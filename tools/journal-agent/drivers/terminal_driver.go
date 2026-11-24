@@ -293,7 +293,7 @@ func (driver *TerminalDriver) prompt(
 	request contracts.RequestIdentity,
 	text string,
 ) (contracts.OperationResult, error) {
-	if driver.waitUntil(driver.runtime.Limits.ReadyWait(), driver.screenDecided); !driver.promptReady() {
+	if driver.waitUntil(driver.runtime.Limits.ReadyWait(), driver.isScreenDecided); !driver.isPromptReady() {
 		return driver.stagedBehindScreen(request)
 	}
 
@@ -318,7 +318,7 @@ func (driver *TerminalDriver) prompt(
 	if errors.Is(err, terminal.ErrLineStranded) {
 		return driver.strandedResult(request, line), nil
 	}
-	if err != nil || delivery != terminal.Delivered || !driver.tookLine(entered) {
+	if err != nil || delivery != terminal.Delivered || !driver.hasTakenLine(entered) {
 		return contracts.OperationResult{Request: request, Progress: contracts.ProgressDeliveryUncertain}, err
 	}
 
@@ -330,10 +330,10 @@ func (driver *TerminalDriver) prompt(
 	return contracts.OperationResult{Request: request, Progress: contracts.ProgressApplying}, nil
 }
 
-// tookLine is whether the program took the entered line: its composer changed after the Enter. A composer that
+// hasTakenLine is whether the program took the entered line: its composer changed after the Enter. A composer that
 // stays exactly as it was when Enter was pressed still holds the line, so it gets Enter again as many times as the
 // journal's limits allow; a user or a browser writer who holds the input by then ends it.
-func (driver *TerminalDriver) tookLine(entered uint64) bool {
+func (driver *TerminalDriver) hasTakenLine(entered uint64) bool {
 	changed := func() bool { return driver.runtime.Generation(driver.runtime.Composer) != entered }
 
 	for again := 0; again < driver.runtime.Limits.UnsentEnters; again++ {
@@ -354,7 +354,7 @@ func (driver *TerminalDriver) strandedResult(
 	request contracts.RequestIdentity,
 	line *terminal.TypedLine,
 ) contracts.OperationResult {
-	if driver.runtime.Gate.Settlement(line, driver.runtime.Limits.StrandedSettle()) {
+	if driver.runtime.Gate.AwaitSettlement(line, driver.runtime.Limits.StrandedSettle()) {
 		return contracts.OperationResult{Request: request, Progress: contracts.ProgressCancelled}
 	}
 
@@ -364,8 +364,8 @@ func (driver *TerminalDriver) strandedResult(
 // awaitTurnEnd waits for the turn to take the composer away and then for an empty, still composer again, and tells
 // whether the composer left within the journal's start window.
 func (driver *TerminalDriver) awaitTurnEnd(current *turnEnd) {
-	left := driver.waitUntil(driver.runtime.Limits.TurnStartWindow(), func() bool { return !driver.promptReady() })
-	for !driver.promptReady() {
+	left := driver.waitUntil(driver.runtime.Limits.TurnStartWindow(), func() bool { return !driver.isPromptReady() })
+	for !driver.isPromptReady() {
 		driver.runtime.Clock.Sleep(pollInterval)
 	}
 	driver.mutex.Lock()
@@ -398,15 +398,15 @@ func (driver *TerminalDriver) stagedBehindScreen(request contracts.RequestIdenti
 	return result, nil
 }
 
-// screenDecided is whether the screen says what a prompt meets: a ready composer, or a known menu holding still,
+// isScreenDecided is whether the screen says what a prompt meets: a ready composer, or a known menu holding still,
 // which is handled the moment it is read instead of at the end of the wait.
-func (driver *TerminalDriver) screenDecided() bool {
+func (driver *TerminalDriver) isScreenDecided() bool {
 	reading := driver.runtime.Classifier.Classify(driver.runtime.Clock.Now())
 
 	return reading.Stable && (reading.Kind == screen.PromptReady || reading.Kind == screen.MenuShown)
 }
 
-func (driver *TerminalDriver) promptReady() bool {
+func (driver *TerminalDriver) isPromptReady() bool {
 	reading := driver.runtime.Classifier.Classify(driver.runtime.Clock.Now())
 
 	return reading.Kind == screen.PromptReady && reading.Stable

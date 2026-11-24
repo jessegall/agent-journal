@@ -95,7 +95,7 @@ final readonly class HelperCalls
         string $brief,
         CallKey $requestKey = new CallKey(),
         array $sourceSubjects = [],
-        bool $independent = false,
+        bool $isIndependent = false,
         DriverType|null $driverType = null,
     ): HelperReceiptData {
         return $this->sender->send(StartHelperCall::from([
@@ -108,7 +108,7 @@ final readonly class HelperCalls
             'brief' => $brief,
             'requestKey' => $requestKey,
             'sourceSubjects' => $sourceSubjects,
-            'isIndependent' => $independent,
+            'isIndependent' => $isIndependent,
             'driverType' => $driverType,
         ]));
     }

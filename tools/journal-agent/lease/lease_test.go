@@ -33,7 +33,7 @@ func TestTheLeaseCountsFromTheRequestStartNotFromTheAnswer(t *testing.T) {
 	server := time.Date(2026, 11, 21, 12, 0, 0, 0, time.UTC)
 	lease := Renewed(started, server, server.Add(60*time.Second))
 
-	if !lease.Expired(started.Add(60 * time.Second)) {
+	if !lease.IsExpired(started.Add(60 * time.Second)) {
 		t.Fatal("a slow answer lengthened the lease")
 	}
 }

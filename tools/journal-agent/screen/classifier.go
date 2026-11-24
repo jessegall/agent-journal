@@ -134,7 +134,7 @@ func (classifier *Classifier) Classify(now time.Time) Classification {
 	for _, family := range classifier.layout.Menus {
 		if family.matches(snapshot) {
 			name := family.Options.Name()
-			stable := classifier.heldFor(name, classifier.reader.Generation(name), now, family.StableFor)
+			stable := classifier.isHeldFor(name, classifier.reader.Generation(name), now, family.StableFor)
 
 			return Classification{
 				Kind:       MenuShown,
@@ -146,14 +146,14 @@ func (classifier *Classifier) Classify(now time.Time) Classification {
 		}
 	}
 
-	if classifier.composerIsEmptyWithCursor(snapshot) {
+	if classifier.isComposerEmptyWithCursor(snapshot) {
 		name := classifier.layout.Composer.Name()
-		stable := classifier.heldFor(name, classifier.reader.Generation(name), now, classifier.layout.ComposerStableFor)
+		stable := classifier.isHeldFor(name, classifier.reader.Generation(name), now, classifier.layout.ComposerStableFor)
 
 		return Classification{Kind: PromptReady, Stable: stable, Generation: generation, Options: options}
 	}
 
-	stable := classifier.heldFor(wholeScreen, generation, now, classifier.layout.unknownStableFor())
+	stable := classifier.isHeldFor(wholeScreen, generation, now, classifier.layout.unknownStableFor())
 
 	return Classification{Kind: Unknown, Stable: stable, Generation: generation, Options: options}
 }
@@ -166,9 +166,9 @@ func (classifier *Classifier) showsOptions(snapshot contracts.Snapshot) bool {
 	return listed && !composing
 }
 
-// composerIsEmptyWithCursor is whether the composer is drawn where the layout says, on the layout's buffer, with the
+// isComposerEmptyWithCursor is whether the composer is drawn where the layout says, on the layout's buffer, with the
 // visible cursor in it at the column of an empty composer: nothing anybody typed is there.
-func (classifier *Classifier) composerIsEmptyWithCursor(snapshot contracts.Snapshot) bool {
+func (classifier *Classifier) isComposerEmptyWithCursor(snapshot contracts.Snapshot) bool {
 	rows, found := classifier.layout.Composer.Rows(snapshot)
 	cursor := snapshot.Cursor
 
@@ -191,8 +191,8 @@ func (classifier *Classifier) Forget() {
 	classifier.since = map[string]time.Time{}
 }
 
-// heldFor is whether the generation kept under the name has not changed for at least the interval.
-func (classifier *Classifier) heldFor(region string, generation uint64, now time.Time, interval time.Duration) bool {
+// isHeldFor is whether the generation kept under the name has not changed for at least the interval.
+func (classifier *Classifier) isHeldFor(region string, generation uint64, now time.Time, interval time.Duration) bool {
 	if _, known := classifier.since[region]; !known || classifier.seen[region] != generation {
 		classifier.seen[region] = generation
 		classifier.since[region] = now

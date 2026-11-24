@@ -67,7 +67,7 @@ func TestASessionContainerThatAlreadyRunsIsFoundAndNotCreatedAgain(t *testing.T)
 		t.Fatal(err)
 	}
 
-	if daemon.Asked(http.MethodPost, "/containers/create") || len(daemon.Created()) != 1 {
+	if daemon.WasAsked(http.MethodPost, "/containers/create") || len(daemon.Created()) != 1 {
 		t.Fatalf("a running session container was created again: %v", daemon.Requests())
 	}
 }
@@ -141,10 +141,10 @@ func TestAStopIsProvenAndRemovesTheContainerAndItsNetworkButKeepsTheVolumes(t *t
 
 	_, hasContainer := daemon.Container("journal-session-7")
 	_, hasNetwork := daemon.Network("journal-session-7")
-	if hasContainer || hasNetwork || !daemon.Asked(http.MethodPost, "/containers/journal-session-7/stop?t=10") {
+	if hasContainer || hasNetwork || !daemon.WasAsked(http.MethodPost, "/containers/journal-session-7/stop?t=10") {
 		t.Fatalf("the stop left the container or its network: %v", daemon.Requests())
 	}
-	if _, kept := daemon.Volume("journal-account-7-projects"); !kept || daemon.Asked(http.MethodDelete, "/volumes/") {
+	if _, kept := daemon.Volume("journal-account-7-projects"); !kept || daemon.WasAsked(http.MethodDelete, "/volumes/") {
 		t.Fatalf("a session volume was removed: %v", daemon.Requests())
 	}
 }
@@ -314,7 +314,7 @@ func TestAWritersCheckoutIsMountedReadWriteInsteadOfTheMainsWorkspace(t *testing
 	if workspace.Source != "journal-checkout-session-7" || workspace.ReadOnly {
 		t.Fatalf("the writer does not work in its own checkout: %+v", workspace)
 	}
-	if !daemon.Asked(http.MethodGet, "/volumes/journal-checkout-session-7") {
+	if !daemon.WasAsked(http.MethodGet, "/volumes/journal-checkout-session-7") {
 		t.Fatalf("the checkout was not looked for before it was used: %v", daemon.Requests())
 	}
 }

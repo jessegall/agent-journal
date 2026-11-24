@@ -17,17 +17,17 @@ func (prepared PreparedStart) ResumableConversation(workFolder string) (string, 
 	if target == "" || !conversationIDPattern.MatchString(target) || prepared.Claim.Directory == "" {
 		return "", false
 	}
-	if transcriptIn(prepared.Claim.Directory, workFolder, target) {
+	if hasTranscriptIn(prepared.Claim.Directory, workFolder, target) {
 		return target, true
 	}
 	return "", false
 }
 
-// transcriptIn reports whether the account folder holds the conversation's transcript: Claude Code keeps it under
+// hasTranscriptIn reports whether the account folder holds the conversation's transcript: Claude Code keeps it under
 // projects/<the workspace path with separators as dashes>/<id>.jsonl, Codex under sessions/ in a rollout file whose
 // name ends with the id.
-func transcriptIn(accountFolder string, workFolder string, conversationID string) bool {
-	if regularFile(filepath.Join(ClaudeProjectFolder(accountFolder, workFolder), conversationID+".jsonl")) {
+func hasTranscriptIn(accountFolder string, workFolder string, conversationID string) bool {
+	if isRegularFile(filepath.Join(ClaudeProjectFolder(accountFolder, workFolder), conversationID+".jsonl")) {
 		return true
 	}
 	rollouts, err := filepath.Glob(filepath.Join(accountFolder, "sessions", "*", "*", "*", "rollout-*-"+conversationID+".jsonl"))
@@ -35,14 +35,14 @@ func transcriptIn(accountFolder string, workFolder string, conversationID string
 		return false
 	}
 	for _, rollout := range rollouts {
-		if regularFile(rollout) {
+		if isRegularFile(rollout) {
 			return true
 		}
 	}
 	return false
 }
 
-func regularFile(path string) bool {
+func isRegularFile(path string) bool {
 	info, err := os.Lstat(path)
 	return err == nil && info.Mode().IsRegular()
 }

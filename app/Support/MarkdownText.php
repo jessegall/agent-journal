@@ -428,7 +428,7 @@ final readonly class MarkdownText
      *
      * @throws MarkdownInvalid
      */
-    private static function outlineOf(string $text, bool $closedFence): array
+    private static function outlineOf(string $text, bool $isClosedFence): array
     {
         $lines = explode("\n", $text);
         $headings = [];
@@ -474,7 +474,7 @@ final readonly class MarkdownText
             }
         }
 
-        if ($closedFence && $fence !== null) {
+        if ($isClosedFence && $fence !== null) {
             throw MarkdownInvalid::unclosedFence($fenceLine);
         }
 

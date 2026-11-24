@@ -206,7 +206,7 @@ func sentSteps(entry keyscripts.Entry, failedAt int) []string {
 
 // askAgainAfter asks under a new key after the journal's wait, while this navigation still holds the runtime.
 func (nav navigation) askAgainAfter(ctx context.Context, wait time.Duration) {
-	if !waitForNavigation(ctx, wait) || !nav.loop.heldForNavigation(nav.runtime) {
+	if !waitForNavigation(ctx, wait) || !nav.loop.isHeldForNavigation(nav.runtime) {
 		return
 	}
 	fresh, readable := nav.reread()
@@ -291,8 +291,8 @@ func (nav navigation) notifyStop(ctx context.Context, progress contracts.Progres
 	}
 }
 
-// heldForNavigation is whether the runtime is still open on this host and held for its navigation.
-func (loop *Loop) heldForNavigation(runtime *liveRuntime) bool {
+// isHeldForNavigation is whether the runtime is still open on this host and held for its navigation.
+func (loop *Loop) isHeldForNavigation(runtime *liveRuntime) bool {
 	loop.mutex.Lock()
 	defer loop.mutex.Unlock()
 

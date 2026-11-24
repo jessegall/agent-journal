@@ -462,7 +462,7 @@ func (terminal *hostTerminal) isCompletePublicRedraw(fresh *screen.EmulatorReade
 	snapshot := fresh.Snapshot()
 	_, composer := terminal.layout.Composer.Rows(snapshot)
 
-	return composer && snapshot.Cursor.IsVisible && terminal.layout.Exportable(snapshot)
+	return composer && snapshot.Cursor.IsVisible && terminal.layout.IsExportable(snapshot)
 }
 
 // promote discards the old screen for the fresh parser's, reopens the barrier and lets the mirror forward again; the

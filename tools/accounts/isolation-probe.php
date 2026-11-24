@@ -69,15 +69,15 @@ $credentials = CREDENTIALS[$program];
 
 switch ($step) {
     case 'setup':
-        if (! $inContainer('test -f '.escapeshellarg($credentials))->succeeded()) {
+        if (! $inContainer('test -f '.escapeshellarg($credentials))->hasSucceeded()) {
             echo "inconclusive: the {$program} credential file is missing\n";
             exit(1);
         }
 
         $canary = bin2hex(random_bytes(16));
         $marker = bin2hex(random_bytes(16));
-        $written = $inContainer('umask 077 && cat > '.CANARY.' && chmod 0600 '.CANARY, $canary)->succeeded()
-            && $inContainer('umask 007 && cat > '.MARKER.' && chmod 0660 '.MARKER, $marker)->succeeded();
+        $written = $inContainer('umask 077 && cat > '.CANARY.' && chmod 0600 '.CANARY, $canary)->hasSucceeded()
+            && $inContainer('umask 007 && cat > '.MARKER.' && chmod 0660 '.MARKER, $marker)->hasSucceeded();
 
         if (! $written) {
             echo "inconclusive: the canary or the marker could not be written\n";

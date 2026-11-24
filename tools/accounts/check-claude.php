@@ -69,7 +69,7 @@ $signedOut = $status(empty_folder('signed-out'));
 $items = [
     pinned_build_item($compatibility, $installed, 'task 252'),
     judged('start-flags', $absentFlags === [], 'the help names every start flag', 'a flag is absent', 'task 240'),
-    judged('empty-account-signed-out', ! $signedOut->signedIn, 'no credential', 'it reported a sign-in', 'task 240'),
+    judged('empty-account-signed-out', ! $signedOut->isSignedIn, 'no credential', 'it reported a sign-in', 'task 240'),
 ];
 
 $statusA = $accountA === null ? null : $status($accountA);
@@ -78,10 +78,10 @@ $statusB = $accountB === null ? null : $status($accountB);
 foreach (['a' => $statusA, 'b' => $statusB] as $name => $accountStatus) {
     $items[] = $accountStatus === null
         ? missing("account-{$name}-signed-in", "a journal account {$name} signed in through the host", 'task 253')
-        : judged("account-{$name}-signed-in", $accountStatus->signedIn, 'signed in', 'not signed in', 'task 253');
+        : judged("account-{$name}-signed-in", $accountStatus->isSignedIn, 'signed in', 'not signed in', 'task 253');
 }
 
-$bothSignedIn = ($statusA?->signedIn ?? false) && ($statusB?->signedIn ?? false);
+$bothSignedIn = ($statusA?->isSignedIn ?? false) && ($statusB?->isSignedIn ?? false);
 $items[] = match (true) {
     ! $bothSignedIn => missing('accounts-separate', 'two signed-in journal accounts', 'task 231'),
     $statusA->identityDigest === null || $statusB->identityDigest === null => missing('accounts-separate', 'an account identity in auth status', 'task 231'),
@@ -94,19 +94,19 @@ $items[] = match (true) {
     ),
 };
 
-$restarted = ($statusA?->signedIn ?? false) && $accountA !== null ? $status($accountA) : null;
+$restarted = ($statusA?->isSignedIn ?? false) && $accountA !== null ? $status($accountA) : null;
 $items[] = $restarted === null
     ? missing('sign-in-survives-restart', 'a signed-in journal account A', 'task 247')
     : judged(
         'sign-in-survives-restart',
-        $restarted->signedIn && $restarted->identityDigest === $statusA->identityDigest,
+        $restarted->isSignedIn && $restarted->identityDigest === $statusA->identityDigest,
         'a new process finds account A signed in as before',
         'a new process does not find account A signed in as before',
         'task 247',
     );
 
 $items[] = (function () use ($options, $statusA, $accountA, $program, $environment): array {
-    if (! $options['allow_requests'] || ! ($statusA?->signedIn ?? false) || $accountA === null) {
+    if (! $options['allow_requests'] || ! ($statusA?->isSignedIn ?? false) || $accountA === null) {
         return missing('hostile-work-settings-ignored', 'a signed-in account A and --allow-requests', 'task 262');
     }
 
@@ -127,7 +127,7 @@ $items[] = (function () use ($options, $statusA, $accountA, $program, $environme
     ];
     $run = run_program($command, $environment($accountA), $work);
 
-    return $run->succeeded()
+    return $run->hasSucceeded()
         ? judged('hostile-work-settings-ignored', ! file_exists($marker), 'its hook stayed off', 'it ran', 'task 262')
         : missing('hostile-work-settings-ignored', 'a restricted request that completes', 'task 262');
 })();

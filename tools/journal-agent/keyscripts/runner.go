@@ -166,7 +166,7 @@ func (runner *Runner) proofMissing(index int, step KeyStep, values map[string]st
 	until := runner.clock.Now().Add(step.Deadline)
 	for {
 		seen := runner.screen.Classify(runner.clock.Now())
-		if seen.Stable && proof.SeenIn(runner.screen.Snapshot().Rows) {
+		if seen.Stable && proof.IsSeenIn(runner.screen.Snapshot().Rows) {
 			return Result{}, false
 		}
 		if !runner.clock.Now().Before(until) {
@@ -190,7 +190,7 @@ func (runner *Runner) navigation(
 	seen screen.Classification,
 ) (Result, bool) {
 	snapshot := runner.screen.Snapshot()
-	if !runner.driver.Layout.Exportable(snapshot) {
+	if !runner.driver.Layout.IsExportable(snapshot) {
 		return Result{}, false
 	}
 	uncertainty := runner.uncertainty(reason, index, step, seen, snapshot)
@@ -220,7 +220,7 @@ func (runner *Runner) Reread(stalled Uncertainty) (fresh Uncertainty, readable b
 	runner.screen.Forget()
 	seen := runner.screen.Classify(runner.clock.Now())
 	snapshot := runner.screen.Snapshot()
-	if !runner.driver.Layout.Exportable(snapshot) {
+	if !runner.driver.Layout.IsExportable(snapshot) {
 		return Uncertainty{}, false
 	}
 

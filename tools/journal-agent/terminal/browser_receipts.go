@@ -388,7 +388,7 @@ func (gate *InputGate) writeCounted(sequence uint64, receipts *grantReceipts, te
 // never lands on the new one; the caller holds the mutex.
 func (gate *InputGate) admitsPrompt(layout screen.Layout) bool {
 	snapshot := gate.reader.Snapshot()
-	allowed := gate.composerDrawn(snapshot) && layout.Exportable(snapshot)
+	allowed := gate.isComposerDrawn(snapshot) && layout.IsExportable(snapshot)
 	if !allowed && gate.browser.promptAllowed {
 		gate.browser.promptRevision++
 	}
@@ -397,7 +397,7 @@ func (gate *InputGate) admitsPrompt(layout screen.Layout) bool {
 	return allowed
 }
 
-func (gate *InputGate) composerDrawn(snapshot contracts.Snapshot) bool {
+func (gate *InputGate) isComposerDrawn(snapshot contracts.Snapshot) bool {
 	_, found := gate.composer.Rows(snapshot)
 
 	return found

@@ -363,7 +363,7 @@ func TestAnAgentContainerIsNotCreatedOnADaemonThatDiscardsItsBudgets(t *testing.
 		t.Fatalf("a daemon with cgroup driver none gave %v", err)
 	}
 
-	if _, created := daemon.Container("journal-session-7"); created || daemon.Asked(http.MethodPost, "/volumes/create") {
+	if _, created := daemon.Container("journal-session-7"); created || daemon.WasAsked(http.MethodPost, "/volumes/create") {
 		t.Fatalf("a volume or container was created on a daemon that discards budgets: %v", daemon.Requests())
 	}
 

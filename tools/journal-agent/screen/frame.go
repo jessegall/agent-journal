@@ -86,7 +86,7 @@ func (reader *EmulatorReader) ExportFrame(layout Layout, epoch string, sequence 
 	defer reader.lock.Unlock()
 
 	snapshot := reader.snapshot()
-	if !layout.Exportable(snapshot) {
+	if !layout.IsExportable(snapshot) {
 		return reader.shieldFrame(epoch, sequence, now)
 	}
 

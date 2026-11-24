@@ -20,7 +20,7 @@ const ACTION_FOLDERS = '#/(Pipes|Pipelines|(?<!Console/)Commands|Listeners|Jobs)
 /**
  * The words that open a yes-or-no question.
  */
-const QUESTION_WORDS = ['is', 'has', 'have', 'can', 'should', 'must', 'may', 'does', 'was', 'were', 'will', 'needs'];
+const QUESTION_WORDS = ['is', 'are', 'has', 'have', 'can', 'should', 'must', 'may', 'does', 'was', 'were', 'will', 'needs'];
 
 /**
  * The words that make "to" and a verb a noun phrase of their own: how to fix, what to answer.

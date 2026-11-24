@@ -332,7 +332,7 @@ func (driver *HeadlessDriver) command(start profilecontracts.Start) (*exec.Cmd, 
 
 		return command, nil
 	}
-	if driver.claudeAccountStart() && driver.runtime.ConfinesAccountStarts && runtime.GOOS == "darwin" {
+	if driver.isClaudeAccountStart() && driver.runtime.ConfinesAccountStarts && runtime.GOOS == "darwin" {
 		sandbox, err := host.WriteSessionSandbox(
 			start.SettingsFolder,
 			driver.runtime.Start.Account.Folder,
@@ -360,16 +360,16 @@ func (driver *HeadlessDriver) stagedStart() profilecontracts.BaseStart {
 	return base
 }
 
-// claudeAccountStart is whether the runtime runs Claude Code on a saved account, whose sign-in and turn results the
+// isClaudeAccountStart is whether the runtime runs Claude Code on a saved account, whose sign-in and turn results the
 // driver checks itself.
-func (driver *HeadlessDriver) claudeAccountStart() bool {
+func (driver *HeadlessDriver) isClaudeAccountStart() bool {
 	return driver.runtime.Start.Account != nil && driver.runtime.Profile.ReportsTurnResults()
 }
 
 // checkSignIn refuses the first turn of a Claude account start whose account is not signed in to claude.ai in its
 // own folder.
 func (driver *HeadlessDriver) checkSignIn(command *exec.Cmd) error {
-	if !driver.claudeAccountStart() || driver.signedIn {
+	if !driver.isClaudeAccountStart() || driver.signedIn {
 		return nil
 	}
 	runtime := driver.runtime
@@ -383,7 +383,7 @@ func (driver *HeadlessDriver) checkSignIn(command *exec.Cmd) error {
 // resultOf reads a Claude turn's result and usage from its output: an account start's own stream-json, or a contained
 // start's container process stream-json, attached by the container start. Other starts have nothing to read.
 func (driver *HeadlessDriver) resultOf(turn TurnProgram) (<-chan contracts.TurnEnd, error) {
-	if !driver.claudeAccountStart() && !driver.containedClaudeStart() {
+	if !driver.isClaudeAccountStart() && !driver.isContainedClaudeStart() {
 		return nil, nil
 	}
 	output, err := turn.Output()
@@ -396,9 +396,9 @@ func (driver *HeadlessDriver) resultOf(turn TurnProgram) (<-chan contracts.TurnE
 	return result, nil
 }
 
-// containedClaudeStart is whether the runtime runs Claude Code in its session's container, where the container
+// isContainedClaudeStart is whether the runtime runs Claude Code in its session's container, where the container
 // process holds the account.
-func (driver *HeadlessDriver) containedClaudeStart() bool {
+func (driver *HeadlessDriver) isContainedClaudeStart() bool {
 	return driver.runtime.Container != nil && driver.runtime.Profile.ReportsTurnResults()
 }
 

@@ -76,7 +76,7 @@ func TestACleanupRemovesTheTransientResourcesAndKeepsTheWorkspace(t *testing.T) 
 	}
 	_, hasContainer := daemon.Container("journal-session-7")
 	_, hasNetwork := daemon.Network("journal-session-7")
-	if hasContainer || hasNetwork || !daemon.Asked(http.MethodPost, "/containers/journal-session-7/stop?t=10") {
+	if hasContainer || hasNetwork || !daemon.WasAsked(http.MethodPost, "/containers/journal-session-7/stop?t=10") {
 		t.Fatalf("the container or its network is still there, or it was not stopped within its bound: %v", daemon.Requests())
 	}
 	if _, err := os.Stat(filepath.Join(runtimes, "session-7")); !os.IsNotExist(err) {

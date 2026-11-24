@@ -83,7 +83,7 @@ func TestATakeDuringAPendingTypedLineClearsItWithoutEnterAndCancelsTheRequest(t 
 	if _, err := gate.Submit(line, 0); !errors.Is(err, ErrLineStranded) {
 		t.Fatalf("the stranded line could still be submitted: %v", err)
 	}
-	if !gate.Settlement(line, time.Second) {
+	if !gate.AwaitSettlement(line, time.Second) {
 		t.Fatal("the line was not reported cancelled before submit")
 	}
 	if gate.Owner() != BrowserInput {
@@ -103,7 +103,7 @@ func TestATakeOverAPartlyWrittenLineIsUncertainAndKeepsTheHold(t *testing.T) {
 	if strings.Contains(program.String(), clearLine) || strings.Contains(program.String(), enterKey) {
 		t.Fatalf("the take wrote to the program: %q", program.String())
 	}
-	if gate.Settlement(line, time.Second) {
+	if gate.AwaitSettlement(line, time.Second) {
 		t.Fatal("an unsettled line was reported cancelled")
 	}
 	if gate.Owner() != DriverInput || gate.GrantState().GrantID != "" {

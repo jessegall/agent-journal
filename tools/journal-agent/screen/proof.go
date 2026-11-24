@@ -29,16 +29,16 @@ func (proof Proof) Text() string {
 	return proof.text
 }
 
-// SeenIn is whether one of the rows holds the proof as a whole word group: "GPT-6" is seen in "Model: GPT-6" and not
+// IsSeenIn is whether one of the rows holds the proof as a whole word group: "GPT-6" is seen in "Model: GPT-6" and not
 // in "GPT-5" or "GPT-6-Sol".
-func (proof Proof) SeenIn(rows []string) bool {
+func (proof Proof) IsSeenIn(rows []string) bool {
 	return slices.ContainsFunc(rows, proof.isInRow)
 }
 
-// AlreadyOn is whether the proof is on the screen when it is raised; such a proof proves nothing, and callers refuse
+// IsAlreadyOn is whether the proof is on the screen when it is raised; such a proof proves nothing, and callers refuse
 // it.
-func (proof Proof) AlreadyOn(rows []string) bool {
-	return proof.SeenIn(rows)
+func (proof Proof) IsAlreadyOn(rows []string) bool {
+	return proof.IsSeenIn(rows)
 }
 
 func (proof Proof) isInRow(row string) bool {

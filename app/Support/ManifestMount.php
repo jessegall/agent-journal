@@ -33,17 +33,17 @@ final readonly class ManifestMount
     /**
      * A named volume of the agent daemon.
      */
-    public static function volume(string $name, string $target, bool $writable): self
+    public static function volume(string $name, string $target, bool $isWritable): self
     {
-        return new self(MountType::Volume, $name, $target, $writable);
+        return new self(MountType::Volume, $name, $target, $isWritable);
     }
 
     /**
      * A named volume that must already exist on the agent daemon, such as a resumed conversation's history.
      */
-    public static function existingVolume(string $name, string $target, bool $writable): self
+    public static function existingVolume(string $name, string $target, bool $isWritable): self
     {
-        return new self(MountType::Volume, $name, $target, $writable, true);
+        return new self(MountType::Volume, $name, $target, $isWritable, true);
     }
 
     /**

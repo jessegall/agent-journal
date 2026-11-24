@@ -21,9 +21,9 @@ func Renewed(requestStarted time.Time, serverTime time.Time, expiresAt time.Time
 	return Lease{renewedAt: requestStarted, remaining: max(expiresAt.Sub(serverTime), 0)}
 }
 
-// Expired is whether the lease ended by now. A wall clock that jumped, as after a sleep, cannot extend it: the
+// IsExpired is whether the lease ended by now. A wall clock that jumped, as after a sleep, cannot extend it: the
 // elapsed time is read from the monotonic clock, and a clock that cannot tell counts as expired.
-func (lease Lease) Expired(now time.Time) bool {
+func (lease Lease) IsExpired(now time.Time) bool {
 	if lease.renewedAt.IsZero() {
 		return true
 	}
@@ -49,7 +49,7 @@ func (supervisor *Supervisor) Renew(lease Lease) {
 
 // Check stops the runtime once its lease has ended, and answers whether it still may work.
 func (supervisor *Supervisor) Check(now time.Time) bool {
-	if supervisor.lease.Expired(now) {
+	if supervisor.lease.IsExpired(now) {
 		supervisor.Stop()
 		return false
 	}

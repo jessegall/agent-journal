@@ -44,7 +44,7 @@ $environment = fn (string $codexHome) => [
 ];
 
 // Only the exit of login status is kept: zero is signed in.
-$signedIn = fn (string $codexHome): bool => run_program([$program, 'login', 'status'], $environment($codexHome), $home)->succeeded();
+$signedIn = fn (string $codexHome): bool => run_program([$program, 'login', 'status'], $environment($codexHome), $home)->hasSucceeded();
 
 // The account keeps its sign-in in its own auth.json: the file setting is in its config.toml and the file exists.
 $usesFileStore = function (string $codexHome) use ($compatibility): bool {

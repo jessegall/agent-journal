@@ -58,7 +58,7 @@ func TestTheGoHookRelaySendsAndPrintsWhatThePHPRelayDoes(t *testing.T) {
 
 	reply := adapter.Answer([]byte(expected.Payload))
 
-	if actual := calls(); !same(t, actual, expected.Calls) {
+	if actual := calls(); !isSame(t, actual, expected.Calls) {
 		t.Errorf("the calls differ from the PHP relay's:\n got %v\nwant %v", actual, expected.Calls)
 	}
 	if reply != expected.Printed {
@@ -97,7 +97,7 @@ func answeringJournal(t *testing.T, answers []recordedAnswer) (*httptest.Server,
 	}
 }
 
-func same(t *testing.T, actual any, expected any) bool {
+func isSame(t *testing.T, actual any, expected any) bool {
 	t.Helper()
 	same, err := relaycontract.SameJSON(actual, expected)
 	if err != nil {

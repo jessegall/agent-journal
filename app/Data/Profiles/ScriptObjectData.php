@@ -24,12 +24,12 @@ final class ScriptObjectData extends Data
         public readonly bool $isAvailable,
     ) {}
 
-    public static function fromDefinition(ObjectDefinition $object, bool $available): self
+    public static function fromDefinition(ObjectDefinition $object, bool $isAvailable): self
     {
         return new self(
             $object->key,
             array_map(fn (ObjectMember $member) => $member->read->key, $object->members),
-            $available,
+            $isAvailable,
         );
     }
 }

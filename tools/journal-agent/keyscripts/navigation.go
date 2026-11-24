@@ -75,7 +75,7 @@ type RoundResult struct {
 func (runner *Runner) Navigate(round Round, epoch uint64, stalled Uncertainty, values map[string]string) RoundResult {
 	seen, _ := runner.waitFor(AnyScreen, roundDeadline, values)
 	snapshot := runner.screen.Snapshot()
-	if !runner.driver.Layout.Exportable(snapshot) {
+	if !runner.driver.Layout.IsExportable(snapshot) {
 		return RoundResult{Refusal: RefusedSecretScreen}
 	}
 	if seen.Generation != round.Generation || runner.gate.UserInputs() != epoch {
@@ -172,12 +172,12 @@ func (runner *Runner) typeParameter(name string, values map[string]string) Round
 // proves nothing.
 func (runner *Runner) checkProof(text string, stalled Uncertainty, values map[string]string) RoundResult {
 	proof, err := screen.NewProof(text)
-	if err != nil || proof.AlreadyOn(stalled.HostRows) {
+	if err != nil || proof.IsAlreadyOn(stalled.HostRows) {
 		return RoundResult{Refusal: RefusedProofShown}
 	}
 	runner.waitFor(AnyScreen, roundDeadline, values)
 
-	return RoundResult{HasObservedProof: proof.SeenIn(runner.screen.Snapshot().Rows)}
+	return RoundResult{HasObservedProof: proof.IsSeenIn(runner.screen.Snapshot().Rows)}
 }
 
 // stoppedRound is a round a key failed in: the user's keys pause it, a refusal of the label helper is reported by
@@ -200,7 +200,7 @@ func (runner *Runner) stoppedRound(result RoundResult, err error) RoundResult {
 func (runner *Runner) after(result RoundResult, values map[string]string) RoundResult {
 	seen, _ := runner.waitFor(AnyScreen, roundDeadline, values)
 	snapshot := runner.screen.Snapshot()
-	if !runner.driver.Layout.Exportable(snapshot) {
+	if !runner.driver.Layout.IsExportable(snapshot) {
 		result.Refusal = RefusedSecretScreen
 		return result
 	}

@@ -30,7 +30,7 @@ final class ScriptKeywordData extends Data
     /**
      * @param  list<string>  $ports
      */
-    public static function fromDefinition(KeywordDefinition $definition, array $ports, bool $available): self
+    public static function fromDefinition(KeywordDefinition $definition, array $ports, bool $isAvailable): self
     {
         return new self(
             $definition->token,
@@ -38,7 +38,7 @@ final class ScriptKeywordData extends Data
             $definition->form->value,
             $definition->documentation,
             $ports,
-            $available,
+            $isAvailable,
         );
     }
 }

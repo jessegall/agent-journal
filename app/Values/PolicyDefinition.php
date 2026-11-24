@@ -59,20 +59,20 @@ final readonly class PolicyDefinition
         return $this->policy::model();
     }
 
-    private function isGrantedToAgent(AccessType $access, bool $coordinator, bool $readOnly): bool
+    private function isGrantedToAgent(AccessType $access, bool $isCoordinator, bool $isReadOnly): bool
     {
-        if (! $access->audience()->admitsAgent($coordinator, $readOnly)) {
+        if (! $access->audience()->admitsAgent($isCoordinator, $isReadOnly)) {
             return false;
         }
 
-        if ($readOnly
+        if ($isReadOnly
             && Reflector::factory()->isSubclassOf($this->policy, WorkspacePolicy::class)
             && $access->changesFiles()) {
             return false;
         }
 
         if (Reflector::factory()->isSubclassOf($this->policy, RestrictedPolicy::class)) {
-            return $this->policy::additionalAudience($access)->admitsAgent($coordinator, $readOnly);
+            return $this->policy::additionalAudience($access)->admitsAgent($isCoordinator, $isReadOnly);
         }
 
         return true;

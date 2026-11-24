@@ -291,7 +291,7 @@ func TestCancellingALostRaiseEndsTheRetryAndKeepsTheHold(t *testing.T) {
 		t.Fatal("the lost raise stayed in its retry delay after cancellation")
 	}
 
-	if journal.raiseCount() != 1 || driver.rereads() != 0 || !loop.heldForNavigation(runtime) {
+	if journal.raiseCount() != 1 || driver.rereads() != 0 || !loop.isHeldForNavigation(runtime) {
 		t.Fatal("the cancelled raise retried, reread the screen, or released the runtime")
 	}
 }
@@ -317,7 +317,7 @@ func TestAnUnreadableScreenStopsBothWaysOfRaisingAgain(t *testing.T) {
 
 			test.run(newNavigation(loop, runtime, keyScriptClaim("script", nil), keyscripts.Uncertainty{}))
 
-			if journal.raiseCount() != test.raises || driver.rereads() != 1 || !loop.heldForNavigation(runtime) {
+			if journal.raiseCount() != test.raises || driver.rereads() != 1 || !loop.isHeldForNavigation(runtime) {
 				t.Fatal("an unreadable screen was raised again or the runtime was released")
 			}
 		})

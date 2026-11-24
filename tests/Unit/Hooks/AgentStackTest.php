@@ -611,14 +611,14 @@ final class AgentStackTest extends TestCase
         );
     }
 
-    private function answeringFrame(bool $messageWaits): Frame
+    private function answeringFrame(bool $doesMessageWait): Frame
     {
         $reference = $this->reference('core.messages.answering', '95');
 
         return new Frame(
             'message-95',
             $reference,
-            $messageWaits ? AnsweringStates::holding('95') : AnsweringStates::answered(),
+            $doesMessageWait ? AnsweringStates::holding('95') : AnsweringStates::answered(),
             CarbonImmutable::now(),
         );
     }

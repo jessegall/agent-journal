@@ -42,7 +42,7 @@ func TestOnlyTheApiKeyScreenAsksForASecretWithOrWithoutItsOptions(t *testing.T) 
 		if asks := layout.AsksForSecret(each.snapshot); asks != each.secret {
 			t.Fatalf("the %s screen asks for a secret: %v", name, asks)
 		}
-		if exportable := layout.Exportable(each.snapshot); exportable == each.secret {
+		if exportable := layout.IsExportable(each.snapshot); exportable == each.secret {
 			t.Fatalf("the %s screen is exportable: %v", name, exportable)
 		}
 	}

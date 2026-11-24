@@ -254,7 +254,7 @@ func requireUnchangeableAncestors(folder string) error {
 		if info.Mode()&os.ModeSymlink != 0 {
 			return fmt.Errorf("%w: %s is a link", ErrInstallationWritable, path)
 		}
-		if info.Mode().Perm()&0o022 != 0 && !stickyRootFolder(info) {
+		if info.Mode().Perm()&0o022 != 0 && !isStickyRootFolder(info) {
 			return fmt.Errorf("%w: others may write into %s", ErrInstallationWritable, path)
 		}
 	}
@@ -271,7 +271,7 @@ func folderAndAncestors(folder string) []string {
 	return paths
 }
 
-func stickyRootFolder(info os.FileInfo) bool {
+func isStickyRootFolder(info os.FileInfo) bool {
 	owner, known := info.Sys().(*syscall.Stat_t)
 	return known && owner.Uid == 0 && info.Mode()&os.ModeSticky != 0
 }

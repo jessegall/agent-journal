@@ -229,7 +229,7 @@ func (sender *screenSender) tick(ctx context.Context) bool {
 	if !readable {
 		return false
 	}
-	if sender.sentAny && sameScreen(frame, sender.lastSent) && !sender.signOfLifeDue(now) {
+	if sender.sentAny && isSameScreen(frame, sender.lastSent) && !sender.signOfLifeDue(now) {
 		return false
 	}
 
@@ -344,8 +344,8 @@ func (sender *screenSender) logFailure(now time.Time, err error) {
 	log.Printf("the screen of runtime %s was not reported: %v", sender.runtimeID, err)
 }
 
-// sameScreen says whether two frames show the same screen, whatever their numbering and capture time.
-func sameScreen(first, second screen.Frame) bool {
+// isSameScreen says whether two frames show the same screen, whatever their numbering and capture time.
+func isSameScreen(first, second screen.Frame) bool {
 	first.Epoch, first.Sequence, first.Captured = "", 0, time.Time{}
 	second.Epoch, second.Sequence, second.Captured = "", 0, time.Time{}
 	first.Stream, first.Proof, first.ExpiresAt = "", 0, time.Time{}

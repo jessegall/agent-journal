@@ -116,8 +116,8 @@ func (daemon *Daemon) Requests() []string {
 	return append([]string{}, daemon.requests...)
 }
 
-// Asked is whether the daemon got a request with the method whose path holds the part given.
-func (daemon *Daemon) Asked(method, part string) bool {
+// WasAsked is whether the daemon got a request with the method whose path holds the part given.
+func (daemon *Daemon) WasAsked(method, part string) bool {
 	for _, request := range daemon.Requests() {
 		if strings.HasPrefix(request, method+" ") && strings.Contains(request, part) {
 			return true

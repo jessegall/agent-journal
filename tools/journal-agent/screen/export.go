@@ -14,8 +14,8 @@ func (layout Layout) AsksForSecret(snapshot contracts.Snapshot) bool {
 	return false
 }
 
-// Exportable is whether any text of this screen may leave the host for the journal; every export asks it first and
+// IsExportable is whether any text of this screen may leave the host for the journal; every export asks it first and
 // sends nothing when it says no.
-func (layout Layout) Exportable(snapshot contracts.Snapshot) bool {
+func (layout Layout) IsExportable(snapshot contracts.Snapshot) bool {
 	return !layout.AsksForSecret(snapshot)
 }

@@ -51,10 +51,10 @@ func TestTheGoRelaySendsAndPrintsWhatThePHPRelayDoes(t *testing.T) {
 	relay := mcprelay.Relay{Send: sendWith(grant), Output: &output, Errors: io.Discard}
 	relay.Run(context.Background(), strings.NewReader(strings.Join(expected.Frames, "\n")+"\n"))
 
-	if actual := calls(); !same(t, actual, expected.Calls) {
+	if actual := calls(); !isSame(t, actual, expected.Calls) {
 		t.Errorf("the calls differ from the PHP relay's:\n got %v\nwant %v", actual, expected.Calls)
 	}
-	if actual := printedLines(t, output.String()); !same(t, actual, expected.Printed) {
+	if actual := printedLines(t, output.String()); !isSame(t, actual, expected.Printed) {
 		t.Errorf("the printed lines differ from the PHP relay's:\n got %v\nwant %v", actual, expected.Printed)
 	}
 }
@@ -126,7 +126,7 @@ func printedLines(t *testing.T, output string) []map[string]any {
 	return lines
 }
 
-func same(t *testing.T, actual any, expected any) bool {
+func isSame(t *testing.T, actual any, expected any) bool {
 	t.Helper()
 	same, err := relaycontract.SameJSON(actual, expected)
 	if err != nil {

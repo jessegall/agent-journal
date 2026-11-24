@@ -107,7 +107,7 @@ final readonly class SearchRequest
         string $continuation,
         string|null $query,
         string|null $within,
-        bool $discover,
+        bool $shouldDiscover,
         int $limit,
     ): self {
         if ($query !== null) {
@@ -118,7 +118,7 @@ final readonly class SearchRequest
             throw SearchRequestInvalid::conflicting('continuation', 'within');
         }
 
-        if ($discover) {
+        if ($shouldDiscover) {
             throw SearchRequestInvalid::conflicting('continuation', 'discover');
         }
 

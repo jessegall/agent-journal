@@ -121,7 +121,7 @@ func TestAGitWorkspaceIsFilledBeforeItsFirstContainerAndLeftAloneOnceItExists(t 
 	if err := filled.PrepareWorkspace(context.Background(), source); err != nil {
 		t.Fatal(err)
 	}
-	if len(filledDaemon.Created()) != 0 || filledDaemon.Asked(http.MethodPost, "/volumes/create") {
+	if len(filledDaemon.Created()) != 0 || filledDaemon.WasAsked(http.MethodPost, "/volumes/create") {
 		t.Fatalf("a filled workspace was cloned again: %v", filledDaemon.Requests())
 	}
 }

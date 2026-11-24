@@ -329,7 +329,7 @@ func (loop *Loop) awaitTurn(
 	loop.mutex.Lock()
 	finished := append(append([]client.ClaimedRequest{}, turnRequests...), runtime.staged...)
 	interrupts := runtime.interrupts
-	if sameRequests(runtime.running, turnRequests) {
+	if hasSameRequests(runtime.running, turnRequests) {
 		runtime.running = nil
 	}
 	runtime.staged, runtime.interrupts = nil, nil
@@ -848,8 +848,8 @@ func whole(number *int) int {
 	return *number
 }
 
-// sameRequests says whether the two lists hold the same requests in the same order.
-func sameRequests(first, second []client.ClaimedRequest) bool {
+// hasSameRequests says whether the two lists hold the same requests in the same order.
+func hasSameRequests(first, second []client.ClaimedRequest) bool {
 	if len(first) != len(second) {
 		return false
 	}

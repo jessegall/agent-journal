@@ -41,7 +41,7 @@ var capabilityLines = []string{"CapInh", "CapPrm", "CapEff", "CapBnd", "CapAmb"}
 func (identity Identity) Verify(status string) error {
 	fields := statusFields(status)
 	uid, gid := strconv.Itoa(identity.UID), strconv.Itoa(identity.GID)
-	if !allEqual(fields["Uid"], uid) || !allEqual(fields["Gid"], gid) {
+	if !areAllEqual(fields["Uid"], uid) || !areAllEqual(fields["Gid"], gid) {
 		return fmt.Errorf("%w: uid %v, gid %v", ErrIdentityNotDropped, fields["Uid"], fields["Gid"])
 	}
 
@@ -55,7 +55,7 @@ func (identity Identity) Verify(status string) error {
 		}
 	}
 
-	if !allEqual(fields["NoNewPrivs"], "1") {
+	if !areAllEqual(fields["NoNewPrivs"], "1") {
 		return fmt.Errorf("%w: no new privileges %v", ErrIdentityNotDropped, fields["NoNewPrivs"])
 	}
 
@@ -75,8 +75,8 @@ func statusFields(status string) map[string][]string {
 	return fields
 }
 
-// allEqual is whether there are values and every one is the wanted one.
-func allEqual(values []string, wanted string) bool {
+// areAllEqual is whether there are values and every one is the wanted one.
+func areAllEqual(values []string, wanted string) bool {
 	if len(values) == 0 {
 		return false
 	}

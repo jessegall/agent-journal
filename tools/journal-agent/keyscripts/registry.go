@@ -47,7 +47,7 @@ func (registry *Registry) Find(profile, name string) (KeyScript, error) {
 			continue
 		}
 		_, newestBuild, _ := strings.Cut(newest.Profile, "@")
-		if !found || newerBuild(build, newestBuild) {
+		if !found || isNewerBuild(build, newestBuild) {
 			newest, found = script, true
 		}
 	}
@@ -58,9 +58,9 @@ func (registry *Registry) Find(profile, name string) (KeyScript, error) {
 	return newest, nil
 }
 
-// newerBuild is whether one dotted build number is newer than the other, part by part, so 2.1.330 is newer than
+// isNewerBuild is whether one dotted build number is newer than the other, part by part, so 2.1.330 is newer than
 // 2.1.323 and 2.10.0 newer than 2.9.9.
-func newerBuild(build, than string) bool {
+func isNewerBuild(build, than string) bool {
 	parts, others := strings.Split(build, "."), strings.Split(than, ".")
 	for at := 0; at < max(len(parts), len(others)); at++ {
 		part, other := buildPart(parts, at), buildPart(others, at)

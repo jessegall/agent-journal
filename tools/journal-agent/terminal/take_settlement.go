@@ -47,9 +47,9 @@ func (gate *InputGate) TakeAfterSettling(takeID string, scope GrantScope, clearK
 	return gate.Take(takeID, scope)
 }
 
-// Settlement waits for a browser take to settle a stranded driver line and says whether it was cleared before any
+// AwaitSettlement waits for a browser take to settle a stranded driver line and says whether it was cleared before any
 // Enter; a settlement that never ends within the wait counts as uncertain.
-func (gate *InputGate) Settlement(line *TypedLine, wait time.Duration) bool {
+func (gate *InputGate) AwaitSettlement(line *TypedLine, wait time.Duration) bool {
 	select {
 	case <-line.settled:
 	case <-time.After(wait):

@@ -49,7 +49,7 @@ final readonly class ProgramRun
         public string $stdout,
     ) {}
 
-    public function succeeded(): bool
+    public function hasSucceeded(): bool
     {
         return $this->exit === 0;
     }
@@ -61,7 +61,7 @@ final readonly class ProgramRun
 final readonly class AccountStatus
 {
     public function __construct(
-        public bool $signedIn,
+        public bool $isSignedIn,
         public string|null $identityDigest,
     ) {}
 }
