@@ -28,7 +28,7 @@ releases nothing. Each fact carries plain values: ids, and Core values such as `
 |---|---|---|---|
 | `PlanStarted` | `Plan::startOnce` | a plan starts; starting it again raises nothing | plan id, the actor who started it |
 | `PlanFinished`, `PlanCancelled` | `Plan::finish`, `Plan::cancel` | a plan ends | plan id, the actor who ended it |
-| `PlanProgressChanged` | projection: `RaisePlanProgressChanged`, `SamplePlanOfStartedTask` | a task in one of the plan's phases started, finished, was blocked or cancelled | plan id |
+| `PlanProgressChanged` | row fact: `Plan::recordProgress` and `Plan::startOnce` | the plan's task counts moved, or the plan started | plan id and number, finished and total counts, when they were counted |
 | `MessageSent` | `Message::create` | an actor sent a message | message id, author, source and destination inbox |
 | `MessageAnswered`, `MessageDismissed` | `Message::answerWith`, `Message::dismissBy` | a message was answered or dismissed | message id, the actor, the reply or the dismissal type |
 | `RuleApproved`, `RuleDenied`, `RuleRemoved` | `Rule::approveBy`, `Rule::deny`, `Rule::remove` | the user reviewed a proposed rule, or a rule was removed | rule id |
@@ -47,7 +47,7 @@ nobody exports refreshes nothing; Core owns the marker and names no domain.
 
 `TaskStarted` is exported and raised by `Task::start` with the actor that started the task. Its transaction listener
 `PushTaskState` pushes the task on the stack inside the start's transaction, before the commit, and Plans'
-`SamplePlanOfStartedTask` reads the plan holding the task there too; its public listeners hear it after the commit.
+`CountPhaseTaskStates` moves the counts of the plan holding the task there too; its public listeners hear it after the commit.
 Plans hears it through its approved requirement of Tasks. `SequenceStarted` and `MessageNeedsAnswer` are internal:
 their owners do not export them, so only their own listeners hear them.
 
@@ -135,8 +135,8 @@ at ten deliveries. Distinct sequential dispatches can run independently.
 
 - Keep `PushTaskState`, `PushSequenceState`, `RegisterAnsweringState` and start-stack listeners at their
   creation boundaries. Their pushes or registration must work before any matching frame exists.
-- Keep global updates in their own listeners. `RaisePlanProgressChanged` and `BroadcastPageChange` are public
-  projections after the commit; `CloseEndedSessionDraft`, link invalidation (`InvalidateRemovedLinkMembers`) and
+- Keep global updates in their own listeners. `BroadcastPageChange` is a public
+  projection after the commit; `CloseEndedSessionDraft`, link invalidation (`InvalidateRemovedLinkMembers`) and
   process activity (`ReadOutputLive`, `RefreshRunActivity`) are transaction listeners inside the transaction. Their work
   cannot depend on a live frame or an admitted stack target.
 - Keep `SupplyMemories`, `SupplyHookContext` and `RemindRequiredSkills` as context-boundary contributors. They

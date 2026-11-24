@@ -12,7 +12,7 @@ use App\Support\ActorIdentity;
 use App\Support\ListenerRegistry;
 use App\Support\StartSessions;
 use Domain\Plans\Events\PlanProgressChanged;
-use Domain\Plans\Listeners\SamplePlanOfStartedTask;
+use Domain\Plans\Listeners\CountPhaseTaskStates;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
@@ -127,7 +127,7 @@ final class TaskStartFactsTest extends TestCase
         $stackRows = AgentStackRow::query()->withoutGlobalScopes()->count();
         $this->app->instance(ListenerRegistry::class, new ListenerRegistry([
             TaskStarted::class => [
-                SamplePlanOfStartedTask::class.'@handle',
+                CountPhaseTaskStates::class.'@handle',
                 PushTaskState::class.'@handle',
                 FailsAfterPush::class.'@handle',
             ],

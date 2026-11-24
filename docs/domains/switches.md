@@ -72,7 +72,7 @@ and the names of the required domains that are not available. A stored switch th
 | Listener | While its domain is off | Recovery |
 | --- | --- | --- |
 | Tasks `PushTaskState`, Sequences `PushSequenceState` | An event does not push its state. | Switching back on does not push the missed state; a later legitimate action may push it. The earlier subject operation is not undone. |
-| Plans `RaisePlanProgressChanged` | The plan progress notification is not raised. | Nothing to repair: fresh reads derive progress from the current records. |
+| Plans `CountPhaseTaskStates` | A task's state change no longer moves its plan's counts, so no progress is raised. | The counts stay as they were while Plans is off. |
 | Rules `SupplyHookContext` | That compaction gets no rules reminders. | Later compactions read the current rules; no past context is replayed. |
 | Memory `LowerMemoryWeights` | That compaction neither lowers memory weights nor adds memory reminders. | Weights stay as they were for missed compactions; later compactions resume without catching up. |
 | Documents `CloseEndedSessionDraft` | A draft may stay held after its session ends. Its data is kept, never published. | After switching on, an authorized user recovers the abandoned draft through `RecoverDocument` (`DraftClosing::recover`). |

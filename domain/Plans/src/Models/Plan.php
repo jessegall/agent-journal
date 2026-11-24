@@ -25,6 +25,7 @@ use App\Support\OrderedRecordIds;
 use App\Support\RecordIdentity;
 use App\Support\ShareRecordCard;
 use App\Support\ShareRelationSet;
+use Carbon\CarbonImmutable;
 use Domain\Plans\Database\Factories\PlanFactory;
 use Domain\Plans\Enums\PlanReviewState;
 use Domain\Plans\Enums\PlanState;
@@ -32,6 +33,7 @@ use Domain\Plans\Enums\PlanTextLimit;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Events\PlanCancelled;
 use Domain\Plans\Events\PlanFinished;
+use Domain\Plans\Events\PlanProgressChanged;
 use Domain\Plans\Events\PlanReviewDecided;
 use Domain\Plans\Events\PlanReviewRequested;
 use Domain\Plans\Events\PlanReviewWithdrawn;
@@ -255,6 +257,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
         $this->state = PlanState::Started;
         $this->assertSaved($this->save());
         $this->raise(new PlanStarted($this->id, $actor));
+        $this->recordProgress($this->progress);
 
         return true;
     }
@@ -321,6 +324,14 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
         $this->blocked_tasks = $progress->blocked;
         $this->started_tasks = $progress->started;
         $this->assertSaved($this->save());
+
+        $this->raise(new PlanProgressChanged(
+            $this->id,
+            $this->number,
+            $this->finished_tasks,
+            $this->total_tasks,
+            (int) CarbonImmutable::now()->format('Uu'),
+        ));
     }
 
     // ----------[ Answers ]----------

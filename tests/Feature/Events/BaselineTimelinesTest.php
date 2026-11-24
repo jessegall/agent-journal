@@ -162,6 +162,8 @@ final class BaselineTimelinesTest extends TestCase
             'commit',
             'TaskStarted',
             'PlanProgressChanged',
+            'saved AgentStackRow',
+            'commit',
         ], $this->timeline);
     }
 
@@ -182,11 +184,13 @@ final class BaselineTimelinesTest extends TestCase
             'commit',
             'TaskStarted',
             'PlanProgressChanged',
+            'saved AgentStackRow',
+            'commit',
         ], $this->timeline);
     }
 
     /**
-     * A permitted repeated start sends TaskStarted again; the stack already holds the task.
+     * A permitted repeated start sends TaskStarted again; the stack already holds the task and no count moved.
      */
     public function test_a_repeated_start_sends_task_started_again(): void
     {
@@ -197,7 +201,7 @@ final class BaselineTimelinesTest extends TestCase
         $this->start($task);
 
         $this->assertSame(
-            ['saved Task', 'commit', 'TaskStarted', 'PlanProgressChanged'],
+            ['saved Task', 'commit', 'TaskStarted'],
             $this->timeline,
         );
     }
@@ -220,9 +224,8 @@ final class BaselineTimelinesTest extends TestCase
     }
 
     /**
-     * Finish saves the task and the run and releases the claim, commits, then TaskFinished is
-     * delivered; the plan progress its listener sends from committed membership reaches the recorder first, and the
-     * task's frame hears the finish and commits its own end.
+     * Finish saves the task and the run and releases the claim, commits, then TaskFinished and the plan's progress
+     * are delivered in the order they were raised; the task's frame and the plan's frame each commit what they heard.
      */
     public function test_a_task_finish_saves_the_task_and_run_then_commits_and_publishes(): void
     {
@@ -237,8 +240,10 @@ final class BaselineTimelinesTest extends TestCase
             'saved TaskRun',
             'saved Plan',
             'commit',
-            'PlanProgressChanged',
             'TaskFinished',
+            'saved AgentStackRow',
+            'commit',
+            'PlanProgressChanged',
             'saved AgentStackRow',
             'commit',
         ], $this->timeline);
@@ -263,13 +268,14 @@ final class BaselineTimelinesTest extends TestCase
     }
 
     /**
-     * TaskFinished samples plan membership at committed delivery, so a task moved to another
-     * plan's phase in the same transaction reports the progress of the plan it moved to.
+     * Progress comes from each plan whose counts moved: a task finished and then moved to another plan's phase in the
+     * same transaction reports the plan it finished in and the plan it was placed into.
      */
-    public function test_a_finish_reports_the_progress_of_the_plan_the_task_moved_to_in_the_same_transaction(): void
+    public function test_a_finish_and_a_move_report_the_progress_of_both_plans_whose_counts_moved(): void
     {
         $task = $this->taskInPhase();
         $this->start($task);
+        $finishedIn = (string) Phase::query()->holdingTask($task->id)->value('plan_id');
         $other = $this->phase();
         $progress = $this->progressOfPlans();
 
@@ -279,17 +285,18 @@ final class BaselineTimelinesTest extends TestCase
             $this->planStructure()->addTasks($other, [$task->id]);
         });
 
-        $this->assertSame([$other->plan_id], $progress());
+        $this->assertSame([$finishedIn, $other->plan_id], $progress());
     }
 
     /**
-     * A move committed concurrently from a second connection before the finish commits is the
-     * membership TaskFinished's plan progress reads.
+     * A move committed concurrently from a second connection does not change whose counts the finish moved: the plan
+     * the task was counted in reports its progress.
      */
-    public function test_a_finish_reports_the_progress_of_the_plan_a_concurrent_move_committed(): void
+    public function test_a_finish_reports_the_plan_it_was_counted_in_despite_a_concurrent_move(): void
     {
         $task = $this->taskInPhase();
         $this->start($task);
+        $countedIn = (string) Phase::query()->holdingTask($task->id)->value('plan_id');
         $other = $this->phase();
         $progress = $this->progressOfPlans();
         $database = $this->app->make(DatabaseManager::class);
@@ -303,12 +310,12 @@ final class BaselineTimelinesTest extends TestCase
         });
 
         $database->purge('concurrent');
-        $this->assertSame([$other->plan_id], $progress());
+        $this->assertSame([$countedIn], $progress());
     }
 
     /**
-     * A plan start pushes the work stack only on the true startOnce branch and sends PlanStarted
-     * after the commit; starting it again writes and sends nothing.
+     * A plan start pushes the work stack only on the true startOnce branch and sends PlanStarted and its opening
+     * progress after the commit, which the new frame keeps; starting it again writes and sends nothing.
      */
     public function test_a_plan_start_pushes_the_stack_once_and_a_second_start_sends_nothing(): void
     {
@@ -321,7 +328,19 @@ final class BaselineTimelinesTest extends TestCase
         $this->timeline = [];
         $this->asAgent(new StartPlanCommand($plan->id));
 
-        $this->assertSame(['saved Plan', 'saved AgentStackRow', 'commit', 'PlanStarted'], $first);
+        $this->assertSame(
+            [
+                'saved Plan',
+                'saved Plan',
+                'saved AgentStackRow',
+                'commit',
+                'PlanStarted',
+                'PlanProgressChanged',
+                'saved AgentStackRow',
+                'commit',
+            ],
+            $first,
+        );
         $this->assertSame(['commit'], $this->timeline);
     }
 

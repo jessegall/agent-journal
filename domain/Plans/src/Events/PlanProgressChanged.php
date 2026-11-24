@@ -9,12 +9,18 @@ use App\Support\Sources\Contracts\DockSourceChanged;
 use Domain\Plans\Models\Plan;
 
 /**
- * A task in one of the plan's phases started, finished, was blocked or was cancelled, so the plan's progress moved.
- * Raised only once that change has committed.
+ * The plan's task counts moved: a task in one of its phases changed state, or tasks were placed in it. It carries the
+ * finished and total counts and when they were counted, so a reader keeps the newest when two arrive out of order.
  */
 final readonly class PlanProgressChanged extends PlanEvent implements DockSourceChanged, UserInterfaceUpdater
 {
-    public function __construct(public string $planId) {}
+    public function __construct(
+        public string $planId,
+        public int $planNumber,
+        public int $finished,
+        public int $total,
+        public int $countedAtMicroseconds,
+    ) {}
 
     public function dockType(): string
     {

@@ -35,12 +35,11 @@ return [
         'sample' => fn () => new PlanFinished('plan', ActorContext::forUser('user')),
     ],
     PlanProgressChanged::class => [
-        'role' => EventRole::Projection,
-        'migrated' => false,
-        'producers' => [
-            'domain/Plans/src/Listeners/RaisePlanProgressChanged.php',
-            'domain/Plans/src/Listeners/SamplePlanOfStartedTask.php',
-        ],
+        'role' => EventRole::RowFact,
+        'owner' => 'Plan::recordProgress',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new PlanProgressChanged('plan', 1, 0, 2, 1),
     ],
     PlanReviewDecided::class => [
         'role' => EventRole::RowFact,

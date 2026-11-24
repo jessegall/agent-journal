@@ -37,7 +37,6 @@ use Domain\Plans\Events\PlanProgressChanged;
 use Domain\Plans\Events\PlanReviewRequested;
 use Domain\Plans\Events\PlanStarted;
 use Domain\Plans\Listeners\CountPhaseTaskStates;
-use Domain\Plans\Listeners\SamplePlanOfStartedTask;
 use Domain\Sequences\Events\SequenceEnded;
 use Domain\Sequences\Events\SequenceStarted;
 use Domain\Sequences\Events\SequenceStepEnded;
@@ -127,7 +126,6 @@ final class TransactionListenerLaneTest extends TestCase
         $this->assertSame(
             [
                 CountPhaseTaskStates::class,
-                SamplePlanOfStartedTask::class,
                 AnnounceTaskStart::class,
                 PushTaskState::class,
                 RecordTaskHistory::class,

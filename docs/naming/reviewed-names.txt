@@ -4955,7 +4955,6 @@ class	RaiseCallers
 class	RaiseNavigationCommand
 class	RaiseNavigationController
 class	RaiseNavigationHandler
-class	RaisePlanProgressChanged
 class	RaisedOutsideUnit
 class	RankedLaunchCandidate
 class	RawRowAccess
@@ -5848,7 +5847,6 @@ class	RuntimeStatuses
 class	SampleApproved
 class	SampleData
 class	SampleOutcome
-class	SamplePlanOfStartedTask
 class	SampleRefused
 class	SampleSettled
 class	SampleStarted
@@ -20512,8 +20510,6 @@ method	RaiseNavigationController::__invoke()
 method	RaiseNavigationHandler::__construct()
 method	RaiseNavigationHandler::handle()
 method	RaiseNavigationHandler::stalledScript()
-method	RaisePlanProgressChanged::__construct()
-method	RaisePlanProgressChanged::handle()
 method	RaisedOutsideUnit::for()
 method	RaisesEvents::assertSaved()
 method	RaisesEvents::bootRaisesEvents()
@@ -22923,8 +22919,6 @@ method	SampleApproved::__construct()
 method	SampleData::__construct()
 method	SampleData::fromPermit()
 method	SampleOutcome::__construct()
-method	SamplePlanOfStartedTask::__construct()
-method	SamplePlanOfStartedTask::handle()
 method	SampleRefused::declarationMissing()
 method	SampleRefused::effectsUnknown()
 method	SampleRefused::notReady()
@@ -27941,6 +27935,7 @@ method	WorkingOnPlanState::instruction()
 method	WorkingOnPlanState::isFinished()
 method	WorkingOnPlanState::onPlanCancelled()
 method	WorkingOnPlanState::onPlanFinished()
+method	WorkingOnPlanState::onPlanProgressChanged()
 method	WorkingOnPlanState::workRecordType()
 method	WorkingOnPlanStateReference::forPlan()
 method	WorkingOnTaskState::__construct()
@@ -28638,6 +28633,7 @@ parameter	$cost
 parameter	$count
 parameter	$countFields
 parameter	$counted
+parameter	$countedAtMicroseconds
 parameter	$counterClass
 parameter	$counters
 parameter	$counts
@@ -37079,7 +37075,11 @@ property	PlanProgress::$cancelled
 property	PlanProgress::$finished
 property	PlanProgress::$started
 property	PlanProgress::$total
+property	PlanProgressChanged::$countedAtMicroseconds
+property	PlanProgressChanged::$finished
 property	PlanProgressChanged::$planId
+property	PlanProgressChanged::$planNumber
+property	PlanProgressChanged::$total
 property	PlanReadResult::$continuations
 property	PlanReadResult::$fields
 property	PlanReadResult::$plans
@@ -37937,7 +37937,6 @@ property	RaiseNavigationHandler::$admission
 property	RaiseNavigationHandler::$dispatch
 property	RaiseNavigationHandler::$pipelines
 property	RaiseNavigationHandler::$runtimes
-property	RaisePlanProgressChanged::$events
 property	RaisesEvents::$raised
 property	RankedLaunchCandidate::$actor
 property	RankedLaunchCandidate::$rank
@@ -39641,7 +39640,6 @@ property	SampleData::$secondsCap
 property	SampleOutcome::$runId
 property	SampleOutcome::$state
 property	SampleOutcome::$unsampledStatuses
-property	SamplePlanOfStartedTask::$facts
 property	SampleSettled::$runId
 property	SampleSettled::$state
 property	SampleSettled::$unsampledStatuses
@@ -42520,9 +42518,12 @@ property	WorkStackPushes::$addressed
 property	WorkStackPushes::$stacks
 property	WorkStackPushes::$states
 property	WorkStackPushes::$workStacks
+property	WorkingOnPlanState::$countedAtMicroseconds
+property	WorkingOnPlanState::$finished
 property	WorkingOnPlanState::$isOpen
+property	WorkingOnPlanState::$number
 property	WorkingOnPlanState::$planId
-property	WorkingOnPlanState::$plans
+property	WorkingOnPlanState::$total
 property	WorkingOnTaskState::$claims
 property	WorkingOnTaskState::$isWorking
 property	WorkingOnTaskState::$number

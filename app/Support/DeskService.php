@@ -92,13 +92,13 @@ final readonly class DeskService
     private function openWithSeats(
         string|null $name,
         string $label,
-        int $seatCount,
+        int $count,
         bool $forwardsOccupants,
     ): DeskRecord {
-        if ($seatCount < 1 || $seatCount > DeskRecord::LARGEST_SEAT_COUNT) {
-            throw DeskSeatCountInvalid::for($seatCount);
+        if ($count < 1 || $count > DeskRecord::LARGEST_SEAT_COUNT) {
+            throw DeskSeatCountInvalid::for($count);
         }
 
-        return $this->open($name, $label, $seatCount, $forwardsOccupants);
+        return $this->open($name, $label, $count, $forwardsOccupants);
     }
 }

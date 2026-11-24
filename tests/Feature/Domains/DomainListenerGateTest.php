@@ -11,7 +11,6 @@ use App\Support\AvailableListener;
 use App\Support\ListenerRegistry;
 use App\Support\Stack\StateTypes;
 use Domain\Memory\Listeners\SupplyMemories;
-use Domain\Plans\Listeners\RaisePlanProgressChanged;
 use stdClass;
 use Tests\Fixtures\Listeners\CountingListener;
 use Tests\Support\RefreshHookDatabase;
@@ -78,7 +77,6 @@ final class DomainListenerGateTest extends TestCase
             }
         }
 
-        $this->assertSame('Plans', $owners[RaisePlanProgressChanged::class]);
         $this->assertSame('Memory', $owners[SupplyMemories::class]);
         $this->assertNotEmpty(array_filter($coreListeners, fn (string $class) => str_starts_with($class, 'App\\')));
         $this->assertSame([], array_filter($coreListeners, fn (string $class) => str_starts_with($class, 'Domain\\')));

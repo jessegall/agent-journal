@@ -11,25 +11,30 @@ use App\Support\States\AgentState;
 use App\Values\AgentText;
 use Domain\Plans\Events\PlanCancelled;
 use Domain\Plans\Events\PlanFinished;
+use Domain\Plans\Events\PlanProgressChanged;
 use Domain\Plans\Models\Plan;
-use Domain\Plans\Resolvers\PlanRecords;
 use Domain\Plans\Support\States\Support\WorkingOnPlanStateReference;
 use PhpOption\Option;
 use PhpOption\Some;
 
 /**
- * An agent working on a started plan. The plan stays open until the state hears it finished or cancelled; its
- * instruction reads the plan's card, with its counts, each time it is shown.
+ * An agent working on a started plan. The plan stays open until the state hears it finished or cancelled; it keeps
+ * the newest counts it heard for the plan and shows them in its instruction.
  */
 #[StateType(WorkingOnPlanStateReference::TYPE_KEY, schemaVersion: 1, transfer: SessionTransferType::Durable)]
 final class WorkingOnPlanState extends AgentState
 {
     private bool $isOpen = true;
 
-    public function __construct(
-        private readonly string $planId,
-        private readonly PlanRecords $plans
-    ) {}
+    private int $number = 0;
+
+    private int $finished = 0;
+
+    private int $total = 0;
+
+    private int $countedAtMicroseconds = 0;
+
+    public function __construct(private readonly string $planId) {}
 
     public function frameReuse(): FrameReuse
     {
@@ -54,12 +59,10 @@ final class WorkingOnPlanState extends AgentState
      */
     public function instruction(): Option
     {
-        $card = $this->plans->cardOf(Plan::query()->whereKey($this->planId)->readExactly(1)->sole());
-
         return new Some(AgentText::of('plans.working_on', [
-            'plan' => $card->number,
-            'finished' => $card->progress->finished,
-            'total' => $card->progress->total,
+            'plan' => $this->number,
+            'finished' => $this->finished,
+            'total' => $this->total,
         ]));
     }
 
@@ -76,6 +79,16 @@ final class WorkingOnPlanState extends AgentState
     {
         if ($event->planId === $this->planId) {
             $this->isOpen = false;
+        }
+    }
+
+    public function onPlanProgressChanged(PlanProgressChanged $event): void
+    {
+        if ($event->planId === $this->planId && $event->countedAtMicroseconds >= $this->countedAtMicroseconds) {
+            $this->number = $event->planNumber;
+            $this->finished = $event->finished;
+            $this->total = $event->total;
+            $this->countedAtMicroseconds = $event->countedAtMicroseconds;
         }
     }
 }
