@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Models\Projects\Host;
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Sessions\StartHeartbeats as StartHeartbeatsContract;
 use App\Contracts\Sessions\StartTransaction;
@@ -29,6 +30,11 @@ final readonly class HeartbeatService implements StartHeartbeatsContract
      * How many never-started sessions one sweep ends; the next sweep takes the rest.
      */
     private const int UNCLAIMED_ENDED_LIMIT = 50;
+
+    /**
+     * How long a start waits for a host whose calls fail or that stopped calling, before it ends.
+     */
+    private const int UNREACHABLE_HOST_WAIT_MINUTES = 30;
 
     /**
      * How long a session may stay silent while its host is still present before the journal ends it as unserved.
@@ -110,13 +116,25 @@ final readonly class HeartbeatService implements StartHeartbeatsContract
 
     /**
      * Ends each running session that never beat and whose start is still waiting for a host since the cutoff, so the
-     * agent can start again and its reserved capacity is freed.
+     * agent can start again and its reserved capacity is freed. A start whose host cannot be reached, its calls failing
+     * or stopped, waits for it to come back instead, up to half an hour.
      */
     private function endUnclaimedSince(CarbonImmutable $cutoff, CarbonImmutable $now): void
     {
+        $unreachableHosts = Host::query()
+            ->whereNotNull('failing_since')
+            ->orWhere('last_answered_at', '<', $cutoff)
+            ->select('id');
+
         ProcessStart::supervised()
             ->where('state', ProcessStartState::Pending->value)
-            ->where('created_at', '<=', $cutoff)
+            ->where(fn ($starts) => $starts
+                ->where('created_at', '<=', $now->subMinutes(self::UNREACHABLE_HOST_WAIT_MINUTES))
+                ->orWhere(fn ($reachable) => $reachable
+                    ->where('created_at', '<=', $cutoff)
+                    ->where(fn ($hosted) => $hosted
+                        ->whereNull('host_id')
+                        ->orWhereNotIn('host_id', $unreachableHosts))))
             ->whereIn('session_id', AgentSession::query()
                 ->whereIn('status', array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()))
                 ->whereNull('last_heartbeat_at')

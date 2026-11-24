@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
+use App\Commands\RecordHostCallAnswered\RecordHostCallAnsweredCommand;
+use App\Commands\RecordHostCallFailure\RecordHostCallFailureCommand;
 use App\Commands\CancelDriverRequest\CancelDriverRequestCommand;
 use App\Commands\CancelKeyScript\CancelKeyScriptCommand;
 use App\Commands\ChangeAgentEffort\ChangeAgentEffortCommand;
@@ -918,6 +920,32 @@ final class AgentDriverLedgerTest extends TestCase
         );
 
         $this->assertSame($asked, $this->wakesAskedOf($opened));
+    }
+
+    public function test_a_start_whose_host_fails_waits_for_it_past_the_presence_window_and_ends_after_half_an_hour(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $this->asSystem(new RecordHostCallFailureCommand($host->hostId, '/host/claim', 500, 'Maximum execution time exceeded'));
+
+        $this->travel(11)->minutes();
+        $this->app->make(HeartbeatService::class)->markSilentStarts();
+        $isWaiting = AgentSession::query()->findOrFail($opened->sessionId)->isActive();
+
+        $this->travel(20)->minutes();
+        $this->app->make(HeartbeatService::class)->markSilentStarts();
+
+        $this->assertSame([true, false], [$isWaiting, AgentSession::query()->findOrFail($opened->sessionId)->isActive()]);
+    }
+
+    public function test_a_start_whose_host_answers_but_never_takes_it_ends_at_the_presence_window(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+
+        $this->travel(11)->minutes();
+        $this->asSystem(new RecordHostCallAnsweredCommand($host->hostId, []));
+        $this->app->make(HeartbeatService::class)->markSilentStarts();
+
+        $this->assertFalse(AgentSession::query()->findOrFail($opened->sessionId)->isActive());
     }
 
     public function test_a_session_long_silent_while_its_host_beats_for_another_is_ended_as_unserved(): void
