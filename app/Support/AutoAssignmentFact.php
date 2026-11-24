@@ -15,7 +15,7 @@ final readonly class AutoAssignmentFact
     public function __construct(
         public string $id,
         public AutoAssignmentKey $key,
-        public bool $enabled,
+        public bool $isEnabled,
         public PoolReference $pool,
         public int $size,
         public int $revision,

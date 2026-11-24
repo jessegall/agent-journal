@@ -332,7 +332,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
      */
     public function hasEnded(): bool
     {
-        return self::allPartsFinal($this->parts()->readLimit(500)->get());
+        return self::areAllPartsFinal($this->parts()->readLimit(500)->get());
     }
 
     /**
@@ -444,7 +444,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
         $parts = $this->parts->sortBy(['syntax_node', 'attempt']);
         $last = $parts->last();
         $title = $last === null ? 'Process run' : "Run of {$last->operation}";
-        $ended = self::allPartsFinal($parts);
+        $ended = self::areAllPartsFinal($parts);
         $startedAt = $parts->first()?->started_at;
 
         $cardParts = [
@@ -509,7 +509,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
      *
      * @param  Collection<int, PartRun>  $parts
      */
-    private static function allPartsFinal(Collection $parts): bool
+    private static function areAllPartsFinal(Collection $parts): bool
     {
         return $parts->isNotEmpty() && $parts->every(fn (PartRun $part): bool => $part->lifecycle->isFinal());
     }

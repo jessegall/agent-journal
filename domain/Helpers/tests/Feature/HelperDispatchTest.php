@@ -68,7 +68,7 @@ final class HelperDispatchTest extends TestCase
 
         $this->assertTrue($receipt->launch->isNewIdentity);
         $this->assertTrue($receipt->isNewJob);
-        $this->assertTrue($receipt->start->newSession);
+        $this->assertTrue($receipt->start->isNewSession);
         $this->assertSame('opus', $selection->model);
         $this->assertSame(DefaultDrivers::CODEX, $selection->driver);
         $this->assertSame(1, $receipt->launch->profileRevision);

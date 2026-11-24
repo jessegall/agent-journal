@@ -21,7 +21,7 @@ final readonly class ExecutionContext
      * @param  list<string>  $positional  $1, $2 ... in order
      * @param  list<string>  $aliases  the ids of the saved aliases whose bodies this command runs inside, outermost
      *                                 first
-     * @param  bool  $pipefail  whether a pipeline fails when any member fails, not only the last
+     * @param  bool  $isPipefail  whether a pipeline fails when any member fails, not only the last
      * @param  int  $lastStatus  the status $? reads
      */
     public function __construct(
@@ -32,7 +32,7 @@ final readonly class ExecutionContext
         public array $programs = [],
         public array $positional = [],
         public array $aliases = [],
-        public bool $pipefail = false,
+        public bool $isPipefail = false,
         public int $lastStatus = 0,
     ) {}
 

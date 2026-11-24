@@ -41,7 +41,7 @@ final class TokenCursor
         );
     }
 
-    public function atEnd(): bool
+    public function isAtEnd(): bool
     {
         return $this->index >= count($this->tokens);
     }
@@ -56,10 +56,10 @@ final class TokenCursor
      */
     public function is(TokenType $type): bool
     {
-        return ! $this->atEnd() && $this->tokens[$this->index]->type === $type;
+        return ! $this->isAtEnd() && $this->tokens[$this->index]->type === $type;
     }
 
-    public function peekIs(int $ahead, TokenType $type): bool
+    public function isNext(int $ahead, TokenType $type): bool
     {
         return ($this->tokens[$this->index + $ahead] ?? null)?->type === $type;
     }
@@ -71,7 +71,7 @@ final class TokenCursor
 
     public function skip(TokenType ...$types): void
     {
-        while (! $this->atEnd() && in_array($this->current()->type, $types, true)) {
+        while (! $this->isAtEnd() && in_array($this->current()->type, $types, true)) {
             $this->index++;
         }
     }
@@ -85,7 +85,7 @@ final class TokenCursor
 
         return $this->offset + (match (true) {
             $token === null => 0,
-            $this->atEnd() => $token->range->end,
+            $this->isAtEnd() => $token->range->end,
             default => $token->range->start,
         });
     }

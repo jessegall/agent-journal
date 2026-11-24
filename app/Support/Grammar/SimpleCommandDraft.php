@@ -26,7 +26,7 @@ final readonly class SimpleCommandDraft
     {
         $cursor = $this->toParse->cursor();
 
-        if ($this->isArrayAssignment || $cursor->atEnd()) {
+        if ($this->isArrayAssignment || $cursor->isAtEnd()) {
             return false;
         }
 

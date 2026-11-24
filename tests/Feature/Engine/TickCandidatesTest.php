@@ -38,7 +38,7 @@ final class TickCandidatesTest extends TestCase
 
     private FinishedSubjects $finished;
 
-    private bool $switchedOn = false;
+    private bool $isSwitchedOn = false;
 
     protected function setUp(): void
     {
@@ -50,7 +50,7 @@ final class TickCandidatesTest extends TestCase
             $event->registry->register(RegisteredStateType::named('test.ticking', TickingState::class));
             $event->registry->register(RegisteredStateType::named('test.plain', UnreadState::class));
             $event->registry->register(
-                RegisteredStateType::named('test.switchable', TickingState::class)->switchedBy(fn (): bool => $this->switchedOn),
+                RegisteredStateType::named('test.switchable', TickingState::class)->switchedBy(fn (): bool => $this->isSwitchedOn),
             );
         });
     }
@@ -106,7 +106,7 @@ final class TickCandidatesTest extends TestCase
             array_map(fn (FrameRecord $record) => $record->id, $row->refresh()->frames->all()),
         );
 
-        $this->switchedOn = true;
+        $this->isSwitchedOn = true;
 
         $this->assertSame(
             ['b-1'],

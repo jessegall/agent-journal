@@ -22,8 +22,8 @@ final readonly class ReadMessagesController
         return MessagesRead::from(['results' => array_map(
             fn (MessageReadResult $messageRead) => [
                 'messageId' => $messageRead->messageId,
-                'firstRead' => $messageRead->firstRead,
-                'claimed' => $messageRead->claimed,
+                'firstRead' => $messageRead->isFirstRead,
+                'claimed' => $messageRead->isClaimed,
             ],
             $batch->messageReads,
         )]);

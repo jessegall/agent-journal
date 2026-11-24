@@ -17,7 +17,7 @@ final readonly class NoteWritten implements Event
      * @param list<RecordNoteEffectCommand> $marked
      */
     public function __construct(
-        public bool $listenerFails = false,
+        public bool $doesListenerFail = false,
         public array $ordinary = [],
         public array $marked = [],
         public bool $asksForGuide = false,

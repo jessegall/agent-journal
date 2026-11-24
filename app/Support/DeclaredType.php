@@ -35,7 +35,7 @@ final readonly class DeclaredType
 
     private string $name;
 
-    private bool $builtin;
+    private bool $isBuiltin;
 
     public function __construct(ReflectionType $type)
     {
@@ -53,7 +53,7 @@ final readonly class DeclaredType
             : [];
 
         $this->name = $type instanceof ReflectionNamedType ? $type->getName() : '';
-        $this->builtin = $type instanceof ReflectionNamedType && $type->isBuiltin();
+        $this->isBuiltin = $type instanceof ReflectionNamedType && $type->isBuiltin();
     }
 
     public function isNamed(): bool
@@ -80,7 +80,7 @@ final readonly class DeclaredType
      */
     public function isBuiltin(): bool
     {
-        return $this->builtin;
+        return $this->isBuiltin;
     }
 
     /**

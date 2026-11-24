@@ -17,11 +17,11 @@ final readonly class SessionSkillStatus implements JsonSerializable
         public string $key,
         public int|null $storedRevision,
         public string|null $generatedDigest,
-        public bool $selected,
+        public bool $isSelected,
         public string $selectionReason,
         public string|null $deliveredGeneration,
         public string $deliveryState,
-        public bool $loaded,
+        public bool $isLoaded,
         public bool $needsNewSession,
     ) {}
 
@@ -44,11 +44,11 @@ final readonly class SessionSkillStatus implements JsonSerializable
             'key' => $this->key,
             'stored_revision' => $this->storedRevision,
             'generated_digest' => $this->generatedDigest,
-            'selected' => $this->selected,
+            'selected' => $this->isSelected,
             'selection_reason' => $this->selectionReason,
             'delivered_generation' => $this->deliveredGeneration,
             'delivery_state' => $this->deliveryState,
-            'loaded' => $this->loaded,
+            'loaded' => $this->isLoaded,
             'needs_new_session' => $this->needsNewSession,
         ];
     }

@@ -78,9 +78,9 @@ final class SkillStatusCommand extends Command
                 $skill->key,
                 $skill->storedRevision === null ? 'shipped' : (string) $skill->storedRevision,
                 $skill->generatedDigest === null ? 'not generated' : substr($skill->generatedDigest, 0, 12),
-                $skill->selected ? 'yes' : "no: {$skill->selectionReason}",
+                $skill->isSelected ? 'yes' : "no: {$skill->selectionReason}",
                 $skill->deliveryText(),
-                $skill->loaded ? 'read in this context' : 'not read',
+                $skill->isLoaded ? 'read in this context' : 'not read',
                 $skill->needsNewSession ? 'yes' : 'no',
             ], $skills),
         );

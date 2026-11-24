@@ -57,7 +57,7 @@ final class AnsweringMessageStateTest extends TestCase
 
         $this->assertTrue($state->isFinished());
         $this->assertTrue($state->instruction()->isEmpty());
-        $this->assertTrue($state->workPermission()->allowed);
+        $this->assertTrue($state->workPermission()->isAllowed);
         $this->assertSame(AnswerType::Delegate, $state->onShellCommand($this->shell())->answerType());
         $this->assertSame(AnswerType::Delegate, $this->decisionOf($state->onStop($this->stop()))->answerType());
     }
@@ -86,7 +86,7 @@ final class AnsweringMessageStateTest extends TestCase
 
         $this->assertSame(self::BUDGET, $this->valuesOf($state)['toolUses']);
         $this->assertSame(AnswerType::Deny, $state->onShellCommand($this->shell())->answerType());
-        $this->assertFalse($state->workPermission()->allowed);
+        $this->assertFalse($state->workPermission()->isAllowed);
         $this->assertSame(['message_id' => self::FIRST], $state->workPermission()->recovery?->arguments);
     }
 

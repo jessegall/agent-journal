@@ -124,7 +124,7 @@ final readonly class TerminalViews implements TerminalViewCloser
 
         $runtime = $this->runtimes->of($agentId);
 
-        if ($view->watchedAnotherSession($runtime)) {
+        if ($view->hasWatchedAnotherSession($runtime)) {
             $view->close($now);
 
             return $this->endedView($view, $now);

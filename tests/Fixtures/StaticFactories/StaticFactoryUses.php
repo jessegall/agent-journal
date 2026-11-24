@@ -38,7 +38,7 @@ final class StaticFactoryUses
         return $today < $tomorrow && $now <= $later && $named != $other && $nested !== null && $parsers !== [];
     }
 
-    public static function helper(string $name): bool
+    public static function isHelper(string $name): bool
     {
         if ($name === '') {
             throw ClassMissing::for($name);

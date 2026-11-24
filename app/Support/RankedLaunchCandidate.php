@@ -15,6 +15,6 @@ final readonly class RankedLaunchCandidate
     public function __construct(
         public ActorIdentity $actor,
         public LaunchCandidateRank $rank,
-        public bool $sawThisPurpose,
+        public bool $hasSeenThisPurpose,
     ) {}
 }

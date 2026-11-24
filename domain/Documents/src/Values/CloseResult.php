@@ -9,5 +9,5 @@ namespace Domain\Documents\Values;
  */
 final readonly class CloseResult
 {
-    public function __construct(public int $revisionNumber, public bool $published) {}
+    public function __construct(public int $revisionNumber, public bool $isPublished) {}
 }

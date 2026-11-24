@@ -71,7 +71,7 @@ final class ChatTimelineTest extends MessagingTestCase
         $this->runOnBus(new RemoveChatParticipantCommand($this->inboxId, "user:{$this->bea->id}"));
 
         $this->startUserRequestAs($this->bea->id);
-        $this->assertTrue($this->timeline()->after($this->inboxId, $old)->accessEnded);
+        $this->assertTrue($this->timeline()->after($this->inboxId, $old)->hasAccessEnded);
 
         $this->asOwner();
         $this->runOnBus(new AddChatParticipantCommand($this->inboxId, "user:{$this->bea->id}"));

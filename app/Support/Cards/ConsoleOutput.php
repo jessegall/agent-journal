@@ -34,7 +34,7 @@ final readonly class ConsoleOutput implements DockPart
         string $key,
         public ConsoleStream $stream,
         array $lines,
-        public bool $truncated,
+        public bool $isTruncated,
         public DockDestination|null $open = null,
     ) {
         PartKey::assertGiven($key, PartType::ConsoleOutput);

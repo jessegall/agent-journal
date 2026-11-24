@@ -17,7 +17,7 @@ final readonly class HelperCandidate
         public HelperIdentity $identity,
         public LaunchCandidateRank $rank,
         public bool $resumesConversation,
-        public bool $exposureChecked,
+        public bool $isExposureChecked,
     ) {}
 
     /**
@@ -29,7 +29,7 @@ final readonly class HelperCandidate
             ? 'It resumes its conversation.'
             : 'It starts a new conversation.';
 
-        $exposure = $this->exposureChecked
+        $exposure = $this->isExposureChecked
             ? ' Nothing it saw before touches this subject.'
             : '';
 

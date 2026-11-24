@@ -24,7 +24,7 @@ final readonly class StateEventDispatch
     public function __construct(
         public Event $event,
         public Option $audience,
-        public bool $afterCommit = false,
+        public bool $isAfterCommit = false,
         public array $listening = [],
     ) {
         $this->id = (string) Str::ulid();

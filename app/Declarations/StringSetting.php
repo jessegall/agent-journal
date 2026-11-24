@@ -26,7 +26,7 @@ final readonly class StringSetting implements Setting
     private function __construct(
         public string $key,
         public string $label,
-        public string $default,
+        public string $isDefault,
         public int $minimumLength,
         public int $maximumLength,
         public string|null $description = null,
@@ -92,9 +92,9 @@ final readonly class StringSetting implements Setting
         ) && strlen($input) >= $this->minimumLength && strlen($input) <= $this->maximumLength;
     }
 
-    public function defaultValue(): string
+    public function isEnabledByDefault(): string
     {
-        return $this->default;
+        return $this->isDefault;
     }
 
     public function catalogueValue(string|bool|int|Decimal|BackedEnum $input): CatalogueValue

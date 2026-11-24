@@ -26,14 +26,14 @@ final class KeptValuesState extends AgentState
         private readonly int $number,
         private readonly ShelfState $shelf,
         private readonly array $names,
-        private readonly FinishedSubjects $finished,
+        private readonly FinishedSubjects $hasFinished,
     ) {
         $this->counted = new CountedValues();
     }
 
     public function isFinished(): bool
     {
-        return ! $this->isOpen || $this->finished->has($this->subject);
+        return ! $this->isOpen || $this->hasFinished->has($this->subject);
     }
 
     public function close(): void
@@ -49,6 +49,6 @@ final class KeptValuesState extends AgentState
 
     public function finished(): FinishedSubjects
     {
-        return $this->finished;
+        return $this->hasFinished;
     }
 }

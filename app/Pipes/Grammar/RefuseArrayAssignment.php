@@ -16,7 +16,7 @@ final readonly class RefuseArrayAssignment implements Pipe
 {
     public function handle(UnparsedWord $toParse): UnparsedWord
     {
-        $isArray = $toParse->cursor()->peekIs(1, TokenType::OpenParen) && $toParse->word->isArrayName();
+        $isArray = $toParse->cursor()->isNext(1, TokenType::OpenParen) && $toParse->word->isArrayName();
 
         return $isArray ? $toParse->placedAs(WordPlace::ArrayAssignment) : $toParse;
     }

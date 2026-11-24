@@ -152,7 +152,7 @@ final class ProfileStartTest extends TestCase
         $this->main = Agent::create('Second main', 'main-agent');
         $automatic = $this->start('default', 'claude-code');
 
-        $this->assertSame([$explicit->sessionId, false], [$repeated->sessionId, $repeated->newSession]);
+        $this->assertSame([$explicit->sessionId, false], [$repeated->sessionId, $repeated->isNewSession]);
         $this->assertSame(
             [DefaultDrivers::CODEX, DriverType::Headless, true, $chosen->id],
             $this->recorded($explicit->requestId, $explicit->sessionId),

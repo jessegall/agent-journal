@@ -163,8 +163,8 @@ final class WorkspaceRead extends Model implements EventSource, ReadableModel
         }
 
         $this->available = $facts->isAvailable;
-        $this->dirty = $facts->isDirty;
-        $this->clean = $facts->isClean;
+        $this->isDirty = $facts->isDirty;
+        $this->shouldClean = $facts->isClean;
         $this->generation = $facts->generation;
         $this->sampled_at = $facts->sampledAt;
         $this->binding_id = $facts->commit->bindingId;
@@ -204,8 +204,8 @@ final class WorkspaceRead extends Model implements EventSource, ReadableModel
 
             return new Some(new WorkspaceFacts(
                 (bool) $this->available,
-                (bool) $this->dirty,
-                (bool) $this->clean,
+                (bool) $this->isDirty,
+                (bool) $this->shouldClean,
                 (int) $this->generation,
                 $this->sampled_at,
                 $this->commitObservation(),

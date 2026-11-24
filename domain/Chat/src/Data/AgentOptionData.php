@@ -62,7 +62,7 @@ final class AgentOptionData extends Data
             'id' => $agent->agentId,
             'name' => $agent->name,
             'profileKey' => $agent->profileKey,
-            'retired' => $agent->retired,
+            'retired' => $agent->isRetired,
             'presence' => $agent->presence,
             'presenceLabel' => $agent->presence->label(),
             'sessionId' => $agent->sessionId,

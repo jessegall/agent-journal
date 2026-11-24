@@ -22,7 +22,7 @@ final readonly class NotifyDriverTurnCommand extends Command
         public string $runtimeId,
         public int $processGeneration,
         public string $nativePromptId,
-        public bool $finished,
+        public bool $hasFinished,
         public string|null $model,
         public string|null $effort,
         public string|null $outcome,

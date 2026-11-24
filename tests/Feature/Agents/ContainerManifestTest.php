@@ -100,11 +100,11 @@ final class ContainerManifestTest extends TestCase
                 $manifest->image,
                 $manifest->user,
                 $manifest->workdir,
-                $manifest->readOnlyRoot,
+                $manifest->isReadOnlyRoot,
                 $manifest->capabilities,
-                $manifest->noNewPrivileges,
+                $manifest->blocksNewPrivileges,
                 $manifest->securityOptions->seccomp,
-                $manifest->privileged,
+                $manifest->isPrivileged,
                 $manifest->publishedPorts,
                 $manifest->network,
             ],
@@ -120,7 +120,7 @@ final class ContainerManifestTest extends TestCase
                 'journal-start-1',
                 MountRules::local(),
                 null,
-            )->mounts[0]->writable,
+            )->mounts[0]->isWritable,
         );
     }
 
@@ -216,7 +216,7 @@ final class ContainerManifestTest extends TestCase
             $wire['workspacePreparation'],
         );
         $this->assertTrue(
-            MountRules::local()->workspaceMount('/workspaces/writer-1', WorkspaceUse::OwnCheckout)->writable,
+            MountRules::local()->workspaceMount('/workspaces/writer-1', WorkspaceUse::OwnCheckout)->isWritable,
         );
     }
 

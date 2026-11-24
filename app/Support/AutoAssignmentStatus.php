@@ -23,7 +23,7 @@ final readonly class AutoAssignmentStatus
      * @param  Option<CarbonImmutable>  $lastAssignedAt
      */
     public function __construct(
-        public bool $enabled,
+        public bool $isEnabled,
         public AutoAssignmentState $state,
         public int $revision,
         public Option $pool,

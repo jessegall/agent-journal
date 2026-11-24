@@ -163,7 +163,7 @@ final class TerminalView extends Model implements EventSource, ReadableModel
      * Whether the view watched a session the agent no longer runs, as after a switch: such a view ends rather than
      * follow the replacement, which a restart of the same session's process does.
      */
-    public function watchedAnotherSession(AgentRuntime $runtime): bool
+    public function hasWatchedAnotherSession(AgentRuntime $runtime): bool
     {
         return $this->runtime->agent_session_id !== $runtime->agent_session_id;
     }

@@ -23,8 +23,8 @@ final readonly class SkipKeywordFunctionHeader implements Pipe
     public function handle(UnparsedCommand $toParse): UnparsedFunction
     {
         $cursor = $toParse->cursor();
-        $hasParentheses = $cursor->peekIs(2, TokenType::OpenParen);
-        $closesAtOnce = $cursor->peekIs(3, TokenType::CloseParen);
+        $hasParentheses = $cursor->isNext(2, TokenType::OpenParen);
+        $closesAtOnce = $cursor->isNext(3, TokenType::CloseParen);
 
         if ($hasParentheses && ! $closesAtOnce) {
             throw ShellGrammarStopped::invalid(AgentText::of('core.shell.function_arguments'), $cursor->position());

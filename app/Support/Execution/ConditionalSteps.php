@@ -27,7 +27,7 @@ final readonly class ConditionalSteps
         return $this->remaining !== [];
     }
 
-    public function nextRuns(): bool
+    public function doesNextStepRun(): bool
     {
         return $this->outcome->status->isSuccess() === $this->runsOnSuccess;
     }

@@ -29,14 +29,14 @@ final readonly class EnumSetting implements OptionSetting
 {
     /**
      * @param  class-string<TEnum>  $enum
-     * @param  TEnum  $default
+     * @param  TEnum  $isDefault
      * @param  ChoiceOptions<string|int>  $options
      */
     private function __construct(
         public string $key,
         public string $label,
         public string $enum,
-        public BackedEnum $default,
+        public BackedEnum $isDefault,
         public SettingType $backing,
         public ChoiceOptions $options,
         public string|null $description = null,
@@ -144,9 +144,9 @@ final readonly class EnumSetting implements OptionSetting
         return Choice::make($case->value, $case instanceof ChoiceLabel ? $case->label() : Str::headline($case->name));
     }
 
-    public function defaultValue(): BackedEnum
+    public function isEnabledByDefault(): BackedEnum
     {
-        return $this->default;
+        return $this->isDefault;
     }
 
     public function catalogueValue(string|bool|int|Decimal|BackedEnum $input): CatalogueValue

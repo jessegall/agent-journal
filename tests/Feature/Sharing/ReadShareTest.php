@@ -101,7 +101,7 @@ final class ReadShareTest extends TestCase
 
         $page = $this->read($token);
 
-        $this->assertTrue($page->allowed);
+        $this->assertTrue($page->isAllowed);
         $this->assertSame(
             ['Design', '1', <<<'TEXT'
             # Goal
@@ -123,13 +123,13 @@ final class ReadShareTest extends TestCase
     public function test_an_expired_share_and_a_lapsed_grant_are_denied_and_audited(): void
     {
         $expired = $this->activeShare($this->document->shareIdentity(), CarbonImmutable::now()->subMinute());
-        $this->assertFalse($this->read($expired)->allowed);
+        $this->assertFalse($this->read($expired)->isAllowed);
 
         $current = $this->activeShare($this->document->shareIdentity(), CarbonImmutable::now()->addDay());
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(8));
         $denied = $this->read($current);
 
-        $this->assertFalse($denied->allowed);
+        $this->assertFalse($denied->isAllowed);
         $this->assertSame('', $denied->body);
         $this->assertSame([ShareAuditType::ReadDenied, ShareAuditType::ReadDenied], $this->auditTypes());
     }
@@ -141,7 +141,7 @@ final class ReadShareTest extends TestCase
         $linkId = Link::query()->sole()->id;
         $step = "records/documents.document/{$this->document->id}";
 
-        $this->assertFalse($this->read($token, $step)->allowed);
+        $this->assertFalse($this->read($token, $step)->isAllowed);
 
         ShareMember::create(
             $share,
@@ -152,7 +152,7 @@ final class ReadShareTest extends TestCase
         $linked = $this->read($token, $step);
 
         $this->assertSame([$this->document->id], array_map(fn ($item) => $item->id, $root->linked));
-        $this->assertTrue($linked->allowed);
+        $this->assertTrue($linked->isAllowed);
         $this->assertSame('Design', $linked->title);
     }
 
@@ -211,15 +211,15 @@ final class ReadShareTest extends TestCase
             );
         }
 
-        $this->assertTrue($this->read($token, "records/documents.document/{$this->document->id}")->allowed);
+        $this->assertTrue($this->read($token, "records/documents.document/{$this->document->id}")->isAllowed);
 
         DB::table('document_revisions')->where('document_id', $this->document->id)->update(['closed_at' => null]);
 
         $withdrawn = $this->read($token, "records/documents.document/{$this->document->id}");
-        $this->assertFalse($withdrawn->allowed);
+        $this->assertFalse($withdrawn->isAllowed);
         $this->assertSame('', $withdrawn->body);
         $this->assertSame([$sibling->id], array_map(fn ($item) => $item->id, $this->read($token)->linked));
-        $this->assertTrue($this->read($token, "records/documents.document/{$sibling->id}")->allowed);
+        $this->assertTrue($this->read($token, "records/documents.document/{$sibling->id}")->isAllowed);
     }
 
     public function test_a_read_waits_for_a_revoke_holding_the_share_and_is_denied_once_it_committed(): void
@@ -255,7 +255,7 @@ final class ReadShareTest extends TestCase
         $this->app->forgetScopedInstances();
         $after = $this->read($token);
 
-        $this->assertFalse($after->allowed);
+        $this->assertFalse($after->isAllowed);
         $this->assertSame('', $after->body);
     }
 

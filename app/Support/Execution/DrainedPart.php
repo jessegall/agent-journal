@@ -10,5 +10,5 @@ namespace App\Support\Execution;
  */
 final readonly class DrainedPart
 {
-    public function __construct(public SpawnedPart $spawned, public string $stdout, public bool $drained) {}
+    public function __construct(public SpawnedPart $spawned, public string $stdout, public bool $isDrained) {}
 }

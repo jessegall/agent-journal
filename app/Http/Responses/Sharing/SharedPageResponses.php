@@ -26,7 +26,7 @@ final readonly class SharedPageResponses
 
     public function page(SharedPage $page): Response
     {
-        if (! $page->allowed) {
+        if (! $page->isAllowed) {
             return $this->unavailable();
         }
 

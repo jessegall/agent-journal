@@ -96,7 +96,7 @@ final class StartAgentTest extends TestCase
 
         $this->assertSame(
             [$first->sessionId, true, false],
-            [$again->sessionId, $first->newSession, $again->newSession],
+            [$again->sessionId, $first->isNewSession, $again->isNewSession],
         );
         $this->assertSame(1, AgentSession::query()->where('agent_id', $this->agent->id)->count());
         $this->assertSame(

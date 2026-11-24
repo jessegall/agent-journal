@@ -36,7 +36,7 @@ final readonly class NotifyRequestProgressCommand extends Command
         public ScriptProgress|null $script = null,
         public NavigationRoundReport|null $navigation = null,
         public HostWakeRefusal|null $refusal = null,
-        public bool $noProcessCreated = false,
+        public bool $hasCreatedNoProcess = false,
         public RequestReportBinding|null $binding = null,
         /** the report's place in its runtime generation's numbered reports; none from a host that numbers none */
         public int|null $sequence = null,

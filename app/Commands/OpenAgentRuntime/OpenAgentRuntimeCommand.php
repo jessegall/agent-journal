@@ -33,7 +33,7 @@ final readonly class OpenAgentRuntimeCommand extends Command implements AgentSta
         public string|null $model = null,
         public string|null $effort = null,
         public string|null $firstMessage = null,
-        public bool $saveDriverType = false,
+        public bool $shouldSaveDriverType = false,
     ) {}
 
     public function startedAgentId(): string

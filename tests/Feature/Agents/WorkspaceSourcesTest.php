@@ -27,7 +27,7 @@ final class WorkspaceSourcesTest extends TestCase
             ManifestMount::volume('acme-workspace-main', '/workspace', true),
             $rules->workspaceMount('/ignored', WorkspaceUse::Shared),
         );
-        $this->assertFalse($rules->workspaceMount('/ignored', WorkspaceUse::ReadOnly)->writable);
+        $this->assertFalse($rules->workspaceMount('/ignored', WorkspaceUse::ReadOnly)->isWritable);
     }
 
     public function test_a_contained_start_with_a_folder_source_binds_its_server_folder(): void

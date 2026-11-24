@@ -29,7 +29,7 @@ final readonly class RecordGatewayHealthHandler implements CommandHandler
             $command->runId,
         );
 
-        if ($command->healthy) {
+        if ($command->isHealthy) {
             $endpoint->recordHealthy();
         }
     }

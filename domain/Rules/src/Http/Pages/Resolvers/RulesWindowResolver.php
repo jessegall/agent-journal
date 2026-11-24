@@ -135,7 +135,7 @@ final readonly class RulesWindowResolver implements PageResolver
         $rule = $page->selection();
 
         if ($rule->isEmpty()) {
-            return $page->selectionMissing
+            return $page->isSelectionMissing
                 ? LayoutPartData::notice('reader', 'empty', 'This rule does not exist.')
                 : LayoutPartData::notice('reader', 'empty', 'Choose a rule to read it.');
         }

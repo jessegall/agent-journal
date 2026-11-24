@@ -23,7 +23,7 @@ final readonly class BooleanSetting implements Setting
     private function __construct(
         public string $key,
         public string $label,
-        public bool $default,
+        public bool $isDefault,
         public string|null $description = null,
     ) {}
 
@@ -60,9 +60,9 @@ final readonly class BooleanSetting implements Setting
         return SettingType::Boolean;
     }
 
-    public function defaultValue(): bool
+    public function isEnabledByDefault(): bool
     {
-        return $this->default;
+        return $this->isDefault;
     }
 
     public function catalogueValue(string|bool|int|Decimal|BackedEnum $input): CatalogueValue

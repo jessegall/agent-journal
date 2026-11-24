@@ -43,7 +43,7 @@ final readonly class CheckListenerPairs implements Pipe
 
         $handler = $listenerType->filter(fn (Reflector $type) => $type->isClass() && $type->hasMethod($method));
 
-        if ($handler->isEmpty() || ! $this->firstParameterAccepts($handler->get()->method($method), $event)) {
+        if ($handler->isEmpty() || ! $this->doesFirstParameterAccept($handler->get()->method($method), $event)) {
             throw InvalidListener::staleCache($listener, $event);
         }
 
@@ -59,7 +59,7 @@ final readonly class CheckListenerPairs implements Pipe
         $ownership->assertOwnership($event, $listener, $method, $listenerDomain);
     }
 
-    private function firstParameterAccepts(ReflectedMethod $method, string $event): bool
+    private function doesFirstParameterAccept(ReflectedMethod $method, string $event): bool
     {
         $parameters = $method->parameters();
 

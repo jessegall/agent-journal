@@ -16,7 +16,7 @@ final readonly class ReadRequest
     public function __construct(
         public string $name,
         public array $arguments = [],
-        public bool $discovery = false,
+        public bool $isDiscovery = false,
         public string|null $target = null,
     ) {}
 
@@ -30,12 +30,12 @@ final readonly class ReadRequest
 
     public static function forDiscovery(string $name): self
     {
-        return new self($name, discovery: true);
+        return new self($name, isDiscovery: true);
     }
 
     public function matchesRecovery(RecoveryCall $recovery): bool
     {
         return $this->name === $recovery->tool
-            && ($this->discovery || array_diff_assoc($recovery->arguments, $this->arguments) === []);
+            && ($this->isDiscovery || array_diff_assoc($recovery->arguments, $this->arguments) === []);
     }
 }

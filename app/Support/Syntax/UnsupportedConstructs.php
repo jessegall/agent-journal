@@ -31,7 +31,7 @@ final readonly class UnsupportedConstructs
         $construct = new UnsupportedConstruct($terminator);
         $cursor->advance();
 
-        while (! $cursor->atEnd() && ! $construct->endsBefore($cursor->current())) {
+        while (! $cursor->isAtEnd() && ! $construct->endsBefore($cursor->current())) {
             $end = $cursor->currentEnd();
             $construct->read($cursor->current());
             $cursor->advance();

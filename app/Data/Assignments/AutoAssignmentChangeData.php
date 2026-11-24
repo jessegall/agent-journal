@@ -19,6 +19,6 @@ final class AutoAssignmentChangeData extends Data
 
     public static function of(AutoAssignmentChange $change): self
     {
-        return new self($change->changed, $change->revision);
+        return new self($change->hasChanged, $change->revision);
     }
 }

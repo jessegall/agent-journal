@@ -106,7 +106,7 @@ final class HelperSelectionTest extends TestCase
 
         $this->assertSame([$fresh->id], $this->identityIds($candidates));
         $this->assertFalse($candidates[0]->resumesConversation);
-        $this->assertTrue($candidates[0]->exposureChecked);
+        $this->assertTrue($candidates[0]->isExposureChecked);
     }
 
     public function test_a_writing_profile_never_picks_a_read_only_identity(): void

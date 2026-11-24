@@ -24,7 +24,7 @@ final readonly class StartReceipt
         public string $sessionId,
         public string $agentId,
         public SelectedDriver $selection,
-        public bool $newSession,
+        public bool $isNewSession,
         public ConversationModeType $conversationMode,
         public string $actualModel,
         public array $driverArguments,

@@ -90,8 +90,8 @@ final class StartIdentityTest extends TestCase
         $this->notifyApplied($host, $wake, self::CONVERSATION);
         $after = $this->claimed($host);
 
-        $this->assertSame([[$wake->id, true, null]], array_map(fn (ClaimedRequest $request) => [$request->requestId, $request->bootstrap, $request->message], $bootstrap));
-        $this->assertSame([[$opened->firstRequestId, false]], array_map(fn (ClaimedRequest $request) => [$request->requestId, $request->bootstrap], $after));
+        $this->assertSame([[$wake->id, true, null]], array_map(fn (ClaimedRequest $request) => [$request->requestId, $request->shouldBootstrap, $request->message], $bootstrap));
+        $this->assertSame([[$opened->firstRequestId, false]], array_map(fn (ClaimedRequest $request) => [$request->requestId, $request->shouldBootstrap], $after));
     }
 
     public function test_a_failed_bootstrap_leaves_the_start_holding_its_message(): void

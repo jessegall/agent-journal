@@ -16,7 +16,7 @@ final readonly class SharedPage
      * @param  list<SharedPageItem>  $children
      */
     public function __construct(
-        public bool $allowed,
+        public bool $isAllowed,
         public string $title,
         public string $publicationVersion,
         public string $body,

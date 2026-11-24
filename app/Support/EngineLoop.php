@@ -31,7 +31,7 @@ final class EngineLoop
 
     public const int STOPPED = 0;
 
-    private bool $stopping = false;
+    private bool $isStopping = false;
 
     public function __construct(
         private readonly AdvisoryEngineLock $lock,
@@ -50,7 +50,7 @@ final class EngineLoop
      */
     public function stop(): void
     {
-        $this->stopping = true;
+        $this->isStopping = true;
     }
 
     /**
@@ -66,7 +66,7 @@ final class EngineLoop
             while (true) {
                 $boundary = $this->waitForBoundaryAfter($boundary);
 
-                if ($this->stopping) {
+                if ($this->isStopping) {
                     return self::STOPPED;
                 }
 

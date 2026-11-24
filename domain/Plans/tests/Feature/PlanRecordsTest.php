@@ -65,7 +65,7 @@ final class PlanRecordsTest extends TestCase
     {
         $cards = $this->records()->list(new PlanFilters())->cards;
 
-        $this->assertSame([false, false], array_map(fn (PlanCard $card) => $card->focused, $cards));
+        $this->assertSame([false, false], array_map(fn (PlanCard $card) => $card->isFocused, $cards));
 
         $build = $this->cardOf($cards, $this->build);
         $empty = $this->cardOf($cards, $this->empty);

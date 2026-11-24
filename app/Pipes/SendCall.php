@@ -18,6 +18,6 @@ final readonly class SendCall implements Pipe
 
     public function handle(PendingCall $send): CallAnswer
     {
-        return new CallAnswer($this->sender->send($send->call), $send->oneLine);
+        return new CallAnswer($this->sender->send($send->call), $send->isOneLine);
     }
 }

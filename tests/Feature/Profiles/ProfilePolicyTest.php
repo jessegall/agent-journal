@@ -71,13 +71,13 @@ final class ProfilePolicyTest extends TestCase
         $start = $this->resolver()->snapshotFor(ProfileKey::from('journal-worker'))->start;
         $access = $start->access;
 
-        $this->assertFalse($access->decide(self::operation('file.delete', AccessType::Delete))->allowed);
+        $this->assertFalse($access->decide(self::operation('file.delete', AccessType::Delete))->isAllowed);
         $this->assertTrue($access->decide(
             self::operation('shell:journal-check.cleanup', AccessType::Delete, '/workspace/.scratch'),
-        )->allowed);
+        )->isAllowed);
         $push = self::operation('shell:git.push', AccessType::Execute);
 
-        $this->assertFalse($access->decide($push)->allowed);
+        $this->assertFalse($access->decide($push)->isAllowed);
         $this->assertSame(PolicyOriginType::Profile, $start->provenance->originOf('access'));
     }
 

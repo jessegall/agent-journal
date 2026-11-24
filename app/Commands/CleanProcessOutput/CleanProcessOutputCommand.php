@@ -22,5 +22,5 @@ final readonly class CleanProcessOutputCommand extends Command
     /**
      * @param  list<string>  $runIds
      */
-    public function __construct(public array $runIds, public bool $preview) {}
+    public function __construct(public array $runIds, public bool $isPreview) {}
 }

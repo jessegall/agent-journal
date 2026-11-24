@@ -12,7 +12,7 @@ use App\Values\ScriptContext;
 final class ExampleScriptObject
 {
     #[ScriptMember(read: 'workspace.status')]
-    public bool $selected { get => $this->context->trigger === 'selected'; }
+    public bool $isSelected { get => $this->context->trigger === 'selected'; }
 
     public function __construct(private readonly ScriptContext $context) {}
 }

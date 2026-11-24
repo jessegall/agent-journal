@@ -10,7 +10,7 @@ namespace App\Support;
 final readonly class AutoAssignmentChange
 {
     public function __construct(
-        public bool $changed,
+        public bool $hasChanged,
         public int $revision,
     ) {}
 }

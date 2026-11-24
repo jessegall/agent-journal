@@ -15,11 +15,11 @@ final readonly class ManifestMount
         public MountType $type,
         public string $source,
         public string $target,
-        public bool $writable,
+        public bool $isWritable,
         // A volume the host must find, never make: the history of a conversation being resumed.
         public bool $mustExist = false,
         // A writer's own clone: the host clones the source into the session's checkout volume and mounts that.
-        public bool $checkout = false,
+        public bool $isCheckout = false,
     ) {}
 
     /**

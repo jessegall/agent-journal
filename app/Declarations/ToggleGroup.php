@@ -20,7 +20,7 @@ final readonly class ToggleGroup implements GroupDeclaration
     private function __construct(
         public string $key,
         public string $label,
-        public bool $defaultEnabled,
+        public bool $isDefaultEnabled,
         public array $settings,
         public string|null $description = null,
     ) {}

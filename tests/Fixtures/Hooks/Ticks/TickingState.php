@@ -17,11 +17,11 @@ use Tests\Fixtures\Hooks\Stacks\FinishedSubjects;
 #[Ticks(guard: ScriptedOccurrenceGuard::class)]
 final class TickingState extends AgentState implements TickableState
 {
-    public function __construct(private readonly string $subject, private readonly FinishedSubjects $finished) {}
+    public function __construct(private readonly string $subject, private readonly FinishedSubjects $hasFinished) {}
 
     public function isFinished(): bool
     {
-        return $this->finished->has($this->subject);
+        return $this->hasFinished->has($this->subject);
     }
 
     public function onTick(TickContext $tick): TickCommands

@@ -48,7 +48,7 @@ final class RequestRecoveryRequest extends FormRequest
         return $this->boolean('confirmsPossibleDuplicate');
     }
 
-    public function applied(): bool
+    public function isApplied(): bool
     {
         return $this->boolean('applied');
     }

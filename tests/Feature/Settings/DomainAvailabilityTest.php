@@ -50,7 +50,7 @@ final class DomainAvailabilityTest extends TestCase
 
         $this->assertSame(
             [true, false, ['Tasks']],
-            [$plans->switchedOn, $plans->available, $plans->unavailableRequirements],
+            [$plans->isSwitchedOn, $plans->isAvailable, $plans->unavailableRequirements],
         );
 
         $this->switchOn('domain_tasks');
@@ -64,7 +64,7 @@ final class DomainAvailabilityTest extends TestCase
         $this->switchOn('domain_tasks');
 
         $plans = $this->domainStatus('Plans');
-        $this->assertSame([false, false, []], [$plans->switchedOn, $plans->available, $plans->unavailableRequirements]);
+        $this->assertSame([false, false, []], [$plans->isSwitchedOn, $plans->isAvailable, $plans->unavailableRequirements]);
         $this->assertTrue($this->availability()->isEnabled('Tasks'));
     }
 

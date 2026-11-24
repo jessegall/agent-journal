@@ -20,15 +20,15 @@ final readonly class SessionToolDiscovery implements ToolDiscovery
         $this->recordDiscoveryAt($sessionId, $signedAt);
     }
 
-    public function discoveredSince(string $sessionId, CarbonImmutable $generationStartedAt): bool
+    public function isDiscoveredSince(string $sessionId, CarbonImmutable $generationStartedAt): bool
     {
-        return AgentSession::discoveredAfter($sessionId, $generationStartedAt);
+        return AgentSession::isDiscoveredAfter($sessionId, $generationStartedAt);
     }
 
     public function isDiscoveredInCurrentGeneration(string $sessionId): bool
     {
         return AgentRuntime::generationStartOfSession($sessionId)
-            ->map(fn (CarbonImmutable $start) => AgentSession::discoveredInOrAfterSecondOf($sessionId, $start))
+            ->map(fn (CarbonImmutable $start) => AgentSession::isDiscoveredInOrAfterSecondOf($sessionId, $start))
             ->getOrElse(true);
     }
 

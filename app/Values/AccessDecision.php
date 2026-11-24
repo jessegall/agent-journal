@@ -12,7 +12,7 @@ use App\Enums\AccessRuleType;
 final readonly class AccessDecision
 {
     private function __construct(
-        public bool $allowed,
+        public bool $isAllowed,
         public AccessRuleType $rule,
         public AgentText $reason,
     ) {}

@@ -293,27 +293,27 @@ final readonly class SearchCoordinator implements RecordSearch
         try {
             $batch = $declared->provider($this->container)->search($query);
         } catch (WorkBudgetSpent) {
-            return self::noted($meter, $declared, $started, $query, 'budget_spent', false);
+            return self::isNoted($meter, $declared, $started, $query, 'budget_spent', false);
         } catch (StatementTimedOut) {
-            return self::noted($meter, $declared, $started, $query, 'statement_cancelled', false);
+            return self::isNoted($meter, $declared, $started, $query, 'statement_cancelled', false);
         } catch (SearchBatchInvalid|SearchValueInvalid) {
             $source->fail();
 
-            return self::noted($meter, $declared, $started, $query, 'invalid_batch', true);
+            return self::isNoted($meter, $declared, $started, $query, 'invalid_batch', true);
         }
 
         if (hrtime(true) - $started > self::SOURCE_MILLISECONDS * 1_000_000) {
-            return self::noted($meter, $declared, $started, $query, 'timed_out', false);
+            return self::isNoted($meter, $declared, $started, $query, 'timed_out', false);
         }
 
         if ($batch->byteSize() > WorkBudget::BYTE_LIMIT) {
             $source->fail();
 
-            return self::noted($meter, $declared, $started, $query, 'too_large', true);
+            return self::isNoted($meter, $declared, $started, $query, 'too_large', true);
         }
 
         $kept = $this->keep($source, $declared, $batch, $fresh);
-        self::noted($meter, $declared, $started, $query, $kept ? $batch->outcome->name() : 'stalled', $kept);
+        self::isNoted($meter, $declared, $started, $query, $kept ? $batch->outcome->name() : 'stalled', $kept);
 
         return $kept;
     }
@@ -321,7 +321,7 @@ final readonly class SearchCoordinator implements RecordSearch
     /**
      * Adds the batch's work to the source's line for this call and passes on whether its answer was kept.
      */
-    private static function noted(
+    private static function isNoted(
         SearchCallMeter $meter,
         DeclaredSearchable $declared,
         int $started,

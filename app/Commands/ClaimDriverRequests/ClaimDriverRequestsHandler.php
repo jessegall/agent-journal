@@ -185,7 +185,7 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
         ClaimedRequest $claim,
         CarbonImmutable $now,
     ): ClaimedRequest {
-        if ($request->operation !== DriverOperation::Wake || $claim->bootstrap) {
+        if ($request->operation !== DriverOperation::Wake || $claim->shouldBootstrap) {
             return $claim;
         }
 

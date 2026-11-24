@@ -89,7 +89,7 @@ final class AutoAssignmentStorageTest extends TestCase
 
         $this->assertEquals(new AutoAssignmentChange(true, 1), $change);
         $fact = $this->fact();
-        $this->assertTrue($fact->enabled);
+        $this->assertTrue($fact->isEnabled);
         $this->assertSame(2, $fact->size);
         $this->assertTrue($fact->pool->isSameAs(self::open()));
         $this->assertNull($fact->lastServedAt);
@@ -149,7 +149,7 @@ final class AutoAssignmentStorageTest extends TestCase
         $off = $this->write(fn (DatabaseAutoAssignments $writer) => $writer->disable($this->key, 1));
 
         $this->assertEquals(new AutoAssignmentChange(true, 2), $off);
-        $this->assertFalse($this->fact()->enabled);
+        $this->assertFalse($this->fact()->isEnabled);
         $this->assertTrue($this->fact()->pool->isSameAs($plan));
         $this->assertSame(3, $this->fact()->size);
     }

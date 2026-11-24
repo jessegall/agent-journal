@@ -73,7 +73,7 @@ final class HookRelayTest extends TestCase
 
     private string $bypassLog;
 
-    private bool $journalIsDown = false;
+    private bool $isJournalDown = false;
 
     protected function setUp(): void
     {
@@ -231,10 +231,10 @@ final class HookRelayTest extends TestCase
 
     public function test_the_bypasses_are_uploaded_once_the_journal_answers_again(): void
     {
-        $this->journalIsDown = true;
+        $this->isJournalDown = true;
         $this->forwardToTheEndpoint();
         $this->relay(self::SHELL);
-        $this->journalIsDown = false;
+        $this->isJournalDown = false;
 
         $this->relay(self::STOP);
 
@@ -326,7 +326,7 @@ final class HookRelayTest extends TestCase
     private function forwardToTheEndpoint(): void
     {
         Http::fake(function (Request $request) {
-            if ($this->journalIsDown) {
+            if ($this->isJournalDown) {
                 throw JournalUnreachable::now();
             }
 

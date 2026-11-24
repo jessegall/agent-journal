@@ -84,7 +84,7 @@ final class JobGrantGuardTest extends TestCase
 
         $permission = $stack->permission();
 
-        $this->assertFalse($permission->allowed);
+        $this->assertFalse($permission->isAllowed);
         $this->assertEquals(new RecoveryCall('messages_read', ['message_id' => 'message-id']), $permission->recovery);
     }
 

@@ -31,15 +31,15 @@ final readonly class ProfileBase
         public array $grants,
         public array $paths,
         public ExecutionModeType $executionMode,
-        public bool $containerRequired,
+        public bool $isContainerRequired,
         public array $stopConditions,
         public OfflineReplyMode $offlineReply,
-        public bool $coordinator,
+        public bool $isCoordinator,
         // What its sessions may use in a container on a server; locally every start keeps the defaults.
         public ExecutionBudgets $containedBudgets,
         // Whether its driver is its container's own terminal process, which the host attaches to, again after a
         // restart: the main agent's is; a helper runs without a terminal.
-        public bool $attachable,
+        public bool $isAttachable,
         // How its sessions run when a start names no driver type: the main agent in a terminal, a helper headless.
         public DriverType $defaultDriverType,
     ) {}
@@ -166,7 +166,7 @@ final readonly class ProfileBase
      */
     public function isAttachable(): bool
     {
-        return $this->attachable;
+        return $this->isAttachable;
     }
 
     /**
@@ -174,7 +174,7 @@ final readonly class ProfileBase
      */
     public function isContainerRequired(): bool
     {
-        return $this->containerRequired;
+        return $this->isContainerRequired;
     }
 
     /**
@@ -219,7 +219,7 @@ final readonly class ProfileBase
      */
     public function canJoinChats(): bool
     {
-        return $this->coordinator;
+        return $this->isCoordinator;
     }
 
     /**
@@ -240,7 +240,7 @@ final readonly class ProfileBase
      */
     public function isCoordinator(): bool
     {
-        return $this->coordinator;
+        return $this->isCoordinator;
     }
 
     /**

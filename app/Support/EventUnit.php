@@ -60,11 +60,11 @@ final class EventUnit
      */
     private array $cause = [];
 
-    private bool $draining = false;
+    private bool $isDraining = false;
 
-    private bool $failed = false;
+    private bool $hasFailed = false;
 
-    private bool $ready = false;
+    private bool $isReady = false;
 
     public function __construct(FactStaging|null $staging = null)
     {
@@ -208,20 +208,20 @@ final class EventUnit
      */
     public function runUnlessDraining(callable $work): void
     {
-        if ($this->draining) {
+        if ($this->isDraining) {
             return;
         }
 
-        $this->draining = true;
+        $this->isDraining = true;
 
         try {
             $work();
         } catch (Throwable $failure) {
-            $this->failed = true;
+            $this->hasFailed = true;
 
             throw $failure;
         } finally {
-            $this->draining = false;
+            $this->isDraining = false;
         }
     }
 
@@ -247,7 +247,7 @@ final class EventUnit
 
     public function hasFailed(): bool
     {
-        return $this->failed;
+        return $this->hasFailed;
     }
 
     /**
@@ -255,7 +255,7 @@ final class EventUnit
      */
     public function markFailed(): void
     {
-        $this->failed = true;
+        $this->hasFailed = true;
     }
 
     /**
@@ -265,16 +265,16 @@ final class EventUnit
      */
     public function markReady(): void
     {
-        if ($this->ready) {
+        if ($this->isReady) {
             throw EventUnitRefused::readyTwice();
         }
 
-        $this->ready = true;
+        $this->isReady = true;
     }
 
     public function isReady(): bool
     {
-        return $this->ready;
+        return $this->isReady;
     }
 
     /**

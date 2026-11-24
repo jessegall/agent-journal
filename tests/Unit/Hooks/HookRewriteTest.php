@@ -170,7 +170,7 @@ final class HookRewriteTest extends TestCase
             new StateReference($id, NoSubject::None),
             $state,
             CarbonImmutable::now(),
-            bottom: $bottom,
+            isBottom: $bottom,
         );
     }
 

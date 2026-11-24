@@ -23,7 +23,7 @@ final readonly class RuleList
         public int $lastPage,
         public int $total,
         public RuleView|null $selected,
-        public bool $selectionMissing,
+        public bool $isSelectionMissing,
     ) {}
 
     /**

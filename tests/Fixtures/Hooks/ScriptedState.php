@@ -26,7 +26,7 @@ final class ScriptedState extends AgentState
 
     public function __construct(
         private readonly Decision $decision,
-        private readonly bool $finished = false,
+        private readonly bool $hasFinished = false,
     ) {}
 
     public static function passing(): self
@@ -36,7 +36,7 @@ final class ScriptedState extends AgentState
 
     public function isFinished(): bool
     {
-        return $this->finished;
+        return $this->hasFinished;
     }
 
     public function onSessionStart(SessionStarted $input): Decision

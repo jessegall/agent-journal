@@ -15,8 +15,8 @@ final readonly class DomainStatus
      */
     public function __construct(
         public string $owner,
-        public bool $switchedOn,
-        public bool $available,
+        public bool $isSwitchedOn,
+        public bool $isAvailable,
         public array $unavailableRequirements,
     ) {}
 }

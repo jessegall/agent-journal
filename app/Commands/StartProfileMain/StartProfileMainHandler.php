@@ -73,7 +73,7 @@ final readonly class StartProfileMainHandler implements CommandHandler
             conversationTarget: $target,
             driverType: $driverType,
             chosenAccount: $command->chosenAccount,
-            savesDriverType: $command->saveDriverType,
+            savesDriverType: $command->shouldSaveDriverType,
             previewRevision: $command->previewRevision,
         )));
     }

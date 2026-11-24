@@ -51,7 +51,7 @@ final class DomainSwitchesTest extends TestCase
 
         $this->assertSame(
             [true],
-            array_values(array_unique(array_map(fn (ToggleGroup $group) => $group->defaultEnabled, $switches))),
+            array_values(array_unique(array_map(fn (ToggleGroup $group) => $group->isDefaultEnabled, $switches))),
         );
 
         $this->assertSame(

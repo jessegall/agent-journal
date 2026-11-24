@@ -57,13 +57,13 @@ final readonly class ThrowOnlyGuards implements FileScan
         $body = $method->stmts ?? [];
         $hasGuardName = preg_match(self::GUARD_NAME, $method->name->toString()) === 1;
 
-        return $hasGuardName && $returnsVoid && $body !== [] && self::onlyThrows($body) && self::containsThrow($body);
+        return $hasGuardName && $returnsVoid && $body !== [] && self::doesOnlyThrow($body) && self::containsThrow($body);
     }
 
     /**
      * @param  array<Stmt>  $statements
      */
-    private static function onlyThrows(array $statements): bool
+    private static function doesOnlyThrow(array $statements): bool
     {
         return array_all($statements, fn (Stmt $statement) => self::isThrowOnly($statement));
     }
@@ -74,7 +74,7 @@ final readonly class ThrowOnlyGuards implements FileScan
             $statement instanceof Expression => $statement->expr instanceof Throw_,
             $statement instanceof Return_ => $statement->expr === null,
             $statement instanceof If_ => self::hasThrowOnlyBranches($statement),
-            $statement instanceof Foreach_ => self::onlyThrows($statement->stmts),
+            $statement instanceof Foreach_ => self::doesOnlyThrow($statement->stmts),
             default => false,
         };
     }
@@ -87,7 +87,7 @@ final readonly class ThrowOnlyGuards implements FileScan
             $arms[] = $branch->else->stmts;
         }
 
-        return array_all($arms, fn (array $statements) => self::onlyThrows($statements));
+        return array_all($arms, fn (array $statements) => self::doesOnlyThrow($statements));
     }
 
     /**

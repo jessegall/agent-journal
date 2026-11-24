@@ -26,7 +26,7 @@ final class SuperviseSharingCommand extends Command
 
     protected $description = 'Run the sharing supervisor: the share-only listener, gateway operations and timers';
 
-    private bool $stopping = false;
+    private bool $isStopping = false;
 
     public function handle(
         SharingSupervisor $supervisor,
@@ -55,8 +55,8 @@ final class SuperviseSharingCommand extends Command
         }
 
         pcntl_async_signals(true);
-        pcntl_signal(SIGTERM, fn () => $this->stopping = true);
-        pcntl_signal(SIGINT, fn () => $this->stopping = true);
+        pcntl_signal(SIGTERM, fn () => $this->isStopping = true);
+        pcntl_signal(SIGINT, fn () => $this->isStopping = true);
         $supervisor->begin();
         $this->info("Sharing supervisor run {$supervisor->runId} on {$host}:{$port}.");
 
@@ -68,7 +68,7 @@ final class SuperviseSharingCommand extends Command
 
         $healthy = true;
 
-        while (! $this->stopping && $healthy) {
+        while (! $this->isStopping && $healthy) {
             $healthy = ! $listener->hasEnded() && $this->workAll($supervisor);
             $now = time();
 

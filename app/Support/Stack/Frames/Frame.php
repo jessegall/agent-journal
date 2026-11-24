@@ -31,9 +31,9 @@ final readonly class Frame
         public StateReference $reference,
         public AgentState $state,
         public CarbonImmutable $enteredAt,
-        private bool $bottom = false,
+        private bool $isBottom = false,
         public int $schemaVersion = 1,
-        private bool $typeEnabled = true,
+        private bool $isTypeEnabled = true,
     ) {}
 
     /**
@@ -57,7 +57,7 @@ final readonly class Frame
         return new FrameRecord(
             $this->id,
             $this->reference,
-            $this->bottom,
+            $this->isBottom,
             $this->schemaVersion,
             $this->enteredAt,
             StateValues::of($this->state),
@@ -66,7 +66,7 @@ final readonly class Frame
 
     public function isBottom(): bool
     {
-        return $this->bottom;
+        return $this->isBottom;
     }
 
     public function typeKey(): string
@@ -98,7 +98,7 @@ final readonly class Frame
      */
     public function isEnabled(): bool
     {
-        return $this->typeEnabled && (! $this->state instanceof ConditionalState || $this->state->isEnabled());
+        return $this->isTypeEnabled && (! $this->state instanceof ConditionalState || $this->state->isEnabled());
     }
 
     /**

@@ -22,7 +22,7 @@ final readonly class RequireEndOfSource implements Pipe
     {
         $cursor = $listRead->context->cursor;
 
-        if (! $cursor->atEnd()) {
+        if (! $cursor->isAtEnd()) {
             throw ShellGrammarStopped::invalid(
                 AgentText::of('core.shell.unexpected', ['token' => $cursor->currentType()->value]),
                 $cursor->position(),

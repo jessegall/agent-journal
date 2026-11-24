@@ -77,24 +77,24 @@ final class PolicyValuesTest extends TestCase
 
         $this->assertSame(
             [false, AccessRuleType::NotGranted],
-            [$writer->decide($push)->allowed, $writer->decide($push)->rule],
+            [$writer->decide($push)->isAllowed, $writer->decide($push)->rule],
         );
         $this->assertSame(
             [true, AccessRuleType::ScopeGrant],
-            [$writer->decide($edit)->allowed, $writer->decide($edit)->rule],
+            [$writer->decide($edit)->isAllowed, $writer->decide($edit)->rule],
         );
         $this->assertSame(
             [false, AccessRuleType::ProtectedPath],
-            [$writer->decide($secret)->allowed, $writer->decide($secret)->rule],
+            [$writer->decide($secret)->isAllowed, $writer->decide($secret)->rule],
         );
         $this->assertSame(
             [false, AccessRuleType::ExplicitDenial],
-            [$denying->decide($push)->allowed, $denying->decide($push)->rule],
+            [$denying->decide($push)->isAllowed, $denying->decide($push)->rule],
         );
         $readOnly = ProfileBase::readOnlyHelper()->defaultAccess();
         $this->assertSame(
             [false, AccessRuleType::NotGranted],
-            [$readOnly->decide($edit)->allowed, $readOnly->decide($edit)->rule],
+            [$readOnly->decide($edit)->isAllowed, $readOnly->decide($edit)->rule],
         );
     }
 

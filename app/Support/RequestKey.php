@@ -23,7 +23,7 @@ final class RequestKey implements RequestKeyContract
 
     private int $depth = 0;
 
-    private bool $receiptTaken = false;
+    private bool $isReceiptTaken = false;
 
     /**
      * @throws RequestKeyInvalid
@@ -43,7 +43,7 @@ final class RequestKey implements RequestKeyContract
     public function forget(): void
     {
         $this->key = null;
-        $this->receiptTaken = false;
+        $this->isReceiptTaken = false;
     }
 
     /**
@@ -51,12 +51,12 @@ final class RequestKey implements RequestKeyContract
      */
     public function markReceiptTaken(): void
     {
-        $this->receiptTaken = true;
+        $this->isReceiptTaken = true;
     }
 
     public function wasReceiptTaken(): bool
     {
-        return $this->receiptTaken;
+        return $this->isReceiptTaken;
     }
 
     /**
@@ -106,15 +106,15 @@ final class RequestKey implements RequestKeyContract
      */
     public function independently(string $key, Closure $work): mixed
     {
-        $before = [$this->key, $this->depth, $this->receiptTaken];
+        $before = [$this->key, $this->depth, $this->isReceiptTaken];
         $this->set($key);
         $this->depth = 0;
-        $this->receiptTaken = false;
+        $this->isReceiptTaken = false;
 
         try {
             return $work();
         } finally {
-            [$this->key, $this->depth, $this->receiptTaken] = $before;
+            [$this->key, $this->depth, $this->isReceiptTaken] = $before;
         }
     }
 

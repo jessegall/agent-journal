@@ -26,7 +26,7 @@ final readonly class AgentOption
         public string $name,
         public string $profileKey,
         public AssigneeIdentity $assignee,
-        public bool $retired,
+        public bool $isRetired,
         public AgentPresence $presence,
         public string|null $sessionId,
         public int $sessionGeneration,

@@ -14,7 +14,7 @@ final readonly class SkillRevisionResult
         public string $skillId,
         public int $number,
         public int $revision,
-        public bool $publicationPending,
+        public bool $isPublicationPending,
         public string $requestId,
     ) {}
 }

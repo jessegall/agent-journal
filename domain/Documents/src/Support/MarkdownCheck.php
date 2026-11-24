@@ -63,7 +63,7 @@ final class MarkdownCheck
             if (self::hasTableCells($line, $next, $columns)) {
                 $cells = count(self::cells($line));
 
-                if (! self::validTableLine($cells, $next, $columns)) {
+                if (! self::isValidTableLine($cells, $next, $columns)) {
                     $problems[] = $index + 1;
                 }
 
@@ -96,7 +96,7 @@ final class MarkdownCheck
             && ($columns > 0 || str_starts_with(ltrim($line), '|') || self::isTableSeparator($next));
     }
 
-    private static function validTableLine(int $cells, string $next, int $columns): bool
+    private static function isValidTableLine(int $cells, string $next, int $columns): bool
     {
         return $columns === 0 ? self::isTableSeparator($next) : $cells === $columns;
     }

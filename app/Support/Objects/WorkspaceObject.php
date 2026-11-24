@@ -14,13 +14,13 @@ use App\Values\WorkspaceFacts;
 final class WorkspaceObject
 {
     #[ScriptMember(read: 'workspace.status')]
-    public bool $available { get => $this->facts()->isAvailable; }
+    public bool $isAvailable { get => $this->facts()->isAvailable; }
 
     #[ScriptMember(read: 'workspace.status')]
-    public bool $dirty { get => $this->facts()->isDirty; }
+    public bool $isDirty { get => $this->facts()->isDirty; }
 
     #[ScriptMember(read: 'workspace.status')]
-    public bool $clean { get => $this->facts()->isClean; }
+    public bool $shouldClean { get => $this->facts()->isClean; }
 
     /**
      * The checkout's generation, read by the runner to tell a repaired workspace from an unchanged one; a script

@@ -11,5 +11,5 @@ use App\Contracts\Accounts\SignInAttemptEvent;
  */
 final readonly class SignInAttemptCleanupApplied extends AccountEvent implements SignInAttemptEvent
 {
-    public function __construct(public string $driver, public string $attemptId, public bool $finished) {}
+    public function __construct(public string $driver, public string $attemptId, public bool $hasFinished) {}
 }

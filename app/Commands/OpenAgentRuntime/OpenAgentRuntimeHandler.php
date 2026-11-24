@@ -73,7 +73,7 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
             $command->model,
             $command->effort,
             $command->firstMessage,
-            $command->saveDriverType,
+            $command->shouldSaveDriverType,
         );
 
         $agent = Agent::query()->findOrFail($command->agentId);

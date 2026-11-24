@@ -28,7 +28,7 @@ final class DockCardTest extends TestCase
         $card = DockCard::named('Release review', Stack::of('root', new Title('title', 'x'), new Subtitle('state', 'y')));
 
         $this->assertSame(['title', 'state'], array_map(fn (DockPart $part) => $part->key(), $card->root->children()));
-        $this->assertFalse($card->overBudget);
+        $this->assertFalse($card->isOverBudget);
     }
 
     public function test_two_siblings_with_one_key_are_refused(): void
@@ -56,7 +56,7 @@ final class DockCardTest extends TestCase
     {
         $titles = array_map(fn (int $index) => new Title("title-{$index}", 'x'), range(1, DockCard::NODE_LIMIT));
 
-        $this->assertTrue(DockCard::named('Many', Stack::of('root', ...$titles))->overBudget);
+        $this->assertTrue(DockCard::named('Many', Stack::of('root', ...$titles))->isOverBudget);
     }
 
     public function test_console_lines_lose_their_terminal_controls(): void

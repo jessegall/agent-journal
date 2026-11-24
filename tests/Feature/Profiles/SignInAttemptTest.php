@@ -76,7 +76,7 @@ final class SignInAttemptTest extends TestCase
         $second = $this->begin('request-2');
         $repeated = $this->begin('request-1');
 
-        $this->assertFalse($first->didRejoin);
+        $this->assertFalse($first->hasRejoined);
         $this->assertSame([$first->attemptId, $first->attemptId], [$second->attemptId, $repeated->attemptId]);
         $this->assertSame(1, SignInAttempt::query()->count());
         Bus::assertDispatched(SignInDeadline::class, fn (SignInDeadline $job) => $job->attemptId === $first->attemptId);

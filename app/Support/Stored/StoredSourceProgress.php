@@ -34,10 +34,10 @@ final class StoredSourceProgress extends Data
         return self::from([
             'source' => $progress->sourceKey,
             'position' => $progress->position?->fields,
-            'exhausted' => $progress->exhausted,
+            'exhausted' => $progress->isExhausted,
             'buffer' => $progress->buffer,
             'stalls' => $progress->stalls,
-            'failed' => $progress->failed,
+            'failed' => $progress->hasFailed,
         ]);
     }
 

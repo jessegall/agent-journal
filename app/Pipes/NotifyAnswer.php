@@ -15,7 +15,7 @@ final readonly class NotifyAnswer implements Pipe
 {
     public function handle(CallAnswer $answer): CommandReport
     {
-        $flags = JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | ($answer->oneLine ? 0 : JSON_PRETTY_PRINT);
+        $flags = JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | ($answer->isOneLine ? 0 : JSON_PRETTY_PRINT);
 
         return CommandReport::ending(0)->line((string) json_encode($answer->answer->toArray(), $flags));
     }

@@ -33,7 +33,7 @@ final class StoredExecutionPolicy extends Data
             'worktree' => $execution->worktree,
             'budgets' => StoredExecutionBudgets::fromExecutionBudgets($execution->budgets),
             'network' => $execution->networkCapabilities,
-            'attachable' => $execution->attachable,
+            'attachable' => $execution->isAttachable,
         ]);
     }
 

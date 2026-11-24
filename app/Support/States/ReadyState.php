@@ -161,7 +161,7 @@ class ReadyState extends AgentState
         foreach ($operations as $operation) {
             $decision = $this->policy->assess($operation);
 
-            if (! $decision->allowed) {
+            if (! $decision->isAllowed) {
                 return Decision::deny(AgentText::of('core.access.refused', ['reason' => $decision->reason]));
             }
         }

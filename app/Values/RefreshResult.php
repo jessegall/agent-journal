@@ -12,8 +12,8 @@ final readonly class RefreshResult
 {
     public function __construct(
         public string $generationId,
-        public bool $reused,
-        public bool $failed,
+        public bool $isReused,
+        public bool $hasFailed,
         public string $reason,
         public int $publications,
     ) {}

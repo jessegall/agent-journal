@@ -31,7 +31,7 @@ final readonly class SettingsDomainAvailability implements DomainAvailability
      */
     public function isEnabled(string $owner): bool
     {
-        return $this->status($owner)->available;
+        return $this->status($owner)->isAvailable;
     }
 
     /**
@@ -64,7 +64,7 @@ final readonly class SettingsDomainAvailability implements DomainAvailability
         foreach ($domain->requires as $requiredClass) {
             $required = $this->statusIn($snapshot, $this->domains->get(DomainEntry::nameOf($requiredClass)));
 
-            if (! $required->available) {
+            if (! $required->isAvailable) {
                 $unavailable[] = $required->owner;
             }
         }

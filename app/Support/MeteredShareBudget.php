@@ -31,7 +31,7 @@ final class MeteredShareBudget implements ShareBudget
 
     private int $links = 0;
 
-    private bool $running = false;
+    private bool $isRunning = false;
 
     private function __construct(
         public readonly int $mostQueries,
@@ -96,16 +96,16 @@ final class MeteredShareBudget implements ShareBudget
      */
     public function run(callable $work): mixed
     {
-        if ($this->running) {
+        if ($this->isRunning) {
             return $work();
         }
 
-        $this->running = true;
+        $this->isRunning = true;
 
         try {
             $measurement = $this->meter->measure('share budget', $work);
         } finally {
-            $this->running = false;
+            $this->isRunning = false;
         }
 
         $this->queries += $measurement->counts->queriesRun;

@@ -18,7 +18,7 @@ final readonly class OwnerStartReceipt
     public function __construct(
         public string $launchReference,
         public SelectedDriver $selection,
-        public bool $newSession,
+        public bool $isNewSession,
         public ConversationModeType $conversationMode,
         public ExecutionModeType $executionMode,
         public string|null $configurationHash,
@@ -36,7 +36,7 @@ final readonly class OwnerStartReceipt
         return new self(
             $receipt->requestId,
             $receipt->selection,
-            $receipt->newSession,
+            $receipt->isNewSession,
             $receipt->conversationMode,
             $executionMode,
             $configurationHash,

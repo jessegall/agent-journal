@@ -17,7 +17,7 @@ final readonly class ElapsedTime
 
     private function __construct(
         public int $nanoseconds,
-        public bool $approximate,
+        public bool $isApproximate,
     ) {}
 
     /**
@@ -56,7 +56,7 @@ final readonly class ElapsedTime
 
     public function isApproximate(): bool
     {
-        return $this->approximate;
+        return $this->isApproximate;
     }
 
     /**
@@ -64,6 +64,6 @@ final readonly class ElapsedTime
      */
     public function plus(self $other): self
     {
-        return new self($this->nanoseconds + $other->nanoseconds, $this->approximate || $other->approximate);
+        return new self($this->nanoseconds + $other->nanoseconds, $this->isApproximate || $other->isApproximate);
     }
 }

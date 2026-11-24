@@ -26,7 +26,7 @@ final readonly class RecordRuntimeCommand extends Command implements AgentStackC
         public string $agentId,
         public string $sessionId,
         public string $idempotencyKey,
-        public bool $stop,
+        public bool $shouldStop,
     ) {}
 
     public function target(): StackTarget
@@ -36,6 +36,6 @@ final readonly class RecordRuntimeCommand extends Command implements AgentStackC
 
     public function operation(): DriverOperation
     {
-        return $this->stop ? DriverOperation::StopRecording : DriverOperation::StartRecording;
+        return $this->shouldStop ? DriverOperation::StopRecording : DriverOperation::StartRecording;
     }
 }

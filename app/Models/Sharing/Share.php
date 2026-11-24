@@ -282,7 +282,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     /**
      * Whether any live, unexpired share is served by the configuration.
      */
-    public static function anyLiveOn(string $configurationId): bool
+    public static function hasAnyLiveOn(string $configurationId): bool
     {
         return self::query()->liveNow()->servedBy($configurationId)->exists();
     }

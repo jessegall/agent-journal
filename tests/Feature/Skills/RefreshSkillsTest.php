@@ -65,9 +65,9 @@ final class RefreshSkillsTest extends TestCase
         $first = $this->refresh();
         $second = $this->refresh();
 
-        $this->assertFalse($first->reused);
+        $this->assertFalse($first->isReused);
         $this->assertSame(1, $first->publications);
-        $this->assertTrue($second->reused);
+        $this->assertTrue($second->isReused);
         $this->assertSame(0, $second->publications);
         $this->assertSame(1, SkillGeneration::query()->count());
         $this->assertSame(1, SkillPublication::query()->count());
@@ -85,7 +85,7 @@ final class RefreshSkillsTest extends TestCase
 
         $failed = $this->refresh();
 
-        $this->assertTrue($failed->failed);
+        $this->assertTrue($failed->hasFailed);
         $this->assertStringContainsString(self::INVALID_SKILL, $failed->reason);
         $this->assertSame(
             GenerationState::Failed,

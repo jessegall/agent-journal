@@ -78,7 +78,7 @@ final readonly class TickDelivery
                 // Once a tick's commands ran, any stack may have changed, so every later candidate is read again.
                 $current = $anyTicked ? $this->candidates->refresh($candidate) : new Some($candidate);
 
-                if ($this->budgetSpent($passStartNanoseconds)) {
+                if ($this->isBudgetSpent($passStartNanoseconds)) {
                     $this->candidates->startNextPassAt($current->getOrElse($candidate));
                     $this->log->info('Engine pass deferred ticks', ['frame' => $candidate->frameId]);
 
@@ -219,7 +219,7 @@ final readonly class TickDelivery
         }
     }
 
-    private function budgetSpent(int $passStartNanoseconds): bool
+    private function isBudgetSpent(int $passStartNanoseconds): bool
     {
         return $this->clock
             ->nanoseconds() - $passStartNanoseconds >= $this

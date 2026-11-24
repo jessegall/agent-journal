@@ -26,13 +26,13 @@ final class AwaitingAnswerState extends AgentState implements TickableState
 
     public const int REMIND_AFTER_SECONDS = 60;
 
-    private bool $settled = false;
+    private bool $isSettled = false;
 
     public function __construct(private readonly string $questionId) {}
 
     public function isFinished(): bool
     {
-        return $this->settled;
+        return $this->isSettled;
     }
 
     public function onTick(TickContext $tick): TickCommands
@@ -49,7 +49,7 @@ final class AwaitingAnswerState extends AgentState implements TickableState
     public function onQuestionAnswered(QuestionAnswered $event): void
     {
         if ($event->questionId === $this->questionId) {
-            $this->settled = true;
+            $this->isSettled = true;
         }
     }
 }

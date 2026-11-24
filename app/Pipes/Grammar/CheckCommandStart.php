@@ -24,7 +24,7 @@ final readonly class CheckCommandStart implements Pipe
         $cursor = $toParse->cursor();
         $toParse->draft()->assertWithinBudget($cursor->position());
 
-        if ($cursor->atEnd()) {
+        if ($cursor->isAtEnd()) {
             throw ShellGrammarStopped::invalid(AgentText::of('core.shell.command_missing_at_end'), $cursor->position());
         }
 
@@ -41,6 +41,6 @@ final readonly class CheckCommandStart implements Pipe
     private function timesCompound(TokenCursor $cursor): bool
     {
         return $cursor->currentLiteral() === 'time'
-            && ($cursor->peekIs(1, TokenType::OpenParen) || $cursor->peekIs(1, TokenType::OpenBrace));
+            && ($cursor->isNext(1, TokenType::OpenParen) || $cursor->isNext(1, TokenType::OpenBrace));
     }
 }

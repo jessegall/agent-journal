@@ -19,7 +19,7 @@ interface ToolDiscovery
     /**
      * Whether the session discovered its tools after its start generation began.
      */
-    public function discoveredSince(string $sessionId, CarbonImmutable $generationStartedAt): bool;
+    public function isDiscoveredSince(string $sessionId, CarbonImmutable $generationStartedAt): bool;
 
     /**
      * Whether the session may be given work: its tools were discovered after its runtime's current process generation

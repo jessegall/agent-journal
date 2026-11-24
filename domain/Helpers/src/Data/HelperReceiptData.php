@@ -55,7 +55,7 @@ final class HelperReceiptData extends Data
             'state' => $receipt->state->value,
             'conversationMode' => $launch->conversationMode->value,
             'conversationReason' => $launch->conversationReason,
-            'independent' => $launch->independent,
+            'independent' => $launch->isIndependent,
             'launchReference' => $start->launchReference,
             'driver' => $selection->driver,
             'requestedModelType' => $requested->type->value,
@@ -63,7 +63,7 @@ final class HelperReceiptData extends Data
             'resolvedModel' => $selection->model,
             'actualModel' => $start->actualModel,
             'executionMode' => $start->executionMode->value,
-            'newSession' => $start->newSession,
+            'newSession' => $start->isNewSession,
         ]);
     }
 }

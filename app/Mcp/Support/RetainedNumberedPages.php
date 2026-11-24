@@ -76,7 +76,7 @@ final readonly class RetainedNumberedPages implements NumberedPages
         $cards = $retainedCards->records;
         $count = count($cards);
 
-        while ($count > 1 && ! $this->budget->payloadFits(
+        while ($count > 1 && ! $this->budget->doesPayloadFit(
             $this->payload($page, array_slice($cards, 0, $count), $retainedCards->unavailableCount),
         )) {
             $count--;

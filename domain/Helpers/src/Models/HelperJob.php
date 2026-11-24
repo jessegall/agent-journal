@@ -111,7 +111,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
         $job->payload_digest = $launch->payloadDigest;
         $job->profile_revision = $launch->profileRevision;
         $job->identity_new = $launch->isNewIdentity;
-        $job->independent = $launch->independent;
+        $job->independent = $launch->isIndependent;
         $job->conversation_mode = $launch->conversationMode;
         $job->conversation_reason = $launch->conversationReason;
         $job->state = JobState::Accepted;

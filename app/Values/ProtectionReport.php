@@ -128,6 +128,6 @@ final readonly class ProtectionReport
      */
     private function unenforced(): array
     {
-        return array_values(array_filter($this->items, fn (ProtectedItem $item): bool => ! $item->enforced));
+        return array_values(array_filter($this->items, fn (ProtectedItem $item): bool => ! $item->isEnforced));
     }
 }

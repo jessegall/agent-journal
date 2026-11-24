@@ -17,6 +17,6 @@ final readonly class DriverSwitchTarget
         public DriverType $driverType,
         public ChosenAccount $account,
         public string|null $conversationId,
-        public bool $saveDriverType,
+        public bool $shouldSaveDriverType,
     ) {}
 }

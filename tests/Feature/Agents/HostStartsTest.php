@@ -330,7 +330,7 @@ final class HostStartsTest extends TestCase
             'claude',
             $driverType,
             'claude-opus-5-5',
-            saveDriverType: $saveDriverType,
+            shouldSaveDriverType: $saveDriverType,
         );
 
         return [$host, $this->app->make(CommandBus::class)->run($command)];

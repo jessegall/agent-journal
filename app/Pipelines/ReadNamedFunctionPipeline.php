@@ -27,8 +27,8 @@ final readonly class ReadNamedFunctionPipeline implements CommandReader, Pipelin
     public static function reads(TokenCursor $cursor): bool
     {
         return $cursor->is(TokenType::Word)
-            && $cursor->peekIs(1, TokenType::OpenParen)
-            && $cursor->peekIs(2, TokenType::CloseParen);
+            && $cursor->isNext(1, TokenType::OpenParen)
+            && $cursor->isNext(2, TokenType::CloseParen);
     }
 
     public function pipes(): array

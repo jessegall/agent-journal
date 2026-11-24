@@ -27,7 +27,7 @@ final class AgentStatusRules
 {
     public static function of(AgentEvidence $evidence, StartRemedyWords $words): AgentStatus
     {
-        if ($evidence->retired) {
+        if ($evidence->isRetired) {
             return new AgentStatus(
                 SessionState::Retired,
                 SessionState::Retired->label(),
@@ -303,7 +303,7 @@ final class AgentStatusRules
 
         $actions = [StatusAction::of(StatusActionType::Start)];
 
-        if ($evidence->resumable) {
+        if ($evidence->isResumable) {
             $actions[] = StatusAction::of(StatusActionType::Resume);
         }
 

@@ -97,7 +97,7 @@ final readonly class AssignmentTurns implements AutoAssignmentTrigger
 
     private function mayTakeTurn(AutoAssignmentFact $fact, StopTime $stop): bool
     {
-        if (! $fact->enabled || $stop->remainingMilliseconds() <= 0 || ! $this->availability->domainsEnabled($fact)) {
+        if (! $fact->isEnabled || $stop->remainingMilliseconds() <= 0 || ! $this->availability->domainsEnabled($fact)) {
             return false;
         }
 

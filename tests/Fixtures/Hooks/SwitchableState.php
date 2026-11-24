@@ -14,12 +14,12 @@ final class SwitchableState extends AgentState implements ConditionalState
 {
     public int $askedCount = 0;
 
-    public function __construct(private readonly bool $enabled) {}
+    public function __construct(private readonly bool $isEnabled) {}
 
     public function isEnabled(): bool
     {
         $this->askedCount++;
 
-        return $this->enabled;
+        return $this->isEnabled;
     }
 }

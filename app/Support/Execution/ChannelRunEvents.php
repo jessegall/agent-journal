@@ -34,7 +34,7 @@ final class ChannelRunEvents implements RunEvents
 
     private float $lastHeartbeat = 0.0;
 
-    private bool $waitingToSend = false;
+    private bool $isWaitingToSend = false;
 
     /**
      * @var array<string, int>
@@ -148,9 +148,9 @@ final class ChannelRunEvents implements RunEvents
     {
         try {
             $this->sendSpooled();
-            $this->waitingToSend = false;
+            $this->isWaitingToSend = false;
         } catch (CallFailed $failure) {
-            $this->waitingToSend = true;
+            $this->isWaitingToSend = true;
 
             $this->logger->warning('processes.run_events_not_sent', [
                 'run_id' => $this->runId,
@@ -166,7 +166,7 @@ final class ChannelRunEvents implements RunEvents
      */
     public function isWaitingToSend(): bool
     {
-        return $this->waitingToSend;
+        return $this->isWaitingToSend;
     }
 
     /**

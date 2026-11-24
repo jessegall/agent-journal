@@ -18,7 +18,7 @@ final readonly class ChatEventPage
      */
     public function __construct(
         public string $inboxId,
-        public bool $accessEnded,
+        public bool $hasAccessEnded,
         public array $events,
         public string|null $cursor,
         public int $watermark,

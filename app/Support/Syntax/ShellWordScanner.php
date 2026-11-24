@@ -27,7 +27,7 @@ final readonly class ShellWordScanner
 
         if (substr($cursor->source, $start, 3) === '[[ '
             && $cursor->dialect !== ShellDialect::Sh
-            && $cursor->atCommandStart()) {
+            && $cursor->isAtCommandStart()) {
             $this->readConditionalExpression($cursor, $start);
 
             return;

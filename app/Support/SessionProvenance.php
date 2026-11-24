@@ -84,7 +84,7 @@ final readonly class SessionProvenance implements SessionProvenanceContract
         return $parent === null ? null : ActorContext::forAgent($parent->agent_id);
     }
 
-    public function parentHasGrant(Model $record, Operation $operation): bool
+    public function doesParentHaveGrant(Model $record, Operation $operation): bool
     {
         if (! $this->session->hasSession()) {
             return false;
@@ -99,7 +99,7 @@ final readonly class SessionProvenance implements SessionProvenanceContract
 
         $access = $this->policies->policyFor($current)->access;
 
-        return $access->decide($operation)->allowed && array_any(
+        return $access->decide($operation)->isAllowed && array_any(
             $access->operationGrants,
             fn (OperationGrant $grant): bool => $grant->resources !== [] && $grant->covers($operation),
         );

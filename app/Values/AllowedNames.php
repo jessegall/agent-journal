@@ -13,7 +13,7 @@ final readonly class AllowedNames
      * @param  list<string>  $names
      */
     private function __construct(
-        public bool $restricted,
+        public bool $isRestricted,
         public array $names,
     ) {}
 
@@ -32,12 +32,12 @@ final readonly class AllowedNames
 
     public function admits(string $name): bool
     {
-        return ! $this->restricted || in_array($name, $this->names, true);
+        return ! $this->isRestricted || in_array($name, $this->names, true);
     }
 
     public function isRestricted(): bool
     {
-        return $this->restricted;
+        return $this->isRestricted;
     }
 
     /**
@@ -52,6 +52,6 @@ final readonly class AllowedNames
 
     public function hasNoneAllowed(): bool
     {
-        return $this->restricted && $this->names === [];
+        return $this->isRestricted && $this->names === [];
     }
 }

@@ -25,7 +25,7 @@ final readonly class ClaimedStart
         public string $signInMethod,
         public AccountStartRecipe $recipe,
         public string|null $conversationTarget,
-        public bool $conversationRequired,
+        public bool $isConversationRequired,
         public array $childCheckouts = [],
     ) {}
 }

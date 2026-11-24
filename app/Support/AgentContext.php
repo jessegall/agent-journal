@@ -33,7 +33,7 @@ final readonly class AgentContext implements Actor
     /**
      * Whether the session's stored beat, read when the call was authenticated, is missing or older than the cutoff.
      */
-    public function heartbeatOlderThan(CarbonImmutable $cutoff): bool
+    public function isHeartbeatOlderThan(CarbonImmutable $cutoff): bool
     {
         return $this->lastHeartbeatAt === null || $this->lastHeartbeatAt->lessThan($cutoff);
     }

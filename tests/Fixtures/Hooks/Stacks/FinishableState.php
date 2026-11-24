@@ -12,7 +12,7 @@ use App\Support\States\AgentState;
  */
 final class FinishableState extends AgentState
 {
-    public function __construct(private readonly string $subject, private readonly FinishedSubjects $finished) {}
+    public function __construct(private readonly string $subject, private readonly FinishedSubjects $hasFinished) {}
 
     public function frameReuse(): FrameReuse
     {
@@ -21,6 +21,6 @@ final class FinishableState extends AgentState
 
     public function isFinished(): bool
     {
-        return $this->finished->has($this->subject);
+        return $this->hasFinished->has($this->subject);
     }
 }

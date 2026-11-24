@@ -26,7 +26,7 @@ final readonly class ReadKeywordFunctionPipeline implements CommandReader, Pipel
 
     public static function reads(TokenCursor $cursor): bool
     {
-        return $cursor->currentLiteral() === 'function' && $cursor->peekIs(1, TokenType::Word);
+        return $cursor->currentLiteral() === 'function' && $cursor->isNext(1, TokenType::Word);
     }
 
     public function pipes(): array

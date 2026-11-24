@@ -32,7 +32,7 @@ final readonly class StartProfileMainCommand extends Command
         public ModelSelection $requested,
         public string|null $driverKey,
         public DriverType|null $driverType = null,
-        public bool $saveDriverType = false,
+        public bool $shouldSaveDriverType = false,
         public ChosenAccount|null $chosenAccount = null,
         public string|null $conversationId = null,
         public int|null $previewRevision = null,
@@ -54,7 +54,7 @@ final readonly class StartProfileMainCommand extends Command
             ModelSelection::fromInput('default'),
             $target->driver,
             $target->driverType,
-            $target->saveDriverType,
+            $target->shouldSaveDriverType,
             $target->account,
             $target->conversationId,
         );

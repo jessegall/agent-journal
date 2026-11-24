@@ -29,7 +29,7 @@ final readonly class RecordChanges
      */
     public function requireChangeOf(Model $record): void
     {
-        if (! $this->createdByActor($record)) {
+        if (! $this->isCreatedByActor($record)) {
             $this->authorizer->authorize(
                 DocumentAdministrationPolicy::class,
                 Document::class,
@@ -42,11 +42,11 @@ final readonly class RecordChanges
     {
         $others = [AccessType::Edit];
 
-        return $this->createdByActor($record)
+        return $this->isCreatedByActor($record)
             || $this->authorizer->filterActions(DocumentAdministrationPolicy::class, Document::class, $others) !== [];
     }
 
-    private function createdByActor(Model $record): bool
+    private function isCreatedByActor(Model $record): bool
     {
         $type = $this->reflections->of($record);
 

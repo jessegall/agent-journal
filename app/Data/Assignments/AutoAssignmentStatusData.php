@@ -32,7 +32,7 @@ final class AutoAssignmentStatusData extends Data
     public static function of(AutoAssignmentStatus $status): self
     {
         return self::from([
-            'enabled' => $status->enabled,
+            'enabled' => $status->isEnabled,
             'state' => $status->state->value,
             'stateLabel' => $status->state->label(),
             'revision' => $status->revision,

@@ -72,7 +72,7 @@ final readonly class AuthenticateAgent
      */
     private function refreshHeartbeatOf(AgentContext $context): void
     {
-        if (! $context->heartbeatOlderThan(
+        if (! $context->isHeartbeatOlderThan(
             CarbonImmutable::now()->subSeconds($this->presence->signedCallRefreshSeconds),
         )) {
             return;

@@ -18,7 +18,7 @@ final readonly class NavigationRaiseAnswer
         public string|null $requestId = null,
         public int|null $retryAfterSeconds = null,
         public LibraryEntryAnswer|null $entry = null,
-        public bool $guarded = false,
+        public bool $isGuarded = false,
     ) {}
 
     public static function opened(string $requestId): self
@@ -42,6 +42,6 @@ final readonly class NavigationRaiseAnswer
      */
     public static function entry(LibraryEntryAnswer $entry, bool $guarded): self
     {
-        return new self(NavigationRaiseOutcome::Entry, entry: $entry, guarded: $guarded);
+        return new self(NavigationRaiseOutcome::Entry, entry: $entry, isGuarded: $guarded);
     }
 }

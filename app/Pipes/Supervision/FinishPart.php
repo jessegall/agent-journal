@@ -15,7 +15,7 @@ final readonly class FinishPart implements Pipe
 {
     public function handle(DrainedPart $drained): StepOutcome
     {
-        $status = $drained->spawned->end($drained->drained);
+        $status = $drained->spawned->end($drained->isDrained);
 
         return new StepOutcome($status, $drained->spawned->queued->context, $drained->stdout);
     }

@@ -16,7 +16,7 @@ final readonly class ArrayAssignmentReader extends UnsupportedCommandReader
     public static function reads(TokenCursor $cursor): bool
     {
         return $cursor->is(TokenType::Word)
-            && $cursor->peekIs(1, TokenType::OpenParen)
+            && $cursor->isNext(1, TokenType::OpenParen)
             && $cursor->word(AgentText::of('core.shell.word_missing'))->isArrayName();
     }
 

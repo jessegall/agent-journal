@@ -31,7 +31,7 @@ final class MutableReadGrant implements ReadGrant
             return true;
         }
 
-        if ($request->discovery) {
+        if ($request->isDiscovery) {
             return $this->taskIds !== [];
         }
 

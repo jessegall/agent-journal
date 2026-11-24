@@ -25,7 +25,7 @@ final readonly class PlanCard
         public PlanType $type,
         public PlanState $state,
         public bool $canStart,
-        public bool $focused,
+        public bool $isFocused,
         public PlanProgress $progress,
         public int|null $currentPhase,
         public Option $holder,

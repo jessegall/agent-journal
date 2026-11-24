@@ -54,5 +54,5 @@ interface SessionProvenance
     /**
      * Whether the agent that started the record's session holds the grant for the operation.
      */
-    public function parentHasGrant(Model $record, Operation $operation): bool;
+    public function doesParentHaveGrant(Model $record, Operation $operation): bool;
 }

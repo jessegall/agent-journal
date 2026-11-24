@@ -131,7 +131,7 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
     /**
      * Whether any endpoint version of the configuration is opening or open, under any run.
      */
-    public static function anyRunningOf(ShareGatewayConfiguration $configuration): bool
+    public static function hasAnyRunningOf(ShareGatewayConfiguration $configuration): bool
     {
         return self::query()->ofConfiguration($configuration->id)->stillRunning()->exists();
     }

@@ -60,7 +60,7 @@ final readonly class AttachListItem implements Pipe
 
     private function endsCommand(TokenCursor $cursor): bool
     {
-        return $cursor->atEnd()
+        return $cursor->isAtEnd()
             || $cursor->is(TokenType::Newline)
             || $cursor->is(TokenType::Semicolon)
             || $cursor->is(TokenType::Comment)

@@ -38,11 +38,11 @@ final readonly class MiddlewareStep
         $middlewareReply = $this->middleware->handle($call, function (
             CommandCall $passed,
         ) use ($call, $next, $name, $record): mixed {
-            if ($record->called) {
+            if ($record->wasCalled) {
                 throw ContinuationCalledTwice::by($name);
             }
 
-            $record->called = true;
+            $record->wasCalled = true;
             $this->assertValidReplacement($call, $passed, $name);
 
             try {
@@ -54,7 +54,7 @@ final readonly class MiddlewareStep
             }
         });
 
-        if (! $record->called) {
+        if (! $record->wasCalled) {
             throw MiddlewareSkippedCommand::by($name);
         }
 

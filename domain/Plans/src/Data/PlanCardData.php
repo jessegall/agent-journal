@@ -51,7 +51,7 @@ final class PlanCardData extends Data
             'title' => $card->title,
             'type' => $card->type,
             'state' => $card->state,
-            'focused' => $card->focused,
+            'focused' => $card->isFocused,
             'finishedTasks' => $card->progress->finished,
             'cancelledTasks' => $card->progress->cancelled,
             'totalTasks' => $card->progress->total,

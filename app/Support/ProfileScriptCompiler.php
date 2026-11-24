@@ -108,7 +108,7 @@ final readonly class ProfileScriptCompiler implements ScriptCompilation
         $operation = new Operation('script', $name, $accesses, [ResourceRequest::path('.')], [], 1);
         $decision = $profile->start->decide($operation);
 
-        return $decision->allowed ? null : $this->texts->render($decision->reason);
+        return $decision->isAllowed ? null : $this->texts->render($decision->reason);
     }
 
     private function readRefusal(ProfileDefinition $profile, string $read): string|null

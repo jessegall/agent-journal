@@ -521,7 +521,7 @@ final class AgentDriverLedgerTest extends TestCase
             null,
             RequestOutcome::Refused,
             refusal: HostWakeRefusal::NotSignedIn,
-            noProcessCreated: true,
+            hasCreatedNoProcess: true,
         ));
 
         [$stopHost, $stopped] = $this->openRuntime();
@@ -716,7 +716,7 @@ final class AgentDriverLedgerTest extends TestCase
             ],
             array_map(fn ($mount) => $mount->source, $manifest->mounts),
         );
-        $this->assertTrue($manifest->mounts[0]->writable);
+        $this->assertTrue($manifest->mounts[0]->isWritable);
         $wire = json_decode(json_encode($grant->toArray(), JSON_THROW_ON_ERROR), true, 512, JSON_THROW_ON_ERROR);
         $this->assertTrue($wire['container']['attachable']);
         $this->assertSame('daemon-bind', $wire['container']['mounts'][0]['type']);
@@ -840,8 +840,8 @@ final class AgentDriverLedgerTest extends TestCase
             ProfileBase::mainAgent()->isAttachable(),
         );
 
-        $this->assertTrue($execution->forDriverScreen(true)->attachable);
-        $this->assertFalse($execution->forDriverScreen(false)->attachable);
+        $this->assertTrue($execution->forDriverScreen(true)->isAttachable);
+        $this->assertFalse($execution->forDriverScreen(false)->isAttachable);
     }
 
     public function test_helpers_are_never_attachable(): void
@@ -1349,7 +1349,7 @@ final class AgentDriverLedgerTest extends TestCase
             null,
             RequestOutcome::EntryUnavailable,
             refusal: HostWakeRefusal::ContainerUnavailable,
-            noProcessCreated: true,
+            hasCreatedNoProcess: true,
         ));
         $request->refresh();
 
@@ -2000,7 +2000,7 @@ final class AgentDriverLedgerTest extends TestCase
             null,
             RequestOutcome::EntryUnavailable,
             refusal: HostWakeRefusal::ContainerUnavailable,
-            noProcessCreated: true,
+            hasCreatedNoProcess: true,
         ));
     }
 }

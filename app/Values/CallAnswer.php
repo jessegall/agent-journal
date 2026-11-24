@@ -11,5 +11,5 @@ use Spatie\LaravelData\Data;
  */
 final readonly class CallAnswer
 {
-    public function __construct(public Data $answer, public bool $oneLine) {}
+    public function __construct(public Data $answer, public bool $isOneLine) {}
 }

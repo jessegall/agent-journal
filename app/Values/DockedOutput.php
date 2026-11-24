@@ -31,7 +31,7 @@ final readonly class DockedOutput implements Dockable
         public OutputStream $stream,
         private int $attempt,
         private array $lines,
-        private bool $truncated,
+        private bool $isTruncated,
     ) {}
 
     public static function keyOf(string $runId, int $part, OutputStream $stream): string
@@ -60,7 +60,7 @@ final readonly class DockedOutput implements Dockable
         return DockCard::named($label, Stack::of(
             'root',
             new Title('title', $label),
-            new ConsoleOutput('output', $this->stream->consoleStream(), $this->lines, $this->truncated),
+            new ConsoleOutput('output', $this->stream->consoleStream(), $this->lines, $this->isTruncated),
         ));
     }
 }

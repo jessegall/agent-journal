@@ -51,12 +51,12 @@ final class AdvisoryEngineLockTest extends TestCase
         $lock->acquire();
 
         $this->assertTrue($lock->isHeld());
-        $this->assertFalse($this->rivalTakesTheLock());
+        $this->assertFalse($this->doesRivalTakeTheLock());
 
         $lock->release();
 
         $this->assertFalse($lock->isHeld());
-        $this->assertTrue($this->rivalTakesTheLock());
+        $this->assertTrue($this->doesRivalTakeTheLock());
     }
 
     public function test_a_terminated_engine_session_loses_the_lock_and_never_reconnects(): void
@@ -69,12 +69,12 @@ final class AdvisoryEngineLockTest extends TestCase
         $this->rival()->statement('select pg_terminate_backend(?)', [$enginePid]);
 
         $this->assertFalse($lock->isHeld());
-        $this->assertTrue($this->rivalTakesTheLock());
+        $this->assertTrue($this->doesRivalTakeTheLock());
         $this->expectException(EngineConnectionLost::class);
         $engine->scalar('select 1');
     }
 
-    private function rivalTakesTheLock(): bool
+    private function doesRivalTakeTheLock(): bool
     {
         return (bool) $this->rival()->scalar(
             'select pg_try_advisory_lock(?)',

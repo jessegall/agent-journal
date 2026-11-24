@@ -93,7 +93,7 @@ final class StateMethodSelectorTest extends TestCase
             new StateReference($id, NoSubject::None),
             $state,
             CarbonImmutable::now(),
-            typeEnabled: $enabled,
+            isTypeEnabled: $enabled,
         );
     }
 }

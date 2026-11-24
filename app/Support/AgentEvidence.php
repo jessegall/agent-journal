@@ -18,7 +18,7 @@ use App\Enums\StartReadiness;
 final readonly class AgentEvidence
 {
     public function __construct(
-        public bool $retired,
+        public bool $isRetired,
         public string|null $sessionId,
         public SessionStatus|null $sessionStatus,
         public ProcessStartState|null $processStart,
@@ -27,7 +27,7 @@ final readonly class AgentEvidence
         public SwitchEvidence|null $switch,
         public DriverRequestStatus|null $request,
         public LaunchOutcome|null $launch,
-        public bool $resumable,
+        public bool $isResumable,
         public bool $canCancelLaunch,
         public bool $hasTerminal = false,
         public bool $canStop = false,

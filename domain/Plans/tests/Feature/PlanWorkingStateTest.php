@@ -129,7 +129,7 @@ final class PlanWorkingStateTest extends TestCase
         $heard = [];
 
         Event::listen(PlanProgressChanged::class, function (PlanProgressChanged $changed) use (&$heard): void {
-            $heard[] = [$changed->finished, $changed->total];
+            $heard[] = [$changed->hasFinished, $changed->total];
         });
 
         $phase = $this->app->make(PlanStructure::class)->addPhase($plan, 'Work');

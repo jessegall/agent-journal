@@ -15,5 +15,5 @@ final readonly class PendingCall
     /**
      * @param  JournalCall<Data>  $call
      */
-    public function __construct(public JournalCall $call, public bool $oneLine = false) {}
+    public function __construct(public JournalCall $call, public bool $isOneLine = false) {}
 }

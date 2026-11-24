@@ -88,7 +88,7 @@ final class SearchProgress
      */
     public function failedSourceKeys(): array
     {
-        return array_keys(array_filter($this->sources, fn (SourceProgress $source): bool => $source->failed));
+        return array_keys(array_filter($this->sources, fn (SourceProgress $source): bool => $source->hasFailed));
     }
 
     /**

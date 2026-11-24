@@ -100,7 +100,7 @@ final class AccountMaintenanceTest extends TestCase
 
         $first = $this->maintenance()->advance($this->account->id);
 
-        $this->assertSame([1, false], [$first->cancelledStarts, $first->settled]);
+        $this->assertSame([1, false], [$first->cancelledStarts, $first->isSettled]);
         $this->assertEqualsCanonicalizing([$claimed->sessionId, $pending->sessionId], $first->runningSessionIds);
         $this->assertNull($this->asSystem(new ClaimStartCommand($host->hostId, $pending->sessionId)));
         $this->assertRefusedWhileHeld($host);
@@ -108,7 +108,7 @@ final class AccountMaintenanceTest extends TestCase
         $this->asSystem(new NotifyStoppedCommand($host->hostId, (string) $key));
         $this->actAsOwner();
 
-        $this->assertTrue($this->maintenance()->advance($this->account->id)->settled);
+        $this->assertTrue($this->maintenance()->advance($this->account->id)->isSettled);
     }
 
     public function test_a_live_sign_in_writer_keeps_maintenance_from_settling(): void
@@ -125,7 +125,7 @@ final class AccountMaintenanceTest extends TestCase
 
         $progress = $this->maintenance()->advance($this->account->id);
 
-        $this->assertSame([true, false], [$progress->isCredentialWriteInProgress, $progress->settled]);
+        $this->assertSame([true, false], [$progress->isCredentialWriteInProgress, $progress->isSettled]);
     }
 
     public function test_a_retired_agents_unclaimed_start_never_runs(): void

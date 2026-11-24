@@ -30,12 +30,12 @@ final class MainTakeoverTest extends MessagingTestCase
         $this->takeOver($this->builder);
         $this->takeOver($this->builder);
 
-        $this->assertSame([true, false], [$this->seatedAtMain($this->builder), $this->seatedAtMain($this->reviewer)]);
+        $this->assertSame([true, false], [$this->isSeatedAtMain($this->builder), $this->isSeatedAtMain($this->reviewer)]);
         $this->assertTrue($this->agentOf($this->builder)->isCurrentRuntime($this->builder));
 
         $this->takeOver($this->reviewer);
 
-        $this->assertSame([false, true], [$this->seatedAtMain($this->builder), $this->seatedAtMain($this->reviewer)]);
+        $this->assertSame([false, true], [$this->isSeatedAtMain($this->builder), $this->isSeatedAtMain($this->reviewer)]);
         $this->assertFalse($this->agentOf($this->builder)->isCurrentRuntime($this->builder));
         $this->assertTrue($this->agentOf($this->builder)->currentRuntime()->isEmpty());
         $this->assertTrue($this->agentOf($this->reviewer)->isCurrentRuntime($this->reviewer));
@@ -48,7 +48,7 @@ final class MainTakeoverTest extends MessagingTestCase
         );
     }
 
-    private function seatedAtMain(AgentSession $session): bool
+    private function isSeatedAtMain(AgentSession $session): bool
     {
         $mainInboxId = DeskRecord::query()->named(BuiltInDesks::MAIN)->sole()->inboxId();
         $seated = $this->app->make(RegisteredInboxes::class)->inboxIdsOf($this->actorOf($session));

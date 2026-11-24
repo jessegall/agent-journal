@@ -212,7 +212,7 @@ final readonly class StateEventDelivery
             'dispatch' => $dispatch->id,
             'event' => $dispatch->event::class,
             'stage' => $stage->value,
-            'after_commit' => $dispatch->afterCommit,
+            'after_commit' => $dispatch->isAfterCommit,
             'failure' => $failure::class,
         ]);
 
@@ -220,7 +220,7 @@ final readonly class StateEventDelivery
             return;
         }
 
-        if ($dispatch->afterCommit) {
+        if ($dispatch->isAfterCommit) {
             throw StateEventAfterCommitFailed::during($dispatch->event::class, $stage, $failure);
         }
 

@@ -148,7 +148,7 @@ final class AnsweringMessageState extends AgentState
      */
     public function onMessageOffered(MessageOffered $event): void
     {
-        if ($this->agentBelongsToChat($event->inboxId, $event->answerer())) {
+        if ($this->doesAgentBelongToChat($event->inboxId, $event->answerer())) {
             $this->addMessage($event->messageId);
         }
     }
@@ -158,7 +158,7 @@ final class AnsweringMessageState extends AgentState
      */
     public function onChatAnswer(ChatAnswer $event): void
     {
-        if ($this->agentBelongsToChat($event->inboxId, $event->answerer())) {
+        if ($this->doesAgentBelongToChat($event->inboxId, $event->answerer())) {
             $this->clear();
         }
     }
@@ -192,7 +192,7 @@ final class AnsweringMessageState extends AgentState
     /**
      * Whether it happened in this state's chat and was done by this state's agent.
      */
-    private function agentBelongsToChat(string $inboxId, ActorIdentity $actor): bool
+    private function doesAgentBelongToChat(string $inboxId, ActorIdentity $actor): bool
     {
         return $inboxId === $this->inboxId && $actor->isAgent() && $actor->id === $this->agentId;
     }

@@ -21,7 +21,7 @@ final readonly class ResolveDriverDeliveryHandler implements CommandHandler
             throw DriverRequestRefused::notResolvable($request->id);
         }
 
-        if ($command->applied) {
+        if ($command->isApplied) {
             $request->resolveAsApplied();
 
             return $this->recovery->record($request, RecoveryAction::ResolvedApplied, $command->reason);

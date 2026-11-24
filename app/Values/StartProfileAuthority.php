@@ -22,7 +22,7 @@ final readonly class StartProfileAuthority implements AuthoritySource
      */
     public function admits(string $command, Authorize $authorize): bool
     {
-        return $this->profile->admits($command, $authorize)->allowed;
+        return $this->profile->admits($command, $authorize)->isAllowed;
     }
 
     public function description(): string

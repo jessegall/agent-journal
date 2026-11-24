@@ -24,6 +24,6 @@ final readonly class ReadShareCommand extends Command
         public string $permitReference,
         public string $path,
         public string|null $cursor,
-        public bool $head,
+        public bool $isHead,
     ) {}
 }

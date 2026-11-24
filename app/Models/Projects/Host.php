@@ -207,11 +207,11 @@ final class Host extends Model implements EventSource, ReadableModel
      */
     public function advertiseBrowserInput(BrowserInputCapabilities $capabilities): void
     {
-        $this->browser_input = $capabilities->text;
+        $this->browser_input = $capabilities->isText;
         $this->browser_keys = $capabilities->keys;
-        $this->browser_paste = $capabilities->paste;
-        $this->browser_resize = $capabilities->resize;
-        $this->browser_private = $capabilities->privateEntry;
+        $this->browser_paste = $capabilities->shouldPaste;
+        $this->browser_resize = $capabilities->shouldResize;
+        $this->browser_private = $capabilities->isPrivateEntry;
 
         if (! $this->isDirty(['browser_input', 'browser_keys', 'browser_paste', 'browser_resize', 'browser_private'])) {
             return;

@@ -59,7 +59,7 @@ final class TaskSearchAccessTest extends TestCase
         $read = $access->agentRead();
 
         $this->assertSame(TaskReadResult::TOOL, $read->name);
-        $this->assertTrue($read->discovery);
+        $this->assertTrue($read->isDiscovery);
         $this->assertNull($read->target);
     }
 

@@ -19,7 +19,7 @@ final class AttributeOccurrence
 
     private object $instance;
 
-    private bool $building = false;
+    private bool $isBuilding = false;
 
     /**
      * @param  string  $name  the attribute's class name as the declaration wrote it
@@ -59,16 +59,16 @@ final class AttributeOccurrence
             return $this->instance;
         }
 
-        if ($this->building) {
+        if ($this->isBuilding) {
             throw AttributeBuiltRecursively::on($this->declaration, $this->name());
         }
 
-        $this->building = true;
+        $this->isBuilding = true;
 
         try {
             return $this->instance = ($this->build)();
         } finally {
-            $this->building = false;
+            $this->isBuilding = false;
         }
     }
 

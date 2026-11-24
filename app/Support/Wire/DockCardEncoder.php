@@ -21,7 +21,7 @@ final readonly class DockCardEncoder implements CardEncoder
     {
         $root = $this->node($card->root);
 
-        if ($card->overBudget || strlen((string) json_encode($root)) > DockCard::BYTE_LIMIT) {
+        if ($card->isOverBudget || strlen((string) json_encode($root)) > DockCard::BYTE_LIMIT) {
             return new EncodedCard($placementId, $source, $card->accessibleName, $safeSummary, null, null);
         }
 

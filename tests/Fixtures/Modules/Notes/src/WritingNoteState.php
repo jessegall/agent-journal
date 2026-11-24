@@ -34,7 +34,7 @@ final class WritingNoteState extends AgentState
      */
     public function onNoteWritten(NoteWritten $event): iterable
     {
-        if ($event->listenerFails) {
+        if ($event->doesListenerFail) {
             throw NoteWorkFailed::whileListening();
         }
 

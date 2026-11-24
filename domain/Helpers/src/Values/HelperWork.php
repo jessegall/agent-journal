@@ -22,7 +22,7 @@ final readonly class HelperWork
         public string|null $purposeText,
         public string $brief,
         public array $sourceSubjects,
-        public bool $independent,
+        public bool $isIndependent,
     ) {}
 
     /**
@@ -63,7 +63,7 @@ final readonly class HelperWork
             $this->purposeText,
             $this->brief,
             $this->sourceSubjects,
-            $this->independent,
+            $this->isIndependent,
         ];
     }
 }

@@ -75,7 +75,7 @@ final readonly class AgentLaunchCandidates implements LaunchCandidates
 
     private function rankOf(LaunchCandidateFacts $helper, bool $lastOnExactModel): LaunchCandidateRank
     {
-        if (! $helper->didThisPurpose) {
+        if (! $helper->hasDoneThisPurpose) {
             return LaunchCandidateRank::OtherPurpose;
         }
 

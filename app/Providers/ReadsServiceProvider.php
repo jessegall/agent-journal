@@ -143,7 +143,7 @@ final class ReadsServiceProvider extends ServiceProvider
                 Connection $on,
             ) => ScopedReadMeter::ofCurrentScope()->recordQuery(
                 (string) $on->getName(),
-                ! self::onlyReads($query),
+                ! self::doesOnlyRead($query),
                 $query,
             ),
         );
@@ -152,7 +152,7 @@ final class ReadsServiceProvider extends ServiceProvider
     /**
      * A statement that only reads: a select, or a with that ends in one.
      */
-    private static function onlyReads(string $query): bool
+    private static function doesOnlyRead(string $query): bool
     {
         return preg_match(
             '/^\\s*(select|with|show|explain)\\b/i',

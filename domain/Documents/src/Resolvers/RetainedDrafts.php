@@ -57,7 +57,7 @@ final readonly class RetainedDrafts implements DraftReader
             1,
         );
 
-        if (! $this->provenance->parentHasGrant($draft, $operation)) {
+        if (! $this->provenance->doesParentHaveGrant($draft, $operation)) {
             throw DraftMissing::unavailable();
         }
 

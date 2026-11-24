@@ -94,7 +94,7 @@ final readonly class DatabaseSettingsCatalogue implements SettingsCatalogue
         ) : GroupAvailability::Always;
 
         $availability = $group instanceof ToggleGroup
-            ? ToggleGroupAvailabilityData::from(['state' => $state, 'defaultEnabled' => $group->defaultEnabled])
+            ? ToggleGroupAvailabilityData::from(['state' => $state, 'defaultEnabled' => $group->isDefaultEnabled])
             : PlainGroupAvailabilityData::from([]);
 
         return SettingGroupData::from([
@@ -117,7 +117,7 @@ final readonly class DatabaseSettingsCatalogue implements SettingsCatalogue
         try {
             $enabled = $document->toggle($group->key)
                 ->map(fn (EncodedToggle $toggle) => $this->codec->decodeToggle($owner, $group, $toggle->encodedToggle))
-                ->getOrElse($group->defaultEnabled);
+                ->getOrElse($group->isDefaultEnabled);
         } catch (SettingStorageInvalid) {
             return GroupAvailability::Invalid;
         }
@@ -144,7 +144,7 @@ final readonly class DatabaseSettingsCatalogue implements SettingsCatalogue
                 GroupAvailability::Invalid => SettingAvailability::GroupInvalid,
                 default => SettingAvailability::Available,
             },
-            'default' => $setting->catalogueValue($setting->defaultValue()),
+            'default' => $setting->catalogueValue($setting->isEnabledByDefault()),
             'constraints' => $setting->catalogueConstraints(),
             'configured' => $stored->map(
                 fn (EncodedSetting $entry) => $this->configured($owner, $setting, $entry),

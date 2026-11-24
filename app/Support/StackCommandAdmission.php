@@ -34,7 +34,7 @@ final readonly class StackCommandAdmission implements CommandAdmission
         if ($this->session->hasSession() && $authorize !== null) {
             $decision = $this->admissions->admitsDeclared($command->command::class, $authorize);
 
-            if (! $decision->allowed) {
+            if (! $decision->isAllowed) {
                 return CommandDecision::refuse(RefusalCode::Forbidden, $this->texts->render($decision->reason));
             }
         }

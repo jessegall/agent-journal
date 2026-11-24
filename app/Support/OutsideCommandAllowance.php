@@ -11,20 +11,20 @@ namespace App\Support;
  */
 final class OutsideCommandAllowance
 {
-    private bool $allowed = false;
+    private bool $isAllowed = false;
 
     public function allow(): void
     {
-        $this->allowed = true;
+        $this->isAllowed = true;
     }
 
     public function forbid(): void
     {
-        $this->allowed = false;
+        $this->isAllowed = false;
     }
 
     public function isAllowed(): bool
     {
-        return $this->allowed;
+        return $this->isAllowed;
     }
 }

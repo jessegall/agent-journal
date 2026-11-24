@@ -11,7 +11,7 @@ final readonly class MessageReadResult
 {
     public function __construct(
         public string $messageId,
-        public bool $firstRead,
-        public bool $claimed,
+        public bool $isFirstRead,
+        public bool $isClaimed,
     ) {}
 }

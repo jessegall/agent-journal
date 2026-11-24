@@ -18,7 +18,7 @@ final readonly class StopResultLine
         public int|null $durationMilliseconds,
         public int|null $exitCode,
         public string|null $signal,
-        public bool $truncated,
+        public bool $isTruncated,
         public string $guidance,
     ) {}
 }

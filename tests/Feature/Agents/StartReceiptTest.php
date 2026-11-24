@@ -162,8 +162,8 @@ final class StartReceiptTest extends TestCase
                 $record->disposition,
                 $record->session_id,
                 $replayed->sessionId,
-                $resumed->newSession,
-                $replayed->newSession,
+                $resumed->isNewSession,
+                $replayed->isNewSession,
             ],
         );
         $this->assertSame(1, CapacityReservation::query()->where('start_request_id', $request->requestId)->count());

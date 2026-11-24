@@ -25,7 +25,7 @@ final class NavigationItem
      * @param  string|null  $group  the full key of a root item's sidebar group, such as web.agents, or null for none
      * @param  class-string<VisibilityCheck>|null  $visibility  null when everyone who sees its page sees the item
      * @param  class-string<CountResolver>|null  $count  null when the item shows no count
-     * @param  bool  $inSidebar  false for a page the command palette finds but the sidebar does not draw
+     * @param  bool  $isInSidebar  false for a page the command palette finds but the sidebar does not draw
      */
     private function __construct(
         public readonly string $key,
@@ -38,10 +38,10 @@ final class NavigationItem
         public readonly string|null $childrenResolver = null,
         public readonly int $position = 0,
         public readonly string|null $group = null,
-        public readonly bool $atBottom = false,
+        public readonly bool $isAtBottom = false,
         public readonly string|null $visibility = null,
         public readonly string|null $count = null,
-        public readonly bool $inSidebar = true,
+        public readonly bool $isInSidebar = true,
     ) {}
 
     /**

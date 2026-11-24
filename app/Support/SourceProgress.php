@@ -20,10 +20,10 @@ final class SourceProgress
     public function __construct(
         public readonly string $sourceKey,
         public SourcePosition|null $position = null,
-        public bool $exhausted = false,
+        public bool $isExhausted = false,
         public array $buffer = [],
         public int $stalls = 0,
-        public bool $failed = false,
+        public bool $hasFailed = false,
     ) {}
 
     /**
@@ -31,12 +31,12 @@ final class SourceProgress
      */
     public function awaitsRefill(): bool
     {
-        return ! $this->exhausted && $this->buffer === [];
+        return ! $this->isExhausted && $this->buffer === [];
     }
 
     public function isDone(): bool
     {
-        return $this->exhausted && $this->buffer === [];
+        return $this->isExhausted && $this->buffer === [];
     }
 
     public function head(): BufferedHit|null
@@ -62,8 +62,8 @@ final class SourceProgress
      */
     public function fail(): void
     {
-        $this->exhausted = true;
-        $this->failed = true;
+        $this->isExhausted = true;
+        $this->hasFailed = true;
         $this->buffer = [];
     }
 
@@ -99,7 +99,7 @@ final class SourceProgress
         }
 
         $this->position = $next ?? $this->position;
-        $this->exhausted = $outcome->isLastBatch();
+        $this->isExhausted = $outcome->isLastBatch();
 
         return true;
     }

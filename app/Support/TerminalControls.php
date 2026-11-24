@@ -182,7 +182,7 @@ final readonly class TerminalControls
             'sequence' => $input->sequence,
             'screen_revision' => $input->screenRevision,
             'text' => $input->text,
-            'enter' => $input->enter,
+            'enter' => $input->shouldEnter,
             'type' => $input->type->value,
             'key' => $input->key?->value,
             'rows' => $input->rows,

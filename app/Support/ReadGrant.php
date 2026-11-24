@@ -17,14 +17,14 @@ final readonly class ReadGrant implements ReadGrantContract
 
     public function allows(ReadRequest $request): bool
     {
-        return $this->admission->assess($request)->allowed;
+        return $this->admission->assess($request)->isAllowed;
     }
 
     public function assertAllowed(ReadRequest $request): void
     {
         $decision = $this->admission->assess($request);
 
-        if (! $decision->allowed) {
+        if (! $decision->isAllowed) {
             throw ReadGrantRefused::because($this->texts->render($decision->reason));
         }
     }

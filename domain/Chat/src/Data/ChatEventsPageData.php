@@ -31,7 +31,7 @@ final class ChatEventsPageData extends Data
     public static function fromChatEventPage(ChatEventPage $page): self
     {
         return new self(
-            $page->accessEnded,
+            $page->hasAccessEnded,
             array_map(fn (ChatEventView $event) => ChatEventData::from($event), $page->events),
             $page->cursor,
             $page->watermark,

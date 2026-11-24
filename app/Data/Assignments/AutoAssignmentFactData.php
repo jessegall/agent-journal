@@ -34,7 +34,7 @@ final class AutoAssignmentFactData extends Data
             'actorType' => $actor->type->value,
             'actorId' => $actor->id,
             'assignableType' => $fact->key->assignableType,
-            'enabled' => $fact->enabled,
+            'enabled' => $fact->isEnabled,
             'pool' => $fact->pool->type,
             'size' => $fact->size,
             'revision' => $fact->revision,

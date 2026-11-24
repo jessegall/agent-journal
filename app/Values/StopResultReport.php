@@ -25,7 +25,7 @@ final readonly class StopResultReport
         public string|null $signal,
         public string $summary,
         public string|null $output,
-        public bool $truncated,
+        public bool $isTruncated,
     ) {}
 
     /**
@@ -45,7 +45,7 @@ final readonly class StopResultReport
             $this->signal,
             $this->summary,
             $this->output,
-            $this->truncated,
+            $this->isTruncated,
         ];
     }
 }

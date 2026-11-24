@@ -33,7 +33,7 @@ final readonly class UnparsedList
     {
         $cursor = $this->context->cursor;
 
-        return $cursor->atEnd()
+        return $cursor->isAtEnd()
             || ($this->closing !== null && $cursor->is($this->closing))
             || $cursor->is(TokenType::CloseParen)
             || $cursor->is(TokenType::CloseBrace);

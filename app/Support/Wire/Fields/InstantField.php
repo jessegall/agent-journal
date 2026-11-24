@@ -14,7 +14,7 @@ use DateTimeInterface;
  */
 final readonly class InstantField implements PartField
 {
-    private function __construct(private string $name, private bool $optional) {}
+    private function __construct(private string $name, private bool $isOptional) {}
 
     public static function named(string $name): self
     {
@@ -33,7 +33,7 @@ final readonly class InstantField implements PartField
 
     public function typeScript(): string
     {
-        return $this->optional ? 'string | null' : 'string';
+        return $this->isOptional ? 'string | null' : 'string';
     }
 
     public function encode(DockPart $part, DestinationEncoder $destinations): mixed

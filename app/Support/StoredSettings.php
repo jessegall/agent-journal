@@ -81,7 +81,7 @@ final readonly class StoredSettings
                 $group,
                 $toggle->encodedToggle,
             ))
-            ->getOrElse($group->defaultEnabled);
+            ->getOrElse($group->isDefaultEnabled);
 
         return $enabled
             ? new StoredEnabledSettingsGroup($group, $this, $this->registry)
@@ -99,7 +99,7 @@ final readonly class StoredSettings
                 $setting,
                 $stored->encodedSetting,
             ))
-            ->getOrElse($setting->default);
+            ->getOrElse($setting->isDefault);
     }
 
     /**
@@ -113,7 +113,7 @@ final readonly class StoredSettings
                 $setting,
                 $stored->encodedSetting,
             ))
-            ->getOrElse($setting->default);
+            ->getOrElse($setting->isDefault);
     }
 
     /**
@@ -127,7 +127,7 @@ final readonly class StoredSettings
                 $setting,
                 $stored->encodedSetting,
             ))
-            ->getOrElse($setting->default);
+            ->getOrElse($setting->isDefault);
     }
 
     /**
@@ -141,7 +141,7 @@ final readonly class StoredSettings
                 $setting,
                 $stored->encodedSetting,
             ))
-            ->getOrElse($setting->default);
+            ->getOrElse($setting->isDefault);
     }
 
     /**
@@ -160,7 +160,7 @@ final readonly class StoredSettings
                 $setting,
                 $stored->encodedSetting,
             ))
-            ->getOrElse($setting->default);
+            ->getOrElse($setting->isDefault);
     }
 
     /**
@@ -179,6 +179,6 @@ final readonly class StoredSettings
                 $setting,
                 $stored->encodedSetting,
             ))
-            ->getOrElse($setting->default);
+            ->getOrElse($setting->isDefault);
     }
 }

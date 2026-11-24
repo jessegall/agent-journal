@@ -13,16 +13,16 @@ final class FakeWatchdog implements Watchdog
 {
     public int $armings = 0;
 
-    public bool $armed = false;
+    public bool $isArmed = false;
 
     public function arm(int $seconds): void
     {
         $this->armings++;
-        $this->armed = true;
+        $this->isArmed = true;
     }
 
     public function disarm(): void
     {
-        $this->armed = false;
+        $this->isArmed = false;
     }
 }

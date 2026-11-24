@@ -38,7 +38,7 @@ interface Setting
     /**
      * The value the setting has while nobody changed it.
      */
-    public function defaultValue(): string|bool|int|Decimal|BackedEnum;
+    public function isEnabledByDefault(): string|bool|int|Decimal|BackedEnum;
 
     /**
      * A value of this setting as the settings catalogue shows it.

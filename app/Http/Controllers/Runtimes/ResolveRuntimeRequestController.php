@@ -19,7 +19,7 @@ final readonly class ResolveRuntimeRequestController
         return $review->run(new ResolveDriverDeliveryCommand(
             $request->requestId(),
             $request->rowVersion(),
-            $request->applied(),
+            $request->isApplied(),
             $request->reason(),
         ));
     }

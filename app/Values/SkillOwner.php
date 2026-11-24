@@ -23,7 +23,7 @@ final readonly class SkillOwner
         public string $name,
         public string $sourceRoot,
         public array $skills,
-        public bool $firstParty,
+        public bool $isFirstParty,
     ) {}
 
     /**
@@ -60,7 +60,7 @@ final readonly class SkillOwner
     {
         $allowed = match (true) {
             $key->isUserAuthored() => false,
-            $this->firstParty => true,
+            $this->isFirstParty => true,
             default => ! $key->isFirstParty() && $key->hasPrefix($this->slug()),
         };
 

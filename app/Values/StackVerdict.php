@@ -7,7 +7,7 @@ namespace App\Values;
 final readonly class StackVerdict
 {
     private function __construct(
-        public bool $allowed,
+        public bool $isAllowed,
         public AgentText|null $reason,
         public RecoveryCall|null $recovery,
     ) {}

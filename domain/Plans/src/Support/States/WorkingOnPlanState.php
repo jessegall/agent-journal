@@ -28,7 +28,7 @@ final class WorkingOnPlanState extends AgentState
 
     private int $number = 0;
 
-    private int $finished = 0;
+    private int $hasFinished = 0;
 
     private int $total = 0;
 
@@ -61,7 +61,7 @@ final class WorkingOnPlanState extends AgentState
     {
         return new Some(AgentText::of('plans.working_on', [
             'plan' => $this->number,
-            'finished' => $this->finished,
+            'finished' => $this->hasFinished,
             'total' => $this->total,
         ]));
     }
@@ -86,7 +86,7 @@ final class WorkingOnPlanState extends AgentState
     {
         if ($event->planId === $this->planId && $event->countedAtMicroseconds >= $this->countedAtMicroseconds) {
             $this->number = $event->planNumber;
-            $this->finished = $event->finished;
+            $this->hasFinished = $event->hasFinished;
             $this->total = $event->total;
             $this->countedAtMicroseconds = $event->countedAtMicroseconds;
         }

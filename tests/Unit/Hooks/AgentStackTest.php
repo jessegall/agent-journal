@@ -154,7 +154,7 @@ final class AgentStackTest extends TestCase
             $this->reference('ready'),
             new ReadyState($policy, new AllowedStops()),
             CarbonImmutable::now(),
-            bottom: true,
+            isBottom: true,
         );
         $stack = $this->stack($ready, $this->frame('guide', ScriptedState::passing()));
 
@@ -330,9 +330,9 @@ final class AgentStackTest extends TestCase
 
     public function test_a_finished_bottom_state_stays_when_the_exposed_frames_are_popped(): void
     {
-        $bottom = new ScriptedState(Decision::delegate(), finished: true);
+        $bottom = new ScriptedState(Decision::delegate(), hasFinished: true);
         $stack = $this->stack(
-            new Frame('ready', $this->reference('ready'), $bottom, CarbonImmutable::now(), bottom: true),
+            new Frame('ready', $this->reference('ready'), $bottom, CarbonImmutable::now(), isBottom: true),
         );
 
         $this->assertSame(['ready'], $stack->withoutExposedInactive()->frameIds());
@@ -574,7 +574,7 @@ final class AgentStackTest extends TestCase
             $this->reference('ready'),
             new ReadyState(new FixedOperationPolicy($changesFiles), new AllowedStops()),
             CarbonImmutable::now(),
-            bottom: true,
+            isBottom: true,
         );
     }
 

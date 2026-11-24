@@ -26,7 +26,7 @@ final readonly class SubmitSignInCodeHandler implements CommandHandler
     {
         $attempt = SignInAttempt::lockedForOwner($command->attemptId);
 
-        if ($attempt->tookAnswer($command->submissionKey)) {
+        if ($attempt->hasTakenAnswer($command->submissionKey)) {
             return;
         }
 

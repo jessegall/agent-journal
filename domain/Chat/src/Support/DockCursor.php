@@ -27,7 +27,7 @@ final readonly class DockCursor
         public string $conversation,
         public string|null $assignedAt,
         public string|null $placementId,
-        public bool $ended,
+        public bool $hasEnded,
     ) {}
 
     public static function start(string $viewer, string $conversation): self
@@ -78,7 +78,7 @@ final readonly class DockCursor
             'conversation' => $this->conversation,
             'assignedAt' => $this->assignedAt,
             'placementId' => $this->placementId,
-            'ended' => $this->ended,
+            'ended' => $this->hasEnded,
             'expires' => CarbonImmutable::now()->addMinutes(self::LIFETIME_MINUTES)->getTimestamp(),
         ])->toJson());
     }

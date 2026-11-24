@@ -23,8 +23,8 @@ final readonly class CommandCall
         public Command $command,
         public Command $original,
         public string $owner,
-        public bool $exported,
-        public bool $repeatableRead,
+        public bool $isExported,
+        public bool $isRepeatableRead,
         public ActorContext|null $actor,
         public array $authorized = [],
     ) {}
@@ -73,12 +73,12 @@ final readonly class CommandCall
 
     public function isExported(): bool
     {
-        return $this->exported;
+        return $this->isExported;
     }
 
     public function isRepeatableReadNeeded(): bool
     {
-        return $this->repeatableRead;
+        return $this->isRepeatableRead;
     }
 
     /**
@@ -125,8 +125,8 @@ final readonly class CommandCall
             $command->withDispatcher($this->actor()),
             $this->original,
             $this->owner,
-            $this->exported,
-            $this->repeatableRead,
+            $this->isExported,
+            $this->isRepeatableRead,
             $this->actor,
         );
     }
@@ -138,13 +138,13 @@ final readonly class CommandCall
     {
         $authorized = [$this->command, $subject];
 
-        $repeatableRead = $this->repeatableRead;
+        $repeatableRead = $this->isRepeatableRead;
 
         return new self(
             $this->command,
             $this->original,
             $this->owner,
-            $this->exported,
+            $this->isExported,
             $repeatableRead,
             $this->actor,
             [$authorized],

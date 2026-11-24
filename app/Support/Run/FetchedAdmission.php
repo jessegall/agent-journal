@@ -26,7 +26,7 @@ final readonly class FetchedAdmission
      */
     private function __construct(
         public string $runId,
-        public bool $alreadyStarted,
+        public bool $isAlreadyStarted,
         public ExecutionPlan|null $plan,
         public string $treeDigest,
         public string $workingFolder,
@@ -63,9 +63,9 @@ final readonly class FetchedAdmission
             : throw AdmissionAnswerUnknown::for($answer::class);
     }
 
-    public function alreadyStarted(): bool
+    public function isAlreadyStarted(): bool
     {
-        return $this->alreadyStarted;
+        return $this->isAlreadyStarted;
     }
 
     public function planMatches(): bool

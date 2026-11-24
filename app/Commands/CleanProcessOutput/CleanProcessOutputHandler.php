@@ -41,10 +41,10 @@ final readonly class CleanProcessOutputHandler implements CommandHandler
             array_values($runs->modelKeys()),
             array_values($parts->modelKeys()),
             (int) $chunks->sum('length'),
-            ! $command->preview,
+            ! $command->isPreview,
         );
 
-        if ($command->preview) {
+        if ($command->isPreview) {
             return $preview;
         }
 

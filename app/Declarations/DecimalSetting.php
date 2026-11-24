@@ -34,7 +34,7 @@ final readonly class DecimalSetting implements Setting
     private function __construct(
         public string $key,
         public string $label,
-        public Decimal $default,
+        public Decimal $isDefault,
         public int $precision,
         public int $scale,
         public Decimal|null $minimum,
@@ -127,9 +127,9 @@ final readonly class DecimalSetting implements Setting
         return $scaled;
     }
 
-    public function defaultValue(): Decimal
+    public function isEnabledByDefault(): Decimal
     {
-        return $this->default;
+        return $this->isDefault;
     }
 
     public function catalogueValue(string|bool|int|Decimal|BackedEnum $input): CatalogueValue

@@ -35,7 +35,7 @@ final readonly class AccessPolicy
 
     public function allows(Operation $operation): bool
     {
-        return $this->decide($operation)->allowed;
+        return $this->decide($operation)->isAllowed;
     }
 
     /**

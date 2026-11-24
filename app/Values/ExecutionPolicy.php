@@ -16,7 +16,7 @@ final readonly class ExecutionPolicy
     /**
      * @param  string|null  $imageReference  the verified image by digest; null exactly on the protected host
      * @param  list<string>  $networkCapabilities
-     * @param  bool  $attachable  whether a contained start's driver is its container's own terminal process
+     * @param  bool  $isAttachable  whether a contained start's driver is its container's own terminal process
      */
     private function __construct(
         public ExecutionModeType $mode,
@@ -24,7 +24,7 @@ final readonly class ExecutionPolicy
         public string $worktree,
         public ExecutionBudgets $budgets,
         public array $networkCapabilities,
-        public bool $attachable,
+        public bool $isAttachable,
     ) {}
 
     /**
@@ -63,6 +63,6 @@ final readonly class ExecutionPolicy
      */
     public function forDriverScreen(bool $hasScreen): self
     {
-        return clone ($this, ['attachable' => $this->attachable && $hasScreen]);
+        return clone ($this, ['attachable' => $this->isAttachable && $hasScreen]);
     }
 }

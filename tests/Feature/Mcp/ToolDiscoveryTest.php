@@ -63,11 +63,11 @@ final class ToolDiscoveryTest extends TestCase
         $discovery = $this->app->make(ToolDiscovery::class);
         $discoveredAt = CarbonImmutable::now()->startOfSecond();
 
-        $this->assertFalse($discovery->discoveredSince($this->start->session->id, $discoveredAt->subMinute()));
+        $this->assertFalse($discovery->isDiscoveredSince($this->start->session->id, $discoveredAt->subMinute()));
 
         $discovery->recordDiscovery($this->start->session->id, $discoveredAt);
 
-        $this->assertTrue($discovery->discoveredSince($this->start->session->id, $discoveredAt->subMinute()));
-        $this->assertFalse($discovery->discoveredSince($this->start->session->id, $discoveredAt->addMinute()));
+        $this->assertTrue($discovery->isDiscoveredSince($this->start->session->id, $discoveredAt->subMinute()));
+        $this->assertFalse($discovery->isDiscoveredSince($this->start->session->id, $discoveredAt->addMinute()));
     }
 }

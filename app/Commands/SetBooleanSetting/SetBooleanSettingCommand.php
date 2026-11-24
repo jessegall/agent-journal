@@ -21,7 +21,7 @@ final readonly class SetBooleanSettingCommand extends Command
 {
     public function __construct(
         public SettingReference $setting,
-        public bool $enabled,
+        public bool $isEnabled,
         public int $expectedRevision,
     ) {}
 }

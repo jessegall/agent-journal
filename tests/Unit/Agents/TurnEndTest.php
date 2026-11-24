@@ -32,15 +32,15 @@ final class TurnEndTest extends TestCase
         $failed = [RequestProgress::Failed, RequestOutcome::TurnFailed];
         $applied = [RequestProgress::Applied, null];
 
-        yield 'a successful result' => [new TurnEnd(exitCode: 0, resultRead: true, resultSubtype: 'success'), ...$applied];
+        yield 'a successful result' => [new TurnEnd(exitCode: 0, isResultRead: true, resultSubtype: 'success'), ...$applied];
 
         yield 'a result marked an error' => [
-            new TurnEnd(exitCode: 0, resultRead: true, resultSubtype: 'success', resultIsError: true),
+            new TurnEnd(exitCode: 0, isResultRead: true, resultSubtype: 'success', isResultError: true),
             ...$failed,
         ];
 
         yield 'a result of another subtype' => [
-            new TurnEnd(exitCode: 0, resultRead: true, resultSubtype: 'error_during_execution'),
+            new TurnEnd(exitCode: 0, isResultRead: true, resultSubtype: 'error_during_execution'),
             ...$failed,
         ];
 

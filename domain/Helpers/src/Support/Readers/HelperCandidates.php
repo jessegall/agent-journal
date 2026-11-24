@@ -63,9 +63,9 @@ final readonly class HelperCandidates
 
         foreach ($ranked as $candidate) {
             $identity = $identities[$candidate->actor->id];
-            $hasSeenSubject = $candidate->sawThisPurpose || in_array($identity->id, $exposedIdentityIds, true);
+            $hasSeenSubject = $candidate->hasSeenThisPurpose || in_array($identity->id, $exposedIdentityIds, true);
 
-            if ($query->independent && $hasSeenSubject) {
+            if ($query->isIndependent && $hasSeenSubject) {
                 continue;
             }
 
@@ -73,7 +73,7 @@ final readonly class HelperCandidates
                 $identity,
                 $candidate->rank,
                 $this->resumes($query, $candidate),
-                $query->independent,
+                $query->isIndependent,
             );
         }
 
@@ -137,7 +137,7 @@ final readonly class HelperCandidates
      */
     private function resumes(CandidateQuery $query, RankedLaunchCandidate $candidate): bool
     {
-        return ! $query->independent && $candidate->rank === LaunchCandidateRank::ExactConversation;
+        return ! $query->isIndependent && $candidate->rank === LaunchCandidateRank::ExactConversation;
     }
 
     /**

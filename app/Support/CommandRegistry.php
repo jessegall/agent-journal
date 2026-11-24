@@ -104,12 +104,12 @@ final readonly class CommandRegistry
 
     public function isExported(string $command): bool
     {
-        return $this->entry($command)->exported;
+        return $this->entry($command)->isExported;
     }
 
     public function isRepeatableReadNeeded(string $command): bool
     {
-        return $this->entry($command)->repeatableRead;
+        return $this->entry($command)->isRepeatableRead;
     }
 
     public function effectOf(string $command): CommandEffectType
@@ -139,7 +139,7 @@ final readonly class CommandRegistry
      */
     public function hasActorScopedReceipt(string $command): bool
     {
-        return $this->entry($command)->actorScopedReceipt;
+        return $this->entry($command)->isActorScopedReceipt;
     }
 
     /**

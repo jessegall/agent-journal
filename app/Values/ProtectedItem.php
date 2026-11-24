@@ -16,7 +16,7 @@ final readonly class ProtectedItem
 
     public function __construct(
         public string $item,
-        public bool $enforced,
+        public bool $isEnforced,
         public string $evidence,
         public string $reason,
     ) {}
@@ -35,7 +35,7 @@ final readonly class ProtectedItem
      */
     public function awaitsEvidenceOnly(): bool
     {
-        return ! $this->enforced && str_starts_with($this->reason, self::EVIDENCE_MISSING);
+        return ! $this->isEnforced && str_starts_with($this->reason, self::EVIDENCE_MISSING);
     }
 
     /**
@@ -45,7 +45,7 @@ final readonly class ProtectedItem
     {
         return [
             'item' => $this->item,
-            'enforced' => $this->enforced,
+            'enforced' => $this->isEnforced,
             'evidence' => $this->evidence,
             'reason' => $this->reason,
         ];

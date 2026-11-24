@@ -57,7 +57,7 @@ final readonly class SignInCompletion
             throw SignInAttemptStale::for($attempt->id);
         }
 
-        if (! $this->starterMayStillAdd($attempt)) {
+        if (! $this->isStarterMayStillAdd($attempt)) {
             $this->endWithout($attempt, SignInState::Failed, $now);
 
             return;
@@ -108,7 +108,7 @@ final readonly class SignInCompletion
      * now, not from the host's signature; a starter that is no longer an actor, such as a user the journal no longer
      * admits, holds none.
      */
-    private function starterMayStillAdd(SignInAttempt $attempt): bool
+    private function isStarterMayStillAdd(SignInAttempt $attempt): bool
     {
         try {
             $accesses = $this->authorizer->filterActions(

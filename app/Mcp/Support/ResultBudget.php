@@ -26,7 +26,7 @@ final readonly class ResultBudget
      *
      * @param  array<string, mixed>  $responseFields
      */
-    public function payloadFits(array $responseFields): bool
+    public function doesPayloadFit(array $responseFields): bool
     {
         return self::payloadBytes($responseFields) <= self::RESULT_BYTES - self::RECOVERY_BYTES;
     }
@@ -38,7 +38,7 @@ final readonly class ResultBudget
      */
     public function fit(ToolResult $toolResult): ResponseFactory
     {
-        if (! $this->payloadFits($toolResult->responseFields)) {
+        if (! $this->doesPayloadFit($toolResult->responseFields)) {
             throw ResultTooLarge::for('payload', self::payloadBytes(
                 $toolResult->responseFields,
             ), self::RESULT_BYTES - self::RECOVERY_BYTES);

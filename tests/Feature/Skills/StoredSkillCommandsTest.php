@@ -62,7 +62,7 @@ final class StoredSkillCommandsTest extends TestCase
 
         $this->assertSame(1, $created->revision);
         $this->assertSame(2, $revised->revision);
-        $this->assertTrue($revised->publicationPending);
+        $this->assertTrue($revised->isPublicationPending);
         $this->assertSame(
             'First.',
             SkillRevision::numbered(

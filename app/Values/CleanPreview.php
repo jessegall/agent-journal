@@ -17,6 +17,6 @@ final readonly class CleanPreview
         public array $runIds,
         public array $partRunIds,
         public int $bytes,
-        public bool $removed,
+        public bool $isRemoved,
     ) {}
 }

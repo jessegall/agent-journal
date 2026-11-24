@@ -40,7 +40,7 @@ final readonly class InitialWakeSettlement
         $binding = $report->binding;
 
         $isProvedUnstarted = $wake->isInitialWakeOf($sessionId)
-            && $report->noProcessCreated
+            && $report->hasCreatedNoProcess
             && $report->attempt === $wake->attempt_version
             && $binding?->sessionId === $sessionId
             && $binding->processGeneration === $runtime->process_generation;

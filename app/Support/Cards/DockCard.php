@@ -21,7 +21,7 @@ final readonly class DockCard
         public string $accessibleName,
         public DockPart $root,
         public DockDestination|null $open,
-        public bool $overBudget,
+        public bool $isOverBudget,
     ) {}
 
     /**

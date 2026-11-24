@@ -69,7 +69,7 @@ final class LexerCursor
     /**
      * Whether a command could start here: at the start of the line or after an operator that ends or joins commands.
      */
-    public function atCommandStart(): bool
+    public function isAtCommandStart(): bool
     {
         $last = $this->tokens[array_key_last($this->tokens) ?? -1] ?? null;
 
@@ -146,7 +146,7 @@ final class LexerCursor
             return false;
         }
 
-        if ($this->source[$start] === '(' && $this->at($start + 1) === '(' && $this->atCommandStart()) {
+        if ($this->source[$start] === '(' && $this->at($start + 1) === '(' && $this->isAtCommandStart()) {
             $this->readArithmeticCommand($start);
 
             return true;
@@ -180,7 +180,7 @@ final class LexerCursor
 
     private function isNegation(): bool
     {
-        return $this->atCommandStart() && in_array($this->at($this->position + 1), [' ', "\t", "\n", ''], true);
+        return $this->isAtCommandStart() && in_array($this->at($this->position + 1), [' ', "\t", "\n", ''], true);
     }
 
     /**

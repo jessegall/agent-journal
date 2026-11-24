@@ -36,7 +36,7 @@ final readonly class NavigationProof
 
         $proof = new self($text);
 
-        if ($proof->seenIn($raiseRows)) {
+        if ($proof->isSeenIn($raiseRows)) {
             throw NavigationProofRefused::alreadyOnScreen($text);
         }
 
@@ -48,7 +48,7 @@ final readonly class NavigationProof
      *
      * @param  list<string>  $rows
      */
-    public function seenIn(array $rows): bool
+    public function isSeenIn(array $rows): bool
     {
         $wanted = self::folded($this->text);
 

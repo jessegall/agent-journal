@@ -97,7 +97,7 @@ final class NumberAllocationTest extends TestCase
         $ledger = $this->commands->run(new OpenLedgerCommand('ledger'));
 
         try {
-            $this->commands->run(new WriteEntryCommand($ledger, 'refused', refusedAfterSave: true));
+            $this->commands->run(new WriteEntryCommand($ledger, 'refused', isRefusedAfterSave: true));
             $this->fail('The write was not refused.');
         } catch (CommandRefused) {
             $this->assertSame(0, LedgerEntry::query()->count());

@@ -10,15 +10,15 @@ namespace App\Support;
  */
 final class OuterTransactionOwner
 {
-    private bool $registered = false;
+    private bool $isRegistered = false;
 
     public function register(): void
     {
-        $this->registered = true;
+        $this->isRegistered = true;
     }
 
     public function isRegistered(): bool
     {
-        return $this->registered;
+        return $this->isRegistered;
     }
 }

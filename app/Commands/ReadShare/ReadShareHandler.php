@@ -128,7 +128,7 @@ final readonly class ReadShareHandler implements CommandHandler
         $content = $budget->run(fn () => $provider->content(new ShareContentRead($target), $budget));
         $linked = $this->linkedFrom($share, $target, $budget);
         [$children, $next] = $this->childrenOf($share, $target, $path, $command->cursor, $budget);
-        $body = $command->head ? '' : $content->body;
+        $body = $command->isHead ? '' : $content->body;
         $budget->chargeRendered(strlen($body) + strlen($content->card->title));
 
         return new SharedPage(

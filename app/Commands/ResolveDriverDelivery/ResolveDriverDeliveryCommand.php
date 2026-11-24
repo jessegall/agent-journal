@@ -21,7 +21,7 @@ final readonly class ResolveDriverDeliveryCommand extends Command
     public function __construct(
         public string $requestId,
         public int $expectedRowVersion,
-        public bool $applied,
+        public bool $isApplied,
         public string $reason,
     ) {}
 }

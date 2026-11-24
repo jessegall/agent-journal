@@ -12,7 +12,7 @@ use Throwable;
  */
 final class ContinuationRecord
 {
-    public bool $called = false;
+    public bool $wasCalled = false;
 
     public mixed $continuationReply = null;
 

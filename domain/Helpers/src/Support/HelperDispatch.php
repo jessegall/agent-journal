@@ -268,7 +268,7 @@ final readonly class HelperDispatch
             $purpose,
             $profile->selection->driver,
             $profile->selection->model,
-            $request->work->independent,
+            $request->work->isIndependent,
         ));
     }
 
@@ -313,7 +313,7 @@ final readonly class HelperDispatch
      */
     private function assertIndependentFor(DispatchRequest $request, HelperIdentity $designated): void
     {
-        if ($request->work->independent && HelperJob::existsFor($designated, $this->purposeOf($request))) {
+        if ($request->work->isIndependent && HelperJob::existsFor($designated, $this->purposeOf($request))) {
             throw HelperUnavailable::forIndependentReview($request->profileKey);
         }
     }
@@ -372,7 +372,7 @@ final readonly class HelperDispatch
                 $request->digest(),
                 $profile->revision,
                 $conversation->isNewIdentity,
-                $request->work->independent,
+                $request->work->isIndependent,
                 $conversation->mode,
                 $conversation->reason,
             ),

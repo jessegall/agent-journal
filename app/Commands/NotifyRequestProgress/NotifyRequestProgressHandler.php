@@ -87,7 +87,7 @@ final readonly class NotifyRequestProgressHandler implements CommandHandler
         }
 
         if ($command->refusal !== null) {
-            $request->recordRefusal($command->refusal, $command->noProcessCreated);
+            $request->recordRefusal($command->refusal, $command->hasCreatedNoProcess);
         }
 
         if ($command->script !== null) {

@@ -22,9 +22,9 @@ final readonly class TurnEnd
 
     public function __construct(
         public int|null $exitCode = null,
-        public bool $resultRead = false,
+        public bool $isResultRead = false,
         public string|null $resultSubtype = null,
-        public bool $resultIsError = false,
+        public bool $isResultError = false,
         public string|null $model = null,
         public string|null $codexStatus = null,
         public bool|null $composerLeft = null,
@@ -98,7 +98,7 @@ final readonly class TurnEnd
     private function failed(): bool
     {
         return match (true) {
-            $this->resultRead => $this->resultIsError || $this->resultSubtype !== self::SUCCESS_SUBTYPE,
+            $this->isResultRead => $this->isResultError || $this->resultSubtype !== self::SUCCESS_SUBTYPE,
             $this->codexStatus !== null => ! in_array($this->codexStatus, self::APPLIED_CODEX_STATUSES, true),
             $this->exitCode !== null => $this->exitCode !== 0,
             default => false,
@@ -110,7 +110,7 @@ final readonly class TurnEnd
      */
     private function isUnread(): bool
     {
-        return ! $this->resultRead && $this->codexStatus === null && $this->exitCode === null
+        return ! $this->isResultRead && $this->codexStatus === null && $this->exitCode === null
             && $this->composerLeft === null;
     }
 }

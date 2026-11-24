@@ -14,11 +14,11 @@ use App\Enums\TerminalInputType;
 final readonly class BrowserInputCapabilities
 {
     public function __construct(
-        public bool $text,
+        public bool $isText,
         public bool $keys,
-        public bool $paste,
-        public bool $resize,
-        public bool $privateEntry,
+        public bool $shouldPaste,
+        public bool $shouldResize,
+        public bool $isPrivateEntry,
     ) {}
 
     public static function none(): self
@@ -29,11 +29,11 @@ final readonly class BrowserInputCapabilities
     public function carriesOut(TerminalInputType $type): bool
     {
         return match ($type) {
-            TerminalInputType::Text => $this->text,
-            TerminalInputType::Key => $this->text && $this->keys,
-            TerminalInputType::Paste => $this->text && $this->paste,
-            TerminalInputType::Resize => $this->text && $this->resize,
-            TerminalInputType::Private => $this->text && $this->privateEntry,
+            TerminalInputType::Text => $this->isText,
+            TerminalInputType::Key => $this->isText && $this->keys,
+            TerminalInputType::Paste => $this->isText && $this->shouldPaste,
+            TerminalInputType::Resize => $this->isText && $this->shouldResize,
+            TerminalInputType::Private => $this->isText && $this->isPrivateEntry,
         };
     }
 }

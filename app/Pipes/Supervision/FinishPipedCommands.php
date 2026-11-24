@@ -21,7 +21,7 @@ final readonly class FinishPipedCommands implements Pipe
         $toRun = $pumped->commands->toRun;
         $statuses = array_map(fn (SpawnedPart $part) => $part->end(true), $pumped->commands->started);
 
-        $status = StepStatus::ofPipeline($statuses, $toRun->context->pipefail);
+        $status = StepStatus::ofPipeline($statuses, $toRun->context->isPipefail);
 
         return new StepOutcome($status, $toRun->context, $pumped->stdout);
     }

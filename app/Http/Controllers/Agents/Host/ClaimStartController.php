@@ -32,7 +32,7 @@ final readonly class ClaimStartController
                 'sign_in_method' => $claimed->signInMethod,
                 'recipe' => $claimed->recipe,
                 'conversation_target' => $claimed->conversationTarget,
-                'conversation_required' => $claimed->conversationRequired,
+                'conversation_required' => $claimed->isConversationRequired,
                 // A connected project's child works in its own worktree, prepared for this claim; none otherwise.
                 'child_checkout' => array_map(fn (ChildCheckout $checkout) => [
                     'claim' => $checkout->claimId,

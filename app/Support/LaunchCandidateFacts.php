@@ -15,7 +15,7 @@ final readonly class LaunchCandidateFacts
     public function __construct(
         public ActorIdentity $actor,
         public bool $hasOpenWork,
-        public bool $didThisPurpose,
+        public bool $hasDoneThisPurpose,
         public CarbonImmutable|null $lastMatchingFinish,
         public CarbonImmutable|null $lastFinish,
     ) {}
@@ -25,6 +25,6 @@ final readonly class LaunchCandidateFacts
      */
     public function rankingFinish(): CarbonImmutable|null
     {
-        return $this->didThisPurpose ? $this->lastMatchingFinish : $this->lastFinish;
+        return $this->hasDoneThisPurpose ? $this->lastMatchingFinish : $this->lastFinish;
     }
 }

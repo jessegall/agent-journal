@@ -541,7 +541,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     /**
      * Whether the answer under this request key is the one the attempt already took.
      */
-    public function tookAnswer(string $submissionKey): bool
+    public function hasTakenAnswer(string $submissionKey): bool
     {
         return $this->submission_key !== null && hash_equals($this->submission_key, $submissionKey);
     }

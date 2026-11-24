@@ -22,9 +22,9 @@ final class UnsupportedConstruct
 
     private int $parentheses = 0;
 
-    private bool $atCommandStart = false;
+    private bool $isAtCommandStart = false;
 
-    private bool $closed = false;
+    private bool $isClosed = false;
 
     /**
      * @var list<string> the words that open a construct this terminator also closes, so nesting is counted
@@ -50,9 +50,9 @@ final class UnsupportedConstruct
     public function read(Token $token): void
     {
         $literal = $token->literal();
-        $wasAtCommandStart = $this->atCommandStart;
+        $wasAtCommandStart = $this->isAtCommandStart;
 
-        $this->atCommandStart = $token->type->isFollowedByCommand() || in_array(
+        $this->isAtCommandStart = $token->type->isFollowedByCommand() || in_array(
             $literal,
             self::COMMAND_STARTING_WORDS,
             true,
@@ -77,12 +77,12 @@ final class UnsupportedConstruct
 
     public function isClosed(): bool
     {
-        return $this->closed;
+        return $this->isClosed;
     }
 
     public function needsClosing(): bool
     {
-        return $this->terminator !== null && ! $this->closed;
+        return $this->terminator !== null && ! $this->isClosed;
     }
 
     private function readReservedWord(string $literal): void
@@ -98,7 +98,7 @@ final class UnsupportedConstruct
         }
 
         if ($this->nesting === 0) {
-            $this->closed = true;
+            $this->isClosed = true;
 
             return;
         }

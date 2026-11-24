@@ -84,7 +84,7 @@ final readonly class RecordGatewayOutcomeHandler implements CommandHandler
             ShareAudit::create($share, ShareAuditType::Activated, ActorIdentity::system(), null);
         }
 
-        if (! Share::anyLiveOn($configuration->id)) {
+        if (! Share::hasAnyLiveOn($configuration->id)) {
             ShareGatewayOperation::create($configuration, GatewayOperationType::Close);
         }
     }

@@ -96,7 +96,7 @@ final class StopResult extends Model implements ReadableModel
         $stopRecord->signal = $report->signal;
         $stopRecord->summary = $report->summary;
         $stopRecord->output = $report->output;
-        $stopRecord->truncated = $report->truncated;
+        $stopRecord->truncated = $report->isTruncated;
 
         return $stopRecord;
     }
@@ -118,7 +118,7 @@ final class StopResult extends Model implements ReadableModel
             $duration,
             $this->exit_code,
             $this->signal,
-            $this->truncated,
+            $this->isTruncated,
             $this->summary,
         );
     }

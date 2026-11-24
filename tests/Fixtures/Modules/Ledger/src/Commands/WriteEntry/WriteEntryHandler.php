@@ -15,7 +15,7 @@ final readonly class WriteEntryHandler implements CommandHandler
     {
         $entry = LedgerEntry::write($command->ledgerId, $command->text);
 
-        if ($command->refusedAfterSave) {
+        if ($command->isRefusedAfterSave) {
             throw CommandRefused::because('the entry was refused after it was numbered');
         }
 

@@ -46,7 +46,7 @@ final class RelayFrames
      */
     private array $queue = [];
 
-    private bool $ended = false;
+    private bool $hasEnded = false;
 
     private string|null $negotiatedVersion = null;
 
@@ -85,7 +85,7 @@ final class RelayFrames
                 );
             }
 
-            if ($this->ended) {
+            if ($this->hasEnded) {
                 return null;
             }
 
@@ -184,7 +184,7 @@ final class RelayFrames
         stream_set_blocking($this->input, false);
         $chunk = fread($this->input, self::CHUNK_BYTES);
         $this->buffer .= is_string($chunk) ? $chunk : '';
-        $this->ended = $chunk === '' && feof($this->input);
+        $this->hasEnded = $chunk === '' && feof($this->input);
 
         while (($end = strpos($this->buffer, "\n")) !== false) {
             $line = rtrim(substr($this->buffer, 0, $end), "\r");
@@ -192,7 +192,7 @@ final class RelayFrames
             $this->admitLine($line, CarbonImmutable::now());
         }
 
-        if ($this->ended && trim($this->buffer) !== '') {
+        if ($this->hasEnded && trim($this->buffer) !== '') {
             $this->admitLine(rtrim($this->buffer, "\r"), CarbonImmutable::now());
             $this->buffer = '';
         }

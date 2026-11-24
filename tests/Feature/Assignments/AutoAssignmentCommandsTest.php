@@ -60,7 +60,7 @@ final class AutoAssignmentCommandsTest extends TestCase
 
         $this->runCommand(new DisableAutoAssignmentCommand($this->key, 1));
 
-        $this->assertFalse($this->fact()->enabled);
+        $this->assertFalse($this->fact()->isEnabled);
     }
 
     public function test_an_agent_enabling_itself_is_refused_and_nothing_is_stored(): void

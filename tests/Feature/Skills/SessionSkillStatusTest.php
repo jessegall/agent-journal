@@ -59,10 +59,10 @@ final class SessionSkillStatusTest extends TestCase
         $session = $this->startedMainAgent();
 
         $guide = $this->guideOf($session);
-        $this->assertTrue($guide->selected);
+        $this->assertTrue($guide->isSelected);
         $this->assertSame(1, $guide->storedRevision);
         $this->assertSame('delivered', $guide->deliveryState);
-        $this->assertFalse($guide->loaded);
+        $this->assertFalse($guide->isLoaded);
         $firstDigest = $guide->generatedDigest;
 
         $this->app->make(RecordProvenSkillReads::class)->handle(new ToolCallFinished(
@@ -73,7 +73,7 @@ final class SessionSkillStatusTest extends TestCase
                 new DriverToolInput(['key' => 'user-guide']),
             ),
         ));
-        $this->assertTrue($this->guideOf($session)->loaded);
+        $this->assertTrue($this->guideOf($session)->isLoaded);
 
         $this->artisan('skill:edit', [
             'number' => 'user-guide',
@@ -88,10 +88,10 @@ final class SessionSkillStatusTest extends TestCase
         $this->boundary($session);
 
         $edited = $this->guideOf($session);
-        $this->assertTrue($edited->selected);
+        $this->assertTrue($edited->isSelected);
         $this->assertSame(2, $edited->storedRevision);
         $this->assertNotSame($firstDigest, $edited->generatedDigest);
-        $this->assertFalse($edited->loaded);
+        $this->assertFalse($edited->isLoaded);
         $this->assertTrue($edited->needsNewSession);
 
         $this->artisan('skill:status', ['--session' => $session->id])

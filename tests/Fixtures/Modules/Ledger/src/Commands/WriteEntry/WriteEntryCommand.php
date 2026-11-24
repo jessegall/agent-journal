@@ -19,5 +19,5 @@ use Tests\Fixtures\Modules\Ledger\Policies\LedgerPolicy;
 #[Authorize(LedgerPolicy::class, AccessType::Create)]
 final readonly class WriteEntryCommand extends Command
 {
-    public function __construct(public string $ledgerId, public string $text, public bool $refusedAfterSave = false) {}
+    public function __construct(public string $ledgerId, public string $text, public bool $isRefusedAfterSave = false) {}
 }

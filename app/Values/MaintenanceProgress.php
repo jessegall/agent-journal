@@ -17,6 +17,6 @@ final readonly class MaintenanceProgress
         public array $runningSessionIds,
         public int $cancelledStarts,
         public bool $isCredentialWriteInProgress,
-        public bool $settled,
+        public bool $isSettled,
     ) {}
 }

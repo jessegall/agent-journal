@@ -95,7 +95,7 @@ final class EngineLoopTest extends TestCase
             array_map(fn ($event) => $event->sincePrevious->milliseconds(), $listener->received),
         );
         $this->assertSame(3, $this->watchdog->armings);
-        $this->assertFalse($this->watchdog->armed);
+        $this->assertFalse($this->watchdog->isArmed);
         $this->assertFalse($this->app->make(AdvisoryEngineLock::class)->isHeld());
     }
 

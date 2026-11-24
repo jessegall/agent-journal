@@ -17,7 +17,7 @@ final readonly class PlanProgressChanged extends PlanEvent implements DockSource
     public function __construct(
         public string $planId,
         public int $planNumber,
-        public int $finished,
+        public int $hasFinished,
         public int $total,
         public int $countedAtMicroseconds,
     ) {}

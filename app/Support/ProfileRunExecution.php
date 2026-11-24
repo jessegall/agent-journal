@@ -46,7 +46,7 @@ final readonly class ProfileRunExecution implements ScriptExecution
 
         $decision = $this->access->decide($operation);
 
-        if (! $decision->allowed) {
+        if (! $decision->isAllowed) {
             return StepOutcome::failed("RUN {$command->key} is refused: {$this->texts->render($decision->reason)}");
         }
 

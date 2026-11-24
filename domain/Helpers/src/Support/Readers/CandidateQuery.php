@@ -19,7 +19,7 @@ final readonly class CandidateQuery
         public HelperPurpose $purpose,
         public string $driver,
         public string $model,
-        public bool $independent,
+        public bool $isIndependent,
     ) {}
 
     /**

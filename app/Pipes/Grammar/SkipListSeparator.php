@@ -38,7 +38,7 @@ final readonly class SkipListSeparator implements Pipe
      */
     private function stepPastSemicolon(TokenCursor $cursor, bool $mayTakeSemicolon): void
     {
-        if ($cursor->peekIs(1, TokenType::Semicolon)) {
+        if ($cursor->isNext(1, TokenType::Semicolon)) {
             throw ShellGrammarStopped::invalid(
                 AgentText::of('core.shell.case_terminator_outside'),
                 $cursor->position(),

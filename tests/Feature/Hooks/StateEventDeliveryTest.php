@@ -93,7 +93,7 @@ final class StateEventDeliveryTest extends TestCase
         });
 
         try {
-            $this->dispatch(new NoteWritten(listenerFails: true, ordinary: [new RecordNoteEffectCommand('partial')]));
+            $this->dispatch(new NoteWritten(doesListenerFail: true, ordinary: [new RecordNoteEffectCommand('partial')]));
             $this->fail('The failing state returned successfully.');
         } catch (NoteWorkFailed) {
             $this->assertCount(1, $ordinary);
@@ -254,7 +254,7 @@ final class StateEventDeliveryTest extends TestCase
         );
         $this->app->instance(LoggerInterface::class, $log);
         $transaction = $this->app->make(StackTransaction::class);
-        $event = new NotePublished(new NoteWritten(listenerFails: true));
+        $event = new NotePublished(new NoteWritten(doesListenerFail: true));
 
         try {
             $transaction->run(function () use ($event): void {

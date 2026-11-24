@@ -28,7 +28,7 @@ final readonly class NotifyDriverTurnHandler implements CommandHandler
         $turn = DriverTurn::recordStart($runtime->id, $command->processGeneration, $command->nativePromptId, $now);
         $this->batches->bindTo($runtime->agent_session_id, $command->processGeneration, $turn->id);
 
-        $activity = $command->finished ? RuntimeActivity::Idle : RuntimeActivity::Running;
+        $activity = $command->hasFinished ? RuntimeActivity::Idle : RuntimeActivity::Running;
 
         if (! $runtime->recordObservation($activity, HoldReason::None, $command->processGeneration, $now)) {
             throw HostReportRefused::staleGeneration(
@@ -40,7 +40,7 @@ final readonly class NotifyDriverTurnHandler implements CommandHandler
 
         $runtime->observeSettings($command->model, $command->effort, $now);
 
-        if ($command->finished) {
+        if ($command->hasFinished) {
             $turn->finish((string) ($command->outcome ?? 'finished'), $now);
         }
     }

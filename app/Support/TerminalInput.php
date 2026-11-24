@@ -20,7 +20,7 @@ final readonly class TerminalInput
 
     public function __construct(
         public string $text,
-        public bool $enter,
+        public bool $shouldEnter,
         public int $sequence,
         public int $screenRevision,
         public TerminalInputType $type = TerminalInputType::Text,

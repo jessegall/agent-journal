@@ -54,7 +54,7 @@ final readonly class AutoAssignmentStatuses
 
         $pool = Some::create($this->describe($fact));
 
-        if (! $fact->enabled) {
+        if (! $fact->isEnabled) {
             return $this->status($fact, AutoAssignmentState::Off, $pool, None::create());
         }
 
@@ -112,7 +112,7 @@ final readonly class AutoAssignmentStatuses
         Option $totals,
     ): AutoAssignmentStatus {
         return new AutoAssignmentStatus(
-            $fact->enabled,
+            $fact->isEnabled,
             $state,
             $fact->revision,
             $pool,

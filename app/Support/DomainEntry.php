@@ -73,7 +73,7 @@ final readonly class DomainEntry
         public array $requires,
         public Exports $exports,
         public SettingsDefinition $settings,
-        private bool $switchable,
+        private bool $isSwitchable,
         private array $skills,
         private array $skillConditions,
     ) {}
@@ -106,7 +106,7 @@ final readonly class DomainEntry
             requires: self::checkedRequirements($name, $className, $domain->requires()),
             exports: ExportsCheck::check($name, $namespace, $domain->exports()),
             settings: $domain instanceof SettingsProvider ? $domain->settings() : new EmptySettingsDefinition(),
-            switchable: $domain->canDisable(),
+            isSwitchable: $domain->canDisable(),
             skills: $domain instanceof SkillProvider ? self::checkedSkills($name, $namespace, $domain->skills()) : [],
             skillConditions: $domain instanceof SkillConditionProvider ? self::checkedSkillConditions(
                 $name,
@@ -133,7 +133,7 @@ final readonly class DomainEntry
      */
     public function canDisable(): bool
     {
-        return $this->switchable;
+        return $this->isSwitchable;
     }
 
     /**

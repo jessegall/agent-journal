@@ -63,7 +63,7 @@ final readonly class SignInChallenges
 
         $answer = $this->encrypter->decrypt($stored);
 
-        if ($attempt->state !== SignInState::Checking || ! $attempt->tookAnswer((string) $answer['key'])) {
+        if ($attempt->state !== SignInState::Checking || ! $attempt->hasTakenAnswer((string) $answer['key'])) {
             return null;
         }
 

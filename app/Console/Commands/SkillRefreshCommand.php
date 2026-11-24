@@ -31,14 +31,14 @@ final class SkillRefreshCommand extends Command
 
         $refresh = $publishing->refresh();
 
-        if ($refresh->failed) {
+        if ($refresh->hasFailed) {
             $this->error("The skills could not be generated, the previous generation stays in use: {$refresh->reason}");
             $this->printOutcomes($publishing->publishOpen($this->holder()));
 
             return self::FAILURE;
         }
 
-        $this->line($refresh->reused
+        $this->line($refresh->isReused
             ? "Generation {$refresh->generationId} is unchanged."
             : "Generation {$refresh->generationId} is ready.");
 

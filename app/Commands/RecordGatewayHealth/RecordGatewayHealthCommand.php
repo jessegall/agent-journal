@@ -21,6 +21,6 @@ final readonly class RecordGatewayHealthCommand extends Command
         public string $runId,
         public string $configurationId,
         public int $endpointVersion,
-        public bool $healthy,
+        public bool $isHealthy,
     ) {}
 }

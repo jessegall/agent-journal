@@ -227,6 +227,9 @@ final class ParsedProject
     /** @var array<string, array{code: string, statements: list<Node>}> */
     private array $others = [];
 
+    /** @var array<string, array<string, list<Node>>>|null every node of the searched files by the name it carries */
+    private array|null $named = null;
+
     public function __construct(public readonly string $root) {}
 
     /**
@@ -266,6 +269,16 @@ final class ParsedProject
         $this->others = [...$this->others, ...$parsed];
 
         return $parsed;
+    }
+
+    /**
+     * The nodes of the searched files that carry the name, by file: one walk of the project serves every rename.
+     *
+     * @return array<string, list<Node>>
+     */
+    public function nodesNamed(string $name): array
+    {
+        return ($this->named ??= nameIndex($this->searched()))[$name] ?? [];
     }
 
     public function codeOf(string $file): string
@@ -321,11 +334,12 @@ function renameMember(ParsedProject $project, array $rename, array $with): array
     }
 
     $files = $what === 'variable' ? $project->under($path) : $project->searched();
+    $named = $what === 'variable' ? nameIndex($files)[$old] ?? [] : $project->nodesNamed($old);
     $changes = $what === 'variable'
         ? ['edits' => variableEdits($files, $old, $new, $line), 'unresolved' => []]
-        : memberEdits($files, $project->index(), $what, ltrim($owner, '\\'), $old, $new, $with);
+        : memberEdits($files, $named, $project->index(), $what, ltrim($owner, '\\'), $old, $new, $with);
 
-    return [...$changes, 'strings' => stringsSpelling($files, $old)];
+    return [...$changes, 'strings' => stringsSpelling($named, $old)];
 }
 
 /**
@@ -526,7 +540,7 @@ function descendantsOf(array $index, string $class): array
  * @param  list<string>  $with
  * @return array{edits: array<string, list<array{int, int, string}>>, unresolved: list<string>}
  */
-function memberEdits(array $files, array $index, string $what, string $class, string $old, string $new, array $with): array
+function memberEdits(array $files, array $named, array $index, string $what, string $class, string $old, string $new, array $with): array
 {
     if (! isset($index[$class])) {
         throw RenameRefused::undeclaredClass($class);
@@ -564,12 +578,11 @@ function memberEdits(array $files, array $index, string $what, string $class, st
 
     $edits = [];
     $unresolved = [];
-    $finder = new NodeFinder();
 
-    foreach ($files as $path => $file) {
+    foreach ($named as $path => $nodes) {
         $found = [];
 
-        foreach ($finder->find($file['statements'], static fn (Node $node) => true) as $node) {
+        foreach ($nodes as $node) {
             array_push($found, ...memberSites($node, $what, $old, $new, $family, $receiverOf, $static));
 
             if (isInstanceUse($node, $what, $old) && $receiverOf($node->var) === Receiver::Unknown) {
@@ -578,7 +591,7 @@ function memberEdits(array $files, array $index, string $what, string $class, st
         }
 
         if ($what === 'property') {
-            array_push($found, ...promotedVariableSites($file['statements'], $old, $new, $family));
+            array_push($found, ...promotedVariableSites($files[$path]['statements'], $old, $new, $family));
         }
 
         if ($found !== []) {
@@ -1053,25 +1066,67 @@ function applied(string $source, array $edits): string
 }
 
 /**
- * Lines whose string literals spell the old name, for a user to check.
+ * Lines whose string literals spell the old name, for a user to check; a migration may name what came before, so it
+ * is left out.
  *
- * @param  array<string, array{code: string, statements: list<Node>}>  $files
+ * @param  array<string, list<Node>>  $named  the nodes carrying the old name, by file
  * @return list<string>
  */
-function stringsSpelling(array $files, string $old): array
+function stringsSpelling(array $named, string $old): array
 {
     $lines = [];
-    $finder = new NodeFinder();
 
-    foreach ($files as $path => $file) {
-        foreach ($finder->findInstanceOf($file['statements'], Node\Scalar\String_::class) as $string) {
-            if ($string->value === $old) {
-                $lines[] = "{$path}:{$string->getStartLine()}";
+    foreach ($named as $path => $nodes) {
+        foreach ($nodes as $node) {
+            if ($node instanceof Node\Scalar\String_ && $node->value === $old && ! str_contains($path, '/migrations/')) {
+                $lines[] = "{$path}:{$node->getStartLine()}";
             }
         }
     }
 
     return $lines;
+}
+
+/**
+ * Every node of the files by the name it carries, in one walk: a member's name, a named argument's, a parameter's or a
+ * string's value.
+ *
+ * @param  array<string, array{code: string, statements: list<Node>}>  $files
+ * @return array<string, array<string, list<Node>>>
+ */
+function nameIndex(array $files): array
+{
+    $index = [];
+    $finder = new NodeFinder();
+
+    foreach ($files as $path => $file) {
+        foreach ($finder->find($file['statements'], static fn (Node $node) => true) as $node) {
+            foreach (namesCarriedBy($node) as $name) {
+                $index[$name][$path][] = $node;
+            }
+        }
+    }
+
+    return $index;
+}
+
+/**
+ * @return list<string>
+ */
+function namesCarriedBy(Node $node): array
+{
+    $name = property_exists($node, 'name') ? $node->name : null;
+
+    return match (true) {
+        $node instanceof Node\Scalar\String_ => [$node->value],
+        $node instanceof Node\Param && $node->var instanceof Node\Expr\Variable && is_string($node->var->name) => [$node->var->name],
+        $node instanceof Node\Expr\New_ => array_values(array_unique(array_filter(array_map(
+            static fn ($argument) => $argument instanceof Node\Arg ? $argument->name?->toString() : null,
+            $node->args,
+        )))),
+        $name instanceof Node\Identifier || $name instanceof Node\VarLikeIdentifier => [$name->toString()],
+        default => [],
+    };
 }
 
 /**
