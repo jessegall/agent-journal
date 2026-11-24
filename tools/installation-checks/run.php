@@ -15,7 +15,7 @@ use Tools\InstallationChecks\Journal;
 use Tools\InstallationChecks\Outcome;
 use Tools\InstallationChecks\ProtectedSessionCheck;
 
-require __DIR__.'/../../vendor/autoload.php';
+require __DIR__.'/autoload.php';
 
 $checkout = dirname(__DIR__, 2);
 $arguments = array_values(array_filter(array_slice($argv, 1), fn (string $argument) => ! str_starts_with($argument, '--')));

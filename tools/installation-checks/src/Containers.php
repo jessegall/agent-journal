@@ -24,7 +24,12 @@ final readonly class Containers
      */
     public function read(string $template, array $values = []): array
     {
-        $code = (string) file_get_contents(__DIR__."/../reads/{$template}.php");
+        // A read is kept as a PHP file to be checked like any other; tinker takes its code without the file's opening.
+        $code = (string) preg_replace(
+            '/^<\?php\s*(declare\(strict_types=1\);\s*)?/',
+            '',
+            (string) file_get_contents(__DIR__."/../reads/{$template}.php"),
+        );
 
         foreach ($values as $name => $value) {
             $code = str_replace("{{{$name}}}", $value, $code);
@@ -97,7 +102,7 @@ final readonly class Containers
                 '%s ended with %d: %s',
                 $command[0].' '.($command[1] ?? ''),
                 (int) $process->getExitCode(),
-                substr($process->getErrorOutput(), 0, 400),
+                substr(trim($process->getErrorOutput()) ?: trim($process->getOutput()), 0, 400),
             ));
         }
 
