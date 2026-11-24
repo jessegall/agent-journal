@@ -98,6 +98,7 @@ function nameFaults(array $names, string $forbiddenWordsFile): array
     $verbs = verbsOf($names, withActionClasses: true);
     $commandVerbs = verbsOf($names, withActionClasses: false);
     $nouns = nounsOf($names);
+    $sharedVerbs = sharedActionWordsOf($names);
     $faults = [];
 
     foreach ($names as $declared) {
@@ -105,7 +106,7 @@ function nameFaults(array $names, string $forbiddenWordsFile): array
             forbiddenWordFault($declared, $forbidden),
             betterVerbFault($declared, $betterVerbs),
             purposeFault($declared, $verbs, $nouns),
-            actionClassFault($declared, $commandVerbs, $nouns),
+            actionClassFault($declared, $commandVerbs, $nouns, $sharedVerbs),
             eventFault($declared),
             commandMoodFault($declared, $verbs),
             questionFault($declared, $verbs),
@@ -171,8 +172,10 @@ function purposeFault(DeclaredName $declared, array $verbs, array $nouns): ?stri
         $before = $words[$at - 1] ?? '';
         $isState = preg_match('/(ed|ing)$/', $before) === 1;
         $isInterrogative = in_array($before, INTERROGATIVE_WORDS, true);
-        // A name that opens with a verb the code never names a type for says what it does: ReplyToMessageCall.
-        $isVerbPhrase = $at === 1 && isset($verbs[$before]) && ! isset($nouns[$before]);
+        // A name that opens with a verb says what it does when what follows "to" is a thing the code names a type for,
+        // or when no type is named for its verb: ReplyToMessageCall.
+        $after = $words[$at + 1] ?? '';
+        $isVerbPhrase = $at === 1 && isset($verbs[$before]) && (! isset($nouns[$before]) || isset($nouns[$after]));
 
         if ($word === 'to' && $at > 0 && ! $isState && ! $isInterrogative && ! $isVerbPhrase && isset($words[$at + 1], $verbs[$words[$at + 1]])) {
             return "named for what will be done with it ({$words[$at - 1]} to {$words[$at + 1]}): name what it is, "
@@ -189,17 +192,40 @@ function purposeFault(DeclaredName $declared, array $verbs, array $nouns): ?stri
  *
  * @param  array<string, true>  $commandVerbs
  * @param  array<string, true>  $nouns
+ * @param  array<string, true>  $sharedVerbs  first words several action classes share, which is a verb's evidence
  */
-function actionClassFault(DeclaredName $declared, array $commandVerbs, array $nouns): ?string
+function actionClassFault(DeclaredName $declared, array $commandVerbs, array $nouns, array $sharedVerbs): ?string
 {
     $first = firstWordOf($declared->name);
-    $isNoun = ! isset($commandVerbs[$first]) && (isset($nouns[$first]) || isset($nouns[rtrim($first, 's')]));
+    $isNoun = ! isset($commandVerbs[$first]) && ! isset($sharedVerbs[$first])
+        && (isset($nouns[$first]) || isset($nouns[rtrim($first, 's')]));
 
     if ($declared->declarationType !== 'class' || $declared->role !== 'action' || ! $isNoun) {
         return null;
     }
 
     return "an action class starts with its verb, and {$first} is a noun the code names types for";
+}
+
+/**
+ * The first words two or more action classes start with (CastConstructorValues, CastPropertyValues): a word that
+ * several actions open with is their verb.
+ *
+ * @param  list<DeclaredName>  $names
+ * @return array<string, true>
+ */
+function sharedActionWordsOf(array $names): array
+{
+    $counts = [];
+
+    foreach ($names as $declared) {
+        if ($declared->declarationType === 'class' && $declared->role === 'action') {
+            $first = firstWordOf($declared->name);
+            $counts[$first] = ($counts[$first] ?? 0) + 1;
+        }
+    }
+
+    return array_fill_keys(array_keys(array_filter($counts, fn (int $count) => $count > 1)), true);
 }
 
 /**

@@ -7,7 +7,7 @@ namespace Tests\Fixtures\Architecture\Names;
 /**
  * A thing named for what will be done with it, holding a yes or no that is no question, a getter and a forbidden word.
  */
-final class StepToRun
+final class PartToSpawn
 {
     public bool $retired = false;
 

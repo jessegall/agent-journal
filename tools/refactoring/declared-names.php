@@ -64,8 +64,10 @@ function declaredNames(array $files): array
             $typeName = $type->name->toString();
             $owner = $type->namespacedName?->toString() ?? $typeName;
             $parents = parentsOf($type);
+            $isActionClass = preg_match(ACTION_FOLDERS, $path) === 1 && ! str_ends_with($typeName, 'Test')
+                && ! ($type instanceof Class_ && $type->isAbstract());
             $typeRole = match (true) {
-                preg_match(ACTION_FOLDERS, $path) === 1 => 'action',
+                $isActionClass => 'action',
                 $type instanceof Class_ && array_any($parents, fn (string $parent) => str_ends_with($parent, 'Event')) => 'event',
                 default => 'thing',
             };

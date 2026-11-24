@@ -16,4 +16,6 @@ final class ReportStop
     public function name(): void {}
 
     public function run(): void {}
+
+    public function spawn(): void {}
 }
