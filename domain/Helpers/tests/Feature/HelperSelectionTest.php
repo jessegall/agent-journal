@@ -50,11 +50,10 @@ final class HelperSelectionTest extends TestCase
 
         $this->parent = $this->actAsUser('parent');
 
-        $this->review = HelperPurpose::forSubject(
+        $this->review = HelperPurpose::forSubjectOnce(
             $this->parent,
             'read-only-helper',
             new RecordIdentity('plans.plan', (string) Str::ulid()),
-            'Review plan 7',
         );
     }
 

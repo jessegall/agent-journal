@@ -9,6 +9,7 @@ use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;
+use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
@@ -53,7 +54,7 @@ final class ScreenFrameData extends Data
         public readonly string|null $attachment = null,
         public readonly string|null $containerInstance = null,
         public readonly bool $connectionLost = false,
-        public readonly ScreenMenuData|null $menu = null,
+        public readonly ScreenMenuData|Optional $menu = new Optional(),
     ) {}
 
     /**

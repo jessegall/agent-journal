@@ -38,7 +38,7 @@ final readonly class NotificationFeed
     {
         return NotificationScope::findFor($this->scopes->keyFor($actor), $actor)
             ->map(fn (NotificationScope $scope) => $this->pageOf($scope, $cursor))
-            ->getOrCall(fn () => new NotificationPage(null, '0', 0, null, '', []));
+            ->getOrCall(fn () => new NotificationPage(null, '0', 0, null, null, []));
     }
 
     private function pageOf(NotificationScope $scope, string|null $cursor): NotificationPage

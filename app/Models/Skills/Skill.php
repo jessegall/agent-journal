@@ -109,17 +109,6 @@ final class Skill extends Model implements EventSource, Numbered, ReadableModel
         );
     }
 
-    /**
-     * Every stored skill of the installation, retired or not, for maintenance such as a refresh; never for an actor's
-     * read.
-     *
-     * @return list<self>
-     */
-    public static function allForMaintenance(int $limit): array
-    {
-        return array_values(self::query()->orderBy('key')->readExactly($limit)->get()->all());
-    }
-
     // ----------[ Mutations ]----------
 
     /**

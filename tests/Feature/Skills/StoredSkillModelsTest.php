@@ -102,7 +102,7 @@ final class StoredSkillModelsTest extends TestCase
             ['user-everywhere', 'user-here'],
             array_map(fn (Skill $skill) => $skill->key, Skill::activeIn(SkillContextResolver::ENVIRONMENT, 10)),
         );
-        $this->assertCount(3, Skill::allForMaintenance(10));
+        $this->assertSame(3, Skill::query()->count());
     }
 
     private function author(): ActorIdentity

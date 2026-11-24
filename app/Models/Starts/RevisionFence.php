@@ -56,15 +56,6 @@ final class RevisionFence extends Model implements ReadableModel
         return self::query()->where('profile_key', $key)->where('profile_revision', $revision)->sole();
     }
 
-    public static function isPending(string $key, int $revision): bool
-    {
-        return self::query()
-            ->where('profile_key', $key)
-            ->where('profile_revision', $revision)
-            ->whereNull('reconciled_at')
-            ->exists();
-    }
-
     /**
      * The fences whose sessions may still run, oldest first.
      *

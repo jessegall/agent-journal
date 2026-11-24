@@ -130,11 +130,15 @@ function prepareWorkerDatabases(string $root, array $environment, int $processes
 
 /**
  * Holds the run's databases until its connection closes: a second run of the same checkout waits here until the first
- * ends, since both use the same databases.
+ * ends, since both use the same databases. The holding connection probes its client every few seconds, so a run that
+ * was stopped without closing it lets go of the lock within half a minute instead of holding it for good.
  */
 function holdRunDatabases(string $root, string $database): PDO
 {
     $server = testServer($root);
+    $server->exec('set tcp_keepalives_idle = 10');
+    $server->exec('set tcp_keepalives_interval = 5');
+    $server->exec('set tcp_keepalives_count = 3');
     $server->prepare('select pg_advisory_lock(hashtext(?))')->execute([$database]);
 
     return $server;

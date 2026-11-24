@@ -14,7 +14,6 @@ use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Models\HelperPurpose;
 use Domain\Helpers\Tests\TestCase;
-use Illuminate\Database\QueryException;
 use Illuminate\Support\Str;
 use Tests\Support\RefreshHookDatabase;
 
@@ -51,11 +50,11 @@ final class HelperRecordsTest extends TestCase
     {
         $parent = $this->actAsUser('parent');
         $subject = new RecordIdentity('tasks.task', (string) Str::ulid());
-        HelperPurpose::forSubject($parent, 'read-only-helper', $subject, 'Review task 41');
+        $first = HelperPurpose::forSubjectOnce($parent, 'read-only-helper', $subject);
+        $again = HelperPurpose::forSubjectOnce($parent, 'read-only-helper', $subject);
 
-        $this->expectException(QueryException::class);
-
-        HelperPurpose::forSubject($parent, 'read-only-helper', $subject, 'Review task 41 again');
+        $this->assertSame($first->id, $again->id);
+        $this->assertSame(1, HelperPurpose::query()->where('subject_id', $subject->id)->count());
     }
 
     public function test_an_identity_keeps_its_profile(): void

@@ -393,12 +393,6 @@ final class AgentRuntime extends Model implements ReadableModel
         $this->save();
     }
 
-    public function requestEffort(string $effort): void
-    {
-        $this->requested_effort = $effort;
-        $this->save();
-    }
-
     // ----------[ Answers ]----------
 
     /**

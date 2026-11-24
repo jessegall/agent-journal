@@ -159,12 +159,12 @@ final class LaunchCleanupTest extends TestCase
         $limits->enforceFences();
 
         $this->assertFalse(AgentRuntime::isRunningForSession($launch->session->id));
-        $this->assertTrue(RevisionFence::isPending($fence->profile_key, $fence->profile_revision));
+        $this->assertTrue(RevisionFence::query()->whereKey($fence->id)->whereNull('reconciled_at')->exists());
 
         $this->app->make(StartHeartbeats::class)->markExited($launch->session, 'exit 0');
         $limits->enforceFences();
 
-        $this->assertFalse(RevisionFence::isPending($fence->profile_key, $fence->profile_revision));
+        $this->assertFalse(RevisionFence::query()->whereKey($fence->id)->whereNull('reconciled_at')->exists());
     }
 
     private function endedContainerLaunch(): TestStart

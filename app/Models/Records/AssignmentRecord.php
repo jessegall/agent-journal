@@ -163,14 +163,6 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
             ->all());
     }
 
-    /**
-     * Whether this exact assignment still exists, whoever holds it.
-     */
-    public static function stillExists(string $assignmentId): bool
-    {
-        return self::holdersOf([$assignmentId]) !== [];
-    }
-
     // ----------[ Answers ]----------
 
     public function toAssignment(): Assignment

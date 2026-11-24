@@ -131,7 +131,7 @@ export function notificationStore(
 
         if (snapshot.value === null || BigInt(page.version) >= BigInt(snapshot.value.version)) {
             snapshot.value = page;
-            changesCursor = page.changesCursor === '' ? null : page.changesCursor;
+            changesCursor = page.changesCursor;
             list(page);
         }
 

@@ -35,7 +35,7 @@ final class TerminalViewTest extends TestCase
         $this->assertTrue($stored->expires_at->equalTo($now->addSeconds(TerminalView::LEASE_SECONDS)));
         $this->assertTrue($stored->isLive());
         $this->assertFalse(TerminalView::query()->ownedBy(TestActors::userIdentity(2))->whereKey($view->id)->exists());
-        $this->assertSame($view->id, $runtime->terminalViews()->acrossActors()->sole()->id);
+        $this->assertSame($view->id, TerminalView::query()->acrossActors()->where('agent_runtime_id', $runtime->id)->sole()->id);
     }
 
     public function test_renewing_moves_the_expiry_and_closing_ends_the_view(): void

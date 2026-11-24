@@ -758,7 +758,7 @@ final class AgentDriverLedgerTest extends TestCase
     public function test_the_reader_keeps_a_staged_effort_apart_from_the_observed_one(): void
     {
         [, $opened] = $this->openRuntime();
-        AgentRuntime::query()->findOrFail($opened->runtimeId)->requestEffort('low');
+        AgentRuntime::query()->findOrFail($opened->runtimeId)->forceFill(['requested_effort' => 'low'])->save();
 
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
         $status = $this->app->make(RuntimeResolver::class)->forSession($opened->sessionId);

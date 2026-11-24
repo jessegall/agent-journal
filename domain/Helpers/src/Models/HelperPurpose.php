@@ -57,15 +57,6 @@ final class HelperPurpose extends Model implements ReadableModel
 
     // ----------[ Queries ]----------
 
-    public static function forSubject(
-        ActorIdentity $parent,
-        string $profileKey,
-        RecordIdentity $subject,
-        string $label,
-    ): self {
-        return self::start($parent, $profileKey, PurposeType::Subject, $subject, $label);
-    }
-
     /**
      * The one purpose of the parent and profile for the record, made by the first of any concurrent starts; a later
      * start reads the one that won. Its label is the record's alias and id, never a fetched title.

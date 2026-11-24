@@ -51,7 +51,7 @@ describe('NotificationList', () => {
             version: '0',
             unread: 0,
             nextCursor: null,
-            changesCursor: '',
+            changesCursor: null,
             items: [],
         });
 

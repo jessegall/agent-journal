@@ -155,7 +155,8 @@ final class ProfilePolicyTest extends TestCase
         Event::assertDispatched(
             ProfileRevisionRevoked::class,
             fn (ProfileRevisionRevoked $event) => $event->revision === $revision->revision
-                && RevisionFence::isPending($event->key->key, $event->revision),
+                && RevisionFence::query()->where('profile_key', $event->key->key)
+                    ->where('profile_revision', $event->revision)->whereNull('reconciled_at')->exists(),
         );
     }
 

@@ -67,8 +67,8 @@ final class ClaimAuthorizationTest extends TestCase
 
         $this->assertSame(1, AssignmentRecord::claimsProvedBy($lost)->delete());
 
-        $this->assertFalse(AssignmentRecord::stillExists($gone->id));
-        $this->assertTrue(AssignmentRecord::stillExists($stays->id));
+        $this->assertFalse(array_key_exists($gone->id, AssignmentRecord::holdersOf([$gone->id])));
+        $this->assertTrue(array_key_exists($stays->id, AssignmentRecord::holdersOf([$stays->id])));
     }
 
     public function test_a_rejoined_actor_does_not_revive_an_old_proof(): void

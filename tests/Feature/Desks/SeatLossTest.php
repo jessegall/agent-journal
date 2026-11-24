@@ -57,10 +57,10 @@ final class SeatLossTest extends TestCase
         ));
 
         foreach ($lostClaims as $claim) {
-            $this->assertFalse(AssignmentRecord::stillExists($claim->id));
+            $this->assertFalse(array_key_exists($claim->id, AssignmentRecord::holdersOf([$claim->id])));
         }
 
-        $this->assertTrue(AssignmentRecord::stillExists($keptClaim->id));
+        $this->assertTrue(array_key_exists($keptClaim->id, AssignmentRecord::holdersOf([$keptClaim->id])));
         $taken = AssignmentRecord::create(
             TestActors::record('communication.message', 1),
             AssigneeIdentity::ofActorIdentity($arriving),

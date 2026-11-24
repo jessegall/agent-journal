@@ -25,8 +25,8 @@ final class NotificationPage extends Data
         public readonly string $version,
         public readonly int $unread,
         public readonly string|null $nextCursor,
-        // Where catching up on later changes starts, at this snapshot's version; empty while the actor has no scope.
-        public readonly string $changesCursor,
+        // Where catching up on later changes starts, at this snapshot's version; none while the actor has no scope.
+        public readonly string|null $changesCursor,
         #[DataCollectionOf(NotificationItem::class)]
         public readonly array $items,
     ) {}
