@@ -52,7 +52,7 @@ final class SupervisorTest extends TestCase
         $this->supervise('false && printf skipped || printf recovered');
 
         [$false, $skipped, $recovered] = $this->parts();
-        $this->assertSame(1, $false->end()->code);
+        $this->assertSame(1, $false->end->code);
         $this->assertSame(LifecycleState::Skipped, $skipped->lifecycle);
         $this->assertSame(LifecycleState::Ended, $recovered->lifecycle);
         $this->assertSame('recovered', $this->output->stdoutOf($recovered));
@@ -71,7 +71,7 @@ final class SupervisorTest extends TestCase
         $outcome = $this->supervise('! false');
 
         $this->assertSame(0, $outcome->status);
-        $this->assertSame(1, $this->parts()[0]->end()->code);
+        $this->assertSame(1, $this->parts()[0]->end->code);
     }
 
     public function test_cd_reaches_pwd_and_both_are_recorded(): void

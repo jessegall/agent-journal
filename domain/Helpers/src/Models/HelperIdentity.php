@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use PhpOption\Option;
@@ -124,14 +125,18 @@ final class HelperIdentity extends Model implements ReadableModel
         $this->save();
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Accessors ]----------
 
     /**
      * The lasting actor this identity represents.
+     *
+     * @return Attribute<ActorIdentity, never>
      */
-    public function helperActor(): ActorIdentity
+    protected function helperActor(): Attribute
     {
-        return new ActorIdentity(ActorType::from($this->helper_actor_type), $this->helper_actor_id);
+        return Attribute::get(
+            fn () => new ActorIdentity(ActorType::from($this->helper_actor_type), $this->helper_actor_id),
+        )->withoutObjectCaching();
     }
 
     // ----------[ Scopes ]----------

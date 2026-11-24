@@ -29,6 +29,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -372,28 +373,6 @@ final class AgentSession extends Model implements ReadableModel
     }
 
     /**
-     * The selection this session was started with, rebuilt from its row.
-     */
-    public function selection(): SelectedDriver
-    {
-        $requested = $this->requested_model_type === ModelSelectionType::Named
-            ? ModelSelection::named((string) $this->requested_model)
-            : ModelSelection::profileDefault();
-
-        return new SelectedDriver(
-            (string) $this->driver_key,
-            $this->model,
-            $requested,
-            new SelectionSource($this->driver_source, $this->profile_key, $this->profile_revision),
-        );
-    }
-
-    public function target(): StackTarget
-    {
-        return new StackTarget($this->agent_id, $this->id);
-    }
-
-    /**
      * This session as a use of the account it ran with; it runs until it ends.
      */
     public function useOf(RecordIdentity $account): AccountUse
@@ -402,7 +381,7 @@ final class AgentSession extends Model implements ReadableModel
             $account,
             $this->id,
             $this->agent_id,
-            $this->selection()->driver,
+            $this->selection->driver,
             AccountProcessRole::Execution,
             CarbonImmutable::instance($this->created_at),
             $this->ended_at,
@@ -435,6 +414,37 @@ final class AgentSession extends Model implements ReadableModel
         }
 
         return $this->parent_session_id === null ? WorkspaceUse::Shared : WorkspaceUse::OwnCheckout;
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * The selection this session was started with, rebuilt from its row.
+     *
+     * @return Attribute<SelectedDriver, never>
+     */
+    protected function selection(): Attribute
+    {
+        return Attribute::get(function () {
+            $requested = $this->requested_model_type === ModelSelectionType::Named
+                ? ModelSelection::named((string) $this->requested_model)
+                : ModelSelection::profileDefault();
+
+            return new SelectedDriver(
+                (string) $this->driver_key,
+                $this->model,
+                $requested,
+                new SelectionSource($this->driver_source, $this->profile_key, $this->profile_revision),
+            );
+        })->withoutObjectCaching();
+    }
+
+    /**
+     * @return Attribute<StackTarget, never>
+     */
+    protected function target(): Attribute
+    {
+        return Attribute::get(fn () => new StackTarget($this->agent_id, $this->id))->withoutObjectCaching();
     }
 
     // ----------[ Relations ]----------

@@ -76,7 +76,7 @@ final class DeskPlanAssignmentTest extends TestCase
         $this->assertCount(count($records), $assignments);
 
         foreach ($assignments as $assignment) {
-            $this->assertTrue($assignment->toAssignment()->holder()->isSameAs($main->assigneeIdentity()));
+            $this->assertTrue($assignment->toAssignment->holder()->isSameAs($main->assigneeIdentity()));
         }
 
         $this->assertTrue($result->requests[0]->requested->isSameAs($agent->assigneeIdentity()));

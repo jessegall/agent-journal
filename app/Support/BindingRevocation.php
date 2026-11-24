@@ -23,7 +23,7 @@ final readonly class BindingRevocation
     public function revoke(ProjectBinding $binding, string $userId): BindingOutcome
     {
         if ($binding->isRevoked()) {
-            return new BindingOutcome($binding->id, BindingOutcome::ALREADY_REVOKED, $binding->revokedAtText());
+            return new BindingOutcome($binding->id, BindingOutcome::ALREADY_REVOKED, $binding->revokedAtText);
         }
 
         $binding->revoke();
@@ -39,6 +39,6 @@ final readonly class BindingRevocation
 
         ConnectionAudit::ofBinding(ConnectionAuditType::BindingRevoked, ConnectionAuditActor::User, $userId, $binding);
 
-        return new BindingOutcome($binding->id, BindingOutcome::REVOKED, $binding->revokedAtText());
+        return new BindingOutcome($binding->id, BindingOutcome::REVOKED, $binding->revokedAtText);
     }
 }

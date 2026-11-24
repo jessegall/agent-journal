@@ -35,7 +35,7 @@ final readonly class SequenceEditorResolver implements PageResolver
 
         $editor = SequenceEditorPartData::from([
             'name' => $sequence->name,
-            'steps' => $sequence->stepList(),
+            'steps' => $sequence->stepList,
             'saveAddress' => route('sequences.change-sequence', ['sequence' => $sequence->id], false),
             'method' => 'PATCH',
             'cancelAddress' => route('sequences.sequence', ['sequence' => $sequence->id], false),

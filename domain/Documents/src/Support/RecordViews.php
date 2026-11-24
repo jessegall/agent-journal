@@ -31,7 +31,7 @@ final readonly class RecordViews
      */
     public static function documentView(Document $document): DocumentView
     {
-        $revision = $document->currentRevisionOrFail();
+        $revision = $document->currentRevisionOrFail;
 
         return new DocumentView(
             $document->id,
@@ -61,7 +61,7 @@ final readonly class RecordViews
             'authorType' => $revision->author_type->value,
             'authorId' => $revision->author_id,
             'closedAt' => (string) $revision->closed_at?->toIso8601String(),
-            'historical' => $document->currentRevisionOrFail()->number !== $revision->number,
+            'historical' => $document->currentRevisionOrFail->number !== $revision->number,
         ]);
     }
 
@@ -100,7 +100,7 @@ final readonly class RecordViews
      */
     public static function documentCard(Document $document): PublicationCard
     {
-        $revision = $document->currentRevisionOrFail();
+        $revision = $document->currentRevisionOrFail;
 
         return PublicationCard::from([
             'id' => $document->id,
@@ -161,7 +161,7 @@ final readonly class RecordViews
      */
     public static function documentSuggestion(Document $document): DockSuggestion
     {
-        $revision = $document->currentRevisionOrFail();
+        $revision = $document->currentRevisionOrFail;
 
         return new DockSuggestion(
             'doc',

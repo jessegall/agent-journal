@@ -10,6 +10,8 @@ use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
+use App\Exceptions\AssignmentTypeUnavailable;
+use App\Exceptions\AutoAssignmentPoolUnreadable;
 use App\Models\Support\HasActorColumns;
 use App\Support\ActorIdentity;
 use App\Support\AutoAssignmentFact;
@@ -154,6 +156,10 @@ final class AutoAssignment extends Model implements ReadableModel
         return $this->configuration_revision === $expected;
     }
 
+    /**
+     * @throws AutoAssignmentPoolUnreadable
+     * @throws AssignmentTypeUnavailable
+     */
     public function toFact(): AutoAssignmentFact
     {
         return new AutoAssignmentFact(
@@ -166,6 +172,8 @@ final class AutoAssignment extends Model implements ReadableModel
             $this->last_served_at,
         );
     }
+
+    // ----------[ Accessors ]----------
 
     // ----------[ Internals ]----------
 

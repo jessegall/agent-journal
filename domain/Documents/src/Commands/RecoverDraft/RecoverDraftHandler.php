@@ -30,12 +30,12 @@ final readonly class RecoverDraftHandler extends DocumentCommandHandler
         $open = DocumentDraft::query()->where('document_id', $document->id)->first();
 
         if ($open !== null) {
-            throw DraftHeld::byOther($open->holderLabel());
+            throw DraftHeld::byOther($open->holderLabel);
         }
 
         $opened = $this->commands->run(new OpenDocumentCommand($document->id, $command->expectedRevision));
         $target = new DraftTarget($document->id, $opened->token, $opened->version);
 
-        return $this->edits->saveEdit($target, fn () => $draft->workingText());
+        return $this->edits->saveEdit($target, fn () => $draft->workingText);
     }
 }

@@ -26,7 +26,7 @@ final readonly class ReleaseAccountRemovalHandler implements CommandHandler
             return false;
         }
 
-        $identity = $account->recordIdentity();
+        $identity = $account->recordIdentity;
         $this->commands->run(new HoldAccountUsesCommand($identity));
         $this->commands->run(new CancelAccountUsesCommand($identity));
 

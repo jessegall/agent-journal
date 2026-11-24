@@ -16,6 +16,7 @@ use App\Values\ApprovedHead;
 use App\Values\MergeOutcome;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -220,11 +221,14 @@ final class MergeAttempt extends Model implements ReadableModel
         $this->save();
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Accessors ]----------
 
-    public function outcome(): MergeOutcome
+    /**
+     * @return Attribute<MergeOutcome, never>
+     */
+    protected function outcome(): Attribute
     {
-        return new MergeOutcome(
+        return Attribute::get(fn () => new MergeOutcome(
             $this->id,
             $this->state,
             $this->head,
@@ -232,14 +236,16 @@ final class MergeAttempt extends Model implements ReadableModel
             $this->result,
             $this->refusal,
             $this->evidence,
-        );
+        ))->withoutObjectCaching();
     }
 
     /**
      * The ref the prospective result is kept under before it is published.
+     *
+     * @return Attribute<non-falsy-string, never>
      */
-    public function resultRef(): string
+    protected function resultRef(): Attribute
     {
-        return "refs/journal/merge/{$this->id}";
+        return Attribute::get(fn () => "refs/journal/merge/{$this->id}");
     }
 }

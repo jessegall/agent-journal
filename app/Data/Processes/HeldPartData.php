@@ -33,7 +33,7 @@ final class HeldPartData extends Data
         return clone ($this, [
             'requestId' => $request->id,
             'requestState' => $request->state->value,
-            'next' => $request->nextStep()->command,
+            'next' => $request->nextStep->command,
         ]);
     }
 }

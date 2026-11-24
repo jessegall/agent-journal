@@ -27,6 +27,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -111,7 +112,7 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
         }
 
         $comment->assertSaved($comment->save());
-        $comment->raise(new CommentPosted($comment->id, $comment->target()));
+        $comment->raise(new CommentPosted($comment->id, $comment->target));
 
         return $comment;
     }
@@ -170,31 +171,43 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
         }
     }
 
+    // ----------[ Accessors ]----------
+
     /**
      * The record the comment is on.
+     *
+     * @return Attribute<RecordIdentity, never>
      */
-    public function target(): RecordIdentity
+    protected function target(): Attribute
     {
-        return new RecordIdentity($this->target_type, $this->target_id);
+        return Attribute::get(
+            fn () => new RecordIdentity($this->target_type, $this->target_id),
+        )->withoutObjectCaching();
     }
 
     /**
      * What the comment is about, in a few words: the whole record, or the version and lines of its text.
+     *
+     * @return Attribute<non-falsy-string, never>
      */
-    public function placeLabel(): string
+    protected function placeLabel(): Attribute
     {
-        $subject = $this->subject();
+        return Attribute::get(function () {
+            $subject = $this->subject();
 
-        return $subject instanceof TextAnchor
-            ? "on {$subject->versionLabel}, lines {$subject->firstLine}-{$subject->lastLine}" : 'on the whole record';
+            return $subject instanceof TextAnchor
+                ? "on {$subject->versionLabel}, lines {$subject->firstLine}-{$subject->lastLine}" : 'on the whole record';
+        });
     }
 
     /**
      * The comment as it is shown, its text also as safe HTML.
+     *
+     * @return Attribute<CommentDetails, never>
      */
-    public function details(): CommentDetails
+    protected function details(): Attribute
     {
-        return CommentDetailsFactory::details($this);
+        return Attribute::get(fn () => CommentDetailsFactory::details($this))->withoutObjectCaching();
     }
 
     // ----------[ Internals ]----------

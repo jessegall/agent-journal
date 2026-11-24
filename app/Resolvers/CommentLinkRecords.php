@@ -47,7 +47,7 @@ final readonly class CommentLinkRecords implements RecordProvider
             fn () => throw RecordUnavailable::forActor($record),
         );
 
-        $this->records->requireReadable($comment->target());
+        $this->records->requireReadable($comment->target);
 
         return $comment;
     }
@@ -68,7 +68,7 @@ final readonly class CommentLinkRecords implements RecordProvider
         foreach ($this->records->visibleCards(
             array_values(
                 $targets
-                    ->map(fn (Comment $comment) => $comment->target())
+                    ->map(fn (Comment $comment) => $comment->target)
                     ->unique(fn (RecordIdentity $target) => $target->type.' '.$target->id)
                     ->all(),
             ),
@@ -101,7 +101,7 @@ final readonly class CommentLinkRecords implements RecordProvider
             'id' => $comment->id,
             'number' => '',
             'label' => "comment on {$target->label}",
-            'title' => "{$comment->author_type->value} {$comment->author_id} · {$comment->placeLabel()}",
+            'title' => "{$comment->author_type->value} {$comment->author_id} · {$comment->placeLabel}",
             'abstract' => Str::limit($comment->body, self::EXCERPT_CHARACTERS),
             'route' => $target->route,
         ]);

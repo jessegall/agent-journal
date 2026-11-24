@@ -106,7 +106,7 @@ final class PlanWorkingStateTest extends TestCase
         $row = AgentStackRow::query()->forTarget($this->target)->sole();
 
         $this->assertTrue($this->planFrame($restorer, $row)->isFinished());
-        $this->assertTrue($restorer->restore($row->frames, $row->target())->top()->isBottom());
+        $this->assertTrue($restorer->restore($row->frames, $row->target)->top()->isBottom());
     }
 
     public function test_the_frame_shows_the_newest_counts_it_heard_and_ignores_an_older_count_arriving_late(): void
@@ -151,7 +151,7 @@ final class PlanWorkingStateTest extends TestCase
      */
     private function planFrame(StackRestorer $restorer, AgentStackRow $row): Frame
     {
-        $frames = $restorer->restore($row->frames, $row->target())->frames();
+        $frames = $restorer->restore($row->frames, $row->target)->frames();
 
         return $frames[array_key_last($frames)];
     }

@@ -110,7 +110,7 @@ final readonly class CommentRecords implements CommentResolver
         $subject = $comment->subject();
 
         return $subject instanceof TextAnchor
-            ? new TextCommentView($card, $comment->details(), $subject)
-            : new RecordCommentView($card, $comment->details());
+            ? new TextCommentView($card, $comment->details, $subject)
+            : new RecordCommentView($card, $comment->details);
     }
 }

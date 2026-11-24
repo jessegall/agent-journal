@@ -85,7 +85,7 @@ final readonly class DraftCloseService
         $closed = $document->closeOf($target->token);
 
         if ($closed !== null) {
-            return $closed->result();
+            return $closed->result;
         }
 
         $draft = DocumentDraft::query()->where('document_id', $document->id)->where('token', $target->token)->firstOr(
@@ -109,13 +109,13 @@ final readonly class DraftCloseService
         string|null $reason,
     ): CloseResult {
         MarkdownCheck::publication($draft->body);
-        $base = $document->currentRevisionOrFail();
+        $base = $document->currentRevisionOrFail;
 
         if (! $draft->hasChangesFrom($base)) {
             $close = DocumentClose::create($document, $draft, $base->number, $cause, $closer, $reason, false);
             $draft->delete();
 
-            return $close->result();
+            return $close->result;
         }
 
         $revision = DocumentRevision::create(
@@ -132,6 +132,6 @@ final readonly class DraftCloseService
         $this->provenance->inherit($revision, $draft);
         $draft->delete();
 
-        return $close->result();
+        return $close->result;
     }
 }

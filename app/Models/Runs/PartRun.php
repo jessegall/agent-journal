@@ -18,6 +18,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -137,7 +138,7 @@ final class PartRun extends Model implements ReadableModel
      */
     public function finishDraining(): void
     {
-        if (! $this->end()->hasEnded()) {
+        if (! $this->end->hasEnded()) {
             throw PartTransitionRefused::notDrained();
         }
 
@@ -160,18 +161,6 @@ final class PartRun extends Model implements ReadableModel
     {
         $this->capture_state = $state;
         $this->save();
-    }
-
-    // ----------[ Answers ]----------
-
-    public function end(): PartEnd
-    {
-        return match ($this->end_type) {
-            PartEndType::NotYet => PartEnd::notYet(),
-            PartEndType::Exited => PartEnd::exited($this->end_code),
-            PartEndType::Signalled => PartEnd::signalled($this->end_code),
-            PartEndType::Unavailable => PartEnd::unavailable($this->end_reason),
-        };
     }
 
     /**
@@ -214,18 +203,6 @@ final class PartRun extends Model implements ReadableModel
     }
 
     /**
-     * The streams this part wrote at least one byte to.
-     *
-     * @return list<OutputStream>
-     */
-    public function recordedStreams(): array
-    {
-        $written = array_keys(array_filter($this->stream_offsets, fn (int $end): bool => $end > 0));
-
-        return array_map(fn (string $stream): OutputStream => OutputStream::from($stream), $written);
-    }
-
-    /**
      * The digest of each stream's chunk manifest: its chunk checksums in offset order.
      *
      * @return array<string, string>
@@ -239,6 +216,35 @@ final class PartRun extends Model implements ReadableModel
         }
 
         return array_map(fn (array $sums): string => hash('sha256', implode("\n", $sums)), $checksums);
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<PartEnd, never>
+     */
+    protected function end(): Attribute
+    {
+        return Attribute::get(fn () => match ($this->end_type) {
+            PartEndType::NotYet => PartEnd::notYet(),
+            PartEndType::Exited => PartEnd::exited($this->end_code),
+            PartEndType::Signalled => PartEnd::signalled($this->end_code),
+            PartEndType::Unavailable => PartEnd::unavailable($this->end_reason),
+        })->withoutObjectCaching();
+    }
+
+    /**
+     * The streams this part wrote at least one byte to.
+     *
+     * @return Attribute<list<OutputStream>, never>
+     */
+    protected function recordedStreams(): Attribute
+    {
+        return Attribute::get(function () {
+            $written = array_keys(array_filter($this->stream_offsets, fn (int $end) => $end > 0));
+
+            return array_map(fn (string $stream) => OutputStream::from($stream), $written);
+        });
     }
 
     // ----------[ Relations ]----------

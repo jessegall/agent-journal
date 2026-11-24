@@ -43,6 +43,6 @@ final class TransportProfileTest extends TestCase
         $this->assertSame(TransportProfileType::Mcp, $earlier->refresh()->transport_profile);
         $this->assertSame(TransportProfileType::Cli, $cli->refresh()->transport_profile);
         $this->assertSame(TransportProfileType::Mcp, $restored->refresh()->transport_profile);
-        $this->assertSame($earlier->settingsIdentity(), $restored->settingsIdentity());
+        $this->assertSame($earlier->settingsIdentity, $restored->settingsIdentity);
     }
 }

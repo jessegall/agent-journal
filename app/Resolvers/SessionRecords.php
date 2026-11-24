@@ -92,7 +92,7 @@ final readonly class SessionRecords implements SessionResolver
             $session->id,
             $session->agent->name,
             new StackTarget($session->agent_id, $session->id),
-            $session->selection(),
+            $session->selection,
             StartReceipt::ACTUAL_MODEL_NOT_REPORTED,
             $session->currentConversation?->native_id,
             (int) $session->getAttribute('visits_count'),

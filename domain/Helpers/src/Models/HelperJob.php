@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -206,29 +207,6 @@ final class HelperJob extends Model implements Assignable, ReadableModel
         $this->save();
     }
 
-    // ----------[ Answers ]----------
-
-    /**
-     * The actor whose helper this job is, the parent that started it.
-     */
-    public function actor(): ActorIdentity
-    {
-        return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
-    }
-
-    public function launch(): JobLaunch
-    {
-        return new JobLaunch(
-            $this->request_id,
-            $this->payload_digest,
-            $this->profile_revision,
-            $this->identity_new,
-            $this->independent,
-            $this->conversation_mode,
-            $this->conversation_reason,
-        );
-    }
-
     /**
      * The job's dispatch receipt, with the profile type it was launched under and Core's start for it.
      */
@@ -240,19 +218,9 @@ final class HelperJob extends Model implements Assignable, ReadableModel
             $isNewJob,
             $profileType,
             $this->state,
-            $this->launch(),
+            $this->launch,
             $start,
         );
-    }
-
-    /**
-     * The records the job was given as its source, written as type:id.
-     *
-     * @return list<string>
-     */
-    public function sourceSubjects(): array
-    {
-        return $this->source_snapshot['subjects'];
     }
 
     /**
@@ -278,7 +246,7 @@ final class HelperJob extends Model implements Assignable, ReadableModel
             $lines[] = AgentText::of('helpers.steering', ['steering' => $steering]);
         }
 
-        foreach ($this->sourceSubjects() as $subject) {
+        foreach ($this->sourceSubjects as $subject) {
             $lines[] = AgentText::of('helpers.source', ['subject' => $subject]);
         }
 
@@ -298,6 +266,42 @@ final class HelperJob extends Model implements Assignable, ReadableModel
     public function isFinished(): bool
     {
         return $this->state->isFinal();
+    }
+
+    /**
+     * The actor whose helper this job is, the parent that started it.
+     */
+    public function actor(): ActorIdentity
+    {
+        return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<JobLaunch, never>
+     */
+    protected function launch(): Attribute
+    {
+        return Attribute::get(fn () => new JobLaunch(
+            $this->request_id,
+            $this->payload_digest,
+            $this->profile_revision,
+            $this->identity_new,
+            $this->independent,
+            $this->conversation_mode,
+            $this->conversation_reason,
+        ))->withoutObjectCaching();
+    }
+
+    /**
+     * The records the job was given as its source, written as type:id.
+     *
+     * @return Attribute<list<string>, never>
+     */
+    protected function sourceSubjects(): Attribute
+    {
+        return Attribute::get(fn () => $this->source_snapshot['subjects']);
     }
 
     // ----------[ Internals ]----------

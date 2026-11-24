@@ -30,7 +30,7 @@ final readonly class StartSwitchReplacementHandler implements CommandHandler
             $switch->request_id,
             $agent->id,
             ProfileKey::from($agent->profile_key),
-            $switch->target(),
+            $switch->target,
         ));
 
         $switch->beginStarting($receipt->sessionId);

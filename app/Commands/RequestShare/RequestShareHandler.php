@@ -47,6 +47,6 @@ final readonly class RequestShareHandler implements CommandHandler
         $proposal = Share::create($root, $expiry, new ShareProposal($actor));
         ShareAudit::create($proposal, ShareAuditType::Created, $actor, null);
 
-        return $proposal->proposalStatus();
+        return $proposal->proposalStatus;
     }
 }

@@ -312,16 +312,6 @@ final class Host extends Model implements ReadableModel
     }
 
     /**
-     * The folder a start the host was not asked for in a folder runs in: the first of its start roots.
-     *
-     * @throws HostUnavailable
-     */
-    public function startFolder(): string
-    {
-        return $this->start_roots[0] ?? throw HostUnavailable::withoutStartFolder($this->id);
-    }
-
-    /**
      * The protection this host reported for the build the unreported report names, or that report when it has none.
      */
     public function protectionOf(ProtectionReport $unreported): ProtectionReport
@@ -367,6 +357,18 @@ final class Host extends Model implements ReadableModel
     {
         return $this->revoked_at !== null;
     }
+
+    /**
+     * The folder a start the host was not asked for in a folder runs in: the first of its start roots.
+     *
+     * @throws HostUnavailable
+     */
+    public function startFolder(): string
+    {
+        return $this->start_roots[0] ?? throw HostUnavailable::withoutStartFolder($this->id);
+    }
+
+    // ----------[ Accessors ]----------
 
     // ----------[ Scopes ]----------
 

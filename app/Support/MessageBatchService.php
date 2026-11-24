@@ -255,7 +255,7 @@ final readonly class MessageBatchService
 
         MessageRange::create($batch, $outstanding, $end, hash('sha256', $handle));
 
-        $author = $message->author();
+        $author = $message->author;
         $root = $message->user_root_id;
         $claimable = $root !== null && SpeechOpportunity::query()->onRoot($root)->openFor($agent)->exists();
 

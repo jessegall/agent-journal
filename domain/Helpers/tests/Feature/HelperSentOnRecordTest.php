@@ -56,7 +56,7 @@ final class HelperSentOnRecordTest extends TestCase
         $identity = HelperIdentity::query()->findOrFail(HelperJob::query()->sole()->helper_identity_id);
         $this->assertCount(1, $heard);
         $this->assertEquals($plan, $heard[0]->subject);
-        $this->assertSame($identity->helperActor()->id, $heard[0]->helperAgentId);
+        $this->assertSame($identity->helperActor->id, $heard[0]->helperAgentId);
     }
 
     public function test_a_helper_on_a_free_purpose_is_not_announced(): void

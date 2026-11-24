@@ -37,6 +37,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -663,47 +664,17 @@ final class Account extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The account as the start it is chosen for runs with it.
-     */
-    public function selectedForStart(): SelectedAccount
-    {
-        return new SelectedAccount(
-            $this->recordIdentity(),
-            $this->account_protocol,
-            $this->directoryForStart(),
-            $this->sign_in_generation,
-        );
-    }
-
-    public function recordIdentity(): RecordIdentity
-    {
-        return new RecordIdentity(self::LINK_TYPE, $this->id);
-    }
-
-    /**
      * Refuses a start on an account that is not signed in or is held for maintenance.
      *
      * @throws AccountUnavailable
      */
     public function assertAvailable(): void
     {
-        $reason = $this->startUnavailableReason();
+        $reason = $this->startUnavailableReason;
 
         if ($reason !== null) {
             throw AccountUnavailable::forStart($this->account_protocol, $reason);
         }
-    }
-
-    /**
-     * Why a start cannot use the account now, none while it is signed in and not held for maintenance.
-     */
-    public function startUnavailableReason(): StartUnavailableReason|null
-    {
-        if ($this->state->canStart() && ! $this->maintenance) {
-            return null;
-        }
-
-        return $this->state->startUnavailableReason();
     }
 
     /**
@@ -716,20 +687,6 @@ final class Account extends Model implements EventSource, ReadableModel
         if ($this->sign_in_generation !== $signIn) {
             throw AccountUnavailable::forStart($this->account_protocol, StartUnavailableReason::ChosenAccountChanged);
         }
-    }
-
-    /**
-     * The folder a start runs the driver's sign-in from; a removed account has none.
-     *
-     * @throws AccountUnavailable
-     */
-    public function directoryForStart(): string
-    {
-        if ($this->directory === null) {
-            throw AccountUnavailable::forStart($this->account_protocol, StartUnavailableReason::NoAccount);
-        }
-
-        return $this->directory;
     }
 
     /**
@@ -772,6 +729,61 @@ final class Account extends Model implements EventSource, ReadableModel
     public function isBeingRemoved(): bool
     {
         return in_array($this->state, [AccountState::Removing, AccountState::Removed], true);
+    }
+
+    /**
+     * The folder a start runs the driver's sign-in from; a removed account has none.
+     *
+     * @throws AccountUnavailable
+     */
+    public function directoryForStart(): string
+    {
+        if ($this->directory === null) {
+            throw AccountUnavailable::forStart($this->account_protocol, StartUnavailableReason::NoAccount);
+        }
+
+        return $this->directory;
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * The account as the start it is chosen for runs with it.
+     *
+     * @return Attribute<SelectedAccount, never>
+     */
+    protected function selectedForStart(): Attribute
+    {
+        return Attribute::get(fn () => new SelectedAccount(
+            $this->recordIdentity,
+            $this->account_protocol,
+            $this->directoryForStart(),
+            $this->sign_in_generation,
+        ))->withoutObjectCaching();
+    }
+
+    /**
+     * @return Attribute<RecordIdentity, never>
+     */
+    protected function recordIdentity(): Attribute
+    {
+        return Attribute::get(fn () => new RecordIdentity(self::LINK_TYPE, $this->id))->withoutObjectCaching();
+    }
+
+    /**
+     * Why a start cannot use the account now, none while it is signed in and not held for maintenance.
+     *
+     * @return Attribute<StartUnavailableReason|null, never>
+     */
+    protected function startUnavailableReason(): Attribute
+    {
+        return Attribute::get(function () {
+            if ($this->state->canStart() && ! $this->maintenance) {
+                return null;
+            }
+
+            return $this->state->startUnavailableReason();
+        })->withoutObjectCaching();
     }
 
     // ----------[ Internals ]----------

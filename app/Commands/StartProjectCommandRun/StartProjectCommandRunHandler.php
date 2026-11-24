@@ -30,7 +30,7 @@ final readonly class StartProjectCommandRunHandler implements CommandHandler
 
             $earlier->reconcile($this->evidence);
 
-            return new CommandRunStart(false, $earlier->state, $earlier->recordedFrames());
+            return new CommandRunStart(false, $earlier->state, $earlier->recordedFrames);
         }
 
         $binding = ProjectBinding::lockById($command->bindingId);

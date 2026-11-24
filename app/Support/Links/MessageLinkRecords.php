@@ -46,7 +46,7 @@ final readonly class MessageLinkRecords implements RecordProvider
             'id' => $record->id,
             'number' => (string) $record->number,
             'label' => "message {$record->number}",
-            'title' => $record->firstLine(),
+            'title' => $record->firstLine,
             'abstract' => null,
             'route' => null,
         ]);

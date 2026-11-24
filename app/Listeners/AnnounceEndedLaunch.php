@@ -21,7 +21,7 @@ final readonly class AnnounceEndedLaunch implements Listener
     public function handle(SessionClosed $event): void
     {
         StartRecord::ownerStartOf($event->sessionId)->forAll(
-            fn (StartRecord $start) => $this->events->dispatch(new LaunchEnded($start->ownerWork())),
+            fn (StartRecord $start) => $this->events->dispatch(new LaunchEnded($start->ownerWork)),
         );
     }
 }

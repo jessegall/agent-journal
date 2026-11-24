@@ -167,7 +167,7 @@ final class TickCandidates
         }
 
         return new TickCandidate(
-            $frame->row->target(),
+            $frame->row->target,
             $frame->row->id,
             $frame->row->version,
             $frame->record->id,

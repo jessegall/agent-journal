@@ -15,6 +15,7 @@ use App\Models\Support\HasWorkColumns;
 use App\Support\RecordIdentity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -50,7 +51,7 @@ final class CertifiedWork extends Model implements ReadableModel
      */
     public static function record(StartRecord $start, string $certificate): self
     {
-        $work = $start->ownerWork();
+        $work = $start->ownerWork;
         $policy = SessionPolicy::query()->where('session_id', $start->session_id)->sole();
 
         $certified = new self([
@@ -79,13 +80,15 @@ final class CertifiedWork extends Model implements ReadableModel
             ->firstOr(fn () => throw HelperWorkUncertified::for($work, $certificate));
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Accessors ]----------
 
     /**
      * The parent repository's ref the commits are imported under: one per certificate, never a branch.
+     *
+     * @return Attribute<non-falsy-string, never>
      */
-    public function importRef(): string
+    protected function importRef(): Attribute
     {
-        return "refs/helpers/{$this->work_type}/{$this->work_id}/{$this->certificate}";
+        return Attribute::get(fn () => "refs/helpers/{$this->work_type}/{$this->work_id}/{$this->certificate}");
     }
 }

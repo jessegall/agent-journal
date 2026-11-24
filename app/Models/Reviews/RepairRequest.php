@@ -14,6 +14,7 @@ use App\Models\Support\HasWorkColumns;
 use App\Support\ActorIdentity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -116,8 +117,15 @@ final class RepairRequest extends Model implements ReadableModel
             ->count();
     }
 
-    public function worker(): ActorIdentity
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<ActorIdentity, never>
+     */
+    protected function worker(): Attribute
     {
-        return new ActorIdentity(ActorType::from($this->worker_type), $this->worker_id);
+        return Attribute::get(
+            fn () => new ActorIdentity(ActorType::from($this->worker_type), $this->worker_id),
+        )->withoutObjectCaching();
     }
 }

@@ -8,6 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -33,11 +34,14 @@ final class TextUploadChunk extends Model implements ReadableModel
         ]);
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Accessors ]----------
 
-    public function text(): string
+    /**
+     * @return Attribute<string, never>
+     */
+    protected function text(): Attribute
     {
-        return base64_decode($this->encoded_text);
+        return Attribute::get(fn () => base64_decode($this->encoded_text));
     }
 
     // ----------[ Relations ]----------

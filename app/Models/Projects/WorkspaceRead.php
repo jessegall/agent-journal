@@ -19,6 +19,7 @@ use App\Values\WorkspaceReadReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -135,7 +136,7 @@ final class WorkspaceRead extends Model implements ReadableModel
         $facts = [];
 
         foreach ($read as $row) {
-            foreach ($row->facts() as $sample) {
+            foreach ($row->facts as $sample) {
                 $facts[] = $sample;
             }
         }
@@ -171,29 +172,6 @@ final class WorkspaceRead extends Model implements ReadableModel
         $this->save();
     }
 
-    // ----------[ Answers ]----------
-
-    /**
-     * What the host found, once it answered.
-     *
-     * @return Option<WorkspaceFacts>
-     */
-    public function facts(): Option
-    {
-        if ($this->sampled_at === null) {
-            return None::create();
-        }
-
-        return new Some(new WorkspaceFacts(
-            (bool) $this->available,
-            (bool) $this->dirty,
-            (bool) $this->clean,
-            (int) $this->generation,
-            $this->sampled_at,
-            $this->commitObservation(),
-        ));
-    }
-
     private function commitObservation(): CommitObservation
     {
         if ($this->binding_id === '') {
@@ -207,8 +185,36 @@ final class WorkspaceRead extends Model implements ReadableModel
         return CommitObservation::ofHead($this->binding_id, $this->checkout_id, $this->head_oid);
     }
 
-    public function reference(): WorkspaceReadReference
+    // ----------[ Accessors ]----------
+
+    /**
+     * What the host found, once it answered.
+     *
+     * @return Attribute<None|Some<WorkspaceFacts>, never>
+     */
+    protected function facts(): Attribute
     {
-        return new WorkspaceReadReference($this->read_reference);
+        return Attribute::get(function (): Option {
+            if ($this->sampled_at === null) {
+                return None::create();
+            }
+
+            return new Some(new WorkspaceFacts(
+                (bool) $this->available,
+                (bool) $this->dirty,
+                (bool) $this->clean,
+                (int) $this->generation,
+                $this->sampled_at,
+                $this->commitObservation(),
+            ));
+        })->withoutObjectCaching();
+    }
+
+    /**
+     * @return Attribute<WorkspaceReadReference, never>
+     */
+    protected function reference(): Attribute
+    {
+        return Attribute::get(fn () => new WorkspaceReadReference($this->read_reference))->withoutObjectCaching();
     }
 }

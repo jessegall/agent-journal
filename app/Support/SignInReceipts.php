@@ -63,7 +63,7 @@ final readonly class SignInReceipts
         return new SignInReceiptData(
             SignInReceiptStatus::Started,
             $attempt->id,
-            $attempt->type(),
+            $attempt->type,
             $attempt->resultAccount?->id,
             $attempt->method,
             $attempt->state,

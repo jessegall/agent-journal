@@ -14,6 +14,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -192,19 +193,6 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
     }
 
     /**
-     * The endpoint as its gateway knows it: run, version, public origin and the reference its program is kept under.
-     */
-    public function toGatewayEndpoint(): GatewayEndpoint
-    {
-        return new GatewayEndpoint(
-            $this->run_id,
-            $this->endpoint_version,
-            $this->public_origin,
-            GatewayEndpoint::referenceOf($this->run_id, $this->endpoint_version),
-        );
-    }
-
-    /**
      * Whether the endpoint answered a health check within the last 45 seconds.
      */
     public function isHealthy(): bool
@@ -217,6 +205,23 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
     public function isVersion(int $version): bool
     {
         return $this->endpoint_version === $version;
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * The endpoint as its gateway knows it: run, version, public origin and the reference its program is kept under.
+     *
+     * @return Attribute<GatewayEndpoint, never>
+     */
+    protected function toGatewayEndpoint(): Attribute
+    {
+        return Attribute::get(fn () => new GatewayEndpoint(
+            $this->run_id,
+            $this->endpoint_version,
+            $this->public_origin,
+            GatewayEndpoint::referenceOf($this->run_id, $this->endpoint_version),
+        ))->withoutObjectCaching();
     }
 
     // ----------[ Scopes ]----------

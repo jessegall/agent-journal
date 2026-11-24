@@ -59,7 +59,7 @@ final readonly class RunWindowResolver implements PageResolver
     {
         $outputs = [];
 
-        foreach ($part->recordedStreams() as $stream) {
+        foreach ($part->recordedStreams as $stream) {
             $tail = $this->output->tail($part, $stream, self::TAIL_LINES);
             $outputs[] = new PartOutputData($stream->value, $tail['before'], $tail['end'], $tail['text']);
         }

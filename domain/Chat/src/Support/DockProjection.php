@@ -90,7 +90,7 @@ final readonly class DockProjection
 
             foreach ($batch as $placement) {
                 $scanned++;
-                $card = $composed->find($placement->source());
+                $card = $composed->find($placement->source);
                 $next = DockCursor::after($viewer, $conversationKey, $placement->assigned_at, $placement->id);
 
                 if ($card->isEmpty()) {
@@ -168,7 +168,7 @@ final readonly class DockProjection
     private function composed(Collection $placements, CardContext $context): DockCards
     {
         return $this->composedSources(
-            array_values($placements->map(fn (DockPlacement $placement) => $placement->source())->all()),
+            array_values($placements->map(fn (DockPlacement $placement) => $placement->source)->all()),
             $context,
         );
     }
@@ -205,9 +205,9 @@ final readonly class DockProjection
         $summary = mb_substr($card->accessibleName, 0, self::SUMMARY_CHARACTER_LIMIT);
 
         try {
-            return $this->encoder->encode($card, $placement->id, $placement->source(), $summary);
+            return $this->encoder->encode($card, $placement->id, $placement->source, $summary);
         } catch (PartMapInvalid) {
-            return new EncodedCard($placement->id, $placement->source(), $summary, $summary, null, null);
+            return new EncodedCard($placement->id, $placement->source, $summary, $summary, null, null);
         }
     }
 }

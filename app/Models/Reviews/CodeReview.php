@@ -19,6 +19,7 @@ use App\Values\AskReference;
 use App\Values\HelperImportReceipt;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -180,9 +181,16 @@ final class CodeReview extends Model implements ReadableModel
         return $this->import_attempts < self::IMPORT_ATTEMPT_LIMIT;
     }
 
-    public function worker(): ActorIdentity
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<ActorIdentity, never>
+     */
+    protected function worker(): Attribute
     {
-        return new ActorIdentity(ActorType::from($this->worker_type), $this->worker_id);
+        return Attribute::get(
+            fn () => new ActorIdentity(ActorType::from($this->worker_type), $this->worker_id),
+        )->withoutObjectCaching();
     }
 
     // ----------[ Relations ]----------

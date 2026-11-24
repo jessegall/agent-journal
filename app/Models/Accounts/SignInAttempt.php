@@ -30,6 +30,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -521,11 +522,6 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
         return in_array($this->state, $published, true) && $this->generation === $generation;
     }
 
-    public function type(): SignInType
-    {
-        return $this->account_id === null ? SignInType::NewAccount : SignInType::SignInAgain;
-    }
-
     /**
      * Whether the answer under this request key is the one the attempt already took.
      */
@@ -616,6 +612,18 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     public function accepts(int $generation, CarbonImmutable $now): bool
     {
         return $this->state->canComplete() && ! $this->isExpiredAt($now) && $this->generation === $generation;
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<SignInType::NewAccount|SignInType::SignInAgain, never>
+     */
+    protected function type(): Attribute
+    {
+        return Attribute::get(
+            fn (): SignInType => $this->account_id === null ? SignInType::NewAccount : SignInType::SignInAgain,
+        )->withoutObjectCaching();
     }
 
     // ----------[ Relations ]----------

@@ -44,6 +44,7 @@ use Domain\Documents\Support\RecordViews;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -135,41 +136,16 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
         return $reports->whereKey($reference)->firstOr(fn () => throw ReportMissing::identified($reference));
     }
 
-    // ----------[ Answers ]----------
-
-    public function card(): PublicationCard
-    {
-        return RecordViews::reportCard($this);
-    }
-
     /**
      * The report as a search found it: its card with a snippet around the words.
      */
     public function searchResult(string $words): PublicationCard
     {
         return PublicationCard::from([
-            ...$this->card()->all(),
+            ...$this->card->all(),
             'snippet' => $this->snippetFor($words),
             'foundIn' => 'report',
         ]);
-    }
-
-    public function dockCard(): DockSuggestion
-    {
-        return RecordViews::reportSuggestion($this);
-    }
-
-    public function view(): ReportView
-    {
-        return RecordViews::reportView($this);
-    }
-
-    /**
-     * The report's safe card for a share; a filed report never changes, so its published version is always 1.
-     */
-    public function shareCard(): ShareRecordCard
-    {
-        return new ShareRecordCard($this->shareIdentity(), $this->title, '1');
     }
 
     /**
@@ -191,6 +167,44 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
     public function composeDockCard(CardContext $context): DockCard
     {
         return new ReportDockCard($this, $context)->card;
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<PublicationCard, never>
+     */
+    protected function card(): Attribute
+    {
+        return Attribute::get(fn () => RecordViews::reportCard($this))->withoutObjectCaching();
+    }
+
+    /**
+     * @return Attribute<DockSuggestion, never>
+     */
+    protected function dockCard(): Attribute
+    {
+        return Attribute::get(fn () => RecordViews::reportSuggestion($this))->withoutObjectCaching();
+    }
+
+    /**
+     * @return Attribute<ReportView, never>
+     */
+    protected function view(): Attribute
+    {
+        return Attribute::get(fn () => RecordViews::reportView($this))->withoutObjectCaching();
+    }
+
+    /**
+     * The report's safe card for a share; a filed report never changes, so its published version is always 1.
+     *
+     * @return Attribute<ShareRecordCard, never>
+     */
+    protected function shareCard(): Attribute
+    {
+        return Attribute::get(
+            fn () => new ShareRecordCard($this->shareIdentity(), $this->title, '1'),
+        )->withoutObjectCaching();
     }
 
     // ----------[ Scopes ]----------

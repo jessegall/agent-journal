@@ -24,6 +24,7 @@ use App\Values\NextStep;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -120,13 +121,6 @@ final class CommandRequest extends Model implements ReadableModel
         return self::query()->whereKey($id)->lockForUpdate()->sole();
     }
 
-    // ----------[ Answers ]----------
-
-    public function nextStep(): NextStep
-    {
-        return $this->state->nextStep($this->id, $this->operation);
-    }
-
     /**
      * Whether the request waits for a proven reader, the one state a proof may be given in.
      */
@@ -148,7 +142,7 @@ final class CommandRequest extends Model implements ReadableModel
         }
 
         return $run->parts()->readLimit(500)->get()->every(fn (PartRun $part): bool => array_all(
-            $part->recordedStreams(),
+            $part->recordedStreams,
             fn (OutputStream $stream): bool => $reads->contains(
                 fn (EvidenceRead $read): bool => $read->part_run_id === $part->id
                     && $read->source === EvidenceSource::of($stream),
@@ -170,7 +164,7 @@ final class CommandRequest extends Model implements ReadableModel
             ->where('operation', $this->operation)
             ->readLimit(500)
             ->get()
-            ->filter(fn (PartRun $part): bool => $part->end()->hasStatus())
+            ->filter(fn (PartRun $part): bool => $part->end->hasStatus())
             ->map(fn (PartRun $part): int => $part->end_code)
             ->all();
 
@@ -306,6 +300,16 @@ final class CommandRequest extends Model implements ReadableModel
         $this->moveTo(RequestState::Withdrawn);
     }
 
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<NextStep, never>
+     */
+    protected function nextStep(): Attribute
+    {
+        return Attribute::get(fn () => $this->state->nextStep($this->id, $this->operation))->withoutObjectCaching();
+    }
+
     // ----------[ Internals ]----------
 
     /**
@@ -323,7 +327,7 @@ final class CommandRequest extends Model implements ReadableModel
 
     private function refusal(RequestState $next): RequestTransitionRefused
     {
-        return RequestTransitionRefused::from($this->state, $next, implode('; ', $this->nextStep()->steps));
+        return RequestTransitionRefused::from($this->state, $next, implode('; ', $this->nextStep->steps));
     }
 
     // ----------[ Scopes ]----------

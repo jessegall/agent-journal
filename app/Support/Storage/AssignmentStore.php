@@ -41,7 +41,7 @@ final readonly class AssignmentStore implements AssignmentStorage
         $this->assertInTransaction();
         $row = AssignmentRecord::query()->forRecord($record)->lockForUpdate()->first();
 
-        return $row === null ? None::create() : Some::create($row->toAssignment());
+        return $row === null ? None::create() : Some::create($row->toAssignment);
     }
 
     /**
@@ -70,7 +70,7 @@ final readonly class AssignmentStore implements AssignmentStorage
         $this->assertInTransaction();
         AssignmentRecord::insertUnlessHeld($record, $holder);
 
-        return AssignmentRecord::query()->forRecord($record)->lockForUpdate()->firstOrFail()->toAssignment();
+        return AssignmentRecord::query()->forRecord($record)->lockForUpdate()->firstOrFail()->toAssignment;
     }
 
     /**
@@ -82,7 +82,7 @@ final readonly class AssignmentStore implements AssignmentStorage
         AssignmentRecord::query()->forRecord($current->record)->whereKey($current->reference->id)->delete();
         $this->facts->publishAfterCommit(new AssignmentsEnded([$current->reference->id]));
 
-        return AssignmentRecord::create($current->record, $holder)->toAssignment();
+        return AssignmentRecord::create($current->record, $holder)->toAssignment;
     }
 
     public function remove(Assignment $current): void
@@ -108,7 +108,7 @@ final readonly class AssignmentStore implements AssignmentStorage
             ->get();
 
         AssignmentRecord::query()->heldForRetirement($holder)->whereKey($rows->modelKeys())->delete();
-        $released = array_values($rows->map(fn (AssignmentRecord $row) => $row->toAssignment())->all());
+        $released = array_values($rows->map(fn (AssignmentRecord $row) => $row->toAssignment)->all());
 
         if ($released !== []) {
             $endedIds = array_values(array_map('strval', $rows->modelKeys()));

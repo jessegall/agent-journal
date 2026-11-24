@@ -32,6 +32,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -456,19 +457,25 @@ final class StartRecord extends Model implements ReadableModel
         return Option::fromValue($this->reply_inbox_id);
     }
 
-    /**
-     * The work this start was made for, as its owner names it.
-     */
-    public function ownerWork(): RecordIdentity
-    {
-        [$type, $id] = explode(':', (string) $this->owner_reference, 2);
-
-        return new RecordIdentity($type, $id);
-    }
-
     public function wasRequestedBy(ActorIdentity $actor): bool
     {
         return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id)->isSameAs($actor);
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * The work this start was made for, as its owner names it.
+     *
+     * @return Attribute<RecordIdentity, never>
+     */
+    protected function ownerWork(): Attribute
+    {
+        return Attribute::get(function () {
+            [$type, $id] = explode(':', (string) $this->owner_reference, 2);
+
+            return new RecordIdentity($type, $id);
+        })->withoutObjectCaching();
     }
 
     // ----------[ Internals ]----------

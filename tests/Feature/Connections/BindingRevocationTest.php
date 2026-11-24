@@ -77,7 +77,7 @@ final class BindingRevocationTest extends TestCase
         $this->assertSame('Revoked', $first->json('result'));
         $this->assertSame(self::ALREADY_REVOKED, $second->json('result'));
         $this->assertSame($first->json('revokedAt'), $second->json('revokedAt'));
-        $this->assertSame($revoked->revokedAtText(), $second->json('revokedAt'));
+        $this->assertSame($revoked->revokedAtText, $second->json('revokedAt'));
         $this->assertSame(2, $revoked->authority_generation);
         $this->assertCount(1, array_filter(
             ConnectionAudit::newest(10),

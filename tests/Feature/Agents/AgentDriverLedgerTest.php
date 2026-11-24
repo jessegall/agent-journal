@@ -1671,7 +1671,7 @@ final class AgentDriverLedgerTest extends TestCase
 
         $again = DriverRequest::query()->findOrFail($againId);
         $this->assertSame([$againId, $original->id], [$repeated, $again->possible_duplicate_of_id]);
-        $this->assertEquals($original->partList(), $again->partList());
+        $this->assertEquals($original->partList, $again->partList);
         $this->assertSame(RequestProgress::DeliveryUncertain, $original->fresh()?->progress);
     }
 

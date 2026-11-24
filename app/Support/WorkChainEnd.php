@@ -34,6 +34,6 @@ final readonly class WorkChainEnd
         }
 
         WorkReservation::lockedFor($review->certificate)->release();
-        $this->stops->stopAgent($review->worker(), "chain-end:{$review->certificate}");
+        $this->stops->stopAgent($review->worker, "chain-end:{$review->certificate}");
     }
 }

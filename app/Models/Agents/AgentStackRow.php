@@ -23,6 +23,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -241,19 +242,21 @@ final class AgentStackRow extends Model implements ReadableModel
         $this->save();
     }
 
-    // ----------[ Answers ]----------
-
-    /**
-     * The agent and session whose stack this is.
-     */
-    public function target(): StackTarget
-    {
-        return new StackTarget($this->agent_id, $this->session_id);
-    }
-
     public function isActive(): bool
     {
         return $this->status === StackStatus::Active;
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * The agent and session whose stack this is.
+     *
+     * @return Attribute<StackTarget, never>
+     */
+    protected function target(): Attribute
+    {
+        return Attribute::get(fn () => new StackTarget($this->agent_id, $this->session_id))->withoutObjectCaching();
     }
 
     // ----------[ Scopes ]----------
@@ -290,7 +293,7 @@ final class AgentStackRow extends Model implements ReadableModel
         self::query()->runningOpen()->readInChunks(100, function ($rows) use ($typeKeys, &$targets): void {
             foreach ($rows as $row) {
                 if ($row->frames->holdAnyOf($typeKeys)) {
-                    $targets[] = $row->target();
+                    $targets[] = $row->target;
                 }
             }
         });

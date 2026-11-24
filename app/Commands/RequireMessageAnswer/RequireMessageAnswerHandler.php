@@ -65,7 +65,7 @@ final readonly class RequireMessageAnswerHandler implements CommandHandler
      */
     private function claimForFirstReader(Message $message): void
     {
-        $reader = $message->firstReader();
+        $reader = $message->firstReader;
         $seatId = $message->read_participation_assignment_id;
         $seatHolder = $seatId === null ? null : (AssignmentRecord::holdersOf([$seatId])[$seatId] ?? null);
 

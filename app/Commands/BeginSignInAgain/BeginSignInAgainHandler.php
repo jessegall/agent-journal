@@ -55,7 +55,7 @@ final readonly class BeginSignInAgainHandler implements CommandHandler
         $account->writerFor($attempt);
         $attempt->writeInGeneration($account->sign_in_generation);
 
-        if ($this->uses->counts([$account->recordIdentity()])->isEmpty()) {
+        if ($this->uses->counts([$account->recordIdentity])->isEmpty()) {
             $attempt->releaseForHost();
         }
 

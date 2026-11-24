@@ -36,7 +36,7 @@ final readonly class RetainedDrafts implements DraftReader
 
     public function draft(string $id): RetainedDraftView
     {
-        return $this->requireReadable($id)->view();
+        return $this->requireReadable($id)->view;
     }
 
     public function requireReadable(string $id): RetainedDraft

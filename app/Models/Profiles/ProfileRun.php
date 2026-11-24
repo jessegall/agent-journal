@@ -219,7 +219,7 @@ final class ProfileRun extends Model implements ReadableModel
     {
         $result = $this->recordedResult($stepReference);
 
-        return $result === null ? None::create() : new Some($result->outcome());
+        return $result === null ? None::create() : new Some($result->outcome);
     }
 
     /**

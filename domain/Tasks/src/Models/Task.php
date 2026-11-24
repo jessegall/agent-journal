@@ -180,7 +180,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
 
         $task = self::query()->whereKey($frame->subject->id)->first();
 
-        return $task === null ? None::create() : new Some($task->summary());
+        return $task === null ? None::create() : new Some($task->summary);
     }
 
     /**
@@ -376,24 +376,6 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
         );
     }
 
-    /**
-     * The task's latest run, when it was ever started.
-     */
-    public function currentRun(): TaskRun|null
-    {
-        return $this->run_number === 0 ? null : TaskRun::ofTask($this, $this->run_number);
-    }
-
-    /**
-     * The task as a list shows it: its number and title.
-     */
-    public function summary(): TaskSummary
-    {
-        $changedAt = CarbonImmutable::parse((string) ($this->updated_at ?? $this->created_at));
-
-        return new TaskSummary($this->number, $this->title, $this->state, $changedAt);
-    }
-
     public function assignmentIdentity(): RecordIdentity
     {
         return new RecordIdentity(self::LINK_TYPE, $this->id);
@@ -432,7 +414,29 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
         ]);
     }
 
+    /**
+     * The task's latest run, when it was ever started.
+     */
+    public function currentRun(): TaskRun|null
+    {
+        return $this->run_number === 0 ? null : TaskRun::ofTask($this, $this->run_number);
+    }
+
     // ----------[ Accessors ]----------
+
+    /**
+     * The task as a list shows it: its number and title.
+     *
+     * @return Attribute<TaskSummary, never>
+     */
+    protected function summary(): Attribute
+    {
+        return Attribute::get(function () {
+            $changedAt = CarbonImmutable::parse((string) ($this->updated_at ?? $this->created_at));
+
+            return new TaskSummary($this->number, $this->title, $this->state, $changedAt);
+        })->withoutObjectCaching();
+    }
 
     /**
      * The words the task's current state was entered with: the finish note, the block reason or the cancel reason;

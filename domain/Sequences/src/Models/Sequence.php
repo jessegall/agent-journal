@@ -15,6 +15,7 @@ use Domain\Sequences\Events\SequenceDefined;
 use Domain\Sequences\Exceptions\SequenceMissing;
 use Domain\Sequences\Values\SequenceStep;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -103,14 +104,6 @@ final class Sequence extends Model implements EventSource, ReadableModel
         return $this->hasMany(SequenceRun::class);
     }
 
-    /**
-     * @return list<SequenceStepData>
-     */
-    public function stepList(): array
-    {
-        return array_values(SequenceStepData::collect($this->steps));
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -135,5 +128,15 @@ final class Sequence extends Model implements EventSource, ReadableModel
     private static function stored(array $steps): array
     {
         return array_map(fn (SequenceStep $step) => $step->toArray(), $steps);
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<list<SequenceStepData>, never>
+     */
+    protected function stepList(): Attribute
+    {
+        return Attribute::get(fn () => array_values(SequenceStepData::collect($this->steps)));
     }
 }

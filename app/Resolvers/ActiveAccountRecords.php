@@ -17,11 +17,11 @@ final readonly class ActiveAccountRecords implements ActiveAccountReader
 {
     public function forStart(string $driver): SelectedAccount
     {
-        return ActiveAccount::lockedAccountForStart($driver)->selectedForStart();
+        return ActiveAccount::lockedAccountForStart($driver)->selectedForStart;
     }
 
     public function chosenForStart(string $driver, string $accountId, int $reviewedSignIn): SelectedAccount
     {
-        return Account::lockedChosenForStart($driver, $accountId, $reviewedSignIn)->selectedForStart();
+        return Account::lockedChosenForStart($driver, $accountId, $reviewedSignIn)->selectedForStart;
     }
 }

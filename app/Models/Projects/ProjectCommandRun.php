@@ -11,6 +11,7 @@ use App\Enums\CommandRunState;
 use App\Support\CommandRunEvidence;
 use App\Values\CommandFrame;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -210,11 +211,13 @@ final class ProjectCommandRun extends Model implements ReadableModel
         return hash_equals($this->fingerprint, $fingerprint);
     }
 
+    // ----------[ Accessors ]----------
+
     /**
-     * @return list<CommandFrame>
+     * @return Attribute<list<CommandFrame>, never>
      */
-    public function recordedFrames(): array
+    protected function recordedFrames(): Attribute
     {
-        return array_map(CommandFrame::fromRecord(...), $this->frames);
+        return Attribute::get(fn () => array_map(CommandFrame::fromRecord(...), $this->frames));
     }
 }

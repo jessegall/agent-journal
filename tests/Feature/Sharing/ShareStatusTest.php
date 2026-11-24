@@ -101,7 +101,7 @@ final class ShareStatusTest extends TestCase
             ),
         );
 
-        $this->assertFalse($status->isPubliclyShared($expired->root()));
+        $this->assertFalse($status->isPubliclyShared($expired->root));
 
         $share = Share::create(
             $root,

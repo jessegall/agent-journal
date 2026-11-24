@@ -29,7 +29,7 @@ final readonly class CleanupReportController
         $pending = array_map(
             fn (CleanupOperation $cleanup) => [
                 'session_id' => $cleanup->agent_session_id,
-                'remaining' => array_map(fn (CleanupStep $step) => $step->value, $cleanup->remainingSteps()),
+                'remaining' => array_map(fn (CleanupStep $step) => $step->value, $cleanup->remainingSteps),
             ],
             CleanupOperation::pendingOn($host->hostId, self::PENDING_LIMIT),
         );

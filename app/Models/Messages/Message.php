@@ -381,27 +381,9 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
         $this->raise(new MessageDismissed($this->id, $actor, $type));
     }
 
-    // ----------[ Answers ]----------
-
-    public function revision(): int
-    {
-        return $this->state_version + 1;
-    }
-
     public function assignmentIdentity(): RecordIdentity
     {
         return new RecordIdentity(self::LINK_TYPE, $this->id);
-    }
-
-    /**
-     * The message's first line, the only text a link card shows of it, ending in … when the message goes on.
-     */
-    public function firstLine(): string
-    {
-        $line = strtok($this->body, "\n") ?: '';
-        $preview = mb_strimwidth($line, 0, 80, '…');
-
-        return $line === trim($this->body) || str_ends_with($preview, '…') ? $preview : $preview.'…';
     }
 
     /**
@@ -428,25 +410,6 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
         return $this->state_version === $expected;
     }
 
-    public function author(): ActorIdentity
-    {
-        return new ActorIdentity(ActorType::from($this->sender_type), $this->sender_id);
-    }
-
-    /**
-     * Who first read the message, absent until someone has.
-     */
-    public function firstRead(): MessageReader|Optional
-    {
-        $reader = $this->firstReader();
-
-        if ($reader === null || $this->read_at === null) {
-            return Optional::create();
-        }
-
-        return new MessageReader($reader->type->value, $reader->id, $this->read_at->toIso8601String());
-    }
-
     public function isWrittenBy(ActorIdentity $actor): bool
     {
         return $this->sender_type === $actor->type->value && $this->sender_id === $actor->id;
@@ -457,16 +420,6 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
         return $this->reply_to_id === $original->id
             && $this->isWrittenBy($actor)
             && $this->sender_session_id === $sessionId;
-    }
-
-    /**
-     * The actor that first read the message, when it was read.
-     */
-    public function firstReader(): ActorIdentity|null
-    {
-        return $this->read_by_type === null || $this->read_by_id === null
-            ? null
-            : new ActorIdentity(ActorType::from($this->read_by_type), $this->read_by_id);
     }
 
     public function awaitsReply(): bool
@@ -480,6 +433,69 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
     }
 
     // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<int, never>
+     */
+    protected function revision(): Attribute
+    {
+        return Attribute::get(fn () => $this->state_version + 1);
+    }
+
+    /**
+     * The message's first line, the only text a link card shows of it, ending in … when the message goes on.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function firstLine(): Attribute
+    {
+        return Attribute::get(function () {
+            $line = strtok($this->body, "\n") ?: '';
+            $preview = mb_strimwidth($line, 0, 80, '…');
+
+            return $line === trim($this->body) || str_ends_with($preview, '…') ? $preview : $preview.'…';
+        });
+    }
+
+    /**
+     * @return Attribute<ActorIdentity, never>
+     */
+    protected function author(): Attribute
+    {
+        return Attribute::get(
+            fn () => new ActorIdentity(ActorType::from($this->sender_type), $this->sender_id),
+        )->withoutObjectCaching();
+    }
+
+    /**
+     * Who first read the message, absent until someone has.
+     *
+     * @return Attribute<MessageReader|Optional, never>
+     */
+    protected function firstRead(): Attribute
+    {
+        return Attribute::get(function () {
+            $reader = $this->firstReader;
+
+            if ($reader === null || $this->read_at === null) {
+                return Optional::create();
+            }
+
+            return new MessageReader($reader->type->value, $reader->id, $this->read_at->toIso8601String());
+        })->withoutObjectCaching();
+    }
+
+    /**
+     * The actor that first read the message, when it was read.
+     *
+     * @return Attribute<ActorIdentity|null, never>
+     */
+    protected function firstReader(): Attribute
+    {
+        return Attribute::get(fn () => $this->read_by_type === null || $this->read_by_id === null
+            ? null
+            : new ActorIdentity(ActorType::from($this->read_by_type), $this->read_by_id))->withoutObjectCaching();
+    }
 
     /**
      * The timeline position a row read with its position carries.

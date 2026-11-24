@@ -23,6 +23,7 @@ use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -253,9 +254,14 @@ final class CommandReceipt extends Model implements ReadableModel
         return unserialize(base64_decode((string) $this->result['php']));
     }
 
-    public function toOperation(): Operation
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<Operation, never>
+     */
+    protected function toOperation(): Attribute
     {
-        return new Operation(
+        return Attribute::get(fn () => new Operation(
             $this->request_key,
             CommandName::of($this->command),
             $this->state,
@@ -263,7 +269,7 @@ final class CommandReceipt extends Model implements ReadableModel
             $this->refusal_code === null ? null : RefusalCode::from($this->refusal_code),
             $this->refusal_message,
             CarbonImmutable::instance($this->created_at ?? CarbonImmutable::now()),
-        );
+        ))->withoutObjectCaching();
     }
 
     // ----------[ Internals ]----------

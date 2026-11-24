@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -207,24 +208,28 @@ final class ReceiptDelivery extends Model implements EventSource, ReadableModel
         $this->recordChange();
     }
 
-    // ----------[ Answers ]----------
-
-    /**
-     * Where the wake of this delivery's recipient stands, for a delivery no runtime has taken yet.
-     */
-    public function wakeStatus(): WakeStatus
-    {
-        $actor = $this->receipt->interval->actor;
-
-        return new WakeStatus($actor->type->value, $actor->id, null, $this->state->wakeState());
-    }
-
     /**
      * Whether this failure is the last one allowed.
      */
     public function isLastTry(int $allowedTries): bool
     {
         return $this->attempts + 1 >= $allowedTries;
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * Where the wake of this delivery's recipient stands, for a delivery no runtime has taken yet.
+     *
+     * @return Attribute<WakeStatus, never>
+     */
+    protected function wakeStatus(): Attribute
+    {
+        return Attribute::get(function () {
+            $actor = $this->receipt->interval->actor;
+
+            return new WakeStatus($actor->type->value, $actor->id, null, $this->state->wakeState());
+        })->withoutObjectCaching();
     }
 
     // ----------[ Relations ]----------

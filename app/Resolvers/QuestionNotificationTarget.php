@@ -38,7 +38,7 @@ final readonly class QuestionNotificationTarget implements NotificationTargetRes
 
         foreach (Message::query()->whereKey($ids)->readExactly(count($ids))->get() as $message) {
             $links[$message->id] = new NotificationLink(
-                $message->firstLine(),
+                $message->firstLine,
                 $this->pages->addressOf(self::CHAT_PAGE, ['question' => $message->id]),
             );
         }

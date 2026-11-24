@@ -123,7 +123,7 @@ final class TextUpload extends Model implements ReadableModel
         if ($position >= 0 && $position < $this->next_index) {
             $chunk = TextUploadChunk::query()->where('upload_id', $this->id)->where('position', $position)->sole();
 
-            if ($chunk->text() !== $text) {
+            if ($chunk->text !== $text) {
                 throw UploadChunkConflict::atPosition();
             }
 
@@ -194,7 +194,7 @@ final class TextUpload extends Model implements ReadableModel
         $chunks = TextUploadChunk::query()->where('upload_id', $this->id)->orderBy('position');
 
         foreach ($chunks->readExactly($this->next_index)->cursor() as $chunk) {
-            $body .= $chunk->text();
+            $body .= $chunk->text;
         }
 
         return $body;

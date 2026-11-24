@@ -54,9 +54,9 @@ final readonly class HelperCommitImport implements HelperCommitImportContract
         $commits = $this->import($certified);
 
         return new HelperImportReceipt(
-            $certified->importRef(),
+            $certified->importRef,
             $this->revision('HEAD'),
-            $this->revision($certified->importRef()),
+            $this->revision($certified->importRef),
             $commits,
         );
     }
@@ -92,7 +92,7 @@ final readonly class HelperCommitImport implements HelperCommitImportContract
      */
     private function import(CertifiedWork $work): array
     {
-        $ref = $work->importRef();
+        $ref = $work->importRef;
 
         if (! $this->git(['rev-parse', '--verify', '--quiet', $ref])->successful()) {
             $fetch = $this->git([

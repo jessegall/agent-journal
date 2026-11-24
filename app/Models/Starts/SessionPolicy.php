@@ -16,6 +16,7 @@ use App\Values\StartPolicy;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -124,11 +125,14 @@ final class SessionPolicy extends Model implements ReadableModel
         return $deadlines;
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Accessors ]----------
 
-    public function policy(): StartPolicy
+    /**
+     * @return Attribute<StartPolicy, never>
+     */
+    protected function policy(): Attribute
     {
-        return new StartPolicy(
+        return Attribute::get(fn () => new StartPolicy(
             $this->access_policy->toAccessPolicy(),
             $this->stop_conditions->toStopConditions(),
             $this->execution_policy->toExecutionPolicy(),
@@ -136,22 +140,24 @@ final class SessionPolicy extends Model implements ReadableModel
             $this->profile_revision,
             $this->configuration_hash,
             $this->requires_review,
-        );
+        ))->withoutObjectCaching();
     }
 
     /**
      * The label of each stop condition the session must pass, by condition key.
      *
-     * @return array<string, string>
+     * @return Attribute<array<string, string>, never>
      */
-    public function stopConditionLabels(): array
+    protected function stopConditionLabels(): Attribute
     {
-        $labels = [];
+        return Attribute::get(function () {
+            $labels = [];
 
-        foreach ($this->stop_conditions->conditions as $condition) {
-            $labels[$condition->key] = $condition->label;
-        }
+            foreach ($this->stop_conditions->conditions as $condition) {
+                $labels[$condition->key] = $condition->label;
+            }
 
-        return $labels;
+            return $labels;
+        });
     }
 }

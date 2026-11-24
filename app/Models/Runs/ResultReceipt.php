@@ -111,6 +111,11 @@ final class ResultReceipt extends Model implements ReadableModel
         return PartRun::query()->whereKey($this->part_run_id)->value('operation');
     }
 
+    public function isCurrent(): bool
+    {
+        return $this->superseded_by_id === null;
+    }
+
     /**
      * This receipt as another domain reads it.
      */
@@ -119,11 +124,6 @@ final class ResultReceipt extends Model implements ReadableModel
         $publishedAt = $this->published_at->toImmutable();
 
         return new PublishedResult($this->id, $this->process_run_id, $this->operation(), $this->outcome, $publishedAt);
-    }
-
-    public function isCurrent(): bool
-    {
-        return $this->superseded_by_id === null;
     }
 
     // ----------[ Scopes ]----------

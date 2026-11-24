@@ -118,28 +118,30 @@ final class TimelineEvent extends Model implements EventSource, ReadableModel
         return $event;
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Accessors ]----------
 
     /**
      * The plain line this event holds, as a chat shows it.
+     *
+     * @return Attribute<ChatLine, never>
      */
-    public function chatLine(): ChatLine
+    protected function chatLine(): Attribute
     {
-        $source = $this->line_source_type === null
-            ? null
-            : new DockIdentity($this->line_source_type, (string) $this->line_source_id);
+        return Attribute::get(function () {
+            $source = $this->line_source_type === null
+                ? null
+                : new DockIdentity($this->line_source_type, (string) $this->line_source_id);
 
-        return new ChatLine(
-            $this->sequence,
-            (string) $this->line_subject,
-            (string) $this->line,
-            $source,
-            $this->line_card_placement ?? LineCardPlacement::Inline,
-            $this->created_at,
-        );
+            return new ChatLine(
+                $this->sequence,
+                (string) $this->line_subject,
+                (string) $this->line,
+                $source,
+                $this->line_card_placement ?? LineCardPlacement::Inline,
+                $this->created_at,
+            );
+        })->withoutObjectCaching();
     }
-
-    // ----------[ Accessors ]----------
 
     /**
      * @return Attribute<ActorIdentity, never>

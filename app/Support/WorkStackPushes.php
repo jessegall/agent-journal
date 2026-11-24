@@ -72,7 +72,7 @@ final readonly class WorkStackPushes implements ActorWorkStacks
     {
         $rows = AgentStackRow::lockActiveOf($actor, $this->workStacks->sessionsOf($actor));
 
-        return array_map(fn (AgentStackRow $row) => $row->target(), $rows);
+        return array_map(fn (AgentStackRow $row) => $row->target, $rows);
     }
 
     /**

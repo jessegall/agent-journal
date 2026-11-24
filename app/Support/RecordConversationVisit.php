@@ -43,7 +43,7 @@ final readonly class RecordConversationVisit implements ConversationVisits
     ): void {
         $session = AgentSession::lockedForUpdate($sessionId);
         $start = ProcessStart::lockedCurrentOf($session->id);
-        $settings = $start === null ? self::HOST_SETTINGS : $start->settingsIdentity();
+        $settings = $start === null ? self::HOST_SETTINGS : $start->settingsIdentity;
         $context = StartRecord::query()->where('request_id', $session->start_request_id)->value('context_reference');
 
         $conversation = DriverConversation::query()->native(

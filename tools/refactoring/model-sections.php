@@ -19,9 +19,9 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeFinder;
 use PhpParser\ParserFactory;
 
-require dirname(__DIR__, 2).'/vendor/autoload.php';
-require __DIR__.'/models.php';
-require __DIR__.'/sections.php';
+require_once dirname(__DIR__, 2).'/vendor/autoload.php';
+require_once __DIR__.'/models.php';
+require_once __DIR__.'/sections.php';
 
 const SECTIONS = ['Constructors', 'Queries', 'Mutations', 'Answers', 'Accessors', 'Relations', 'Internals', 'Scopes'];
 
@@ -192,32 +192,45 @@ function sorted(string $source, Class_ $class): string
     return substr($source, 0, $start).implode("\n\n", $parts).substr($source, $end);
 }
 
-$parser = new ParserFactory()->createForNewestSupportedVersion();
-$fix = in_array('--fix', $argv, true);
-$faultCount = 0;
+/**
+ * Checks or sorts the models under each path the command names, and exits with whether they are in order.
+ *
+ * @param  list<string>  $arguments
+ */
+function runModelSections(array $arguments): int
+{
+    $parser = new ParserFactory()->createForNewestSupportedVersion();
+    $fix = in_array('--fix', $arguments, true);
+    $faultCount = 0;
 
-foreach (array_values(array_diff(array_slice($argv, 1), ['--fix'])) as $path) {
-    foreach (phpFiles($path) as $file) {
-        $source = (string) file_get_contents($file);
-        $models = array_filter(
-            new NodeFinder()->findInstanceOf($parser->parse($source) ?? [], Class_::class),
-            isModel(...),
-        );
+    foreach (array_values(array_diff(array_slice($arguments, 1), ['--fix'])) as $path) {
+        foreach (phpFiles($path) as $file) {
+            $source = (string) file_get_contents($file);
+            $models = array_filter(
+                new NodeFinder()->findInstanceOf($parser->parse($source) ?? [], Class_::class),
+                isModel(...),
+            );
 
-        foreach ($models as $class) {
-            if ($fix) {
-                $source = sorted($source, $class);
-                file_put_contents($file, $source);
+            foreach ($models as $class) {
+                if ($fix) {
+                    $source = sorted($source, $class);
+                    file_put_contents($file, $source);
 
-                continue;
-            }
+                    continue;
+                }
 
-            foreach (faultsOf($source, $class) as $fault) {
-                $faultCount++;
-                echo "{$file}:{$fault}\n";
+                foreach (faultsOf($source, $class) as $fault) {
+                    $faultCount++;
+                    echo "{$file}:{$fault}\n";
+                }
             }
         }
     }
+
+    return $faultCount === 0 ? 0 : 1;
 }
 
-exit($faultCount === 0 ? 0 : 1);
+// Run as a command, not when another tool loads these functions.
+if (realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE__) {
+    exit(runModelSections($argv));
+}

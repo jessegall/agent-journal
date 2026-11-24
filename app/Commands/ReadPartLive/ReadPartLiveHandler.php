@@ -48,7 +48,7 @@ final readonly class ReadPartLiveHandler implements CommandHandler
         $checkpoint = $position->checkpoint();
 
         try {
-            foreach ($part->recordedStreams() as $stream) {
+            foreach ($part->recordedStreams as $stream) {
                 $frames = $this->output->frames($part, $stream, $checkpoint->offsetOf($stream));
                 $checkpoint = $reader->read($checkpoint, ...$frames);
             }

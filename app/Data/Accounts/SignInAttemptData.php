@@ -42,7 +42,7 @@ final class SignInAttemptData extends Data
             $attempt->id,
             $attempt->account_protocol,
             $attempt->method,
-            $attempt->type(),
+            $attempt->type,
             $attempt->account_id,
             $attempt->resultAccount?->id,
             $attempt->isWaitingForAgents(),

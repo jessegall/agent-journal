@@ -212,6 +212,16 @@ final class Phase extends Model implements Assignable, Numbered, ReadableModel
     }
 
     /**
+     * The phase in a plan read, with the window of its tasks that read shows.
+     *
+     * @param  list<string>  $ids
+     */
+    public function withTasks(array $ids): PlanPhaseTasks
+    {
+        return new PlanPhaseTasks($this->id, $this->number, $this->title, $this->revision, $ids);
+    }
+
+    /**
      * The phase as a read shows it, with every task in its order.
      */
     public function details(): PhaseDetails
@@ -224,16 +234,6 @@ final class Phase extends Model implements Assignable, Numbered, ReadableModel
             $this->revision,
             $this->taskIds(),
         );
-    }
-
-    /**
-     * The phase in a plan read, with the window of its tasks that read shows.
-     *
-     * @param  list<string>  $ids
-     */
-    public function withTasks(array $ids): PlanPhaseTasks
-    {
-        return new PlanPhaseTasks($this->id, $this->number, $this->title, $this->revision, $ids);
     }
 
     // ----------[ Accessors ]----------

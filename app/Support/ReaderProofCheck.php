@@ -90,7 +90,7 @@ final readonly class ReaderProofCheck
             return ["no part of the run is {$request->operation}"];
         }
 
-        if (! $run->hasEnded() || ! $part->end()->hasStatus()) {
+        if (! $run->hasEnded() || ! $part->end->hasStatus()) {
             return ['the run has not ended with its own exit status'];
         }
 

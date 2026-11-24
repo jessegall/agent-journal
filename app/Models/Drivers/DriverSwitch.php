@@ -20,6 +20,7 @@ use App\Values\ChosenAccount;
 use App\Values\DriverSwitchTarget;
 use App\Values\PinnedDriver;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -258,17 +259,20 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
         };
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Accessors ]----------
 
-    public function target(): DriverSwitchTarget
+    /**
+     * @return Attribute<DriverSwitchTarget, never>
+     */
+    protected function target(): Attribute
     {
-        return new DriverSwitchTarget(
+        return Attribute::get(fn () => new DriverSwitchTarget(
             $this->target_family,
             $this->mode,
             new ChosenAccount($this->account_id, $this->account_revision),
             $this->conversation_id,
             $this->remember,
-        );
+        ))->withoutObjectCaching();
     }
 
     // ----------[ Internals ]----------

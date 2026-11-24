@@ -19,6 +19,7 @@ use Domain\Documents\Exceptions\RecordImmutable;
 use Domain\Documents\Support\RecordViews;
 use Domain\Documents\Values\CloseResult;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -110,15 +111,23 @@ final class DocumentClose extends Model implements EventSource, ReadableModel
         });
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Accessors ]----------
 
-    public function result(): CloseResult
+    /**
+     * @return Attribute<CloseResult, never>
+     */
+    protected function result(): Attribute
     {
-        return new CloseResult($this->result_revision_number, $this->published);
+        return Attribute::get(
+            fn () => new CloseResult($this->result_revision_number, $this->published),
+        )->withoutObjectCaching();
     }
 
-    public function card(): CloseCard
+    /**
+     * @return Attribute<CloseCard, never>
+     */
+    protected function card(): Attribute
     {
-        return RecordViews::closeCard($this);
+        return Attribute::get(fn () => RecordViews::closeCard($this))->withoutObjectCaching();
     }
 }

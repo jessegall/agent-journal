@@ -37,7 +37,7 @@ final readonly class ReadProjectCommandStatusController
         foreach (ProjectCommandRun::ofRequestBy($call->requestKey, $agent->agentId, $call->bindingId) as $run) {
             $state = $run->settledStateBy($evidence);
 
-            return ProjectCommandStatus::of($state, $state->isActive() ? [] : $run->recordedFrames());
+            return ProjectCommandStatus::of($state, $state->isActive() ? [] : $run->recordedFrames);
         }
 
         return ProjectCommandStatus::of(CommandRunState::Unknown, []);

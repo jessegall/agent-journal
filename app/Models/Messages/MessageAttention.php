@@ -16,6 +16,7 @@ use App\Support\AttentionOutcome;
 use App\Support\InboxMembers;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use PhpOption\Option;
@@ -148,18 +149,20 @@ final class MessageAttention extends Model implements ReadableModel
             ->all());
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Accessors ]----------
 
     /**
      * Whether this member's runtime accepted the wake, as its message's author reads it.
+     *
+     * @return Attribute<WakeStatus, never>
      */
-    public function wakeStatus(): WakeStatus
+    protected function wakeStatus(): Attribute
     {
-        return new WakeStatus(
+        return Attribute::get(fn () => new WakeStatus(
             $this->actor_type,
             $this->actor_id,
             $this->request_id,
             $this->request_id === null ? WakeState::WaitingForStartup : WakeState::Accepted,
-        );
+        ))->withoutObjectCaching();
     }
 }

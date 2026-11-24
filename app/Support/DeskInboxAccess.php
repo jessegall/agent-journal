@@ -68,7 +68,7 @@ final readonly class DeskInboxAccess implements InboxAccess
 
     private function membershipOf(AssignmentRecord $seat): InboxMembership
     {
-        $assignment = $seat->toAssignment();
+        $assignment = $seat->toAssignment;
 
         return InboxMembership::atDeskSeat(SeatOccupant::of($assignment), $assignment->reference);
     }

@@ -16,6 +16,7 @@ use App\Support\ActorIdentity;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Values\StopAttemptReference;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -228,9 +229,14 @@ final class StopAttempt extends Model implements ReadableModel
         return $this->certified_at !== null;
     }
 
-    public function reference(): StopAttemptReference
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<StopAttemptReference, never>
+     */
+    protected function reference(): Attribute
     {
-        return new StopAttemptReference($this->id);
+        return Attribute::get(fn () => new StopAttemptReference($this->id))->withoutObjectCaching();
     }
 
     // ----------[ Relations ]----------

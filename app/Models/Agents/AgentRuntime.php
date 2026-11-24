@@ -393,20 +393,6 @@ final class AgentRuntime extends Model implements ReadableModel
         $this->save();
     }
 
-    // ----------[ Answers ]----------
-
-    /**
-     * How many live terminal views watch the runtime, counted once with the runtime when it was read with its watchers.
-     */
-    public function watcherCount(): int
-    {
-        if (! array_key_exists('watchers', $this->getAttributes())) {
-            $this->loadCount(['terminalViews as watchers' => self::liveViews(...)]);
-        }
-
-        return (int) $this->getAttribute('watchers');
-    }
-
     /**
      * Whether the runtime's driver draws a screen a viewer can watch, as its pinned capabilities said.
      */
@@ -503,6 +489,20 @@ final class AgentRuntime extends Model implements ReadableModel
     public function isAtGeneration(int $processGeneration): bool
     {
         return $this->process_generation === $processGeneration;
+    }
+
+    // ----------[ Answers ]----------
+
+    /**
+     * How many live terminal views watch the runtime, counted once with the runtime when it was read with its watchers.
+     */
+    public function watcherCount(): int
+    {
+        if (! array_key_exists('watchers', $this->getAttributes())) {
+            $this->loadCount(['terminalViews as watchers' => self::liveViews(...)]);
+        }
+
+        return (int) $this->getAttribute('watchers');
     }
 
     // ----------[ Relations ]----------

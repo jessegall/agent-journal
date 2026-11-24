@@ -25,7 +25,7 @@ final readonly class DocumentDockCard
 
     public function __construct(Document $document, CardContext $context)
     {
-        $revision = $document->currentRevisionOrFail();
+        $revision = $document->currentRevisionOrFail;
 
         $parts = [
             new Title('title', $revision->title),

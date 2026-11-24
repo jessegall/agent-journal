@@ -29,6 +29,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -230,12 +231,7 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
             throw AskRefused::submissionChanged();
         }
 
-        return $this->reference();
-    }
-
-    public function reference(): AskReference
-    {
-        return new AskReference($this->id);
+        return $this->reference;
     }
 
     public function assignmentIdentity(): RecordIdentity
@@ -246,11 +242,6 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
     public function typeKey(): AskTypeKey
     {
         return AskTypeKey::from($this->type_key);
-    }
-
-    public function workReference(): WorkReference
-    {
-        return new WorkReference($this->work);
     }
 
     public function requirePending(int $version): SupervisorTarget
@@ -276,6 +267,24 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
     public function hasOutlived(CarbonImmutable $now): bool
     {
         return CarbonImmutable::instance($this->created_at)->addHours(self::LIFETIME_HOURS) <= $now;
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<AskReference, never>
+     */
+    protected function reference(): Attribute
+    {
+        return Attribute::get(fn () => new AskReference($this->id))->withoutObjectCaching();
+    }
+
+    /**
+     * @return Attribute<WorkReference, never>
+     */
+    protected function workReference(): Attribute
+    {
+        return Attribute::get(fn () => new WorkReference($this->work))->withoutObjectCaching();
     }
 
     // ----------[ Scopes ]----------

@@ -28,14 +28,14 @@ final readonly class OpenDocumentHandler extends DocumentCommandHandler
             $this->assertDocumentRevision($document, $command->expectedRevision);
         }
 
-        $baseRevision = $document->currentRevisionOrFail();
+        $baseRevision = $document->currentRevisionOrFail;
 
         $editor = $this->editors->editor();
         $held = DocumentDraft::query()->where('document_id', $document->id)->first();
 
         if ($held !== null) {
             if (! $this->editors->isEditing($held)) {
-                throw DraftHeld::byOther($held->holderLabel());
+                throw DraftHeld::byOther($held->holderLabel);
             }
 
             return $held->reference($document);

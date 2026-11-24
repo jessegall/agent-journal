@@ -30,7 +30,7 @@ final readonly class CurrentStates implements CurrentState
     public function top(StackTarget $target): Option
     {
         return AgentStackRow::activeFor($target)->map(function (AgentStackRow $row): StateReference {
-            $stack = $this->restorer->restore($row->frames, $row->target());
+            $stack = $this->restorer->restore($row->frames, $row->target);
 
             return $stack->top()->reference;
         });
@@ -39,7 +39,7 @@ final readonly class CurrentStates implements CurrentState
     public function record(StackTarget $target): Option
     {
         return AgentStackRow::activeFor($target)->flatMap(function (AgentStackRow $row): Option {
-            $frames = $this->restorer->restore($row->frames, $row->target())->frames();
+            $frames = $this->restorer->restore($row->frames, $row->target)->frames();
 
             foreach (array_reverse($frames) as $frame) {
                 $record = $this->workRecord($frame);
@@ -74,7 +74,7 @@ final readonly class CurrentStates implements CurrentState
     private function highestLive(StackTarget $target, Closure $matches): Option
     {
         return AgentStackRow::activeFor($target)->flatMap(function (AgentStackRow $row) use ($matches): Option {
-            foreach (array_reverse($this->restorer->restore($row->frames, $row->target())->frames()) as $frame) {
+            foreach (array_reverse($this->restorer->restore($row->frames, $row->target)->frames()) as $frame) {
                 if ($matches($frame) && $frame->isLive()) {
                     return Option::fromValue($frame->reference);
                 }

@@ -435,27 +435,6 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
     }
 
     /**
-     * The plan's safe card for a share: its title. A plan keeps no revisions, so its published version is always 1.
-     */
-    public function shareCard(): ShareRecordCard
-    {
-        return new ShareRecordCard($this->shareIdentity(), $this->title, '1');
-    }
-
-    /**
-     * The summary a share shows of the plan: its title and its state, never its phases or tasks.
-     */
-    public function shareSummary(): string
-    {
-        return <<<TEXT
-        # {$this->title}
-
-        This plan is {$this->state->value}.
-
-        TEXT;
-    }
-
-    /**
      * The plan as a read shows it: its card's progress, a window of its phases' tasks and, when the read asks, its
      * long texts.
      *
@@ -483,6 +462,33 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
     }
 
     // ----------[ Accessors ]----------
+
+    /**
+     * The plan's safe card for a share: its title. A plan keeps no revisions, so its published version is always 1.
+     *
+     * @return Attribute<ShareRecordCard, never>
+     */
+    protected function shareCard(): Attribute
+    {
+        return Attribute::get(
+            fn () => new ShareRecordCard($this->shareIdentity(), $this->title, '1'),
+        )->withoutObjectCaching();
+    }
+
+    /**
+     * The summary a share shows of the plan: its title and its state, never its phases or tasks.
+     *
+     * @return Attribute<non-falsy-string, never>
+     */
+    protected function shareSummary(): Attribute
+    {
+        return Attribute::get(fn () => <<<TEXT
+        # {$this->title}
+
+        This plan is {$this->state->value}.
+
+        TEXT);
+    }
 
     /**
      * How far the tasks in the plan's phases have got, from the tallies kept on the row; no task is read.

@@ -13,6 +13,7 @@ use App\Values\GenerationStatus;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -111,13 +112,6 @@ final class SkillGeneration extends Model implements ReadableModel
         $this->save();
     }
 
-    // ----------[ Answers ]----------
-
-    public function status(): GenerationStatus
-    {
-        return new GenerationStatus($this->id, $this->state, $this->catalogue_digest, $this->error_reason);
-    }
-
     /**
      * The entry of this key, or null when the generation holds none.
      *
@@ -132,6 +126,18 @@ final class SkillGeneration extends Model implements ReadableModel
         }
 
         return null;
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<GenerationStatus, never>
+     */
+    protected function status(): Attribute
+    {
+        return Attribute::get(
+            fn () => new GenerationStatus($this->id, $this->state, $this->catalogue_digest, $this->error_reason),
+        )->withoutObjectCaching();
     }
 
     // ----------[ Scopes ]----------

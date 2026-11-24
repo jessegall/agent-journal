@@ -98,7 +98,7 @@ final readonly class DeskSeatAdmission
             ->heldBy(AssigneeIdentity::ofActorIdentity($actor))
             ->first();
 
-        return $held === null ? None::create() : Some::create($held->toAssignment());
+        return $held === null ? None::create() : Some::create($held->toAssignment);
     }
 
     /**

@@ -39,7 +39,7 @@ final readonly class OpenStuckAsk implements Listener
         );
 
         if ($ask->open && $ask->version === 0) {
-            $this->commands->run(new RouteAskCommand($ask->reference(), 0));
+            $this->commands->run(new RouteAskCommand($ask->reference, 0));
         }
     }
 }

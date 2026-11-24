@@ -11,6 +11,7 @@ use App\Enums\StepStatus;
 use App\Values\StepOutcome;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -58,10 +59,15 @@ final class ProfileStepResult extends Model implements ReadableModel
         return $result;
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Accessors ]----------
 
-    public function outcome(): StepOutcome
+    /**
+     * @return Attribute<StepOutcome, never>
+     */
+    protected function outcome(): Attribute
     {
-        return StepOutcome::reported($this->status, $this->port, $this->evidence);
+        return Attribute::get(
+            fn () => StepOutcome::reported($this->status, $this->port, $this->evidence),
+        )->withoutObjectCaching();
     }
 }

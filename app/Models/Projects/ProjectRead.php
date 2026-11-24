@@ -18,6 +18,7 @@ use App\Values\ProjectFileText;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -254,20 +255,22 @@ final class ProjectRead extends Model implements ReadableModel
         return ProjectBinding::query()->whereKey($this->binding_id)->where('host_id', $hostId)->exists();
     }
 
-    /**
-     * The folder's entries as the host listed them; none for a file or an unanswered read.
-     *
-     * @return list<ProjectEntry>
-     */
-    public function listedEntries(): array
-    {
-        return array_map(ProjectEntry::fromFields(...), $this->entries ?? []);
-    }
-
     private function settle(ProjectReadState $state): void
     {
         $this->state = $state;
         $this->answered_at = CarbonImmutable::now();
         $this->save();
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * The folder's entries as the host listed them; none for a file or an unanswered read.
+     *
+     * @return Attribute<list<ProjectEntry>, never>
+     */
+    protected function listedEntries(): Attribute
+    {
+        return Attribute::get(fn () => array_map(ProjectEntry::fromFields(...), $this->entries ?? []));
     }
 }

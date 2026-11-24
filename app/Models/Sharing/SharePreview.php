@@ -17,6 +17,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -170,7 +171,7 @@ final class SharePreview extends Model implements ReadableModel
         $configuration = ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id);
 
         if ($checksum !== $this->checksum
-            || self::checksumOf($ownerUserId, $this->root(), $selection, $configuration) !== $this->checksum) {
+            || self::checksumOf($ownerUserId, $this->root, $selection, $configuration) !== $this->checksum) {
             throw SharePreviewRefused::changed($this->id);
         }
 
@@ -180,11 +181,14 @@ final class SharePreview extends Model implements ReadableModel
         return $selection;
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Accessors ]----------
 
-    public function root(): RecordIdentity
+    /**
+     * @return Attribute<RecordIdentity, never>
+     */
+    protected function root(): Attribute
     {
-        return new RecordIdentity($this->root_type, $this->root_id);
+        return Attribute::get(fn () => new RecordIdentity($this->root_type, $this->root_id))->withoutObjectCaching();
     }
 
     // ----------[ Internals ]----------

@@ -22,6 +22,7 @@ use Domain\Documents\Values\DraftReference;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -135,14 +136,6 @@ final class DocumentDraft extends Model implements EventSource, ReadableModel
         return RecordViews::draftView($this, $document);
     }
 
-    /**
-     * Who holds the draft, as others see it: never its text.
-     */
-    public function holderLabel(): string
-    {
-        return "{$this->author_type->value} {$this->author_id}";
-    }
-
     public function hasChangesFrom(DocumentRevision $baseRevision): bool
     {
         return $this->title !== $baseRevision->title
@@ -160,6 +153,18 @@ final class DocumentDraft extends Model implements EventSource, ReadableModel
             $this->base_revision_number,
             MarkdownText::workingBody($this->body)->outline(),
         );
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * Who holds the draft, as others see it: never its text.
+     *
+     * @return Attribute<non-falsy-string, never>
+     */
+    protected function holderLabel(): Attribute
+    {
+        return Attribute::get(fn () => "{$this->author_type->value} {$this->author_id}");
     }
 
     // ----------[ Relations ]----------

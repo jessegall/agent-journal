@@ -30,7 +30,7 @@ final readonly class ProfileRecords implements ProfileResolver, ProfileScripts
 
     public function scriptAt(ProfileKey $key, int $revision): Option
     {
-        return ProfileRevision::numbered(Profile::byKey($key), $revision)->script();
+        return ProfileRevision::numbered(Profile::byKey($key), $revision)->script;
     }
 
     public function admittedPin(ProfileKey $key, int $revision): ProfileSnapshot

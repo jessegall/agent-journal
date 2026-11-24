@@ -92,6 +92,11 @@ final class ReaderRevision extends Model implements ReadableModel
         self::updating(fn (self $revision) => throw RevisionImmutable::reader($revision->id));
     }
 
+    public function isProven(): bool
+    {
+        return $this->proofs()->exists();
+    }
+
     // ----------[ Answers ]----------
 
     /**
@@ -102,10 +107,7 @@ final class ReaderRevision extends Model implements ReadableModel
         return ReaderDefinition::fromArray($this->definition);
     }
 
-    public function isProven(): bool
-    {
-        return $this->proofs()->exists();
-    }
+    // ----------[ Accessors ]----------
 
     // ----------[ Relations ]----------
 

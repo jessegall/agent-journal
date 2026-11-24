@@ -209,7 +209,7 @@ final readonly class SkillAuthoringService
      */
     public function currentDraft(Skill $skill): SkillDraft
     {
-        return SkillRevision::currentOf($skill)->draft();
+        return SkillRevision::currentOf($skill)->draft;
     }
 
     /**

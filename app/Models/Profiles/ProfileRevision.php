@@ -32,6 +32,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use PhpOption\None;
@@ -229,26 +230,30 @@ final class ProfileRevision extends Model implements ReadableModel
         return ScriptSource::fromDefinitions($this->script_source, $this->script_commands);
     }
 
-    /**
-     * The script this revision runs; a revision without one has none.
-     *
-     * @return Option<ProfileScript>
-     */
-    public function script(): Option
-    {
-        if ($this->compiled_script === null || $this->script_definition_digest === null) {
-            return None::create();
-        }
-
-        return new Some(new ProfileScript(
-            $this->scriptSource(),
-            new CompiledScript($this->compiled_script, $this->script_definition_digest),
-        ));
-    }
-
     public function snapshot(ProfileKey $key): ProfileSnapshot
     {
         return ProfileSnapshots::of($this, $key);
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * The script this revision runs; a revision without one has none.
+     *
+     * @return Attribute<None|Some<ProfileScript>, never>
+     */
+    protected function script(): Attribute
+    {
+        return Attribute::get(function (): Option {
+            if ($this->compiled_script === null || $this->script_definition_digest === null) {
+                return None::create();
+            }
+
+            return new Some(new ProfileScript(
+                $this->scriptSource(),
+                new CompiledScript($this->compiled_script, $this->script_definition_digest),
+            ));
+        })->withoutObjectCaching();
     }
 
     // ----------[ Scopes ]----------

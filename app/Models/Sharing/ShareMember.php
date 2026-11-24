@@ -15,6 +15,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -175,17 +176,22 @@ final class ShareMember extends Model implements ReadableModel
             ->get(['target_type', 'target_id']);
 
         foreach ($members as $member) {
-            $grouped[$member->target_type][] = $member->target();
+            $grouped[$member->target_type][] = $member->target;
         }
 
         return $grouped;
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Accessors ]----------
 
-    public function target(): RecordIdentity
+    /**
+     * @return Attribute<RecordIdentity, never>
+     */
+    protected function target(): Attribute
     {
-        return new RecordIdentity($this->target_type, $this->target_id);
+        return Attribute::get(
+            fn () => new RecordIdentity($this->target_type, $this->target_id),
+        )->withoutObjectCaching();
     }
 
     // ----------[ Scopes ]----------

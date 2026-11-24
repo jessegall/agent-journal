@@ -31,6 +31,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -381,20 +382,6 @@ final class DriverRequest extends Model implements ReadableModel
     }
 
     /**
-     * The key script this request runs, with its version and parameters, as a navigation request's goal.
-     *
-     * @throws NavigationRaiseRefused
-     */
-    public function scriptGoal(): ScriptGoal
-    {
-        if ($this->script_id === null || $this->script_version === null) {
-            throw NavigationRaiseRefused::notAKeyScript($this->id);
-        }
-
-        return new ScriptGoal($this->script_id, $this->script_version, $this->script_parameters);
-    }
-
-    /**
      * Whether the stopped key script reached a step it can go on from.
      */
     public function canResumeScript(): bool
@@ -452,21 +439,6 @@ final class DriverRequest extends Model implements ReadableModel
     }
 
     /**
-     * What the caller who asked for this request is told: where it stands and the timing to expect.
-     */
-    public function receipt(): DriverReceipt
-    {
-        return new DriverReceipt(
-            $this->id,
-            $this->sequence,
-            $this->operation,
-            $this->progress,
-            $this->expected_timing,
-            $this->expected_observed_at?->toIso8601String(),
-        );
-    }
-
-    /**
      * The request as its host receives it to carry out, bound to the runtime's session and process generation and the
      * session's supervised start, if it has one; a bootstrap is the initial wake of a start still proving its
      * conversation.
@@ -480,7 +452,7 @@ final class DriverRequest extends Model implements ReadableModel
             $this->attempt_version,
             $this->operation->value,
             $this->message,
-            $this->partList(),
+            $this->partList,
             $this->model,
             $this->effort,
             $this->script_id,
@@ -497,19 +469,6 @@ final class DriverRequest extends Model implements ReadableModel
     }
 
     /**
-     * The delivery's parts in their order; none for any other request.
-     *
-     * @return list<MessagePart>
-     */
-    public function partList(): array
-    {
-        return array_map(
-            fn (array $stored) => MessagePartType::from($stored['type'])->partFrom($stored),
-            $this->parts ?? [],
-        );
-    }
-
-    /**
      * Drops the request's payload once its host reported how it ended, as a browser writer's typed text is never kept.
      */
     public function forgetPayload(): void
@@ -517,14 +476,6 @@ final class DriverRequest extends Model implements ReadableModel
         $this->message = null;
         $this->parts = null;
         $this->save();
-    }
-
-    /**
-     * The request as stored, for readers.
-     */
-    public function status(): DriverRequestStatus
-    {
-        return RuntimeStatuses::ofRequest($this);
     }
 
     /**
@@ -587,6 +538,62 @@ final class DriverRequest extends Model implements ReadableModel
     {
         $this->wake_acknowledged = $this->wake_requested;
         $this->markApplied('no_pending_work', RequestOutcome::NoWork);
+    }
+
+    /**
+     * The key script this request runs, with its version and parameters, as a navigation request's goal.
+     *
+     * @throws NavigationRaiseRefused
+     */
+    public function scriptGoal(): ScriptGoal
+    {
+        if ($this->script_id === null || $this->script_version === null) {
+            throw NavigationRaiseRefused::notAKeyScript($this->id);
+        }
+
+        return new ScriptGoal($this->script_id, $this->script_version, $this->script_parameters);
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * What the caller who asked for this request is told: where it stands and the timing to expect.
+     *
+     * @return Attribute<DriverReceipt, never>
+     */
+    protected function receipt(): Attribute
+    {
+        return Attribute::get(fn () => new DriverReceipt(
+            $this->id,
+            $this->sequence,
+            $this->operation,
+            $this->progress,
+            $this->expected_timing,
+            $this->expected_observed_at?->toIso8601String(),
+        ))->withoutObjectCaching();
+    }
+
+    /**
+     * The delivery's parts in their order; none for any other request.
+     *
+     * @return Attribute<list<MessagePart>, never>
+     */
+    protected function partList(): Attribute
+    {
+        return Attribute::get(fn () => array_map(
+            fn (array $stored) => MessagePartType::from($stored['type'])->partFrom($stored),
+            $this->parts ?? [],
+        ));
+    }
+
+    /**
+     * The request as stored, for readers.
+     *
+     * @return Attribute<DriverRequestStatus, never>
+     */
+    protected function status(): Attribute
+    {
+        return Attribute::get(fn () => RuntimeStatuses::ofRequest($this))->withoutObjectCaching();
     }
 
     // ----------[ Relations ]----------

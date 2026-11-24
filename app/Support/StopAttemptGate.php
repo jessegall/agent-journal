@@ -85,7 +85,7 @@ final readonly class StopAttemptGate implements StopConditionGate
         }
 
         $work = StartRecord::ownerStartOf($stop->sessionId)
-            ->map(fn (StartRecord $start) => WorkReference::forRecord($start->ownerWork()))
+            ->map(fn (StartRecord $start) => WorkReference::forRecord($start->ownerWork))
             ->getOrElse(WorkReference::free(self::OWN_WORK));
 
         return $this->preparer->prepare(new StopPreparationRequest(
@@ -120,7 +120,7 @@ final readonly class StopAttemptGate implements StopConditionGate
             return $this->passWithoutConditions($attempt);
         }
 
-        $stopOutcome = $this->evidence->result($attempt->reference());
+        $stopOutcome = $this->evidence->result($attempt->reference);
 
         return match ($stopOutcome->state) {
             StopAttemptState::Pending => new MessageLine(AgentText::of('core.stop.checks_running')),
@@ -182,7 +182,7 @@ final readonly class StopAttemptGate implements StopConditionGate
     {
         StartRecord::ownerStartOf($attempt->session_id)->forAll(
             fn (StartRecord $start) => $this->facts->publishAfterCommit(
-                new HelperStopHeld($start->ownerWork(), $attempt->reference()),
+                new HelperStopHeld($start->ownerWork, $attempt->reference),
             ),
         );
     }
@@ -198,7 +198,7 @@ final readonly class StopAttemptGate implements StopConditionGate
         foreach (StopAttempt::latestSettledOf($sessionId, self::UNCHANGED_FAILURES_TO_HOLD + 1) as $settled) {
             $isSameFailure = $settled->state === StopAttemptState::Failed
                 && $settled->isFor($attempt->policy_digest, $attempt->workspace_generation)
-                && $this->evidence->result($settled->reference())->failureSummary() === $summary;
+                && $this->evidence->result($settled->reference)->failureSummary() === $summary;
 
             if (! $isSameFailure) {
                 break;

@@ -13,6 +13,7 @@ use App\Support\AssignmentReference;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -118,7 +119,7 @@ final class ClaimAuthorization extends Model implements ReadableModel
      */
     public function isValidFor(AssigneeIdentity $claimant): bool
     {
-        return $this->isValidAgainst($claimant, AssignmentRecord::holdersOf($this->sourceIds()));
+        return $this->isValidAgainst($claimant, AssignmentRecord::holdersOf($this->sourceIds));
     }
 
     /**
@@ -140,14 +141,18 @@ final class ClaimAuthorization extends Model implements ReadableModel
         return $participationHolds && $workHolds;
     }
 
+    // ----------[ Accessors ]----------
+
     /**
      * The ids of the assignments the claim stands on.
      *
-     * @return list<string>
+     * @return Attribute<list{0?: string, 1?: string}, never>
      */
-    public function sourceIds(): array
+    protected function sourceIds(): Attribute
     {
-        return array_values(array_filter([$this->participation_assignment_id, $this->work_assignment_id]));
+        return Attribute::get(
+            fn () => array_values(array_filter([$this->participation_assignment_id, $this->work_assignment_id])),
+        );
     }
 
     // ----------[ Internals ]----------

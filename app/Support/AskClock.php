@@ -70,7 +70,7 @@ final readonly class AskClock
 
         foreach ($hops as $hop) {
             if (array_key_exists($hop->ask_id, $asks)) {
-                $queues[$hop->holderKey()][] = $hop;
+                $queues[$hop->holderKey][] = $hop;
             }
         }
 

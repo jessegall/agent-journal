@@ -161,22 +161,6 @@ final class Agent extends Model implements Assignee, MessageRecipient, MessageSe
         return $this->current_session_id === $session->id;
     }
 
-    /**
-     * The runtime of the current session, when that session runs under a driver that can be woken.
-     *
-     * @return Option<RunningRuntime>
-     */
-    public function currentRuntime(): Option
-    {
-        if ($this->current_session_id === null || ! AgentRuntime::runsForSession($this->current_session_id)) {
-            return None::create();
-        }
-
-        $target = new StackTarget($this->id, $this->current_session_id);
-
-        return Some::create(new RunningRuntime($target, $this->runtime_generation));
-    }
-
     public function assigneeIdentity(): AssigneeIdentity
     {
         return AssigneeIdentity::of($this);
@@ -195,5 +179,21 @@ final class Agent extends Model implements Assignee, MessageRecipient, MessageSe
     public function isRetired(): bool
     {
         return $this->retired_at !== null;
+    }
+
+    /**
+     * The runtime of the current session, when that session runs under a driver that can be woken.
+     *
+     * @return Option<RunningRuntime>
+     */
+    public function currentRuntime(): Option
+    {
+        if ($this->current_session_id === null || ! AgentRuntime::runsForSession($this->current_session_id)) {
+            return None::create();
+        }
+
+        $target = new StackTarget($this->id, $this->current_session_id);
+
+        return Some::create(new RunningRuntime($target, $this->runtime_generation));
     }
 }

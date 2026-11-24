@@ -88,7 +88,7 @@ final class ProfileDraft extends Model implements ReadableModel
             throw ProfileDraftRefused::stale(ProfileKey::from($this->profile_key), $expected, $this->revision);
         }
 
-        return $this->currentRevision?->scriptSource() ?? ScriptSource::empty();
+        return $this->currentRevision->scriptSource ?? ScriptSource::empty();
     }
 
     // ----------[ Relations ]----------

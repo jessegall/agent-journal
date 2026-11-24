@@ -70,7 +70,7 @@ final readonly class SequencesIndex extends SequencesPage
      */
     private function detailOf(Sequence $sequence): string
     {
-        $count = count($sequence->stepList());
+        $count = count($sequence->stepList);
         $steps = $count === 1 ? '1 step' : "{$count} steps";
 
         return $sequence->summary === '' ? $steps : "{$steps} · {$sequence->summary}";

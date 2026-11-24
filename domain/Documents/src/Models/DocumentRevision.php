@@ -21,6 +21,7 @@ use Domain\Documents\Support\RecordViews;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -97,13 +98,6 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
         });
     }
 
-    // ----------[ Answers ]----------
-
-    public function card(): RevisionCard
-    {
-        return RecordViews::revisionCard($this);
-    }
-
     /**
      * The revision with its text, marked historical when the document has a later one.
      */
@@ -118,6 +112,16 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
     public function numberHolder(): Model
     {
         return $this->relationLoaded('document') ? $this->document : $this->document()->sole();
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<RevisionCard, never>
+     */
+    protected function card(): Attribute
+    {
+        return Attribute::get(fn () => RecordViews::revisionCard($this))->withoutObjectCaching();
     }
 
     // ----------[ Relations ]----------

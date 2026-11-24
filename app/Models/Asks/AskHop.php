@@ -17,6 +17,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use PhpOption\Option;
@@ -185,7 +186,7 @@ final class AskHop extends Model implements EventSource, ReadableModel
         $times = [];
 
         foreach ($answered as $row) {
-            $times[$row->holderKey()] = CarbonImmutable::parse((string) $row->getAttribute('answered_at'));
+            $times[$row->holderKey] = CarbonImmutable::parse((string) $row->getAttribute('answered_at'));
         }
 
         return $times;
@@ -227,17 +228,21 @@ final class AskHop extends Model implements EventSource, ReadableModel
         return $this->actor()->type->isAgent();
     }
 
-    /**
-     * The holder as one text, to group the hops of one holder's queue.
-     */
-    public function holderKey(): string
-    {
-        return "{$this->actor_type}:{$this->actor_id}";
-    }
-
     public function lockDelivery(): self
     {
         return self::lockedById($this->id);
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * The holder as one text, to group the hops of one holder's queue.
+     *
+     * @return Attribute<non-falsy-string, never>
+     */
+    protected function holderKey(): Attribute
+    {
+        return Attribute::get(fn () => "{$this->actor_type}:{$this->actor_id}");
     }
 
     // ----------[ Scopes ]----------

@@ -63,7 +63,7 @@ final class ProcessRecordsTest extends TestCase
 
         $part->finishProcess(PartEnd::signalled(9));
 
-        $end = $part->refresh()->end();
+        $end = $part->refresh()->end;
         $this->assertSame(PartEndType::Signalled, $end->type);
         $this->assertFalse($end->hasStatus());
     }

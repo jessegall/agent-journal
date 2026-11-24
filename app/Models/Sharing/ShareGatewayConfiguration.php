@@ -19,6 +19,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -201,6 +202,14 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
     }
 
     /**
+     * The public address a share's token opens under this configuration.
+     */
+    public function shareUrl(string $token): string
+    {
+        return rtrim($this->settings->publicOrigin, '/').'/s/'.$token;
+    }
+
+    /**
      * Whether the newest running endpoint of this revision answers; null while none runs.
      */
     public function endpointHealth(): bool|null
@@ -220,26 +229,27 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
         return Share::unendedOf($this->id);
     }
 
+    // ----------[ Accessors ]----------
+
     /**
      * How this gateway's forwarded requests name the visitor: none until a gateway's fixture proves the header it
      * overwrites.
+     *
+     * @return Attribute<SourceAddressRule, never>
      */
-    public function sourceAddressRule(): SourceAddressRule
+    protected function sourceAddressRule(): Attribute
     {
-        return SourceAddressRule::none();
+        return Attribute::get(fn () => SourceAddressRule::none())->withoutObjectCaching();
     }
 
     /**
-     * The public address a share's token opens under this configuration.
+     * @return Attribute<GatewayConfiguration, never>
      */
-    public function shareUrl(string $token): string
+    protected function toConfiguration(): Attribute
     {
-        return rtrim($this->settings->publicOrigin, '/').'/s/'.$token;
-    }
-
-    public function toConfiguration(): GatewayConfiguration
-    {
-        return new GatewayConfiguration($this->id, $this->configuration_version, $this->settings);
+        return Attribute::get(
+            fn () => new GatewayConfiguration($this->id, $this->configuration_version, $this->settings),
+        )->withoutObjectCaching();
     }
 
     // ----------[ Scopes ]----------

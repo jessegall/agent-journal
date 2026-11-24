@@ -25,6 +25,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -206,14 +207,6 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     }
 
     /**
-     * The key script the request navigates for, with its version and parameters.
-     */
-    public function goal(): ScriptGoal
-    {
-        return new ScriptGoal($this->goal_script, $this->goal_version, $this->goal_parameters);
-    }
-
-    /**
      * Whether the main agent is answering the request, the one state in which a proof may be given.
      */
     public function isAnswering(): bool
@@ -310,6 +303,20 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     public function expire(): void
     {
         $this->moveTo(NavigationState::Expired);
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * The key script the request navigates for, with its version and parameters.
+     *
+     * @return Attribute<ScriptGoal, never>
+     */
+    protected function goal(): Attribute
+    {
+        return Attribute::get(
+            fn () => new ScriptGoal($this->goal_script, $this->goal_version, $this->goal_parameters),
+        )->withoutObjectCaching();
     }
 
     // ----------[ Relations ]----------

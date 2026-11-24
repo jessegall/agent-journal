@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
 use Illuminate\Support\Carbon;
@@ -140,7 +141,7 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
             ->withoutGlobalScope(SignedInScope::class)
             ->whereKey($ids)
             ->get()
-            ->mapWithKeys(fn (self $row) => [$row->id => $row->toAssignment()->holder()])
+            ->mapWithKeys(fn (self $row) => [$row->id => $row->toAssignment->holder()])
             ->all();
     }
 
@@ -156,7 +157,7 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
             ->withoutGlobalScope(SignedInScope::class)
             ->whereKey($ids)
             ->get()
-            ->mapWithKeys(fn (self $row) => [$row->id => $row->toAssignment()])
+            ->mapWithKeys(fn (self $row) => [$row->id => $row->toAssignment])
             ->all();
     }
 
@@ -176,14 +177,17 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
             ->all());
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Accessors ]----------
 
-    public function toAssignment(): Assignment
+    /**
+     * @return Attribute<Assignment, never>
+     */
+    protected function toAssignment(): Attribute
     {
-        return new Assignment(
+        return Attribute::get(fn () => new Assignment(
             new RecordIdentity($this->record_type, $this->record_id),
             new AssignmentReference($this->id, new AssigneeIdentity($this->holder_type, $this->holder_id)),
-        );
+        ))->withoutObjectCaching();
     }
 
     // ----------[ Scopes ]----------

@@ -50,7 +50,7 @@ final readonly class ReportRecords implements ReportResolver
                 $page->map(
                     fn (Report $report) => $filters->searches() ? $report->searchResult(
                         $filters->query,
-                    ) : $report->card(),
+                    ) : $report->card,
                 )->all(),
             ),
             'page' => $filters->page,
@@ -73,7 +73,7 @@ final readonly class ReportRecords implements ReportResolver
 
     public function show(int $number): ReportView
     {
-        return self::published($number)->view();
+        return self::published($number)->view;
     }
 
     public function inspect(int $number): RecordInspection

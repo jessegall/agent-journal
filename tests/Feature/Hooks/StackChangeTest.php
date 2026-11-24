@@ -95,7 +95,7 @@ final class StackChangeTest extends TestCase
 
         $this->assertEquals(['A' => $entered['A']], $this->storedEntryTimes());
         $row = AgentStackRow::query()->forTarget($this->target)->sole();
-        $restored = $this->app->make(StackRestorer::class)->restore($row->frames, $row->target())->frames();
+        $restored = $this->app->make(StackRestorer::class)->restore($row->frames, $row->target)->frames();
         $this->assertEquals($entered['A'], $restored[1]->enteredAt);
         $this->assertEquals($row->frames->all()[0]->enteredAt, $restored[0]->enteredAt);
     }
@@ -174,7 +174,7 @@ final class StackChangeTest extends TestCase
         $row = AgentStackRow::query()->forTarget($this->target)->sole();
         $restorer = $this->app->make(StackRestorer::class);
 
-        $this->assertCount(2, $restorer->restore($row->frames, $row->target())->frames());
+        $this->assertCount(2, $restorer->restore($row->frames, $row->target)->frames());
 
         $records = $row->frames->all();
         $tooMany = new FrameRecords(

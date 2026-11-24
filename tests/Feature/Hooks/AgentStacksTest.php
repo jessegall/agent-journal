@@ -420,7 +420,7 @@ final class AgentStacksTest extends TestCase
     {
         $row = AgentStackRow::query()->forTarget($this->target)->sole();
 
-        return $this->app->make(StackRestorer::class)->restore($row->frames, $row->target());
+        return $this->app->make(StackRestorer::class)->restore($row->frames, $row->target);
     }
 
     private function countingStateOf(AgentStack $stack): CountingState

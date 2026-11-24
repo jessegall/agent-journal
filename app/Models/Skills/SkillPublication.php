@@ -21,6 +21,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -406,17 +407,29 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
         return $this->updated_at !== null && $this->updated_at->lessThan($moment);
     }
 
-    /**
-     * The one name of its session's target, so publications of one target are counted together.
-     */
-    public function targetName(): string
+    public static function openKeyOf(string $sessionId, string $target): string
     {
-        return self::openKeyOf($this->session_id, $this->target);
+        return $sessionId.'|'.$target;
     }
 
-    public function status(): PublicationStatus
+    // ----------[ Accessors ]----------
+
+    /**
+     * The one name of its session's target, so publications of one target are counted together.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function targetName(): Attribute
     {
-        return new PublicationStatus(
+        return Attribute::get(fn () => self::openKeyOf($this->session_id, $this->target));
+    }
+
+    /**
+     * @return Attribute<PublicationStatus, never>
+     */
+    protected function status(): Attribute
+    {
+        return Attribute::get(fn () => new PublicationStatus(
             $this->id,
             $this->session_id,
             $this->state,
@@ -424,20 +437,17 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
             $this->selection_digest,
             $this->target,
             $this->error,
-        );
-    }
-
-    public static function openKeyOf(string $sessionId, string $target): string
-    {
-        return $sessionId.'|'.$target;
+        ))->withoutObjectCaching();
     }
 
     /**
      * The open key of this publication's session target.
+     *
+     * @return Attribute<string, never>
      */
-    public function targetKey(): string
+    protected function targetKey(): Attribute
     {
-        return self::openKeyOf($this->session_id, $this->target);
+        return Attribute::get(fn () => self::openKeyOf($this->session_id, $this->target));
     }
 
     // ----------[ Internals ]----------

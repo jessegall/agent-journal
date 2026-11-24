@@ -17,6 +17,7 @@ use Domain\Chat\Events\DockChanged;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -119,13 +120,6 @@ final class DockPlacement extends Model implements EventSource, ReadableModel
         $this->raise(new DockChanged($this->conversation_id));
     }
 
-    // ----------[ Answers ]----------
-
-    public function source(): DockIdentity
-    {
-        return new DockIdentity($this->dockable_type, $this->dockable_id);
-    }
-
     /**
      * The presentation to show: the one chosen when the owner still offers it, else the owner's default.
      */
@@ -134,6 +128,18 @@ final class DockPlacement extends Model implements EventSource, ReadableModel
         return in_array($this->presentation, $definition->presentations, true)
             ? $this->presentation
             : DockDefinition::DEFAULT_PRESENTATION;
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<DockIdentity, never>
+     */
+    protected function source(): Attribute
+    {
+        return Attribute::get(
+            fn () => new DockIdentity($this->dockable_type, $this->dockable_id),
+        )->withoutObjectCaching();
     }
 
     // ----------[ Scopes ]----------

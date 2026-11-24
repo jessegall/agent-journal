@@ -43,6 +43,7 @@ use Domain\Documents\Support\RecordViews;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -180,13 +181,8 @@ final class Document extends Model implements Commentable, Dockable, EventSource
             ->orderByDesc('closed_at')
             ->orderByDesc('id')
             ->get()
-            ->map(fn (DocumentClose $close) => $close->card())
+            ->map(fn (DocumentClose $close) => $close->card)
             ->all());
-    }
-
-    public function card(): PublicationCard
-    {
-        return RecordViews::documentCard($this);
     }
 
     /**
@@ -195,7 +191,7 @@ final class Document extends Model implements Commentable, Dockable, EventSource
     public function searchResult(string $words, DocumentRevision $matchingRevision): PublicationCard
     {
         return PublicationCard::from([
-            ...$this->card()->all(),
+            ...$this->card->all(),
             'snippet' => $matchingRevision->snippetFor($words),
             'foundIn' => "revision {$matchingRevision->number}",
         ]);
@@ -210,28 +206,7 @@ final class Document extends Model implements Commentable, Dockable, EventSource
             ? $this->revisions->sortByDesc('number')->first()
             : $this->currentRevision;
 
-        return $matchingRevision ?? $this->currentRevisionOrFail();
-    }
-
-    /**
-     * The document's safe card for a share: its current closed revision's title, and that revision's number as the
-     * published version.
-     */
-    public function shareCard(): ShareRecordCard
-    {
-        $revision = $this->currentRevisionOrFail();
-
-        return new ShareRecordCard($this->shareIdentity(), $revision->title, (string) $revision->number);
-    }
-
-    public function dockCard(): DockSuggestion
-    {
-        return RecordViews::documentSuggestion($this);
-    }
-
-    public function view(): DocumentView
-    {
-        return RecordViews::documentView($this);
+        return $matchingRevision ?? $this->currentRevisionOrFail;
     }
 
     /**
@@ -240,14 +215,6 @@ final class Document extends Model implements Commentable, Dockable, EventSource
     public function closeOf(string $token): DocumentClose|null
     {
         return DocumentClose::query()->where('document_id', $this->id)->where('token', $token)->first();
-    }
-
-    /**
-     * The current revision; every published document has one from the moment it is created.
-     */
-    public function currentRevisionOrFail(): DocumentRevision
-    {
-        return $this->currentRevision ?? throw DocumentMissing::numbered($this->number);
     }
 
     /**
@@ -293,6 +260,59 @@ final class Document extends Model implements Commentable, Dockable, EventSource
     public function composeDockCard(CardContext $context): DockCard
     {
         return new DocumentDockCard($this, $context)->card;
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<PublicationCard, never>
+     */
+    protected function card(): Attribute
+    {
+        return Attribute::get(fn () => RecordViews::documentCard($this))->withoutObjectCaching();
+    }
+
+    /**
+     * The document's safe card for a share: its current closed revision's title, and that revision's number as the
+     * published version.
+     *
+     * @return Attribute<ShareRecordCard, never>
+     */
+    protected function shareCard(): Attribute
+    {
+        return Attribute::get(function () {
+            $revision = $this->currentRevisionOrFail;
+
+            return new ShareRecordCard($this->shareIdentity(), $revision->title, (string) $revision->number);
+        })->withoutObjectCaching();
+    }
+
+    /**
+     * @return Attribute<DockSuggestion, never>
+     */
+    protected function dockCard(): Attribute
+    {
+        return Attribute::get(fn () => RecordViews::documentSuggestion($this))->withoutObjectCaching();
+    }
+
+    /**
+     * @return Attribute<DocumentView, never>
+     */
+    protected function view(): Attribute
+    {
+        return Attribute::get(fn () => RecordViews::documentView($this))->withoutObjectCaching();
+    }
+
+    /**
+     * The current revision; every published document has one from the moment it is created.
+     *
+     * @return Attribute<DocumentRevision, never>
+     */
+    protected function currentRevisionOrFail(): Attribute
+    {
+        return Attribute::get(
+            fn () => $this->currentRevision ?? throw DocumentMissing::numbered($this->number),
+        )->withoutObjectCaching();
     }
 
     // ----------[ Relations ]----------

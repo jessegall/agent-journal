@@ -55,8 +55,8 @@ final readonly class DocumentLinkRecords implements RecordProvider
             'id' => $record->id,
             'number' => (string) $record->number,
             'label' => "doc {$record->number}",
-            'title' => $record->currentRevisionOrFail()->title,
-            'abstract' => $record->currentRevisionOrFail()->abstract,
+            'title' => $record->currentRevisionOrFail->title,
+            'abstract' => $record->currentRevisionOrFail->abstract,
             'route' => "/documents/docs/{$record->number}",
         ]);
     }

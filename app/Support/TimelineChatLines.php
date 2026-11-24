@@ -67,6 +67,6 @@ final readonly class TimelineChatLines implements ChatLines
             ->limit(self::PAGE_LINE_LIMIT)
             ->get();
 
-        return array_values($events->map(fn (TimelineEvent $event) => $event->chatLine())->all());
+        return array_values($events->map(fn (TimelineEvent $event) => $event->chatLine)->all());
     }
 }

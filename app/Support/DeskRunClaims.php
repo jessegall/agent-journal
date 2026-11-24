@@ -37,7 +37,7 @@ final readonly class DeskRunClaims implements RunClaims
 
             if ($proof !== null && $proof->isValidFor($holder)) {
                 return $holder->isSameAs($claimant)
-                    ? new RunClaim($current->get()->reference, $proof->sourceIds())
+                    ? new RunClaim($current->get()->reference, $proof->sourceIds)
                     : throw RunClaimRefused::claimedByAnother($run->id);
             }
 
@@ -90,7 +90,7 @@ final readonly class DeskRunClaims implements RunClaims
         if ($work->holder()->isSameAs($claimant)) {
             $claim = $this->responsibilities->assign($run, $claimant)->reference;
 
-            return new RunClaim($claim, ClaimAuthorization::forDirectRun($claim, $work->reference)->sourceIds());
+            return new RunClaim($claim, ClaimAuthorization::forDirectRun($claim, $work->reference)->sourceIds);
         }
 
         $seat = AssignmentRecord::query()
@@ -103,8 +103,8 @@ final readonly class DeskRunClaims implements RunClaims
         }
 
         $claim = $this->responsibilities->assign($run, $claimant)->reference;
-        $proof = ClaimAuthorization::forDeskRun($claim, $seat->toAssignment()->reference, $work->reference);
+        $proof = ClaimAuthorization::forDeskRun($claim, $seat->toAssignment->reference, $work->reference);
 
-        return new RunClaim($claim, $proof->sourceIds());
+        return new RunClaim($claim, $proof->sourceIds);
     }
 }

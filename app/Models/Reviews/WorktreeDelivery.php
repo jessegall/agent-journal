@@ -13,6 +13,7 @@ use App\Models\Agents\ChildClaim;
 use App\Values\DeliveryReceipt;
 use App\Values\DeliverySubmission;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -124,10 +125,15 @@ final class WorktreeDelivery extends Model implements ReadableModel
         $this->save();
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Accessors ]----------
 
-    public function receipt(): DeliveryReceipt
+    /**
+     * @return Attribute<DeliveryReceipt, never>
+     */
+    protected function receipt(): Attribute
     {
-        return new DeliveryReceipt($this->delivery_id, $this->delivered_tip, $this->outcome->value);
+        return Attribute::get(
+            fn () => new DeliveryReceipt($this->delivery_id, $this->delivered_tip, $this->outcome->value),
+        )->withoutObjectCaching();
     }
 }

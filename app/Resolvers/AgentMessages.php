@@ -89,7 +89,7 @@ final readonly class AgentMessages implements AgentMessageReader
 
         $currentId = (string) $position->filters['message_id'];
         $message = $currentId === $root->id ? $root : Message::visibleById($currentId);
-        $position->assertCurrentRevision($message->revision());
+        $position->assertCurrentRevision($message->revision);
         $body = TextChunk::of($message->body, $position->offset, $position->characterOffset, self::CHUNK_BYTES);
 
         return new AgentMessageDetails(
@@ -108,7 +108,7 @@ final readonly class AgentMessages implements AgentMessageReader
                 $position->filters,
                 $body->nextLine,
                 $body->nextCharacter,
-                $message->revision(),
+                $message->revision,
             ));
         }
 
@@ -149,12 +149,12 @@ final readonly class AgentMessages implements AgentMessageReader
         return new AgentMessageCard(
             $message->id,
             $message->number,
-            $message->firstLine(),
-            $message->author(),
+            $message->firstLine,
+            $message->author,
             $message->source_inbox_id,
             $message->destination_inbox_id,
             $message->state,
-            $message->revision(),
+            $message->revision,
             $message->is_question,
             $this->isUnread($message),
             $message->id === $selected,

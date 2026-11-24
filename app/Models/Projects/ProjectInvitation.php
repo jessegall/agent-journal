@@ -162,6 +162,14 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
         $this->raise(new ProjectInvitationSpent($this->id, $binding->id, $this->spent_at));
     }
 
+    /**
+     * Whether the line can still be redeemed at this server time: not revoked, not spent and not expired.
+     */
+    public function isRedeemableAt(CarbonImmutable $now): bool
+    {
+        return $this->revoked_at === null && $this->spent_at === null && $this->expires_at->isAfter($now);
+    }
+
     // ----------[ Answers ]----------
 
     /**
@@ -179,13 +187,7 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
         return InstallAttempt::lockById($this->install_attempt_id);
     }
 
-    /**
-     * Whether the line can still be redeemed at this server time: not revoked, not spent and not expired.
-     */
-    public function isRedeemableAt(CarbonImmutable $now): bool
-    {
-        return $this->revoked_at === null && $this->spent_at === null && $this->expires_at->isAfter($now);
-    }
+    // ----------[ Accessors ]----------
 
     // ----------[ Scopes ]----------
 

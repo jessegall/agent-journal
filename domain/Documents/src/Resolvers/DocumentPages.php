@@ -37,7 +37,7 @@ final readonly class DocumentPages implements DocumentReader
     public function document(int|string $id, ToolArguments $arguments): ToolResult
     {
         $document = DocumentRecords::published($id);
-        $current = $document->currentRevisionOrFail();
+        $current = $document->currentRevisionOrFail;
         $cursor = $arguments->continuation();
 
         $position = $cursor === null

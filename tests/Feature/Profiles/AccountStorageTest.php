@@ -132,7 +132,7 @@ final class AccountStorageTest extends TestCase
         $removed->refresh();
         $this->assertSame(AccountState::Removed, $removed->state);
         $this->assertSame(['Work', null], [$removed->label, $removed->directory]);
-        $this->assertSame('core.account', $removed->recordIdentity()->type);
+        $this->assertSame('core.account', $removed->recordIdentity->type);
         $this->assertNotSame($removed->id, $again->id);
         $this->expectException(QueryException::class);
 

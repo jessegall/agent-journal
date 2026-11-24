@@ -23,6 +23,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder as QueryBuilder;
@@ -377,19 +378,26 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
         $this->save();
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Accessors ]----------
 
     /**
      * The settings store the start's driver keeps its conversations in: its account's folder, named by identity.
+     *
+     * @return Attribute<non-falsy-string, never>
      */
-    public function settingsIdentity(): string
+    protected function settingsIdentity(): Attribute
     {
-        return $this->account_type.':'.$this->account_id;
+        return Attribute::get(fn () => $this->account_type.':'.$this->account_id);
     }
 
-    public function accountIdentity(): RecordIdentity
+    /**
+     * @return Attribute<RecordIdentity, never>
+     */
+    protected function accountIdentity(): Attribute
     {
-        return new RecordIdentity($this->account_type, $this->account_id);
+        return Attribute::get(
+            fn () => new RecordIdentity($this->account_type, $this->account_id),
+        )->withoutObjectCaching();
     }
 
     // ----------[ Scopes ]----------

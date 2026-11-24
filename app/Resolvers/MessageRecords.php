@@ -165,14 +165,14 @@ final readonly class MessageRecords implements ConversationResolver
             ->where('origin_id', $message->id)
             ->limit(InboxMembers::LIMIT)
             ->get()
-            ->map(fn (MessageAttention $attention) => $attention->wakeStatus());
+            ->map(fn (MessageAttention $attention) => $attention->wakeStatus);
 
         $unsettled = ReceiptDelivery::query()
             ->unwokenFor($message->id)
             ->with('receipt.interval')
             ->limit(InboxMembers::LIMIT)
             ->get()
-            ->map(fn (ReceiptDelivery $delivery) => $delivery->wakeStatus());
+            ->map(fn (ReceiptDelivery $delivery) => $delivery->wakeStatus);
 
         return [...$woken->all(), ...$unsettled->all()];
     }
@@ -229,7 +229,7 @@ final readonly class MessageRecords implements ConversationResolver
             $inboxLabels[$inboxId] = $this->inboxes->resolve($inboxId)->inboxLabel();
         }
 
-        $authors = $this->labels->labelsFor(array_map(fn (Message $message) => $message->author(), $messages));
+        $authors = $this->labels->labelsFor(array_map(fn (Message $message) => $message->author, $messages));
 
         $claims = $this->proved->validClaimsOn(
             Message::LINK_TYPE,
@@ -254,14 +254,14 @@ final readonly class MessageRecords implements ConversationResolver
             'destinationInboxLabel' => $inboxLabels[$message->destination_inbox_id],
             'authorType' => $message->sender_type,
             'authorId' => $message->sender_id,
-            'authorLabel' => $authors->nameOf($message->author()),
+            'authorLabel' => $authors->nameOf($message->author),
             'body' => $message->body,
             'state' => $message->state,
             'stateVersion' => $message->state_version,
             'replyToId' => in_array($message->reply_to_id, $hiddenParents, true) ? null : $message->reply_to_id,
             'replyUnavailable' => in_array($message->reply_to_id, $hiddenParents, true),
             'answerId' => $message->answer_message_id,
-            'firstReader' => $message->firstRead(),
+            'firstReader' => $message->firstRead,
             ...$holderFields[$message->id] ?? [],
             ...$originalFields[$message->reply_to_id] ?? [],
             'sentAt' => (string) $message->created_at?->toIso8601String(),
@@ -289,11 +289,11 @@ final readonly class MessageRecords implements ConversationResolver
         }
 
         $parents = array_values(Message::query()->whereKey($parentIds)->limit(count($parentIds))->get()->all());
-        $authors = $this->labels->labelsFor(array_map(fn (Message $parent) => $parent->author(), $parents));
+        $authors = $this->labels->labelsFor(array_map(fn (Message $parent) => $parent->author, $parents));
         $originals = [];
 
         foreach ($parents as $parent) {
-            $author = $parent->author();
+            $author = $parent->author;
 
             $originals[$parent->id]['replyOriginal'] = ReplyOriginal::from([
                 'actor' => "{$author->type->value}:{$author->id}",

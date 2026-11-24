@@ -87,7 +87,7 @@ final readonly class StoredSkillWrites
     ): SkillRevision {
         return $this->appendRevision(
             $skill,
-            $earlier->draft(),
+            $earlier->draft,
             $condition,
             $author,
             $earlier->source_key,

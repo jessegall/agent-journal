@@ -35,7 +35,7 @@ final readonly class TaskExecutions
             array_values(array_map(fn (TaskRun $run) => $run->assignmentIdentity(), $runs)),
         );
 
-        $runners = array_map(fn (TaskRun $run) => $holders[$run->id] ?? $run->starter(), $runs);
+        $runners = array_map(fn (TaskRun $run) => $holders[$run->id] ?? $run->starter, $runs);
         $labels = $this->labels->labelsFor(array_values($runners));
 
         return $tasks->mapWithKeys(fn (Task $task) => [

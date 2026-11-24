@@ -44,7 +44,7 @@ final readonly class ProtectedMerge
     {
         $branch = "refs/heads/{$attempt->target_branch}";
         $target = $this->revision($branch);
-        $result = $this->revision($attempt->resultRef());
+        $result = $this->revision($attempt->resultRef);
 
         if ($result !== '' && $result === $target) {
             $attempt->merged($result);
@@ -90,7 +90,7 @@ final readonly class ProtectedMerge
             return;
         }
 
-        $this->git($this->repository, ['update-ref', $attempt->resultRef(), $result]);
+        $this->git($this->repository, ['update-ref', $attempt->resultRef, $result]);
         $this->publish($attempt, $branch, $target, $result);
     }
 

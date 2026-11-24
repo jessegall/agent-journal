@@ -73,7 +73,7 @@ final class SharingModelsTest extends TestCase
             $configuration->settings,
             ShareGatewayConfiguration::query()->findOrFail($configuration->id)->settings,
         );
-        $this->assertSame('press', $configuration->toConfiguration()->gatewayKey());
+        $this->assertSame('press', $configuration->toConfiguration->gatewayKey());
         $this->assertSame('https://share.example.test', $endpoint->public_origin);
         $this->assertSame(GatewayEndpointState::Opening, $endpoint->fresh()?->state);
         $this->assertSame(GatewayOperationType::Open, $operation->fresh()?->type);
@@ -91,7 +91,7 @@ final class SharingModelsTest extends TestCase
         $this->assertEquals([$target], SharePreview::query()->findOrFail($preview->id)->selection);
         $this->assertSame(64, strlen($preview->checksum));
         $this->assertNotSame($preview->checksum, $other->checksum);
-        $this->assertEquals($this->root(), $preview->root());
+        $this->assertEquals($this->root(), $preview->root);
     }
 
     public function test_a_share_never_serializes_its_token_and_stores_it_encrypted(): void
@@ -136,7 +136,7 @@ final class SharingModelsTest extends TestCase
         $this->assertSame(ShareState::Proposed, $proposal->fresh()?->state);
         $this->assertNull($proposal->token_digest);
         $this->assertSame(0, $member->scope_version);
-        $this->assertEquals(TestActors::record('documents.report', 7), $member->target());
+        $this->assertEquals(TestActors::record('documents.report', 7), $member->target);
         $this->assertSame($proposal->id, $audit->share_id);
         $this->assertNull($change->share_id);
         $this->assertSame(ShareAuditType::GatewayChanged, $change->fresh()?->type);

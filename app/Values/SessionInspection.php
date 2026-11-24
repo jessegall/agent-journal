@@ -45,7 +45,7 @@ final readonly class SessionInspection
             $execution->mode,
             $execution->image,
             $execution->budgets->wallSeconds,
-            array_values($policy->stopConditionLabels()),
+            array_values($policy->stopConditionLabels),
             $lastStop,
         );
     }

@@ -24,7 +24,7 @@ final readonly class AgentWakes
         if ($open !== null) {
             $open->claimWake($open->wake_requested + 1);
 
-            return $open->receipt();
+            return $open->receipt;
         }
 
         $wake = $this->requests->append(
@@ -36,6 +36,6 @@ final readonly class AgentWakes
 
         $wake->claimWake(1);
 
-        return $wake->receipt();
+        return $wake->receipt;
     }
 }

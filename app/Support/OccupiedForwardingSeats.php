@@ -34,7 +34,7 @@ final readonly class OccupiedForwardingSeats
 
     private static function occupied(AssignmentRecord $row): OccupiedSeat
     {
-        $assignment = $row->toAssignment();
+        $assignment = $row->toAssignment;
         $seat = DeskSeat::query()->whereKey($assignment->record->id)->sole();
 
         return new OccupiedSeat(DeskRecord::query()->whereKey($seat->desk_id)->sole(), $assignment->reference);

@@ -21,6 +21,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -108,7 +109,7 @@ final class MenuEntry extends Model implements ReadableModel
         NavigationCompletion $completes,
         string $proof,
     ): self {
-        $goal = $source->goal();
+        $goal = $source->goal;
         $entry = new self();
         $entry->family = $source->family;
         $entry->entry_fingerprint = $steps[0]->fingerprint;
@@ -137,7 +138,7 @@ final class MenuEntry extends Model implements ReadableModel
     public static function lockForPath(NavigationRequest $navigation, array $steps): self|null
     {
         return self::query()->ownedBy($navigation->actor())->current()->forDriver($navigation->family)
-            ->matching($steps[0]->fingerprint, $navigation->goal())
+            ->matching($steps[0]->fingerprint, $navigation->goal)
             ->whereRaw('steps::jsonb = ?::jsonb', [json_encode(self::storedSteps($steps), JSON_THROW_ON_ERROR)])
             ->lockForUpdate()
             ->recentFirst()
@@ -192,13 +193,6 @@ final class MenuEntry extends Model implements ReadableModel
     {
         $this->state = MenuEntryState::Retired;
         $this->save();
-    }
-
-    // ----------[ Answers ]----------
-
-    public function goal(): ScriptGoal
-    {
-        return new ScriptGoal($this->goal_script, $this->goal_version, $this->goal_parameters);
     }
 
     /**
@@ -277,20 +271,34 @@ final class MenuEntry extends Model implements ReadableModel
         $this->storeBuilds($builds);
     }
 
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<ScriptGoal, never>
+     */
+    protected function goal(): Attribute
+    {
+        return Attribute::get(
+            fn () => new ScriptGoal($this->goal_script, $this->goal_version, $this->goal_parameters),
+        )->withoutObjectCaching();
+    }
+
     /**
      * The entry as the host replays it, and nothing else of its owner's.
+     *
+     * @return Attribute<LibraryEntryAnswer, never>
      */
-    public function libraryAnswer(): LibraryEntryAnswer
+    protected function libraryAnswer(): Attribute
     {
-        return new LibraryEntryAnswer(
+        return Attribute::get(fn () => new LibraryEntryAnswer(
             $this->id,
             $this->family,
-            EntryGoalAnswer::of($this->goal()),
+            EntryGoalAnswer::of($this->goal),
             $this->steps(),
             $this->completes->value,
             $this->next_step,
             $this->proof,
-        );
+        ))->withoutObjectCaching();
     }
 
     // ----------[ Internals ]----------
