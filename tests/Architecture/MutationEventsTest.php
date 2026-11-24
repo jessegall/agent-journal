@@ -12,7 +12,7 @@ use Tests\TestCase;
 
 /**
  * Every method of a model's Mutations section that writes the model's row raises a named event of its own, even when
- * nothing listens to it yet; the models on the list in SilentModels.php are still to be converted.
+ * nothing listens to it yet; a model on the list in SilentModels.php is written by the framework outside any unit.
  */
 #[TimeLimit(seconds: 60, reason: 'It parses every model of app and the domains.')]
 final class MutationEventsTest extends TestCase
@@ -80,6 +80,9 @@ final class MutationEventsTest extends TestCase
      */
     private function silentModels(): array
     {
-        return require base_path(self::SILENT_MODELS);
+        /** @var array<string, string> $reasons */
+        $reasons = require base_path(self::SILENT_MODELS);
+
+        return array_keys($reasons);
     }
 }

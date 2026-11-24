@@ -6,7 +6,10 @@ namespace App\Models\Drivers;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Events\DriverTurnFinished;
 use App\Models\Agents\AgentRuntime;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -31,11 +34,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(
     ['agent_runtime_id', 'process_generation', 'native_prompt_id', 'observed_model', 'observed_effort', 'started_at'],
 )]
-final class DriverTurn extends Model implements ReadableModel
+final class DriverTurn extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -75,7 +79,8 @@ final class DriverTurn extends Model implements ReadableModel
     {
         $this->outcome = $outcome;
         $this->finished_at = $at;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new DriverTurnFinished($this->id, $outcome));
     }
 
     // ----------[ Relations ]----------

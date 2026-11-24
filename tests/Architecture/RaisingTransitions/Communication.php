@@ -30,4 +30,5 @@ return [
     'NotificationReceipt::reveal',
     'InboxRecord::takeSequence',
     'UserPresence::beatAt',
+    'AgentChatPermission::withdraw',
 ];

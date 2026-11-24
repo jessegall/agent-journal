@@ -10,4 +10,6 @@ return [
     'DeskPreference::switchTo',
     'DeskRecord::advanceSeating',
     'DeskRecord::rename',
+    'Layout::remove',
+    'Layout::saveNameAndShape',
 ];

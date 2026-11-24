@@ -7,7 +7,9 @@ namespace App\Models\Drivers;
 use App\Casts\OptionalStoredValueCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
 use App\Contracts\Drivers\MessagePart;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Data\Agents\DriverRequestStatus;
 use App\Enums\DriverOperation;
@@ -17,6 +19,16 @@ use App\Enums\HostWakeRefusal;
 use App\Enums\MessagePartType;
 use App\Enums\RequestOutcome;
 use App\Enums\RequestProgress;
+use App\Events\DriverRequestAccepted;
+use App\Events\DriverRequestApplied;
+use App\Events\DriverRequestApplying;
+use App\Events\DriverRequestHeld;
+use App\Events\DriverRequestPossibleDuplicate;
+use App\Events\DriverRequestRetried;
+use App\Events\DriverRequestScriptProgressed;
+use App\Events\DriverRequestStaged;
+use App\Events\DriverRequestWakeAcknowledged;
+use App\Events\DriverRequestWakeClaimed;
 use App\Exceptions\NavigationRaiseRefused;
 use App\Models\Agents\AgentRuntime;
 use App\Support\InitialWakeSettlement;
@@ -95,11 +107,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'navigation_request_id',
     'navigation_round',
 ])]
-final class DriverRequest extends Model implements ReadableModel
+final class DriverRequest extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -153,7 +166,8 @@ final class DriverRequest extends Model implements ReadableModel
     {
         $this->moveTo(RequestProgress::Accepted);
         $this->hold_reason = HoldReason::None;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new DriverRequestAccepted($this->id));
     }
 
     /**
@@ -165,7 +179,8 @@ final class DriverRequest extends Model implements ReadableModel
         $this->script_step = $progress->step;
         $this->script_generation = $progress->generation;
         $this->script_evidence = mb_substr($progress->evidence, 0, 500);
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new DriverRequestScriptProgressed($this->id));
     }
 
     /**
@@ -176,7 +191,8 @@ final class DriverRequest extends Model implements ReadableModel
         $this->moveTo(RequestProgress::Staged);
         $this->wake_claimed = $this->wake_requested;
         $this->staged_at = $at;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new DriverRequestStaged($this->id));
     }
 
     /**
@@ -186,7 +202,8 @@ final class DriverRequest extends Model implements ReadableModel
     {
         $this->moveTo(RequestProgress::Applying);
         $this->attempt_version = $attempt;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new DriverRequestApplying($this->id, $attempt));
     }
 
     public function markApplied(string $actualBinding, RequestOutcome|null $outcome = null): void
@@ -194,7 +211,8 @@ final class DriverRequest extends Model implements ReadableModel
         $this->moveTo(RequestProgress::Applied);
         $this->actual_binding = $actualBinding;
         $this->outcome = $outcome;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new DriverRequestApplied($this->id));
     }
 
     /**
@@ -212,7 +230,8 @@ final class DriverRequest extends Model implements ReadableModel
         $this->attempt_version++;
         $this->outcome = null;
         $this->moveTo(RequestProgress::Accepted);
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new DriverRequestRetried($this->id));
     }
 
     /**
@@ -221,14 +240,16 @@ final class DriverRequest extends Model implements ReadableModel
     public function markPossibleDuplicateOf(self $original): void
     {
         $this->possible_duplicate_of_id = $original->id;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new DriverRequestPossibleDuplicate($this->id, $original->id));
     }
 
     public function hold(HoldReason $reason): void
     {
         $this->hold_reason = $reason;
         $this->row_version++;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new DriverRequestHeld($this->id, $reason));
     }
 
     /**
@@ -238,14 +259,16 @@ final class DriverRequest extends Model implements ReadableModel
     {
         $this->wake_requested = max($requested, $this->wake_requested);
         $this->row_version++;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new DriverRequestWakeClaimed($this->id, $requested));
     }
 
     public function acknowledgeWake(int $acknowledged): void
     {
         $this->wake_acknowledged = max($acknowledged, $this->wake_acknowledged);
         $this->row_version++;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new DriverRequestWakeAcknowledged($this->id, $acknowledged));
     }
 
     // ----------[ Answers ]----------

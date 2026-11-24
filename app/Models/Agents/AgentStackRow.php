@@ -5,11 +5,16 @@ declare(strict_types=1);
 namespace App\Models\Agents;
 
 use App\Concerns\BoundedReads;
-use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\SessionStatus;
 use App\Enums\StackStatus;
+use App\Events\AgentStackClosed;
+use App\Events\AgentStackFramesSaved;
+use App\Events\AgentStackHeldForInvestigation;
+use App\Events\AgentStackStarted;
 use App\Exceptions\StackAlreadyClosed;
 use App\Exceptions\StackMissing;
 use App\Models\Support\AgentSessionScope;
@@ -47,12 +52,12 @@ use PhpOption\Some;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['version', 'frames', 'status', 'closed_at', 'has_ticking_frames'])]
-final class AgentStackRow extends Model implements ReadableModel
+final class AgentStackRow extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
-    use InsertsAbsentRows;
     use Linkable;
+    use RaisesEvents;
 
     protected $table = 'agent_stacks';
 
@@ -215,7 +220,8 @@ final class AgentStackRow extends Model implements ReadableModel
         $this->frames = $frames;
         $this->has_ticking_frames = $frames->holdTicking($ticking);
         $this->status = StackStatus::Active;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AgentStackStarted($this->id));
     }
 
     /**
@@ -224,7 +230,8 @@ final class AgentStackRow extends Model implements ReadableModel
     public function holdForInvestigation(CarbonImmutable $time): void
     {
         $this->held_at = $time;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AgentStackHeldForInvestigation($this->id));
     }
 
     public function saveFrames(FrameRecords $frames, TickingTypes $ticking): void
@@ -232,14 +239,16 @@ final class AgentStackRow extends Model implements ReadableModel
         $this->frames = $frames;
         $this->has_ticking_frames = $frames->holdTicking($ticking);
         $this->version++;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AgentStackFramesSaved($this->id));
     }
 
     public function closeAt(CarbonImmutable $time): void
     {
         $this->status = StackStatus::Closed;
         $this->closed_at = $time;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AgentStackClosed($this->id));
     }
 
     public function isActive(): bool

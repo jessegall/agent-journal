@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Models\Projects;
 
 use App\Concerns\BoundedReads;
-use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Events\WorkspaceReadAnswered;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Support\HasActorColumns;
@@ -61,13 +63,13 @@ use PhpOption\Some;
     'generation',
     'sampled_at',
 ])]
-final class WorkspaceRead extends Model implements ReadableModel
+final class WorkspaceRead extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasActorColumns;
     use HasUlids;
-    use InsertsAbsentRows;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -169,7 +171,8 @@ final class WorkspaceRead extends Model implements ReadableModel
         $this->checkout_id = $facts->commit->checkoutId;
         $this->head_oid = $facts->commit->headOid;
         $this->unavailable_reason = $facts->commit->reason;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new WorkspaceReadAnswered($this->id));
     }
 
     private function commitObservation(): CommitObservation

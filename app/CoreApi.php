@@ -56,6 +56,7 @@ use App\Commands\CancelTerminalTake\CancelTerminalTakeCommand;
 use App\Commands\CertifyPassedStops\CertifyPassedStopsCommand;
 use App\Commands\ChangeAgentEffort\ChangeAgentEffortCommand;
 use App\Commands\ChangeAgentModel\ChangeAgentModelCommand;
+use App\Commands\ChangeLayout\ChangeLayoutCommand;
 use App\Commands\CheckStartStatus\CheckStartStatusCommand;
 use App\Commands\CheckTerminalScreen\CheckTerminalScreenCommand;
 use App\Commands\ChooseTerminalDraft\ChooseTerminalDraftCommand;
@@ -71,6 +72,7 @@ use App\Commands\CreateDesk\CreateDeskCommand;
 use App\Commands\CreateShare\CreateShareCommand;
 use App\Commands\CreateSkill\CreateSkillCommand;
 use App\Commands\DeclineChatQuestion\DeclineChatQuestionCommand;
+use App\Commands\DeleteLayout\DeleteLayoutCommand;
 use App\Commands\DeliverAgent\DeliverAgentCommand;
 use App\Commands\DisableAutoAssignment\DisableAutoAssignmentCommand;
 use App\Commands\DisableSettingGroup\DisableSettingGroupCommand;
@@ -172,6 +174,7 @@ use App\Commands\RevokeProjectBindings\RevokeProjectBindingsCommand;
 use App\Commands\RevokeProjectInvitation\RevokeProjectInvitationCommand;
 use App\Commands\RevokeShare\RevokeShareCommand;
 use App\Commands\RunKeyScript\RunKeyScriptCommand;
+use App\Commands\SaveLayout\SaveLayoutCommand;
 use App\Commands\SaveSharePreview\SaveSharePreviewCommand;
 use App\Commands\SeatActor\SeatActorCommand;
 use App\Commands\SelectMessage\SelectMessageCommand;
@@ -2627,6 +2630,9 @@ final class CoreApi
                 CreateAgentCommand::class,
                 RecordHeartbeatCommand::class,
                 RecordUserHeartbeatCommand::class,
+                SaveLayoutCommand::class,
+                ChangeLayoutCommand::class,
+                DeleteLayoutCommand::class,
                 EnrollHostCommand::class,
                 OpenAgentRuntimeCommand::class,
                 DeliverAgentCommand::class,

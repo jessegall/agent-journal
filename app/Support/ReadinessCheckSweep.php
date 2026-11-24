@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Contracts\Work\StackTransactionRunner;
 use App\Enums\RequestOutcome;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Starts\StartRecord;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\ConnectionInterface;
 
 /**
  * Ends each Check status no host answered within its minute as unavailable and leaves its start uncertain, its
@@ -20,11 +20,11 @@ final readonly class ReadinessCheckSweep
 
     private const int PASS_LIMIT = 100;
 
-    public function __construct(private ConnectionInterface $database) {}
+    public function __construct(private StackTransactionRunner $transaction) {}
 
     public function sweep(CarbonImmutable $at): void
     {
-        $this->database->transaction(fn () => DriverRequest::query()
+        $this->transaction->run(fn () => DriverRequest::query()
             ->with('runtime')
             ->unansweredReadinessChecksSince($at->subSeconds(self::ANSWER_SECONDS_LIMIT))
             ->orderBy('created_at')

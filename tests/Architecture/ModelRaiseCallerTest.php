@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
+use App\Attributes\InCommandTransaction as TransactionListener;
 use App\Support\CommandRegistry;
 use Tests\Architecture\Support\CommandReach;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\RaiseCallers;
+use Tests\Architecture\Support\UnitRoots;
 use Tests\Fixtures\RaiseCallers\Attributes\InCommandTransaction;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -30,20 +32,27 @@ final class ModelRaiseCallerTest extends TestCase
     /**
      * The attribute that marks a listener required in the command's transaction.
      */
-    private const string TRANSACTION_LISTENER = 'App\Attributes\InCommandTransaction';
+    private const string TRANSACTION_LISTENER = TransactionListener::class;
 
     private const string FIXTURES = 'tests/Fixtures/RaiseCallers';
 
     public function test_every_migrated_transition_is_called_only_inside_a_unit(): void
     {
-        $reach = CommandReach::of($this->app->make(CommandRegistry::class), base_path(), $this->app);
+        $folders = [app_path(), ...DomainFiles::domainCode()];
+        $registry = $this->app->make(CommandRegistry::class);
+        $roots = UnitRoots::in($folders, self::TRANSACTION_LISTENER, $this->app);
+        $nearReach = CommandReach::of($registry, base_path(), $this->app, $roots);
+        $reach = CommandReach::of($registry, base_path(), $this->app, [
+            ...$roots,
+            ...UnitRoots::requestListenersIn($folders, $nearReach->handlersByFile, base_path()),
+        ]);
         $callers = new RaiseCallers(
             base_path(),
             RaiseCallers::migrated(base_path()),
             $reach->handlersByFile,
             self::TRANSACTION_LISTENER,
         );
-        $violations = $callers->violationsIn([app_path(), ...DomainFiles::domainCode()]);
+        $violations = $callers->violationsIn($folders);
 
         $this->assertSame(
             [],

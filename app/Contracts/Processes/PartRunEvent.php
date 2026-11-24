@@ -1,0 +1,12 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Contracts\Processes;
+
+use App\Contracts\Events\Event;
+
+/**
+ * A change to a part run: every event of it implements this, so a listener typed on it hears them all.
+ */
+interface PartRunEvent extends Event {}

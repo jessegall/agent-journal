@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Models\Skills;
 
 use App\Concerns\BoundedReads;
-use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Events\SkillContextEpochAdvanced;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -24,12 +26,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['session_id', 'epoch'])]
-final class SkillContextEpoch extends Model implements ReadableModel
+final class SkillContextEpoch extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
-    use InsertsAbsentRows;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -73,6 +75,7 @@ final class SkillContextEpoch extends Model implements ReadableModel
     public function advance(): void
     {
         $this->epoch++;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new SkillContextEpochAdvanced($this->id));
     }
 }

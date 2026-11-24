@@ -1,0 +1,16 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Events;
+
+/**
+ * A start was refused for the reason given.
+ */
+final readonly class StartRecordRefused extends SessionEvent
+{
+    public function __construct(
+        public string $startId,
+        public string $reason,
+    ) {}
+}

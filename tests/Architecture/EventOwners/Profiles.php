@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\ProfileRunState;
 use App\Enums\SignInState;
 use App\Events\AccountCheckRequested;
 use App\Events\AccountCleaned;
@@ -25,6 +26,10 @@ use App\Events\ActiveAccountCleared;
 use App\Events\ActiveAccountSelected;
 use App\Events\ProfileRetired;
 use App\Events\ProfileRevisionRevoked;
+use App\Events\ProfileRunFinished;
+use App\Events\ProfileRunResumed;
+use App\Events\ProfileRunStarted;
+use App\Events\ProfileRunSuspended;
 use App\Events\SignInAttemptAnswerAccepted;
 use App\Events\SignInAttemptClaimed;
 use App\Events\SignInAttemptCleanupApplied;
@@ -289,5 +294,33 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new ProfileRetired('profile'),
+    ],
+    ProfileRunStarted::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ProfileRun::startOn',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ProfileRunStarted('run', 1),
+    ],
+    ProfileRunSuspended::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ProfileRun::suspendOn',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ProfileRunSuspended('run', 1),
+    ],
+    ProfileRunResumed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ProfileRun::resumeAfter',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ProfileRunResumed('run'),
+    ],
+    ProfileRunFinished::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ProfileRun::finish',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ProfileRunFinished('run', ProfileRunState::cases()[0]),
     ],
 ];

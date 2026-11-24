@@ -40,4 +40,5 @@ return [
     'ProjectRead::answerWithEntries',
     'ProjectRead::answerWithText',
     'ProjectRead::fail',
+    'WorkspaceRead::answer',
 ];

@@ -7,7 +7,10 @@ namespace App\Models\Sharing;
 use App\Casts\SelectedTargetsCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Events\SharePreviewConsumed;
 use App\Exceptions\SharePreviewRefused;
 use App\Models\Support\BelongsToOneRoot;
 use App\Support\RecordIdentity;
@@ -53,12 +56,13 @@ use PhpOption\Option;
         'consumed_at',
     ],
 )]
-final class SharePreview extends Model implements ReadableModel
+final class SharePreview extends Model implements EventSource, ReadableModel
 {
     use BelongsToOneRoot;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     public const string LINK_TYPE = 'core.share-preview';
 
@@ -176,7 +180,8 @@ final class SharePreview extends Model implements ReadableModel
         }
 
         $this->consumed_at = CarbonImmutable::now();
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new SharePreviewConsumed($this->id));
 
         return $selection;
     }

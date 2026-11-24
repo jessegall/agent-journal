@@ -16,4 +16,13 @@ return [
     'EvidencePermit::expire',
     'RuleProposal::withdraw',
     'RuleProposal::adopt',
+    'PartRun::start',
+    'PartRun::finishProcess',
+    'PartRun::finishDraining',
+    'PartRun::captureUpTo',
+    'PartRun::markCapture',
+    'PartRun::stop',
+    'PartRun::lose',
+    'PartRun::failToSpawn',
+    'PartRun::skip',
 ];

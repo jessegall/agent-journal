@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Chat\ChatParticipationEnding;
+use App\Contracts\Work\StackTransactionRunner;
 use App\Enums\ActorType;
 use App\Models\Chats\AgentChatInviter;
 use App\Models\Chats\AgentChatPermission;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\ConnectionInterface;
 
 /**
  * An operator's say over an agent in chats: allowing it in an environment with the users who may invite it, and
@@ -19,7 +19,7 @@ use Illuminate\Database\ConnectionInterface;
 final readonly class AgentChatAccessService
 {
     public function __construct(
-        private ConnectionInterface $database,
+        private StackTransactionRunner $transaction,
         private ChatParticipationEnding $chats,
     ) {}
 
@@ -33,7 +33,7 @@ final readonly class AgentChatAccessService
         ActorIdentity $operator,
         CarbonImmutable $at,
     ): AgentChatPermission {
-        return $this->database->transaction(function () use ($agentId, $environmentId, $inviterIds, $operator, $at) {
+        return $this->transaction->run(function () use ($agentId, $environmentId, $inviterIds, $operator, $at) {
             AgentChatPermission::query()->activeFor($agentId, $environmentId)->first()?->withdraw($at);
             $permission = AgentChatPermission::create($agentId, $environmentId, $operator, $at);
 
@@ -47,7 +47,7 @@ final readonly class AgentChatAccessService
 
     public function withdraw(string $agentId, string|null $environmentId, CarbonImmutable $at): void
     {
-        $this->database->transaction(function () use ($agentId, $environmentId, $at): void {
+        $this->transaction->run(function () use ($agentId, $environmentId, $at): void {
             $permission = AgentChatPermission::query()->activeFor($agentId, $environmentId)->lockForUpdate()->first();
 
             if ($permission === null) {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\PublicationState;
 use App\Events\SessionSkillsIntended;
+use App\Events\SkillContextEpochAdvanced;
 use App\Events\SkillGenerationRetired;
 use App\Events\SkillPublicationClaimed;
 use App\Events\SkillPublicationMoved;
@@ -59,5 +60,12 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new SkillGenerationRetired('generation'),
+    ],
+    SkillContextEpochAdvanced::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'SkillContextEpoch::advance',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new SkillContextEpochAdvanced('epoch'),
     ],
 ];

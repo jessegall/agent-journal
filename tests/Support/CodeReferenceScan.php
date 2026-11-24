@@ -7,6 +7,7 @@ namespace Tests\Support;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\Expr\ClassConstFetch;
+use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
@@ -19,7 +20,8 @@ use Tests\Support\ScanCache\FileScan;
 /**
  * What one file's syntax tree says about its classes: each class it declares, each class it names, what each class
  * serves (the interfaces it implements and the commands or events its handle method takes), the classes one call names
- * together (a container binding, a listener registration), and each test method it holds.
+ * together (a container binding, a listener registration), the classes it creates with new, and each test method it
+ * holds.
  *
  * @implements FileScan<string>
  */
@@ -38,6 +40,8 @@ final readonly class CodeReferenceScan implements FileScan
 
     public const string TEST = 'test ';
 
+    public const string CREATES = 'creates ';
+
     private const string TEST_ATTRIBUTE = 'PHPUnit\Framework\Attributes\Test';
 
     /**
@@ -47,7 +51,7 @@ final readonly class CodeReferenceScan implements FileScan
 
     public function key(): string
     {
-        return 'code-references-2';
+        return 'code-references-3';
     }
 
     public function findingsIn(ParsedFile $file): array
@@ -82,6 +86,12 @@ final readonly class CodeReferenceScan implements FileScan
 
             if (count($linked) > 1) {
                 $findings[] = self::LINKS.implode(' ', $linked);
+            }
+        }
+
+        foreach ($finder->findInstanceOf($file->statements, New_::class) as $creation) {
+            if ($creation->class instanceof Name) {
+                $findings[] = self::CREATES.$creation->class->toString();
             }
         }
 

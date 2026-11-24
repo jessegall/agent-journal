@@ -6,10 +6,14 @@ namespace App\Models\CommandRules;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
 use App\Contracts\Bus\TargetedCommand;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ReceiptState;
 use App\Enums\RefusalCode;
+use App\Events\CommandReceiptCompleted;
+use App\Events\CommandReceiptRefused;
 use App\Exceptions\RefusalReplayed;
 use App\Exceptions\RequestKeyExpired;
 use App\Support\CommandName;
@@ -73,11 +77,12 @@ use Illuminate\Support\Carbon;
         'refuses_until',
     ],
 )]
-final class CommandReceipt extends Model implements ReadableModel
+final class CommandReceipt extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     public const string LINK_TYPE = 'core.command-receipt';
 
@@ -181,7 +186,8 @@ final class CommandReceipt extends Model implements ReadableModel
     {
         $this->state = ReceiptState::Completed;
         $this->result = ['value' => PlainValue::of($reply), 'php' => base64_encode(serialize($reply))];
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new CommandReceiptCompleted($this->id));
     }
 
     /**
@@ -200,7 +206,8 @@ final class CommandReceipt extends Model implements ReadableModel
         $this->refusal_code = $code->value;
         $this->refusal_message = $message;
         $this->refusal_details = $details;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new CommandReceiptRefused($this->id, $code));
     }
 
     // ----------[ Answers ]----------

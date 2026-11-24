@@ -9,6 +9,7 @@ use App\Enums\LeaveReason;
 use App\Enums\MessageBatchState;
 use App\Enums\SpeechOpportunityState;
 use App\Enums\WakeState;
+use App\Events\AgentChatPermissionWithdrawn;
 use App\Events\ChatLinePosted;
 use App\Events\ChatMemberJoined;
 use App\Events\ChatMemberLeft;
@@ -378,5 +379,12 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new UserPresenceBeat('presence'),
+    ],
+    AgentChatPermissionWithdrawn::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'AgentChatPermission::withdraw',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AgentChatPermissionWithdrawn('permission'),
     ],
 ];

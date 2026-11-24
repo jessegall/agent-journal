@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\ActorType;
+use App\Enums\CaptureState;
 use App\Enums\RunLogicalResult;
 use App\Events\BundleActivated;
 use App\Events\ClassificationRuleRetired;
@@ -10,6 +11,15 @@ use App\Events\EvidenceInvalid;
 use App\Events\EvidencePermitConsumed;
 use App\Events\EvidencePermitExpired;
 use App\Events\OutputChunkCommitted;
+use App\Events\PartRunCaptured;
+use App\Events\PartRunCaptureMarked;
+use App\Events\PartRunDrained;
+use App\Events\PartRunLost;
+use App\Events\PartRunProcessFinished;
+use App\Events\PartRunSkipped;
+use App\Events\PartRunSpawnFailed;
+use App\Events\PartRunStarted;
+use App\Events\PartRunStopped;
 use App\Events\ProcessRunConsumed;
 use App\Events\ProcessRunLost;
 use App\Events\ProcessRunMarkedStale;
@@ -204,5 +214,68 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new RuleProposalAdopted('proposal'),
+    ],
+    PartRunStarted::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'PartRun::start',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new PartRunStarted('part', 'host'),
+    ],
+    PartRunProcessFinished::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'PartRun::finishProcess',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new PartRunProcessFinished('part'),
+    ],
+    PartRunDrained::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'PartRun::finishDraining',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new PartRunDrained('part'),
+    ],
+    PartRunCaptured::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'PartRun::captureUpTo',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new PartRunCaptured('part'),
+    ],
+    PartRunCaptureMarked::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'PartRun::markCapture',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new PartRunCaptureMarked('part', CaptureState::cases()[0]),
+    ],
+    PartRunStopped::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'PartRun::stop',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new PartRunStopped('part', 'reason'),
+    ],
+    PartRunLost::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'PartRun::lose',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new PartRunLost('part'),
+    ],
+    PartRunSpawnFailed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'PartRun::failToSpawn',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new PartRunSpawnFailed('part', 'reason'),
+    ],
+    PartRunSkipped::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'PartRun::skip',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new PartRunSkipped('part'),
     ],
 ];

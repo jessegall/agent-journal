@@ -10,4 +10,5 @@ return [
     'Skill::makeCurrent',
     'Skill::retireBy',
     'SkillGeneration::retire',
+    'SkillContextEpoch::advance',
 ];

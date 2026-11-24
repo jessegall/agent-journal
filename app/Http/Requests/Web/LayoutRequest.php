@@ -6,6 +6,7 @@ namespace App\Http\Requests\Web;
 
 use App\Contracts\Actors\CurrentUserResolver;
 use App\Models\Records\Layout;
+use App\Values\LayoutShape;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Unique;
@@ -41,11 +42,8 @@ final class LayoutRequest extends FormRequest
         return trim($this->string('name')->toString());
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function shape(): array
+    public function shape(): LayoutShape
     {
-        return $this->array('shape');
+        return LayoutShape::of($this->array('shape'));
     }
 }

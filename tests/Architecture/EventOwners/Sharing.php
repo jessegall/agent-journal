@@ -16,6 +16,7 @@ use App\Events\ShareGatewayMadeDefault;
 use App\Events\ShareGatewayOperationClaimed;
 use App\Events\ShareGatewayOperationFinished;
 use App\Events\ShareInstallationHeld;
+use App\Events\SharePreviewConsumed;
 use App\Events\SharePruned;
 use App\Events\ShareRequested;
 use App\Events\ShareRetried;
@@ -143,5 +144,12 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new ShareInstallationHeld('installation', 'run'),
+    ],
+    SharePreviewConsumed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'SharePreview::consumeFor',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new SharePreviewConsumed('preview'),
     ],
 ];

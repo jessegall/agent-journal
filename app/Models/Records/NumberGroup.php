@@ -6,7 +6,11 @@ namespace App\Models\Records;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Events\NumberGroupRetired;
+use App\Events\NumberTaken;
 use App\Exceptions\NumberLimitReached;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -29,11 +33,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['holder_type', 'holder_id', 'record_type'])]
-final class NumberGroup extends Model implements ReadableModel
+final class NumberGroup extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     /**
      * The highest number a group hands out, the largest signed bigint.
@@ -75,7 +80,8 @@ final class NumberGroup extends Model implements ReadableModel
         }
 
         $this->last_number++;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new NumberTaken($this->id, $this->last_number));
 
         return $this->last_number;
     }
@@ -86,7 +92,8 @@ final class NumberGroup extends Model implements ReadableModel
     public function retire(): void
     {
         $this->retired_at = Carbon::now();
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new NumberGroupRetired($this->id));
     }
 
     // ----------[ Scopes ]----------

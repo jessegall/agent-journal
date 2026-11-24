@@ -6,11 +6,22 @@ namespace App\Models\Runs;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\CaptureState;
 use App\Enums\LifecycleState;
 use App\Enums\OutputStream;
 use App\Enums\PartEndType;
+use App\Events\PartRunCaptured;
+use App\Events\PartRunCaptureMarked;
+use App\Events\PartRunDrained;
+use App\Events\PartRunLost;
+use App\Events\PartRunProcessFinished;
+use App\Events\PartRunSkipped;
+use App\Events\PartRunSpawnFailed;
+use App\Events\PartRunStarted;
+use App\Events\PartRunStopped;
 use App\Exceptions\PartTransitionRefused;
 use App\Values\PartEnd;
 use App\Values\PartKey;
@@ -54,11 +65,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['process_run_id', 'syntax_node', 'part_id', 'attempt', 'parent_part_run_id', 'operation'])]
-final class PartRun extends Model implements ReadableModel
+final class PartRun extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     /**
      * @var array<string, mixed>
@@ -118,7 +130,8 @@ final class PartRun extends Model implements ReadableModel
         $this->pid = $pid;
         $this->host = $host;
         $this->started_at = CarbonImmutable::now();
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new PartRunStarted($this->id, $host));
     }
 
     /**
@@ -130,7 +143,8 @@ final class PartRun extends Model implements ReadableModel
         $this->end_type = $end->type;
         $this->end_code = $end->code;
         $this->end_reason = $end->reason;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new PartRunProcessFinished($this->id));
     }
 
     /**
@@ -145,7 +159,8 @@ final class PartRun extends Model implements ReadableModel
         $this->moveTo(LifecycleState::Ended);
         $this->streams_drained = true;
         $this->ended_at = CarbonImmutable::now();
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new PartRunDrained($this->id));
     }
 
     /**
@@ -154,13 +169,15 @@ final class PartRun extends Model implements ReadableModel
     public function captureUpTo(OutputChunk $chunk): void
     {
         $this->stream_offsets = [...$this->stream_offsets, $chunk->stream->value => $chunk->offset + $chunk->length];
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new PartRunCaptured($this->id));
     }
 
     public function markCapture(CaptureState $state): void
     {
         $this->capture_state = $state;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new PartRunCaptureMarked($this->id, $state));
     }
 
     /**
@@ -171,6 +188,7 @@ final class PartRun extends Model implements ReadableModel
         $this->stop_reason = $reason;
         $this->capture_state = CaptureState::Incomplete;
         $this->finishAs(LifecycleState::Stopped);
+        $this->raise(new PartRunStopped($this->id, $reason));
     }
 
     /**
@@ -184,6 +202,7 @@ final class PartRun extends Model implements ReadableModel
         $this->end_reason = 'exit_unavailable: the supervisor stopped reporting';
         $this->capture_state = CaptureState::Incomplete;
         $this->finishAs(LifecycleState::Lost);
+        $this->raise(new PartRunLost($this->id));
     }
 
     public function failToSpawn(string $reason): void
@@ -191,6 +210,7 @@ final class PartRun extends Model implements ReadableModel
         $this->end_type = PartEndType::Unavailable;
         $this->end_reason = $reason;
         $this->finishAs(LifecycleState::SpawnFailed);
+        $this->raise(new PartRunSpawnFailed($this->id, $reason));
     }
 
     /**
@@ -200,6 +220,7 @@ final class PartRun extends Model implements ReadableModel
     {
         $this->skip_reason = $controllingResult;
         $this->finishAs(LifecycleState::Skipped);
+        $this->raise(new PartRunSkipped($this->id));
     }
 
     /**

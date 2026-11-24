@@ -6,6 +6,8 @@ namespace App\Models\Starts;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Refusals\StartRefusal;
 use App\Enums\ActorType;
@@ -21,6 +23,13 @@ use App\Enums\StartPreflightRefusal;
 use App\Enums\StartReadiness;
 use App\Enums\StartRefusalType;
 use App\Enums\StartUnavailableReason;
+use App\Events\StartIdentityBound;
+use App\Events\StartIdentityPrepared;
+use App\Events\StartIdentityUncertain;
+use App\Events\StartIntentForgotten;
+use App\Events\StartRecordRefused;
+use App\Events\StartStartedAs;
+use App\Events\StartVerificationCancelled;
 use App\Exceptions\StartRefusalReplayed;
 use App\Exceptions\StartRequestConflict;
 use App\Models\Agents\AgentSession;
@@ -107,11 +116,12 @@ use PhpOption\Option;
     'native_id',
     'session_id',
 ])]
-final class StartRecord extends Model implements ReadableModel
+final class StartRecord extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -343,7 +353,8 @@ final class StartRecord extends Model implements ReadableModel
     public function prepareIdentity(): void
     {
         $this->readiness = StartReadiness::PreparingIdentity;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new StartIdentityPrepared($this->id));
     }
 
     /**
@@ -358,7 +369,8 @@ final class StartRecord extends Model implements ReadableModel
 
         $this->native_id = $nativeId;
         $this->readiness = StartReadiness::Ready;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new StartIdentityBound($this->id, $nativeId));
 
         return true;
     }
@@ -370,7 +382,8 @@ final class StartRecord extends Model implements ReadableModel
     public function markIdentityUncertain(): void
     {
         $this->readiness = StartReadiness::Uncertain;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new StartIdentityUncertain($this->id));
     }
 
     /**
@@ -396,14 +409,16 @@ final class StartRecord extends Model implements ReadableModel
         }
 
         $this->readiness = StartReadiness::Cancelled;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new StartVerificationCancelled($this->id));
     }
 
     public function startedAs(AgentSession $session): void
     {
         $this->session_id = $session->id;
         $this->disposition = StartDisposition::Started;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new StartStartedAs($this->id, $session->id));
     }
 
     /**
@@ -425,7 +440,8 @@ final class StartRecord extends Model implements ReadableModel
         $this->readiness = StartReadiness::Refused;
         $this->refusal_reason = $reason->value;
         $this->refused_at = CarbonImmutable::now();
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new StartRecordRefused($this->id, $reason->value));
     }
 
     /**
@@ -438,6 +454,7 @@ final class StartRecord extends Model implements ReadableModel
         }
 
         $this->delete();
+        $this->raise(new StartIntentForgotten($this->id));
     }
 
     // ----------[ Answers ]----------

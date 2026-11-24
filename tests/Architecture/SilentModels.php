@@ -3,26 +3,11 @@
 declare(strict_types=1);
 
 /**
- * The models whose mutations still raise no event of their own (MutationEventsTest). Each is a model that raises
- * nothing yet, so its writes must first all run inside a unit; a filed task converts each area, and a model
- * is taken off this list in the same change that gives its mutations their events.
+ * The models whose mutations raise no event of their own (MutationEventsTest), each with the reason it cannot be an
+ * event source: a save of an event source outside an event unit is refused, so a model the framework itself writes
+ * outside any unit stays here.
  */
 return [
-    'AgentChatPermission',
-    'AgentSession',
-    'AgentStackRow',
-    'CommandReceipt',
-    'DriverRequest',
-    'DriverTurn',
-    'HookCall',
-    'Layout',
-    'NumberGroup',
-    'PartRun',
-    'ProfileRun',
-    'SharePreview',
-    'SkillContextEpoch',
-    'StartRecord',
-    'StopAttempt',
-    'User',
-    'WorkspaceRead',
+    'User' => 'Laravel\'s guard and Fortify save the user outside any unit: the remember token at sign-in, the '
+        .'verified email, the two-factor secret and the passkeys.',
 ];

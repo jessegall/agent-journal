@@ -6,7 +6,12 @@ namespace App\Models\Records;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Events\LayoutRemoved;
+use App\Events\LayoutSaved;
+use App\Values\LayoutShape;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -24,11 +29,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['user_id', 'name', 'shape'])]
-final class Layout extends Model implements ReadableModel
+final class Layout extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -42,23 +48,34 @@ final class Layout extends Model implements ReadableModel
 
     /**
      * A layout a user saves under a name.
-     *
-     * @param  array<string, mixed>  $shape
      */
-    public static function create(int|string $userId, string $name, array $shape): self
+    public static function create(int|string $userId, string $name, LayoutShape $shape): self
     {
-        return self::query()->create(['user_id' => $userId, 'name' => $name, 'shape' => $shape]);
+        return self::query()->create(['user_id' => $userId, 'name' => $name, 'shape' => $shape->toArray()]);
+    }
+
+    /**
+     * The layout locked for a change; one of another user's is outside the scope, so it is missing (404).
+     */
+    public static function lockedForChange(string $layoutId): self
+    {
+        return self::query()->whereKey($layoutId)->lockForUpdate()->firstOrFail();
     }
 
     // ----------[ Mutations ]----------
 
     /**
      * Saves the layout's new name and shape.
-     *
-     * @param  array<string, mixed>  $shape
      */
-    public function saveNameAndShape(string $name, array $shape): void
+    public function saveNameAndShape(string $name, LayoutShape $shape): void
     {
-        $this->update(['name' => $name, 'shape' => $shape]);
+        $this->update(['name' => $name, 'shape' => $shape->toArray()]);
+        $this->raise(new LayoutSaved($this->id));
+    }
+
+    public function remove(): void
+    {
+        $this->delete();
+        $this->raise(new LayoutRemoved($this->id));
     }
 }

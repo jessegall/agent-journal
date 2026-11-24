@@ -6,6 +6,8 @@ use App\Events\ChatAccessEnded;
 use App\Events\DeskPreferenceSwitched;
 use App\Events\DeskRenamed;
 use App\Events\DeskSeatingAdvanced;
+use App\Events\LayoutRemoved;
+use App\Events\LayoutSaved;
 use App\Events\NotificationsInvalidated;
 use App\Events\PageChanged;
 use App\Events\ProtectedViewInvalidated;
@@ -67,5 +69,19 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new DeskRenamed('desk', 'Desk'),
+    ],
+    LayoutSaved::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Layout::saveNameAndShape',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new LayoutSaved('layout'),
+    ],
+    LayoutRemoved::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Layout::remove',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new LayoutRemoved('layout'),
     ],
 ];

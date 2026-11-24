@@ -39,6 +39,7 @@ use App\Events\ProjectReadAnsweredWithEntries;
 use App\Events\ProjectReadAnsweredWithText;
 use App\Events\ProjectReadClaimed;
 use App\Events\ProjectReadFailed;
+use App\Events\WorkspaceReadAnswered;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -284,5 +285,12 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new ProjectReadFailed('read', ProjectReadFailure::cases()[0]),
+    ],
+    WorkspaceReadAnswered::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'WorkspaceRead::answer',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new WorkspaceReadAnswered('read'),
     ],
 ];

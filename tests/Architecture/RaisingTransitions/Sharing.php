@@ -20,4 +20,5 @@ return [
     'ShareGatewayOperation::claimFor',
     'ShareGatewayOperation::finish',
     'ShareInstallation::holdFor',
+    'SharePreview::consumeFor',
 ];

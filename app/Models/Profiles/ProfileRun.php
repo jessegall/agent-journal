@@ -6,8 +6,14 @@ namespace App\Models\Profiles;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ProfileRunState;
+use App\Events\ProfileRunFinished;
+use App\Events\ProfileRunResumed;
+use App\Events\ProfileRunStarted;
+use App\Events\ProfileRunSuspended;
 use App\Exceptions\ProfileRunRefused;
 use App\Models\Support\BelongsToOneActor;
 use App\Models\Support\HasActorColumns;
@@ -63,13 +69,14 @@ use PhpOption\Some;
     'message',
     'sequence',
 ])]
-final class ProfileRun extends Model implements ReadableModel
+final class ProfileRun extends Model implements EventSource, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
     use HasActorColumns;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -139,7 +146,8 @@ final class ProfileRun extends Model implements ReadableModel
     public function startOn(int $generation): void
     {
         $this->generation = $generation;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new ProfileRunStarted($this->id, $generation));
     }
 
     /**
@@ -150,7 +158,8 @@ final class ProfileRun extends Model implements ReadableModel
         $this->cursor = $line;
         $this->state = ProfileRunState::Suspended;
         $this->awaited_step = $stepReference;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new ProfileRunSuspended($this->id, $line));
     }
 
     /**
@@ -166,7 +175,8 @@ final class ProfileRun extends Model implements ReadableModel
 
         $this->state = ProfileRunState::Running;
         $this->awaited_step = null;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new ProfileRunResumed($this->id));
     }
 
     /**
@@ -178,7 +188,8 @@ final class ProfileRun extends Model implements ReadableModel
         $this->message = $message;
         $this->unchanged_returns = $unchangedReturns;
         $this->awaited_step = null;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new ProfileRunFinished($this->id, $state));
     }
 
     // ----------[ Answers ]----------

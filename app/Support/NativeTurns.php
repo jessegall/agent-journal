@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Drivers\NativeTurnRecords;
+use App\Contracts\Work\StackTransactionRunner;
 use App\Enums\DriverOperation;
 use App\Enums\RequestProgress;
 use App\Exceptions\StaleProcessGeneration;
@@ -20,6 +21,8 @@ use Carbon\CarbonImmutable;
  */
 final readonly class NativeTurns implements NativeTurnRecords
 {
+    public function __construct(private StackTransactionRunner $transaction) {}
+
     /**
      * @throws StaleProcessGeneration
      */
@@ -44,13 +47,14 @@ final readonly class NativeTurns implements NativeTurnRecords
             return;
         }
 
-        DriverRequest::query()
+        // The hook is answered after this, in a transaction of its own, so the acknowledgement takes one too.
+        $this->transaction->run(fn () => DriverRequest::query()
             ->where('agent_runtime_id', $runtime->id)
             ->where('operation', DriverOperation::Wake)
             ->whereIn('progress', [RequestProgress::Staged, RequestProgress::Applying])
             ->lockForUpdate()
             ->get()
-            ->each(fn (DriverRequest $wake) => $wake->acknowledgeActivityAt($activityAt));
+            ->each(fn (DriverRequest $wake) => $wake->acknowledgeActivityAt($activityAt)));
     }
 
     /**

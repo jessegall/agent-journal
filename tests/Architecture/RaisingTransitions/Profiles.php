@@ -28,4 +28,8 @@ return [
     'SignInAttempt::releaseForHost',
     'SignInAttempt::retryCleanup',
     'Profile::retire',
+    'ProfileRun::startOn',
+    'ProfileRun::suspendOn',
+    'ProfileRun::resumeAfter',
+    'ProfileRun::finish',
 ];

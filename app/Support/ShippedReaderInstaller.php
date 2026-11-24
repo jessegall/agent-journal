@@ -14,6 +14,7 @@ use App\Commands\RecordEvidenceReads\RecordEvidenceReadsCommand;
 use App\Commands\SettleSample\SettleSampleCommand;
 use App\Commands\StartSample\StartSampleCommand;
 use App\Contracts\Bus\CommandBus;
+use App\Contracts\Work\StackTransactionRunner;
 use App\Declarations\VerificationContract;
 use App\Enums\EvidenceSource;
 use App\Enums\OutputStream;
@@ -53,6 +54,7 @@ final readonly class ShippedReaderInstaller
         private ShippedReaders $readers,
         private CommandRuleRegistry $coreRules,
         private CommandBus $commands,
+        private StackTransactionRunner $transaction,
         private SpoolRecorder $recorder,
         private OutputSummaries $summaries,
         private ActiveRules $rules,
@@ -158,13 +160,19 @@ final readonly class ShippedReaderInstaller
         );
 
         $run = ProcessRun::ofAnyActor($runId);
-        $part = PartRun::create($run, new PartKey(1, 1, $reader->invocation));
-        $part->start('shipped');
         $bytes = $reader->outputOf($sample);
-        $this->recorder->append(new CapturedChunk($part, OutputStream::Stdout, $bytes, CarbonImmutable::now()));
-        $part->finishProcess($sample->end());
-        $part->finishDraining();
-        $this->recorder->finish($part, $sample->end());
+
+        $part = $this->transaction->run(function () use ($run, $reader, $sample, $bytes): PartRun {
+            $part = PartRun::create($run, new PartKey(1, 1, $reader->invocation));
+            $part->start('shipped');
+            $this->recorder->append(new CapturedChunk($part, OutputStream::Stdout, $bytes, CarbonImmutable::now()));
+            $part->finishProcess($sample->end());
+            $part->finishDraining();
+            $this->recorder->finish($part, $sample->end());
+
+            return $part;
+        });
+
         $this->summaries->of($run);
         $read = EvidenceRange::bytes($part->id, EvidenceSource::of(OutputStream::Stdout), 0, strlen($bytes));
         $this->commands->run(new RecordEvidenceReadsCommand($run->id, [$read]));

@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Models\Starts;
 
 use App\Concerns\BoundedReads;
-use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Enums\StopAttemptState;
+use App\Events\StopAttemptCertified;
+use App\Events\StopAttemptSettled;
 use App\Models\Agents\AgentSession;
 use App\Models\Support\AgentSessionScope;
 use App\Support\ActorIdentity;
@@ -41,12 +44,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['stop_id', 'policy_digest', 'workspace_generation', 'condition_hashes', 'state', 'submission_digest'])]
-final class StopAttempt extends Model implements ReadableModel
+final class StopAttempt extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
-    use InsertsAbsentRows;
     use Linkable;
+    use RaisesEvents;
 
     /**
      * The workspace generation every attempt is asked under until the host counts the changes it admits.
@@ -177,7 +180,8 @@ final class StopAttempt extends Model implements ReadableModel
     {
         $this->state = $state;
         $this->submission_digest = $submissionDigest;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new StopAttemptSettled($this->id, $state));
     }
 
     /**
@@ -186,7 +190,8 @@ final class StopAttempt extends Model implements ReadableModel
     public function certify(): void
     {
         $this->certified_at = Carbon::now();
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new StopAttemptCertified($this->id));
     }
 
     // ----------[ Answers ]----------

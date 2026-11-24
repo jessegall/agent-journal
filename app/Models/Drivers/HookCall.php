@@ -6,7 +6,10 @@ namespace App\Models\Drivers;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Events\HookCallRecorded;
 use App\Models\Support\AgentSessionScope;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\Storage\RecordedAnswer;
@@ -38,11 +41,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['event_id', 'input_digest', 'answer', 'steps'])]
-final class HookCall extends Model implements ReadableModel
+final class HookCall extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -67,7 +71,8 @@ final class HookCall extends Model implements ReadableModel
         $this->input_digest = $hook->inputDigest;
         $this->answer = $answer;
         $this->steps = $steps;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new HookCallRecorded($this->id));
     }
 
     // ----------[ Answers ]----------

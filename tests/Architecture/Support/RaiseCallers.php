@@ -120,13 +120,12 @@ final readonly class RaiseCallers
         $isTransactionListener = $declaration !== null && $declaration->hasAttribute($this->transactionListenerAttribute);
 
         return match (true) {
-            $isModel, $isTransactionListener => null,
+            $isModel, $isTransactionListener, isset($this->reach[$path]) => null,
             str_contains($path, '/Listeners/') => 'a public listener',
             $declaration?->implements(EngineListener::class) === true => 'an engine tick listener',
             str_contains($path, '/Jobs/') => 'a queued job',
             str_contains($path, '/Console/') => 'a console command',
             str_contains($path, '/Http/') => 'a controller',
-            isset($this->reach[$path]) => null,
             default => 'code no command handler reaches',
         };
     }

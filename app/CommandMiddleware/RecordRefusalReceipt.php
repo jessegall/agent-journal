@@ -8,6 +8,7 @@ use App\Contracts\Bus\CommandMiddleware;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Bus\ReceiptRefusal;
 use App\Contracts\Refusals\RefusalDetails;
+use App\Contracts\Work\StackTransactionRunner;
 use App\Enums\RefusalCode;
 use App\Models\CommandRules\CommandReceipt;
 use App\Support\CommandCall;
@@ -28,6 +29,7 @@ final readonly class RecordRefusalReceipt implements CommandMiddleware
         private RequestKey $key,
         private ReceiptCallers $callers,
         private CommandRegistry $registry,
+        private StackTransactionRunner $transaction,
     ) {}
 
     public function handle(CommandCall $call, Closure $next): mixed
@@ -39,7 +41,8 @@ final readonly class RecordRefusalReceipt implements CommandMiddleware
                 return $next($call);
             } catch (Throwable $failure) {
                 if ($key !== null && $this->isFirstRefusal($failure)) {
-                    $this->recordRefusal($call, $key, $failure);
+                    // The command's transaction rolled back, so the refusal is kept in a transaction of its own.
+                    $this->transaction->run(fn () => $this->recordRefusal($call, $key, $failure));
                 }
 
                 throw $failure;

@@ -7,7 +7,10 @@ namespace App\Models\Chats;
 use App\Concerns\BoundedReads;
 use App\Concerns\GrantedInEnvironment;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Events\AgentChatPermissionWithdrawn;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -30,12 +33,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property CarbonImmutable|null $revoked_at
  */
 #[Fillable(['agent_id', 'environment_key', 'allows_participation', 'granted_by_type', 'granted_by_id'])]
-final class AgentChatPermission extends Model implements ReadableModel
+final class AgentChatPermission extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use GrantedInEnvironment;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     public const string LOCAL_ENVIRONMENT = '';
 
@@ -75,7 +79,8 @@ final class AgentChatPermission extends Model implements ReadableModel
     public function withdraw(CarbonImmutable $at): void
     {
         $this->revoked_at = $at;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AgentChatPermissionWithdrawn($this->id));
     }
 
     // ----------[ Answers ]----------

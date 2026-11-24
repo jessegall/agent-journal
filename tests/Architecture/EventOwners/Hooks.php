@@ -7,6 +7,7 @@ use App\Events\HelperCompletionCertified;
 use App\Events\HelperReportedOnRecord;
 use App\Events\HelperSentOnRecord;
 use App\Events\HelperStopHeld;
+use App\Events\HookCallRecorded;
 use App\Events\StateCommandAnswered;
 use App\Events\StateTypesRequested;
 use App\Events\ToolCallFinished;
@@ -73,5 +74,12 @@ return [
         'producers' => [
             'app/Support/FinishedToolCalls.php',
         ],
+    ],
+    HookCallRecorded::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'HookCall::recordFor',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new HookCallRecorded('call'),
     ],
 ];

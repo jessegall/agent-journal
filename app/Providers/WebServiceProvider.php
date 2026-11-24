@@ -27,6 +27,7 @@ use App\Enums\AccessType;
 use App\Http\Middleware\Web\CheckPageVisibility;
 use App\Models\Records\Layout;
 use App\Models\Support\CurrentUserScope;
+use App\Policies\LayoutPolicy;
 use App\Policies\PresencePolicy;
 use App\Support\DeclaredRoutes;
 use App\Support\DomainRegistry;
@@ -121,6 +122,11 @@ final class WebServiceProvider extends ServiceProvider
         $policies->register(
             'Core',
             new PolicyDefinition(PresencePolicy::class, [AccessType::Edit]),
+        );
+
+        $policies->register(
+            'Core',
+            new PolicyDefinition(LayoutPolicy::class, [AccessType::Create, AccessType::Edit, AccessType::Delete]),
         );
 
         $links->register(['web.layout' => Layout::class]);

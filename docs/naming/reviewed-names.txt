@@ -1845,6 +1845,7 @@ class	AgentChatAdmission
 class	AgentChatInviter
 class	AgentChatPart
 class	AgentChatPermission
+class	AgentChatPermissionWithdrawn
 class	AgentClientSettings
 class	AgentContext
 class	AgentContextFactory
@@ -1899,11 +1900,21 @@ class	AgentRuntimes
 class	AgentRuntimesFenced
 class	AgentScope
 class	AgentSession
+class	AgentSessionConversationEntered
 class	AgentSessionCounter
+class	AgentSessionDriverLabelKept
+class	AgentSessionEnded
+class	AgentSessionHeartbeat
 class	AgentSessionScope
+class	AgentSessionSelectionUsed
+class	AgentSessionSkillsGenerated
 class	AgentSessions
 class	AgentStack
+class	AgentStackClosed
+class	AgentStackFramesSaved
+class	AgentStackHeldForInvestigation
 class	AgentStackRow
+class	AgentStackStarted
 class	AgentStacks
 class	AgentState
 class	AgentStateMachine
@@ -2371,6 +2382,8 @@ class	ChangeAgentModelHandler
 class	ChangeAutoAssignmentRequest
 class	ChangeDocumentDetailsCommand
 class	ChangeDocumentDetailsHandler
+class	ChangeLayoutCommand
+class	ChangeLayoutHandler
 class	ChangeSequenceCommand
 class	ChangeSequenceController
 class	ChangeSequenceHandler
@@ -2659,6 +2672,8 @@ class	CommandPermissions
 class	CommandReach
 class	CommandReaderResolver
 class	CommandReceipt
+class	CommandReceiptCompleted
+class	CommandReceiptRefused
 class	CommandRefused
 class	CommandRegistry
 class	CommandReplacedWithOtherClass
@@ -2948,6 +2963,8 @@ class	DeferredCommandHandler
 class	DefineSequenceCommand
 class	DefineSequenceController
 class	DefineSequenceHandler
+class	DeleteLayoutCommand
+class	DeleteLayoutHandler
 class	DeliverAgentCommand
 class	DeliverAgentHandler
 class	DeliverMessages
@@ -3243,13 +3260,23 @@ class	DriverReply
 class	DriverReplyData
 class	DriverReplyMalformed
 class	DriverRequest
+class	DriverRequestAccepted
+class	DriverRequestApplied
+class	DriverRequestApplying
 class	DriverRequestEndings
+class	DriverRequestHeld
 class	DriverRequestMismatch
 class	DriverRequestPayload
+class	DriverRequestPossibleDuplicate
 class	DriverRequestRecovered
 class	DriverRequestRecovery
 class	DriverRequestRefused
+class	DriverRequestRetried
+class	DriverRequestScriptProgressed
+class	DriverRequestStaged
 class	DriverRequestStatus
+class	DriverRequestWakeAcknowledged
+class	DriverRequestWakeClaimed
 class	DriverRequests
 class	DriverRequired
 class	DriverResult
@@ -3274,6 +3301,7 @@ class	DriverSwitchStopped
 class	DriverSwitchTarget
 class	DriverToolInput
 class	DriverTurn
+class	DriverTurnFinished
 class	DriverTurnReportData
 class	DriverUnknown
 class	DriverUnstartableInContainer
@@ -3696,6 +3724,7 @@ class	HomeWindowResolver
 class	HookAnswer
 class	HookAnswerRefused
 class	HookCall
+class	HookCallRecorded
 class	HookCallStage
 class	HookController
 class	HookDeadlineExpired
@@ -3954,11 +3983,15 @@ class	LayoutMenuGroupData
 class	LayoutMenuItemData
 class	LayoutNativeData
 class	LayoutPartData
+class	LayoutPolicy
 class	LayoutProgressData
 class	LayoutRefused
+class	LayoutRemoved
 class	LayoutRequest
 class	LayoutRoots
 class	LayoutRowData
+class	LayoutSaved
+class	LayoutShape
 class	LayoutSplitData
 class	LayoutTabData
 class	LayoutWaysData
@@ -4417,9 +4450,11 @@ class	NotifyRunOutcome
 class	NumberChanged
 class	NumberField
 class	NumberGroup
+class	NumberGroupRetired
 class	NumberHolderUnsaved
 class	NumberLimitReached
 class	NumberObserver
+class	NumberTaken
 class	NumberedModelInvalid
 class	NumberedModelUndeclared
 class	NumberedPage
@@ -4601,6 +4636,15 @@ class	PartOutputData
 class	PartProjection
 class	PartResult
 class	PartRun
+class	PartRunCaptureMarked
+class	PartRunCaptured
+class	PartRunDrained
+class	PartRunLost
+class	PartRunProcessFinished
+class	PartRunSkipped
+class	PartRunSpawnFailed
+class	PartRunStarted
+class	PartRunStopped
 class	PartSnapshotData
 class	PartSummary
 class	PartSummaryData
@@ -4911,8 +4955,12 @@ class	ProfileRuleRecords
 class	ProfileRun
 class	ProfileRunData
 class	ProfileRunExecution
+class	ProfileRunFinished
 class	ProfileRunRefused
+class	ProfileRunResumed
 class	ProfileRunShowCommand
+class	ProfileRunStarted
+class	ProfileRunSuspended
 class	ProfileScript
 class	ProfileScriptCompiler
 class	ProfileScriptPageData
@@ -6040,6 +6088,8 @@ class	SaveCommandAliasHandler
 class	SaveCommandRuleCommand
 class	SaveCommandRuleHandler
 class	SaveDraftPageController
+class	SaveLayoutCommand
+class	SaveLayoutHandler
 class	SaveMemoryCall
 class	SaveMemoryCommand
 class	SaveMemoryController
@@ -6401,6 +6451,7 @@ class	ShareMember
 class	ShareMemberData
 class	ShareOpener
 class	SharePreview
+class	SharePreviewConsumed
 class	SharePreviewController
 class	SharePreviewData
 class	SharePreviewPageRequest
@@ -6598,6 +6649,7 @@ class	SkillConditionRefused
 class	SkillConflict
 class	SkillContext
 class	SkillContextEpoch
+class	SkillContextEpochAdvanced
 class	SkillContextResolver
 class	SkillContextUnavailable
 class	SkillCopyCommand
@@ -6761,6 +6813,10 @@ class	StartHelperController
 class	StartHelperHandler
 class	StartHelperTool
 class	StartIdentity
+class	StartIdentityBound
+class	StartIdentityPrepared
+class	StartIdentityUncertain
+class	StartIntentForgotten
 class	StartOwnedAgentCommand
 class	StartOwnedAgentHandler
 class	StartPermitRun
@@ -6793,6 +6849,7 @@ class	StartReceiptController
 class	StartRecord
 class	StartRecordDetails
 class	StartRecordMissing
+class	StartRecordRefused
 class	StartRecords
 class	StartRefusalCodes
 class	StartRefusalReplayed
@@ -6819,6 +6876,7 @@ class	StartSettingsRequested
 class	StartSignInController
 class	StartSignInRequest
 class	StartStacks
+class	StartStartedAs
 class	StartSwitchReplacementCommand
 class	StartSwitchReplacementHandler
 class	StartSwitchReplacementOnStop
@@ -6833,6 +6891,7 @@ class	StartTokenRevoked
 class	StartTokenRotated
 class	StartTokens
 class	StartUnavailable
+class	StartVerificationCancelled
 class	StartedAgent
 class	StateAnswer
 class	StateAnswerRefused
@@ -6906,11 +6965,13 @@ class	StopAgentController
 class	StopAgentHandler
 class	StopAgentRequest
 class	StopAttempt
+class	StopAttemptCertified
 class	StopAttemptGate
 class	StopAttemptMissing
 class	StopAttemptRecords
 class	StopAttemptReference
 class	StopAttemptResult
+class	StopAttemptSettled
 class	StopCertification
 class	StopCondition
 class	StopConditionRunData
@@ -7418,6 +7479,7 @@ class	UndockSourceCommand
 class	UndockSourceHandler
 class	UnfocusTaskCommand
 class	UnfocusTaskHandler
+class	UnitRoots
 class	UnjudgedCall
 class	UnknownAccessType
 class	UnknownLinkType
@@ -7558,6 +7620,7 @@ class	WorkspaceFacts
 class	WorkspaceObject
 class	WorkspacePreparation
 class	WorkspaceRead
+class	WorkspaceReadAnswered
 class	WorkspaceReadController
 class	WorkspaceReadPending
 class	WorkspaceReadReference
@@ -7754,6 +7817,7 @@ constant	CommandGrammar::SCALARS
 constant	CommandGrammar::UNLISTED_ARRAY
 constant	CommandNesting::LIMIT
 constant	CommandOwner::CORE
+constant	CommandReach::UNIT_ROOT
 constant	CommandReaderResolver::READERS
 constant	CommandReceipt::CONTRACT_MAJOR
 constant	CommandReceipt::LINK_TYPE
@@ -8761,6 +8825,8 @@ constant	TunlerGateway::CONNECTED_PREFIX
 constant	TunlerGateway::KEY
 constant	TunlerGateway::STATUS_SECONDS
 constant	UiManifest::SHARED_INCLUDES
+constant	UnitRoots::SCRIPT_OBJECTS
+constant	UnitRoots::UNIT_OWNERS
 constant	UnsupportedConstruct::COMMAND_STARTING_WORDS
 constant	UploadStore::ACTIVE_UPLOADS
 constant	UsdAmount::MOST_DECIMALS
@@ -9165,8 +9231,10 @@ interface	AgentMessageReader
 interface	AgentRequestClient
 interface	AgentResolver
 interface	AgentRuntimeEvent
+interface	AgentSessionEvent
 interface	AgentStack
 interface	AgentStackCommand
+interface	AgentStackEvent
 interface	AgentStartCommand
 interface	AgentTexts
 interface	AliasResolver
@@ -9251,6 +9319,7 @@ interface	CommandMiddlewareProvider
 interface	CommandPermissionResolver
 interface	CommandProvider
 interface	CommandReader
+interface	CommandReceiptEvent
 interface	CommandRefusal
 interface	CommandRuleProvider
 interface	CommandStops
@@ -9302,6 +9371,7 @@ interface	DriverCapabilities
 interface	DriverCatalogue
 interface	DriverCompatibilities
 interface	DriverConversationResolver
+interface	DriverRequestEvent
 interface	DriverSkills
 interface	DriverSwitchEvent
 interface	EnabledSettingsGroup
@@ -9408,6 +9478,7 @@ interface	PageOption
 interface	PageProvider
 interface	PageResolver
 interface	PartField
+interface	PartRunEvent
 interface	PendingWorkSource
 interface	PinnedBuilds
 interface	Pipable
@@ -9427,6 +9498,7 @@ interface	ProcessStartEvent
 interface	ProfileLanguage
 interface	ProfileResolver
 interface	ProfileRules
+interface	ProfileRunEvent
 interface	ProfileScripts
 interface	ProfileSelections
 interface	ProgramClassifier
@@ -9544,6 +9616,7 @@ interface	StaleRefusal
 interface	StartAccounts
 interface	StartExecutor
 interface	StartHeartbeats
+interface	StartIdentityEvent
 interface	StartPreflight
 interface	StartProfileAdmission
 interface	StartReceipts
@@ -9558,6 +9631,7 @@ interface	StateProvider
 interface	StateRegistration
 interface	StateTypes
 interface	StatementDeadlines
+interface	StopAttemptEvent
 interface	StopConditionGate
 interface	StopEvidence
 interface	StopPreparer
@@ -10312,6 +10386,7 @@ method	AgentChatPermission::casts()
 method	AgentChatPermission::create()
 method	AgentChatPermission::inviters()
 method	AgentChatPermission::withdraw()
+method	AgentChatPermissionWithdrawn::__construct()
 method	AgentClientSettings::__construct()
 method	AgentContext::__construct()
 method	AgentContext::actorId()
@@ -10523,11 +10598,17 @@ method	AgentSession::useOf()
 method	AgentSession::useSelection()
 method	AgentSession::visits()
 method	AgentSession::workspaceUse()
+method	AgentSessionConversationEntered::__construct()
 method	AgentSessionCounter::__construct()
 method	AgentSessionCounter::count()
 method	AgentSessionCounter::type()
+method	AgentSessionDriverLabelKept::__construct()
+method	AgentSessionEnded::__construct()
+method	AgentSessionHeartbeat::__construct()
 method	AgentSessionScope::__construct()
 method	AgentSessionScope::apply()
+method	AgentSessionSelectionUsed::__construct()
+method	AgentSessionSkillsGenerated::__construct()
 method	AgentSessions::__construct()
 method	AgentSessions::end()
 method	AgentSessions::lockForStart()
@@ -10555,7 +10636,10 @@ method	AgentStack::withLiveFrameLifted()
 method	AgentStack::withStateOnTop()
 method	AgentStack::withoutExposedInactive()
 method	AgentStack::withoutFrame()
+method	AgentStackClosed::__construct()
 method	AgentStackCommand::target()
+method	AgentStackFramesSaved::__construct()
+method	AgentStackHeldForInvestigation::__construct()
 method	AgentStackRow::acrossEveryAgent()
 method	AgentStackRow::activeAuthorizedFor()
 method	AgentStackRow::activeFor()
@@ -10580,6 +10664,7 @@ method	AgentStackRow::startFor()
 method	AgentStackRow::target()
 method	AgentStackRow::targetsHolding()
 method	AgentStackRow::tickingOpen()
+method	AgentStackStarted::__construct()
 method	AgentStacks::__construct()
 method	AgentStacks::activate()
 method	AgentStacks::lift()
@@ -11988,6 +12073,8 @@ method	ChangeAutoAssignmentRequest::rules()
 method	ChangeDocumentDetailsCommand::__construct()
 method	ChangeDocumentDetailsHandler::__construct()
 method	ChangeDocumentDetailsHandler::handle()
+method	ChangeLayoutCommand::__construct()
+method	ChangeLayoutHandler::handle()
 method	ChangeSequenceCommand::__construct()
 method	ChangeSequenceController::__invoke()
 method	ChangeSequenceHandler::handle()
@@ -12941,6 +13028,7 @@ method	CommandPermissions::revoking()
 method	CommandProvider::commands()
 method	CommandReach::__construct()
 method	CommandReach::boundClassOf()
+method	CommandReach::createdByFile()
 method	CommandReach::isProjectClass()
 method	CommandReach::of()
 method	CommandReach::reachedFrom()
@@ -12963,6 +13051,8 @@ method	CommandReceipt::readableKeysOf()
 method	CommandReceipt::refuse()
 method	CommandReceipt::replay()
 method	CommandReceipt::toOperation()
+method	CommandReceiptCompleted::__construct()
+method	CommandReceiptRefused::__construct()
 method	CommandRefused::because()
 method	CommandRegistry::__construct()
 method	CommandRegistry::authorizeOf()
@@ -13915,6 +14005,8 @@ method	DeferredCommandHandler::handle()
 method	DefineSequenceCommand::__construct()
 method	DefineSequenceController::__invoke()
 method	DefineSequenceHandler::handle()
+method	DeleteLayoutCommand::__construct()
+method	DeleteLayoutHandler::handle()
 method	DeliverAgentCommand::__construct()
 method	DeliverAgentCommand::target()
 method	DeliverAgentCommand::text()
@@ -14988,6 +15080,9 @@ method	DriverRequest::status()
 method	DriverRequest::supersede()
 method	DriverRequest::unansweredReadinessChecksSince()
 method	DriverRequest::wasRetriedFrom()
+method	DriverRequestAccepted::__construct()
+method	DriverRequestApplied::__construct()
+method	DriverRequestApplying::__construct()
 method	DriverRequestEndings::abandon()
 method	DriverRequestEndings::cancel()
 method	DriverRequestEndings::cancelNavigation()
@@ -14997,6 +15092,7 @@ method	DriverRequestEndings::closeAfterExit()
 method	DriverRequestEndings::expire()
 method	DriverRequestEndings::interrupt()
 method	DriverRequestEndings::settleAfterExit()
+method	DriverRequestHeld::__construct()
 method	DriverRequestMismatch::for()
 method	DriverRequestMismatch::notResume()
 method	DriverRequestPayload::__construct()
@@ -15009,6 +15105,7 @@ method	DriverRequestPayload::nothing()
 method	DriverRequestPayload::parts()
 method	DriverRequestPayload::terminalControl()
 method	DriverRequestPayload::text()
+method	DriverRequestPossibleDuplicate::__construct()
 method	DriverRequestRecovered::__construct()
 method	DriverRequestRecovery::__construct()
 method	DriverRequestRecovery::lockedAt()
@@ -15036,8 +15133,13 @@ method	DriverRequestRefused::notUncertain()
 method	DriverRequestRefused::sessionEnded()
 method	DriverRequestRefused::stopping()
 method	DriverRequestRefused::unsupportedEffort()
+method	DriverRequestRetried::__construct()
+method	DriverRequestScriptProgressed::__construct()
+method	DriverRequestStaged::__construct()
 method	DriverRequestStatus::__construct()
 method	DriverRequestStatus::isUnsettledDelivery()
+method	DriverRequestWakeAcknowledged::__construct()
+method	DriverRequestWakeClaimed::__construct()
 method	DriverRequests::append()
 method	DriverRequests::holdRuntime()
 method	DriverRequests::lockedRuntime()
@@ -15116,6 +15218,7 @@ method	DriverTurn::casts()
 method	DriverTurn::finish()
 method	DriverTurn::recordStart()
 method	DriverTurn::runtime()
+method	DriverTurnFinished::__construct()
 method	DriverTurnReportData::__construct()
 method	DriverUnknown::for()
 method	DriverUnstartableInContainer::for()
@@ -16413,6 +16516,7 @@ method	HookCall::forHookId()
 method	HookCall::isSameCallAs()
 method	HookCall::prunableBefore()
 method	HookCall::recordFor()
+method	HookCallRecorded::__construct()
 method	HookCallStage::__construct()
 method	HookCallStage::locked()
 method	HookController::__construct()
@@ -17176,6 +17280,8 @@ method	LaunchProfiles::isOnTrial()
 method	LaunchProfiles::trialOf()
 method	Layout::casts()
 method	Layout::create()
+method	Layout::lockedForChange()
+method	Layout::remove()
 method	Layout::saveNameAndShape()
 method	LayoutActionData::__construct()
 method	LayoutActionData::appending()
@@ -17224,6 +17330,7 @@ method	LayoutPartData::tabs()
 method	LayoutPartData::text()
 method	LayoutPartData::time()
 method	LayoutPartData::usage()
+method	LayoutPolicy::model()
 method	LayoutProgressData::__construct()
 method	LayoutRefused::bindingMismatch()
 method	LayoutRefused::childrenNotAllowed()
@@ -17236,6 +17343,7 @@ method	LayoutRefused::tooManyParts()
 method	LayoutRefused::tooManyRows()
 method	LayoutRefused::unknownSize()
 method	LayoutRefused::unknownStyle()
+method	LayoutRemoved::__construct()
 method	LayoutRequest::layoutName()
 method	LayoutRequest::rules()
 method	LayoutRequest::shape()
@@ -17245,6 +17353,10 @@ method	LayoutRoots::misplaced()
 method	LayoutRoots::package()
 method	LayoutRowData::__construct()
 method	LayoutRowData::parts()
+method	LayoutSaved::__construct()
+method	LayoutShape::__construct()
+method	LayoutShape::of()
+method	LayoutShape::toArray()
 method	LayoutSplitData::__construct()
 method	LayoutSplitData::showingList()
 method	LayoutSplitData::showingReader()
@@ -18441,6 +18553,7 @@ method	NamespacesDeclared::findingsIn()
 method	NamespacesDeclared::key()
 method	NativePartProvider::nativeParts()
 method	NativeTurnRecords::recordPrompt()
+method	NativeTurns::__construct()
 method	NativeTurns::acknowledgeWake()
 method	NativeTurns::checkGeneration()
 method	NativeTurns::recordPrompt()
@@ -18793,10 +18906,12 @@ method	NumberGroup::locked()
 method	NumberGroup::ofJournal()
 method	NumberGroup::retire()
 method	NumberGroup::takeNumber()
+method	NumberGroupRetired::__construct()
 method	NumberHolderUnsaved::for()
 method	NumberLimitReached::for()
 method	NumberObserver::__construct()
 method	NumberObserver::creating()
+method	NumberTaken::__construct()
 method	Numbered::assignNumber()
 method	Numbered::numberHolder()
 method	NumberedModelInvalid::notNumbered()
@@ -19329,6 +19444,15 @@ method	PartRun::run()
 method	PartRun::skip()
 method	PartRun::start()
 method	PartRun::stop()
+method	PartRunCaptureMarked::__construct()
+method	PartRunCaptured::__construct()
+method	PartRunDrained::__construct()
+method	PartRunLost::__construct()
+method	PartRunProcessFinished::__construct()
+method	PartRunSkipped::__construct()
+method	PartRunSpawnFailed::__construct()
+method	PartRunStarted::__construct()
+method	PartRunStopped::__construct()
 method	PartSnapshotData::__construct()
 method	PartSnapshotData::of()
 method	PartSummary::__construct()
@@ -20406,10 +20530,14 @@ method	ProfileRunExecution::recordEvidence()
 method	ProfileRunExecution::run()
 method	ProfileRunExecution::subject()
 method	ProfileRunExecution::yieldToActor()
+method	ProfileRunFinished::__construct()
 method	ProfileRunRefused::stepNotAwaited()
+method	ProfileRunResumed::__construct()
 method	ProfileRunShowCommand::handle()
+method	ProfileRunStarted::__construct()
 method	ProfileRunState::isUnfinished()
 method	ProfileRunState::unfinished()
+method	ProfileRunSuspended::__construct()
 method	ProfileScript::__construct()
 method	ProfileScriptCompiler::__construct()
 method	ProfileScriptCompiler::compile()
@@ -21917,6 +22045,7 @@ method	Reflector::__construct()
 method	Reflector::allTraits()
 method	Reflector::asInstance()
 method	Reflector::backingType()
+method	Reflector::capturedBy()
 method	Reflector::cases()
 method	Reflector::constructor()
 method	Reflector::declaredAttributes()
@@ -23468,6 +23597,8 @@ method	SaveCommandRuleCommand::__construct()
 method	SaveCommandRuleHandler::__construct()
 method	SaveCommandRuleHandler::handle()
 method	SaveDraftPageController::__invoke()
+method	SaveLayoutCommand::__construct()
+method	SaveLayoutHandler::handle()
 method	SaveMemoryCall::__construct()
 method	SaveMemoryCommand::__construct()
 method	SaveMemoryController::__invoke()
@@ -24808,6 +24939,7 @@ method	SharePreview::openFor()
 method	SharePreview::ownedBy()
 method	SharePreview::root()
 method	SharePreview::stillOpen()
+method	SharePreviewConsumed::__construct()
 method	SharePreviewController::__invoke()
 method	SharePreviewData::__construct()
 method	SharePreviewPageRequest::rules()
@@ -25466,6 +25598,7 @@ method	SkillContextEpoch::advance()
 method	SkillContextEpoch::casts()
 method	SkillContextEpoch::currentOf()
 method	SkillContextEpoch::lockedFor()
+method	SkillContextEpochAdvanced::__construct()
 method	SkillContextResolver::__construct()
 method	SkillContextResolver::contextOf()
 method	SkillContextResolver::current()
@@ -25966,6 +26099,10 @@ method	StartHelperTool::command()
 method	StartHelperTool::present()
 method	StartIdentity::settle()
 method	StartIdentity::settleRecord()
+method	StartIdentityBound::__construct()
+method	StartIdentityPrepared::__construct()
+method	StartIdentityUncertain::__construct()
+method	StartIntentForgotten::__construct()
 method	StartOwnedAgentCommand::__construct()
 method	StartOwnedAgentCommand::startedAgentId()
 method	StartOwnedAgentHandler::__construct()
@@ -26081,6 +26218,7 @@ method	StartRecord::startedAs()
 method	StartRecord::wasRequestedBy()
 method	StartRecordDetails::__construct()
 method	StartRecordMissing::forRequest()
+method	StartRecordRefused::__construct()
 method	StartRecordResolver::currentOwnerStart()
 method	StartRecordResolver::forOwnerReference()
 method	StartRecordResolver::own()
@@ -26165,6 +26303,7 @@ method	StartStacks::__construct()
 method	StartStacks::carriedFrames()
 method	StartStacks::close()
 method	StartStacks::open()
+method	StartStartedAs::__construct()
 method	StartSwitchReplacementCommand::__construct()
 method	StartSwitchReplacementHandler::__construct()
 method	StartSwitchReplacementHandler::handle()
@@ -26203,6 +26342,7 @@ method	StartUnavailable::noticeReason()
 method	StartUnavailableReason::explanation()
 method	StartUnavailableReason::remedy()
 method	StartUnavailableReason::sentence()
+method	StartVerificationCancelled::__construct()
 method	StartedAgent::__construct()
 method	StartedAgent::opened()
 method	StartedAgent::secrets()
@@ -26463,6 +26603,7 @@ method	StopAttempt::reference()
 method	StopAttempt::results()
 method	StopAttempt::settle()
 method	StopAttempt::wasSubmittedAs()
+method	StopAttemptCertified::__construct()
 method	StopAttemptGate::__construct()
 method	StopAttemptGate::answer()
 method	StopAttemptGate::certifyCompletion()
@@ -26479,6 +26620,7 @@ method	StopAttemptRecords::result()
 method	StopAttemptReference::__construct()
 method	StopAttemptResult::__construct()
 method	StopAttemptResult::failureSummary()
+method	StopAttemptSettled::__construct()
 method	StopAttemptState::settledBy()
 method	StopCertification::__construct()
 method	StopCertification::certify()
@@ -28163,6 +28305,11 @@ method	UnfocusTaskCommand::__construct()
 method	UnfocusTaskHandler::handle()
 method	UnitOfWork::run()
 method	UnitOfWork::within()
+method	UnitRoots::in()
+method	UnitRoots::pipesNamedBy()
+method	UnitRoots::requestListenersIn()
+method	UnitRoots::runsInUnit()
+method	UnitRoots::valuesOf()
 method	UnjudgedCall::__construct()
 method	UnjudgedCall::replyWith()
 method	UnknownAccessType::forKey()
@@ -28584,6 +28731,7 @@ method	WorkspaceRead::latestCommitReadOf()
 method	WorkspaceRead::pendingOn()
 method	WorkspaceRead::reference()
 method	WorkspaceRead::retain()
+method	WorkspaceReadAnswered::__construct()
 method	WorkspaceReadController::__invoke()
 method	WorkspaceReadController::index()
 method	WorkspaceReadPending::__construct()
@@ -29118,6 +29266,7 @@ parameter	$closerId
 parameter	$closes
 parameter	$closing
 parameter	$closingWords
+parameter	$closure
 parameter	$code
 parameter	$codeDigest
 parameter	$codec
@@ -29260,6 +29409,7 @@ parameter	$counters
 parameter	$counts
 parameter	$coverage
 parameter	$cpuCores
+parameter	$created
 parameter	$createdAt
 parameter	$createdReport
 parameter	$creation
@@ -29536,6 +29686,7 @@ parameter	$environmentIds
 parameter	$environmentLabel
 parameter	$environments
 parameter	$epoch
+parameter	$epochId
 parameter	$error
 parameter	$errorDetails
 parameter	$errorKey
@@ -30139,6 +30290,7 @@ parameter	$launchProfiles
 parameter	$launchReference
 parameter	$launches
 parameter	$layout
+parameter	$layoutId
 parameter	$layouts
 parameter	$leading
 parameter	$leadingOperands
@@ -30881,6 +31033,7 @@ parameter	$ranges
 parameter	$rank
 parameter	$ranked
 parameter	$reach
+parameter	$reachedFiles
 parameter	$reachedLiveJob
 parameter	$reachesStart
 parameter	$reactions
@@ -31738,6 +31891,7 @@ parameter	$unfinishedCount
 parameter	$unfinishedTasks
 parameter	$unit
 parameter	$unitOfWork
+parameter	$unitRoots
 parameter	$units
 parameter	$unprovenStatuses
 parameter	$unread
@@ -32350,11 +32504,12 @@ property	AgentCallReply::$headers
 property	AgentCallReply::$status
 property	AgentCalls::$sender
 property	AgentChatAccessService::$chats
-property	AgentChatAccessService::$database
+property	AgentChatAccessService::$transaction
 property	AgentChatInviter::$guarded
 property	AgentChatPart::$claimableRootId
 property	AgentChatPart::$inboxId
 property	AgentChatPart::$receiver
+property	AgentChatPermissionWithdrawn::$permissionId
 property	AgentClientSettings::$journalUrl
 property	AgentClientSettings::$profile
 property	AgentClientSettings::$timeoutSeconds
@@ -32513,9 +32668,18 @@ property	AgentRuntimesFenced::$agentId
 property	AgentRuntimesFenced::$runtimeGeneration
 property	AgentScope::$currentContext
 property	AgentScope::$visibility
+property	AgentSessionConversationEntered::$sessionId
 property	AgentSessionCounter::$window
+property	AgentSessionDriverLabelKept::$label
+property	AgentSessionDriverLabelKept::$sessionId
+property	AgentSessionEnded::$sessionId
+property	AgentSessionHeartbeat::$sessionId
 property	AgentSessionScope::$currentContext
 property	AgentSessionScope::$visibility
+property	AgentSessionSelectionUsed::$requestId
+property	AgentSessionSelectionUsed::$sessionId
+property	AgentSessionSkillsGenerated::$generationId
+property	AgentSessionSkillsGenerated::$sessionId
 property	AgentSessions::$builtInProfiles
 property	AgentSessions::$databases
 property	AgentSessions::$lifecycle
@@ -32523,7 +32687,11 @@ property	AgentStack::$factory
 property	AgentStack::$frames
 property	AgentStack::$selector
 property	AgentStack::$target
+property	AgentStackClosed::$stackId
+property	AgentStackFramesSaved::$stackId
+property	AgentStackHeldForInvestigation::$stackId
 property	AgentStackRow::$table
+property	AgentStackStarted::$stackId
 property	AgentStacks::$access
 property	AgentStacks::$statePush
 property	AgentStacks::$transaction
@@ -33338,6 +33506,9 @@ property	ChangeDocumentDetailsCommand::$abstract
 property	ChangeDocumentDetailsCommand::$draft
 property	ChangeDocumentDetailsCommand::$title
 property	ChangeDocumentDetailsHandler::$drafts
+property	ChangeLayoutCommand::$layoutId
+property	ChangeLayoutCommand::$name
+property	ChangeLayoutCommand::$shape
 property	ChangeSequenceCommand::$name
 property	ChangeSequenceCommand::$openedVersion
 property	ChangeSequenceCommand::$sequenceId
@@ -33930,6 +34101,9 @@ property	CommandPermissions::$deniedPatterns
 property	CommandPermissions::$revision
 property	CommandPermissions::$source
 property	CommandReach::$handlersByFile
+property	CommandReceiptCompleted::$receiptId
+property	CommandReceiptRefused::$code
+property	CommandReceiptRefused::$receiptId
 property	CommandRegistry::$commands
 property	CommandReport::$lines
 property	CommandReport::$status
@@ -34460,6 +34634,7 @@ property	DeferredCommandHandler::$container
 property	DeferredCommandHandler::$handler
 property	DefineSequenceCommand::$name
 property	DefineSequenceCommand::$steps
+property	DeleteLayoutCommand::$layoutId
 property	DeliverAgentCommand::$agentId
 property	DeliverAgentCommand::$idempotencyKey
 property	DeliverAgentCommand::$parts
@@ -35055,6 +35230,12 @@ property	DriverReply::$stdout
 property	DriverReplyData::$exitCode
 property	DriverReplyData::$stderr
 property	DriverReplyData::$stdout
+property	DriverRequestAccepted::$requestId
+property	DriverRequestApplied::$requestId
+property	DriverRequestApplying::$attempt
+property	DriverRequestApplying::$requestId
+property	DriverRequestHeld::$reason
+property	DriverRequestHeld::$requestId
 property	DriverRequestPayload::$effort
 property	DriverRequestPayload::$message
 property	DriverRequestPayload::$model
@@ -35063,12 +35244,17 @@ property	DriverRequestPayload::$parts
 property	DriverRequestPayload::$scriptId
 property	DriverRequestPayload::$scriptParameters
 property	DriverRequestPayload::$scriptVersion
+property	DriverRequestPossibleDuplicate::$originalId
+property	DriverRequestPossibleDuplicate::$requestId
 property	DriverRequestRecovered::$action
 property	DriverRequestRecovered::$actor
 property	DriverRequestRecovered::$reason
 property	DriverRequestRecovered::$requestId
 property	DriverRequestRecovery::$actors
 property	DriverRequestRecovery::$facts
+property	DriverRequestRetried::$requestId
+property	DriverRequestScriptProgressed::$requestId
+property	DriverRequestStaged::$requestId
 property	DriverRequestStatus::$canCancel
 property	DriverRequestStatus::$canCancelScript
 property	DriverRequestStatus::$canResolve
@@ -35087,6 +35273,10 @@ property	DriverRequestStatus::$script
 property	DriverRequestStatus::$scriptEvidence
 property	DriverRequestStatus::$scriptStep
 property	DriverRequestStatus::$sequence
+property	DriverRequestWakeAcknowledged::$acknowledged
+property	DriverRequestWakeAcknowledged::$requestId
+property	DriverRequestWakeClaimed::$requestId
+property	DriverRequestWakeClaimed::$requested
 property	DriverResult::$outcome
 property	DriverResult::$reason
 property	DriverRuntimeStops::$requests
@@ -35113,6 +35303,8 @@ property	DriverSwitchTarget::$driver
 property	DriverSwitchTarget::$saveVariant
 property	DriverSwitchTarget::$variant
 property	DriverToolInput::$arguments
+property	DriverTurnFinished::$outcome
+property	DriverTurnFinished::$turnId
 property	DriverTurnReportData::$effort
 property	DriverTurnReportData::$finished
 property	DriverTurnReportData::$model
@@ -35953,6 +36145,7 @@ property	HookAnswer::$effects
 property	HookAnswer::$messages
 property	HookAnswer::$stack
 property	HookAnswer::$steps
+property	HookCallRecorded::$callId
 property	HookCallStage::$capabilities
 property	HookCallStage::$identity
 property	HookCallStage::$input
@@ -36406,6 +36599,7 @@ property	LayoutProgressData::$label
 property	LayoutProgressData::$max
 property	LayoutProgressData::$unit
 property	LayoutProgressData::$value
+property	LayoutRemoved::$layoutId
 property	LayoutRowData::$detail
 property	LayoutRowData::$fact
 property	LayoutRowData::$hasColumns
@@ -36418,6 +36612,8 @@ property	LayoutRowData::$menu
 property	LayoutRowData::$query
 property	LayoutRowData::$trailing
 property	LayoutRowData::$value
+property	LayoutSaved::$layoutId
+property	LayoutShape::$json
 property	LayoutSplitData::$back
 property	LayoutSplitData::$listWidth
 property	LayoutSplitData::$narrowShows
@@ -36428,8 +36624,8 @@ property	LayoutTabData::$label
 property	LayoutWaysData::$guided
 property	LayoutWaysData::$isInHeader
 property	LayoutWaysData::$plain
+property	LayoutsController::$commands
 property	LayoutsController::$redirect
-property	LayoutsController::$users
 property	LeaveChatCommand::$inboxId
 property	LeaveChatHandler::$membership
 property	LexedLine::$diagnostic
@@ -37073,6 +37269,7 @@ property	NamedHookEvent::$hookEventName
 property	NamedTaskPool::$members
 property	NamedTaskPoolFactory::$tasks
 property	NamesUsedAnywhere::$roots
+property	NativeTurns::$transaction
 property	NavigationAdmission::$command
 property	NavigationAdmission::$dispatch
 property	NavigationAdmission::$owner
@@ -37269,7 +37466,10 @@ property	NotifyMergeAskHolder::$notifications
 property	NotifyRunOutcome::$notifications
 property	NumberField::$name
 property	NumberGroup::$attributes
+property	NumberGroupRetired::$groupId
 property	NumberObserver::$allocator
+property	NumberTaken::$groupId
+property	NumberTaken::$number
 property	NumberedPage::$number
 property	NumberedPage::$size
 property	NumberedPageContent::$cards
@@ -37675,6 +37875,19 @@ property	PartResult::$problems
 property	PartResult::$receiptId
 property	PartResult::$type
 property	PartRun::$attributes
+property	PartRunCaptureMarked::$partId
+property	PartRunCaptureMarked::$state
+property	PartRunCaptured::$partId
+property	PartRunDrained::$partId
+property	PartRunLost::$partId
+property	PartRunProcessFinished::$partId
+property	PartRunSkipped::$partId
+property	PartRunSpawnFailed::$partId
+property	PartRunSpawnFailed::$reason
+property	PartRunStarted::$host
+property	PartRunStarted::$partId
+property	PartRunStopped::$partId
+property	PartRunStopped::$reason
 property	PartSnapshotData::$assessmentId
 property	PartSnapshotData::$bytes
 property	PartSnapshotData::$capture
@@ -38366,8 +38579,15 @@ property	ProfileRunExecution::$context
 property	ProfileRunExecution::$reader
 property	ProfileRunExecution::$step
 property	ProfileRunExecution::$texts
+property	ProfileRunFinished::$runId
+property	ProfileRunFinished::$state
+property	ProfileRunResumed::$runId
 property	ProfileRunShowCommand::$description
 property	ProfileRunShowCommand::$signature
+property	ProfileRunStarted::$generation
+property	ProfileRunStarted::$runId
+property	ProfileRunSuspended::$line
+property	ProfileRunSuspended::$runId
 property	ProfileScript::$compiled
 property	ProfileScript::$source
 property	ProfileScriptCompiler::$checks
@@ -39001,7 +39221,7 @@ property	ReaderSampleApproveCommand::$description
 property	ReaderSampleApproveCommand::$signature
 property	ReaderSampleRunCommand::$description
 property	ReaderSampleRunCommand::$signature
-property	ReadinessCheckSweep::$database
+property	ReadinessCheckSweep::$transaction
 property	ReadsServiceProvider::$countedConnections
 property	ReadyState::$policy
 property	ReadyState::$stops
@@ -39228,6 +39448,7 @@ property	RecordReference::$type
 property	RecordRefusalReceipt::$callers
 property	RecordRefusalReceipt::$key
 property	RecordRefusalReceipt::$registry
+property	RecordRefusalReceipt::$transaction
 property	RecordRule::$expression
 property	RecordRule::$pattern
 property	RecordRule::$role
@@ -40591,6 +40812,8 @@ property	SaveCommandRuleHandler::$approvals
 property	SaveCommandRuleHandler::$checks
 property	SaveCommandRuleHandler::$projects
 property	SaveCommandRuleHandler::$proposals
+property	SaveLayoutCommand::$name
+property	SaveLayoutCommand::$shape
 property	SaveMemoryCall::$requestKey
 property	SaveMemoryCall::$text
 property	SaveMemoryCall::$weight
@@ -41334,6 +41557,7 @@ property	ShareMemberData::$targetId
 property	ShareMemberData::$targetType
 property	ShareOpener::$commands
 property	ShareOpener::$redirect
+property	SharePreviewConsumed::$previewId
 property	SharePreviewData::$candidates
 property	SharePreviewData::$liveShare
 property	SharePreviewData::$openProposals
@@ -41498,6 +41722,7 @@ property	ShippedReaderInstaller::$readers
 property	ShippedReaderInstaller::$recorder
 property	ShippedReaderInstaller::$rules
 property	ShippedReaderInstaller::$summaries
+property	ShippedReaderInstaller::$transaction
 property	ShowAccountsNotice::$journal
 property	ShowAskCall::$id
 property	ShowAskCommand::$description
@@ -41659,6 +41884,7 @@ property	SkillContext::$environment
 property	SkillContext::$profile
 property	SkillContext::$provider
 property	SkillContext::$sessionId
+property	SkillContextEpochAdvanced::$epochId
 property	SkillContextResolver::$agents
 property	SkillContextResolver::$drivers
 property	SkillContextResolver::$profiles
@@ -41929,6 +42155,11 @@ property	StartHelperCommand::$profileKey
 property	StartHelperCommand::$requestId
 property	StartHelperCommand::$work
 property	StartHelperHandler::$dispatch
+property	StartIdentityBound::$nativeId
+property	StartIdentityBound::$startId
+property	StartIdentityPrepared::$startId
+property	StartIdentityUncertain::$startId
+property	StartIntentForgotten::$startId
 property	StartOwnedAgentCommand::$request
 property	StartOwnedAgentHandler::$commands
 property	StartOwnedAgentHandler::$previews
@@ -42019,6 +42250,8 @@ property	StartRecordDetails::$requestId
 property	StartRecordDetails::$requestedModel
 property	StartRecordDetails::$requestedModelType
 property	StartRecordDetails::$sessionId
+property	StartRecordRefused::$reason
+property	StartRecordRefused::$startId
 property	StartRecords::$actors
 property	StartRecords::$authorizer
 property	StartRecords::$sessions
@@ -42076,6 +42309,8 @@ property	StartSettingsRequested::$settings
 property	StartStacks::$clock
 property	StartStacks::$transaction
 property	StartStacks::$types
+property	StartStartedAs::$sessionId
+property	StartStartedAs::$startId
 property	StartSwitchReplacementCommand::$switchId
 property	StartSwitchReplacementHandler::$commands
 property	StartSwitchReplacementOnStop::$journal
@@ -42090,6 +42325,7 @@ property	StartTokenRotated::$tokenId
 property	StartUnavailable::$agentId
 property	StartUnavailable::$driver
 property	StartUnavailable::$reason
+property	StartVerificationCancelled::$startId
 property	StartedAgent::$driverArguments
 property	StartedAgent::$firstRequest
 property	StartedAgent::$runtime
@@ -42234,6 +42470,7 @@ property	StopAgentCommand::$sessionId
 property	StopAgentHandler::$clock
 property	StopAgentHandler::$controls
 property	StopAgentHandler::$requests
+property	StopAttemptCertified::$attemptId
 property	StopAttemptGate::$certification
 property	StopAttemptGate::$evidence
 property	StopAttemptGate::$facts
@@ -42243,6 +42480,8 @@ property	StopAttemptReference::$attemptId
 property	StopAttemptResult::$state
 property	StopAttemptResult::$statuses
 property	StopAttemptResult::$summaries
+property	StopAttemptSettled::$attemptId
+property	StopAttemptSettled::$state
 property	StopCertification::$facts
 property	StopCertification::$policies
 property	StopCondition::$accessTypes
@@ -43608,6 +43847,7 @@ property	WorkspaceObject::$generation
 property	WorkspaceObject::$workspaces
 property	WorkspacePreparation::$clone
 property	WorkspacePreparation::$folder
+property	WorkspaceReadAnswered::$readId
 property	WorkspaceReadPending::$reference
 property	WorkspaceReadReference::$key
 property	WorkspaceSources::$sources
@@ -44286,6 +44526,7 @@ variable	$exit
 variable	$exitCode
 variable	$exits
 variable	$expansion
+variable	$expectation
 variable	$expected
 variable	$expired
 variable	$expiresAt
@@ -44325,6 +44566,7 @@ variable	$filter
 variable	$filters
 variable	$final
 variable	$finder
+variable	$finding
 variable	$findings
 variable	$fingerprint
 variable	$fingerprints
@@ -44432,6 +44674,7 @@ variable	$healthy
 variable	$heard
 variable	$held
 variable	$heldIds
+variable	$heldRequests
 variable	$help
 variable	$helper
 variable	$helpers
@@ -44976,6 +45219,7 @@ variable	$ownerId
 variable	$ownerNames
 variable	$owners
 variable	$ownsClass
+variable	$ownsUnit
 variable	$pFlag
 variable	$package
 variable	$page
@@ -45045,6 +45289,7 @@ variable	$pins
 variable	$pipe
 variable	$pipeline
 variable	$pipelineOutput
+variable	$pipes
 variable	$pivot
 variable	$place
 variable	$placed
@@ -45102,6 +45347,7 @@ variable	$processControlClasses
 variable	$processRun
 variable	$processes
 variable	$producerDone
+variable	$producers
 variable	$profile
 variable	$profiles
 variable	$program

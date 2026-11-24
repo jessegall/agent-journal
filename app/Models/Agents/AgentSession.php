@@ -6,12 +6,20 @@ namespace App\Models\Agents;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\AccountProcessRole;
 use App\Enums\DriverSourceType;
 use App\Enums\ModelSelectionType;
 use App\Enums\SessionStatus;
 use App\Enums\WorkspaceUse;
+use App\Events\AgentSessionConversationEntered;
+use App\Events\AgentSessionDriverLabelKept;
+use App\Events\AgentSessionEnded;
+use App\Events\AgentSessionHeartbeat;
+use App\Events\AgentSessionSelectionUsed;
+use App\Events\AgentSessionSkillsGenerated;
 use App\Exceptions\SessionSelectionFixed;
 use App\Models\Drivers\ConversationVisit;
 use App\Models\Drivers\DriverConversation;
@@ -79,11 +87,12 @@ use Illuminate\Support\Carbon;
     'start_request_id',
     'skill_generation_id',
 ])]
-final class AgentSession extends Model implements ReadableModel
+final class AgentSession extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -311,7 +320,8 @@ final class AgentSession extends Model implements ReadableModel
         $this->profile_key = $selection->source->profileKey;
         $this->profile_revision = $selection->source->profileRevision;
         $this->start_request_id = $requestId;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AgentSessionSelectionUsed($this->id, $requestId));
     }
 
     /**
@@ -320,13 +330,15 @@ final class AgentSession extends Model implements ReadableModel
     public function recordSkillGeneration(string $generationId): void
     {
         $this->skill_generation_id = $generationId;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AgentSessionSkillsGenerated($this->id, $generationId));
     }
 
     public function enterConversation(DriverConversation $conversation): void
     {
         $this->current_conversation_id = $conversation->id;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AgentSessionConversationEntered($this->id));
     }
 
     /**
@@ -336,14 +348,16 @@ final class AgentSession extends Model implements ReadableModel
     public function keepDriverLabel(string $label): void
     {
         $this->driver_label = $label;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AgentSessionDriverLabelKept($this->id, $label));
     }
 
     public function endAt(CarbonImmutable $time): void
     {
         $this->status = SessionStatus::Ended;
         $this->ended_at = $time;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AgentSessionEnded($this->id));
     }
 
     /**
@@ -354,7 +368,8 @@ final class AgentSession extends Model implements ReadableModel
         $this->last_heartbeat_at = $time;
         $this->silent_since = null;
         $this->status = $this->status === SessionStatus::Silent ? SessionStatus::Active : $this->status;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AgentSessionHeartbeat($this->id));
     }
 
     // ----------[ Answers ]----------
