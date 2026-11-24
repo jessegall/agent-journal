@@ -12,7 +12,8 @@
  * content on each side, such as a list row filled with other tasks). "width",
  * "height" and "theme" (light or dark) set the window both sides open in. A step value may name an environment
  * variable as ${NAME}, such as a password. "accepted" lists differences that stay on purpose, each as its report line
- * without the leading dash ("\"Send\" (button) x") and a reason; they are left out of the count. The pictures and the
+ * without the leading dash ("\"Send\" (button) x"), or an element found on one side only as its line with "only in
+ * the design" or "only in the app" after it, and a reason; they are left out of the count. The pictures and the
  * report land in storage/design-compare/<view name>/, and each run writes the view's line in record.json: when it ran,
  * the hash of the design it ran against and the differences left.
  *
@@ -36,7 +37,9 @@ import {
     differencesOf,
     differingAreas,
     gapDifferences,
+    lineOf,
     pairElements,
+    unacceptedOnOneSide,
 } from './comparison.ts';
 import { designHash, readRecords, RECORD_FILE } from './record.ts';
 import type { ViewRecord } from './record.ts';
@@ -96,9 +99,12 @@ const browser = await chromium.launch();
 try {
     const design = await capture(view.design, {});
     const app = await capture(view.app, view.labels ?? {});
-    const { pairs, onlyInDesign, onlyInApp } = pairElements(design.elements, app.elements, view.pairing ?? 'text');
-    const placedPairs = pairs.filter(([designElement]) => designElement.role !== 'part');
     const accepted = new Set((view.accepted ?? []).map((each) => each.difference));
+    const paired = pairElements(design.elements, app.elements, view.pairing ?? 'text');
+    const pairs = paired.pairs;
+    const onlyInDesign = unacceptedOnOneSide(paired.onlyInDesign, accepted, 'design');
+    const onlyInApp = unacceptedOnOneSide(paired.onlyInApp, accepted, 'app');
+    const placedPairs = pairs.filter(([designElement]) => designElement.role !== 'part');
     const differences: Difference[] = [
         ...pairs.flatMap(([designElement, appElement]) => differencesOf(designElement, appElement)),
         ...gapDifferences(placedPairs),
@@ -357,11 +363,11 @@ function reportOf(differences: Difference[], onlyInDesign: CapturedElement[], on
     ];
 
     if (onlyInDesign.length > 0) {
-        lines.push('', '## Only in the design', ...onlyInDesign.map((element) => `- "${element.text}" (${element.role})`));
+        lines.push('', '## Only in the design', ...onlyInDesign.map((element) => `- ${lineOf(element)}`));
     }
 
     if (onlyInApp.length > 0) {
-        lines.push('', '## Only in the app', ...onlyInApp.map((element) => `- "${element.text}" (${element.role})`));
+        lines.push('', '## Only in the app', ...onlyInApp.map((element) => `- ${lineOf(element)}`));
     }
 
     return `${lines.join('\n')}\n`;

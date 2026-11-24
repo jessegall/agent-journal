@@ -133,6 +133,19 @@ function pairInOrder(
     return { pairs, onlyInDesign, onlyInApp };
 }
 
+/** An element as a report line names it: its text and its role. */
+export function lineOf(element: CapturedElement): string {
+    return `"${element.text}" (${element.role})`;
+}
+
+/**
+ * The elements found on one side only that no accepted entry names; an entry names one as its line followed by
+ * "only in the design" or "only in the app".
+ */
+export function unacceptedOnOneSide(elements: CapturedElement[], accepted: Set<string>, side: 'design' | 'app'): CapturedElement[] {
+    return elements.filter((element) => !accepted.has(`${lineOf(element)} only in the ${side}`));
+}
+
 /** The measurements of one pair that differ: position and size past the tolerance, and every drawn style. */
 export function differencesOf(design: CapturedElement, app: CapturedElement): Difference[] {
     const differences: Difference[] = [];

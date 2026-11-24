@@ -7,6 +7,7 @@ import {
     gapDifferences,
     pairElements,
     swapLabel,
+    unacceptedOnOneSide,
 } from './comparison.ts';
 
 function element(text: string, x: number, y: number, style: Record<string, string> = {}): CapturedElement {
@@ -19,6 +20,14 @@ describe('the design comparison', () => {
 
         expect(swapLabel('  Connect a project ', labels)).toBe('  Open connected projects ');
         expect(swapLabel('Connect a project now', labels)).toBe('Connect a project now');
+    });
+
+    it('leaves out an element found on one side only that an accepted entry names for that side', () => {
+        const accepted = new Set(['"Comments" (span) only in the app']);
+        const found = [element('Comments', 0, 0), element('Help', 0, 30)];
+
+        expect(unacceptedOnOneSide(found, accepted, 'app').map((kept) => kept.text)).toEqual(['Help']);
+        expect(unacceptedOnOneSide(found, accepted, 'design').map((kept) => kept.text)).toEqual(['Comments', 'Help']);
     });
 
     it('pairs elements by what they say, in order, and lists the texts of one side only', () => {
