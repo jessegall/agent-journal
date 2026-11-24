@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Reads\TextContent;
 use App\Contracts\Records\Commentable;
 use App\Contracts\Records\RecordResolver;
-use App\Contracts\Work\WorkStacks;
+use App\Contracts\Work\ActorStackSessions;
 use App\Enums\WholeRecord;
 use App\Exceptions\SubmissionKeyConflict;
 use App\Exceptions\TargetHasNoText;
@@ -24,7 +24,7 @@ final readonly class CommentWriter
 {
     public function __construct(
         private RecordResolver $records,
-        private WorkStacks $workStacks,
+        private ActorStackSessions $stackSessions,
     ) {}
 
     public function post(
@@ -42,7 +42,7 @@ final readonly class CommentWriter
 
         $body = MarkdownText::comment($text);
         $author = ActorIdentity::of($actor);
-        $sessionId = $this->workStacks->sessionsToAdmit()[0] ?? null;
+        $sessionId = $this->stackSessions->sessionsToAdmit()[0] ?? null;
         $hash = self::hashOf($targetIdentity, $subject, $body);
         $earlier = Comment::query()->submittedAs($author, $sessionId, $submissionKey)->first();
 

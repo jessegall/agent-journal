@@ -2,8 +2,6 @@ package drivers
 
 import (
 	"context"
-	"errors"
-	"fmt"
 
 	"journal-agent/drivers/contracts"
 	"journal-agent/host"
@@ -17,9 +15,6 @@ type CodexThreads interface {
 	Interrupt(ctx context.Context, threadID, turnID string) error
 	TurnEnds(threadID string) <-chan host.CodexTurnEnd
 }
-
-// ErrTurnInterrupted is the end of a turn the user or the journal interrupted.
-var ErrTurnInterrupted = errors.New("the turn was interrupted")
 
 // CodexDriver runs one runtime as one thread on its account's shared app-server: each turn is a turn/start on the
 // thread the app-server acknowledged, and its end is that turn's own completion, whatever the owner does next.
@@ -53,7 +48,7 @@ func (driver *CodexDriver) Deliver(ctx context.Context, delivery contracts.Deliv
 }
 
 func (driver *CodexDriver) Wake(ctx context.Context, wake contracts.WakeRequest) (contracts.OperationResult, error) {
-	return driver.startTurn(ctx, wake.Request, wake.PromptOr(pendingWorkPrompt))
+	return driver.startTurn(ctx, wake.Request, wake.Prompt)
 }
 
 // ChangeModel is staged for the next thread start; a thread keeps the model it started with.
@@ -150,39 +145,31 @@ func (driver *CodexDriver) startTurn(
 	}
 	driver.turns++
 	driver.turnID = turnID
-	driver.finished = make(chan error, 1)
+	driver.finished = make(chan contracts.TurnEnd, 1)
 	go driver.awaitEnd(driver.owner.TurnEnds(driver.threadID), turnID, driver.finished)
 	return contracts.OperationResult{Request: request, Progress: contracts.ProgressApplying, Hold: contracts.HoldNone},
 		nil
 }
 
 // awaitEnd ends the turn with its own completion, whatever the owner does next.
-func (driver *CodexDriver) awaitEnd(ends <-chan host.CodexTurnEnd, turnID string, finished chan<- error) {
-	outcome := turnOutcome(ends, turnID)
+func (driver *CodexDriver) awaitEnd(ends <-chan host.CodexTurnEnd, turnID string, finished chan<- contracts.TurnEnd) {
+	outcome := turnEndOf(ends, turnID)
 	driver.mutex.Lock()
 	driver.turnID = ""
 	driver.mutex.Unlock()
 	finished <- outcome
 }
 
-// turnOutcome waits for the turn's own end: completed is a success, interrupted and failed are not, and an owner that
-// exited, or a thread the owner no longer knows, ends the turn as failed.
-func turnOutcome(ends <-chan host.CodexTurnEnd, turnID string) error {
+// turnEndOf waits for the turn's own end and tells the status the owner ended it with, or that the owner exited or no
+// longer knows the thread.
+func turnEndOf(ends <-chan host.CodexTurnEnd, turnID string) contracts.TurnEnd {
 	if ends == nil {
-		return fmt.Errorf("%w: the owner no longer knows the thread", ErrProviderTurnFailed)
+		return contracts.TurnEnd{Problem: "the owner no longer knows the thread"}
 	}
 	for end := range ends {
-		if end.Status != "ownerExited" && end.TurnID != turnID {
-			continue
-		}
-		switch end.Status {
-		case "completed":
-			return nil
-		case "interrupted":
-			return ErrTurnInterrupted
-		default:
-			return fmt.Errorf("%w: %s", ErrProviderTurnFailed, end.Status)
+		if end.Status == "ownerExited" || end.TurnID == turnID {
+			return contracts.TurnEnd{CodexStatus: end.Status}
 		}
 	}
-	return fmt.Errorf("%w: the owner closed the thread", ErrProviderTurnFailed)
+	return contracts.TurnEnd{Problem: "the owner closed the thread"}
 }

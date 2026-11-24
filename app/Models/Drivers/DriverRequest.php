@@ -676,6 +676,19 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
     }
 
     /**
+     * The deliveries and wakes still applying since before this moment: turns that have run that long.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function turnsApplyingSince(Builder $query, CarbonImmutable $before): void
+    {
+        $query->whereIn('operation', [DriverOperation::Deliver, DriverOperation::Wake])
+            ->where('progress', RequestProgress::Applying)
+            ->where('updated_at', '<', $before);
+    }
+
+    /**
      * The Check status requests no host has answered since before this moment.
      *
      * @param  Builder<self>  $query

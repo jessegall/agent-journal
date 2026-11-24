@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Tasks\Listeners;
 
 use App\Attributes\InCommandTransaction;
-use App\Contracts\Actors\ActorWorkStacks;
 use App\Contracts\Events\Listener;
+use App\Contracts\Work\AgentStack;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Resolvers\Support\TaskRecords;
 use Domain\Tasks\Support\States\Support\WorkingOnTaskStateReference;
@@ -19,11 +19,11 @@ final readonly class PushTaskState implements Listener
 {
     public function __construct(
         private TaskRecords $tasks,
-        private ActorWorkStacks $workStack,
+        private AgentStack $stacks,
     ) {}
 
     public function handle(TaskStarted $event): void
     {
-        $this->workStack->push(WorkingOnTaskStateReference::forTask($this->tasks->get($event->taskId)));
+        $this->stacks->activateForCaller(WorkingOnTaskStateReference::forTask($this->tasks->get($event->taskId)));
     }
 }

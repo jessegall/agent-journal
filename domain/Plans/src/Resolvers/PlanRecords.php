@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Resolvers;
 
-use App\Contracts\Actors\ActorWorkStacks;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Assignments\AssigneeResolver;
 use App\Contracts\Assignments\AssignmentResolver;
 use App\Contracts\Assignments\AssignmentTransaction;
+use App\Contracts\Work\CurrentState;
 use App\Support\AssigneeIdentity;
 use App\Support\NumberedPage;
 use App\Support\References\StateReference;
@@ -45,7 +45,7 @@ final readonly class PlanRecords implements PlanResolver
         private AssignmentResolver $assignments,
         private AssigneeResolver $assignees,
         private AssignmentTransaction $transaction,
-        private ActorWorkStacks $workStack,
+        private CurrentState $states,
     ) {}
 
     public function list(PlanFilters $filters): PlanList
@@ -104,7 +104,7 @@ final readonly class PlanRecords implements PlanResolver
      */
     private function focusedPlanId(): Option
     {
-        return $this->workStack->current(WorkingOnPlanStateReference::TYPE_KEY)
+        return $this->states->ofCaller(WorkingOnPlanStateReference::TYPE_KEY)
             ->flatMap(
                 fn (
                     StateReference $frame,

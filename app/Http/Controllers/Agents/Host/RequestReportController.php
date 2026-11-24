@@ -22,15 +22,16 @@ final readonly class RequestReportController
             $host->hostId,
             $report->requestId,
             $report->attempt,
-            $report->progress,
+            $report->judgedProgress(),
             $report->actualBinding,
-            $report->outcome,
+            $report->judgedOutcome(),
             $report->scriptProgress(),
             $report->navigationReport(),
             $report->refusal(),
             $report->noProcessCreated,
             $report->binding(),
             $report->sequence,
+            $report->turnEnd(),
         ));
 
         return new Response(status: Response::HTTP_NO_CONTENT);

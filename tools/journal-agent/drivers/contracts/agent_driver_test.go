@@ -21,12 +21,3 @@ func TestAnOrdinaryErrorCarriesNoStartRefusal(t *testing.T) {
 		t.Fatal("an ordinary error carried a start refusal")
 	}
 }
-
-func TestAWakeCarriesTheServersPromptOrFallsBackToTheGenericOne(t *testing.T) {
-	if got := (WakeRequest{}).PromptOr("Check your pending journal work."); got != "Check your pending journal work." {
-		t.Fatalf("an empty wake should fall back, got %q", got)
-	}
-	if got := (WakeRequest{Prompt: "New messages in the chat Design."}).PromptOr("fallback"); got != "New messages in the chat Design." {
-		t.Fatalf("a wake with a prompt should present it, got %q", got)
-	}
-}

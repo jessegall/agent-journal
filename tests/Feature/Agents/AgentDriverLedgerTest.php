@@ -12,6 +12,7 @@ use App\Commands\ClaimDriverRequests\ClaimDriverRequestsCommand;
 use App\Commands\ClaimStartGrant\ClaimStartGrantCommand;
 use App\Commands\DeliverAgent\DeliverAgentCommand;
 use App\Commands\InterruptAgent\InterruptAgentCommand;
+use App\Commands\InterruptStuckTurns\InterruptStuckTurnsHandler;
 use App\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\PostChatMessage\PostChatMessageCommand;
 use App\Commands\RecordRuntime\RecordRuntimeCommand;
@@ -53,6 +54,7 @@ use App\Enums\RequestProgress;
 use App\Enums\RuntimeActivity;
 use App\Enums\SessionStatus;
 use App\Events\DriverRequestRecovered;
+use App\Events\EngineTicked;
 use App\Events\SessionStateChanged;
 use App\Exceptions\AccountFolderInvalid;
 use App\Exceptions\ActorNotAllowed;
@@ -83,6 +85,8 @@ use App\Support\ArrangementSetting;
 use App\Support\ClaimedRequests;
 use App\Support\DefaultDrivers;
 use App\Support\DriverBudgets;
+use App\Support\EnginePass;
+use App\Support\EngineTickedDelivery;
 use App\Support\EnrolledHost;
 use App\Support\HeartbeatService;
 use App\Support\InitialWakeSettlement;
@@ -93,6 +97,7 @@ use App\Support\OpenedRuntime;
 use App\Support\PendingWorkSources;
 use App\Support\RequestKey;
 use App\Support\StartGrant;
+use App\Support\Ticks\ElapsedTime;
 use App\Values\AccountLabel;
 use App\Values\BrowserInputCapabilities;
 use App\Values\DriverReceipt;
@@ -290,6 +295,36 @@ final class AgentDriverLedgerTest extends TestCase
         $this->assertSame(RequestProgress::Superseded, DriverRequest::query()->findOrFail($high->requestId)->progress);
     }
 
+    /**
+     * A setting change the host staged waits for a turn and counts as applied only on that turn's evidence: the model
+     * its output names confirms a model change, while an effort change, which no output shows, stays unconfirmed.
+     */
+    public function test_a_staged_setting_is_applied_only_on_the_turns_evidence(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $agentId = $this->agentIdOf($opened);
+        $model = $this->asOwner(new ChangeAgentModelCommand($agentId, $opened->sessionId, 'model-1', 'claude-sonnet-5-5'));
+        $effort = $this->asOwner(new ChangeAgentEffortCommand($agentId, $opened->sessionId, 'effort-1', 'high'));
+        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+
+        foreach ([$model, $effort] as $setting) {
+            $this->reportTurnEnd($host, $setting->requestId, null);
+        }
+        $this->assertSame(RequestProgress::Staged, DriverRequest::query()->findOrFail($model->requestId)->progress);
+
+        foreach ([$model, $effort] as $setting) {
+            $this->reportTurnEnd($host, $setting->requestId, ['exit_code' => 0, 'model' => 'claude-sonnet-5-5']);
+        }
+
+        $this->assertSame(
+            [RequestProgress::Applied, RequestProgress::DeliveryUncertain],
+            [
+                DriverRequest::query()->findOrFail($model->requestId)->progress,
+                DriverRequest::query()->findOrFail($effort->requestId)->progress,
+            ],
+        );
+    }
+
     public function test_an_unknown_effort_is_refused_before_anything_is_accepted(): void
     {
         [, $opened] = $this->openRuntime();
@@ -390,6 +425,8 @@ final class AgentDriverLedgerTest extends TestCase
             RequestProgress::Staged,
             DriverRequest::query()->where('operation', DriverOperation::Wake)->sole()->progress,
         );
+        // The journal sends the wake's whole prompt; the host makes none up.
+        $this->assertSame('Check your pending journal work.', $claimed->requests[0]->message);
     }
 
     /**
@@ -413,6 +450,98 @@ final class AgentDriverLedgerTest extends TestCase
         $this->assertSame(
             [$opened->firstRequestId],
             array_map(fn ($request): string => $request->requestId, $again->requests),
+        );
+    }
+
+    /**
+     * The host reports a turn's end as it saw it; the journal judges a result marked an error as a failed turn.
+     */
+    public function test_a_turn_whose_result_is_an_error_is_judged_failed(): void
+    {
+        [$host, $opened] = $this->openRuntime(firstMessage: 'Fails');
+        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $request = DriverRequest::query()->findOrFail($opened->firstRequestId);
+
+        $this->hostCall($host, '/host/reports/request', [
+            'request_id' => $request->id,
+            'attempt' => $request->attempt_version,
+            'actual_binding' => null,
+            'turn_end' => ['exit_code' => 0, 'result_read' => true, 'result_subtype' => 'error_during_execution'],
+        ])->assertSuccessful();
+
+        $this->assertSame(
+            [RequestProgress::Failed, RequestOutcome::TurnFailed],
+            [$request->fresh()?->progress, $request->fresh()?->outcome],
+        );
+    }
+
+    /**
+     * A turn that runs past the journal's limit is interrupted on the next engine pass, once, and its runtime held.
+     */
+    public function test_a_turn_running_past_the_limit_is_interrupted_once(): void
+    {
+        [$host, $opened] = $this->openRuntime(firstMessage: 'Never ends');
+        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $request = DriverRequest::query()->findOrFail($opened->firstRequestId);
+        $this->asSystem(new ReportRequestProgressCommand(
+            $host->hostId,
+            $request->id,
+            $request->attempt_version,
+            RequestProgress::Applying,
+            null,
+            null,
+        ));
+
+        $this->travel(InterruptStuckTurnsHandler::TURN_MINUTES_LIMIT + 1)->minutes();
+
+        foreach ([1, 2] as $pass) {
+            $this->app->make(EnginePass::class)->run(fn () => $this->app->make(EngineTickedDelivery::class)->deliver(
+                new EngineTicked(CarbonImmutable::now(), ElapsedTime::between(0, 1_000_000_000)),
+            ));
+        }
+
+        $this->assertSame(1, DriverRequest::query()->where('operation', DriverOperation::Interrupt)->count());
+        $this->assertSame(HoldReason::Interrupted, AgentRuntime::query()->findOrFail($opened->runtimeId)->hold_reason);
+    }
+
+    /**
+     * The host reports plain facts and the journal chooses the hold: an account that is not signed in, and a stop the
+     * host could not prove, each leave the runtime needing attention.
+     */
+    public function test_the_journal_holds_a_runtime_for_attention_from_the_hosts_facts(): void
+    {
+        [$host, $signedOut] = $this->openRuntime(firstMessage: 'Signed out');
+        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $wake = DriverRequest::query()->findOrFail($signedOut->firstRequestId);
+        $this->asSystem(new ReportRequestProgressCommand(
+            $host->hostId,
+            $wake->id,
+            $wake->attempt_version,
+            RequestProgress::Failed,
+            null,
+            RequestOutcome::Refused,
+            refusal: HostWakeRefusal::NotSignedIn,
+            noProcessCreated: true,
+        ));
+
+        [$stopHost, $stopped] = $this->openRuntime();
+        $stop = $this->asOwner(new StopAgentCommand($this->agentIdOf($stopped), $stopped->sessionId, 'stop-1'));
+        $this->asSystem(new ClaimDriverRequestsCommand($stopHost->hostId, 10, BrowserInputCapabilities::none()));
+        $this->asSystem(new ReportRequestProgressCommand(
+            $stopHost->hostId,
+            $stop->requestId,
+            DriverRequest::query()->findOrFail($stop->requestId)->attempt_version,
+            RequestProgress::Failed,
+            null,
+            RequestOutcome::StopUnconfirmed,
+        ));
+
+        $this->assertSame(
+            [HoldReason::NeedsAttention, HoldReason::NeedsAttention],
+            [
+                AgentRuntime::query()->findOrFail($signedOut->runtimeId)->hold_reason,
+                AgentRuntime::query()->findOrFail($stopped->runtimeId)->hold_reason,
+            ],
         );
     }
 
@@ -1814,6 +1943,23 @@ final class AgentDriverLedgerTest extends TestCase
     private function deliver(OpenedRuntime $opened, string $key, string $message): DriverReceipt
     {
         return $this->asOwner(DeliverAgentCommand::text($this->agentIdOf($opened), $opened->sessionId, $key, $message));
+    }
+
+    /**
+     * The host's report of a request: staged without a turn's end, or the turn's end as the host saw it.
+     *
+     * @param  array<string, int|string|bool>|null  $turnEnd
+     */
+    private function reportTurnEnd(EnrolledHost $host, string $requestId, array|null $turnEnd): void
+    {
+        $request = DriverRequest::query()->findOrFail($requestId);
+        $report = ['request_id' => $request->id, 'attempt' => $request->attempt_version, 'actual_binding' => null];
+
+        $this->hostCall(
+            $host,
+            '/host/reports/request',
+            $turnEnd === null ? [...$report, 'progress' => 'staged'] : [...$report, 'turn_end' => $turnEnd],
+        )->assertSuccessful();
     }
 
     private function reportProgress(string $hostId, string $requestId, RequestProgress $progress): void

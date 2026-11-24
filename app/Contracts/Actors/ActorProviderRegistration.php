@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Actors;
 
-use App\Contracts\Work\WorkStackProvider;
+use App\Contracts\Work\ActorStackSessionProvider;
 use App\Enums\ActorType;
 use App\Exceptions\ActorProviderRepeated;
 
@@ -35,9 +35,9 @@ interface ActorProviderRegistration
     public function registerVisibility(ActorType $type, string $providerClass): void;
 
     /**
-     * @param  class-string<WorkStackProvider>  $providerClass
+     * @param  class-string<ActorStackSessionProvider>  $providerClass
      *
      * @throws ActorProviderRepeated
      */
-    public function registerWorkStack(ActorType $type, string $providerClass): void;
+    public function registerStackSessions(ActorType $type, string $providerClass): void;
 }

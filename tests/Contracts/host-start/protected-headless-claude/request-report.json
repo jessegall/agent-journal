@@ -1,7 +1,12 @@
 {
     "request_id": "01contractrequest000000000",
     "attempt": 0,
-    "progress": "applied",
+    "turn_end": {
+        "exit_code": 0,
+        "result_read": true,
+        "result_subtype": "success",
+        "model": "claude-opus-5-5"
+    },
     "actual_binding": "00000000-0000-4000-8000-000000000000",
     "outcome": null,
     "sequence": 3,

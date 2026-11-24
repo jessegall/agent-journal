@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Plans\Listeners;
 
 use App\Attributes\InCommandTransaction;
-use App\Contracts\Actors\ActorWorkStacks;
 use App\Contracts\Events\Listener;
+use App\Contracts\Work\AgentStack;
 use Domain\Plans\Events\PlanStarted;
 use Domain\Plans\Support\States\Support\WorkingOnPlanStateReference;
 
@@ -17,10 +17,10 @@ use Domain\Plans\Support\States\Support\WorkingOnPlanStateReference;
 #[InCommandTransaction]
 final readonly class PushPlanState implements Listener
 {
-    public function __construct(private ActorWorkStacks $workStack) {}
+    public function __construct(private AgentStack $stacks) {}
 
     public function handle(PlanStarted $event): void
     {
-        $this->workStack->push(WorkingOnPlanStateReference::forPlan($event->planId));
+        $this->stacks->activateForCaller(WorkingOnPlanStateReference::forPlan($event->planId));
     }
 }

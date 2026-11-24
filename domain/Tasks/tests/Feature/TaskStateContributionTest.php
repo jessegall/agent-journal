@@ -9,6 +9,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Processes\RunClaims;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\StackAlreadyClosed;
+use App\Models\Agents\AgentFocus;
 use App\Models\Agents\AgentStackRow;
 use App\Support\References\SubjectReference;
 use App\Support\Storage\FrameRecord;
@@ -230,7 +231,7 @@ final class TaskStateContributionTest extends TestCase
      */
     private function focusedTaskIds(): array
     {
-        return array_values(Task::query()->focusedBy($this->target->agentId)->pluck('id')->all());
+        return array_values(AgentFocus::query()->where('agent_id', $this->target->agentId)->pluck('focused_id')->all());
     }
 
     public function test_an_agent_finishing_a_task_it_never_started_is_refused_and_leaves_the_stack_alone(): void

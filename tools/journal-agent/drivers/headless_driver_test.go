@@ -48,23 +48,23 @@ func (container printingContainer) TurnProgram(profilecontracts.Start, int) (Tur
 	return &childTurn{command: command}, nil
 }
 
-func containedTurn(t *testing.T, container printingContainer) (*recordedUsage, error) {
+func containedTurn(t *testing.T, container printingContainer) (*recordedUsage, contracts.TurnEnd) {
 	t.Helper()
 	usage := &recordedUsage{}
 	driver := NewHeadlessDriver(HeadlessRuntime{
 		Limits: journalLimits,
-		Start: profilecontracts.BaseStart{SessionID: "conversation"}, Profile: profiles.ClaudeCode{},
+		Start:  profilecontracts.BaseStart{SessionID: "conversation"}, Profile: profiles.ClaudeCode{},
 		Container: container, Usage: usage,
 	}, 1)
 	if _, err := driver.Deliver(context.Background(), contracts.Delivery{Request: request("one"), Parts: contracts.TextParts("hi")}); err != nil {
 		t.Fatal(err)
 	}
 	select {
-	case err := <-driver.Finished():
-		return usage, err
+	case end := <-driver.Finished():
+		return usage, end
 	case <-time.After(5 * time.Second):
 		t.Fatal("the contained turn never ended")
-		return nil, nil
+		return nil, contracts.TurnEnd{}
 	}
 }
 
@@ -72,11 +72,11 @@ const containedStream = `{"type":"rate_limit_event","rate_limit_info":{"unifiedW
 {"type":"result","subtype":"error_during_execution","is_error":true,"uuid":"r1","model_usage_since_last_result":{"opus":{"costUSD":0.5}}}
 `
 
-func TestAContainedClaudeTurnReportsItsUsageFromTheContainerOutputAndEndsWithItsExit(t *testing.T) {
-	usage, err := containedTurn(t, printingContainer{output: containedStream})
+func TestAContainedClaudeTurnReportsItsUsageAndEndsWithItsResultAndExit(t *testing.T) {
+	usage, end := containedTurn(t, printingContainer{output: containedStream})
 
-	if err != nil {
-		t.Fatalf("an error result changed the contained turn's end: %v", err)
+	if !end.ResultIsError || end.ResultSubtype != "error_during_execution" || end.ExitCode == nil || *end.ExitCode != 0 {
+		t.Fatalf("the contained turn ended as %+v", end)
 	}
 	if len(usage.windows) != 1 || *usage.windows[0].UsedPercent != 42 {
 		t.Fatalf("windows %+v", usage.windows)
@@ -85,8 +85,8 @@ func TestAContainedClaudeTurnReportsItsUsageFromTheContainerOutputAndEndsWithIts
 		t.Fatalf("costs %v %v", usage.costs, usage.results)
 	}
 
-	if _, err := containedTurn(t, printingContainer{output: containedStream, exit: 3}); err == nil {
-		t.Fatal("a failed container process ended its turn well")
+	if _, end := containedTurn(t, printingContainer{output: containedStream, exit: 3}); end.ExitCode == nil || *end.ExitCode != 3 {
+		t.Fatalf("a failed container process ended its turn as %+v", end)
 	}
 }
 
@@ -105,7 +105,7 @@ func TestAConfinedChildTurnRunsUnderItsConfinementInPlaceOfTheSessionSandbox(t *
 	runtime.WorkFolder, runtime.Account = t.TempDir(), &profilecontracts.AccountStart{Folder: t.TempDir()}
 	driver := NewHeadlessDriver(HeadlessRuntime{
 		Limits: journalLimits,
-		Start: runtime, Profile: profiles.ClaudeCode{}, Executable: "/opt/claude", Confinement: recordingConfinement{},
+		Start:  runtime, Profile: profiles.ClaudeCode{}, Executable: "/opt/claude", Confinement: recordingConfinement{},
 	}, 1)
 
 	command, err := driver.command(turn.Turn("", false))
@@ -129,7 +129,7 @@ func TestADelayedEndOfChildAKeepsChildBAndSettlesOnlyAsTurn(t *testing.T) {
 	turnA, turnB := &childTurn{command: childA}, &childTurn{command: exec.Command("true")}
 	driver := &HeadlessDriver{}
 	driver.turn = turnB
-	endOfA, endOfB := make(chan error, 1), make(chan error, 1)
+	endOfA, endOfB := make(chan contracts.TurnEnd, 1), make(chan contracts.TurnEnd, 1)
 	driver.finished = endOfB
 
 	driver.wait(turnA, nil, endOfA)

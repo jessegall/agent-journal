@@ -58,14 +58,14 @@ func (owner *fakeOwner) complete(threadID string) {
 	owner.ends[threadID] <- host.CodexTurnEnd{TurnID: threadID + "-turn", Status: "completed"}
 }
 
-func endOf(t *testing.T, driver *CodexDriver) error {
+func endOf(t *testing.T, driver *CodexDriver) contracts.TurnEnd {
 	t.Helper()
 	select {
-	case err := <-driver.Finished():
-		return err
+	case end := <-driver.Finished():
+		return end
 	case <-time.After(2 * time.Second):
 		t.Fatal("the turn never ended")
-		return nil
+		return contracts.TurnEnd{}
 	}
 }
 
@@ -86,18 +86,18 @@ func TestTwoRuntimesRunSeparateThreadsAndAnInterruptReachesOnlyOne(t *testing.T)
 	}
 	owner.complete("thread-2")
 
-	if err := endOf(t, first); !errors.Is(err, ErrTurnInterrupted) {
-		t.Fatalf("the first thread ended with %v", err)
+	if end := endOf(t, first); end.CodexStatus != "interrupted" {
+		t.Fatalf("the first thread ended with %+v", end)
 	}
-	if err := endOf(t, second); err != nil {
-		t.Fatalf("the second thread ended with %v", err)
+	if end := endOf(t, second); end.CodexStatus != "completed" {
+		t.Fatalf("the second thread ended with %+v", end)
 	}
 	if owner.threads != 2 || len(owner.interrupted) != 1 || owner.interrupted[0] != "thread-1-turn" {
 		t.Fatalf("threads %d, interrupted %v", owner.threads, owner.interrupted)
 	}
 }
 
-func TestAFailedTurnIsNotASuccessAndTheThreadIsKept(t *testing.T) {
+func TestAFailedTurnIsToldWithItsStatusAndTheThreadIsKept(t *testing.T) {
 	owner := newFakeOwner()
 	driver := NewCodexDriver(owner, host.CodexThreadSettings{}, 1)
 	request := contracts.RequestIdentity{RuntimeID: "runtime"}
@@ -108,23 +108,23 @@ func TestAFailedTurnIsNotASuccessAndTheThreadIsKept(t *testing.T) {
 	_, _ = driver.Wake(context.Background(), contracts.WakeRequest{Request: request})
 	owner.complete("thread-1")
 
-	if !errors.Is(failed, ErrProviderTurnFailed) {
-		t.Fatalf("a failed turn ended with %v", failed)
+	if failed.CodexStatus != "failed" {
+		t.Fatalf("a failed turn ended with %+v", failed)
 	}
-	if err := endOf(t, driver); err != nil || owner.threads != 1 {
-		t.Fatalf("the next turn ended with %v on %d threads", err, owner.threads)
+	if end := endOf(t, driver); end.CodexStatus != "completed" || owner.threads != 1 {
+		t.Fatalf("the next turn ended with %+v on %d threads", end, owner.threads)
 	}
 }
 
-func TestAnOwnerThatExitsFailsTheRunningTurn(t *testing.T) {
+func TestAnOwnerThatExitsEndsTheRunningTurnWithThatStatus(t *testing.T) {
 	owner := newFakeOwner()
 	driver := NewCodexDriver(owner, host.CodexThreadSettings{}, 1)
 
 	_, _ = driver.Deliver(context.Background(), contracts.Delivery{Parts: contracts.TextParts("one")})
 	owner.ends["thread-1"] <- host.CodexTurnEnd{Status: "ownerExited"}
 
-	if err := endOf(t, driver); !errors.Is(err, ErrProviderTurnFailed) {
-		t.Fatalf("got %v", err)
+	if end := endOf(t, driver); end.CodexStatus != "ownerExited" {
+		t.Fatalf("got %+v", end)
 	}
 }
 

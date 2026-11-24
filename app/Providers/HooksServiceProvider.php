@@ -10,7 +10,6 @@ use App\Console\Commands\RelayHookCommand;
 use App\Contracts\Actors\ActorGuidance;
 use App\Contracts\Actors\ActorProviderRegistration;
 use App\Contracts\Actors\ActorVisibility;
-use App\Contracts\Actors\ActorWorkStacks;
 use App\Contracts\Admission\StackAdmission;
 use App\Contracts\Drivers\DriverCompatibilities;
 use App\Contracts\Drivers\PinnedBuilds;
@@ -19,6 +18,7 @@ use App\Contracts\Events\HelperRecordFacts;
 use App\Contracts\Processes\StopEvidence;
 use App\Contracts\Processes\StopPreparer;
 use App\Contracts\Sessions\StartTransaction;
+use App\Contracts\Work\AgentFocuses;
 use App\Contracts\Work\AgentStack;
 use App\Contracts\Work\CurrentState;
 use App\Contracts\Work\IncomingWorkRegistration;
@@ -38,7 +38,7 @@ use App\Resolvers\StopAttemptRecords;
 use App\Support\Admission\AdvisoryStackAdmission;
 use App\Support\AgentContext;
 use App\Support\AgentStacks;
-use App\Support\AgentWorkStack;
+use App\Support\AgentStackSessions;
 use App\Support\Compatibility\PinnedDriverBuilds;
 use App\Support\ContextBudget;
 use App\Support\CurrentStates;
@@ -69,8 +69,8 @@ use App\Support\StateCatalog\Contracts\StateTypes as StateTypesContract;
 use App\Support\StateEvents\StateEventScope;
 use App\Support\States\Contracts\StopConditionGate;
 use App\Support\StopAttemptGate;
+use App\Support\StoredAgentFocuses;
 use App\Support\UserStacks;
-use App\Support\WorkStackPushes;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Config\Repository;
@@ -100,6 +100,7 @@ final class HooksServiceProvider extends ServiceProvider
         Event::clearResolvedInstance('events');
 
         $this->app->bind(AgentStack::class, AgentStacks::class);
+        $this->app->bind(AgentFocuses::class, StoredAgentFocuses::class);
         $this->app->bind(HelperRecordFacts::class, HelperRecordFactSender::class);
         $this->app->bind(CurrentState::class, CurrentStates::class);
         $this->app->bind(StackTransactionRunner::class, StackTransaction::class);
@@ -129,7 +130,6 @@ final class HooksServiceProvider extends ServiceProvider
         $this->app->bindIf(StopPreparer::class, NoStopPreparation::class);
         $this->app->bind(ActorGuidance::class, HookGuidance::class);
         $this->app->bind(PinnedBuilds::class, PinnedDriverBuilds::class);
-        $this->app->scoped(ActorWorkStacks::class, WorkStackPushes::class);
 
         $this->app->singleton(RetentionPeriods::class, fn () => new RetentionPeriods(
             $this->app->make('config')->integer('hooks.hook_call_days'),
@@ -162,7 +162,7 @@ final class HooksServiceProvider extends ServiceProvider
         PendingWorkSources $pendingWork,
     ): void {
         $pendingWork->register(PendingAgentMessages::class);
-        $actors->registerWorkStack(ActorType::Agent, AgentWorkStack::class);
+        $actors->registerStackSessions(ActorType::Agent, AgentStackSessions::class);
         $this->loadCoreRoutes('hooks/hooks.php');
         $this->commands([PruneHookHistoryCommand::class, RelayHookCommand::class]);
 

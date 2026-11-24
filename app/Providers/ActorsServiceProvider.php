@@ -22,7 +22,7 @@ use App\Contracts\Authorization\TargetAuthorizer;
 use App\Contracts\Chat\ChatMemberPolicies;
 use App\Contracts\Chat\UserPresences;
 use App\Contracts\Time\ServerClock;
-use App\Contracts\Work\WorkStacks;
+use App\Contracts\Work\ActorStackSessions;
 use App\Enums\ActorType;
 use App\Support\ActiveActorCounterRegistry;
 use App\Support\ActorContext;
@@ -82,7 +82,7 @@ final class ActorsServiceProvider extends ServiceProvider
         $this->app->alias(ActorProviderRegistry::class, ActorProviderRegistration::class);
         $this->app->alias(ActorProviderRegistry::class, ActorLabels::class);
         $this->app->alias(ActorProviderRegistry::class, ActorVisibility::class);
-        $this->app->alias(ActorProviderRegistry::class, WorkStacks::class);
+        $this->app->alias(ActorProviderRegistry::class, ActorStackSessions::class);
         $this->app->singleton(AuthorizerProviderRegistry::class);
         $this->app->alias(AuthorizerProviderRegistry::class, AuthorizerProviderRegistration::class);
         $this->app->scoped(CurrentAuthorizer::class, CurrentActorAuthorizer::class);

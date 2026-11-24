@@ -29,6 +29,11 @@ final readonly class FixedCurrentState implements CurrentState
         ) ? new Some($this->frames[$typeKey]) : None::create();
     }
 
+    public function ofCaller(string $typeKey): Option
+    {
+        return $this->of($this->target, $typeKey);
+    }
+
     public function top(StackTarget $target): Option
     {
         return $target == $this->target && $this->frames !== [] ? new Some(

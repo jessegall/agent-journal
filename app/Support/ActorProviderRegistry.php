@@ -13,8 +13,8 @@ use App\Contracts\Actors\ActorResolver;
 use App\Contracts\Actors\ActorVisibility;
 use App\Contracts\Actors\ActorVisibilityProvider;
 use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Work\WorkStackProvider;
-use App\Contracts\Work\WorkStacks;
+use App\Contracts\Work\ActorStackSessionProvider;
+use App\Contracts\Work\ActorStackSessions;
 use App\Enums\ActorType;
 use App\Exceptions\ActorProviderMissing;
 use App\Exceptions\ActorProviderRepeated;
@@ -35,8 +35,8 @@ final class ActorProviderRegistry implements
     ActorLabels,
     ActorProviderRegistration,
     ActorResolver,
-    ActorVisibility,
-    WorkStacks
+    ActorStackSessions,
+    ActorVisibility
 {
     /**
      * @var Registry<class-string<ActorProvider>>
@@ -54,9 +54,9 @@ final class ActorProviderRegistry implements
     private readonly Registry $visibilityProviders;
 
     /**
-     * @var Registry<class-string<WorkStackProvider>>
+     * @var Registry<class-string<ActorStackSessionProvider>>
      */
-    private readonly Registry $workStackProviders;
+    private readonly Registry $stackSessionProviders;
 
     public function __construct()
     {
@@ -68,7 +68,7 @@ final class ActorProviderRegistry implements
             ActorProviderRepeated::forType(...),
         );
 
-        $this->workStackProviders = Registry::once(
+        $this->stackSessionProviders = Registry::once(
             ActorProviderMissing::forType(...),
             ActorProviderRepeated::forType(...),
         );
@@ -194,11 +194,11 @@ final class ActorProviderRegistry implements
     }
 
     /**
-     * @param  class-string<WorkStackProvider>  $class
+     * @param  class-string<ActorStackSessionProvider>  $class
      */
-    public function registerWorkStack(ActorType $type, string $class): void
+    public function registerStackSessions(ActorType $type, string $class): void
     {
-        $this->workStackProviders->put($type->value, $class);
+        $this->stackSessionProviders->put($type->value, $class);
     }
 
     /**
@@ -214,8 +214,8 @@ final class ActorProviderRegistry implements
             return [];
         }
 
-        $sessions = $this->workStackOf($actors->actor()->actorType()->value)
-            ->map(fn (WorkStackProvider $provider) => $provider->sessionsToAdmit())
+        $sessions = $this->stackSessionsOf($actors->actor()->actorType()->value)
+            ->map(fn (ActorStackSessionProvider $provider) => $provider->sessionsToAdmit())
             ->getOrElse([]);
 
         sort($sessions);
@@ -225,8 +225,8 @@ final class ActorProviderRegistry implements
 
     public function sessionsOf(ActorIdentity $actor): array
     {
-        return $this->workStackOf($actor->type->value)
-            ->map(fn (WorkStackProvider $provider) => $provider->sessionsOf($actor))
+        return $this->stackSessionsOf($actor->type->value)
+            ->map(fn (ActorStackSessionProvider $provider) => $provider->sessionsOf($actor))
             ->getOrElse([]);
     }
 
@@ -239,13 +239,13 @@ final class ActorProviderRegistry implements
     }
 
     /**
-     * The work stack provider of the actor type, built for this call; a type that works on no stack has none.
+     * The stack session provider of the actor type, built for this call; a type that works on no stack has none.
      *
-     * @return Option<WorkStackProvider>
+     * @return Option<ActorStackSessionProvider>
      */
-    private function workStackOf(string $type): Option
+    private function stackSessionsOf(string $type): Option
     {
-        return $this->workStackProviders->find($type)
+        return $this->stackSessionProviders->find($type)
             ->map(fn (string $providerClass) => Container::getInstance()->make($providerClass));
     }
 }

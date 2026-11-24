@@ -347,7 +347,7 @@ final class BaselineTimelinesTest extends TestCase
     }
 
     /**
-     * A plan start pushes the work stack only on the true startOnce branch and sends PlanStarted and its opening
+     * A plan start pushes the stack only on the true startOnce branch and sends PlanStarted and its opening
      * progress after the commit, which the new frame keeps; starting it again writes and sends nothing.
      */
     public function test_a_plan_start_pushes_the_stack_once_and_a_second_start_sends_nothing(): void
@@ -460,7 +460,7 @@ final class BaselineTimelinesTest extends TestCase
     }
 
     /**
-     * Runs the command as an agent in a session, whose work stack a start pushes.
+     * Runs the command as an agent in a session, whose stack a start pushes.
      */
     private function asAgent(object $command): void
     {

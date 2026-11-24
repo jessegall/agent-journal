@@ -482,10 +482,11 @@ func (opener runtimeOpener) headlessRuntime(
 		return nil, err
 	}
 	headless := drivers.HeadlessRuntime{
-		Limits:     grant.Runtime.Limits,
-		JournalURL: opener.journalURL,
-		Credential: grant.Token,
-		ProfilePin: grant.ProfileEnvironment(),
+		Limits:        grant.Runtime.Limits,
+		SignInMethods: grant.Runtime.SignInMethods,
+		JournalURL:    opener.journalURL,
+		Credential:    grant.Token,
+		ProfilePin:    grant.ProfileEnvironment(),
 		Start: startOnThisMachine(grant, conversationID, settingsFolder, opener.hookCommand,
 			accountOf(prepared, opener.installationFolder, runtimeID)),
 		ResumesConversation: resumes,

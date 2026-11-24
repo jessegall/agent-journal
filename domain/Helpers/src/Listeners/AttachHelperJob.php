@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Helpers\Listeners;
 
 use App\Attributes\InCommandTransaction;
-use App\Contracts\Actors\ActorWorkStacks;
 use App\Contracts\Events\Listener;
+use App\Contracts\Work\AgentStack;
 use App\Events\StartSessionOpened;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
@@ -20,7 +20,7 @@ use Domain\Helpers\Support\States\Support\HelperJobStateReference;
 #[InCommandTransaction]
 final readonly class AttachHelperJob implements Listener
 {
-    public function __construct(private ActorWorkStacks $workStacks) {}
+    public function __construct(private AgentStack $stacks) {}
 
     public function handle(StartSessionOpened $event): void
     {
@@ -38,7 +38,7 @@ final readonly class AttachHelperJob implements Listener
         $purpose = HelperPurpose::query()->acrossActors()->whereKey($job->helper_purpose_id)->firstOrFail();
         $job->attachTo($event->sessionId);
 
-        $this->workStacks->pushFor(
+        $this->stacks->pushFor(
             $identity->helperActor,
             HelperJobStateReference::forJob($job, $identity, $purpose->label),
         );

@@ -112,6 +112,7 @@ final class HookRewriteTest extends TestCase
         $rewriter = new ShellAnswerState(function (ShellCommandRequested $input) {
             if ($input->command->source === 'composer test') {
                 yield new MessageLine(TestText::of(self::ORIGINAL));
+
                 yield Decision::rewrite('git status');
 
                 return;
@@ -148,12 +149,14 @@ final class HookRewriteTest extends TestCase
         $guard = new ShellAnswerState(function (ShellCommandRequested $input) {
             if ($input->command->source === 'composer test') {
                 yield new MessageLine(TestText::of(self::ORIGINAL));
+
                 yield Decision::rewrite('journal run tests --write');
 
                 return;
             }
 
             yield new MessageLine(TestText::of(self::REFUSAL_CONTEXT));
+
             yield Decision::deny(TestText::of(self::REFUSAL));
         });
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Actors\ActorAttention;
-use App\Contracts\Actors\ActorWorkStacks;
+use App\Contracts\Work\AgentStack;
 use App\Contracts\Work\StackTransactionRunner;
 use App\Models\Asks\Ask;
 use App\Models\Asks\AskHop;
@@ -19,7 +19,7 @@ final readonly class AskAttention
 
     public function __construct(
         private ActorAttention $attention,
-        private ActorWorkStacks $stacks,
+        private AgentStack $stacks,
         private StackTransactionRunner $transactions,
     ) {}
 

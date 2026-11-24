@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Work\WorkStacks;
+use App\Contracts\Work\ActorStackSessions;
 
 /**
  * Finds whose request keys a write or a read belongs to: an agent's keys live in the session of its signed call, a
@@ -15,7 +15,7 @@ final readonly class ReceiptCallers
 {
     public function __construct(
         private CurrentActor $actors,
-        private WorkStacks $workStacks,
+        private ActorStackSessions $stackSessions,
         private CommandRegistry $registry,
     ) {}
 
@@ -33,7 +33,7 @@ final readonly class ReceiptCallers
      */
     public function of(ActorContext $actor): ReceiptCaller
     {
-        $sessions = $this->workStacks->sessionsToAdmit();
+        $sessions = $this->stackSessions->sessionsToAdmit();
 
         return $sessions === [] ? ReceiptCaller::withoutSession($actor) : ReceiptCaller::inSession(
             $actor,

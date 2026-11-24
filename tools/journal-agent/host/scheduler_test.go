@@ -18,6 +18,14 @@ func sequences(requests []client.ClaimedRequest) []int {
 	return numbers
 }
 
+// turnOf is the sequence of the admission's one turn, or none.
+func turnOf(admission Admission) []int {
+	if admission.Turn == nil {
+		return []int{}
+	}
+	return []int{admission.Turn.Sequence}
+}
+
 func equal(left, right []int) bool {
 	if len(left) != len(right) {
 		return false
@@ -38,22 +46,26 @@ func TestIdleDeliverIsAdmittedWithoutAWake(t *testing.T) {
 
 	admission := queue.Next()
 
-	if !equal(sequences(admission.Deliveries), []int{1}) || len(admission.Wakes) != 0 {
+	if !equal(turnOf(admission), []int{1}) {
 		t.Fatalf("got %+v", admission)
 	}
 }
 
-func TestIdleDeliverAndWakeMakeOneActivation(t *testing.T) {
+// The journal builds each turn's whole prompt, so the host joins no two requests into one turn.
+func TestADeliveryAndAWakeAreTwoTurnsInTheirOrder(t *testing.T) {
 	queue := RuntimeQueue{}
-	queue.Add(request(1, operationDeliver), request(2, operationWake))
+	queue.Add(request(1, operationDeliver), request(2, operationWake), request(3, operationDeliver))
 
-	admission := queue.Next()
+	first := queue.Next()
+	queue.TurnStarted()
+	queue.TurnFinished()
+	second := queue.Next()
+	queue.TurnStarted()
+	queue.TurnFinished()
+	third := queue.Next()
 
-	if !equal(sequences(admission.Deliveries), []int{1}) || !equal(sequences(admission.Wakes), []int{2}) {
-		t.Fatalf("got %+v", admission)
-	}
-	if !queue.Next().IsEmpty() {
-		t.Fatal("a second activation was admitted")
+	if !equal(turnOf(first), []int{1}) || !equal(turnOf(second), []int{2}) || !equal(turnOf(third), []int{3}) {
+		t.Fatalf("got %+v, %+v, %+v", first, second, third)
 	}
 }
 
@@ -69,7 +81,7 @@ func TestRunningTurnStagesEffortAndAdmitsTheDeliveryAfterIt(t *testing.T) {
 
 	queue.TurnFinished()
 	next := queue.Next()
-	if !equal(sequences(next.Deliveries), []int{2}) || !equal(sequences(next.Wakes), []int{3}) {
+	if !equal(turnOf(next), []int{2}) {
 		t.Fatalf("after the turn got %+v", next)
 	}
 }
@@ -79,18 +91,15 @@ func TestSettingsAreABarrierBetweenDeliveries(t *testing.T) {
 	queue.Add(request(1, operationDeliver), request(2, operationChangeModel), request(3, operationDeliver), request(4, operationWake))
 
 	first := queue.Next()
-	if !equal(sequences(first.Deliveries), []int{1}) || len(first.Staged) != 0 || len(first.Wakes) != 0 {
+	if !equal(turnOf(first), []int{1}) || len(first.Staged) != 0 {
 		t.Fatalf("first turn got %+v", first)
 	}
 	queue.TurnStarted()
 	queue.TurnFinished()
 
 	second := queue.Next()
-	if !equal(sequences(second.Staged), []int{2}) || !equal(sequences(second.Deliveries), []int{3}) || !equal(sequences(second.Wakes), []int{4}) {
+	if !equal(sequences(second.Staged), []int{2}) || !equal(turnOf(second), []int{3}) {
 		t.Fatalf("second turn got %+v", second)
-	}
-	if !queue.Next().IsEmpty() {
-		t.Fatal("the wake added an empty turn")
 	}
 }
 
@@ -100,7 +109,7 @@ func TestALaterEffortSupersedesAnEarlierOne(t *testing.T) {
 
 	admission := queue.Next()
 
-	if !equal(sequences(admission.Superseded), []int{1}) || !equal(sequences(admission.Staged), []int{2}) || !equal(sequences(admission.Deliveries), []int{3}) {
+	if !equal(sequences(admission.Superseded), []int{1}) || !equal(sequences(admission.Staged), []int{2}) || !equal(turnOf(admission), []int{3}) {
 		t.Fatalf("got %+v", admission)
 	}
 }
@@ -115,13 +124,11 @@ func TestAWakeOnABusyRuntimeWaits(t *testing.T) {
 	}
 }
 
-func TestAWakeOnAnIdleRuntimeMakesOneActivation(t *testing.T) {
+func TestAWakeOnAnIdleRuntimeMakesOneTurn(t *testing.T) {
 	queue := RuntimeQueue{}
 	queue.Add(request(1, operationWake), request(2, operationWake))
 
-	admission := queue.Next()
-
-	if len(admission.Deliveries) != 0 || !equal(sequences(admission.Wakes), []int{1, 2}) {
+	if admission := queue.Next(); !equal(turnOf(admission), []int{1}) {
 		t.Fatalf("got %+v", admission)
 	}
 }
@@ -140,7 +147,7 @@ func TestAnInterruptGoesFirstAndHoldsEverythingElse(t *testing.T) {
 		t.Fatal("pending work restarted after the interrupt")
 	}
 	queue.Release()
-	if !equal(sequences(queue.Next().Deliveries), []int{1}) {
+	if !equal(turnOf(queue.Next()), []int{1}) {
 		t.Fatal("the release did not let the pending delivery run")
 	}
 }
@@ -152,13 +159,13 @@ func TestContentBehindARepairedSettingWaitsUntilItIsReconciled(t *testing.T) {
 	queue.Add(repaired, request(2, operationDeliver))
 
 	first := queue.Next()
-	if !equal(sequences(first.Staged), []int{1}) || len(first.Deliveries) != 0 {
+	if !equal(sequences(first.Staged), []int{1}) || first.Turn != nil {
 		t.Fatalf("content ran before the repaired setting was reconciled: %+v", first)
 	}
 
 	queue.SettingsReconciled()
 	second := queue.Next()
-	if !equal(sequences(second.Deliveries), []int{2}) {
+	if !equal(turnOf(second), []int{2}) {
 		t.Fatalf("got %+v", second)
 	}
 }
@@ -178,7 +185,7 @@ func TestAKeyScriptRunsAloneAfterTheLeadingSettingsAndBeforeTheContentBehindIt(t
 		t.Fatalf("a busy runtime admitted %+v while its script ran", waiting)
 	}
 	queue.TurnFinished()
-	if next := queue.Next(); !equal(sequences(next.Deliveries), []int{3}) || next.Script != nil {
+	if next := queue.Next(); !equal(turnOf(next), []int{3}) || next.Script != nil {
 		t.Fatalf("after the script the runtime admitted %+v", next)
 	}
 }

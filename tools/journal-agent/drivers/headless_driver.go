@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strconv"
+	"strings"
 	"syscall"
 
 	"journal-agent/drivers/contracts"
@@ -58,6 +59,8 @@ type HeadlessRuntime struct {
 	Usage UsageObserver
 	// Limits are the waits the journal sent with the start; a stop gives the turn no longer than they say.
 	Limits contracts.Limits
+	// SignInMethods are the Claude sign-in methods the journal accepts for an account start, as the program names them.
+	SignInMethods []string
 }
 
 // TurnContainer gives one turn of the program, at the process generation given, as its session container's own
@@ -163,7 +166,7 @@ func (driver *HeadlessDriver) Deliver(_ context.Context, delivery contracts.Deli
 
 // Wake starts one standard turn that checks the agent's pending work.
 func (driver *HeadlessDriver) Wake(_ context.Context, wake contracts.WakeRequest) (contracts.OperationResult, error) {
-	return driver.startTurn(wake.Request, wake.PromptOr(pendingWorkPrompt))
+	return driver.startTurn(wake.Request, wake.Prompt)
 }
 
 func (driver *HeadlessDriver) ChangeModel(_ context.Context, change contracts.ModelChange) (contracts.OperationResult, error) {
@@ -203,9 +206,6 @@ func (driver *HeadlessDriver) Stop(_ context.Context, stop contracts.StopRequest
 	return stopResult(stop.Request, turn.Stop(host.StopStagesOf(driver.runtime.Limits.StopGrace(), driver.runtime.Limits.StopForce()))), nil
 }
 
-// pendingWorkPrompt is the one prompt a wake sends: it asks the agent to look at its own scoped work.
-const pendingWorkPrompt = "Check your pending journal work."
-
 func (driver *HeadlessDriver) startTurn(request contracts.RequestIdentity, prompt string) (contracts.OperationResult, error) {
 	driver.mutex.Lock()
 	defer driver.mutex.Unlock()
@@ -214,7 +214,7 @@ func (driver *HeadlessDriver) startTurn(request contracts.RequestIdentity, promp
 		return contracts.OperationResult{}, ErrTurnRunning
 	}
 	if driver.runtime.Start.SessionID == "" {
-		return contracts.OperationResult{Request: request, Progress: contracts.ProgressFailed, Hold: contracts.HoldNeedsAttention}, ErrConversationUnknown
+		return contracts.OperationResult{}, contracts.RefuseStart(contracts.RefusalConversationUnknown, ErrConversationUnknown)
 	}
 
 	start := driver.stagedStart().Turn(prompt, driver.turns > 0 || driver.runtime.ResumesConversation)
@@ -223,7 +223,7 @@ func (driver *HeadlessDriver) startTurn(request contracts.RequestIdentity, promp
 	if err != nil {
 		driver.generation--
 
-		return turnRefusal(request, err)
+		return turnRefusal(err)
 	}
 	result, err := driver.resultOf(turn)
 	if err != nil {
@@ -237,23 +237,21 @@ func (driver *HeadlessDriver) startTurn(request contracts.RequestIdentity, promp
 
 	driver.turns++
 	driver.turn = turn
-	driver.finished = make(chan error, 1)
+	driver.finished = make(chan contracts.TurnEnd, 1)
 	go driver.wait(turn, result, driver.finished)
 
 	return contracts.OperationResult{Request: request, Progress: contracts.ProgressApplying, Hold: contracts.HoldNone}, nil
 }
 
-// turnRefusal answers a turn that never started: a failed sign-in check leaves the runtime needing attention, any
-// other failure is the caller's to read.
-func turnRefusal(request contracts.RequestIdentity, err error) (contracts.OperationResult, error) {
+// turnRefusal answers a turn that never started: a failed sign-in check is refused as not signed in, a plain fact the
+// journal chooses the runtime's hold from; any other failure is the caller's to read.
+func turnRefusal(err error) (contracts.OperationResult, error) {
 	var signIn signInFailure
 	if !errors.As(err, &signIn) {
 		return contracts.OperationResult{}, err
 	}
 
-	return contracts.OperationResult{
-		Request: request, Progress: contracts.ProgressFailed, Hold: contracts.HoldNeedsAttention,
-	}, signIn.cause
+	return contracts.OperationResult{}, contracts.RefuseStart(contracts.RefusalNotSignedIn, signIn.cause)
 }
 
 // turnProgram is the program of the turn at the driver's current generation: the session container's own process
@@ -372,17 +370,16 @@ func (driver *HeadlessDriver) checkSignIn(command *exec.Cmd) error {
 		return nil
 	}
 	runtime := driver.runtime
-	if err := CheckClaudeSignIn(context.Background(), command.Path, command.Env, runtime.ReadFiles, runtime.Start.Account.Folder); err != nil {
+	if err := CheckClaudeSignIn(context.Background(), command.Path, command.Env, runtime.ReadFiles, runtime.Start.Account.Folder, runtime.SignInMethods); err != nil {
 		return err
 	}
 	driver.signedIn = true
 	return nil
 }
 
-// resultOf reads a Claude account turn's result and usage from its output. A contained Claude turn's output is its
-// container process's own stream-json, attached by the container start: it is read for usage only, so its turn ends
-// with its exit as before. Other starts have nothing to read.
-func (driver *HeadlessDriver) resultOf(turn TurnProgram) (<-chan error, error) {
+// resultOf reads a Claude turn's result and usage from its output: an account start's own stream-json, or a contained
+// start's container process stream-json, attached by the container start. Other starts have nothing to read.
+func (driver *HeadlessDriver) resultOf(turn TurnProgram) (<-chan contracts.TurnEnd, error) {
 	if !driver.claudeAccountStart() && !driver.containedClaudeStart() {
 		return nil, nil
 	}
@@ -390,15 +387,9 @@ func (driver *HeadlessDriver) resultOf(turn TurnProgram) (<-chan error, error) {
 	if err != nil {
 		return nil, err
 	}
-	result := make(chan error, 1)
-	usage, process, decides := driver.usage(), driver.generation, driver.claudeAccountStart()
-	go func() {
-		answer := readClaudeResult(output, usage, process)
-		if !decides {
-			answer = nil
-		}
-		result <- answer
-	}()
+	result := make(chan contracts.TurnEnd, 1)
+	usage, process := driver.usage(), driver.generation
+	go func() { result <- readClaudeResult(output, usage, process) }()
 	return result, nil
 }
 
@@ -416,23 +407,34 @@ func (driver *HeadlessDriver) usage() UsageObserver {
 	return driver.runtime.Usage
 }
 
-// wait ends the turn with the process exit, or with the turn's own failure when the process exited cleanly but its
-// result was an error.
-func (driver *HeadlessDriver) wait(turn TurnProgram, result <-chan error, finished chan<- error) {
-	var turnFailure error
+// wait ends the turn with what its output's result said, when one is read, and the process's exit.
+func (driver *HeadlessDriver) wait(turn TurnProgram, result <-chan contracts.TurnEnd, finished chan<- contracts.TurnEnd) {
+	end := contracts.TurnEnd{}
 	if result != nil {
-		turnFailure = <-result
+		end = <-result
 	}
-	err := turn.Wait()
-	if err == nil {
-		err = turnFailure
-	}
+	withExit(&end, turn.Wait())
 	driver.mutex.Lock()
 	if driver.turn == turn {
 		driver.turn = nil
 	}
 	driver.mutex.Unlock()
-	finished <- err
+	finished <- end
+}
+
+// withExit adds the process's exit code to the end, or the problem that kept the host from reading one.
+func withExit(end *contracts.TurnEnd, waited error) {
+	code := 0
+	var exit *exec.ExitError
+	switch {
+	case waited == nil:
+		end.ExitCode = &code
+	case errors.As(waited, &exit):
+		code = exit.ExitCode()
+		end.ExitCode = &code
+	default:
+		end.Problem = strings.TrimSpace(strings.Join([]string{end.Problem, waited.Error()}, " "))
+	}
 }
 
 func alreadyIdle(request contracts.RequestIdentity) contracts.OperationResult {
@@ -449,11 +451,11 @@ func alreadyIdle(request contracts.RequestIdentity) contracts.OperationResult {
 func stopResult(request contracts.RequestIdentity, outcome host.StopOutcome) contracts.OperationResult {
 	switch outcome {
 	case host.StopProven:
-		return contracts.OperationResult{Request: request, Progress: contracts.ProgressApplied, Outcome: contracts.OutcomeConfirmed, Hold: contracts.HoldNone}
+		return contracts.OperationResult{Request: request, Progress: contracts.ProgressApplied, Outcome: contracts.OutcomeConfirmed}
 	case host.StopNotOwned:
-		return contracts.OperationResult{Request: request, Progress: contracts.ProgressFailed, Outcome: contracts.OutcomeRefused, Hold: contracts.HoldNeedsAttention}
+		return contracts.OperationResult{Request: request, Progress: contracts.ProgressFailed, Outcome: contracts.OutcomeRefused}
 	default:
-		return contracts.OperationResult{Request: request, Progress: contracts.ProgressFailed, Outcome: contracts.OutcomeStopUnconfirmed, Hold: contracts.HoldNeedsAttention}
+		return contracts.OperationResult{Request: request, Progress: contracts.ProgressFailed, Outcome: contracts.OutcomeStopUnconfirmed}
 	}
 }
 

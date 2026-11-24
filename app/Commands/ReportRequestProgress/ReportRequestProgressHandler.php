@@ -7,11 +7,13 @@ namespace App\Commands\ReportRequestProgress;
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\DriverOperation;
+use App\Enums\HoldReason;
 use App\Enums\RequestOutcome;
 use App\Enums\RequestProgress;
 use App\Enums\RuntimeEventType;
 use App\Events\SessionStateChanged;
 use App\Exceptions\HostReportRefused;
+use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\RuntimeEvent;
 use App\Models\Starts\StartRecord;
@@ -58,21 +60,27 @@ final readonly class ReportRequestProgressHandler implements CommandHandler
             return;
         }
 
-        match ($command->progress) {
+        $this->observeModel($command, $request, $runtime);
+
+        $outcome = $command->outcomeOf($request);
+
+        match ($command->progressOf($request)) {
             RequestProgress::Applying => $request->beginApplying($command->attempt),
-            RequestProgress::Applied => $request->markApplied((string) $command->actualBinding, $command->outcome),
+            RequestProgress::Applied => $request->markApplied((string) $command->actualBinding, $outcome),
             RequestProgress::DeliveryUncertain => $request->markUncertain(),
-            RequestProgress::Failed => $request->fail($command->outcome ?? RequestOutcome::Refused),
-            RequestProgress::Unavailable => $request->markUnavailable($command->outcome ?? RequestOutcome::Refused),
-            RequestProgress::Staged => $request->giveBack(
-                CarbonImmutable::now()->addMilliseconds(self::OFFER_AGAIN_WAIT_MS),
-            ),
+            RequestProgress::Failed => $request->fail($outcome ?? RequestOutcome::Refused),
+            RequestProgress::Unavailable => $request->markUnavailable($outcome ?? RequestOutcome::Refused),
+            RequestProgress::Staged => $this->answerStaged($request),
             RequestProgress::Accepted,
             RequestProgress::Cancelled => $request->cancel(),
             RequestProgress::Superseded => $request->hold(
                 $request->hold_reason,
             ),
         };
+
+        if ($this->needsAttention($command, $request)) {
+            $runtime->holdFor(HoldReason::NeedsAttention);
+        }
 
         if ($request->operation->isTerminalControl()) {
             $this->terminalGrants->settle($request, $command);
@@ -109,5 +117,47 @@ final readonly class ReportRequestProgressHandler implements CommandHandler
         }
 
         $this->facts->publishAfterCommit(new SessionStateChanged($runtime->agent_session_id));
+    }
+
+    /**
+     * The model a turn's own output named is what the runtime runs on now; the turn's own request records it once.
+     */
+    private function observeModel(
+        ReportRequestProgressCommand $command,
+        DriverRequest $request,
+        AgentRuntime $runtime,
+    ): void {
+        if ($command->turnEnd?->model === null || $request->changesASetting()) {
+            return;
+        }
+
+        $runtime->observeSettings($command->turnEnd->model, null, CarbonImmutable::now());
+    }
+
+    /**
+     * A setting change staged by the host waits for the next turn, which settles it; any other staged request is one
+     * the host could not start, so it is given back to be offered again after a wait.
+     */
+    private function answerStaged(DriverRequest $request): void
+    {
+        if ($request->changesASetting()) {
+            return;
+        }
+
+        $request->giveBack(CarbonImmutable::now()->addMilliseconds(self::OFFER_AGAIN_WAIT_MS));
+    }
+
+    /**
+     * The journal's hold from the host's plain facts: a runtime needs someone to look at it when its account is not
+     * signed in or its start names no conversation, when a stop could not be proven, or when a key script ended in no
+     * outcome the journal knows.
+     */
+    private function needsAttention(ReportRequestProgressCommand $command, DriverRequest $request): bool
+    {
+        $failed = $request->progress === RequestProgress::Failed;
+
+        return $command->refusal?->needsAttention() === true
+            || ($failed && $request->operation === DriverOperation::Stop)
+            || ($failed && $request->operation === DriverOperation::KeyScript && $command->outcome === null);
     }
 }

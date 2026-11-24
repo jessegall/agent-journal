@@ -12,8 +12,8 @@ use App\Support\References\StateReference;
 use App\Values\StackTarget;
 
 /**
- * Pushes states onto the calling agent's own stack, always inside the caller's stack transaction and under the stack's
- * row lock.
+ * Pushes states onto an agent's stack, by its target, onto the acting actor's own stacks, or onto another actor's,
+ * always inside the caller's stack transaction and under the stack's row lock.
  */
 final readonly class AgentStacks implements AgentStack
 {
@@ -21,6 +21,8 @@ final readonly class AgentStacks implements AgentStack
         private StackTransaction $transaction,
         private StackAccess $access,
         private StatePush $statePush,
+        private CallerStackTargets $targets,
+        private AddressedStackPush $addressed,
     ) {}
 
     /**
@@ -50,5 +52,31 @@ final readonly class AgentStacks implements AgentStack
         $this->access->assertTargetGranted($target);
 
         $this->statePush->lift($target, AgentStackRow::lockFor($target), $state);
+    }
+
+    public function activateForCaller(StateReference $state): void
+    {
+        foreach ($this->targets->ofCaller() as $target) {
+            $this->activate($target, $state);
+        }
+    }
+
+    public function liftForCaller(StateReference $state): void
+    {
+        foreach ($this->targets->ofCaller() as $target) {
+            $this->lift($target, $state);
+        }
+    }
+
+    public function pushFor(ActorIdentity $actor, StateReference $state): void
+    {
+        foreach ($this->targets->lockedRowsOf($actor) as $row) {
+            $this->addressed->push($row->target, $state);
+        }
+    }
+
+    public function offerFor(ActorIdentity $actor, StateReference $state): void
+    {
+        $this->addressed->offer($this->targets->lockedRowsOf($actor), $state);
     }
 }

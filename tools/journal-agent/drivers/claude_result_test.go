@@ -3,6 +3,7 @@ package drivers
 import (
 	"context"
 	"errors"
+	"journal-agent/drivers/contracts"
 	"journal-agent/host"
 	"os"
 	"path/filepath"
@@ -10,18 +11,19 @@ import (
 	"testing"
 )
 
-func TestATurnSucceedsOnlyOnASuccessfulResult(t *testing.T) {
-	outputs := map[string]bool{
-		`{"type":"system"}` + "\n" + `{"type":"result","subtype":"success","is_error":false}`:                true,
-		`{"type":"result","subtype":"success","is_error":true,"result":"Not logged in · Please run /login"}`: false,
-		`{"type":"result","subtype":"error_during_execution","is_error":false}`:                              false,
-		`{"type":"assistant"}`: false,
+// The host judges nothing of a result: it tells the last result's subtype and error flag, or that none came.
+func TestTheLastResultIsToldAsItWasWritten(t *testing.T) {
+	outputs := map[string]contracts.TurnEnd{
+		`{"type":"system"}` + "\n" + `{"type":"result","subtype":"success","is_error":false}`: {ResultRead: true, ResultSubtype: "success"},
+		`{"type":"result","subtype":"success","is_error":true,"result":"Not logged in"}`:      {ResultRead: true, ResultSubtype: "success", ResultIsError: true},
+		`{"type":"result","subtype":"error_during_execution","is_error":false}`:               {ResultRead: true, ResultSubtype: "error_during_execution"},
+		`{"type":"assistant"}`: {},
 	}
-	for output, succeeds := range outputs {
-		err := readClaudeResult(strings.NewReader(output), ignoredUsage{}, 1)
-
-		if succeeds != (err == nil) || (!succeeds && !errors.Is(err, ErrProviderTurnFailed)) {
-			t.Fatalf("output %s: got %v", output, err)
+	outputs[`{"type":"system","subtype":"init","model":"claude-opus-4-5"}`+"\n"+`{"type":"result","subtype":"success"}`] =
+		contracts.TurnEnd{ResultRead: true, ResultSubtype: "success", Model: "claude-opus-4-5"}
+	for output, told := range outputs {
+		if end := readClaudeResult(strings.NewReader(output), ignoredUsage{}, 1); end != told {
+			t.Fatalf("output %s: told %+v", output, end)
 		}
 	}
 }
@@ -43,7 +45,7 @@ func TestTheSignInMustBeAJournalMethodInTheAccountsOwnFolder(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		err := CheckClaudeSignIn(context.Background(), executable, nil, nil, "/accounts/a")
+		err := CheckClaudeSignIn(context.Background(), executable, nil, nil, "/accounts/a", journalSignInMethods)
 
 		if !errors.Is(err, want) && !(want == nil && err == nil) {
 			t.Fatalf("answer %s: got %v, want %v", answer, err, want)
@@ -64,7 +66,7 @@ func TestTheTokenFileReachesTheCheckOnDescriptorThreeAndNotItsEnvironment(t *tes
 		t.Fatal(err)
 	}
 
-	err := CheckClaudeSignIn(context.Background(), executable, nil, []string{token}, "/accounts/a")
+	err := CheckClaudeSignIn(context.Background(), executable, nil, []string{token}, "/accounts/a", journalSignInMethods)
 
 	if err != nil {
 		t.Fatalf("a token read on descriptor 3 was not accepted: %v", err)
@@ -86,25 +88,25 @@ func (usage *recordedUsage) ResultCost(resultID, usd string) {
 	usage.costs = append(usage.costs, usd)
 }
 
-func readUsage(t *testing.T, lines ...string) (*recordedUsage, error) {
+func readUsage(t *testing.T, lines ...string) (*recordedUsage, contracts.TurnEnd) {
 	t.Helper()
 	usage := &recordedUsage{}
-	err := readClaudeResult(strings.NewReader(strings.Join(lines, "\n")), usage, 4)
-	return usage, err
+	end := readClaudeResult(strings.NewReader(strings.Join(lines, "\n")), usage, 4)
+	return usage, end
 }
 
 const successResult = `{"type":"result","subtype":"success","is_error":false}`
 
 func TestBothWindowsOfARateLimitEventAreReadAsPercentsWithTheirResets(t *testing.T) {
-	usage, err := readUsage(t,
+	usage, end := readUsage(t,
 		`{"type":"rate_limit_event","rate_limit_info":{"status":"allowed","unifiedWindows":{`+
 			`"five_hour":{"utilization":0.25,"resetsAt":1764000000},"seven_day":{"utilization":0,"resetsAt":1764500000}}}}`,
 		`{"type":"rate_limit_event","rate_limit_info":{"status":"allowed"}}`,
 		`{"type":"rate_limit_event","rate_limit_info":{"unifiedWindows":{"five_hour":{"utilization":1.5},`+
 			`"seven_day":{"utilization":0.5}}}}`,
 		successResult)
-	if err != nil {
-		t.Fatal(err)
+	if end.ResultIsError || end.Problem != "" {
+		t.Fatalf("the result was told as %+v", end)
 	}
 
 	if len(usage.windows) != 3 {
@@ -123,7 +125,7 @@ func TestBothWindowsOfARateLimitEventAreReadAsPercentsWithTheirResets(t *testing
 }
 
 func TestEachResultGivesItsOwnCostAndTheCumulativeTotalIsNeverRead(t *testing.T) {
-	usage, err := readUsage(t,
+	usage, end := readUsage(t,
 		`{"type":"result","subtype":"success","uuid":"r1","total_cost_usd":4,`+
 			`"model_usage_since_last_result":{"opus":{"costUSD":3.5},"haiku":{"costUSD":0.5}}}`,
 		`{"type":"result","subtype":"success","total_cost_usd":7,"model_usage_since_last_result":{"opus":{"costUSD":3}}}`,
@@ -131,8 +133,8 @@ func TestEachResultGivesItsOwnCostAndTheCumulativeTotalIsNeverRead(t *testing.T)
 		`{"type":"result","subtype":"success","model_usage_since_last_result":{}}`,
 		`{"type":"result","subtype":"success","model_usage_since_last_result":{"opus":{"costUSD":-1}}}`,
 		successResult)
-	if err != nil {
-		t.Fatal(err)
+	if end.ResultIsError || end.Problem != "" {
+		t.Fatalf("the result was told as %+v", end)
 	}
 
 	if strings.Join(usage.costs, " ") != "4.000000000000 3.000000000000" {
@@ -143,12 +145,12 @@ func TestEachResultGivesItsOwnCostAndTheCumulativeTotalIsNeverRead(t *testing.T)
 	}
 }
 
-func TestAnErrorResultStillFailsTheTurnAndStillGivesItsCost(t *testing.T) {
-	usage, err := readUsage(t, `{"type":"result","subtype":"error_during_execution","is_error":true,`+
+func TestAnErrorResultIsToldAndStillGivesItsCost(t *testing.T) {
+	usage, end := readUsage(t, `{"type":"result","subtype":"error_during_execution","is_error":true,`+
 		`"model_usage_since_last_result":{"opus":{"costUSD":0.0128}}}`)
 
-	if !errors.Is(err, ErrProviderTurnFailed) {
-		t.Fatalf("the error result answered %v", err)
+	if !end.ResultIsError || end.ResultSubtype != "error_during_execution" {
+		t.Fatalf("the error result was told as %+v", end)
 	}
 	if len(usage.costs) != 1 || usage.costs[0] != "0.012800000000" {
 		t.Fatalf("costs %v", usage.costs)

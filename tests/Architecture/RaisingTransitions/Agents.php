@@ -10,6 +10,8 @@ return [
     'DriverSwitch::markStopped',
     'ProcessStart::refuse',
     'Agent::preferDriverType',
+    'AgentFocus::clear',
+    'AgentFocus::moveTo',
     'Agent::adoptRuntime',
     'Agent::fenceRuntimes',
     'Agent::retireAt',

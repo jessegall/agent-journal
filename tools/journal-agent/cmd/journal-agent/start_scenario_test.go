@@ -195,9 +195,9 @@ func TestScenarioAProtectedHeadlessClaudeStartRunsItsTurnInItsContainer(t *testi
 		t.Fatalf("the turn was not started: %v", err)
 	}
 	select {
-	case err := <-driver.Finished():
-		if err != nil {
-			t.Fatalf("the turn ended with %v", err)
+	case end := <-driver.Finished():
+		if end.ExitCode == nil || *end.ExitCode != 0 || end.Problem != "" {
+			t.Fatalf("the turn ended with %+v", end)
 		}
 	case <-time.After(10 * time.Second):
 		t.Fatal("the turn never ended")
@@ -393,7 +393,7 @@ const fixedConversation = "00000000-0000-4000-8000-000000000000"
 // The whole way of one claimed request through the host: the serving loop takes the journal's claimed delivery,
 // prepares and opens the protected headless runtime, runs its turn in the container and reports it applied, with the
 // conversation the journal then keeps. What it reports is the message the journal's own test takes back.
-func TestScenarioTheHostServesTheClaimedDeliveryAndReportsItApplied(t *testing.T) {
+func TestScenarioTheHostServesTheClaimedDeliveryAndReportsItsTurnEnd(t *testing.T) {
 	var grant client.Grant
 	var claim client.ClaimedStart
 	var claimed client.Claim
@@ -423,7 +423,7 @@ func TestScenarioTheHostServesTheClaimedDeliveryAndReportsItApplied(t *testing.T
 	for {
 		select {
 		case report := <-journal.requests:
-			if report.Progress != string(contracts.ProgressApplied) {
+			if report.TurnEnd == nil {
 				if report.Progress == string(contracts.ProgressFailed) || report.RefusalReason != nil {
 					t.Fatalf("the delivery was reported %+v", report)
 				}
@@ -431,7 +431,7 @@ func TestScenarioTheHostServesTheClaimedDeliveryAndReportsItApplied(t *testing.T
 				continue
 			}
 			if report.ActualBinding == nil || len(*report.ActualBinding) != 36 {
-				t.Fatalf("the applied delivery names the conversation %v", report.ActualBinding)
+				t.Fatalf("the ended turn names the conversation %v", report.ActualBinding)
 			}
 			conversation := fixedConversation
 			report.ActualBinding = &conversation
@@ -441,7 +441,7 @@ func TestScenarioTheHostServesTheClaimedDeliveryAndReportsItApplied(t *testing.T
 		case exit := <-journal.exits:
 			t.Fatalf("the runtime was reported ended: %+v", exit)
 		case <-time.After(15 * time.Second):
-			t.Fatal("the delivery was never reported applied")
+			t.Fatal("the delivery's turn was never reported ended")
 		}
 	}
 }

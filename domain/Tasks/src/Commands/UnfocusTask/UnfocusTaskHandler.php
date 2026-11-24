@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands\UnfocusTask;
 
+use App\Contracts\Work\AgentFocuses;
+use App\Support\ActorIdentity;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Models\Task;
 
 final readonly class UnfocusTaskHandler extends TaskCommandHandler
 {
+    public function __construct(private AgentFocuses $focuses) {}
+
     public function handle(UnfocusTaskCommand $command): void
     {
-        $task = Task::lockedById($command->taskId);
-
-        if ($task->focused_by_id === $command->dispatchedBy()->id) {
-            $task->unfocus();
-        }
+        $this->focuses->unfocus(ActorIdentity::of($command->dispatchedBy()), Task::lockedById($command->taskId));
     }
 }

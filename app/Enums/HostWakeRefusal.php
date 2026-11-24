@@ -17,6 +17,10 @@ enum HostWakeRefusal: string
     case PinnedBuildMissing = 'pinned-build-missing';
     // The host keeps no ready report for the runtime's start, so Check status has nothing to send again.
     case NoObservation = 'no_observation';
+    // The account's sign-in check found no sign-in by a method the journal accepts in its folder.
+    case NotSignedIn = 'not-signed-in';
+    // The start names no conversation for a turn to continue.
+    case ConversationUnknown = 'conversation-unknown';
     case Unknown = 'unknown';
 
     /**
@@ -25,6 +29,15 @@ enum HostWakeRefusal: string
     public static function fromReport(string $reason): self
     {
         return self::tryFrom($reason) ?? self::Unknown;
+    }
+
+    /**
+     * Whether the runtime cannot go on without someone looking at it: an account no longer signed in, or a start that
+     * names no conversation to continue.
+     */
+    public function needsAttention(): bool
+    {
+        return $this === self::NotSignedIn || $this === self::ConversationUnknown;
     }
 
     /**
@@ -38,6 +51,8 @@ enum HostWakeRefusal: string
             self::CapacityUnavailable => StartRefusalType::CapacityUnavailable,
             self::ProtectedAccountFolderRejected => HostRefusal::AccountFolderRejected,
             self::PinnedBuildMissing => HostRefusal::PinnedBuildMissing,
+            self::NotSignedIn => HostRefusal::NotSignedIn,
+            self::ConversationUnknown => HostRefusal::ConversationUnknown,
             // no_observation answers Check status, never a start, so on a start's wake it is no reason the start knows
             self::NoObservation, self::Unknown => HostRefusal::Unknown,
         };

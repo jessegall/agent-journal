@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\ClaimDriverRequests;
 
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\DriverOperation;
 use App\Enums\RequestProgress;
@@ -18,6 +19,7 @@ use App\Support\ClaimedRequests;
 use App\Support\MessageBatchService;
 use App\Support\PendingWorkSources;
 use App\Support\PrivateValues;
+use App\Values\AgentText;
 use App\Values\ClaimedRequest;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
@@ -33,6 +35,7 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
     public function __construct(
         private PendingWorkSources $pendingWork,
         private MessageBatchService $messageBatches,
+        private AgentTexts $texts,
         private PrivateValues $privateValues,
     ) {}
 
@@ -166,9 +169,9 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
     }
 
     /**
-     * A wake carries the next batch of chat text for the runtime's driver when one waits; otherwise it keeps the
-     * generic pending-work prompt, so desk work is never starved by a chat backlog. A bootstrap carries no chat text:
-     * the backlog waits for the first wake after the start is ready.
+     * A wake carries its whole prompt: the next batch of chat text for the runtime's driver when one waits, otherwise
+     * the pending-work prompt, so desk work is never starved by a chat backlog. A bootstrap carries no prompt: the
+     * backlog waits for the first wake after the start is ready.
      */
     private function withMessageBatch(
         DriverRequest $request,
@@ -180,9 +183,10 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
             return $claim;
         }
 
-        $prompt = $this->messageBatches->textFor($runtime, $now);
-
-        return $prompt === null ? $claim : $claim->withMessage($prompt);
+        return $claim->withMessage(
+            $this->messageBatches->textFor($runtime, $now)
+                ?? $this->texts->render(AgentText::of('core.drivers.pending_work')),
+        );
     }
 
     private function settledWithoutWork(DriverRequest $request, AgentRuntime $runtime): bool

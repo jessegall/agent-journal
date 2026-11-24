@@ -21,6 +21,13 @@ interface CurrentState
     public function of(StackTarget $target, string $typeKey): Option;
 
     /**
+     * The live frame of the type on the acting actor's first stack.
+     *
+     * @return Option<StateReference> none for an actor that runs no session, or a stack without such a frame
+     */
+    public function ofCaller(string $typeKey): Option;
+
+    /**
      * The state the stack answers from now: its highest frame whose work is not done.
      *
      * @return Option<StateReference> none when the stack is closed or holds no live frame

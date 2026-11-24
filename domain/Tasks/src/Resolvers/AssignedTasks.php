@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Resolvers;
 
-use App\Contracts\Actors\ActorWorkStacks;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Assignments\AssigneeResolver;
 use App\Contracts\Assignments\AssignmentResolver;
 use App\Contracts\Assignments\AssignmentTransaction;
+use App\Contracts\Work\CurrentState;
 use App\Support\AssigneeIdentity;
 use App\Support\References\StateReference;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
@@ -30,13 +30,13 @@ final readonly class AssignedTasks implements AssignedTaskResolver
         private AssignmentTransaction $transaction,
         private AssignmentResolver $assignments,
         private AssigneeResolver $assignees,
-        private ActorWorkStacks $workStack,
+        private CurrentState $states,
         private TaskExecutions $executions,
     ) {}
 
     public function currentForCaller(): Option
     {
-        return $this->workStack->current(WorkingOnTaskStateReference::TYPE_KEY)
+        return $this->states->ofCaller(WorkingOnTaskStateReference::TYPE_KEY)
             ->flatMap(fn (StateReference $frame) => Task::summaryOf($frame));
     }
 

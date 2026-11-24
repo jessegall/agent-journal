@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Attributes\InCommandTransaction;
-use App\Contracts\Actors\ActorWorkStacks;
 use App\Contracts\Events\Listener;
+use App\Contracts\Work\AgentStack;
 use App\Events\ChatMessageOffered;
 use App\Support\States\Support\AnsweringMessageStateReference;
 
@@ -18,10 +18,10 @@ use App\Support\States\Support\AnsweringMessageStateReference;
 #[InCommandTransaction]
 final readonly class PushAnsweringMessageState implements Listener
 {
-    public function __construct(private ActorWorkStacks $workStacks) {}
+    public function __construct(private AgentStack $stacks) {}
 
     public function handle(ChatMessageOffered $event): void
     {
-        $this->workStacks->pushFor($event->agent, AnsweringMessageStateReference::forOffer($event));
+        $this->stacks->pushFor($event->agent, AnsweringMessageStateReference::forOffer($event));
     }
 }

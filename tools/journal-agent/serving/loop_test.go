@@ -2,7 +2,6 @@ package serving
 
 import (
 	"context"
-	"errors"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -160,12 +159,25 @@ func (journal *fakeJournal) ReportExit(context.Context, client.LivenessReport) e
 	return nil
 }
 
+func (journal *fakeJournal) turnEndOf(requestID string) *contracts.TurnEnd {
+	journal.mutex.Lock()
+	defer journal.mutex.Unlock()
+	for _, report := range journal.reports {
+		if report.RequestID == requestID && report.TurnEnd != nil {
+			return report.TurnEnd
+		}
+	}
+	return nil
+}
+
 func (journal *fakeJournal) progressOf(requestID string) []string {
 	journal.mutex.Lock()
 	defer journal.mutex.Unlock()
 	progress := []string{}
 	for _, report := range journal.reports {
-		if report.RequestID == requestID {
+		if report.RequestID == requestID && report.TurnEnd != nil {
+			progress = append(progress, "ended")
+		} else if report.RequestID == requestID {
 			progress = append(progress, report.Progress)
 		}
 	}
@@ -175,18 +187,18 @@ func (journal *fakeJournal) progressOf(requestID string) []string {
 // fakeRuntime runs every turn until the test ends it.
 type fakeRuntime struct {
 	prompts  []string
-	finished chan error
+	finished chan contracts.TurnEnd
 	stopped  bool
 }
 
 func (runtime *fakeRuntime) Deliver(_ context.Context, delivery contracts.Delivery) (contracts.OperationResult, error) {
 	runtime.prompts = append(runtime.prompts, contracts.PromptOf(delivery.Parts))
-	runtime.finished = make(chan error, 1)
+	runtime.finished = make(chan contracts.TurnEnd, 1)
 	return contracts.OperationResult{Request: delivery.Request, Progress: contracts.ProgressApplying}, nil
 }
 
 func (runtime *fakeRuntime) Wake(_ context.Context, wake contracts.WakeRequest) (contracts.OperationResult, error) {
-	return runtime.Deliver(context.Background(), contracts.Delivery{Request: wake.Request, Parts: contracts.TextParts("wake")})
+	return runtime.Deliver(context.Background(), contracts.Delivery{Request: wake.Request, Parts: contracts.TextParts(wake.Prompt)})
 }
 
 func (runtime *fakeRuntime) ChangeModel(_ context.Context, change contracts.ModelChange) (contracts.OperationResult, error) {
@@ -208,7 +220,7 @@ func (runtime *fakeRuntime) Stop(_ context.Context, stop contracts.StopRequest) 
 
 func (runtime *fakeRuntime) Generation() int { return 1 }
 
-func (runtime *fakeRuntime) Finished() <-chan error { return runtime.finished }
+func (runtime *fakeRuntime) Finished() <-chan contracts.TurnEnd { return runtime.finished }
 
 func (runtime *fakeRuntime) NativeIdentity() string { return "conversation-1" }
 
@@ -227,25 +239,37 @@ func waitFor(t *testing.T, condition func() bool) {
 	}
 }
 
-func TestDeliveriesRunAsOneTurnAndAreAppliedWhenItEnds(t *testing.T) {
+// The journal builds each turn's whole prompt: the program gets each delivery and each wake's prompt as it was sent,
+// one turn at a time, and the host joins and invents nothing.
+func TestEachTurnGivesTheProgramThePromptTheJournalSent(t *testing.T) {
 	journal := &fakeJournal{}
 	runtime := &fakeRuntime{}
 	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
 
-	loop.Take(context.Background(), []client.ClaimedRequest{claimed("a", 1, "deliver", "one"), claimed("b", 2, "deliver", "two")})
+	loop.Take(context.Background(), []client.ClaimedRequest{
+		claimed("a", 1, "deliver", "one"), claimed("b", 2, "deliver", "two"), claimed("c", 3, "wake", "New messages."),
+	})
+	runtime.finished <- contracts.TurnEnd{}
+	waitFor(t, func() bool { return len(journal.progressOf("b")) == 1 })
+	runtime.finished <- contracts.TurnEnd{}
+	waitFor(t, func() bool { return len(journal.progressOf("c")) == 1 })
 
-	if len(runtime.prompts) != 1 || runtime.prompts[0] != "one\n\ntwo" {
-		t.Fatalf("the program got %q", runtime.prompts)
+	prompts := runtime.prompts
+	if len(prompts) != 3 || prompts[0] != "one" || prompts[1] != "two" || prompts[2] != "New messages." {
+		t.Fatalf("the program got %q", prompts)
 	}
-	if got := journal.progressOf("a"); len(got) != 1 || got[0] != "applying" {
-		t.Fatalf("a was reported %v before the turn ended", got)
-	}
+}
 
-	runtime.finished <- nil
+func TestAWakeTheJournalSentNoPromptWithIsRefusedAndNeverFilledIn(t *testing.T) {
+	journal := &fakeJournal{}
+	runtime := &fakeRuntime{}
+	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
 
-	waitFor(t, func() bool { return len(journal.progressOf("b")) == 2 })
-	if got := journal.progressOf("b"); got[1] != "applied" || journal.grants != 1 {
-		t.Fatalf("b was reported %v after %d grants", got, journal.grants)
+	loop.Take(context.Background(), []client.ClaimedRequest{claimed("a", 1, "wake", "")})
+
+	waitFor(t, func() bool { return len(journal.progressOf("a")) == 1 })
+	if got := journal.progressOf("a"); got[0] != string(contracts.ProgressFailed) || len(runtime.prompts) != 0 {
+		t.Fatalf("the empty wake was reported %v and the program got %q", got, runtime.prompts)
 	}
 }
 
@@ -255,7 +279,7 @@ func TestEveryReportOfARuntimeIsNumberedOneAfterTheLast(t *testing.T) {
 	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
 
 	loop.Take(context.Background(), []client.ClaimedRequest{claimed("a", 1, "deliver", "one")})
-	runtime.finished <- nil
+	runtime.finished <- contracts.TurnEnd{}
 	waitFor(t, func() bool { return len(journal.progressOf("a")) == 2 })
 
 	journal.mutex.Lock()
@@ -272,8 +296,8 @@ func TestAnEndedTurnReportsTheConversationItsProgramRuns(t *testing.T) {
 	runtime := &fakeRuntime{}
 	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
 
-	loop.Take(context.Background(), []client.ClaimedRequest{claimed("a", 1, "wake", "")})
-	runtime.finished <- nil
+	loop.Take(context.Background(), []client.ClaimedRequest{claimed("a", 1, "wake", "Check your work.")})
+	runtime.finished <- contracts.TurnEnd{}
 	waitFor(t, func() bool { return len(journal.progressOf("a")) == 2 })
 
 	journal.mutex.Lock()
@@ -306,28 +330,31 @@ func TestAnInterruptKeepsTheRuntimeHeldAndEndsWithItsTurn(t *testing.T) {
 	loop.Take(context.Background(), []client.ClaimedRequest{claimed("work", 1, "deliver", "count")})
 
 	loop.Take(context.Background(), []client.ClaimedRequest{claimed("stop-turn", 2, "interrupt", "")})
-	runtime.finished <- errors.New("signal: interrupt")
+	runtime.finished <- contracts.TurnEnd{Problem: "signal: interrupt"}
 
 	waitFor(t, func() bool { return len(journal.progressOf("stop-turn")) == 2 })
 	journal.mutex.Lock()
 	last := journal.activity[len(journal.activity)-1]
 	journal.mutex.Unlock()
-	if got := journal.progressOf("stop-turn"); got[1] != "applied" || last != "idle" {
+	if got := journal.progressOf("stop-turn"); got[1] != "ended" || last != "idle" {
 		t.Fatalf("the interrupt was reported %v, the runtime %s", got, last)
 	}
 }
 
-func TestATurnWhoseProgramFailsLeavesItsDeliveryUncertain(t *testing.T) {
+// The host judges no turn: what it saw of the end goes to the journal as it was, which decides whether it failed.
+func TestATurnsEndIsReportedAsTheHostSawIt(t *testing.T) {
 	journal := &fakeJournal{}
 	runtime := &fakeRuntime{}
 	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
 	loop.Take(context.Background(), []client.ClaimedRequest{claimed("work", 1, "deliver", "hello")})
 
-	runtime.finished <- errors.New("exit status 1")
+	failed := 1
+	runtime.finished <- contracts.TurnEnd{ExitCode: &failed, ResultRead: true, ResultSubtype: "error_during_execution"}
 
 	waitFor(t, func() bool { return len(journal.progressOf("work")) == 2 })
-	if got := journal.progressOf("work"); got[1] != "delivery_uncertain" {
-		t.Fatalf("the failed turn was reported %v", got)
+	end := journal.turnEndOf("work")
+	if end == nil || *end.ExitCode != 1 || end.ResultSubtype != "error_during_execution" || end.Problem != "" {
+		t.Fatalf("the turn's end was reported as %+v", end)
 	}
 }
 
@@ -354,7 +381,7 @@ func TestATurnTheScreenRefusesIsReportedOnceAndGetsInWhenTheJournalOffersItAgain
 	runtime := &menuRuntime{}
 	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
 
-	loop.Take(context.Background(), []client.ClaimedRequest{claimed("a", 1, "wake", "")})
+	loop.Take(context.Background(), []client.ClaimedRequest{claimed("a", 1, "wake", "Check your work.")})
 	waitFor(t, func() bool { return len(journal.progressOf("a")) == 1 })
 	if held := journal.activities(); len(held) != 1 || held[0] != "idle onboarding_required" {
 		t.Fatalf("the held start was reported as %v, not once as idle and held by the menu", held)
@@ -368,7 +395,7 @@ func TestATurnTheScreenRefusesIsReportedOnceAndGetsInWhenTheJournalOffersItAgain
 	}
 
 	runtime.answered.Store(true)
-	loop.Take(context.Background(), []client.ClaimedRequest{claimed("a", 2, "wake", "")})
+	loop.Take(context.Background(), []client.ClaimedRequest{claimed("a", 2, "wake", "Check your work.")})
 	waitFor(t, func() bool { return len(journal.progressOf("a")) == 2 })
 
 	if started := journal.activities()[1]; started != "running "+string(contracts.HoldNone) {
@@ -384,7 +411,7 @@ func TestARuntimeTheLoopServesIsReportedAliveFromTheMomentItOpens(t *testing.T) 
 	journal := &fakeJournal{}
 	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return &fakeRuntime{}, nil })
 
-	loop.Take(context.Background(), []client.ClaimedRequest{claimed("a", 1, "wake", "")})
+	loop.Take(context.Background(), []client.ClaimedRequest{claimed("a", 1, "wake", "Check your work.")})
 
 	waitFor(t, func() bool { return journal.beatsOf("runtime") == 1 })
 }
@@ -404,7 +431,7 @@ func TestARuntimeWhoseProgramEndsOnItsOwnLeavesTheLoopAndItsWaitingWakeIsGivenUp
 	runtime := &endingRuntime{ended: make(chan string, 1)}
 	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
 
-	loop.Take(context.Background(), []client.ClaimedRequest{claimed("a", 1, "wake", "")})
+	loop.Take(context.Background(), []client.ClaimedRequest{claimed("a", 1, "wake", "Check your work.")})
 	waitFor(t, func() bool { return len(journal.progressOf("a")) == 1 })
 	runtime.ended <- "the session container's program exited with 137"
 
@@ -460,7 +487,7 @@ func TestAWakeThatIsNoBootstrapStillStartsATurn(t *testing.T) {
 	runtime := &bootstrappingRuntime{}
 	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
 
-	loop.Take(context.Background(), []client.ClaimedRequest{claimed("a", 1, "wake", "")})
+	loop.Take(context.Background(), []client.ClaimedRequest{claimed("a", 1, "wake", "Check your work.")})
 
 	if runtime.bootstraps != 0 || len(runtime.prompts) != 1 {
 		t.Fatalf("a plain wake bootstrapped %d times and ran %d turns", runtime.bootstraps, len(runtime.prompts))

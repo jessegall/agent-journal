@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Contracts\Work;
 
 use App\Exceptions\FrameNotHeld;
+use App\Support\ActorIdentity;
 use App\Support\References\Exceptions\ActivationDeclined;
 use App\Support\References\StateReference;
 use App\Values\StackTarget;
@@ -34,4 +35,31 @@ interface AgentStack
      * @throws FrameNotHeld when the stack holds no live frame for the state
      */
     public function lift(StackTarget $target, StateReference $state): void;
+
+    /**
+     * Pushes a state the caller requires onto each stack the acting actor works in now, as activate does; an actor
+     * that runs no session gets nothing.
+     *
+     * @throws ActivationDeclined
+     */
+    public function activateForCaller(StateReference $state): void;
+
+    /**
+     * Brings the state's live frame back on top of each stack the acting actor works in now, as lift does.
+     *
+     * @throws FrameNotHeld when such a stack holds no live frame for the state
+     */
+    public function liftForCaller(StateReference $state): void;
+
+    /**
+     * Pushes onto the stacks of another actor's running sessions, such as the actor a message is addressed to;
+     * nothing when it runs no session.
+     */
+    public function pushFor(ActorIdentity $actor, StateReference $state): void;
+
+    /**
+     * Pushes onto one stack of another actor, and only while every stack it works in rests on its bottom state: work
+     * offered to an actor that is busy is left for later.
+     */
+    public function offerFor(ActorIdentity $actor, StateReference $state): void;
 }

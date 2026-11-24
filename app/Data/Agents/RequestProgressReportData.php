@@ -7,9 +7,11 @@ namespace App\Data\Agents;
 use App\Enums\HostWakeRefusal;
 use App\Enums\RequestOutcome;
 use App\Enums\RequestProgress;
+use App\Exceptions\HostReportRefused;
 use App\Values\NavigationRoundReport;
 use App\Values\RequestReportBinding;
 use App\Values\ScriptProgress;
+use App\Values\TurnEnd;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;
@@ -24,9 +26,10 @@ final class RequestProgressReportData extends Data
     public function __construct(
         public readonly string $requestId,
         public readonly int $attempt,
-        public readonly RequestProgress $progress,
         public readonly string|null $actualBinding,
-        public readonly RequestOutcome|null $outcome,
+        public readonly RequestOutcome|null $outcome = null,
+        public readonly RequestProgress|null $progress = null,
+        public readonly TurnEndData|Optional $turnEnd = new Optional(),
         public readonly ScriptProgressData|Optional $script = new Optional(),
         public readonly NavigationRoundReportData|Optional $navigation = new Optional(),
         public readonly string|null $refusalReason = null,
@@ -36,6 +39,33 @@ final class RequestProgressReportData extends Data
         public readonly int|null $processGeneration = null,
         public readonly int|null $sequence = null,
     ) {}
+
+    /**
+     * How the attempt went: what the host reported, or the journal's judgement of a turn's end the host saw.
+     *
+     * @throws HostReportRefused when the report names neither
+     */
+    public function judgedProgress(): RequestProgress
+    {
+        if ($this->turnEnd instanceof TurnEndData) {
+            return $this->turnEnd->turnEnd()->progress();
+        }
+
+        return $this->progress ?? throw HostReportRefused::withoutProgress($this->requestId);
+    }
+
+    /**
+     * What the host saw when the attempt's turn ended; none for any other report.
+     */
+    public function turnEnd(): TurnEnd|null
+    {
+        return $this->turnEnd instanceof TurnEndData ? $this->turnEnd->turnEnd() : null;
+    }
+
+    public function judgedOutcome(): RequestOutcome|null
+    {
+        return $this->turnEnd instanceof TurnEndData ? $this->turnEnd->turnEnd()->outcome() : $this->outcome;
+    }
 
     /**
      * The allowlisted reason the host refused the request for; one outside the set is kept as unknown.

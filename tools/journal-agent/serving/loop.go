@@ -33,7 +33,7 @@ type Journal interface {
 type Runtime interface {
 	contracts.AgentDriver
 	Generation() int
-	Finished() <-chan error
+	Finished() <-chan contracts.TurnEnd
 	// NativeIdentity is the conversation the program runs, reported with each turn it ends.
 	NativeIdentity() string
 }
@@ -159,7 +159,7 @@ func (loop *Loop) run(ctx context.Context, runtime *liveRuntime, admission host.
 
 		return false
 	}
-	admission.Wakes = loop.bootstrap(ctx, runtime, admission.Wakes)
+	admission.Turn = loop.bootstrap(ctx, runtime, admission.Turn)
 	if !admission.ShouldStartTurn() {
 		return true
 	}
@@ -261,43 +261,36 @@ func (loop *Loop) setting(ctx context.Context, runtime *liveRuntime, request cli
 func (loop *Loop) bootstrap(
 	ctx context.Context,
 	runtime *liveRuntime,
-	wakes []client.ClaimedRequest,
-) []client.ClaimedRequest {
+	turn *client.ClaimedRequest,
+) *client.ClaimedRequest {
 	bootstrapper, ok := runtime.driver.(contracts.Bootstrapper)
-	if !ok {
-		return wakes
+	if !ok || turn == nil || !turn.Bootstrap {
+		return turn
 	}
-	rest := make([]client.ClaimedRequest, 0, len(wakes))
-	for _, wake := range wakes {
-		if !wake.Bootstrap {
-			rest = append(rest, wake)
-			continue
-		}
-		result, err := bootstrapper.Bootstrap(ctx, identityOf(wake))
-		if err != nil {
-			loop.reportResult(ctx, wake, result, err)
-			continue
-		}
-		loop.observe(wake, loop.report(ctx, wake, result))
+	result, err := bootstrapper.Bootstrap(ctx, identityOf(*turn))
+	if err != nil {
+		loop.reportResult(ctx, *turn, result, err)
+		return nil
 	}
-	return rest
+	loop.observe(*turn, loop.report(ctx, *turn, result))
+	return nil
 }
 
-// startTurn hands the turn's deliveries to the program as one prompt, or the wake's pending-work prompt when no
-// content waits, and reports the rest when the turn ends.
+// startTurn hands the turn's one request to the program with the prompt the journal sent, and reports it when the turn
+// ends; a wake the journal sent no prompt with is refused, never filled in.
 func (loop *Loop) startTurn(ctx context.Context, runtime *liveRuntime, admission host.Admission) {
-	requests := append(append([]client.ClaimedRequest{}, admission.Deliveries...), admission.Wakes...)
-	first := identityOf(requests[0])
+	turn := *admission.Turn
+	requests := []client.ClaimedRequest{turn}
+	identity := identityOf(turn)
 	var result contracts.OperationResult
 	var err error
-	if len(admission.Deliveries) > 0 {
-		parts := make([]contracts.MessagePart, 0, len(admission.Deliveries))
-		for _, delivery := range admission.Deliveries {
-			parts = append(parts, delivery.Parts...)
-		}
-		result, err = runtime.driver.Deliver(ctx, contracts.Delivery{Request: first, Parts: parts})
-	} else {
-		result, err = runtime.driver.Wake(ctx, contracts.WakeRequest{Request: first, Prompt: wakePrompt(admission.Wakes)})
+	switch {
+	case turn.Operation == "deliver":
+		result, err = runtime.driver.Deliver(ctx, contracts.Delivery{Request: identity, Parts: turn.Parts})
+	case text(turn.Message) == "":
+		result = contracts.OperationResult{Request: identity, Progress: contracts.ProgressFailed, Outcome: contracts.OutcomeRefused}
+	default:
+		result, err = runtime.driver.Wake(ctx, contracts.WakeRequest{Request: identity, Prompt: text(turn.Message)})
 	}
 	if err == nil && result.Progress == contracts.ProgressStaged && result.Hold != contracts.HoldInterrupted {
 		loop.holdBehindScreen(ctx, runtime, result.Hold)
@@ -321,25 +314,20 @@ func (loop *Loop) startTurn(ctx context.Context, runtime *liveRuntime, admission
 	go loop.awaitTurn(ctx, runtime, runtime.driver.Finished(), requests)
 }
 
-// awaitTurn waits for this turn's program to end, on the channel of the turn it started, and reports this turn's
-// requests applied, or uncertain when the program ended with an error, and the runtime idle; a turn that ends late
+// awaitTurn waits for this turn's program to end, on the channel of the turn it started, and reports what the host saw
+// of the end with each of this turn's requests, for the journal to judge, and the runtime idle; a turn that ends late
 // settles only its own requests, never those of a turn started after it.
 func (loop *Loop) awaitTurn(
 	ctx context.Context,
 	runtime *liveRuntime,
-	turnEnd <-chan error,
+	turnEnd <-chan contracts.TurnEnd,
 	turnRequests []client.ClaimedRequest,
 ) {
 	ended := <-turnEnd
-	result := contracts.OperationResult{
-		Progress:      contracts.ProgressApplied,
-		Outcome:       contracts.OutcomeConfirmed,
-		ActualBinding: runtime.driver.NativeIdentity(),
+	if ended.Problem != "" {
+		log.Printf("the turn of runtime %s ended with a problem: %s", runtime.id, ended.Problem)
 	}
-	if ended != nil {
-		log.Printf("the turn of runtime %s ended with an error: %v", runtime.id, ended)
-		result = contracts.OperationResult{Progress: contracts.ProgressDeliveryUncertain}
-	}
+	result := contracts.OperationResult{TurnEnd: &ended, ActualBinding: runtime.driver.NativeIdentity()}
 
 	loop.mutex.Lock()
 	finished := append(append([]client.ClaimedRequest{}, turnRequests...), runtime.staged...)
@@ -354,7 +342,7 @@ func (loop *Loop) awaitTurn(
 		loop.observe(request, loop.report(ctx, request, result))
 	}
 	for _, request := range interrupts {
-		loop.report(ctx, request, contracts.OperationResult{Progress: contracts.ProgressApplied})
+		loop.report(ctx, request, contracts.OperationResult{TurnEnd: &ended})
 	}
 	loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.TurnFinished() })
 	loop.activity(ctx, runtime, "idle")
@@ -568,7 +556,7 @@ func scriptEnd(result keyscripts.Result) contracts.OperationResult {
 		}
 	}
 
-	return contracts.OperationResult{Progress: contracts.ProgressFailed, Hold: contracts.HoldNeedsAttention}
+	return contracts.OperationResult{Progress: contracts.ProgressFailed}
 }
 
 // parametersOf is the claimed script's parameters by name.
@@ -717,7 +705,10 @@ func (loop *Loop) activity(ctx context.Context, runtime *liveRuntime, activity s
 }
 
 func (loop *Loop) failAll(ctx context.Context, admission host.Admission, progress contracts.Progress) {
-	all := append(append(append([]client.ClaimedRequest{}, admission.Staged...), admission.Deliveries...), admission.Wakes...)
+	all := append([]client.ClaimedRequest{}, admission.Staged...)
+	if admission.Turn != nil {
+		all = append(all, *admission.Turn)
+	}
 	if admission.Control != nil {
 		all = append(all, *admission.Control)
 	}
@@ -773,6 +764,7 @@ func (loop *Loop) report(
 		binding := result.ActualBinding
 		report.ActualBinding = &binding
 	}
+	report.TurnEnd = result.TurnEnd
 	if result.Outcome != "" && result.Outcome != contracts.OutcomeConfirmed {
 		outcome := string(result.Outcome)
 		report.Outcome = &outcome
@@ -788,7 +780,7 @@ func (loop *Loop) observe(request client.ClaimedRequest, report client.RequestRe
 	if loop.observations == nil || !request.Bootstrap || report.ActualBinding == nil {
 		return
 	}
-	if report.Progress != string(contracts.ProgressApplied) {
+	if report.Progress != string(contracts.ProgressApplied) && report.TurnEnd == nil {
 		return
 	}
 	if err := loop.observations.Keep(request.RuntimeID, report); err != nil {
@@ -857,17 +849,6 @@ func whole(number *int) int {
 	}
 
 	return *number
-}
-
-// wakePrompt answers the first prompt the server attached to one of the wakes, such as a batch of chat messages to
-// present, or none so the driver sends its generic pending-work prompt.
-func wakePrompt(wakes []client.ClaimedRequest) string {
-	for _, wake := range wakes {
-		if prompt := text(wake.Message); prompt != "" {
-			return prompt
-		}
-	}
-	return ""
 }
 
 // sameRequests says whether the two lists hold the same requests in the same order.

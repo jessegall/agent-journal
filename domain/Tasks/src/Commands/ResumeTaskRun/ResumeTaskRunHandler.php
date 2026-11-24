@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands\ResumeTaskRun;
 
-use App\Contracts\Actors\ActorWorkStacks;
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Processes\RunClaims;
+use App\Contracts\Work\AgentStack;
+use App\Contracts\Work\CurrentState;
 use App\Exceptions\RunClaimRefused;
 use App\Support\ActorIdentity;
 use App\Support\References\SubjectReference;
@@ -24,7 +25,8 @@ final readonly class ResumeTaskRunHandler extends TaskCommandHandler
 {
     public function __construct(
         private RunClaims $claims,
-        private ActorWorkStacks $workStack,
+        private AgentStack $stacks,
+        private CurrentState $states,
         private CommandFacts $facts,
     ) {}
 
@@ -55,7 +57,7 @@ final readonly class ResumeTaskRunHandler extends TaskCommandHandler
         $actor = ActorIdentity::of($command->dispatchedBy());
         $claim = $this->claims->take($run->assignmentIdentity(), $task->assignmentIdentity(), $actor);
 
-        $this->workStack->push(WorkingOnTaskStateReference::forTask($task));
+        $this->stacks->activateForCaller(WorkingOnTaskStateReference::forTask($task));
 
         $this->facts->publishAfterCommit(
             new TaskRunClaimed($task->id, $run->run_number, $actor, $claim->assignmentIds()),
@@ -69,7 +71,7 @@ final readonly class ResumeTaskRunHandler extends TaskCommandHandler
      */
     private function assertNotCovered(Task $task): void
     {
-        foreach ($this->workStack->current(WorkingOnTaskStateReference::TYPE_KEY) as $current) {
+        foreach ($this->states->ofCaller(WorkingOnTaskStateReference::TYPE_KEY) as $current) {
             $subject = $current->subject;
 
             if ($subject instanceof SubjectReference && $subject->id !== $task->id) {

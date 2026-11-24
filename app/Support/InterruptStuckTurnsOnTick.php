@@ -1,0 +1,28 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Support;
+
+use App\Commands\InterruptStuckTurns\InterruptStuckTurnsCommand;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Events\EngineListener;
+use App\Events\EngineTicked;
+
+/**
+ * Interrupts the turns that ran past the journal's limit on every engine pass; the sweep is one bounded batch.
+ */
+final readonly class InterruptStuckTurnsOnTick implements EngineListener
+{
+    public function __construct(private CommandBus $commands) {}
+
+    public function maintenanceScope(): string
+    {
+        return InterruptStuckTurnsCommand::MAINTENANCE_SCOPE;
+    }
+
+    public function __invoke(EngineTicked $event): void
+    {
+        $this->commands->run(new InterruptStuckTurnsCommand());
+    }
+}

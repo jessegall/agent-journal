@@ -9,7 +9,7 @@ use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Sessions\BuiltInStartProfiles;
 use App\Contracts\Sessions\ProfileSelections;
-use App\Contracts\Work\WorkStacks;
+use App\Contracts\Work\ActorStackSessions;
 use App\Enums\DriverCapability;
 use App\Enums\ExecutionModeType;
 use App\Exceptions\HostUnavailable;
@@ -34,7 +34,7 @@ use Illuminate\Support\Str;
 final readonly class OpenAgentRuntimeHandler implements CommandHandler
 {
     public function __construct(
-        private WorkStacks $workStacks,
+        private ActorStackSessions $stackSessions,
         private StartSessions $starts,
         private AgentSessions $sessions,
         private ActiveAccountReader $accounts,
@@ -125,7 +125,7 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
      */
     private function parentSessionFor(OpenAgentRuntimeCommand $command): AgentSession|null
     {
-        $sessionId = $this->workStacks->sessionsToAdmit()[0] ?? null;
+        $sessionId = $this->stackSessions->sessionsToAdmit()[0] ?? null;
 
         if ($sessionId === null) {
             return null;

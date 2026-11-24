@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature\Http;
 
+use App\Contracts\Work\AgentFocuses;
 use App\Enums\ActorType;
 use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
@@ -209,7 +210,7 @@ final class TaskPageTest extends TestCase
         $agent = Agent::create($agentName, 'main-agent');
         $task = Task::factory()->create(['state' => TaskState::Started, 'run_number' => 1]);
         TaskRun::create($task, 1, new ActorIdentity(ActorType::Agent, $agent->id));
-        $task->focusFor($agent->id);
+        $this->app->make(AgentFocuses::class)->focus(new ActorIdentity(ActorType::Agent, $agent->id), $task);
 
         return $task;
     }

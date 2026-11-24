@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Commands\AskSupervisor;
 
 use App\Commands\RouteAsk\RouteAskCommand;
-use App\Contracts\Actors\ActorWorkStacks;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Work\AgentFocuses;
 use App\Enums\AskOriginType;
 use App\Exceptions\AskRefused;
 use App\Models\Asks\Ask;
@@ -22,7 +22,7 @@ final readonly class AskSupervisorHandler implements CommandHandler
     private const int OPEN_LIMIT = 5;
 
     public function __construct(
-        private ActorWorkStacks $stacks,
+        private AgentFocuses $focuses,
         private AskTypeRegistry $types,
         private AskService $opening,
         private CommandBus $commands,
@@ -46,7 +46,7 @@ final readonly class AskSupervisorHandler implements CommandHandler
             throw AskRefused::openLimit(self::OPEN_LIMIT);
         }
 
-        $work = $this->stacks->currentRecord()->getOrElse(null);
+        $work = $this->focuses->focusOf($requester)->getOrElse(null);
 
         $ask = $this->opening->open(
             $requester,

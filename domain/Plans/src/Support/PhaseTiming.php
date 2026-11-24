@@ -7,7 +7,7 @@ namespace Domain\Plans\Support;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Assignments\AssignmentResolver;
 use App\Contracts\Time\VerificationTiming;
-use App\Contracts\Work\WorkStacks;
+use App\Contracts\Work\ActorStackSessions;
 use App\Support\AssigneeIdentity;
 use App\Support\IdListPage;
 use App\Values\TimingVerdict;
@@ -28,7 +28,7 @@ final readonly class PhaseTiming implements VerificationTiming
 
     public function __construct(
         private CurrentActor $actors,
-        private WorkStacks $workStacks,
+        private ActorStackSessions $stackSessions,
         private AssignmentResolver $assignments,
         private TaskResolver $tasks,
         private TaskProgressCounter $taskCounts,
@@ -37,7 +37,7 @@ final readonly class PhaseTiming implements VerificationTiming
     public function forCaller(): TimingVerdict
     {
         // An actor that works in no session, such as the owner, runs its checks whenever it asks.
-        if ($this->workStacks->sessionsToAdmit() === []) {
+        if ($this->stackSessions->sessionsToAdmit() === []) {
             return TimingVerdict::allowed();
         }
 

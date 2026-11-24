@@ -82,7 +82,7 @@ type stalledScript struct {
 // turnEnd is the end of one submitted prompt's turn, watched from the first time someone waits for it; seen is set,
 // under the driver's lock, once the watch saw the turn end.
 type turnEnd struct {
-	ended chan error
+	ended chan contracts.TurnEnd
 	watch sync.Once
 	seen  bool
 }
@@ -108,7 +108,7 @@ func (driver *TerminalDriver) NativeIdentity() string {
 // Finished delivers the end of the last submitted prompt's turn: once the turn has taken the composer away, the
 // composer is empty and still again. The program keeps running between turns. With no prompt submitted yet there is
 // no turn to end, and the channel never delivers.
-func (driver *TerminalDriver) Finished() <-chan error {
+func (driver *TerminalDriver) Finished() <-chan contracts.TurnEnd {
 	driver.mutex.Lock()
 	current := driver.turnEnd
 	driver.mutex.Unlock()
@@ -142,7 +142,7 @@ func (driver *TerminalDriver) Deliver(
 
 // Wake types the standard pending-work prompt, unless an interrupt holds the runtime: a held runtime does no work.
 func (driver *TerminalDriver) Wake(_ context.Context, wake contracts.WakeRequest) (contracts.OperationResult, error) {
-	return driver.prompt(wake.Request, wake.PromptOr(pendingWorkPrompt))
+	return driver.prompt(wake.Request, wake.Prompt)
 }
 
 // ChangeModel stays staged: the recorded model picker reaches the wanted entry, but no recording shows a confirmed
@@ -342,7 +342,7 @@ func (driver *TerminalDriver) prompt(
 
 	driver.mutex.Lock()
 	driver.turns++
-	driver.turnEnd = &turnEnd{ended: make(chan error, 1)}
+	driver.turnEnd = &turnEnd{ended: make(chan contracts.TurnEnd, 1)}
 	driver.mutex.Unlock()
 
 	return contracts.OperationResult{Request: request, Progress: contracts.ProgressApplying}, nil
@@ -379,16 +379,17 @@ func (driver *TerminalDriver) strandedResult(
 	return contracts.OperationResult{Request: request, Progress: contracts.ProgressDeliveryUncertain}
 }
 
-// awaitTurnEnd waits for the turn to take the composer away and then for an empty, still composer again.
+// awaitTurnEnd waits for the turn to take the composer away and then for an empty, still composer again, and tells
+// whether the composer left within the journal's start window.
 func (driver *TerminalDriver) awaitTurnEnd(current *turnEnd) {
-	driver.waitUntil(driver.runtime.Limits.TurnStartWindow(), func() bool { return !driver.promptReady() })
+	left := driver.waitUntil(driver.runtime.Limits.TurnStartWindow(), func() bool { return !driver.promptReady() })
 	for !driver.promptReady() {
 		driver.runtime.Clock.Sleep(pollInterval)
 	}
 	driver.mutex.Lock()
 	current.seen = true
 	driver.mutex.Unlock()
-	current.ended <- nil
+	current.ended <- contracts.TurnEnd{ComposerLeft: &left}
 }
 
 // stagedBehindScreen is a prompt the screen did not let in: it stays staged and is held by what the screen shows, a

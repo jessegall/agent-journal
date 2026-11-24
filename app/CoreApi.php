@@ -95,6 +95,7 @@ use App\Commands\InstallDesks\InstallDesksCommand;
 use App\Commands\InstallNumbers\InstallNumbersCommand;
 use App\Commands\InterruptAgent\InterruptAgentCommand;
 use App\Commands\InterruptNavigation\InterruptNavigationCommand;
+use App\Commands\InterruptStuckTurns\InterruptStuckTurnsCommand;
 use App\Commands\IssueEvidencePermit\IssueEvidencePermitCommand;
 use App\Commands\IssueProjectInvitation\IssueProjectInvitationCommand;
 use App\Commands\LinkRecords\LinkRecordsCommand;
@@ -237,7 +238,6 @@ use App\Contracts\Actors\ActorProvisioning;
 use App\Contracts\Actors\ActorResolver;
 use App\Contracts\Actors\ActorVisibility;
 use App\Contracts\Actors\ActorVisibilityProvider;
-use App\Contracts\Actors\ActorWorkStacks;
 use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Actors\ChoiceLabel;
 use App\Contracts\Actors\CurrentActor;
@@ -457,10 +457,14 @@ use App\Contracts\Skills\SkillConditionProvider;
 use App\Contracts\Skills\SkillProvider;
 use App\Contracts\Skills\SkillResolver;
 use App\Contracts\Time\VerificationTiming;
+use App\Contracts\Work\ActorStackSessionProvider;
+use App\Contracts\Work\ActorStackSessions;
+use App\Contracts\Work\AgentFocuses;
 use App\Contracts\Work\AgentStack;
 use App\Contracts\Work\ConditionalState;
 use App\Contracts\Work\CurrentState;
 use App\Contracts\Work\EnvironmentTasks;
+use App\Contracts\Work\Focusable;
 use App\Contracts\Work\IncomingWork;
 use App\Contracts\Work\IncomingWorkProvider;
 use App\Contracts\Work\IncomingWorkRegistration;
@@ -472,8 +476,6 @@ use App\Contracts\Work\WorkAllowance;
 use App\Contracts\Work\WorkOccurrenceGuard;
 use App\Contracts\Work\WorkProgress;
 use App\Contracts\Work\WorkRepair;
-use App\Contracts\Work\WorkStackProvider;
-use App\Contracts\Work\WorkStacks;
 use App\Data\Accounts\EligibleAccountData;
 use App\Data\Accounts\EligibleAccountsData;
 use App\Data\Agents\DriverRequestStatus;
@@ -1656,6 +1658,8 @@ final class CoreApi
                 RecordVisibility::class,
                 RuntimeResolver::class,
                 AgentStack::class,
+                AgentFocuses::class,
+                Focusable::class,
                 Driver::class,
                 DriverCatalogue::class,
                 DriverCapabilities::class,
@@ -1680,7 +1684,6 @@ final class CoreApi
                 RestrictedPolicy::class,
                 WorkspacePolicy::class,
                 PolicyCatalogue::class,
-                ActorWorkStacks::class,
                 WorkProgress::class,
                 ScriptKeywordDefinition::class,
                 Inbox::class,
@@ -1703,9 +1706,9 @@ final class CoreApi
                 AssignmentDestinationResolver::class,
                 InboxDestinationResolver::class,
                 ActorInboxResolver::class,
-                WorkStacks::class,
+                ActorStackSessions::class,
                 PolicyProvider::class,
-                WorkStackProvider::class,
+                ActorStackSessionProvider::class,
                 RecordCommand::class,
                 MessageCommand::class,
                 Authorizer::class,
@@ -2694,6 +2697,7 @@ final class CoreApi
                 SettleMergeOutcomesCommand::class,
                 InspectMergeAttemptsCommand::class,
                 ExpireNavigationRequestsCommand::class,
+                InterruptStuckTurnsCommand::class,
                 SettleFrameTimesCommand::class,
                 SaveSharePreviewCommand::class,
                 CreateShareCommand::class,

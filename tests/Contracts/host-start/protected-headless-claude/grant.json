@@ -23,7 +23,12 @@
             "stranded_settle_ms": 5000,
             "stop_grace_ms": 5000,
             "stop_force_ms": 2000
-        }
+        },
+        "sign_in_methods": [
+            "claude.ai",
+            "oauth_token",
+            "api_key_helper"
+        ]
     },
     "container": {
         "image": "journal-agent@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",

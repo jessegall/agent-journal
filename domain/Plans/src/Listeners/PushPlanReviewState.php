@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Plans\Listeners;
 
 use App\Attributes\InCommandTransaction;
-use App\Contracts\Actors\ActorWorkStacks;
 use App\Contracts\Events\Listener;
+use App\Contracts\Work\AgentStack;
 use Domain\Plans\Events\PlanReviewRequested;
 use Domain\Plans\Support\States\Support\ReviewingPlanStateReference;
 
@@ -17,14 +17,14 @@ use Domain\Plans\Support\States\Support\ReviewingPlanStateReference;
 #[InCommandTransaction]
 final readonly class PushPlanReviewState implements Listener
 {
-    public function __construct(private ActorWorkStacks $workStack) {}
+    public function __construct(private AgentStack $stacks) {}
 
     public function handle(PlanReviewRequested $event): void
     {
         $reference = ReviewingPlanStateReference::forPlan($event->planId, $event->planNumber);
 
         foreach ($event->reviewers as $reviewer) {
-            $this->workStack->pushFor($reviewer, $reference);
+            $this->stacks->pushFor($reviewer, $reference);
         }
     }
 }

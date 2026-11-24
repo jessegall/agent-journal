@@ -28,4 +28,9 @@ final class HostReportRefused extends RuntimeException implements CommandRefusal
     {
         return new self("A report of attempt {$reported} is older than attempt {$current} of request {$requestId}.");
     }
+
+    public static function withoutProgress(string $requestId): self
+    {
+        return new self("A report of request {$requestId} names neither its progress nor how its turn ended.");
+    }
 }

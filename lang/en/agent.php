@@ -188,5 +188,6 @@ return [
         'outage_protected' => 'The journal is unreachable: saved accounts and saved outputs stay closed until it is '
             .'back',
         'call_refused' => 'The journal refused this call ({failure})',
+        'pending_work' => 'Check your pending journal work.',
     ],
 ];

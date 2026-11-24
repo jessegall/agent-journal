@@ -27,6 +27,7 @@ use App\Support\EngineTickedDelivery;
 use App\Support\ExpireNavigationRequestsOnTick;
 use App\Support\FrameBaselines;
 use App\Support\InspectMergeAttemptsOnTick;
+use App\Support\InterruptStuckTurnsOnTick;
 use App\Support\MarkSilentSessionsOnTick;
 use App\Support\MonotonicStopTimes;
 use App\Support\SelfMeasuredCommands;
@@ -85,6 +86,7 @@ final class EngineServiceProvider extends ServiceProvider
         $listeners->add(InspectMergeAttemptsOnTick::class);
         $listeners->add(EndTerminalViewsOnTick::class);
         $listeners->add(ExpireNavigationRequestsOnTick::class);
+        $listeners->add(InterruptStuckTurnsOnTick::class);
         $listeners->add(EnforceLaunchLimitsOnTick::class);
         $selfMeasured->add('engine:tick');
         $this->commands([TickCommand::class]);

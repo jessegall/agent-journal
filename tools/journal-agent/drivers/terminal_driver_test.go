@@ -87,7 +87,7 @@ func recordedWith(
 		func(keyscripts.Progress) {})
 
 	runtime := TerminalRuntime{
-		Limits: journalLimits,
+		Limits:     journalLimits,
 		Profile:    "claude@2.1.323",
 		Classifier: classifier,
 		Gate:       gate,
@@ -231,11 +231,11 @@ func TestAnInterruptHoldsTheRuntimeAndAWakeDoesNotRestartWork(t *testing.T) {
 	if err != nil || interrupt.Hold != contracts.HoldInterrupted || interrupt.Outcome == contracts.OutcomeAlreadyIdle {
 		t.Fatalf("the interrupt ended %+v, %v", interrupt, err)
 	}
-	wake, err := driver.Wake(context.Background(), contracts.WakeRequest{Request: request("wake")})
+	wake, err := driver.Wake(context.Background(), contracts.WakeRequest{Request: request("wake"), Prompt: "Look at your work."})
 	if err != nil || wake.Progress != contracts.ProgressStaged || wake.Hold != contracts.HoldInterrupted {
 		t.Fatalf("a wake while interrupted ended %+v, %v", wake, err)
 	}
-	if strings.Contains(program.String(), pendingWorkPrompt) || driver.Turns() != 1 {
+	if strings.Contains(program.String(), "Look at your work.") || driver.Turns() != 1 {
 		t.Fatalf("the held runtime got %q", program.String())
 	}
 }
@@ -257,7 +257,7 @@ func TestAnInterruptBoundToAnEarlierTurnInterruptsNothing(t *testing.T) {
 
 func TestAnInterruptAfterItsTurnEndedIsAlreadyIdleAndTypesNothing(t *testing.T) {
 	driver, _, program := recordedTurn(t, 11*time.Second)
-	driver.turns, driver.turnEnd = 1, &turnEnd{ended: make(chan error, 1), seen: true}
+	driver.turns, driver.turnEnd = 1, &turnEnd{ended: make(chan contracts.TurnEnd, 1), seen: true}
 	typed := program.String()
 
 	interrupt, err := driver.Interrupt(context.Background(), contracts.InterruptRequest{Request: request("after"), Turn: driver.Turns()})
@@ -302,9 +302,9 @@ func TestATerminalTurnEndsWhenItsComposerIsEmptyAndStillAgain(t *testing.T) {
 	submitted := clock.Now()
 
 	select {
-	case err := <-driver.Finished():
-		if err != nil {
-			t.Fatal(err)
+	case end := <-driver.Finished():
+		if end.ComposerLeft == nil || !*end.ComposerLeft {
+			t.Fatalf("the recorded turn ended as %+v", end)
 		}
 	case <-time.After(10 * time.Second):
 		t.Fatal("the recorded turn never ended")

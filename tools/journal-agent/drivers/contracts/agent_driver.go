@@ -27,17 +27,9 @@ type Delivery struct {
 // WakeRequest asks an idle agent to look for waiting work.
 type WakeRequest struct {
 	Request RequestIdentity
-	// Prompt is the text the server asks the wake to present, such as a batch of chat messages; empty means the
-	// generic pending-work prompt.
+	// Prompt is the whole text the journal asks the wake to present, such as a batch of chat messages or the
+	// pending-work prompt; the host sends it as it is and never makes one up.
 	Prompt string
-}
-
-// PromptOr answers the wake's own prompt, or the fallback when the server sent none.
-func (wake WakeRequest) PromptOr(fallback string) string {
-	if wake.Prompt == "" {
-		return fallback
-	}
-	return wake.Prompt
 }
 
 // ModelChange asks the agent to use another model.
@@ -175,6 +167,10 @@ const (
 	RefusalPinnedBuildMissing RefusalReason = "pinned-build-missing"
 	// RefusalNoObservation answers Check status when the host keeps no ready report of the runtime's start.
 	RefusalNoObservation RefusalReason = "no_observation"
+	// RefusalNotSignedIn: the account's sign-in check found no sign-in by a method the journal accepts in its folder.
+	RefusalNotSignedIn RefusalReason = "not-signed-in"
+	// RefusalConversationUnknown: the start names no conversation for a turn to continue.
+	RefusalConversationUnknown RefusalReason = "conversation-unknown"
 )
 
 // StartRefused is the failure of an operation the host refused for an allowlisted reason before it created any process
@@ -219,6 +215,8 @@ type OperationResult struct {
 	// Script is where a key script run stopped, for the loop to report; nil for every other operation and for a
 	// driver that could not run the script at all.
 	Script *keyscripts.Result
+	// TurnEnd is what the host saw when a turn ended, for the journal to judge; nil for every other report.
+	TurnEnd *TurnEnd
 }
 
 // IsHeld is whether the driver holds the agent after the operation, waiting on the user or a menu.

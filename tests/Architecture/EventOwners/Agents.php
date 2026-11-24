@@ -11,6 +11,8 @@ use App\Events\AccountSettingsRequested;
 use App\Events\AccountUseChanged;
 use App\Events\ActivityRecorded;
 use App\Events\AgentDriverTypePreferred;
+use App\Events\AgentFocusCleared;
+use App\Events\AgentFocusMoved;
 use App\Events\AgentHoldReleased;
 use App\Events\AgentRetired;
 use App\Events\AgentRuntimeAdopted;
@@ -372,6 +374,20 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new AgentRuntimesFenced('agent', 2),
+    ],
+    AgentFocusCleared::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'AgentFocus::clear',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AgentFocusCleared('agent', 'tasks.task', 'task'),
+    ],
+    AgentFocusMoved::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'AgentFocus::moveTo',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AgentFocusMoved('agent', 'tasks.task', 'task'),
     ],
     AgentRetired::class => [
         'role' => EventRole::RowFact,

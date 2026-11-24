@@ -20,11 +20,18 @@ use PhpOption\Option;
  */
 final readonly class CurrentStates implements CurrentState
 {
-    public function __construct(private StackRestorer $restorer) {}
+    public function __construct(private StackRestorer $restorer, private CallerStackTargets $targets) {}
 
     public function of(StackTarget $target, string $typeKey): Option
     {
         return $this->highestLive($target, fn (Frame $frame): bool => $frame->typeKey() === $typeKey);
+    }
+
+    public function ofCaller(string $typeKey): Option
+    {
+        $target = $this->targets->ofCaller()[0] ?? null;
+
+        return $target === null ? None::create() : $this->of($target, $typeKey);
     }
 
     public function top(StackTarget $target): Option

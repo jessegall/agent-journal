@@ -137,12 +137,14 @@ type ScriptParameter struct {
 
 // RequestReport mirrors App\Http\Data\Agents\RequestProgressReportData.
 type RequestReport struct {
-	RequestID     string        `json:"request_id"`
-	Attempt       int           `json:"attempt"`
-	Progress      string        `json:"progress"`
-	ActualBinding *string       `json:"actual_binding"`
-	Outcome       *string       `json:"outcome"`
-	Script        *ScriptReport `json:"script,omitempty"`
+	RequestID string `json:"request_id"`
+	Attempt   int    `json:"attempt"`
+	// Progress is empty for a turn's end, which the journal judges from TurnEnd.
+	Progress      string             `json:"progress,omitempty"`
+	TurnEnd       *contracts.TurnEnd `json:"turn_end,omitempty"`
+	ActualBinding *string            `json:"actual_binding"`
+	Outcome       *string            `json:"outcome"`
+	Script        *ScriptReport      `json:"script,omitempty"`
 	// OperationKey names one raise or report call, so the journal takes a repeated call once; empty for the others.
 	OperationKey string `json:"operation_key,omitempty"`
 	// Navigation is what the host saw after a round of the main agent; nil for any other request.
@@ -561,6 +563,8 @@ type RuntimeStart struct {
 	Effort            *string `json:"effort"`
 	// Limits are the waits the journal decided for this runtime's driver.
 	Limits contracts.Limits `json:"limits"`
+	// SignInMethods are the Claude sign-in methods the journal accepts for an account start.
+	SignInMethods []string `json:"sign_in_methods"`
 }
 
 // RequestedModel is the model the journal asked this start to run on; empty when it leaves the choice to the program.

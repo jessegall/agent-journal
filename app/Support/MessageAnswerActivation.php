@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Actors\ActorWorkStacks;
 use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Work\AgentStack;
+use App\Contracts\Work\CurrentState;
 use App\Contracts\Work\IncomingWork;
 use App\Contracts\Work\StackTransaction;
 use App\Models\Messages\Message;
@@ -23,7 +24,8 @@ final readonly class MessageAnswerActivation implements IncomingWork
 
     public function __construct(
         private CurrentActor $actors,
-        private ActorWorkStacks $workStacks,
+        private AgentStack $stacks,
+        private CurrentState $states,
         private ProvedClaims $proved,
         private StackTransaction $transaction,
     ) {}
@@ -48,12 +50,12 @@ final readonly class MessageAnswerActivation implements IncomingWork
         if ($oldest !== null && $oldest->holder()->isSameAs($actor)) {
             $message = Message::query()->whereKey($oldest->record->id)->readExactly(1)->sole();
             $frame = AnsweringMessageStateReference::forClaim($message, $actor);
-            $this->transaction->run(fn () => $this->workStacks->push($frame));
+            $this->transaction->run(fn () => $this->stacks->activateForCaller($frame));
         }
     }
 
     private function isAnswering(): bool
     {
-        return $this->workStacks->current(AnsweringMessageStateReference::TYPE_KEY)->isDefined();
+        return $this->states->ofCaller(AnsweringMessageStateReference::TYPE_KEY)->isDefined();
     }
 }

@@ -20,4 +20,5 @@ enum RequestOutcome: string
     case ScriptFailed = 'script_failed';
     case Unconfirmed = 'unconfirmed';
     case Refused = 'refused';
+    case TurnFailed = 'turn_failed';
 }

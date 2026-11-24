@@ -22,18 +22,14 @@ const (
 	operationResendReady = "resend_readiness"
 )
 
-// maxBatch is the fixed cut-off of consecutive deliveries one turn takes.
-const maxBatch = 8
-
-// Admission is what one runtime may do next: a control to carry out at once, settings to stage, and either the
-// deliveries and wakes of one turn or one key script run alone. Superseded settings were replaced by a later one of
-// the same kind before they ran.
+// Admission is what one runtime may do next: a control to carry out at once, settings to stage, and either the one
+// delivery or wake that makes a turn, as the journal sent it, or one key script run alone. Superseded settings were
+// replaced by a later one of the same kind before they ran.
 type Admission struct {
 	Control    *client.ClaimedRequest
 	Staged     []client.ClaimedRequest
 	Superseded []client.ClaimedRequest
-	Deliveries []client.ClaimedRequest
-	Wakes      []client.ClaimedRequest
+	Turn       *client.ClaimedRequest
 	Script     *client.ClaimedRequest
 	// Navigation is a round of the main agent on the runtime's stalled screen: admitted while the runtime is held
 	// for it, and alone.
@@ -42,13 +38,13 @@ type Admission struct {
 
 // IsEmpty says whether the admission asks for nothing.
 func (admission Admission) IsEmpty() bool {
-	return admission.Control == nil && len(admission.Staged) == 0 && len(admission.Deliveries) == 0 &&
-		len(admission.Wakes) == 0 && admission.Script == nil && admission.Navigation == nil
+	return admission.Control == nil && len(admission.Staged) == 0 && admission.Turn == nil &&
+		admission.Script == nil && admission.Navigation == nil
 }
 
 // ShouldStartTurn says whether the admission starts a turn of the program.
 func (admission Admission) ShouldStartTurn() bool {
-	return len(admission.Deliveries) > 0 || len(admission.Wakes) > 0
+	return admission.Turn != nil
 }
 
 // RuntimeQueue keeps one runtime's claimed requests in their accepted order and decides what may run next
@@ -85,8 +81,8 @@ func (queue *RuntimeQueue) SettingsReconciled() { queue.reconciling = false }
 // Next takes what may run now out of the queue. A stop or an interrupt goes first, past everything; an interrupt also
 // holds the runtime, so nothing waiting restarts work until it is released. A held runtime admits nothing else. A
 // busy runtime only stages the settings at the front of the queue. An idle one stages those settings, then takes a
-// key script at the front to run alone, or else the deliveries and wakes up to the next barrier, at most maxBatch
-// deliveries, as one turn.
+// key script at the front to run alone, or else the delivery or wake at the front as one turn: the journal builds each
+// turn's whole prompt, so the host joins none.
 func (queue *RuntimeQueue) Next() Admission {
 	if control, found := queue.takeControl(); found {
 		if control.Operation == operationInterrupt {
@@ -108,15 +104,9 @@ func (queue *RuntimeQueue) Next() Admission {
 		queue.pending = queue.pending[1:]
 		return admission
 	}
-	for len(queue.pending) > 0 {
-		next := queue.pending[0]
-		if next.Operation == operationDeliver && len(admission.Deliveries) < maxBatch {
-			admission.Deliveries = append(admission.Deliveries, next)
-		} else if next.Operation == operationWake {
-			admission.Wakes = append(admission.Wakes, next)
-		} else {
-			break
-		}
+	if len(queue.pending) > 0 && (queue.pending[0].Operation == operationDeliver || queue.pending[0].Operation == operationWake) {
+		turn := queue.pending[0]
+		admission.Turn = &turn
 		queue.pending = queue.pending[1:]
 	}
 	return admission

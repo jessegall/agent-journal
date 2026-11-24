@@ -6,7 +6,7 @@ namespace Tests\Feature\Communication;
 
 use App\Commands\ReadMessages\ReadMessagesCommand;
 use App\Commands\ReplyToMessage\ReplyToMessageCommand;
-use App\Contracts\Actors\ActorWorkStacks;
+use App\Contracts\Work\CurrentState;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Messages\Message;
 use App\Support\MessageAnswerActivation;
@@ -73,6 +73,6 @@ final class MessageActivationTest extends MessagingTestCase
      */
     private function currentFrame(): Option
     {
-        return $this->app->make(ActorWorkStacks::class)->current(AnsweringMessageStateReference::TYPE_KEY);
+        return $this->app->make(CurrentState::class)->ofCaller(AnsweringMessageStateReference::TYPE_KEY);
     }
 }

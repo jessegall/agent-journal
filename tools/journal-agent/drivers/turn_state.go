@@ -12,12 +12,11 @@ import (
 type turnState struct {
 	mutex    sync.Mutex
 	effort   string
-	finished chan error
+	finished chan contracts.TurnEnd
 }
 
-// Finished delivers the end of the current turn: nil for a normal end, which leaves the runtime eligible for the
-// next turn; an error fails that turn and the host holds the runtime instead of running it again.
-func (state *turnState) Finished() <-chan error {
+// Finished delivers what the host saw when the current turn ended, for the journal to judge.
+func (state *turnState) Finished() <-chan contracts.TurnEnd {
 	state.mutex.Lock()
 	defer state.mutex.Unlock()
 	return state.finished

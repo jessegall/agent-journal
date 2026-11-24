@@ -12,7 +12,7 @@ import (
 
 func boundWake() client.ClaimedRequest {
 	start := "start-1"
-	request := claimed("wake-1", 1, "wake", "")
+	request := claimed("wake-1", 1, "wake", "Check your work.")
 	request.Attempt = 3
 	request.SessionID = "session-1"
 	request.ProcessStartID = &start

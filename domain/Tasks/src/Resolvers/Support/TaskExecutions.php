@@ -6,11 +6,12 @@ namespace Domain\Tasks\Resolvers\Support;
 
 use App\Contracts\Actors\ActorLabels;
 use App\Contracts\Processes\RunClaims;
-use App\Support\ActorIdentity;
+use App\Contracts\Work\AgentFocuses;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
 use Domain\Tasks\Values\TaskExecution;
 use Illuminate\Support\Collection;
+use PhpOption\Option;
 
 /**
  * The execution summary of a page of tasks, with every agent label read in one batch: no read per task.
@@ -20,6 +21,7 @@ final readonly class TaskExecutions
     public function __construct(
         private ActorLabels $labels,
         private RunClaims $claims,
+        private AgentFocuses $focuses,
     ) {}
 
     /**
@@ -38,15 +40,20 @@ final readonly class TaskExecutions
 
         $runners = array_map(fn (TaskRun $run) => $holders[$run->id] ?? $run->starter, $runs);
 
-        $focusers = $tasks
-            ->flatMap(fn (Task $task) => $task->focuser()->map(fn (ActorIdentity $agent) => [$agent])->getOrElse([]))
-            ->all();
+        $focusers = $this->focuses->focusersOf(
+            array_values($tasks->map(fn (Task $task) => $task->focusIdentity())->all()),
+        );
 
-        $labels = $this->labels->labelsFor([...array_values($runners), ...$focusers]);
+        $labels = $this->labels->labelsFor([...array_values($runners), ...array_values($focusers)]);
 
         return $tasks->mapWithKeys(fn (Task $task) => [
             $task->id => isset($runners[$task->id])
-                ? $task->executionBy($runners[$task->id], $labels, isset($holders[$runs[$task->id]->id]))
+                ? $task->executionBy(
+                    $runners[$task->id],
+                    $labels,
+                    isset($holders[$runs[$task->id]->id]),
+                    Option::fromArraysValue($focusers, $task->focusIdentity()->reference()),
+                )
                 : null,
         ])->all();
     }

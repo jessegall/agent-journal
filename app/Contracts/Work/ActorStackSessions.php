@@ -7,13 +7,12 @@ namespace App\Contracts\Work;
 use App\Support\ActorIdentity;
 
 /**
- * What the owner of an actor type answers for stack admission: the session stacks the acting actor's operation must
- * be admitted to before its transaction opens; an actor that works on no stack has none.
+ * The session stacks the operation of whoever acts in this request must be admitted to, from its type's provider.
  */
-interface WorkStackProvider
+interface ActorStackSessions
 {
     /**
-     * @return list<string> session ids
+     * @return list<string> session ids, sorted, so every operation admits them in one order
      */
     public function sessionsToAdmit(): array;
 

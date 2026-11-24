@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Sessions\CurrentSession;
-use App\Contracts\Work\WorkStackProvider;
+use App\Contracts\Work\ActorStackSessionProvider;
 use App\Models\Agents\AgentSession;
 
 /**
  * An agent works on the stack of the session its signed call came from; an agent acting outside a signed call has
  * none to admit.
  */
-final readonly class AgentWorkStack implements WorkStackProvider
+final readonly class AgentStackSessions implements ActorStackSessionProvider
 {
     private const int RUNNING_SESSIONS_READ = 20;
 

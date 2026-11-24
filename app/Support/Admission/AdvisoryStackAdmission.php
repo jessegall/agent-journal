@@ -7,7 +7,7 @@ namespace App\Support\Admission;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Admission\StackAdmission;
 use App\Contracts\Authorization\EngineTargetAccess;
-use App\Contracts\Work\WorkStacks;
+use App\Contracts\Work\ActorStackSessions;
 use App\Support\OperationDeadline;
 use App\Support\SessionAdvisoryLocks;
 use App\Support\StateEvents\StateEventScope;
@@ -36,7 +36,7 @@ final class AdvisoryStackAdmission implements StackAdmission
     public function __construct(
         private readonly DatabaseManager $databases,
         private readonly SessionAdvisoryLocks $locks,
-        private readonly WorkStacks $workStacks,
+        private readonly ActorStackSessions $stackSessions,
         private readonly CurrentActor $actors,
         private readonly EngineTargetAccess $engine,
         private readonly StateEventScope $eventScope,
@@ -67,7 +67,7 @@ final class AdvisoryStackAdmission implements StackAdmission
      */
     public function admitCaller(OperationDeadline $deadline, Closure $work): mixed
     {
-        $sessions = $this->workStacks->sessionsToAdmit();
+        $sessions = $this->stackSessions->sessionsToAdmit();
         $admitted = fn () => $this->withEventTargets($sessions, $work);
 
         foreach (array_reverse($sessions) as $sessionId) {
