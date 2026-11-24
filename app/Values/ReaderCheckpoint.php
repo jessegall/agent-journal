@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Contracts\Settings\StoredValue;
 use App\Enums\OutputStream;
 use App\Enums\RecordRole;
+use App\Support\Stored\StoredReaderCheckpoint;
 
 /**
  * Where a reader stands in a part's output: per stream the next offset it expects and the unfinished line it holds,
@@ -25,7 +27,7 @@ use App\Enums\RecordRole;
  *   }>,
  * }
  */
-final readonly class ReaderCheckpoint
+final readonly class ReaderCheckpoint implements StoredValue
 {
     /**
      * @param  array<string, int>  $offsets  stream => next offset
@@ -73,16 +75,16 @@ final readonly class ReaderCheckpoint
         ];
     }
 
-    /**
-     * @param  CheckpointFields  $fields
-     */
-    public static function fromArray(array $fields): self
+    public static function fromJson(string $json): self
     {
-        return new self(
-            $fields['offsets'],
-            array_map(fn (string $bytes) => (string) base64_decode($bytes, true), $fields['pending']),
-            array_map(OutputRecord::fromArray(...), $fields['records']),
-            array_map(OutputProblem::fromArray(...), $fields['problems']),
-        );
+        return StoredReaderCheckpoint::from(json_decode($json, true, flags: JSON_THROW_ON_ERROR))->checkpoint();
+    }
+
+    public static function listFromJson(string $json): array
+    {
+        return array_values(array_map(
+            fn (StoredReaderCheckpoint $stored) => $stored->checkpoint(),
+            StoredReaderCheckpoint::collect(json_decode($json, true, flags: JSON_THROW_ON_ERROR)),
+        ));
     }
 }

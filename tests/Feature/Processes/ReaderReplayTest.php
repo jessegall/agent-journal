@@ -38,7 +38,7 @@ final class ReaderReplayTest extends TestCase
 
         $position = $this->livePosition($part);
         $this->assertSame(InterpretationState::Provisional, $position->interpretation);
-        $this->assertSame(['stdout' => strlen(self::PASSED_OUTPUT)], $position->checkpoint()->offsets);
+        $this->assertSame(['stdout' => strlen(self::PASSED_OUTPUT)], $position->checkpoint->offsets);
     }
 
     public function test_an_oversized_record_fails_the_reader_alone_and_capture_goes_on(): void

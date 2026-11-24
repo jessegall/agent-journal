@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Runs;
 
+use App\Casts\StoredValueCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
@@ -17,8 +18,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * @phpstan-import-type CheckpointFields from ReaderCheckpoint
- *
  * Where one reader revision stands in one part's output: its checkpoint after the last committed chunk it read, so
  * it resumes there instead of reading from the start.
  *
@@ -26,7 +25,7 @@ use Illuminate\Support\Carbon;
  * @property string $part_run_id
  * @property string $reader_revision_id
  * @property PositionPurpose $purpose
- * @property CheckpointFields $checkpoint
+ * @property ReaderCheckpoint $checkpoint
  * @property InterpretationState $interpretation Provisional while reading, ReaderFailed once the reader broke
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -48,7 +47,7 @@ final class ReaderPosition extends Model implements ReadableModel
     {
         return [
             'purpose' => PositionPurpose::class,
-            'checkpoint' => 'array',
+            'checkpoint' => StoredValueCast::class.':'.ReaderCheckpoint::class,
             'interpretation' => InterpretationState::class,
         ];
     }
@@ -88,14 +87,14 @@ final class ReaderPosition extends Model implements ReadableModel
      */
     public function rewindTo(ReaderCheckpoint $consumed): void
     {
-        $this->checkpoint = $consumed->toArray();
+        $this->checkpoint = $consumed;
         $this->interpretation = InterpretationState::Provisional;
         $this->save();
     }
 
     public function advance(ReaderCheckpoint $checkpoint): void
     {
-        $this->checkpoint = $checkpoint->toArray();
+        $this->checkpoint = $checkpoint;
         $this->save();
     }
 
@@ -104,11 +103,6 @@ final class ReaderPosition extends Model implements ReadableModel
     public function hasFailed(): bool
     {
         return $this->interpretation === InterpretationState::ReaderFailed;
-    }
-
-    public function checkpoint(): ReaderCheckpoint
-    {
-        return ReaderCheckpoint::fromArray($this->checkpoint);
     }
 
     // ----------[ Internals ]----------
@@ -126,7 +120,7 @@ final class ReaderPosition extends Model implements ReadableModel
 
         $position = new self([
             ...$identity,
-            'checkpoint' => $checkpoint->toArray(),
+            'checkpoint' => $checkpoint,
             'interpretation' => InterpretationState::Provisional,
         ]);
 

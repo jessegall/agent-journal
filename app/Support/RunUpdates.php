@@ -51,7 +51,7 @@ final readonly class RunUpdates
             $part->id,
             $position === null ? '' : $position->reader_revision_id,
             $assessment === null ? '' : $assessment->id,
-            $position === null ? [] : $position->checkpoint()->offsets,
+            $position === null ? [] : $position->checkpoint->offsets,
         );
 
         $this->events->dispatch(new RunChanged($run->id, $run->nextUpdate(), [$projection]));

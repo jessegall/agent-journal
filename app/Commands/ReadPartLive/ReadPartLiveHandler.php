@@ -45,7 +45,7 @@ final readonly class ReadPartLiveHandler implements CommandHandler
 
         $definition = $pairs[0]->reader->readerDefinition();
         $reader = new DeclarativeReader($definition, $pairs[0]->contract->output, $position->reader_revision_id);
-        $checkpoint = $position->checkpoint();
+        $checkpoint = $position->checkpoint;
 
         try {
             foreach ($part->recordedStreams as $stream) {
