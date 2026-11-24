@@ -55,6 +55,7 @@ use Tests\Fixtures\Hooks\ScriptedState;
  */
 trait CommittedHookStack
 {
+    use InstallsBuiltInProfiles;
     use RefreshHookDatabase;
     use RegistersTestStates;
 
