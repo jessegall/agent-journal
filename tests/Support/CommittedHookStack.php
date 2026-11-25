@@ -11,7 +11,6 @@ use App\Contracts\Processes\ShellCommandParser;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Drivers\RewriteSupport;
 use App\Enums\Engine\NoSubject;
-use App\Enums\Hooks\ToolOutcome;
 use App\Enums\Processes\ShellDialect;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
@@ -22,21 +21,15 @@ use App\Support\ActorIdentity;
 use App\Support\ActorProvisioning;
 use App\Support\AgentContext;
 use App\Support\AgentRuntimes;
-use App\Support\AgentStacks;
 use App\Support\Drivers\DriverCapabilities;
 use App\Support\Drivers\DriverReplies;
 use App\Support\Inputs\ShellCommandRequested;
 use App\Support\Inputs\StopRequested;
-use App\Support\Inputs\ToolFinished;
-use App\Support\Inputs\Values\DriverToolInput;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\Inputs\Values\StopDetails;
-use App\Support\Inputs\Values\ToolResult;
-use App\Support\OperationDeadline;
 use App\Support\References\StateReference;
 use App\Support\References\SubjectReference;
 use App\Support\SignedCall;
-use App\Support\Stack\HookAnswer;
 use App\Support\StackTransaction;
 use App\Support\StartStacks;
 use App\Support\Storage\FrameRecord;
@@ -88,7 +81,7 @@ trait CommittedHookStack
         $this->makeStatesWith(ScriptedState::class, fn () => ScriptedState::passing());
         $this->registerTestState('test.messaging', MessageState::class);
         $this->registerTestState('test.rewriting', RewriteState::class);
-        $this->callAs('call-1');
+        $this->journal->actAsAgentOf($this->target);
         $this->app->make(StackTransaction::class)->run(
             fn () => $this->app->make(StartStacks::class)->open($this->target),
         );
@@ -156,34 +149,13 @@ trait CommittedHookStack
     }
 
     /**
-     * The answer the machine gives a stop from the started agent under this call id.
+     * What the started agent's program is told when it asks to stop, answered through the journal.
      */
-    protected function answerStop(string $callId): string
+    protected function answerStop(): string
     {
-        $this->callAs($callId);
+        $answer = $this->journal->answerHook($this->target, $this->stop(), $this->capabilities());
 
-        return $this->machine()->answer(
-            $this->stop(),
-            $this->capabilities(),
-            new OperationDeadline(3000),
-            fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::stop($answer, $texts),
-        )->stdout;
-    }
-
-    protected function answerToolFinished(string $callId): void
-    {
-        $this->callAs($callId);
-        $finished = new ToolFinished(
-            $this->hookIdentity(),
-            new ToolResult('Bash', ToolOutcome::Succeeded, new DriverToolInput(['command' => 'ls'])),
-        );
-
-        $this->machine()->answer(
-            $finished,
-            $this->capabilities(),
-            new OperationDeadline(3000),
-            fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::allowTool($answer->shownContext($texts)),
-        );
+        return DriverReplies::stop($answer, $this->app->make(AgentTexts::class))->stdout;
     }
 
     protected function callAs(string $callId, string|null $inputDigest = null): void
@@ -200,13 +172,6 @@ trait CommittedHookStack
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent(TestIds::of(1)),
             TestStartAuthority::forAgent(TestIds::of(1)),
-        );
-    }
-
-    protected function pushState(StateReference $state): void
-    {
-        $this->app->make(StackTransaction::class)->run(
-            fn () => $this->app->make(AgentStacks::class)->push($this->target, $state),
         );
     }
 

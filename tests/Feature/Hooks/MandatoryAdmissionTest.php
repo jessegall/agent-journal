@@ -72,7 +72,7 @@ final class MandatoryAdmissionTest extends TestCase
 
     public function test_an_allowed_line_cannot_skip_the_admission(): void
     {
-        $this->pushState(new StateReference('guide', NoSubject::None));
+        $this->journal->pushState($this->target, new StateReference('guide', NoSubject::None));
 
         $answer = $this->answerShell('acme publish --everything');
 
@@ -92,7 +92,7 @@ final class MandatoryAdmissionTest extends TestCase
 
     public function test_a_rewritten_line_is_admitted_as_its_replacement_and_its_refusal_keeps_the_old_stack(): void
     {
-        $this->pushState($this->rewriting());
+        $this->journal->pushState($this->target, $this->rewriting());
 
         $answer = $this->answerShell('make docs');
 

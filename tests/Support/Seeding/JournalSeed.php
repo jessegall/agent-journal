@@ -23,6 +23,7 @@ use App\Support\DomainRegistry;
 use App\Support\StartedAgent;
 use App\Support\StartSessions;
 use App\Values\SelectedDriver;
+use App\Values\StackTarget;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Foundation\Application;
@@ -354,6 +355,17 @@ final class JournalSeed
     public function asGuest(): self
     {
         $this->requests->asGuest();
+
+        return $this;
+    }
+
+    /**
+     * Acts as the agent of a stack target a test made itself, under the authority its start gives it, keeping what the
+     * request bound in its scope.
+     */
+    public function actAsAgentOf(StackTarget $target): self
+    {
+        $this->requests->asAgent($target->agentId, $target->sessionId);
 
         return $this;
     }

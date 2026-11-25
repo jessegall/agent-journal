@@ -109,7 +109,10 @@ final class CodexTest extends TestCase
 
     public function test_a_denial_carries_its_reason(): void
     {
-        $reply = json_decode($this->render('shell command', Decision::deny(TestText::of(self::DENIAL_REASON)))->stdout, true);
+        $reply = json_decode(
+$this->render('shell command', Decision::deny(TestText::of(self::DENIAL_REASON)))->stdout,
+ true,
+);
 
         $this->assertSame('deny', $reply['hookSpecificOutput']['permissionDecision']);
         $this->assertSame(self::DENIAL_REASON, $reply['hookSpecificOutput']['permissionDecisionReason']);
@@ -146,7 +149,10 @@ final class CodexTest extends TestCase
 
         $this->assertSame([], $settled->stack->frameIds());
         $this->assertSame('deny', $reply['hookSpecificOutput']['permissionDecision']);
-        $this->assertSame(TestText::words(AgentText::of('core.drivers.rewrite_refused')), $reply['hookSpecificOutput']['permissionDecisionReason']);
+        $this->assertSame(
+TestText::words(AgentText::of('core.drivers.rewrite_refused')),
+ $reply['hookSpecificOutput']['permissionDecisionReason'],
+);
         $this->assertArrayNotHasKey('updatedInput', $reply['hookSpecificOutput']);
     }
 
@@ -169,7 +175,12 @@ final class CodexTest extends TestCase
     {
         return $this->renderAnswer(
             $name,
-            new HookAnswer($decision, [], [], new AgentStack([], new InMemoryStateFactory(), new StackTarget('agent-1', 'session-1'))),
+            new HookAnswer(
+$decision,
+ [],
+ [],
+ new AgentStack([], new InMemoryStateFactory(), new StackTarget('agent-1', 'session-1')),
+),
         );
     }
 

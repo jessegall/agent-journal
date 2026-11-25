@@ -7,11 +7,8 @@ namespace Tests\Feature\Hooks;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Drivers\RewriteSupport;
 use App\Support\Drivers\DriverCapabilities;
-use App\Support\Drivers\DriverReply;
 use App\Support\Inputs\ContextCompacted;
 use App\Support\Inputs\Values\CompactionDetails;
-use App\Support\OperationDeadline;
-use App\Support\Stack\HookAnswer;
 use Domain\Memory\MemoryDomain;
 use Domain\Memory\Models\Memory;
 use Domain\Rules\Models\Rule;
@@ -50,7 +47,12 @@ final class HookCompactionTest extends TestCase
      */
     protected static function bootedDomains(): array
     {
-        return DomainBoot::withRequirements(MemoryDomain::class, RulesDomain::class, SequencesDomain::class, TasksDomain::class);
+        return DomainBoot::withRequirements(
+            MemoryDomain::class,
+            RulesDomain::class,
+            SequencesDomain::class,
+            TasksDomain::class,
+        );
     }
 
     private Task $task;
@@ -86,7 +88,9 @@ final class HookCompactionTest extends TestCase
             array_values(array_filter($context, fn (string $line) => str_contains($line, 'An old rule.'))),
         );
         $this->assertContains(
-            TestText::words(new FollowSequenceState($this->run->id, $this->run->number, $this->run->steps)->instruction()->get()),
+            TestText::words(
+                new FollowSequenceState($this->run->id, $this->run->number, $this->run->steps)->instruction()->get(),
+            ),
             $context,
         );
     }
@@ -105,7 +109,6 @@ final class HookCompactionTest extends TestCase
      */
     private function compact(string $callId): string
     {
-        $this->callAs($callId, hash('sha256', $callId));
         $compaction = new ContextCompacted(
             TestActors::hookIdentity(1, 10, $callId, hash('sha256', $callId)),
             new CompactionDetails($callId),
@@ -117,14 +120,7 @@ final class HookCompactionTest extends TestCase
             RewriteSupport::WithoutApproval,
         );
 
-        $reply = $this->machine()->answer(
-            $compaction,
-            $capabilities,
-            new OperationDeadline(3000),
-            fn (HookAnswer $answer) => new DriverReply((string) json_encode($answer->context), '', 0),
-        );
-
-        return $reply->stdout;
+        return (string) json_encode($this->journal->answerHook($this->target, $compaction, $capabilities)->context);
     }
 
     private function remember(string $text, int $weight): void

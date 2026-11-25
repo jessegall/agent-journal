@@ -25,7 +25,6 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\TestStartAuthority;
-use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 final class HookEndpointTest extends TestCase

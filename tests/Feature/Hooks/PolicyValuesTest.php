@@ -57,7 +57,14 @@ final class PolicyValuesTest extends TestCase
             ['push'],
             1,
         );
-        $edit = new Operation('tool', 'tool:edit', [AccessType::Edit], [ResourceRequest::path('/workspace/a.php')], [], 1);
+        $edit = new Operation(
+'tool',
+ 'tool:edit',
+ [AccessType::Edit],
+ [ResourceRequest::path('/workspace/a.php')],
+ [],
+ 1,
+);
         $secret = new Operation(
             'tool',
             'tool:read',
@@ -100,7 +107,14 @@ final class PolicyValuesTest extends TestCase
 
     public function test_an_escaping_operand_and_an_unknown_access_type_are_refused(): void
     {
-        $escaping = new Operation('tool', 'tool:read', [AccessType::Read], [ResourceRequest::path('../outside')], [], 1);
+        $escaping = new Operation(
+'tool',
+ 'tool:read',
+ [AccessType::Read],
+ [ResourceRequest::path('../outside')],
+ [],
+ 1,
+);
 
         $this->assertSame(
             AccessRuleType::Unclassified,

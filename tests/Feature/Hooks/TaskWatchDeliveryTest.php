@@ -55,15 +55,24 @@ final class TaskWatchDeliveryTest extends TestCase
     public function test_real_task_events_visit_every_live_watch_from_the_top_and_each_watch_answers_the_stop(): void
     {
         $taskId = TestIds::of(42);
-        $this->pushState($this->task(42));
-        $this->pushState(new StateReference('tasks.task_watch', new SubjectReference($taskId, 1), ['taskId' => $taskId, 'runNumber' => 1]));
-        $this->pushState(new StateReference('tasks.ordinary_task_watch', new SubjectReference($taskId, 2), ['taskId' => $taskId, 'runNumber' => 2]));
-        $this->pushState(new StateReference('tasks.task_watch', new SubjectReference($taskId, 3), ['taskId' => $taskId, 'runNumber' => 3]));
+        $this->journal->pushState($this->target, $this->task(42));
+        $this->journal->pushState(
+$this->target,
+ new StateReference('tasks.task_watch', new SubjectReference($taskId, 1), ['taskId' => $taskId, 'runNumber' => 1]),
+);
+        $this->journal->pushState(
+$this->target,
+ new StateReference('tasks.ordinary_task_watch', new SubjectReference($taskId, 2), ['taskId' => $taskId, 'runNumber' => 2]),
+);
+        $this->journal->pushState(
+$this->target,
+ new StateReference('tasks.task_watch', new SubjectReference($taskId, 3), ['taskId' => $taskId, 'runNumber' => 3]),
+);
 
         $attention = new RecordedAttention();
         $this->app->instance(ActorAttention::class, $attention);
         $trace = [];
-        $logger = $this->createMock(LoggerInterface::class);
+        $logger = $this->createStub(LoggerInterface::class);
         $logger->method('debug')->willReturnCallback(
             static function (string $message, array $context) use (&$trace): void {
                 if ($message === 'Calling a state event method.') {
@@ -93,13 +102,20 @@ final class TaskWatchDeliveryTest extends TestCase
         ], $this->app->make(TaskWatchLog::class)->records);
         $this->assertSame([], $attention->wakes);
         $this->assertSame(
-            [TaskFinished::class, TaskFinished::class, TaskFinished::class, TaskCancelled::class, TaskCancelled::class, TaskCancelled::class],
+            [
+TaskFinished::class,
+ TaskFinished::class,
+ TaskFinished::class,
+ TaskCancelled::class,
+ TaskCancelled::class,
+ TaskCancelled::class,
+],
             array_column($trace, 0),
         );
         $this->assertSame(array_slice(array_column($trace, 1), 0, 3), array_slice(array_column($trace, 1), 3));
 
-        $this->answerStop('call-1');
-        $steps = HookCall::query()->forHookId('call-1')->sole()->steps->steps;
+        $this->answerStop();
+        $steps = HookCall::query()->forHookId('hook-call-1')->sole()->steps->steps;
         $this->assertSame(
             [AnswerType::Delegate, AnswerType::Delegate, AnswerType::Delegate, AnswerType::Deny],
             array_column($steps, 'answer'),

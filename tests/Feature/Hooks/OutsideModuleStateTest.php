@@ -24,12 +24,12 @@ final class OutsideModuleStateTest extends TestCase
 
     public function test_a_module_outside_the_domains_registers_and_pushes_its_own_state(): void
     {
-        $this->pushState(new StateReference('notes.writing', NoSubject::None));
+        $this->journal->pushState($this->target, new StateReference('notes.writing', NoSubject::None));
 
         $this->assertSame(['core.ready', 'notes.writing'], $this->storedTypeKeys());
         $this->assertSame(
             json_encode(['decision' => 'block', 'reason' => self::NOTE_REASON]),
-            $this->answerStop('call-2'),
+            $this->answerStop(),
         );
     }
 

@@ -9,20 +9,13 @@ use App\Enums\Agents\AccessType;
 use App\Enums\Drivers\RewriteSupport;
 use App\Enums\Hooks\ContextStartType;
 use App\Mcp\Support\McpInstructions;
-use App\Support\AgentContext;
 use App\Support\Drivers\DriverCapabilities;
-use App\Support\Drivers\DriverReply;
 use App\Support\Inputs\SessionStarted;
 use App\Support\Inputs\Values\SessionStartDetails;
-use App\Support\OperationDeadline;
-use App\Support\SignedCall;
-use App\Support\Stack\HookAnswer;
-use Carbon\CarbonImmutable;
 use Tests\Fixtures\Actors\FixedCurrentAuthorizer;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\TestActors;
-use Tests\Support\TestIds;
 use Tests\Support\TestText;
 use Tests\TestCase;
 
@@ -83,17 +76,7 @@ final class McpInstructionsTest extends TestCase
      */
     private function startAs(): array
     {
-        $this->callAs('call-1', hash('sha256', 'call-1'));
         $this->app->instance(CurrentAuthorizer::class, new FixedCurrentAuthorizer([AccessType::Delegate]));
-        $this->app->instance(
-            AgentContext::class,
-            new AgentContext(
-                TestIds::of(1),
-                TestIds::of(10),
-                new SignedCall('call-1', CarbonImmutable::now(), hash('sha256', 'call-1')),
-                null,
-            ),
-        );
         $start = new SessionStarted(
             TestActors::hookIdentity(1, 10, 'call-1', hash('sha256', 'call-1')),
             new SessionStartDetails('native-1', ContextStartType::Start, null),
@@ -105,18 +88,6 @@ final class McpInstructionsTest extends TestCase
             RewriteSupport::WithoutApproval,
         );
 
-        $context = [];
-        $this->machine()->answer(
-            $start,
-            $capabilities,
-            new OperationDeadline(3000),
-            function (HookAnswer $answer) use (&$context): DriverReply {
-                $context = $answer->context;
-
-                return new DriverReply('', '', 0);
-            },
-        );
-
-        return $context;
+        return $this->journal->answerHook($this->target, $start, $capabilities)->context;
     }
 }

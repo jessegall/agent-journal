@@ -21,10 +21,8 @@ use App\Support\Inputs\Values\FileChange;
 use App\Support\Inputs\Values\FileChanges;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\Inputs\Values\PromptDetails;
-use App\Support\OperationDeadline;
 use App\Support\PendingWorkSources;
 use App\Support\References\StateReference;
-use App\Support\Stack\HookAnswer;
 use App\Support\StateEvents\StateEventDispatch;
 use App\Support\StateEvents\StateEventScope;
 use App\Values\StackTarget;
@@ -47,9 +45,9 @@ final class AgentMessageDeliveryTest extends TestCase
         Agent::query()->findOrFail($this->target->agentId)->adoptRuntime(
             AgentSession::query()->findOrFail($this->target->sessionId),
         );
-        $this->pushState(new StateReference('test.messaging', NoSubject::None));
+        $this->journal->pushState($this->target, new StateReference('test.messaging', NoSubject::None));
 
-        $reply = $this->answerStop('call-1');
+        $reply = $this->answerStop();
 
         $this->assertSame('{}', $reply);
         $this->assertSame(1, PendingAgentMessage::countFor($this->target->actorIdentity()));
@@ -61,8 +59,8 @@ final class AgentMessageDeliveryTest extends TestCase
 
     public function test_the_turn_the_wake_starts_gets_the_message_as_context_once(): void
     {
-        $this->pushState(new StateReference('test.messaging', NoSubject::None));
-        $this->answerStop('call-1');
+        $this->journal->pushState($this->target, new StateReference('test.messaging', NoSubject::None));
+        $this->answerStop();
 
         $first = $this->answerPrompt('call-2');
         $second = $this->answerPrompt('call-3');
@@ -77,18 +75,16 @@ final class AgentMessageDeliveryTest extends TestCase
 
     public function test_a_busy_agent_gets_the_message_in_the_reply_and_is_not_woken(): void
     {
-        $this->pushState(new StateReference('test.messaging', NoSubject::None));
-        $this->callAs('call-1');
-
-        $reply = $this->machine()->answer(
+        $this->journal->pushState($this->target, new StateReference('test.messaging', NoSubject::None));
+        $answer = $this->journal->answerHook(
+            $this->target,
             new FileEditRequested(
                 $this->hookIdentityFor('call-1'),
                 new FileChanges([new FileChange('app/Models/Task.php', FileOperation::Edit)]),
             ),
             $this->messagingCapabilities(),
-            new OperationDeadline(3000),
-            fn (HookAnswer $answer) => DriverReplies::allowTool($answer->context),
-        )->stdout;
+        );
+        $reply = DriverReplies::allowTool($answer->context)->stdout;
 
         $this->assertSame(MessageState::TEXT, $this->contextOf($reply));
         $this->assertSame(0, PendingAgentMessage::countFor($this->target->actorIdentity()));
@@ -104,17 +100,16 @@ final class AgentMessageDeliveryTest extends TestCase
 
     private function answerPrompt(string $callId): string
     {
-        $this->callAs($callId);
-
-        return $this->machine()->answer(
+        $answer = $this->journal->answerHook(
+            $this->target,
             new PromptSubmitted(
                 $this->hookIdentityFor($callId),
                 new PromptDetails($callId, 'Check your pending journal work.', $callId),
             ),
             $this->messagingCapabilities(),
-            new OperationDeadline(3000),
-            fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::prompt($answer, $texts),
-        )->stdout;
+        );
+
+        return DriverReplies::prompt($answer, $this->app->make(AgentTexts::class))->stdout;
     }
 
     private function messagingCapabilities(): DriverCapabilities

@@ -77,9 +77,12 @@ final class StateEventDeliveryTest extends TestCase
 
     public function test_every_live_listener_answers_from_the_top_down(): void
     {
-        $this->pushState(new StateReference('notes.writing', NoSubject::None));
-        $this->pushState(new StateReference('notes.watching', new SubjectReference('lower', 1)));
-        $this->pushState(new StateReference('notes.watching', NoSubject::None));
+        $this->journal->pushState($this->target, new StateReference('notes.writing', NoSubject::None));
+        $this->journal->pushState(
+$this->target,
+ new StateReference('notes.watching', new SubjectReference('lower', 1)),
+);
+        $this->journal->pushState($this->target, new StateReference('notes.watching', NoSubject::None));
 
         $this->dispatch(new NoteWritten(
             ordinary: [new RecordNoteEffectCommand('watching')],
@@ -91,8 +94,8 @@ final class StateEventDeliveryTest extends TestCase
 
     public function test_a_failed_collection_runs_no_effect_of_any_selected_listener(): void
     {
-        $this->pushState(new StateReference('notes.writing', NoSubject::None));
-        $this->pushState(new StateReference('notes.watching', NoSubject::None));
+        $this->journal->pushState($this->target, new StateReference('notes.writing', NoSubject::None));
+        $this->journal->pushState($this->target, new StateReference('notes.watching', NoSubject::None));
         $effects = $this->app->make(NoteEffects::class);
 
         $ordinary = [];
@@ -103,20 +106,24 @@ final class StateEventDeliveryTest extends TestCase
         });
 
         try {
-            $this->dispatch(new NoteWritten(doesListenerFail: true, ordinary: [new RecordNoteEffectCommand('partial')]));
+            $this->dispatch(
+new NoteWritten(doesListenerFail: true, ordinary: [new RecordNoteEffectCommand('partial')]),
+);
             $this->fail('The failing state returned successfully.');
         } catch (NoteWorkFailed) {
             $this->assertCount(1, $ordinary);
             $this->assertSame([], $effects->labels);
         }
 
-        $this->dispatch(new NoteWritten(ordinary: [new RecordNoteEffectCommand('watching')], marked: [new RecordNoteEffectCommand('writing')]));
+        $this->dispatch(
+new NoteWritten(ordinary: [new RecordNoteEffectCommand('watching')], marked: [new RecordNoteEffectCommand('writing')]),
+);
         $this->assertSame(['watching', 'writing'], $effects->labels);
     }
 
     public function test_a_fact_no_one_admitted_reaches_the_stack_holding_a_state_that_listens_for_it(): void
     {
-        $this->pushState(new StateReference('notes.writing', NoSubject::None));
+        $this->journal->pushState($this->target, new StateReference('notes.writing', NoSubject::None));
 
         $this->app->make(Dispatcher::class)->dispatch(new NoteWritten(marked: [new RecordNoteEffectCommand('heard')]));
 
@@ -125,7 +132,7 @@ final class StateEventDeliveryTest extends TestCase
 
     public function test_a_listener_that_answers_with_a_state_puts_it_on_top_of_its_stack(): void
     {
-        $this->pushState(new StateReference('notes.writing', NoSubject::None));
+        $this->journal->pushState($this->target, new StateReference('notes.writing', NoSubject::None));
 
         $this->app->make(Dispatcher::class)->dispatch(new NoteWritten(asksForGuide: true));
 
@@ -134,7 +141,7 @@ final class StateEventDeliveryTest extends TestCase
 
     public function test_a_fact_no_state_listens_for_reaches_no_stack(): void
     {
-        $this->pushState(new StateReference('notes.watching', NoSubject::None));
+        $this->journal->pushState($this->target, new StateReference('notes.watching', NoSubject::None));
 
         $this->app->make(Dispatcher::class)->dispatch(new NoteAudited());
 
@@ -143,7 +150,7 @@ final class StateEventDeliveryTest extends TestCase
 
     public function test_a_closed_stack_has_no_recipient(): void
     {
-        $this->pushState(new StateReference('notes.writing', NoSubject::None));
+        $this->journal->pushState($this->target, new StateReference('notes.writing', NoSubject::None));
         $this->app->make(StackTransaction::class)->run(
             fn () => $this->app->make(StartStacks::class)->close($this->target),
         );
@@ -155,9 +162,12 @@ final class StateEventDeliveryTest extends TestCase
 
     public function test_a_listener_covered_by_a_new_frame_still_runs_its_remaining_effects(): void
     {
-        $this->pushState(new StateReference('notes.writing', NoSubject::None));
-        $this->pushState(new StateReference('notes.watching', new SubjectReference('original', 1)));
-        $this->pushState(new StateReference('guide', NoSubject::None));
+        $this->journal->pushState($this->target, new StateReference('notes.writing', NoSubject::None));
+        $this->journal->pushState(
+$this->target,
+ new StateReference('notes.watching', new SubjectReference('original', 1)),
+);
+        $this->journal->pushState($this->target, new StateReference('guide', NoSubject::None));
 
         $effects = $this->app->make(NoteEffects::class);
         $effects->afterRecording(function (RecordNoteEffectCommand $command): void {
@@ -180,7 +190,7 @@ final class StateEventDeliveryTest extends TestCase
     public function test_a_recreated_frame_does_not_receive_the_old_occurrences_remaining_effects(): void
     {
         $reference = new StateReference('notes.watching', NoSubject::None);
-        $this->pushState($reference);
+        $this->journal->pushState($this->target, $reference);
         $effects = $this->app->make(NoteEffects::class);
         $effects->afterRecording(function (RecordNoteEffectCommand $command) use ($reference): void {
             if ($command->label === 'replace') {
@@ -192,14 +202,16 @@ final class StateEventDeliveryTest extends TestCase
             }
         });
 
-        $this->dispatch(new NoteWritten(ordinary: [new RecordNoteEffectCommand('replace'), new RecordNoteEffectCommand('stale')]));
+        $this->dispatch(
+new NoteWritten(ordinary: [new RecordNoteEffectCommand('replace'), new RecordNoteEffectCommand('stale')]),
+);
 
         $this->assertSame(['replace'], $effects->labels);
     }
 
     public function test_a_live_origin_does_not_bypass_the_original_actors_command_authorization(): void
     {
-        $this->pushState(new StateReference('notes.watching', NoSubject::None));
+        $this->journal->pushState($this->target, new StateReference('notes.watching', NoSubject::None));
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent($this->target->agentId),
             TestStartAuthority::granting(ProfileBase::mainAgent(), []),
@@ -215,7 +227,7 @@ final class StateEventDeliveryTest extends TestCase
 
     public function test_a_cycle_in_an_effect_fails_visibly_and_a_later_dispatch_is_independent(): void
     {
-        $this->pushState(new StateReference('notes.writing', NoSubject::None));
+        $this->journal->pushState($this->target, new StateReference('notes.writing', NoSubject::None));
         $effects = $this->app->make(NoteEffects::class);
         $effects->afterRecording(function (RecordNoteEffectCommand $command): void {
             if ($command->label === 'reenter') {
@@ -238,7 +250,7 @@ final class StateEventDeliveryTest extends TestCase
 
     public function test_a_fact_dispatched_inside_an_unfinished_hook_waits_for_its_commit_and_never_reenters(): void
     {
-        $this->pushState(new StateReference('notes.writing', NoSubject::None));
+        $this->journal->pushState($this->target, new StateReference('notes.writing', NoSubject::None));
 
         $reply = $this->machine()->answer(
             $this->stop(),
@@ -256,7 +268,7 @@ final class StateEventDeliveryTest extends TestCase
 
     public function test_after_commit_failure_reports_its_stage_and_leaves_the_producers_write(): void
     {
-        $this->pushState(new StateReference('notes.writing', NoSubject::None));
+        $this->journal->pushState($this->target, new StateReference('notes.writing', NoSubject::None));
         $log = $this->createMock(LoggerInterface::class);
         $log->expects($this->once())->method('error')->with(
             'State event delivery failed.',
@@ -284,7 +296,7 @@ final class StateEventDeliveryTest extends TestCase
 
     public function test_a_committed_fact_that_logs_listener_failures_keeps_the_producers_success(): void
     {
-        $this->pushState(new StateReference('notes.writing', NoSubject::None));
+        $this->journal->pushState($this->target, new StateReference('notes.writing', NoSubject::None));
         $log = $this->createMock(LoggerInterface::class);
         $log->expects($this->once())->method('error')->with('State event delivery failed.', $this->anything());
         $this->app->instance(LoggerInterface::class, $log);

@@ -14,6 +14,7 @@ use App\Support\AgentContext;
 use App\Support\Drivers\DriverCapabilities;
 use App\Support\Drivers\DriverReplies;
 use App\Support\Inputs\Contracts\HookInput;
+use App\Support\Inputs\StopRequested;
 use App\Support\OperationDeadline;
 use App\Support\SignedCall;
 use App\Support\Stack\HookAnswer;
@@ -48,16 +49,19 @@ final class FixtureRequests
 
     /**
      * Sends the hook through the target agent's state machine under a signed call id of its own, so it is answered
-     * rather than replayed, and returns the answer the stack gave it; the selection in place comes back on every exit.
+     * rather than replayed, and returns the answer the stack gave it; the test driver replies to a stop with its stop
+     * reply and to every other hook with an allow, and the selection in place comes back on every exit.
      */
     public function answerHook(StackTarget $target, HookInput $input, DriverCapabilities $capabilities): HookAnswer
     {
         $answered = null;
         $callId = 'hook-call-'.++$this->hookCallCount;
-        $render = function (HookAnswer $answer, AgentTexts $texts) use (&$answered) {
+        $render = function (HookAnswer $answer, AgentTexts $texts) use (&$answered, $input) {
             $answered = $answer;
 
-            return DriverReplies::allowTool($answer->shownContext($texts));
+            return $input instanceof StopRequested
+                ? DriverReplies::stop($answer, $texts)
+                : DriverReplies::allowTool($answer->shownContext($texts));
         };
 
         $this->during(

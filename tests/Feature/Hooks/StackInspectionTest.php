@@ -20,14 +20,14 @@ final class StackInspectionTest extends TestCase
     {
         parent::setUp();
 
-        $this->pushState($this->task(42));
-        $this->pushState(new StateReference('guide', NoSubject::None));
+        $this->journal->pushState($this->target, $this->task(42));
+        $this->journal->pushState($this->target, new StateReference('guide', NoSubject::None));
     }
 
     public function test_a_user_sees_the_frames_bottom_first_and_the_last_walk_as_it_ran(): void
     {
-        $this->answerStop('call-1');
-        $stdout = $this->answerStop('call-2');
+        $this->answerStop();
+        $stdout = $this->answerStop();
 
         $inspection = $this->actingAs(User::factory()->create())->getJson(
             '/hooks/stacks/'.TestIds::of(1).'/'.TestIds::of(10),
@@ -43,14 +43,14 @@ final class StackInspectionTest extends TestCase
             array_column($inspection['frames'], 'subject'),
         );
         $this->assertSame([true, false, false], array_column($inspection['frames'], 'isBottom'));
-        $this->assertSame('call-2', $inspection['lastCall']['hookId']);
+        $this->assertSame('hook-call-2', $inspection['lastCall']['hookId']);
         $this->assertSame('deny', $inspection['lastCall']['answer']);
         $this->assertSame($stdout, $inspection['lastCall']['stdout']);
     }
 
     public function test_the_walk_shows_only_the_states_it_asked(): void
     {
-        $this->answerStop('call-1');
+        $this->answerStop();
 
         $steps = $this->actingAs(User::factory()->create())->getJson(
             '/hooks/stacks/'.TestIds::of(1).'/'.TestIds::of(10),

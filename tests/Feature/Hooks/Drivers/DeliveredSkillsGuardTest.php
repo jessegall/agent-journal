@@ -93,7 +93,10 @@ final class DeliveredSkillsGuardTest extends TestCase
             $this->hookIdentity(),
         );
 
-        $this->assertSame('{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow"}}', $read->stdout);
+        $this->assertSame(
+'{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow"}}',
+ $read->stdout,
+);
         $this->assertInstanceOf(JudgedCall::class, $edit);
         $this->assertInstanceOf(FileEditRequested::class, $edit->input);
     }
@@ -159,7 +162,12 @@ final class DeliveredSkillsGuardTest extends TestCase
      */
     private function claudeCode(string $tool, array $arguments): DriverReply
     {
-        $allowed = new HookAnswer(Decision::allow(), [], [], new AgentStack([], new InMemoryStateFactory(), new StackTarget('agent-1', 'session-1')));
+        $allowed = new HookAnswer(
+Decision::allow(),
+ [],
+ [],
+ new AgentStack([], new InMemoryStateFactory(), new StackTarget('agent-1', 'session-1')),
+);
 
         return $this->app->make(ClaudeCodeAdapter::class)
             ->callFor($this->payload($tool, $arguments), $this->hookIdentity())
