@@ -9,7 +9,7 @@ use App\Enums\Files\Place;
 use App\Support\DeclaredType;
 use App\Support\ReflectedMethod;
 use App\Support\ReflectedParameter;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use App\Values\Depth;
 use App\Values\FilePath;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -85,7 +85,7 @@ final readonly class ScopeStubs
      */
     private function block(string $builder, string $lines): string
     {
-        $type = ReflectedType::of($builder);
+        $type = Reflector::of($builder);
 
         return "namespace {$type->namespaceName()} {\n    /**\n{$lines}\n     */\n"
             ."    class {$type->shortName()} {}\n}\n";
@@ -93,7 +93,7 @@ final readonly class ScopeStubs
 
     /**
      * @param  list<string>  $locations
-     * @return list<ReflectedType<Model>>
+     * @return list<Reflector<Model>>
      */
     private static function modelsIn(Files $files, array $locations): array
     {
@@ -103,7 +103,7 @@ final readonly class ScopeStubs
             foreach ($files->matching(FilePath::in(Place::Project, $location)) as $folder) {
                 foreach ($files->list($folder->path, Depth::levels(Depth::LEVEL_LIMIT), '*.php') as $file) {
                     $class = $file->isFile() ? self::classIn($files->codeFile($file->path)) : null;
-                    $type = $class !== null && ReflectedType::exists($class) ? ReflectedType::of($class) : null;
+                    $type = $class !== null && Reflector::exists($class) ? Reflector::of($class) : null;
 
                     if ($type !== null && $type->isSubclassOf(Model::class) && ! $type->isAbstract()) {
                         $models[] = $type;
