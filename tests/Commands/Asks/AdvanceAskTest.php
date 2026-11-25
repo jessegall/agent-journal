@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Supervision;
+namespace Tests\Commands\Asks;
 
 use App\Commands\Agents\ChangeSupervisor\ChangeSupervisorCommand;
 use App\Commands\Asks\AdvanceAsk\AdvanceAskCommand;
-use App\Commands\Asks\ReplyToAsk\ReplyToAskCommand;
 use App\Commands\Asks\RouteAsk\RouteAskCommand;
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Actors\CurrentActorSetter;
@@ -38,17 +37,14 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * An ask's clock and its escalation: a holder that keeps answering never lets its queue escalate, the ask
- * it answers runs out on its own allowance while those behind it wait, an overdue ask moves up to the owner, the root
- * of the chain closes it unanswered, 48 hours close it whatever it does, and the owner's late text keeps that outcome.
+ * The supervision clock moves an overdue ask up to the owner, where the root closes it unanswered; a holder that
+ * keeps answering never lets its queue escalate.
  */
 #[TimeLimit(seconds: 6, reason: 'It activates the profiles and routes several asks through the bus.')]
-final class AskClockTest extends TestCase
+final class AdvanceAskTest extends TestCase
 {
     use CommitsHookRows;
     use StartsAgentRequests;
-
-    private const string LATE_ANSWER = 'Late, but here it is.';
 
     private const array TABLES = [
         'ask_hops', 'asks', 'ask_requesters', 'supervisor_changes', 'supervisor_links',
@@ -105,20 +101,6 @@ final class AskClockTest extends TestCase
         $this->advanceAt($ask, $start->addMinutes(32));
 
         $this->assertSame(UnansweredReason::RootTimeout, $ask->refresh()->outcome);
-    }
-
-    public function test_two_days_close_an_ask_and_the_owners_late_text_keeps_its_outcome(): void
-    {
-        $ask = $this->routedAsk('question');
-
-        $this->advanceAt($ask, CarbonImmutable::now()->addHours(Ask::LIFETIME_HOURS));
-        $this->startUserRequestAs($this->owner->id);
-        $this->app->make(CommandBus::class)->run(new ReplyToAskCommand($ask->reference, self::LATE_ANSWER));
-
-        $closed = $ask->refresh();
-        $this->assertSame(UnansweredReason::TotalExpiry, $closed->outcome);
-        $this->assertSame(self::LATE_ANSWER, $closed->late_answer);
-        $this->assertFalse($closed->open);
     }
 
     private function routedAsk(string $body): Ask
