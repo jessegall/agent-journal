@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Tasks\Tests\Feature\States;
+namespace Domain\Tasks\Tests\States;
 
 use App\Contracts\Processes\ShellCommandParser;
 use App\Enums\Hooks\AnswerType;
@@ -12,6 +12,7 @@ use Domain\Tasks\Support\States\Support\LogDueStateReference;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Fixtures\Hooks\ListedCommandParser;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsState;
 use Tests\Support\Seeding\SessionHooks;
 use Tests\Support\Seeding\StateHandle;
 use Tests\Support\Seeding\StateObservation;
@@ -21,6 +22,7 @@ use Tests\Support\TestIds;
  * The log-due state on the real engine: work passes while its budget of tool uses lasts and is refused once it is
  * spent, a read-only line always passes, and a log on its task ends it.
  */
+#[TestsState(LogDueState::class)]
 final class LogDueStateTest extends TestCase
 {
     use CommitsHookRows;

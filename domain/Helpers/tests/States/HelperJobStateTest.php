@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Helpers\Tests\Feature\States;
+namespace Domain\Helpers\Tests\States;
 
 use App\Contracts\Events\Event;
 use Domain\Helpers\Events\HelperJobCancelled;
@@ -11,10 +11,12 @@ use Domain\Helpers\Events\HelperJobHeld;
 use Domain\Helpers\Events\HelperJobSteered;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
+use Domain\Helpers\Support\States\HelperJobState;
 use Domain\Helpers\Support\States\Support\HelperJobStateReference;
 use Domain\Helpers\Tests\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsState;
 use Tests\Support\Seeding\StateHandle;
 use Tests\Support\Seeding\StateObservation;
 
@@ -22,6 +24,7 @@ use Tests\Support\Seeding\StateObservation;
  * The helper job state on the real engine: steering for its job joins what it shows the helper, and its job held,
  * finished or cancelled ends it, while another job's events leave it as it was.
  */
+#[TestsState(HelperJobState::class)]
 final class HelperJobStateTest extends TestCase
 {
     use CommitsHookRows;

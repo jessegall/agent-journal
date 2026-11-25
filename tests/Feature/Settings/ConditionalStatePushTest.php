@@ -46,7 +46,7 @@ use Tests\TestCase;
  * The Reviews fixture's state follows its review group: pushed while the group is on, declined and later removed
  * while it is off, read through the reader of the request running now, and never quietly off on a failed read.
  */
-final class ConditionalReviewStateTest extends TestCase
+final class ConditionalStatePushTest extends TestCase
 {
     use CommitsHookRows;
 

@@ -19,6 +19,7 @@ use Domain\Plans\Exceptions\PlanUnderReview;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Models\PlanReviewEdition;
 use Domain\Plans\Support\PlanStructure;
+use Domain\Plans\Support\States\Support\ReviewPlanStateReference;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Commands\EditTask\EditTaskCommand;
@@ -27,6 +28,7 @@ use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Seeding\StateObservation;
 
 /**
  * A plan under review holds still. Requesting a review puts the plan in Reviewing and refuses
@@ -50,6 +52,7 @@ final class RequestPlanReviewTest extends TestCase
         'tasks',
         'command_receipts',
         'number_groups',
+        'agent_stacks',
     ];
 
     /**
@@ -128,6 +131,37 @@ final class RequestPlanReviewTest extends TestCase
         $this->assertSame(0, PlanReviewEdition::query()->count());
     }
 
+    public function test_an_agent_named_as_reviewer_gets_the_review_on_its_stack(): void
+    {
+        $plan = $this->reviewersPlan();
+
+        $this->journal->actAs('Owner')->run(new RequestPlanReviewCommand($plan->id, [
+            $this->journal->actorCalled('Reviewer'),
+            $this->journal->actorCalled('Ada'),
+        ]));
+
+        $this->journal
+            ->stateOn(
+$this->journal->sessionOf('Reviewer'),
+ ReviewPlanStateReference::forPlan($plan->id, $plan->number),
+)
+            ->given([], fn (StateObservation $state) => $state->assertOnTop());
+    }
+
+    public function test_a_review_with_only_a_user_as_reviewer_changes_no_stack(): void
+    {
+        $plan = $this->reviewersPlan();
+
+        $this->journal->actAs('Owner')->run(
+            new RequestPlanReviewCommand($plan->id, [$this->journal->actorCalled('Ada')]),
+        );
+
+        $this->journal->assertNoFrame(
+            $this->journal->sessionOf('Reviewer'),
+            ReviewPlanStateReference::forPlan($plan->id, $plan->number),
+        );
+    }
+
     public function runCommand(object $command): mixed
     {
         return $this->app->make(CommandBus::class)->run($command);
@@ -157,6 +191,16 @@ final class RequestPlanReviewTest extends TestCase
             $plan->refresh(),
             $task,
         ];
+    }
+
+    /**
+     * A plan of the owner, whose agent Reviewer runs a session and whose user Ada does not.
+     */
+    private function reviewersPlan(): Plan
+    {
+        $this->journal->owner()->agent('Reviewer')->user('Ada');
+
+        return $this->journal->fixtures(PlanFixtures::class)->plan('Release')->planCalled('Release');
     }
 
     private function owner(): ActorIdentity

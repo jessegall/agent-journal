@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Plans\Tests\Feature\States;
+namespace Domain\Plans\Tests\States;
 
 use App\Enums\Hooks\AnswerType;
 use App\Events\Hooks\HelperAssigned;
@@ -13,9 +13,11 @@ use Domain\Plans\Enums\PlanReviewStatus;
 use Domain\Plans\Events\PlanReviewDecided;
 use Domain\Plans\Events\PlanReviewWithdrawn;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Support\States\ReviewPlanState;
 use Domain\Plans\Support\States\Support\ReviewPlanStateReference;
 use Domain\Plans\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsState;
 use Tests\Support\Seeding\StateHandle;
 use Tests\Support\Seeding\StateObservation;
 use Tests\Support\TestIds;
@@ -24,6 +26,7 @@ use Tests\Support\TestIds;
  * The plan review state on the real engine: it holds the agent's stop while no reviewer is out, lets it pass while one
  * is, and ends once the review is decided or withdrawn.
  */
+#[TestsState(ReviewPlanState::class)]
 final class ReviewPlanStateTest extends TestCase
 {
     use CommitsHookRows;

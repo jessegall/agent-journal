@@ -6,6 +6,7 @@ namespace Domain\Tasks\Tests\Commands;
 
 use App\Contracts\Assignments\AssignmentQuery;
 use App\Contracts\Bus\CommandBus;
+use App\Exceptions\StackAlreadyClosed;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Agents\AgentStackRow;
@@ -13,6 +14,7 @@ use App\Support\ActorIdentity;
 use App\Support\ListenerRegistry;
 use App\Support\PoolMembers;
 use App\Support\StartSessions;
+use Carbon\CarbonImmutable;
 use Closure;
 use Domain\Plans\Events\PlanCancelled;
 use Domain\Plans\Events\PlanFinished;
@@ -312,6 +314,19 @@ final class StartTaskTest extends TestCase
 
         $this->assertSame(TaskStatus::Started, $task->refresh()->status);
         $this->assertSame([], $progress());
+    }
+
+    public function test_a_start_onto_a_closed_stack_rolls_the_start_back(): void
+    {
+        $task = $this->tasks->taskCalled('Owned work');
+        AgentStackRow::query()->withoutGlobalScopes()->forTarget($this->journal->sessionOf('First')->target)->sole()
+            ->closeAt(CarbonImmutable::now());
+
+        $this->journal->actAs('First');
+
+        $this->assertThrows(fn () => $this->journal->run(new StartTaskCommand($task->id)), StackAlreadyClosed::class);
+        $stored = $task->refresh();
+        $this->assertSame([TaskStatus::Open, 0], [$stored->status, $stored->run_number]);
     }
 
     public function test_a_failure_after_the_push_leaves_no_task_run_or_stack_change(): void

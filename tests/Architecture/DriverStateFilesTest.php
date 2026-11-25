@@ -12,7 +12,7 @@ use Tests\Support\TimeLimits\TimeLimit;
  * screen go away, except the account's first-run step and the few files that protect or trust a driver's folders.
  */
 #[TimeLimit(seconds: 20, reason: 'It reads every source file of the project.')]
-final class DriverStateTest extends TestCase
+final class DriverStateFilesTest extends TestCase
 {
     private const array FOLDERS = ['app', 'domain', 'tools', 'scripts', '.docker'];
 

@@ -16,7 +16,7 @@ use Tests\TestCase;
  * plugs it
  * into the core without the core naming it.
  */
-final class OutsideModuleStateTest extends TestCase
+final class OutsideModuleStatesTest extends TestCase
 {
     use CommittedHookStack;
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Plans\Tests\Feature;
+namespace Domain\Plans\Tests\States;
 
 use App\Models\Agents\AgentSession;
 use App\Values\AgentText;
@@ -16,6 +16,7 @@ use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsState;
 use Tests\Support\Seeding\StateObservation;
 use Tests\Support\TimeLimits\TimeLimit;
 
@@ -23,7 +24,8 @@ use Tests\Support\TimeLimits\TimeLimit;
  * An agent that starts a plan gets the plan's working frame in the same command; the plan stays its current plan until
  * the plan is done or cancelled, and a user's start changes no stack.
  */
-final class PlanWorkingStateTest extends TestCase
+#[TestsState(WorkOnPlanState::class)]
+final class WorkOnPlanStateTest extends TestCase
 {
     use CommitsHookRows;
 
