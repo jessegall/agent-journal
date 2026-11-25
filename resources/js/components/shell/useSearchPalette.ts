@@ -1,7 +1,7 @@
-import { router } from '@inertiajs/vue3';
-import { ref } from 'vue';
-import { PropReadFailed, reloadProp } from '@/kit/pageReads';
-import type { PaletteHitData, PaletteSearchData, PaletteSourceData, PaletteSourcesData } from '@/types/generated';
+import { onBeforeUnmount, ref } from 'vue';
+import { onPurge } from '@/composables/protectedView';
+import { LoaderFailed, load, shellSearch, shellSearchSources } from '@/kit/loaders';
+import type { PaletteHitData, PaletteSearchData, PaletteSourceData, SearchInput } from '@/types/generated';
 
 /**
  * The milliseconds the palette waits after the last keystroke before it searches.
@@ -25,9 +25,9 @@ const ADVANCING = ['pending'];
 
 /**
  * The palette's reads of the common search service: the scope picker's sources for a prefix, and a search for words
- * within an optional scope, both as partial reloads of the shell's props. Each read carries a number; an answer
- * that arrives after a newer read started, or after the palette closed, is dropped, so a late answer never moves
- * the focus, the selection or reopens the dialog.
+ * within an optional scope, both through the shell's loaders, so the words travel in a header and never in the
+ * address. Each read carries a number; an answer that arrives after a newer read started, or after the palette closed,
+ * is dropped, so a late answer never moves the focus, the selection or reopens the dialog.
  */
 export function useSearchPalette() {
     const words = ref('');
@@ -64,40 +64,54 @@ export function useSearchPalette() {
         const asked = currentSources;
 
         try {
-            const page = await reloadProp<PaletteSourcesData>('searchSources', (options) =>
-                router.reload({ ...options, data: { searchPrefix: prefix } }),
-            );
+            const loaded = await load(shellSearchSources, { prefix, after: null });
 
-            if (asked === currentSources) {
-                sources.value = page.sources;
+            if (asked === currentSources && loaded.status === 'ok') {
+                sources.value = loaded.value.sources;
             }
         } catch (error) {
-            if (!(error instanceof PropReadFailed)) {
+            if (!(error instanceof LoaderFailed)) {
                 throw error;
             }
         }
     }
 
-    async function read(data: Record<string, string | number>, appending: boolean, idle = 0): Promise<void> {
+    function firstPage(): SearchInput {
+        return { query: words.value, within: within.value?.key ?? null, limit: null, continuation: null };
+    }
+
+    function nextPage(continuation: string): SearchInput {
+        return { query: null, within: null, limit: null, continuation };
+    }
+
+    /**
+     * Reads one page of the search; a continuation the server no longer reads starts again from the first page.
+     */
+    async function read(input: SearchInput, appending: boolean, idle = 0): Promise<void> {
         const asked = next();
         loading.value = true;
         failed.value = false;
 
         try {
-            const found = await reloadProp<PaletteSearchData>('search', (options) =>
-                router.reload({ ...options, data }),
-            );
+            const loaded = await load(shellSearch, input);
 
             if (asked !== current) {
                 return;
             }
 
+            if (loaded.status !== 'ok') {
+                restart(input, asked);
+
+                return;
+            }
+
+            const found = loaded.value;
             answer.value = found;
             hits.value = appending ? [...hits.value, ...found.hits] : found.hits;
             added.value = found.hits.length;
             advance(found, asked, found.hits.length === 0 ? idle + 1 : 0);
         } catch (error) {
-            if (!(error instanceof PropReadFailed)) {
+            if (!(error instanceof LoaderFailed)) {
                 throw error;
             }
 
@@ -112,6 +126,23 @@ export function useSearchPalette() {
     }
 
     /**
+     * Reads the first page again after the server refused a continuation; a refused first page shows the empty result.
+     */
+    function restart(input: SearchInput, asked: number): void {
+        if (input.continuation === null) {
+            answer.value = null;
+            hits.value = [];
+            added.value = 0;
+
+            return;
+        }
+
+        if (asked === current) {
+            void read(firstPage(), false);
+        }
+    }
+
+    /**
      * Follows a pending answer's continuation by itself, one read after another, while this read is still the current
      * one; it stops once the answers stall without a new hit.
      */
@@ -121,7 +152,7 @@ export function useSearchPalette() {
         }
 
         if (asked === current) {
-            void read({ searchContinuation: found.continuation }, true, idle);
+            void read(nextPage(found.continuation), true, idle);
         }
     }
 
@@ -133,10 +164,7 @@ export function useSearchPalette() {
 
         timer = setTimeout(() => {
             timer = null;
-            void read(
-                { searchQuery: words.value, ...(within.value === null ? {} : { searchWithin: within.value.key }) },
-                false,
-            );
+            void read(firstPage(), false);
         }, SEARCH_DEBOUNCE_MS);
     }
 
@@ -144,7 +172,7 @@ export function useSearchPalette() {
      * Reads the next page of the search the last answer continues.
      */
     function continueSearch(continuation: string): Promise<void> {
-        return read({ searchContinuation: continuation }, true);
+        return read(nextPage(continuation), true);
     }
 
     /**
@@ -165,6 +193,22 @@ export function useSearchPalette() {
         added.value = 0;
         failed.value = false;
     }
+
+    /**
+     * Drops what the palette shows when the protected view is purged, and searches the same words again.
+     */
+    function reload(): void {
+        sources.value = [];
+        answer.value = null;
+        hits.value = [];
+        added.value = 0;
+
+        if (words.value.trim().length >= MINIMUM_CHARACTERS) {
+            searchSoon();
+        }
+    }
+
+    onBeforeUnmount(onPurge(reload));
 
     return {
         words,

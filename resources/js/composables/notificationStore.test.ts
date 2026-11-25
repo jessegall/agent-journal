@@ -186,6 +186,19 @@ describe('notificationStore', () => {
         expect(await store.catchUp()).toEqual([]);
     });
 
+    it('starts again from the first page when the server refuses the changes cursor', async () => {
+        const changes = vi.fn().mockRejectedValueOnce(new NotificationRequestFailed('refused'));
+        const page = vi.fn().mockResolvedValueOnce(pageOf(1, 1)).mockResolvedValueOnce(pageOf(2, 0));
+        const store = notificationStore(clientOf({ page, changes }));
+
+        await store.refresh();
+
+        expect(await store.catchUp()).toEqual([]);
+        expect(page).toHaveBeenLastCalledWith(null);
+        expect(store.state.value).toBe('loaded');
+        expect(store.shown.value?.unread).toBe(0);
+    });
+
     it('appends an older page once and holds new rows above it until revealed', async () => {
         const row = (id: string) => ({ id, sequence: 1, readAt: null, title: id, target: undefined });
         const first = { ...pageOf(1, 2), items: [row('b')], nextCursor: 'older' };

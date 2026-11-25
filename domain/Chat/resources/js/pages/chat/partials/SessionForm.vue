@@ -13,7 +13,8 @@ import Dialog from "@kit/Dialog";
 import { followPage } from "@kit/followPage";
 import { keyedPost } from "@kit/keyedPost";
 import { sendPageAction } from "@kit/pageActions";
-import { readPage } from "@kit/pageReads";
+import { load, LoaderCancelled, webStartPreview, webStartReceipt } from "@kit/loaders";
+import { onPurge, protectedViewGeneration } from "@kit/protectedView";
 import { newRequestId } from "@kit/requestId";
 import { useStartRestoration } from "../../../composables/useStartRestoration";
 import { useSwitchOperation } from "../../../composables/useSwitchOperation";
@@ -154,13 +155,6 @@ const restoration = useStartRestoration(
 const restored = restoration.read();
 const focusedField = ref<string | null>(restored?.focus ?? null);
 
-type StartReceiptAnswer = {
-  state: "pending" | "accepted" | "refused";
-  sessionId?: string | null;
-  explanation?: string;
-  remedy?: string;
-};
-
 if (restored !== null) {
   model.value = restored.model;
   accountId.value = restored.accountId;
@@ -210,10 +204,18 @@ function close(): void {
  * session it started is then followed, a refusal shown, and a start still pending is followed from the page.
  */
 function readReceipt(): void {
-  readPage<StartReceiptAnswer>("web.start-receipt", {
-    request: requestId,
-  }).then(
-    (answer) => {
+  load(webStartReceipt, { request: requestId }).then(
+    (answered) => {
+      if (answered.status !== "ok") {
+        progress.value = null;
+        refusal.value =
+          "This start could not be read; check the agent before starting again.";
+
+        return;
+      }
+
+      const answer = answered.value;
+
       if (answer.state === "refused") {
         progress.value = null;
         refusal.value = [answer.explanation, answer.remedy]
@@ -227,7 +229,11 @@ function readReceipt(): void {
       startedSessionId = answer.sessionId ?? startedSessionId;
       followStart();
     },
-    () => {
+    (failure: Error) => {
+      if (failure instanceof LoaderCancelled) {
+        return;
+      }
+
       progress.value = null;
       refusal.value =
         "This start could not be read; check the agent before starting again.";
@@ -367,18 +373,20 @@ function chooseHeadless(isHeadless: boolean): void {
 }
 
 function readPreview(): void {
-  readPage<StartPreviewData>("web.start-preview", {
+  load(webStartPreview, {
     agent: props.agent.id,
-    family: driver.value,
-    driverType: draftedDriverType.value ?? "",
-    model: model.value ?? "default",
+    family: driver.value === "" ? null : driver.value,
+    driverType: draftedDriverType.value,
+    model: model.value,
   }).then(
-    (answer) => (preview.value = answer),
+    (answer) => (preview.value = answer.status === "ok" ? answer.value : null),
     () => (preview.value = null),
   );
 }
 
-watch([driver, draftedDriverType, model], readPreview, { immediate: true });
+watch([driver, draftedDriverType, model, protectedViewGeneration], readPreview, { immediate: true });
+// A purge of what this viewer was shown takes the preview with it; the generation's move reads it again.
+onBeforeUnmount(onPurge(() => (preview.value = null)));
 watch(
   [
     driver,

@@ -1,62 +1,81 @@
 import { describe, expect, it, vi } from 'vitest';
 
-type Options = Record<string, unknown> & {
-    onSuccess: (page: { props: Record<string, unknown> }) => void;
-    onError: () => void;
-    onHttpException: (response: { status: number }) => boolean;
-    onNetworkError: () => boolean;
-};
+type Sent = { loader: { key: string }; input: unknown };
 
-const reloads: Options[] = [];
-const posts: Array<{ url: string; data: unknown; options: Options }> = [];
+const loads: Sent[] = [];
+const posts: Array<{ url: string; data: unknown; options: unknown }> = [];
+const answers: unknown[] = [];
 
 vi.mock('@inertiajs/vue3', () => ({
-    router: {
-        reload: (options: Options) => reloads.push(options),
-        post: (url: string, data: unknown, options: Options) => posts.push({ url, data, options }),
-    },
+    router: { post: (url: string, data: unknown, options: unknown) => posts.push({ url, data, options }) },
 }));
 vi.mock('@/routes/communication/notifications', () => ({
     read: { url: () => '/communication/notifications/read' },
     readAll: { url: () => '/communication/notifications/read-all' },
     readTarget: { url: () => '/communication/notifications/read-target' },
 }));
+vi.mock('@kit/loaders', () => {
+    class LoaderFailed extends Error {
+        constructor(public readonly status: number | null) {
+            super('failed');
+        }
+    }
+
+    const answer = () => {
+        const next = answers.shift();
+
+        return next instanceof Error ? Promise.reject(next) : Promise.resolve(next);
+    };
+
+    return {
+        LoaderFailed,
+        shellNotifications: { key: 'shell.notifications', prop: 'load_shell_notifications' },
+        shellNotificationChanges: { key: 'shell.notification-changes', prop: 'load_shell_notification_changes' },
+        load: (loader: { key: string }, input: unknown) => {
+            loads.push({ loader, input });
+
+            return answer();
+        },
+        loadAfter: (loader: { key: string }, input: unknown, send: (options: unknown) => void) => {
+            loads.push({ loader, input });
+            send({ only: [loader.key] });
+
+            return answer();
+        },
+    };
+});
 
 const { notificationVisits } = await import('./notificationVisits');
 const { NotificationRequestFailed } = await import('./notificationStore');
+const { LoaderFailed } = await import('@kit/loaders');
 
 describe('notificationVisits', () => {
-    it('reads a page and the changes by partial reloads of their own prop, holding nothing else up', async () => {
-        const page = notificationVisits.page('cursor-2');
-        reloads[0].onSuccess({ props: { notifications: { items: [] } } });
-        const changes = notificationVisits.changes('cursor-3');
-        reloads[1].onSuccess({ props: { notificationChanges: { changes: [] } } });
+    it('reads a page by its cursor and the changes since a cursor through the shell loaders', async () => {
+        answers.push({ status: 'ok', value: { items: [] } }, { status: 'ok', value: { changes: [] } });
 
-        await expect(page).resolves.toEqual({ items: [] });
-        await expect(changes).resolves.toEqual({ changes: [] });
-        expect(reloads[0]).toMatchObject({
-            only: ['notifications'],
-            async: true,
-            preserveState: true,
-            preserveUrl: true,
-            data: { notificationsCursor: 'cursor-2' },
+        await expect(notificationVisits.page('cursor-2')).resolves.toEqual({ items: [] });
+        await expect(notificationVisits.changes('cursor-3')).resolves.toEqual({ changes: [] });
+        expect(loads[0]).toEqual({ loader: expect.objectContaining({ key: 'shell.notifications' }), input: { cursor: 'cursor-2' } });
+        expect(loads[1]).toEqual({
+            loader: expect.objectContaining({ key: 'shell.notification-changes' }),
+            input: { since: 'cursor-3' },
         });
-        expect(reloads[1]).toMatchObject({ only: ['notificationChanges'], data: { notificationsSince: 'cursor-3' } });
     });
 
-    it('marks by a post that comes back with the newest notifications, and settles a refusal and a lost answer', async () => {
-        const marked = notificationVisits.markAll('41');
-        posts[0].options.onSuccess({ props: { notifications: { unreadCount: 0 } } });
-        const refused = notificationVisits.markRead('receipt-1');
-        posts[1].options.onError();
-        const lost = notificationVisits.markTargetRead('ask', 'ask-1');
-        const showsErrorPage = posts[2].options.onHttpException({ status: 503 });
+    it('marks by a post whose redirect answers the newest head, and settles a refusal and a lost answer', async () => {
+        loads.length = 0;
+        answers.push(
+            { status: 'ok', value: { unread: 0 } },
+            { status: 'invalid', errors: { receiptId: 'unknown' } },
+            new LoaderFailed(503),
+        );
 
-        await expect(marked).resolves.toEqual({ unreadCount: 0 });
+        await expect(notificationVisits.markAll('41')).resolves.toEqual({ unread: 0 });
+        await expect(notificationVisits.markRead('receipt-1')).rejects.toEqual(new NotificationRequestFailed('refused'));
+        await expect(notificationVisits.markTargetRead('ask', 'ask-1')).rejects.toEqual(
+            new NotificationRequestFailed('lost'),
+        );
         expect(posts[0]).toMatchObject({ url: '/communication/notifications/read-all', data: { through: 41 } });
-        expect(posts[0].options.only).toEqual(['notifications']);
-        await expect(refused).rejects.toEqual(new NotificationRequestFailed('refused'));
-        await expect(lost).rejects.toEqual(new NotificationRequestFailed('lost'));
-        expect(showsErrorPage).toBe(false);
+        expect(loads[0].input).toEqual({ cursor: null });
     });
 });

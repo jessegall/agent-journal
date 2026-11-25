@@ -5,7 +5,7 @@ import type {
 } from "@generated/types/chat";
 import { onChatAccessEnded } from "@kit/chatAccess";
 import type { DockNode } from "@kit/dockCards";
-import { readPage } from "@kit/pageReads";
+import { chatRows, load } from "@kit/loaders";
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from "vue";
 import type { ComputedRef, Ref } from "vue";
 
@@ -21,12 +21,26 @@ export type ChatTimelineClient = {
   rows(inboxId: string, beforeId: string | null): Promise<ChatRowsPageData>;
 };
 
+/**
+ * The chat's rows could not be read for this viewer: the chat is gone or no longer theirs.
+ */
+export class ChatRowsUnavailable extends Error {}
+
 export const chatTimelineClient: ChatTimelineClient = {
-  rows: (inboxId, beforeId) =>
-    readPage<ChatRowsPageData>(
-      "chat.rows",
-      beforeId === null ? { inboxId } : { inboxId, beforeId },
-    ),
+  rows: async (inboxId, beforeId) => {
+    const answer = await load(chatRows, { inboxId, beforeId });
+
+    if (answer.status === "ok") {
+      return answer.value;
+    }
+
+    // A cursor the server no longer reads starts again from the newest page, which merges in by id.
+    if (beforeId !== null) {
+      return chatTimelineClient.rows(inboxId, null);
+    }
+
+    throw new ChatRowsUnavailable("The chat's rows are unavailable.");
+  },
 };
 
 /** Whether a card's parts hold a time that has not ended, so what it shows still runs. */

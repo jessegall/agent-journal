@@ -17,7 +17,8 @@ import {
 } from "@kit/sessionStarts";
 import { keyedPost } from "@kit/keyedPost";
 import { sendPageAction } from "@kit/pageActions";
-import { readPage } from "@kit/pageReads";
+import { load, LoaderCancelled, webCapacity } from "@kit/loaders";
+import type { CapacityData } from "@kit/CoreTypes";
 import { useOpenSessionDialog } from "../../../composables/useChosenAgent";
 import { useStatusCheck } from "../../../composables/useStatusCheck";
 import { useSwitchOperation } from "../../../composables/useSwitchOperation";
@@ -38,13 +39,6 @@ const props = defineProps<{ agent: AgentOptionData }>();
 const emit = defineEmits<{ dialog: [isOpen: boolean] }>();
 
 type FormMode = "start" | "resume" | "switch";
-
-type CapacityAnswer = {
-  fits: boolean;
-  resource?: string;
-  explanation?: string;
-  remedy?: string;
-};
 
 const formModes: FormMode[] = ["start", "resume", "switch"];
 const viewerId = useAppContext().viewer.value.id;
@@ -114,16 +108,20 @@ function readAgain(): void {
 
 function checkCapacity(): void {
   pendingType.value = "check-capacity";
-  readPage<CapacityAnswer>("web.capacity", {
-    agent: props.agent.id,
-    mode: "required_container",
-  })
+  load(webCapacity, { agent: props.agent.id, mode: "required_container" })
     .then((answer) => {
-      notice.value = answer.fits
-        ? "The host has room for this start now."
-        : (answer.explanation ?? null);
+      notice.value = answer.status === "ok" ? capacityNotice(answer.value) : null;
+    })
+    .catch((failure: Error) => {
+      if (!(failure instanceof LoaderCancelled)) {
+        notice.value = "The capacity check did not arrive; check again.";
+      }
     })
     .finally(() => (pendingType.value = null));
+}
+
+function capacityNotice(capacity: CapacityData): string | null {
+  return capacity.fits ? "The host has room for this start now." : (capacity.explanation ?? null);
 }
 
 function dismiss(): void {

@@ -6,7 +6,7 @@ import type {
 import type { SignInCodeDirection } from '@/types/generated';
 import { challenge } from '@generated/routes/accounts';
 import type { DriverLook } from '@kit/appContext';
-import { readPage } from '@kit/pageReads';
+import { accountsSignInReceipt, load } from '@kit/loaders';
 import { xsrfToken } from '@kit/xsrfToken';
 
 export type SignInChallenge = { address: string | null; code: string | null };
@@ -175,8 +175,10 @@ export type ReceiptTarget = { driver: string } | { account: string };
  * What became of a sign-in start under its request key; nothing when the read itself failed, so the caller asks
  * again.
  */
-export function readReceipt(key: string, target: ReceiptTarget): Promise<SignInReceiptData | null> {
-    return readPage<SignInReceiptData>('accounts.sign-in-receipt', { key, ...target }).catch(() => null);
+export async function readReceipt(key: string, target: ReceiptTarget): Promise<SignInReceiptData | null> {
+    const answer = await load(accountsSignInReceipt, { key, ...target }).catch(() => null);
+
+    return answer?.status === 'ok' ? answer.value : null;
 }
 
 /**
