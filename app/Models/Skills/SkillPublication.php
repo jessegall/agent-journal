@@ -299,7 +299,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     {
         $hasNewer = self::query()
             ->forTarget($this->session_id, $this->target)
-            ->where('created_at', '>', $this->created_at)
+            ->madeAfter($this)
             ->exists();
 
         if ($hasNewer) {
@@ -374,13 +374,8 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     public static function currentSelectionsOf(array $sessionIds): array
     {
         $publications = self::query()
-            ->whereIn('session_id', $sessionIds)
-            ->whereIn('state', [
-                PublicationState::Pending->value,
-                PublicationState::Preparing->value,
-                PublicationState::Delivered->value,
-            ])
-            ->orderByDesc('created_at')
+            ->ofSessions($sessionIds)
+            ->inAnyState([PublicationState::Pending, PublicationState::Preparing, PublicationState::Delivered])
             ->newestFirst()
             ->readExactly(max(1, 2 * count($sessionIds)))
             ->get()
@@ -410,12 +405,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     public static function settled(int $limit): array
     {
         $settled = self::query()
-            ->whereIn('state', [
-                PublicationState::Delivered->value,
-                PublicationState::Failed->value,
-                PublicationState::Superseded->value,
-            ])
-            ->orderByDesc('created_at')
+            ->inAnyState([PublicationState::Delivered, PublicationState::Failed, PublicationState::Superseded])
             ->newestFirst()
             ->readExactly($limit)
             ->get();
@@ -431,8 +421,8 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     public static function open(int $limit): array
     {
         $open = self::query()
-            ->whereIn('state', [PublicationState::Pending->value, PublicationState::Preparing->value])
-            ->orderBy('created_at')
+            ->inAnyState([PublicationState::Pending, PublicationState::Preparing])
+            ->oldestFirst()
             ->readExactly($limit)
             ->get();
 
@@ -448,8 +438,8 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     public static function latestOfSessions(array $ids, int $limit): array
     {
         $latest = self::query()
-            ->whereIn('session_id', $ids)
-            ->orderByDesc('created_at')
+            ->ofSessions($ids)
+            ->newestFirst()
             ->readExactly($limit)
             ->get()
             ->unique('session_id');
@@ -477,8 +467,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     public static function firstOfSession(string $sessionId): self
     {
         return self::query()
-            ->where('session_id', $sessionId)
-            ->orderBy('created_at')
+            ->ofSessions([$sessionId])
             ->oldestFirst()
             ->firstOrFail();
     }
@@ -489,9 +478,8 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     public static function latestDeliveredOfSession(string $sessionId): self|null
     {
         return self::query()
-            ->where('session_id', $sessionId)
+            ->ofSessions([$sessionId])
             ->inState(PublicationState::Delivered)
-            ->orderByDesc('created_at')
             ->newestFirst()
             ->first();
     }
@@ -502,8 +490,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     public static function latestOfSession(string $sessionId): self|null
     {
         return self::query()
-            ->where('session_id', $sessionId)
-            ->orderByDesc('created_at')
+            ->ofSessions([$sessionId])
             ->newestFirst()
             ->first();
     }
@@ -516,7 +503,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     public static function latestOfEverySession(int $limit): array
     {
         $latest = self::query()
-            ->orderByDesc('created_at')
+            ->newestFirst()
             ->readExactly($limit)
             ->get()
             ->unique('session_id');
@@ -542,5 +529,40 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     protected function inState(Builder $query, PublicationState $state): void
     {
         $query->where('state', $state->value);
+    }
+
+    /**
+     * The publications made after that one.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function madeAfter(Builder $query, self $publication): void
+    {
+        $query->where('created_at', '>', $publication->created_at);
+    }
+
+    /**
+     * The publications of the sessions.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $sessionIds
+     */
+    #[Scope]
+    protected function ofSessions(Builder $query, array $sessionIds): void
+    {
+        $query->whereIn('session_id', $sessionIds);
+    }
+
+    /**
+     * The publications in any of the states.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<PublicationState>  $states
+     */
+    #[Scope]
+    protected function inAnyState(Builder $query, array $states): void
+    {
+        $query->whereIn('state', array_map(fn (PublicationState $state) => $state->value, $states));
     }
 }

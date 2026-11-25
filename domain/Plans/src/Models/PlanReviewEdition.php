@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -81,7 +83,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
     {
         return self::query()->create([
             'plan_id' => $plan->id,
-            'number' => (int) self::query()->where('plan_id', $plan->id)->max('number') + 1,
+            'number' => (int) self::query()->ofPlan($plan->id)->max('number') + 1,
             'requested_by_type' => $actor->type,
             'requested_by_id' => $actor->id,
             'plan_revision' => $plan->revision,
@@ -152,8 +154,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
      */
     public static function requestedOf(string $planId): self|null
     {
-        return self::query()->where('plan_id', $planId)->where('state', PlanReviewState::Requested)
-            ->orderByDesc('number')->first();
+        return self::query()->ofPlan($planId)->inState(PlanReviewState::Requested)->newestNumberFirst()->first();
     }
 
     /**
@@ -161,7 +162,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
      */
     public static function numberedIn(string $planId, int $number): self|null
     {
-        return self::query()->where('plan_id', $planId)->where('number', $number)->first();
+        return self::query()->ofPlan($planId)->numbered($number)->first();
     }
 
     /**
@@ -169,7 +170,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
      */
     public static function latestOf(string $planId): self|null
     {
-        return self::query()->where('plan_id', $planId)->orderByDesc('number')->first();
+        return self::query()->ofPlan($planId)->newestNumberFirst()->first();
     }
 
     /**
@@ -177,8 +178,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
      */
     public static function latestApprovalOf(string $planId): self|null
     {
-        return self::query()->where('plan_id', $planId)->where('state', PlanReviewState::Approved)
-            ->orderByDesc('number')->first();
+        return self::query()->ofPlan($planId)->inState(PlanReviewState::Approved)->newestNumberFirst()->first();
     }
 
     /**
@@ -186,7 +186,65 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
      */
     public static function currentApprovalOf(string $planId): self|null
     {
-        return self::query()->where('plan_id', $planId)->where('state', PlanReviewState::Approved)
-            ->where('is_historical', false)->orderByDesc('number')->first();
+        return self::query()->ofPlan($planId)->inState(PlanReviewState::Approved)->current()
+            ->newestNumberFirst()
+            ->first();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The plan's editions.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofPlan(Builder $query, string $planId): void
+    {
+        $query->where('plan_id', $planId);
+    }
+
+    /**
+     * The editions in that state.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inState(Builder $query, PlanReviewState $state): void
+    {
+        $query->where('state', $state);
+    }
+
+    /**
+     * The edition of that number.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function numbered(Builder $query, int $number): void
+    {
+        $query->where('number', $number);
+    }
+
+    /**
+     * The editions not made historical.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function current(Builder $query): void
+    {
+        $query->where('is_historical', false);
+    }
+
+    /**
+     * The editions newest number first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function newestNumberFirst(Builder $query): void
+    {
+        $query->orderByDesc('number');
     }
 }

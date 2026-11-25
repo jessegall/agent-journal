@@ -15,14 +15,17 @@ use Illuminate\Database\Eloquent\Builder;
 trait HasActorColumns
 {
     /**
-     * The rows one actor made.
+     * The rows one actor made; the columns are named with the model's table, so a join keeps them apart.
      *
      * @param  Builder<static>  $query
      */
     #[Scope]
     protected function byActor(Builder $query, ActorIdentity $actor): void
     {
-        $query->where('actor_type', $actor->type->value)->where('actor_id', $actor->id);
+        $type = $query->qualifyColumn('actor_type');
+        $id = $query->qualifyColumn('actor_id');
+
+        $query->where($type, $actor->type->value)->where($id, $actor->id);
     }
 
     /**

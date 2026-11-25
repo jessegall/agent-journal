@@ -143,9 +143,9 @@ final class AskHop extends Model implements EventSource, ReadableModel
     public static function holderBefore(string $askId, string $hopId): Option
     {
         return self::query()
-            ->where('ask_id', $askId)
+            ->ofAsks([$askId])
             ->whereKeyNot($hopId)
-            ->reorder('version', 'desc')
+            ->newestVersionFirst()
             ->newestFirst()
             ->firstOption()
             ->map(fn (self $hop) => $hop->actor());
@@ -159,8 +159,8 @@ final class AskHop extends Model implements EventSource, ReadableModel
     public static function latestHolderOf(string $askId): Option
     {
         return self::query()
-            ->where('ask_id', $askId)
-            ->reorder('version', 'desc')
+            ->ofAsks([$askId])
+            ->newestVersionFirst()
             ->newestFirst()
             ->firstOption()
             ->map(fn (self $hop) => $hop->actor());
@@ -168,7 +168,7 @@ final class AskHop extends Model implements EventSource, ReadableModel
 
     public static function currentFor(Ask $ask): self
     {
-        return self::query()->where('ask_id', $ask->id)->where('version', $ask->version)->firstOrFail();
+        return self::query()->ofAsks([$ask->id])->atVersion($ask->version)->firstOrFail();
     }
 
     /**
@@ -177,7 +177,7 @@ final class AskHop extends Model implements EventSource, ReadableModel
      */
     public static function repliesTo(array $asks): array
     {
-        return self::query()->whereIn('ask_id', $asks)->whereNotNull('result')->pluck('result', 'ask_id')->all();
+        return self::query()->ofAsks($asks)->answered()->pluck('result', 'ask_id')->all();
     }
 
     /**
@@ -193,17 +193,17 @@ final class AskHop extends Model implements EventSource, ReadableModel
             return [];
         }
 
-        return self::query()->currentHops()->whereIn('ask_hops.id', $hops)->readExactly(count($hops))
+        return self::query()->currentHops()->whereKey($hops)->readExactly(count($hops))
             ->pluck('ask_hops.version', 'ask_hops.id')->map(fn (mixed $version) => (int) $version)->all();
     }
 
     public static function nextFor(ActorIdentity $holder): self|null
     {
         return self::query()->currentHops()
-            ->where('ask_hops.actor_type', $holder->type->value)
-            ->where('ask_hops.actor_id', $holder->id)
-            ->orderByRaw(self::URGENT_FIRST, CoreAskType::urgentKeys())
-            ->oldest('ask_hops.accepted_at')->orderBy('ask_hops.id')->first();
+            ->byActor($holder)
+            ->urgentFirst()
+            ->acceptedFirst()
+            ->first();
     }
 
     /**
@@ -214,9 +214,8 @@ final class AskHop extends Model implements EventSource, ReadableModel
     public static function unansweredCurrent(int $limit): array
     {
         $hops = self::query()->currentHops()
-            ->whereNull('ask_hops.result')
-            ->oldest('ask_hops.accepted_at')
-            ->orderBy('ask_hops.id')
+            ->unanswered()
+            ->acceptedFirst()
             ->readExactly($limit)
             ->get();
 
@@ -231,9 +230,8 @@ final class AskHop extends Model implements EventSource, ReadableModel
     public static function lastAnswerTimes(): array
     {
         $answered = self::query()
-            ->whereNotNull('result')
-            ->groupBy('actor_type', 'actor_id')
-            ->selectRaw('actor_type, actor_id, max(updated_at) as answered_at')
+            ->answered()
+            ->lastAnswerPerHolder()
             ->readAll('one row per holder that ever answered, to start its queue clock')
             ->get();
 
@@ -251,7 +249,7 @@ final class AskHop extends Model implements EventSource, ReadableModel
      */
     public static function hasHeld(Ask $ask, ActorIdentity $actor): bool
     {
-        return self::query()->where('ask_id', $ask->id)->byActor($actor)->exists();
+        return self::query()->ofAsks([$ask->id])->byActor($actor)->exists();
     }
 
     // ----------[ Scopes ]----------
@@ -271,5 +269,94 @@ final class AskHop extends Model implements EventSource, ReadableModel
             })
             ->where('asks.open', true)->whereColumn('asks.version', 'ask_hops.version')
             ->select('ask_hops.*');
+    }
+
+    /**
+     * The hops of the asks.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $askIds
+     */
+    #[Scope]
+    protected function ofAsks(Builder $query, array $askIds): void
+    {
+        $query->whereIn('ask_hops.ask_id', $askIds);
+    }
+
+    /**
+     * The hop of that version of its ask.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function atVersion(Builder $query, int $version): void
+    {
+        $query->where('ask_hops.version', $version);
+    }
+
+    /**
+     * The hops that hold an answer.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function answered(Builder $query): void
+    {
+        $query->whereNotNull('ask_hops.result');
+    }
+
+    /**
+     * The hops that hold no answer yet.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unanswered(Builder $query): void
+    {
+        $query->whereNull('ask_hops.result');
+    }
+
+    /**
+     * The hops newest version first, before any order set earlier.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function newestVersionFirst(Builder $query): void
+    {
+        $query->reorder('ask_hops.version', 'desc');
+    }
+
+    /**
+     * The hops of an urgent ask type first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function urgentFirst(Builder $query): void
+    {
+        $query->orderByRaw(self::URGENT_FIRST, CoreAskType::urgentKeys());
+    }
+
+    /**
+     * The hops accepted longest ago first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function acceptedFirst(Builder $query): void
+    {
+        $query->orderBy('ask_hops.accepted_at')->orderBy('ask_hops.id');
+    }
+
+    /**
+     * One row for each holder with the moment of its last answer.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function lastAnswerPerHolder(Builder $query): void
+    {
+        $query->groupBy('actor_type', 'actor_id')->selectRaw('actor_type, actor_id, max(updated_at) as answered_at');
     }
 }
