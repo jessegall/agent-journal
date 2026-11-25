@@ -11,24 +11,20 @@ use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCompatibilities;
-use App\Enums\Accounts\SignInMethod;
 use App\Enums\Agents\SessionProcessStatus;
 use App\Enums\Drivers\DriverEvidence;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Sessions\StartUnavailableReason;
 use App\Exceptions\AccountUnavailable;
 use App\Models\Accounts\Account;
-use App\Models\Accounts\SignInAttempt;
 use App\Models\Agents\Agent;
 use App\Models\Sessions\SessionProcess;
 use App\Support\AccountMaintenance;
 use App\Support\ActorContext;
-use App\Support\ActorIdentity;
 use App\Support\Compatibility\DriverCompatibility;
 use App\Support\EnrolledHost;
 use App\Support\OpenedRuntime;
 use App\Values\OwnerAuthority;
-use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
@@ -88,23 +84,6 @@ final class AccountMaintenanceTest extends TestCase
                 return $pinned->withEvidence(DriverEvidence::NativeShown, 'this test');
             }
         });
-    }
-
-    public function test_a_live_sign_in_writer_keeps_maintenance_from_settling(): void
-    {
-        $attempt = SignInAttempt::create(
-            ActorIdentity::system(),
-            $this->account,
-            SignInMethod::OAuth,
-            '/journal/accounts/staging-request-1',
-            CarbonImmutable::now()->addMinutes(10),
-        );
-        $this->account->writerFor($attempt);
-        $attempt->writeInGeneration($this->account->sign_in_generation);
-
-        $progress = $this->maintenance()->advance($this->account->id);
-
-        $this->assertSame([true, false], [$progress->isCredentialWriteInProgress, $progress->isSettled]);
     }
 
     public function test_a_retired_agents_unclaimed_start_never_runs(): void

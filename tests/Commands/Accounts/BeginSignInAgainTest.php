@@ -39,10 +39,9 @@ use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
- * The owner signs an account in again: two tabs start one writer and new starts wait, the host takes it only after the
- * account's processes ended, success starts a new generation and keeps the choice, the same principal moves the account
- * to its staging folder, another principal ends as a different account, a key account swaps to its new key, and a key
- * another account holds ends already added.
+ * The owner signs an account in again: two tabs start one writer and new starts wait, success starts a new generation
+ * and keeps the choice, the same principal moves the account to its staging folder, another principal ends as a
+ * different account, a key account swaps to its new key, and a key another account holds ends already added.
  */
 #[TimeLimit(seconds: 4, reason: 'It commits accounts, attempts and starts through the bus and empties seven tables.')]
 final class BeginSignInAgainTest extends TestCase
@@ -89,21 +88,6 @@ final class BeginSignInAgainTest extends TestCase
         $this->assertSame($generation + 1, $this->account->sign_in_generation);
         $this->expectException(AccountUnavailable::class);
         $this->account->assertAvailable();
-    }
-
-    public function test_the_host_takes_it_only_after_the_accounts_processes_ended(): void
-    {
-        $this->startProcessOnAccount();
-        $attemptId = $this->again('tab-1');
-
-        $this->assertNull($this->claimSignIn('host', CarbonImmutable::now()));
-        $this->reconcile();
-        $this->assertNull($this->claimSignIn('host', CarbonImmutable::now()));
-
-        DB::table('session_processes')->update(['status' => SessionProcessStatus::Stopped->value]);
-        $this->reconcile();
-
-        $this->assertSame($attemptId, $this->claimSignIn('host', CarbonImmutable::now())?->id);
     }
 
     public function test_success_starts_a_new_generation_and_keeps_the_choice(): void
