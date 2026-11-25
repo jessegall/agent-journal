@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Reads;
 
 use App\Contracts\Bus\CommandRefusal;
+use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Files\Files;
 use App\Enums\Files\Permissions;
 use App\Enums\Files\Place;
@@ -17,12 +18,15 @@ use Illuminate\Session\Store;
 use Illuminate\Support\Facades\Process;
 use Inertia\AlwaysProp;
 use Inertia\DeferProp;
+use Mockery;
+use Spatie\LaravelData\Data;
 use Tests\Support\Entries\Attributes\TestsRead;
 use Tests\TestCase;
 
 /**
  * The app context each viewer gets: a guest the installation's name and version, the owner its faults, the navigation
- * and its counts deferred, an inbox member the navigation alone, and the refusal code of the last form once.
+ * and its counts deferred, an inbox member the navigation alone, every signed-in viewer the look of each driver
+ * family, and the refusal code of the last form once.
  */
 #[TestsRead(AppContext::class)]
 final class AppContextTest extends TestCase
@@ -88,6 +92,40 @@ final class AppContextTest extends TestCase
         $this->assertArrayNotHasKey('navigationCounts', $props);
     }
 
+    public function test_the_owner_sees_how_every_registered_driver_family_is_shown(): void
+    {
+        $this->journal->owner();
+
+        $drivers = $this->resolvedList($this->props()['drivers']);
+
+        $this->assertSame(['claude-code', 'codex'], array_column($drivers, 'family'));
+        $this->assertSame([
+            'family' => 'claude-code',
+            'label' => 'Claude Code',
+            'aliases' => ['claude', 'claude-code-headless'],
+            'markUrl' => '/images/drivers/claude-code.svg',
+            'markTone' => 'own',
+            'signInCode' => 'paste-back',
+        ], $drivers[0]);
+        $this->assertSame(['current-color', 'outgoing'], [$drivers[1]['markTone'], $drivers[1]['signInCode']]);
+        $this->assertFileExists(public_path('images/drivers/claude-code.svg'));
+        $this->assertFileExists(public_path('images/drivers/codex.svg'));
+    }
+
+    public function test_a_guest_and_an_empty_catalogue_get_no_driver_looks(): void
+    {
+        $this->journal->asGuest();
+
+        $this->assertSame([], $this->resolvedList($this->props()['drivers']));
+
+        $this->journal->owner();
+        $catalogue = Mockery::mock(DriverCatalogue::class);
+        $catalogue->allows('families')->andReturn([]);
+        $this->app->instance(DriverCatalogue::class, $catalogue);
+
+        $this->assertSame([], $this->resolvedList($this->props()['drivers']));
+    }
+
     public function test_the_refusal_code_of_the_last_form_is_shown_on_the_next_page_alone(): void
     {
         $this->journal->owner();
@@ -147,6 +185,18 @@ final class AppContextTest extends TestCase
     private function session(): Store
     {
         return $this->app->make('session.store');
+    }
+
+    /**
+     * The list a closure prop sends, each Data as its array.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function resolvedList(mixed $prop): array
+    {
+        $this->assertInstanceOf(Closure::class, $prop);
+
+        return array_map(fn (Data $item) => $item->toArray(), $prop());
     }
 
     /**

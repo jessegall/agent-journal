@@ -10,6 +10,8 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCatalogue as DriverCatalogueContract;
 use App\Enums\Agents\ExecutionModeType;
 use App\Enums\Drivers\DriverType;
+use App\Enums\Drivers\MarkTone;
+use App\Enums\Drivers\SignInCodeDirection;
 use App\Enums\Projects\ArrangementType;
 use App\Support\ActorReference;
 use App\Support\DefaultDrivers;
@@ -64,7 +66,18 @@ final class ApproveDriverTest extends TestCase
         $this->assertInstanceOf(DriverCatalogue::class, $registry);
         $claude = $registry->family(DefaultDrivers::CLAUDE_CODE);
         $registry->registerFamily(
-            new DriverFamily('acme', 'Acme', ProviderKey::from('acme'), 'acme', $claude->isolatesHooksPerSession, []),
+            new DriverFamily(
+                'acme',
+                'Acme',
+                ProviderKey::from('acme'),
+                'acme',
+                $claude->isolatesHooksPerSession,
+                [],
+                [],
+                'images/drivers/acme.svg',
+                MarkTone::CurrentColor,
+                SignInCodeDirection::Outgoing,
+            ),
         );
         $registry->register($this->acme('acme/reader', DriverType::Headless));
 

@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Enums\Drivers\MarkTone;
+use App\Enums\Drivers\SignInCodeDirection;
 use App\Enums\Profiles\ModelTier;
 
 /**
  * One family of drivers, such as Claude Code, which a terminal and a headless driver share: its name as users read
- * it, the provider that runs it and the name the protected host knows it by.
+ * it, the provider that runs it, the name the protected host knows it by, and how pages show it.
  */
 final readonly class DriverFamily
 {
@@ -20,6 +22,10 @@ final readonly class DriverFamily
      *                                         project folder needs to run it isolated
      * @param  list<string>  $models  the models the family's drivers run, one per tier, cheapest first; every one
      *                                can be chosen at any start
+     * @param  list<string>  $aliases  the other names the family's records may hold: a short name or a registration key
+     * @param  string  $markAsset  the family's mark under public, such as images/drivers/claude-code.svg
+     * @param  MarkTone  $markTone  whether the mark is drawn in its own colours or in the text colour
+     * @param  SignInCodeDirection  $signInCode  which way the code of an account's sign-in travels
      */
     public function __construct(
         public string $key,
@@ -28,6 +34,10 @@ final readonly class DriverFamily
         public string $hostName,
         public bool $isolatesHooksPerSession,
         public array $models,
+        public array $aliases,
+        public string $markAsset,
+        public MarkTone $markTone,
+        public SignInCodeDirection $signInCode,
     ) {}
 
     /**

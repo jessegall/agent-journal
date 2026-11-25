@@ -29,8 +29,8 @@ const slotLabel: Record<UsageWindowSlot, string> = {
 };
 
 /**
- * The order a row prefers its window in after the week: Codex's secondary before its primary window, the five-hour
- * window last.
+ * The order a row prefers its window in after the week: a secondary before a primary window, the five-hour window
+ * last.
  */
 const slotPreference: Record<UsageWindowSlot, number> = {
     seven_day: 0,

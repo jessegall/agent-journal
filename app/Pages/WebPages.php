@@ -11,6 +11,7 @@ use App\Contracts\Records\TypeProvider;
 use App\Data\Accounts\LoginInput;
 use App\Data\Activity\ActivityEventData;
 use App\Data\Activity\ActivityWindowData;
+use App\Data\Drivers\DriverLookData;
 use App\Data\Navigation\NavigationCountsData;
 use App\Data\Navigation\NavigationData;
 use App\Data\Navigation\NavigationGroupData;
@@ -33,6 +34,8 @@ use App\Declarations\DomainClient;
 use App\Declarations\NavigationItem;
 use App\Declarations\Page;
 use App\Declarations\Slot;
+use App\Enums\Drivers\MarkTone;
+use App\Enums\Drivers\SignInCodeDirection;
 use App\Enums\Navigation\Icon;
 use App\Enums\Profiles\SlotContextType;
 use App\Enums\Web\ViewerType;
@@ -90,12 +93,14 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
             ActivityWindowData::class,
             AppContextData::class,
             DeniedWindow::class,
+            DriverLookData::class,
             FailedWindow::class,
             HomeData::class,
             HomeWindowData::class,
             InstallationData::class,
             LayoutData::class,
             LoginInput::class,
+            MarkTone::class,
             NavigationCountsData::class,
             NavigationData::class,
             NavigationGroupData::class,
@@ -103,6 +108,7 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
             ReadyWindow::class,
             RecoveryRefusalPartData::class,
             RuntimeEntryData::class,
+            SignInCodeDirection::class,
             TerminalWindowData::class,
             UnavailableWindow::class,
             ViewerData::class,

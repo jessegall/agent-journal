@@ -324,12 +324,14 @@ const accountOptions = computed(() =>
     disabled: choice.unavailableReason !== null,
   })),
 );
+// The chosen family, else the one the agent last ran, else the first the host offers; with none offered nothing names a
+// driver, so the start is refused rather than sent for an invented one.
 const driver = computed(
   () =>
     family.value ??
     props.agent.conversations[0]?.driver ??
     families.value[0] ??
-    "claude-code",
+    "",
 );
 const draftedDriverType = computed<DriverType | null>(
   () =>

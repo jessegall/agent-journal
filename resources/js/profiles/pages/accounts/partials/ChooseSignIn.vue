@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useAppContext } from '@kit/appContext';
 import type {
     DriverMethodsData,
     SignInMethod,
@@ -7,7 +8,8 @@ import OptionCards from '@kit/OptionCards';
 import DriverIcon from '@kit/DriverIcon';
 import SegmentedControl from '@kit/SegmentedControl';
 import { computed } from 'vue';
-import { driverIcon, driverName } from '../../../accountLooks';
+
+const { driverLabel } = useAppContext();
 
 /**
  * The wizard's first step: the driver switch, then a card for each way that driver signs in on this host, each
@@ -23,7 +25,7 @@ const emit = defineEmits<{ confirm: [] }>();
 const drivers = computed(() =>
     props.methods.map((entry) => ({
         value: entry.driver,
-        label: driverName(entry.driver),
+        label: driverLabel(entry.driver),
     })),
 );
 
@@ -53,7 +55,7 @@ function chooseDriver(chosen: string): void {
         @update:model-value="chooseDriver"
     >
         <template #icon="{ value }">
-            <DriverIcon :driver="driverIcon(value)" :size="14" />
+            <DriverIcon :driver="value" :size="14" />
         </template>
     </SegmentedControl>
     <OptionCards
@@ -63,7 +65,7 @@ function chooseDriver(chosen: string): void {
         @confirm="emit('confirm')"
     >
         <template #icon>
-            <DriverIcon :driver="driverIcon(driver)" :size="18" />
+            <DriverIcon :driver="driver" :size="18" />
         </template>
     </OptionCards>
     <template v-if="method === null">

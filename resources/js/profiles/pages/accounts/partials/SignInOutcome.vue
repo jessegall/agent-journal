@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useAppContext } from '@kit/appContext';
 import SwitchCase from '@kit/SwitchCase';
 import type {
     SignInAttemptData,
@@ -6,8 +7,9 @@ import type {
 } from '@generated/types/accounts';
 import Spinner from '@kit/Spinner';
 import ChosenSignIn from './ChosenSignIn.vue';
-import { driverName } from '../../../accountLooks';
 import { completedTitle, endedMessage } from '../../../signIn';
+
+const { driverLabel } = useAppContext();
 
 /**
  * The wizard's third step: the check while the host proves the sign-in, then the account added, the account that
@@ -32,7 +34,7 @@ defineProps<{
             <template #checking>
                 <Spinner large class="text-brand" />
                 <h4 class="mt-1 font-semibold text-card text-text">
-                    Checking the sign-in with {{ driverName(driver) }}…
+                    Checking the sign-in with {{ driverLabel(driver) }}…
                 </h4>
                 <p class="max-w-[340px] text-field leading-relaxed text-text-2">
                     This usually takes a few seconds. You can close this window: the
@@ -50,9 +52,9 @@ defineProps<{
                 </h4>
                 <p class="max-w-[340px] text-field leading-relaxed text-text-2">
                     <b class="font-medium [overflow-wrap:anywhere] text-text">{{
-                        accountName ?? driverName(driver)
+                        accountName ?? driverLabel(driver)
                     }}</b>
-                    is saved as a {{ driverName(driver) }} account.
+                    is saved as a {{ driverLabel(driver) }} account.
                 </p>
                 <template
                     v-if="

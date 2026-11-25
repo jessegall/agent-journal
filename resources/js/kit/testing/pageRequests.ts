@@ -3,6 +3,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, vi } from 'vitest';
 import { reactive } from 'vue';
+import { declaredLooks } from './driverLooks';
 
 /**
  * The ids every recorded request names, one for each record a route or a body points at; the server's replay
@@ -52,7 +53,7 @@ type FormRoute = { url: string; method: string };
  */
 export function recordingInertia(sent: SentRequest[]) {
     return {
-        usePage: () => ({ props: { viewer: { type: 'owner', id: 'owner', canShare: true } } }),
+        usePage: () => ({ props: { viewer: { type: 'owner', id: 'owner', canShare: true }, drivers: declaredLooks } }),
         router: {
             post: (url: string, body: unknown, options: VisitOptions = {}) =>
                 sent.push({ method: 'POST', url, body: body ?? null, headers: options.headers ?? {} }),

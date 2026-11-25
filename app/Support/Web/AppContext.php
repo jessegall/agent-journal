@@ -7,10 +7,12 @@ namespace App\Support\Web;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Actors\CurrentUserResolver;
 use App\Contracts\Bus\CommandRefusal;
+use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Drivers\InstalledVersion;
 use App\Contracts\Navigation\NavigationRecords;
 use App\Contracts\Settings\SettingsResolver;
 use App\Contracts\Sharing\SharePolicy;
+use App\Data\Drivers\DriverLookData;
 use App\Data\Web\AppContextData;
 use App\Data\Web\InstallationData;
 use App\Data\Web\ViewerData;
@@ -28,8 +30,8 @@ use Spatie\LaravelData\Optional;
 
 /**
  * The app context of one request, read from who views it: a guest sees the installation's name and version, the owner
- * its faults, the navigation and its counts, and an inbox member the navigation alone. It holds nothing between
- * requests.
+ * its faults, the driver looks, the navigation and its counts, and an inbox member the driver looks and the navigation.
+ * It holds nothing between requests.
  */
 final readonly class AppContext
 {
@@ -45,6 +47,7 @@ final readonly class AppContext
         private InstalledVersion $version,
         private InstallationFaults $installationFaults,
         private HostLinkAlarms $hostLinkAlarms,
+        private DriverCatalogue $drivers,
     ) {}
 
     public function data(Request $request): AppContextData
@@ -55,6 +58,7 @@ final readonly class AppContext
         return AppContextData::from([
             'installation' => ContextLazy::value(fn () => $this->installation($type)),
             'viewer' => ContextLazy::always(fn () => $this->viewer($user, $type)),
+            'drivers' => ContextLazy::value(fn () => $type === ViewerType::Guest ? [] : $this->driverLooks()),
             'refusalCode' => $this->refusalCodeOf($request),
             'navigation' => $type === ViewerType::Guest
                 ? new Optional()
@@ -95,6 +99,16 @@ final readonly class AppContext
                 ->map(fn (CurrentUser $signedIn) => $this->sharing->mayManage(ActorReference::forUser($signedIn->id)))
                 ->getOrElse(false),
         ]);
+    }
+
+    /**
+     * How each registered driver family is shown.
+     *
+     * @return list<DriverLookData>
+     */
+    private function driverLooks(): array
+    {
+        return DriverLookData::collect($this->drivers->families());
     }
 
     /**

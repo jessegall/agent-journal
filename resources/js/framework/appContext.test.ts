@@ -1,12 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
 import { reactive } from 'vue';
-import type { AppContextData, InstallationData, ViewerData } from '@/types/generated';
+import type { AppContextData, DriverLookData, InstallationData, ViewerData } from '@/types/generated';
 import { useAppContext } from './appContext';
 
-const page = reactive<{ props: AppContextData & { installation: InstallationData; viewer: ViewerData } }>({
+const page = reactive<{
+    props: AppContextData & { installation: InstallationData; viewer: ViewerData; drivers: DriverLookData[] };
+}>({
     props: {
         installation: { name: 'Journal', version: '012345678', faults: [] },
         viewer: { type: 'guest', canShare: false },
+        drivers: [],
     },
 });
 
@@ -36,5 +39,26 @@ describe('the app context', () => {
         page.props.navigationCounts = { counts: { 'plans.open': 2 } };
 
         expect(context.navigationCounts.value?.counts['plans.open']).toBe(2);
+    });
+});
+
+describe('a driver look', () => {
+    it('is found by family, alias or vendor name, and an unknown driver keeps its recorded name', () => {
+        page.props.drivers = [
+            {
+                family: 'acme',
+                label: 'Acme',
+                aliases: ['acme-headless'],
+                markUrl: '/images/drivers/acme.svg',
+                markTone: 'own',
+                signInCode: 'outgoing',
+            },
+        ];
+        const { driverLook } = useAppContext();
+
+        expect(driverLook('acme')).toMatchObject({ type: 'declared', look: { label: 'Acme' } });
+        expect(driverLook('acme-headless')).toMatchObject({ type: 'declared', look: { family: 'acme' } });
+        expect(driverLook('vendor/acme')).toMatchObject({ type: 'declared', look: { family: 'acme' } });
+        expect(driverLook('gone')).toEqual({ type: 'unknown', label: 'gone' });
     });
 });
