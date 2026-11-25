@@ -96,8 +96,7 @@ final class RuleRevision extends Model implements ReadableModel
         $rule = $proposed->payload;
         self::assertReadersFit($rule, $readers);
 
-        $latest = self::query()->ofProject($projectKey)->ofRule($rule->scope, $rule->id)->max('revision');
-        $approved = $rule->ownedBy($rule->scope, (int) $latest + 1);
+        $approved = $rule->ownedBy($rule->scope, self::resolveNextRevision($projectKey, $rule));
 
         $ruleRevision = new self();
         $ruleRevision->project_key = $projectKey;
@@ -158,6 +157,16 @@ final class RuleRevision extends Model implements ReadableModel
     private function assertUnedited(): never
     {
         throw RevisionImmutable::rule($this->id);
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The revision the rule's next approval in the project takes: one past its newest.
+     */
+    public static function resolveNextRevision(string $projectKey, CommandRule $rule): int
+    {
+        return (int) self::query()->ofProject($projectKey)->ofRule($rule->scope, $rule->id)->max('revision') + 1;
     }
 
     // ----------[ Scopes ]----------

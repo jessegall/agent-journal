@@ -87,9 +87,7 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
      */
     public static function createForConfiguration(ShareGatewayConfiguration $configuration, string $runId): self
     {
-        $latest = self::query()->ofConfiguration($configuration->id)->max('endpoint_version');
-
-        return self::create($configuration, (is_numeric($latest) ? (int) $latest : 0) + 1, $runId);
+        return self::create($configuration, self::resolveNextVersion($configuration), $runId);
     }
 
     // ----------[ Mutations ]----------
@@ -222,6 +220,14 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
             ->atVersion($version)
             ->ofRun($runId)
             ->lockForUpdate()->firstOr(GatewayLeaseRefused::throwing()->forEndpoint($configurationId, $version));
+    }
+
+    /**
+     * The version the configuration's next endpoint takes: one past its newest.
+     */
+    public static function resolveNextVersion(ShareGatewayConfiguration $configuration): int
+    {
+        return (int) self::query()->ofConfiguration($configuration->id)->max('endpoint_version') + 1;
     }
 
     // ----------[ Scopes ]----------

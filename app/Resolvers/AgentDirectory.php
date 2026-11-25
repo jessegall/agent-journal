@@ -74,11 +74,13 @@ final readonly class AgentDirectory implements AgentDirectoryContract
         $sessions = AgentSession::query()->ofAgents($ids)->running()
             ->limit(self::AGENTS_SHOWN)->get()->keyBy('agent_id');
 
-        $runtimes = AgentRuntime::query()->ofSessions($sessions->pluck('id')->all())
+        $sessionIds = array_values($sessions->map(fn (AgentSession $session): string => $session->id)->all());
+
+        $runtimes = AgentRuntime::query()->ofSessions($sessionIds)
             ->limit(self::AGENTS_SHOWN)->get()->keyBy('agent_session_id');
 
-        $starts = SessionProcess::query()->supervised()->whereIn('session_id', $sessions->pluck('id')->all())
-            ->orderByDesc('created_at')->limit(self::AGENTS_SHOWN * 2)->get()->unique('session_id')
+        $starts = SessionProcess::query()->supervised()->ofSessions($sessionIds)
+            ->newestFirst()->limit(self::AGENTS_SHOWN * 2)->get()->unique('session_id')
             ->keyBy('session_id');
 
         $requests = DriverRequest::query()->ofAgentRuntimes($runtimes->pluck('id')->all())

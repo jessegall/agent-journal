@@ -59,7 +59,7 @@ final class ProfileRevisionHold extends Model implements EventSource, ReadableMo
         $fence->setAttribute($fence->getKeyName(), $fence->newUniqueId());
         $fence->insertIfAbsent();
 
-        return self::query()->ofRevision($key, $revision)->sole();
+        return self::findOfRevision($key, $revision);
     }
 
     // ----------[ Mutations ]----------
@@ -83,6 +83,14 @@ final class ProfileRevisionHold extends Model implements EventSource, ReadableMo
         $pending = self::query()->unreconciled()->oldestFirst()->readExactly($limit)->get();
 
         return array_values($pending->all());
+    }
+
+    /**
+     * The hold on this profile revision.
+     */
+    public static function findOfRevision(string $key, int $revision): self
+    {
+        return self::query()->ofRevision($key, $revision)->sole();
     }
 
     // ----------[ Scopes ]----------

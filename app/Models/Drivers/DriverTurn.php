@@ -72,7 +72,7 @@ final class DriverTurn extends Model implements EventSource, ReadableModel
         string $nativePromptId,
         CarbonImmutable $startedAt,
     ): self {
-        $existing = self::query()->ofPrompt($runtimeId, $processGeneration, $nativePromptId)->first();
+        $existing = self::findOfPrompt($runtimeId, $processGeneration, $nativePromptId);
 
         if ($existing !== null) {
             return $existing;
@@ -198,6 +198,14 @@ final class DriverTurn extends Model implements EventSource, ReadableModel
             ->newestFirst()
             ->lockForUpdate()
             ->first();
+    }
+
+    /**
+     * The turn of this prompt in the process generation; none before it.
+     */
+    public static function findOfPrompt(string $runtimeId, int $processGeneration, string $nativePromptId): self|null
+    {
+        return self::query()->ofPrompt($runtimeId, $processGeneration, $nativePromptId)->first();
     }
 
     // ----------[ Scopes ]----------

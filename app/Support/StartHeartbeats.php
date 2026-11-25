@@ -129,18 +129,12 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
         $isAnyHostReachable = Host::query()->unrevoked()->excludingKeys($unreachableHosts)->exists();
 
         SessionProcess::query()->supervised()
-            ->where('state', SessionProcessState::Pending->value)
-            ->where(fn ($starts) => $starts
-                ->where('created_at', '<=', $now->subMinutes(self::UNREACHABLE_HOST_WAIT_MINUTES))
-                ->orWhere(fn ($reachable) => $reachable
-                    ->where('created_at', '<=', $cutoff)
-                    ->where(fn ($hosted) => $isAnyHostReachable
-                        ? $hosted->whereNull('host_id')->orWhereNotIn('host_id', $unreachableHosts)
-                        : $hosted->whereNotIn('host_id', $unreachableHosts))))
-            ->whereIn('session_id', AgentSession::query()
-                ->withAnyStatus(SessionStatus::running())
-                ->neverBeat()
-                ->keys())
+            ->unclaimedTooLong(
+                $now->subMinutes(self::UNREACHABLE_HOST_WAIT_MINUTES),
+                $cutoff,
+                $unreachableHosts,
+                $isAnyHostReachable,
+            )
             ->limit(self::UNCLAIMED_ENDED_LIMIT)
             ->get()
             ->each(fn (SessionProcess $start) => $this->endUnclaimed($start->session_id, $now));

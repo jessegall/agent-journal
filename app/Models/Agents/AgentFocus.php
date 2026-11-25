@@ -58,7 +58,7 @@ final class AgentFocus extends Model implements EventSource, ReadableModel
      */
     public static function create(string $agentId): self
     {
-        $focus = self::query()->ofAgent($agentId)->lockForUpdate()->first();
+        $focus = self::findLockedOfAgent($agentId);
 
         if ($focus instanceof self) {
             return $focus;
@@ -116,6 +116,16 @@ final class AgentFocus extends Model implements EventSource, ReadableModel
     protected function record(): Attribute
     {
         return Accessor::get(fn () => new RecordIdentity($this->focused_type, $this->focused_id));
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The agent's focus, locked; none before its first.
+     */
+    public static function findLockedOfAgent(string $agentId): self|null
+    {
+        return self::query()->ofAgent($agentId)->lockForUpdate()->first();
     }
 
     // ----------[ Scopes ]----------

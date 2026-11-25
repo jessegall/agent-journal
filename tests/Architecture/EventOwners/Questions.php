@@ -32,7 +32,7 @@ return [
     ],
     QuestionAnswerNoticeWritten::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'QuestionAnswerNotice::write',
+        'owner' => 'QuestionAnswerNotice::create',
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new QuestionAnswerNoticeWritten('notice', 'question', ActorIdentity::ofClass(Agent::class, 'agent')),

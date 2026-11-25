@@ -60,7 +60,7 @@ final class CommandAlias extends Model implements EventSource, ReadableModel
      */
     public static function create(string $projectKey, string $name): self
     {
-        $existing = self::query()->named($name, $projectKey)->first();
+        $existing = self::findNamedInProject($projectKey, $name);
 
         if ($existing !== null) {
             return $existing;
@@ -108,6 +108,16 @@ final class CommandAlias extends Model implements EventSource, ReadableModel
             $this->body_digest,
             $this->argument_grammar,
         ));
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The project's alias of this name; none before its first.
+     */
+    public static function findNamedInProject(string $projectKey, string $name): self|null
+    {
+        return self::query()->named($name, $projectKey)->first();
     }
 
     // ----------[ Scopes ]----------

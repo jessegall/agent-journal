@@ -53,7 +53,7 @@ final class QuestionAnswerNotice extends Model implements EventSource, ReadableM
 
     public static function create(Question $question, ActorIdentity $recipient): self
     {
-        $existing = self::query()->ofQuestion($question->id)->first();
+        $existing = self::findOfQuestion($question);
 
         if ($existing !== null) {
             return $existing;
@@ -99,6 +99,16 @@ final class QuestionAnswerNotice extends Model implements EventSource, ReadableM
     public function question(): BelongsTo
     {
         return $this->belongsTo(Question::class);
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The question's answer notice; none before it.
+     */
+    public static function findOfQuestion(Question $question): self|null
+    {
+        return self::query()->ofQuestion($question->id)->first();
     }
 
     // ----------[ Scopes ]----------

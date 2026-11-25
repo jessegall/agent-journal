@@ -100,11 +100,9 @@ final class ProfileRevision extends Model implements ReadableModel
         ScriptSource $source,
         CompiledScript|null $compiled,
     ): self {
-        $latest = self::query()->ofProfile($profile)->max('revision');
-
         $profileRevision = new self();
         $profileRevision->profile_id = $profile->id;
-        $profileRevision->revision = (is_numeric($latest) ? (int) $latest : 0) + 1;
+        $profileRevision->revision = self::resolveNextRevision($profile);
         $profileRevision->base = $definition->base;
         $profileRevision->instructions = $definition->instructions;
         $profileRevision->preferred_tier = $definition->preferredTier;
@@ -217,6 +215,14 @@ final class ProfileRevision extends Model implements ReadableModel
             });
 
         return $profiles;
+    }
+
+    /**
+     * The revision the profile's next definition takes: one past its newest.
+     */
+    public static function resolveNextRevision(Profile $profile): int
+    {
+        return (int) self::query()->ofProfile($profile)->max('revision') + 1;
     }
 
     // ----------[ Scopes ]----------

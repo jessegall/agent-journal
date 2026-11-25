@@ -57,7 +57,7 @@ final class UserPresence extends Model implements EventSource, ReadableModel
         $presence->setAttribute($presence->getKeyName(), $presence->newUniqueId());
         $presence->insertIfAbsent();
 
-        return self::query()->ofUser($userId)->lockForUpdate()->sole();
+        return self::findLockedOfUser($userId);
     }
 
     // ----------[ Mutations ]----------
@@ -70,6 +70,16 @@ final class UserPresence extends Model implements EventSource, ReadableModel
         $this->last_heartbeat_at = $time;
         $this->assertSaved($this->save());
         $this->raise(new UserPresenceConfirmed($this->id));
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The user's presence, locked until the transaction ends.
+     */
+    public static function findLockedOfUser(string $userId): self
+    {
+        return self::query()->ofUser($userId)->lockForUpdate()->sole();
     }
 
     // ----------[ Scopes ]----------

@@ -68,12 +68,7 @@ final class AccountUsageCost extends Model implements EventSource, ReadableModel
      */
     public static function create(Account $account, int $generation, UsageCost $cost): void
     {
-        $kept = self::query()
-            ->withoutGlobalScope(AccountOwnerScope::class)
-            ->ofSignIn($account, $generation)
-            ->fromSource($cost->sourceId)
-            ->lockForUpdate()
-            ->first();
+        $kept = self::findLockedOfSource($account, $generation, $cost->sourceId);
 
         if ($kept !== null) {
             $kept->assertRecords($cost);
@@ -140,6 +135,19 @@ final class AccountUsageCost extends Model implements EventSource, ReadableModel
         }
 
         return $costs;
+    }
+
+    /**
+     * The cost this sign-in recorded from the source, locked; none before the first.
+     */
+    public static function findLockedOfSource(Account $account, int $generation, string $sourceId): self|null
+    {
+        return self::query()
+            ->withoutGlobalScope(AccountOwnerScope::class)
+            ->ofSignIn($account, $generation)
+            ->fromSource($sourceId)
+            ->lockForUpdate()
+            ->first();
     }
 
     // ----------[ Scopes ]----------

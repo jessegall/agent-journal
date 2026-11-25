@@ -50,7 +50,7 @@ final class DriverApproval extends Model implements EventSource, ReadableModel
      */
     public static function create(DriverKey $key): self
     {
-        $existing = self::query()->ofKeys([(string) $key])->first();
+        $existing = self::findOfKey($key);
 
         if ($existing !== null) {
             return $existing;
@@ -92,6 +92,14 @@ final class DriverApproval extends Model implements EventSource, ReadableModel
             ->get()
             ->mapWithKeys(fn (self $approval) => [$approval->driver_key => $approval->build_pins])
             ->all();
+    }
+
+    /**
+     * The driver's approval; none before its first.
+     */
+    public static function findOfKey(DriverKey $key): self|null
+    {
+        return self::query()->ofKeys([(string) $key])->first();
     }
 
     // ----------[ Scopes ]----------

@@ -146,7 +146,7 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
     ): self {
         $request = new self();
         $request->agent_runtime_id = $runtime->id;
-        $request->sequence = (int) self::query()->ofRuntime($runtime)->max('sequence') + 1;
+        $request->sequence = self::resolveNextSequence($runtime);
         $request->operation = $operation;
         $request->idempotency_key = $idempotencyKey;
         $request->payload_digest = $envelope->digestFor($operation->value);
@@ -683,6 +683,16 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
     {
         $this->progress = $progress;
         $this->row_version++;
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The sequence the runtime's next request takes: one past its newest.
+     */
+    public static function resolveNextSequence(AgentRuntime $runtime): int
+    {
+        return (int) self::query()->ofRuntime($runtime)->max('sequence') + 1;
     }
 
     // ----------[ Scopes ]----------

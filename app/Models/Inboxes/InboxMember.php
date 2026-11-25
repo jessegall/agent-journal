@@ -65,7 +65,7 @@ final class InboxMember extends Model implements EventSource, ReadableModel
      */
     public static function create(string $inboxId, ActorIdentity $actor, CarbonImmutable $at): void
     {
-        if (self::query()->active()->ofActor($actor)->ofInbox($inboxId)->exists()) {
+        if (self::isAttached($inboxId, $actor)) {
             return;
         }
 

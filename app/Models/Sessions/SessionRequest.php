@@ -133,7 +133,7 @@ final class SessionRequest extends Model implements EventSource, ReadableModel
         PinnedDriver $pin,
         ActorIdentity $requester,
     ): self {
-        $existing = self::query()->underRequest($request->requestId)->lockForUpdate()->first();
+        $existing = self::findLockedUnderRequest($request->requestId);
 
         if ($existing !== null) {
             $existing->assertDigest($request);
@@ -468,6 +468,14 @@ final class SessionRequest extends Model implements EventSource, ReadableModel
             ->ofSessions([$sessionId])
             ->inConversationMode(ConversationModeType::Resume)
             ->exists();
+    }
+
+    /**
+     * The session request made under this start request, locked; none before it.
+     */
+    public static function findLockedUnderRequest(string $requestId): self|null
+    {
+        return self::query()->underRequest($requestId)->lockForUpdate()->first();
     }
 
     // ----------[ Scopes ]----------

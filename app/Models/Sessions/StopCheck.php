@@ -102,10 +102,7 @@ final class StopCheck extends Model implements EventSource, ReadableModel
 
         $attempt->insertIfAbsent();
 
-        return self::query()
-            ->withoutGlobalScope(AgentSessionScope::class)
-            ->ofStop($stop)
-            ->sole();
+        return self::findOfStop($stop);
     }
 
     // ----------[ Mutations ]----------
@@ -271,6 +268,14 @@ final class StopCheck extends Model implements EventSource, ReadableModel
             ->readExactly($count)
             ->get()
             ->all());
+    }
+
+    /**
+     * The check of this stop, whichever session's.
+     */
+    public static function findOfStop(HookIdentity $stop): self
+    {
+        return self::query()->withoutGlobalScope(AgentSessionScope::class)->ofStop($stop)->sole();
     }
 
     // ----------[ Scopes ]----------

@@ -114,8 +114,8 @@ final class RawReflectionRule implements Rule
      * The wrapper call to use instead of a native method, by lowercase method name.
      */
     private const array WRAPPER_METHODS = [
-        'getattributes' => 'Reflector::attributes(X::class), attribute(X::class) or hasAttribute(X::class)',
-        'newinstance' => 'Reflector::attribute(X::class), which builds the attribute',
+        'getattributes' => 'ReflectedType::attributes(X::class), attribute(X::class) or hasAttribute(X::class)',
+        'newinstance' => 'ReflectedType::attribute(X::class), which builds the attribute',
     ];
 
     /**
@@ -130,20 +130,20 @@ final class RawReflectionRule implements Rule
      * PHP's functions that ask about a type by its name, each with the Reflector question that answers it.
      */
     private const array TYPE_FUNCTIONS = [
-        'class_exists' => 'Reflector::exists($name) and Reflector::of($name)->isClass()',
-        'class_implements' => 'Reflector::of($target)->interfaces()',
-        'class_uses' => 'Reflector::of($target)->traits() or ->uses(X::class)',
-        'enum_exists' => 'Reflector::exists($name) and Reflector::of($name)->isEnum()',
-        'get_parent_class' => 'Reflector::of($target)->parent()',
-        'interface_exists' => 'Reflector::exists($name) and Reflector::of($name)->isInterface()',
-        'is_a' => 'Reflector::of($target)->is(X::class), or ->isInstance($value)',
-        'is_subclass_of' => 'Reflector::of($target)->isSubclassOf(X::class) or ->implements(X::class)',
-        'method_exists' => 'Reflector::of($target)->hasMethod($name)',
-        'property_exists' => 'Reflector::of($target)->hasProperty($name)',
-        'trait_exists' => 'Reflector::exists($name) and Reflector::of($name)->isTrait()',
+        'class_exists' => 'ReflectedType::exists($name) and ReflectedType::of($name)->isClass()',
+        'class_implements' => 'ReflectedType::of($target)->interfaces()',
+        'class_uses' => 'ReflectedType::of($target)->traits() or ->uses(X::class)',
+        'enum_exists' => 'ReflectedType::exists($name) and ReflectedType::of($name)->isEnum()',
+        'get_parent_class' => 'ReflectedType::of($target)->parent()',
+        'interface_exists' => 'ReflectedType::exists($name) and ReflectedType::of($name)->isInterface()',
+        'is_a' => 'ReflectedType::of($target)->is(X::class), or ->isInstance($value)',
+        'is_subclass_of' => 'ReflectedType::of($target)->isSubclassOf(X::class) or ->implements(X::class)',
+        'method_exists' => 'ReflectedType::of($target)->hasMethod($name)',
+        'property_exists' => 'ReflectedType::of($target)->hasProperty($name)',
+        'trait_exists' => 'ReflectedType::exists($name) and ReflectedType::of($name)->isTrait()',
     ];
 
-    private const string CONSTRUCTION_HINT = 'Reflector::of($target), or reflect() of the Reflects trait';
+    private const string CONSTRUCTION_HINT = 'ReflectedType::of($target), or reflect() of the Reflects trait';
 
     private const string METHOD_HINT = 'the Reflector answer for it; add that answer in app/Reflection when it has '
         .'none';
@@ -232,7 +232,7 @@ final class RawReflectionRule implements Rule
         if ($node->class instanceof Expr && $scope->getType($node->class)->isString()->yes()) {
             return [$this->error(
                 'instanceof on a type held as a name',
-                'Reflector::of($type)->isInstance($value)',
+                'ReflectedType::of($type)->isInstance($value)',
                 $node,
                 $scope,
             )];

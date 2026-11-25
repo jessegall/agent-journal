@@ -42,8 +42,8 @@ final readonly class ReconcileStartsHandler implements CommandHandler
     private function stopProven(string $hostId, array $keys): array
     {
         $starts = SessionProcess::query()->supervised()
-            ->where('host_id', $hostId)
-            ->whereIn('start_key', $keys)
+            ->onHost($hostId)
+            ->withStartKeys($keys)
             ->unresolved()
             ->lockForUpdate()
             ->readAll('a host reports a bounded batch of exited starts')

@@ -59,7 +59,7 @@ final class CapacityReservation extends Model implements ReadableModel
      */
     public static function create(string $startRequestId, ExecutionBudgets $budgets, HostCapacity $capacity): self
     {
-        $existing = self::query()->ofStartRequest($startRequestId)->first();
+        $existing = self::findOfStartRequest($startRequestId);
 
         if ($existing !== null) {
             return $existing;
@@ -130,6 +130,14 @@ final class CapacityReservation extends Model implements ReadableModel
             ->ofStartRequest($startRequestId)
             ->reserved()
             ->exists();
+    }
+
+    /**
+     * The start request's reservation; none before it.
+     */
+    public static function findOfStartRequest(string $requestId): self|null
+    {
+        return self::query()->ofStartRequest($requestId)->first();
     }
 
     // ----------[ Scopes ]----------

@@ -88,11 +88,9 @@ final class SkillRevision extends Model implements ReadableModel
         string|null $sourceKey,
         string|null $sourceDigest,
     ): self {
-        $latest = self::query()->ofSkill($skill)->max('revision');
-
         $skillRevision = new self();
         $skillRevision->skill_id = $skill->id;
-        $skillRevision->revision = (is_numeric($latest) ? (int) $latest : 0) + 1;
+        $skillRevision->revision = self::resolveNextRevision($skill);
         $skillRevision->name = $draft->name;
         $skillRevision->description = $draft->description;
         $sections = array_map(fn (SectionDraft $section) => $section->toSection(), $draft->sections);
@@ -192,6 +190,14 @@ final class SkillRevision extends Model implements ReadableModel
     public static function findHistoryOf(Skill $skill, int $limit): array
     {
         return array_values(self::query()->ofSkill($skill)->newestRevisionFirst()->readExactly($limit)->get()->all());
+    }
+
+    /**
+     * The revision the skill's next draft takes: one past its newest.
+     */
+    public static function resolveNextRevision(Skill $skill): int
+    {
+        return (int) self::query()->ofSkill($skill)->max('revision') + 1;
     }
 
     // ----------[ Scopes ]----------

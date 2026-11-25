@@ -74,9 +74,7 @@ final class SkillReceipt extends Model implements ReadableModel
             return $receipt;
         }
 
-        return self::query()
-            ->ofRead($sessionId, $epoch, $skillKey, $digest)
-            ->sole();
+        return self::findOfRead($sessionId, $epoch, $skillKey, $digest);
     }
 
     // ----------[ Queries ]----------
@@ -89,6 +87,14 @@ final class SkillReceipt extends Model implements ReadableModel
         $epoch = SkillContextEpoch::resolveCurrentOf($sessionId);
 
         return self::query()->ofRead($sessionId, $epoch, $skillKey, $digest)->exists();
+    }
+
+    /**
+     * The receipt of this skill read in the session's epoch.
+     */
+    public static function findOfRead(string $sessionId, int $epoch, string $skillKey, string $digest): self
+    {
+        return self::query()->ofRead($sessionId, $epoch, $skillKey, $digest)->sole();
     }
 
     // ----------[ Scopes ]----------

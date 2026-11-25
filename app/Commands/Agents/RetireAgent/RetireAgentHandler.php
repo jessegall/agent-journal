@@ -11,7 +11,6 @@ use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Inboxes\InboxParticipationEnding;
 use App\Enums\Agents\AccessType;
-use App\Enums\Agents\SessionProcessState;
 use App\Enums\Assignments\AssignmentReason;
 use App\Events\Sessions\AccountUseChanged;
 use App\Exceptions\AgentRetirementDenied;
@@ -125,8 +124,8 @@ final readonly class RetireAgentHandler implements CommandHandler
     private function cancelPendingOfAgent(string $agentId): array
     {
         $starts = SessionProcess::query()->supervised()
-            ->where('agent_id', $agentId)
-            ->where('state', SessionProcessState::Pending->value)
+            ->ofAgents([$agentId])
+            ->pending()
             ->lockForUpdate()
             ->readAll('a retiring agent has few starts')
             ->get();

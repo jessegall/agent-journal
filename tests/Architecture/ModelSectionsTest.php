@@ -14,7 +14,7 @@ use Tests\Support\TimeLimits\TimeLimit;
  * made from when the model has several, and a row builder only one constructor uses is inlined into it (user messages
  * 22052 and 22060). A static of Queries starts with find for the model, none or a list of it, resolve for a value, count
  * for a count and is, has or can for a yes or no, and makes no row; a constructor or mutation reads through them and
- * never ends a query itself (user messages 22077, 22080, 22091). tools/refactoring/model-sections.php lists every fault, and sorts with --fix.
+ * never ends a query itself. tools/refactoring/model-sections.php lists every fault, and sorts with --fix.
  */
 #[TimeLimit(seconds: 60, reason: 'It parses every PHP file of app and domain.')]
 final class ModelSectionsTest extends TestCase

@@ -73,7 +73,7 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
         $entry->actor_type = $actor->type;
         $entry->actor_id = $actor->id;
         $entry->text = $text;
-        $entry->sequence = (int) self::query()->ofTask($task->id)->max('sequence') + 1;
+        $entry->sequence = self::resolveNextSequence($task);
 
         $entry->assertSaved($entry->save());
         $entry->raise(new TaskLogged($task->id, $entry->id));
@@ -137,6 +137,14 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
             ->newestFirst()
             ->limit($limit)
             ->get();
+    }
+
+    /**
+     * The sequence the task's next log entry takes: one past its newest.
+     */
+    public static function resolveNextSequence(Task $task): int
+    {
+        return (int) self::query()->ofTask($task->id)->max('sequence') + 1;
     }
 
     // ----------[ Scopes ]----------

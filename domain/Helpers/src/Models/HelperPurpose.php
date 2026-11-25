@@ -76,7 +76,7 @@ final class HelperPurpose extends Model implements ReadableModel
         $purpose->belongTo($parent);
         $purpose->insertIfAbsent();
 
-        return self::query()->ownedBy($parent)->ofProfile($profileKey)->aboutSubject($subject)->sole();
+        return self::findOfSubject($parent, $profileKey, $subject);
     }
 
     // ----------[ Accessors ]----------
@@ -137,6 +137,14 @@ final class HelperPurpose extends Model implements ReadableModel
     public static function findFree(ActorIdentity $parent, string $profileKey, string $label): self
     {
         return self::start($parent, $profileKey, PurposeType::Free, null, $label);
+    }
+
+    /**
+     * The parent's purpose for this profile about the subject.
+     */
+    public static function findOfSubject(ActorIdentity $parent, string $profileKey, RecordIdentity $subject): self
+    {
+        return self::query()->ownedBy($parent)->ofProfile($profileKey)->aboutSubject($subject)->sole();
     }
 
     // ----------[ Scopes ]----------
@@ -210,8 +218,8 @@ final class HelperPurpose extends Model implements ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function sameAs(Builder $query, self $purpose): void
+    protected function idsSameAs(Builder $query, self $purpose): void
     {
-        $query->acrossActors()->likePurpose($purpose);
+        $query->acrossActors()->likePurpose($purpose)->select('id');
     }
 }

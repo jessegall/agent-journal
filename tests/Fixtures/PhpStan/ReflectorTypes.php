@@ -24,8 +24,8 @@ class ReflectorTypes
         assertType('App\Support\ReflectedType<static(Tests\Fixtures\PhpStan\ReflectorTypes)>', $this->reflect());
         assertType('App\Support\ReflectedType<Tests\Fixtures\Reflection\Parcel>', static::reflect(Parcel::class));
         assertType('App\Support\ReflectedType<Tests\Fixtures\Reflection\Parcel>', static::reflect($parcel));
-        assertType('App\Support\ReflectedType<Tests\Fixtures\Reflection\Parcel>', Reflector::of(Parcel::class));
-        assertType('App\Support\ReflectedType<Tests\Fixtures\Reflection\Parcel>', Reflector::of($parcel));
+        assertType('App\Support\ReflectedType<Tests\Fixtures\Reflection\Parcel>', ReflectedType::of(Parcel::class));
+        assertType('App\Support\ReflectedType<Tests\Fixtures\Reflection\Parcel>', ReflectedType::of($parcel));
     }
 
     public function attributeTypes(): void

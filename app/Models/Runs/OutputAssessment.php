@@ -82,7 +82,7 @@ final class OutputAssessment extends Model implements ReadableModel
         ReplayedOutput $replayed,
         OutputValidation $validation,
     ): self {
-        $previous = self::query()->ofPart($part)->first();
+        $previous = self::findLatestOf($part);
 
         $outputAssessment = new self();
         $outputAssessment->project_key = $run->project_key;

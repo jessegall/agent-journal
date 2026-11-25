@@ -91,7 +91,7 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
         ProposedRule $proposed,
         CommandRequest|null $answers,
     ): self {
-        $existing = self::query()->ofProject($projectKey)->requestedBy($author, $requestId)->first();
+        $existing = self::findRequestedBy($projectKey, $author, $requestId);
 
         if ($existing !== null) {
             $existing->assertSameRequest($proposed);
@@ -281,6 +281,16 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
 
         $this->state = $state;
         $this->save();
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The proposal this author's request made in the project; none before it.
+     */
+    public static function findRequestedBy(string $projectKey, ActorIdentity $author, string $requestId): self|null
+    {
+        return self::query()->ofProject($projectKey)->requestedBy($author, $requestId)->first();
     }
 
     // ----------[ Scopes ]----------

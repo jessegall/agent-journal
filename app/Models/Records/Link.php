@@ -58,7 +58,7 @@ final class Link extends MorphPivot implements EventSource, ReadableModel
      */
     public static function createForModels(Model $source, Model $target): self
     {
-        $existing = self::query()->between($source, $target)->first();
+        $existing = self::findBetween($source, $target);
 
         if ($existing !== null) {
             return $existing;
@@ -95,7 +95,7 @@ final class Link extends MorphPivot implements EventSource, ReadableModel
      */
     public static function createForKey(Model $source, string $targetType, string $targetId): self
     {
-        return self::query()->touching($source)->touchingKey($targetType, $targetId)->first()
+        return self::findTouchingKey($source, $targetType, $targetId)
             ?? self::create($source->getMorphClass(), (string) $source->getKey(), $targetType, $targetId);
     }
 
@@ -160,6 +160,24 @@ final class Link extends MorphPivot implements EventSource, ReadableModel
     public function target(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The link between the two models; none before the first.
+     */
+    public static function findBetween(Model $source, Model $target): self|null
+    {
+        return self::query()->between($source, $target)->first();
+    }
+
+    /**
+     * The link from the model to this keyed record; none before the first.
+     */
+    public static function findTouchingKey(Model $source, string $targetType, string $targetId): self|null
+    {
+        return self::query()->touching($source)->touchingKey($targetType, $targetId)->first();
     }
 
     // ----------[ Scopes ]----------

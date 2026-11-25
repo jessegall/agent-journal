@@ -48,7 +48,7 @@ final class ProcessEvent extends Model implements ReadableModel
 
     public static function create(ProcessRun $run, int $sequence, ProcessEventFacts $facts): self
     {
-        $existing = self::query()->ofRun($run)->atSequence($sequence)->first();
+        $existing = self::findAtSequence($run, $sequence);
 
         if ($existing === null) {
             return self::createAt($run, $sequence, $facts);
@@ -58,7 +58,7 @@ final class ProcessEvent extends Model implements ReadableModel
             return $existing;
         }
 
-        $next = (int) self::query()->ofRun($run)->max('sequence') + 1;
+        $next = self::resolveNextSequence($run);
 
         return self::createAt($run, $next, ProcessEventFacts::conflict($sequence, $facts));
     }
@@ -75,6 +75,24 @@ final class ProcessEvent extends Model implements ReadableModel
         $processEvent->save();
 
         return $processEvent;
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The run's event at this sequence; none before it.
+     */
+    public static function findAtSequence(ProcessRun $run, int $sequence): self|null
+    {
+        return self::query()->ofRun($run)->atSequence($sequence)->first();
+    }
+
+    /**
+     * The sequence the run's next event takes: one past its newest.
+     */
+    public static function resolveNextSequence(ProcessRun $run): int
+    {
+        return (int) self::query()->ofRun($run)->max('sequence') + 1;
     }
 
     // ----------[ Scopes ]----------

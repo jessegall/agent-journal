@@ -138,7 +138,7 @@ class User extends Authenticatable implements
             return $owner;
         }
 
-        return self::query()->withEmail($email)->sole();
+        return self::findWithEmail($email);
     }
 
     // ----------[ Mutations ]----------
@@ -213,6 +213,14 @@ class User extends Authenticatable implements
         }
 
         return null;
+    }
+
+    /**
+     * The user with this email; a missing one fails the read.
+     */
+    public static function findWithEmail(string $email): self
+    {
+        return self::query()->withEmail($email)->sole();
     }
 
     // ----------[ Scopes ]----------

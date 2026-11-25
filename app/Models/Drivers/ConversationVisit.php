@@ -56,13 +56,13 @@ final class ConversationVisit extends Model implements ReadableModel
         string $eventId,
         CarbonImmutable $observedAt,
     ): self {
-        $existing = self::query()->ofSession($session)->ofEvent($eventId)->first();
+        $existing = self::findOfEvent($session, $eventId);
 
         if ($existing !== null) {
             return $existing;
         }
 
-        $next = (int) self::query()->ofSession($session)->max('sequence_number') + 1;
+        $next = self::resolveNextSequenceNumber($session);
 
         $conversationVisit = new self();
         $conversationVisit->session_id = $session->id;
@@ -73,6 +73,24 @@ final class ConversationVisit extends Model implements ReadableModel
         $conversationVisit->save();
 
         return $conversationVisit;
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The session's visit recorded for this event; none before it.
+     */
+    public static function findOfEvent(AgentSession $session, string $eventId): self|null
+    {
+        return self::query()->ofSession($session)->ofEvent($eventId)->first();
+    }
+
+    /**
+     * The number the session's next visit takes: one past its newest.
+     */
+    public static function resolveNextSequenceNumber(AgentSession $session): int
+    {
+        return (int) self::query()->ofSession($session)->max('sequence_number') + 1;
     }
 
     // ----------[ Scopes ]----------

@@ -80,7 +80,7 @@ final class SessionCleanup extends Model implements EventSource, ReadableModel
         $operation->setAttribute($operation->getKeyName(), $operation->newUniqueId());
         $operation->insertIfAbsent();
 
-        return self::query()->ofStartRequest($session->start_request_id)->sole();
+        return self::findOfStartRequest($session->start_request_id);
     }
 
     // ----------[ Mutations ]----------
@@ -163,6 +163,14 @@ final class SessionCleanup extends Model implements EventSource, ReadableModel
     public static function findForSessionOn(string $hostId, string $sessionId): self
     {
         return self::query()->onHost($hostId)->ofSession($sessionId)->firstOrFail();
+    }
+
+    /**
+     * The cleanup of the start request's session.
+     */
+    public static function findOfStartRequest(string $requestId): self
+    {
+        return self::query()->ofStartRequest($requestId)->sole();
     }
 
     // ----------[ Scopes ]----------

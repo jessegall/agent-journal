@@ -68,10 +68,9 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
      */
     public static function create(GatewaySettings $settings): self
     {
-        $latest = self::query()->forGateway($settings->gatewayKey)->max('configuration_version');
         $configuration = new self();
         $configuration->gateway_key = $settings->gatewayKey;
-        $configuration->configuration_version = (is_numeric($latest) ? (int) $latest : 0) + 1;
+        $configuration->configuration_version = self::resolveNextVersion($settings->gatewayKey);
         $configuration->settings = $settings;
         $configuration->is_default = false;
         $configuration->assertSaved($configuration->save());
@@ -257,6 +256,14 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
     public static function findUsableDefault(): self
     {
         return self::query()->enabled()->markedDefault()->firstOr(ShareGatewayUnavailable::throwing()->noDefault());
+    }
+
+    /**
+     * The version the gateway's next configuration takes: one past its newest.
+     */
+    public static function resolveNextVersion(string $gatewayKey): int
+    {
+        return (int) self::query()->forGateway($gatewayKey)->max('configuration_version') + 1;
     }
 
     // ----------[ Scopes ]----------

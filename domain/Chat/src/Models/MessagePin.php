@@ -56,10 +56,7 @@ final class MessagePin extends Model implements ReadableModel
         string $inboxId,
         string $messageId,
     ): self {
-        $existing = self::query()
-            ->ownedBy($owner)
-            ->ofMessage($inboxId, $messageId)
-            ->first();
+        $existing = self::findOwnedOfMessage($owner, $inboxId, $messageId);
 
         if ($existing !== null) {
             return $existing;
@@ -74,6 +71,16 @@ final class MessagePin extends Model implements ReadableModel
         $pin->save();
 
         return $pin;
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The owner's pin of the message; none before it.
+     */
+    public static function findOwnedOfMessage(ActorIdentity $owner, string $inboxId, string $messageId): self|null
+    {
+        return self::query()->ownedBy($owner)->ofMessage($inboxId, $messageId)->first();
     }
 
     // ----------[ Scopes ]----------

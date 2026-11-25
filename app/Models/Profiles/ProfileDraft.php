@@ -49,7 +49,7 @@ final class ProfileDraft extends Model implements ReadableModel
      */
     public static function createForProfile(ProfileKey $profile): self
     {
-        $existing = self::query()->with('currentRevision')->ofProfile($profile)->first();
+        $existing = self::findOfProfile($profile);
 
         if ($existing !== null) {
             return $existing;
@@ -83,15 +83,7 @@ final class ProfileDraft extends Model implements ReadableModel
             $draft->insertIfAbsent();
         }
 
-        return self::query()
-            ->ofProfiles($profiles)
-            ->inProfileOrder()
-            ->lockForUpdate()
-            ->with('currentRevision')
-            ->readExactly(count($profiles))
-            ->get()
-            ->keyBy('profile_key')
-            ->all();
+        return self::findLockedOfProfiles($profiles);
     }
 
     // ----------[ Transformers ]----------
@@ -125,6 +117,35 @@ final class ProfileDraft extends Model implements ReadableModel
         if ($expected !== $this->revision) {
             throw ProfileDraftRefused::stale(ProfileKey::from($this->profile_key), $expected, $this->revision);
         }
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The profile's draft with its current revision; none before the first.
+     */
+    public static function findOfProfile(ProfileKey $profile): self|null
+    {
+        return self::query()->with('currentRevision')->ofProfile($profile)->first();
+    }
+
+    /**
+     * The drafts of these profiles with their current revisions, locked, by profile key.
+     *
+     * @param  list<string>  $profiles
+     * @return array<string, self>
+     */
+    public static function findLockedOfProfiles(array $profiles): array
+    {
+        return self::query()
+            ->ofProfiles($profiles)
+            ->inProfileOrder()
+            ->lockForUpdate()
+            ->with('currentRevision')
+            ->readExactly(count($profiles))
+            ->get()
+            ->keyBy('profile_key')
+            ->all();
     }
 
     // ----------[ Scopes ]----------

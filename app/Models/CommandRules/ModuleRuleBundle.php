@@ -61,7 +61,7 @@ final class ModuleRuleBundle extends Model implements ReadableModel
         $approval->setAttribute($approval->getKeyName(), $approval->newUniqueId());
         $approval->insertIfAbsent();
 
-        return self::query()->ofBundle($projectKey, $bundle)->sole();
+        return self::findOfBundle($projectKey, $bundle);
     }
 
     // ----------[ Predicates ]----------
@@ -71,6 +71,16 @@ final class ModuleRuleBundle extends Model implements ReadableModel
         return $this->module === $bundle->module
             && $this->version === $bundle->version
             && $this->digest === $bundle->digest();
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The project's approval of this bundle.
+     */
+    public static function findOfBundle(string $projectKey, RuleBundle $bundle): self
+    {
+        return self::query()->ofBundle($projectKey, $bundle)->sole();
     }
 
     // ----------[ Scopes ]----------

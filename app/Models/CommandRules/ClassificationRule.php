@@ -70,7 +70,7 @@ final class ClassificationRule extends Model implements EventSource, ReadableMod
      */
     public static function create(string $projectKey, CommandRule $rule): self
     {
-        $existing = self::query()->ofProject($projectKey)->ofRule($rule->scope, $rule->id)->first();
+        $existing = self::findForRule($projectKey, $rule);
 
         if ($existing !== null) {
             return $existing;
@@ -196,6 +196,16 @@ final class ClassificationRule extends Model implements EventSource, ReadableMod
         $this->state = ClassificationState::Active;
         $this->state_reason = $reason;
         $this->save();
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The rule's classification in the project; none before its first.
+     */
+    public static function findForRule(string $projectKey, CommandRule $rule): self|null
+    {
+        return self::query()->ofProject($projectKey)->ofRule($rule->scope, $rule->id)->first();
     }
 
     // ----------[ Scopes ]----------

@@ -12,6 +12,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Accounts\AccountProcessRole;
 use App\Enums\Agents\SessionProcessState;
+use App\Enums\Sessions\SessionStatus;
 use App\Enums\Sessions\TransportProfileType;
 use App\Events\Sessions\SessionProcessCancelled;
 use App\Events\Sessions\SessionProcessClaimed;
@@ -21,6 +22,7 @@ use App\Events\Sessions\SessionProcessStopped;
 use App\Events\Sessions\StartRefused;
 use App\Exceptions\SessionProcessUnknown;
 use App\Models\Agents\AgentSession;
+use App\Models\Projects\Host;
 use App\Models\Support\Accessor;
 use App\Models\Support\SessionProcessScope;
 use App\Support\RecordIdentity;
@@ -485,5 +487,57 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
     protected function supervised(Builder $query): void
     {
         $query->withoutGlobalScope(SessionProcessScope::class);
+    }
+
+    /**
+     * The starts no host claimed yet.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function pending(Builder $query): void
+    {
+        $query->where('state', SessionProcessState::Pending->value);
+    }
+
+    /**
+     * The starts under any of these keys.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $keys
+     */
+    #[Scope]
+    protected function withStartKeys(Builder $query, array $keys): void
+    {
+        $query->whereIn('start_key', $keys);
+    }
+
+    /**
+     * The pending starts left unclaimed too long: made before the host wait ended, or before the cutoff where a
+     * reachable host could have claimed them, of a running session that never beat.
+     *
+     * @param  Builder<self>  $query
+     * @param  Builder<Host>  $unreachableHosts
+     */
+    #[Scope]
+    protected function unclaimedTooLong(
+        Builder $query,
+        CarbonImmutable $hostWaitEnd,
+        CarbonImmutable $cutoff,
+        Builder $unreachableHosts,
+        bool $isAnyHostReachable,
+    ): void {
+        $query->where('state', SessionProcessState::Pending->value)
+            ->where(fn ($starts) => $starts
+                ->where('created_at', '<=', $hostWaitEnd)
+                ->orWhere(fn ($reachable) => $reachable
+                    ->where('created_at', '<=', $cutoff)
+                    ->where(fn ($hosted) => $isAnyHostReachable
+                        ? $hosted->whereNull('host_id')->orWhereNotIn('host_id', $unreachableHosts)
+                        : $hosted->whereNotIn('host_id', $unreachableHosts))))
+            ->whereIn('session_id', AgentSession::query()
+                ->withAnyStatus(SessionStatus::running())
+                ->neverBeat()
+                ->keys());
     }
 }

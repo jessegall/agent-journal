@@ -54,7 +54,7 @@ final class SupervisorLink extends Model implements EventSource, ReadableModel
 
     public static function create(ActorIdentity $actor, SupervisorRoutes $inherited): self
     {
-        $link = self::query()->ownedBy($actor)->first();
+        $link = self::findOwnedBy($actor);
 
         if ($link !== null) {
             return $link;
@@ -105,5 +105,13 @@ final class SupervisorLink extends Model implements EventSource, ReadableModel
         });
 
         return $routes;
+    }
+
+    /**
+     * The actor's supervisor link; none before its first.
+     */
+    public static function findOwnedBy(ActorIdentity $actor): self|null
+    {
+        return self::query()->ownedBy($actor)->first();
     }
 }

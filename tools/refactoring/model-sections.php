@@ -521,7 +521,11 @@ function queryFaultOf(ClassMethod $method, string|null $section, string $model, 
         $word[1] === 'find' && ! $givesModel => "query {$name} hands back no {$model}: name it resolve",
         $word[1] === 'resolve' && $givesModel => "query {$name} hands back the {$model}: name it find",
         $word[1] === 'count' && returnedName($method) !== 'int' => "query {$name} counts nothing: it returns an int",
-        in_array($word[1], ['is', 'has', 'can'], true) && ! returnsBool($method) => "query {$name} answers no yes or no",
+        in_array($word[1], [
+            'is',
+            'has',
+            'can',
+        ], true) && ! returnsBool($method) => "query {$name} answers no yes or no",
         default => null,
     };
 }
@@ -561,7 +565,10 @@ function isOverride(ClassMethod $method): bool
  */
 function endedQueryFaultOf(ClassMethod $method, string|null $section): string|null
 {
-    if (! in_array($section, ['Constructors', 'Mutations'], true)) {
+    if (! in_array($section, [
+        'Constructors',
+        'Mutations',
+    ], true)) {
         return null;
     }
 

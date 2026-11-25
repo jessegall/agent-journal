@@ -61,7 +61,7 @@ final class MessageReadEntry extends Model implements EventSource, ReadableModel
 
     public static function create(Message $message, MessageSender&MessageReceiver $reader, CarbonImmutable $at): void
     {
-        $entry = self::query()->ofMessages([$message->id])->ofReader($reader)->first();
+        $entry = self::findOfReader($message, $reader);
 
         if ($entry === null) {
             $entry = new self();
@@ -95,6 +95,16 @@ final class MessageReadEntry extends Model implements EventSource, ReadableModel
     public function message(): BelongsTo
     {
         return $this->belongsTo(Message::class);
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The reader's entry for the message; none before the first read.
+     */
+    public static function findOfReader(Message $message, MessageSender&MessageReceiver $reader): self|null
+    {
+        return self::query()->ofMessages([$message->id])->ofReader($reader)->first();
     }
 
     // ----------[ Scopes ]----------

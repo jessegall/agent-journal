@@ -60,10 +60,7 @@ final class RuntimeEvent extends Model implements ReadableModel
         RuntimeEventType $type,
         string|null $requestId,
     ): RecordedEvent {
-        $previous = self::query()
-            ->ofGeneration($runtime, $generation)
-            ->before($sequence)
-            ->max('sequence');
+        $previous = self::resolvePreviousSequence($runtime, $generation, $sequence);
 
         $event = new self();
         $event->id = $event->newUniqueId();
@@ -73,7 +70,23 @@ final class RuntimeEvent extends Model implements ReadableModel
         $event->event_type = $type;
         $event->driver_request_id = $requestId;
 
-        return new RecordedEvent(! $event->insertIfAbsent(), $previous !== null && $sequence > ((int) $previous) + 1);
+        return new RecordedEvent(! $event->insertIfAbsent(), $previous !== null && $sequence > $previous + 1);
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The newest sequence the runtime's generation recorded before this one; none before its first event.
+     */
+    public static function resolvePreviousSequence(AgentRuntime $runtime, int $generation, int $sequence): int|null
+    {
+        $previous = self::query()->ofGeneration($runtime, $generation)->before($sequence)->max('sequence');
+
+        if ($previous === null) {
+            return null;
+        }
+
+        return (int) $previous;
     }
 
     // ----------[ Scopes ]----------

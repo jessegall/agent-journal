@@ -16,9 +16,9 @@ use PHPStan\Testing\RuleTestCase;
  */
 final class RawReflectionRuleTest extends RuleTestCase
 {
-    private const string CONSTRUCTION = 'Use Reflector::of($target), or reflect() of the Reflects trait.';
+    private const string CONSTRUCTION = 'Use ReflectedType::of($target), or reflect() of the Reflects trait.';
 
-    private const string ATTRIBUTES = 'Use Reflector::attributes(X::class), attribute(X::class) or hasAttribute(X::class).';
+    private const string ATTRIBUTES = 'Use ReflectedType::attributes(X::class), attribute(X::class) or hasAttribute(X::class).';
 
     /**
      * @var list<string>
@@ -32,7 +32,7 @@ final class RawReflectionRuleTest extends RuleTestCase
             ["new ReflectionMethod\n".self::CONSTRUCTION, 23],
             ["ReflectionProperty::getAttributes()\n".self::ATTRIBUTES, 28],
             ["ReflectionProperty::getAttributes()\n".self::ATTRIBUTES, 33],
-            ["ReflectionAttribute::newInstance()\nUse Reflector::attribute(X::class), which builds the attribute.", 34],
+            ["ReflectionAttribute::newInstance()\nUse ReflectedType::attribute(X::class), which builds the attribute.", 34],
             ["ReflectionNamedType type\nUse a Reflector or the answer it gives.", 38],
             ["instanceof ReflectionUnionType\n".self::CONSTRUCTION, 40],
             ["ReflectionMethod::createFromMethodName()\n".self::CONSTRUCTION, 45],
@@ -42,13 +42,13 @@ final class RawReflectionRuleTest extends RuleTestCase
                 57,
             ],
             ["new ReflectionProperty\n".self::CONSTRUCTION, 65],
-            ["class_exists()\nUse Reflector::exists(\$name) and Reflector::of(\$name)->isClass().", 70],
+            ["class_exists()\nUse ReflectedType::exists(\$name) and ReflectedType::of(\$name)->isClass().", 70],
             [
-                "is_subclass_of()\nUse Reflector::of(\$target)->isSubclassOf(X::class) or ->implements(X::class).",
+                "is_subclass_of()\nUse ReflectedType::of(\$target)->isSubclassOf(X::class) or ->implements(X::class).",
                 71,
             ],
-            ["method_exists()\nUse Reflector::of(\$target)->hasMethod(\$name).", 72],
-            ["instanceof on a type held as a name\nUse Reflector::of(\$type)->isInstance(\$value).", 73],
+            ["method_exists()\nUse ReflectedType::of(\$target)->hasMethod(\$name).", 72],
+            ["instanceof on a type held as a name\nUse ReflectedType::of(\$type)->isInstance(\$value).", 73],
         ]);
     }
 

@@ -97,8 +97,7 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
      */
     public static function create(string $userId, string $idempotencyKey, Environment|null $joins): self
     {
-        $earlier = self::query()->ofOwner($userId)->withIdempotencyKey($idempotencyKey)->lockForUpdate()
-            ->limit(1)->get()->all();
+        $earlier = self::findLockedWithKey($userId, $idempotencyKey);
 
         foreach ($earlier as $attempt) {
             return $attempt;
@@ -117,7 +116,7 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
         $attempt->setAttribute($attempt->getKeyName(), $attempt->newUniqueId());
 
         if (! $attempt->insertIfAbsent()) {
-            $attempt = self::query()->ofOwner($userId)->withIdempotencyKey($idempotencyKey)->sole();
+            $attempt = self::findWithKey($userId, $idempotencyKey);
         }
 
         if ($attempt->wasRecentlyCreated) {
@@ -301,6 +300,26 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
             ])
             ->newestFirst()
             ->cursorPaginate(self::PAGE_LIMIT, cursor: $cursor);
+    }
+
+    /**
+     * The owner's attempt with this idempotency key, locked, as a list of at most one.
+     *
+     * @return list<self>
+     */
+    public static function findLockedWithKey(string $userId, string $idempotencyKey): array
+    {
+        return array_values(
+            self::query()->ofOwner($userId)->withIdempotencyKey($idempotencyKey)->lockForUpdate()->limit(1)->get()->all(),
+        );
+    }
+
+    /**
+     * The owner's attempt with this idempotency key.
+     */
+    public static function findWithKey(string $userId, string $idempotencyKey): self
+    {
+        return self::query()->ofOwner($userId)->withIdempotencyKey($idempotencyKey)->sole();
     }
 
     // ----------[ Scopes ]----------

@@ -34,7 +34,7 @@ final readonly class CancelAccountUsesHandler implements CommandHandler
     {
         return SessionProcess::query()->supervised()
             ->onAccount($account)
-            ->where('state', SessionProcessState::Pending->value)
+            ->pending()
             ->update([
                 'state' => SessionProcessState::Cancelled->value,
                 'ended_at' => CarbonImmutable::now(),

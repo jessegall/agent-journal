@@ -379,7 +379,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
     #[Scope]
     protected function forPurposeLike(Builder $query, HelperPurpose $purpose): void
     {
-        $query->whereIn('helper_purpose_id', HelperPurpose::query()->sameAs($purpose)->select('id'));
+        $query->whereIn('helper_purpose_id', HelperPurpose::query()->idsSameAs($purpose));
     }
 
     /**

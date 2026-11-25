@@ -47,7 +47,17 @@ final class AskRequester extends Model implements ReadableModel
         ]);
 
         $requester->insertIfAbsent();
-        self::query()->ofActor($actor)->lockForUpdate()->sole();
+        self::findLockedOfActor($actor);
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The actor's requester row, locked until the transaction ends.
+     */
+    public static function findLockedOfActor(ActorIdentity $actor): self
+    {
+        return self::query()->ofActor($actor)->lockForUpdate()->sole();
     }
 
     // ----------[ Scopes ]----------

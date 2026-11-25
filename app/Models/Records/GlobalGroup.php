@@ -44,7 +44,7 @@ final class GlobalGroup extends Model implements ReadableModel
         $group->setAttribute($group->getKeyName(), $group->newUniqueId());
         $group->insertIfAbsent();
 
-        return self::query()->named(self::JOURNAL)->sole();
+        return self::findJournal();
     }
 
     // ----------[ Queries ]----------

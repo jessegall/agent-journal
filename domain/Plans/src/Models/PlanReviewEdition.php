@@ -70,7 +70,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
     {
         $planReviewEdition = new self();
         $planReviewEdition->plan_id = $plan->id;
-        $planReviewEdition->number = (int) self::query()->ofPlan($plan->id)->max('number') + 1;
+        $planReviewEdition->number = self::resolveNextNumber($plan);
         $planReviewEdition->requested_by_type = $actor->type;
         $planReviewEdition->requested_by_id = $actor->id;
         $planReviewEdition->plan_revision = $plan->revision;
@@ -178,6 +178,14 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
         return self::query()->ofPlan($planId)->inState(PlanReviewState::Approved)->current()
             ->newestNumberFirst()
             ->first();
+    }
+
+    /**
+     * The number the plan's next review edition takes: one past its newest.
+     */
+    public static function resolveNextNumber(Plan $plan): int
+    {
+        return (int) self::query()->ofPlan($plan->id)->max('number') + 1;
     }
 
     // ----------[ Scopes ]----------

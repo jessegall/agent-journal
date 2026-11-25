@@ -88,7 +88,7 @@ final class WorkspaceRead extends Model implements EventSource, ReadableModel
         $read->setAttribute($read->getKeyName(), $read->newUniqueId());
         $read->insertIfAbsent();
 
-        return self::query()->underReference($reference)->sole();
+        return self::findUnderReference($reference);
     }
 
     // ----------[ Mutations ]----------
@@ -204,6 +204,14 @@ final class WorkspaceRead extends Model implements EventSource, ReadableModel
     public static function findByReference(WorkspaceReadReference $reference): self
     {
         return self::query()->underReference($reference)->firstOrFail();
+    }
+
+    /**
+     * The workspace read kept under this reference.
+     */
+    public static function findUnderReference(WorkspaceReadReference $reference): self
+    {
+        return self::query()->underReference($reference)->sole();
     }
 
     // ----------[ Scopes ]----------
