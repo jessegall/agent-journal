@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace Domain\Rules\Tests\Feature\Http;
 
 use App\Models\Access\User;
-use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use Domain\Rules\Enums\RuleStatus;
 use Domain\Rules\Models\Rule;
+use Domain\Rules\Tests\Fixtures\RuleFixtures;
 use Domain\Rules\Tests\TestCase;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\HoldingRules;
 use Tests\Support\TestIds;
 
 /**
@@ -40,9 +39,10 @@ final class RulesPageTest extends TestCase
     {
         parent::setUp();
 
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->active = HoldingRules::create('Write all code in plain English.');
+        $this->owner = $this->journal->user('Proposer')->owner()->ownerUser();
+        $this->active = $this->journal->fixtures(RuleFixtures::class)
+            ->holdingRule('Plain', 'Write all code in plain English.', proposer: 'Proposer', approver: 'Owner')
+            ->ruleCalled('Plain');
 
         $this->proposed = Rule::create(
             "Every phase ends with its tests.\n  - run them once",
@@ -54,6 +54,7 @@ final class RulesPageTest extends TestCase
 
     public function test_a_guest_is_sent_to_sign_in(): void
     {
+        $this->journal->asGuest();
         $this->get('/rules')->assertRedirect('/login');
     }
 

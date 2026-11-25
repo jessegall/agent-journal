@@ -11,10 +11,10 @@ use Domain\Rules\Enums\RuleStatus;
 use Domain\Rules\Exceptions\RuleMissing;
 use Domain\Rules\Models\Rule;
 use Domain\Rules\Support\ActiveRules;
+use Domain\Rules\Tests\Fixtures\RuleFixtures;
 use Domain\Rules\Tests\TestCase;
 use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Tests\Support\HoldingRules;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestText;
 
@@ -50,7 +50,9 @@ final class ProposeRuleTest extends TestCase
 
     public function test_a_proposal_keeps_its_reason_proposer_and_replaced_rule_and_does_not_hold(): void
     {
-        $old = HoldingRules::create('Old rule.');
+        $old = $this->journal->fixtures(RuleFixtures::class)
+            ->holdingRule('Old', 'Old rule.', proposer: 'Planner', approver: 'Owner')
+            ->ruleCalled('Old');
 
         $ruleId = $this->journal->run(new ProposeRuleCommand('New rule.', 'The old one is too vague.', $old->id));
 

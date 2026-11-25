@@ -5,15 +5,14 @@ declare(strict_types=1);
 namespace Domain\Rules\Tests\Commands;
 
 use App\Exceptions\CommandAdmissionRefused;
-use App\Support\ActorContext;
 use Domain\Rules\Commands\DenyRule\DenyRuleCommand;
 use Domain\Rules\Enums\RuleStatus;
 use Domain\Rules\Events\RuleDenied;
 use Domain\Rules\Exceptions\RuleNotProposed;
 use Domain\Rules\Models\Rule;
+use Domain\Rules\Tests\Fixtures\RuleFixtures;
 use Domain\Rules\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
-use Tests\Support\HoldingRules;
 use Tests\Support\RefreshHookDatabase;
 
 /**
@@ -32,12 +31,9 @@ final class DenyRuleTest extends TestCase
 
         Event::fake([RuleDenied::class]);
         $this->journal->agent('Planner')->owner();
-        $this->proposed = Rule::create(
-            'No phase waits on the user.',
-            'Agents keep forgetting it.',
-            null,
-            ActorContext::forAgent($this->journal->agentCalled('Planner')->id),
-        );
+        $this->proposed = $this->journal->fixtures(RuleFixtures::class)
+            ->proposedRule('Proposed', 'No phase waits on the user.', 'Planner', 'Agents keep forgetting it.')
+            ->ruleCalled('Proposed');
     }
 
     public function test_a_denied_rule_never_holds_and_says_so(): void
@@ -58,7 +54,9 @@ final class DenyRuleTest extends TestCase
 
     public function test_a_rule_that_holds_cannot_be_denied(): void
     {
-        $active = HoldingRules::create('Held rule.');
+        $active = $this->journal->fixtures(RuleFixtures::class)
+            ->holdingRule('Held', 'Held rule.', proposer: 'Planner', approver: 'Owner')
+            ->ruleCalled('Held');
 
         $this->assertThrows(fn () => $this->journal->run(new DenyRuleCommand($active->id)), RuleNotProposed::class);
         $this->assertSame(RuleStatus::Active, $active->refresh()->status);

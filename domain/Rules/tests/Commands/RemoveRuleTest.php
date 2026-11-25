@@ -10,10 +10,10 @@ use Domain\Rules\Enums\RuleStatus;
 use Domain\Rules\Events\RuleRemoved;
 use Domain\Rules\Exceptions\RuleMissing;
 use Domain\Rules\Models\Rule;
+use Domain\Rules\Tests\Fixtures\RuleFixtures;
 use Domain\Rules\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
-use Tests\Support\HoldingRules;
 use Tests\Support\RefreshHookDatabase;
 
 /**
@@ -32,7 +32,9 @@ final class RemoveRuleTest extends TestCase
 
         Event::fake([RuleRemoved::class]);
         $this->journal->agent('Planner')->owner();
-        $this->active = HoldingRules::create('Held rule.');
+        $this->active = $this->journal->fixtures(RuleFixtures::class)
+            ->holdingRule('Held', 'Held rule.', proposer: 'Planner', approver: 'Owner')
+            ->ruleCalled('Held');
     }
 
     public function test_a_removed_rule_no_longer_holds_and_says_so(): void

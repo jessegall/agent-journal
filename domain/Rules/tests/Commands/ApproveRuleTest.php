@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\Rules\Tests\Commands;
 
 use App\Exceptions\CommandAdmissionRefused;
-use App\Support\ActorContext;
 use Domain\Rules\Commands\ApproveRule\ApproveRuleCommand;
 use Domain\Rules\Commands\DenyRule\DenyRuleCommand;
 use Domain\Rules\Enums\RuleStatus;
@@ -13,6 +12,7 @@ use Domain\Rules\Events\RuleApproved;
 use Domain\Rules\Exceptions\RuleNotProposed;
 use Domain\Rules\Models\Rule;
 use Domain\Rules\Support\ActiveRules;
+use Domain\Rules\Tests\Fixtures\RuleFixtures;
 use Domain\Rules\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\RefreshHookDatabase;
@@ -34,12 +34,9 @@ final class ApproveRuleTest extends TestCase
 
         Event::fake([RuleApproved::class]);
         $this->journal->agent('Planner')->owner();
-        $this->proposed = Rule::create(
-            'No phase waits on the user.',
-            'Agents keep forgetting it.',
-            null,
-            ActorContext::forAgent($this->journal->agentCalled('Planner')->id),
-        );
+        $this->proposed = $this->journal->fixtures(RuleFixtures::class)
+            ->proposedRule('Proposed', 'No phase waits on the user.', 'Planner', 'Agents keep forgetting it.')
+            ->ruleCalled('Proposed');
     }
 
     public function test_an_approved_rule_holds_and_says_so(): void
