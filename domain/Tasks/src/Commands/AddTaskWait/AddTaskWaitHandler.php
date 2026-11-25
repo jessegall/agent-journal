@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands\AddTaskWait;
 
+use App\Exceptions\CrossProjectEdge;
 use App\Support\ActorReference;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Contracts\TaskResolver;
@@ -28,10 +29,11 @@ final readonly class AddTaskWaitHandler extends TaskCommandHandler
 
     /**
      * The new wait's id, after the graph lock and the two task locks; a self-link, an ended or started dependent, a
-     * repeated wait and a wait that would close a cycle are refused.
+     * repeated wait, a wait on another project's task and a wait that would close a cycle are refused.
      *
      * @throws TaskMissing
      * @throws TaskWaitRefused
+     * @throws CrossProjectEdge
      */
     public function handle(AddTaskWaitCommand $command): string
     {
@@ -42,6 +44,7 @@ final readonly class AddTaskWaitHandler extends TaskCommandHandler
         $this->tasks->requireVisible($command->prerequisiteTaskId);
         [$dependent, $locked] = $this->lock->lock($command->dependentTaskId, $command->prerequisiteTaskId);
         $prerequisite = $this->rules->assertMayAdd($dependent, $locked, $command->prerequisiteTaskId);
+        $prerequisite->assertSameProjectAs($dependent);
 
         $this->graph->assertNoCycle($dependent, $prerequisite);
         $actor = ActorReference::of($command->dispatchedBy());

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->foreignUlid('number_group_id')->constrained('number_groups')->restrictOnDelete();
             $table->unsignedBigInteger('number');
+            $table->foreignUlid('project_id')->index()->constrained('projects')->restrictOnDelete();
             $table->string('title');
             $table->text('brief');
             $table->string('creator_type', 16);
@@ -42,6 +43,7 @@ return new class extends Migration
         Schema::create('phases', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->foreignUlid('plan_id')->constrained('plans')->cascadeOnDelete();
+            $table->foreignUlid('project_id')->index()->constrained('projects')->restrictOnDelete();
             $table->foreignUlid('number_group_id')->constrained('number_groups')->restrictOnDelete();
             $table->unsignedBigInteger('number');
             $table->string('title');

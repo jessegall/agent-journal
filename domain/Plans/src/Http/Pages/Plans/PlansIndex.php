@@ -18,6 +18,7 @@ use App\Support\Layout\LayoutRowData;
 use App\Support\Layout\ListEmpty;
 use App\Support\Layout\ListPage;
 use App\Support\Layout\ListPaging;
+use App\Support\Layout\ProjectField;
 use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Data\PlanCardData;
 use Domain\Plans\Data\PlanFiltersData;
@@ -36,6 +37,7 @@ final readonly class PlansIndex extends PlansPage
     public function __construct(
         private PlanResolver $plans,
         private DraftProducers $producers,
+        private ProjectField $projectField,
     ) {}
 
     /**
@@ -149,6 +151,7 @@ final readonly class PlansIndex extends PlansPage
                     new LayoutFieldData('type', '', [], $this->typeNames()),
                     'choice',
                 ),
+                ...$this->projectField->forProject(),
             ],
         );
     }

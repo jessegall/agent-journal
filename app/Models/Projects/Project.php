@@ -47,6 +47,14 @@ final class Project extends Model implements EventSource, ReadableModel
         return $project;
     }
 
+    /**
+     * The journal's own project, made under the label the first time it is asked for, as seeding and tests do.
+     */
+    public static function findOrCreateLocal(string $label): self
+    {
+        return self::query()->withKey(self::localKey())->first() ?? self::create(self::localKey(), $label);
+    }
+
     // ----------[ Queries ]----------
 
     /**

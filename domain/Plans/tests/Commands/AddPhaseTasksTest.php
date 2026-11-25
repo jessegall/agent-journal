@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Domain\Plans\Tests\Commands;
 
 use App\Contracts\Bus\CommandBus;
+use App\Exceptions\CrossProjectEdge;
+use App\Values\ProjectOwner;
 use Domain\Plans\Commands\AddPhaseTasks\AddPhaseTasksCommand;
 use Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use Domain\Plans\Support\PlanStructure;
@@ -22,7 +24,7 @@ use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 
 /**
- * Plans puts tasks into phases by id, after Tasks confirmed they exist.
+ * Plans puts tasks into phases by id, after Tasks confirmed they exist and are of the phase's project.
  */
 #[TestsCommand(AddPhaseTasksCommand::class)]
 final class AddPhaseTasksTest extends TestCase
@@ -35,6 +37,7 @@ final class AddPhaseTasksTest extends TestCase
     private const array TABLES = [
         'plans',
         'phases',
+        'projects',
         'phase_tasks',
         'tasks',
         'users',
@@ -91,6 +94,25 @@ final class AddPhaseTasksTest extends TestCase
         );
 
         $this->assertSame([], $this->plans->phaseCalled('Read')->taskIds());
+    }
+
+    public function test_a_task_of_another_project_is_refused_and_both_stay_as_they_were(): void
+    {
+        $this->journal->project('Shop');
+        $elsewhere = Task::create(
+            'Elsewhere',
+            'Shop work.',
+            $this->journal->ownerUser(),
+            ProjectOwner::ofProject($this->journal->projectCalled('Shop')->id),
+        );
+
+        $this->journal->assertRefused(
+            CrossProjectEdge::class,
+            fn () => $this->journal->run(new AddPhaseTasksCommand($this->phaseId(), 1, [$elsewhere->id])),
+        );
+
+        $this->assertSame([], $this->plans->phaseCalled('Read')->taskIds());
+        $this->journal->run(new AddPhaseTasksCommand($this->phaseId(), 1, [$this->tasks->taskCalled('First')->id]));
     }
 
     public function test_a_task_named_twice_is_refused_before_anything_is_written(): void

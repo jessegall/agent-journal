@@ -7,6 +7,7 @@ namespace Tests\Commands\Assignments;
 use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
 use App\Commands\Assignments\ReassignRecord\ReassignRecordCommand;
 use App\Contracts\Bus\CommandBus;
+use App\Exceptions\CrossProjectEdge;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
@@ -58,5 +59,25 @@ final class ReassignRecordTest extends TestCase
         $row = AssignmentRecord::query()->sole();
         $this->assertSame('user', $row->holder_type);
         $this->assertTrue($row->toAssignment->holder()->isSameAs($owner->assigneeIdentity()));
+    }
+
+    public function test_a_reassignment_to_an_agent_of_another_project_is_refused_and_the_holder_stays(): void
+    {
+        $owner = $this->journal->owner()->project('Shop')->ownerUser();
+        $agent = $this->journal->idleAgent('Builder', 'read-only-helper')->agentCalled('Builder');
+        $stranger = $this->journal->idleAgent('Shopper', 'read-only-helper', 'Shop')->agentCalled('Shopper');
+        $task = Task::factory()->create(['title' => 'Write the reader'])->assignmentIdentity();
+        $this->journal->actAsUserId($owner->id);
+        $bus = $this->app->make(CommandBus::class);
+        $this->app->make(RequestKey::class)->set((string) Str::ulid());
+        $held = $bus->run(new AssignRecordCommand($task, $agent->assigneeIdentity()))->outcomes[0]->current;
+
+        $this->app->make(RequestKey::class)->set((string) Str::ulid());
+
+        $this->assertThrows(
+            fn () => $bus->run(new ReassignRecordCommand($task, $held->reference, $stranger->assigneeIdentity())),
+            CrossProjectEdge::class,
+        );
+        $this->assertSame($agent->id, AssignmentRecord::query()->sole()->holder_id);
     }
 }

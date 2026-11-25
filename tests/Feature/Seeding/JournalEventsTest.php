@@ -12,6 +12,7 @@ use App\Models\Records\Link;
 use App\Support\RecordIdentity;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Database\DatabaseManager;
 use PHPUnit\Framework\AssertionFailedError;
 use RuntimeException;
@@ -89,8 +90,18 @@ final class JournalEventsTest extends TestCase
     private function linkedTasks(): array
     {
         $this->journal->owner();
-        $first = Task::create('First', 'One.', $this->journal->ownerUser())->assignmentIdentity();
-        $second = Task::create('Second', 'Two.', $this->journal->ownerUser())->assignmentIdentity();
+        $first = Task::create(
+            'First',
+            'One.',
+            $this->journal->ownerUser(),
+            TaskFixtures::ownerFor($this->journal->ownerUser()),
+        )->assignmentIdentity();
+        $second = Task::create(
+            'Second',
+            'Two.',
+            $this->journal->ownerUser(),
+            TaskFixtures::ownerFor($this->journal->ownerUser()),
+        )->assignmentIdentity();
         $this->journal->run(new LinkRecordsCommand($first, $second));
 
         return [$first, $second];

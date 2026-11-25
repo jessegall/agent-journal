@@ -19,6 +19,7 @@ use PHPUnit\Framework\Assert;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
 use Tests\Support\Seeding\FixtureAliases;
 use Tests\Support\Seeding\TestJournal;
+use Tests\Support\TestProjects;
 
 /**
  * Plans, their phases and the tasks placed in them, arranged by the owner through the Plans commands and kept under
@@ -42,7 +43,7 @@ final class PlanFixtures
         string|null $title = null,
     ): self {
         $this->aliases->claim($name);
-        $id = $this->journal->asOwner(new CreatePlanCommand($title ?? $name, $brief, $type));
+        $id = $this->journal->asOwner(new CreatePlanCommand($title ?? $name, $brief, $type, TestProjects::local()->id));
         $this->aliases->rememberResult($name, $id, Plan::class);
 
         return $this;

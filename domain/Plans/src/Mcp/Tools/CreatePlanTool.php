@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Mcp\Tools;
 
 use App\Attributes\Bus\Dispatches;
+use App\Contracts\Projects\ProjectDestination;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use Domain\Plans\Commands\CreatePlan\CreatePlanCommand;
@@ -15,6 +16,7 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
+use PhpOption\None;
 
 #[IsIdempotent]
 #[IsDestructive(false)]
@@ -23,6 +25,8 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[Description('Create a plan with a title, brief, and type.')]
 final class CreatePlanTool extends PlanWriteTool
 {
+    public function __construct(private readonly ProjectDestination $destination) {}
+
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
@@ -38,6 +42,7 @@ final class CreatePlanTool extends PlanWriteTool
             $arguments->text('title'),
             $arguments->text('brief'),
             $arguments->enum('type', PlanType::class),
+            $this->destination->projectFor(None::create()),
         );
     }
 

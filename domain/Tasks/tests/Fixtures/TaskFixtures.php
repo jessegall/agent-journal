@@ -6,6 +6,8 @@ namespace Domain\Tasks\Tests\Fixtures;
 
 use App\Contracts\Actors\Actor;
 use App\Contracts\Processes\RunClaims;
+use App\Contracts\Projects\ProjectOwned;
+use App\Values\ProjectOwner;
 use Domain\Tasks\Commands\AddTaskWait\AddTaskWaitCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Commands\WaiveTaskWait\WaiveTaskWaitCommand;
@@ -17,6 +19,7 @@ use Domain\Tasks\Models\TaskWait;
 use PHPUnit\Framework\Assert;
 use Tests\Support\Seeding\FixtureAliases;
 use Tests\Support\Seeding\TestJournal;
+use Tests\Support\TestProjects;
 
 /**
  * Tasks, their runs and their waits, kept under the names a test gives them: a task is made open, a run is started by
@@ -34,7 +37,8 @@ final class TaskFixtures
     }
 
     /**
-     * An open task, made by the owner unless another creator is given, in the environments named by id.
+     * An open task, made by the owner unless another creator is given, of the creator's project when it is an agent and
+     * the local project otherwise, in the environments named by id.
      *
      * @param  list<string>  $environmentIds
      */
@@ -45,7 +49,8 @@ final class TaskFixtures
         array $environmentIds = [],
     ): self {
         $this->aliases->claim($name);
-        $task = Task::create($name, $brief, $creator ?? $this->journal->ownerUser(), $environmentIds);
+        $maker = $creator ?? $this->journal->ownerUser();
+        $task = Task::create($name, $brief, $maker, self::ownerFor($maker), $environmentIds);
         $this->aliases->remember($name, $task);
 
         return $this;
@@ -204,5 +209,17 @@ final class TaskFixtures
         ]);
 
         return $this;
+    }
+
+    /**
+     * The project a task of this creator belongs to: an agent's own, the local project for anyone else.
+     */
+    public static function ownerFor(Actor $creator): ProjectOwner
+    {
+        if ($creator instanceof ProjectOwned) {
+            return $creator->projectOwner();
+        }
+
+        return ProjectOwner::ofProject(TestProjects::local()->id);
     }
 }

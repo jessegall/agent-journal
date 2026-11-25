@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Http\Requests;
 
+use App\Http\Requests\Concerns\ReadsChosenProject;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Illuminate\Foundation\Http\FormRequest;
@@ -14,6 +15,8 @@ use Illuminate\Validation\Rule;
  */
 final class CreatePlanRequest extends FormRequest
 {
+    use ReadsChosenProject;
+
     /**
      * @return array<string, list<mixed>>
      */
@@ -23,6 +26,7 @@ final class CreatePlanRequest extends FormRequest
             'title' => ['required', 'string', 'max:'.Plan::TITLE_CHARACTER_LIMIT],
             'brief' => ['required', 'string', 'max:'.Plan::BRIEF_CHARACTER_LIMIT],
             'type' => ['required', Rule::enum(PlanType::class)],
+            ...$this->projectRules(),
         ];
     }
 

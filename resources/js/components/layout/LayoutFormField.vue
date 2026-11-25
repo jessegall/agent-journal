@@ -10,7 +10,8 @@ import type { LayoutFormValues } from './layoutForm';
 
 // A field inside a layout form: it edits its own value of the form, shows the server's error for its name and keeps
 // what was typed when the form comes back refused; its id comes from this mount. A secret field hides what is typed,
-// and a switch is drawn only where the declaration says so, holding 1 or 0.
+// a choice shows each option's label where it has one, and a switch is drawn only where the declaration says so,
+// holding 1 or 0.
 const props = defineProps<{
     field: LayoutFieldData;
     form: InertiaForm<LayoutFormValues>;
@@ -24,6 +25,9 @@ const isOn = computed({
     },
 });
 const choiceLabelId = useId();
+const choices = computed(() =>
+    props.field.options.map((option, index) => ({ value: option, label: props.field.optionLabels[index] ?? option })),
+);
 const value = computed({
     get: () => String(props.form[props.field.name]),
     set: (typed: string) => {
@@ -42,7 +46,7 @@ const value = computed({
             <Select
                 v-model="value"
                 :aria-labelledby="choiceLabelId"
-                :options="field.options.map((option) => ({ value: option, label: option }))"
+                :options="choices"
                 :invalid="form.errors[props.field.name] !== undefined"
             />
             <template v-if="form.errors[props.field.name]">

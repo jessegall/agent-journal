@@ -8,10 +8,12 @@ use App\Commands\Links\LinkRecords\LinkRecordsCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Records\RecordResolver;
+use App\Exceptions\CrossProjectEdge;
 use App\Exceptions\RecordUnavailable;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Messages\Message;
+use App\Models\Projects\Environment;
 use App\Models\Records\Link;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorReference;
@@ -19,6 +21,7 @@ use App\Support\AgentContext;
 use App\Support\RecordIdentity;
 use App\Support\SignedCall;
 use App\Values\OwnerAuthority;
+use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;
@@ -29,6 +32,7 @@ use Domain\Plans\Models\Plan;
 use Domain\Plans\PlansDomain;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
@@ -40,7 +44,8 @@ use Tests\TestCase;
 
 /**
  * A reader links one record to another once, whichever way round it is named again; a record that is not there is
- * refused and links nothing.
+ * refused and links nothing, two records of different projects are never linked, and a link takes its project from
+ * the end that has one.
  */
 #[TestsCommand(LinkRecordsCommand::class)]
 final class LinkRecordsTest extends TestCase
@@ -49,6 +54,8 @@ final class LinkRecordsTest extends TestCase
 
     private const array TABLES = [
         'links',
+        'project_environments',
+        'projects',
         'tasks',
         'messages',
         'phases',
@@ -72,8 +79,18 @@ final class LinkRecordsTest extends TestCase
     public function test_two_records_are_linked_once_whichever_way_round(): void
     {
         $this->journal->owner();
-        $first = Task::create('First', 'One.', $this->journal->ownerUser())->assignmentIdentity();
-        $second = Task::create('Second', 'Two.', $this->journal->ownerUser())->assignmentIdentity();
+        $first = Task::create(
+            'First',
+            'One.',
+            $this->journal->ownerUser(),
+            TaskFixtures::ownerFor($this->journal->ownerUser()),
+        )->assignmentIdentity();
+        $second = Task::create(
+            'Second',
+            'Two.',
+            $this->journal->ownerUser(),
+            TaskFixtures::ownerFor($this->journal->ownerUser()),
+        )->assignmentIdentity();
 
         $this->journal->run(new LinkRecordsCommand($first, $second));
         $this->journal->run(new LinkRecordsCommand($second, $first));
@@ -84,7 +101,12 @@ final class LinkRecordsTest extends TestCase
     public function test_a_record_that_is_not_there_is_refused_and_links_nothing(): void
     {
         $this->journal->owner();
-        $first = Task::create('First', 'One.', $this->journal->ownerUser())->assignmentIdentity();
+        $first = Task::create(
+            'First',
+            'One.',
+            $this->journal->ownerUser(),
+            TaskFixtures::ownerFor($this->journal->ownerUser()),
+        )->assignmentIdentity();
 
         $this->assertThrows(
             fn () => $this->journal->run(
@@ -141,6 +163,31 @@ final class LinkRecordsTest extends TestCase
 
         $this->actingAs($owner)->from('/reports/1')->post('/links/remove', $link)->assertRedirect('/reports/1');
         $this->assertSame(0, Link::query()->count());
+    }
+
+    public function test_records_of_two_projects_are_refused_and_both_stay_unlinked(): void
+    {
+        $this->journal->owner()->project('Shop');
+        $local = Task::create('Here', 'Local work.', $this->journal->ownerUser(), $this->localOwner());
+        $shop = Environment::create($this->journal->projectCalled('Shop'), 'Shop work');
+
+        $this->assertThrows(fn () => Link::createForModels($local, $shop), CrossProjectEdge::class);
+        $this->assertSame(0, Link::query()->count());
+    }
+
+    public function test_a_link_to_a_global_record_stands_and_carries_the_project_of_its_other_end(): void
+    {
+        $this->journal->owner()->project('Shop');
+        $shop = Environment::create($this->journal->projectCalled('Shop'), 'Shop work');
+
+        $link = Link::createForModels($this->journal->ownerUser(), $shop);
+
+        $this->assertSame($this->journal->projectCalled('Shop')->id, $link->project_id);
+    }
+
+    private function localOwner(): ProjectOwner
+    {
+        return TaskFixtures::ownerFor($this->journal->ownerUser());
     }
 
     private function records(): RecordResolver

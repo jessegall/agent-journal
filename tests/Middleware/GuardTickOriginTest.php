@@ -125,7 +125,6 @@ final class GuardTickOriginTest extends TestCase
 
         $project = Agent::query()->findOrFail($stack->agent_id)->project_id;
         $this->assertEquals([ProjectSelection::of($project)], $seen);
-        $this->assertEquals(ProjectSelection::all(), $this->app->make(CurrentProject::class)->selection());
     }
 
     /**

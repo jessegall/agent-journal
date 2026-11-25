@@ -81,15 +81,15 @@ final class GuardCommandProjectTest extends TestCase
         $this->journal->assertRefused(RecordUnavailable::class, fn () => $this->journal->run($command));
     }
 
-    public function test_the_journal_pinned_to_an_agent_writes_only_that_agents_project(): void
+    public function test_work_pinned_to_an_agent_writes_only_that_agents_project(): void
     {
         $this->journal->owner()->project('Shop')->agent('Ada');
         $own = $this->journal->agentCalled('Ada')->project_id;
         $store = $this->app->make(ProjectSelectionStore::class);
 
-        $store->within(ProjectSelection::of($own), function (): void {
+        $store->within(ProjectSelection::of($own), function () use ($own): void {
+            $this->assertSame(self::PASSED, $this->guard(ProjectOwner::ofProject($own)));
             $this->assertGuardRefuses(ProjectOwner::ofProject($this->projectId('Shop')));
-            $this->assertGuardRefuses(ProjectOwner::global());
         });
     }
 

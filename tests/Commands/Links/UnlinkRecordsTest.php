@@ -9,6 +9,7 @@ use App\Commands\Links\UnlinkRecords\UnlinkRecordsCommand;
 use App\Models\Records\Link;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -32,8 +33,18 @@ final class UnlinkRecordsTest extends TestCase
     public function test_the_link_goes_whichever_way_round_it_is_named_and_both_records_stay(): void
     {
         $this->journal->owner();
-        $first = Task::create('First', 'One.', $this->journal->ownerUser())->assignmentIdentity();
-        $second = Task::create('Second', 'Two.', $this->journal->ownerUser())->assignmentIdentity();
+        $first = Task::create(
+            'First',
+            'One.',
+            $this->journal->ownerUser(),
+            TaskFixtures::ownerFor($this->journal->ownerUser()),
+        )->assignmentIdentity();
+        $second = Task::create(
+            'Second',
+            'Two.',
+            $this->journal->ownerUser(),
+            TaskFixtures::ownerFor($this->journal->ownerUser()),
+        )->assignmentIdentity();
         $this->journal->run(new LinkRecordsCommand($first, $second));
 
         $this->journal->run(new UnlinkRecordsCommand($second, $first));

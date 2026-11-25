@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Contracts;
 
+use App\Contracts\Projects\ProjectOwned;
+use App\Exceptions\CrossProjectEdge;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Values\TaskSummary;
 
@@ -26,6 +28,16 @@ interface TaskResolver
      * @throws TaskMissing
      */
     public function requireAllVisible(array $taskIds): void;
+
+    /**
+     * Every id must be there and each task of the project of the record it joins, or the whole check fails.
+     *
+     * @param  list<string>  $taskIds
+     *
+     * @throws TaskMissing
+     * @throws CrossProjectEdge
+     */
+    public function requireAllVisibleBeside(array $taskIds, ProjectOwned $joined): void;
 
     /**
      * The number and title of each task, in the order of the ids.

@@ -32,8 +32,16 @@ return new class extends Migration
                 'number',
             ]);
 
-            // The environment of the connected binding a task was made through, by id alone; none for a task made here.
-            $table->string('environment_id')->nullable()->index();
+            $table->foreignUlid('project_id')->constrained('projects')->restrictOnDelete();
+            $table->index(['project_id', 'status']);
+
+            // The environment of the connected binding a task was made through, which must be of the task's project;
+            // none for a task made here.
+            $table->ulid('environment_id')->nullable()->index();
+            $table->foreign(['environment_id', 'project_id'])
+                ->references(['id', 'project_id'])
+                ->on('project_environments')
+                ->restrictOnDelete();
         });
 
         DB::statement('ALTER TABLE tasks ADD CONSTRAINT tasks_number_positive CHECK (number > 0)');

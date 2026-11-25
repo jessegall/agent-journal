@@ -6,11 +6,14 @@ namespace App\Models\Agents;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Agents\ActivityLevel;
 use App\Enums\Agents\ActivityType;
+use App\Models\Support\BelongsToProject;
 use App\Models\Support\HasActorColumns;
 use App\Support\ActorReference;
+use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Database\Eloquent\Attributes\Scope;
