@@ -54,7 +54,7 @@ final class HelperCommandsTest extends TestCase
             ->expectsOutputToContain('actual: '.StartReceipt::ACTUAL_MODEL_NOT_REPORTED)
             ->assertSuccessful();
 
-        $this->assertSame(JobState::Accepted, HelperJob::query()->acrossActors()->sole()->state);
+        $this->assertSame(JobState::Running, HelperJob::query()->acrossActors()->sole()->state);
     }
 
     public function test_a_steer_reaches_the_live_job_and_a_cancel_ends_it(): void

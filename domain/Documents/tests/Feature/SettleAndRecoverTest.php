@@ -212,7 +212,7 @@ final class SettleAndRecoverTest extends TestCase
             true,
         ], [
             $result->revisionNumber,
-            $result->published,
+            $result->isPublished,
         ]);
         $this->assertSame(TestIds::of(9), $this->documents()->revisions(1, 1)[1]->authorId);
 

@@ -90,7 +90,7 @@ final class TaskLogSearchTest extends TestCase
         $this->actingAs($this->owner)
             ->get("/tasks/{$task->number}?tab=logs&entry=01arz3ndektsv4rrffq69g0000")
             ->assertOk()
-            ->assertSee('"selectedGone":true', false);
+            ->assertSee('"isSelectedGone":true', false);
     }
 
     public function test_lines_appended_mid_search_force_no_restart(): void

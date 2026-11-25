@@ -7,6 +7,7 @@ namespace Domain\Plans\Tests\Feature;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
+use App\Support\DomainRegistry;
 use App\Values\OwnerAuthority;
 use Database\Seeders\DatabaseSeeder;
 use Domain\Plans\Enums\PlanState;
@@ -26,6 +27,14 @@ final class PlanPersistenceTest extends TestCase
 {
     use RefreshHookDatabase;
     use StartsAgentRequests;
+
+    /**
+     * Every installed domain, since the local seeders fill each of them.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 4));
+    }
 
     public function test_phases_and_their_tasks_keep_their_order(): void
     {

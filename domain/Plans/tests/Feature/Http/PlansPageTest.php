@@ -10,11 +10,14 @@ use App\Support\Access\AccessSettings;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\PlansDomain;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\TestCase;
+use Domain\Rules\RulesDomain;
 use Domain\Tasks\Models\Task;
 use Illuminate\Http\Request;
 use Inertia\Testing\AssertableInertia;
+use Tests\Support\DomainBoot;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
 
@@ -25,6 +28,14 @@ final class PlansPageTest extends TestCase
     private const string ROWS = 'page.data.root.children.1.children.0.children.0.children.0.rows';
 
     private const string READER = 'page.data.root.children.1.children.1.children';
+
+    /**
+     * Plans, and Rules, whose page the sidebar test reads beside the plans.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(PlansDomain::class, RulesDomain::class);
+    }
 
     private User $owner;
 
@@ -76,7 +87,7 @@ final class PlansPageTest extends TestCase
     {
         $this->actingAs($this->owner)->get('/plans')->assertInertia(fn (AssertableInertia $page) => $page
             ->where('navigation.items', function ($items): bool {
-                $inSidebar = collect($items)->mapWithKeys(fn (array $item) => [$item['key'] => $item['inSidebar']]);
+                $inSidebar = collect($items)->mapWithKeys(fn (array $item) => [$item['key'] => $item['isInSidebar']]);
 
                 return $inSidebar['plans.list'] === true
                     && $inSidebar['rules.list'] === false

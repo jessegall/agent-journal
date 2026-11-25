@@ -81,7 +81,7 @@ final class HelperContinueTest extends TestCase
         $job = HelperJob::query()->findOrFail($receipt->jobId);
         $this->assertSame($receipt->jobId, $continued->jobId);
         $this->assertSame($continued->jobId, $repeated->jobId);
-        $this->assertSame(JobState::Accepted, $job->state);
+        $this->assertSame(JobState::Running, $job->state);
         $this->assertSame(self::BRIEF, $job->brief);
         $this->assertSame(2, SessionRequest::query()->where('owner_reference', 'like', '%'.$receipt->jobId)->count());
     }
