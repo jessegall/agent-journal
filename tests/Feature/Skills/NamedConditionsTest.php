@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
+use Domain\Rules\RulesDomain;
+use Tests\Support\DomainBoot;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Enums\Skills\ConditionOutcome;
 use App\Exceptions\ConditionWriteRefused;
@@ -52,6 +54,14 @@ final class NamedConditionsTest extends TestCase
         'key' => 'notes.has-notes',
         'parameters' => ['atLeast' => 2],
     ];
+
+    /**
+     * Rules, which the Notes test module requires.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(RulesDomain::class);
+    }
 
     protected function setUp(): void
     {

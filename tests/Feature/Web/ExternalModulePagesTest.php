@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
+use Domain\Rules\RulesDomain;
+use Tests\Support\DomainBoot;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Pages\WebPages;
@@ -29,6 +31,14 @@ final class ExternalModulePagesTest extends TestCase
 {
     use InstallsNotesModule;
     use RefreshHookDatabase;
+
+    /**
+     * Rules, which the Notes test module requires.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(RulesDomain::class);
+    }
 
     private User $owner;
 

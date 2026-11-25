@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Settings;
 
+use Domain\Rules\RulesDomain;
 use App\Commands\Settings\DisableSettingGroup\DisableSettingGroupCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
@@ -36,7 +37,7 @@ final class DomainStateTypesTest extends TestCase
      */
     protected static function bootedDomains(): array
     {
-        return DomainBoot::withRequirements(TasksDomain::class);
+        return DomainBoot::withRequirements(RulesDomain::class, TasksDomain::class);
     }
 
     /**

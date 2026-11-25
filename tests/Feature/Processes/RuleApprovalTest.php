@@ -69,7 +69,7 @@ final class RuleApprovalTest extends TestCase
         $rule = ClassificationRule::query()->sole();
         $this->assertSame(ClassificationState::Active, $rule->state);
         $revision = RuleRevision::query()->findOrFail($rule->active_revision_id);
-        $this->assertEquals([new ReaderApproval($reader, $proof)], $revision->reader_approvals);
+        $this->assertSame([new ReaderApproval($reader, $proof)->toArray()], $revision->reader_approvals->toArray());
         $this->assertSame(RequestState::Active, $this->request()->state);
         $this->assertSame(ProposalState::Approved, RuleProposal::query()->sole()->state);
         Event::assertDispatched(RuleActivated::class);

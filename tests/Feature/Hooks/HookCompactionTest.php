@@ -163,6 +163,6 @@ final class HookCompactionTest extends TestCase
 
     private function remember(string $text, int $weight): void
     {
-        new Memory(['text' => $text, 'weight' => $weight])->saveFor(TestActors::agentIdentity(1));
+        Memory::create(TestActors::agentIdentity(1), $text, $weight);
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Docking;
 
+use Domain\Rules\RulesDomain;
 use App\Contracts\Bus\CommandBus;
 use App\Events\Web\PageChanged;
 use App\Models\Access\User;
@@ -88,7 +89,7 @@ final class RichCardsTest extends TestCase
      */
     protected static function bootedDomains(): array
     {
-        return DomainBoot::withRequirements(ChatDomain::class, DocumentsDomain::class, PlansDomain::class, TasksDomain::class);
+        return DomainBoot::withRequirements(RulesDomain::class, ChatDomain::class, DocumentsDomain::class, PlansDomain::class, TasksDomain::class);
     }
 
     private TestStart $agent;

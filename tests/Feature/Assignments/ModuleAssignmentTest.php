@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
+use Domain\Rules\RulesDomain;
+use Tests\Support\DomainBoot;
 use App\Commands\Agents\RetireAgent\RetireAgentCommand;
 use App\Contracts\Assignments\AssignmentResolver;
 use App\Contracts\Bus\CommandBus;
@@ -36,6 +38,14 @@ final class ModuleAssignmentTest extends TestCase
     use CommitsHookRows;
     use InstallsNotesModule;
     use StartsAgentRequests;
+
+    /**
+     * Rules, which the Notes test module requires.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(RulesDomain::class);
+    }
 
     /**
      * The stored type of a note, which stays in the rows while the module is gone.

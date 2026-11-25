@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
+use Domain\Rules\RulesDomain;
+use Tests\Support\DomainBoot;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Events\Event;
 use App\Enums\Engine\NoSubject;
@@ -44,6 +46,14 @@ use Tests\TestCase;
 
 final class StateEventDeliveryTest extends TestCase
 {
+    /**
+     * Rules, which the Notes test module requires.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(RulesDomain::class);
+    }
+
     use CommittedHookStack {
         setUpCommittedHookStack as private setUpBaseStack;
         tearDownCommittedHookStack as private tearDownBaseStack;

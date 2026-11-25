@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Docking;
 
+use Domain\Rules\RulesDomain;
 use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
@@ -72,7 +73,7 @@ final class ExternalOwnerDockTest extends TestCase
      */
     protected static function bootedDomains(): array
     {
-        return DomainBoot::withRequirements(ChatDomain::class, DocumentsDomain::class);
+        return DomainBoot::withRequirements(RulesDomain::class, ChatDomain::class, DocumentsDomain::class);
     }
 
     private User $owner;

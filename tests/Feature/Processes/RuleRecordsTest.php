@@ -143,7 +143,7 @@ final class RuleRecordsTest extends TestCase
 
         $check = $this->approve($this->checkRule(), [$reader]);
 
-        $this->assertEquals([$reader], $check->refresh()->reader_approvals);
+        $this->assertSame([$reader->toArray()], $check->refresh()->reader_approvals->toArray());
         $this->assertThrows(fn () => $this->approve($this->checkRule(), []), RuleRevisionInvalid::class);
         $this->assertThrows(fn () => $this->approve($this->statusRule(), [$reader]), RuleRevisionInvalid::class);
     }
@@ -158,8 +158,8 @@ final class RuleRecordsTest extends TestCase
         $proposed = $proposal->revisions()->firstOrFail();
         $revision = RuleRevision::create($proposed, self::PROJECT, $this->user(), [], [$script]);
 
-        $this->assertEquals([$replaced], $proposal->refresh()->replaces);
-        $this->assertEquals([$script], $revision->refresh()->script_bindings);
+        $this->assertSame([$replaced->toArray()], $proposal->refresh()->replaces->toArray());
+        $this->assertSame([$script->toArray()], $revision->refresh()->script_bindings->toArray());
     }
 
     public function test_the_rule_activates_retires_and_restores_only_from_the_expected_revision(): void

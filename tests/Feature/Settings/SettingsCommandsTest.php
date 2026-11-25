@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Settings;
 
+use Domain\Rules\RulesDomain;
+use Tests\Support\DomainBoot;
 use App\Commands\Settings\EnableSettingGroup\EnableSettingGroupCommand;
 use App\Commands\Settings\SetIntegerSetting\SetIntegerSettingCommand;
 use App\Contracts\Actors\CurrentActorSetter;
@@ -53,6 +55,14 @@ final class SettingsCommandsTest extends TestCase
     use CommitsHookRows;
     use InstallsCommandModules;
     use UsesReviewsSettings;
+
+    /**
+     * Rules, which the Notes test module requires.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(RulesDomain::class);
+    }
 
     /**
      * The bus commits the settings commands for real, so this table is emptied around each test.

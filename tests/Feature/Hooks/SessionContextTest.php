@@ -63,7 +63,7 @@ final class SessionContextTest extends TestCase
         parent::setUp();
 
         $this->rule = HoldingRules::create(self::RULE_TEXT);
-        new Memory(['text' => self::MEMORY_TEXT, 'weight' => 3])->saveFor(TestActors::agentIdentity(1));
+        Memory::create(TestActors::agentIdentity(1), self::MEMORY_TEXT, 3);
     }
 
     public function test_a_start_like_a_codex_start_and_a_clear_like_claude_codes_both_carry_the_reminders(): void

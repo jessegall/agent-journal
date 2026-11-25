@@ -48,8 +48,8 @@ final class AgentVisibilityTest extends TestCase
         $this->giveWorkTo(1, 10);
         $this->giveWorkTo(1, 11);
         $this->giveWorkTo(2, 20);
-        new Memory(['text' => 'Kept by agent 1', 'weight' => 3])->saveFor(TestActors::agentIdentity(1));
-        new Memory(['text' => 'Kept by agent 2', 'weight' => 3])->saveFor(TestActors::agentIdentity(2));
+        Memory::create(TestActors::agentIdentity(1), 'Kept by agent 1', 3);
+        Memory::create(TestActors::agentIdentity(2), 'Kept by agent 2', 3);
         Task::factory()->create(['title' => 'Write the walk'])->start(ActorIdentity::system());
         HoldingRules::create('No phase waits on the user.');
     }

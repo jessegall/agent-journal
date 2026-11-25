@@ -13,7 +13,12 @@ use Spatie\LaravelData\Data;
 final class PlanWord extends Data
 {
     /**
-     * @param  list<string|int>  $pieces  literal text, or the syntax node id of a substitution whose output goes here
+     * The Data cast reads @param and would turn every piece of a string|int union into an int, so it is given a list
+     * it leaves alone; @phpstan-param keeps the real type.
+     *
+     * @param  list<mixed>  $pieces  literal text, or the syntax node id of a substitution whose output goes here
+     *
+     * @phpstan-param  list<string|int>  $pieces
      */
     public function __construct(public readonly array $pieces) {}
 

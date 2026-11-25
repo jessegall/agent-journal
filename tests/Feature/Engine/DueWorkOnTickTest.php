@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Engine;
 
+use Domain\Rules\RulesDomain;
+use Tests\Support\DomainBoot;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Time\MonotonicClock;
 use App\Contracts\Time\ServerClock;
@@ -62,6 +64,14 @@ final class DueWorkOnTickTest extends TestCase
     ];
 
     private const int SECOND = 1_000_000_000;
+
+    /**
+     * Rules, which the Notes test module requires.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(RulesDomain::class);
+    }
 
     private FakeMonotonicClock $clock;
 

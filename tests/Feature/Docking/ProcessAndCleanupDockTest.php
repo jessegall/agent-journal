@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Docking;
 
+use Domain\Rules\RulesDomain;
 use App\Enums\Processes\OutputStream;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
@@ -87,7 +88,7 @@ final class ProcessAndCleanupDockTest extends TestCase
      */
     protected static function bootedDomains(): array
     {
-        return DomainBoot::withRequirements(ChatDomain::class);
+        return DomainBoot::withRequirements(RulesDomain::class, ChatDomain::class);
     }
 
     private TestStart $agent;

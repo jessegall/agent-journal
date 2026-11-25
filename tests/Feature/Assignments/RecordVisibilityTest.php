@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
+use Domain\Rules\RulesDomain;
 use App\Contracts\Records\RecordVisibility;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
@@ -37,7 +38,7 @@ final class RecordVisibilityTest extends TestCase
      */
     protected static function bootedDomains(): array
     {
-        return DomainBoot::withRequirements(TasksDomain::class);
+        return DomainBoot::withRequirements(RulesDomain::class, TasksDomain::class);
     }
 
     private Agent $writer;
