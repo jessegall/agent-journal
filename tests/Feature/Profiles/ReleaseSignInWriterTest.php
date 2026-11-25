@@ -55,7 +55,7 @@ final class ReleaseSignInWriterTest extends TestCase
         'sign_in_attempts',
         'command_receipts',
         'links',
-        'process_starts',
+        'session_processes',
         'account_notices',
     ];
 

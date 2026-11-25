@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Commands\Agents\CancelLaunch\CancelLaunchCommand;
-use App\Commands\Starts\CertifyPassedStops\CertifyPassedStopsCommand;
-use App\Commands\Starts\RecordStopResults\RecordStopResultsCommand;
+use App\Commands\Sessions\CertifyPassedStops\CertifyPassedStopsCommand;
+use App\Commands\Sessions\RecordStopConditionResults\RecordStopConditionResultsCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCatalogue;
@@ -16,9 +16,9 @@ use App\Enums\Agents\ConversationModeType;
 use App\Enums\Drivers\DriverOperation;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Hooks\AnswerType;
-use App\Enums\Starts\CleanupStep;
-use App\Enums\Starts\StartOriginType;
-use App\Enums\Starts\StopResultType;
+use App\Enums\Sessions\CleanupStep;
+use App\Enums\Sessions\StartOriginType;
+use App\Enums\Sessions\StopConditionResultType;
 use App\Events\Hooks\HelperCompletionCertified;
 use App\Events\Hooks\HelperStopHeld;
 use App\Events\Sessions\LaunchCancelled;
@@ -26,9 +26,9 @@ use App\Exceptions\AgentReservedForReview;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Reviews\WorkReservation;
-use App\Models\Starts\SessionPolicy;
-use App\Models\Starts\StartRecord;
-use App\Models\Starts\StopAttempt;
+use App\Models\Sessions\SessionPolicy;
+use App\Models\Sessions\SessionRequest;
+use App\Models\Sessions\StopCheck;
 use App\Support\ActorIdentity;
 use App\Support\CommandEntrance;
 use App\Support\EngineAccess;
@@ -80,13 +80,13 @@ final class HelperCompletionTest extends TestCase
         $start = $this->helperWithConditions();
         $work = $this->startedFor($start);
         $this->stop($start, 'stop-1');
-        $this->settle('stop-1', StopResultType::Passed, 'clean');
+        $this->settle('stop-1', StopConditionResultType::Passed, 'clean');
 
         $allowed = $this->stop($start, 'stop-1');
         $this->stop($start, 'stop-1');
 
         $this->assertSame(AnswerType::Allow, $this->typeOf($allowed));
-        $this->assertNotNull(StopAttempt::query()->withoutGlobalScopes()->sole()->certified_at);
+        $this->assertNotNull(StopCheck::query()->withoutGlobalScopes()->sole()->certified_at);
         Event::assertDispatchedTimes(HelperCompletionCertified::class, 1);
         Event::assertDispatched(
             HelperCompletionCertified::class,
@@ -100,13 +100,13 @@ final class HelperCompletionTest extends TestCase
         $start = $this->helperWithConditions();
         $this->startedFor($start);
         $this->stop($start, 'stop-1');
-        $this->settle('stop-1', StopResultType::Passed, 'clean');
+        $this->settle('stop-1', StopConditionResultType::Passed, 'clean');
 
         $this->certifyPassedStops('pass-1');
         $this->certifyPassedStops('pass-2');
         $this->stop($start, 'stop-1');
 
-        $this->assertNotNull(StopAttempt::query()->withoutGlobalScopes()->sole()->certified_at);
+        $this->assertNotNull(StopCheck::query()->withoutGlobalScopes()->sole()->certified_at);
         Event::assertDispatchedTimes(HelperCompletionCertified::class, 1);
     }
 
@@ -116,7 +116,7 @@ final class HelperCompletionTest extends TestCase
         $start = $this->helperWithConditions(requiresReview: true);
         $this->startedFor($start);
         $this->stop($start, 'stop-1');
-        $this->settle('stop-1', StopResultType::Passed, 'clean');
+        $this->settle('stop-1', StopConditionResultType::Passed, 'clean');
 
         $this->certifyPassedStops('pass-1');
         $start->session->endAt(CarbonImmutable::now());
@@ -144,7 +144,7 @@ final class HelperCompletionTest extends TestCase
         $this->startedFor($start);
 
         $running = $this->stop($start, 'stop-1');
-        $this->settle('stop-1', StopResultType::Failed, 'NOTE is not committed');
+        $this->settle('stop-1', StopConditionResultType::Failed, 'NOTE is not committed');
         $refused = $this->stop($start, 'stop-1');
 
         $this->assertSame([TestText::words(AgentText::of('core.stop.checks_running'))], $this->messagesOf($running));
@@ -175,7 +175,7 @@ final class HelperCompletionTest extends TestCase
 
         foreach (['stop-1', 'stop-2', 'stop-3', 'stop-4'] as $stopId) {
             $this->stop($start, $stopId);
-            $this->settle($stopId, StopResultType::Failed, 'NOTE is not committed');
+            $this->settle($stopId, StopConditionResultType::Failed, 'NOTE is not committed');
             $decisions[] = $this->typeOf($this->stop($start, $stopId));
         }
 
@@ -191,7 +191,7 @@ final class HelperCompletionTest extends TestCase
 
         foreach (['stop-1' => 'first', 'stop-2' => 'first', 'stop-3' => 'second'] as $stopId => $summary) {
             $this->stop($start, $stopId);
-            $this->settle($stopId, StopResultType::Failed, $summary);
+            $this->settle($stopId, StopConditionResultType::Failed, $summary);
             $last = $this->stop($start, $stopId);
         }
 
@@ -252,24 +252,24 @@ final class HelperCompletionTest extends TestCase
             StartPolicy::withoutProfile(TestSelections::onHost()),
             driverType: DriverType::Headless,
         );
-        StartRecord::create($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create())->startedAs($session);
+        SessionRequest::create($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create())->startedAs($session);
 
         return $work;
     }
 
-    private function settle(string $stopId, StopResultType $status, string $summary): void
+    private function settle(string $stopId, StopConditionResultType $status, string $summary): void
     {
-        $attempt = StopAttempt::query()->withoutGlobalScopes()->where('stop_id', $stopId)->sole();
+        $attempt = StopCheck::query()->withoutGlobalScopes()->where('stop_id', $stopId)->sole();
         $condition = StopCondition::cleanWorktree();
 
-        $this->asSystem(new RecordStopResultsCommand('host-1', $attempt->id, $attempt->policy_digest, 0, [
+        $this->asSystem(new RecordStopConditionResultsCommand('host-1', $attempt->id, $attempt->policy_digest, 0, [
             new StopResultReport(
                 $condition->key,
                 $condition->definitionHash(),
                 $status,
                 '2026-11-20T01:00:00Z',
                 '2026-11-20T01:00:01Z',
-                $status === StopResultType::Passed ? 0 : 1,
+                $status === StopConditionResultType::Passed ? 0 : 1,
                 null,
                 $summary,
                 null,

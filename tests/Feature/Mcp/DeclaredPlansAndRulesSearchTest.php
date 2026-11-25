@@ -29,7 +29,7 @@ final class DeclaredPlansAndRulesSearchTest extends TestCase
     use SendsSignedCalls;
 
     private const array TABLES = [
-        'users', 'plans', 'rules', 'agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'hook_calls',
+        'users', 'plans', 'rules', 'agents', 'agent_sessions', 'session_tokens', 'agent_stacks', 'hook_calls',
         'command_receipts',
     ];
 

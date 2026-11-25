@@ -45,7 +45,7 @@ final class TaskRunOwnershipTest extends TestCase
         'task_runs',
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'hook_calls',
         'links',

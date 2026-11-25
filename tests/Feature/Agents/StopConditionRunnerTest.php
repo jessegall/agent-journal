@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\Starts\RecordStopResults\RecordStopResultsCommand;
+use App\Commands\Sessions\RecordStopConditionResults\RecordStopConditionResultsCommand;
 use App\Enums\Hooks\AnswerType;
-use App\Enums\Starts\StopAttemptState;
-use App\Enums\Starts\StopResultType;
-use App\Models\Starts\ProcessStart;
-use App\Models\Starts\SessionPolicy;
-use App\Models\Starts\StopAttempt;
+use App\Enums\Sessions\StopCheckState;
+use App\Enums\Sessions\StopConditionResultType;
+use App\Models\Sessions\SessionPolicy;
+use App\Models\Sessions\SessionProcess;
+use App\Models\Sessions\StopCheck;
 use App\Support\RecordIdentity;
 use App\Values\AgentText;
 use App\Values\SelectedAccount;
@@ -51,7 +51,7 @@ final class StopConditionRunnerTest extends TestCase
         $decision = $this->stop($start, 'stop-1');
         $again = $this->stop($start, 'stop-1');
 
-        $attempt = StopAttempt::query()->withoutGlobalScopes()->sole();
+        $attempt = StopCheck::query()->withoutGlobalScopes()->sole();
         $this->assertSame(AnswerType::Allow, $this->typeOf($decision));
         $this->assertSame([TestText::words(AgentText::of('core.stop.checks_running'))], $this->messagesOf($decision));
         $this->assertSame(AnswerType::Allow, $this->typeOf($again));
@@ -85,9 +85,9 @@ final class StopConditionRunnerTest extends TestCase
     {
         $start = $this->helperWithConditions();
         $this->stop($start, 'stop-1');
-        $this->settle('stop-1', StopResultType::Failed, 'NOTE is not committed');
+        $this->settle('stop-1', StopConditionResultType::Failed, 'NOTE is not committed');
         $this->stop($start, 'stop-2');
-        $this->settle('stop-2', StopResultType::Passed, 'clean');
+        $this->settle('stop-2', StopConditionResultType::Passed, 'clean');
 
         $refused = $this->stop($start, 'stop-1');
         $allowed = $this->stop($start, 'stop-2');
@@ -107,8 +107,8 @@ final class StopConditionRunnerTest extends TestCase
         $this->assertSame(AnswerType::Allow, $this->typeOf($this->stop($unfrozen, 'stop-1')));
         $this->assertSame(AnswerType::Allow, $this->typeOf($this->stop($empty, 'stop-1')));
         $this->assertSame(
-            StopAttemptState::Passed,
-            StopAttempt::query()->withoutGlobalScopes()->sole()->state,
+            StopCheckState::Passed,
+            StopCheck::query()->withoutGlobalScopes()->sole()->state,
         );
     }
 
@@ -128,19 +128,19 @@ final class StopConditionRunnerTest extends TestCase
         return $start;
     }
 
-    private function settle(string $stopId, StopResultType $status, string $summary): void
+    private function settle(string $stopId, StopConditionResultType $status, string $summary): void
     {
-        $attempt = StopAttempt::query()->withoutGlobalScopes()->where('stop_id', $stopId)->sole();
+        $attempt = StopCheck::query()->withoutGlobalScopes()->where('stop_id', $stopId)->sole();
         $condition = StopCondition::cleanWorktree();
 
-        $this->asSystem(new RecordStopResultsCommand('host-1', $attempt->id, $attempt->policy_digest, 0, [
+        $this->asSystem(new RecordStopConditionResultsCommand('host-1', $attempt->id, $attempt->policy_digest, 0, [
             new StopResultReport(
                 $condition->key,
                 $condition->definitionHash(),
                 $status,
                 '2026-11-20T01:00:00Z',
                 '2026-11-20T01:00:01Z',
-                $status === StopResultType::Passed ? 0 : 1,
+                $status === StopConditionResultType::Passed ? 0 : 1,
                 null,
                 $summary,
                 null,
@@ -157,7 +157,7 @@ final class StopConditionRunnerTest extends TestCase
             '/accounts/a',
             1,
         );
-        ProcessStart::create($start->session, $account);
-        ProcessStart::supervised()->where('session_id', $start->session->id)->sole()->claimOn($hostId);
+        SessionProcess::create($start->session, $account);
+        SessionProcess::supervised()->where('session_id', $start->session->id)->sole()->claimOn($hostId);
     }
 }

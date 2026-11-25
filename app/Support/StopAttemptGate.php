@@ -9,10 +9,10 @@ use App\Contracts\Processes\StopEvidence;
 use App\Contracts\Processes\StopPreparer;
 use App\Contracts\Sessions\SessionPolicyReader;
 use App\Enums\Agents\StopPreparationState;
-use App\Enums\Starts\StopAttemptState;
+use App\Enums\Sessions\StopCheckState;
 use App\Events\Hooks\HelperStopHeld;
-use App\Models\Starts\StartRecord;
-use App\Models\Starts\StopAttempt;
+use App\Models\Sessions\SessionRequest;
+use App\Models\Sessions\StopCheck;
 use App\Support\Decisions\Decision;
 use App\Support\Decisions\MessageLine;
 use App\Support\Inputs\Values\HookIdentity;
@@ -81,8 +81,8 @@ final readonly class StopAttemptGate implements StopConditionGate
             return StopPreparation::finalChecks();
         }
 
-        $work = StartRecord::ownerStartOf($stop->sessionId)
-            ->map(fn (StartRecord $start) => WorkReference::forRecord($start->owner_work))
+        $work = SessionRequest::ownerStartOf($stop->sessionId)
+            ->map(fn (SessionRequest $start) => WorkReference::forRecord($start->owner_work))
             ->getOrElse(WorkReference::free(self::OWN_WORK));
 
         return $this->preparer->prepare(new StopPreparationRequest(
@@ -107,7 +107,7 @@ final readonly class StopAttemptGate implements StopConditionGate
         }
 
         $attempt = $this->openAttempt($stop, $policy);
-        $attempt->settle(StopAttemptState::Failed, self::PREPARATION_HELD_SUBMISSION, $preparation->message->key);
+        $attempt->settle(StopCheckState::Failed, self::PREPARATION_HELD_SUBMISSION, $preparation->message->key);
         $this->tellOwnerHeld($attempt);
 
         return StopAnswer::forAttempt($attempt->id, $held);
@@ -124,19 +124,19 @@ final readonly class StopAttemptGate implements StopConditionGate
         $stopOutcome = $this->evidence->result($attempt->reference);
 
         return StopAnswer::forAttempt($attempt->id, match ($stopOutcome->state) {
-            StopAttemptState::Pending => new MessageLine(AgentText::of('core.stop.checks_running')),
-            StopAttemptState::Passed => $this->certifyCompletion($attempt),
-            StopAttemptState::Failed => $this->refuseOrHold($attempt, $settled, $stopOutcome->failureSummary()),
-            StopAttemptState::Unresolved => Decision::deny(AgentText::of('core.stop.checks_unresolved')),
+            StopCheckState::Pending => new MessageLine(AgentText::of('core.stop.checks_running')),
+            StopCheckState::Passed => $this->certifyCompletion($attempt),
+            StopCheckState::Failed => $this->refuseOrHold($attempt, $settled, $stopOutcome->failureSummary()),
+            StopCheckState::Unresolved => Decision::deny(AgentText::of('core.stop.checks_unresolved')),
         });
     }
 
-    private function openAttempt(HookIdentity $stop, StartPolicy $policy): StopAttempt
+    private function openAttempt(HookIdentity $stop, StartPolicy $policy): StopCheck
     {
-        return StopAttempt::openFor(
+        return StopCheck::openFor(
             $stop,
             $policy->digest(),
-            StopAttempt::FIRST_GENERATION,
+            StopCheck::FIRST_GENERATION,
             $policy->stopConditions->definitionHashes(),
         );
     }
@@ -145,16 +145,16 @@ final readonly class StopAttemptGate implements StopConditionGate
      * A stop with no conditions passes with nothing said: a line here would be kept for the agent and wake it only to
      * read that it may stop, and its next stop would do so again without end.
      */
-    private function passWithoutConditions(StopAttempt $attempt): Decision
+    private function passWithoutConditions(StopCheck $attempt): Decision
     {
         if (! $attempt->isSettled()) {
-            $attempt->settle(StopAttemptState::Passed, self::NO_CONDITIONS_SUBMISSION, '');
+            $attempt->settle(StopCheckState::Passed, self::NO_CONDITIONS_SUBMISSION, '');
         }
 
         return $this->certifyCompletion($attempt);
     }
 
-    private function certifyCompletion(StopAttempt $attempt): Decision
+    private function certifyCompletion(StopCheck $attempt): Decision
     {
         $this->certification->certify($attempt);
 
@@ -166,7 +166,7 @@ final readonly class StopAttemptGate implements StopConditionGate
      * from the attempts the stack saw settle before this one.
      */
     private function refuseOrHold(
-        StopAttempt $attempt,
+        StopCheck $attempt,
         SettledStopAttempts $settled,
         string $failureSummary,
     ): Decision|MessageLine {
@@ -183,10 +183,10 @@ final readonly class StopAttemptGate implements StopConditionGate
         return new MessageLine(AgentText::of('core.stop.held', ['conditions' => $failureSummary]));
     }
 
-    private function tellOwnerHeld(StopAttempt $attempt): void
+    private function tellOwnerHeld(StopCheck $attempt): void
     {
-        StartRecord::ownerStartOf($attempt->session_id)->forAll(
-            fn (StartRecord $start) => $this->facts->publishAfterCommit(
+        SessionRequest::ownerStartOf($attempt->session_id)->forAll(
+            fn (SessionRequest $start) => $this->facts->publishAfterCommit(
                 new HelperStopHeld($start->owner_work, $attempt->reference),
             ),
         );

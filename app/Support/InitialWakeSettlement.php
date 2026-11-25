@@ -10,8 +10,8 @@ use App\Enums\Drivers\HostWakeRefusal;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;
-use App\Models\Starts\ProcessStart;
-use App\Models\Starts\StartRecord;
+use App\Models\Sessions\SessionProcess;
+use App\Models\Sessions\SessionRequest;
 
 /**
  * Settles a launch the host proved it never started: only the start's own initial wake, refused in the attempt it
@@ -50,7 +50,7 @@ final readonly class InitialWakeSettlement
         }
 
         $this->transaction->runForSession($sessionId, function () use ($sessionId, $binding, $report): void {
-            $start = ProcessStart::lockedCurrentOf($sessionId);
+            $start = SessionProcess::lockedCurrentOf($sessionId);
 
             if ($start === null || $start->id !== $binding->processStartId) {
                 return;
@@ -60,12 +60,12 @@ final readonly class InitialWakeSettlement
             $session = AgentSession::query()->findOrFail($sessionId);
             $start->refuse($reason->explanation());
 
-            StartRecord::query()
+            SessionRequest::query()
                 ->underRequest($session->start_request_id)
                 ->lockForUpdate()
                 ->limit(1)
                 ->get()
-                ->each(fn (StartRecord $record) => $record->refuseFor($reason));
+                ->each(fn (SessionRequest $record) => $record->refuseFor($reason));
 
             $this->heartbeats->markExited($session, "the host never started it ({$reason->value})");
         });

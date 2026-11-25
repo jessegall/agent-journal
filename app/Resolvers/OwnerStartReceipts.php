@@ -8,8 +8,8 @@ use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Sessions\StartReceipts;
 use App\Exceptions\StartRecordMissing;
 use App\Models\Agents\AgentSession;
-use App\Models\Starts\SessionPolicy;
-use App\Models\Starts\StartRecord;
+use App\Models\Sessions\SessionPolicy;
+use App\Models\Sessions\SessionRequest;
 use App\Support\ActorIdentity;
 use App\Support\OwnerStartReceipt;
 use App\Support\RecordIdentity;
@@ -27,7 +27,7 @@ final readonly class OwnerStartReceipts implements StartReceipts
     {
         $reference = $work->reference();
 
-        $record = StartRecord::query()
+        $record = SessionRequest::query()
             ->forOwnerReference($reference)
             ->requestedBy(ActorIdentity::of($this->actors->actor()))
             ->withSession()

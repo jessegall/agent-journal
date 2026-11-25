@@ -12,8 +12,8 @@ use App\Events\Sessions\ChildCheckoutRequested;
 use App\Exceptions\StartClaimRefused;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
-use App\Models\Starts\ProcessStart;
-use App\Models\Starts\StartRecord;
+use App\Models\Sessions\SessionProcess;
+use App\Models\Sessions\SessionRequest;
 use App\Support\AccountStartSettings;
 use App\Support\ChildCheckoutSlot;
 use App\Support\ClaimedStart;
@@ -85,8 +85,8 @@ final readonly class ClaimStartHandler implements CommandHandler
             $start->account_generation,
             $settings->signInMethod($driver),
             $settings->recipeFor($driver, $start->transport_profile),
-            StartRecord::conversationTargetOf($start->session_id),
-            StartRecord::requiresConversation($start->session_id),
+            SessionRequest::conversationTargetOf($start->session_id),
+            SessionRequest::requiresConversation($start->session_id),
             $checkout->checkouts(),
         );
     }
@@ -95,9 +95,9 @@ final readonly class ClaimStartHandler implements CommandHandler
      * The pending start of the session, taken by the host that will make its process; none when it was cancelled or
      * taken already. A start whose session ended is cancelled instead, so no process starts for it.
      */
-    private function claimFor(string $hostId, string $sessionId): ProcessStart|null
+    private function claimFor(string $hostId, string $sessionId): SessionProcess|null
     {
-        $start = ProcessStart::supervised()
+        $start = SessionProcess::supervised()
             ->where('session_id', $sessionId)
             ->where('state', ProcessStartState::Pending->value)
             ->lockForUpdate()

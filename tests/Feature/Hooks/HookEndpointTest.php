@@ -48,7 +48,7 @@ final class HookEndpointTest extends TestCase
         'agents',
         'agent_sessions',
         'agent_runtimes',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'hook_calls',
         'failure_receipts',

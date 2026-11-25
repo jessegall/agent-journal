@@ -19,7 +19,7 @@ final class MemoryToolsTest extends TestCase
     private const string MEMORY_TEXT = 'Use the same key to retry.';
 
     private const array TABLES = [
-        'agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'memories', 'command_receipts',
+        'agents', 'agent_sessions', 'session_tokens', 'agent_stacks', 'memories', 'command_receipts',
     ];
 
     public function test_the_owner_can_read_edit_and_remove_a_saved_memory_after_reconnect(): void

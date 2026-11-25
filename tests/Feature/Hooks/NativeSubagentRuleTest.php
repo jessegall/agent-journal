@@ -36,7 +36,7 @@ final class NativeSubagentRuleTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'hook_calls',
         'process_events',

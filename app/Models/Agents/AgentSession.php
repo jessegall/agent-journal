@@ -13,8 +13,8 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\Accounts\AccountProcessRole;
 use App\Enums\Agents\WorkspaceUse;
 use App\Enums\Drivers\DriverSourceType;
+use App\Enums\Sessions\ModelSelectionType;
 use App\Enums\Sessions\SessionStatus;
-use App\Enums\Starts\ModelSelectionType;
 use App\Events\Sessions\AgentSessionConversationEntered;
 use App\Events\Sessions\AgentSessionDriverLabelKept;
 use App\Events\Sessions\AgentSessionEnded;
@@ -24,8 +24,8 @@ use App\Events\Sessions\AgentSessionSkillsGenerated;
 use App\Exceptions\SessionSelectionFixed;
 use App\Models\Drivers\ConversationVisit;
 use App\Models\Drivers\DriverConversation;
-use App\Models\Starts\StartRecord;
-use App\Models\Starts\StartToken;
+use App\Models\Sessions\SessionRequest;
+use App\Models\Sessions\SessionToken;
 use App\Models\Support\Accessor;
 use App\Support\PresenceWindow;
 use App\Support\RecordIdentity;
@@ -78,7 +78,7 @@ use Illuminate\Support\Carbon;
  * @property mixed $target attribute
  * @property Agent $agent
  * @property ?DriverConversation $currentConversation
- * @property StartToken $startToken
+ * @property SessionToken $startToken
  * @property Collection<int, ConversationVisit>|ConversationVisit[] $visits
  */
 final class AgentSession extends Model implements EventSource, ReadableModel
@@ -292,11 +292,11 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * @return HasOne<StartToken, $this>
+     * @return HasOne<SessionToken, $this>
      */
     public function startToken(): HasOne
     {
-        return $this->hasOne(StartToken::class, 'agent_session_id');
+        return $this->hasOne(SessionToken::class, 'agent_session_id');
     }
 
     /**
@@ -588,7 +588,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function launched(Builder $query): void
     {
-        $query->whereIn('id', StartRecord::query()->withOwner()->sessionIds());
+        $query->whereIn('id', SessionRequest::query()->withOwner()->sessionIds());
     }
 
     /**

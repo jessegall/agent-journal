@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\Starts\CertifyPassedStops\CertifyPassedStopsCommand;
+use App\Commands\Sessions\CertifyPassedStops\CertifyPassedStopsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Events\EngineListener;
 use App\Events\Engine\EngineTicked;

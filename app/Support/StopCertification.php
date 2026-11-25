@@ -9,8 +9,8 @@ use App\Contracts\Sessions\SessionPolicyReader;
 use App\Events\Hooks\HelperCompletionCertified;
 use App\Models\Reviews\CertifiedWork;
 use App\Models\Reviews\WorkReservation;
-use App\Models\Starts\StartRecord;
-use App\Models\Starts\StopAttempt;
+use App\Models\Sessions\SessionRequest;
+use App\Models\Sessions\StopCheck;
 use App\Values\StartPolicy;
 
 /**
@@ -22,7 +22,7 @@ final readonly class StopCertification
 {
     public function __construct(private SessionPolicyReader $policies, private CommandFacts $facts) {}
 
-    public function certify(StopAttempt $attempt): void
+    public function certify(StopCheck $attempt): void
     {
         if ($attempt->isCertified()) {
             return;
@@ -31,17 +31,17 @@ final readonly class StopCertification
         $attempt->certify();
         $policy = $this->policies->policyFor($attempt->session_id);
 
-        StartRecord::ownerStartOf($attempt->session_id)->forAll(
-            fn (StartRecord $start) => $this->certifyFor($start, $attempt, $policy),
+        SessionRequest::ownerStartOf($attempt->session_id)->forAll(
+            fn (SessionRequest $start) => $this->certifyFor($start, $attempt, $policy),
         );
     }
 
-    private function certifyFor(StartRecord $start, StopAttempt $attempt, StartPolicy $policy): void
+    private function certifyFor(SessionRequest $start, StopCheck $attempt, StartPolicy $policy): void
     {
         $work = CertifiedWork::create($start, $attempt->id);
 
         if ($policy->requiresReview) {
-            WorkReservation::retain($work, StopAttempt::agentOf($attempt->reference), $attempt->workspace_generation);
+            WorkReservation::retain($work, StopCheck::agentOf($attempt->reference), $attempt->workspace_generation);
         }
 
         $this->facts->publishAfterCommit(new HelperCompletionCertified($start->owner_work, $attempt->reference));

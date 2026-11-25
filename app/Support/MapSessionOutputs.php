@@ -6,9 +6,9 @@ namespace App\Support;
 
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverConversation;
-use App\Models\Starts\ProcessStart;
-use App\Models\Starts\SessionOutputGrant;
-use App\Models\Starts\StartRecord;
+use App\Models\Sessions\SessionOutputGrant;
+use App\Models\Sessions\SessionProcess;
+use App\Models\Sessions\SessionRequest;
 use App\Support\Drivers\Contracts\DriverAdapters;
 use App\Values\SessionOutputPaths;
 
@@ -25,7 +25,7 @@ final readonly class MapSessionOutputs
     public function map(
         AgentSession $session,
         DriverConversation $conversation,
-        ProcessStart $start,
+        SessionProcess $start,
         string|null $transcriptPath,
     ): void {
         $start->advanceOutputGeneration();
@@ -52,7 +52,7 @@ final readonly class MapSessionOutputs
      */
     private function continuedFrom(AgentSession $session): array
     {
-        $predecessorId = StartRecord::query()->underRequest($session->start_request_id)->value(
+        $predecessorId = SessionRequest::query()->underRequest($session->start_request_id)->value(
             'context_reference',
         );
 
@@ -73,7 +73,7 @@ final readonly class MapSessionOutputs
      *
      * @param  array<string, SessionOutputPaths>  $pathsByConversation
      */
-    private function replaceFor(ProcessStart $start, array $pathsByConversation): void
+    private function replaceFor(SessionProcess $start, array $pathsByConversation): void
     {
         SessionOutputGrant::query()->ofSession($start->session_id)->delete();
 

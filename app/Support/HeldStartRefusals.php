@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Refusals\StartRefusal;
-use App\Models\Starts\StartRecord;
+use App\Models\Sessions\SessionRequest;
 use App\Values\PinnedDriver;
 use App\Values\StartRequest;
 use Closure;
@@ -29,7 +29,7 @@ final class HeldStartRefusals
         ActorIdentity $requester,
         StartRefusal $refusal,
     ): void {
-        $this->refusals[] = fn () => StartRecord::create($request, $pin, $requester)->refuse($refusal);
+        $this->refusals[] = fn () => SessionRequest::create($request, $pin, $requester)->refuse($refusal);
     }
 
     /**

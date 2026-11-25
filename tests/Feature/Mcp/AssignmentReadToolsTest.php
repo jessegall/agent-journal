@@ -35,7 +35,7 @@ final class AssignmentReadToolsTest extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'tasks',
         'assignments',
         'agent_stacks',

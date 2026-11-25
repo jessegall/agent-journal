@@ -20,9 +20,9 @@ use App\Models\Agents\MainAgentDesignation;
 use App\Models\Drivers\DriverConversation;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\DriverSwitch;
-use App\Models\Starts\LaunchOutcomeDismissal;
-use App\Models\Starts\ProcessStart;
-use App\Models\Starts\StartRecord;
+use App\Models\Sessions\SessionOutcomeDismissal;
+use App\Models\Sessions\SessionProcess;
+use App\Models\Sessions\SessionRequest;
 use App\Policies\AgentPolicy;
 use App\Support\ActorIdentity;
 use App\Support\AgentFacts;
@@ -77,7 +77,7 @@ final readonly class AgentRecords implements AgentDirectory
         $runtimes = AgentRuntime::query()->ofSessions($sessions->pluck('id')->all())
             ->limit(self::AGENTS_SHOWN)->get()->keyBy('agent_session_id');
 
-        $starts = ProcessStart::supervised()->whereIn('session_id', $sessions->pluck('id')->all())
+        $starts = SessionProcess::supervised()->whereIn('session_id', $sessions->pluck('id')->all())
             ->orderByDesc('created_at')->limit(self::AGENTS_SHOWN * 2)->get()->unique('session_id')
             ->keyBy('session_id');
 
@@ -90,7 +90,7 @@ final readonly class AgentRecords implements AgentDirectory
             $sessions->pluck('id')->all(),
         )));
 
-        $readiness = StartRecord::latestReadinessOf(array_values(array_map(
+        $readiness = SessionRequest::latestReadinessOf(array_values(array_map(
             strval(...),
             $sessions->pluck('id')->all(),
         )));
@@ -100,7 +100,7 @@ final readonly class AgentRecords implements AgentDirectory
         $switches = DriverSwitch::query()->ofAgents($ids)->newestCreatedFirst()
             ->limit(self::AGENTS_SHOWN * 2)->get()->unique('agent_id')->keyBy('agent_id');
 
-        $refusals = ProcessStart::refusalsOf(array_values(array_map(strval(...), $ids)));
+        $refusals = SessionProcess::refusalsOf(array_values(array_map(strval(...), $ids)));
 
         $launches = $this->launchOutcomesOf(array_values(array_map(strval(...), $ids)));
 
@@ -171,7 +171,7 @@ final readonly class AgentRecords implements AgentDirectory
      */
     private function launchOutcomesOf(array $ids): array
     {
-        $launches = StartRecord::latestOf($ids)->map(fn (StartRecord $record) => new LaunchOutcome(
+        $launches = SessionRequest::latestOf($ids)->map(fn (SessionRequest $record) => new LaunchOutcome(
             $record->agent_id,
             $record->request_id,
             $record->disposition,
@@ -179,7 +179,7 @@ final readonly class AgentRecords implements AgentDirectory
             $record->refusal_reason,
         ));
 
-        $dismissed = LaunchOutcomeDismissal::dismissedKeysOf(
+        $dismissed = SessionOutcomeDismissal::dismissedKeysOf(
             ActorIdentity::of($this->actors->actor()),
             array_values($launches->map(fn (LaunchOutcome $launch) => $launch->requestId)->all()),
         );

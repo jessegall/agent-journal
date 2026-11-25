@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Enums\Agents\ProcessStartState;
-use App\Enums\Starts\StartDisposition;
-use App\Enums\Starts\StartReadiness;
+use App\Enums\Sessions\StartDisposition;
+use App\Enums\Sessions\StartReadiness;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\DriverSwitch;
-use App\Models\Starts\ProcessStart;
+use App\Models\Sessions\SessionProcess;
 use Carbon\CarbonImmutable;
 
 /**
@@ -23,7 +23,7 @@ final readonly class AgentFacts
     public function __construct(
         public AgentSession|null $session,
         public AgentRuntime|null $runtime,
-        public ProcessStart|null $start,
+        public SessionProcess|null $start,
         public DriverRequest|null $request,
         public DriverSwitch|null $switch,
         public LaunchOutcome|null $launch,

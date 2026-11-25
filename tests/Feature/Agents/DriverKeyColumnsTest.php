@@ -22,7 +22,7 @@ final class DriverKeyColumnsTest extends TestCase
      */
     private const array KEY_COLUMNS = [
         ['agent_sessions', 'driver_key'],
-        ['start_records', 'driver_key'],
+        ['session_requests', 'driver_key'],
         ['agent_runtimes', 'driver_key'],
         ['driver_switches', 'target_driver_key'],
         ['driver_conversations', 'resume_protocol'],
@@ -33,9 +33,9 @@ final class DriverKeyColumnsTest extends TestCase
      * The columns the binding identity adds to each table.
      */
     private const array BINDING_COLUMNS = [
-        ['start_records', 'driver_type'],
-        ['start_records', 'remember'],
-        ['start_records', 'catalogue_revision'],
+        ['session_requests', 'driver_type'],
+        ['session_requests', 'remember'],
+        ['session_requests', 'catalogue_revision'],
         ['agent_runtimes', 'driver_type'],
         ['driver_switches', 'driver_type'],
         ['agents', 'driver_type_preference'],
@@ -46,7 +46,7 @@ final class DriverKeyColumnsTest extends TestCase
      * confirmed native binding, so these were removed.
      */
     private const array REMOVED_BINDING_COLUMNS = [
-        ['start_records', 'binding_id'],
+        ['session_requests', 'binding_id'],
         ['agent_runtimes', 'binding_id'],
         ['agent_runtimes', 'binding_generation'],
         ['driver_switches', 'source_binding_id'],

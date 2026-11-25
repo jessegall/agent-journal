@@ -22,7 +22,7 @@ final class RuleToolsTest extends TestCase
     private const string RULE_TEXT = 'Use the same request key on retry.';
 
     private const array TABLES = [
-        'agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'rules', 'command_receipts',
+        'agents', 'agent_sessions', 'session_tokens', 'agent_stacks', 'rules', 'command_receipts',
     ];
 
     public function test_an_agent_proposes_a_rule_and_reads_both_rule_states(): void

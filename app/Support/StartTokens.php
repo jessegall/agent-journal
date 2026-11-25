@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Exceptions\CredentialRejected;
 use App\Models\Agents\AgentSession;
-use App\Models\Starts\StartToken;
+use App\Models\Sessions\SessionToken;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 
@@ -21,7 +21,7 @@ final readonly class StartTokens
     public function issue(AgentSession $session): string
     {
         $token = Str::random(64);
-        new StartToken()->issueFor($session, self::hashOf($token));
+        new SessionToken()->issueFor($session, self::hashOf($token));
 
         return $token;
     }

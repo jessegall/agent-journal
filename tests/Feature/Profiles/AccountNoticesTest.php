@@ -15,7 +15,7 @@ use App\Enums\Accounts\AccountNoticeReason;
 use App\Enums\Agents\ConversationModeType;
 use App\Enums\Drivers\DriverFailure;
 use App\Enums\Drivers\DriverType;
-use App\Enums\Starts\StartOriginType;
+use App\Enums\Sessions\StartOriginType;
 use App\Events\Sessions\DriverFailed;
 use App\Exceptions\AccountUnavailable;
 use App\Http\Pages\Resolvers\AccountNoticesSection;
@@ -47,9 +47,9 @@ final class AccountNoticesTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
-        'start_records',
+        'session_requests',
         'accounts',
         'active_accounts',
         'account_notices',

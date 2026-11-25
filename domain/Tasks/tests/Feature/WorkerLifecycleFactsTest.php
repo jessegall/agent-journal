@@ -31,7 +31,7 @@ final class WorkerLifecycleFactsTest extends TestCase
         'tasks',
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'hook_calls',
         'links',

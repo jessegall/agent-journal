@@ -17,9 +17,9 @@ use App\Enums\Agents\ProcessStartState;
 use App\Enums\Drivers\DriverOperation;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Sessions\SessionStatus;
-use App\Enums\Starts\StartDisposition;
-use App\Enums\Starts\StartOriginType;
-use App\Enums\Starts\StartUnavailableReason;
+use App\Enums\Sessions\StartDisposition;
+use App\Enums\Sessions\StartOriginType;
+use App\Enums\Sessions\StartUnavailableReason;
 use App\Events\Sessions\StartAccepted;
 use App\Exceptions\AccountUnavailable;
 use App\Exceptions\AgentBusy;
@@ -32,9 +32,9 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Projects\Host;
-use App\Models\Starts\CapacityReservation;
-use App\Models\Starts\ProcessStart;
-use App\Models\Starts\StartRecord;
+use App\Models\Sessions\CapacityReservation;
+use App\Models\Sessions\SessionProcess;
+use App\Models\Sessions\SessionRequest;
 use App\Resolvers\Support\PendingStartSecrets;
 use App\Support\ActorStore;
 use App\Support\CommandEntrance;
@@ -105,7 +105,7 @@ final class StartAgentTest extends TestCase
         $this->assertSame(1, AgentSession::query()->where('agent_id', $this->agent->id)->count());
         $this->assertSame(
             StartDisposition::Started,
-            StartRecord::query()->where('request_id', $request->requestId)->sole()->disposition,
+            SessionRequest::query()->where('request_id', $request->requestId)->sole()->disposition,
         );
         $this->assertSame(['--model', TestSelections::MODEL], $first->driverArguments);
         $this->assertSame(StartReceipt::ACTUAL_MODEL_NOT_REPORTED, $first->actualModel);
@@ -166,7 +166,7 @@ final class StartAgentTest extends TestCase
     {
         $receipt = $this->start($this->request());
 
-        $start = ProcessStart::query()->withoutGlobalScopes()->sole();
+        $start = SessionProcess::query()->withoutGlobalScopes()->sole();
         $account = Account::query()->withoutGlobalScopes()->where('account_protocol', 'claude-code')->sole();
         $session = AgentSession::query()->findOrFail($receipt->sessionId);
         $this->assertSame(
@@ -188,7 +188,7 @@ final class StartAgentTest extends TestCase
             $this->assertSame(StartUnavailableReason::NoAccount, $refused->reason);
         }
 
-        $this->assertSame(0, ProcessStart::query()->withoutGlobalScopes()->count());
+        $this->assertSame(0, SessionProcess::query()->withoutGlobalScopes()->count());
         $this->assertSame(0, AgentSession::query()->where('agent_id', $this->agent->id)->count());
     }
 
@@ -222,7 +222,7 @@ final class StartAgentTest extends TestCase
         $this->app->make(StartHeartbeats::class)->markSilentStarts();
 
         $session = AgentSession::query()->findOrFail($receipt->sessionId);
-        $start = ProcessStart::query()->withoutGlobalScopes()->where('session_id', $receipt->sessionId)->sole();
+        $start = SessionProcess::query()->withoutGlobalScopes()->where('session_id', $receipt->sessionId)->sole();
         $this->assertSame(
             [SessionStatus::Ended, ProcessStartState::Cancelled, false],
             [$session->status, $start->state, CapacityReservation::isHeldFor($session->start_request_id)],
@@ -251,7 +251,7 @@ final class StartAgentTest extends TestCase
     public function test_a_start_a_host_took_up_stays_running_when_it_falls_silent(): void
     {
         $receipt = $this->start($this->request());
-        ProcessStart::query()->withoutGlobalScopes()->where('session_id', $receipt->sessionId)->sole()->claim();
+        SessionProcess::query()->withoutGlobalScopes()->where('session_id', $receipt->sessionId)->sole()->claim();
         $this->app->instance(ServerClock::class, new FixedServerClock(CarbonImmutable::now()->addSeconds(121)));
 
         $this->app->make(StartHeartbeats::class)->markSilentStarts();
@@ -267,7 +267,7 @@ final class StartAgentTest extends TestCase
             fn () => $this->start($this->request($stale)),
             StartPreviewStale::class,
         );
-        $this->assertSame(0, StartRecord::query()->count());
+        $this->assertSame(0, SessionRequest::query()->count());
     }
 
     private function request(int|null $previewRevision = null): StartRequest

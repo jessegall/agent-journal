@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use App\Enums\Starts\StopAttemptState;
+use App\Enums\Sessions\StopCheckState;
 use App\Events\Sessions\StopAttemptSettled;
 use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\Values\HookIdentity;
@@ -30,9 +30,9 @@ final class ReadyStateSettledAttemptsTest extends TestCase
             $ready->onStop($this->stop($attempt));
         }
 
-        $ready->onStopAttemptSettled(new StopAttemptSettled('attempt-3', StopAttemptState::Failed, 'same'));
-        $ready->onStopAttemptSettled(new StopAttemptSettled('attempt-1', StopAttemptState::Failed, 'other'));
-        $ready->onStopAttemptSettled(new StopAttemptSettled('attempt-2', StopAttemptState::Failed, 'same'));
+        $ready->onStopAttemptSettled(new StopAttemptSettled('attempt-3', StopCheckState::Failed, 'same'));
+        $ready->onStopAttemptSettled(new StopAttemptSettled('attempt-1', StopCheckState::Failed, 'other'));
+        $ready->onStopAttemptSettled(new StopAttemptSettled('attempt-2', StopCheckState::Failed, 'same'));
         $ready->onStop($this->stop('attempt-4'));
 
         $this->assertSame(2, $gate->lastSettled->unchangedBefore('attempt-4', 'same'));
@@ -45,8 +45,8 @@ final class ReadyStateSettledAttemptsTest extends TestCase
         $ready = new ReadyState(new FixedOperationPolicy(), $gate);
         $ready->onStop($this->stop('attempt-1'));
 
-        $ready->onStopAttemptSettled(new StopAttemptSettled('elsewhere', StopAttemptState::Failed, 'same'));
-        $ready->onStopAttemptSettled(new StopAttemptSettled('attempt-1', StopAttemptState::Failed, 'same'));
+        $ready->onStopAttemptSettled(new StopAttemptSettled('elsewhere', StopCheckState::Failed, 'same'));
+        $ready->onStopAttemptSettled(new StopAttemptSettled('attempt-1', StopCheckState::Failed, 'same'));
         $ready->onStop($this->stop('attempt-2'));
 
         $this->assertSame(1, $gate->lastSettled->unchangedBefore('attempt-2', 'same'));

@@ -30,7 +30,7 @@ final class NavigationRequestTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'hook_calls',
         'hosts',
@@ -39,7 +39,7 @@ final class NavigationRequestTest extends TestCase
         'navigation_requests',
         'accounts',
         'active_accounts',
-        'process_starts',
+        'session_processes',
     ];
 
     public function test_a_raised_request_carries_its_script_goal_runtime_and_screen(): void

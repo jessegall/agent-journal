@@ -33,7 +33,7 @@ final class RecordHeartbeatTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'hook_calls'];
+    private const array TABLES = ['agents', 'agent_sessions', 'session_tokens', 'agent_stacks', 'hook_calls'];
 
     public function test_a_beat_records_the_database_server_time(): void
     {

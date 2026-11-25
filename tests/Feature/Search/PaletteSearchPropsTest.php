@@ -35,7 +35,7 @@ final class PaletteSearchPropsTest extends TestCase
     use SendsMcpFrames;
 
     private const array TABLES = [
-        'users', 'tasks', 'plans', 'number_groups', 'links', 'agents', 'agent_sessions', 'start_tokens',
+        'users', 'tasks', 'plans', 'number_groups', 'links', 'agents', 'agent_sessions', 'session_tokens',
         'agent_stacks', 'hook_calls', 'command_receipts',
     ];
 

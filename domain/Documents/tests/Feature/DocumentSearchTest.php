@@ -43,7 +43,7 @@ final class DocumentSearchTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'command_receipts',
         'links',

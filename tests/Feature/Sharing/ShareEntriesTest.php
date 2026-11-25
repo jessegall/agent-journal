@@ -66,7 +66,7 @@ final class ShareEntriesTest extends TestCase
         'document_revisions',
         'documents',
         'number_groups',
-        'start_tokens',
+        'session_tokens',
         'agent_sessions',
         'agents',
     ];

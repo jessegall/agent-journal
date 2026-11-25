@@ -14,12 +14,12 @@ use App\Enums\Drivers\DriverOperation;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Drivers\HostWakeRefusal;
 use App\Enums\Drivers\RequestProgress;
-use App\Enums\Starts\HostRefusal;
-use App\Enums\Starts\StartOriginType;
-use App\Enums\Starts\StartReadiness;
+use App\Enums\Sessions\HostRefusal;
+use App\Enums\Sessions\StartOriginType;
+use App\Enums\Sessions\StartReadiness;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;
-use App\Models\Starts\StartRecord;
+use App\Models\Sessions\SessionRequest;
 use App\Support\ActorIdentity;
 use App\Support\AgentWakes;
 use App\Support\EnrolledHost;
@@ -54,8 +54,8 @@ final class StartIdentityTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'start_tokens',
-        'start_records',
+        'session_tokens',
+        'session_requests',
         'agent_stacks',
         'hook_calls',
         'hosts',
@@ -64,7 +64,7 @@ final class StartIdentityTest extends TestCase
         'runtime_events',
         'accounts',
         'active_accounts',
-        'process_starts',
+        'session_processes',
         'links',
     ];
 
@@ -214,7 +214,7 @@ final class StartIdentityTest extends TestCase
         $this->assertSame(StartReadiness::Uncertain, $record->refresh()->readiness);
     }
 
-    private function checkStatus(StartRecord $record): bool
+    private function checkStatus(SessionRequest $record): bool
     {
         $session = AgentSession::query()->findOrFail($record->session_id);
 
@@ -239,7 +239,7 @@ final class StartIdentityTest extends TestCase
     }
 
     /**
-     * @return array{EnrolledHost, OpenedRuntime, DriverRequest, StartRecord}
+     * @return array{EnrolledHost, OpenedRuntime, DriverRequest, SessionRequest}
      */
     public function test_a_ready_report_after_the_start_was_cancelled_changes_nothing(): void
     {
@@ -273,7 +273,7 @@ final class StartIdentityTest extends TestCase
             StartPolicy::withoutProfile(TestSelections::onHost()),
             driverType: DriverType::Headless,
         );
-        $record = StartRecord::create($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create());
+        $record = SessionRequest::create($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create());
         $record->startedAs($session);
         $receipt = $this->app->make(AgentWakes::class)->wake(
             new StackTarget($session->agent_id, $session->id),

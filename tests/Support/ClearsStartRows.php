@@ -15,7 +15,7 @@ trait ClearsStartRows
     {
         $database = $this->app->make(ConnectionInterface::class);
 
-        foreach (['command_receipts', 'start_tokens', 'agent_sessions', 'agents'] as $table) {
+        foreach (['command_receipts', 'session_tokens', 'agent_sessions', 'agents'] as $table) {
             $database->table($table)->delete();
         }
     }

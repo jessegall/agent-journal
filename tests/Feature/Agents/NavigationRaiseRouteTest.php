@@ -58,7 +58,7 @@ final class NavigationRaiseRouteTest extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'hook_calls',
         'hosts',
@@ -73,7 +73,7 @@ final class NavigationRaiseRouteTest extends TestCase
         'assignments',
         'accounts',
         'active_accounts',
-        'process_starts',
+        'session_processes',
     ];
 
     private const string FINGERPRINT = 'fp1:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';

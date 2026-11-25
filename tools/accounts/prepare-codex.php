@@ -14,7 +14,7 @@ declare(strict_types=1);
  *   echo '{"account":"...","working_roots":"...","root":"...","tables":["..."]}' | php tools/accounts/prepare-codex.php
  */
 
-use App\Enums\Starts\TransportProfileType;
+use App\Enums\Sessions\TransportProfileType;
 use App\Support\Compatibility\DriverCompatibility;
 use App\Support\DefaultDrivers;
 use App\Support\Drivers\AccountConfigurationWrite;

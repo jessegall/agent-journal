@@ -52,7 +52,7 @@ final class CommandReceiptTest extends CommandBusTestCase
             'command_receipts',
             'assignments',
             'tasks',
-            'start_tokens',
+            'session_tokens',
             'agent_sessions',
             'agents',
         ] as $table) {

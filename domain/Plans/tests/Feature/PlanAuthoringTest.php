@@ -35,7 +35,7 @@ final class PlanAuthoringTest extends TestCase
         'tasks',
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'assignments',
         'command_receipts',

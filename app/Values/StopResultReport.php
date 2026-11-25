@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Starts\StopResultType;
+use App\Enums\Sessions\StopConditionResultType;
 
 /**
  * What the host reports for one stop condition it ran: the condition and the definition it ran, how it ended, its
@@ -18,7 +18,7 @@ final readonly class StopResultReport
     public function __construct(
         public string $conditionKey,
         public string $definitionHash,
-        public StopResultType $status,
+        public StopConditionResultType $status,
         public string $startedAt,
         public string|null $endedAt,
         public int|null $exitCode,

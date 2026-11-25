@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\Agents\ProcessStartState;
 use App\Events\Sessions\AccountUseChanged;
-use App\Models\Starts\ProcessStart;
+use App\Models\Sessions\SessionProcess;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
 
@@ -32,7 +32,7 @@ final readonly class CancelAccountUsesHandler implements CommandHandler
      */
     private function cancelPendingOf(RecordIdentity $account): int
     {
-        return ProcessStart::supervised()
+        return SessionProcess::supervised()
             ->onAccount($account)
             ->where('state', ProcessStartState::Pending->value)
             ->update([

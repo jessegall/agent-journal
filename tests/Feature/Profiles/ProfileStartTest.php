@@ -17,8 +17,8 @@ use App\Enums\Drivers\DriverSourceType;
 use App\Enums\Drivers\DriverSwitchStage;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Profiles\ModelTier;
-use App\Enums\Starts\ResumeRefusal;
-use App\Enums\Starts\StartPreflightRefusal;
+use App\Enums\Sessions\ResumeRefusal;
+use App\Enums\Sessions\StartPreflightRefusal;
 use App\Events\Sessions\DriverSwitchStopped;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Exceptions\DriverSwitchStale;
@@ -34,7 +34,7 @@ use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverConversation;
 use App\Models\Drivers\DriverSwitch;
 use App\Models\Projects\Host;
-use App\Models\Starts\StartRecord;
+use App\Models\Sessions\SessionRequest;
 use App\Support\Access\AccessSettings;
 use App\Support\AgentSessions;
 use App\Support\Capabilities\CodexTerminalCapabilities;
@@ -245,9 +245,9 @@ final class ProfileStartTest extends TestCase
 
         $resumed = $this->resume($older->id);
 
-        $record = StartRecord::query()->where('request_id', $resumed->requestId)->sole();
+        $record = SessionRequest::query()->where('request_id', $resumed->requestId)->sole();
         $this->assertSame(['older-thread-0001', ConversationModeType::Resume], [$record->conversation_target, $record->conversation_mode]);
-        $this->assertTrue(StartRecord::requiresConversation($resumed->sessionId));
+        $this->assertTrue(SessionRequest::requiresConversation($resumed->sessionId));
 
         try {
             $this->resume(strtolower((string) Str::ulid()));
@@ -408,7 +408,7 @@ final class ProfileStartTest extends TestCase
      */
     private function recorded(string $requestId, string $sessionId): array
     {
-        $record = StartRecord::query()->where('request_id', $requestId)->sole();
+        $record = SessionRequest::query()->where('request_id', $requestId)->sole();
         $account = $this->app->make(AccountUses::class)->accountOf($sessionId, Account::linkType());
 
         return [$record->family, $record->driver_type, $record->account_chosen, $account->id];

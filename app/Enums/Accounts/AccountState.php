@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Enums\Accounts;
 
+use App\Enums\Sessions\StartUnavailableReason;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
-use App\Enums\Starts\StartUnavailableReason;
 
 /**
  * Where a saved account stands: signed in, waiting for its owner to sign in again, being removed, or removed with its

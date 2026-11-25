@@ -8,7 +8,7 @@ use App\Concerns\RendersRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Contracts\Refusals\StartRefusal;
 use App\Enums\Engine\RefusalCode;
-use App\Enums\Starts\StartUnavailableReason;
+use App\Enums\Sessions\StartUnavailableReason;
 use App\Exceptions\Concerns\ThrowsLater;
 use RuntimeException;
 

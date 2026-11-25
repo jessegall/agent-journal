@@ -53,10 +53,10 @@ final class CodeReviewTest extends TestCase
     use StartsAgentRequests;
 
     private const array TABLES = [
-        'active_accounts', 'account_notices', 'accounts', 'process_starts', 'agent_runtimes',
+        'active_accounts', 'account_notices', 'accounts', 'session_processes', 'agent_runtimes',
         'review_decisions', 'code_reviews', 'work_reservations', 'certified_works', 'session_policies',
-        'start_records', 'ask_hops', 'asks', 'ask_requesters', 'supervisor_changes', 'supervisor_links',
-        'assignments', 'command_receipts', 'start_tokens', 'agent_sessions', 'agents', 'profile_revisions', 'profiles',
+        'session_requests', 'ask_hops', 'asks', 'ask_requesters', 'supervisor_changes', 'supervisor_links',
+        'assignments', 'command_receipts', 'session_tokens', 'agent_sessions', 'agents', 'profile_revisions', 'profiles',
         'agent_stacks', 'pending_agent_messages', 'driver_requests', 'tasks', 'users',
         'notification_changes',
         'notification_receipts', 'notification_scopes', 'notification_occurrences',

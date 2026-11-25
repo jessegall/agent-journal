@@ -16,7 +16,7 @@ use App\Exceptions\HostReportRefused;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\RuntimeEvent;
-use App\Models\Starts\StartRecord;
+use App\Models\Sessions\SessionRequest;
 use App\Support\HostRuntimes;
 use App\Support\InitialWakeSettlement;
 use App\Support\NavigationRoundReports;
@@ -107,9 +107,9 @@ final readonly class NotifyRequestProgressHandler implements CommandHandler
         // A host that could not send its ready report again leaves an unverified start without proof: it stays held,
         // uncertain. A start already verified keeps its proof; the answer only showed the host is there.
         if ($request->operation === DriverOperation::ResendReadiness && $request->progress->isRefused()) {
-            StartRecord::lockedLatestOf($runtime->agent_session_id)
-                ->filter(fn (StartRecord $start) => $start->readiness->isUnverified())
-                ->forAll(fn (StartRecord $start) => $start->markReadinessUnseen());
+            SessionRequest::lockedLatestOf($runtime->agent_session_id)
+                ->filter(fn (SessionRequest $start) => $start->readiness->isUnverified())
+                ->forAll(fn (SessionRequest $start) => $start->markReadinessUnseen());
         }
 
         if ($request->isInitialWakeOf($runtime->agent_session_id)) {

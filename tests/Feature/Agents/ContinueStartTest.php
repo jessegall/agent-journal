@@ -9,14 +9,14 @@ use App\Commands\Agents\StartAgent\StartAgentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Agents\ConversationModeType;
 use App\Enums\Drivers\DriverType;
-use App\Enums\Starts\StartOriginType;
+use App\Enums\Sessions\StartOriginType;
 use App\Exceptions\StartRefused;
 use App\Models\Access\User;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
-use App\Models\Starts\StartRecord;
+use App\Models\Sessions\SessionRequest;
 use App\Support\Access\AccessSettings;
 use App\Support\DefaultDrivers;
 use App\Values\AccountLabel;
@@ -87,7 +87,7 @@ final class ContinueStartTest extends TestCase
 
         $this->assertSame(
             DriverType::Terminal,
-            StartRecord::query()->where('request_id', $successor->requestId)->sole()->driver_type,
+            SessionRequest::query()->where('request_id', $successor->requestId)->sole()->driver_type,
         );
     }
 

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Commands\Starts\RecordBindingStart\RecordBindingStartCommand;
+use App\Commands\Sessions\RecordBindingRuntime\RecordBindingRuntimeCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Connections\BindingRuntimeRequestData;
 use App\Models\Projects\ProjectBinding;
-use App\Models\Starts\BindingStart;
+use App\Models\Sessions\BindingRuntime;
 use App\Values\HostContext;
 use Illuminate\Http\JsonResponse;
 
@@ -28,7 +28,7 @@ final readonly class BindingRuntimeController
         $commands->run($request->asBindingStart($host->hostId, $binding));
 
         // A start asked again under its id, after a lost reply or a restart, answers the runtime it opened.
-        foreach ($request->startId === '' ? [] : BindingStart::ofBinding($binding, $request->startId) as $earlier) {
+        foreach ($request->startId === '' ? [] : BindingRuntime::ofBinding($binding, $request->startId) as $earlier) {
             return $this->answer($binding, $earlier->session_id, $earlier->runtime_id, JsonResponse::HTTP_OK);
         }
 
@@ -36,7 +36,7 @@ final readonly class BindingRuntimeController
 
         if ($request->startId !== '') {
             $commands->run(
-                new RecordBindingStartCommand($binding, $request->startId, $opened->sessionId, $opened->runtimeId),
+                new RecordBindingRuntimeCommand($binding, $request->startId, $opened->sessionId, $opened->runtimeId),
             );
         }
 

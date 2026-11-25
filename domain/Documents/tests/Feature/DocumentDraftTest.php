@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Events\Sessions\SessionClosed;
 use App\Models\Agents\Agent;
 use App\Models\Messages\Message;
-use App\Models\Starts\SessionPolicy;
+use App\Models\Sessions\SessionPolicy;
 use App\Support\ActorIdentity;
 use App\Support\AgentSessions;
 use App\Support\DeskService;
@@ -46,7 +46,7 @@ final class DocumentDraftTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'session_policies',
         'links',

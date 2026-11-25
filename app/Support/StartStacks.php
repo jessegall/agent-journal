@@ -10,7 +10,7 @@ use App\Enums\Sessions\SessionTransferType;
 use App\Exceptions\StateSchemaUnknown;
 use App\Exceptions\StateTransferUnknown;
 use App\Models\Agents\AgentStackRow;
-use App\Models\Starts\StartRecord;
+use App\Models\Sessions\SessionRequest;
 use App\Support\References\StateReference;
 use App\Support\Stack\StateTypes;
 use App\Support\States\ReadyState;
@@ -71,7 +71,7 @@ final readonly class StartStacks
      */
     private function carriedFrames(StackTarget $target): array
     {
-        if (! StartRecord::resumesConversation($target->sessionId)) {
+        if (! SessionRequest::resumesConversation($target->sessionId)) {
             return [];
         }
 

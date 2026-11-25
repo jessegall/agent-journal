@@ -22,7 +22,7 @@ use App\Models\Accounts\Account;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
-use App\Models\Starts\ProcessStart;
+use App\Models\Sessions\SessionProcess;
 use App\Support\ActorContext;
 use App\Support\Compatibility\DriverCompatibility;
 use App\Support\DefaultDrivers;
@@ -55,7 +55,7 @@ final class ContainerAccountTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'hook_calls',
         'hosts',
@@ -64,7 +64,7 @@ final class ContainerAccountTest extends TestCase
         'driver_turns',
         'accounts',
         'active_accounts',
-        'process_starts',
+        'session_processes',
         'links',
         'command_receipts',
         'assignments',
@@ -124,11 +124,11 @@ final class ContainerAccountTest extends TestCase
 
         $this->asSystem(new ReconcileStartsCommand($host->hostId, []));
 
-        $this->assertSame([$key], ProcessStart::unresolvedKeysOf($host->hostId));
+        $this->assertSame([$key], SessionProcess::unresolvedKeysOf($host->hostId));
 
         $this->asSystem(new ReconcileStartsCommand($host->hostId, [$key]));
 
-        $this->assertSame([], ProcessStart::unresolvedKeysOf($host->hostId));
+        $this->assertSame([], SessionProcess::unresolvedKeysOf($host->hostId));
         $this->assertFalse(AgentSession::query()->findOrFail($launch->sessionId)->isActive());
         $this->assertSame(
             RuntimeActivity::Stopped,
@@ -163,9 +163,9 @@ final class ContainerAccountTest extends TestCase
         $this->assertSame($start->refusal, $agent->startRefusal);
     }
 
-    private function startOf(OpenedRuntime $runtime): ProcessStart
+    private function startOf(OpenedRuntime $runtime): SessionProcess
     {
-        return ProcessStart::query()->withoutGlobalScopes()->where('session_id', $runtime->sessionId)->sole();
+        return SessionProcess::query()->withoutGlobalScopes()->where('session_id', $runtime->sessionId)->sole();
     }
 
     private function open(EnrolledHost $host): OpenedRuntime

@@ -9,7 +9,7 @@ use App\Contracts\Bus\CommandHandler;
 use App\Events\Sessions\AccountUseChanged;
 use App\Events\Sessions\DriverFailed;
 use App\Models\Agents\AgentSession;
-use App\Models\Starts\ProcessStart;
+use App\Models\Sessions\SessionProcess;
 
 final readonly class NotifyFailureHandler implements CommandHandler
 {
@@ -17,7 +17,7 @@ final readonly class NotifyFailureHandler implements CommandHandler
 
     public function handle(NotifyFailureCommand $command): void
     {
-        $start = ProcessStart::claimedBy($command->hostId, $command->startKey);
+        $start = SessionProcess::claimedBy($command->hostId, $command->startKey);
 
         if (! $start->stopWithProof()) {
             return;

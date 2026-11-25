@@ -179,7 +179,7 @@ final class EventPayloads
                 'fields' => [
                     'agentId' => 'string',
                     'driver' => 'string',
-                    'reason' => 'App\Enums\Starts\StartUnavailableReason',
+                    'reason' => 'App\Enums\Sessions\StartUnavailableReason',
                 ],
             ],
             AssignmentsChanged::class => [

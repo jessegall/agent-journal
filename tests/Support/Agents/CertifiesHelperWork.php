@@ -8,10 +8,10 @@ use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\Agents\ConversationModeType;
 use App\Enums\Agents\ExecutionModeType;
 use App\Enums\Drivers\DriverType;
-use App\Enums\Starts\StartOriginType;
+use App\Enums\Sessions\StartOriginType;
 use App\Models\Reviews\CertifiedWork;
-use App\Models\Starts\SessionPolicy;
-use App\Models\Starts\StartRecord;
+use App\Models\Sessions\SessionPolicy;
+use App\Models\Sessions\SessionRequest;
 use App\Support\ActorIdentity;
 use App\Support\HelperCommitImport;
 use App\Support\RecordIdentity;
@@ -94,7 +94,7 @@ trait CertifiesHelperWork
             new StartPolicy($policy->access, $policy->stopConditions, $execution, null, null, null, $requiresReview),
             driverType: DriverType::Headless,
         );
-        $start = StartRecord::create($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create());
+        $start = SessionRequest::create($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create());
         $start->startedAs($launch->session);
         SessionPolicy::create($launch->session, $request->policy);
 

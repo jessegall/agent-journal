@@ -14,7 +14,7 @@ use App\Contracts\Actors\IdentityLinks;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\CommandTransaction;
 use App\Enums\Accounts\AccountProcessRole;
-use App\Enums\Starts\StartUnavailableReason;
+use App\Enums\Sessions\StartUnavailableReason;
 use App\Events\Sessions\AccountUseChanged;
 use App\Exceptions\AccountInUse;
 use App\Exceptions\AccountUnavailable;
@@ -24,7 +24,7 @@ use App\Exceptions\CommandTransactionMissing;
 use App\Exceptions\UnknownLinkType;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
-use App\Models\Starts\ProcessStart;
+use App\Models\Sessions\SessionProcess;
 use App\Resolvers\ActiveAccountRecords;
 use App\Resolvers\UnconfiguredAccounts;
 use App\Support\ActorContext;
@@ -58,11 +58,11 @@ final class AccountUsesTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'hook_calls',
         'links',
-        'process_starts',
+        'session_processes',
         'command_receipts',
     ];
 
@@ -74,7 +74,7 @@ final class AccountUsesTest extends TestCase
     private Agent $agent;
 
     /**
-     * @var array<string, ProcessStart>
+     * @var array<string, SessionProcess>
      */
     private array $starts = [];
 

@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Starts\StartUnavailableReason;
+use App\Enums\Sessions\StartUnavailableReason;
 use App\Events\Accounts\AccountSwitched;
 use App\Events\Accounts\ActiveAccountCleared;
 use App\Events\Accounts\ActiveAccountSelected;

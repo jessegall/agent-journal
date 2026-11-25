@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Enums\Agents\ConversationModeType;
 use App\Enums\Agents\ExecutionModeType;
 use App\Enums\Drivers\DriverType;
-use App\Enums\Starts\StartOriginType;
+use App\Enums\Sessions\StartOriginType;
 use App\Models\Drivers\DriverConversation;
 use App\Values\SelectedDriver;
 use App\Values\StartPolicy;

@@ -66,7 +66,7 @@ final class SignInAgainTest extends TestCase
         'sign_in_attempts',
         'command_receipts',
         'links',
-        'process_starts',
+        'session_processes',
         'account_notices',
     ];
 
@@ -108,7 +108,7 @@ final class SignInAgainTest extends TestCase
         $this->reconcile();
         $this->assertNull($this->claimSignIn('host', CarbonImmutable::now()));
 
-        DB::table('process_starts')->update(['state' => ProcessStartState::Stopped->value]);
+        DB::table('session_processes')->update(['state' => ProcessStartState::Stopped->value]);
         $this->reconcile();
 
         $this->assertSame($attemptId, $this->claimSignIn('host', CarbonImmutable::now())?->id);
@@ -379,7 +379,7 @@ final class SignInAgainTest extends TestCase
 
     private function startProcessOnAccount(): void
     {
-        DB::table('process_starts')->insert([
+        DB::table('session_processes')->insert([
             'id' => strtolower((string) Str::ulid()),
             'agent_id' => strtolower((string) Str::ulid()),
             'session_id' => strtolower((string) Str::ulid()),

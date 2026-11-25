@@ -33,7 +33,7 @@ final class MenuEntryTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'hook_calls',
         'hosts',
@@ -43,7 +43,7 @@ final class MenuEntryTest extends TestCase
         'menu_entries',
         'accounts',
         'active_accounts',
-        'process_starts',
+        'session_processes',
     ];
 
     public function test_a_proven_entry_is_found_by_its_program_first_screen_and_goal(): void

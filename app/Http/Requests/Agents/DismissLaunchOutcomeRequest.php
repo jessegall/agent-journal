@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Agents;
 
-use App\Commands\Starts\DismissLaunchOutcome\DismissLaunchOutcomeCommand;
-use App\Enums\Starts\StartDisposition;
+use App\Commands\Sessions\DismissSessionStartOutcome\DismissSessionStartOutcomeCommand;
+use App\Enums\Sessions\StartDisposition;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -26,9 +26,9 @@ final class DismissLaunchOutcomeRequest extends FormRequest
         ];
     }
 
-    public function command(string $agentId): DismissLaunchOutcomeCommand
+    public function command(string $agentId): DismissSessionStartOutcomeCommand
     {
-        return new DismissLaunchOutcomeCommand(
+        return new DismissSessionStartOutcomeCommand(
             $agentId,
             $this->string('requestId')->lower()->toString(),
             StartDisposition::from($this->string('version')->toString()),

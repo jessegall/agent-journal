@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Relay;
 
 use App\Enums\Files\Place;
-use App\Enums\Starts\OfflineReplyMode;
+use App\Enums\Sessions\OfflineReplyMode;
 use App\Exceptions\OfflineReplySealInvalid;
 use App\Support\AgentClientSettings;
 use App\Support\OfflineReplySeal;

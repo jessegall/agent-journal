@@ -61,7 +61,7 @@ use App\Enums\Files\Place;
 use App\Exceptions\AgentContextMissing;
 use App\Models\Agents\Agent;
 use App\Models\Drivers\NavigationRequest;
-use App\Models\Starts\ProcessStart;
+use App\Models\Sessions\SessionProcess;
 use App\Models\Support\ProcessStartScope;
 use App\Policies\ActivityPolicy;
 use App\Policies\AgentMaintenancePolicy;
@@ -336,7 +336,7 @@ final class AgentsServiceProvider extends ServiceProvider
         );
 
         $starts = new ProcessStartScope(static fn () => Container::getInstance()->make(CurrentActor::class));
-        $events->listen('eloquent.booted: '.ProcessStart::class, fn () => ProcessStart::addGlobalScope($starts));
+        $events->listen('eloquent.booted: '.SessionProcess::class, fn () => SessionProcess::addGlobalScope($starts));
 
         $policies->register('Core', new PolicyDefinition(ActivityPolicy::class, [AccessType::Read]));
 

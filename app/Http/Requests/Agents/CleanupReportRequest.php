@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Agents;
 
-use App\Enums\Starts\CleanupStep;
+use App\Enums\Sessions\CleanupStep;
 use App\Values\CleanupReport;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;

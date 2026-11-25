@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Enums\Drivers;
 
-use App\Enums\Starts\HostRefusal;
-use App\Enums\Starts\StartRefusalType;
+use App\Enums\Sessions\HostRefusal;
+use App\Enums\Sessions\StartRefusalType;
 
 /**
  * Why a host refused a request, from the closed set journal-agent may report (contracts.RefusalReason); a reason

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Commands\Agents\StartAgent\StartAgentCommand;
-use App\Commands\Starts\DismissLaunchOutcome\DismissLaunchOutcomeCommand;
+use App\Commands\Sessions\DismissSessionStartOutcome\DismissSessionStartOutcomeCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Hosts\DockerImageVerifier;
 use App\Contracts\Hosts\HostCapabilities;
@@ -14,9 +14,9 @@ use App\Enums\Agents\ConversationModeType;
 use App\Enums\Agents\ExecutionModeType;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Projects\CapabilityStatusType;
-use App\Enums\Starts\StartDisposition;
-use App\Enums\Starts\StartOriginType;
-use App\Enums\Starts\StartRefusalType;
+use App\Enums\Sessions\StartDisposition;
+use App\Enums\Sessions\StartOriginType;
+use App\Enums\Sessions\StartRefusalType;
 use App\Exceptions\CapacityUnavailable;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
@@ -127,7 +127,7 @@ final class LaunchOutcomeTest extends TestCase
     private function dismiss(StartRequest $request): void
     {
         $this->commands()->run(
-            new DismissLaunchOutcomeCommand($this->agentId, $request->requestId, StartDisposition::Refused),
+            new DismissSessionStartOutcomeCommand($this->agentId, $request->requestId, StartDisposition::Refused),
         );
     }
 

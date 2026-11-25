@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
 use App\Events\Sessions\LaunchCancelled;
 use App\Models\Agents\AgentRuntime;
-use App\Models\Starts\StartRecord;
+use App\Models\Sessions\SessionRequest;
 use App\Support\DriverRequests;
 
 final readonly class CancelLaunchHandler implements CommandHandler
@@ -25,15 +25,15 @@ final readonly class CancelLaunchHandler implements CommandHandler
     {
         $hasRuntime = AgentRuntime::existsForSession($command->sessionId);
 
-        StartRecord::lockedLatestOf($command->sessionId)
-            ->forAll(fn (StartRecord $start) => $start->cancelVerification());
+        SessionRequest::lockedLatestOf($command->sessionId)
+            ->forAll(fn (SessionRequest $start) => $start->cancelVerification());
 
         if ($hasRuntime) {
             $this->requests->stop($command->target(), $command->idempotencyKey);
         }
 
-        StartRecord::ownerStartOf($command->sessionId)->forAll(
-            fn (StartRecord $start) => $this->facts->publishAfterCommit(new LaunchCancelled($start->owner_work)),
+        SessionRequest::ownerStartOf($command->sessionId)->forAll(
+            fn (SessionRequest $start) => $this->facts->publishAfterCommit(new LaunchCancelled($start->owner_work)),
         );
 
         return $hasRuntime;

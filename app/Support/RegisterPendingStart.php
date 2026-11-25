@@ -6,10 +6,10 @@ namespace App\Support;
 
 use App\Contracts\Actors\IdentityLinks;
 use App\Contracts\Bus\CommandFacts;
-use App\Enums\Starts\TransportProfileType;
+use App\Enums\Sessions\TransportProfileType;
 use App\Events\Sessions\AccountUseChanged;
 use App\Models\Agents\AgentSession;
-use App\Models\Starts\ProcessStart;
+use App\Models\Sessions\SessionProcess;
 use App\Values\SelectedAccount;
 use Illuminate\Contracts\Config\Repository;
 
@@ -25,11 +25,11 @@ final readonly class RegisterPendingStart
         private CommandFacts $facts,
     ) {}
 
-    public function register(AgentSession $session, SelectedAccount $account): ProcessStart
+    public function register(AgentSession $session, SelectedAccount $account): SessionProcess
     {
         $this->links->link($session, $account->record);
         $transport = TransportProfileType::from($this->config->string('agents.transport_profile'));
-        $start = ProcessStart::create($session, $account, $transport);
+        $start = SessionProcess::create($session, $account, $transport);
         $this->facts->publishAfterCommit(new AccountUseChanged($account->record));
 
         return $start;

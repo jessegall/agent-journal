@@ -40,7 +40,7 @@ final class NavigationToolsTest extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'hook_calls',
         'hosts',
@@ -55,7 +55,7 @@ final class NavigationToolsTest extends TestCase
         'command_receipts',
         'accounts',
         'active_accounts',
-        'process_starts',
+        'session_processes',
     ];
 
     private TestStart $main;

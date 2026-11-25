@@ -16,7 +16,7 @@ use App\Events\Accounts\ProfileRevisionRevoked;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\ProfilePolicyRefused;
 use App\Exceptions\ProfileProposalRefused;
-use App\Models\Starts\RevisionFence;
+use App\Models\Profiles\ProfileRevisionHold;
 use App\Support\ActorContext;
 use App\Support\ProfileProposal;
 use App\Values\Operation;
@@ -43,7 +43,7 @@ final class ProfilePolicyTest extends TestCase
 
     private const string REQUIRED_CONTAINER = 'required container';
 
-    private const array TABLES = ['profile_revisions', 'profiles', 'revision_fences', 'command_receipts'];
+    private const array TABLES = ['profile_revisions', 'profiles', 'profile_revision_holds', 'command_receipts'];
 
     private const array WORKER = [
         'base' => 'writing-helper',
@@ -155,7 +155,7 @@ final class ProfilePolicyTest extends TestCase
         Event::assertDispatched(
             ProfileRevisionRevoked::class,
             fn (ProfileRevisionRevoked $event) => $event->revision === $revision->revision
-                && RevisionFence::query()->where('profile_key', $event->key->key)
+                && ProfileRevisionHold::query()->where('profile_key', $event->key->key)
                     ->where('profile_revision', $event->revision)->whereNull('reconciled_at')->exists(),
         );
     }

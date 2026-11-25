@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\Starts\OfflineReplyMode;
+use App\Enums\Sessions\OfflineReplyMode;
 
 /**
  * What a host receives once for a Starting runtime: its start token, the folders it writes before spawning and, for

@@ -32,7 +32,7 @@ final class PlanWorkCommandsTest extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'tasks',
         'plans',
         'phases',

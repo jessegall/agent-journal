@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\Starts\NotifyCleanup\NotifyCleanupCommand;
+use App\Commands\Sessions\NotifyCleanup\NotifyCleanupCommand;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\Agents\ConversationModeType;
 use App\Enums\Drivers\DriverType;
-use App\Enums\Starts\CapacityResource;
-use App\Enums\Starts\CleanupState;
-use App\Enums\Starts\CleanupStep;
-use App\Enums\Starts\ReservationState;
-use App\Enums\Starts\StartOriginType;
+use App\Enums\Sessions\CapacityResource;
+use App\Enums\Sessions\CleanupState;
+use App\Enums\Sessions\CleanupStep;
+use App\Enums\Sessions\ReservationState;
+use App\Enums\Sessions\StartOriginType;
 use App\Exceptions\CapacityUnavailable;
 use App\Models\Agents\AgentRuntime;
-use App\Models\Starts\CapacityReservation;
-use App\Models\Starts\CleanupOperation;
-use App\Models\Starts\RevisionFence;
-use App\Models\Starts\SessionPolicy;
-use App\Models\Starts\StartRecord;
+use App\Models\Profiles\ProfileRevisionHold;
+use App\Models\Sessions\CapacityReservation;
+use App\Models\Sessions\SessionCleanup;
+use App\Models\Sessions\SessionPolicy;
+use App\Models\Sessions\SessionRequest;
 use App\Support\ActorIdentity;
 use App\Support\HeartbeatService;
 use App\Support\LaunchLimits;
@@ -101,7 +101,7 @@ final class LaunchCleanupTest extends TestCase
         $this->app->make(HeartbeatService::class)->markExited($launch->session, 'exit 1');
 
         $this->assertSame(ReservationState::Released, $this->reservationOf($launch)->state);
-        $this->assertSame(0, CleanupOperation::query()->count());
+        $this->assertSame(0, SessionCleanup::query()->count());
     }
 
     public function test_a_start_past_the_host_capacity_is_refused_unless_the_owner_switched_the_guard_off(): void
@@ -154,18 +154,18 @@ final class LaunchCleanupTest extends TestCase
     public function test_a_fence_stops_the_sessions_of_its_revision_and_is_reconciled_once_none_runs(): void
     {
         $launch = $this->runningLaunch();
-        $fence = RevisionFence::retain($launch->session->profile_key, $launch->session->profile_revision);
+        $fence = ProfileRevisionHold::retain($launch->session->profile_key, $launch->session->profile_revision);
         $limits = $this->app->make(LaunchLimits::class);
 
         $limits->enforceFences();
 
         $this->assertFalse(AgentRuntime::isRunningForSession($launch->session->id));
-        $this->assertTrue(RevisionFence::query()->whereKey($fence->id)->whereNull('reconciled_at')->exists());
+        $this->assertTrue(ProfileRevisionHold::query()->whereKey($fence->id)->whereNull('reconciled_at')->exists());
 
         $this->app->make(HeartbeatService::class)->markExited($launch->session, 'exit 0');
         $limits->enforceFences();
 
-        $this->assertFalse(RevisionFence::query()->whereKey($fence->id)->whereNull('reconciled_at')->exists());
+        $this->assertFalse(ProfileRevisionHold::query()->whereKey($fence->id)->whereNull('reconciled_at')->exists());
     }
 
     private function endedContainerLaunch(): TestStart
@@ -200,7 +200,7 @@ final class LaunchCleanupTest extends TestCase
             StartPolicy::withoutProfile(TestSelections::onHost()),
             driverType: DriverType::Headless,
         );
-        StartRecord::create($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create())->startedAs($launch->session);
+        SessionRequest::create($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create())->startedAs($launch->session);
         SessionPolicy::create($launch->session, $request->policy);
 
         return $launch;
@@ -217,9 +217,9 @@ final class LaunchCleanupTest extends TestCase
         return $this->asSystem(new NotifyCleanupCommand('host-1', $launch->session->id, $report));
     }
 
-    private function cleanupOf(TestStart $launch): CleanupOperation
+    private function cleanupOf(TestStart $launch): SessionCleanup
     {
-        return CleanupOperation::query()->where('agent_session_id', $launch->session->id)->sole();
+        return SessionCleanup::query()->where('agent_session_id', $launch->session->id)->sole();
     }
 
     private function reservationOf(TestStart $launch): CapacityReservation

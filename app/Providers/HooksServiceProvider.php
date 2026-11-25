@@ -31,7 +31,7 @@ use App\Enums\Assignments\ActorType;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Drivers\FailureReceipt;
 use App\Models\Drivers\HookCall;
-use App\Models\Starts\StopAttempt;
+use App\Models\Sessions\StopCheck;
 use App\Models\Support\AgentSessionScope;
 use App\Resolvers\PinnedCompatibilities;
 use App\Resolvers\StopAttemptRecords;
@@ -180,7 +180,7 @@ final class HooksServiceProvider extends ServiceProvider
             AgentStackRow::class,
             HookCall::class,
             FailureReceipt::class,
-            StopAttempt::class,
+            StopCheck::class,
         ] as $model) {
             $events->listen("eloquent.booted: {$model}", fn () => $model::addGlobalScope($scope));
         }

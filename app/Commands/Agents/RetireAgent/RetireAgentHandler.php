@@ -19,7 +19,7 @@ use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Reviews\WorkerReservation;
-use App\Models\Starts\ProcessStart;
+use App\Models\Sessions\SessionProcess;
 use App\Policies\AgentPolicy;
 use App\Support\ActorIdentity;
 use App\Support\AgentSessions;
@@ -129,7 +129,7 @@ final readonly class RetireAgentHandler implements CommandHandler
      */
     private function cancelPendingOfAgent(string $agentId): array
     {
-        $starts = ProcessStart::supervised()
+        $starts = SessionProcess::supervised()
             ->where('agent_id', $agentId)
             ->where('state', ProcessStartState::Pending->value)
             ->lockForUpdate()

@@ -92,7 +92,7 @@ final class AccountRemovalTest extends TestCase
         'sign_in_attempts',
         'command_receipts',
         'links',
-        'process_starts',
+        'session_processes',
         'account_notices',
     ];
 
@@ -140,7 +140,7 @@ final class AccountRemovalTest extends TestCase
         $this->reconcile();
         $this->assertNull($this->asHost(new ClaimCleanupCommand('host')));
 
-        DB::table('process_starts')->update(['state' => ProcessStartState::Stopped->value]);
+        DB::table('session_processes')->update(['state' => ProcessStartState::Stopped->value]);
         $this->reconcile();
         $claimed = $this->asHost(new ClaimCleanupCommand('host'));
         $this->assertInstanceOf(ClaimedCleanup::class, $claimed);
@@ -436,7 +436,7 @@ final class AccountRemovalTest extends TestCase
 
     private function startProcessOnAccount(): void
     {
-        DB::table('process_starts')->insert([
+        DB::table('session_processes')->insert([
             'id' => strtolower((string) Str::ulid()),
             'agent_id' => strtolower((string) Str::ulid()),
             'session_id' => strtolower((string) Str::ulid()),

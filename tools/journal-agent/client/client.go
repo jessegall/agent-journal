@@ -157,7 +157,7 @@ type RequestReport struct {
 	Sequence uint64 `json:"sequence"`
 	// SessionID, ProcessStartID and ProcessGeneration are the claim's binding the report answers.
 	SessionID         string  `json:"session_id,omitempty"`
-	ProcessStartID    *string `json:"process_start_id,omitempty"`
+	ProcessStartID    *string `json:"session_process_id,omitempty"`
 	ProcessGeneration int     `json:"process_generation,omitempty"`
 }
 

@@ -49,7 +49,7 @@ final class JobGrantGuardTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'tasks',
         'assignments',

@@ -46,7 +46,7 @@ final class UnfamiliarRegistrationTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'hook_calls',
         'hosts',
@@ -55,7 +55,7 @@ final class UnfamiliarRegistrationTest extends TestCase
         'driver_turns',
         'accounts',
         'active_accounts',
-        'process_starts',
+        'session_processes',
         'links',
     ];
 
@@ -88,7 +88,7 @@ final class UnfamiliarRegistrationTest extends TestCase
             'progress' => 'applied',
             'actual_binding' => null,
             'session_id' => $claimed['sessionId'],
-            'process_start_id' => $claimed['processStartId'],
+            'session_process_id' => $claimed['processStartId'],
             'process_generation' => $claimed['processGeneration'],
         ])->assertSuccessful();
 

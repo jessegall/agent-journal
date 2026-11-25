@@ -7,8 +7,8 @@ namespace App\Support;
 use App\Data\Agents\DriverRequestStatus;
 use App\Enums\Agents\ProcessStartState;
 use App\Enums\Sessions\SessionStatus;
-use App\Enums\Starts\StartDisposition;
-use App\Enums\Starts\StartReadiness;
+use App\Enums\Sessions\StartDisposition;
+use App\Enums\Sessions\StartReadiness;
 
 /**
  * Every fact the server holds of one agent that its status is decided from: retirement, the live session, its

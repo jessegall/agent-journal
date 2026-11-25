@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\Readers;
 
-use App\Models\Starts\SessionPolicy;
-use App\Models\Starts\StopAttempt;
-use App\Models\Starts\StopResult;
+use App\Models\Sessions\SessionPolicy;
+use App\Models\Sessions\StopCheck;
+use App\Models\Sessions\StopConditionResult;
 use App\Values\SessionInspection;
 use App\Values\StopResultLine;
 
@@ -28,14 +28,14 @@ final readonly class SessionInspections
      */
     private function lastStop(string $sessionId, array $labels): array
     {
-        $attempts = StopAttempt::latestSettledOf($sessionId, 1);
+        $attempts = StopCheck::latestSettledOf($sessionId, 1);
 
         if ($attempts === [] || $labels === []) {
             return [];
         }
 
         return array_values(array_map(
-            fn (StopResult $result) => $result->line($labels[$result->condition_key]),
+            fn (StopConditionResult $result) => $result->line($labels[$result->condition_key]),
             $attempts[0]->results()->readExactly(count($labels))->get()->all(),
         ));
     }

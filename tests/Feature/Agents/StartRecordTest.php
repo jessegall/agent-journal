@@ -9,14 +9,14 @@ use App\Contracts\Sessions\StartRecordResolver;
 use App\Enums\Agents\ConversationModeType;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Profiles\ModelTier;
-use App\Enums\Starts\ModelSelectionType;
-use App\Enums\Starts\StartDisposition;
-use App\Enums\Starts\StartOriginType;
+use App\Enums\Sessions\ModelSelectionType;
+use App\Enums\Sessions\StartDisposition;
+use App\Enums\Sessions\StartOriginType;
 use App\Exceptions\SessionSelectionFixed;
 use App\Exceptions\StartRecordMissing;
 use App\Exceptions\StartRequestConflict;
 use App\Models\Agents\Agent;
-use App\Models\Starts\StartRecord;
+use App\Models\Sessions\SessionRequest;
 use App\Support\ActorIdentity;
 use App\Support\DefaultDrivers;
 use App\Support\StartSessions;
@@ -52,7 +52,7 @@ final class StartRecordTest extends TestCase
             'profile_revision',
             'start_request_id',
         ]));
-        $this->assertTrue(Schema::hasColumns('start_records', [
+        $this->assertTrue(Schema::hasColumns('session_requests', [
             'request_id',
             'agent_id',
             'actor_type',
@@ -126,11 +126,11 @@ final class StartRecordTest extends TestCase
         $request = $this->request($agent, TestSelections::requestId(), ModelSelection::named('claude-opus-5-5'));
         $requester = ActorIdentity::system();
 
-        $first = StartRecord::create($request, TestSelections::pinOf($request), $requester, None::create());
-        $again = StartRecord::create($request, TestSelections::pinOf($request), $requester, None::create());
+        $first = SessionRequest::create($request, TestSelections::pinOf($request), $requester, None::create());
+        $again = SessionRequest::create($request, TestSelections::pinOf($request), $requester, None::create());
 
         $this->assertSame($first->id, $again->id);
-        $this->assertSame(1, StartRecord::query()->where('request_id', $request->requestId)->count());
+        $this->assertSame(1, SessionRequest::query()->where('request_id', $request->requestId)->count());
         $this->assertSame(StartDisposition::Accepted, $again->disposition);
         $pin = TestSelections::pinOf($request);
         $this->assertSame(
@@ -142,7 +142,7 @@ final class StartRecordTest extends TestCase
 
         $changed = $this->request($agent, $request->requestId, ModelSelection::named('claude-sonnet-5-5'));
 
-        StartRecord::create($changed, TestSelections::pinOf($changed), $requester, None::create());
+        SessionRequest::create($changed, TestSelections::pinOf($changed), $requester, None::create());
     }
 
     public function test_an_agent_reads_its_own_record_and_not_another_agents(): void
@@ -156,8 +156,8 @@ final class StartRecordTest extends TestCase
             'helpers.helper-job 7',
         );
         $otherRequest = $this->request($other, TestSelections::requestId(), ModelSelection::named('claude-opus-5-5'));
-        StartRecord::create($ownRequest, TestSelections::pinOf($ownRequest), ActorIdentity::system(), None::create());
-        StartRecord::create($otherRequest, TestSelections::pinOf($otherRequest), ActorIdentity::system(), None::create());
+        SessionRequest::create($ownRequest, TestSelections::pinOf($ownRequest), ActorIdentity::system(), None::create());
+        SessionRequest::create($otherRequest, TestSelections::pinOf($otherRequest), ActorIdentity::system(), None::create());
         $session = $this->app->make(StartSessions::class)
             ->start($own, TestSelections::of(), TestSelections::requestId())
             ->session;

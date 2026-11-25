@@ -45,7 +45,7 @@ final class DockAdmissionTest extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'hook_calls',
         'inboxes',

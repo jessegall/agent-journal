@@ -6,7 +6,7 @@ namespace Tests\Feature\Profiles;
 
 use App\Contracts\Accounts\ActiveAccountReader;
 use App\Contracts\Actors\CurrentActorSetter;
-use App\Enums\Starts\StartUnavailableReason;
+use App\Enums\Sessions\StartUnavailableReason;
 use App\Exceptions\AccountUnavailable;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;

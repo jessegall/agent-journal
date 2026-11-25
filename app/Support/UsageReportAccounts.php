@@ -8,7 +8,7 @@ use App\Exceptions\AccountMissing;
 use App\Exceptions\ProcessStartUnknown;
 use App\Exceptions\UsageReportRefused;
 use App\Models\Accounts\Account;
-use App\Models\Starts\ProcessStart;
+use App\Models\Sessions\SessionProcess;
 use App\Values\ReportedStart;
 
 /**
@@ -26,7 +26,7 @@ final readonly class UsageReportAccounts
      */
     public function accountOf(ReportedStart $reported): Account
     {
-        $start = ProcessStart::claimedBy($reported->hostId, $reported->key);
+        $start = SessionProcess::claimedBy($reported->hostId, $reported->key);
 
         if ($start->account_type !== Account::linkType() || $start->account_generation !== $reported->generation) {
             throw UsageReportRefused::otherGeneration($reported->key);

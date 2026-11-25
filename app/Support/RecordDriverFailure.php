@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Bus\CommandFacts;
 use App\Events\Sessions\DriverFailed;
 use App\Models\Drivers\FailureReceipt;
-use App\Models\Starts\ProcessStart;
+use App\Models\Sessions\SessionProcess;
 use App\Support\Inputs\FailureDetails;
 use App\Support\Inputs\Values\HookIdentity;
 
@@ -25,7 +25,7 @@ final readonly class RecordDriverFailure
             return;
         }
 
-        $start = ProcessStart::latestOfSession($hook->sessionId);
+        $start = SessionProcess::latestOfSession($hook->sessionId);
 
         $failed = new DriverFailed(
             $hook->agentId,

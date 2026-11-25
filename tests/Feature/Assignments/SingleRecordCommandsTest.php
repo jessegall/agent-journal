@@ -28,7 +28,7 @@ final class SingleRecordCommandsTest extends TestCase
     use CommitsHookRows;
     use SendsSignedCalls;
 
-    private const array TABLES = ['users', 'agents', 'agent_sessions', 'start_tokens', 'tasks', 'assignments'];
+    private const array TABLES = ['users', 'agents', 'agent_sessions', 'session_tokens', 'tasks', 'assignments'];
 
     private User $owner;
 

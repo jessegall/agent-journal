@@ -44,7 +44,7 @@ final class NavigationDispatchTest extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'hook_calls',
         'hosts',
@@ -58,7 +58,7 @@ final class NavigationDispatchTest extends TestCase
         'assignments',
         'accounts',
         'active_accounts',
-        'process_starts',
+        'session_processes',
     ];
 
     private RecordedAttention $attention;

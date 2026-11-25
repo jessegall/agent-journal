@@ -10,7 +10,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Sessions\ProfileResolver;
 use App\Enums\Accounts\AccountCheckResult;
-use App\Enums\Starts\StartUnavailableReason;
+use App\Enums\Sessions\StartUnavailableReason;
 use App\Exceptions\ActorNotAllowed;
 use App\Models\Accounts\Account;
 use App\Support\ActorContext;

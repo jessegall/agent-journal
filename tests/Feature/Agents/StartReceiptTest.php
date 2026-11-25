@@ -13,9 +13,9 @@ use App\Enums\Agents\ConversationModeType;
 use App\Enums\Agents\ExecutionModeType;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Projects\CapabilityStatusType;
-use App\Enums\Starts\StartDisposition;
-use App\Enums\Starts\StartOriginType;
-use App\Enums\Starts\StartRefusalType;
+use App\Enums\Sessions\StartDisposition;
+use App\Enums\Sessions\StartOriginType;
+use App\Enums\Sessions\StartRefusalType;
 use App\Exceptions\CapacityUnavailable;
 use App\Exceptions\StartRecordMissing;
 use App\Exceptions\StartRefusalReplayed;
@@ -23,8 +23,8 @@ use App\Exceptions\StartRequestConflict;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
-use App\Models\Starts\CapacityReservation;
-use App\Models\Starts\StartRecord;
+use App\Models\Sessions\CapacityReservation;
+use App\Models\Sessions\SessionRequest;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\HostCapability;
@@ -61,11 +61,11 @@ final class StartReceiptTest extends TestCase
         'agent_sessions',
         'accounts',
         'active_accounts',
-        'start_records',
+        'session_requests',
         'capacity_reservations',
-        'process_starts',
+        'session_processes',
         'session_policies',
-        'start_tokens',
+        'session_tokens',
         'agent_runtimes',
         'driver_requests',
         'agent_stacks',
@@ -100,7 +100,7 @@ final class StartReceiptTest extends TestCase
 
         $this->assertThrows(fn () => $this->start($request), CapacityUnavailable::class);
 
-        $record = StartRecord::query()->where('request_id', $request->requestId)->sole();
+        $record = SessionRequest::query()->where('request_id', $request->requestId)->sole();
         $this->assertSame(
             [StartDisposition::Refused, StartRefusalType::CapacityUnavailable->value, null],
             [$record->disposition, $record->refusal_reason, $record->session_id],
@@ -142,7 +142,7 @@ final class StartReceiptTest extends TestCase
         );
         $this->assertSame(
             StartDisposition::Refused,
-            StartRecord::query()->where('request_id', $request->requestId)->sole()->disposition,
+            SessionRequest::query()->where('request_id', $request->requestId)->sole()->disposition,
         );
     }
 
@@ -150,12 +150,12 @@ final class StartReceiptTest extends TestCase
     {
         $this->app->instance(HostCapacity::class, new HostCapacity(64, 256 * 1024 ** 3, 1024 ** 4));
         $request = $this->containerRequest(TestSelections::requestId());
-        StartRecord::create($request, TestSelections::pinOf($request), ActorIdentity::of(ActorContext::forUser($this->ownerId)), None::create());
+        SessionRequest::create($request, TestSelections::pinOf($request), ActorIdentity::of(ActorContext::forUser($this->ownerId)), None::create());
 
         $resumed = $this->start($request);
         $replayed = $this->start($request);
 
-        $record = StartRecord::query()->where('request_id', $request->requestId)->sole();
+        $record = SessionRequest::query()->where('request_id', $request->requestId)->sole();
         $this->assertSame(
             [StartDisposition::Started, $resumed->sessionId, $resumed->sessionId, true, false],
             [

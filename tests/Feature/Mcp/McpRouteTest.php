@@ -32,7 +32,7 @@ final class McpRouteTest extends TestCase
 
     private const string INSTRUCTIONS_OPENING = 'Use overview_read first.';
 
-    private const array TABLES = ['agents', 'agent_sessions', 'start_tokens'];
+    private const array TABLES = ['agents', 'agent_sessions', 'session_tokens'];
 
     private const string ROUTE = '/agent/mcp/v1';
 

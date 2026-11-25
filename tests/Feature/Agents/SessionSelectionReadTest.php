@@ -9,7 +9,7 @@ use App\Contracts\Sessions\SessionResolver;
 use App\Enums\Drivers\DriverSourceType;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Profiles\ModelTier;
-use App\Enums\Starts\ModelSelectionType;
+use App\Enums\Sessions\ModelSelectionType;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Support\DefaultDrivers;

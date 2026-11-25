@@ -9,7 +9,7 @@ use App\Contracts\Bus\CommandHandler;
 use App\Events\Sessions\AccountUseChanged;
 use App\Events\Sessions\SessionStateChanged;
 use App\Models\Agents\AgentSession;
-use App\Models\Starts\ProcessStart;
+use App\Models\Sessions\SessionProcess;
 use App\Support\HeartbeatService;
 use App\Support\RecordIdentity;
 
@@ -41,7 +41,7 @@ final readonly class ReconcileStartsHandler implements CommandHandler
      */
     private function stopProven(string $hostId, array $keys): array
     {
-        $starts = ProcessStart::supervised()
+        $starts = SessionProcess::supervised()
             ->where('host_id', $hostId)
             ->whereIn('start_key', $keys)
             ->unresolved()

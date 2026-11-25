@@ -34,7 +34,7 @@ final class MenuToolsTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'hook_calls',
         'hosts',
@@ -45,7 +45,7 @@ final class MenuToolsTest extends TestCase
         'command_receipts',
         'accounts',
         'active_accounts',
-        'process_starts',
+        'session_processes',
     ];
 
     private TestStart $caller;

@@ -8,7 +8,7 @@ use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\Drivers\DriverCapability;
 use App\Exceptions\AccountWriterTaken;
 use App\Models\Agents\AgentRuntime;
-use App\Models\Starts\ProcessStart;
+use App\Models\Sessions\SessionProcess;
 use App\Values\BoundTarget;
 use App\Values\DriverKey;
 use App\Values\PinnedDriver;
@@ -27,7 +27,7 @@ final readonly class AccountSharingService
      */
     public function assertMayStart(PinnedDriver $driver, SelectedAccount $account): void
     {
-        $sessionIds = ProcessStart::unresolvedSessionIdsOf($account->record);
+        $sessionIds = SessionProcess::unresolvedSessionIdsOf($account->record);
 
         if ($sessionIds === []) {
             return;

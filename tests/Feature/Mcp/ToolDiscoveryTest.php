@@ -20,7 +20,7 @@ final class ToolDiscoveryTest extends TestCase
     use SendsMcpFrames;
     use StartsTestAgent;
 
-    private const array TABLES = ['agents', 'agent_sessions', 'start_tokens'];
+    private const array TABLES = ['agents', 'agent_sessions', 'session_tokens'];
 
     public function test_a_tools_list_sets_discovered_at_to_the_signed_issue_time(): void
     {

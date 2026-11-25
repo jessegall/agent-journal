@@ -36,7 +36,7 @@ final class TextUploadTest extends TestCase
         'links',
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'command_receipts',
     ];

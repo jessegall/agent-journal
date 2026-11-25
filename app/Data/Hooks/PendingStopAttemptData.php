@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Hooks;
 
-use App\Models\Starts\StopAttempt;
+use App\Models\Sessions\StopCheck;
 use App\Values\StartPolicy;
 use App\Values\StopCondition;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
@@ -32,7 +32,7 @@ final class PendingStopAttemptData extends Data
         public array $conditions,
     ) {}
 
-    public static function of(StopAttempt $attempt, StartPolicy $policy): self
+    public static function of(StopCheck $attempt, StartPolicy $policy): self
     {
         return new self(
             $attempt->id,

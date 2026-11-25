@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Contracts\Actors\IdentityLinks;
-use App\Enums\Starts\TransportProfileType;
+use App\Enums\Sessions\TransportProfileType;
 use App\Support\RecordIdentity;
 use App\Support\RegisterPendingStart;
 use App\Values\SelectedAccount;
@@ -21,7 +21,7 @@ final class TransportProfileTest extends TestCase
     use CommitsHookRows;
     use SendsMcpFrames;
 
-    private const array TABLES = ['process_starts', 'agents', 'agent_sessions', 'start_tokens', 'agent_stacks'];
+    private const array TABLES = ['session_processes', 'agents', 'agent_sessions', 'session_tokens', 'agent_stacks'];
 
     public function test_switching_transport_applies_at_registration_and_existing_mcp_still_answers(): void
     {

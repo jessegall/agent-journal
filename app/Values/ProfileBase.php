@@ -8,7 +8,7 @@ use App\Enums\Agents\AccessType;
 use App\Enums\Agents\ExecutionModeType;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Profiles\ModelTier;
-use App\Enums\Starts\OfflineReplyMode;
+use App\Enums\Sessions\OfflineReplyMode;
 use App\Exceptions\BuiltInProfileMissing;
 
 /**

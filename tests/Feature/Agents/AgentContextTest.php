@@ -6,7 +6,7 @@ namespace Tests\Feature\Agents;
 
 use App\Exceptions\AgentContextMissing;
 use App\Http\Middleware\Agents\AuthenticateAgent;
-use App\Models\Starts\StartToken;
+use App\Models\Sessions\SessionToken;
 use App\Support\AgentContext;
 use App\Support\AgentSessions;
 use App\Support\Stack\StateTypes;
@@ -49,7 +49,7 @@ final class AgentContextTest extends TestCase
     {
         $start = TestStart::start();
 
-        $stored = StartToken::query()->sole();
+        $stored = SessionToken::query()->sole();
 
         $this->assertNotSame($start->token, $stored->token_hash);
         $this->assertSame(hash('sha256', $start->token), $stored->token_hash);

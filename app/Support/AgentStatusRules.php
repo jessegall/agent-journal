@@ -14,10 +14,10 @@ use App\Enums\Drivers\RequestProgress;
 use App\Enums\Runs\RuntimeActivity;
 use App\Enums\Sessions\SessionState;
 use App\Enums\Sessions\SessionStatus;
-use App\Enums\Starts\StartDisposition;
-use App\Enums\Starts\StartRefusalType;
-use App\Enums\Starts\StartRemedyType;
-use App\Enums\Starts\StartUnavailableReason;
+use App\Enums\Sessions\StartDisposition;
+use App\Enums\Sessions\StartRefusalType;
+use App\Enums\Sessions\StartRemedyType;
+use App\Enums\Sessions\StartUnavailableReason;
 
 /**
  * Decides an agent's status from its evidence: the state, the words that name it and the actions it offers. Core's

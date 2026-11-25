@@ -38,7 +38,7 @@ final class OperationsReadTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'tasks',
         'assignments',
         'agent_stacks',

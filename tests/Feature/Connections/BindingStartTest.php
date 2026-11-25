@@ -45,7 +45,7 @@ final class BindingStartTest extends TestCase
     private const string EARLIER_SESSIONS = 'reported what became of its earlier sessions';
 
     private const array TABLES = [
-        'connection_audits', 'project_invitations', 'install_attempts', 'binding_starts', 'project_bindings',
+        'connection_audits', 'project_invitations', 'install_attempts', 'binding_runtimes', 'project_bindings',
         'project_environments', 'projects', 'agent_runtimes', 'agent_sessions', 'agents', 'hosts', 'settings_records',
         'users', 'accounts', 'active_accounts', 'desks', 'desk_seats', 'inboxes',
     ];

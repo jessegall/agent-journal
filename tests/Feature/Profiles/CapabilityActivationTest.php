@@ -14,7 +14,7 @@ use App\Enums\Agents\ConversationModeType;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Projects\CapabilityStatusType;
 use App\Enums\Projects\HostCapabilityType;
-use App\Enums\Starts\StartOriginType;
+use App\Enums\Sessions\StartOriginType;
 use App\Exceptions\AccountContainerUnsupported;
 use App\Exceptions\ContainerUnavailable;
 use App\Models\Agents\Agent;

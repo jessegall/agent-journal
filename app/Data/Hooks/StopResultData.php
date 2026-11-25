@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Hooks;
 
-use App\Enums\Starts\StopResultType;
+use App\Enums\Sessions\StopConditionResultType;
 use App\Values\StopResultReport;
 use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Attributes\MapName;
@@ -20,7 +20,7 @@ final class StopResultData extends Data
     public function __construct(
         public string $conditionKey,
         public string $definitionHash,
-        public StopResultType $status,
+        public StopConditionResultType $status,
         public CarbonImmutable $startedAt,
         public CarbonImmutable|null $endedAt,
         public int|null $exitCode,

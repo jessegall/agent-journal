@@ -138,7 +138,7 @@ function isChosen(DeclaredName $declared, array $options): bool
     $isAction = $declared->role === 'action';
     $holdsWord = $options['verb']
         ? $isAction && ($words[0] ?? '') === $options['word']
-        : in_array($options['word'], $words, true);
+        : holdsPhrase($words, explode(' ', $options['word']));
     $isType = $options['types'] === [] || in_array($declared->declarationType, $options['types'], true);
     $isInNamespace = $options['namespace'] === '' || str_starts_with($declared->owner, $options['namespace'].'\\');
 
@@ -173,19 +173,101 @@ function renameLine(DeclaredName $declared, array $options): string
 function replacedWord(string $identifier, array $options): string
 {
     preg_match_all('/[A-Z]+(?![a-z])|[A-Z]?[a-z0-9]+|[^A-Za-z0-9]+/', $identifier, $segments);
+    $segments = $segments[0];
+    $phrase = explode(' ', $options['word']);
+    $replacement = explode(' ', $options['replacement']);
     $replaced = [];
 
-    foreach ($segments[0] as $at => $segment) {
-        $isMatch = strtolower($segment) === $options['word'] && (! $options['verb'] || $at === 0);
-        $replaced[] = match (true) {
-            ! $isMatch => $segment,
-            $segment === strtoupper($segment) => strtoupper($options['replacement']),
-            ctype_upper($segment[0]) => ucfirst($options['replacement']),
-            default => $options['replacement'],
-        };
+    for ($at = 0; $at < count($segments); $at++) {
+        $run = phraseRunAt($segments, $at, $phrase);
+
+        if ($run === [] || ($options['verb'] && $at !== 0)) {
+            $replaced[] = $segments[$at];
+
+            continue;
+        }
+
+        $replaced[] = spelledLike($segments, $run, $replacement);
+        $at = end($run);
     }
 
     return implode('', $replaced);
+}
+
+/**
+ * Whether the words of a name hold the phrase's words one after another.
+ *
+ * @param  list<string>  $words
+ * @param  list<string>  $phrase
+ */
+function holdsPhrase(array $words, array $phrase): bool
+{
+    for ($at = 0; $at + count($phrase) <= count($words); $at++) {
+        if (array_slice($words, $at, count($phrase)) === $phrase) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * The places of the segments that spell the phrase from a segment on, word segments with at most one separator
+ * between two of them, or none when the phrase does not start there.
+ *
+ * @param  list<string>  $segments
+ * @param  list<string>  $phrase
+ * @return list<int>
+ */
+function phraseRunAt(array $segments, int $at, array $phrase): array
+{
+    $run = [];
+
+    foreach ($phrase as $index => $word) {
+        if ($index > 0 && preg_match('/^[^A-Za-z0-9]$/', $segments[$at] ?? '') === 1) {
+            $at++;
+        }
+
+        if (strtolower($segments[$at] ?? '') !== $word) {
+            return [];
+        }
+
+        $run[] = $at;
+        $at++;
+    }
+
+    return $run;
+}
+
+/**
+ * The replacement's words written the way the matched segments were: REPORT_NAME, ReportName, reportName or
+ * report_name.
+ *
+ * @param  list<string>  $segments
+ * @param  list<int>  $run
+ * @param  list<string>  $replacement
+ */
+function spelledLike(array $segments, array $run, array $replacement): string
+{
+    $first = $segments[$run[0]];
+    $separator = count($run) > 1 && $run[1] - $run[0] === 2 ? $segments[$run[0] + 1] : '';
+    $isUpper = $first === strtoupper($first) && ctype_alpha($first) && strlen($first) > 1;
+    $words = [];
+
+    foreach ($replacement as $index => $word) {
+        $words[] = match (true) {
+            $isUpper => strtoupper($word),
+            $separator === '' && ($index > 0 || ctype_upper($first[0])) => ucfirst($word),
+            $index === 0 && ctype_upper($first[0]) => ucfirst($word),
+            default => $word,
+        };
+    }
+
+    if ($separator === '' && count($run) === 1 && count($replacement) > 1 && str_contains(implode('', $segments), '_')) {
+        $separator = '_';
+    }
+
+    return implode($separator, $words);
 }
 
 /**

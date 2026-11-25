@@ -29,7 +29,7 @@ final class TaskToolsTest extends TestCase
     private const string BLOCK_REASON = 'Needs a decision.';
 
     private const array TABLES = [
-        'users', 'tasks', 'task_runs', 'task_log_entries', 'agents', 'agent_sessions', 'start_tokens', 'agent_stacks',
+        'users', 'tasks', 'task_runs', 'task_log_entries', 'agents', 'agent_sessions', 'session_tokens', 'agent_stacks',
         'hook_calls', 'links', 'assignments', 'claim_authorizations', 'command_receipts',
     ];
 

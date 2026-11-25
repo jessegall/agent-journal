@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Resolvers;
 
 use App\Contracts\Sessions\LaunchCandidates;
-use App\Enums\Starts\LaunchCandidateRank;
+use App\Enums\Sessions\LaunchCandidateRank;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\ConversationVisit;
 use App\Models\Drivers\DriverConversation;
 use App\Models\Reviews\WorkReservation;
-use App\Models\Starts\ProcessStart;
+use App\Models\Sessions\SessionProcess;
 use App\Support\LaunchCandidateFacts;
 use App\Support\LaunchCandidateQuery;
 use App\Support\RankedLaunchCandidate;
@@ -104,7 +104,7 @@ final readonly class AgentLaunchCandidates implements LaunchCandidates
             ->pluck('agent_id')
             ->all();
 
-        $starting = ProcessStart::query()
+        $starting = SessionProcess::query()
             ->ofAgents($ids)
             ->unresolved()
             ->readAll('the unresolved starts of the offered helpers')

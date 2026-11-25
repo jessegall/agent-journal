@@ -8,7 +8,7 @@ use App\Contracts\Files\Files;
 use App\Enums\Files\Place;
 use App\Enums\Hooks\CallFailure;
 use App\Models\Drivers\HookCall;
-use App\Models\Starts\StartBypass;
+use App\Models\Sessions\ReportedBypass;
 use App\Support\DefaultDrivers;
 use App\Support\Drivers\DriverReply;
 use App\Support\ProtectedAccounts;
@@ -42,8 +42,8 @@ final class HookRelayTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'start_tokens',
-        'start_bypasses',
+        'session_tokens',
+        'reported_bypasses',
         'agent_stacks',
         'hook_calls',
         'links',
@@ -239,8 +239,8 @@ final class HookRelayTest extends TestCase
 
         $this->relay(self::STOP);
 
-        $this->assertSame(['PreToolUse'], StartBypass::query()->pluck('native_event')->all());
-        $this->assertSame($this->start->session->id, StartBypass::query()->value('agent_session_id'));
+        $this->assertSame(['PreToolUse'], ReportedBypass::query()->pluck('native_event')->all());
+        $this->assertSame($this->start->session->id, ReportedBypass::query()->value('agent_session_id'));
         $this->assertFileDoesNotExist($this->bypassLog);
         $this->assertSame(1, HookCall::query()->authorizedFor($this->target())->count());
     }

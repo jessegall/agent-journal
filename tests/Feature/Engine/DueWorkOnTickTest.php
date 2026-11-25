@@ -55,7 +55,7 @@ final class DueWorkOnTickTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'hook_calls',
         'engine_frame_times',

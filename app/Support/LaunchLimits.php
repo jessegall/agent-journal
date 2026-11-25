@@ -7,8 +7,8 @@ namespace App\Support;
 use App\Contracts\Time\ServerClock;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
-use App\Models\Starts\RevisionFence;
-use App\Models\Starts\SessionPolicy;
+use App\Models\Profiles\ProfileRevisionHold;
+use App\Models\Sessions\SessionPolicy;
 
 /**
  * Stops the launches that may no longer run through the host's durable stop requests: a launch past its wall limit,
@@ -48,7 +48,7 @@ final readonly class LaunchLimits
      */
     public function enforceFences(): void
     {
-        foreach (RevisionFence::pending(self::PASS_LIMIT) as $fence) {
+        foreach (ProfileRevisionHold::pending(self::PASS_LIMIT) as $fence) {
             $sessions = AgentSession::runningFromRevision(
                 $fence->profile_key,
                 $fence->profile_revision,

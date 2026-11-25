@@ -9,7 +9,7 @@ use App\Contracts\Bus\CommandHandler;
 use App\Events\Sessions\AccountUseChanged;
 use App\Events\Sessions\SessionStateChanged;
 use App\Models\Drivers\DriverSwitch;
-use App\Models\Starts\ProcessStart;
+use App\Models\Sessions\SessionProcess;
 
 final readonly class NotifyStoppedHandler implements CommandHandler
 {
@@ -17,7 +17,7 @@ final readonly class NotifyStoppedHandler implements CommandHandler
 
     public function handle(NotifyStoppedCommand $command): void
     {
-        $start = ProcessStart::claimedBy($command->hostId, $command->startKey);
+        $start = SessionProcess::claimedBy($command->hostId, $command->startKey);
 
         if ($start->stopWithProof()) {
             $this->facts->publishAfterCommit(new AccountUseChanged($start->accountIdentity));

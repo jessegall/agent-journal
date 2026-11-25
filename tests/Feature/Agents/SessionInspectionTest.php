@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\Starts\RecordStopResults\RecordStopResultsCommand;
+use App\Commands\Sessions\RecordStopConditionResults\RecordStopConditionResultsCommand;
 use App\Contracts\Sessions\ProfileResolver;
 use App\Enums\Agents\ExecutionModeType;
-use App\Enums\Starts\StopResultType;
-use App\Models\Starts\SessionPolicy;
-use App\Models\Starts\StopAttempt;
+use App\Enums\Sessions\StopConditionResultType;
+use App\Models\Sessions\SessionPolicy;
+use App\Models\Sessions\StopCheck;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\Readers\SessionInspections;
 use App\Support\States\Contracts\StopConditionGate;
@@ -65,7 +65,7 @@ final class SessionInspectionTest extends TestCase
         $this->assertSame([StopCondition::cleanWorktree()->label], $inspection->stopConditions);
         $this->assertEquals([new StopResultLine(
             StopCondition::cleanWorktree()->label,
-            StopResultType::Failed,
+            StopConditionResultType::Failed,
             1000,
             1,
             null,
@@ -87,14 +87,14 @@ final class SessionInspectionTest extends TestCase
         $writer->startRequest($this->app);
         $hook = new HookIdentity($writer->agent->id, $writer->session->id, 'stop-1', 'digest');
         $this->app->make(StopConditionGate::class)->answer($hook, new SettledStopAttempts([]));
-        $attempt = StopAttempt::query()->withoutGlobalScopes()->where('stop_id', 'stop-1')->sole();
+        $attempt = StopCheck::query()->withoutGlobalScopes()->where('stop_id', 'stop-1')->sole();
         $condition = StopCondition::cleanWorktree();
 
-        $this->asSystem(new RecordStopResultsCommand('host-1', $attempt->id, $attempt->policy_digest, 0, [
+        $this->asSystem(new RecordStopConditionResultsCommand('host-1', $attempt->id, $attempt->policy_digest, 0, [
             new StopResultReport(
                 $condition->key,
                 $condition->definitionHash(),
-                StopResultType::Failed,
+                StopConditionResultType::Failed,
                 '2026-11-20T01:00:00Z',
                 '2026-11-20T01:00:01Z',
                 1,

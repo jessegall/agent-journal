@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Commands\Starts\NotifyCleanup\NotifyCleanupCommand;
+use App\Commands\Sessions\NotifyCleanup\NotifyCleanupCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\Starts\CleanupStep;
+use App\Enums\Sessions\CleanupStep;
 use App\Http\Requests\Agents\CleanupReportRequest;
-use App\Models\Starts\CleanupOperation;
+use App\Models\Sessions\SessionCleanup;
 use App\Values\HostContext;
 use Illuminate\Http\JsonResponse;
 
@@ -27,11 +27,11 @@ final readonly class CleanupReportController
     public function index(HostContext $host): JsonResponse
     {
         $pending = array_map(
-            fn (CleanupOperation $cleanup) => [
+            fn (SessionCleanup $cleanup) => [
                 'session_id' => $cleanup->agent_session_id,
                 'remaining' => array_map(fn (CleanupStep $step) => $step->value, $cleanup->remainingSteps()),
             ],
-            CleanupOperation::pendingOn($host->hostId, self::PENDING_LIMIT),
+            SessionCleanup::pendingOn($host->hostId, self::PENDING_LIMIT),
         );
 
         return new JsonResponse(['pending' => $pending]);

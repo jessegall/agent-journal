@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Contracts\Refusals\StartRefusal;
-use App\Enums\Starts\CapacityResource;
-use App\Enums\Starts\StartRefusalType;
+use App\Enums\Sessions\CapacityResource;
+use App\Enums\Sessions\StartRefusalType;
 use RuntimeException;
 
 /**

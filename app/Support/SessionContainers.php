@@ -9,7 +9,7 @@ use App\Exceptions\AccountFolderInvalid;
 use App\Exceptions\ManifestRefused;
 use App\Exceptions\WorkspaceSourceMissing;
 use App\Models\Agents\AgentRuntime;
-use App\Models\Starts\ProcessStart;
+use App\Models\Sessions\SessionProcess;
 use App\Values\SelectedAccount;
 
 /**
@@ -68,7 +68,7 @@ final readonly class SessionContainers
      */
     private function accountOf(AgentRuntime $runtime): SelectedAccount|null
     {
-        $start = ProcessStart::currentOf($runtime->agent_session_id);
+        $start = SessionProcess::currentOf($runtime->agent_session_id);
 
         if ($start === null) {
             return null;

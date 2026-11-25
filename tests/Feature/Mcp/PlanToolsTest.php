@@ -36,7 +36,7 @@ final class PlanToolsTest extends TestCase
     private const string PLAN_TITLE = 'New title';
 
     private const array TABLES = [
-        'users', 'agents', 'agent_sessions', 'agent_stacks', 'start_tokens',
+        'users', 'agents', 'agent_sessions', 'agent_stacks', 'session_tokens',
         'tasks', 'plans', 'phases', 'phase_tasks', 'assignments', 'command_receipts',
     ];
 

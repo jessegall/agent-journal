@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandHandler;
 use App\Enums\Drivers\DriverSwitchStage;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverSwitch;
-use App\Models\Starts\ProcessStart;
+use App\Models\Sessions\SessionProcess;
 
 final readonly class RecheckDriverSwitchHandler implements CommandHandler
 {
@@ -23,7 +23,7 @@ final readonly class RecheckDriverSwitchHandler implements CommandHandler
             ? $switch->expected_session_id
             : $switch->replacement_session_id;
 
-        $start = $session === null ? null : ProcessStart::latestOfSession($session);
+        $start = $session === null ? null : SessionProcess::latestOfSession($session);
         $switch->recheck($start?->state, AgentRuntime::ofSession($switch->expected_session_id));
     }
 }

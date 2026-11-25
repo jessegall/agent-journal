@@ -15,7 +15,7 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverSwitch;
 use App\Models\Projects\Host;
-use App\Models\Starts\ProcessStart;
+use App\Models\Sessions\SessionProcess;
 use Carbon\CarbonImmutable;
 
 /**
@@ -73,7 +73,7 @@ final readonly class HeartbeatService implements StartHeartbeatsContract
      * its session, while still open, ends as a reported exit ends it, so its runtime stops and the agent can start
      * again.
      */
-    public function endStart(ProcessStart $start, AgentSession $session, string $evidence): void
+    public function endStart(SessionProcess $start, AgentSession $session, string $evidence): void
     {
         $start->stopWithProof();
         DriverSwitch::stoppingOf($start->session_id)?->markStopped();
@@ -124,7 +124,7 @@ final readonly class HeartbeatService implements StartHeartbeatsContract
         $unreachableHosts = Host::query()->unreachableSince($cutoff)->keys();
         $isAnyHostReachable = Host::query()->unrevoked()->excludingKeys($unreachableHosts)->exists();
 
-        ProcessStart::supervised()
+        SessionProcess::supervised()
             ->where('state', ProcessStartState::Pending->value)
             ->where(fn ($starts) => $starts
                 ->where('created_at', '<=', $now->subMinutes(self::UNREACHABLE_HOST_WAIT_MINUTES))
@@ -139,7 +139,7 @@ final readonly class HeartbeatService implements StartHeartbeatsContract
                 ->keys())
             ->limit(self::UNCLAIMED_ENDED_LIMIT)
             ->get()
-            ->each(fn (ProcessStart $start) => $this->endUnclaimed($start->session_id, $now));
+            ->each(fn (SessionProcess $start) => $this->endUnclaimed($start->session_id, $now));
     }
 
     /**
@@ -167,7 +167,7 @@ final readonly class HeartbeatService implements StartHeartbeatsContract
     private function endUnclaimed(string $sessionId, CarbonImmutable $now): void
     {
         $this->transaction->runForSession($sessionId, function () use ($sessionId, $now): void {
-            $start = ProcessStart::lockedCurrentOf($sessionId);
+            $start = SessionProcess::lockedCurrentOf($sessionId);
 
             if ($start === null || $start->state !== ProcessStartState::Pending) {
                 return;

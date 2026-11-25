@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\Starts\ReservationState;
-use App\Models\Starts\CapacityReservation;
+use App\Enums\Sessions\ReservationState;
+use App\Models\Sessions\CapacityReservation;
 
 /**
  * Gives back the host capacity a start reserved, once the start is over.

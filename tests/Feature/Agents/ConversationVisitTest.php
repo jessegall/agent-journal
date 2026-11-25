@@ -9,7 +9,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverConversationResolver;
 use App\Enums\Agents\ConversationModeType;
 use App\Enums\Drivers\DriverType;
-use App\Enums\Starts\StartOriginType;
+use App\Enums\Sessions\StartOriginType;
 use App\Exceptions\ConversationIncompatible;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\ConversationVisit;

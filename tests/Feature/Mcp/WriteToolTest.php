@@ -46,7 +46,7 @@ final class WriteToolTest extends CommandBusTestCase
     {
         $this->emptyTables(
             'command_receipts',
-            'start_tokens',
+            'session_tokens',
             'agent_stacks',
             'agent_sessions',
             'agents',

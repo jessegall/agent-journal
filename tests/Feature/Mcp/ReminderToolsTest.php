@@ -19,7 +19,7 @@ final class ReminderToolsTest extends TestCase
     use CommitsHookRows;
     use SendsMcpFrames;
 
-    private const array TABLES = ['agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'reminders', 'command_receipts'];
+    private const array TABLES = ['agents', 'agent_sessions', 'session_tokens', 'agent_stacks', 'reminders', 'command_receipts'];
 
     public function test_an_agent_creates_a_reminder_and_finishes_it_through_the_tools(): void
     {

@@ -41,7 +41,7 @@ final class AccountSharingTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'hook_calls',
         'hosts',
@@ -50,7 +50,7 @@ final class AccountSharingTest extends TestCase
         'driver_turns',
         'accounts',
         'active_accounts',
-        'process_starts',
+        'session_processes',
         'links',
     ];
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\Starts\OfflineReplyMode;
+use App\Enums\Sessions\OfflineReplyMode;
 
 /**
  * What other areas add to one start as the host takes its grant: folders to write in its settings folder, with the

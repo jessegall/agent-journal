@@ -10,8 +10,8 @@ use App\Exceptions\ConversationIncompatible;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\ConversationVisit;
 use App\Models\Drivers\DriverConversation;
-use App\Models\Starts\ProcessStart;
-use App\Models\Starts\StartRecord;
+use App\Models\Sessions\SessionProcess;
+use App\Models\Sessions\SessionRequest;
 use Carbon\CarbonImmutable;
 
 /**
@@ -42,9 +42,9 @@ final readonly class RecordConversationVisit implements ConversationVisits
         CarbonImmutable $observedAt,
     ): void {
         $session = AgentSession::lockedForUpdate($sessionId);
-        $start = ProcessStart::lockedCurrentOf($session->id);
+        $start = SessionProcess::lockedCurrentOf($session->id);
         $settings = $start === null ? self::HOST_SETTINGS : $start->settingsIdentity;
-        $context = StartRecord::query()->underRequest($session->start_request_id)->value('context_reference');
+        $context = SessionRequest::query()->underRequest($session->start_request_id)->value('context_reference');
 
         $conversation = DriverConversation::query()->native(
             (string) $session->driver_key,
@@ -88,7 +88,7 @@ final readonly class RecordConversationVisit implements ConversationVisits
      */
     private function confirmConversation(string $sessionId, string $nativeId): void
     {
-        $start = StartRecord::query()->ofSession($sessionId)->resumeUnsettled()->first();
+        $start = SessionRequest::query()->ofSession($sessionId)->resumeUnsettled()->first();
 
         if ($start === null || $start->conversation_mode !== ConversationModeType::Resume) {
             return;

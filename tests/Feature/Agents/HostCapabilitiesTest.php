@@ -10,7 +10,7 @@ use App\Enums\Accounts\AccountModeType;
 use App\Enums\Agents\ExecutionModeType;
 use App\Enums\Projects\CapabilityStatusType;
 use App\Enums\Projects\HostCapabilityType;
-use App\Enums\Starts\StartRefusalType;
+use App\Enums\Sessions\StartRefusalType;
 use App\Exceptions\AccountContainerUnsupported;
 use App\Exceptions\CapabilityMatrixInvalid;
 use App\Exceptions\HostCapabilityUnsupported;

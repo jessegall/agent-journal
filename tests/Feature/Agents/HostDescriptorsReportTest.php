@@ -22,7 +22,7 @@ final class HostDescriptorsReportTest extends TestCase
     use RunsTrustedCommands;
     use SendsHostCalls;
 
-    private const array TABLES = ['hosts', 'agent_runtimes', 'start_records', 'hook_calls'];
+    private const array TABLES = ['hosts', 'agent_runtimes', 'session_requests', 'hook_calls'];
 
     private const string CLAIM = '/host/claim?limit=1&wait=0&watched_version=0';
 

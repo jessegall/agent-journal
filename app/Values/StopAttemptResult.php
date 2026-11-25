@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Starts\StopAttemptState;
-use App\Enums\Starts\StopResultType;
+use App\Enums\Sessions\StopCheckState;
+use App\Enums\Sessions\StopConditionResultType;
 
 /**
  * Where a stop attempt stands and how each of its conditions ended, by condition key, with the summaries a helper
@@ -14,11 +14,11 @@ use App\Enums\Starts\StopResultType;
 final readonly class StopAttemptResult
 {
     /**
-     * @param  array<string, StopResultType>  $statuses  condition key => how it ended
+     * @param  array<string, StopConditionResultType>  $statuses  condition key => how it ended
      * @param  array<string, string>  $summaries  condition key => its short summary
      */
     public function __construct(
-        public StopAttemptState $state,
+        public StopCheckState $state,
         public array $statuses,
         public array $summaries,
     ) {}
@@ -28,7 +28,7 @@ final readonly class StopAttemptResult
      *
      * @param  list<StopResultReport>  $reports
      */
-    public static function ofReports(StopAttemptState $state, array $reports): self
+    public static function ofReports(StopCheckState $state, array $reports): self
     {
         $statuses = [];
         $summaries = [];

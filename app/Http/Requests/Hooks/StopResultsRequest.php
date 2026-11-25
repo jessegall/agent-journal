@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Hooks;
 
 use App\Data\Hooks\StopResultData;
-use App\Enums\Starts\StopResultType;
+use App\Enums\Sessions\StopConditionResultType;
 use App\Values\StopResultReport;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -27,7 +27,7 @@ final class StopResultsRequest extends FormRequest
             'results' => ['required', 'array', 'min:1', 'max:50'],
             'results.*.condition_key' => ['required', 'string', 'max:64'],
             'results.*.definition_hash' => ['required', 'string', 'size:64'],
-            'results.*.status' => ['required', Rule::enum(StopResultType::class)],
+            'results.*.status' => ['required', Rule::enum(StopConditionResultType::class)],
             'results.*.started_at' => ['required', 'date'],
             'results.*.ended_at' => ['nullable', 'date'],
             'results.*.exit_code' => ['nullable', 'integer'],

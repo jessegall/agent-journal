@@ -9,7 +9,7 @@ use App\Contracts\Bus\CommandMiddleware;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Refusals\StartRefusal;
 use App\Exceptions\DriverCapabilityUnsupported;
-use App\Models\Starts\StartRecord;
+use App\Models\Sessions\SessionRequest;
 use App\Support\ActorIdentity;
 use App\Support\CommandCall;
 use App\Support\HeldStartRefusals;
@@ -65,7 +65,7 @@ final readonly class KeepStartReceipt implements CommandMiddleware
         ActorIdentity $requester,
         Closure $start,
     ): mixed {
-        $intent = StartRecord::create($request, $this->pinOf($request), $requester);
+        $intent = SessionRequest::create($request, $this->pinOf($request), $requester);
 
         try {
             return $start();
@@ -92,7 +92,7 @@ final readonly class KeepStartReceipt implements CommandMiddleware
             return $start();
         } catch (StartRefusal $refusal) {
             $pin = $this->pinOf($request);
-            StartRecord::create($request, $pin, $requester)->refuse($refusal);
+            SessionRequest::create($request, $pin, $requester)->refuse($refusal);
             $this->heldRefusals->hold($request, $pin, $requester, $refusal);
 
             throw $refusal;

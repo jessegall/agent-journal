@@ -36,7 +36,7 @@ final class MemoryCommandsTest extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'memories',
         'number_groups',
         'command_receipts',

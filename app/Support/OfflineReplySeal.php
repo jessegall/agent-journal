@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\Starts\OfflineReplyMode;
+use App\Enums\Sessions\OfflineReplyMode;
 use App\Exceptions\OfflineReplySealInvalid;
 use Illuminate\Container\Attributes\Config;
 

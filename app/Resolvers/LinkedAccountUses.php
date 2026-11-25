@@ -11,7 +11,7 @@ use App\Enums\Agents\AccessType;
 use App\Exceptions\AccountUseMissing;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
-use App\Models\Starts\ProcessStart;
+use App\Models\Sessions\SessionProcess;
 use App\Policies\AgentMaintenancePolicy;
 use App\Support\AccountSessions;
 use App\Support\AccountUseCounts;
@@ -35,7 +35,7 @@ final readonly class LinkedAccountUses implements AccountUses
         $counts = new AccountUseCounts();
 
         foreach ($accounts as $account) {
-            $counts = $counts->with($account, ProcessStart::unresolvedCountOf($account));
+            $counts = $counts->with($account, SessionProcess::unresolvedCountOf($account));
         }
 
         return $counts;

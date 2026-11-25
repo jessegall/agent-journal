@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Agents\Host;
 use App\Commands\Agents\ReconcileStarts\ReconcileStartsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Agents\StartReportRequest;
-use App\Models\Starts\ProcessStart;
+use App\Models\Sessions\SessionProcess;
 use App\Values\HostContext;
 use Illuminate\Http\JsonResponse;
 
@@ -20,7 +20,7 @@ final readonly class ReconcileStartsController
 {
     public function index(HostContext $host): JsonResponse
     {
-        return new JsonResponse(['unresolved' => ProcessStart::unresolvedKeysOf($host->hostId)]);
+        return new JsonResponse(['unresolved' => SessionProcess::unresolvedKeysOf($host->hostId)]);
     }
 
     public function __invoke(StartReportRequest $request, HostContext $host, CommandBus $commands): JsonResponse

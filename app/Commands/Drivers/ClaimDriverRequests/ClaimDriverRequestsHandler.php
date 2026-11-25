@@ -12,8 +12,8 @@ use App\Enums\Runs\RuntimeActivity;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Projects\Host;
-use App\Models\Starts\ProcessStart;
-use App\Models\Starts\StartRecord;
+use App\Models\Sessions\SessionProcess;
+use App\Models\Sessions\SessionRequest;
 use App\Support\ActorIdentity;
 use App\Support\ClaimedRequests;
 use App\Support\PendingWorkSources;
@@ -77,14 +77,14 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
         $now = CarbonImmutable::now();
         $claimed = [];
 
-        $held = StartRecord::sessionsHoldingDeliveries(array_values(array_map(
+        $held = SessionRequest::sessionsHoldingDeliveries(array_values(array_map(
             fn (AgentRuntime $runtime) => $runtime->agent_session_id,
             $runtimes->all(),
         )));
 
         $bootstrapped = [];
 
-        $starts = ProcessStart::latestIdsOfSessions(array_values(array_map(
+        $starts = SessionProcess::latestIdsOfSessions(array_values(array_map(
             fn (AgentRuntime $runtime) => $runtime->agent_session_id,
             $runtimes->all(),
         )));
@@ -154,7 +154,7 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
         }
 
         if ($bootstrapped !== []) {
-            StartRecord::lockedAcceptedOf($bootstrapped)->each(fn (StartRecord $record) => $record->prepareIdentity());
+            SessionRequest::lockedAcceptedOf($bootstrapped)->each(fn (SessionRequest $record) => $record->prepareIdentity());
         }
 
         return new ClaimedRequests($claimed);

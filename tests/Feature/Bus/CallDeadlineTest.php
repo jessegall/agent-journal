@@ -28,7 +28,7 @@ final class CallDeadlineTest extends TestCase
     use CommitsHookRows;
     use SendsMcpFrames;
 
-    private const array TABLES = ['agents', 'agent_sessions', 'start_tokens'];
+    private const array TABLES = ['agents', 'agent_sessions', 'session_tokens'];
 
     public function test_a_call_signed_18_seconds_ago_gets_about_one_second(): void
     {

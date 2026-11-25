@@ -43,7 +43,7 @@ final class AssignmentPurposeTest extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'tasks',
         'inboxes',
         'desks',

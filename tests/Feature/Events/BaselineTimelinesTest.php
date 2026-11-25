@@ -74,7 +74,7 @@ final class BaselineTimelinesTest extends TestCase
         'phase_tasks',
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'hook_calls',
         'links',
@@ -85,7 +85,7 @@ final class BaselineTimelinesTest extends TestCase
         'accounts',
         'active_accounts',
         'sign_in_attempts',
-        'process_starts',
+        'session_processes',
         'account_notices',
     ];
 

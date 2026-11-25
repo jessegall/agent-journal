@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Models\Agents\AgentStackRow;
 use App\Models\Drivers\HookCall;
-use App\Models\Starts\StopResult;
+use App\Models\Sessions\StopConditionResult;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 
@@ -62,7 +62,7 @@ final readonly class PruneHookHistory
      */
     private function forgetOutputBefore(CarbonImmutable $before): int
     {
-        return StopResult::query()
+        return StopConditionResult::query()
             ->withOutput()
             ->createdBefore($before)
             ->update(['output' => null]);

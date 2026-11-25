@@ -27,7 +27,7 @@ final class AgentHeartbeatRouteTest extends TestCase
     use CommitsHookRows;
     use SendsSignedCalls;
 
-    private const array TABLES = ['agents', 'agent_sessions', 'start_tokens'];
+    private const array TABLES = ['agents', 'agent_sessions', 'session_tokens'];
 
     private const string PING = '/agent/test-ping';
 

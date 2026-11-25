@@ -43,7 +43,7 @@ final class SkillMcpToolsTest extends TestCase
         'command_receipts',
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
     ];
 

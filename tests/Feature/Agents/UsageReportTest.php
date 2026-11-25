@@ -42,7 +42,7 @@ final class UsageReportTest extends TestCase
         'account_usage_windows',
         'account_usage_costs',
         'account_usage_tokens',
-        'process_starts',
+        'session_processes',
         'active_accounts',
         'accounts',
         'hosts',
@@ -184,7 +184,7 @@ final class UsageReportTest extends TestCase
     private function claimedStart(Account $account, ProcessStartState $state = ProcessStartState::Running): string
     {
         $key = (string) Str::ulid();
-        DB::table('process_starts')->insert([
+        DB::table('session_processes')->insert([
             'id' => strtolower((string) Str::ulid()),
             'agent_id' => strtolower((string) Str::ulid()),
             'session_id' => strtolower((string) Str::ulid()),

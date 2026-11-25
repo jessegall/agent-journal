@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Hooks\Host;
 
-use App\Commands\Starts\RecordStopResults\RecordStopResultsCommand;
+use App\Commands\Sessions\RecordStopConditionResults\RecordStopConditionResultsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Hooks\StopResultsRequest;
 use App\Values\HostContext;
@@ -18,7 +18,7 @@ final readonly class StopResultsController
 {
     public function __invoke(StopResultsRequest $request, HostContext $host, CommandBus $commands): JsonResponse
     {
-        $state = $commands->run(new RecordStopResultsCommand(
+        $state = $commands->run(new RecordStopConditionResultsCommand(
             $host->hostId,
             $request->attemptId(),
             $request->policyDigest(),

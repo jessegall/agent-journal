@@ -30,7 +30,7 @@ final class SearchToolTest extends TestCase
     use WritesInboxMessages;
 
     private const array TABLES = [
-        'agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'command_receipts', 'number_groups', 'links',
+        'agents', 'agent_sessions', 'session_tokens', 'agent_stacks', 'command_receipts', 'number_groups', 'links',
         'tasks', 'plans', 'phases', 'phase_tasks', 'rules', 'documents', 'document_revisions', 'reports',
         'inboxes', 'desks', 'desk_seats', 'desk_preferences', 'assignments', 'messages', 'message_attentions',
     ];

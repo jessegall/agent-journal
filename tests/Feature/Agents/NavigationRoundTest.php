@@ -46,7 +46,7 @@ final class NavigationRoundTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'hook_calls',
         'hosts',
@@ -61,7 +61,7 @@ final class NavigationRoundTest extends TestCase
         'assignments',
         'accounts',
         'active_accounts',
-        'process_starts',
+        'session_processes',
     ];
 
     protected function setUp(): void

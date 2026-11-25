@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Reads\SessionOutputAccess;
-use App\Models\Starts\ProcessStart;
-use App\Models\Starts\SessionOutputGrant;
+use App\Models\Sessions\SessionOutputGrant;
+use App\Models\Sessions\SessionProcess;
 
 /**
  * Reads a session's output grants of its current start and newest mapping generation only.
@@ -15,7 +15,7 @@ final readonly class GrantedSessionOutputs implements SessionOutputAccess
 {
     public function grantedTo(string $sessionId): array
     {
-        $start = ProcessStart::currentOf($sessionId);
+        $start = SessionProcess::currentOf($sessionId);
 
         if ($start === null) {
             return [];

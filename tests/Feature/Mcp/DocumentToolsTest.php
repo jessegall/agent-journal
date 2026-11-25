@@ -21,7 +21,7 @@ final class DocumentToolsTest extends TestCase
     private const string REPORT_BODY = '# Findings';
 
     private const array TABLES = [
-        'agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'command_receipts', 'links', 'number_groups',
+        'agents', 'agent_sessions', 'session_tokens', 'agent_stacks', 'command_receipts', 'links', 'number_groups',
         'documents', 'document_revisions', 'document_drafts', 'document_closes', 'retained_drafts', 'reports',
         'record_settlements', 'text_uploads', 'text_upload_chunks', 'comments',
     ];

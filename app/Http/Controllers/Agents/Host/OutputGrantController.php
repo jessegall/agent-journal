@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Agents\Host;
 
 use App\Http\Requests\Agents\StartReportRequest;
-use App\Models\Starts\ProcessStart;
-use App\Models\Starts\SessionOutputGrant;
+use App\Models\Sessions\SessionOutputGrant;
+use App\Models\Sessions\SessionProcess;
 use App\Support\Relay\OutputGrantSeal;
 use App\Values\HostContext;
 use App\Values\SessionOutputPaths;
@@ -22,7 +22,7 @@ final readonly class OutputGrantController
     public function __invoke(StartReportRequest $request, HostContext $host, OutputGrantSeal $seal): JsonResponse
     {
         $startKey = $request->startKey();
-        $start = ProcessStart::claimedBy($host->hostId, $startKey);
+        $start = SessionProcess::claimedBy($host->hostId, $startKey);
 
         $paths = array_map(
             fn (SessionOutputPaths $paths) => $paths->transcriptPath,

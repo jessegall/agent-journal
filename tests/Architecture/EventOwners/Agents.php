@@ -5,8 +5,8 @@ declare(strict_types=1);
 use App\Enums\Drivers\DriverType;
 use App\Enums\Drivers\HoldReason;
 use App\Enums\Runs\RuntimeActivity;
-use App\Enums\Starts\CleanupState;
-use App\Enums\Starts\StopAttemptState;
+use App\Enums\Sessions\CleanupState;
+use App\Enums\Sessions\StopCheckState;
 use App\Events\Sessions\AccountSettingsRequested;
 use App\Events\Sessions\AccountUseChanged;
 use App\Events\Sessions\ActivityRecorded;
@@ -716,7 +716,7 @@ return [
         'owner' => 'StopAttempt::settle',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new StopAttemptSettled('attempt', StopAttemptState::cases()[0], 'outcome'),
+        'sample' => fn () => new StopAttemptSettled('attempt', StopCheckState::cases()[0], 'outcome'),
     ],
     StopAttemptCertified::class => [
         'role' => EventRole::RowFact,

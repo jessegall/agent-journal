@@ -24,7 +24,7 @@ final class DeclaredMessageSearchTest extends TestCase
     use WritesInboxMessages;
 
     private const array TABLES = [
-        'agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'command_receipts', 'number_groups', 'links',
+        'agents', 'agent_sessions', 'session_tokens', 'agent_stacks', 'command_receipts', 'number_groups', 'links',
         'inboxes', 'desks', 'desk_seats', 'desk_preferences', 'assignments', 'messages', 'message_attentions',
     ];
 

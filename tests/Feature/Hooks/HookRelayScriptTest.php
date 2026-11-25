@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Enums\Starts\OfflineReplyMode;
+use App\Enums\Sessions\OfflineReplyMode;
 use App\Support\OfflineReplySeal;
 use App\Support\StartProfilePin;
 use Illuminate\Support\Facades\Process;

@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Work\StackTransactionRunner;
 use App\Enums\Drivers\RequestOutcome;
 use App\Models\Drivers\DriverRequest;
-use App\Models\Starts\StartRecord;
+use App\Models\Sessions\SessionRequest;
 use Carbon\CarbonImmutable;
 
 /**
@@ -34,8 +34,8 @@ final readonly class ReadinessCheckSweep
             ->each(function (DriverRequest $request): void {
                 $request->markUnavailable(RequestOutcome::Unconfirmed);
 
-                StartRecord::lockedLatestOf($request->runtime->agent_session_id)->forAll(
-                    fn (StartRecord $start) => $start->markReadinessUnseen(),
+                SessionRequest::lockedLatestOf($request->runtime->agent_session_id)->forAll(
+                    fn (SessionRequest $start) => $start->markReadinessUnseen(),
                 );
             }));
     }

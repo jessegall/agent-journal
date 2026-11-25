@@ -40,7 +40,7 @@ final class NavigationLifecycleTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'hook_calls',
         'hosts',
@@ -49,7 +49,7 @@ final class NavigationLifecycleTest extends TestCase
         'navigation_requests',
         'accounts',
         'active_accounts',
-        'process_starts',
+        'session_processes',
     ];
 
     public function test_the_engine_registers_the_expiry_sweep(): void

@@ -6,10 +6,10 @@ namespace App\Support;
 
 use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Enums\Drivers\RequestProgress;
-use App\Enums\Starts\HostRefusal;
+use App\Enums\Sessions\HostRefusal;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
-use App\Models\Starts\StartRecord;
+use App\Models\Sessions\SessionRequest;
 
 /**
  * Settles what a start's bootstrap proved: the conversation its driver runs makes the start ready, so its held
@@ -20,13 +20,13 @@ final readonly class StartIdentity
 {
     public function settle(AgentRuntime $runtime, NotifyRequestProgressCommand $report): void
     {
-        StartRecord::lockedLatestOf($runtime->agent_session_id)
-            ->filter(fn (StartRecord $record) => $record->readiness->takesReadiness())
-            ->forAll(fn (StartRecord $record) => $this->settleRecord($record, $runtime, $report));
+        SessionRequest::lockedLatestOf($runtime->agent_session_id)
+            ->filter(fn (SessionRequest $record) => $record->readiness->takesReadiness())
+            ->forAll(fn (SessionRequest $record) => $this->settleRecord($record, $runtime, $report));
     }
 
     private function settleRecord(
-        StartRecord $record,
+        SessionRequest $record,
         AgentRuntime $runtime,
         NotifyRequestProgressCommand $report,
     ): void {

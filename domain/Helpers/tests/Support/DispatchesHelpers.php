@@ -12,7 +12,7 @@ use App\Enums\Profiles\InstancePolicy;
 use App\Enums\Projects\CapabilityStatusType;
 use App\Models\Access\User;
 use App\Models\Agents\AgentSession;
-use App\Models\Starts\StartRecord;
+use App\Models\Sessions\SessionRequest;
 use App\Support\Access\AccessSettings;
 use App\Support\HostCapability;
 use App\Support\HostCapabilityQuery;
@@ -72,7 +72,7 @@ trait DispatchesHelpers
 
     private function endSessionOf(HelperReceipt $receipt): void
     {
-        $sessionId = StartRecord::query()->where('request_id', $receipt->start->launchReference)->sole()->session_id;
+        $sessionId = SessionRequest::query()->where('request_id', $receipt->start->launchReference)->sole()->session_id;
         AgentSession::query()->findOrFail($sessionId)->endAt(CarbonImmutable::now());
     }
 

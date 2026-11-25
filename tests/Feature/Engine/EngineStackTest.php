@@ -36,7 +36,7 @@ final class EngineStackTest extends TestCase
     use CommitsHookRows;
     use RunsAsEngine;
 
-    private const array TABLES = ['agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'hook_calls'];
+    private const array TABLES = ['agents', 'agent_sessions', 'session_tokens', 'agent_stacks', 'hook_calls'];
 
     private FinishedSubjects $tasks;
 

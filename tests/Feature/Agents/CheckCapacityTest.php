@@ -7,7 +7,7 @@ namespace Tests\Feature\Agents;
 use App\Enums\Agents\ExecutionModeType;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
-use App\Models\Starts\CapacityReservation;
+use App\Models\Sessions\CapacityReservation;
 use App\Support\Access\AccessSettings;
 use App\Values\ExecutionBudgets;
 use App\Values\HostCapacity;

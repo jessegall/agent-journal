@@ -28,7 +28,7 @@ final class AgentSessionCounterTest extends TestCase
 
     private const string COUNT_QUERY = 'select count(*) as "aggregate" from "agent_sessions"';
 
-    private const array TABLES = ['agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'hook_calls'];
+    private const array TABLES = ['agents', 'agent_sessions', 'session_tokens', 'agent_stacks', 'hook_calls'];
 
     private CarbonImmutable $beat;
 

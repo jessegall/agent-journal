@@ -41,7 +41,7 @@ final class ProjectCommandsTest extends TestCase
 
     private const array TABLES = [
         'project_command_runs', 'device_grants', 'connection_audits', 'command_receipts', 'project_bindings',
-        'project_environments', 'projects', 'agent_runtimes', 'agent_sessions', 'start_tokens', 'agents', 'hosts',
+        'project_environments', 'projects', 'agent_runtimes', 'agent_sessions', 'session_tokens', 'agents', 'hosts',
         'settings_records', 'users',
     ];
 

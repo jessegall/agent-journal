@@ -15,7 +15,7 @@ use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverSwitch;
-use App\Models\Starts\ProcessStart;
+use App\Models\Sessions\SessionProcess;
 use App\Support\ActorContext;
 use App\Support\DefaultDrivers;
 use App\Support\StartSessions;
@@ -41,7 +41,7 @@ final class DriverSwitchTest extends TestCase
         'driver_switches',
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'hook_calls',
         'links',
@@ -183,7 +183,7 @@ final class DriverSwitchTest extends TestCase
 
     public function test_a_late_running_after_the_replacement_ended_confirms_nothing(): void
     {
-        $start = new ProcessStart();
+        $start = new SessionProcess();
         $start->state = ProcessStartState::Stopped;
 
         $this->assertFalse($start->recordRunning('execution-late'));

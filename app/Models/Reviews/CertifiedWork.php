@@ -9,8 +9,8 @@ use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Exceptions\HelperWorkUncertified;
-use App\Models\Starts\SessionPolicy;
-use App\Models\Starts\StartRecord;
+use App\Models\Sessions\SessionPolicy;
+use App\Models\Sessions\SessionRequest;
 use App\Models\Support\Accessor;
 use App\Models\Support\HasWorkColumns;
 use App\Support\RecordIdentity;
@@ -48,7 +48,7 @@ final class CertifiedWork extends Model implements ReadableModel
      * Records the certificate of the start's work, with the checkout frozen in its session's policy; recording the
      * same certificate again finds the first.
      */
-    public static function create(StartRecord $start, string $certificate): self
+    public static function create(SessionRequest $start, string $certificate): self
     {
         $work = $start->owner_work;
         $policy = SessionPolicy::query()->ofSessions([$start->session_id])->sole();

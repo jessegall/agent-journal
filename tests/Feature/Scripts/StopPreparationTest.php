@@ -53,7 +53,7 @@ final class StopPreparationTest extends TestCase
     private const string FAILED_TESTS = '2 tests failed.';
 
     private const array TABLES = [
-        'active_accounts', 'account_notices', 'accounts', 'process_starts', 'agent_runtimes',
+        'active_accounts', 'account_notices', 'accounts', 'session_processes', 'agent_runtimes',
         'profile_step_results',
         'profile_runs',
         'workspace_reads',
@@ -65,7 +65,7 @@ final class StopPreparationTest extends TestCase
         'driver_requests',
         'agent_sessions',
         'agents',
-        'start_tokens',
+        'session_tokens',
         'command_receipts',
     ];
 

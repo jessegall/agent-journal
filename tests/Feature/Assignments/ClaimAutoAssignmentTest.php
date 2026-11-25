@@ -40,7 +40,7 @@ final class ClaimAutoAssignmentTest extends TestCase
 
     private const array TABLES = [
         'assignments', 'auto_assignments', 'command_receipts',
-        'tasks', 'agents', 'agent_sessions', 'start_tokens', 'users',
+        'tasks', 'agents', 'agent_sessions', 'session_tokens', 'users',
     ];
 
     public function test_a_claim_fills_one_slot_and_later_claims_leave_the_full_fact_unchanged(): void

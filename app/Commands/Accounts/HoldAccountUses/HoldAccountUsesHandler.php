@@ -7,7 +7,7 @@ namespace App\Commands\Accounts\HoldAccountUses;
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
 use App\Events\Sessions\AccountUseChanged;
-use App\Models\Starts\ProcessStart;
+use App\Models\Sessions\SessionProcess;
 use App\Support\HeldAccountUses;
 
 final readonly class HoldAccountUsesHandler implements CommandHandler
@@ -16,7 +16,7 @@ final readonly class HoldAccountUsesHandler implements CommandHandler
 
     public function handle(HoldAccountUsesCommand $command): HeldAccountUses
     {
-        $sessionIds = ProcessStart::unresolvedSessionIdsOf($command->account);
+        $sessionIds = SessionProcess::unresolvedSessionIdsOf($command->account);
         $this->facts->publishAfterCommit(new AccountUseChanged($command->account));
 
         return new HeldAccountUses($command->account, $sessionIds);

@@ -9,12 +9,12 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Reads\SessionOutputAccess;
 use App\Enums\Agents\ConversationModeType;
 use App\Enums\Drivers\DriverType;
-use App\Enums\Starts\StartOriginType;
+use App\Enums\Sessions\StartOriginType;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
-use App\Models\Starts\ProcessStart;
-use App\Models\Starts\SessionOutputGrant;
+use App\Models\Sessions\SessionOutputGrant;
+use App\Models\Sessions\SessionProcess;
 use App\Support\Access\AccessSettings;
 use App\Support\RecordConversationVisit;
 use App\Support\RecordIdentity;
@@ -77,7 +77,7 @@ final class SessionOutputGrantsTest extends TestCase
         $this->assertTrue($this->access->mayRead($session->id, self::PROJECT.'/native-a/tool-results/out.txt'));
         $this->assertTrue($this->access->mayRead($session->id, self::PROJECT.'/native-b/tool-results/out.txt'));
         $this->assertCount(2, $this->access->grantedTo($session->id));
-        $start = ProcessStart::currentOf($session->id);
+        $start = SessionProcess::currentOf($session->id);
         $this->assertSame(3, $start?->output_generation);
         $this->assertSame(0, SessionOutputGrant::query()->where('mapping_generation', '<', 3)->count());
     }
@@ -111,7 +111,7 @@ final class SessionOutputGrantsTest extends TestCase
         $session = $this->start('helpers.helper-job 1');
         $this->enter($session, 'native-a', 'call-1');
 
-        ProcessStart::currentOf($session->id)?->stopWithProof();
+        SessionProcess::currentOf($session->id)?->stopWithProof();
 
         $this->assertSame([], $this->access->grantedTo($session->id));
     }

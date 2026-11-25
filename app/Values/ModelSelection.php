@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Starts\ModelSelectionType;
+use App\Enums\Sessions\ModelSelectionType;
 use App\Exceptions\ModelRequired;
 
 /**

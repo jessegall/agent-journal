@@ -80,7 +80,7 @@ final class ShareProposalTest extends TestCase
         'document_revisions',
         'documents',
         'number_groups',
-        'start_tokens',
+        'session_tokens',
         'agent_sessions',
         'agents',
     ];

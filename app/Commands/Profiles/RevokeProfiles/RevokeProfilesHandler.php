@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\Profiles\RevokeProfiles;
 
-use App\Commands\Starts\FenceProfileRevision\FenceProfileRevisionCommand;
+use App\Commands\Sessions\HoldProfileRevision\HoldProfileRevisionCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
@@ -31,7 +31,7 @@ final readonly class RevokeProfilesHandler implements CommandHandler
         foreach ($profiles as $profile) {
             $revision = ProfileRevision::currentOf($profile);
             $profile->retire();
-            $this->commands->run(new FenceProfileRevisionCommand($profile->key, $revision->revision));
+            $this->commands->run(new HoldProfileRevisionCommand($profile->key, $revision->revision));
 
             $this->facts->publishAfterCommit(new ProfileRevisionRevoked(
                 ProfileKey::from($profile->key),

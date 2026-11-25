@@ -41,7 +41,7 @@ final class FocusedQuestionTest extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'agent_runtimes',
         'driver_requests',

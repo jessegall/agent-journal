@@ -9,11 +9,11 @@ use App\Contracts\Sessions\StartTransaction;
 use App\Enums\Agents\ConversationModeType;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Engine\NoSubject;
-use App\Enums\Starts\StartOriginType;
+use App\Enums\Sessions\StartOriginType;
 use App\Exceptions\StateTransferUnknown;
 use App\Models\Agents\AgentSession;
 use App\Models\Agents\AgentStackRow;
-use App\Models\Starts\StartRecord;
+use App\Models\Sessions\SessionRequest;
 use App\Support\ActorIdentity;
 use App\Support\AgentSessions;
 use App\Support\RecordIdentity;
@@ -119,7 +119,7 @@ final class ContinueStackTest extends TestCase
             StartPolicy::withoutProfile(TestSelections::onHost()),
             driverType: DriverType::Headless,
         );
-        StartRecord::create($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create())->startedAs($session);
+        SessionRequest::create($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create())->startedAs($session);
         $target = new StackTarget($old->agent->id, $session->id);
         $this->app->make(StartTransaction::class)->runForSession(
             $session->id,

@@ -7,7 +7,7 @@ namespace App\Values;
 use App\Enums\Agents\ConversationModeType;
 use App\Enums\Drivers\DriverCapability;
 use App\Enums\Drivers\DriverType;
-use App\Enums\Starts\StartOriginType;
+use App\Enums\Sessions\StartOriginType;
 use App\Support\RecordIdentity;
 
 /**

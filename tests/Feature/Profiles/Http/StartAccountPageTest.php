@@ -9,7 +9,7 @@ use App\Commands\Agents\StartAgent\StartAgentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Agents\ConversationModeType;
 use App\Enums\Drivers\DriverType;
-use App\Enums\Starts\StartOriginType;
+use App\Enums\Sessions\StartOriginType;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Support\RecordIdentity;

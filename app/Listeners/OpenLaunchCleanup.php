@@ -9,8 +9,8 @@ use App\Contracts\Events\Listener;
 use App\Events\Sessions\SessionClosed;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
-use App\Models\Starts\CapacityReservation;
-use App\Models\Starts\CleanupOperation;
+use App\Models\Sessions\CapacityReservation;
+use App\Models\Sessions\SessionCleanup;
 use App\Support\CapacityRelease;
 
 /**
@@ -39,6 +39,6 @@ final readonly class OpenLaunchCleanup implements Listener
             return;
         }
 
-        CleanupOperation::open($session, $host->get());
+        SessionCleanup::open($session, $host->get());
     }
 }

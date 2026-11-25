@@ -8,6 +8,6 @@
     "has_created_no_process": true,
     "sequence": 1,
     "session_id": "01contractsession000000000",
-    "process_start_id": "01contractstart00000000000",
+    "session_process_id": "01contractstart00000000000",
     "process_generation": 1
 }

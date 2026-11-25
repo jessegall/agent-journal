@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace Tests\Feature\Desks;
 
 use App\Commands\Agents\CreateAgent\CreateAgentCommand;
-use App\Commands\Desks\RestoreActorDesk\RestoreActorDeskCommand;
 use App\Commands\Agents\RetireAgent\RetireAgentCommand;
+use App\Commands\Desks\RestoreActorDesk\RestoreActorDeskCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Chat\ActorDesks;
-use App\Contracts\Inboxes\LabeledInbox;
 use App\Contracts\Inboxes\InboxResolver;
+use App\Contracts\Inboxes\LabeledInbox;
 use App\Models\Agents\Agent;
-use App\Models\Inboxes\Inbox;
 use App\Models\Desks\DeskRecord;
 use App\Models\Desks\DeskSeat;
+use App\Models\Inboxes\Inbox;
 use App\Support\ActorIdentity;
 use App\Support\DeskSeatService;
 use App\Support\RequestKey;
@@ -42,7 +42,7 @@ final class DeskProvisioningTest extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'inboxes',
         'desks',
         'desk_seats',

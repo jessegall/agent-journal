@@ -17,7 +17,7 @@ use App\Exceptions\AccountContainerUnsupported;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
-use App\Models\Starts\StartRecord;
+use App\Models\Sessions\SessionRequest;
 use App\Support\ActorIdentity;
 use App\Support\DefaultDrivers;
 use App\Support\HostCapability;
@@ -96,7 +96,7 @@ final class HelperDispatchTest extends TestCase
     public function test_a_helper_starts_in_its_profile_mode_and_a_saved_mode_it_cannot_run_is_refused(): void
     {
         $first = $this->start('request-1', 'Review plan 7');
-        $record = StartRecord::query()->where('request_id', $first->start->launchReference)->sole();
+        $record = SessionRequest::query()->where('request_id', $first->start->launchReference)->sole();
         $this->assertSame($this->keyOf($record->family, DriverType::Headless), $record->driver_key);
 
         Agent::query()->findOrFail($record->agent_id)->preferDriverType(DriverType::Terminal);

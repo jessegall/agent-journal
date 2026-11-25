@@ -11,7 +11,7 @@ use App\Contracts\Sessions\BuiltInStartProfiles;
 use App\Contracts\Sessions\SessionPolicyReader;
 use App\Enums\Agents\ConversationModeType;
 use App\Enums\Drivers\DriverType;
-use App\Enums\Starts\StartOriginType;
+use App\Enums\Sessions\StartOriginType;
 use App\Exceptions\StartRefused;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;

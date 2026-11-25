@@ -37,7 +37,7 @@ final class SilenceSweepOnTickTest extends TestCase
     use CommitsHookRows;
     use RunsEnginePasses;
 
-    private const array TABLES = ['agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'hook_calls'];
+    private const array TABLES = ['agents', 'agent_sessions', 'session_tokens', 'agent_stacks', 'hook_calls'];
 
     public function test_the_agents_area_registers_the_sweep_with_the_engine(): void
     {

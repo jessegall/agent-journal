@@ -61,7 +61,7 @@ final class StartSkillsTest extends TestCase
         'command_receipts',
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'hook_calls',
         'hosts',
@@ -72,7 +72,7 @@ final class StartSkillsTest extends TestCase
         'profiles',
         'accounts',
         'active_accounts',
-        'process_starts',
+        'session_processes',
         'links',
     ];
 

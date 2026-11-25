@@ -15,7 +15,7 @@ use App\Exceptions\DriverNotContainable;
 use App\Exceptions\HostArrangementRefused;
 use App\Exceptions\InstallationNameMissing;
 use App\Models\Agents\Agent;
-use App\Models\Starts\ProcessStart;
+use App\Models\Sessions\SessionProcess;
 use App\Support\ActorContext;
 use App\Support\ArrangementSetting;
 use App\Support\Capabilities\CodexHeadlessCapabilities;
@@ -44,7 +44,7 @@ final class HostArrangementTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'hook_calls',
         'hosts',
@@ -53,7 +53,7 @@ final class HostArrangementTest extends TestCase
         'driver_turns',
         'accounts',
         'active_accounts',
-        'process_starts',
+        'session_processes',
         'links',
         'command_receipts',
     ];
@@ -74,7 +74,7 @@ final class HostArrangementTest extends TestCase
     public function test_a_contained_journal_refuses_a_local_host_and_creates_no_start(): void
     {
         $this->useArrangement(ArrangementType::Contained);
-        $starts = ProcessStart::query()->withoutGlobalScopes()->count();
+        $starts = SessionProcess::query()->withoutGlobalScopes()->count();
 
         try {
             $this->openOn(ArrangementType::Local);
@@ -83,7 +83,7 @@ final class HostArrangementTest extends TestCase
             $this->assertSame(HostArrangementRefused::localHost()->getMessage(), $refusal->getMessage());
         }
 
-        $this->assertSame($starts, ProcessStart::query()->withoutGlobalScopes()->count());
+        $this->assertSame($starts, SessionProcess::query()->withoutGlobalScopes()->count());
     }
 
     public function test_a_contained_journal_starts_on_a_contained_host(): void
@@ -140,7 +140,7 @@ final class HostArrangementTest extends TestCase
             $this->assertSame(CodexHeadlessCapabilities::NOT_CONTAINABLE, $refusal->getMessage());
         }
 
-        $this->assertSame(0, ProcessStart::query()->count());
+        $this->assertSame(0, SessionProcess::query()->count());
         $this->assertNotSame('', $this->openOn(ArrangementType::Contained)->runtimeId);
     }
 

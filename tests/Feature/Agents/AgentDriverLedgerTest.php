@@ -51,8 +51,8 @@ use App\Enums\IntervalRole;
 use App\Enums\MessageBatchState;
 use App\Enums\Projects\ArrangementType;
 use App\Enums\Runs\RuntimeActivity;
+use App\Enums\Sessions\HostRefusal;
 use App\Enums\Sessions\SessionStatus;
-use App\Enums\Starts\HostRefusal;
 use App\Events\Engine\EngineTicked;
 use App\Events\Sessions\DriverRequestRecovered;
 use App\Events\Sessions\SessionStateChanged;
@@ -77,8 +77,8 @@ use App\Models\Inboxes\Inbox;
 use App\Models\Messages\MessageBatch;
 use App\Models\Projects\Host;
 use App\Models\Records\GlobalGroup;
-use App\Models\Starts\ProcessStart;
-use App\Models\Starts\SessionPolicy;
+use App\Models\Sessions\SessionPolicy;
+use App\Models\Sessions\SessionProcess;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
@@ -154,7 +154,7 @@ final class AgentDriverLedgerTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'hook_calls',
         'hosts',
@@ -163,7 +163,7 @@ final class AgentDriverLedgerTest extends TestCase
         'driver_turns',
         'accounts',
         'active_accounts',
-        'process_starts',
+        'session_processes',
         'links',
     ];
 
@@ -1152,7 +1152,7 @@ final class AgentDriverLedgerTest extends TestCase
 
         $session = AgentSession::query()->findOrFail($opened->sessionId);
         $this->assertSame(SessionStatus::Active, $session->status);
-        $this->assertNull(ProcessStart::latestOfSession($opened->sessionId)?->refusal);
+        $this->assertNull(SessionProcess::latestOfSession($opened->sessionId)?->refusal);
         $this->assertSame(RequestProgress::Failed, DriverRequest::query()->findOrFail($wake->requestId)->progress);
     }
 
@@ -1170,7 +1170,7 @@ final class AgentDriverLedgerTest extends TestCase
         $this->notifyWakeRefused($host, $claimed, 'container-unavailable', true);
 
         $session = AgentSession::query()->findOrFail($opened->sessionId);
-        $start = ProcessStart::latestOfSession($opened->sessionId);
+        $start = SessionProcess::latestOfSession($opened->sessionId);
         $this->assertSame(SessionStatus::Ended, $session->status);
         $this->assertSame(self::NO_CONTAINER, $start?->refusal);
     }
@@ -1188,7 +1188,7 @@ final class AgentDriverLedgerTest extends TestCase
         $this->notifyWakeRefused($host, $claimed, null, false);
 
         $this->assertSame(SessionStatus::Active, AgentSession::query()->findOrFail($opened->sessionId)->status);
-        $this->assertNull(ProcessStart::latestOfSession($opened->sessionId)?->refusal);
+        $this->assertNull(SessionProcess::latestOfSession($opened->sessionId)?->refusal);
     }
 
     public function test_two_stops_of_the_same_generation_converge_on_one_request(): void
@@ -1353,7 +1353,7 @@ final class AgentDriverLedgerTest extends TestCase
                 'refusal_reason' => $reason,
                 'has_created_no_process' => true,
                 'session_id' => $claimed['sessionId'],
-                'process_start_id' => $claimed['processStartId'],
+                'session_process_id' => $claimed['processStartId'],
                 'process_generation' => $claimed['processGeneration'],
             ])->assertSuccessful();
         }
@@ -1802,7 +1802,7 @@ final class AgentDriverLedgerTest extends TestCase
             'refusal_reason' => $reason,
             'has_created_no_process' => $hasCreatedNoProcess,
             'session_id' => $claimed['sessionId'],
-            'process_start_id' => $claimed['processStartId'],
+            'session_process_id' => $claimed['processStartId'],
             'process_generation' => $claimed['processGeneration'],
         ])->assertSuccessful();
     }

@@ -7,7 +7,7 @@ namespace Domain\Helpers\Tests\Feature;
 use App\Contracts\Bus\CommandBus;
 use App\Events\Sessions\LaunchEnded;
 use App\Exceptions\DriverCapabilityUnsupported;
-use App\Models\Starts\StartRecord;
+use App\Models\Sessions\SessionRequest;
 use App\Support\Capabilities\CodexHeadlessCapabilities;
 use Domain\Helpers\Commands\CancelHelperJob\CancelHelperJobCommand;
 use Domain\Helpers\Commands\ContinueHelper\ContinueHelperCommand;
@@ -83,7 +83,7 @@ final class HelperContinueTest extends TestCase
         $this->assertSame($continued->jobId, $repeated->jobId);
         $this->assertSame(JobState::Accepted, $job->state);
         $this->assertSame(self::BRIEF, $job->brief);
-        $this->assertSame(2, StartRecord::query()->where('owner_reference', 'like', '%'.$receipt->jobId)->count());
+        $this->assertSame(2, SessionRequest::query()->where('owner_reference', 'like', '%'.$receipt->jobId)->count());
     }
 
     public function test_a_continue_on_a_driver_that_cannot_reopen_a_conversation_is_refused_by_its_reason(): void

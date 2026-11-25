@@ -47,7 +47,7 @@ final class DockTest extends TestCase
         'links',
         'hook_calls',
         'agent_stacks',
-        'start_tokens',
+        'session_tokens',
         'agent_sessions',
         'agents',
     ];

@@ -26,7 +26,7 @@ final class DeclaredSearchToolTest extends TestCase
     use SendsSignedCalls;
 
     private const array TABLES = [
-        'users', 'tasks', 'agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'hook_calls', 'command_receipts',
+        'users', 'tasks', 'agents', 'agent_sessions', 'session_tokens', 'agent_stacks', 'hook_calls', 'command_receipts',
     ];
 
     private TestStart $caller;

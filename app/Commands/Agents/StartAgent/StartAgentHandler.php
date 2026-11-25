@@ -10,7 +10,7 @@ use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Drivers\PinnedBuilds;
 use App\Enums\Agents\ExecutionModeType;
-use App\Enums\Starts\StartOriginType;
+use App\Enums\Sessions\StartOriginType;
 use App\Events\Sessions\StartAccepted;
 use App\Exceptions\AgentBusy;
 use App\Exceptions\HostUnavailable;
@@ -22,8 +22,8 @@ use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverSwitch;
 use App\Models\Projects\Host;
-use App\Models\Starts\SessionPolicy;
-use App\Models\Starts\StartRecord;
+use App\Models\Sessions\SessionPolicy;
+use App\Models\Sessions\SessionRequest;
 use App\Resolvers\Support\PendingStartSecrets;
 use App\Support\AccountSharingService;
 use App\Support\ActorIdentity;
@@ -85,7 +85,7 @@ final readonly class StartAgentHandler implements CommandHandler
             $request->neededCapabilities(),
         );
 
-        $record = StartRecord::create(
+        $record = SessionRequest::create(
             $request,
             $pinned,
             $dispatcher,

@@ -6,8 +6,8 @@ namespace App\Http\Controllers\Hooks\Host;
 
 use App\Contracts\Sessions\SessionPolicyReader;
 use App\Data\Hooks\PendingStopAttemptData;
-use App\Models\Starts\ProcessStart;
-use App\Models\Starts\StopAttempt;
+use App\Models\Sessions\SessionProcess;
+use App\Models\Sessions\StopCheck;
 use App\Values\HostContext;
 use Illuminate\Http\JsonResponse;
 
@@ -19,10 +19,10 @@ final readonly class PendingStopAttemptsController
 {
     public function __invoke(HostContext $host, SessionPolicyReader $policies): JsonResponse
     {
-        $attempts = StopAttempt::pendingOf(ProcessStart::unresolvedSessionIdsOn($host->hostId));
+        $attempts = StopCheck::pendingOf(SessionProcess::unresolvedSessionIdsOn($host->hostId));
 
         return new JsonResponse(['attempts' => array_map(
-            fn (StopAttempt $attempt) => PendingStopAttemptData::of(
+            fn (StopCheck $attempt) => PendingStopAttemptData::of(
                 $attempt,
                 $policies->policyFor($attempt->session_id),
             )->toArray(),

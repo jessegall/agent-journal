@@ -7,7 +7,7 @@ namespace Tests\Feature\Profiles;
 use App\Contracts\Drivers\DriverCompatibilities;
 use App\Enums\Accounts\SignInMethod;
 use App\Enums\Drivers\DriverEvidence;
-use App\Enums\Starts\TransportProfileType;
+use App\Enums\Sessions\TransportProfileType;
 use App\Events\Sessions\AccountSettingsRequested;
 use App\Models\Accounts\Account;
 use App\Support\AccountStartRecipe;

@@ -39,7 +39,7 @@ final class RuleProposalTest extends TestCase
         'rules',
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'command_receipts',
     ];
 

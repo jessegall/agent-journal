@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\Starts\StartBypass;
+use App\Models\Sessions\ReportedBypass;
 use App\Values\BypassReport;
 use App\Values\LoggedBypass;
 use Carbon\CarbonImmutable;
@@ -26,8 +26,8 @@ final readonly class StartBypasses
     {
         $now = CarbonImmutable::now();
 
-        StartBypass::query()->insert(array_map(fn (LoggedBypass $fact) => [
-            'id' => new StartBypass()->newUniqueId(),
+        ReportedBypass::query()->insert(array_map(fn (LoggedBypass $fact) => [
+            'id' => new ReportedBypass()->newUniqueId(),
             'agent_session_id' => $sessionId,
             'native_event' => $fact->nativeEvent,
             'failure' => $fact->failure,

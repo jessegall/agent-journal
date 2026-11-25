@@ -16,12 +16,12 @@ use App\Enums\Accounts\SignInMethod;
 use App\Enums\Agents\ProcessStartState;
 use App\Enums\Drivers\DriverEvidence;
 use App\Enums\Drivers\DriverType;
-use App\Enums\Starts\StartUnavailableReason;
+use App\Enums\Sessions\StartUnavailableReason;
 use App\Exceptions\AccountUnavailable;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\SignInAttempt;
 use App\Models\Agents\Agent;
-use App\Models\Starts\ProcessStart;
+use App\Models\Sessions\SessionProcess;
 use App\Support\AccountMaintenance;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
@@ -55,7 +55,7 @@ final class AccountMaintenanceTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'start_tokens',
+        'session_tokens',
         'agent_stacks',
         'hook_calls',
         'hosts',
@@ -65,7 +65,7 @@ final class AccountMaintenanceTest extends TestCase
         'accounts',
         'active_accounts',
         'sign_in_attempts',
-        'process_starts',
+        'session_processes',
         'links',
         'command_receipts',
         'assignments',
@@ -132,11 +132,11 @@ final class AccountMaintenanceTest extends TestCase
     {
         $host = $this->enrollHost();
         $opened = $this->open($host);
-        $agentId = ProcessStart::query()->withoutGlobalScopes()->sole()->agent_id;
+        $agentId = SessionProcess::query()->withoutGlobalScopes()->sole()->agent_id;
 
         $this->app->make(CommandBus::class)->run(new RetireAgentCommand($agentId));
 
-        $this->assertSame(ProcessStartState::Cancelled, ProcessStart::query()->withoutGlobalScopes()->sole()->state);
+        $this->assertSame(ProcessStartState::Cancelled, SessionProcess::query()->withoutGlobalScopes()->sole()->state);
         $this->assertNull($this->asSystem(new ClaimStartCommand($host->hostId, $opened->sessionId)));
     }
 

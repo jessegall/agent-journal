@@ -7,7 +7,7 @@ namespace App\Listeners;
 use App\Contracts\Events\Listener;
 use App\Events\Sessions\LaunchEnded;
 use App\Events\Sessions\SessionClosed;
-use App\Models\Starts\StartRecord;
+use App\Models\Sessions\SessionRequest;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
@@ -20,8 +20,8 @@ final readonly class AnnounceLaunchEnded implements Listener
 
     public function handle(SessionClosed $event): void
     {
-        StartRecord::ownerStartOf($event->sessionId)->forAll(
-            fn (StartRecord $start) => $this->events->dispatch(new LaunchEnded($start->owner_work)),
+        SessionRequest::ownerStartOf($event->sessionId)->forAll(
+            fn (SessionRequest $start) => $this->events->dispatch(new LaunchEnded($start->owner_work)),
         );
     }
 }

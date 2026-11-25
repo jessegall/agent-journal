@@ -18,7 +18,7 @@ use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Projects\Host;
-use App\Models\Starts\SessionPolicy;
+use App\Models\Sessions\SessionPolicy;
 use App\Support\AccountSharingService;
 use App\Support\AgentSessions;
 use App\Support\ArrangementSetting;
