@@ -36,6 +36,13 @@ final class CancelPrivateEntryTest extends TestCase
         'terminal_grants',
     ];
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
+
     public function test_the_host_is_asked_to_close_the_private_entry(): void
     {
         $agentId = $this->grantedRuntime()->session->agent_id;

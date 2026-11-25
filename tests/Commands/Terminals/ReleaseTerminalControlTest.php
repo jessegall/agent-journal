@@ -37,6 +37,13 @@ final class ReleaseTerminalControlTest extends TestCase
         'terminal_grants',
     ];
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
+
     public function test_control_is_given_back_once(): void
     {
         $agentId = $this->grantedRuntime()->session->agent_id;

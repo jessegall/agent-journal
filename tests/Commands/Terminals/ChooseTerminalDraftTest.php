@@ -38,6 +38,13 @@ final class ChooseTerminalDraftTest extends TestCase
         'terminal_grants',
     ];
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
+
     public function test_a_choice_at_the_next_sequence_goes_to_the_host_and_a_gap_is_refused(): void
     {
         $agentId = $this->grantedRuntime()->session->agent_id;

@@ -37,6 +37,13 @@ final class OpenPrivateEntryTest extends TestCase
         'terminal_grants',
     ];
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
+
     public function test_a_private_entry_opens_at_the_next_sequence_and_a_gap_is_refused(): void
     {
         $agentId = $this->grantedRuntime()->session->agent_id;

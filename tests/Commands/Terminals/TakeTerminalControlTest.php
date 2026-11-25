@@ -44,6 +44,13 @@ final class TakeTerminalControlTest extends TestCase
         'terminal_grants',
     ];
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
+
     public function test_two_takes_racing_for_one_runtime_leave_one_grant(): void
     {
         $runtime = $this->controllableRuntime();

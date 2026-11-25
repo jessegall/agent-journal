@@ -49,6 +49,13 @@ final class SendTerminalInputTest extends TestCase
         'terminal_grants',
     ];
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
+
     public function test_a_revoked_grant_has_its_input_refused_at_the_server(): void
     {
         $runtime = $this->controllableRuntime();

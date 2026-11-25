@@ -38,6 +38,13 @@ final class CancelTerminalTakeTest extends TestCase
         'terminal_grants',
     ];
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
+
     public function test_an_unanswered_take_is_cancelled_once(): void
     {
         $runtime = $this->controllableRuntime();

@@ -39,6 +39,13 @@ final class EndTerminalViewsTest extends TestCase
         'terminal_grants',
     ];
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
+
     public function test_a_lapsed_view_ends_on_the_engine_pass_and_a_live_one_stays(): void
     {
         $runtime = $this->controllableRuntime();

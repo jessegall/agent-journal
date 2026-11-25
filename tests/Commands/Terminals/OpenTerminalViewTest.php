@@ -35,6 +35,13 @@ final class OpenTerminalViewTest extends TestCase
     use OpensTerminalRuntimes;
     use RefreshHookDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
+
     public function test_a_good_open_makes_one_live_view_of_the_viewer_and_changes_the_hosts_version(): void
     {
         $this->freezeTime();

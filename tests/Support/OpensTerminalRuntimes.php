@@ -6,24 +6,18 @@ namespace Tests\Support;
 
 use App\Commands\Terminals\OpenTerminalView\OpenTerminalViewCommand;
 use App\Commands\Terminals\RenewTerminalView\RenewTerminalViewCommand;
-use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\Command;
-use App\Contracts\Bus\CommandBus;
 use App\Contracts\Time\ServerClock;
 use App\Data\Terminals\TerminalControlData;
 use App\Data\Terminals\TerminalInterestData;
 use App\Enums\Drivers\DriverType;
-use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
-use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\AgentRuntimes;
 use App\Support\StartSessions;
 use App\Support\TerminalControls;
 use App\Support\TerminalViewCloser;
-use App\Values\OwnerAuthority;
 use App\Values\RuntimeIntent;
-use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
 
 /**
@@ -32,11 +26,17 @@ use Tests\Fixtures\Agents\TestSelections;
  */
 trait OpensTerminalRuntimes
 {
+    private int $watchedAgentCount = 0;
+
+    /**
+     * A new journal agent started in a session of its own, with a runtime of this driver open on the host, in the
+     * project folder.
+     */
     private function runtimeOn(string $hostId, DriverType $driver = DriverType::Terminal): AgentRuntime
     {
-        $agent = Agent::create('Watched agent '.Str::random(6), 'main-agent', $this->localProject());
+        $name = 'Watched agent '.++$this->watchedAgentCount;
         $started = $this->app->make(StartSessions::class)->start(
-            $agent,
+            $this->journal->idleAgent($name)->agentCalled($name),
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
         );
@@ -48,13 +48,12 @@ trait OpensTerminalRuntimes
     }
 
     /**
-     * Runs the command as the owner and answers what the browser is answered: a view's read interest after an open or
-     * renewal, the owner's control of the grant after a control command, and nothing after a close.
+     * Runs the command as the journal's owner and answers what the browser is answered: a view's read interest after
+     * an open or renewal, the owner's control of the grant after a control command, and nothing after a close.
      */
     private function asOwner(Command $command): TerminalInterestData|TerminalControlData|null
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
-        $rowId = $this->app->make(CommandBus::class)->run($command);
+        $rowId = $this->journal->asOwner($command);
 
         return match (true) {
             $command instanceof OpenTerminalViewCommand, $command instanceof RenewTerminalViewCommand => $this->app
@@ -69,6 +68,6 @@ trait OpensTerminalRuntimes
 
     private function owner(): ActorIdentity
     {
-        return ActorIdentity::of(ActorContext::forUser('owner'));
+        return $this->journal->actorCalled('Owner');
     }
 }

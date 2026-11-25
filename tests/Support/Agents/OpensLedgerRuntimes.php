@@ -4,19 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Support\Agents;
 
-use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
-use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Commands\Terminals\RunKeyScript\RunKeyScriptCommand;
-use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\Command;
-use App\Contracts\Bus\CommandBus;
-use App\Enums\Drivers\DriverType;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
-use App\Support\ActorContext;
 use App\Support\EnrolledHost;
 use App\Support\OpenedRuntime;
-use App\Values\OwnerAuthority;
 use App\Values\ScriptParameter;
 use Illuminate\Support\Str;
 use Tests\Support\WithActiveAccount;
@@ -32,45 +25,50 @@ trait OpensLedgerRuntimes
 
     private const string FOLDER = '/work/project';
 
+    private int $openedRuntimeCount = 0;
+
     /**
-     * Every runtime starts through the real start path, which runs with the account chosen for its driver.
+     * Every runtime starts through the real start path, which runs with the account chosen for its driver, opened by
+     * the journal's owner.
      */
     protected function setUpOpensLedgerRuntimes(): void
     {
         $this->chooseActiveAccounts();
+        $this->journal->owner();
     }
 
     /**
+     * A new agent's runtime opened by the owner on a new host in the project folder.
+     *
      * @return array{EnrolledHost, OpenedRuntime}
      */
     private function openRuntime(string|null $firstMessage = null, string $build = '2.1.323'): array
     {
-        $host = $this->enrollHost();
-        $opened = $this->asOwner(
-            new OpenAgentRuntimeCommand(
-                $this->agent()->id,
-                $host->hostId,
-                self::FOLDER,
-                'claude-code',
-                $build,
-                'claude',
-                DriverType::Headless,
-                'claude-opus-5-5',
-                firstMessage: $firstMessage,
-            ),
+        $number = ++$this->openedRuntimeCount;
+        $this->journal->idleAgent("Driven agent {$number}")->enrollHost("Test host {$number}", [self::FOLDER]);
+        $opened = $this->journal->openRuntimeOn(
+            "Driven agent {$number}",
+            "Test host {$number}",
+            self::FOLDER,
+            build: $build,
+            firstMessage: $firstMessage,
         );
 
-        return [$host, $opened];
+        return [$this->journal->hostCalled("Test host {$number}"), $opened];
     }
 
     private function enrollHost(): EnrolledHost
     {
-        return $this->journal->asSystem(new EnrollHostCommand('test host '.Str::random(6), [self::FOLDER]));
+        $name = 'Enrolled host '.++$this->openedRuntimeCount;
+
+        return $this->journal->enrollHost($name, [self::FOLDER])->hostCalled($name);
     }
 
     private function agent(): Agent
     {
-        return Agent::create('Driven agent '.Str::random(6), 'main-agent', $this->localProject());
+        $name = 'Idle agent '.++$this->openedRuntimeCount;
+
+        return $this->journal->idleAgent($name)->agentCalled($name);
     }
 
     private function agentIdOf(OpenedRuntime $opened): string
@@ -83,19 +81,17 @@ trait OpensLedgerRuntimes
      */
     private function keyScript(OpenedRuntime $opened, string $script, array $parameters): RunKeyScriptCommand
     {
-        $key = (string) Str::ulid();
-
         return new RunKeyScriptCommand(
             $this->agentIdOf($opened),
             $opened->sessionId,
-            $key,
+            (string) Str::ulid(),
             $script,
             ScriptParameter::listOf($parameters),
         );
     }
 
     /**
-     * Runs a command as the user who owns the journal, as the web and the CLI do.
+     * Runs a command as the journal's owner, as the web and the CLI do.
      *
      * @template TResult
      *
@@ -104,8 +100,6 @@ trait OpensLedgerRuntimes
      */
     private function asOwner(Command $command): mixed
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
-
-        return $this->app->make(CommandBus::class)->run($command);
+        return $this->journal->asOwner($command);
     }
 }

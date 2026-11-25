@@ -35,6 +35,13 @@ final class RenewTerminalViewTest extends TestCase
     use OpensTerminalRuntimes;
     use RefreshHookDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
+
     public function test_renewing_moves_the_expiry_and_a_closed_interest_is_refused_not_reopened(): void
     {
         $runtime = $this->runtimeOn('host-1');

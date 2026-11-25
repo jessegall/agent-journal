@@ -25,6 +25,13 @@ final class CloseTerminalViewTest extends TestCase
     use OpensTerminalRuntimes;
     use RefreshHookDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
+
     public function test_closing_one_viewers_view_keeps_the_runtime_watched_until_the_last_one_closes(): void
     {
         $runtime = $this->runtimeOn('host-1');

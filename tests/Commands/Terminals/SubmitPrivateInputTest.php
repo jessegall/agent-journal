@@ -43,6 +43,13 @@ final class SubmitPrivateInputTest extends TestCase
         'terminal_grants',
     ];
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
+
     public function test_a_private_value_reaches_the_host_once_and_is_stored_nowhere(): void
     {
         $runtime = $this->controllableRuntime();
