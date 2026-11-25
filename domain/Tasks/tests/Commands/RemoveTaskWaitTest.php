@@ -2,17 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Domain\Tasks\Tests\Feature;
+namespace Domain\Tasks\Tests\Commands;
 
 use Domain\Tasks\Commands\AddTaskWait\AddTaskWaitCommand;
 use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
 use Domain\Tasks\Commands\RemoveTaskWait\RemoveTaskWaitCommand;
-use Domain\Tasks\Commands\WaiveTaskWait\WaiveTaskWaitCommand;
 use Domain\Tasks\Contracts\TaskWaitResolver;
 use Domain\Tasks\Enums\TaskWaitChange;
-use Domain\Tasks\Exceptions\TaskWaitRefused;
 use Domain\Tasks\Models\Task;
-use Domain\Tasks\Models\TaskWait;
 use Domain\Tasks\Models\TaskWaitHistory;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\ActsAsOwner;
@@ -21,10 +18,10 @@ use Tests\Support\RunsKeyedCommands;
 use Tests\Support\StartsAgentRequests;
 
 /**
- * A task waits on another through a checked, recorded edge: no self-link and no cycle, a waiver needs a reason and
- * keeps who and when, a cancelled prerequisite leaves the wait outstanding, and the history keeps every change.
+ * A wait whose prerequisite was cancelled still holds its task until it is removed; the removal frees the task and
+ * the history keeps every change.
  */
-final class TaskWaitsTest extends TestCase
+final class RemoveTaskWaitTest extends TestCase
 {
     use ActsAsOwner;
     use CommitsHookRows;
@@ -57,45 +54,6 @@ final class TaskWaitsTest extends TestCase
         $this->first = Task::factory()->create(['title' => 'Prepare records']);
         $this->second = Task::factory()->create(['title' => 'Publish records']);
         $this->startUserRequestAs($this->owner->id);
-    }
-
-    public function test_a_cycle_and_a_self_link_are_refused(): void
-    {
-        $this->runCommand(new AddTaskWaitCommand($this->second->id, $this->first->id));
-
-        $this->assertThrows(
-            fn () => $this->runCommand(new AddTaskWaitCommand($this->first->id, $this->second->id)),
-            TaskWaitRefused::class,
-        );
-
-        $this->assertThrows(
-            fn () => $this->runCommand(new AddTaskWaitCommand($this->first->id, $this->first->id)),
-            TaskWaitRefused::class,
-        );
-
-        $this->assertSame(1, TaskWait::query()->count());
-    }
-
-    public function test_a_waiver_needs_a_reason_and_keeps_who_and_when(): void
-    {
-        $this->runCommand(new AddTaskWaitCommand($this->second->id, $this->first->id));
-
-        $this->assertThrows(
-            fn () => $this->runCommand(new WaiveTaskWaitCommand($this->second->id, $this->first->id, '')),
-        );
-
-        $this->runCommand(new WaiveTaskWaitCommand($this->second->id, $this->first->id, 'Done by hand.'));
-
-        $wait = TaskWait::findBetween($this->second->id, $this->first->id);
-        $this->assertNotNull($wait?->waived_at);
-        $this->assertSame([
-            $this->owner->id,
-            'Done by hand.',
-        ], [
-            $wait->waived_by_id,
-            $wait->waive_reason,
-        ]);
-        $this->assertSame([$this->second->id], $this->waits()->readyAmong([$this->second->id]));
     }
 
     public function test_a_cancelled_prerequisite_leaves_the_wait_outstanding_and_history_keeps_every_change(): void

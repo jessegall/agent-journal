@@ -12,6 +12,7 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\Policies\RecordPolicy;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Regex;
+use Spatie\LaravelData\Attributes\Validation\Required;
 
 /**
  * Blocks the caller's current started run of a task with the reason it waits, not blank; the task's work ends on every
@@ -25,7 +26,7 @@ final readonly class BlockTaskCommand extends Command implements RecordCommand
     public function __construct(
         public string $taskId,
         public int $runNumber,
-        #[Max(Task::NOTE_CHARACTER_LIMIT), Regex('/\S/')]
+        #[Required, Max(Task::NOTE_CHARACTER_LIMIT), Regex('/\S/')]
         public string $reason,
     ) {}
 

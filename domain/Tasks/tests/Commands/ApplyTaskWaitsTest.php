@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Tasks\Tests\Feature;
+namespace Domain\Tasks\Tests\Commands;
 
 use Domain\Tasks\Commands\AddTaskWait\AddTaskWaitCommand;
 use Domain\Tasks\Commands\ApplyTaskWaits\ApplyTaskWaitsCommand;

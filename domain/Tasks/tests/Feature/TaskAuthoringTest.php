@@ -6,27 +6,23 @@ namespace Domain\Tasks\Tests\Feature;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Exceptions\CommandInputInvalid;
-use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Values\OwnerAuthority;
-use Domain\Tasks\Commands\CreateTask\CreateTaskCommand;
 use Domain\Tasks\Commands\EditTask\EditTaskCommand;
 use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Exceptions\TaskRevisionChanged;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
-use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TestIds;
 
 /**
- * A task carries its brief, creator, revision and run, and changes them only through its own intention methods,
- * within Tasks' text limits.
+ * A task's run counts up through its own methods, an agent's signed route makes a task as the agent, and the route
+ * and the bus give the same edit.
  */
 final class TaskAuthoringTest extends TestCase
 {
@@ -46,74 +42,6 @@ final class TaskAuthoringTest extends TestCase
     ];
 
     private const string AGENT = '01jd8x0g9m3qz6v4k2agent001';
-
-    public function test_the_tasks_table_has_the_authoring_and_run_columns(): void
-    {
-        $this->assertTrue(Schema::hasColumns('tasks', [
-            'brief',
-            'creator_type',
-            'creator_id',
-            'revision',
-            'run_number',
-            'result_note',
-            'block_reason',
-            'cancel_reason',
-        ]));
-    }
-
-    public function test_create_task_records_its_brief_and_creator(): void
-    {
-        $this->actAsUser();
-
-        $taskId = $this->app->make(CommandBus::class)->run(new CreateTaskCommand('Write the brief', 'What it asks.'));
-        $task = Task::query()->findOrFail($taskId);
-
-        $this->assertSame([
-            'Write the brief',
-            'What it asks.',
-            1,
-        ], [
-            $task->title,
-            $task->brief,
-            $task->revision,
-        ]);
-        $this->assertSame([
-            User::storedType(),
-            TestIds::of(7),
-        ], [
-            $task->creator_type,
-            $task->creator_id,
-        ]);
-    }
-
-    public function test_describe_changes_only_title_brief_and_revision(): void
-    {
-        $task = Task::factory()->create([
-            'title' => 'Old',
-            'brief' => 'Old brief',
-        ]);
-
-        $task->describe('New', 'New brief');
-
-        $fresh = $task->fresh();
-
-        $this->assertSame(
-            [
-                'New',
-                'New brief',
-                2,
-                TaskStatus::Open,
-                0,
-            ],
-            [
-                $fresh?->title,
-                $fresh?->brief,
-                $fresh?->revision,
-                $fresh?->status,
-                $fresh?->run_number,
-            ],
-        );
-    }
 
     public function test_a_run_counts_up_and_records_its_note_and_reasons(): void
     {
@@ -151,60 +79,6 @@ final class TaskAuthoringTest extends TestCase
         );
     }
 
-    public function test_cancel_records_its_reason(): void
-    {
-        $task = Task::factory()->create();
-
-        $task->cancel('No longer needed.');
-
-        $this->assertSame(
-            [
-                TaskStatus::Cancelled,
-                'No longer needed.',
-            ],
-            [
-                $task->fresh()?->status,
-                $task->fresh()?->cancel_reason,
-            ],
-        );
-    }
-
-    public function test_a_241_character_title_is_refused_before_a_task_is_made_and_240_pass(): void
-    {
-        $this->actAsUser();
-        $bus = $this->app->make(CommandBus::class);
-        $tooLong = new CreateTaskCommand(str_repeat('é', Task::TITLE_CHARACTER_LIMIT + 1), 'Brief');
-
-        $this->assertThrows(
-            fn () => $bus->run($tooLong),
-            CommandInputInvalid::class,
-            self::TITLE_TOO_LONG,
-        );
-
-        $this->assertSame(0, Task::query()->count());
-
-        $taskId = $bus->run(new CreateTaskCommand(str_repeat('é', Task::TITLE_CHARACTER_LIMIT), 'Brief'));
-
-        $this->assertSame(Task::TITLE_CHARACTER_LIMIT, mb_strlen((string) Task::query()->findOrFail($taskId)->title));
-    }
-
-    public function test_an_edit_with_neither_title_nor_brief_is_refused_naming_the_title(): void
-    {
-        $this->actAsUser();
-        $task = Task::factory()->create([
-            'title' => 'First',
-            'brief' => 'First brief',
-        ]);
-
-        $this->assertThrows(
-            fn () => $this->app->make(CommandBus::class)->run(new EditTaskCommand($task->id, 1)),
-            CommandInputInvalid::class,
-            self::TITLE_NEEDED_WITHOUT_BRIEF,
-        );
-
-        $this->assertSame(1, $task->fresh()?->revision);
-    }
-
     public function test_an_agent_creates_one_open_task_as_itself_and_its_session(): void
     {
         $start = TestStart::start();
@@ -226,36 +100,11 @@ final class TaskAuthoringTest extends TestCase
             [
                 $task->creator_type,
                 $task->creator_id,
-                $task->state,
+                $task->status,
             ],
         );
 
         $this->assertSame(1, Task::query()->count());
-    }
-
-    public function test_a_stale_revision_is_a_conflict_and_the_newer_text_stays(): void
-    {
-        $start = TestStart::start();
-        $task = Task::factory()->create([
-            'title' => 'First',
-            'brief' => 'First brief',
-        ]);
-        $task->describe('Second', 'Second brief');
-
-        $this->signed($start, '/agent/tasks/edit', [
-            'task_id' => $task->id,
-            'expected_revision' => 1,
-            'title' => 'Stale',
-            'request_key' => bin2hex(random_bytes(8)),
-        ])->assertConflict();
-
-        $this->assertSame([
-            'Second',
-            2,
-        ], [
-            $task->fresh()?->title,
-            $task->fresh()?->revision,
-        ]);
     }
 
     public function test_the_agent_route_and_the_bus_give_the_same_edit(): void

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Tasks\Tests\Feature;
+namespace Domain\Tasks\Tests\Commands;
 
 use App\Contracts\Bus\CommandBus;
 use Domain\Tasks\Commands\LogTaskRun\LogTaskRunCommand;
@@ -20,7 +20,7 @@ use Tests\Support\StartsAgentRequests;
  * A task run's log keeps its lines against the run current when they were written, in order, and is read a bounded
  * page at a time in either direction.
  */
-final class TaskLogTest extends TestCase
+final class LogTaskRunTest extends TestCase
 {
     use ActsAsOwner;
     use CommitsHookRows;

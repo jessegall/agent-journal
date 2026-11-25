@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Tasks\Tests\Feature;
+namespace Domain\Tasks\Tests\Commands;
 
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\JournalCommands;
@@ -39,7 +39,7 @@ use Tests\Support\TestIds;
  * that check once, and becomes the task's proof. A run of another caller is refused, and a receipt of a run no check
  * names binds nothing.
  */
-final class TaskCheckTest extends TestCase
+final class BindTaskCheckTest extends TestCase
 {
     use ActsAsOwner;
     use CommitsHookRows;

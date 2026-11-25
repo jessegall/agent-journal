@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Seeding;
 
+use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\JournalCommands;
 use App\Enums\Accounts\CommandEntry;
 use App\Models\Access\User;
@@ -14,6 +15,7 @@ use App\Models\Messages\Message;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\Command;
+use App\Support\StartSessions;
 use Illuminate\Contracts\Foundation\Application;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\OpensDriverRuntimes;
@@ -58,6 +60,8 @@ final class JournalSeed
 
     private User|null $owner = null;
 
+    private string|null $acting = null;
+
     public function __construct(private readonly Application $app) {}
 
     /**
@@ -82,21 +86,22 @@ final class JournalSeed
     }
 
     /**
-     * An agent of the local project on the profile, running one session with its driver's runtime, and a personal
-     * inbox.
+     * An agent of the local project on the profile, running one session started as the journal starts one, with its
+     * stack and its driver's runtime, and a personal inbox.
      */
     public function agent(string $name, string $profile = 'main-agent'): self
     {
         $agent = Agent::create($name, $profile, TestProjects::local());
-        $session = new AgentSession()->forceFill(TestSelections::sessionColumns());
-        $session->agent_id = $agent->id;
-        $session->save();
+        $this->app->make(CurrentActorSetter::class)->clear();
+        $session = $this->app->make(StartSessions::class)
+            ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
+            ->session;
         $this->openDriverRuntime($session);
         $this->agents[$name] = $agent;
         $this->sessions[$name] = $session;
         $this->inboxOf(ActorIdentity::of($agent));
 
-        return $this;
+        return $this->acting === null ? $this : $this->actAs($this->acting);
     }
 
     /**
@@ -115,6 +120,7 @@ final class JournalSeed
     public function actAs(string $name): self
     {
         $this->app->forgetScopedInstances();
+        $this->acting = $name;
 
         if (array_key_exists($name, $this->agents)) {
             $this->startRequestAs($this->agents[$name]->id, $this->sessions[$name]->id);

@@ -10,6 +10,7 @@ use App\Support\Command;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Policies\TaskPolicy;
 use Spatie\LaravelData\Attributes\Validation\Max;
+use Spatie\LaravelData\Attributes\Validation\Required;
 
 /**
  * Creates an open task with its title and brief and answers its id; the task takes the journal's next task number
@@ -21,7 +22,7 @@ use Spatie\LaravelData\Attributes\Validation\Max;
 final readonly class CreateTaskCommand extends Command
 {
     public function __construct(
-        #[Max(Task::TITLE_CHARACTER_LIMIT)]
+        #[Required, Max(Task::TITLE_CHARACTER_LIMIT)]
         public string $title,
         #[Max(Task::NOTE_CHARACTER_LIMIT)]
         public string $brief,
