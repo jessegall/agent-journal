@@ -18,4 +18,11 @@ interface DriverAdapters
      * Whether an adapter reads the hook protocol of the family; a family nobody registered has none.
      */
     public function supports(string $family): bool;
+
+    /**
+     * Every adapter, one for each native hook protocol the journal reads.
+     *
+     * @return list<DriverAdapter>
+     */
+    public function all(): array;
 }

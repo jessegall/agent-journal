@@ -37,6 +37,11 @@ final readonly class DriverAdapters implements DriverAdaptersContract
         return $this->adapters[$protocol] ?? throw HookProtocolUnknown::for($protocol);
     }
 
+    public function all(): array
+    {
+        return array_values($this->adapters);
+    }
+
     public function supports(string $family): bool
     {
         return $this->drivers->hasFamily($family)
