@@ -80,7 +80,7 @@ final class TaskSearchMeasurement extends TestCase
         $this->app->instance(SearchDiagnostics::class, new SearchDiagnostics($log));
         $coordinator = $this->app->make(RecordSearch::class);
         $user = ActorReference::forUser(self::AGENT_ID);
-        $owner = new SearchOwner('measure', $user, '', 'search', SearchSurface::Palette);
+        $owner = new SearchOwner('measure', $user, '', 'all', 'search', SearchSurface::Palette);
         $reader = new SearchReader($user, SearchSurface::Palette);
 
         $started = hrtime(true);

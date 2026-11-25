@@ -6,6 +6,7 @@ namespace App\Http\Responses;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Hosts\ServedEnvironment;
+use App\Contracts\Projects\CurrentProject;
 use App\Contracts\Records\RecordResolver;
 use App\Contracts\Search\RecordSearch;
 use App\Contracts\Search\SearchSources;
@@ -54,6 +55,7 @@ final readonly class SearchProps
         private CurrentActor $actors,
         private ServedEnvironment $environment,
         private ResponseFactory $inertia,
+        private CurrentProject $projects,
     ) {}
 
     /**
@@ -188,6 +190,7 @@ final readonly class SearchProps
             $request->session()->getId(),
             $this->actors->actor(),
             implode(',', $this->environment->environmentIds()),
+            $this->projects->selection()->key(),
             DeclaredSearch::TOOL,
             SearchSurface::Palette,
         );
