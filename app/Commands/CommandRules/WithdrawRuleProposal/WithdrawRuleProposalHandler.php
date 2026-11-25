@@ -7,7 +7,6 @@ namespace App\Commands\CommandRules\WithdrawRuleProposal;
 use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\RuleProposalRefused;
 use App\Models\CommandRules\RuleProposal;
-use App\Support\ActorReference;
 
 final readonly class WithdrawRuleProposalHandler implements CommandHandler
 {
@@ -17,7 +16,7 @@ final readonly class WithdrawRuleProposalHandler implements CommandHandler
     public function handle(WithdrawRuleProposalCommand $command): string
     {
         $proposal = RuleProposal::query()->whereKey($command->proposalId)->lockForUpdate()->sole();
-        $proposal->withdraw(ActorReference::of($command->dispatchedBy()));
+        $proposal->withdraw($command->dispatchedBy());
 
         return $proposal->id;
     }

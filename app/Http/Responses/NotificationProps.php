@@ -52,7 +52,7 @@ final readonly class NotificationProps
 
     private function actor(): ActorReference
     {
-        return ActorReference::of($this->actors->actor());
+        return $this->actors->actor();
     }
 
     /**

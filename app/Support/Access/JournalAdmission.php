@@ -23,7 +23,7 @@ final readonly class JournalAdmission implements JournalAdmissionContract
             return false;
         }
 
-        return ActorReference::of($actor)->isSameAs(ActorReference::of($this->owner()));
+        return ActorReference::of($actor)->isSameAs($this->owner());
     }
 
     public function owner(): ActorReference

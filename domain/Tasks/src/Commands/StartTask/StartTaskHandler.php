@@ -42,7 +42,7 @@ final readonly class StartTaskHandler extends TaskCommandHandler
      */
     public function handle(StartTaskCommand $command, Task $task): int
     {
-        $actor = ActorReference::of($command->dispatchedBy());
+        $actor = $command->dispatchedBy();
         $this->requireRunNotTaken($task, $actor);
 
         if ($task->status !== TaskStatus::Started) {

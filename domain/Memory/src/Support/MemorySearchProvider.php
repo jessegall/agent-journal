@@ -26,7 +26,7 @@ final readonly class MemorySearchProvider implements SearchProvider
 
     public function search(SearchQuery|RefreshCandidates $query): SearchBatch
     {
-        $owner = ActorReference::of($query->reader->actor);
+        $owner = $query->reader->actor;
 
         return $this->texts->search($query, new TieredSearchSource(
             admitted: fn () => self::ownedBy($owner),

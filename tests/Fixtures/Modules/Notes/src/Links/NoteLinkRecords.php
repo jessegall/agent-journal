@@ -8,7 +8,6 @@ use App\Concerns\ProvidesModelRecords;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Records\RecordProvider;
 use App\Data\Pages\RecordCard;
-use App\Support\ActorReference;
 use App\Support\ReadBuilder;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Model;
@@ -60,6 +59,6 @@ final readonly class NoteLinkRecords implements RecordProvider
      */
     protected function mayChange(Model $record): bool
     {
-        return $record->isWrittenBy(ActorReference::of($this->actors->actor()));
+        return $record->isWrittenBy($this->actors->actor());
     }
 }

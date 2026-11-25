@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Commands\RequestPlanChanges;
 
-use App\Support\ActorReference;
 use Domain\Plans\Commands\Support\PlanCommandHandler;
 use Domain\Plans\Enums\PlanReviewStatus;
 use Domain\Plans\Exceptions\PlanReviewRefused;
@@ -22,7 +21,7 @@ final readonly class RequestPlanChangesHandler extends PlanCommandHandler
     public function handle(RequestPlanChangesCommand $command): string
     {
         [$plan, $edition] = $this->decision->certified($command->planId, $command->editionNumber);
-        $edition->requestChanges(ActorReference::of($command->dispatchedBy()), $command->requestKey, $command->reason);
+        $edition->requestChanges($command->dispatchedBy(), $command->requestKey, $command->reason);
         $plan->settleReview($edition->id, PlanReviewStatus::ChangesRequested);
 
         return $edition->id;

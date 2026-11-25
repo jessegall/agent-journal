@@ -10,7 +10,6 @@ use App\Contracts\Bus\CommandHandler;
 use App\Enums\Runs\LifecycleStatus;
 use App\Exceptions\RetryRefused;
 use App\Models\Runs\ProcessRun;
-use App\Support\ActorReference;
 use App\Support\ProcessAdministration;
 use App\Values\AdmissionRefusal;
 use App\Values\ExecutionContext;
@@ -29,7 +28,7 @@ final readonly class RetryProcessRunHandler implements CommandHandler
     public function handle(RetryProcessRunCommand $command): string
     {
         $lost = ProcessRun::query()->acrossActors()->whereKey($command->runId)->sole();
-        $actor = ActorReference::of($command->dispatchedBy());
+        $actor = $command->dispatchedBy();
 
         if (! $this->administration->isGrantedToCaller() && ! $lost->isByActor($actor)) {
             throw RetryRefused::ofAnotherActor($lost->id);

@@ -8,7 +8,6 @@ use App\Attributes\Bus\Dispatches;
 use App\Commands\Inboxes\LeaveInbox\LeaveInboxCommand;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Bus\CommandBus;
-use App\Support\ActorReference;
 use Domain\Chat\Data\ChatInput;
 use Domain\Chat\Support\PairChats;
 use Illuminate\Http\RedirectResponse;
@@ -28,7 +27,7 @@ final readonly class LeaveChatController
         Redirector $redirect,
     ): RedirectResponse {
         $chats->attached($input->inboxId);
-        $commands->run(new LeaveInboxCommand($input->inboxId, ActorReference::of($actors->actor())));
+        $commands->run(new LeaveInboxCommand($input->inboxId, $actors->actor()));
 
         return $redirect->back(303);
     }

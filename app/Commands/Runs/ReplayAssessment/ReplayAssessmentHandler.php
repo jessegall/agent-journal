@@ -12,7 +12,6 @@ use App\Models\CommandRules\RuleRevision;
 use App\Models\Runs\OutputAssessment;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
-use App\Support\ActorReference;
 use App\Support\PartAssessments;
 use App\Support\ProcessAdministration;
 use App\Values\ApprovedPair;
@@ -32,7 +31,7 @@ final readonly class ReplayAssessmentHandler implements CommandHandler
     {
         $part = PartRun::query()->whereKey($command->partRunId)->lockForUpdate()->sole();
         $run = ProcessRun::findForAnyActor($part->process_run_id);
-        $actor = ActorReference::of($command->dispatchedBy());
+        $actor = $command->dispatchedBy();
 
         if (! $this->administration->isGrantedToCaller() && ! $run->isByActor($actor)) {
             throw ReplayRefused::ofAnotherActor($part->id);

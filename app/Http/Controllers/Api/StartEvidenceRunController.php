@@ -8,7 +8,6 @@ use App\Api\Processes\EvidenceRunStarted;
 use App\Api\Processes\StartEvidenceRunPayload;
 use App\Contracts\Actors\CurrentActor;
 use App\Models\CommandRules\EvidencePermit;
-use App\Support\ActorReference;
 use App\Support\EvidenceRuns;
 
 /**
@@ -22,7 +21,7 @@ final readonly class StartEvidenceRunController
         CurrentActor $actors,
         EvidenceRuns $evidence,
     ): EvidenceRunStarted {
-        $run = $evidence->start($evidencePermit, ActorReference::of($actors->actor()), $call->requestKey->value);
+        $run = $evidence->start($evidencePermit, $actors->actor(), $call->requestKey->value);
 
         return EvidenceRunStarted::from(['runId' => $run->id]);
     }

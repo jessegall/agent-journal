@@ -8,7 +8,6 @@ use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
 use App\Events\Sessions\AgentHoldReleased;
 use App\Exceptions\DriverRequestRefused;
-use App\Support\ActorReference;
 use App\Support\DriverRequests;
 
 final readonly class ReleaseAgentHoldHandler implements CommandHandler
@@ -36,7 +35,7 @@ final readonly class ReleaseAgentHoldHandler implements CommandHandler
         }
 
         $runtime->releaseHold();
-        $actor = ActorReference::of($command->dispatchedBy());
+        $actor = $command->dispatchedBy();
 
         $this->facts->publishAfterCommit(
             new AgentHoldReleased($runtime->id, $command->expectedHold, $actor, $command->reason),

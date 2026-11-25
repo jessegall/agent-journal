@@ -8,7 +8,6 @@ use App\Contracts\Bus\CommandHandler;
 use App\Enums\CommandRules\ProposalStatus;
 use App\Exceptions\ApprovalRefused;
 use App\Models\CommandRules\RuleRevision;
-use App\Support\ActorReference;
 use App\Support\ProposalChecks;
 use App\Support\RuleApprovals;
 use App\Support\RuleProposals;
@@ -30,7 +29,7 @@ final readonly class SaveCommandRuleHandler implements CommandHandler
      */
     public function handle(SaveCommandRuleCommand $command): ApprovalReceipt
     {
-        $owner = ActorReference::of($command->dispatchedBy());
+        $owner = $command->dispatchedBy();
         $rule = $command->proposed->rule;
 
         if ($rule->hasContract()) {

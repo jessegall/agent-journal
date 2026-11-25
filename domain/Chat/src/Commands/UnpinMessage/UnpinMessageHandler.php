@@ -24,7 +24,7 @@ final readonly class UnpinMessageHandler extends ChatCommandHandler
         $this->pinnable->requireIn($command->inboxId, $command->messageId);
 
         $this->unpinFor(
-            ActorReference::of($command->dispatchedBy()),
+            $command->dispatchedBy(),
             $command->inboxId,
             $command->messageId,
         );

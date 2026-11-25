@@ -12,7 +12,6 @@ use App\Enums\Asks\AskOriginType;
 use App\Exceptions\AskRefused;
 use App\Models\Asks\Ask;
 use App\Models\Asks\AskRequester;
-use App\Support\ActorReference;
 use App\Support\AskService;
 use App\Support\AskTypeRegistry;
 use App\Values\AskReference;
@@ -30,7 +29,7 @@ final readonly class AskSupervisorHandler implements CommandHandler
 
     public function handle(AskSupervisorCommand $command): AskReference
     {
-        $requester = ActorReference::of($command->dispatchedBy());
+        $requester = $command->dispatchedBy();
         $body = trim($command->body);
         AskRefused::assertValidSubmission($body, $command->submissionKey);
         AskRequester::create($requester);

@@ -42,7 +42,7 @@ final readonly class CommentWriter
         }
 
         $body = MarkdownText::comment($text);
-        $author = ActorReference::of($actor);
+        $author = $actor;
         $hash = self::hashOf($targetIdentity, $subject, $body);
         $earlier = Comment::query()->submittedAs($author, $submissionKey)->first();
 

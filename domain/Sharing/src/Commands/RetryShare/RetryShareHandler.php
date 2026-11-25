@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\Sharing\Commands\RetryShare;
 
 use App\Contracts\Sharing\SharePolicy;
-use App\Support\ActorReference;
 use Domain\Sharing\Commands\Support\SharingCommandHandler;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\ShareAuditType;
@@ -36,7 +35,7 @@ final readonly class RetryShareHandler extends SharingCommandHandler
         $configuration = ShareGatewayConfiguration::findUsable($configurationId);
 
         ShareGatewayOperation::create($configuration, GatewayOperationType::Open);
-        ShareAudit::create($share, ShareAuditType::Retried, ActorReference::of($owner), null);
+        ShareAudit::create($share, ShareAuditType::Retried, $owner, null);
 
         return $share->summary;
     }

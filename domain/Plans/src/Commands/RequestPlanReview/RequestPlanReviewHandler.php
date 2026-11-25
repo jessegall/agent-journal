@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Commands\RequestPlanReview;
 
-use App\Support\ActorReference;
 use Domain\Plans\Commands\Support\PlanCommandHandler;
 use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Exceptions\PlanReviewRefused;
@@ -26,7 +25,7 @@ final readonly class RequestPlanReviewHandler extends PlanCommandHandler
             throw PlanReviewRefused::notPlanned($plan->number, $plan->status->value);
         }
 
-        $review = PlanReviewEdition::create($plan, ActorReference::of($command->dispatchedBy()));
+        $review = PlanReviewEdition::create($plan, $command->dispatchedBy());
         $plan->requestReview($review, $command->reviewers);
 
         return $review->id;

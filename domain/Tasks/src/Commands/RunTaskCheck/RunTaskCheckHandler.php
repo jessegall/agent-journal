@@ -33,7 +33,7 @@ final readonly class RunTaskCheckHandler extends TaskCommandHandler
             throw TaskRunOfAnotherActor::forRun($task->number, $command->runNumber);
         }
 
-        $caller = ActorReference::of($command->dispatchedBy());
+        $caller = $command->dispatchedBy();
 
         $isOpener = $this->callers->callerOf($command->processRunId)
             ->filter(fn (ActorReference $opener) => $opener->isSameAs($caller))

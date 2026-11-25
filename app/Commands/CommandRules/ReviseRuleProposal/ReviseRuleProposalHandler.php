@@ -8,7 +8,6 @@ use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\RequestTransitionRefused;
 use App\Exceptions\RuleProposalRefused;
 use App\Models\CommandRules\RuleProposal;
-use App\Support\ActorReference;
 use App\Support\ProposalChecks;
 use App\Support\RuleProposals;
 use App\Values\ProposalReceipt;
@@ -26,7 +25,7 @@ final readonly class ReviseRuleProposalHandler implements CommandHandler
      */
     public function handle(ReviseRuleProposalCommand $command): ProposalReceipt
     {
-        $actor = ActorReference::of($command->dispatchedBy());
+        $actor = $command->dispatchedBy();
         $proposal = RuleProposal::query()->whereKey($command->proposalId)->lockForUpdate()->sole();
         $request = $proposal->commandRequest()->lockForUpdate()->first();
         $this->checks->check($command->proposed->rule, $request !== null && $request->hold_reason->needsReader());

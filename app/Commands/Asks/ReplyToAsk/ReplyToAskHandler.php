@@ -34,7 +34,7 @@ final readonly class ReplyToAskHandler implements CommandHandler
         $ask = $this->asks->lock($command->ask);
 
         if ($ask->isUnanswered()) {
-            return $this->answerLate($ask, ActorReference::of($command->dispatchedBy()), $body);
+            return $this->answerLate($ask, $command->dispatchedBy(), $body);
         }
 
         $this->admission->requireCurrent($command->ask, CoreAskType::Question->requiredCommand(), $ask->version);

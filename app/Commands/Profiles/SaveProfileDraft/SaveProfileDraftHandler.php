@@ -19,7 +19,7 @@ final readonly class SaveProfileDraftHandler implements CommandHandler
             $command->profile,
             $command->expectedRevision,
             $command->source,
-            ActorReference::of($command->dispatchedBy()),
+            $command->dispatchedBy(),
         );
     }
 

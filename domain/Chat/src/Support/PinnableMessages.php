@@ -9,7 +9,6 @@ use App\Data\Messages\MessageView;
 use App\Exceptions\MessageMissing;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Messages\Message;
-use App\Support\ActorReference;
 use App\Support\ShownMessage;
 
 /**
@@ -26,7 +25,7 @@ final readonly class PinnableMessages
     {
         $message = Message::query()->inInbox($inboxId)->whereKey($messageId)->first();
 
-        if ($message === null || ! InboxMember::isAttached($inboxId, ActorReference::of($this->actors->actor()))) {
+        if ($message === null || ! InboxMember::isAttached($inboxId, $this->actors->actor())) {
             throw MessageMissing::forId($messageId);
         }
 
