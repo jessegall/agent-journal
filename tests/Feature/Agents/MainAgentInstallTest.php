@@ -39,6 +39,7 @@ final class MainAgentInstallTest extends TestCase
     public function test_the_install_designates_one_main_agent_and_a_second_run_changes_nothing(): void
     {
         $this->installInboxes();
+        $this->localProject();
 
         $this->artisan('agents:install')->assertSuccessful();
         $main = MainAgentDesignation::designatedAgent();
