@@ -27,6 +27,11 @@ rebuilt. Follow what it does with `docker compose logs -f updater`, and turn it 
 Know what you switch on: the updater holds the Docker socket, which gives it root on the server, and it runs whatever
 the branch holds a minute after each push.
 
+## Rebuilding a development database
+
+A rebuild discards every development row and makes the schema again from the create migrations; how to keep a
+snapshot first and the order to rebuild in are in [docs/operations/rebuild.md](docs/operations/rebuild.md).
+
 ## Licence
 
 Copyright 2026 Jesse Gall.
