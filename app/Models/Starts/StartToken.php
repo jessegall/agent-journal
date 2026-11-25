@@ -14,7 +14,6 @@ use App\Events\Sessions\StartTokenRevoked;
 use App\Events\Sessions\StartTokenRotated;
 use App\Models\Agents\AgentSession;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,7 +28,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $updated_at
  * @property AgentSession $session
  */
-#[Fillable(['revoked_at'])]
 final class StartToken extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

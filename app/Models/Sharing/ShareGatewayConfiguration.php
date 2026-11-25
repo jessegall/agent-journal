@@ -19,7 +19,6 @@ use App\Support\GatewayConfiguration;
 use App\Support\GatewaySettings;
 use App\Support\SourceAddressRule;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -39,13 +38,6 @@ use Illuminate\Support\Carbon;
  * @property mixed $source_address_rule attribute
  * @property mixed $to_configuration attribute
  */
-#[Fillable([
-    'gateway_key',
-    'configuration_version',
-    'settings',
-    'is_default',
-    'disabled_at',
-])]
 final class ShareGatewayConfiguration extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

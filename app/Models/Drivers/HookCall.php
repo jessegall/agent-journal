@@ -18,7 +18,6 @@ use App\Support\Storage\RecordedSteps;
 use App\Support\Storage\RecordedStepsCast;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -37,12 +36,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[Fillable([
-    'event_id',
-    'input_digest',
-    'answer',
-    'steps',
-])]
 final class HookCall extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

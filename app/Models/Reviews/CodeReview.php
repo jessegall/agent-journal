@@ -23,7 +23,6 @@ use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
 use App\Values\AskReference;
 use App\Values\HelperImportReceipt;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -54,21 +53,6 @@ use Illuminate\Support\Carbon;
  * @property ReviewDecision $decision
  */
 #[Table('code_reviews')]
-#[Fillable([
-    'certificate',
-    'work_type',
-    'work_id',
-    'worker_type',
-    'worker_id',
-    'state',
-    'import_ref',
-    'base',
-    'head',
-    'import_attempts',
-    'import_failure',
-    'origin_target',
-    'ask_id',
-])]
 final class CodeReview extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -104,15 +88,14 @@ final class CodeReview extends Model implements EventSource, ReadableModel
         $work = $reservation->certifiedWork->work();
         $worker = $reservation->actor();
 
-        $review = new self([
-            'certificate' => $reservation->certificate,
-            'work_type' => $work->type,
-            'work_id' => $work->id,
-            'worker_type' => $worker->type->value,
-            'worker_id' => $worker->id,
-            'state' => CodeReviewState::AwaitingImport,
-            'import_attempts' => 0,
-        ]);
+        $review = new self();
+        $review->certificate = $reservation->certificate;
+        $review->work_type = $work->type;
+        $review->work_id = $work->id;
+        $review->worker_type = $worker->type->value;
+        $review->worker_id = $worker->id;
+        $review->state = CodeReviewState::AwaitingImport;
+        $review->import_attempts = 0;
 
         $review->setAttribute($review->getKeyName(), $review->newUniqueId());
         $review->insertIfAbsent();

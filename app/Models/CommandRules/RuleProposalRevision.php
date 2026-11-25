@@ -15,7 +15,6 @@ use App\Support\ActorIdentity;
 use App\Values\CommandRule;
 use App\Values\ProposedRule;
 use App\Values\RuleExample;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -37,15 +36,6 @@ use Illuminate\Support\Carbon;
  * @property mixed $proposed_rule attribute
  * @property RuleProposal $proposal
  */
-#[Fillable([
-    'rule_proposal_id',
-    'revision',
-    'payload',
-    'evidence',
-    'examples',
-    'author_type',
-    'author_id',
-])]
 final class RuleProposalRevision extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -78,15 +68,17 @@ final class RuleProposalRevision extends Model implements ReadableModel
      */
     public static function create(RuleProposal $proposal, ProposedRule $proposed, ActorIdentity $author): self
     {
-        return self::query()->create([
-            'rule_proposal_id' => $proposal->id,
-            'revision' => $proposal->current_revision + 1,
-            'payload' => $proposed->rule,
-            'evidence' => $proposed->evidence,
-            'examples' => $proposed->examples,
-            'author_type' => $author->type->value,
-            'author_id' => $author->id,
-        ]);
+        $ruleProposalRevision = new self();
+        $ruleProposalRevision->rule_proposal_id = $proposal->id;
+        $ruleProposalRevision->revision = $proposal->current_revision + 1;
+        $ruleProposalRevision->payload = $proposed->rule;
+        $ruleProposalRevision->evidence = $proposed->evidence;
+        $ruleProposalRevision->examples = $proposed->examples;
+        $ruleProposalRevision->author_type = $author->type->value;
+        $ruleProposalRevision->author_id = $author->id;
+        $ruleProposalRevision->save();
+
+        return $ruleProposalRevision;
     }
 
     // ----------[ Accessors ]----------

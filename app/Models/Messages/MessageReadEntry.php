@@ -13,7 +13,6 @@ use App\Events\Messages\MessageRead;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Closure;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -29,13 +28,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CarbonImmutable $last_read_at
  * @property Message $message
  */
-#[Fillable([
-    'message_id',
-    'reader_type',
-    'reader_id',
-    'read_at',
-    'last_read_at',
-])]
 final class MessageReadEntry extends Model implements EventSource
 {
     use HasUlids;
@@ -60,17 +52,21 @@ final class MessageReadEntry extends Model implements EventSource
 
     public static function create(Message $message, MessageSender&MessageReceiver $reader, CarbonImmutable $at): void
     {
-        $entry = self::query()->firstOrCreate(
-            [
-                'message_id' => $message->id,
-                'reader_type' => $reader->participantType(),
-                'reader_id' => $reader->participantId(),
-            ],
-            [
-                'read_at' => $at,
-                'last_read_at' => $at,
-            ],
-        );
+        $entry = self::query()
+            ->where('message_id', $message->id)
+            ->where('reader_type', $reader->participantType())
+            ->where('reader_id', $reader->participantId())
+            ->first();
+
+        if ($entry === null) {
+            $entry = new self();
+            $entry->message_id = $message->id;
+            $entry->reader_type = $reader->participantType();
+            $entry->reader_id = $reader->participantId();
+            $entry->read_at = $at;
+            $entry->last_read_at = $at;
+            $entry->assertSaved($entry->save());
+        }
 
         if ($entry->wasRecentlyCreated) {
             $entry->raise(new MessageRead($message->id, $message->inbox_id, ActorIdentity::of($reader)));

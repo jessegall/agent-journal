@@ -15,7 +15,6 @@ use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use App\Support\ShareAuditEntry;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -33,12 +32,6 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  * @property mixed $entry attribute
  */
-#[Fillable([
-    'type',
-    'actor_type',
-    'actor_id',
-    'reason_code',
-])]
 final class ShareAudit extends Model implements ReadableModel
 {
     use BoundedReads;

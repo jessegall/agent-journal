@@ -12,7 +12,6 @@ use App\Enums\EvidenceSource;
 use App\Models\Runs\ProcessRun;
 use App\Support\ActorIdentity;
 use App\Values\EvidenceRange;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -31,16 +30,6 @@ use Illuminate\Support\Carbon;
  * @property int $end_byte
  * @property Carbon $read_at
  */
-#[Fillable([
-    'project_key',
-    'actor_type',
-    'actor_id',
-    'process_run_id',
-    'part_run_id',
-    'source',
-    'first_byte',
-    'end_byte',
-])]
 final class EvidenceRead extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -75,16 +64,19 @@ final class EvidenceRead extends Model implements ReadableModel
      */
     public static function createMany(ProcessRun $run, ActorIdentity $reader, array $ranges): array
     {
-        $reads = array_map(fn (EvidenceRange $range) => new self([
-            'project_key' => $run->project_key,
-            'actor_type' => $reader->type->value,
-            'actor_id' => $reader->id,
-            'process_run_id' => $run->id,
-            'part_run_id' => $range->partRunId,
-            'source' => $range->source,
-            'first_byte' => $range->firstByte,
-            'end_byte' => $range->endByte,
-        ]), $ranges);
+        $reads = array_map(function (EvidenceRange $range) use ($run, $reader): self {
+            $read = new self();
+            $read->project_key = $run->project_key;
+            $read->actor_type = $reader->type->value;
+            $read->actor_id = $reader->id;
+            $read->process_run_id = $run->id;
+            $read->part_run_id = $range->partRunId;
+            $read->source = $range->source;
+            $read->first_byte = $range->firstByte;
+            $read->end_byte = $range->endByte;
+
+            return $read;
+        }, $ranges);
 
         return self::insertRows($reads);
     }

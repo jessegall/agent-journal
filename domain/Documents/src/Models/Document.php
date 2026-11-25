@@ -42,7 +42,6 @@ use Domain\Documents\Models\Concerns\Settles;
 use Domain\Documents\Models\Concerns\SharedWithComments;
 use Domain\Documents\Support\Cards\DocumentDockCard;
 use Domain\Documents\Support\RecordViews;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -73,10 +72,6 @@ use Illuminate\Support\Carbon;
  * @property DocumentDraft $draft
  * @property Collection<int, DocumentRevision>|DocumentRevision[] $revisions
  */
-#[Fillable([
-    'creator_type',
-    'creator_id',
-])]
 final class Document extends Model implements Commentable, Dockable, EventSource, Numbered, ReadableModel, Shareable, TextContent
 {
     use BoundedReads;
@@ -122,10 +117,9 @@ final class Document extends Model implements Commentable, Dockable, EventSource
      */
     public static function create(Actor $author): self
     {
-        $document = new self([
-            'creator_type' => $author->actorType(),
-            'creator_id' => $author->actorId(),
-        ]);
+        $document = new self();
+        $document->creator_type = $author->actorType();
+        $document->creator_id = $author->actorId();
         $document->assertSaved($document->save());
         $document->raise(new DocumentCreated($document->id, $document->number, ActorContext::of($author)));
 

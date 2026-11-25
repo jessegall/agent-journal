@@ -13,7 +13,6 @@ use App\Enums\ReviewDecisionType;
 use App\Events\Reviews\ReviewDecisionMergeLinked;
 use App\Models\Asks\Ask;
 use App\Support\ActorIdentity;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -38,17 +37,6 @@ use Illuminate\Support\Carbon;
  * @property CodeReview $review
  */
 #[Table('review_decisions')]
-#[Fillable([
-    'code_review_id',
-    'decision',
-    'reviewer_type',
-    'reviewer_id',
-    'base',
-    'head',
-    'findings',
-    'merge_ask_id',
-    'repaired_at',
-])]
 final class ReviewDecision extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

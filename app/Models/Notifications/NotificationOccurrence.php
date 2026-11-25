@@ -10,7 +10,6 @@ use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Data\Notifications\NotificationTarget;
 use App\Enums\NotificationSourceType;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -27,12 +26,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  */
 #[Table('notification_occurrences')]
-#[Fillable([
-    'occurrence_key',
-    'source_type',
-    'target_key',
-    'target_id',
-])]
 final class NotificationOccurrence extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -59,12 +52,11 @@ final class NotificationOccurrence extends Model implements ReadableModel
      */
     public static function create(string $key, NotificationSourceType $source, NotificationTarget $target): self
     {
-        $occurrence = new self([
-            'occurrence_key' => $key,
-            'source_type' => $source,
-            'target_key' => $target->key,
-            'target_id' => $target->id,
-        ]);
+        $occurrence = new self();
+        $occurrence->occurrence_key = $key;
+        $occurrence->source_type = $source;
+        $occurrence->target_key = $target->key;
+        $occurrence->target_id = $target->id;
 
         $occurrence->id = $occurrence->newUniqueId();
         $occurrence->insertIfAbsent();

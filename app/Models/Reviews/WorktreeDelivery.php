@@ -13,7 +13,6 @@ use App\Models\Agents\ChildClaim;
 use App\Models\Support\Accessor;
 use App\Values\DeliveryReceipt;
 use App\Values\DeliverySubmission;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -37,17 +36,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $updated_at
  * @property mixed $receipt attribute
  */
-#[Fillable([
-    'delivery_id',
-    'binding_id',
-    'child_claim_id',
-    'runtime_generation',
-    'checkout',
-    'base_oid',
-    'delivered_tip',
-    'target_ref',
-    'expected_target_oid',
-])]
 final class WorktreeDelivery extends Model implements ReadableModel
 {
     use BoundedReads;

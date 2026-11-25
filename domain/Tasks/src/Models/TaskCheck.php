@@ -18,7 +18,6 @@ use App\Values\ReadOrder;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Events\TaskCheckRecorded;
 use Domain\Tasks\Values\TaskProof;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -42,15 +41,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $bound_at
  * @property mixed $proof attribute
  */
-#[Fillable([
-    'task_id',
-    'task_run_id',
-    'run_number',
-    'operation',
-    'caller_type',
-    'caller_id',
-    'process_run_id',
-])]
 final class TaskCheck extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -84,15 +74,14 @@ final class TaskCheck extends Model implements EventSource, ReadableModel
         ActorIdentity $caller,
         string $processRunId,
     ): self {
-        $check = new self([
-            'task_id' => $run->task_id,
-            'task_run_id' => $run->id,
-            'run_number' => $run->run_number,
-            'operation' => $operation,
-            'caller_type' => $caller->type,
-            'caller_id' => $caller->id,
-            'process_run_id' => $processRunId,
-        ]);
+        $check = new self();
+        $check->task_id = $run->task_id;
+        $check->task_run_id = $run->id;
+        $check->run_number = $run->run_number;
+        $check->operation = $operation;
+        $check->caller_type = $caller->type;
+        $check->caller_id = $caller->id;
+        $check->process_run_id = $processRunId;
 
         $check->assertSaved($check->save());
 

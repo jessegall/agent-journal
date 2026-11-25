@@ -16,7 +16,6 @@ use App\Events\Accounts\ActiveAccountSelected;
 use App\Exceptions\AccountSelectionChanged;
 use App\Exceptions\AccountUnavailable;
 use App\Models\Support\AccountOwnerScope;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -33,7 +32,6 @@ use Illuminate\Support\Str;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[Fillable(['account_protocol'])]
 final class ActiveAccount extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

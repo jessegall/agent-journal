@@ -18,7 +18,6 @@ use App\Exceptions\InboxUnavailable;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
 use Closure;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -42,13 +41,6 @@ use PhpOption\Option;
  * @property Collection<int, InboxMember>|InboxMember[] $members
  */
 #[Table('inboxes')]
-#[Fillable([
-    'provider_key',
-    'provider_id',
-    'name',
-    'label',
-    'forwards_members',
-])]
 final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, ReadableModel
 {
     use BoundedReads;
@@ -91,13 +83,13 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
         string|null $name = null,
         bool $forwardsMembers = false,
     ): self {
-        $inbox = self::query()->create([
-            'provider_key' => $providerKey,
-            'provider_id' => $providerId,
-            'name' => $name,
-            'label' => $label,
-            'forwards_members' => $forwardsMembers,
-        ]);
+        $inbox = new self();
+        $inbox->provider_key = $providerKey;
+        $inbox->provider_id = $providerId;
+        $inbox->name = $name;
+        $inbox->label = $label;
+        $inbox->forwards_members = $forwardsMembers;
+        $inbox->assertSaved($inbox->save());
 
         $inbox->raise(new InboxOpened($inbox->id));
 

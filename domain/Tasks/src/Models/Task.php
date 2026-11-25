@@ -50,7 +50,6 @@ use Domain\Tasks\Values\TaskCard;
 use Domain\Tasks\Values\TaskExecution;
 use Domain\Tasks\Values\TaskSummary;
 use Illuminate\Contracts\Database\Query\Builder as QueryBuilder;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
@@ -91,18 +90,6 @@ use PhpOption\Some;
  */
 #[UseFactory(TaskFactory::class)]
 #[UsePolicy(TaskRunPolicy::class)]
-#[Fillable([
-    'title',
-    'brief',
-    'creator_type',
-    'creator_id',
-    'revision',
-    'run_number',
-    'result_note',
-    'block_reason',
-    'cancel_reason',
-    'environment_id',
-])]
 final class Task extends Model implements Assignable, Commentable, EventSource, Focusable, Numbered, ReadableModel
 {
     use AssignableListing;
@@ -162,13 +149,15 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
      */
     public static function create(string $title, string $brief, Actor $creator, array $environmentIds = []): self
     {
-        return self::query()->create([
-            'title' => $title,
-            'brief' => $brief,
-            'creator_type' => $creator->actorType(),
-            'creator_id' => $creator->actorId(),
-            'environment_id' => $environmentIds[0] ?? null,
-        ]);
+        $task = new self();
+        $task->title = $title;
+        $task->brief = $brief;
+        $task->creator_type = $creator->actorType();
+        $task->creator_id = $creator->actorId();
+        $task->environment_id = $environmentIds[0] ?? null;
+        $task->assertSaved($task->save());
+
+        return $task;
     }
 
     // ----------[ Mutations ]----------

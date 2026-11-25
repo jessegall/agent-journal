@@ -14,7 +14,6 @@ use Carbon\CarbonImmutable;
 use Domain\Documents\Data\SettlementCard;
 use Domain\Documents\Exceptions\RecordImmutable;
 use Domain\Documents\Support\RecordViews;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -35,15 +34,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $updated_at
  * @property mixed $card attribute
  */
-#[Fillable([
-    'parent_type',
-    'parent_id',
-    'actor_type',
-    'actor_id',
-    'reason',
-    'revision_number',
-    'settled_at',
-])]
 final class RecordSettlement extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -73,15 +63,17 @@ final class RecordSettlement extends Model implements ReadableModel
         string $reason,
         int|null $revisionNumber,
     ): self {
-        return self::query()->create([
-            'parent_type' => $parentType,
-            'parent_id' => $parentId,
-            'actor_type' => $actor->actorType(),
-            'actor_id' => $actor->actorId(),
-            'reason' => $reason,
-            'revision_number' => $revisionNumber,
-            'settled_at' => CarbonImmutable::now(),
-        ]);
+        $recordSettlement = new self();
+        $recordSettlement->parent_type = $parentType;
+        $recordSettlement->parent_id = $parentId;
+        $recordSettlement->actor_type = $actor->actorType();
+        $recordSettlement->actor_id = $actor->actorId();
+        $recordSettlement->reason = $reason;
+        $recordSettlement->revision_number = $revisionNumber;
+        $recordSettlement->settled_at = CarbonImmutable::now();
+        $recordSettlement->save();
+
+        return $recordSettlement;
     }
 
     // ----------[ Accessors ]----------

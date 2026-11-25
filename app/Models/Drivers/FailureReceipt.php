@@ -10,7 +10,6 @@ use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\DriverFailure;
 use App\Support\Inputs\Values\HookIdentity;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -24,10 +23,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[Fillable([
-    'event_id',
-    'failure',
-])]
 final class FailureReceipt extends Model implements ReadableModel
 {
     use BoundedReads;

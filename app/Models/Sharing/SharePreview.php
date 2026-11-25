@@ -19,7 +19,6 @@ use App\Support\RecordIdentity;
 use App\Support\ShareCandidates;
 use App\Support\ShareSelectedTarget;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -43,18 +42,6 @@ use PhpOption\Option;
  * @property ?Carbon $updated_at
  * @property mixed $root attribute
  */
-#[Fillable(
-    [
-        'owner_user_id',
-        'root_type',
-        'root_id',
-        'selection',
-        'configuration_version',
-        'checksum',
-        'expires_at',
-        'consumed_at',
-    ],
-)]
 final class SharePreview extends Model implements EventSource, ReadableModel
 {
     use BelongsToOneRoot;

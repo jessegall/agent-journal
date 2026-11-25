@@ -13,7 +13,6 @@ use App\Models\Support\HasActorColumns;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Closure;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -34,7 +33,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[Fillable(['subject'])]
 #[Table('activity_entries')]
 final class ActivityEntry extends Model implements ReadableModel
 {

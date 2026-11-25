@@ -14,7 +14,6 @@ use App\Models\Starts\StartRecord;
 use App\Models\Support\Accessor;
 use App\Models\Support\HasWorkColumns;
 use App\Support\RecordIdentity;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -35,13 +34,6 @@ use Illuminate\Support\Carbon;
  * @property mixed $import_ref attribute
  */
 #[Table('certified_works')]
-#[Fillable([
-    'work_type',
-    'work_id',
-    'certificate',
-    'agent_session_id',
-    'worktree',
-])]
 final class CertifiedWork extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -61,13 +53,12 @@ final class CertifiedWork extends Model implements ReadableModel
         $work = $start->ownerWork;
         $policy = SessionPolicy::query()->ofSessions([$start->session_id])->sole();
 
-        $certified = new self([
-            'certificate' => $certificate,
-            'work_type' => $work->type,
-            'work_id' => $work->id,
-            'agent_session_id' => $start->session_id,
-            'worktree' => $policy->execution_policy->worktree,
-        ]);
+        $certified = new self();
+        $certified->certificate = $certificate;
+        $certified->work_type = $work->type;
+        $certified->work_id = $work->id;
+        $certified->agent_session_id = $start->session_id;
+        $certified->worktree = $policy->execution_policy->worktree;
 
         $certified->setAttribute($certified->getKeyName(), $certified->newUniqueId());
         $certified->insertIfAbsent();

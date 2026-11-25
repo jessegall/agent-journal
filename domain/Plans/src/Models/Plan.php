@@ -48,7 +48,6 @@ use Domain\Plans\Values\PlanCard;
 use Domain\Plans\Values\PlanDetails;
 use Domain\Plans\Values\PlanPhaseTasks;
 use Domain\Plans\Values\PlanProgress;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -88,27 +87,17 @@ use PhpOption\Option;
  * @property Collection<int, Phase>|Phase[] $phases
  */
 #[UseFactory(PlanFactory::class)]
-#[Fillable([
-    'title',
-    'brief',
-    'creator_type',
-    'creator_id',
-    'revision',
-    'type',
-    'finish_note',
-    'cancel_reason',
-])]
 final class Plan extends Model implements Assignable, EventSource, Numbered, ReadableModel, Shareable
 {
     use AssignableListing;
     use BoundedReads;
+
     /**
      * @use HasFactory<PlanFactory>
      */
     use HasFactory;
 
     use HasNumber;
-
     use HasUlids;
     use Linkable;
     use OrdersById;
@@ -167,13 +156,15 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
      */
     public static function create(string $title, string $brief, PlanType $type, Actor $creator): self
     {
-        return self::query()->create([
-            'title' => $title,
-            'brief' => $brief,
-            'type' => $type,
-            'creator_type' => $creator->actorType(),
-            'creator_id' => $creator->actorId(),
-        ]);
+        $plan = new self();
+        $plan->title = $title;
+        $plan->brief = $brief;
+        $plan->type = $type;
+        $plan->creator_type = $creator->actorType();
+        $plan->creator_id = $creator->actorId();
+        $plan->assertSaved($plan->save());
+
+        return $plan;
     }
 
     // ----------[ Mutations ]----------

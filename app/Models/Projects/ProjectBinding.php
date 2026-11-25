@@ -30,7 +30,6 @@ use App\Values\PresenceReport;
 use App\Values\ProviderEligibility;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Pagination\CursorPaginator;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -72,16 +71,6 @@ use PhpOption\Option;
  * @property Agent $mainAgent
  * @property Project $project
  */
-#[Fillable([
-    'host_id',
-    'project_id',
-    'main_agent_id',
-    'root_id',
-    'canonical_root',
-    'project_label',
-    'machine_label',
-    'installation_nonce',
-])]
 final class ProjectBinding extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

@@ -7,7 +7,6 @@ namespace App\Models\Runs;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -23,12 +22,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[Fillable([
-    'process_run_id',
-    'sequence',
-    'type',
-    'payload',
-])]
 final class ProcessEvent extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -58,14 +51,14 @@ final class ProcessEvent extends Model implements ReadableModel
         $existing = self::query()->ofRun($run)->atSequence($sequence)->first();
 
         if ($existing === null) {
-            return self::query()->create(
-                [
-                    'process_run_id' => $run->id,
-                    'sequence' => $sequence,
-                    'type' => $type,
-                    'payload' => $fields,
-                ],
-            );
+            $processEvent = new self();
+            $processEvent->process_run_id = $run->id;
+            $processEvent->sequence = $sequence;
+            $processEvent->type = $type;
+            $processEvent->payload = $fields;
+            $processEvent->save();
+
+            return $processEvent;
         }
 
         if ($existing->type === $type && $existing->payload === $fields) {
@@ -74,18 +67,18 @@ final class ProcessEvent extends Model implements ReadableModel
 
         $next = (int) self::query()->ofRun($run)->max('sequence') + 1;
 
-        return self::query()->create(
-            [
-                'process_run_id' => $run->id,
-                'sequence' => $next,
-                'type' => self::OPERATIONAL_ERROR,
-                'payload' => [
-                    'conflicts_with' => $sequence,
-                    'type' => $type,
-                    'payload' => $fields,
-                ],
-            ],
-        );
+        $processEvent = new self();
+        $processEvent->process_run_id = $run->id;
+        $processEvent->sequence = $next;
+        $processEvent->type = self::OPERATIONAL_ERROR;
+        $processEvent->payload = [
+            'conflicts_with' => $sequence,
+            'type' => $type,
+            'payload' => $fields,
+        ];
+        $processEvent->save();
+
+        return $processEvent;
     }
 
     // ----------[ Scopes ]----------

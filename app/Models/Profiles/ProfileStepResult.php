@@ -10,7 +10,6 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\StepStatus;
 use App\Models\Support\Accessor;
 use App\Values\StepOutcome;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -31,13 +30,6 @@ use Illuminate\Support\Carbon;
  * @property mixed $outcome attribute
  */
 #[Table('profile_step_results')]
-#[Fillable([
-    'profile_run_id',
-    'step_reference',
-    'status',
-    'port',
-    'evidence',
-])]
 final class ProfileStepResult extends Model implements ReadableModel
 {
     use BoundedReads;

@@ -16,7 +16,6 @@ use Domain\Plans\Events\PlanReviewEditionApproved;
 use Domain\Plans\Events\PlanReviewEditionChangesRequested;
 use Domain\Plans\Events\PlanReviewEditionOutdated;
 use Domain\Plans\Events\PlanReviewEditionWithdrawn;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -40,14 +39,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[Fillable([
-    'plan_id',
-    'number',
-    'requested_by_type',
-    'requested_by_id',
-    'plan_revision',
-    'state',
-])]
 final class PlanReviewEdition extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -78,14 +69,16 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
      */
     public static function create(Plan $plan, ActorIdentity $actor): self
     {
-        return self::query()->create([
-            'plan_id' => $plan->id,
-            'number' => (int) self::query()->ofPlan($plan->id)->max('number') + 1,
-            'requested_by_type' => $actor->type,
-            'requested_by_id' => $actor->id,
-            'plan_revision' => $plan->revision,
-            'state' => PlanReviewState::Requested,
-        ]);
+        $planReviewEdition = new self();
+        $planReviewEdition->plan_id = $plan->id;
+        $planReviewEdition->number = (int) self::query()->ofPlan($plan->id)->max('number') + 1;
+        $planReviewEdition->requested_by_type = $actor->type;
+        $planReviewEdition->requested_by_id = $actor->id;
+        $planReviewEdition->plan_revision = $plan->revision;
+        $planReviewEdition->state = PlanReviewState::Requested;
+        $planReviewEdition->assertSaved($planReviewEdition->save());
+
+        return $planReviewEdition;
     }
 
     // ----------[ Mutations ]----------

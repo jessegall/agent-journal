@@ -31,7 +31,6 @@ use App\Values\ProfileKey;
 use App\Values\SupervisorTarget;
 use App\Values\WorkReference;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -63,13 +62,6 @@ use PhpOption\Option;
  * @property mixed $reference attribute
  * @property mixed $work_reference attribute
  */
-#[Fillable([
-    'version',
-    'pending_target',
-    'open',
-    'outcome',
-    'late_answer',
-])]
 final class Ask extends Model implements Assignable, EventSource, ReadableModel
 {
     use BelongsToOneActor;

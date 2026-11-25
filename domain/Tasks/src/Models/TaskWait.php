@@ -15,7 +15,6 @@ use App\Support\ActorIdentity;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskWaitChange;
 use Domain\Tasks\Events\TaskWaitChanged;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -36,12 +35,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[Fillable([
-    'dependent_task_id',
-    'prerequisite_task_id',
-    'created_by_type',
-    'created_by_id',
-])]
 final class TaskWait extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -69,12 +62,11 @@ final class TaskWait extends Model implements EventSource, ReadableModel
      */
     public static function create(Task $dependent, Task $prerequisite, ActorIdentity $actor): self
     {
-        $wait = new self([
-            'dependent_task_id' => $dependent->id,
-            'prerequisite_task_id' => $prerequisite->id,
-            'created_by_type' => $actor->type,
-            'created_by_id' => $actor->id,
-        ]);
+        $wait = new self();
+        $wait->dependent_task_id = $dependent->id;
+        $wait->prerequisite_task_id = $prerequisite->id;
+        $wait->created_by_type = $actor->type;
+        $wait->created_by_id = $actor->id;
 
         $wait->assertSaved($wait->save());
 

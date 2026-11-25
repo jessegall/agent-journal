@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 use Tests\Support\ScanCache\ScanCache;
 
 /**
- * Every model of a domain has an explicit #[Fillable] list, nothing else, and never an open model.
+ * Every model of a domain declares no fillable columns, as it writes its columns as properties, and is never open.
  */
 final class ModelConventions
 {
@@ -146,8 +146,8 @@ final class ModelConventions
         $model = new $class();
         $violations = [];
 
-        if (! self::listsFillableOnlyInTheAttribute($class, $model)) {
-            $violations[] = new Violation($path, $line, $class, 'none', 'none', ViolationType::FillableNotListed);
+        if (self::declaresFillable($class, $model)) {
+            $violations[] = new Violation($path, $line, $class, 'none', 'none', ViolationType::FillableDeclared);
         }
 
         if ($model->getGuarded() === []) {
@@ -185,41 +185,19 @@ final class ModelConventions
     }
 
     /**
-     * The model's fillable columns come from a non-empty #[Fillable] attribute alone, as Laravel reads them.
+     * Whether the model or a parent declares fillable columns, by a #[Fillable] attribute or a $fillable list: a model
+     * writes its columns as properties, so it needs none (user message 22249).
      *
      * @param  class-string<Model>  $class
      */
-    private static function listsFillableOnlyInTheAttribute(string $class, Model $model): bool
-    {
-        $columns = self::fillableAttributeColumns($class);
-
-        return $columns !== [] && $columns === $model->getFillable() && ! self::declaresFillableProperty($class);
-    }
-
-    /**
-     * The columns of the #[Fillable] attribute on the model or the nearest parent that carries one; none without one.
-     *
-     * @param  class-string<Model>  $class
-     * @return list<string>
-     */
-    private static function fillableAttributeColumns(string $class): array
+    private static function declaresFillable(string $class, Model $model): bool
     {
         foreach (Reflector::of($class)->lineage() as $declaration) {
             if ($declaration->hasAttribute(Fillable::class)) {
-                return array_values($declaration->attribute(Fillable::class)->columns);
+                return true;
             }
         }
 
-        return [];
-    }
-
-    /**
-     * Whether the model or a parent writes a non-empty $fillable property beside or instead of the attribute.
-     *
-     * @param  class-string<Model>  $class
-     */
-    private static function declaresFillableProperty(string $class): bool
-    {
-        return Reflector::of($class)->property('fillable')->defaultValue() !== [];
+        return $model->getFillable() !== [];
     }
 }

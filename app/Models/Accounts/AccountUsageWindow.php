@@ -17,7 +17,6 @@ use App\Models\Concerns\RemovedWithAccount;
 use App\Models\Support\AccountOwnerScope;
 use App\Values\UsageWindowReading;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -39,12 +38,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[Fillable([
-    'account_id',
-    'sign_in_generation',
-    'limit_id',
-    'slot',
-])]
 final class AccountUsageWindow extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -78,12 +71,11 @@ final class AccountUsageWindow extends Model implements EventSource, ReadableMod
      */
     public static function create(Account $account, int $generation, UsageWindowReading $reading): void
     {
-        $window = new self([
-            'account_id' => $account->id,
-            'sign_in_generation' => $generation,
-            'limit_id' => $reading->limitId,
-            'slot' => $reading->slot->value,
-        ]);
+        $window = new self();
+        $window->account_id = $account->id;
+        $window->sign_in_generation = $generation;
+        $window->limit_id = $reading->limitId;
+        $window->slot = $reading->slot->value;
 
         $window->fillWith($reading);
         $window->assertSaved($window->save());

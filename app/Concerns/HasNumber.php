@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * The model side of Numbered: numbered within the journal unless the model names another holder, given its number
- * as it is created, and never renumbered after. Keep number and number_group_id out of the model's Fillable.
+ * as it is created, and never renumbered after.
  *
  * @property string $number_group_id
  * @property int $number

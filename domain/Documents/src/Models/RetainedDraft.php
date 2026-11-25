@@ -17,7 +17,6 @@ use Domain\Documents\Events\DraftKept;
 use Domain\Documents\Exceptions\RecordImmutable;
 use Domain\Documents\Support\DraftText;
 use Domain\Documents\Values\RetainedDraftView;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -39,16 +38,6 @@ use Illuminate\Support\Carbon;
  * @property mixed $view attribute
  * @property mixed $working_text attribute
  */
-#[Fillable([
-    'document_id',
-    'base_revision_number',
-    'title',
-    'abstract',
-    'body',
-    'reason',
-    'author_type',
-    'author_id',
-])]
 final class RetainedDraft extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -72,16 +61,15 @@ final class RetainedDraft extends Model implements EventSource, ReadableModel
 
     public static function create(DocumentDraft $draft, string $reason, ActorContext|null $parent): self
     {
-        $kept = new self([
-            'document_id' => $draft->document_id,
-            'base_revision_number' => $draft->base_revision_number,
-            'title' => $draft->title,
-            'abstract' => $draft->abstract,
-            'body' => $draft->body,
-            'reason' => $reason,
-            'author_type' => $draft->author_type,
-            'author_id' => $draft->author_id,
-        ]);
+        $kept = new self();
+        $kept->document_id = $draft->document_id;
+        $kept->base_revision_number = $draft->base_revision_number;
+        $kept->title = $draft->title;
+        $kept->abstract = $draft->abstract;
+        $kept->body = $draft->body;
+        $kept->reason = $reason;
+        $kept->author_type = $draft->author_type;
+        $kept->author_id = $draft->author_id;
 
         $kept->assertSaved($kept->save());
         $kept->raise(new DraftKept($kept->id, $kept->document_id, $parent));

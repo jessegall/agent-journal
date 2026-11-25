@@ -25,7 +25,6 @@ use App\Support\RecordIdentity;
 use App\Support\ShareRelationSet;
 use App\Values\TextAnchor;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -57,11 +56,6 @@ use Illuminate\Support\Carbon;
  * @property mixed $place_label attribute
  * @property mixed $target attribute
  */
-#[Fillable([
-    'body',
-    'submission_key',
-    'submission_hash',
-])]
 final class Comment extends Model implements EventSource, ReadableModel, Shareable
 {
     use BoundedReads;
@@ -105,11 +99,10 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
         string $key,
         string $hash,
     ): self {
-        $comment = new self([
-            'body' => $body,
-            'submission_key' => $key,
-            'submission_hash' => $hash,
-        ]);
+        $comment = new self();
+        $comment->body = $body;
+        $comment->submission_key = $key;
+        $comment->submission_hash = $hash;
         $comment->target_type = $target->getMorphClass();
         $comment->target_id = (string) $target->getKey();
         $comment->author_type = $author->type;

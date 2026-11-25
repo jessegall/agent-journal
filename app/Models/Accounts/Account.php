@@ -41,7 +41,6 @@ use App\Values\CleanupProgress;
 use App\Values\SelectedAccount;
 use App\Values\SignInIdentity;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -82,10 +81,6 @@ use Illuminate\Support\Str;
  * @property mixed $selected_for_start attribute
  * @property mixed $start_unavailable_reason attribute
  */
-#[Fillable([
-    'account_protocol',
-    'label',
-])]
 final class Account extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -133,7 +128,8 @@ final class Account extends Model implements EventSource, ReadableModel
      */
     public static function create(string $driver, AccountLabel $label, string $directory): self
     {
-        $account = new self(['account_protocol' => $driver]);
+        $account = new self();
+        $account->account_protocol = $driver;
         $account->name($label);
         $account->state = AccountState::SignedIn;
         $account->directory = $directory;

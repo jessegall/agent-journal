@@ -27,7 +27,6 @@ use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;
 use App\Values\SelectedAccount;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -60,7 +59,6 @@ use Illuminate\Support\Str;
  * @property mixed $account_identity attribute
  * @property mixed $settings_identity attribute
  */
-#[Fillable(['execution_id'])]
 final class ProcessStart extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

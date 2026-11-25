@@ -12,7 +12,6 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\RunLogicalResult;
 use App\Enums\RunResultSource;
 use App\Events\Processes\RunOutcomeRecorded;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -32,13 +31,6 @@ use PhpOption\Option;
  * @property ?Carbon $updated_at
  */
 #[Table('run_outcomes')]
-#[Fillable([
-    'run_id',
-    'attempt_id',
-    'result',
-    'source',
-    'version',
-])]
 final class RunOutcome extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -69,13 +61,12 @@ final class RunOutcome extends Model implements EventSource, ReadableModel
         RunLogicalResult $result,
         RunResultSource $source,
     ): self {
-        $outcome = new self([
-            'run_id' => $run->id,
-            'attempt_id' => $attemptId,
-            'result' => $result,
-            'source' => $source,
-            'version' => 1,
-        ]);
+        $outcome = new self();
+        $outcome->run_id = $run->id;
+        $outcome->attempt_id = $attemptId;
+        $outcome->result = $result;
+        $outcome->source = $source;
+        $outcome->version = 1;
 
         $outcome->id = $outcome->newUniqueId();
 

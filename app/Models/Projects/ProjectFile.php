@@ -15,7 +15,6 @@ use App\Contracts\Records\ReadableModel;
 use App\Exceptions\TextVersionUnavailable;
 use App\Models\Records\Comment;
 use App\Values\TextVersion;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -37,7 +36,6 @@ use PhpOption\Option;
  * @property Collection<int, Comment>|Comment[] $comments
  * @property Collection<int, ProjectFileVersion>|ProjectFileVersion[] $versions
  */
-#[Fillable(['path'])]
 #[Table('project_files')]
 final class ProjectFile extends Model implements Commentable, Numbered, ReadableModel, TextContent
 {

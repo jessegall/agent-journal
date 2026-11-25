@@ -19,7 +19,6 @@ use App\Support\AssigneeIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Access\Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
@@ -56,11 +55,6 @@ use Laravel\Passkeys\Passkey;
  * @property Collection<int, DatabaseNotification>|DatabaseNotification[] $unreadNotifications
  */
 #[UseFactory(UserFactory::class)]
-#[Fillable([
-    'name',
-    'email',
-    'password',
-])]
 #[Hidden([
     'password',
     'two_factor_secret',
@@ -113,11 +107,13 @@ class User extends Authenticatable implements
      */
     public static function create(string $name, string $email, string $password): self
     {
-        return self::query()->create([
-            'name' => $name,
-            'email' => $email,
-            'password' => $password,
-        ]);
+        $user = new self();
+        $user->name = $name;
+        $user->email = $email;
+        $user->password = $password;
+        $user->save();
+
+        return $user;
     }
 
     // ----------[ Mutations ]----------
@@ -179,11 +175,10 @@ class User extends Authenticatable implements
      */
     public static function installOwner(string $name, string $email, string $password): self
     {
-        $owner = new self([
-            'name' => $name,
-            'email' => $email,
-            'password' => $password,
-        ]);
+        $owner = new self();
+        $owner->name = $name;
+        $owner->email = $email;
+        $owner->password = $password;
         $owner->setAttribute($owner->getKeyName(), $owner->newUniqueId());
 
         // The inserted row is returned as it is, so its caller sees wasRecentlyCreated; an owner already there is read.

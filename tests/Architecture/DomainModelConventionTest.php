@@ -15,9 +15,8 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * Every domain and core model lists its fillable attributes with #[Fillable([...])] only, is never open to mass
- * assignment,
- * is keyed by a ULID and can be linked.
+ * Every domain and core model declares no fillable columns, as it writes its columns as properties, is never open to
+ * mass assignment, is keyed by a ULID and can be linked.
  */
 #[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class DomainModelConventionTest extends TestCase
@@ -27,14 +26,13 @@ final class DomainModelConventionTest extends TestCase
         $violations = ModelConventions::modelViolations(DomainFiles::in([$this->fixtureFolder().'/Models']));
 
         $this->assertSame([
-            'AttributeAndPropertyModel' => 'fillable-not-listed',
+            'AttributeAndPropertyModel' => 'fillable-declared',
             'EmptyGuardedModel' => 'open-model',
             'EmptyGuardedPropertyModel' => 'open-model',
-            'EmptyListModel' => 'fillable-not-listed',
-            'InheritedPropertyModel' => 'fillable-not-listed',
-            'NoAttributeModel' => 'fillable-not-listed',
+            'EmptyListModel' => 'fillable-declared',
+            'InheritedPropertyModel' => 'fillable-declared',
             'OpenPivot' => 'open-model',
-            'PropertyOnlyModel' => 'fillable-not-listed',
+            'PropertyOnlyModel' => 'fillable-declared',
             'UnguardedModel' => 'open-model',
         ], $this->typesByModel($violations));
     }

@@ -10,7 +10,6 @@ use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
 use App\Values\SessionOutputPaths;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -30,14 +29,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $updated_at
  * @property mixed $paths attribute
  */
-#[Fillable([
-    'session_id',
-    'start_id',
-    'mapping_generation',
-    'conversation_id',
-    'transcript_path',
-    'output_directory',
-])]
 final class SessionOutputGrant extends Model implements ReadableModel
 {
     use BoundedReads;

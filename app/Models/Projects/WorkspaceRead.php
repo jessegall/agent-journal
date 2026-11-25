@@ -19,7 +19,6 @@ use App\Values\WorkReference;
 use App\Values\WorkspaceFacts;
 use App\Values\WorkspaceReadReference;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -51,17 +50,6 @@ use PhpOption\Some;
  * @property mixed $reference attribute
  */
 #[Table('workspace_reads')]
-#[Fillable([
-    'read_reference',
-    'actor_type',
-    'actor_id',
-    'work',
-    'available',
-    'dirty',
-    'clean',
-    'generation',
-    'sampled_at',
-])]
 final class WorkspaceRead extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -161,12 +149,11 @@ final class WorkspaceRead extends Model implements EventSource, ReadableModel
      */
     public static function retain(WorkspaceReadReference $reference, ActorIdentity $actor, WorkReference $work): self
     {
-        $read = new self([
-            'read_reference' => $reference->key,
-            'actor_type' => $actor->type->value,
-            'actor_id' => $actor->id,
-            'work' => $work->key,
-        ]);
+        $read = new self();
+        $read->read_reference = $reference->key;
+        $read->actor_type = $actor->type->value;
+        $read->actor_id = $actor->id;
+        $read->work = $work->key;
         $read->setAttribute($read->getKeyName(), $read->newUniqueId());
         $read->insertIfAbsent();
 

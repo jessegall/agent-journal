@@ -9,7 +9,6 @@ use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -26,10 +25,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $updated_at
  */
 #[Table('helper_messages')]
-#[Fillable([
-    'text',
-    'suggested_command',
-])]
 final class HelperMessage extends Model implements ReadableModel
 {
     use BelongsToOneActor;

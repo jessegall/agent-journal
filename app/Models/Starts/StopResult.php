@@ -12,7 +12,6 @@ use App\Enums\StopResultType;
 use App\Values\StopResultLine;
 use App\Values\StopResultReport;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -37,18 +36,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $updated_at
  * @property StopAttempt $attempt
  */
-#[Fillable([
-    'condition_key',
-    'definition_hash',
-    'status',
-    'started_at',
-    'ended_at',
-    'exit_code',
-    'signal',
-    'summary',
-    'output',
-    'truncated',
-])]
 final class StopResult extends Model implements ReadableModel
 {
     use BoundedReads;

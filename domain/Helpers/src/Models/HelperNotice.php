@@ -15,7 +15,6 @@ use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Events\HelperNoticeDelivered;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -36,10 +35,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $updated_at
  */
 #[Table('helper_notices')]
-#[Fillable([
-    'job_state',
-    'text',
-])]
 final class HelperNotice extends Model implements EventSource, ReadableModel
 {
     use BelongsToOneActor;

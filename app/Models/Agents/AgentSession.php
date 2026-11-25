@@ -37,7 +37,6 @@ use App\Values\SelectionSource;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Closure;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -82,19 +81,6 @@ use Illuminate\Support\Carbon;
  * @property StartToken $startToken
  * @property Collection<int, ConversationVisit>|ConversationVisit[] $visits
  */
-#[Fillable([
-    'driver_key',
-    'current_conversation_id',
-    'discovered_at',
-    'model',
-    'requested_model_type',
-    'requested_model',
-    'driver_source',
-    'profile_key',
-    'profile_revision',
-    'start_request_id',
-    'skill_generation_id',
-])]
 final class AgentSession extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

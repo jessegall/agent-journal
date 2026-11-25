@@ -12,7 +12,6 @@ use App\Contracts\Records\ReadableModel;
 use App\Events\Engine\NumberGroupRetired;
 use App\Events\Engine\NumberTaken;
 use App\Exceptions\NumberLimitReached;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -29,11 +28,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[Fillable([
-    'holder_type',
-    'holder_id',
-    'record_type',
-])]
 final class NumberGroup extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -69,11 +63,11 @@ final class NumberGroup extends Model implements EventSource, ReadableModel
      */
     public static function create(string $holderType, string $holderId, string $recordType): void
     {
-        self::query()->create([
-            'holder_type' => $holderType,
-            'holder_id' => $holderId,
-            'record_type' => $recordType,
-        ]);
+        $numberGroup = new self();
+        $numberGroup->holder_type = $holderType;
+        $numberGroup->holder_id = $holderId;
+        $numberGroup->record_type = $recordType;
+        $numberGroup->assertSaved($numberGroup->save());
     }
 
     // ----------[ Mutations ]----------

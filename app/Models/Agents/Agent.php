@@ -27,7 +27,6 @@ use App\Support\AssigneeIdentity;
 use App\Values\RunningRuntime;
 use App\Values\StackTarget;
 use Carbon\CarbonInterface;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -50,10 +49,6 @@ use PhpOption\Some;
  * @property ?Carbon $updated_at
  * @property Collection<int, InboxMember>|InboxMember[] $inboxMemberships
  */
-#[Fillable([
-    'name',
-    'profile_key',
-])]
 final class Agent extends Model implements
     AnswersQuestions,
     Assignee,
@@ -87,10 +82,12 @@ final class Agent extends Model implements
      */
     public static function create(string $name, string $profileKey): self
     {
-        return self::query()->create([
-            'name' => $name,
-            'profile_key' => $profileKey,
-        ]);
+        $agent = new self();
+        $agent->name = $name;
+        $agent->profile_key = $profileKey;
+        $agent->assertSaved($agent->save());
+
+        return $agent;
     }
 
     // ----------[ Mutations ]----------

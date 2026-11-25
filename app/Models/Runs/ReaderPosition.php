@@ -16,7 +16,6 @@ use App\Events\Processes\ReaderPositionAdvanced;
 use App\Events\Processes\ReaderPositionFailed;
 use App\Events\Processes\ReaderPositionRewound;
 use App\Values\ReaderCheckpoint;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -33,13 +32,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[Fillable([
-    'part_run_id',
-    'reader_revision_id',
-    'purpose',
-    'checkpoint',
-    'interpretation',
-])]
 final class ReaderPosition extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -108,13 +100,12 @@ final class ReaderPosition extends Model implements EventSource, ReadableModel
         PositionPurpose $purpose,
         ReaderCheckpoint $checkpoint,
     ): self {
-        $identity = ['part_run_id' => $part->id, 'reader_revision_id' => $revision->id, 'purpose' => $purpose];
-
-        $position = new self([
-            ...$identity,
-            'checkpoint' => $checkpoint,
-            'interpretation' => InterpretationState::Provisional,
-        ]);
+        $position = new self();
+        $position->part_run_id = $part->id;
+        $position->reader_revision_id = $revision->id;
+        $position->purpose = $purpose;
+        $position->checkpoint = $checkpoint;
+        $position->interpretation = InterpretationState::Provisional;
 
         $position->setAttribute($position->getKeyName(), $position->newUniqueId());
         $position->insertIfAbsent();

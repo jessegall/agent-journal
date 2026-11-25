@@ -44,7 +44,6 @@ use App\Values\ScriptParameter;
 use App\Values\ScriptProgress;
 use Carbon\CarbonImmutable;
 use Closure;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -95,23 +94,6 @@ use Illuminate\Support\Carbon;
  * @property mixed $status attribute
  * @property AgentRuntime $runtime
  */
-#[Fillable([
-    'agent_runtime_id',
-    'sequence',
-    'operation',
-    'idempotency_key',
-    'payload_digest',
-    'message',
-    'model',
-    'effort',
-    'expected_timing',
-    'expected_observed_at',
-    'script_id',
-    'script_version',
-    'script_parameters',
-    'navigation_request_id',
-    'navigation_round',
-])]
 final class DriverRequest extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

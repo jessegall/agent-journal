@@ -45,7 +45,6 @@ use Domain\Documents\Models\Concerns\Settles;
 use Domain\Documents\Models\Concerns\SharedWithComments;
 use Domain\Documents\Support\Cards\ReportDockCard;
 use Domain\Documents\Support\RecordViews;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -73,14 +72,6 @@ use Illuminate\Support\Carbon;
  * @property mixed $view attribute
  * @property Collection<int, Comment>|Comment[] $comments
  */
-#[Fillable([
-    'title',
-    'abstract',
-    'body',
-    'creator_type',
-    'creator_id',
-    'filed_at',
-])]
 final class Report extends Model implements Commentable, Dockable, EventSource, Numbered, ReadableModel, Shareable, TextContent
 {
     use BoundedReads;
@@ -119,14 +110,13 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
      */
     public static function create(string $title, string $abstract, MarkdownText $body, Actor $author): self
     {
-        $report = new self([
-            'title' => trim($title),
-            'abstract' => trim($abstract),
-            'body' => $body->text,
-            'creator_type' => $author->actorType(),
-            'creator_id' => $author->actorId(),
-            'filed_at' => CarbonImmutable::now(),
-        ]);
+        $report = new self();
+        $report->title = trim($title);
+        $report->abstract = trim($abstract);
+        $report->body = $body->text;
+        $report->creator_type = $author->actorType();
+        $report->creator_id = $author->actorId();
+        $report->filed_at = CarbonImmutable::now();
 
         $report->assertSaved($report->save());
         $report->raise(new ReportFiled($report->id, $report->number, ActorContext::of($author)));

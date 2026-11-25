@@ -13,7 +13,6 @@ use App\Events\Messages\NotificationReceiptHidden;
 use App\Events\Messages\NotificationReceiptRead;
 use App\Events\Messages\NotificationReceiptRevealed;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -34,11 +33,6 @@ use PhpOption\Option;
  * @property NotificationOccurrence $occurrence
  */
 #[Table('notification_receipts')]
-#[Fillable([
-    'occurrence_id',
-    'scope_id',
-    'sequence',
-])]
 final class NotificationReceipt extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -68,11 +62,10 @@ final class NotificationReceipt extends Model implements EventSource, ReadableMo
      */
     public static function create(NotificationOccurrence $occurrence, NotificationScope $scope): self
     {
-        $receipt = new self([
-            'occurrence_id' => $occurrence->id,
-            'scope_id' => $scope->id,
-            'sequence' => $scope->next_sequence,
-        ]);
+        $receipt = new self();
+        $receipt->occurrence_id = $occurrence->id;
+        $receipt->scope_id = $scope->id;
+        $receipt->sequence = $scope->next_sequence;
 
         $receipt->id = $receipt->newUniqueId();
         $receipt->insertIfAbsent();

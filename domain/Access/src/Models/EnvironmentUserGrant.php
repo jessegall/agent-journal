@@ -14,7 +14,6 @@ use App\Enums\InboxPermission;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Access\Events\EnvironmentUserGrantRevoked;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -35,16 +34,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[Fillable([
-    'user_id',
-    'environment_key',
-    'can_open_inboxes',
-    'can_manage_members',
-    'can_receive_invitations',
-    'granted_by_type',
-    'granted_by_id',
-    'granted_at',
-])]
 final class EnvironmentUserGrant extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -83,14 +72,16 @@ final class EnvironmentUserGrant extends Model implements EventSource, ReadableM
         ActorIdentity $grantedBy,
         CarbonImmutable $at,
     ): self {
-        $grant = new self([
-            'user_id' => $user->id,
-            'environment_key' => $environmentId ?? self::LOCAL_ENVIRONMENT,
-            ...self::columnsOf($permissions),
-            'granted_by_type' => $grantedBy->type->value,
-            'granted_by_id' => $grantedBy->id,
-            'granted_at' => $at,
-        ]);
+        $grant = new self();
+        $grant->user_id = $user->id;
+        $grant->environment_key = $environmentId ?? self::LOCAL_ENVIRONMENT;
+        $grant->granted_by_type = $grantedBy->type->value;
+        $grant->granted_by_id = $grantedBy->id;
+        $grant->granted_at = $at;
+
+        foreach (InboxPermission::cases() as $permission) {
+            $grant->{$permission->column()} = in_array($permission, $permissions, true);
+        }
 
         $grant->save();
 
@@ -114,21 +105,6 @@ final class EnvironmentUserGrant extends Model implements EventSource, ReadableM
     }
 
     // ----------[ Internals ]----------
-
-    /**
-     * @param  list<InboxPermission>  $permissions
-     * @return array<string, bool>
-     */
-    private static function columnsOf(array $permissions): array
-    {
-        $columns = [];
-
-        foreach (InboxPermission::cases() as $permission) {
-            $columns[$permission->column()] = in_array($permission, $permissions, true);
-        }
-
-        return $columns;
-    }
 
     // ----------[ Scopes ]----------
 

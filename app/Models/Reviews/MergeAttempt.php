@@ -22,7 +22,6 @@ use App\Models\Support\HasActorColumns;
 use App\Models\Support\HasWorkColumns;
 use App\Values\ApprovedHead;
 use App\Values\MergeOutcome;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -58,27 +57,6 @@ use Illuminate\Support\Carbon;
  * @property mixed $result_ref attribute
  */
 #[Table('merge_attempts')]
-#[Fillable([
-    'decision_id',
-    'work_type',
-    'work_id',
-    'certificate',
-    'actor_type',
-    'actor_id',
-    'ask_id',
-    'ask_version',
-    'target_branch',
-    'base',
-    'head',
-    'import_ref',
-    'state',
-    'target_before',
-    'result',
-    'refusal',
-    'evidence',
-    'owner_attested',
-    'acknowledged_at',
-])]
 final class MergeAttempt extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -200,20 +178,20 @@ final class MergeAttempt extends Model implements EventSource, ReadableModel
      */
     public static function retain(ApprovedHead $approved): self
     {
-        $attempt = new self([
-            'decision_id' => $approved->decision->id,
-            'work_type' => $approved->work->type,
-            'work_id' => $approved->work->id,
-            'certificate' => $approved->certificate,
-            ...$approved->admitted->asColumns('actor'),
-            'ask_id' => $approved->askId,
-            'ask_version' => $approved->version,
-            'target_branch' => $approved->targetBranch,
-            'base' => $approved->base,
-            'head' => $approved->head,
-            'import_ref' => $approved->importRef,
-            'state' => MergeAttemptState::Prepared,
-        ]);
+        $attempt = new self();
+        $attempt->decision_id = $approved->decision->id;
+        $attempt->work_type = $approved->work->type;
+        $attempt->work_id = $approved->work->id;
+        $attempt->certificate = $approved->certificate;
+        $attempt->actor_type = $approved->admitted->type->value;
+        $attempt->actor_id = $approved->admitted->id;
+        $attempt->ask_id = $approved->askId;
+        $attempt->ask_version = $approved->version;
+        $attempt->target_branch = $approved->targetBranch;
+        $attempt->base = $approved->base;
+        $attempt->head = $approved->head;
+        $attempt->import_ref = $approved->importRef;
+        $attempt->state = MergeAttemptState::Prepared;
 
         $attempt->setAttribute($attempt->getKeyName(), $attempt->newUniqueId());
         $attempt->insertIfAbsent();

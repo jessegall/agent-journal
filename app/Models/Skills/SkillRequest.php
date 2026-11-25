@@ -10,7 +10,6 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Models\Support\HasActorColumns;
 use App\Support\ActorIdentity;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -28,14 +27,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[Fillable([
-    'actor_type',
-    'actor_id',
-    'request_id',
-    'input_digest',
-    'skill_id',
-    'skill_revision_id',
-])]
 final class SkillRequest extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -61,14 +52,16 @@ final class SkillRequest extends Model implements ReadableModel
         string $inputDigest,
         SkillRevision $revision,
     ): self {
-        return self::query()->create([
-            'actor_type' => $actor->type,
-            'actor_id' => $actor->id,
-            'request_id' => $requestId,
-            'input_digest' => $inputDigest,
-            'skill_id' => $revision->skill_id,
-            'skill_revision_id' => $revision->id,
-        ]);
+        $skillRequest = new self();
+        $skillRequest->actor_type = $actor->type;
+        $skillRequest->actor_id = $actor->id;
+        $skillRequest->request_id = $requestId;
+        $skillRequest->input_digest = $inputDigest;
+        $skillRequest->skill_id = $revision->skill_id;
+        $skillRequest->skill_revision_id = $revision->id;
+        $skillRequest->save();
+
+        return $skillRequest;
     }
 
     // ----------[ Predicates ]----------

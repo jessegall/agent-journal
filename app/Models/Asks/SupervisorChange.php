@@ -11,7 +11,6 @@ use App\Exceptions\SupervisorRouteRefused;
 use App\Support\ActorIdentity;
 use App\Values\AskTypeKey;
 use App\Values\SupervisorTarget;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -27,15 +26,6 @@ use Illuminate\Support\Carbon;
  * @property int $version
  * @property Carbon $created_at
  */
-#[Fillable([
-    'supervisor_link_id',
-    'actor_type',
-    'actor_id',
-    'route',
-    'previous_target',
-    'target',
-    'version',
-])]
 final class SupervisorChange extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -58,15 +48,15 @@ final class SupervisorChange extends Model implements ReadableModel
         SupervisorTarget $previous,
         SupervisorTarget $target,
     ): void {
-        self::query()->create([
-            'supervisor_link_id' => $link->id,
-            'actor_type' => $author->type->value,
-            'actor_id' => $author->id,
-            'route' => AskTypeKey::routeOf($type),
-            'previous_target' => $previous->key,
-            'target' => $target->key,
-            'version' => $link->versionFor($type),
-        ]);
+        $supervisorChange = new self();
+        $supervisorChange->supervisor_link_id = $link->id;
+        $supervisorChange->actor_type = $author->type->value;
+        $supervisorChange->actor_id = $author->id;
+        $supervisorChange->route = AskTypeKey::routeOf($type);
+        $supervisorChange->previous_target = $previous->key;
+        $supervisorChange->target = $target->key;
+        $supervisorChange->version = $link->versionFor($type);
+        $supervisorChange->save();
     }
 
     // ----------[ Asserts ]----------

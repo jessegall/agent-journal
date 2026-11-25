@@ -11,7 +11,6 @@ use App\Enums\ClaimBasis;
 use App\Models\Inboxes\InboxMember;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentReference;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -29,12 +28,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $updated_at
  */
 #[Table('claim_authorizations')]
-#[Fillable([
-    'claim_assignment_id',
-    'basis_type',
-    'participation_assignment_id',
-    'work_assignment_id',
-])]
 final class ClaimAuthorization extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -98,12 +91,11 @@ final class ClaimAuthorization extends Model implements ReadableModel
         string|null $memberId,
         string $workId,
     ): self {
-        $proof = new self([
-            'claim_assignment_id' => $claim->id,
-            'basis_type' => $basis,
-            'inbox_member_id' => $memberId,
-            'work_assignment_id' => $workId,
-        ]);
+        $proof = new self();
+        $proof->claim_assignment_id = $claim->id;
+        $proof->basis_type = $basis;
+        $proof->inbox_member_id = $memberId;
+        $proof->work_assignment_id = $workId;
 
         $proof->save();
 

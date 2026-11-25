@@ -15,7 +15,6 @@ use App\Events\Accounts\AccountNoticeRecorded;
 use App\Events\Accounts\AccountNoticeResolved;
 use App\Models\Support\AccountOwnerScope;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -31,10 +30,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[Fillable([
-    'driver',
-    'reason',
-])]
 final class AccountNotice extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -62,10 +57,9 @@ final class AccountNotice extends Model implements EventSource, ReadableModel
      */
     public static function create(string $driver, AccountNoticeReason $reason): self
     {
-        $notice = new self([
-            'driver' => $driver,
-            'reason' => $reason->value,
-        ]);
+        $notice = new self();
+        $notice->driver = $driver;
+        $notice->reason = $reason->value;
         $notice->assertSaved($notice->save());
         $notice->raise(new AccountNoticeRecorded($notice->driver, $notice->id));
 

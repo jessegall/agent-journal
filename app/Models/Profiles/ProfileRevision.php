@@ -29,7 +29,6 @@ use App\Values\ProfileSnapshot;
 use App\Values\ScriptSource;
 use App\Values\SupervisorProfile;
 use App\Values\SupervisorRoutes;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -67,25 +66,6 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  * @property mixed $script attribute
  */
-#[Fillable([
-    'profile_id',
-    'revision',
-    'base',
-    'instructions',
-    'preferred_tier',
-    'skill_allowlist',
-    'required_skills',
-    'start_policy',
-    'authorization',
-    'supervisor',
-    'instances',
-    'script_source',
-    'script_commands',
-    'compiled_script',
-    'script_definition_digest',
-    'author_type',
-    'author_id',
-])]
 final class ProfileRevision extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -132,24 +112,26 @@ final class ProfileRevision extends Model implements ReadableModel
     ): self {
         $latest = self::query()->ofProfile($profile)->max('revision');
 
-        return self::query()->create([
-            'profile_id' => $profile->id,
-            'revision' => (is_numeric($latest) ? (int) $latest : 0) + 1,
-            'base' => $definition->base,
-            'instructions' => $definition->instructions,
-            'preferred_tier' => $definition->preferredTier,
-            'skill_allowlist' => $definition->skillAllowlist,
-            'required_skills' => $definition->requiredSkills,
-            'start_policy' => $definition->start,
-            'authorization' => $definition->authorization,
-            'supervisor' => $definition->supervisor,
-            'instances' => $definition->instances,
-            'script_source' => $source,
-            'compiled_script' => $compiled?->graph,
-            'script_definition_digest' => $compiled?->definitionDigest,
-            'author_type' => $author->type,
-            'author_id' => $author->id,
-        ]);
+        $profileRevision = new self();
+        $profileRevision->profile_id = $profile->id;
+        $profileRevision->revision = (is_numeric($latest) ? (int) $latest : 0) + 1;
+        $profileRevision->base = $definition->base;
+        $profileRevision->instructions = $definition->instructions;
+        $profileRevision->preferred_tier = $definition->preferredTier;
+        $profileRevision->skill_allowlist = $definition->skillAllowlist;
+        $profileRevision->required_skills = $definition->requiredSkills;
+        $profileRevision->start_policy = $definition->start;
+        $profileRevision->authorization = $definition->authorization;
+        $profileRevision->supervisor = $definition->supervisor;
+        $profileRevision->instances = $definition->instances;
+        $profileRevision->script_source = $source;
+        $profileRevision->compiled_script = $compiled?->graph;
+        $profileRevision->script_definition_digest = $compiled?->definitionDigest;
+        $profileRevision->author_type = $author->type;
+        $profileRevision->author_id = $author->id;
+        $profileRevision->save();
+
+        return $profileRevision;
     }
 
     // ----------[ Transformers ]----------

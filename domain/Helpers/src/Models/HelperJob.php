@@ -31,7 +31,6 @@ use Domain\Helpers\Events\HelperJobSteered;
 use Domain\Helpers\Exceptions\HelperJobFinished;
 use Domain\Helpers\Values\HelperReceipt;
 use Domain\Helpers\Values\JobLaunch;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -65,14 +64,6 @@ use Illuminate\Support\Carbon;
  * @property mixed $launch attribute
  */
 #[Table('helper_jobs')]
-#[Fillable([
-    'brief',
-    'source_subjects',
-    'request_id',
-    'state',
-    'steering',
-    'profile_revision',
-])]
 final class HelperJob extends Model implements Assignable, EventSource, ReadableModel
 {
     use BelongsToOneActor;

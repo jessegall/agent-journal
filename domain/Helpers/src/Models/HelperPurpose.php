@@ -13,7 +13,6 @@ use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
 use Domain\Helpers\Enums\PurposeType;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -40,13 +39,6 @@ use PhpOption\Some;
  * @property mixed $subject_record attribute
  */
 #[Table('helper_purposes')]
-#[Fillable([
-    'profile_key',
-    'purpose_type',
-    'subject_type',
-    'subject_id',
-    'label',
-])]
 final class HelperPurpose extends Model implements ReadableModel
 {
     use BelongsToOneActor;
@@ -116,13 +108,12 @@ final class HelperPurpose extends Model implements ReadableModel
      */
     public static function forSubjectOnce(ActorIdentity $parent, string $profileKey, RecordIdentity $subject): self
     {
-        $purpose = new self([
-            'profile_key' => $profileKey,
-            'purpose_type' => PurposeType::Subject,
-            'subject_type' => $subject->type,
-            'subject_id' => $subject->id,
-            'label' => "{$subject->type}:{$subject->id}",
-        ]);
+        $purpose = new self();
+        $purpose->profile_key = $profileKey;
+        $purpose->purpose_type = PurposeType::Subject;
+        $purpose->subject_type = $subject->type;
+        $purpose->subject_id = $subject->id;
+        $purpose->label = "{$subject->type}:{$subject->id}";
 
         $purpose->id = strtolower((string) Str::ulid());
         $purpose->belongTo($parent);

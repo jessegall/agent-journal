@@ -22,7 +22,6 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -51,10 +50,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $updated_at
  * @property AgentRuntime $runtime
  */
-#[Fillable([
-    'state',
-    'expires_at',
-])]
 final class TerminalGrant extends Model implements EventSource, ReadableModel
 {
     use BelongsToOneActor;

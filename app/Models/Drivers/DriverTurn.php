@@ -16,7 +16,6 @@ use App\Events\Sessions\ClosingWordsOffered;
 use App\Events\Sessions\DriverTurnFinished;
 use App\Models\Agents\AgentRuntime;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -41,16 +40,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $updated_at
  * @property AgentRuntime $runtime
  */
-#[Fillable(
-    [
-        'agent_runtime_id',
-        'process_generation',
-        'native_prompt_id',
-        'observed_model',
-        'observed_effort',
-        'started_at',
-    ],
-)]
 final class DriverTurn extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -88,12 +77,14 @@ final class DriverTurn extends Model implements EventSource, ReadableModel
             return $existing;
         }
 
-        return self::query()->create([
-            'agent_runtime_id' => $runtimeId,
-            'process_generation' => $processGeneration,
-            'native_prompt_id' => $nativePromptId,
-            'started_at' => $startedAt,
-        ]);
+        $driverTurn = new self();
+        $driverTurn->agent_runtime_id = $runtimeId;
+        $driverTurn->process_generation = $processGeneration;
+        $driverTurn->native_prompt_id = $nativePromptId;
+        $driverTurn->started_at = $startedAt;
+        $driverTurn->assertSaved($driverTurn->save());
+
+        return $driverTurn;
     }
 
     /**

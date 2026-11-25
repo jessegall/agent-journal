@@ -12,7 +12,6 @@ use App\Exceptions\RevisionImmutable;
 use App\Models\CommandRules\CommandRequest;
 use App\Support\ActorIdentity;
 use App\Values\ReaderDefinition;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -36,16 +35,6 @@ use Illuminate\Support\Carbon;
  * @property CommandRequest $commandRequest
  * @property Collection<int, ReaderProof>|ReaderProof[] $proofs
  */
-#[Fillable([
-    'project_key',
-    'command_request_id',
-    'declaration_revision',
-    'operation',
-    'contract_label',
-    'definition',
-    'actor_type',
-    'actor_id',
-])]
 final class ReaderRevision extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -82,16 +71,18 @@ final class ReaderRevision extends Model implements ReadableModel
         ReaderDefinition $definition,
         ActorIdentity $author,
     ): self {
-        return self::query()->create([
-            'project_key' => $request->project_key,
-            'command_request_id' => $request->id,
-            'declaration_revision' => $declarationRevision,
-            'operation' => $request->operation,
-            'contract_label' => $contractLabel,
-            'definition' => $definition->toArray(),
-            'actor_type' => $author->type->value,
-            'actor_id' => $author->id,
-        ]);
+        $readerRevision = new self();
+        $readerRevision->project_key = $request->project_key;
+        $readerRevision->command_request_id = $request->id;
+        $readerRevision->declaration_revision = $declarationRevision;
+        $readerRevision->operation = $request->operation;
+        $readerRevision->contract_label = $contractLabel;
+        $readerRevision->definition = $definition->toArray();
+        $readerRevision->actor_type = $author->type->value;
+        $readerRevision->actor_id = $author->id;
+        $readerRevision->save();
+
+        return $readerRevision;
     }
 
     public function isProven(): bool

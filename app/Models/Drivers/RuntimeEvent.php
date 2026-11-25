@@ -11,7 +11,6 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\RuntimeEventType;
 use App\Models\Agents\AgentRuntime;
 use App\Values\RecordedEvent;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -30,13 +29,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $updated_at
  */
 #[Table('runtime_events')]
-#[Fillable([
-    'agent_runtime_id',
-    'generation',
-    'sequence',
-    'event_type',
-    'driver_request_id',
-])]
 final class RuntimeEvent extends Model implements ReadableModel
 {
     use BoundedReads;

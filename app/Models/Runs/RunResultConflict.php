@@ -8,7 +8,6 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\RunLogicalResult;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -23,12 +22,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  */
 #[Table('run_result_conflicts')]
-#[Fillable([
-    'run_id',
-    'attempt_id',
-    'kept_result',
-    'offered_result',
-])]
 final class RunResultConflict extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -52,12 +45,11 @@ final class RunResultConflict extends Model implements ReadableModel
 
     public static function create(RunOutcome $kept, RunLogicalResult $offered): self
     {
-        $conflict = new self([
-            'run_id' => $kept->run_id,
-            'attempt_id' => $kept->attempt_id,
-            'kept_result' => $kept->result,
-            'offered_result' => $offered,
-        ]);
+        $conflict = new self();
+        $conflict->run_id = $kept->run_id;
+        $conflict->attempt_id = $kept->attempt_id;
+        $conflict->kept_result = $kept->result;
+        $conflict->offered_result = $offered;
 
         $conflict->save();
 

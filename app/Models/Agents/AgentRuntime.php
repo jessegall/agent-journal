@@ -34,7 +34,6 @@ use App\Values\PinnedDriver;
 use App\Values\RuntimeIntent;
 use Carbon\CarbonImmutable;
 use Closure;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -80,15 +79,6 @@ use PhpOption\Option;
  * @property AgentSession $session
  * @property Collection<int, TerminalView>|TerminalView[] $terminalViews
  */
-#[Fillable([
-    'agent_session_id',
-    'host_id',
-    'driver_type',
-    'driver_key',
-    'driver_build',
-    'profile',
-    'canonical_folder',
-])]
 final class AgentRuntime extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

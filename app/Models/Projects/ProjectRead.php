@@ -23,7 +23,6 @@ use App\Models\Support\HasActorColumns;
 use App\Support\ActorIdentity;
 use App\Values\ProjectFileText;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -54,11 +53,6 @@ use Spatie\LaravelData\DataCollection;
  * @property ?Carbon $updated_at
  */
 #[Table('project_reads')]
-#[Fillable([
-    'type',
-    'path',
-    'state',
-])]
 final class ProjectRead extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

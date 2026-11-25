@@ -23,7 +23,6 @@ use App\Values\PublicationManifest;
 use App\Values\PublicationStatus;
 use Carbon\CarbonImmutable;
 use Closure;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -54,23 +53,6 @@ use Illuminate\Support\Carbon;
  * @property mixed $target_key attribute
  * @property mixed $target_name attribute
  */
-#[Fillable([
-    'session_id',
-    'skill_protocol',
-    'target',
-    'generation_id',
-    'selection_digest',
-    'skill_keys',
-    'expected_previous_generation_id',
-    'fencing_version',
-    'lease_holder',
-    'lease_until',
-    'progress',
-    'state',
-    'open_key',
-    'manifest',
-    'error',
-])]
 final class SkillPublication extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -104,17 +86,19 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
         PublicationIntent $intent,
         string|null $expectedPreviousGenerationId,
     ): self {
-        return self::query()->create([
-            'session_id' => $intent->sessionId,
-            'skill_protocol' => $intent->driver,
-            'target' => $intent->target,
-            'generation_id' => $generation->id,
-            'selection_digest' => $intent->selectionDigest,
-            'skill_keys' => $intent->skillKeys,
-            'expected_previous_generation_id' => $expectedPreviousGenerationId,
-            'state' => PublicationState::Pending,
-            'open_key' => self::openKeyOf($intent->sessionId, $intent->target),
-        ]);
+        $skillPublication = new self();
+        $skillPublication->session_id = $intent->sessionId;
+        $skillPublication->skill_protocol = $intent->driver;
+        $skillPublication->target = $intent->target;
+        $skillPublication->generation_id = $generation->id;
+        $skillPublication->selection_digest = $intent->selectionDigest;
+        $skillPublication->skill_keys = $intent->skillKeys;
+        $skillPublication->expected_previous_generation_id = $expectedPreviousGenerationId;
+        $skillPublication->state = PublicationState::Pending;
+        $skillPublication->open_key = self::openKeyOf($intent->sessionId, $intent->target);
+        $skillPublication->assertSaved($skillPublication->save());
+
+        return $skillPublication;
     }
 
     // ----------[ Mutations ]----------

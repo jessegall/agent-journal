@@ -11,7 +11,6 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Events\Sessions\DriverBuildsApproved;
 use App\Values\DriverKey;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -25,10 +24,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[Fillable([
-    'driver_key',
-    'build_pins',
-])]
 final class DriverApproval extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -65,7 +60,16 @@ final class DriverApproval extends Model implements EventSource, ReadableModel
      */
     public static function forKey(DriverKey $key): self
     {
-        return self::query()->firstOrNew(['driver_key' => (string) $key]);
+        $existing = self::query()->where('driver_key', (string) $key)->first();
+
+        if ($existing !== null) {
+            return $existing;
+        }
+
+        $approval = new self();
+        $approval->driver_key = (string) $key;
+
+        return $approval;
     }
 
     /**

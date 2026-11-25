@@ -20,7 +20,6 @@ use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use App\Values\SkillKey;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -42,14 +41,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $updated_at
  * @property mixed $skill_key attribute
  */
-#[Fillable([
-    'key',
-    'owner_type',
-    'owner_id',
-    'environment',
-    'current_revision_id',
-    'retired_at',
-])]
 final class Skill extends Model implements EventSource, Numbered, ReadableModel
 {
     use BoundedReads;
@@ -77,14 +68,14 @@ final class Skill extends Model implements EventSource, Numbered, ReadableModel
      */
     public static function create(SkillKey $key, ActorIdentity $owner, string|null $environment): self
     {
-        return self::query()->create(
-            [
-                'key' => $key->key,
-                'owner_type' => $owner->type,
-                'owner_id' => $owner->id,
-                'environment' => $environment,
-            ],
-        );
+        $skill = new self();
+        $skill->key = $key->key;
+        $skill->owner_type = $owner->type;
+        $skill->owner_id = $owner->id;
+        $skill->environment = $environment;
+        $skill->assertSaved($skill->save());
+
+        return $skill;
     }
 
     // ----------[ Mutations ]----------

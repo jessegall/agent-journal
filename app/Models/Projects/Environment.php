@@ -12,7 +12,6 @@ use App\Contracts\Records\ReadableModel;
 use App\Events\Connections\EnvironmentOpened;
 use App\Exceptions\InvitationUnusable;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -25,10 +24,6 @@ use Illuminate\Support\Carbon;
  * @property string $label
  * @property ?Carbon $created_at
  */
-#[Fillable([
-    'project_id',
-    'label',
-])]
 final class Environment extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

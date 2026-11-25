@@ -13,7 +13,6 @@ use App\Enums\AssessmentOutcome;
 use App\Events\Processes\ResultReceiptSuperseded;
 use App\Values\PublishedResult;
 use App\Values\VerifiedOutput;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -36,19 +35,6 @@ use Illuminate\Support\Carbon;
  * @property ?string $superseded_by_id
  * @property Carbon $published_at
  */
-#[Fillable([
-    'project_key',
-    'process_run_id',
-    'part_run_id',
-    'attempt',
-    'work_fingerprint',
-    'rule_revision_id',
-    'reader_revision_id',
-    'exit_policy_digest',
-    'manifest_digest',
-    'output_assessment_id',
-    'outcome',
-])]
 final class ResultReceipt extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -79,19 +65,21 @@ final class ResultReceipt extends Model implements EventSource, ReadableModel
      */
     public static function create(VerifiedOutput $verified, string $exitPolicyDigest): self
     {
-        return self::query()->create([
-            'project_key' => $verified->run->project_key,
-            'process_run_id' => $verified->run->id,
-            'part_run_id' => $verified->part->id,
-            'attempt' => $verified->part->attempt,
-            'work_fingerprint' => $verified->run->tree_digest,
-            'rule_revision_id' => $verified->declaration->id,
-            'reader_revision_id' => $verified->assessment->reader_revision_id,
-            'exit_policy_digest' => $exitPolicyDigest,
-            'manifest_digest' => $verified->manifestDigest,
-            'output_assessment_id' => $verified->assessment->id,
-            'outcome' => $verified->assessment->outcome,
-        ]);
+        $resultReceipt = new self();
+        $resultReceipt->project_key = $verified->run->project_key;
+        $resultReceipt->process_run_id = $verified->run->id;
+        $resultReceipt->part_run_id = $verified->part->id;
+        $resultReceipt->attempt = $verified->part->attempt;
+        $resultReceipt->work_fingerprint = $verified->run->tree_digest;
+        $resultReceipt->rule_revision_id = $verified->declaration->id;
+        $resultReceipt->reader_revision_id = $verified->assessment->reader_revision_id;
+        $resultReceipt->exit_policy_digest = $exitPolicyDigest;
+        $resultReceipt->manifest_digest = $verified->manifestDigest;
+        $resultReceipt->output_assessment_id = $verified->assessment->id;
+        $resultReceipt->outcome = $verified->assessment->outcome;
+        $resultReceipt->assertSaved($resultReceipt->save());
+
+        return $resultReceipt;
     }
 
     // ----------[ Mutations ]----------

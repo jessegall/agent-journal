@@ -22,7 +22,6 @@ use App\Support\ActorIdentity;
 use App\Values\ExitBranch;
 use App\Values\ExitPolicy;
 use App\Values\NextStep;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -47,19 +46,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $updated_at
  * @property mixed $next_step attribute
  */
-#[Fillable([
-    'project_key',
-    'actor_type',
-    'actor_id',
-    'operation',
-    'binding_digest',
-    'source_digest',
-    'source_excerpt',
-    'source_line',
-    'working_folder',
-    'hold_reason',
-    'state',
-])]
 final class CommandRequest extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -88,19 +74,21 @@ final class CommandRequest extends Model implements ReadableModel
      */
     public static function create(string $projectKey, ActorIdentity $actor, OpenCommandRequestCommand $command): self
     {
-        return self::query()->create([
-            'project_key' => $projectKey,
-            'actor_type' => $actor->type->value,
-            'actor_id' => $actor->id,
-            'operation' => $command->operation,
-            'binding_digest' => $command->bindingDigest,
-            'source_digest' => hash('sha256', $command->line),
-            'source_excerpt' => self::excerptOf($command->line),
-            'source_line' => $command->line,
-            'working_folder' => $command->workingFolder,
-            'hold_reason' => $command->reason,
-            'state' => RequestState::CollectingDeclaration,
-        ]);
+        $commandRequest = new self();
+        $commandRequest->project_key = $projectKey;
+        $commandRequest->actor_type = $actor->type->value;
+        $commandRequest->actor_id = $actor->id;
+        $commandRequest->operation = $command->operation;
+        $commandRequest->binding_digest = $command->bindingDigest;
+        $commandRequest->source_digest = hash('sha256', $command->line);
+        $commandRequest->source_excerpt = self::excerptOf($command->line);
+        $commandRequest->source_line = $command->line;
+        $commandRequest->working_folder = $command->workingFolder;
+        $commandRequest->hold_reason = $command->reason;
+        $commandRequest->state = RequestState::CollectingDeclaration;
+        $commandRequest->save();
+
+        return $commandRequest;
     }
 
     // ----------[ Accessors ]----------

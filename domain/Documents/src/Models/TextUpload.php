@@ -19,7 +19,6 @@ use Domain\Documents\Exceptions\UploadChunkConflict;
 use Domain\Documents\Exceptions\UploadExpired;
 use Domain\Documents\Exceptions\UploadIncomplete;
 use Domain\Documents\Exceptions\UploadInvalid;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -39,12 +38,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[Fillable([
-    'type',
-    'bytes',
-    'digest',
-    'expires_at',
-])]
 final class TextUpload extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -78,12 +71,14 @@ final class TextUpload extends Model implements EventSource, ReadableModel
     {
         self::assertDeclarationValid($bytes, $digest);
 
-        return self::query()->create([
-            'type' => $type,
-            'bytes' => $bytes,
-            'digest' => strtolower($digest),
-            'expires_at' => CarbonImmutable::now()->addDay(),
-        ]);
+        $textUpload = new self();
+        $textUpload->type = $type;
+        $textUpload->bytes = $bytes;
+        $textUpload->digest = strtolower($digest);
+        $textUpload->expires_at = CarbonImmutable::now()->addDay();
+        $textUpload->assertSaved($textUpload->save());
+
+        return $textUpload;
     }
 
     // ----------[ Mutations ]----------

@@ -19,7 +19,6 @@ use App\Values\CommandRule;
 use App\Values\PermitLimits;
 use App\Values\PermittedLine;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -47,21 +46,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[Fillable([
-    'project_key',
-    'working_folder',
-    'source_line',
-    'source_digest',
-    'classification_digest',
-    'approved_classes',
-    'runner_type',
-    'runner_id',
-    'byte_cap',
-    'seconds_cap',
-    'expires_at',
-    'command_request_id',
-    'candidate_rules',
-])]
 final class EvidencePermit extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

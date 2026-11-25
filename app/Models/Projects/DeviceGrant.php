@@ -19,7 +19,6 @@ use App\Events\Connections\DeviceGrantRevoked;
 use App\Exceptions\DeviceGrantRefused;
 use App\Support\ShortReference;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -48,18 +47,6 @@ use Illuminate\Support\Carbon;
  * @property ProjectBinding $binding
  * @property ?Environment $environment
  */
-#[Fillable([
-    'binding_id',
-    'device_code_digest',
-    'user_code',
-    'scopes',
-    'state',
-    'code_expires_at',
-    'reference',
-    'generation',
-    'start_key',
-    'environment_id',
-])]
 final class DeviceGrant extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

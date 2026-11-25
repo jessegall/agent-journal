@@ -14,7 +14,6 @@ use App\Events\Reviews\WorkReservationHandedOff;
 use App\Events\Reviews\WorkReservationReleased;
 use App\Models\Support\HasActorColumns;
 use App\Support\ActorIdentity;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -36,14 +35,6 @@ use Illuminate\Support\Carbon;
  * @property CertifiedWork $certifiedWork
  */
 #[Table('work_reservations')]
-#[Fillable([
-    'actor_type',
-    'actor_id',
-    'generation',
-    'certificate',
-    'handed_off_at',
-    'released_at',
-])]
 final class WorkReservation extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -111,12 +102,11 @@ final class WorkReservation extends Model implements EventSource, ReadableModel
      */
     public static function retain(CertifiedWork $work, ActorIdentity $actor, int $generation): self
     {
-        $reservation = new self([
-            'certificate' => $work->certificate,
-            'actor_type' => $actor->type->value,
-            'actor_id' => $actor->id,
-            'generation' => $generation,
-        ]);
+        $reservation = new self();
+        $reservation->certificate = $work->certificate;
+        $reservation->actor_type = $actor->type->value;
+        $reservation->actor_id = $actor->id;
+        $reservation->generation = $generation;
 
         $reservation->setAttribute($reservation->getKeyName(), $reservation->newUniqueId());
         $reservation->insertIfAbsent();

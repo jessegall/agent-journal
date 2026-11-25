@@ -12,7 +12,6 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Events\Settings\SettingsRevised;
 use App\Support\Storage\SettingsDocument;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -30,11 +29,6 @@ use PhpOption\Option;
  * @property ?Carbon $updated_at
  */
 #[Table('settings_records')]
-#[Fillable([
-    'owner',
-    'revision',
-    'document',
-])]
 final class SettingsRecord extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

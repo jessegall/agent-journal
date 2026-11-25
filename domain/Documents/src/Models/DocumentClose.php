@@ -19,7 +19,6 @@ use Domain\Documents\Events\DocumentClosed;
 use Domain\Documents\Exceptions\RecordImmutable;
 use Domain\Documents\Support\RecordViews;
 use Domain\Documents\Values\CloseResult;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -46,20 +45,6 @@ use Illuminate\Support\Carbon;
  * @property mixed $card attribute
  * @property mixed $result attribute
  */
-#[Fillable([
-    'token',
-    'document_id',
-    'base_revision_number',
-    'result_revision_number',
-    'author_type',
-    'author_id',
-    'cause',
-    'closer_type',
-    'closer_id',
-    'reason',
-    'published',
-    'closed_at',
-])]
 final class DocumentClose extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -96,20 +81,19 @@ final class DocumentClose extends Model implements EventSource, ReadableModel
         string|null $reason,
         bool $isPublished,
     ): self {
-        $close = new self([
-            'token' => $draft->token,
-            'document_id' => $draft->document_id,
-            'base_revision_number' => $draft->base_revision_number,
-            'result_revision_number' => $resultNumber,
-            'author_type' => $draft->author_type,
-            'author_id' => $draft->author_id,
-            'cause' => $cause,
-            'closer_type' => $closer?->actorType(),
-            'closer_id' => $closer?->actorId(),
-            'reason' => $reason === null ? null : trim($reason),
-            'published' => $isPublished,
-            'closed_at' => CarbonImmutable::now(),
-        ]);
+        $close = new self();
+        $close->token = $draft->token;
+        $close->document_id = $draft->document_id;
+        $close->base_revision_number = $draft->base_revision_number;
+        $close->result_revision_number = $resultNumber;
+        $close->author_type = $draft->author_type;
+        $close->author_id = $draft->author_id;
+        $close->cause = $cause;
+        $close->closer_type = $closer?->actorType();
+        $close->closer_id = $closer?->actorId();
+        $close->reason = $reason === null ? null : trim($reason);
+        $close->published = $isPublished;
+        $close->closed_at = CarbonImmutable::now();
 
         $close->assertSaved($close->save());
         $close->raise(new DocumentClosed($document->id, $document->number, $resultNumber));

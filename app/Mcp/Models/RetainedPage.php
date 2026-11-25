@@ -12,7 +12,6 @@ use App\Models\Support\AgentSessionScope;
 use App\Support\AgentContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Container\Container;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -29,12 +28,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[Fillable([
-    'agent_id',
-    'session_id',
-    'references',
-    'expires_at',
-])]
 final class RetainedPage extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -72,12 +65,14 @@ final class RetainedPage extends Model implements ReadableModel
      */
     public static function create(AgentContext $agent, array $references, CarbonImmutable $expiresAt): self
     {
-        return self::query()->create([
-            'agent_id' => $agent->agentId,
-            'session_id' => $agent->sessionId,
-            'references' => $references,
-            'expires_at' => $expiresAt,
-        ]);
+        $page = new self();
+        $page->agent_id = $agent->agentId;
+        $page->session_id = $agent->sessionId;
+        $page->references = $references;
+        $page->expires_at = $expiresAt;
+        $page->save();
+
+        return $page;
     }
 
     // ----------[ Transformers ]----------

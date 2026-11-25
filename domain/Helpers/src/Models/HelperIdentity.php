@@ -16,7 +16,6 @@ use App\Support\ActorIdentity;
 use Domain\Helpers\Events\HelperDesignated;
 use Domain\Helpers\Events\HelperDesignationReleased;
 use Domain\Helpers\Exceptions\HelperIdentityFixed;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -40,10 +39,6 @@ use PhpOption\Option;
  * @property mixed $helper_actor attribute
  */
 #[Table('helper_identities')]
-#[Fillable([
-    'profile_key',
-    'profile_base',
-])]
 final class HelperIdentity extends Model implements EventSource, ReadableModel
 {
     use BelongsToOneActor;

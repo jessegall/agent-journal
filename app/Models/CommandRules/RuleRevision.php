@@ -16,9 +16,7 @@ use App\Models\Support\NamedByRuleScope;
 use App\Support\ActorIdentity;
 use App\Values\CommandRule;
 use App\Values\ReaderApproval;
-use App\Values\RuleScope;
 use App\Values\ScriptBinding;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -44,22 +42,6 @@ use Illuminate\Support\Carbon;
  * @property string $approver_id
  * @property Carbon $approved_at
  */
-#[Fillable([
-    'project_key',
-    'scope',
-    'rule_id',
-    'revision',
-    'rule_proposal_revision_id',
-    'payload',
-    'script_bindings',
-    'reader_approvals',
-    'digest',
-    'author_type',
-    'author_id',
-    'approver_type',
-    'approver_id',
-    'approved_at',
-])]
 final class RuleRevision extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -114,21 +96,23 @@ final class RuleRevision extends Model implements ReadableModel
         $latest = self::query()->ofProject($projectKey)->ofRule($rule->scope, $rule->id)->max('revision');
         $approved = $rule->ownedBy($rule->scope, (int) $latest + 1);
 
-        return self::query()->create([
-            'project_key' => $projectKey,
-            'scope' => $approved->scope,
-            'rule_id' => $approved->id,
-            'revision' => $approved->revision,
-            'rule_proposal_revision_id' => $proposed->id,
-            'payload' => $approved,
-            'script_bindings' => $scripts,
-            'reader_approvals' => $readers,
-            'digest' => $approved->digest(),
-            'author_type' => $proposed->author_type,
-            'author_id' => $proposed->author_id,
-            'approver_type' => $approver->type->value,
-            'approver_id' => $approver->id,
-        ]);
+        $ruleRevision = new self();
+        $ruleRevision->project_key = $projectKey;
+        $ruleRevision->scope = $approved->scope;
+        $ruleRevision->rule_id = $approved->id;
+        $ruleRevision->revision = $approved->revision;
+        $ruleRevision->rule_proposal_revision_id = $proposed->id;
+        $ruleRevision->payload = $approved;
+        $ruleRevision->script_bindings = $scripts;
+        $ruleRevision->reader_approvals = $readers;
+        $ruleRevision->digest = $approved->digest();
+        $ruleRevision->author_type = $proposed->author_type;
+        $ruleRevision->author_id = $proposed->author_id;
+        $ruleRevision->approver_type = $approver->type->value;
+        $ruleRevision->approver_id = $approver->id;
+        $ruleRevision->save();
+
+        return $ruleRevision;
     }
 
     // ----------[ Predicates ]----------

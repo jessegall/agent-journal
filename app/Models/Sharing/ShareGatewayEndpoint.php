@@ -17,7 +17,6 @@ use App\Exceptions\GatewayLeaseRefused;
 use App\Models\Support\Accessor;
 use App\Support\GatewayEndpoint;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -38,13 +37,6 @@ use PhpOption\Option;
  * @property ?Carbon $updated_at
  * @property mixed $to_gateway_endpoint attribute
  */
-#[Fillable([
-    'endpoint_version',
-    'run_id',
-    'public_origin',
-    'state',
-    'last_health_at',
-])]
 final class ShareGatewayEndpoint extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

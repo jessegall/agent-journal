@@ -16,7 +16,6 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -40,13 +39,6 @@ use Illuminate\Support\Str;
  * @property ?Carbon $updated_at
  * @property AgentRuntime $runtime
  */
-#[Fillable([
-    'agent_runtime_id',
-    'interval_ms',
-    'process_generation',
-    'expires_at',
-    'closed_at',
-])]
 final class TerminalView extends Model implements EventSource, ReadableModel
 {
     use BelongsToOneActor;

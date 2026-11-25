@@ -10,7 +10,6 @@ use App\Contracts\Records\ReadableModel;
 use App\Models\Agents\AgentSession;
 use Carbon\CarbonImmutable;
 use Closure;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -27,13 +26,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[Fillable([
-    'session_id',
-    'conversation_id',
-    'sequence_number',
-    'event_id',
-    'observed_at',
-])]
 final class ConversationVisit extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -71,15 +63,15 @@ final class ConversationVisit extends Model implements ReadableModel
 
         $next = (int) self::query()->ofSession($session)->max('sequence_number') + 1;
 
-        return self::query()->create(
-            [
-                'session_id' => $session->id,
-                'conversation_id' => $conversation->id,
-                'sequence_number' => $next,
-                'event_id' => $eventId,
-                'observed_at' => $observedAt,
-            ],
-        );
+        $conversationVisit = new self();
+        $conversationVisit->session_id = $session->id;
+        $conversationVisit->conversation_id = $conversation->id;
+        $conversationVisit->sequence_number = $next;
+        $conversationVisit->event_id = $eventId;
+        $conversationVisit->observed_at = $observedAt;
+        $conversationVisit->save();
+
+        return $conversationVisit;
     }
 
     // ----------[ Scopes ]----------

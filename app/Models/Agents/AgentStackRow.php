@@ -27,7 +27,6 @@ use App\Support\Storage\StoredFrames;
 use App\Support\Ticks\TickingTypes;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -52,13 +51,6 @@ use PhpOption\Some;
  * @property ?Carbon $updated_at
  * @property mixed $target attribute
  */
-#[Fillable([
-    'version',
-    'frames',
-    'status',
-    'closed_at',
-    'has_ticking_frames',
-])]
 final class AgentStackRow extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

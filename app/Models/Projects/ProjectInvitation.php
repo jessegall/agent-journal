@@ -16,7 +16,6 @@ use App\Events\Connections\ProjectInvitationSpent;
 use App\Exceptions\InvitationUnusable;
 use App\Values\InstallTicket;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -38,15 +37,6 @@ use Illuminate\Support\Carbon;
  * @property ?string $install_attempt_id
  * @property ?string $environment_id
  */
-#[Fillable([
-    'ticket_digest',
-    'issuer_user_id',
-    'mode',
-    'project_id',
-    'environment_id',
-    'install_attempt_id',
-    'expires_at',
-])]
 final class ProjectInvitation extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

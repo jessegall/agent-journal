@@ -37,7 +37,6 @@ use Domain\Sequences\Events\SequenceStarted;
 use Domain\Sequences\Events\SequenceStepEnded;
 use Domain\Sequences\Events\SequenceStepReached;
 use Domain\Sequences\Exceptions\SequenceRunMissing;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -60,10 +59,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $updated_at
  * @property ?Sequence $sequence
  */
-#[Fillable([
-    'name',
-    'steps',
-])]
 final class SequenceRun extends Model implements AuthoredModel, Dockable, EventSource, Numbered, ReadableModel
 {
     use BelongsToOneActor;

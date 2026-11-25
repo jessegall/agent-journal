@@ -40,7 +40,6 @@ use App\Support\RecordIdentity;
 use App\Values\PinnedDriver;
 use App\Values\StartRequest;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -90,36 +89,6 @@ use PhpOption\Option;
  * @property ?Carbon $updated_at
  * @property mixed $owner_work attribute
  */
-#[Fillable([
-    'request_id',
-    'agent_id',
-    'actor_type',
-    'actor_id',
-    'driver_key',
-    'family',
-    'driver_label',
-    'catalogue_revision',
-    'model',
-    'requested_model_type',
-    'requested_model',
-    'driver_source',
-    'profile_key',
-    'profile_revision',
-    'origin_type',
-    'owner_reference',
-    'context_reference',
-    'conversation_mode',
-    'conversation_target',
-    'driver_type',
-    'account_chosen',
-    'remember',
-    'conversation_resumed',
-    'payload_digest',
-    'disposition',
-    'readiness',
-    'native_id',
-    'session_id',
-])]
 final class StartRecord extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -177,33 +146,35 @@ final class StartRecord extends Model implements EventSource, ReadableModel
         $requested = $selection->requested;
         $source = $selection->source;
 
-        return self::query()->create([
-            'request_id' => $request->requestId,
-            'agent_id' => $request->agentId,
-            'actor_type' => $requester->type->value,
-            'actor_id' => $requester->id,
-            'driver_key' => (string) $pin->registration->key,
-            'family' => $pin->registration->family,
-            'driver_label' => $pin->registration->label,
-            'catalogue_revision' => $pin->catalogueRevision,
-            'model' => $selection->model,
-            'requested_model_type' => $requested->type,
-            'requested_model' => $requested->model,
-            'driver_source' => $source->driverSource,
-            'profile_key' => $source->profileKey,
-            'profile_revision' => $source->profileRevision,
-            'origin_type' => $request->origin,
-            'owner_reference' => $request->ownerWork?->reference(),
-            'context_reference' => $request->contextReference,
-            'conversation_mode' => $request->conversationMode,
-            'conversation_target' => $request->conversationTarget,
-            'driver_type' => $request->driverType,
-            'account_chosen' => $request->chosenAccount !== null,
-            'remember' => $request->savesDriverType,
-            'payload_digest' => $request->digest(),
-            'disposition' => StartDisposition::Accepted,
-            'readiness' => StartReadiness::Accepted,
-        ]);
+        $startRecord = new self();
+        $startRecord->request_id = $request->requestId;
+        $startRecord->agent_id = $request->agentId;
+        $startRecord->actor_type = $requester->type->value;
+        $startRecord->actor_id = $requester->id;
+        $startRecord->driver_key = (string) $pin->registration->key;
+        $startRecord->family = $pin->registration->family;
+        $startRecord->driver_label = $pin->registration->label;
+        $startRecord->catalogue_revision = $pin->catalogueRevision;
+        $startRecord->model = $selection->model;
+        $startRecord->requested_model_type = $requested->type;
+        $startRecord->requested_model = $requested->model;
+        $startRecord->driver_source = $source->driverSource;
+        $startRecord->profile_key = $source->profileKey;
+        $startRecord->profile_revision = $source->profileRevision;
+        $startRecord->origin_type = $request->origin;
+        $startRecord->owner_reference = $request->ownerWork?->reference();
+        $startRecord->context_reference = $request->contextReference;
+        $startRecord->conversation_mode = $request->conversationMode;
+        $startRecord->conversation_target = $request->conversationTarget;
+        $startRecord->driver_type = $request->driverType;
+        $startRecord->account_chosen = $request->chosenAccount !== null;
+        $startRecord->remember = $request->savesDriverType;
+        $startRecord->payload_digest = $request->digest();
+        $startRecord->disposition = StartDisposition::Accepted;
+        $startRecord->readiness = StartReadiness::Accepted;
+        $startRecord->assertSaved($startRecord->save());
+
+        return $startRecord;
     }
 
     // ----------[ Mutations ]----------

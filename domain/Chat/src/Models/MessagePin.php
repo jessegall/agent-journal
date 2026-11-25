@@ -10,7 +10,6 @@ use App\Contracts\Records\ReadableModel;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -27,11 +26,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[Fillable([
-    'inbox_id',
-    'message_id',
-    'pinned_at',
-])]
 final class MessagePin extends Model implements ReadableModel
 {
     use BelongsToOneActor;
@@ -70,11 +64,10 @@ final class MessagePin extends Model implements ReadableModel
             return $existing;
         }
 
-        $pin = new self([
-            'inbox_id' => $inboxId,
-            'message_id' => $messageId,
-            'pinned_at' => CarbonImmutable::now(),
-        ]);
+        $pin = new self();
+        $pin->inbox_id = $inboxId;
+        $pin->message_id = $messageId;
+        $pin->pinned_at = CarbonImmutable::now();
 
         $pin->belongTo($owner);
         $pin->save();

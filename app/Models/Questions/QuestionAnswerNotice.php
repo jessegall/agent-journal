@@ -10,7 +10,6 @@ use App\Events\Questions\QuestionAnswerNoticeDelivered;
 use App\Events\Questions\QuestionAnswerNoticeWritten;
 use App\Models\Support\Accessor;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -29,11 +28,6 @@ use Illuminate\Support\Carbon;
  * @property mixed $delivery_key attribute
  * @property Question $question
  */
-#[Fillable([
-    'question_id',
-    'agent_id',
-    'delivered_at',
-])]
 final class QuestionAnswerNotice extends Model implements EventSource
 {
     use HasUlids;
@@ -83,11 +77,17 @@ final class QuestionAnswerNotice extends Model implements EventSource
 
     public static function write(Question $question, string $agentId): self
     {
-        $notice = self::query()->firstOrCreate(['question_id' => $question->id], ['agent_id' => $agentId]);
+        $existing = self::query()->where('question_id', $question->id)->first();
 
-        if ($notice->wasRecentlyCreated) {
-            $notice->raise(new QuestionAnswerNoticeWritten($notice->id, $question->id, $agentId));
+        if ($existing !== null) {
+            return $existing;
         }
+
+        $notice = new self();
+        $notice->question_id = $question->id;
+        $notice->agent_id = $agentId;
+        $notice->assertSaved($notice->save());
+        $notice->raise(new QuestionAnswerNoticeWritten($notice->id, $question->id, $agentId));
 
         return $notice;
     }

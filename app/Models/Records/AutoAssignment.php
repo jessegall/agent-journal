@@ -24,7 +24,6 @@ use App\Support\IdListPage;
 use App\Support\PoolReference;
 use App\Support\ReadBuilder;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -47,15 +46,6 @@ use PhpOption\Option;
  * @property ?Carbon $updated_at
  */
 #[Table('auto_assignments')]
-#[Fillable([
-    'actor_type',
-    'actor_id',
-    'assignable_type',
-    'enabled',
-    'pool',
-    'size',
-    'configuration_revision',
-])]
 final class AutoAssignment extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -89,15 +79,14 @@ final class AutoAssignment extends Model implements EventSource, ReadableModel
     {
         $key = $input->key;
 
-        $row = new self([
-            'actor_type' => $key->actor->type,
-            'actor_id' => $key->actor->id,
-            'assignable_type' => $key->assignableType,
-            'enabled' => true,
-            'pool' => $input->pool,
-            'size' => $input->size,
-            'configuration_revision' => 1,
-        ]);
+        $row = new self();
+        $row->actor_type = $key->actor->type;
+        $row->actor_id = $key->actor->id;
+        $row->assignable_type = $key->assignableType;
+        $row->enabled = true;
+        $row->pool = $input->pool;
+        $row->size = $input->size;
+        $row->configuration_revision = 1;
 
         $row->setAttribute($row->getKeyName(), $row->newUniqueId());
         $row->insertIfAbsent();

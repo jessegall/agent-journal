@@ -9,7 +9,6 @@ use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
 use App\Values\AliasLookup;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -29,14 +28,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $updated_at
  * @property mixed $lookup attribute
  */
-#[Fillable([
-    'project_key',
-    'name',
-    'line',
-    'revision',
-    'body_digest',
-    'argument_grammar',
-])]
 final class CommandAlias extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -60,12 +51,11 @@ final class CommandAlias extends Model implements ReadableModel
      */
     public function recordLine(string $line, array $arguments = []): void
     {
-        $this->fill([
-            'line' => $line,
-            'argument_grammar' => $arguments,
-            'body_digest' => hash('sha256', $line),
-            'revision' => $this->revision + 1,
-        ])->save();
+        $this->line = $line;
+        $this->argument_grammar = $arguments;
+        $this->body_digest = hash('sha256', $line);
+        $this->revision = $this->revision + 1;
+        $this->save();
     }
 
     // ----------[ Accessors ]----------
@@ -94,13 +84,18 @@ final class CommandAlias extends Model implements ReadableModel
      */
     public static function forName(string $projectKey, string $name): self
     {
-        return self::query()->named($name, $projectKey)->first() ?? new self(
-            [
-                'project_key' => $projectKey,
-                'name' => $name,
-                'revision' => 0,
-            ],
-        );
+        $existing = self::query()->named($name, $projectKey)->first();
+
+        if ($existing !== null) {
+            return $existing;
+        }
+
+        $alias = new self();
+        $alias->project_key = $projectKey;
+        $alias->name = $name;
+        $alias->revision = 0;
+
+        return $alias;
     }
 
     // ----------[ Scopes ]----------

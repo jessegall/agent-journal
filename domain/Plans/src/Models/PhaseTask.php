@@ -10,7 +10,6 @@ use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Values\ReadOrder;
 use Closure;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -25,11 +24,6 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  * @property int $position
  */
 #[Table('phase_tasks')]
-#[Fillable([
-    'phase_id',
-    'task_id',
-    'position',
-])]
 final class PhaseTask extends Pivot implements ReadableModel
 {
     use BoundedReads;
@@ -40,7 +34,7 @@ final class PhaseTask extends Pivot implements ReadableModel
     public $timestamps = false;
 
     /**
-     * A pivot opens every attribute by default; this one takes only its Fillable list.
+     * A pivot opens every attribute by default; this one stays closed, as every model writes its columns as properties.
      *
      * @var list<string>
      */
@@ -88,11 +82,13 @@ final class PhaseTask extends Pivot implements ReadableModel
      */
     public static function create(Phase $phase, string $taskId, int $position): self
     {
-        return self::query()->create([
-            'phase_id' => $phase->id,
-            'task_id' => $taskId,
-            'position' => $position,
-        ]);
+        $phaseTask = new self();
+        $phaseTask->phase_id = $phase->id;
+        $phaseTask->task_id = $taskId;
+        $phaseTask->position = $position;
+        $phaseTask->save();
+
+        return $phaseTask;
     }
 
     /**

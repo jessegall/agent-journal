@@ -17,7 +17,6 @@ use App\Support\ConditionTree;
 use App\Values\SectionDraft;
 use App\Values\SkillDraft;
 use App\Values\SkillSection;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -42,22 +41,6 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  * @property mixed $draft attribute
  */
-#[Fillable(
-    [
-        'skill_id',
-        'revision',
-        'name',
-        'description',
-        'sections',
-        'condition',
-        'condition_version',
-        'author_type',
-        'author_id',
-        'source_key',
-        'source_digest',
-        'input_digest',
-    ],
-)]
 final class SkillRevision extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -106,20 +89,22 @@ final class SkillRevision extends Model implements ReadableModel
     ): self {
         $latest = self::query()->ofSkill($skill)->max('revision');
 
-        return self::query()->create([
-            'skill_id' => $skill->id,
-            'revision' => (is_numeric($latest) ? (int) $latest : 0) + 1,
-            'name' => $draft->name,
-            'description' => $draft->description,
-            'sections' => array_map(fn (SectionDraft $section) => $section->toSection(), $draft->sections),
-            'condition' => $condition->toArray(),
-            'condition_version' => self::CONDITION_VERSION,
-            'author_type' => $author->type,
-            'author_id' => $author->id,
-            'source_key' => $sourceKey,
-            'source_digest' => $sourceDigest,
-            'input_digest' => $draft->digest(),
-        ]);
+        $skillRevision = new self();
+        $skillRevision->skill_id = $skill->id;
+        $skillRevision->revision = (is_numeric($latest) ? (int) $latest : 0) + 1;
+        $skillRevision->name = $draft->name;
+        $skillRevision->description = $draft->description;
+        $skillRevision->sections = array_map(fn (SectionDraft $section) => $section->toSection(), $draft->sections);
+        $skillRevision->condition = $condition->toArray();
+        $skillRevision->condition_version = self::CONDITION_VERSION;
+        $skillRevision->author_type = $author->type;
+        $skillRevision->author_id = $author->id;
+        $skillRevision->source_key = $sourceKey;
+        $skillRevision->source_digest = $sourceDigest;
+        $skillRevision->input_digest = $draft->digest();
+        $skillRevision->save();
+
+        return $skillRevision;
     }
 
     // ----------[ Transformers ]----------

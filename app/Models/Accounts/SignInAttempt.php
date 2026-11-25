@@ -37,7 +37,6 @@ use App\Models\Support\KeepsCleanupTries;
 use App\Support\ActorIdentity;
 use App\Values\CleanupProgress;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -76,12 +75,6 @@ use Illuminate\Support\Str;
  * @property ?Account $account
  * @property ?Account $resultAccount
  */
-#[Fillable([
-    'account_protocol',
-    'method',
-    'actor_type',
-    'actor_id',
-])]
 final class SignInAttempt extends Model implements EventSource, ReadableModel
 {
     /**
@@ -140,14 +133,13 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
         string $directory,
         CarbonImmutable $expiresAt,
     ): self {
-        $attempt = new self([
-            'account_protocol' => $accountOrDriver instanceof Account
-                ? $accountOrDriver->account_protocol
-                : $accountOrDriver,
-            'method' => $method,
-            'actor_type' => $starter->type->value,
-            'actor_id' => $starter->id,
-        ]);
+        $attempt = new self();
+        $attempt->account_protocol = $accountOrDriver instanceof Account
+            ? $accountOrDriver->account_protocol
+            : $accountOrDriver;
+        $attempt->method = $method;
+        $attempt->actor_type = $starter->type->value;
+        $attempt->actor_id = $starter->id;
 
         if ($accountOrDriver instanceof Account) {
             $attempt->account_id = $accountOrDriver->id;

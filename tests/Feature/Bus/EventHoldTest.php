@@ -140,7 +140,11 @@ final class EventHoldTest extends TestCase
 
     private function row(): RaisingRow
     {
-        return RaisingRow::query()->create(['name' => 'start']);
+        $raisingRow = new RaisingRow();
+        $raisingRow->name = 'start';
+        $raisingRow->save();
+
+        return $raisingRow;
     }
 
     /**

@@ -51,7 +51,9 @@ final class CaptureSafeWritesTest extends TestCase
 
     public function test_a_counter_changed_and_saved_is_captured(): void
     {
-        $row = RaisingRow::query()->create(['name' => 'counted']);
+        $row = new RaisingRow();
+        $row->name = 'counted';
+        $row->save();
         $unit = $this->openUnit();
 
         $row->countVisit();

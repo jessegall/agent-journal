@@ -15,7 +15,6 @@ use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use App\Values\AskTypeKey;
 use App\Values\SupervisorRoutes;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -29,10 +28,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[Fillable([
-    'routes',
-    'versions',
-])]
 final class SupervisorLink extends Model implements EventSource, ReadableModel
 {
     use BelongsToOneActor;
@@ -59,10 +54,9 @@ final class SupervisorLink extends Model implements EventSource, ReadableModel
             return $link;
         }
 
-        $link = new self([
-            'routes' => $inherited,
-            'versions' => [],
-        ]);
+        $link = new self();
+        $link->routes = $inherited;
+        $link->versions = [];
         $link->belongTo($actor);
 
         return $link;

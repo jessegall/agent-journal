@@ -20,7 +20,6 @@ use App\Support\AssignmentReference;
 use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;
 use Illuminate\Container\Container;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -40,12 +39,6 @@ use Illuminate\Support\Carbon;
  * @property mixed $to_assignment attribute
  */
 #[Table('assignments')]
-#[Fillable([
-    'record_type',
-    'record_id',
-    'holder_type',
-    'holder_id',
-])]
 final class AssignmentRecord extends MorphPivot implements ReadableModel
 {
     use BoundedReads;
@@ -56,7 +49,7 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
     use OrdersById;
 
     /**
-     * A pivot opens every attribute by default; this one takes only its Fillable list.
+     * A pivot opens every attribute by default; this one stays closed, as every model writes its columns as properties.
      *
      * @var list<string>
      */
@@ -80,12 +73,11 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
      */
     public static function createForFreeRecord(RecordIdentity $record, AssigneeIdentity $holder): void
     {
-        $row = new self([
-            'record_type' => $record->type,
-            'record_id' => $record->id,
-            'holder_type' => $holder->type,
-            'holder_id' => $holder->id,
-        ]);
+        $row = new self();
+        $row->record_type = $record->type;
+        $row->record_id = $record->id;
+        $row->holder_type = $holder->type;
+        $row->holder_id = $holder->id;
 
         $row->setAttribute($row->getKeyName(), $row->newUniqueId());
         $row->insertIfAbsent();
@@ -93,12 +85,14 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
 
     public static function createForRecord(RecordIdentity $record, AssigneeIdentity $holder): self
     {
-        return self::query()->create([
-            'record_type' => $record->type,
-            'record_id' => $record->id,
-            'holder_type' => $holder->type,
-            'holder_id' => $holder->id,
-        ]);
+        $assignmentRecord = new self();
+        $assignmentRecord->record_type = $record->type;
+        $assignmentRecord->record_id = $record->id;
+        $assignmentRecord->holder_type = $holder->type;
+        $assignmentRecord->holder_id = $holder->id;
+        $assignmentRecord->save();
+
+        return $assignmentRecord;
     }
 
     // ----------[ Accessors ]----------

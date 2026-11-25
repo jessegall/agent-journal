@@ -15,7 +15,6 @@ use App\Support\Stored\StoredExecutionPolicy;
 use App\Support\Stored\StoredStopConditions;
 use App\Values\StartPolicy;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -40,17 +39,6 @@ use Illuminate\Support\Carbon;
  * @property mixed $policy attribute
  */
 #[Table('session_policies')]
-#[Fillable([
-    'session_id',
-    'profile_key',
-    'profile_revision',
-    'configuration_hash',
-    'access_policy',
-    'stop_conditions',
-    'execution_policy',
-    'policy_digest',
-    'requires_review',
-])]
 final class SessionPolicy extends Model implements ReadableModel
 {
     use BoundedReads;

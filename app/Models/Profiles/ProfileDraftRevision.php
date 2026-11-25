@@ -12,7 +12,6 @@ use App\Models\Concerns\PreventsRevisionUpdates;
 use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use App\Values\ScriptSource;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -29,14 +28,6 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  * @property mixed $script_source attribute
  */
-#[Fillable([
-    'profile_key',
-    'revision',
-    'source',
-    'commands',
-    'author_type',
-    'author_id',
-])]
 final class ProfileDraftRevision extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -59,14 +50,16 @@ final class ProfileDraftRevision extends Model implements ReadableModel
 
     public static function create(ProfileDraft $draft, ScriptSource $script, ActorIdentity $author): self
     {
-        return self::query()->create([
-            'profile_key' => $draft->profile_key,
-            'revision' => $draft->revision + 1,
-            'source' => $script->text,
-            'commands' => $script->definitions(),
-            'author_type' => $author->type,
-            'author_id' => $author->id,
-        ]);
+        $profileDraftRevision = new self();
+        $profileDraftRevision->profile_key = $draft->profile_key;
+        $profileDraftRevision->revision = $draft->revision + 1;
+        $profileDraftRevision->source = $script->text;
+        $profileDraftRevision->commands = $script->definitions();
+        $profileDraftRevision->author_type = $author->type;
+        $profileDraftRevision->author_id = $author->id;
+        $profileDraftRevision->save();
+
+        return $profileDraftRevision;
     }
 
     // ----------[ Accessors ]----------

@@ -15,7 +15,6 @@ use App\Values\ReadOrder;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Values\TaskTransition;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -40,17 +39,6 @@ use Illuminate\Support\Carbon;
  * @property mixed $transition attribute
  */
 #[Table('task_history')]
-#[Fillable([
-    'task_id',
-    'task_run_id',
-    'run_number',
-    'actor_type',
-    'actor_id',
-    'from_state',
-    'to_state',
-    'text',
-    'sequence',
-])]
 final class TaskHistoryEntry extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -88,17 +76,16 @@ final class TaskHistoryEntry extends Model implements ReadableModel
         TaskState $fromState,
         string|null $text,
     ): self {
-        $entry = new self([
-            'task_id' => $task->id,
-            'task_run_id' => $run?->id,
-            'run_number' => $run?->run_number,
-            'actor_type' => $actor->type,
-            'actor_id' => $actor->id,
-            'from_state' => $fromState,
-            'to_state' => $task->state,
-            'text' => $text,
-            'sequence' => self::lastSequenceOf($task->id) + 1,
-        ]);
+        $entry = new self();
+        $entry->task_id = $task->id;
+        $entry->task_run_id = $run?->id;
+        $entry->run_number = $run?->run_number;
+        $entry->actor_type = $actor->type;
+        $entry->actor_id = $actor->id;
+        $entry->from_state = $fromState;
+        $entry->to_state = $task->state;
+        $entry->text = $text;
+        $entry->sequence = self::lastSequenceOf($task->id) + 1;
 
         $entry->id = $id;
         $entry->save();

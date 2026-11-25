@@ -11,7 +11,6 @@ use App\Enums\OutputStream;
 use App\Values\CapturedChunk;
 use Carbon\CarbonImmutable;
 use Closure;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -30,15 +29,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[Fillable([
-    'part_run_id',
-    'stream',
-    'offset',
-    'length',
-    'checksum',
-    'captured_at',
-    'storage_path',
-])]
 final class OutputChunk extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -65,15 +55,17 @@ final class OutputChunk extends Model implements ReadableModel
      */
     public static function create(CapturedChunk $chunk, int $offset, string $storagePath): self
     {
-        return self::query()->create([
-            'part_run_id' => $chunk->part->id,
-            'stream' => $chunk->stream,
-            'offset' => $offset,
-            'length' => strlen($chunk->bytes),
-            'checksum' => hash('sha256', $chunk->bytes),
-            'captured_at' => $chunk->capturedAt,
-            'storage_path' => $storagePath,
-        ]);
+        $outputChunk = new self();
+        $outputChunk->part_run_id = $chunk->part->id;
+        $outputChunk->stream = $chunk->stream;
+        $outputChunk->offset = $offset;
+        $outputChunk->length = strlen($chunk->bytes);
+        $outputChunk->checksum = hash('sha256', $chunk->bytes);
+        $outputChunk->captured_at = $chunk->capturedAt;
+        $outputChunk->storage_path = $storagePath;
+        $outputChunk->save();
+
+        return $outputChunk;
     }
 
     // ----------[ Scopes ]----------

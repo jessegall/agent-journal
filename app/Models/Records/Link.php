@@ -12,7 +12,6 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Events\Links\LinkRemoved;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -34,12 +33,6 @@ use Illuminate\Support\Carbon;
  * @property Model $target
  */
 #[Table('links')]
-#[Fillable([
-    'source_type',
-    'source_id',
-    'target_type',
-    'target_id',
-])]
 final class Link extends MorphPivot implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -50,7 +43,7 @@ final class Link extends MorphPivot implements EventSource, ReadableModel
     use RaisesEvents;
 
     /**
-     * A pivot opens every attribute by default; this one takes only its Fillable list.
+     * A pivot opens every attribute by default; this one stays closed, as every model writes its columns as properties.
      *
      * @var list<string>
      */
@@ -63,12 +56,20 @@ final class Link extends MorphPivot implements EventSource, ReadableModel
      */
     public static function createForModels(Model $source, Model $target): self
     {
-        return self::query()->between($source, $target)->first() ?? self::query()->create([
-            'source_type' => $source->getMorphClass(),
-            'source_id' => $source->getKey(),
-            'target_type' => $target->getMorphClass(),
-            'target_id' => $target->getKey(),
-        ]);
+        $existing = self::query()->between($source, $target)->first();
+
+        if ($existing !== null) {
+            return $existing;
+        }
+
+        $link = new self();
+        $link->source_type = $source->getMorphClass();
+        $link->source_id = $source->getKey();
+        $link->target_type = $target->getMorphClass();
+        $link->target_id = $target->getKey();
+        $link->save();
+
+        return $link;
     }
 
     /**

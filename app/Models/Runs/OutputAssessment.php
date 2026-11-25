@@ -16,7 +16,6 @@ use App\Models\CommandRules\RuleRevision;
 use App\Values\OutputProblem;
 use App\Values\OutputValidation;
 use App\Values\ReplayedOutput;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -37,18 +36,6 @@ use Illuminate\Support\Carbon;
  * @property ?string $replaces_assessment_id
  * @property Carbon $created_at
  */
-#[Fillable([
-    'project_key',
-    'part_run_id',
-    'reader_revision_id',
-    'rule_revision_id',
-    'interpretation',
-    'outcome',
-    'problems',
-    'counts',
-    'final_offsets',
-    'replaces_assessment_id',
-])]
 final class OutputAssessment extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -92,18 +79,20 @@ final class OutputAssessment extends Model implements ReadableModel
     ): self {
         $previous = self::query()->ofPart($part)->newestFirst()->first();
 
-        return self::query()->create([
-            'project_key' => $run->project_key,
-            'part_run_id' => $part->id,
-            'reader_revision_id' => $reader->id,
-            'rule_revision_id' => $declaration->id,
-            'interpretation' => self::interpretationOf($validation->problems),
-            'outcome' => $validation->outcome,
-            'problems' => $validation->problems,
-            'counts' => $replayed->assessment->counts,
-            'final_offsets' => $replayed->consumed->offsets,
-            'replaces_assessment_id' => $previous?->id,
-        ]);
+        $outputAssessment = new self();
+        $outputAssessment->project_key = $run->project_key;
+        $outputAssessment->part_run_id = $part->id;
+        $outputAssessment->reader_revision_id = $reader->id;
+        $outputAssessment->rule_revision_id = $declaration->id;
+        $outputAssessment->interpretation = self::interpretationOf($validation->problems);
+        $outputAssessment->outcome = $validation->outcome;
+        $outputAssessment->problems = $validation->problems;
+        $outputAssessment->counts = $replayed->assessment->counts;
+        $outputAssessment->final_offsets = $replayed->consumed->offsets;
+        $outputAssessment->replaces_assessment_id = $previous?->id;
+        $outputAssessment->save();
+
+        return $outputAssessment;
     }
 
     // ----------[ Predicates ]----------

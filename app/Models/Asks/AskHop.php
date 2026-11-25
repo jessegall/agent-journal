@@ -19,7 +19,6 @@ use App\Models\Support\Accessor;
 use App\Models\Support\HasActorColumns;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -44,15 +43,6 @@ use PhpOption\Option;
  * @property ?Carbon $updated_at
  * @property mixed $holder_key attribute
  */
-#[Fillable([
-    'ask_id',
-    'actor_type',
-    'actor_id',
-    'type_key',
-    'version',
-    'route_version',
-    'accepted_at',
-])]
 final class AskHop extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -85,15 +75,14 @@ final class AskHop extends Model implements EventSource, ReadableModel
      */
     public static function create(Ask $ask, ActorIdentity $holder, int $routeVersion): self
     {
-        $hop = new self([
-            'ask_id' => $ask->id,
-            'actor_type' => $holder->type->value,
-            'actor_id' => $holder->id,
-            'type_key' => $ask->type_key->key,
-            'version' => $ask->version,
-            'route_version' => $routeVersion,
-            'accepted_at' => CarbonImmutable::now(),
-        ]);
+        $hop = new self();
+        $hop->ask_id = $ask->id;
+        $hop->actor_type = $holder->type->value;
+        $hop->actor_id = $holder->id;
+        $hop->type_key = $ask->type_key->key;
+        $hop->version = $ask->version;
+        $hop->route_version = $routeVersion;
+        $hop->accepted_at = CarbonImmutable::now();
 
         $hop->assertSaved($hop->save());
         $hop->raise(new AskHopAssigned($ask->id, $hop->id, $hop->type_key, $holder));

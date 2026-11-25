@@ -16,7 +16,6 @@ use App\Events\Skills\SkillGenerationRetired;
 use App\Exceptions\SkillGenerationImmutable;
 use App\Models\Support\Accessor;
 use App\Values\GenerationStatus;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -36,13 +35,6 @@ use Spatie\LaravelData\DataCollection;
  * @property ?Carbon $updated_at
  * @property mixed $status attribute
  */
-#[Fillable([
-    'catalogue_digest',
-    'registration_digest',
-    'entries',
-    'state',
-    'error_reason',
-])]
 final class SkillGeneration extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -82,15 +74,15 @@ final class SkillGeneration extends Model implements EventSource, ReadableModel
         array $definitions,
         string|null $errorReason,
     ): self {
-        return self::query()->create(
-            [
-                'catalogue_digest' => $catalogueDigest,
-                'registration_digest' => $registrationDigest,
-                'entries' => $definitions,
-                'state' => $state,
-                'error_reason' => $errorReason,
-            ],
-        );
+        $skillGeneration = new self();
+        $skillGeneration->catalogue_digest = $catalogueDigest;
+        $skillGeneration->registration_digest = $registrationDigest;
+        $skillGeneration->entries = $definitions;
+        $skillGeneration->state = $state;
+        $skillGeneration->error_reason = $errorReason;
+        $skillGeneration->assertSaved($skillGeneration->save());
+
+        return $skillGeneration;
     }
 
     // ----------[ Mutations ]----------

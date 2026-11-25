@@ -52,7 +52,9 @@ final class WrapperOwnedUnitTest extends TestCase
 
     public function test_the_transaction_listener_runs_inside_and_the_public_facts_go_out_when_the_command_returns(): void
     {
-        $row = RaisingRow::query()->create(['name' => 'start']);
+        $row = new RaisingRow();
+        $row->name = 'start';
+        $row->save();
         $heardInside = null;
 
         $this->command(function () use ($row, &$heardInside): void {
@@ -66,7 +68,9 @@ final class WrapperOwnedUnitTest extends TestCase
 
     public function test_a_command_that_throws_sends_no_facts(): void
     {
-        $row = RaisingRow::query()->create(['name' => 'start']);
+        $row = new RaisingRow();
+        $row->name = 'start';
+        $row->save();
 
         $this->assertThrows(fn () => $this->command(function () use ($row): void {
             $row->rename('first');

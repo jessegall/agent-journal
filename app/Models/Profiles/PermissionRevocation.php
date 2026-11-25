@@ -16,7 +16,6 @@ use App\Values\CommandPattern;
 use App\Values\CommandPatternSet;
 use App\Values\CommandPermissions;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -36,16 +35,6 @@ use Spatie\LaravelData\DataCollection;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[Fillable(
-    [
-        'permission_source',
-        'revoked_classes',
-        'revoked_patterns',
-        'revoked_by_type',
-        'revoked_by_id',
-        'revoked_at',
-    ],
-)]
 final class PermissionRevocation extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -73,14 +62,16 @@ final class PermissionRevocation extends Model implements ReadableModel
         CommandPatternSet $patterns,
         ActorIdentity $by,
     ): self {
-        return self::query()->create([
-            'permission_source' => $source,
-            'revoked_classes' => array_map(fn (CommandClass $class) => $class->value, $classes->classes),
-            'revoked_patterns' => array_map(fn (CommandPattern $pattern) => new RevokedPatternData($pattern->words), $patterns->patterns),
-            'revoked_by_type' => $by->type->value,
-            'revoked_by_id' => $by->id,
-            'revoked_at' => CarbonImmutable::now(),
-        ]);
+        $permissionRevocation = new self();
+        $permissionRevocation->permission_source = $source;
+        $permissionRevocation->revoked_classes = array_map(fn (CommandClass $class) => $class->value, $classes->classes);
+        $permissionRevocation->revoked_patterns = array_map(fn (CommandPattern $pattern) => new RevokedPatternData($pattern->words), $patterns->patterns);
+        $permissionRevocation->revoked_by_type = $by->type->value;
+        $permissionRevocation->revoked_by_id = $by->id;
+        $permissionRevocation->revoked_at = CarbonImmutable::now();
+        $permissionRevocation->save();
+
+        return $permissionRevocation;
     }
 
     // ----------[ Queries ]----------

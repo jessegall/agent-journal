@@ -18,7 +18,6 @@ use App\Support\RecordIdentity;
 use Domain\Tasks\Enums\TaskRunState;
 use Domain\Tasks\Events\TaskRunEnded;
 use Domain\Tasks\Exceptions\TaskRunFinished;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -41,14 +40,6 @@ use Illuminate\Support\Carbon;
  * @property mixed $starter attribute
  */
 #[Table('task_runs')]
-#[Fillable([
-    'task_id',
-    'run_number',
-    'started_by_type',
-    'started_by_id',
-    'state',
-    'outcome',
-])]
 final class TaskRun extends Model implements Assignable, EventSource, ReadableModel
 {
     use BoundedReads;
@@ -75,13 +66,12 @@ final class TaskRun extends Model implements Assignable, EventSource, ReadableMo
      */
     public static function create(Task $task, int $number, ActorIdentity $starter): self
     {
-        $run = new self([
-            'task_id' => $task->id,
-            'run_number' => $number,
-            'started_by_type' => $starter->type->value,
-            'started_by_id' => $starter->id,
-            'state' => TaskRunState::Running,
-        ]);
+        $run = new self();
+        $run->task_id = $task->id;
+        $run->run_number = $number;
+        $run->started_by_type = $starter->type->value;
+        $run->started_by_id = $starter->id;
+        $run->state = TaskRunState::Running;
 
         $run->save();
 

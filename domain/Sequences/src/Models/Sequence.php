@@ -14,7 +14,6 @@ use Domain\Sequences\Events\SequenceChanged;
 use Domain\Sequences\Events\SequenceDefined;
 use Domain\Sequences\Exceptions\SequenceMissing;
 use Domain\Sequences\Values\SequenceStep;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -34,11 +33,6 @@ use Spatie\LaravelData\DataCollection;
  * @property ?Carbon $updated_at
  * @property Collection<int, SequenceRun>|SequenceRun[] $runs
  */
-#[Fillable([
-    'name',
-    'summary',
-    'steps',
-])]
 final class Sequence extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

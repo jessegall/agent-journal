@@ -57,7 +57,9 @@ final class EventUnitLifecycleTest extends TestCase
 
     public function test_an_inner_commands_required_work_is_done_when_it_returns(): void
     {
-        $row = RaisingRow::query()->create(['name' => 'start']);
+        $row = new RaisingRow();
+        $row->name = 'start';
+        $row->save();
         $seen = [];
 
         $unit = $this->owned(function () use ($row, &$seen): void {
@@ -71,7 +73,9 @@ final class EventUnitLifecycleTest extends TestCase
 
     public function test_a_caught_failure_of_an_inner_command_refuses_the_commit_with_no_facts(): void
     {
-        $row = RaisingRow::query()->create(['name' => 'start']);
+        $row = new RaisingRow();
+        $row->name = 'start';
+        $row->save();
         $unit = null;
         $caught = '';
         $commit = function () use ($row, &$unit, &$caught): void {
@@ -95,7 +99,9 @@ final class EventUnitLifecycleTest extends TestCase
 
     public function test_a_stack_that_throws_after_a_command_rolls_both_back_and_the_next_stack_starts_empty(): void
     {
-        $row = RaisingRow::query()->create(['name' => 'start']);
+        $row = new RaisingRow();
+        $row->name = 'start';
+        $row->save();
         $stack = $this->app->make(StackTransaction::class);
 
         $this->assertThrows(fn () => $stack->run(function () use ($row): void {
@@ -112,7 +118,9 @@ final class EventUnitLifecycleTest extends TestCase
 
     public function test_a_retried_attempt_keeps_only_the_facts_of_the_attempt_that_commits(): void
     {
-        $row = RaisingRow::query()->create(['name' => 'start']);
+        $row = new RaisingRow();
+        $row->name = 'start';
+        $row->save();
 
         $this->assertThrows(fn () => $this->owned(function () use ($row): void {
             $row->rename('second');

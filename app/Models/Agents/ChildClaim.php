@@ -15,7 +15,6 @@ use App\Models\Support\Accessor;
 use App\Values\ChildCheckout;
 use App\Values\CommitObservation;
 use App\Values\WorkspaceFacts;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -38,17 +37,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $updated_at
  * @property mixed $checkout attribute
  */
-#[Fillable([
-    'parent_runtime_id',
-    'parent_generation',
-    'child_agent_id',
-    'role',
-    'binding_id',
-    'base_oid',
-    'parent_was_dirty',
-    'parent_claim_id',
-    'root_runtime_id',
-])]
 final class ChildClaim extends Model implements ReadableModel
 {
     use BoundedReads;

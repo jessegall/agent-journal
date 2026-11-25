@@ -55,7 +55,9 @@ final class PublicationTest extends TestCase
 
     public function test_a_listener_hears_the_fact_only_once_another_connection_reads_the_committed_row(): void
     {
-        $row = RaisingRow::query()->create(['name' => 'start']);
+        $row = new RaisingRow();
+        $row->name = 'start';
+        $row->save();
         $database = $this->app->make(DatabaseManager::class);
         $this->app->make('config')->set('database.connections.second', $database->connection()->getConfig());
         $read = [];
@@ -73,7 +75,9 @@ final class PublicationTest extends TestCase
     {
         Queue::fake();
         $this->app->make(Dispatcher::class)->listen(RowRenamed::class, QueuedRenameListener::class);
-        $row = RaisingRow::query()->create(['name' => 'start']);
+        $row = new RaisingRow();
+        $row->name = 'start';
+        $row->save();
         $pushedBeforeCommit = 0;
 
         $this->commit(function () use ($row, &$pushedBeforeCommit): void {
@@ -93,8 +97,12 @@ final class PublicationTest extends TestCase
     // A failure is never swallowed. Every fact still goes out, then the failure is thrown.
     public function test_a_failing_listener_is_thrown_once_the_next_fact_went_out_too(): void
     {
-        $first = RaisingRow::query()->create(['name' => 'a']);
-        $second = RaisingRow::query()->create(['name' => 'b']);
+        $first = new RaisingRow();
+        $first->name = 'a';
+        $first->save();
+        $second = new RaisingRow();
+        $second->name = 'b';
+        $second->save();
         $heard = [];
         $listener = function (RowRenamed $renamed) use (&$heard): void {
             $heard[] = $renamed->name;
@@ -118,7 +126,9 @@ final class PublicationTest extends TestCase
     public function test_a_fake_of_the_event_sees_it_after_the_commit(): void
     {
         Event::fake([RowRenamed::class]);
-        $row = RaisingRow::query()->create(['name' => 'start']);
+        $row = new RaisingRow();
+        $row->name = 'start';
+        $row->save();
 
         $this->commit(fn () => $row->rename('faked'));
 

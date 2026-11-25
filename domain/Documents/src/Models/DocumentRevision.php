@@ -21,7 +21,6 @@ use Domain\Documents\Exceptions\RecordImmutable;
 use Domain\Documents\Models\Concerns\MeasuresBody;
 use Domain\Documents\Models\Concerns\SearchesText;
 use Domain\Documents\Support\RecordViews;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -46,15 +45,6 @@ use Illuminate\Support\Carbon;
  * @property mixed $card attribute
  * @property Document $document
  */
-#[Fillable([
-    'document_id',
-    'title',
-    'abstract',
-    'body',
-    'author_type',
-    'author_id',
-    'closed_at',
-])]
 final class DocumentRevision extends Model implements Numbered, ReadableModel
 {
     use BoundedReads;
@@ -90,15 +80,14 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
         ActorType $authorType,
         string $authorId,
     ): self {
-        $revision = new self([
-            'document_id' => $document->id,
-            'title' => $title,
-            'abstract' => $abstract,
-            'body' => $body,
-            'author_type' => $authorType,
-            'author_id' => $authorId,
-            'closed_at' => CarbonImmutable::now(),
-        ]);
+        $revision = new self();
+        $revision->document_id = $document->id;
+        $revision->title = $title;
+        $revision->abstract = $abstract;
+        $revision->body = $body;
+        $revision->author_type = $authorType;
+        $revision->author_id = $authorId;
+        $revision->closed_at = CarbonImmutable::now();
 
         $revision->setRelation('document', $document);
         $revision->save();

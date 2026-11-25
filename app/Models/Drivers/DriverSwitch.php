@@ -28,7 +28,6 @@ use App\Values\ChosenAccount;
 use App\Values\DriverSwitchTarget;
 use App\Values\PinnedDriver;
 use Closure;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -59,23 +58,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $updated_at
  * @property mixed $target attribute
  */
-#[Fillable([
-    'request_id',
-    'agent_id',
-    'expected_session_id',
-    'expected_generation',
-    'target_driver_key',
-    'target_family',
-    'driver_type',
-    'account_id',
-    'account_revision',
-    'conversation_id',
-    'remember',
-    'requested_by',
-    'replacement_session_id',
-    'stage',
-    'failure_reason',
-])]
 final class DriverSwitch extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

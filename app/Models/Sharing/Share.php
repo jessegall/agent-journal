@@ -40,7 +40,6 @@ use App\Support\ShareProposalStatus;
 use App\Support\ShareSummary;
 use App\Support\ShareToken;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -83,18 +82,6 @@ use PhpOption\Option;
     'token_digest',
     'token_ciphertext',
 ])]
-#[Fillable(
-    [
-        'state',
-        'root_type',
-        'root_id',
-        'owner_user_id',
-        'configuration_version',
-        'scope_version',
-        'expires_at',
-        'terminal_at',
-    ],
-)]
 final class Share extends Model implements EventSource, Numbered, ReadableModel
 {
     use BelongsToOneRoot;

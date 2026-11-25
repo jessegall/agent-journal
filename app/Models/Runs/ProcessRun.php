@@ -42,7 +42,6 @@ use App\Values\ExecutionPlan;
 use App\Values\RelationRead;
 use App\Values\RunAdmission;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -87,19 +86,6 @@ use Illuminate\Support\Carbon;
  * @property Collection<int, ProcessEvent>|ProcessEvent[] $events
  * @property Collection<int, PartRun>|PartRun[] $parts
  */
-#[Fillable([
-    'admission_id',
-    'mode',
-    'project_key',
-    'source_digest',
-    'dialect',
-    'tree_digest',
-    'registry_revision',
-    'policy_revision',
-    'event_key_hash',
-    'working_folder',
-    'plan',
-])]
 final class ProcessRun extends Model implements Dockable, EventSource, ReadableModel
 {
     use BelongsToOneActor;

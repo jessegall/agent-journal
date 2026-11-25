@@ -9,7 +9,6 @@ use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Exceptions\GlobalGroupMissing;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -22,7 +21,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[Fillable(['name'])]
 final class GlobalGroup extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -47,7 +45,8 @@ final class GlobalGroup extends Model implements ReadableModel
      */
     public static function installJournal(): self
     {
-        $group = new self(['name' => self::JOURNAL]);
+        $group = new self();
+        $group->name = self::JOURNAL;
         $group->setAttribute($group->getKeyName(), $group->newUniqueId());
         $group->insertIfAbsent();
 

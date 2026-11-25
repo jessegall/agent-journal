@@ -9,7 +9,6 @@ use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Support\ActorIdentity;
 use Domain\Helpers\Enums\ReportJobDiscrepancyReason;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -25,13 +24,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  */
 #[Table('report_job_discrepancies')]
-#[Fillable([
-    'report_id',
-    'owner_reference',
-    'filer_type',
-    'filer_id',
-    'reason',
-])]
 final class ReportJobDiscrepancy extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -58,13 +50,12 @@ final class ReportJobDiscrepancy extends Model implements ReadableModel
         ActorIdentity $filer,
         ReportJobDiscrepancyReason $reason,
     ): self {
-        $discrepancy = new self([
-            'report_id' => $reportId,
-            'owner_reference' => $ownerReference,
-            'filer_type' => $filer->type->value,
-            'filer_id' => $filer->id,
-            'reason' => $reason,
-        ]);
+        $discrepancy = new self();
+        $discrepancy->report_id = $reportId;
+        $discrepancy->owner_reference = $ownerReference;
+        $discrepancy->filer_type = $filer->type->value;
+        $discrepancy->filer_id = $filer->id;
+        $discrepancy->reason = $reason;
 
         $discrepancy->save();
 

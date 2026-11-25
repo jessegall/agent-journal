@@ -11,7 +11,6 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Events\Connections\BindingStartRecorded;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -26,12 +25,6 @@ use Illuminate\Support\Carbon;
  * @property string $runtime_id
  * @property ?Carbon $created_at
  */
-#[Fillable([
-    'binding_id',
-    'start_id',
-    'session_id',
-    'runtime_id',
-])]
 final class BindingStart extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

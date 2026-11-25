@@ -15,7 +15,6 @@ use App\Events\Reviews\RepairRequestSettled;
 use App\Models\Support\Accessor;
 use App\Models\Support\HasWorkColumns;
 use App\Support\ActorIdentity;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -40,17 +39,6 @@ use Illuminate\Support\Carbon;
  * @property mixed $worker attribute
  */
 #[Table('repair_requests')]
-#[Fillable([
-    'source',
-    'certificate',
-    'work_type',
-    'work_id',
-    'worker_type',
-    'worker_id',
-    'findings',
-    'target_commit',
-    'state',
-])]
 final class RepairRequest extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -110,17 +98,16 @@ final class RepairRequest extends Model implements EventSource, ReadableModel
         string $findings,
         string|null $targetCommit,
     ): self {
-        $repair = new self([
-            'source' => $source,
-            'certificate' => $review->certificate,
-            'work_type' => $review->work_type,
-            'work_id' => $review->work_id,
-            'worker_type' => $review->worker_type,
-            'worker_id' => $review->worker_id,
-            'findings' => $findings,
-            'target_commit' => $targetCommit,
-            'state' => RepairRequestState::Pending,
-        ]);
+        $repair = new self();
+        $repair->source = $source;
+        $repair->certificate = $review->certificate;
+        $repair->work_type = $review->work_type;
+        $repair->work_id = $review->work_id;
+        $repair->worker_type = $review->worker_type;
+        $repair->worker_id = $review->worker_id;
+        $repair->findings = $findings;
+        $repair->target_commit = $targetCommit;
+        $repair->state = RepairRequestState::Pending;
 
         $repair->setAttribute($repair->getKeyName(), $repair->newUniqueId());
         $repair->insertIfAbsent();

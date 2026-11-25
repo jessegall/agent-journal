@@ -24,7 +24,6 @@ use App\Values\NavigationUncertainty;
 use App\Values\ScriptGoal;
 use Carbon\CarbonImmutable;
 use Closure;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -67,31 +66,6 @@ use Illuminate\Support\Carbon;
  * @property DriverRequest $driverRequest
  * @property AgentRuntime $runtime
  */
-#[Fillable([
-    'agent_runtime_id',
-    'driver_request_id',
-    'operation_key',
-    'family',
-    'build',
-    'goal_script',
-    'goal_version',
-    'goal_parameters',
-    'goal_key',
-    'completes',
-    'proof',
-    'fingerprint',
-    'screen',
-    'raise_rows',
-    'stalled_step',
-    'next_step',
-    'sent_steps',
-    'library_entry_id',
-    'stale_entry_id',
-    'state',
-    'reason',
-    'abandon_reason',
-    'expires_at',
-])]
 final class NavigationRequest extends Model implements Assignable, ReadableModel
 {
     use BelongsToOneActor;

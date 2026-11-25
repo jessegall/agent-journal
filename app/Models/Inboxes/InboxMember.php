@@ -12,7 +12,6 @@ use App\Events\Inboxes\InboxJoined;
 use App\Events\Inboxes\InboxLeft;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -27,12 +26,6 @@ use PhpOption\Option;
  * @property CarbonImmutable $joined_at
  * @property ?CarbonImmutable $left_at
  */
-#[Fillable([
-    'inbox_id',
-    'actor_type',
-    'actor_id',
-    'joined_at',
-])]
 final class InboxMember extends Model implements EventSource
 {
     /**
@@ -79,18 +72,17 @@ final class InboxMember extends Model implements EventSource
      */
     public static function join(string $inboxId, ActorIdentity $actor, CarbonImmutable $at): void
     {
-        $member = self::query()->active()->ofActor($actor)->firstOrCreate(
-            [
-                'inbox_id' => $inboxId,
-                'actor_type' => $actor->type->value,
-                'actor_id' => $actor->id,
-            ],
-            ['joined_at' => $at],
-        );
-
-        if ($member->wasRecentlyCreated) {
-            $member->raise(new InboxJoined($inboxId, $actor));
+        if (self::query()->active()->ofActor($actor)->where('inbox_id', $inboxId)->exists()) {
+            return;
         }
+
+        $member = new self();
+        $member->inbox_id = $inboxId;
+        $member->actor_type = $actor->type->value;
+        $member->actor_id = $actor->id;
+        $member->joined_at = $at;
+        $member->assertSaved($member->save());
+        $member->raise(new InboxJoined($inboxId, $actor));
     }
 
     /**

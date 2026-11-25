@@ -15,7 +15,6 @@ use App\Events\Processes\ClassificationRuleRetired;
 use App\Exceptions\ClassificationRuleRefused;
 use App\Models\Support\NamedByRuleScope;
 use App\Values\CommandRule;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -38,15 +37,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $updated_at
  * @property RuleRevision $activeRevision
  */
-#[Fillable([
-    'project_key',
-    'scope',
-    'rule_id',
-    'active_revision_id',
-    'active_revision',
-    'state',
-    'state_reason',
-])]
 final class ClassificationRule extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -185,15 +175,19 @@ final class ClassificationRule extends Model implements EventSource, ReadableMod
      */
     public static function forRule(string $projectKey, CommandRule $rule): self
     {
-        return self::query()
-            ->ofProject($projectKey)
-            ->ofRule($rule->scope, $rule->id)
-            ->firstOrNew([], [
-                'project_key' => $projectKey,
-                'scope' => $rule->scope,
-                'rule_id' => $rule->id,
-                'active_revision' => 0,
-            ]);
+        $existing = self::query()->ofProject($projectKey)->ofRule($rule->scope, $rule->id)->first();
+
+        if ($existing !== null) {
+            return $existing;
+        }
+
+        $classification = new self();
+        $classification->project_key = $projectKey;
+        $classification->scope = $rule->scope;
+        $classification->rule_id = $rule->id;
+        $classification->active_revision = 0;
+
+        return $classification;
     }
 
     // ----------[ Scopes ]----------

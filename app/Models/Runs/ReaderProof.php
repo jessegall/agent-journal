@@ -12,7 +12,6 @@ use App\Exceptions\RevisionImmutable;
 use App\Models\CommandRules\RuleProposalRevision;
 use App\Support\ActorIdentity;
 use App\Values\ProvenBranch;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -30,15 +29,6 @@ use Illuminate\Support\Carbon;
  * @property string $actor_id
  * @property Carbon $created_at
  */
-#[Fillable([
-    'project_key',
-    'command_request_id',
-    'reader_revision_id',
-    'rule_proposal_revision_id',
-    'proven_branches',
-    'actor_type',
-    'actor_id',
-])]
 final class ReaderProof extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -71,15 +61,17 @@ final class ReaderProof extends Model implements ReadableModel
         array $branches,
         ActorIdentity $prover,
     ): self {
-        return self::query()->create([
-            'project_key' => $reader->project_key,
-            'command_request_id' => $reader->command_request_id,
-            'reader_revision_id' => $reader->id,
-            'rule_proposal_revision_id' => $declaration->id,
-            'proven_branches' => $branches,
-            'actor_type' => $prover->type->value,
-            'actor_id' => $prover->id,
-        ]);
+        $readerProof = new self();
+        $readerProof->project_key = $reader->project_key;
+        $readerProof->command_request_id = $reader->command_request_id;
+        $readerProof->reader_revision_id = $reader->id;
+        $readerProof->rule_proposal_revision_id = $declaration->id;
+        $readerProof->proven_branches = $branches;
+        $readerProof->actor_type = $prover->type->value;
+        $readerProof->actor_id = $prover->id;
+        $readerProof->save();
+
+        return $readerProof;
     }
 
     // ----------[ Asserts ]----------

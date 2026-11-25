@@ -19,7 +19,6 @@ use App\Support\ActorIdentity;
 use App\Values\ProposedRule;
 use App\Values\RuleReference;
 use Closure;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -50,20 +49,6 @@ use Illuminate\Support\Carbon;
  * @property ?CommandRequest $commandRequest
  * @property Collection<int, RuleProposalRevision>|RuleProposalRevision[] $revisions
  */
-#[Fillable([
-    'project_key',
-    'scope',
-    'command_request_id',
-    'program',
-    'operation',
-    'state',
-    'author_type',
-    'author_id',
-    'request_id',
-    'payload_digest',
-    'replaces',
-    'current_revision',
-])]
 final class RuleProposal extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -107,20 +92,20 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
             return $existing;
         }
 
-        $proposal = self::query()->create([
-            'project_key' => $projectKey,
-            'scope' => $proposed->rule->scope,
-            'command_request_id' => $answers?->id,
-            'program' => $proposed->rule->programFamily(),
-            'operation' => $proposed->rule->operation(),
-            'state' => ProposalState::Draft,
-            'author_type' => $author->type->value,
-            'author_id' => $author->id,
-            'request_id' => $requestId,
-            'payload_digest' => $proposed->digest(),
-            'replaces' => $proposed->rule->replaces,
-            'current_revision' => 0,
-        ]);
+        $proposal = new self();
+        $proposal->project_key = $projectKey;
+        $proposal->scope = $proposed->rule->scope;
+        $proposal->command_request_id = $answers?->id;
+        $proposal->program = $proposed->rule->programFamily();
+        $proposal->operation = $proposed->rule->operation();
+        $proposal->state = ProposalState::Draft;
+        $proposal->author_type = $author->type->value;
+        $proposal->author_id = $author->id;
+        $proposal->request_id = $requestId;
+        $proposal->payload_digest = $proposed->digest();
+        $proposal->replaces = $proposed->rule->replaces;
+        $proposal->current_revision = 0;
+        $proposal->assertSaved($proposal->save());
 
         return $proposal;
     }

@@ -16,7 +16,6 @@ use App\Events\Messages\NotificationsMarkAllFinished;
 use App\Events\Messages\NotificationsMarkAllStarted;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -40,14 +39,6 @@ use PhpOption\Option;
  * @property ?Carbon $updated_at
  */
 #[Table('notification_scopes')]
-#[Fillable([
-    'scope_key',
-    'recipient_type',
-    'recipient_id',
-    'next_sequence',
-    'mutation_version',
-    'unread_count',
-])]
 final class NotificationScope extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -77,14 +68,13 @@ final class NotificationScope extends Model implements EventSource, ReadableMode
      */
     public static function create(string $key, ActorIdentity $recipient): self
     {
-        $scope = new self([
-            'scope_key' => $key,
-            'recipient_type' => $recipient->type->value,
-            'recipient_id' => $recipient->id,
-            'next_sequence' => 1,
-            'mutation_version' => 0,
-            'unread_count' => 0,
-        ]);
+        $scope = new self();
+        $scope->scope_key = $key;
+        $scope->recipient_type = $recipient->type->value;
+        $scope->recipient_id = $recipient->id;
+        $scope->next_sequence = 1;
+        $scope->mutation_version = 0;
+        $scope->unread_count = 0;
 
         $scope->id = $scope->newUniqueId();
         $scope->insertIfAbsent();

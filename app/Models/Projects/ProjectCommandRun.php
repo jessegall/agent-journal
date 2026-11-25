@@ -17,7 +17,6 @@ use App\Events\Connections\ProjectCommandFinished;
 use App\Events\Connections\ProjectCommandProcessRecorded;
 use App\Events\Connections\ProjectCommandReconciled;
 use App\Support\CommandRunEvidence;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -40,15 +39,6 @@ use Spatie\LaravelData\DataCollection;
  * @property string $fingerprint
  * @property string $worker
  */
-#[Fillable([
-    'request_key',
-    'agent_id',
-    'binding_id',
-    'argv',
-    'fingerprint',
-    'worker',
-    'state',
-])]
 final class ProjectCommandRun extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

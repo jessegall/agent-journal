@@ -27,7 +27,6 @@ use App\Models\Support\Accessor;
 use App\Values\PartEnd;
 use App\Values\PartKey;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -67,14 +66,6 @@ use Illuminate\Support\Carbon;
  * @property Collection<int, OutputChunk>|OutputChunk[] $chunks
  * @property ProcessRun $run
  */
-#[Fillable([
-    'process_run_id',
-    'syntax_node',
-    'part_id',
-    'attempt',
-    'parent_part_run_id',
-    'operation',
-])]
 final class PartRun extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -119,13 +110,15 @@ final class PartRun extends Model implements EventSource, ReadableModel
      */
     public static function create(ProcessRun $run, PartKey $part): self
     {
-        return self::query()->create([
-            'process_run_id' => $run->id,
-            'syntax_node' => $part->node,
-            'part_id' => $part->partId(),
-            'attempt' => $part->attempt,
-            'operation' => $part->operation,
-        ]);
+        $partRun = new self();
+        $partRun->process_run_id = $run->id;
+        $partRun->syntax_node = $part->node;
+        $partRun->part_id = $part->partId();
+        $partRun->attempt = $part->attempt;
+        $partRun->operation = $part->operation;
+        $partRun->assertSaved($partRun->save());
+
+        return $partRun;
     }
 
     // ----------[ Mutations ]----------

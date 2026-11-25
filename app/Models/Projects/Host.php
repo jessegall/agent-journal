@@ -30,7 +30,6 @@ use App\Values\BrowserInputCapabilities;
 use App\Values\ProtectionReport;
 use App\Values\StartProposal;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -63,12 +62,6 @@ use Spatie\LaravelData\DataCollection;
  * @property ?Carbon $updated_at
  * @property mixed $link_alarm attribute
  */
-#[Fillable([
-    'installation_name',
-    'credential_hash',
-    'start_roots',
-    'arrangement',
-])]
 final class Host extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -112,12 +105,14 @@ final class Host extends Model implements EventSource, ReadableModel
         array $startRoots,
         ArrangementType $arrangement,
     ): self {
-        return self::query()->create([
-            'installation_name' => $installationName,
-            'credential_hash' => self::hashOf($secret),
-            'start_roots' => $startRoots,
-            'arrangement' => $arrangement,
-        ]);
+        $host = new self();
+        $host->installation_name = $installationName;
+        $host->credential_hash = self::hashOf($secret);
+        $host->start_roots = $startRoots;
+        $host->arrangement = $arrangement;
+        $host->assertSaved($host->save());
+
+        return $host;
     }
 
     // ----------[ Mutations ]----------

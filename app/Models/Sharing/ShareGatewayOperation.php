@@ -19,7 +19,6 @@ use App\Exceptions\GatewayLeaseRefused;
 use App\Support\GatewayConfiguration;
 use App\Support\GatewayOperation;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -41,13 +40,6 @@ use PhpOption\Option;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[Fillable([
-    'type',
-    'run_id',
-    'lease_token',
-    'lease_ends_at',
-    'outcome_code',
-])]
 final class ShareGatewayOperation extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

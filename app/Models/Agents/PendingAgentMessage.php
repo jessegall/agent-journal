@@ -11,7 +11,6 @@ use App\Contracts\Records\ReadableModel;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use App\Support\AttentionOrigin;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -29,12 +28,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[Fillable([
-    'origin_type',
-    'origin_id',
-    'lines',
-    'requests_attention',
-])]
 final class PendingAgentMessage extends Model implements ReadableModel
 {
     use BelongsToOneActor;
@@ -69,12 +62,11 @@ final class PendingAgentMessage extends Model implements ReadableModel
         $messages = [];
 
         foreach ($texts as $text) {
-            $message = new self([
-                'origin_type' => $origin->type,
-                'origin_id' => $origin->id,
-                'lines' => [$text],
-                'requests_attention' => true,
-            ]);
+            $message = new self();
+            $message->origin_type = $origin->type;
+            $message->origin_id = $origin->id;
+            $message->lines = [$text];
+            $message->requests_attention = true;
             $message->belongTo($agent);
             $messages[] = $message;
         }

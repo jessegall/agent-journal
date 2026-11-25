@@ -11,7 +11,6 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Events\Sessions\RevisionFenceReconciled;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -28,11 +27,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $updated_at
  */
 #[Table('revision_fences')]
-#[Fillable([
-    'profile_key',
-    'profile_revision',
-    'reconciled_at',
-])]
 final class RevisionFence extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -67,10 +61,9 @@ final class RevisionFence extends Model implements EventSource, ReadableModel
      */
     public static function retain(string $key, int $revision): self
     {
-        $fence = new self([
-            'profile_key' => $key,
-            'profile_revision' => $revision,
-        ]);
+        $fence = new self();
+        $fence->profile_key = $key;
+        $fence->profile_revision = $revision;
         $fence->setAttribute($fence->getKeyName(), $fence->newUniqueId());
         $fence->insertIfAbsent();
 

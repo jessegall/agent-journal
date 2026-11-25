@@ -15,7 +15,6 @@ use App\Support\Cards\DockIdentity;
 use App\Support\Sources\DockDefinition;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Events\DockChanged;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -36,15 +35,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $updated_at
  * @property mixed $source attribute
  */
-#[Fillable([
-    'inbox_id',
-    'dockable_type',
-    'dockable_id',
-    'presentation',
-    'assigned_by_type',
-    'assigned_by_id',
-    'assigned_at',
-])]
 final class DockPlacement extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -75,15 +65,14 @@ final class DockPlacement extends Model implements EventSource, ReadableModel
         string $presentation,
         ActorIdentity $assignedBy,
     ): self {
-        $placement = new self([
-            'inbox_id' => $inbox->id,
-            'dockable_type' => $source->type,
-            'dockable_id' => $source->id,
-            'presentation' => $presentation,
-            'assigned_by_type' => $assignedBy->type->value,
-            'assigned_by_id' => $assignedBy->id,
-            'assigned_at' => CarbonImmutable::now(),
-        ]);
+        $placement = new self();
+        $placement->inbox_id = $inbox->id;
+        $placement->dockable_type = $source->type;
+        $placement->dockable_id = $source->id;
+        $placement->presentation = $presentation;
+        $placement->assigned_by_type = $assignedBy->type->value;
+        $placement->assigned_by_id = $assignedBy->id;
+        $placement->assigned_at = CarbonImmutable::now();
 
         $placement->assertSaved($placement->save());
         $placement->raise(new DockChanged($inbox->id));

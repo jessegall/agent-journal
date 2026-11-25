@@ -14,7 +14,6 @@ use App\Enums\CleanupStep;
 use App\Events\Sessions\CleanupPassRecorded;
 use App\Models\Agents\AgentSession;
 use App\Values\CleanupReport;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -36,16 +35,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $updated_at
  */
 #[Table('cleanup_operations')]
-#[Fillable([
-    'start_request_id',
-    'agent_session_id',
-    'host_id',
-    'removed_steps',
-    'recovery_location',
-    'last_error',
-    'state',
-    'attempts',
-])]
 final class CleanupOperation extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -135,13 +124,12 @@ final class CleanupOperation extends Model implements EventSource, ReadableModel
      */
     public static function open(AgentSession $session, string $hostId): self
     {
-        $operation = new self([
-            'start_request_id' => $session->start_request_id,
-            'agent_session_id' => $session->id,
-            'host_id' => $hostId,
-            'removed_steps' => [],
-            'state' => CleanupState::Pending,
-        ]);
+        $operation = new self();
+        $operation->start_request_id = $session->start_request_id;
+        $operation->agent_session_id = $session->id;
+        $operation->host_id = $hostId;
+        $operation->removed_steps = [];
+        $operation->state = CleanupState::Pending;
 
         $operation->setAttribute($operation->getKeyName(), $operation->newUniqueId());
         $operation->insertIfAbsent();

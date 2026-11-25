@@ -26,7 +26,6 @@ use App\Support\ReceiptCallers;
 use App\Support\ReceiptRetention;
 use Carbon\CarbonImmutable;
 use Illuminate\Container\Container;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -55,25 +54,6 @@ use Illuminate\Support\Carbon;
  * @property ?string $target
  * @property mixed $to_operation attribute
  */
-#[Fillable(
-    [
-        'author_type',
-        'author_id',
-        'session_id',
-        'contract_major',
-        'request_key',
-        'command',
-        'fingerprint',
-        'target',
-        'state',
-        'result',
-        'refusal_code',
-        'refusal_message',
-        'refusal_details',
-        'answers_until',
-        'refuses_until',
-    ],
-)]
 final class CommandReceipt extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -122,12 +102,23 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
         object $command,
         ReceiptRetention $retention,
     ): self {
-        return self::query()->create(
-            [
-                ...self::keyColumns($caller, $requestKey, $command, $retention),
-                'state' => ReceiptState::Taken,
-            ],
-        );
+        $now = CarbonImmutable::now();
+
+        $receipt = new self();
+        $receipt->author_type = $caller->actor->type->value;
+        $receipt->author_id = $caller->actor->id;
+        $receipt->session_id = $caller->sessionId;
+        $receipt->contract_major = self::CONTRACT_MAJOR;
+        $receipt->request_key = $requestKey;
+        $receipt->command = $command::class;
+        $receipt->fingerprint = PlainValue::fingerprintOf($command);
+        $receipt->target = $command instanceof TargetedCommand ? $command->receiptTarget() : null;
+        $receipt->answers_until = $retention->answersUntil($now);
+        $receipt->refuses_until = $retention->refusesUntil($now);
+        $receipt->state = ReceiptState::Taken;
+        $receipt->assertSaved($receipt->save());
+
+        return $receipt;
     }
 
     // ----------[ Mutations ]----------
@@ -245,29 +236,6 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
     }
 
     // ----------[ Internals ]----------
-
-    /**
-     * @return array<string, mixed>
-     */
-    private static function keyColumns(
-        ReceiptCaller $caller,
-        string $requestKey,
-        object $command,
-        ReceiptRetention $retention,
-    ): array {
-        $now = CarbonImmutable::now();
-
-        return [
-            ...$caller->columns(),
-            'contract_major' => self::CONTRACT_MAJOR,
-            'request_key' => $requestKey,
-            'command' => $command::class,
-            'fingerprint' => PlainValue::fingerprintOf($command),
-            'target' => $command instanceof TargetedCommand ? $command->receiptTarget() : null,
-            'answers_until' => $retention->answersUntil($now),
-            'refuses_until' => $retention->refusesUntil($now),
-        ];
-    }
 
     // ----------[ Queries ]----------
 

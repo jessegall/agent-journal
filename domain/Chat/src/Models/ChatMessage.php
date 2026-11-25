@@ -17,7 +17,6 @@ use Carbon\CarbonImmutable;
 use Domain\Chat\Enums\ChatMessageType;
 use Domain\Chat\Events\ChatMessageChanged;
 use Domain\Chat\Support\ChatGrouping;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -40,15 +39,6 @@ use Illuminate\Support\Carbon;
  * @property mixed $author attribute
  * @property Model $source
  */
-#[Fillable([
-    'inbox_id',
-    'source_type',
-    'source_id',
-    'type',
-    'group_number',
-    'author_type',
-    'author_id',
-])]
 final class ChatMessage extends Model implements EventSource
 {
     use HasUlids;
@@ -91,15 +81,15 @@ final class ChatMessage extends Model implements EventSource
         $author = $source->author();
         $latest = self::lockNewestInInbox($inboxId);
 
-        $entry = self::query()->create([
-            'inbox_id' => $inboxId,
-            'source_type' => $source->getMorphClass(),
-            'source_id' => $source->getKey(),
-            'type' => $type,
-            'group_number' => self::groupAfter($latest, $author, $at),
-            'author_type' => $author->type->value,
-            'author_id' => $author->id,
-        ]);
+        $entry = new self();
+        $entry->inbox_id = $inboxId;
+        $entry->source_type = $source->getMorphClass();
+        $entry->source_id = $source->getKey();
+        $entry->type = $type;
+        $entry->group_number = self::groupAfter($latest, $author, $at);
+        $entry->author_type = $author->type->value;
+        $entry->author_id = $author->id;
+        $entry->assertSaved($entry->save());
 
         $entry->raise(new ChatMessageChanged($inboxId, $entry->id));
 

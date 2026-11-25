@@ -10,7 +10,6 @@ use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ReadEvidence;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -25,14 +24,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property ReadEvidence $evidence
  * @property CarbonImmutable $read_at
  */
-#[Fillable([
-    'session_id',
-    'context_epoch',
-    'skill_key',
-    'content_digest',
-    'evidence',
-    'read_at',
-])]
 final class SkillReceipt extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -68,13 +59,12 @@ final class SkillReceipt extends Model implements ReadableModel
         string $digest,
         ReadEvidence $evidence,
     ): self {
-        $receipt = new self([
-            'session_id' => $sessionId,
-            'context_epoch' => $epoch,
-            'skill_key' => $skillKey,
-            'content_digest' => $digest,
-            'evidence' => $evidence,
-        ]);
+        $receipt = new self();
+        $receipt->session_id = $sessionId;
+        $receipt->context_epoch = $epoch;
+        $receipt->skill_key = $skillKey;
+        $receipt->content_digest = $digest;
+        $receipt->evidence = $evidence;
 
         $receipt->setAttribute($receipt->getKeyName(), $receipt->newUniqueId());
 

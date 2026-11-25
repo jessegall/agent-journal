@@ -14,7 +14,6 @@ use App\Models\Support\Accessor;
 use App\Support\ConsumedPreview;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -36,15 +35,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $updated_at
  * @property mixed $target attribute
  */
-#[Fillable([
-    'scope_version',
-    'link_id',
-    'source_type',
-    'source_id',
-    'target_type',
-    'target_id',
-    'invalidated_at',
-])]
 final class ShareMember extends Model implements ReadableModel
 {
     use BoundedReads;

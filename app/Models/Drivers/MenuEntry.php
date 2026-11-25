@@ -27,7 +27,6 @@ use App\Values\MenuEntryBuild;
 use App\Values\MenuStep;
 use App\Values\ScriptGoal;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -61,24 +60,6 @@ use Illuminate\Support\Carbon;
  * @property mixed $goal attribute
  * @property mixed $library_answer attribute
  */
-#[Fillable([
-    'source_request_id',
-    'family',
-    'builds',
-    'goal_key',
-    'goal_script',
-    'goal_version',
-    'goal_parameters',
-    'completes',
-    'proof',
-    'entry_fingerprint',
-    'steps',
-    'next_step',
-    'state',
-    'superseded_by_id',
-    'last_replay_key',
-    'last_used_at',
-])]
 final class MenuEntry extends Model implements EventSource, ReadableModel
 {
     use BelongsToOneActor;

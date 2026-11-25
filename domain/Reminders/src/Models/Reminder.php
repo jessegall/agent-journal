@@ -16,7 +16,6 @@ use Carbon\CarbonImmutable;
 use Domain\Reminders\Enums\ReminderStatus;
 use Domain\Reminders\Events\ReminderFinished;
 use Domain\Reminders\Exceptions\ReminderEnded;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -33,11 +32,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[Fillable([
-    'title',
-    'due_at',
-    'status',
-])]
 final class Reminder extends Model implements EventSource, ReadableModel
 {
     use BelongsToOneActor;

@@ -12,7 +12,6 @@ use App\Contracts\Records\ReadableModel;
 use Carbon\CarbonImmutable;
 use Domain\Helpers\Events\ReportJobLinked;
 use Domain\Helpers\Values\FiledReport;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -31,13 +30,6 @@ use PhpOption\Option;
  * @property ?Carbon $created_at
  */
 #[Table('report_job_links')]
-#[Fillable([
-    'report_id',
-    'report_number',
-    'helper_job_id',
-    'dispatch_request_id',
-    'verified_at',
-])]
 final class ReportJobLink extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -65,13 +57,12 @@ final class ReportJobLink extends Model implements EventSource, ReadableModel
      */
     public static function create(FiledReport $report, HelperJob $job, string $dispatchRequestId): self
     {
-        $link = new self([
-            'report_id' => $report->id,
-            'report_number' => $report->number,
-            'helper_job_id' => $job->id,
-            'dispatch_request_id' => $dispatchRequestId,
-            'verified_at' => CarbonImmutable::now(),
-        ]);
+        $link = new self();
+        $link->report_id = $report->id;
+        $link->report_number = $report->number;
+        $link->helper_job_id = $job->id;
+        $link->dispatch_request_id = $dispatchRequestId;
+        $link->verified_at = CarbonImmutable::now();
 
         $link->id = $link->newUniqueId();
 

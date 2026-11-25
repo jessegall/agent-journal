@@ -20,7 +20,6 @@ use Domain\Documents\Events\DocumentOpened;
 use Domain\Documents\Support\DraftText;
 use Domain\Documents\Support\RecordViews;
 use Domain\Documents\Values\DraftReference;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -47,19 +46,6 @@ use Illuminate\Support\Str;
  * @property mixed $holder_label attribute
  * @property Document $document
  */
-#[Fillable(
-    [
-        'document_id',
-        'token',
-        'author_type',
-        'author_id',
-        'base_revision_number',
-        'title',
-        'abstract',
-        'body',
-        'opened_at',
-    ],
-)]
 final class DocumentDraft extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -86,17 +72,16 @@ final class DocumentDraft extends Model implements EventSource, ReadableModel
      */
     public static function create(Document $document, DocumentRevision $baseRevision, ActorIdentity $editor): self
     {
-        $draft = new self([
-            'document_id' => $document->id,
-            'token' => Str::random(40),
-            'author_type' => $editor->type,
-            'author_id' => $editor->id,
-            'base_revision_number' => $baseRevision->number,
-            'title' => $baseRevision->title,
-            'abstract' => $baseRevision->abstract,
-            'body' => $baseRevision->body,
-            'opened_at' => CarbonImmutable::now(),
-        ]);
+        $draft = new self();
+        $draft->document_id = $document->id;
+        $draft->token = Str::random(40);
+        $draft->author_type = $editor->type;
+        $draft->author_id = $editor->id;
+        $draft->base_revision_number = $baseRevision->number;
+        $draft->title = $baseRevision->title;
+        $draft->abstract = $baseRevision->abstract;
+        $draft->body = $baseRevision->body;
+        $draft->opened_at = CarbonImmutable::now();
 
         $draft->assertSaved($draft->save());
         $draft->raise(new DocumentOpened($document->id, $document->number));

@@ -18,8 +18,6 @@ use App\Events\Messages\MessageSent;
 use App\Models\Inboxes\Inbox;
 use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
-use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -46,14 +44,6 @@ use Illuminate\Support\Carbon;
  * @property Collection<int, Message>|Message[] $replies
  * @property ?Message $target
  */
-#[Fillable([
-    'inbox_id',
-    'number',
-    'sender_type',
-    'sender_id',
-    'body',
-    'target_message_id',
-])]
 final class Message extends Model implements AuthoredModel, EventSource, ReadableModel
 {
     use BoundedReads;
@@ -75,14 +65,14 @@ final class Message extends Model implements AuthoredModel, EventSource, Readabl
     ): self {
         $inbox = Inbox::lockedById($to->inbox()->id);
 
-        $message = self::query()->create([
-            'inbox_id' => $inbox->id,
-            'number' => $inbox->takeMessageNumber(),
-            'sender_type' => $from->participantType(),
-            'sender_id' => $from->participantId(),
-            'body' => $body,
-            'target_message_id' => $target?->id,
-        ]);
+        $message = new self();
+        $message->inbox_id = $inbox->id;
+        $message->number = $inbox->takeMessageNumber();
+        $message->sender_type = $from->participantType();
+        $message->sender_id = $from->participantId();
+        $message->body = $body;
+        $message->target_message_id = $target?->id;
+        $message->assertSaved($message->save());
 
         $message->raise(new MessageSent($message->id, $inbox->id, $message->number, $target?->id, ActorIdentity::of($from)));
 

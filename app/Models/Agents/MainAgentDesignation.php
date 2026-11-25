@@ -8,7 +8,6 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Exceptions\MainAgentMissing;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -22,7 +21,6 @@ use PhpOption\Option;
  * @property ?Carbon $updated_at
  * @property Agent $agent
  */
-#[Fillable(['agent_id'])]
 final class MainAgentDesignation extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -36,7 +34,11 @@ final class MainAgentDesignation extends Model implements ReadableModel
      */
     public static function create(Agent $agent): self
     {
-        return self::query()->create(['agent_id' => $agent->id]);
+        $mainAgentDesignation = new self();
+        $mainAgentDesignation->agent_id = $agent->id;
+        $mainAgentDesignation->save();
+
+        return $mainAgentDesignation;
     }
 
     // ----------[ Relations ]----------

@@ -10,7 +10,6 @@ use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Support\ActorIdentity;
 use App\Values\RuleBundle;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -27,14 +26,6 @@ use Illuminate\Support\Carbon;
  * @property string $approver_id
  * @property Carbon $approved_at
  */
-#[Fillable([
-    'project_key',
-    'module',
-    'version',
-    'digest',
-    'approver_type',
-    'approver_id',
-])]
 final class ModuleRuleBundle extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -67,18 +58,13 @@ final class ModuleRuleBundle extends Model implements ReadableModel
 
     public static function approve(string $projectKey, RuleBundle $bundle, ActorIdentity $approver): self
     {
-        $identity = [
-            'project_key' => $projectKey,
-            'module' => $bundle->module,
-            'version' => $bundle->version,
-            'digest' => $bundle->digest(),
-        ];
-
-        $approval = new self([
-            ...$identity,
-            'approver_type' => $approver->type->value,
-            'approver_id' => $approver->id,
-        ]);
+        $approval = new self();
+        $approval->project_key = $projectKey;
+        $approval->module = $bundle->module;
+        $approval->version = $bundle->version;
+        $approval->digest = $bundle->digest();
+        $approval->approver_type = $approver->type->value;
+        $approval->approver_id = $approver->id;
         $approval->setAttribute($approval->getKeyName(), $approval->newUniqueId());
         $approval->insertIfAbsent();
 

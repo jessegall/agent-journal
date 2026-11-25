@@ -20,7 +20,6 @@ use App\Models\Support\HasActorColumns;
 use App\Support\ActorIdentity;
 use App\Values\StepOutcome;
 use App\Values\WorkReference;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -54,20 +53,6 @@ use PhpOption\Some;
  * @property Collection<int, ProfileStepResult>|ProfileStepResult[] $results
  */
 #[Table('profile_runs')]
-#[Fillable([
-    'work',
-    'profile_key',
-    'profile_revision',
-    'definition_digest',
-    'trigger_reference',
-    'state',
-    'cursor',
-    'awaited_step',
-    'generation',
-    'unchanged_returns',
-    'message',
-    'sequence',
-])]
 final class ProfileRun extends Model implements EventSource, ReadableModel
 {
     use BelongsToOneActor;

@@ -17,7 +17,6 @@ use App\Values\ReadOrder;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Events\TaskLogged;
 use Domain\Tasks\Values\TaskLogLine;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -38,15 +37,6 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  * @property mixed $line attribute
  */
-#[Fillable([
-    'task_id',
-    'task_run_id',
-    'run_number',
-    'actor_type',
-    'actor_id',
-    'text',
-    'sequence',
-])]
 final class TaskLogEntry extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -77,15 +67,14 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
      */
     public static function create(Task $task, TaskRun $run, ActorIdentity $actor, string $text): self
     {
-        $entry = new self([
-            'task_id' => $task->id,
-            'task_run_id' => $run->id,
-            'run_number' => $run->run_number,
-            'actor_type' => $actor->type,
-            'actor_id' => $actor->id,
-            'text' => $text,
-            'sequence' => (int) self::query()->ofTask($task->id)->max('sequence') + 1,
-        ]);
+        $entry = new self();
+        $entry->task_id = $task->id;
+        $entry->task_run_id = $run->id;
+        $entry->run_number = $run->run_number;
+        $entry->actor_type = $actor->type;
+        $entry->actor_id = $actor->id;
+        $entry->text = $text;
+        $entry->sequence = (int) self::query()->ofTask($task->id)->max('sequence') + 1;
 
         $entry->assertSaved($entry->save());
         $entry->raise(new TaskLogged($task->id, $entry->id));

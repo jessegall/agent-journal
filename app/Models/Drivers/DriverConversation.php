@@ -12,7 +12,6 @@ use App\Enums\ResumeRefusal;
 use App\Exceptions\ResumeRefused;
 use App\Models\Agents\AgentSession;
 use Closure;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -32,13 +31,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[Fillable([
-    'resume_protocol',
-    'settings_identity',
-    'native_id',
-    'agent_id',
-    'context_reference',
-])]
 final class DriverConversation extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -57,13 +49,15 @@ final class DriverConversation extends Model implements ReadableModel
         string $nativeId,
         string|null $context,
     ): self {
-        return self::query()->create([
-            'resume_protocol' => $session->driver_key,
-            'settings_identity' => $settingsIdentity,
-            'native_id' => $nativeId,
-            'agent_id' => $session->agent_id,
-            'context_reference' => $context,
-        ]);
+        $driverConversation = new self();
+        $driverConversation->resume_protocol = $session->driver_key;
+        $driverConversation->settings_identity = $settingsIdentity;
+        $driverConversation->native_id = $nativeId;
+        $driverConversation->agent_id = $session->agent_id;
+        $driverConversation->context_reference = $context;
+        $driverConversation->save();
+
+        return $driverConversation;
     }
 
     // ----------[ Predicates ]----------

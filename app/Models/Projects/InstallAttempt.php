@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models\Projects;
 
 use App\Concerns\BoundedReads;
+use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
@@ -22,7 +23,6 @@ use App\Support\ShortReference;
 use App\Values\RelationRead;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Pagination\CursorPaginator;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -51,20 +51,11 @@ use Illuminate\Support\Carbon;
  * @property Collection<int, ProjectInvitation>|ProjectInvitation[] $invitations
  * @property ?Project $project
  */
-#[Fillable([
-    'reference',
-    'owner_user_id',
-    'idempotency_key',
-    'mode',
-    'project_id',
-    'environment_id',
-    'state',
-    'version',
-])]
 final class InstallAttempt extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use InsertsAbsentRows;
     use Linkable;
     use OrdersById;
     use RaisesEvents;
@@ -112,20 +103,20 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
         }
 
         // Only two first submissions at once reach this far; the key's unique index keeps them one attempt.
-        $attempt = self::query()->createOrFirst(
-            [
-                'owner_user_id' => $userId,
-                'idempotency_key' => $idempotencyKey,
-            ],
-            [
-                'reference' => ShortReference::withPrefix('IA'),
-                'mode' => $joins === null ? InvitationMode::New : InvitationMode::Join,
-                'project_id' => $joins?->project_id,
-                'environment_id' => $joins?->id,
-                'state' => InstallAttemptState::Open,
-                'version' => 0,
-            ],
-        );
+        $attempt = new self();
+        $attempt->owner_user_id = $userId;
+        $attempt->idempotency_key = $idempotencyKey;
+        $attempt->reference = ShortReference::withPrefix('IA');
+        $attempt->mode = $joins === null ? InvitationMode::New : InvitationMode::Join;
+        $attempt->project_id = $joins?->project_id;
+        $attempt->environment_id = $joins?->id;
+        $attempt->state = InstallAttemptState::Open;
+        $attempt->version = 0;
+        $attempt->setAttribute($attempt->getKeyName(), $attempt->newUniqueId());
+
+        if (! $attempt->insertIfAbsent()) {
+            $attempt = self::query()->where('owner_user_id', $userId)->where('idempotency_key', $idempotencyKey)->sole();
+        }
 
         if ($attempt->wasRecentlyCreated) {
             $attempt->raise(new InstallAttemptOpened($attempt->id, $attempt->reference, CarbonImmutable::now()));

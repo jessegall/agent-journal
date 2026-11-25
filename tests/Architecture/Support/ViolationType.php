@@ -35,7 +35,7 @@ enum ViolationType: string
     case StarterKitUsesDomain = 'starter-kit-uses-domain';
     case NamespaceOutsideDomain = 'namespace-outside-domain';
     case SharedPlaceFile = 'shared-place-file';
-    case FillableNotListed = 'fillable-not-listed';
+    case FillableDeclared = 'fillable-declared';
     case OpenModel = 'open-model';
     case OpeningModelCall = 'opening-model-call';
     case KeyNotUlid = 'key-not-ulid';
@@ -125,8 +125,8 @@ enum ViolationType: string
             ),
             self::NamespaceOutsideDomain => "declares namespace {$violation->subject}, outside {$violation->owner}",
             self::SharedPlaceFile => 'is not one of the fixed files of App\\Domains; the shared foundation holds only Domain, DomainEntry, DomainRegistry, DomainServiceProvider, the listener class reader and the named start-up exceptions',
-            self::FillableNotListed => sprintf(
-                'declares model %s; list every fillable attribute with #[Fillable([...])], and nothing else',
+            self::FillableDeclared => sprintf(
+                'declares model %s with fillable columns; write each column as a property and declare none',
                 $violation->subject,
             ),
             self::OpenModel => "declares model {$violation->subject}, "

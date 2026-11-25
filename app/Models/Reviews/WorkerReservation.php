@@ -15,7 +15,6 @@ use App\Events\Reviews\WorkerReservationReleased;
 use App\Exceptions\WorkerAlreadyAssigned;
 use App\Support\AssigneeIdentity;
 use App\Support\RecordIdentity;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -31,12 +30,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[Fillable([
-    'holder_type',
-    'holder_id',
-    'root_type',
-    'root_id',
-])]
 final class WorkerReservation extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -121,10 +114,9 @@ final class WorkerReservation extends Model implements EventSource, ReadableMode
         $locked = [];
 
         foreach ($keys as $holder) {
-            $reservation = new self([
-                'holder_type' => $holder->type,
-                'holder_id' => $holder->id,
-            ]);
+            $reservation = new self();
+            $reservation->holder_type = $holder->type;
+            $reservation->holder_id = $holder->id;
             $reservation->id = $reservation->newUniqueId();
             $reservation->insertIfAbsent();
         }

@@ -21,7 +21,6 @@ use App\Support\ActorIdentity;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Values\RelationRead;
 use App\Values\StopAttemptReference;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -47,14 +46,6 @@ use Illuminate\Support\Carbon;
  * @property mixed $reference attribute
  * @property Collection<int, StopResult>|StopResult[] $results
  */
-#[Fillable([
-    'stop_id',
-    'policy_digest',
-    'workspace_generation',
-    'condition_hashes',
-    'state',
-    'submission_digest',
-])]
 final class StopAttempt extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

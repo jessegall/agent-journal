@@ -13,7 +13,6 @@ use App\Contracts\Records\ReadableModel;
 use App\Events\Web\LayoutRemoved;
 use App\Events\Web\LayoutSaved;
 use App\Values\LayoutShape;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -28,11 +27,6 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
-#[Fillable([
-    'user_id',
-    'name',
-    'shape',
-])]
 final class Layout extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -55,11 +49,13 @@ final class Layout extends Model implements EventSource, ReadableModel
      */
     public static function create(int|string $userId, string $name, LayoutShape $shape): self
     {
-        return self::query()->create([
-            'user_id' => $userId,
-            'name' => $name,
-            'shape' => $shape,
-        ]);
+        $layout = new self();
+        $layout->user_id = $userId;
+        $layout->name = $name;
+        $layout->shape = $shape;
+        $layout->assertSaved($layout->save());
+
+        return $layout;
     }
 
     // ----------[ Mutations ]----------
@@ -69,10 +65,9 @@ final class Layout extends Model implements EventSource, ReadableModel
      */
     public function saveNameAndShape(string $name, LayoutShape $shape): void
     {
-        $this->update([
-            'name' => $name,
-            'shape' => $shape,
-        ]);
+        $this->name = $name;
+        $this->shape = $shape;
+        $this->assertSaved($this->save());
         $this->raise(new LayoutSaved($this->id));
     }
 

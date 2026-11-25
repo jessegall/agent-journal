@@ -23,7 +23,6 @@ use Domain\Plans\Exceptions\PhaseRevisionChanged;
 use Domain\Plans\Values\PhaseDetails;
 use Domain\Plans\Values\PlanPhaseTasks;
 use Domain\Plans\Values\PlanProgress;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -50,10 +49,6 @@ use Illuminate\Support\Carbon;
  * @property mixed $progress attribute
  * @property Plan $plan
  */
-#[Fillable([
-    'title',
-    'revision',
-])]
 final class Phase extends Model implements Assignable, EventSource, Numbered, ReadableModel
 {
     use BoundedReads;
@@ -97,7 +92,8 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
      */
     public static function create(Plan $plan, string $title): self
     {
-        $phase = new self(['title' => $title]);
+        $phase = new self();
+        $phase->title = $title;
         $phase->plan_id = $plan->id;
         $phase->setRelation('plan', $plan);
         $phase->save();

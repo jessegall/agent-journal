@@ -11,7 +11,6 @@ use App\Contracts\Records\ReadableModel;
 use App\Exceptions\ProfileDraftRefused;
 use App\Values\ProfileKey;
 use App\Values\ScriptSource;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -29,11 +28,6 @@ use Illuminate\Support\Str;
  * @property ?Carbon $updated_at
  * @property ?ProfileDraftRevision $currentRevision
  */
-#[Fillable([
-    'profile_key',
-    'revision',
-    'current_revision_id',
-])]
 final class ProfileDraft extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -86,11 +80,17 @@ final class ProfileDraft extends Model implements ReadableModel
      */
     public static function of(ProfileKey $profile): self
     {
-        return self::query()->with('currentRevision')->ofProfile($profile)->first()
-            ?? new self([
-                'profile_key' => $profile->key,
-                'revision' => 0,
-            ]);
+        $existing = self::query()->with('currentRevision')->ofProfile($profile)->first();
+
+        if ($existing !== null) {
+            return $existing;
+        }
+
+        $draft = new self();
+        $draft->profile_key = $profile->key;
+        $draft->revision = 0;
+
+        return $draft;
     }
 
     /**

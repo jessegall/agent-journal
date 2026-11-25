@@ -18,7 +18,6 @@ use App\Exceptions\QuestionRefused;
 use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -43,18 +42,6 @@ use Illuminate\Support\Carbon;
  * @property mixed $sender attribute
  * @property mixed $target attribute
  */
-#[Fillable([
-    'inbox_id',
-    'sender_type',
-    'sender_id',
-    'target_type',
-    'target_id',
-    'text',
-    'type',
-    'options',
-    'answer',
-    'answered_at',
-])]
 final class Question extends Model implements AuthoredModel, EventSource, ReadableModel
 {
     use BoundedReads;
@@ -87,16 +74,16 @@ final class Question extends Model implements AuthoredModel, EventSource, Readab
         QuestionType $type,
         array $options,
     ): self {
-        $question = self::query()->create([
-            'inbox_id' => $inboxId,
-            'sender_type' => $sender->type->value,
-            'sender_id' => $sender->id,
-            'target_type' => $target->type->value,
-            'target_id' => $target->id,
-            'text' => $text,
-            'type' => $type,
-            'options' => $options,
-        ]);
+        $question = new self();
+        $question->inbox_id = $inboxId;
+        $question->sender_type = $sender->type->value;
+        $question->sender_id = $sender->id;
+        $question->target_type = $target->type->value;
+        $question->target_id = $target->id;
+        $question->text = $text;
+        $question->type = $type;
+        $question->options = $options;
+        $question->assertSaved($question->save());
 
         $question->raise(new QuestionAsked($question->id, $inboxId, $sender, $target));
 

@@ -10,7 +10,6 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\NotificationMutationType;
 use Carbon\CarbonImmutable;
 use Closure;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -29,13 +28,6 @@ use PhpOption\Option;
  * @property ?Carbon $created_at
  */
 #[Table('notification_changes')]
-#[Fillable([
-    'scope_id',
-    'version',
-    'receipt_id',
-    'mutation_type',
-    'sequence',
-])]
 final class NotificationChange extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -71,13 +63,12 @@ final class NotificationChange extends Model implements ReadableModel
         NotificationReceipt $receipt,
         NotificationMutationType $type,
     ): self {
-        $change = new self([
-            'scope_id' => $scope->id,
-            'version' => $scope->mutation_version,
-            'receipt_id' => $receipt->id,
-            'mutation_type' => $type,
-            'sequence' => $receipt->sequence,
-        ]);
+        $change = new self();
+        $change->scope_id = $scope->id;
+        $change->version = $scope->mutation_version;
+        $change->receipt_id = $receipt->id;
+        $change->mutation_type = $type;
+        $change->sequence = $receipt->sequence;
 
         $change->save();
 

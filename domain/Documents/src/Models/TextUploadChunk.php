@@ -8,7 +8,6 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -27,11 +26,6 @@ use Illuminate\Support\Carbon;
  * @property mixed $text attribute
  * @property TextUpload $upload
  */
-#[Fillable([
-    'upload_id',
-    'position',
-    'encoded_text',
-])]
 final class TextUploadChunk extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -42,11 +36,11 @@ final class TextUploadChunk extends Model implements ReadableModel
 
     public static function create(TextUpload $upload, int $position, string $text): void
     {
-        self::query()->create([
-            'upload_id' => $upload->id,
-            'position' => $position,
-            'encoded_text' => base64_encode($text),
-        ]);
+        $textUploadChunk = new self();
+        $textUploadChunk->upload_id = $upload->id;
+        $textUploadChunk->position = $position;
+        $textUploadChunk->encoded_text = base64_encode($text);
+        $textUploadChunk->save();
     }
 
     // ----------[ Accessors ]----------

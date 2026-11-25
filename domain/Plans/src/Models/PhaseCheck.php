@@ -10,7 +10,6 @@ use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Support\ActorIdentity;
 use App\Values\PublishedResult;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -27,14 +26,6 @@ use Illuminate\Support\Carbon;
  * @property string $actor_id
  * @property Carbon $recorded_at
  */
-#[Fillable([
-    'phase_id',
-    'operation',
-    'receipt_id',
-    'outcome',
-    'actor_type',
-    'actor_id',
-])]
 final class PhaseCheck extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -61,14 +52,13 @@ final class PhaseCheck extends Model implements ReadableModel
      */
     public static function record(Phase $phase, PublishedResult $receipt, ActorIdentity $recorder): self
     {
-        $check = new self([
-            'phase_id' => $phase->id,
-            'receipt_id' => $receipt->receiptId,
-            'operation' => $receipt->operation,
-            'outcome' => $receipt->outcome->value,
-            'actor_type' => $recorder->type->value,
-            'actor_id' => $recorder->id,
-        ]);
+        $check = new self();
+        $check->phase_id = $phase->id;
+        $check->receipt_id = $receipt->receiptId;
+        $check->operation = $receipt->operation;
+        $check->outcome = $receipt->outcome->value;
+        $check->actor_type = $recorder->type->value;
+        $check->actor_id = $recorder->id;
 
         $check->setAttribute($check->getKeyName(), $check->newUniqueId());
         $check->insertIfAbsent();

@@ -10,7 +10,6 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Support\ActorIdentity;
 use Domain\Tasks\Enums\TaskWaitChange;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -29,16 +28,6 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  */
 #[Table('task_wait_history')]
-#[Fillable([
-    'task_wait_id',
-    'dependent_task_id',
-    'prerequisite_task_id',
-    'change',
-    'actor_type',
-    'actor_id',
-    'reason',
-    'batch_id',
-])]
 final class TaskWaitHistory extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -70,15 +59,17 @@ final class TaskWaitHistory extends Model implements ReadableModel
         string|null $reason,
         string|null $batchId,
     ): self {
-        return self::query()->create([
-            'task_wait_id' => $wait->id,
-            'dependent_task_id' => $wait->dependent_task_id,
-            'prerequisite_task_id' => $wait->prerequisite_task_id,
-            'change' => $change,
-            'actor_type' => $actor->type,
-            'actor_id' => $actor->id,
-            'reason' => $reason,
-            'batch_id' => $batchId,
-        ]);
+        $taskWaitHistory = new self();
+        $taskWaitHistory->task_wait_id = $wait->id;
+        $taskWaitHistory->dependent_task_id = $wait->dependent_task_id;
+        $taskWaitHistory->prerequisite_task_id = $wait->prerequisite_task_id;
+        $taskWaitHistory->change = $change;
+        $taskWaitHistory->actor_type = $actor->type;
+        $taskWaitHistory->actor_id = $actor->id;
+        $taskWaitHistory->reason = $reason;
+        $taskWaitHistory->batch_id = $batchId;
+        $taskWaitHistory->save();
+
+        return $taskWaitHistory;
     }
 }
