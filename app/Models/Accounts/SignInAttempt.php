@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Accounts;
 
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
@@ -491,11 +492,8 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     {
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
-            ->where('state', SignInState::Starting->value)
-            ->where('waits_for_uses', false)
-            ->whereNull('process_reference')
-            ->where('expires_at', '>', $now)
-            ->orderBy('created_at')
+            ->waitingToStartAt($now)
+            ->oldestFirst()
             ->lockForUpdate()
             ->first();
     }
@@ -516,9 +514,8 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     {
         return self::query()
             ->ofDriver($driver)
-            ->where('account_id', $account?->id)
-            ->whereIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
-            ->orderBy('created_at')
+            ->ofAccount($account?->id)
+            ->live()
             ->oldestFirst()
             ->lockForUpdate()
             ->first();
@@ -586,9 +583,9 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     {
         $ids = self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
-            ->whereIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
-            ->where('expires_at', '<=', $now)
-            ->orderBy('expires_at')
+            ->live()
+            ->expiredBy($now)
+            ->soonestExpiringFirst()
             ->readExactly($limit)
             ->pluck('id');
 
@@ -604,10 +601,8 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     public static function recentFor(CarbonImmutable $now): array
     {
         $attempts = self::query()
-            ->where(fn (Builder $recent) => $recent
-                ->whereIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
-                ->orWhere('updated_at', '>=', $now->subMinutes(15)))
-            ->orderByDesc('created_at')
+            ->liveOrUpdatedSince($now->subMinutes(15))
+            ->newestFirst()
             ->with('resultAccount')
             ->limit(50)
             ->get();
@@ -625,10 +620,10 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     {
         $attempts = self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
-            ->where('process_reference', $hostId)
-            ->whereIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
-            ->whereNotIn('id', $runningAttemptIds)
-            ->orderBy('created_at')
+            ->runOnHost($hostId)
+            ->live()
+            ->whereKeyNot($runningAttemptIds)
+            ->oldestFirst()
             ->lockForUpdate()
             ->readAll('a host reconciles the few sign-ins it took')
             ->get();
@@ -647,7 +642,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
         $attempt = self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
             ->whereKey($attemptId)
-            ->where('process_reference', $hostId)
+            ->runOnHost($hostId)
             ->first();
         self::assertFound($attempt, $attemptId);
 
@@ -662,14 +657,9 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     {
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
-            ->where('cleanup_pending', true)
-            ->where('cleanup_tries', '<', CleanupProgress::MOST_TRIES)
-            ->whereNotNull('directory')
-            ->whereNotExists(fn ($accounts) => $accounts->from('accounts')
-                ->whereColumn('accounts.directory', 'sign_in_attempts.directory')
-                ->where('accounts.state', '!=', AccountState::Removed->value))
-            ->whereNotIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
-            ->orderBy('updated_at')
+            ->cleanupDue()
+            ->notLive()
+            ->leastRecentlyUpdatedFirst()
             ->first();
     }
 
@@ -681,9 +671,9 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     public static function pendingCleanups(): array
     {
         $attempts = self::query()
-            ->where('cleanup_pending', true)
-            ->whereNotIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
-            ->orderBy('created_at')
+            ->cleanupPending()
+            ->notLive()
+            ->oldestFirst()
             ->limit(50)
             ->get();
 
@@ -699,9 +689,9 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     {
         $ids = self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
-            ->where('waits_for_uses', true)
-            ->whereIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
-            ->orderBy('created_at')
+            ->waitingForUses()
+            ->live()
+            ->oldestFirst()
             ->readExactly($limit)
             ->pluck('id');
 
@@ -717,5 +707,145 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     protected function ofDriver(Builder $query, string $driver): void
     {
         $query->where('account_protocol', $driver);
+    }
+
+    /**
+     * The attempts still starting then that wait on no use and no host took.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function waitingToStartAt(Builder $query, CarbonImmutable $now): void
+    {
+        $query->where('state', SignInState::Starting->value)
+            ->where('waits_for_uses', false)
+            ->whereNull('process_reference')
+            ->where('expires_at', '>', $now);
+    }
+
+    /**
+     * The account's attempts; with none named, the attempts for a new account.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofAccount(Builder $query, string|null $accountId): void
+    {
+        $query->where('account_id', $accountId);
+    }
+
+    /**
+     * The attempts still going.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function live(Builder $query): void
+    {
+        $query->whereIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()));
+    }
+
+    /**
+     * The attempts that ended.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function notLive(Builder $query): void
+    {
+        $query->whereNotIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()));
+    }
+
+    /**
+     * The attempts expired by then.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function expiredBy(Builder $query, CarbonImmutable $now): void
+    {
+        $query->where('expires_at', '<=', $now);
+    }
+
+    /**
+     * The attempts that expire first first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function soonestExpiringFirst(Builder $query): void
+    {
+        $query->orderBy('expires_at');
+    }
+
+    /**
+     * The attempts still going or updated since that moment.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function liveOrUpdatedSince(Builder $query, CarbonImmutable $since): void
+    {
+        $query->where(fn (Builder $recent) => $recent->live()->orWhere('updated_at', '>=', $since));
+    }
+
+    /**
+     * The attempts the host runs.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function runOnHost(Builder $query, string $hostId): void
+    {
+        $query->where('process_reference', $hostId);
+    }
+
+    /**
+     * The attempts whose files wait to be cleaned up.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function cleanupPending(Builder $query): void
+    {
+        $query->where('cleanup_pending', true);
+    }
+
+    /**
+     * The attempts whose files may be cleaned up now: tries left, and no kept account uses the folder.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function cleanupDue(Builder $query): void
+    {
+        $query->cleanupPending()
+            ->where('cleanup_tries', '<', CleanupProgress::MOST_TRIES)
+            ->whereNotNull('directory')
+            ->whereNotExists(fn (QueryBuilder $accounts) => $accounts->from('accounts')
+                ->whereColumn('accounts.directory', 'sign_in_attempts.directory')
+                ->where('accounts.state', '!=', AccountState::Removed->value));
+    }
+
+    /**
+     * The attempts that wait for the uses of their account to end.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function waitingForUses(Builder $query): void
+    {
+        $query->where('waits_for_uses', true);
+    }
+
+    /**
+     * The attempts updated longest ago first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function leastRecentlyUpdatedFirst(Builder $query): void
+    {
+        $query->orderBy('updated_at');
     }
 }
