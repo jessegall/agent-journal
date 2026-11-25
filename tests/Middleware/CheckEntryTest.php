@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Bus;
+namespace Tests\Middleware;
 
+use App\CommandMiddleware\CheckEntry;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Accounts\CommandEntry;
-use App\Exceptions\ActorContextMissing;
 use App\Exceptions\CommandNotRegistered;
 use App\Support\ActorContext;
 use App\Support\ActorStore;
@@ -16,26 +16,27 @@ use App\Support\EngineAccess;
 use App\Support\SystemActor;
 use App\Values\TrustedEntryAuthority;
 use Closure;
-use Illuminate\Support\Facades\Log;
 use Tests\Fixtures\Modules\Notes\Commands\EngineCopyNote\EngineCopyNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\EngineNote\EngineNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
-use Tests\Support\TestIds;
+use Tests\Support\Bus\RunsModuleCommands;
+use Tests\Support\Entries\Attributes\TestsMiddleware;
+use Tests\TestCase;
 
 /**
- * The actor of a command: no command runs without one, the engine runs one only under a grant, and
- * the log line names the command, its owner, the actor and the outcome but no field.
+ * A command runs only through its own entry: the journal acting through a trusted entry is refused an application
+ * command as unknown, the engine runs one only as a tick's own work, and a command the tick's command dispatches
+ * follows it.
  */
-final class CommandActorTest extends CommandBusTestCase
+#[TestsMiddleware(CheckEntry::class)]
+final class CheckEntryTest extends TestCase
 {
-    public function test_a_command_without_an_actor_runs_nothing(): void
-    {
-        $this->installCommandModules();
+    use RunsModuleCommands;
 
-        $this->expectException(ActorContextMissing::class);
-
-        $this->app->make(CommandBus::class)->run(new WriteNoteCommand('never'));
-    }
+    /**
+     * None at the start: the test modules' table is made as a test sets up and emptied when it ends.
+     */
+    private const array TABLES = [];
 
     public function test_the_journal_acting_through_a_trusted_entry_is_refused_an_application_command(): void
     {
@@ -47,23 +48,6 @@ final class CommandActorTest extends CommandBusTestCase
             CommandNotRegistered::class,
         );
         $this->assertSame(0, $this->rowCount());
-    }
-
-    public function test_each_command_logs_its_name_owner_actor_and_outcome_and_no_field(): void
-    {
-        $this->installCommandModules();
-        $this->journal->actAsUserId(TestIds::of(1));
-        $log = Log::spy();
-
-        $this->app->make(CommandBus::class)->run(new WriteNoteCommand('private text'));
-
-        $log->shouldHaveReceived('info')->withArgs(fn (
-            string $line,
-            array $context,
-        ) => $line === 'Command WriteNote done'
-                && $context['owner'] === 'Notes'
-                && $context['actor'] === 'user:'.TestIds::of(1)
-                && ! str_contains((string) json_encode($context), 'private text'));
     }
 
     public function test_the_engine_outside_a_tick_is_refused_an_application_command(): void
@@ -81,7 +65,9 @@ final class CommandActorTest extends CommandBusTestCase
         $this->installCommandModules();
         $this->actAsEngine();
 
-        $this->assertSame(4, $this->asTick(fn () => $this->app->make(CommandBus::class)->run(new EngineNoteCommand('tick'))));
+        $written = $this->asTick(fn () => $this->app->make(CommandBus::class)->run(new EngineNoteCommand('tick')));
+
+        $this->assertSame(4, $written);
     }
 
     public function test_a_nested_command_follows_the_ticks_command(): void

@@ -2,26 +2,45 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Bus;
+namespace Tests\Middleware;
 
+use App\CommandMiddleware\ValidateCommand;
+use App\Contracts\Authorization\OperationResolver;
+use App\Contracts\Bus\CommandBus;
 use App\Enums\Engine\RefusalCode;
 use App\Exceptions\CommandInputInvalid;
+use App\Exceptions\CommandNotRegistered;
 use App\Exceptions\CommandRefused;
 use App\Exceptions\InputRefused;
+use App\Exceptions\OperationUnavailable;
+use App\Support\ActorStore;
 use App\Support\OneLineRule;
 use App\Support\RefusalMapper;
+use App\Support\RequestKey;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Validator;
-use Tests\Support\RefreshHookDatabase;
+use Tests\Fixtures\Modules\Notes\Commands\CopyLimitNote\CopyLimitNoteCommand;
+use Tests\Fixtures\Modules\Notes\Commands\LimitNote\LimitNoteCommand;
+use Tests\Support\Bus\RunsModuleCommands;
+use Tests\Support\ClearsStartRows;
+use Tests\Support\Entries\Attributes\TestsMiddleware;
 use Tests\TestCase;
 
 /**
- * A refusal as the caller sees it: a form error on a web page, and on a JSON request the refusal's
- * code, message and fields with its status. Refused input is a 422 invalid-input with its fields.
+ * Before any lock, transaction or receipt, a command's input passes the rules its properties declare:
+ * bad input never reaches the handler, a null optional field is not checked, and a nested command is checked too.
  */
-final class CommandRefusalRenderingTest extends TestCase
+#[TestsMiddleware(ValidateCommand::class)]
+final class ValidateCommandTest extends TestCase
 {
-    use RefreshHookDatabase;
+    use RunsModuleCommands;
+
+    /**
+     * None at the start: the test modules' table is made as a test sets up and emptied when it ends.
+     */
+    private const array TABLES = [];
+
+    use ClearsStartRows;
 
     private const string REFUSED_HEAD = "The input was refused.\ntitle: The title must be one line";
 
@@ -30,6 +49,85 @@ final class CommandRefusalRenderingTest extends TestCase
     private const string CONSOLE_HEAD = "The journal refused the call (invalid_input): The input was refused.\ntitle: ";
 
     private const string SECRET_TITLE = "Secret\nnotes";
+
+    private const string TEXT_TOO_LONG = 'text: The text field must not be greater than 5 characters.';
+
+    private const string KEY = '01JD8X0G9M3QZ6V4K2VA1DATE1';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->installCommandModules();
+        $start = $this->journal->signedStart('Main agent', 'main-agent');
+        $this->journal->actAsAgentIds($start->agent->id, $start->session->id);
+    }
+
+    public function test_a_value_over_its_limit_is_refused_before_the_handler(): void
+    {
+        $this->assertThrows(
+            fn () => $this->app->make(CommandBus::class)->run(new LimitNoteCommand('sixsix')),
+            CommandInputInvalid::class,
+            self::TEXT_TOO_LONG,
+        );
+        $this->assertSame(0, $this->rowCount());
+    }
+
+    public function test_a_value_within_its_limit_runs_unchanged(): void
+    {
+        $id = $this->app->make(CommandBus::class)->run(new LimitNoteCommand('five5', 'label'));
+
+        $this->assertSame('five5', $this->rowText($id));
+    }
+
+    public function test_a_null_optional_field_is_not_checked_and_a_sent_one_is(): void
+    {
+        $bus = $this->app->make(CommandBus::class);
+
+        $id = $bus->run(new LimitNoteCommand('note'));
+
+        $this->assertSame('note', $this->rowText($id));
+        $this->assertThrows(
+            fn () => $bus->run(new LimitNoteCommand('note', 'labels')),
+            CommandInputInvalid::class,
+            'label:',
+        );
+    }
+
+    public function test_a_nested_command_with_bad_input_fails_its_outer_command(): void
+    {
+        $this->assertThrows(
+            fn () => $this->app->make(CommandBus::class)->run(new CopyLimitNoteCommand('sixsix')),
+            CommandInputInvalid::class,
+        );
+        $this->assertSame(0, $this->rowCount());
+    }
+
+    public function test_a_keyed_write_refused_for_its_input_can_be_sent_again_corrected_under_the_same_key(): void
+    {
+        $this->app->make(RequestKey::class)->set(self::KEY);
+        $bus = $this->app->make(CommandBus::class);
+
+        $this->assertThrows(fn () => $bus->run(new LimitNoteCommand('sixsix')), CommandInputInvalid::class);
+        $this->assertThrows(
+            fn () => $this->app->make(OperationResolver::class)->operation(self::KEY),
+            OperationUnavailable::class,
+        );
+
+        $id = $bus->run(new LimitNoteCommand('fixed'));
+
+        $this->assertSame('fixed', $this->rowText($id));
+    }
+
+    public function test_an_actor_the_command_does_not_admit_gets_its_refusal_before_the_input_is_read(): void
+    {
+        $run = fn () => $this->app->make(CommandBus::class)->run(new LimitNoteCommand('sixsix'));
+
+        $this->assertThrows(
+            fn () => $this->app->make(ActorStore::class)->actAsSystem('test', $run),
+            CommandNotRegistered::class,
+        );
+    }
 
     public function test_a_refusal_is_a_form_error_on_the_web_and_a_403_on_an_agent_route(): void
     {

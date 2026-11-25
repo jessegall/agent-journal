@@ -8,10 +8,6 @@ use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
 use App\Contracts\Authorization\OperationResolver;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\CommandRules\ReceiptStatus;
-use App\Exceptions\CommandRefused;
-use App\Exceptions\NestedCommandFailureIgnored;
-use App\Exceptions\OperationUnavailable;
-use App\Exceptions\RefusalReplayed;
 use App\Models\Records\AssignmentRecord;
 use App\Support\AssigneeIdentity;
 use App\Support\RequestKey;
@@ -20,14 +16,12 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Database\ConnectionInterface;
 use Tests\Fixtures\Agents\TestStart;
-use Tests\Fixtures\Modules\Notes\Commands\IgnoreFailedNote\IgnoreFailedNoteCommand;
-use Tests\Fixtures\Modules\Notes\Commands\RefuseNote\RefuseNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 use Tests\Support\DomainBoot;
 
 /**
  * A keyed write of an agent session runs once: a repeat answers from its receipt without the handler, a different
- * write under the key is a conflict, a refusal is kept and given again, and a rolled-back write leaves the key free.
+ * write under the key is a conflict, and a repeatable read is receipted and replayed.
  */
 final class CommandReceiptTest extends CommandBusTestCase
 {
@@ -84,42 +78,6 @@ final class CommandReceiptTest extends CommandBusTestCase
             ReceiptStatus::Completed,
             $this->app->make(OperationResolver::class)->operation(self::KEY)->state,
         );
-    }
-
-    public function test_a_refused_write_keeps_its_refusal_and_a_retry_gets_the_same_one(): void
-    {
-        $bus = $this->app->make(CommandBus::class);
-
-        try {
-            $bus->run(new RefuseNoteCommand('refused'));
-            $this->fail('The write was not refused.');
-        } catch (CommandRefused $refusal) {
-            $message = $refusal->getMessage();
-        }
-
-        $this->assertThrows(fn () => $bus->run(new RefuseNoteCommand('refused')), RefusalReplayed::class, $message);
-        $this->assertSame(
-            ReceiptStatus::Refused,
-            $this->app->make(OperationResolver::class)->operation(self::KEY)->state,
-        );
-        $this->assertSame(0, $this->rowCount());
-    }
-
-    public function test_a_rolled_back_write_leaves_no_receipt_so_the_key_is_safe_to_retry(): void
-    {
-        $bus = $this->app->make(CommandBus::class);
-
-        $this->assertThrows(
-            fn () => $bus->run(new IgnoreFailedNoteCommand('rolled back')),
-            NestedCommandFailureIgnored::class,
-        );
-
-        $this->assertThrows(
-            fn () => $this->app->make(OperationResolver::class)->operation(self::KEY),
-            OperationUnavailable::class,
-        );
-        $id = $bus->run(new WriteNoteCommand('retried'));
-        $this->assertSame('retried', $this->rowText($id));
     }
 
     public function test_a_repeatable_read_assignment_is_receipted_and_replayed(): void

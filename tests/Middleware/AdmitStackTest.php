@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Bus;
+namespace Tests\Middleware;
 
+use App\CommandMiddleware\AdmitStack;
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\CommandRefused;
 use App\Exceptions\StackLockTimedOut;
@@ -14,15 +15,26 @@ use Illuminate\Database\DatabaseManager;
 use Tests\Fixtures\Modules\Notes\Commands\CopyNote\CopyNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\RefuseNote\RefuseNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
+use Tests\Support\Bus\RunsModuleCommands;
+use Tests\Support\Entries\Attributes\TestsMiddleware;
 use Tests\Support\TestIds;
+use Tests\TestCase;
 
 /**
  * Commands of one agent session pass its stack one at a time: AdmitStack takes the session's advisory lock before
  * the transaction, another session is never held up, a nested command joins, and the lock is given back however
  * the command ends.
  */
-final class StackAdmissionTest extends CommandBusTestCase
+#[TestsMiddleware(AdmitStack::class)]
+final class AdmitStackTest extends TestCase
 {
+    use RunsModuleCommands;
+
+    /**
+     * None at the start: the test modules' table is made as a test sets up and emptied when it ends.
+     */
+    private const array TABLES = [];
+
     private const string BUSY = 'busy with another operation';
 
     private const string OTHER_SESSION = 'other session';

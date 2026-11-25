@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Bus;
+namespace Tests\Middleware;
 
 use App\CommandMiddleware\AdmitStack;
 use App\CommandMiddleware\BindDispatcher;
@@ -15,16 +15,36 @@ use App\Support\MiddlewareDeclaration;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordDispatcher;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\UppercasesText;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
+use Tests\Support\Bus\RunsModuleCommands;
+use Tests\Support\Entries\Attributes\TestsMiddleware;
 use Tests\Support\TestIds;
+use Tests\TestCase;
 
 /**
  * The bus binds the request's actor to every command it runs: middleware and handler read it from the
  * command, the caller's own object stays unbound, a replacement is bound to the same actor, and a call without an
  * actor is refused where the dispatcher is bound.
  */
-final class CommandDispatcherTest extends CommandBusTestCase
+#[TestsMiddleware(BindDispatcher::class)]
+final class BindDispatcherTest extends TestCase
 {
+    use RunsModuleCommands;
+
+    /**
+     * None at the start: the test modules' table is made as a test sets up and emptied when it ends.
+     */
+    private const array TABLES = [];
+
     private const string DISPATCH_STEP = 'dispatched by user:%s';
+
+    public function test_a_command_without_an_actor_runs_nothing(): void
+    {
+        $this->installCommandModules();
+
+        $this->expectException(ActorContextMissing::class);
+
+        $this->app->make(CommandBus::class)->run(new WriteNoteCommand('never'));
+    }
 
     public function test_the_command_passed_on_reports_the_requests_actor_and_the_callers_object_stays_unbound(): void
     {
