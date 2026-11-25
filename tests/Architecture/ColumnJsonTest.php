@@ -8,7 +8,7 @@ use Symfony\Component\Process\Process;
 
 /**
  * A model or an Eloquent cast never writes or reads a column's JSON by hand: a column holding an object or a list of
- * them is cast to its Laravel Data class, and Laravel Data reads and writes it (user messages 22253 and 22257).
+ * them is cast to its Laravel Data class, and Laravel Data reads and writes it.
  * tools/refactoring/column-json.php lists every other.
  */
 final class ColumnJsonTest extends TestCase

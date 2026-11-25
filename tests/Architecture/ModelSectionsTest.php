@@ -9,8 +9,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 
 /**
  * An Eloquent model's methods sit in marked sections, Constructors, Mutations, Predicates, Transformers, Calculations,
- * Accessors, Relations, Asserts, Internals, Queries and Scopes, in that order (user messages 22032, 22042, 22044 and
- * 22120): a yes or no answer in Predicates, an object in Transformers, a scalar no accessor can give in Calculations,
+ * Accessors, Relations, Asserts, Internals, Queries and Scopes, in that order: a yes or no answer in Predicates, an object in Transformers, a scalar no accessor can give in Calculations,
  * and an accessor (returning Attribute) only in Accessors. A constructor is named create, or createFor and what it is
  * made from when the model has several, and a row builder only one constructor uses is inlined into it (user messages
  * 22052 and 22060). tools/refactoring/model-sections.php lists every fault, and sorts with --fix.

@@ -8,7 +8,7 @@ use App\Attributes\Commands\Authorize;
 use App\Attributes\Commands\Entry;
 use App\Attributes\Commands\RepeatableRead;
 use App\Attributes\Commands\RequiresRequestKey;
-use App\Commands\Desks\ProvisionActorDesk\ProvisionActorDeskCommand;
+use App\Commands\Access\GrantEnvironmentAccess\GrantEnvironmentAccessCommand;
 use App\Support\CommandRegistry;
 use App\Support\Reflector;
 use App\Support\RegisteredMiddleware;
@@ -53,7 +53,7 @@ final class CommandFolderTest extends TestCase
             fn (string $class) => str_ends_with($class, 'Command') && ! $registry->has($class),
         );
 
-        $this->assertContains(ProvisionActorDeskCommand::class, $this->classesIn('Commands'));
+        $this->assertContains(GrantEnvironmentAccessCommand::class, $this->classesIn('Commands'));
 
         $this->assertSame(
             [],

@@ -36,6 +36,7 @@ use Tests\Architecture\Support\NameUse;
 use Tests\Architecture\Support\ParsedFile;
 use Tests\Fixtures\Mcp\DuplicateCommandTool;
 use Tests\Support\ScanCache\ScanCache;
+use Tests\Support\StartsAgentRequests;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -46,6 +47,8 @@ use Tests\Support\TimeLimits\TimeLimit;
 #[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class McpToolRulesTest extends TestCase
 {
+    use StartsAgentRequests;
+
     /**
      * Names an Mcp class may not use; any Eloquent model is refused besides these.
      */
@@ -78,6 +81,9 @@ final class McpToolRulesTest extends TestCase
 
     public function test_every_tool_extends_a_journal_base_has_a_snake_case_name_and_asks_no_caller_identity(): void
     {
+        // A tool is built the way an agent's call builds it, so its schema reads what that call binds.
+        $this->startRequestAs('agent', 'session');
+
         $this->assertSame([], $this->classViolationsIn($this->mcpFiles()));
     }
 

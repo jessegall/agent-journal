@@ -8,7 +8,7 @@ use Symfony\Component\Process\Process;
 
 /**
  * tools/refactoring/test-overlap.php lists tests that rest on near-identical facts and tests a command test already
- * covers, each with its score, so a removal is a calculated choice (rule 104).
+ * covers, each with its score, so a removal is a calculated choice.
  */
 final class TestOverlapTest extends TestCase
 {

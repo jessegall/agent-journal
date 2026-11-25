@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * The naming rules (rule 99, user message 21116), judged from the grammar of each name with the code's own verbs, so no
+ * The naming rules, judged from the grammar of each name with the code's own verbs, so no
  * list of names is kept: a thing is a noun for what it is, an action starts with its verb, an event says what happened
  * and a yes-or-no answer reads as a question. docs/naming/forbidden-words.txt adds the words no name may hold and the
  * verbs that have a better word.
@@ -464,7 +464,7 @@ function eventFault(DeclaredName $declared): string|null
 
 /**
  * A state says with the plain verb what the agent is to do (ReadMessageState), never with the gerund
- * (ReadMessageState) (user message 22134).
+ * (ReadMessageState).
  */
 function stateFault(DeclaredName $declared): string|null
 {

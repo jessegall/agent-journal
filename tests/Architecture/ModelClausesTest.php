@@ -9,7 +9,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 
 /**
  * A model writes a query clause (a where, an order, a when, a join) only inside a named scope or a relation; its other
- * methods chain scopes and end the query (user message 22047). tools/refactoring/model-clauses.php lists every other.
+ * methods chain scopes and end the query. tools/refactoring/model-clauses.php lists every other.
  */
 #[TimeLimit(seconds: 60, reason: 'It parses every PHP file of app and domain.')]
 final class ModelClausesTest extends TestCase

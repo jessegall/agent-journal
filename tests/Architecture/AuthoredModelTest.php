@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Tests\Architecture\Support\DomainFiles;
 
 /**
- * An AuthoredModel is always an Eloquent model: whatever implements it extends Model (user message 21992).
+ * An AuthoredModel is always an Eloquent model: whatever implements it extends Model.
  */
 final class AuthoredModelTest extends TestCase
 {

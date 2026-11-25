@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 /*
  * Lists every return of a ternary, and rewrites each with --fix as an if with an early return and a plain return after
- * it (user messages 21961 to 21966). A short ternary (?:) is only listed: its condition would run twice.
+ * it. A short ternary (?:) is only listed: its condition would run twice.
  *
  *   php tools/refactoring/ternary-returns.php app domain tools
  *   php tools/refactoring/ternary-returns.php --fix app

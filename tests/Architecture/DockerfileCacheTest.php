@@ -7,7 +7,7 @@ namespace Tests\Architecture;
 use Illuminate\Support\Facades\File;
 
 /**
- * Every image build keeps its slow steps in Docker's cache (rule 82; user messages 19445 and 19447): a package install
+ * Every image build keeps its slow steps in Docker's cache: a package install
  * carries a cache mount for its package manager, and no package install follows a copy of the whole checkout in its
  * stage, where any changed file would run it again.
  */

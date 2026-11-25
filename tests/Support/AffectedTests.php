@@ -87,8 +87,7 @@ final readonly class AffectedTests
     }
 
     /**
-     * The architecture tests among the test files: an affected run takes each of them whole, outside its count (user
-     * message 22087).
+     * The architecture tests among the test files: an affected run takes each of them whole, outside its count.
      *
      * @param  array<string, array{class: string, methods: list<string>}>  $tests
      * @return array<string, array{class: string, methods: list<string>}>

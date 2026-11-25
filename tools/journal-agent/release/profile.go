@@ -82,7 +82,7 @@ var providerProfiles = map[string]contracts.DriverProfile{
 }
 
 // officialInstall is a provider the release does not redistribute: the installer imports the official install it
-// finds on the machine's PATH, once that install reports the pinned build (doc 31, Providers).
+// finds on the machine's PATH, once that install reports the pinned build.
 func officialInstall(name string) Provider {
 	profile := providerProfiles[name]
 

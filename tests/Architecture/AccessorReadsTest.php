@@ -8,7 +8,7 @@ use Symfony\Component\Process\Process;
 
 /**
  * A model's Attribute accessor is read by its snake case name, as the generated @property block names it, never by its
- * camel case method name, though Laravel resolves both (user messages 22269 and 22270).
+ * camel case method name, though Laravel resolves both.
  * tools/refactoring/accessor-reads.php lists every other.
  */
 final class AccessorReadsTest extends TestCase

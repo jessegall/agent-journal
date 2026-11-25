@@ -8,7 +8,7 @@ use Symfony\Component\Process\Process;
 
 /**
  * Outside its own model, a query chains only the model's scopes and then a read, so every way a model is filtered or
- * ordered is named on the model (user message 22197). tools/refactoring/outside-queries.php lists every other.
+ * ordered is named on the model. tools/refactoring/outside-queries.php lists every other.
  */
 final class OutsideQueriesTest extends TestCase
 {

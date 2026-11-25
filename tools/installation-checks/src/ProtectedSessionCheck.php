@@ -8,7 +8,7 @@ use RuntimeException;
 use Symfony\Component\Uid\Ulid;
 
 /**
- * Tasks 1772 and 1773 as one run: a protected headless session on the cheapest model, started through the request the
+ * One run of a protected headless session on the cheapest model, started through the request the
  * Start dialog sends, whose isolation is judged by the tool results of chat messages it is sent (README.md).
  */
 final class ProtectedSessionCheck
@@ -22,7 +22,7 @@ final class ProtectedSessionCheck
         'codex' => '/home/journal/.account/auth.json',
     ];
 
-    // The driver's program and its cheapest model (user message 19195).
+    // The driver's program and its cheapest model.
     private const array DRIVERS = [
         'claude-code' => [
             'program' => 'claude',

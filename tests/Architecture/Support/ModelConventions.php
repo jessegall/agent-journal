@@ -186,7 +186,7 @@ final class ModelConventions
 
     /**
      * Whether the model or a parent declares fillable columns, by a #[Fillable] attribute or a $fillable list: a model
-     * writes its columns as properties, so it needs none (user message 22249).
+     * writes its columns as properties, so it needs none.
      *
      * @param  class-string<Model>  $class
      */

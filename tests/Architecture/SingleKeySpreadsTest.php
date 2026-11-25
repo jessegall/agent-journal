@@ -9,7 +9,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 
 /**
  * A caller never spreads a method of its class that only ever gives one fixed key: it names the key and the method
- * returns the value (user message 22066). tools/refactoring/single-key-spreads.php lists every such spread.
+ * returns the value. tools/refactoring/single-key-spreads.php lists every such spread.
  */
 #[TimeLimit(seconds: 90, reason: 'It parses every PHP file of app, domain and tools.')]
 final class SingleKeySpreadsTest extends TestCase

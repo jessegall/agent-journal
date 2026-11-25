@@ -8,7 +8,7 @@ use Tests\Architecture\Support\DomainFiles;
 
 /**
  * Nothing in core's backend names chat: no file, class, method, comment or string of app holds the word. Chat is the
- * picture of inboxes and lives in the chat domain alone (doc 115). The product name ChatGPT is not the word.
+ * picture of inboxes and lives in the chat domain alone. The product name ChatGPT is not the word.
  */
 final class NoChatInCoreTest extends TestCase
 {

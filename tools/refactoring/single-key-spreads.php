@@ -5,7 +5,7 @@ declare(strict_types=1);
 /*
  * Lists every spread of a call to a method of the same class whose every return is an array of one and the same fixed
  * key, declared in the class or a class it extends: the caller names that key and the method returns only its value
- * (user message 22066). A spread of a method with several keys, or a key worked out at run time, stays allowed.
+ *. A spread of a method with several keys, or a key worked out at run time, stays allowed.
  *
  *   php tools/refactoring/single-key-spreads.php app domain tools
  */

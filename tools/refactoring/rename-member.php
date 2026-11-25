@@ -1298,7 +1298,7 @@ function nameIndex(array $files): array
  */
 function namesCarriedBy(Node $node): array
 {
-    $name = property_exists($node, 'name') ? $node->name : null;
+    $name = in_array('name', $node->getSubNodeNames(), true) ? $node->name : null;
 
     $argumentNames = $node instanceof Node\Expr\CallLike && ! $node->isFirstClassCallable() ? array_filter(array_map(
         static fn ($argument) => $argument instanceof Node\Arg ? $argument->name?->toString() : null,

@@ -14,7 +14,7 @@ use Symfony\Component\Process\Process;
 
 /**
  * A model's link type is its morph alias, worked out from its namespace and never written by hand: the application
- * enforces the map MorphAliases builds from the core and domain model folders (user messages 22106 to 22116).
+ * enforces the map MorphAliases builds from the core and domain model folders.
  */
 final class MorphAliasesTest extends TestCase
 {

@@ -7,7 +7,7 @@ namespace Tests\Architecture;
 use Symfony\Component\Process\Process;
 
 /**
- * Every command has its own test file that seeds what it needs and covers its scenarios (rule 104): a core command in
+ * Every command has its own test file that seeds what it needs and covers its scenarios: a core command in
  * tests/Commands/<Subject>/<Name>Test.php, a domain's in domain/<Domain>/tests/Commands/<Name>Test.php.
  * tools/refactoring/command-test-files.php lists each command without one.
  */

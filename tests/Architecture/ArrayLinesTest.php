@@ -9,7 +9,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 
 /**
  * An array of two or more entries puts each on its own line, unless it is the value of a local variable or a request's
- * validation rules (user messages 22073, 22083, 22085 and 22100). tools/refactoring/array-lines.php lists every other.
+ * validation rules. tools/refactoring/array-lines.php lists every other.
  */
 #[TimeLimit(seconds: 90, reason: 'It parses every PHP file of app, domain and tools.')]
 final class ArrayLinesTest extends TestCase

@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Tests\Architecture\Support\FrontendLayout;
 
 /**
- * The browser code of the shell, of every core module and of every domain follows one layout (rule 75): shared
+ * The browser code of the shell, of every core module and of every domain follows one layout: shared
  * components in components/<component>/, a page's components in pages/<page>/ and the components only that page uses
  * in pages/<page>/partials/.
  */

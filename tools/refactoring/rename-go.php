@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 /**
  * Renames Go names with gopls, the Go team's renamer, started once as a language server for the whole list: it loads
- * the module once, answers every rename on that one load, and each file is written once with all its edits (user
- * message 21162). An interface's method renames its implementations with it.
+ * the module once, answers every rename on that one load, and each file is written once with all its edits. An
+ * interface's method renames its implementations with it.
  *
  *   php tools/refactoring/rename-go.php --list=<file> [--dry-run]   lines "<file>:<line>:<column> <new name>",
  *                                                                    paths and columns as in the module folder

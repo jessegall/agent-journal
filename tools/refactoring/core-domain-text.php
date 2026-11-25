@@ -6,7 +6,7 @@ declare(strict_types=1);
  * Lists every mention of a domain in core's files, read as text: a Domain\<Name> namespace, a domain/<Name> path or a
  *
  * @domain/<name> frontend import, in code, strings, comments and docblocks alike. Core never depends on a domain, and
- * the class scan of DomainBoundaryTest cannot see a name in a string, a config file or a comment (user message 22343).
+ * the class scan of DomainBoundaryTest cannot see a name in a string, a config file or a comment.
  * Only the composition files that install the domains and generated caches may name them.
  *
  *   php tools/refactoring/core-domain-text.php [<root>]

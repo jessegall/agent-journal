@@ -19,7 +19,7 @@ use Symfony\Component\Finder\Finder;
 use Tests\Architecture\Support\ParsedFile;
 
 /**
- * A pipe does its one thing itself (rule 98): its handle never only hands the value to a service injected into it
+ * A pipe does its one thing itself: its handle never only hands the value to a service injected into it
  * and returns the answer or the value. Work two pipelines share is a pipe both list.
  */
 final class PipesDoTheirOwnWorkTest extends TestCase

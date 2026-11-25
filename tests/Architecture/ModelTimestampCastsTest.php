@@ -10,7 +10,7 @@ use Tests\Architecture\Support\DomainFiles;
 
 /**
  * A model never casts created_at or updated_at: Eloquent already reads its timestamps as the project's immutable
- * dates (user message 21935).
+ * dates.
  */
 final class ModelTimestampCastsTest extends TestCase
 {

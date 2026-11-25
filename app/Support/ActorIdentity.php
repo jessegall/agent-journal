@@ -120,6 +120,14 @@ final readonly class ActorIdentity
         ];
     }
 
+    /**
+     * Whether this names the same actor as the other identity.
+     */
+    public function isSameAs(self $other): bool
+    {
+        return $this->type === $other->type && $this->id === $other->id;
+    }
+
     public function isUser(): bool
     {
         return $this->type === User::storedType();

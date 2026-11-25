@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 /*
  * Lists every query clause an Eloquent model writes by hand outside its scopes and relations: a where, an order, a
- * when or a join lives in a named scope, and the model's other methods chain scopes (user message 22047).
+ * when or a join lives in a named scope, and the model's other methods chain scopes.
  *
  *   php tools/refactoring/model-clauses.php app domain
  */

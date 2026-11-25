@@ -34,7 +34,7 @@ const SCALAR_TYPES = '/^(string|int|float|non-falsy-string|non-empty-string|posi
 
 /**
  * What an accessor's closure, or an answer that may become one, must never do: write, dispatch, run, throw, assert or
- * change the model (user message 22137); an accessor only reads its row.
+ * change the model; an accessor only reads its row.
  */
 const SIDE_EFFECTS = '/->(save|update|delete|forceDelete|increment|decrement|forceFill|fill|touch|push|restore|raise)\(|'
     .'\bdispatch\(|\bevent\(|->dispatch\(|->run\(|file_get_contents|file_put_contents|Process::|\bthrow\b|'
@@ -148,7 +148,7 @@ function readsItsOwnColumn(ClassMethod $method, string $body): bool
 
 /**
  * Whether a public answer of the row, an accessor or a transformer, gives a model: its declared type, or an accessor's
- * documented one, names a model class (user message 22093).
+ * documented one, names a model class.
  */
 function returnsModel(string $source, ClassMethod $method): bool
 {
@@ -179,7 +179,7 @@ function returnsModel(string $source, ClassMethod $method): bool
 
 /**
  * Whether a type is one an accessor may give: a string, an int, a float, a backed enum or an object that is no model
- * (user messages 22093, 22095 and 22169); a bool is a predicate's, another model a relation's, and an array belongs
+ *; a bool is a predicate's, another model a relation's, and an array belongs
  * in Data.
  */
 function givesAccessorValue(string $source, string $type): bool

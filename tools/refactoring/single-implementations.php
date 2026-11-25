@@ -5,7 +5,7 @@ declare(strict_types=1);
 /**
  * Lists the contracts that exactly one class implements under another name. Such a class is simply what its contract
  * says, so it carries the contract's name and imports the contract with a Contract alias: final readonly class
- * AgentDirectory implements AgentDirectoryContract (user message 22177). Interfaces live under a Contracts folder.
+ * AgentDirectory implements AgentDirectoryContract. Interfaces live under a Contracts folder.
  *
  *   php tools/refactoring/single-implementations.php app domain
  *       prints "file:line<TAB>class <Class> is the only implementation of <Contract> ..." for each, and fails while

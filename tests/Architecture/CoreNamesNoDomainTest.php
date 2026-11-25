@@ -8,7 +8,7 @@ use Symfony\Component\Process\Process;
 
 /**
  * Core never names a domain, read as text, in code, strings, comments, config, routes, migrations, bootstrap or the
- * core frontend; only the composition files that install the domains may (user message 22343). It closes what
+ * core frontend; only the composition files that install the domains may. It closes what
  * DomainBoundaryTest's class scan cannot see. tools/refactoring/core-domain-text.php lists every mention.
  */
 final class CoreNamesNoDomainTest extends TestCase

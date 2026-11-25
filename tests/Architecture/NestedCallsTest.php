@@ -8,7 +8,7 @@ use Symfony\Component\Process\Process;
 
 /**
  * No row read is passed straight into another call and no null-safe call hangs on another call's result: the inner
- * result is bound first, and missing is handled before acting (user message 21973).
+ * result is bound first, and missing is handled before acting.
  * tools/refactoring/nested-calls.php lists every such nesting.
  */
 final class NestedCallsTest extends TestCase

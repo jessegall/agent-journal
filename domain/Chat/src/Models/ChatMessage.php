@@ -14,7 +14,6 @@ use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Enums\ChatMessageType;
 use Domain\Chat\Events\ChatMessageChanged;
-use Domain\Chat\Support\ChatGrouping;
 use Domain\Questions\Values\QuestionNotificationKeys;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -44,6 +43,11 @@ final class ChatMessage extends Model implements EventSource
     use RaisesEvents;
 
     public const int PAGE_SIZE = 50;
+
+    /**
+     * The most seconds after one author's last message that a next message of theirs still joins its group.
+     */
+    private const int GROUP_SECONDS_LIMIT = 30;
 
     /**
      * @return array<string, string>
@@ -174,7 +178,7 @@ final class ChatMessage extends Model implements EventSource
      */
     private function isWithinGroupWindow(CarbonImmutable $at): bool
     {
-        return $this->created_at->diffInSeconds($at) <= ChatGrouping::WINDOW_SECONDS;
+        return $this->created_at->diffInSeconds($at) <= self::GROUP_SECONDS_LIMIT;
     }
 
     // ----------[ Queries ]----------

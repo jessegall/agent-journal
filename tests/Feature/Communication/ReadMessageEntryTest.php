@@ -12,7 +12,7 @@ use Tests\Support\MessagingTestCase;
 
 /**
  * The reading state finds what its agent has not read when it goes live: messages already waiting in the inbox hold
- * the agent until each is read (user message 22128).
+ * the agent until each is read.
  */
 final class ReadMessageEntryTest extends MessagingTestCase
 {

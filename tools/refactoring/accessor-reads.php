@@ -6,7 +6,7 @@ declare(strict_types=1);
  * Lists the reads of a model's Attribute accessor written by its camel case method name ($this->startUnavailableReason)
  * where the snake case column name is the one way to read it ($this->start_unavailable_reason), as the generated
  *
- * @property block names it (user messages 22269 and 22270). It checks $this inside the model and a variable whose
+ * @property block names it. It checks $this inside the model and a variable whose
  * declared parameter type is the model.
  *
  *   php tools/refactoring/accessor-reads.php app domain

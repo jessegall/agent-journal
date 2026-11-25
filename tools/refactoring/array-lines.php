@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 /*
  * Lists every array of two or more entries that does not put each entry on its own line, unless the array is the value
- * of a local variable (user messages 22073, 22083 and 22085). --fix splits each, the outermost first; run it until it
+ * of a local variable. --fix splits each, the outermost first; run it until it
  * lists nothing. An array with comments between its entries, or written as array(), is only listed.
  *
  *   php tools/refactoring/array-lines.php app domain tools
@@ -48,7 +48,7 @@ function outermostArrayOf(Node $node): Node
 
 /**
  * Whether an array may stay on one line: the value of a local variable, the left side of a destructuring, or a
- * validation rule list, in a request class or passed to a validate call (user message 22100).
+ * validation rule list, in a request class or passed to a validate call.
  */
 function mayStayOnOneLine(Array_ $array): bool
 {

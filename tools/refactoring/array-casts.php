@@ -6,7 +6,7 @@ declare(strict_types=1);
  * Lists the model columns cast to a plain array whose type, stated in casts()'s doc comment as "@column <name>
  * <type>", holds more than scalars or is not stated: an array shape, a nested list or a mixed value. Such a column is
  * cast to Laravel Data, the Data class for one object or DataCollection::class.':'.ItemData::class for a list of them,
- * so the model hands back typed objects (user message 22125). A list or map of scalars keeps its array cast.
+ * so the model hands back typed objects. A list or map of scalars keeps its array cast.
  *
  *   php tools/refactoring/array-casts.php app domain
  *       prints "file:line<TAB>column <name> ..." for each such column, and fails while there is one.

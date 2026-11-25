@@ -6,7 +6,7 @@ namespace App\Values;
 
 /**
  * The script an activated profile revision runs: the source it was written in and what it compiled to. A revision
- * without a script runs the empty one, which handles nothing (user message 22097).
+ * without a script runs the empty one, which handles nothing.
  */
 final readonly class ProfileScript
 {

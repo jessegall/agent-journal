@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Domain\Questions\Mcp\Tools;
 
-use Domain\Questions\Commands\AskQuestion\AskQuestionCommand;
 use App\Contracts\Actors\ActorTypes;
 use App\Contracts\Bus\Command;
-use Domain\Questions\Enums\QuestionType;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Support\ToolArguments;
+use App\Mcp\Tools\MessageWriteTool;
 use App\Support\ActorIdentity;
+use Domain\Questions\Commands\AskQuestion\AskQuestionCommand;
+use Domain\Questions\Enums\QuestionType;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
-use App\Mcp\Tools\MessageWriteTool;
 
 #[IsIdempotent]
 #[VisibleToProfiles]
@@ -43,11 +43,9 @@ final class QuestionAskTool extends MessageWriteTool
 
     protected function command(ToolArguments $arguments): Command
     {
-        $targetType = $arguments->oneOf('target_type', $this->actorTypes->requestTypes());
-
         return new AskQuestionCommand(
             $arguments->text('inbox_id'),
-            ActorIdentity::fromText("{$targetType}:{$arguments->text('target_id')}"),
+            $this->targetOf($arguments),
             $arguments->text('text'),
             $arguments->enum('type', QuestionType::class),
             $arguments->optionalList('options'),
@@ -57,5 +55,15 @@ final class QuestionAskTool extends MessageWriteTool
     protected function payload(mixed $questionId): array
     {
         return ['question_id' => $questionId];
+    }
+
+    /**
+     * The actor the question is asked of, of one of the actor types a request may name.
+     */
+    private function targetOf(ToolArguments $arguments): ActorIdentity
+    {
+        $type = $arguments->oneOf('target_type', $this->actorTypes->requestTypes());
+
+        return ActorIdentity::fromStored($type, $arguments->text('target_id'));
     }
 }

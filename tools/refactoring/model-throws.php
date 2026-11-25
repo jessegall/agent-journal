@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 /*
  * Lists every throw in an Eloquent model that sits outside a method named assert..., closures and arrow functions
- * inside a method included: a model refuses only from its assert methods (user message 21928).
+ * inside a method included: a model refuses only from its assert methods.
  *
  *   php tools/refactoring/model-throws.php app domain
  */

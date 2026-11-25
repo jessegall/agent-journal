@@ -10,7 +10,7 @@ use Tests\TestCase;
 
 /**
  * A core test boots no domain: the registry holds none, no domain's provider is registered, and no domain listens to
- * any event, so core is tested alone and a domain never answers core's events here (user message 22402).
+ * any event, so core is tested alone and a domain never answers core's events here.
  */
 final class CoreBootsNoDomainTest extends TestCase
 {

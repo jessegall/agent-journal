@@ -8,7 +8,7 @@ use Symfony\Component\Process\Process;
 
 /**
  * A model writes a row one way, assigning each column as a property and saving, never through an array, so the
- * property types check every column and no fillable list is needed (user messages 22237 and 22249).
+ * property types check every column and no fillable list is needed.
  * tools/refactoring/array-writes.php lists every other.
  */
 final class ArrayWritesTest extends TestCase

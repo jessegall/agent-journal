@@ -8,8 +8,8 @@ use Symfony\Component\Process\Process;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
- * A model throws only inside a method named assert<What>, which its other methods call (user messages 21923 and
- * 21928). tools/refactoring/model-throws.php lists every throw in a model method of another name.
+ * A model throws only inside a method named assert<What>, which its other methods call.
+ * tools/refactoring/model-throws.php lists every throw in a model method of another name.
  */
 #[TimeLimit(seconds: 60, reason: 'It parses every PHP file of app and domain.')]
 final class ModelThrowsTest extends TestCase

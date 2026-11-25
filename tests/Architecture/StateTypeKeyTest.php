@@ -36,7 +36,7 @@ final class StateTypeKeyTest extends TestCase
 
     /**
      * Nothing is released yet, so no stored state of an older shape exists to read: every state type is at schema
-     * version 1 until version 6 ships (user messages 22130 and 22132).
+     * version 1 until version 6 ships.
      */
     public function test_every_state_type_is_at_schema_version_one(): void
     {

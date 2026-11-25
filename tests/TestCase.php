@@ -137,7 +137,7 @@ abstract class TestCase extends BaseTestCase
 
     /**
      * The application with only the domains this test case boots: none for a core test, so no domain hears or answers
-     * core's events (user message 22402); a domain's test case boots that domain and the domains it requires.
+     * core's events; a domain's test case boots that domain and the domains it requires.
      */
     public function createApplication(): Application
     {

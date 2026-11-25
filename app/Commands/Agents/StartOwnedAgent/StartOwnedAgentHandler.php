@@ -7,7 +7,6 @@ namespace App\Commands\Agents\StartOwnedAgent;
 use App\Commands\Agents\StartAgent\StartAgentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\CommandHandler;
-use App\Contracts\Bus\RequestSource;
 use App\Contracts\Sessions\BuiltInStartProfiles;
 use App\Contracts\Sessions\CurrentSession;
 use App\Models\Agents\Agent;
@@ -23,7 +22,6 @@ final readonly class StartOwnedAgentHandler implements CommandHandler
     public function __construct(
         private CurrentSession $sessions,
         private CommandBus $commands,
-        private RequestSource $sources,
         private BuiltInStartProfiles $profiles,
         private StartPreviews $previews,
     ) {}
@@ -41,11 +39,8 @@ final readonly class StartOwnedAgentHandler implements CommandHandler
             $this->profiles->defaultDriverTypeOf($agent->profile_key),
         );
 
-        $receipt = $this->commands->run(
-            new StartAgentCommand(
-                $request->startRequest($parentSessionId, $driverType, $this->sources->selectedSource()),
-            ),
-        );
+        $start = $request->startRequest($parentSessionId, $driverType);
+        $receipt = $this->commands->run(new StartAgentCommand($start));
 
         return OwnerStartReceipt::ofStart(
             $receipt,

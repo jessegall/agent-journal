@@ -39,7 +39,7 @@ enum HostRefusal: string
                 StartRemedyType::OperatorInstruction,
                 'Check account-folder ownership on the host',
             ),
-            self::IdentityMismatch => StartRemedy::forEveryone(
+            self::IdentityMismatch, self::ConversationUnknown => StartRemedy::forEveryone(
                 StartRemedyType::RetryStart,
                 'Start the agent again',
             ),
@@ -50,10 +50,6 @@ enum HostRefusal: string
             self::NotSignedIn => StartRemedy::forOperators(
                 StartRemedyType::OperatorInstruction,
                 'Sign the account in again',
-            ),
-            self::ConversationUnknown => StartRemedy::forEveryone(
-                StartRemedyType::RetryStart,
-                'Start the agent again',
             ),
             self::Unknown => StartRemedy::forEveryone(
                 StartRemedyType::OperatorInstruction,

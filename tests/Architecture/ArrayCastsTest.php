@@ -8,7 +8,7 @@ use Symfony\Component\Process\Process;
 
 /**
  * A model column whose items are not plain scalars is cast to Laravel Data, the Data class or a collection of one,
- * never to an array of shapes (user message 22125). tools/refactoring/array-casts.php lists every other.
+ * never to an array of shapes. tools/refactoring/array-casts.php lists every other.
  */
 final class ArrayCastsTest extends TestCase
 {

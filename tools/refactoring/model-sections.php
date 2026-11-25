@@ -124,7 +124,7 @@ function returnsScalar(ClassMethod $method): bool
 
 /**
  * Whether a method sits above the sections, before the Constructors divider: the casts and the boot hooks, so the
- * divider stands right above the first constructor (user message 22026).
+ * divider stands right above the first constructor.
  */
 function isPreamble(ClassMethod $method): bool
 {
@@ -239,7 +239,7 @@ function staticCallCounts(): array
 
 /**
  * The faults of the model's row builders that only one constructor of the model calls, once: such a builder is
- * inlined into that constructor (user message 22060).
+ * inlined into that constructor.
  *
  * @return list<string>
  */
@@ -341,7 +341,7 @@ function judgesAbsence(Node\Stmt $statement, string $variable): bool
 }
 
 /**
- * The faults of the model's asserts (user messages 22147 to 22152) as "line<TAB>fault": an assert guards a
+ * The faults of the model's asserts as "line<TAB>fault": an assert guards a
  * precondition, so it never takes a nullable model; a method calls its own asserts before its work; and a row read
  * that is judged for absence right after it is a firstOr or findOr that fails with the exception's throwing().
  *
@@ -404,7 +404,7 @@ function assertFaultsOf(Class_ $class): array
 /**
  * A constructor is named create, or createFor and what it is made from when the model has several (user message
  * 22052); one that writes a batch through insertRows is createMany or createManyFor and returns the ids it wrote
- * (user message 22070). None for any other method.
+ *. None for any other method.
  */
 function constructorNameFault(ClassMethod $method, string|null $section, int $constructorCount): string|null
 {
@@ -439,7 +439,7 @@ function constructorNameFault(ClassMethod $method, string|null $section, int $co
 
 /**
  * Why a method does not belong in the answer section it sits in: a predicate answers yes or no, a transformer gives an
- * object, a calculation gives a scalar an accessor cannot (user messages 22041, 22044, 22095, 22120 and 22122).
+ * object, a calculation gives a scalar an accessor cannot.
  */
 function lookFaultOf(ClassMethod $method, string $section): string|null
 {

@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 
 /**
  * Every model's morph alias, the link type a row stores when it points at another row, worked out from where the model
- * lives and never written by hand (user messages 22106 to 22116): core.<area>.<model> for App\Models\<Area> and
+ * lives and never written by hand: core.<area>.<model> for App\Models\<Area> and
  * core.<module>.<model> for App\<Module>\Models, and <domain>.<model> for the Models folder of a domain, in kebab case.
  */
 final readonly class MorphAliases

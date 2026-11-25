@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-
 /**
  * An agent's instructions, skills and settings are handed to its container by the host at every boot, never built
  * into an image, so a change to them reaches the next session without an image build: an image holds programs and
- * packages only, never a configuration file (rule 85).
+ * packages only, never a configuration file.
  */
 final class ImageInstructionsTest extends TestCase
 {

@@ -11,7 +11,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 
 /**
  * Every name of the project, in PHP, the frontend, the Go host, the shell scripts and the file names, follows the
- * naming rules of tools/refactoring/name-grammar.php and docs/naming/forbidden-words.txt (rule 99). Nothing is written
+ * naming rules of tools/refactoring/name-grammar.php and docs/naming/forbidden-words.txt. Nothing is written
  * down as approved: the scan judges each name as it finds it.
  */
 final class NamesFollowTheRulesTest extends TestCase

@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Lists tests that overlap, so removing one is a calculated choice (rule 104; user message 22399). For each test
+ * Lists tests that overlap, so removing one is a calculated choice. For each test
  * method it reads the commands it runs, the classes it touches and the assertions it makes; then it prints the pairs
  * whose sets are near-identical (Jaccard at or above the threshold) and the tests whose whole set lies inside a
  * command test's, each with its score.

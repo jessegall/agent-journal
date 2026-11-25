@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Lists every command without its own test file (rule 104; user messages 22399 and 22402). A core command
+ * Lists every command without its own test file. A core command
  * app/Commands/<Subject>/<Name>/<Name>Command.php is tested in tests/Commands/<Subject>/<Name>Test.php; a domain's
  * command domain/<Domain>/src/Commands/<Name>/<Name>Command.php in domain/<Domain>/tests/Commands/<Name>Test.php.
  *

@@ -124,13 +124,14 @@ final readonly class ProfileProposal
         }
 
         $fields = ProposedProfileData::from($profile);
+        $base = ProfileBase::of($fields->base);
 
         return new ProposedProfile(
             ProfileKey::from($key),
             $fields->label ?? $key,
-            ProfileBase::of($fields->base),
+            $base,
             $fields->instructions,
-            self::tier($key, $fields->tier, ProfileBase::of($fields->base)),
+            self::tier($key, $fields->tier, $base),
             $fields->preferredDriver,
             $fields->skillAllowlist,
             $fields->requiredSkills,

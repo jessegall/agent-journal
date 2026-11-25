@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Suggests the indexes the models' queries want, run by hand from time to time (user message 22104). It reads the
+ * Suggests the indexes the models' queries want, run by hand from time to time. It reads the
  * columns each #[Scope] of each model filters and orders on, follows every query chain that calls them
  * (Model::query()->ofSession()->unresolved()->newestFirst()) to the columns one query uses together, and compares
  * them with the indexes the create migrations declare. A foreign key is no index: Postgres makes none for it.

@@ -8,7 +8,7 @@ use Symfony\Component\Process\Process;
 
 /**
  * A contract that exactly one class implements is that class's name: the class is simply what the contract says, and
- * imports the contract with a Contract alias (user message 22177). tools/refactoring/single-implementations.php lists
+ * imports the contract with a Contract alias. tools/refactoring/single-implementations.php lists
  * every other.
  */
 final class SingleImplementationsTest extends TestCase
