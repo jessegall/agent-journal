@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Chat\Tests\Feature;
+namespace Domain\Chat\Tests\Commands;
 
 use App\Exceptions\MessageMissing;
 use Domain\Chat\Commands\PinMessage\PinMessageCommand;
@@ -19,7 +19,7 @@ use Tests\Support\WritesInboxMessages;
  * A pin is its owner's alone, one per message and inbox, made only on a message the owner can read, and
  * listed only while the owner still can: it hides when access goes and comes back with it.
  */
-final class MessagePinTest extends TestCase
+final class PinMessageTest extends TestCase
 {
     use CommitsHookRows;
     use OpensTeamInboxMessage;

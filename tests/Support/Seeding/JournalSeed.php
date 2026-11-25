@@ -10,6 +10,7 @@ use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Inboxes\Inbox;
+use App\Models\Messages\Message;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\Command;
@@ -140,6 +141,14 @@ final class JournalSeed
     public function runAsJournal(CommandEntry $entry, string $trustedEntry, Command $command): mixed
     {
         return $this->app->make(JournalCommands::class)->runAsJournal($entry, $trustedEntry, $command);
+    }
+
+    /**
+     * A message the user or agent of this name posts to the inbox, under the inbox's next number.
+     */
+    public function post(string $sender, Inbox $inbox, string $body): Message
+    {
+        return $this->postTo($inbox, $this->agents[$sender] ?? $this->userCalled($sender), $body);
     }
 
     public function ownerUser(): User

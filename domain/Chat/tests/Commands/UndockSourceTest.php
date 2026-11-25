@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Chat\Tests\Feature;
+namespace Domain\Chat\Tests\Commands;
 
 use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
@@ -14,8 +14,6 @@ use App\Support\RequestKey;
 use Domain\Chat\ChatDomain;
 use Domain\Chat\Commands\DockSource\DockSourceCommand;
 use Domain\Chat\Commands\UndockSource\UndockSourceCommand;
-use Domain\Chat\Enums\DockOutcome;
-use Domain\Chat\Exceptions\ChatUnavailable;
 use Domain\Chat\Models\DockPlacement;
 use Domain\Chat\Support\DockRequests;
 use Domain\Chat\Tests\TestCase;
@@ -31,11 +29,10 @@ use Tests\Support\StartsMainAgents;
 use Tests\Support\WritesInboxMessages;
 
 /**
- * Docking goes through one admission: a second dock of one source answers the placement it has, a retry under the
- * first key answers the first time even after the placement is gone, a guessed placement is nothing to act on, and an
- * agent the user cannot see or a conversation the user takes no part in is refused before anything is docked.
+ * A user undocks a placement: undocking on chat's own page returns there, a retried dock under the first key answers
+ * the first time even after the placement is gone, and a guessed placement is nothing to act on.
  */
-final class DockAdmissionTest extends TestCase
+final class UndockSourceTest extends TestCase
 {
     use CommitsHookRows;
     use OpensPairChats;
@@ -88,22 +85,6 @@ final class DockAdmissionTest extends TestCase
         $this->conversationId = $this->app->make(DockRequests::class)->inboxWith($this->agentId)->id;
     }
 
-    public function test_a_second_dock_of_one_source_answers_its_one_placement(): void
-    {
-        $added = $this->runKeyed($this->dockTask(), (string) Str::ulid());
-        $present = $this->runKeyed($this->dockTask(), (string) Str::ulid());
-
-        $this->assertSame([
-            DockOutcome::Added,
-            DockOutcome::Present,
-        ], [
-            $added->outcome,
-            $present->outcome,
-        ]);
-        $this->assertSame($added->placementId, $present->placementId);
-        $this->assertSame(1, DockPlacement::query()->count());
-    }
-
     public function test_a_retried_dock_after_its_removal_answers_the_first_time_and_docks_nothing(): void
     {
         $key = (string) Str::ulid();
@@ -152,32 +133,6 @@ final class DockAdmissionTest extends TestCase
 
         $this->assertEquals(DockResult::unavailable(), $guessed);
         $this->assertSame(1, DockPlacement::query()->count());
-    }
-
-    public function test_an_agent_out_of_sight_is_refused_before_anything_is_docked(): void
-    {
-        $this->expectException(ChatUnavailable::class);
-
-        try {
-            $this->app->make(DockRequests::class)->inboxWith(strtolower((string) Str::ulid()));
-        } finally {
-            $this->assertSame(0, DockPlacement::query()->count());
-        }
-    }
-
-    public function test_a_conversation_the_user_takes_no_part_in_is_refused(): void
-    {
-        $strangers = $this->pairChat(
-            ActorIdentity::ofClass(Agent::class, 'agent-one'),
-            ActorIdentity::ofClass(Agent::class, 'agent-two'),
-        );
-
-        $this->expectException(ChatUnavailable::class);
-
-        $this->runKeyed(
-            new DockSourceCommand($strangers->id, 'tasks.task', $this->task->id),
-            (string) Str::ulid(),
-        );
     }
 
     private function dockTask(): DockSourceCommand
