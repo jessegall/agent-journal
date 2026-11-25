@@ -53,8 +53,8 @@ final class RouteAskTest extends TestCase
     public function test_the_internal_route_holds_an_ask_and_public_assignment_cannot_change_it(): void
     {
         $this->activateProfiles();
-        $requester = Agent::create('Requester', 'journal-worker', $this->localProject());
-        $holder = Agent::create('Supervisor', 'journal-code-reviewer', $this->localProject());
+        $requester = $this->journal->idleAgent('Requester', 'journal-worker')->agentCalled('Requester');
+        $holder = $this->journal->idleAgent('Supervisor', 'journal-code-reviewer')->agentCalled('Supervisor');
         $ask = $this->retainFor($requester, SupervisorTarget::forActor(ActorIdentity::of($holder)));
         $record = $ask->assignmentIdentity();
         $bus = $this->app->make(CommandBus::class);
@@ -82,9 +82,9 @@ final class RouteAskTest extends TestCase
     public function test_an_unrelated_actor_sees_nothing_while_a_previous_holder_can_still_read_the_ask(): void
     {
         $this->activateProfiles();
-        $requester = Agent::create('Requester', 'journal-worker', $this->localProject());
-        $holder = Agent::create('Supervisor', 'journal-code-reviewer', $this->localProject());
-        $outsider = Agent::create('Other', 'journal-code-reviewer', $this->localProject());
+        $requester = $this->journal->idleAgent('Requester', 'journal-worker')->agentCalled('Requester');
+        $holder = $this->journal->idleAgent('Supervisor', 'journal-code-reviewer')->agentCalled('Supervisor');
+        $outsider = $this->journal->idleAgent('Other', 'journal-code-reviewer')->agentCalled('Other');
         $ask = $this->retainFor($requester, SupervisorTarget::forActor(ActorIdentity::of($holder)));
         $reference = new AskReference($ask->id);
         $bus = $this->app->make(CommandBus::class);
@@ -101,7 +101,7 @@ final class RouteAskTest extends TestCase
     public function test_a_symbolic_profile_without_helpers_is_unavailable_and_the_submission_key_replays(): void
     {
         $this->activateProfiles();
-        $requester = Agent::create('Requester', 'journal-worker', $this->localProject());
+        $requester = $this->journal->idleAgent('Requester', 'journal-worker')->agentCalled('Requester');
         $target = SupervisorTarget::parse('profile:journal-code-reviewer');
         $ask = $this->retainFor($requester, $target);
         $again = $this->retainFor($requester, $target, routeVersion: 1);

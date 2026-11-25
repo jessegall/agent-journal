@@ -16,7 +16,6 @@ use App\Enums\Accounts\CommandEntry;
 use App\Enums\Assignments\AutoAssignmentClaimType;
 use App\Exceptions\AssignmentConflict;
 use App\Exceptions\EngineAccessRefused;
-use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
 use App\Support\ActorIdentity;
 use App\Support\AutoAssignmentFact;
@@ -87,7 +86,7 @@ final class ClaimAutoAssignmentTest extends TestCase
     {
         $this->assertSame(AutoAssignmentClaimType::Off, $this->claim($this->key)->type);
         $this->journal->actAs('Owner');
-        $inactive = ActorIdentity::of(Agent::create('Inactive', 'writing-helper', $this->localProject()));
+        $inactive = ActorIdentity::of($this->journal->idleAgent('Inactive', 'writing-helper')->agentCalled('Inactive'));
         $key = new AutoAssignmentKey($inactive, $this->key->assignableType);
         $this->enable($key);
         $this->enable($this->key);

@@ -36,6 +36,8 @@ final class EnforceSessionStartLimitsTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    private int $startCount = 0;
+
     public function test_a_start_past_its_wall_budget_is_stopped_and_a_younger_one_runs_on(): void
     {
         $this->travel(-7)->hours();
@@ -71,7 +73,7 @@ final class EnforceSessionStartLimitsTest extends TestCase
      */
     private function runningStart(): TestStart
     {
-        $start = TestStart::start('writing-helper');
+        $start = $this->journal->signedStart('Test agent '.++$this->startCount, 'writing-helper');
         $start->openRuntime($this->app);
         $start->openStack($this->app);
         $request = new StartRequest(

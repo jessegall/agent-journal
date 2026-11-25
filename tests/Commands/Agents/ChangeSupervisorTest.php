@@ -7,7 +7,6 @@ namespace Tests\Commands\Agents;
 use App\Commands\Agents\ChangeSupervisor\ChangeSupervisorCommand;
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Models\Agents\Agent;
 use App\Models\Asks\SupervisorChange;
 use App\Models\Asks\SupervisorLink;
 use App\Support\ActorContext;
@@ -27,7 +26,7 @@ final class ChangeSupervisorTest extends TestCase
     public function test_changing_a_route_keeps_other_versions_and_records_the_author(): void
     {
         $this->activate((array) config('profiles'));
-        $agent = Agent::create('Worker', 'journal-worker', $this->localProject());
+        $agent = $this->journal->idleAgent('Worker', 'journal-worker')->agentCalled('Worker');
         $actor = ActorIdentity::of(ActorContext::forAgent($agent->id));
         $question = AskTypeKey::of('question');
         $receipt = $this->app->make(CommandBus::class)->run(

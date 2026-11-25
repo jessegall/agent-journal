@@ -7,12 +7,10 @@ namespace Tests\Commands\Assignments;
 use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\RequestKeyConflict;
-use App\Models\Agents\Agent;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Records\AssignmentRecord;
 use App\Support\ActorIdentity;
-use App\Support\ActorProvisioning;
 use App\Support\RequestKey;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Models\Task;
@@ -60,7 +58,7 @@ final class AssignRecordTest extends TestCase
     public function test_a_task_given_to_the_actor_at_main_is_held_by_main_and_names_both(): void
     {
         $main = Inbox::findMain();
-        $agent = $this->withInbox(Agent::create('Main', 'main-agent', $this->localProject()));
+        $agent = $this->journal->idleAgent('Main', 'main-agent')->agentCalled('Main');
         InboxMember::create($main->id, ActorIdentity::of($agent), CarbonImmutable::now());
         $task = Task::factory()->create()->assignmentIdentity();
 
@@ -75,7 +73,7 @@ final class AssignRecordTest extends TestCase
 
     public function test_an_actor_in_no_forwarding_inbox_keeps_the_task(): void
     {
-        $agent = $this->withInbox(Agent::create('Builder', 'read-only-helper', $this->localProject()));
+        $agent = $this->journal->idleAgent('Builder', 'read-only-helper')->agentCalled('Builder');
         $task = Task::factory()->create()->assignmentIdentity();
 
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
@@ -87,8 +85,8 @@ final class AssignRecordTest extends TestCase
 
     public function test_a_changed_recipient_under_the_same_key_conflicts(): void
     {
-        $builder = $this->withInbox(Agent::create('Builder', 'read-only-helper', $this->localProject()));
-        $reviewer = $this->withInbox(Agent::create('Reviewer', 'read-only-helper', $this->localProject()));
+        $builder = $this->journal->idleAgent('Builder', 'read-only-helper')->agentCalled('Builder');
+        $reviewer = $this->journal->idleAgent('Reviewer', 'read-only-helper')->agentCalled('Reviewer');
         $task = Task::factory()->create()->assignmentIdentity();
         $bus = $this->app->make(CommandBus::class);
         $this->app->make(RequestKey::class)->set('assign-once');
@@ -100,12 +98,5 @@ final class AssignRecordTest extends TestCase
             fn () => $bus->run(new AssignRecordCommand($task, $reviewer->assigneeIdentity())),
             RequestKeyConflict::class,
         );
-    }
-
-    private function withInbox(Agent $agent): Agent
-    {
-        $this->app->make(ActorProvisioning::class)->provision(ActorIdentity::of($agent), $agent->name);
-
-        return $agent;
     }
 }

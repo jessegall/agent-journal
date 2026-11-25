@@ -65,8 +65,8 @@ final class AdvanceAskTest extends TestCase
         $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(ProfileProposal::fromConfiguration(
             (array) config('profiles'),
         )));
-        $this->requester = Agent::create('Requester', 'journal-worker', $this->localProject());
-        $this->holder = Agent::create('Reviewer', 'journal-code-reviewer', $this->localProject());
+        $this->requester = $this->journal->idleAgent('Requester', 'journal-worker')->agentCalled('Requester');
+        $this->holder = $this->journal->idleAgent('Reviewer', 'journal-code-reviewer')->agentCalled('Reviewer');
         $this->superviseWith($this->requester, SupervisorTarget::forActor(ActorIdentity::of($this->holder)));
     }
 

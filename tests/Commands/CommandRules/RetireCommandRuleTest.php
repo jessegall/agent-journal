@@ -16,7 +16,6 @@ use App\Values\CommandClassSet;
 use App\Values\CommandRule;
 use App\Values\ProgramSpellings;
 use App\Values\RuleScope;
-use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
@@ -35,13 +34,15 @@ final class RetireCommandRuleTest extends TestCase
     public function test_retiring_a_rule_makes_a_queued_admission_refuse_on_start(): void
     {
         config(['processes.runner' => true]);
-        $start = TestStart::start();
+        $start = $this->journal->signedStart('Test agent');
         $queued = $this->admit(ActorIdentity::ofClass(Agent::class, $start->agent->id), 'printf queued');
         $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(
             new SaveCommandRuleCommand('save-1', AcmeDeclarations::proposed($this->tidyRule()), 0, 'reviewed'),
         );
 
-        $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(new RetireCommandRuleCommand(ClassificationRule::query()->sole()->id, 1, 'not needed'));
+        $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(
+            new RetireCommandRuleCommand(ClassificationRule::query()->sole()->id, 1, 'not needed'),
+        );
 
         $this->assertStringStartsWith('rule-revision-changed', $queued->refresh()->stale_reason);
         $reply = $this->journal->agentCall(

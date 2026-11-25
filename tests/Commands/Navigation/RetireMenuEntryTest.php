@@ -49,7 +49,7 @@ final class RetireMenuEntryTest extends TestCase
     {
         parent::setUp();
         $this->app->instance(AccessSettings::class, new AccessSettings('owner'));
-        $this->caller = TestStart::start();
+        $this->caller = $this->journal->signedStart('Test agent');
     }
 
     #[TimeLimit(20, 'It proves 51 menu entries, one stalled script each.')]

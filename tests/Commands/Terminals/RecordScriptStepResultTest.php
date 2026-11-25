@@ -11,7 +11,6 @@ use App\Exceptions\ProfileRunRefused;
 use App\Models\Profiles\ProfileRun;
 use App\Support\ActorIdentity;
 use App\Values\WorkReference;
-use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -27,7 +26,7 @@ final class RecordScriptStepResultTest extends TestCase
     public function test_a_step_outcome_is_recorded_once_and_resumes_the_waiting_run(): void
     {
         $run = ProfileRun::create(
-            ActorIdentity::of(TestStart::start('writing-helper')->agent),
+            ActorIdentity::of($this->journal->signedStart('Test agent', 'writing-helper')->agent),
             WorkReference::free('ask'),
             'journal-worker',
             1,

@@ -37,7 +37,7 @@ final class ApproveSampleTest extends TestCase
         parent::setUp();
 
         ProcessOutputDisk::fake();
-        $this->start = TestStart::start();
+        $this->start = $this->journal->signedStart('Test agent');
         $this->requestId = $this->journal->actAsAgentIds(
             $this->start->agent->id,
             $this->start->session->id,
@@ -84,7 +84,10 @@ final class ApproveSampleTest extends TestCase
         );
         $digest = CommandRequest::query()->findOrFail($other)->source_digest;
 
-        $this->assertThrows(fn () => $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(new ApproveSampleCommand($other, 1, $digest)), SampleRefused::class);
+        $this->assertThrows(
+            fn () => $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(new ApproveSampleCommand($other, 1, $digest)),
+            SampleRefused::class,
+        );
     }
 
     private function approval(): ApproveSampleCommand

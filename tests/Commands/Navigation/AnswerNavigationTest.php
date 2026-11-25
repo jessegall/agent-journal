@@ -62,7 +62,7 @@ final class AnswerNavigationTest extends TestCase
 
         $this->journal->installInboxes();
         $this->app->instance(AccessSettings::class, new AccessSettings('owner'));
-        $this->main = Agent::create('Main', 'main-agent', $this->localProject());
+        $this->main = $this->journal->idleAgent('Main', 'main-agent')->agentCalled('Main');
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
         $this->app->make(AssignmentTransaction::class)->run(
             fn () => $this->app->make(MainInboxTakeover::class)->takeOver($this->main),
@@ -88,7 +88,7 @@ final class AnswerNavigationTest extends TestCase
     public function test_a_stale_round_another_actors_round_or_a_parameter_the_goal_lacks_stores_nothing(): void
     {
         $navigation = $this->raise($this->stalledScript(), 'raise-1');
-        $stranger = Agent::create('Helper', 'main-agent', $this->localProject());
+        $stranger = $this->journal->idleAgent('Helper', 'main-agent')->agentCalled('Helper');
         $choose = NavigationAnswer::choose('GPT-6');
         $refused = [
             'stale version' => [$this->main, new AnswerNavigationCommand($navigation->id, 9, 7, $choose)],

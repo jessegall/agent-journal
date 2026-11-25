@@ -63,7 +63,7 @@ final class ProveNavigationTest extends TestCase
 
         $this->journal->installInboxes();
         $this->app->instance(AccessSettings::class, new AccessSettings('owner'));
-        $this->main = Agent::create('Main', 'main-agent', $this->localProject());
+        $this->main = $this->journal->idleAgent('Main', 'main-agent')->agentCalled('Main');
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
         $this->app->make(AssignmentTransaction::class)->run(
             fn () => $this->app->make(MainInboxTakeover::class)->takeOver($this->main),

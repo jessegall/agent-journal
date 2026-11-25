@@ -67,7 +67,7 @@ final class OpenBindingMainRuntimeTest extends TestCase
 
     public function test_a_binding_runtime_leaves_the_servers_main_agent_attached_to_main(): void
     {
-        $serverMain = Agent::create('Server main', 'main-agent', $this->localProject());
+        $serverMain = $this->journal->idleAgent('Server main', 'main-agent')->agentCalled('Server main');
         $this->app->make(AssignmentTransaction::class)->run(
             fn () => $this->app->make(MainInboxTakeover::class)->takeOver($serverMain),
         );
@@ -77,7 +77,10 @@ final class OpenBindingMainRuntimeTest extends TestCase
 
         $this->assertSame(
             [ActorIdentity::of($serverMain)->text()],
-            array_map(fn (ActorIdentity $member) => $member->text(), InboxMember::resolveAttachedTo([Inbox::findMain()->id], Agent::class)),
+            array_map(
+                fn (ActorIdentity $member) => $member->text(),
+                InboxMember::resolveAttachedTo([Inbox::findMain()->id], Agent::class),
+            ),
         );
         $this->assertTrue(Agent::query()->findOrFail($serverMain->id)->currentRuntime()->isEmpty());
     }
@@ -97,7 +100,9 @@ final class OpenBindingMainRuntimeTest extends TestCase
     {
         $this->issueLine($ticket);
 
-        return ProjectBinding::query()->findOrFail($this->redeemLine($ticket, $nonce)->assertCreated()->json('bindingId'));
+        return ProjectBinding::query()->findOrFail(
+            $this->redeemLine($ticket, $nonce)->assertCreated()->json('bindingId'),
+        );
     }
 
     /**

@@ -12,7 +12,6 @@ use App\Contracts\Bus\CommandBus;
 use App\Enums\Accounts\CommandEntry;
 use App\Exceptions\CommandNotRegistered;
 use App\Exceptions\EngineAccessRefused;
-use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
 use App\Support\CommandEntrance;
 use App\Support\EngineAccess;
@@ -42,7 +41,10 @@ final class AssignRecordForMaintenanceTest extends TestCase
     public function test_fill_scope_can_assign_but_cannot_reassign_or_unassign(): void
     {
         $record = Task::factory()->create()->assignmentIdentity();
-        $holder = Agent::create('Recipient', 'writing-helper', $this->localProject())->assigneeIdentity();
+        $holder = $this->journal->idleAgent(
+            'Recipient',
+            'writing-helper',
+        )->agentCalled('Recipient')->assigneeIdentity();
         $this->actAsEngine();
         $this->app->make(EngineAccess::class)->grantMaintenance(AssignRecordForMaintenanceCommand::FILL_SCOPE);
         $this->app->make(RequestKey::class)->set('engine-fill');
@@ -75,7 +77,10 @@ final class AssignRecordForMaintenanceTest extends TestCase
     public function test_a_missing_or_different_maintenance_scope_writes_nothing(): void
     {
         $record = Task::factory()->create()->assignmentIdentity();
-        $holder = Agent::create('Recipient', 'writing-helper', $this->localProject())->assigneeIdentity();
+        $holder = $this->journal->idleAgent(
+            'Recipient',
+            'writing-helper',
+        )->agentCalled('Recipient')->assigneeIdentity();
         $this->actAsEngine();
         $bus = $this->app->make(CommandBus::class);
         $assign = fn () => $this->app->make(CommandEntrance::class)->through(

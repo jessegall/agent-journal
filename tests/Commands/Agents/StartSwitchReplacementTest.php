@@ -68,7 +68,7 @@ final class StartSwitchReplacementTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->journal->actAsUserId($this->owner->id);
-        $this->main = Agent::create('Main', 'main-agent', $this->localProject());
+        $this->main = $this->journal->idleAgent('Main', 'main-agent')->agentCalled('Main');
     }
 
     public function test_after_a_proven_stop_the_replacement_starts_and_a_refused_one_fails_the_switch(): void

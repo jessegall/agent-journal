@@ -16,7 +16,6 @@ use App\Values\ProfileRevisionReference;
 use App\Values\ScriptContext;
 use App\Values\WorkReference;
 use App\Values\WorkspaceReadReference;
-use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -58,7 +57,7 @@ final class NotifyWorkspaceReadTest extends TestCase
 
     private function context(): ScriptContext
     {
-        $start = TestStart::start('writing-helper');
+        $start = $this->journal->signedStart('Test agent', 'writing-helper');
 
         return new ScriptContext(
             ActorIdentity::of($start->agent),

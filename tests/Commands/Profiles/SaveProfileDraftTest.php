@@ -11,7 +11,6 @@ use App\Enums\Profiles\CommandDirectory;
 use App\Exceptions\CommandAdmissionRefused;
 use App\Exceptions\InvalidScript;
 use App\Exceptions\ProfileDraftRefused;
-use App\Models\Agents\Agent;
 use App\Models\Profiles\ProfileDraft;
 use App\Models\Profiles\ProfileDraftRevision;
 use App\Models\Profiles\ProfileRevision;
@@ -48,9 +47,12 @@ final class SaveProfileDraftTest extends TestCase
         $this->journal->actAsUserId(TestIds::of(1));
         $commands = $this->app->make(CommandBus::class);
         $profile = ProfileKey::from('draft-test');
-        $actor = Agent::create('Editor', 'writing-helper', $this->localProject());
+        $actor = $this->journal->idleAgent('Editor', 'writing-helper')->agentCalled('Editor');
 
-        $this->assertSame(1, $commands->run(new SaveProfileDraftCommand($profile, 0, new ScriptSource('syntax error'))));
+        $this->assertSame(
+            1,
+            $commands->run(new SaveProfileDraftCommand($profile, 0, new ScriptSource('syntax error'))),
+        );
         $this->journal->actAsAgentIds($actor->id, TestIds::of(87));
 
         $draft = ScriptSource::fromDefinitions('RUN tests', self::COMMANDS);

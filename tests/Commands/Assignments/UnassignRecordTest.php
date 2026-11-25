@@ -7,10 +7,7 @@ namespace Tests\Commands\Assignments;
 use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
 use App\Commands\Assignments\UnassignRecord\UnassignRecordCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
-use App\Support\ActorIdentity;
-use App\Support\ActorProvisioning;
 use App\Support\RequestKey;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
@@ -54,7 +51,7 @@ final class UnassignRecordTest extends TestCase
 
     public function test_a_retry_with_the_same_key_returns_the_first_result_after_the_assignment_was_removed(): void
     {
-        $agent = $this->withInbox(Agent::create('Builder', 'read-only-helper', $this->localProject()));
+        $agent = $this->journal->idleAgent('Builder', 'read-only-helper')->agentCalled('Builder');
         $task = Task::factory()->create()->assignmentIdentity();
         $bus = $this->app->make(CommandBus::class);
         $this->app->make(RequestKey::class)->set('assign-the-builder');
@@ -67,12 +64,5 @@ final class UnassignRecordTest extends TestCase
 
         $this->assertEquals($first, $retry);
         $this->assertSame(0, AssignmentRecord::query()->forRecord($task)->count());
-    }
-
-    private function withInbox(Agent $agent): Agent
-    {
-        $this->app->make(ActorProvisioning::class)->provision(ActorIdentity::of($agent), $agent->name);
-
-        return $agent;
     }
 }

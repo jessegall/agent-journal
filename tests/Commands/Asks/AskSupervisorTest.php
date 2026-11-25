@@ -8,7 +8,6 @@ use App\Commands\Asks\AskSupervisor\AskSupervisorCommand;
 use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Asks\AskReader;
 use App\Contracts\Bus\CommandBus;
-use App\Models\Agents\Agent;
 use App\Support\ProfileProposal;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\CommitsHookRows;
@@ -39,7 +38,7 @@ final class AskSupervisorTest extends TestCase
         $this->journal->owner()->activatedProfile(ProfileProposal::fromConfiguration((array) config('profiles')));
         $owner = $this->journal->ownerUser();
         $this->mock(ActorAttention::class)->shouldNotReceive('request');
-        $requester = Agent::create('Requester', 'journal-main', $this->localProject());
+        $requester = $this->journal->idleAgent('Requester', 'journal-main')->agentCalled('Requester');
         $this->journal->actAsAgentIds($requester->id, TestIds::of(99));
 
         $ask = $this->app->make(CommandBus::class)->run(new AskSupervisorCommand('Check my result.', 'owner-question'));

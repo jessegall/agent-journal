@@ -10,7 +10,6 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\Drivers\DriverSwitchStage;
 use App\Enums\Drivers\DriverType;
-use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverSwitch;
 use App\Support\ActorContext;
@@ -53,7 +52,7 @@ final class RecheckDriverSwitchTest extends TestCase
             ActorContext::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
-        $agent = Agent::create('Main agent', 'main-agent', $this->localProject());
+        $agent = $this->journal->idleAgent('Main agent', 'main-agent')->agentCalled('Main agent');
         $this->session = $this->app->make(StartSessions::class)
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;

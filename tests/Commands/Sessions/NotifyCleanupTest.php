@@ -72,7 +72,7 @@ final class NotifyCleanupTest extends TestCase
 
     private function endedContainerStart(): TestStart
     {
-        $start = TestStart::start('writing-helper');
+        $start = $this->journal->signedStart('Test agent', 'writing-helper');
         $start->openRuntime($this->app);
         $start->openStack($this->app);
         $this->reserve($start);

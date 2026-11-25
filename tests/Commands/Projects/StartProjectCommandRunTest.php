@@ -36,6 +36,8 @@ final class StartProjectCommandRunTest extends TestCase
 {
     use CommitsHookRows;
 
+    private int $startCount = 0;
+
     private const string SECRET_TASKS = 'Secret tasks';
 
     private const array TABLES = [
@@ -145,7 +147,7 @@ final class StartProjectCommandRunTest extends TestCase
      */
     private function connectedStart(): array
     {
-        $start = TestStart::start();
+        $start = $this->journal->signedStart('Test agent '.++$this->startCount);
         $host = Host::create('laptop', 'secret-'.bin2hex(random_bytes(4)), [], ArrangementType::Local);
         $project = $this->localProject();
         $binding = ProjectBinding::create(

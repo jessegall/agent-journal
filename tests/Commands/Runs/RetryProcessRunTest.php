@@ -41,7 +41,7 @@ final class RetryProcessRunTest extends TestCase
         parent::setUp();
 
         config(['processes.runner' => true]);
-        $this->start = TestStart::start();
+        $this->start = $this->journal->signedStart('Test agent');
         $this->start->startRequest($this->app);
         $context = ExecutionContext::inFolder(base_path());
         $admissions = $this->app->make(ShellAdmission::class);

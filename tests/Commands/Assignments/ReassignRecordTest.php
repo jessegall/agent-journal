@@ -41,7 +41,7 @@ final class ReassignRecordTest extends TestCase
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $agent = Agent::create('Builder', 'read-only-helper', $this->localProject());
+        $agent = $this->journal->idleAgent('Builder', 'read-only-helper')->agentCalled('Builder');
         $task = Task::factory()->create(['title' => 'Write the reader'])->assignmentIdentity();
         $this->journal->actAsUserId($owner->id);
         $bus = $this->app->make(CommandBus::class);

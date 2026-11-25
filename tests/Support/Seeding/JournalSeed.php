@@ -520,6 +520,15 @@ final class JournalSeed
     }
 
     /**
+     * A new agent of this name on the profile, started once in a session named after it, as a TestStart that signs
+     * with the credential the start was issued.
+     */
+    public function signedStart(string $name, string $profile = 'main-agent'): TestStart
+    {
+        return $this->idleAgent($name, $profile)->startSession($name, $name)->testStartCalled($name);
+    }
+
+    /**
      * The named start as a TestStart that signs with the credential the start was issued, making nothing new.
      */
     public function testStartCalled(string $start): TestStart

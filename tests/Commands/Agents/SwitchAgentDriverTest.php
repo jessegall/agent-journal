@@ -73,7 +73,7 @@ final class SwitchAgentDriverTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->journal->actAsUserId($this->owner->id);
-        $this->main = Agent::create('Main', 'main-agent', $this->localProject());
+        $this->main = $this->journal->idleAgent('Main', 'main-agent')->agentCalled('Main');
     }
 
     public function test_a_switch_the_host_cannot_run_is_refused_and_keeps_the_old_session_and_a_repeat_answers_it(): void

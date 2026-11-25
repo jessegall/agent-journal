@@ -9,7 +9,6 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Sessions\SessionStatus;
 use App\Exceptions\CredentialRejected;
-use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Support\ActorContext;
 use App\Support\ServerClock;
@@ -116,7 +115,7 @@ final class RecordHeartbeatTest extends TestCase
     private function start(): StartedAgent
     {
         $started = $this->app->make(StartSessions::class)->start(
-            Agent::create('Test agent', 'main-agent', $this->localProject()),
+            $this->journal->idleAgent('Test agent', 'main-agent')->agentCalled('Test agent'),
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
         );

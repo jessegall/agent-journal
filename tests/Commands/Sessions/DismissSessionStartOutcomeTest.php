@@ -56,7 +56,7 @@ final class DismissSessionStartOutcomeTest extends TestCase
         $this->chooseActiveAccounts();
         $this->ownerId = User::factory()->create()->id;
         $this->journal->actAsUserId($this->ownerId);
-        $this->agentId = Agent::create('Builder', 'writing-helper', $this->localProject())->id;
+        $this->agentId = $this->journal->idleAgent('Builder', 'writing-helper')->agentCalled('Builder')->id;
         $this->app->instance(HostCapabilities::class, new class implements HostCapabilities
         {
             public function capability(HostCapabilityQuery $query): HostCapability

@@ -72,7 +72,7 @@ final class CertifyPassedStopsTest extends TestCase
 
     private function helperWithConditions(): TestStart
     {
-        $start = TestStart::start('writing-helper');
+        $start = $this->journal->signedStart('Test agent', 'writing-helper');
         $policy = StartPolicy::mainOnHost('/workspace');
         SessionPolicy::create($start->session, new StartPolicy(
             $policy->access,

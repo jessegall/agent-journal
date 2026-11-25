@@ -82,8 +82,8 @@ final class RetireAgentTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->main = Agent::create('Main', 'main-agent', $this->localProject());
-        $this->helper = Agent::create('Helper', 'read-only-helper', $this->localProject());
+        $this->main = $this->journal->idleAgent('Main', 'main-agent')->agentCalled('Main');
+        $this->helper = $this->journal->idleAgent('Helper', 'read-only-helper')->agentCalled('Helper');
         $this->journal->actAsUserId($this->owner->id);
     }
 

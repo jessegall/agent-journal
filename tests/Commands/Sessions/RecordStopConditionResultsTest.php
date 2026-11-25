@@ -100,8 +100,8 @@ final class RecordStopConditionResultsTest extends TestCase
 
     public function test_a_session_without_stop_conditions_stops_at_once_on_a_passed_attempt(): void
     {
-        $unfrozen = TestStart::start('writing-helper');
-        $empty = TestStart::start('writing-helper');
+        $unfrozen = $this->journal->signedStart('Test agent', 'writing-helper');
+        $empty = $this->journal->signedStart('Test agent 2', 'writing-helper');
         SessionPolicy::create($empty->session, StartPolicy::mainOnHost('/workspace'));
 
         $this->assertSame(AnswerType::Allow, $this->typeOf($this->stop($unfrozen, 'stop-1')));
@@ -114,7 +114,7 @@ final class RecordStopConditionResultsTest extends TestCase
 
     private function helperWithConditions(): TestStart
     {
-        $start = TestStart::start('writing-helper');
+        $start = $this->journal->signedStart('Test agent 3', 'writing-helper');
         $policy = StartPolicy::mainOnHost('/workspace');
         SessionPolicy::create($start->session, new StartPolicy(
             $policy->access,

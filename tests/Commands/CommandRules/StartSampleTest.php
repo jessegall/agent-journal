@@ -33,7 +33,7 @@ final class StartSampleTest extends TestCase
         parent::setUp();
 
         ProcessOutputDisk::fake();
-        $this->start = TestStart::start();
+        $this->start = $this->journal->signedStart('Test agent');
         $this->requestId = $this->journal->actAsAgentIds(
             $this->start->agent->id,
             $this->start->session->id,

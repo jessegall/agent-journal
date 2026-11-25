@@ -79,7 +79,7 @@ final class StartProfileMainTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->journal->actAsUserId($this->owner->id);
-        $this->main = Agent::create('Main', 'main-agent', $this->localProject());
+        $this->main = $this->journal->idleAgent('Main', 'main-agent')->agentCalled('Main');
     }
 
     public function test_default_resolves_to_the_profiles_model_and_revision(): void
@@ -139,7 +139,7 @@ final class StartProfileMainTest extends TestCase
 
         $explicit = $this->start('default', 'codex', $requestId, DriverType::Headless, $chosen);
         $repeated = $this->start('default', 'codex', $requestId, DriverType::Headless, $chosen);
-        $this->main = Agent::create('Second main', 'main-agent', $this->localProject());
+        $this->main = $this->journal->idleAgent('Second main', 'main-agent')->agentCalled('Second main');
         $automatic = $this->start('default', 'claude-code');
 
         $this->assertSame([$explicit->sessionId, false], [$repeated->sessionId, $repeated->isNewSession]);
@@ -191,7 +191,10 @@ final class StartProfileMainTest extends TestCase
         $resumed = $this->resume($older->id);
 
         $record = SessionRequest::query()->where('request_id', $resumed->requestId)->sole();
-        $this->assertSame(['older-thread-0001', ConversationModeType::Resume], [$record->conversation_target, $record->conversation_mode]);
+        $this->assertSame(
+            ['older-thread-0001', ConversationModeType::Resume],
+            [$record->conversation_target, $record->conversation_mode],
+        );
         $this->assertTrue(SessionRequest::isConversationRequired($resumed->sessionId));
 
         try {

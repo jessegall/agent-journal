@@ -69,7 +69,7 @@ final class FinishProjectCommandRunTest extends TestCase
      */
     private function connectedStart(): array
     {
-        $start = TestStart::start();
+        $start = $this->journal->signedStart('Test agent');
         $host = Host::create('laptop', 'secret-'.bin2hex(random_bytes(4)), [], ArrangementType::Local);
         $project = $this->localProject();
         $binding = ProjectBinding::create(

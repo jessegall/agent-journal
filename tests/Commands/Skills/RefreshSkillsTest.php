@@ -11,7 +11,6 @@ use App\Enums\Sessions\SessionStatus;
 use App\Enums\Skills\GenerationStatus;
 use App\Enums\Skills\PublicationStatus;
 use App\Exceptions\CommandNotRegistered;
-use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Skills\SkillGeneration;
 use App\Models\Skills\SkillPublication;
@@ -137,7 +136,7 @@ final class RefreshSkillsTest extends TestCase
 
     private function start(): AgentSession
     {
-        $agent = Agent::create('Main', 'main-agent', $this->localProject());
+        $agent = $this->journal->idleAgent('Main', 'main-agent')->agentCalled('Main');
         $session = new AgentSession()->forceFill(TestSelections::sessionColumns());
         $session->agent_id = $agent->id;
         $session->status = SessionStatus::Active;

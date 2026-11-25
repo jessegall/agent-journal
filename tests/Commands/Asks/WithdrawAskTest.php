@@ -11,7 +11,6 @@ use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Asks\AskReader;
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\AskRefused;
-use App\Models\Agents\Agent;
 use App\Models\Asks\Ask;
 use App\Models\Asks\AskHop;
 use App\Models\Records\AssignmentRecord;
@@ -46,8 +45,8 @@ final class WithdrawAskTest extends TestCase
     public function test_replay_and_closing_asks_are_available_at_the_open_limit(): void
     {
         $this->activateProfiles();
-        $requester = Agent::create('Requester', 'journal-worker', $this->localProject());
-        $recipient = Agent::create('Supervisor', 'journal-code-reviewer', $this->localProject());
+        $requester = $this->journal->idleAgent('Requester', 'journal-worker')->agentCalled('Requester');
+        $recipient = $this->journal->idleAgent('Supervisor', 'journal-code-reviewer')->agentCalled('Supervisor');
         $this->journal->actAsAgentIds($requester->id, TestIds::of(91));
         $commands = $this->app->make(CommandBus::class);
 
