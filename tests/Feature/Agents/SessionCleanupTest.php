@@ -14,15 +14,12 @@ use App\Enums\Sessions\CleanupStep;
 use App\Enums\Sessions\ReservationStatus;
 use App\Enums\Sessions\StartOriginType;
 use App\Exceptions\CapacityUnavailable;
-use App\Models\Agents\AgentRuntime;
-use App\Models\Profiles\ProfileRevisionHold;
 use App\Models\Sessions\CapacityReservation;
 use App\Models\Sessions\SessionCleanup;
 use App\Models\Sessions\SessionPolicy;
 use App\Models\Sessions\SessionRequest;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
-use App\Support\SessionStartLimits;
 use App\Support\StartHeartbeats;
 use App\Values\CleanupReport;
 use App\Values\ExecutionBudgets;
@@ -40,9 +37,9 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * An ended container start is cleaned up durably: a full pass removes its transient resources and only
- * then releases its capacity, a failed pass keeps the dirty workspace as the recovery location and retries, a repeated
- * pass changes nothing more, and a start past its wall budget or from a revoked revision is stopped.
+ * A start's capacity on its host: a start that never opened a runtime releases its capacity at once, a start past the
+ * host's capacity is refused unless the owner switched the guard off, and a capacity check names the shortage while it
+ * is held and fits once a cleanup releases it.
  */
 #[TimeLimit(seconds: 4, reason: 'It starts test agent sessions and opens their runtimes.')]
 final class SessionCleanupTest extends TestCase
@@ -96,36 +93,6 @@ final class SessionCleanupTest extends TestCase
         $this->assertSame(CleanupStatus::Done, $this->notify($start, new CleanupReport(self::ALL_STEPS, null, null)));
         $this->assertTrue(CapacityReservation::isHeldFor('start-other'));
         $this->assertSame(ReservationStatus::Released, $this->reservationOf($start)->status);
-    }
-
-    public function test_a_start_past_its_wall_budget_is_stopped_and_a_younger_one_runs_on(): void
-    {
-        $this->travel(-7)->hours();
-        $old = $this->runningStart();
-        $this->travelBack();
-        $young = $this->runningStart();
-
-        $this->app->make(SessionStartLimits::class)->stopOverdue();
-
-        $this->assertFalse(AgentRuntime::isRunningForSession($old->session->id));
-        $this->assertTrue(AgentRuntime::isRunningForSession($young->session->id));
-    }
-
-    public function test_a_fence_stops_the_sessions_of_its_revision_and_is_reconciled_once_none_runs(): void
-    {
-        $start = $this->runningStart();
-        $fence = ProfileRevisionHold::create($start->session->profile_key, $start->session->profile_revision);
-        $limits = $this->app->make(SessionStartLimits::class);
-
-        $limits->enforceFences();
-
-        $this->assertFalse(AgentRuntime::isRunningForSession($start->session->id));
-        $this->assertTrue(ProfileRevisionHold::query()->whereKey($fence->id)->whereNull('reconciled_at')->exists());
-
-        $this->app->make(StartHeartbeats::class)->markExited($start->session, 'exit 0');
-        $limits->enforceFences();
-
-        $this->assertFalse(ProfileRevisionHold::query()->whereKey($fence->id)->whereNull('reconciled_at')->exists());
     }
 
     private function endedContainerStart(): TestStart

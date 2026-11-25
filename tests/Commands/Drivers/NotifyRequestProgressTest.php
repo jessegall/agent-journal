@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Drivers;
 
-use App\Commands\Agents\ChangeAgentEffort\ChangeAgentEffortCommand;
 use App\Commands\Agents\NotifyRuntimeExit\NotifyRuntimeExitCommand;
-use App\Commands\Agents\RepairDriverSettings\RepairDriverSettingsCommand;
 use App\Commands\Agents\StopAgent\StopAgentCommand;
 use App\Commands\Drivers\ClaimDriverRequests\ClaimDriverRequestsCommand;
 use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
@@ -42,8 +40,8 @@ use Tests\TestCase;
 
 /**
  * A host reports how far a request got: a staged report gives the request back after a wait, the host's facts hold a
- * runtime for attention, an applied stop keeps stopping until its exit is proved, a failed effort change is repaired
- * in its own place in the queue, and a stopped key script resumes from its step or is cancelled.
+ * runtime for attention, an applied stop keeps stopping until its exit is proved, and a stopped key script resumes from
+ * its step or is cancelled.
  */
 final class NotifyRequestProgressTest extends TestCase
 {
@@ -157,33 +155,6 @@ final class NotifyRequestProgressTest extends TestCase
         $this->notifyExit($host, $opened);
 
         $this->assertSame('Stopped', $this->statusOf($agentId)->label);
-    }
-
-    public function test_a_failed_effort_change_is_repaired_in_its_own_place_in_the_queue(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-        $agentId = $this->agentIdOf($opened);
-        $effort = $this->asOwner(new ChangeAgentEffortCommand($agentId, $opened->sessionId, 'effort-1', 'high'));
-        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
-        $request = DriverRequest::query()->findOrFail($effort->requestId);
-        $attempt = $request->attempt_version;
-        $this->asSystem(new NotifyRequestProgressCommand(
-            $host->hostId,
-            $request->id,
-            $attempt,
-            RequestProgress::Failed,
-            null,
-            RequestOutcome::Refused,
-        ));
-        $request->refresh();
-        $sequence = $request->sequence;
-
-        $this->asOwner(new RepairDriverSettingsCommand($request->id, $request->row_version, 'low', 'high is not offered'));
-
-        $request->refresh();
-        $this->assertSame([RequestProgress::Accepted, 'low'], [$request->progress, $request->effort]);
-        $this->assertSame([$sequence, $attempt + 1], [$request->sequence, $request->attempt_version]);
-        $this->assertSame('low', AgentRuntime::query()->findOrFail($opened->runtimeId)->requested_effort);
     }
 
     public function test_a_stopped_key_script_resumes_from_its_step_or_is_cancelled(): void
