@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Agents;
+namespace Tests\Commands\Accounts;
 
 use App\Enums\Accounts\AccountProcessRole;
 use App\Enums\Agents\SessionProcessStatus;
@@ -31,7 +31,7 @@ use Tests\TestCase;
  * report names: another host is refused, a retry is acknowledged once more, and a removed account takes none.
  */
 #[TimeLimit(seconds: 4, reason: 'It enrolls hosts and sends signed calls, emptying several tables.')]
-final class UsageReportTest extends TestCase
+final class AddUsageCostTest extends TestCase
 {
     use CommitsHookRows;
     use RunsTrustedCommands;
