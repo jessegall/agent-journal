@@ -13,16 +13,23 @@ return new class extends Migration
     {
         Schema::create('helper_identities', function (Blueprint $table) {
             $table->ulid('id')->primary();
+            $table->foreignUlid('project_id')->constrained('projects')->restrictOnDelete();
             $table->string('actor_type', 16);
             $table->string('actor_id');
             $table->string('profile_key', 64);
             $table->string('profile_base', 64);
             $table->string('helper_actor_type', 16);
             $table->string('helper_actor_id');
-            $table->string('designated_profile', 64)->nullable()->unique();
+            $table->string('designated_profile', 64)->nullable();
             $table->timestampsTz();
 
+            $table->unique([
+                'project_id',
+                'designated_profile',
+            ]);
+
             $table->index([
+                'project_id',
                 'actor_type',
                 'actor_id',
             ]);
@@ -35,6 +42,7 @@ return new class extends Migration
 
         Schema::create('helper_purposes', function (Blueprint $table) {
             $table->ulid('id')->primary();
+            $table->foreignUlid('project_id')->constrained('projects')->restrictOnDelete();
             $table->string('actor_type', 16);
             $table->string('actor_id');
             $table->string('profile_key', 64);
@@ -45,6 +53,7 @@ return new class extends Migration
             $table->timestampsTz();
 
             $table->unique([
+                'project_id',
                 'actor_type',
                 'actor_id',
                 'profile_key',
@@ -59,6 +68,7 @@ return new class extends Migration
 
         Schema::create('helper_jobs', function (Blueprint $table) {
             $table->ulid('id')->primary();
+            $table->foreignUlid('project_id')->constrained('projects')->restrictOnDelete();
             $table->string('actor_type', 16);
             $table->string('actor_id');
             $table->foreignUlid('helper_identity_id')->constrained('helper_identities')->restrictOnDelete();
@@ -84,6 +94,7 @@ return new class extends Migration
             ]);
 
             $table->unique([
+                'project_id',
                 'actor_type',
                 'actor_id',
                 'request_id',

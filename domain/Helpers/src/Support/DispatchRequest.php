@@ -10,7 +10,7 @@ use Domain\Helpers\Values\HelperWork;
 
 /**
  * One dispatch as the parent asked it: who asks, the request id that makes a repeat find the same job, the profile,
- * the model and driver it names, the work, and for a send the identity it addresses.
+ * the model and driver it names, the work, the project it works in, and for a send the identity it addresses.
  */
 final readonly class DispatchRequest
 {
@@ -21,6 +21,7 @@ final readonly class DispatchRequest
         public string $model,
         public string|null $driverKey,
         public HelperWork $work,
+        public string $projectId,
         public string|null $identityId,
         public DriverType|null $driverType = null,
     ) {}

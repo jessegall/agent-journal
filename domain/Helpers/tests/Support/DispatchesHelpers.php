@@ -22,6 +22,7 @@ use Domain\Helpers\Values\HelperReceipt;
 use Domain\Helpers\Values\HelperWork;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Profiles\TestProposals;
+use Tests\Support\TestProjects;
 use Tests\Support\WithActiveAccount;
 
 /**
@@ -64,6 +65,7 @@ trait DispatchesHelpers
             'default',
             null,
             new HelperWork(null, null, $purpose, $brief, [], false),
+            TestProjects::local()->id,
         ));
     }
 

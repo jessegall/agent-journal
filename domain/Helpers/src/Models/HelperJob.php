@@ -10,10 +10,12 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Assignments\Assignable;
 use App\Contracts\Events\EventSource;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Agents\ConversationModeType;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneActor;
+use App\Models\Support\BelongsToProject;
 use App\Support\ActorReference;
 use App\Support\OwnerStartReceipt;
 use App\Support\RecordIdentity;
@@ -39,6 +41,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
+ * @property string $project_id
  * @property string $actor_type
  * @property string $actor_id
  * @property string $helper_identity_id
@@ -63,9 +66,10 @@ use Illuminate\Database\Eloquent\Model;
  * @mixin \Eloquent
  */
 #[Table('helper_jobs')]
-final class HelperJob extends Model implements Assignable, EventSource, ReadableModel
+final class HelperJob extends Model implements Assignable, EventSource, ProjectOwned, ReadableModel
 {
     use BelongsToOneActor;
+    use BelongsToProject;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -94,6 +98,8 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
     // ----------[ Constructors ]----------
 
     /**
+     * A job of its purpose's project.
+     *
      * @param  list<string>  $sourceSubjects
      */
     public static function create(
@@ -105,6 +111,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
         SessionStartDetails $startDetails,
     ): self {
         $job = new self();
+        $job->project_id = $purpose->project_id;
         $job->helper_identity_id = $helper->id;
         $job->helper_purpose_id = $purpose->id;
         $job->brief = $brief;

@@ -26,6 +26,7 @@ final readonly class SendHelperHandler extends HelperCommandHandler
             $command->model,
             $command->driverKey,
             $command->work,
+            $command->projectId,
             $command->identityId,
         ));
     }

@@ -57,6 +57,7 @@ final readonly class AskQuestionHandler extends QuestionCommandHandler
         }
 
         return Question::create(
+            $command->owner(),
             $command->inboxId,
             $sender,
             $command->target,

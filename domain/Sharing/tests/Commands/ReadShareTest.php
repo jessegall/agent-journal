@@ -294,6 +294,7 @@ final class ReadShareTest extends TestCase
 
         $share = Share::create(
             $root,
+            TestProjects::localOwner(),
             $expiresAt,
             new ShareGrant(
                 $this->journal->ownerUser()->id,

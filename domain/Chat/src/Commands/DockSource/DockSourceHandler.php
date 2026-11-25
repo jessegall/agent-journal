@@ -34,6 +34,7 @@ final readonly class DockSourceHandler extends ChatCommandHandler
         $placement = DockPlacement::create(
             $inbox,
             $source,
+            $this->requests->ownerOf($source),
             $command->presentation,
             ActorReference::of($command->dispatchedBy()),
         );

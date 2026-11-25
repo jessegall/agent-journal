@@ -10,6 +10,7 @@ use App\Support\Sources\Contracts\CardContext;
 use App\Support\Sources\Contracts\Dockable;
 use App\Support\Sources\Contracts\DockableProvider;
 use App\Support\Sources\DockDefinition;
+use App\Values\ProjectOwner;
 use Domain\Sequences\Models\SequenceRun;
 
 /**
@@ -23,6 +24,14 @@ final readonly class SequenceRunDocking implements DockableProvider
             ->acrossActors()
             ->whereKey($id)
             ->firstOr(DockSourceUnavailable::throwing()->of($definition->type, $id));
+    }
+
+    /**
+     * A sequence run is its runner's and of no project, so its placement is Global.
+     */
+    public function ownerOf(DockDefinition $definition, string $id): ProjectOwner
+    {
+        return ProjectOwner::global();
     }
 
     public function cardsFor(DockDefinition $definition, array $ids, CardContext $context): array

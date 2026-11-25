@@ -16,6 +16,7 @@ use App\Support\Cards\DockIdentity;
 use App\Support\Sources\Contracts\DockableProvider;
 use App\Support\Sources\Contracts\DockRegistration;
 use App\Support\Sources\DockDefinition;
+use App\Values\ProjectOwner;
 use Domain\Chat\Exceptions\ChatUnavailable;
 use Illuminate\Container\Container;
 
@@ -121,10 +122,28 @@ final readonly class DockRequests
             throw DockSourceUnavailable::unsupported($source->type, $presentation);
         }
 
+        $definition->assertOwns($this->providerOf($definition)->requireReadable($definition, $source->id));
+    }
+
+    /**
+     * The project of a source that assertReadable let through, or Global, as its registered owner answers it.
+     *
+     * @throws DockSourceUnavailable
+     */
+    public function ownerOf(DockIdentity $source): ProjectOwner
+    {
+        $definition = $this->registry->definition($source->type);
+
+        return $this->providerOf($definition)->ownerOf($definition, $source->id);
+    }
+
+    private function providerOf(DockDefinition $definition): DockableProvider
+    {
         /**
          * @var DockableProvider $provider
          */
         $provider = $this->container->make($definition->provider);
-        $definition->assertOwns($provider->requireReadable($definition, $source->id));
+
+        return $provider;
     }
 }

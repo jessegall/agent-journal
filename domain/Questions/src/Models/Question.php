@@ -8,10 +8,13 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\AuthoredModel;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
+use App\Models\Support\BelongsToProject;
 use App\Support\ActorReference;
+use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
 use Domain\Questions\Enums\QuestionType;
 use Domain\Questions\Events\QuestionAnswered;
@@ -27,6 +30,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
+ * @property string $project_id
  * @property string $inbox_id
  * @property string $sender_type
  * @property string $sender_id
@@ -46,8 +50,9 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class Question extends Model implements AuthoredModel, EventSource, ReadableModel
+final class Question extends Model implements AuthoredModel, EventSource, ProjectOwned, ReadableModel
 {
+    use BelongsToProject;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -70,9 +75,12 @@ final class Question extends Model implements AuthoredModel, EventSource, Readab
     // ----------[ Constructors ]----------
 
     /**
+     * A question of the asker's project.
+     *
      * @param  list<string>  $options
      */
     public static function create(
+        ProjectOwner $owner,
         string $inboxId,
         ActorReference $sender,
         ActorReference $target,
@@ -81,6 +89,7 @@ final class Question extends Model implements AuthoredModel, EventSource, Readab
         array $options,
     ): self {
         $question = new self();
+        $question->project_id = $owner->projectId();
         $question->inbox_id = $inboxId;
         $question->sender_type = $sender->type;
         $question->sender_id = $sender->id;

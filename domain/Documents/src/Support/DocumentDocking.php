@@ -10,6 +10,7 @@ use App\Support\Sources\Contracts\CardContext;
 use App\Support\Sources\Contracts\Dockable;
 use App\Support\Sources\Contracts\DockableProvider;
 use App\Support\Sources\DockDefinition;
+use App\Values\ProjectOwner;
 use Domain\Documents\Models\Document;
 
 /**
@@ -23,6 +24,14 @@ final readonly class DocumentDocking implements DockableProvider
             ->sharedPublished()
             ->whereKey($id)
             ->firstOr(DockSourceUnavailable::throwing()->of($definition->type, $id));
+    }
+
+    public function ownerOf(DockDefinition $definition, string $id): ProjectOwner
+    {
+        return Document::query()
+            ->whereKey($id)
+            ->firstOr(DockSourceUnavailable::throwing()->of($definition->type, $id))
+            ->projectOwner();
     }
 
     public function cardsFor(DockDefinition $definition, array $ids, CardContext $context): array

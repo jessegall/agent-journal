@@ -243,6 +243,7 @@ final class RequestShareTest extends TestCase
     {
         $first = Share::create(
             $this->root,
+            TestProjects::localOwner(),
             CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS),
             new ShareProposal(ActorReference::ofClass(Agent::class, $this->start->agent->id)),
         );

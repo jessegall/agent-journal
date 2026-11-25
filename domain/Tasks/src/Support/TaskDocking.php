@@ -14,6 +14,7 @@ use App\Support\Sources\Contracts\CardContext;
 use App\Support\Sources\Contracts\Dockable;
 use App\Support\Sources\Contracts\DockableProvider;
 use App\Support\Sources\DockDefinition;
+use App\Values\ProjectOwner;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Policies\TaskPolicy;
 use Illuminate\Database\Eloquent\Collection;
@@ -30,6 +31,14 @@ final readonly class TaskDocking implements DockableProvider
         $task = Task::query()->whereKey($id)->firstOr(DockSourceUnavailable::throwing()->of($definition->type, $id));
 
         return $this->docked($task->newCollection([$task]))[0];
+    }
+
+    public function ownerOf(DockDefinition $definition, string $id): ProjectOwner
+    {
+        return Task::query()
+            ->whereKey($id)
+            ->firstOr(DockSourceUnavailable::throwing()->of($definition->type, $id))
+            ->projectOwner();
     }
 
     public function cardsFor(DockDefinition $definition, array $ids, CardContext $context): array

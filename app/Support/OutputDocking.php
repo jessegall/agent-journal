@@ -15,6 +15,7 @@ use App\Support\Sources\Contracts\Dockable;
 use App\Support\Sources\Contracts\DockableProvider;
 use App\Support\Sources\DockDefinition;
 use App\Values\DockedOutput;
+use App\Values\ProjectOwner;
 use Illuminate\Database\Eloquent\Collection;
 use PhpOption\None;
 use PhpOption\Option;
@@ -37,6 +38,19 @@ final readonly class OutputDocking implements DockableProvider
     public function requireReadable(DockDefinition $definition, string $id): Dockable
     {
         return $this->outputs([$id])[$id] ?? throw DockSourceUnavailable::of($definition->type, $id);
+    }
+
+    /**
+     * The project of the run the output is of.
+     */
+    public function ownerOf(DockDefinition $definition, string $id): ProjectOwner
+    {
+        $runId = self::parsed($id)->getOrThrow(DockSourceUnavailable::of($definition->type, $id))[0];
+
+        return ProcessRun::query()
+            ->whereKey($runId)
+            ->firstOr(DockSourceUnavailable::throwing()->of($definition->type, $id))
+            ->projectOwner();
     }
 
     public function cardsFor(DockDefinition $definition, array $ids, CardContext $context): array

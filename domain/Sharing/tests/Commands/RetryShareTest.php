@@ -36,6 +36,7 @@ use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
+use Tests\Support\TestProjects;
 
 /**
  * A retry of a failed share adds one open request and keeps its deadline; a share that expired, was revoked or is
@@ -107,6 +108,7 @@ final class RetryShareTest extends TestCase
 
         $proposal = Share::create(
             $this->root,
+            TestProjects::localOwner(),
             CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS),
             new ShareProposal(TestActors::agentIdentity(5)),
         );

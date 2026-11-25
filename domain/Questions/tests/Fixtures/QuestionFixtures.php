@@ -11,6 +11,7 @@ use Domain\Questions\Models\QuestionAnswerNotice;
 use PHPUnit\Framework\Assert;
 use Tests\Support\Seeding\FixtureAliases;
 use Tests\Support\Seeding\TestJournal;
+use Tests\Support\TestProjects;
 
 /**
  * Questions one named user or agent asks another in an inbox, kept under the names a test gives them, and what became
@@ -41,6 +42,7 @@ final class QuestionFixtures
         $sender = $this->journal->actorCalled($asker);
 
         $question = Question::create(
+            TestProjects::ownerOf($this->journal->userOrAgentCalled($asker)),
             $inbox->id,
             $sender,
             $this->journal->actorCalled($target),

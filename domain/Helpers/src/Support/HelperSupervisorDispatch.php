@@ -53,6 +53,7 @@ final readonly class HelperSupervisorDispatch implements SupervisorDispatch
                 'default',
                 null,
                 HelperWork::described(null, null, "Answer ask {$request->askId}", $request->body, [], false),
+                $request->projectId,
             ));
         } catch (HelperBusy) {
             return;

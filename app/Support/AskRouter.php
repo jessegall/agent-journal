@@ -6,10 +6,12 @@ namespace App\Support;
 
 use App\Contracts\Assignments\JournalAssignmentWriter;
 use App\Contracts\Processes\SupervisorDispatch;
+use App\Contracts\Projects\AgentProjects;
 use App\Enums\Asks\AskRouteStatus;
 use App\Enums\Asks\SupervisorDispatchOutcome;
 use App\Models\Asks\Ask;
 use App\Models\Asks\AskHop;
+use App\Support\Projects\SelectedProject;
 use App\Values\SupervisorRequest;
 use App\Values\SupervisorTarget;
 
@@ -25,6 +27,8 @@ final readonly class AskRouter
         private JournalAssignmentWriter $writer,
         private AskAttention $attention,
         private SupervisorDispatch $dispatch,
+        private AgentProjects $agentProjects,
+        private SelectedProject $selectedProject,
     ) {}
 
     /**
@@ -50,7 +54,13 @@ final readonly class AskRouter
         $found = $this->recipients->resolve($target);
 
         if ($found->isEmpty() && $target->isProfile()) {
-            $request = new SupervisorRequest($target->profileKey()->key, $ask->id, $ask->body, $ask->actor());
+            $request = new SupervisorRequest(
+                $target->profileKey()->key,
+                $ask->id,
+                $ask->body,
+                $ask->actor(),
+                $this->projectIdOf($ask->actor()),
+            );
 
             if ($this->dispatch->startFor($request) === SupervisorDispatchOutcome::Unavailable) {
                 return AskRouteStatus::Unavailable;
@@ -86,5 +96,17 @@ final readonly class AskRouter
         $this->attention->retainHop(AskHop::create($ask, $recipient, $route->version));
 
         return AskRouteStatus::Assigned;
+    }
+
+    /**
+     * The asker's project: an agent's own, else the one selected, or the journal's own under every project.
+     */
+    private function projectIdOf(ActorReference $asker): string
+    {
+        if ($asker->isAgent()) {
+            return $this->agentProjects->projectIdOf($asker->id);
+        }
+
+        return $this->selectedProject->find()->id;
     }
 }

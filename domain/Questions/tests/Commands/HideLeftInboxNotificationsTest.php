@@ -12,6 +12,7 @@ use Domain\Questions\Enums\QuestionType;
 use Domain\Questions\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\TestProjects;
 
 /**
  * Once a member leaves an inbox, the journal hides the notifications of the questions asked of them there and counts
@@ -61,6 +62,7 @@ final class HideLeftInboxNotificationsTest extends TestCase
             $this->journal->actorCalled('Owner'),
             'Which database?',
             QuestionType::Open,
+            TestProjects::local()->id,
         ));
     }
 }

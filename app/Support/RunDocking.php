@@ -11,6 +11,7 @@ use App\Support\Sources\Contracts\CardContext;
 use App\Support\Sources\Contracts\Dockable;
 use App\Support\Sources\Contracts\DockableProvider;
 use App\Support\Sources\DockDefinition;
+use App\Values\ProjectOwner;
 
 /**
  * Reads process runs to dock through the actor-scoped query alone: a run belongs to the actor that started it, so
@@ -24,6 +25,14 @@ final readonly class RunDocking implements DockableProvider
             ->withDockParts()
             ->whereKey($id)
             ->firstOr(DockSourceUnavailable::throwing()->of($definition->type, $id));
+    }
+
+    public function ownerOf(DockDefinition $definition, string $id): ProjectOwner
+    {
+        return ProcessRun::query()
+            ->whereKey($id)
+            ->firstOr(DockSourceUnavailable::throwing()->of($definition->type, $id))
+            ->projectOwner();
     }
 
     public function cardsFor(DockDefinition $definition, array $ids, CardContext $context): array

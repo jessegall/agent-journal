@@ -33,6 +33,7 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\InstallsNotesModule;
+use Tests\Support\TestProjects;
 
 /**
  * A user docks a source in a conversation once: a second dock of it answers the placement it has, and an agent the
@@ -135,6 +136,30 @@ final class DockSourceTest extends TestCase
 
         $this->assertSame($added->placementId, $present->placementId);
         $this->assertSame(1, DockPlacement::query()->count());
+    }
+
+    public function test_a_placement_carries_its_sources_project_and_a_dock_under_one_project_shows_only_its_own(): void
+    {
+        $this->journal->project('B');
+        $other = Task::factory()->create(['project_id' => $this->journal->projectCalled('B')->id]);
+
+        $local = $this->runKeyed($this->dockTask(), (string) Str::ulid());
+        $inB = $this->runKeyed(
+            new DockSourceCommand($this->conversationId, 'tasks.task', $other->id),
+            (string) Str::ulid(),
+        );
+
+        $this->assertSame(
+            [TestProjects::local()->id, $this->journal->projectCalled('B')->id],
+            [
+                DockPlacement::query()->findOrFail($local->placementId)->project_id,
+                DockPlacement::query()->findOrFail($inB->placementId)->project_id,
+            ],
+        );
+
+        $this->journal->selectProject('B');
+        $this->assertSame(1, DockPlacement::query()->count());
+        $this->assertTrue(DockPlacement::query()->whereKey($inB->placementId)->exists());
     }
 
     public function test_an_agent_out_of_sight_is_refused_before_anything_is_docked(): void

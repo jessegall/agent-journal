@@ -39,6 +39,18 @@ final readonly class ProjectSelection
     }
 
     /**
+     * What a record of the owner may reach: its own project and Global, or only Global for a Global owner.
+     */
+    public static function reachableFrom(ProjectOwner $owner): self
+    {
+        if ($owner->isGlobal()) {
+            return self::none();
+        }
+
+        return self::of($owner->projectId());
+    }
+
+    /**
      * @throws ProjectNotChosen
      */
     public function projectId(): string

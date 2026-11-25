@@ -30,6 +30,7 @@ final readonly class HelperCandidates
     public function candidatesFor(CandidateQuery $query): array
     {
         $identities = HelperIdentity::query()
+            ->inProject($query->purpose->project_id)
             ->ofProfile($query->profileKey, $query->profileBase)
             ->readAll('the parent\'s helper identities of one profile, every one a candidate')
             ->get()

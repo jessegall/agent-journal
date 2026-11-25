@@ -547,12 +547,12 @@ final class TestJournal
     }
 
     /**
-     * A new agent of this name on the profile, started once in a session named after it, as a TestStart that signs
-     * with the credential the start was issued.
+     * A new agent of this name on the profile, in the local project or the named one, started once in a session named
+     * after it, as a TestStart that signs with the credential the start was issued.
      */
-    public function signedStart(string $name, string $profile = 'main-agent'): TestStart
+    public function signedStart(string $name, string $profile = 'main-agent', string|null $project = null): TestStart
     {
-        return $this->idleAgent($name, $profile)->startSession($name, $name)->testStartCalled($name);
+        return $this->idleAgent($name, $profile, $project)->startSession($name, $name)->testStartCalled($name);
     }
 
     /**

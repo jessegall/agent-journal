@@ -12,6 +12,7 @@ use App\Contracts\Assignments\ResponsibilityWriter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\CallingDriver;
 use App\Contracts\Events\HelperRecordFacts;
+use App\Contracts\Records\RecordResolver;
 use App\Contracts\Sessions\ProfileSelections;
 use App\Contracts\Sessions\StartReservations;
 use App\Enums\Agents\AccessType;
@@ -20,13 +21,13 @@ use App\Enums\Profiles\InstancePolicy;
 use App\Exceptions\AgentBusy;
 use App\Exceptions\AgentNotAvailable;
 use App\Exceptions\ConsoleOwnerMissing;
+use App\Exceptions\CrossProjectEdge;
 use App\Exceptions\ProfileMissing;
 use App\Exceptions\StartRefused;
-use App\Models\Agents\Agent;
-use App\Models\Projects\Project;
 use App\Support\ActorReference;
 use App\Support\AssigneeIdentity;
 use App\Support\OwnerStartRequest;
+use App\Support\Projects\ProjectEdges;
 use App\Support\RecordIdentity;
 use App\Values\ModelSelection;
 use App\Values\ProfileKey;
@@ -79,6 +80,8 @@ final readonly class HelperDispatch
         private CommandBus $commands,
         private JournalAdmission $admission,
         private HelperRecordFacts $helperFacts,
+        private RecordResolver $recordResolver,
+        private ProjectEdges $edges,
     ) {}
 
     public function start(DispatchRequest $request): HelperReceipt
@@ -124,7 +127,7 @@ final readonly class HelperDispatch
         }
 
         $profile = $this->admittedProfile($request->profileKey, $request->model, $request->driverKey);
-        $identity = HelperIdentity::query()->whereKey($request->identityId)->first();
+        $identity = HelperIdentity::query()->inProject($request->projectId)->whereKey($request->identityId)->first();
 
         if ($identity === null) {
             throw HelperUnavailable::toYou();
@@ -248,6 +251,7 @@ final readonly class HelperDispatch
         $work = $request->work;
 
         return $this->purposes->resolve(new PurposeChoice(
+            $request->projectId,
             $request->parent,
             $request->profileKey,
             $work->subject,
@@ -284,7 +288,7 @@ final readonly class HelperDispatch
             return $this->newHelper($request, $profile);
         }
 
-        $designated = HelperIdentity::findDesignatedFor($request->profileKey);
+        $designated = HelperIdentity::findDesignatedFor($request->projectId, $request->profileKey);
 
         if ($designated->isDefined() && ! $this->hasRetired($designated->get())) {
             $this->assertIndependentFor($request, $designated->get());
@@ -295,6 +299,7 @@ final readonly class HelperDispatch
         $designated->forAll(fn (HelperIdentity $retired) => $retired->releaseDesignation());
 
         return HelperIdentity::create(
+            $request->projectId,
             $this->designatedHolder($request),
             $this->newActor($request, $profile),
             $request->profileKey,
@@ -338,27 +343,21 @@ final readonly class HelperDispatch
         return $this->commands->run(new CreateAgentCommand(
             sprintf('%s helper', $profile->base->label),
             $request->profileKey,
-            $this->projectIdOf($request),
+            $request->projectId,
         ));
-    }
-
-    /**
-     * The project a new helper belongs to: its parent agent's, or the local project when the user dispatches it.
-     */
-    private function projectIdOf(DispatchRequest $request): string
-    {
-        if ($request->parent->isAgent()) {
-            return Agent::query()->findOrFail($request->parent->id)->project_id;
-        }
-
-        return Project::findLocal()->id;
     }
 
     private function newHelper(DispatchRequest $request, ProfileSelection $profile): HelperIdentity
     {
         $actor = $this->newActor($request, $profile);
 
-        return HelperIdentity::create($request->parent, $actor, $request->profileKey, $profile->base->key);
+        return HelperIdentity::create(
+            $request->projectId,
+            $request->parent,
+            $actor,
+            $request->profileKey,
+            $profile->base->key,
+        );
     }
 
     /**
@@ -375,6 +374,7 @@ final readonly class HelperDispatch
         $helper = $identity->helper_actor;
         $this->reserve($identity);
         $this->assertNoOpenJob($identity);
+        $this->assertSourcesOfProject($request, $purpose);
 
         $job = HelperJob::create(
             $identity,
@@ -421,6 +421,18 @@ final readonly class HelperDispatch
             throw HelperBusy::running($identity->id, $busyAgent);
         } catch (AgentNotAvailable|StartRefused $retired) {
             throw HelperRetired::forIdentity($identity->id, $retired);
+        }
+    }
+
+    /**
+     * Refuses a source record of another project than the job's; a Global record is a source of any job.
+     *
+     * @throws CrossProjectEdge
+     */
+    private function assertSourcesOfProject(DispatchRequest $request, HelperPurpose $purpose): void
+    {
+        foreach ($request->work->sourceRecords() as $source) {
+            $this->edges->assertJoinable($purpose, $this->recordResolver->requireReadable($source));
         }
     }
 

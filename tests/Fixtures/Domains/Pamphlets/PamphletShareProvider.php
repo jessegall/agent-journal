@@ -14,6 +14,7 @@ use App\Support\ShareRecords;
 use App\Support\ShareRelationRead;
 use App\Support\ShareSelection;
 use App\Support\ShareTargetRead;
+use App\Values\ProjectOwner;
 
 /**
  * Discloses pamphlets but not their notes, and answers every pamphlet as one fixed published card with no linked
@@ -24,6 +25,11 @@ final class PamphletShareProvider implements ShareRecordProvider
     public function mayDisclose(RecordIdentity $record): bool
     {
         return $record->type === 'pamphlets.pamphlet';
+    }
+
+    public function ownerOf(RecordIdentity $record): ProjectOwner
+    {
+        return ProjectOwner::global();
     }
 
     public function preview(ShareSelection $selection, ShareBudget $budget): ShareRecordCard

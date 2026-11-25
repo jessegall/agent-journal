@@ -21,6 +21,7 @@ use Domain\Helpers\Values\HelperReceipt;
 use Domain\Helpers\Values\HelperWork;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestProjects;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -85,6 +86,7 @@ final class SendHelperTest extends TestCase
             'default',
             null,
             new HelperWork(null, null, $purpose, 'Review it.', [], false),
+            TestProjects::local()->id,
         ));
     }
 

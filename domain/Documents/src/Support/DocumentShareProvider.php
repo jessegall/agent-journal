@@ -13,6 +13,7 @@ use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;
 use App\Support\ShareContentRead;
 use App\Support\SharedContent;
+use App\Values\ProjectOwner;
 use Domain\Comments\Contracts\PublicCommentResolver;
 use Domain\Documents\Concerns\SharesPublishedRecords;
 use Domain\Documents\Models\Document;
@@ -33,6 +34,17 @@ final readonly class DocumentShareProvider implements ShareRecordProvider
         return $record->type === Document::linkType() && Document::query()->sharedPublished()->whereKey(
             $record->id,
         )->exists();
+    }
+
+    /**
+     * @throws RecordUnavailable when the document is missing
+     */
+    public function ownerOf(RecordIdentity $record): ProjectOwner
+    {
+        return Document::query()
+            ->whereKey($record->id)
+            ->firstOr(RecordUnavailable::throwing()->forActor($record))
+            ->projectOwner();
     }
 
     /**

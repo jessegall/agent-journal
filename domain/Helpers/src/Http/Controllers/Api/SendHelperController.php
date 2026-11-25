@@ -6,10 +6,12 @@ namespace Domain\Helpers\Http\Controllers\Api;
 
 use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\CommandBus;
+use App\Contracts\Projects\ProjectDestination;
 use Domain\Helpers\Api\SendHelperPayload;
 use Domain\Helpers\Commands\SendHelper\SendHelperCommand;
 use Domain\Helpers\Data\HelperReceiptData;
 use Domain\Helpers\Values\HelperWork;
+use PhpOption\None;
 
 /**
  * Gives the named helper new work and answers the receipt.
@@ -17,8 +19,11 @@ use Domain\Helpers\Values\HelperWork;
 final readonly class SendHelperController
 {
     #[Dispatches(SendHelperCommand::class)]
-    public function __invoke(SendHelperPayload $call, CommandBus $commands): HelperReceiptData
-    {
+    public function __invoke(
+        SendHelperPayload $call,
+        CommandBus $commands,
+        ProjectDestination $destination,
+    ): HelperReceiptData {
         return HelperReceiptData::from($commands->run(new SendHelperCommand(
             $call->requestKey->value,
             $call->identityId,
@@ -33,6 +38,7 @@ final readonly class SendHelperController
                 $call->sourceSubjects,
                 $call->isIndependent,
             ),
+            $destination->projectFor(None::create()),
         )));
     }
 }

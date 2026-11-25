@@ -25,6 +25,7 @@ use Tests\Fixtures\Domains\Pamphlets\PamphletsDomain;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
+use Tests\Support\TestProjects;
 
 /**
  * The owner's share policy: only the current configured owner manages shares, an owner change ends every earlier
@@ -93,6 +94,7 @@ final class OwnerSharePolicyTest extends TestCase
 
         $share = Share::create(
             TestActors::record('pamphlets.pamphlet', 4),
+            TestProjects::localOwner(),
             CarbonImmutable::now()->addDays(7),
             new ShareGrant(
                 $this->ownerId,
@@ -104,6 +106,7 @@ final class OwnerSharePolicyTest extends TestCase
 
         $proposal = Share::create(
             TestActors::record('pamphlets.pamphlet', 4),
+            TestProjects::localOwner(),
             CarbonImmutable::now()->addDays(7),
             new ShareProposal(TestActors::agentIdentity(5)),
         );

@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Support;
 
-use App\Support\Cards\ComposedCard;
 use App\Exceptions\DockSourceUnavailable;
+use App\Support\Cards\ComposedCard;
 use App\Support\Sources\Contracts\CardContext;
 use App\Support\Sources\Contracts\Dockable;
 use App\Support\Sources\Contracts\DockableProvider;
 use App\Support\Sources\DockDefinition;
+use App\Values\ProjectOwner;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 
 /**
@@ -24,6 +25,11 @@ final readonly class NotesTallyDocking implements DockableProvider
         }
 
         return new NotesTally(Note::query()->count());
+    }
+
+    public function ownerOf(DockDefinition $definition, string $id): ProjectOwner
+    {
+        return ProjectOwner::global();
     }
 
     public function cardsFor(DockDefinition $definition, array $ids, CardContext $context): array
