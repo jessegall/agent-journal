@@ -77,7 +77,9 @@ final class ReadMessageState extends AgentState
     {
         $agent = Agent::query()->findOrFail($this->agentId);
 
-        $this->unreadIds = Message::query()->inInbox($this->inboxId)->unreadBy($agent)->pluck('id')->all();
+        $unread = Message::query()->inInbox($this->inboxId)->unreadBy($agent)->get();
+        $ids = $unread->map(fn (Message $message): string => $message->id)->all();
+        $this->unreadIds = array_values($ids);
     }
 
     // ----------[ Hooks ]----------

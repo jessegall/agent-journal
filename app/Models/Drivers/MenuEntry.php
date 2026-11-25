@@ -42,7 +42,7 @@ use Spatie\LaravelData\DataCollection;
  * @property string $entry_fingerprint
  * @property string $goal_script
  * @property int $goal_version
- * @property array $goal_parameters
+ * @property array<string, string> $goal_parameters
  * @property string $goal_key
  * @property DataCollection<int, MenuStep> $steps
  * @property NavigationCompletion $completes

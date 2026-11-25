@@ -348,15 +348,6 @@ final readonly class BoundaryChecker
             ->isDefined();
     }
 
-    /**
-     * Whether the name is a class, interface, enum or trait that exists: a migration's text naming a class that has
-     * since moved is a stored value, not a use.
-     */
-    private static function isDeclared(string $name): bool
-    {
-        return Reflector::exists($name);
-    }
-
     private function isShared(string $name): bool
     {
         return array_any(self::SHARED_NAMESPACES, fn (string $shared) => stripos(ltrim($name, '\\'), $shared) === 0);

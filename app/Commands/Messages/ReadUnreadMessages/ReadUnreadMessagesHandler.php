@@ -29,6 +29,8 @@ final readonly class ReadUnreadMessagesHandler implements CommandHandler
             MessageReadEntry::create($message, $reader, $at);
         }
 
-        return new ShownMessages($messages->map(ShownMessage::of(...))->values()->all());
+        $shown = $messages->map(ShownMessage::of(...))->all();
+
+        return new ShownMessages(array_values($shown));
     }
 }

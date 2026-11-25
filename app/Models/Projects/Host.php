@@ -43,7 +43,7 @@ use Spatie\LaravelData\DataCollection;
  * @property string $id
  * @property string $installation_name
  * @property string $credential_hash
- * @property array $start_roots
+ * @property list<string> $start_roots
  * @property ProtectionReportData[]|DataCollection<array-key, ProtectionReportData> $protection
  * @property ArrangementType $arrangement
  * @property EnrolledDescriptorData[]|DataCollection<array-key, EnrolledDescriptorData> $descriptors

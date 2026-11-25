@@ -276,13 +276,13 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
         $constructor = $this->reflectors->make($object)->constructor()->get();
 
         foreach ($constructor->parameters() as $parameter) {
-            $type = $parameter->type()->get()->name();
+            $type = $parameter->type()->get()->className();
             $reflector = $this->reflectors->make($type);
             $arguments[] = $reflector->isInstantiable()
                 ? $reflector->newLazilyConstructed($this->constructLazily(...))
                 : $this->container->make($type);
         }
 
-        $object->__construct(...$arguments);
+        $constructor->invokeOn($object, ...$arguments);
     }
 }

@@ -88,7 +88,7 @@ use Spatie\LaravelData\DataCollection;
  * @property ?string $script_id
  * @property ?int $script_version
  * @property ?int $script_step
- * @property array $script_parameters
+ * @property array<string, string> $script_parameters
  * @property ?int $script_generation
  * @property ?string $script_evidence
  * @property ?string $navigation_request_id

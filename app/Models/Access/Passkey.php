@@ -16,7 +16,7 @@ use Laravel\Passkeys\Passkey as PackagePasskey;
  * @property string $user_id
  * @property string $name
  * @property string $credential_id
- * @property array $credential
+ * @property array<string, mixed> $credential
  * @property ?Carbon $last_used_at
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at

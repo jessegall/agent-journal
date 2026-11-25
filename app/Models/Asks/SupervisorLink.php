@@ -23,7 +23,7 @@ use Illuminate\Support\Carbon;
  * @property string $actor_type
  * @property string $actor_id
  * @property SupervisorRoutes $routes
- * @property array $versions
+ * @property array<string, int> $versions
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */

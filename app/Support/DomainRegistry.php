@@ -272,7 +272,7 @@ final readonly class DomainRegistry
     /**
      * The domain classes the project installs, in the order bootstrap/domains.php lists them.
      *
-     * @return list<string>
+     * @return list<class-string<Domain>>
      */
     public static function installedClasses(string $basePath): array
     {
@@ -283,7 +283,7 @@ final readonly class DomainRegistry
      * The installed domain classes this process boots: all of them, unless JOURNAL_BOOTED_DOMAINS names a part, as a
      * test does to boot core alone or one domain with those it requires. An empty name list boots none.
      *
-     * @return list<string>
+     * @return list<class-string<Domain>>
      */
     public static function bootedClasses(string $basePath): array
     {

@@ -30,6 +30,7 @@ use Illuminate\Support\Carbon;
  * @property int $sign_in_generation
  * @property string $source_id
  * @property string|float $usd
+ * @property-read int $observations
  * @property CarbonImmutable $observed_at
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at

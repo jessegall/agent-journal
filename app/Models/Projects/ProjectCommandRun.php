@@ -29,7 +29,7 @@ use Spatie\LaravelData\DataCollection;
  * @property string $request_key
  * @property string $agent_id
  * @property string $binding_id
- * @property array $argv
+ * @property list<string> $argv
  * @property CommandRunState $state
  * @property ?int $pid
  * @property ?int $exit_code

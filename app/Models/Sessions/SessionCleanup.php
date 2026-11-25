@@ -26,7 +26,7 @@ use Illuminate\Support\Carbon;
  * @property string $start_request_id
  * @property string $agent_session_id
  * @property string $host_id
- * @property array $removed_steps
+ * @property list<string> $removed_steps
  * @property ?string $recovery_location
  * @property ?string $last_error
  * @property CleanupState $state

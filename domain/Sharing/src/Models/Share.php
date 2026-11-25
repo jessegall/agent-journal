@@ -12,6 +12,12 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
+use App\Models\Concerns\FindsForUpdate;
+use App\Models\Support\Accessor;
+use App\Models\Support\BelongsToOneRoot;
+use App\Support\ActorIdentity;
+use App\Support\RecordIdentity;
+use Carbon\CarbonImmutable;
 use Domain\Sharing\Enums\ShareState;
 use Domain\Sharing\Events\ShareActivated;
 use Domain\Sharing\Events\ShareCreated;
@@ -26,11 +32,6 @@ use Domain\Sharing\Exceptions\ShareEndInvalid;
 use Domain\Sharing\Exceptions\ShareGatewayUnavailable;
 use Domain\Sharing\Exceptions\ShareProposalUnavailable;
 use Domain\Sharing\Exceptions\ShareRetryRefused;
-use App\Models\Concerns\FindsForUpdate;
-use App\Models\Support\Accessor;
-use App\Models\Support\BelongsToOneRoot;
-use App\Support\ActorIdentity;
-use App\Support\RecordIdentity;
 use Domain\Sharing\Support\ShareFact;
 use Domain\Sharing\Support\ShareGrant;
 use Domain\Sharing\Support\ShareListFilters;
@@ -38,7 +39,6 @@ use Domain\Sharing\Support\ShareProposal;
 use Domain\Sharing\Support\ShareProposalStatus;
 use Domain\Sharing\Support\ShareSummary;
 use Domain\Sharing\Support\ShareToken;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -210,10 +210,13 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
         $this->token_ciphertext = null;
         $this->assertSaved($this->save());
 
-        match ($terminal) {
-            ShareState::Revoked => $this->raise(new ShareRevoked($this->factAt($endedAt))),
-            ShareState::Expired => $this->raise(new ShareExpired($this->factAt($endedAt))),
-        };
+        if ($terminal === ShareState::Revoked) {
+            $this->raise(new ShareRevoked($this->factAt($endedAt)));
+
+            return true;
+        }
+
+        $this->raise(new ShareExpired($this->factAt($endedAt)));
 
         return true;
     }

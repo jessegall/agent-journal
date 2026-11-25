@@ -32,7 +32,7 @@ use Spatie\LaravelData\DataCollection;
  * @property string $source_line
  * @property string $source_digest
  * @property string $classification_digest
- * @property array $approved_classes
+ * @property list<string> $approved_classes
  * @property string $runner_type
  * @property string $runner_id
  * @property int $byte_cap

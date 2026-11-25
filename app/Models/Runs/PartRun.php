@@ -58,7 +58,7 @@ use Illuminate\Support\Carbon;
  * @property string $skip_reason
  * @property string $stop_reason
  * @property CaptureState $capture_state
- * @property array $stream_offsets
+ * @property array<string, int> $stream_offsets
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  * @property mixed $end attribute
@@ -370,7 +370,7 @@ final class PartRun extends Model implements EventSource, ReadableModel
      * The parts of the runs.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $ids
+     * @param  array<array-key, int|string>  $ids  the runs' keys
      */
     #[Scope]
     protected function ofRuns(Builder $query, array $ids): void

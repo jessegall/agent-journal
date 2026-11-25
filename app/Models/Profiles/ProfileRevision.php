@@ -40,8 +40,8 @@ use Illuminate\Support\Carbon;
  * @property ProfileBase $base
  * @property string $instructions
  * @property ModelTier $preferred_tier
- * @property ?array $skill_allowlist
- * @property array $required_skills
+ * @property ?list<string> $skill_allowlist
+ * @property list<string> $required_skills
  * @property ProfileStartPolicy $start_policy
  * @property ProfileAuthorization $authorization
  * @property SupervisorRoutes $supervisor

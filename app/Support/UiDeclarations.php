@@ -338,11 +338,6 @@ final readonly class UiDeclarations implements DeclaredPages, SlotSections
     }
 
     /**
-     * @param  array<string, RegisteredPage>  $pages
-     * @param  array<string, RegisteredSection>  $sections
-     * @return array<string, RegisteredAction>
-     */
-    /**
      * Whether the owner a slot key starts with is among the owners in use: a section for the slot of a domain that is
      * switched off has no page to show in and is left out, while a slot an owner in use does not offer is a fault.
      *
@@ -361,6 +356,11 @@ final readonly class UiDeclarations implements DeclaredPages, SlotSections
         return false;
     }
 
+    /**
+     * @param  array<string, RegisteredPage>  $pages
+     * @param  array<string, RegisteredSection>  $sections
+     * @return array<string, RegisteredAction>
+     */
     private static function actionsOf(array $pages, array $sections): array
     {
         $actions = [];

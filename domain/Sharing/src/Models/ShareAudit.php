@@ -8,11 +8,8 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
 use App\Contracts\Records\ReadableModel;
-use App\Models\Access\User;
-use App\Models\Agents\Agent;
 use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
-use App\Support\SystemActor;
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Enums\ShareAuditActor;
 use Domain\Sharing\Enums\ShareAuditType;
@@ -113,11 +110,7 @@ final class ShareAudit extends Model implements ReadableModel
             return ShareAuditActor::Visitor;
         }
 
-        return match ($this->actor_type) {
-            User::storedType() => ShareAuditActor::Owner,
-            Agent::storedType() => ShareAuditActor::Agent,
-            SystemActor::storedType() => ShareAuditActor::System,
-        };
+        return ShareAuditActor::forStoredType($this->actor_type);
     }
 
     // ----------[ Queries ]----------

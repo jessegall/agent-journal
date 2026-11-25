@@ -26,7 +26,7 @@ use Illuminate\Support\Carbon;
  * @property string $line
  * @property int $revision
  * @property string $body_digest
- * @property array $argument_grammar
+ * @property list<string> $argument_grammar
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  * @property mixed $lookup attribute

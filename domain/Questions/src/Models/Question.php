@@ -35,7 +35,7 @@ use Illuminate\Support\Carbon;
  * @property string $target_id
  * @property string $text
  * @property QuestionType $type
- * @property array $options
+ * @property list<string> $options
  * @property ?string $answer
  * @property ?CarbonImmutable $answered_at
  * @property ?Carbon $created_at

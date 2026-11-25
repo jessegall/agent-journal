@@ -14,6 +14,6 @@ final readonly class TeamInboxProvider implements InboxProvider
 {
     public function inboxFor(string $inboxId, string $providerId): LabeledInbox
     {
-        return new TeamInbox($inboxId, "Team {$providerId}");
+        return new TeamInbox($inboxId);
     }
 }

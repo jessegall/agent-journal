@@ -55,19 +55,19 @@ use Illuminate\Support\Carbon;
  * @property string $fingerprint
  * @property string $goal_script
  * @property int $goal_version
- * @property array $goal_parameters
+ * @property array<string, string> $goal_parameters
  * @property string $goal_key
  * @property int $stalled_step
  * @property NavigationReason $reason
  * @property NavigationScreen $screen
- * @property array $raise_rows
+ * @property list<string> $raise_rows
  * @property NavigationState $state
  * @property ?NavigationCompletion $completes
  * @property ?int $next_step
  * @property ?string $proof
  * @property ?string $abandon_reason
  * @property ?string $stale_entry_id
- * @property array $sent_steps
+ * @property list<string> $sent_steps
  * @property ?string $library_entry_id
  * @property CarbonImmutable $expires_at
  * @property int $row_version

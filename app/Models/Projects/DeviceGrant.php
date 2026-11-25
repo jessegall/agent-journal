@@ -31,7 +31,7 @@ use Illuminate\Support\Carbon;
  * @property string $binding_id
  * @property string $device_code_digest
  * @property string $user_code
- * @property array $scopes
+ * @property list<string> $scopes
  * @property DeviceGrantState $state
  * @property ?string $approved_by_user_id
  * @property CarbonImmutable $code_expires_at

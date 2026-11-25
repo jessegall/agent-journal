@@ -27,7 +27,7 @@ use Spatie\LaravelData\DataCollection;
 /**
  * @property string $id
  * @property string $permission_source
- * @property array $revoked_classes
+ * @property list<string> $revoked_classes
  * @property RevokedPatternData[]|DataCollection<array-key, RevokedPatternData> $revoked_patterns
  * @property string $revoked_by_type
  * @property string $revoked_by_id

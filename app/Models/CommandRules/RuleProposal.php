@@ -19,6 +19,7 @@ use App\Exceptions\RuleProposalRefused;
 use App\Support\ActorIdentity;
 use App\Values\ProposedRule;
 use App\Values\RuleReference;
+use App\Values\RuleScope;
 use Closure;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -35,6 +36,7 @@ use Spatie\LaravelData\DataCollection;
  * @property string $project_key
  * @property string $scope_type
  * @property string $scope_owner
+ * @property RuleScope $scope
  * @property string $scope_version
  * @property ?string $command_request_id
  * @property string $program

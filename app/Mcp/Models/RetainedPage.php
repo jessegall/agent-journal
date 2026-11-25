@@ -23,7 +23,7 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property string $agent_id
  * @property string $session_id
- * @property array $references
+ * @property list<string> $references
  * @property CarbonImmutable $expires_at
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at

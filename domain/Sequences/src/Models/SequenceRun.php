@@ -49,7 +49,7 @@ use Illuminate\Support\Carbon;
  * @property int $number
  * @property ?string $sequence_id
  * @property string $name
- * @property array $steps
+ * @property list<string> $steps
  * @property int $current_step
  * @property SequenceRunState $state
  * @property ?string $actor_type

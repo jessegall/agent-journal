@@ -31,8 +31,8 @@ use Spatie\LaravelData\DataCollection;
  * @property InterpretationState $interpretation
  * @property AssessmentOutcome $outcome
  * @property DataCollection<int, OutputProblem> $problems
- * @property array $counts
- * @property array $final_offsets
+ * @property array<string, int> $counts
+ * @property array<string, int> $final_offsets
  * @property ?string $replaces_assessment_id
  * @property Carbon $created_at
  */

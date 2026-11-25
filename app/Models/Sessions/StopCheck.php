@@ -37,7 +37,7 @@ use Illuminate\Support\Carbon;
  * @property string $stop_id
  * @property string $policy_digest
  * @property int $workspace_generation
- * @property array $condition_hashes
+ * @property array<string, string> $condition_hashes
  * @property StopCheckState $state
  * @property ?string $submission_digest
  * @property ?Carbon $certified_at

@@ -34,6 +34,7 @@ use Domain\Chat\Support\ChatInboxes;
 use Domain\Chat\Support\DockProjection;
 use Domain\Questions\Contracts\QuestionSummaryReader;
 use Domain\Questions\Support\ShownQuestion;
+use Illuminate\Database\Eloquent\Collection as ModelCollection;
 use Illuminate\Support\Collection;
 
 /**
@@ -122,10 +123,10 @@ final readonly class ChatPages
     }
 
     /**
-     * @param  Collection<int, ChatMessage>  $rows
+     * @param  ModelCollection<int, ChatMessage>  $rows
      * @return list<ChatEntryData>
      */
-    private function entriesOf(Collection $rows): array
+    private function entriesOf(ModelCollection $rows): array
     {
         $authors = array_values($rows->map(fn (ChatMessage $row) => $row->author)->all());
         $names = $this->labels->labelsFor($authors);

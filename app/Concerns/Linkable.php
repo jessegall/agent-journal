@@ -21,7 +21,7 @@ trait Linkable
      */
     public static function linkType(): string
     {
-        $model = new static();
+        $model = static::query()->getModel();
 
         return $model->getMorphClass();
     }

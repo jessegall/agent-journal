@@ -59,7 +59,7 @@ final class AccountNotice extends Model implements EventSource, ReadableModel
     {
         $notice = new self();
         $notice->driver = $driver;
-        $notice->reason = $reason->value;
+        $notice->reason = $reason;
         $notice->assertSaved($notice->save());
         $notice->raise(new AccountNoticeRecorded($notice->driver, $notice->id));
 

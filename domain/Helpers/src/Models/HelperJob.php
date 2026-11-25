@@ -45,10 +45,10 @@ use Illuminate\Support\Carbon;
  * @property string $helper_identity_id
  * @property string $helper_purpose_id
  * @property string $brief
- * @property array $source_subjects
+ * @property list<string> $source_subjects
  * @property string $request_id
  * @property JobState $state
- * @property array $steering
+ * @property list<string> $steering
  * @property ?string $stop_evidence_reference
  * @property int $profile_revision
  * @property ?CarbonImmutable $finished_at

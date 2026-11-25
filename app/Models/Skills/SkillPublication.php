@@ -37,7 +37,7 @@ use Illuminate\Support\Carbon;
  * @property string $target
  * @property string $generation_id
  * @property string $selection_digest
- * @property array $skill_keys
+ * @property list<string> $skill_keys
  * @property ?string $expected_previous_generation_id
  * @property int $fencing_version
  * @property ?string $lease_holder

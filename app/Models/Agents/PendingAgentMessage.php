@@ -23,7 +23,7 @@ use Illuminate\Support\Carbon;
  * @property string $actor_id
  * @property string $origin_type
  * @property string $origin_id
- * @property array $lines
+ * @property list<string> $lines
  * @property bool $requests_attention
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at

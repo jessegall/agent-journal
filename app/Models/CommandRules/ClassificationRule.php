@@ -17,6 +17,7 @@ use App\Events\Processes\ClassificationRuleRetired;
 use App\Exceptions\ClassificationRuleRefused;
 use App\Models\Support\NamedByRuleScope;
 use App\Values\CommandRule;
+use App\Values\RuleScope;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -29,6 +30,7 @@ use Illuminate\Support\Carbon;
  * @property string $project_key
  * @property string $scope_type
  * @property string $scope_owner
+ * @property RuleScope $scope
  * @property string $scope_version
  * @property string $rule_id
  * @property string $active_revision_id

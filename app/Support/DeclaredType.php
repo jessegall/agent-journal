@@ -76,6 +76,26 @@ final readonly class DeclaredType
     }
 
     /**
+     * The class or interface a named type that is not one of PHP's own types names.
+     *
+     * @return class-string
+     *
+     * @throws TypeNotNamed
+     */
+    public function className(): string
+    {
+        if ($this->isBuiltin()) {
+            throw TypeNotNamed::for($this->text);
+        }
+
+        // PHP names a class or an interface for every named type that is not one of its own.
+        /** @var class-string $class */
+        $class = $this->name();
+
+        return $class;
+    }
+
+    /**
      * Whether it is one of PHP's own types, such as int, array or void, rather than a class.
      */
     public function isBuiltin(): bool

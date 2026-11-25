@@ -4,12 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Contracts\Sharing\Shareable;
-use App\Contracts\Sharing\ShareGateway;
-use App\Contracts\Sharing\ShareGatewayProvider;
-use App\Contracts\Sharing\SharePolicy;
-use App\Contracts\Sharing\ShareRecordContributor;
-use App\Contracts\Sharing\ShareRecordProvider;
 use App\Support\CommandRegistry;
 use App\Support\Reflector;
 use Domain\Sharing\Commands\ApproveShareRequest\ApproveShareRequestCommand;
@@ -28,18 +22,6 @@ use Domain\Sharing\Commands\RequestShare\RequestShareCommand;
 use Domain\Sharing\Commands\RetryShare\RetryShareCommand;
 use Domain\Sharing\Commands\RevokeShare\RevokeShareCommand;
 use Domain\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
-use Domain\Sharing\Events\ShareActivated;
-use Domain\Sharing\Models\Share;
-use Domain\Sharing\Models\ShareAudit;
-use Domain\Sharing\Models\ShareGatewayConfiguration;
-use Domain\Sharing\Models\ShareGatewayEndpoint;
-use Domain\Sharing\Models\ShareGatewayOperation;
-use Domain\Sharing\Models\ShareInstallation;
-use Domain\Sharing\Models\ShareMember;
-use Domain\Sharing\Models\SharePreview;
-use Domain\Sharing\Support\GatewayRuns;
-use Domain\Sharing\Support\ShareEndings;
-use Domain\Sharing\Support\ShareGrants;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 /**
@@ -72,42 +54,6 @@ final class SharingBoundaryTest extends TestCase
         RecordGatewayHealthCommand::class,
         ReopenSharedGatewaysCommand::class,
         PruneShareAuditCommand::class,
-    ];
-
-    private const array MODELS = [
-        Share::class,
-        ShareAudit::class,
-        ShareGatewayConfiguration::class,
-        ShareGatewayEndpoint::class,
-        ShareGatewayOperation::class,
-        ShareInstallation::class,
-        ShareMember::class,
-        SharePreview::class,
-    ];
-
-    /**
-     * The services that carry out sharing work for the handlers.
-     */
-    private const array SHARE_WORK = [
-        GatewayRuns::class,
-        ShareEndings::class,
-        ShareGrants::class,
-    ];
-
-    private const array SEAMS = [
-        Shareable::class,
-        ShareRecordProvider::class,
-        ShareGateway::class,
-        ShareRecordContributor::class,
-        ShareGatewayProvider::class,
-        SharePolicy::class,
-    ];
-
-    /**
-     * The sharing facts a domain hears; the others stay Core's own until a domain needs one.
-     */
-    private const array EVENTS = [
-        ShareActivated::class,
     ];
 
     public function test_every_sharing_command_is_registered_through_the_bus_and_none_is_queued(): void

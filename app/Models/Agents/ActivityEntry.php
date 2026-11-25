@@ -28,7 +28,7 @@ use Illuminate\Support\Carbon;
  * @property ActivityLevel $level
  * @property ActivityType $type
  * @property string $subject
- * @property ?array $found
+ * @property ?list<string> $found
  * @property CarbonImmutable $occurred_at
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at

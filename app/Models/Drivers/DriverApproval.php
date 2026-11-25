@@ -20,7 +20,7 @@ use Illuminate\Support\Carbon;
 /**
  * @property string $id
  * @property string $driver_key
- * @property array $build_pins
+ * @property list<string> $build_pins
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */

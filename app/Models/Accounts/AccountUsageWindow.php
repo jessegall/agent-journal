@@ -75,7 +75,7 @@ final class AccountUsageWindow extends Model implements EventSource, ReadableMod
         $window->account_id = $account->id;
         $window->sign_in_generation = $generation;
         $window->limit_id = $reading->limitId;
-        $window->slot = $reading->slot->value;
+        $window->slot = $reading->slot;
 
         $window->fillWith($reading);
         $window->assertSaved($window->save());
