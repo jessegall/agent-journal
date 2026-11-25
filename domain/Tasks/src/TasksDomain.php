@@ -319,8 +319,18 @@ final class TasksDomain extends Domain implements
     public function assignmentPools(): array
     {
         return [
-            new PoolDefinition(OpenTaskPoolFactory::KEY, TaskType::linkType(), OpenTaskPoolFactory::class, 'Open tasks'),
-            new PoolDefinition(NamedTaskPoolFactory::KEY, TaskType::linkType(), NamedTaskPoolFactory::class, 'Named tasks'),
+            new PoolDefinition(
+                OpenTaskPoolFactory::KEY,
+                TaskType::linkType(),
+                OpenTaskPoolFactory::class,
+                'Open tasks',
+            ),
+            new PoolDefinition(
+                NamedTaskPoolFactory::KEY,
+                TaskType::linkType(),
+                NamedTaskPoolFactory::class,
+                'Named tasks',
+            ),
         ];
     }
 

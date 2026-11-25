@@ -138,8 +138,12 @@ final class ReaderPosition extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function forPurpose(Builder $query, PartRun $part, ReaderRevision $revision, PositionPurpose $purpose): void
-    {
+    protected function forPurpose(
+        Builder $query,
+        PartRun $part,
+        ReaderRevision $revision,
+        PositionPurpose $purpose,
+    ): void {
         $query->where('part_run_id', $part->id)
             ->where('reader_revision_id', $revision->id)
             ->where('purpose', $purpose);

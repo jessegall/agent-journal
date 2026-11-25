@@ -32,7 +32,9 @@ final readonly class QuestionNotificationTarget implements NotificationTargetRes
     public function linksFor(array $ids): array
     {
         $questions = $this->questions->byIds($ids);
-        $inboxIds = array_values(array_unique(array_map(fn (QuestionSummary $question) => $question->inboxId, $questions)));
+        $inboxIds = array_values(
+            array_unique(array_map(fn (QuestionSummary $question) => $question->inboxId, $questions)),
+        );
         $attached = InboxMember::query()
             ->active()
             ->ofActor(ActorIdentity::of($this->actors->actor()))

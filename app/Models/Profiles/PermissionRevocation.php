@@ -66,8 +66,14 @@ final class PermissionRevocation extends Model implements ReadableModel
     ): self {
         $permissionRevocation = new self();
         $permissionRevocation->permission_source = $source;
-        $permissionRevocation->revoked_classes = array_map(fn (CommandClass $class) => $class->value, $classes->classes);
-        $permissionRevocation->revoked_patterns = array_map(fn (CommandPattern $pattern) => new RevokedPatternData($pattern->words), $patterns->patterns);
+        $permissionRevocation->revoked_classes = array_map(
+            fn (CommandClass $class) => $class->value,
+            $classes->classes,
+        );
+        $permissionRevocation->revoked_patterns = array_map(
+            fn (CommandPattern $pattern) => new RevokedPatternData($pattern->words),
+            $patterns->patterns,
+        );
         $permissionRevocation->revoked_by_type = $by->type;
         $permissionRevocation->revoked_by_id = $by->id;
         $permissionRevocation->revoked_at = CarbonImmutable::now();
@@ -83,7 +89,9 @@ final class PermissionRevocation extends Model implements ReadableModel
      */
     public static function narrow(CommandPermissions $permissions): CommandPermissions
     {
-        self::query()->ofSource($permissions->source)->oldestFirst()->readInChunks(200, function (Collection $revocations) use (&$permissions): void {
+        self::query()->ofSource($permissions->source)->oldestFirst()->readInChunks(200, function (
+            Collection $revocations,
+        ) use (&$permissions): void {
             foreach ($revocations as $revocation) {
                 $permissions = $permissions->revoking(
                     CommandClassSet::of(...array_map(CommandClass::from(...), $revocation->revoked_classes)),

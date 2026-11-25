@@ -14,7 +14,11 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 #[MapName(SnakeCaseMapper::class)]
 final class RuleReference extends Data
 {
-    public function __construct(public readonly RuleScope $scope, public readonly string $id, public readonly int $revision) {}
+    public function __construct(
+        public readonly RuleScope $scope,
+        public readonly string $id,
+        public readonly int $revision,
+    ) {}
 
     public function label(): string
     {

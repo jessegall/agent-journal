@@ -57,7 +57,8 @@ final readonly class AuthenticateHost
 
     /**
      * @param  Closure(Request): Response  $next
-     * @param  string  $role  the hosts the route admits, journal.host:relay or journal.host:shared; none is enrolled hosts
+     * @param  string  $role  the hosts the route admits, journal.host:relay or journal.host:shared; none admits
+     *                        enrolled hosts
      */
     public function handle(Request $request, Closure $next, string $role = HostRouteRole::Enrolled->value): Response
     {
@@ -95,7 +96,14 @@ final readonly class AuthenticateHost
         $route = '/'.$request->path();
 
         if ($response->getStatusCode() >= Response::HTTP_INTERNAL_SERVER_ERROR) {
-            $this->runForHost(new RecordHostCallFailureCommand($hostId, $route, $response->getStatusCode(), $this->reasonOf($response)));
+            $this->runForHost(
+                new RecordHostCallFailureCommand(
+                    $hostId,
+                    $route,
+                    $response->getStatusCode(),
+                    $this->reasonOf($response),
+                ),
+            );
 
             return;
         }
@@ -123,7 +131,10 @@ final readonly class AuthenticateHost
      */
     private function reasonOf(Response $response): string
     {
-        $exception = $response instanceof IlluminateResponse || $response instanceof JsonResponse ? $response->exception : null;
+        $exception = $response instanceof IlluminateResponse
+            || $response instanceof JsonResponse
+            ? $response->exception
+            : null;
         $reason = $exception?->getMessage() ?? Response::$statusTexts[$response->getStatusCode()] ?? 'Server error';
 
         return mb_substr($reason, 0, 300);

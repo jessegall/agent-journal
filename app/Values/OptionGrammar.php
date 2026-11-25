@@ -20,7 +20,11 @@ final class OptionGrammar extends Data
      * @param  list<string>  $names
      * @param  list<OperandType>  $operandTypes  empty for a flag, one type for an option that takes a value
      */
-    public function __construct(public readonly array $names, public readonly array $operandTypes, public readonly bool $isRequired) {}
+    public function __construct(
+        public readonly array $names,
+        public readonly array $operandTypes,
+        public readonly bool $isRequired,
+    ) {}
 
     public static function flag(string ...$names): self
     {

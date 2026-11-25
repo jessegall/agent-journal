@@ -338,7 +338,9 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
     {
         $query->where(function (Builder $records) use ($idsByType): void {
             foreach ($idsByType as $type => $ids) {
-                $records->orWhere(fn (Builder $ofType) => $ofType->where('record_type', $type)->whereIn('record_id', $ids));
+                $records->orWhere(
+                    fn (Builder $ofType) => $ofType->where('record_type', $type)->whereIn('record_id', $ids),
+                );
             }
         });
     }

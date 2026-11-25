@@ -13,5 +13,10 @@ use App\Support\ActorIdentity;
 #[TransactionListenerConsent]
 final readonly class QuestionAsked extends QuestionEvent
 {
-    public function __construct(public string $questionId, public string $inboxId, public ActorIdentity $sender, public ActorIdentity $target) {}
+    public function __construct(
+        public string $questionId,
+        public string $inboxId,
+        public ActorIdentity $sender,
+        public ActorIdentity $target,
+    ) {}
 }

@@ -184,7 +184,9 @@ final readonly class AgentRecords implements AgentDirectory
             array_values($startOutcomes->map(fn (SessionStartOutcome $start) => $start->requestId)->all()),
         );
 
-        return $startOutcomes->reject(fn (SessionStartOutcome $start) => in_array($start->key(), $dismissed, true))->all();
+        return $startOutcomes->reject(
+            fn (SessionStartOutcome $start) => in_array($start->key(), $dismissed, true),
+        )->all();
     }
 
     /**

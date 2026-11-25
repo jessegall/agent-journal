@@ -39,7 +39,9 @@ final readonly class PartAssessments
     {
         $approved = $this->rules->approvedFor($part->operation);
 
-        if ($approved === [] || $approved[0]->payload->contracts === [] || $approved[0]->reader_approvals->items() === []) {
+        if ($approved === []
+            || $approved[0]->payload->contracts === []
+            || $approved[0]->reader_approvals->items() === []) {
             return [];
         }
 

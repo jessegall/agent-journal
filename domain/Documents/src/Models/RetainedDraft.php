@@ -97,7 +97,9 @@ final class RetainedDraft extends Model implements EventSource, ReadableModel
      */
     protected function workingText(): Attribute
     {
-        return Accessor::get(fn () => new DraftText($this->title, $this->abstract, MarkdownText::workingBody($this->body)));
+        return Accessor::get(
+            fn () => new DraftText($this->title, $this->abstract, MarkdownText::workingBody($this->body)),
+        );
     }
 
     // ----------[ Asserts ]----------

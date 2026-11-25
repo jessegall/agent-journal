@@ -98,7 +98,10 @@ final class ProfileAuthorization extends Data
         }
 
         if ($this->grants($authorization->policy, $authorization->access)) {
-            return AccessDecision::allowed(AccessRuleType::ScopeGrant, AgentText::of('core.access.profile_grants_pair'));
+            return AccessDecision::allowed(
+                AccessRuleType::ScopeGrant,
+                AgentText::of('core.access.profile_grants_pair'),
+            );
         }
 
         return AccessDecision::refused(

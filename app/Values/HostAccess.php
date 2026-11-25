@@ -20,7 +20,11 @@ final class HostAccess extends Data
     /**
      * @param  list<AccessType>  $accesses
      */
-    public function __construct(public readonly ResourceType $type, public readonly string $scope, public readonly array $accesses) {}
+    public function __construct(
+        public readonly ResourceType $type,
+        public readonly string $scope,
+        public readonly array $accesses,
+    ) {}
 
     /**
      * @param  list<AccessType>  $accesses

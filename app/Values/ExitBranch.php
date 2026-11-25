@@ -17,7 +17,11 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 #[MapName(SnakeCaseMapper::class)]
 final class ExitBranch extends Data
 {
-    public function __construct(public readonly int $status, public readonly Outcome $outcome, public readonly string $requires) {}
+    public function __construct(
+        public readonly int $status,
+        public readonly Outcome $outcome,
+        public readonly string $requires,
+    ) {}
 
     /**
      * @throws VerificationContractInvalid

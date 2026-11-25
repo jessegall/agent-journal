@@ -37,7 +37,8 @@ final class SessionOutcomeDismissal extends Model implements ReadableModel
     // ----------[ Constructors ]----------
 
     /**
-     * The viewer's dismissal of this version of the start's outcome; dismissing it again keeps the one already there, by the table's unique key.
+     * The viewer's dismissal of this version of the start's outcome; dismissing it again keeps the one already there,
+     * by the table's unique key.
      */
     public static function create(ActorIdentity $viewer, SessionRequest $start, StartDisposition $version): void
     {
@@ -67,7 +68,9 @@ final class SessionOutcomeDismissal extends Model implements ReadableModel
             ->ofRequests($requestIds)
             ->readExactly(count($requestIds) * count(StartDisposition::cases()))
             ->get()
-            ->map(fn (self $dismissal) => SessionStartOutcome::keyOf($dismissal->request_id, $dismissal->outcome_version))
+            ->map(
+                fn (self $dismissal) => SessionStartOutcome::keyOf($dismissal->request_id, $dismissal->outcome_version),
+            )
             ->all());
     }
 

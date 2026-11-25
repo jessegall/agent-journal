@@ -282,7 +282,9 @@ final class ShareProposalTest extends TestCase
         $this->startRequestAs($this->start->agent->id, $this->start->session->id);
         $this->app->make(RequestKey::class)->set($key);
 
-        return $this->app->make(CommandBus::class)->run(new RequestShareCommand($this->root->type, $this->root->id, $key));
+        return $this->app->make(CommandBus::class)->run(
+            new RequestShareCommand($this->root->type, $this->root->id, $key),
+        );
     }
 
     private function preview(): SavedSharePreview

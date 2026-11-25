@@ -46,7 +46,9 @@ final readonly class DockRequests
             throw ChatUnavailable::notAttached($agentId);
         }
 
-        return Inbox::query()->findOrFail($this->chats->pairWith(ActorIdentity::ofClass(Agent::class, $agent->agentId)));
+        return Inbox::query()->findOrFail(
+            $this->chats->pairWith(ActorIdentity::ofClass(Agent::class, $agent->agentId)),
+        );
     }
 
     /**

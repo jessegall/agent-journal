@@ -33,7 +33,9 @@ final readonly class CancelSessionStartHandler implements CommandHandler
         }
 
         SessionRequest::ownerStartOf($command->sessionId)->forAll(
-            fn (SessionRequest $start) => $this->facts->publishAfterCommit(new SessionStartCancelled($start->owner_work)),
+            fn (SessionRequest $start) => $this->facts->publishAfterCommit(
+                new SessionStartCancelled($start->owner_work),
+            ),
         );
 
         return $hasRuntime;

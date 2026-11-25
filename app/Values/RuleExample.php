@@ -16,7 +16,11 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 #[MapName(SnakeCaseMapper::class)]
 final class RuleExample extends Data
 {
-    public function __construct(public readonly ExampleType $type, public readonly string $line, public readonly CommandClassSet $classes) {}
+    public function __construct(
+        public readonly ExampleType $type,
+        public readonly string $line,
+        public readonly CommandClassSet $classes,
+    ) {}
 
     public static function positive(string $line, CommandClassSet $classes): self
     {

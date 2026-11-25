@@ -40,6 +40,14 @@ abstract class TestCase extends BaseTestCase
      */
     protected static function sessionStartFor(string $requestId): SessionStartDetails
     {
-        return new SessionStartDetails($requestId, hash('sha256', $requestId), 1, false, false, ConversationModeType::New, '');
+        return new SessionStartDetails(
+            $requestId,
+            hash('sha256', $requestId),
+            1,
+            false,
+            false,
+            ConversationModeType::New,
+            '',
+        );
     }
 }

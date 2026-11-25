@@ -23,7 +23,9 @@ final readonly class CreateChatMessageHandler extends ChatCommandHandler
      */
     public function handle(CreateChatMessageCommand $command): string
     {
-        $model = Relation::getMorphedModel($command->sourceType) ?? throw ChatSourceRefused::unknownType($command->sourceType);
+        $model = Relation::getMorphedModel(
+            $command->sourceType,
+        ) ?? throw ChatSourceRefused::unknownType($command->sourceType);
         $source = $model::query()->findOrFail($command->sourceId);
 
         if (! $source instanceof AuthoredModel) {

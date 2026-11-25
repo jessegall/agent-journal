@@ -117,6 +117,9 @@ final class QuestionAnswerNotice extends Model implements EventSource, ReadableM
     #[Scope]
     protected function undeliveredFor(Builder $query, ActorIdentity $recipient): void
     {
-        $query->where('recipient_type', $recipient->type)->where('recipient_id', $recipient->id)->whereNull('delivered_at')->orderBy('created_at')->orderBy('id');
+        $query->where(
+            'recipient_type',
+            $recipient->type,
+        )->where('recipient_id', $recipient->id)->whereNull('delivered_at')->orderBy('created_at')->orderBy('id');
     }
 }

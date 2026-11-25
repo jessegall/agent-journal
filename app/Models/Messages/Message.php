@@ -74,7 +74,9 @@ final class Message extends Model implements AuthoredModel, EventSource, Readabl
         $message->target_message_id = $target?->id;
         $message->assertSaved($message->save());
 
-        $message->raise(new MessageSent($message->id, $inbox->id, $message->number, $target?->id, ActorIdentity::of($from)));
+        $message->raise(
+            new MessageSent($message->id, $inbox->id, $message->number, $target?->id, ActorIdentity::of($from)),
+        );
 
         return $message;
     }

@@ -139,7 +139,9 @@ final readonly class ChatPages
         $questions = $this->questionsAmong($rows);
         $rows->loadMorph('source', [Message::class => ['target']]);
 
-        return array_values($rows->map(function (ChatMessage $row) use ($names, $events, $viewer, $readIds, $questions): ChatEntryData {
+        return array_values($rows->map(function (
+            ChatMessage $row,
+        ) use ($names, $events, $viewer, $readIds, $questions): ChatEntryData {
             $author = $row->author;
 
             return ChatEntryData::from([
@@ -150,7 +152,9 @@ final readonly class ChatPages
                 'authorLabel' => $names->nameOf($author),
                 'createdAt' => $row->created_at->toIso8601String(),
                 ...$this->sourceFieldsOf($row, $viewer, $readIds, $questions),
-                ...($row->type === ChatMessageType::Event && isset($events[$row->id]) ? ['event' => $events[$row->id]] : []),
+                ...($row->type === ChatMessageType::Event && isset($events[$row->id]) ? [
+                    'event' => $events[$row->id],
+                ] : []),
             ]);
         })->all());
     }

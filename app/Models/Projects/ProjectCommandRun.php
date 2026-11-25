@@ -219,7 +219,9 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
      */
     public static function ofRequestBy(string $requestKey, string $agentId, string $bindingId): array
     {
-        return array_values(self::query()->ofRequest($requestKey)->ofAgent($agentId)->ofBinding($bindingId)->limit(1)->get()->all());
+        return array_values(
+            self::query()->ofRequest($requestKey)->ofAgent($agentId)->ofBinding($bindingId)->limit(1)->get()->all(),
+        );
     }
 
     /**

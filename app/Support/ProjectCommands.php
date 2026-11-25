@@ -145,7 +145,11 @@ final readonly class ProjectCommands
         $frames = [];
 
         $process->start(function (string $type, string $bytes) use (&$frames): void {
-            $frames[] = ProjectCommandFrame::output(count($frames) + 1, $type === Process::ERR ? 'stderr' : 'stdout', $bytes);
+            $frames[] = ProjectCommandFrame::output(
+                count($frames) + 1,
+                $type === Process::ERR ? 'stderr' : 'stdout',
+                $bytes,
+            );
         });
 
         $record = new RecordProjectCommandProcessCommand($call->requestKey->value, (int) $process->getPid());

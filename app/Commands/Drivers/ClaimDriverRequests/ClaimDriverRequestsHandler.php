@@ -154,7 +154,9 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
         }
 
         if ($bootstrapped !== []) {
-            SessionRequest::lockedAcceptedOf($bootstrapped)->each(fn (SessionRequest $record) => $record->prepareIdentity());
+            SessionRequest::lockedAcceptedOf($bootstrapped)->each(
+                fn (SessionRequest $record) => $record->prepareIdentity(),
+            );
         }
 
         return new ClaimedRequests($claimed);

@@ -518,7 +518,12 @@ final class Host extends Model implements EventSource, ReadableModel
     ): self {
         $hosts = array_values(array_filter(
             self::servingEnrolled(),
-            fn (self $host) => $host->runsPlacement($placement) && $host->declaresRun($driver, $build, $placement, $driverType),
+            fn (self $host) => $host->runsPlacement($placement) && $host->declaresRun(
+                $driver,
+                $build,
+                $placement,
+                $driverType,
+            ),
         ));
         self::assertServesStart($hosts, $driver, $driverType);
 
@@ -605,7 +610,9 @@ final class Host extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function unreachableSince(Builder $query, CarbonImmutable $cutoff): void
     {
-        $query->where(fn (Builder $hosts) => $hosts->whereNotNull('failing_since')->orWhere('last_answered_at', '<', $cutoff));
+        $query->where(
+            fn (Builder $hosts) => $hosts->whereNotNull('failing_since')->orWhere('last_answered_at', '<', $cutoff),
+        );
     }
 
     /**

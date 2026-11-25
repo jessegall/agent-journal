@@ -18,8 +18,12 @@ enum AgentPresence: string
     case Failed = 'failed';
     case Retired = 'retired';
 
-    public static function of(bool $isRetired, bool $isLive, DriverSwitchStage|null $switchStage, bool $isStartRefused): self
-    {
+    public static function of(
+        bool $isRetired,
+        bool $isLive,
+        DriverSwitchStage|null $switchStage,
+        bool $isStartRefused,
+    ): self {
         return match (true) {
             $isRetired => self::Retired,
             $switchStage === DriverSwitchStage::StartFailed, $isStartRefused => self::Failed,

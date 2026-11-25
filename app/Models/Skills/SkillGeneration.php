@@ -115,7 +115,9 @@ final class SkillGeneration extends Model implements EventSource, ReadableModel
      */
     protected function status(): Attribute
     {
-        return Accessor::get(fn () => new GenerationStatus($this->id, $this->state, $this->catalogue_digest, $this->error_reason));
+        return Accessor::get(
+            fn () => new GenerationStatus($this->id, $this->state, $this->catalogue_digest, $this->error_reason),
+        );
     }
 
     // ----------[ Asserts ]----------

@@ -811,6 +811,8 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function undiscoveredSince(Builder $query, CarbonImmutable $moment): void
     {
-        $query->where(fn (Builder $older) => $older->whereNull('discovered_at')->orWhere('discovered_at', '<', $moment));
+        $query->where(
+            fn (Builder $older) => $older->whereNull('discovered_at')->orWhere('discovered_at', '<', $moment),
+        );
     }
 }

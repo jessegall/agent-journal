@@ -326,7 +326,9 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
             return None::create();
         }
 
-        $shareGatewayConfiguration = ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id);
+        $shareGatewayConfiguration = ShareGatewayConfiguration::query()->findOrFail(
+            $this->share_gateway_configuration_id,
+        );
 
         return ShareGatewayEndpoint::newestRunningOf(
             $shareGatewayConfiguration,

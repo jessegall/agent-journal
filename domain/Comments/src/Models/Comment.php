@@ -220,7 +220,12 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
             throw CommentAnchorCorrupt::for($this->id, IncompleteTextAnchor::withoutType());
         }
 
-        $columns = ['versionId' => 'version_id', 'versionLabel' => 'version_label', 'firstLine' => 'first_line', 'lastLine' => 'last_line'];
+        $columns = [
+            'versionId' => 'version_id',
+            'versionLabel' => 'version_label',
+            'firstLine' => 'first_line',
+            'lastLine' => 'last_line',
+        ];
 
         if ($type === TextAnchorType::Section) {
             $columns['sectionNumber'] = 'section_number';

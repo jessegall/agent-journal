@@ -734,7 +734,9 @@ final class Account extends Model implements EventSource, ReadableModel
      */
     public static function lockedForChange(string $accountId): self
     {
-        $account = self::query()->whereKey($accountId)->lockForUpdate()->firstOr(AccountMissing::throwing()->for($accountId));
+        $account = self::query()->whereKey($accountId)->lockForUpdate()->firstOr(
+            AccountMissing::throwing()->for($accountId),
+        );
         $account->assertNotRemoved();
 
         return $account;

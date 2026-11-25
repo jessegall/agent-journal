@@ -16,8 +16,11 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class StopConditionResultsController
 {
-    public function __invoke(StopConditionResultsRequest $request, HostContext $host, CommandBus $commands): JsonResponse
-    {
+    public function __invoke(
+        StopConditionResultsRequest $request,
+        HostContext $host,
+        CommandBus $commands,
+    ): JsonResponse {
         $state = $commands->run(new RecordStopConditionResultsCommand(
             $host->hostId,
             $request->attemptId(),

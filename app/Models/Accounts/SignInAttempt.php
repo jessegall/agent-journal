@@ -518,7 +518,9 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      */
     public static function lockedForOwner(string $attemptId): self
     {
-        return self::query()->whereKey($attemptId)->lockForUpdate()->firstOr(SignInAttemptMissing::throwing()->for($attemptId));
+        return self::query()->whereKey($attemptId)->lockForUpdate()->firstOr(
+            SignInAttemptMissing::throwing()->for($attemptId),
+        );
     }
 
     /**

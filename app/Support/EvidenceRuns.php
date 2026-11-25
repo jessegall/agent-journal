@@ -28,8 +28,9 @@ use App\Values\RunAdmission;
 use App\Values\TimingVerdict;
 
 /**
- * Issues evidence permits for known command lines and turns a used permit into an evidence-only run: the exact line is read and classified again, must keep its full output, and becomes a run admitted
- * in evidence mode that never answers the agent. The run's admission id is the permit's, so a second start of the
+ * Issues evidence permits for known command lines and turns a used permit into an evidence-only run: the exact line
+ * is read and classified again, must keep its full output, and becomes a run admitted in evidence mode that never
+ * answers the agent. The run's admission id is the permit's, so a second start of the
  * same permit fails on that unique key.
  */
 final readonly class EvidenceRuns
@@ -88,7 +89,11 @@ final readonly class EvidenceRuns
      */
     public function start(EvidencePermit $permit, ActorIdentity $runner, string $requestId): ProcessRun
     {
-        $classification = $this->classify($permit->source_line, $permit->working_folder, $permit->candidate_rules->items());
+        $classification = $this->classify(
+            $permit->source_line,
+            $permit->working_folder,
+            $permit->candidate_rules->items(),
+        );
         $permit->assertUsable($runner, $requestId, $this->digestOf($classification));
 
         if ($permit->wasStartedBy($requestId)) {

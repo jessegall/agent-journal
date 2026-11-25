@@ -15,7 +15,11 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 #[MapName(SnakeCaseMapper::class)]
 final class ScriptBinding extends Data
 {
-    public function __construct(public readonly string $packageFile, public readonly string $script, public readonly string $digest) {}
+    public function __construct(
+        public readonly string $packageFile,
+        public readonly string $script,
+        public readonly string $digest,
+    ) {}
 
     public function reference(): string
     {

@@ -142,7 +142,12 @@ final class TaskHistoryEntry extends Model implements ReadableModel
      */
     public static function pageOf(string $taskId, int|null $beforeSequence, int $limit): Collection
     {
-        return self::query()->ofTask($taskId)->before($beforeSequence)->newestSequenceFirst()->newestFirst()->limit($limit)->get();
+        return self::query()->ofTask($taskId)
+            ->before($beforeSequence)
+            ->newestSequenceFirst()
+            ->newestFirst()
+            ->limit($limit)
+            ->get();
     }
 
     // ----------[ Scopes ]----------

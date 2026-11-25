@@ -130,7 +130,12 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
      */
     public static function pageBefore(string $taskId, int|null $sequence, int $limit): Collection
     {
-        return self::query()->ofTask($taskId)->before($sequence)->newestSequenceFirst()->newestFirst()->limit($limit)->get();
+        return self::query()->ofTask($taskId)
+            ->before($sequence)
+            ->newestSequenceFirst()
+            ->newestFirst()
+            ->limit($limit)
+            ->get();
     }
 
     // ----------[ Scopes ]----------

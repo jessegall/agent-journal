@@ -37,7 +37,12 @@ final readonly class BindingRevocation
             $run->cancel();
         }
 
-        ConnectionAudit::createForBinding(ConnectionAuditType::BindingRevoked, ConnectionAuditActor::User, $userId, $binding);
+        ConnectionAudit::createForBinding(
+            ConnectionAuditType::BindingRevoked,
+            ConnectionAuditActor::User,
+            $userId,
+            $binding,
+        );
 
         return new BindingOutcome($binding->id, BindingOutcome::REVOKED, $binding->revoked_at_text);
     }

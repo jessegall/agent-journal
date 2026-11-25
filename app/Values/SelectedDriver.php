@@ -92,8 +92,11 @@ final readonly class SelectedDriver
     /**
      * @throws DefaultUnavailable
      */
-    private static function model(ModelSelection $requested, ProfileDefaults|null $profile, DriverFamily $family): string
-    {
+    private static function model(
+        ModelSelection $requested,
+        ProfileDefaults|null $profile,
+        DriverFamily $family,
+    ): string {
         if ($requested->model !== null) {
             return $requested->model;
         }

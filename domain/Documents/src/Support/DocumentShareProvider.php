@@ -80,6 +80,8 @@ final readonly class DocumentShareProvider implements ShareRecordProvider
      */
     private function cardQuery(array $ids): ReadBuilder
     {
-        return Document::query()->sharedPublished()->withCurrentRevisionCard()->whereKey($ids)->readExactly(count($ids));
+        return Document::query()->sharedPublished()->withCurrentRevisionCard()->whereKey($ids)->readExactly(
+            count($ids),
+        );
     }
 }

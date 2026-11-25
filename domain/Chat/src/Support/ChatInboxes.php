@@ -95,7 +95,11 @@ final readonly class ChatInboxes implements PairChats
         $inbox = $this->attached($inboxId);
         $viewer = ActorIdentity::of($this->actors->actor());
 
-        if ($inbox->provider_key !== self::GROUP_PROVIDER || ! $this->eligibility->holds($viewer, InboxPermission::ManageMembers, null)) {
+        if ($inbox->provider_key !== self::GROUP_PROVIDER || ! $this->eligibility->holds(
+            $viewer,
+            InboxPermission::ManageMembers,
+            null,
+        )) {
             throw ChatUnavailable::notAttached($inboxId);
         }
     }

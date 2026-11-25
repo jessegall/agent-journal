@@ -40,7 +40,10 @@ final readonly class PinnedCompatibilities implements DriverCompatibilities
         }
 
         if ($this->startProfiles->isOnTrial($driver) && $report->awaitsEvidenceOnly()) {
-            return $pinned->withEvidence(DriverEvidence::NativeShown, 'the protected-account trial of this installation');
+            return $pinned->withEvidence(
+                DriverEvidence::NativeShown,
+                'the protected-account trial of this installation',
+            );
         }
 
         if (! $report->isReported()) {

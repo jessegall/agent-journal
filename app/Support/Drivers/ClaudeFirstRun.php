@@ -37,7 +37,10 @@ final readonly class ClaudeFirstRun
     public function settle(FilePath $accountFolder): void
     {
         $file = $accountFolder->child(self::STATE_FILE);
-        $state = $this->files->exists($file) ? json_decode($this->files->read($file), flags: JSON_THROW_ON_ERROR) : new stdClass();
+        $state = $this->files->exists($file) ? json_decode(
+            $this->files->read($file),
+            flags: JSON_THROW_ON_ERROR,
+        ) : new stdClass();
         $folders = $state->{self::FOLDERS} ?? new stdClass();
         $sessionFolder = $folders->{ContainerManifest::WORKDIR} ?? new stdClass();
         $isWelcomePassed = ($state->{self::WELCOME_PASSED} ?? false) === true;
@@ -52,6 +55,10 @@ final readonly class ClaudeFirstRun
         $state->{self::FOLDERS} = $folders;
         $state->{self::WELCOME_PASSED} = true;
 
-        $this->files->write($file, json_encode($state, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES), Permissions::OwnerOnly);
+        $this->files->write(
+            $file,
+            json_encode($state, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES),
+            Permissions::OwnerOnly,
+        );
     }
 }

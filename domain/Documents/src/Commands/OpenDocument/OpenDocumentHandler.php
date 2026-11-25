@@ -42,7 +42,9 @@ final readonly class OpenDocumentHandler extends DocumentCommandHandler
             return $held->reference($document);
         }
 
-        $otherDocumentDraft = DocumentDraft::query()->withDocument()->withAuthorType($editor->type)->ofAuthor($editor->id)->first();
+        $otherDocumentDraft = DocumentDraft::query()->withDocument()->withAuthorType(
+            $editor->type,
+        )->ofAuthor($editor->id)->first();
 
         if ($otherDocumentDraft !== null) {
             throw DraftHeld::elsewhere($otherDocumentDraft->document->number);

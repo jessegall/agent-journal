@@ -94,7 +94,9 @@ final readonly class DocumentRecords implements DocumentResolver
     {
         $document = self::published($documentNumber);
 
-        $revision = $document->revisions()->closed()->numbered($revisionNumber)->firstOr(DocumentMissing::throwing()->numbered($documentNumber));
+        $revision = $document->revisions()->closed()->numbered($revisionNumber)->firstOr(
+            DocumentMissing::throwing()->numbered($documentNumber),
+        );
 
         return $revision->view($document);
     }
@@ -112,7 +114,9 @@ final readonly class DocumentRecords implements DocumentResolver
             throw StaleRead::revision($expectedRevision, $current);
         }
 
-        $publishedRevision = $document->revisions()->closed()->numbered($revision ?? $current)->firstOr(DocumentMissing::throwing()->numbered($number));
+        $publishedRevision = $document->revisions()->closed()->numbered($revision ?? $current)->firstOr(
+            DocumentMissing::throwing()->numbered($number),
+        );
 
         return RecordReading::read("doc {$number}", $publishedRevision, $selection);
     }

@@ -332,7 +332,8 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         if (! $family->isolatesHooksPerSession) {
             return ProviderEligibility::unavailable(
                 $family,
-                "{$family->label} does not keep its hooks to one session yet, so a connected folder cannot run it isolated.",
+                "{$family->label} does not keep its hooks to one session yet, "
+                    .'so a connected folder cannot run it isolated.',
             );
         }
 
@@ -511,7 +512,9 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
      */
     public static function ofMainAgent(string $agentId): array
     {
-        return array_values(self::query()->with('project')->withMainAgent($agentId)->unrevoked()->limit(1)->get()->all());
+        return array_values(
+            self::query()->with('project')->withMainAgent($agentId)->unrevoked()->limit(1)->get()->all(),
+        );
     }
 
     /**

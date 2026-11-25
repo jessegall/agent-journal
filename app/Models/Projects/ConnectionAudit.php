@@ -59,8 +59,11 @@ final class ConnectionAudit extends Model implements ReadableModel
     /**
      * A step the owner took on an install line.
      */
-    public static function createForInvitation(ConnectionAuditType $type, string $userId, ProjectInvitation $invitation): self
-    {
+    public static function createForInvitation(
+        ConnectionAuditType $type,
+        string $userId,
+        ProjectInvitation $invitation,
+    ): self {
         return self::record(
             $type,
             ConnectionAuditActor::User,

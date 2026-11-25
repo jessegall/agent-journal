@@ -61,7 +61,11 @@ final readonly class PendingStep
      */
     public function innerShell(): self
     {
-        return new self($this->step->innerShell(), $this->context->withPositional($this->step->positional), $this->state);
+        return new self(
+            $this->step->innerShell(),
+            $this->context->withPositional($this->step->positional),
+            $this->state,
+        );
     }
 
     public function inOrder(): StepsInOrder

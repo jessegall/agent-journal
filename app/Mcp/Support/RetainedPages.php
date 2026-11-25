@@ -44,7 +44,9 @@ final readonly class RetainedPages
      */
     public function resolve(string $pageId, int $offset, Closure $read): RetainedEntries
     {
-        $page = RetainedPage::query()->whereKey($pageId)->unexpiredAt(CarbonImmutable::now())->firstOr(ContinuationStale::throwing()->expired());
+        $page = RetainedPage::query()->whereKey($pageId)->unexpiredAt(CarbonImmutable::now())->firstOr(
+            ContinuationStale::throwing()->expired(),
+        );
 
         $references = array_slice($page->references, $offset);
         $found = $read($references);

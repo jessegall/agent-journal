@@ -56,6 +56,13 @@ final readonly class AskQuestionHandler extends QuestionCommandHandler
             throw QuestionRefused::choiceNeedsOptions();
         }
 
-        return Question::create($command->inboxId, $sender, $command->target, $command->text, $command->type, $options)->id;
+        return Question::create(
+            $command->inboxId,
+            $sender,
+            $command->target,
+            $command->text,
+            $command->type,
+            $options,
+        )->id;
     }
 }

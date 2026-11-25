@@ -10,14 +10,14 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use Domain\Sharing\Events\ShareGatewayChanged;
-use Domain\Sharing\Events\ShareGatewayMadeDefault;
-use Domain\Sharing\Exceptions\ShareGatewayUnavailable;
 use App\Models\Support\Accessor;
 use App\Support\GatewayConfiguration;
 use App\Support\GatewaySettings;
 use App\Support\SourceAddressRule;
 use Carbon\CarbonImmutable;
+use Domain\Sharing\Events\ShareGatewayChanged;
+use Domain\Sharing\Events\ShareGatewayMadeDefault;
+use Domain\Sharing\Exceptions\ShareGatewayUnavailable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -160,7 +160,9 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
      */
     protected function toConfiguration(): Attribute
     {
-        return Accessor::get(fn () => new GatewayConfiguration($this->id, $this->configuration_version, $this->settings));
+        return Accessor::get(
+            fn () => new GatewayConfiguration($this->id, $this->configuration_version, $this->settings),
+        );
     }
 
     // ----------[ Queries ]----------

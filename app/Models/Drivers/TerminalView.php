@@ -308,6 +308,8 @@ final class TerminalView extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function endedBefore(Builder $query, CarbonImmutable $cutoff): void
     {
-        $query->where(fn (Builder $ended) => $ended->where('closed_at', '<', $cutoff)->orWhere('expires_at', '<', $cutoff));
+        $query->where(
+            fn (Builder $ended) => $ended->where('closed_at', '<', $cutoff)->orWhere('expires_at', '<', $cutoff),
+        );
     }
 }

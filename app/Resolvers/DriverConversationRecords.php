@@ -17,7 +17,9 @@ final readonly class DriverConversationRecords implements DriverConversationReso
 {
     public function conversations(string $agentId, string $driver, string|null $contextReference): array
     {
-        $conversations = DriverConversation::query()->ownedBy($agentId)->withResumeProtocol($driver)->withContextReference($contextReference)
+        $conversations = DriverConversation::query()->ownedBy($agentId)
+            ->withResumeProtocol($driver)
+            ->withContextReference($contextReference)
             ->limit(self::MOST_CONVERSATIONS)->get()->keyBy('id');
 
         $lastVisits = ConversationVisit::query()->ofConversations($conversations->keys()->all())->newestObservedFirst()
@@ -25,7 +27,9 @@ final readonly class DriverConversationRecords implements DriverConversationReso
             ->get()
             ->unique('conversation_id');
 
-        $models = AgentSession::query()->withAnyId($lastVisits->pluck('session_id')->all())->readAll('the sessions of those last visits')->pluck('model', 'id');
+        $models = AgentSession::query()->withAnyId(
+            $lastVisits->pluck('session_id')->all(),
+        )->readAll('the sessions of those last visits')->pluck('model', 'id');
 
         return array_values($lastVisits->map(fn (ConversationVisit $visit) => new DriverConversationSummary(
             $visit->conversation_id,

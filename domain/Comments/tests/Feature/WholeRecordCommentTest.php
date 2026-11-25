@@ -103,7 +103,12 @@ final class WholeRecordCommentTest extends TestCase
 
         try {
             $this->app->make(CommandBus::class)->run(
-                new PostTextCommentCommand($this->target(), 'Which line?', TextRange::lines('1', 1, 1), (string) Str::uuid()),
+                new PostTextCommentCommand(
+                    $this->target(),
+                    'Which line?',
+                    TextRange::lines('1', 1, 1),
+                    (string) Str::uuid(),
+                ),
             );
         } finally {
             $this->assertSame(0, Comment::query()->count());

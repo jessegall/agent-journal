@@ -35,7 +35,9 @@ final readonly class SpawnedPart
             return ExitStatus::Interrupted->status();
         }
 
-        $this->process->drain(fn (OutputStream $stream, string $bytes) => $state->events->output($part, $stream, $bytes));
+        $this->process->drain(
+            fn (OutputStream $stream, string $bytes) => $state->events->output($part, $stream, $bytes),
+        );
         $end = $this->process->wait();
         $state->events->ended($part, $end, $isDrained);
 
