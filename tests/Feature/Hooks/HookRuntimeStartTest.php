@@ -57,6 +57,14 @@ final class HookRuntimeStartTest extends TestCase
     ];
 
     /**
+     * Every installed domain, since the state types this test checks come from them.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
+    }
+
+    /**
      * @return iterable<string, array{string, string}>
      */
     public static function programEvents(): iterable

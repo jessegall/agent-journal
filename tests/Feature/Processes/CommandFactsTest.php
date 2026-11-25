@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
+use App\Support\DomainRegistry;
 use App\Contracts\Admission\ShellAdmission;
 use App\Contracts\Processes\ShellCommandParser;
 use App\Enums\CommandRules\CommandEffect;
@@ -26,6 +27,14 @@ use Tests\TestCase;
 final class CommandFactsTest extends TestCase
 {
     use RefreshHookDatabase;
+
+    /**
+     * Every installed domain, since the journal tools and routes this test names come from them.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
+    }
 
     protected function setUp(): void
     {

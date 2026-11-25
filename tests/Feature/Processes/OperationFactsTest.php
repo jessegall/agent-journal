@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
+use App\Support\DomainRegistry;
 use App\Contracts\Bus\CommandClassifier;
 use App\Enums\Agents\AccessType;
 use App\Enums\Processes\ShellDialect;
@@ -22,6 +23,14 @@ use Tests\TestCase;
 final class OperationFactsTest extends TestCase
 {
     use RefreshHookDatabase;
+
+    /**
+     * Every installed domain, since the journal tools and routes this test names come from them.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
+    }
 
     public function test_deleting_a_branch_needs_delete(): void
     {

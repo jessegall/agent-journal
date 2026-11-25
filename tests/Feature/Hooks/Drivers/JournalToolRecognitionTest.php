@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks\Drivers;
 
+use App\Support\DomainRegistry;
 use App\Contracts\Domains\JournalToolNames;
 use App\Exceptions\UnsupportedHook;
 use App\Mcp\Support\McpCatalogue;
@@ -28,6 +29,14 @@ final class JournalToolRecognitionTest extends TestCase
 {
     use ChecksProgramFixtures;
     use RefreshHookDatabase;
+
+    /**
+     * Every installed domain, since the journal tools and routes this test names come from them.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 4));
+    }
 
     protected static function fixtureFolder(): string
     {
