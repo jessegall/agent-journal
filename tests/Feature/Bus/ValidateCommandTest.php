@@ -11,7 +11,6 @@ use App\Exceptions\CommandNotRegistered;
 use App\Exceptions\OperationUnavailable;
 use App\Support\ActorStore;
 use App\Support\RequestKey;
-use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Modules\Notes\Commands\CopyLimitNote\CopyLimitNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\LimitNote\LimitNoteCommand;
 use Tests\Support\ClearsStartRows;
@@ -33,7 +32,7 @@ final class ValidateCommandTest extends CommandBusTestCase
         parent::setUp();
 
         $this->installCommandModules();
-        $start = TestStart::start();
+        $start = $this->journal->signedStart('Main agent', 'main-agent');
         $this->journal->actAsAgentIds($start->agent->id, $start->session->id);
     }
 
@@ -61,7 +60,11 @@ final class ValidateCommandTest extends CommandBusTestCase
         $id = $bus->run(new LimitNoteCommand('note'));
 
         $this->assertSame('note', $this->rowText($id));
-        $this->assertThrows(fn () => $bus->run(new LimitNoteCommand('note', 'labels')), CommandInputInvalid::class, 'label:');
+        $this->assertThrows(
+            fn () => $bus->run(new LimitNoteCommand('note', 'labels')),
+            CommandInputInvalid::class,
+            'label:',
+        );
     }
 
     public function test_a_nested_command_with_bad_input_fails_its_outer_command(): void

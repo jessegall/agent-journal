@@ -15,7 +15,6 @@ use App\Exceptions\ContinuationCalledTwice;
 use App\Exceptions\InboxUnavailable;
 use App\Exceptions\MiddlewareSkippedCommand;
 use App\Exceptions\MiddlewareSwallowedFailure;
-use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\CommandRules\CommandReceipt;
@@ -29,7 +28,6 @@ use App\Support\AssigneeIdentity;
 use App\Support\CommandScope;
 use App\Support\MiddlewareDeclaration;
 use App\Support\RequestKey;
-use App\Support\StartSessions;
 use Domain\Plans\Commands\StartPlan\StartPlanCommand;
 use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Enums\PlanType;
@@ -45,7 +43,6 @@ use Domain\Tasks\TasksDomain;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Modules\Cards\Commands\ShuffleDeck\ShuffleDeckCommand;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\CallsNextTwice;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\ChangesResult;
@@ -221,15 +218,6 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         }
     }
 
-    private function startedSession(): AgentSession
-    {
-        return $this->app->make(StartSessions::class)->start(
-            Agent::create('Reader', 'main-agent', $this->localProject()),
-            TestSelections::of('claude-code'),
-            TestSelections::requestId(),
-        )->session;
-    }
-
     public function test_notes_limits_plan_starts_and_nothing_is_written(): void
     {
         $trail = $this->installCommandModulesRequiring(
@@ -256,7 +244,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
             ['Chat'],
             MiddlewareDeclaration::around(TrimMessages::class, CommandScope::command(SendMessageCommand::class)),
         );
-        $user = User::factory()->create();
+        $user = $this->journal->owner()->ownerUser();
         $this->journal->actAsUserId($user->id);
 
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
@@ -275,7 +263,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
             ['Chat'],
             MiddlewareDeclaration::around(SendsToUnknownInbox::class, CommandScope::command(SendMessageCommand::class)),
         );
-        $user = User::factory()->create();
+        $user = $this->journal->owner()->ownerUser();
         $this->journal->actAsUserId($user->id);
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
         $command = new SendMessageCommand($this->journal->inboxes()->personal(ActorIdentity::of($user))->id, 'Hello');
@@ -308,7 +296,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
                 CommandScope::command(RetireAgentCommand::class),
             ),
         );
-        $helper = Agent::create('Helper', 'read-only-helper', $this->localProject());
+        $helper = $this->journal->idleAgent('Helper', 'read-only-helper')->agentCalled('Helper');
         $task = Task::factory()->create(['title' => 'Held']);
         $this->journal->actAsUserId(TestIds::of(1));
         $bus = $this->app->make(CommandBus::class);

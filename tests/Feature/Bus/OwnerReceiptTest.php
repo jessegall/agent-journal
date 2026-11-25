@@ -15,7 +15,6 @@ use App\Support\RequestKey;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Modules\Notes\Commands\KeepNote\KeepNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 use Tests\Support\ClearsStartRows;
@@ -125,7 +124,7 @@ final class OwnerReceiptTest extends CommandBusTestCase
         $this->app->make(RequestKey::class)->set(self::KEY);
         $this->app->make(CommandBus::class)->run(new WriteNoteCommand('user'));
 
-        $start = TestStart::start();
+        $start = $this->journal->signedStart('Main agent', 'main-agent');
         $this->journal->actAsAgentIds($start->agent->id, $start->session->id);
         $this->app->make(CommandBus::class)->run(new WriteNoteCommand('agent'));
 

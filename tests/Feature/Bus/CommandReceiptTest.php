@@ -48,7 +48,7 @@ final class CommandReceiptTest extends CommandBusTestCase
         parent::setUp();
 
         $this->installCommandModules();
-        $this->start = TestStart::start();
+        $this->start = $this->journal->signedStart('Main agent', 'main-agent');
         $this->journal->actAsAgentIds($this->start->agent->id, $this->start->session->id);
         $this->app->make(RequestKey::class)->set(self::KEY);
     }

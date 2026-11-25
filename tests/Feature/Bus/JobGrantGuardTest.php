@@ -69,7 +69,7 @@ final class JobGrantGuardTest extends TestCase
 
     public function test_a_reviewer_cannot_discover_or_call_hidden_writes_and_cannot_dispatch_work(): void
     {
-        $start = TestStart::start('read-only-helper');
+        $start = $this->journal->signedStart('Reader', 'read-only-helper');
         $tools = $this->journal->mcpRequest($start, 'tools/list')->assertOk()->json('result.tools');
 
         $this->assertContains('overview_read', array_column($tools, 'name'));
@@ -77,7 +77,7 @@ final class JobGrantGuardTest extends TestCase
         $this->journal->mcpRequest($start, 'tools/call', ['name' => 'skills_edit', 'arguments' => (object) []])
             ->assertBadRequest()
             ->assertJsonPath('error.code', -32602);
-        $this->assign($start, TestStart::start(), Task::factory()->create())
+        $this->assign($start, $this->journal->signedStart('Main agent', 'main-agent'), Task::factory()->create())
             ->assertForbidden()
             ->assertJsonPath('code', 'forbidden');
         $this->assertSame(0, AssignmentRecord::query()->count());
@@ -100,7 +100,12 @@ final class JobGrantGuardTest extends TestCase
         }
 
         $this->assertFalse($reads->allows(new ReadRequest('plans_list')));
-        $this->journal->agentCall(TestStart::start(), 'POST', '/agent/tasks/assigned', [])->assertForbidden();
+        $this->journal->agentCall(
+            $this->journal->signedStart('Main agent', 'main-agent'),
+            'POST',
+            '/agent/tasks/assigned',
+            [],
+        )->assertForbidden();
     }
 
     private function assign(TestStart $start, TestStart $recipient, Task $task): TestResponse

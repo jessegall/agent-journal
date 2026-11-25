@@ -14,7 +14,6 @@ use Closure;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
@@ -71,7 +70,7 @@ final class CallDeadlineTest extends TestCase
 
     public function test_a_call_signed_25_seconds_ago_is_refused_before_any_handler_runs(): void
     {
-        $start = TestStart::start();
+        $start = $this->journal->signedStart('Main agent', 'main-agent');
 
         $this->journal->mcpRequest(
             $start,

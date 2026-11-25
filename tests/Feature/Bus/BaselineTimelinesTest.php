@@ -473,7 +473,7 @@ final class BaselineTimelinesTest extends TestCase
 
     private function startedSession(): AgentSession
     {
-        $agent = Agent::create('Worker', 'main-agent', $this->localProject());
+        $agent = $this->journal->idleAgent('Worker', 'main-agent')->agentCalled('Worker');
 
         return $this->app->make(StartSessions::class)
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())

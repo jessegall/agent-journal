@@ -9,11 +9,8 @@ use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Messages\Message;
-use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
-use App\Support\StartSessions;
-use Tests\Fixtures\Agents\TestSelections;
 
 /**
  * The messaging fixtures a test of messages shares: the owner, two started agents and the helpers that act as each.
@@ -56,8 +53,7 @@ trait MessagingFixtures
      */
     protected function setUpMessaging(): void
     {
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+        $this->owner = $this->journal->owner()->ownerUser();
         $this->builder = $this->start('Builder');
         $this->reviewer = $this->start('Reviewer');
         $this->asOwner();
@@ -113,12 +109,8 @@ trait MessagingFixtures
 
     private function start(string $name): AgentSession
     {
-        $agent = Agent::create($name, 'main-agent', $this->localProject());
-        $session = $this->app->make(StartSessions::class)
-            ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
-            ->session;
+        $session = $this->journal->idleAgent($name)->startSession($name, $name)->sessionCalled($name);
         $this->journal->syntheticRuntime($session);
-        $this->journal->inboxes()->personal(ActorIdentity::of($agent));
 
         return $session;
     }
