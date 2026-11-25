@@ -42,6 +42,7 @@ return new class extends Migration
                 'number_group_id',
                 'number',
             ]);
+
             $table->index([
                 'status',
                 'expires_at',

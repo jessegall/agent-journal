@@ -106,6 +106,7 @@ final readonly class RunClaims implements RunClaimsContract
             $work->holder()->id,
             ActorIdentity::fromStored($claimant->type, $claimant->id),
         )->getOrThrow(RunClaimRefused::notTheHolder($run->id));
+
         $claim = $this->responsibilities->assign($run, $claimant)->reference;
         $proof = ClaimAuthorization::findForInboxRun($claim, $member, $work->reference);
 

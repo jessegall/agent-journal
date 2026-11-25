@@ -56,10 +56,12 @@ final class ConfigureShareGatewayTest extends TestCase
     public function test_configuring_twice_makes_versions_one_and_two_and_a_share_keeps_the_first(): void
     {
         $first = $this->configure(FakeShareGateway::KEY, false);
+
         $share = $this->grantForADay(
             TestActors::record('binders.binder', 1),
             ShareGatewayConfiguration::query()->findOrFail($first->configurationId),
         );
+
         $second = $this->configure(FakeShareGateway::KEY, true);
 
         $this->assertSame([
@@ -69,6 +71,7 @@ final class ConfigureShareGatewayTest extends TestCase
             $first->configurationVersion,
             $second->configurationVersion,
         ]);
+
         $this->assertSame(
             [
                 $first->configurationId,
@@ -79,6 +82,7 @@ final class ConfigureShareGatewayTest extends TestCase
                 $share->fresh()?->configuration_version,
             ],
         );
+
         $this->assertTrue(ShareGatewayConfiguration::query()->findOrFail($second->configurationId)->is_default);
         $this->assertSame(2, ShareAudit::query()->where('type', ShareAuditType::GatewayChanged->value)->count());
     }
@@ -86,10 +90,12 @@ final class ConfigureShareGatewayTest extends TestCase
     public function test_an_unregistered_gateway_and_a_missing_secret_are_refused(): void
     {
         $this->assertThrows(fn () => $this->configure('nowhere', false), UnknownShareGateway::class);
+
         $this->assertThrows(
             fn () => $this->configure(FakeShareGateway::KEY, false, ['not-stored']),
             GatewaySecretRefused::class,
         );
+
         $this->assertSame(0, ShareGatewayConfiguration::query()->count());
     }
 
@@ -100,6 +106,7 @@ final class ConfigureShareGatewayTest extends TestCase
             GatewayNotSetUp::class,
             self::NOT_LOGGED_IN,
         );
+
         $this->assertSame(0, ShareGatewayConfiguration::query()->where('is_default', true)->count());
 
         $configured = $this->configure(UnconfiguredShareGateway::KEY, false);
@@ -110,6 +117,7 @@ final class ConfigureShareGatewayTest extends TestCase
     {
         $owner = $this->journal->ownerUser();
         $logged = [];
+
         Event::listen(MessageLogged::class, function (MessageLogged $message) use (&$logged): void {
             $logged[] = $message->message.json_encode($message->context);
         });
@@ -130,14 +138,17 @@ final class ConfigureShareGatewayTest extends TestCase
 
         $this->assertSame(self::SECRET, file_get_contents("{$this->secretsFolder}/fake-login"));
         $this->assertSame(['fake-login'], ShareGatewayConfiguration::query()->sole()->settings->secretReferences);
+
         $this->assertStringNotContainsString(
             self::SECRET,
             (string) json_encode(ShareGatewayConfiguration::query()->sole()->getAttributes()),
         );
+
         $this->assertStringNotContainsString(
             self::SECRET,
             (string) json_encode(CommandReceipt::query()->withoutGlobalScopes()->get()->map->getAttributes()->all()),
         );
+
         $this->assertStringNotContainsString(self::SECRET, implode("\n", $logged));
     }
 

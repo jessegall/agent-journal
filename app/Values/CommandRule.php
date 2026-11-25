@@ -108,6 +108,7 @@ final class CommandRule extends Data
         }
 
         $binding = self::usualBinding($program);
+
         $contract = VerificationContract::unproven(implode(' ', [
             $program->family,
             ...$subcommands,

@@ -22,9 +22,11 @@ final class ReminderFixturesTest extends TestCase
     public function test_the_exact_reminder_is_done_and_another_owners_stays_open(): void
     {
         $due = CarbonImmutable::parse('2026-11-30 09:00');
+
         $reminders = $this->journal->user('Colleague')->owner()->fixtures(ReminderFixtures::class)
             ->reminder('Room', 'Owner', $due)
             ->reminder('Coffee', 'Colleague', $due);
+
         $room = $reminders->reminderCalled('Room')->id;
 
         $this->journal->runAs('Owner', new FinishReminderCommand($room));
@@ -33,6 +35,7 @@ final class ReminderFixturesTest extends TestCase
             ReminderEnded::class,
             fn () => $this->journal->runAs('Owner', new FinishReminderCommand($room)),
         );
+
         $this->journal->assertRefused(
             RecordUnavailable::class,
             fn () => $this->journal->runAs(
@@ -40,6 +43,7 @@ final class ReminderFixturesTest extends TestCase
                 new FinishReminderCommand($reminders->reminderCalled('Coffee')->id),
             ),
         );
+
         $reminders->assertDone('Room')->assertOwnedBy('Room', 'Owner')->assertDueAt('Room', $due);
         $reminders->assertOpen('Coffee')->assertOwnedBy('Coffee', 'Colleague');
     }

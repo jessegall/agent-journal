@@ -95,6 +95,7 @@ final readonly class StartSessions
     ): StartedAgent {
         $session = $this->sessions->start($agent, $selection, $requestId, $parent);
         $token = $this->credentials->issue($session);
+
         [$runtime, $firstRequest] = $intent === null ? [
             null,
             null,

@@ -182,6 +182,7 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
             ->ofDriver($driver)
             ->lockForUpdate()
             ->first();
+
         $accountId = $selection?->account_id;
         self::assertAccountChosen($accountId, $driver);
 

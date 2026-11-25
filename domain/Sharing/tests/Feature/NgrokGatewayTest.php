@@ -42,6 +42,7 @@ final class NgrokGatewayTest extends TestCase
         file_put_contents($this->folder.'/ngrok', "#!/bin/sh\n");
         chmod($this->folder.'/ngrok', 0755);
         file_put_contents($this->folder.'/secrets/ngrok-authtoken', "fixture-token\n");
+
         config([
             'sharing.ngrok.binary' => $this->folder.'/ngrok',
             'sharing.ngrok.config_dir' => $this->folder.'/config',
@@ -50,13 +51,16 @@ final class NgrokGatewayTest extends TestCase
             'sharing.secrets_dir' => $this->folder.'/secrets',
             'sharing.rate_limit_store' => 'array',
         ]);
+
         $this->processes = new Processes();
+
         $this->processes->fake(
             [
                 '*version*' => 'ngrok version 3.20.0',
                 '*http 127.0.0.1:8090*' => $this->processes->describe()->output('started')->iterations(1),
             ],
         );
+
         $this->app->instance(Processes::class, $this->processes);
         $this->http = new HttpClient();
         $this->app->instance(HttpClient::class, $this->http);
@@ -78,10 +82,12 @@ final class NgrokGatewayTest extends TestCase
         $endpoint = $this->gateway()->open($this->operation(self::ORIGIN));
 
         $this->assertSame(self::ORIGIN, $endpoint->publicOrigin);
+
         $this->assertStringContainsString(
             self::AUTH_TOKEN_LINE,
             (string) file_get_contents($this->folder.'/config/ngrok.yml'),
         );
+
         $this->assertStringContainsString(
             self::WEB_ADDRESS_LINE,
             (string) file_get_contents($this->folder.'/config/ngrok.yml'),

@@ -160,6 +160,7 @@ final readonly class CompileContext
         }
 
         $member = $object->members[$condition->member];
+
         $this->graph->remember("object:{$object->key}.{$member->name}", [
             $object->owner,
             $object->class,

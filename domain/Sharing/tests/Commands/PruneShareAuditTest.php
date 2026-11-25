@@ -71,12 +71,14 @@ final class PruneShareAuditTest extends TestCase
             $this->totalsOf($live),
             $this->totalsOf($ended),
         ]);
+
         $this->assertNotNull($live->fresh()?->last_pruned_at);
         $this->assertSame(1, ShareAudit::query()->where('type', ShareAuditType::AuditPruned->value)->count());
         $this->assertSame(2, ShareAudit::query()->whereNotNull('share_id')->count());
 
         $this->assertEquals(new AuditPruning(0, false), $this->prune());
         $this->assertSame(1, ShareAudit::query()->where('type', ShareAuditType::AuditPruned->value)->count());
+
         $this->assertSame([
             1,
             1,

@@ -57,10 +57,12 @@ final class ProposeRuleTest extends TestCase
         $ruleId = $this->journal->run(new ProposeRuleCommand('New rule.', 'The old one is too vague.', $old->id));
 
         $rule = Rule::query()->findOrFail($ruleId);
+
         $this->assertSame(
             [RuleStatus::Proposed, 'The old one is too vague.', $old->id, Agent::storedType(), $this->journal->agentCalled('Planner')->id],
             [$rule->status, $rule->reason, $rule->replaces_rule_id, $rule->proposer_type, $rule->proposer_id],
         );
+
         $this->assertSame(
             ["Rule {$old->number}: Old rule."],
             array_map(TestText::words(...), $this->app->make(ActiveRules::class)->reminders()),
@@ -73,6 +75,7 @@ final class ProposeRuleTest extends TestCase
             fn () => $this->journal->run(new ProposeRuleCommand('New rule.', 'A reason.', (string) Str::ulid())),
             RuleMissing::class,
         );
+
         $this->assertSame(0, Rule::query()->count());
     }
 

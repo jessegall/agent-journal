@@ -58,6 +58,7 @@ abstract class PlanCascadeTool extends JournalWriteTool
             'type',
             'id',
         ]);
+
         $type = $root->text('type');
 
         if (! in_array($type, self::ROOT_TYPES, true)) {

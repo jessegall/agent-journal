@@ -87,6 +87,7 @@ final class RecordGatewayOutcomeTest extends TestCase
             fn () => $this->outcome(self::FIRST_RUN, $claim, GatewayOutcome::Succeeded),
             GatewayLeaseRefused::class,
         );
+
         $this->assertSame(ShareStatus::Pending, $this->share->fresh()?->status);
     }
 
@@ -99,8 +100,10 @@ final class RecordGatewayOutcomeTest extends TestCase
             fn () => $this->outcome(self::FIRST_RUN, $claim, GatewayOutcome::Succeeded),
             GatewayRunStale::class,
         );
+
         $this->assertThrows(fn () => $this->health(self::FIRST_RUN, 1), GatewayRunStale::class);
         $this->assertThrows(fn () => $this->claim(self::FIRST_RUN), GatewayRunStale::class);
+
         $this->assertSame(
             [
                 2,
@@ -111,10 +114,12 @@ final class RecordGatewayOutcomeTest extends TestCase
                 ShareGatewayEndpoint::query()->where('endpoint_version', 2)->sole()->status,
             ],
         );
+
         $this->assertSame(
             GatewayEndpointStatus::Closed,
             ShareGatewayEndpoint::query()->where('endpoint_version', 1)->sole()->status,
         );
+
         $this->assertSame(ShareStatus::Pending, $this->share->fresh()?->status);
     }
 
@@ -149,6 +154,7 @@ final class RecordGatewayOutcomeTest extends TestCase
 
         $this->assertSame(ShareStatus::Revoked, $this->share->fresh()?->status);
         $close = $this->claim(self::FIRST_RUN);
+
         $this->assertSame([
             GatewayOperationType::Close,
             1,
@@ -156,6 +162,7 @@ final class RecordGatewayOutcomeTest extends TestCase
             $close?->type,
             $close?->operation->endpointVersion,
         ]);
+
         $this->assertSame(GatewayEndpointStatus::Closing, ShareGatewayEndpoint::query()->sole()->status);
 
         $this->outcome(self::FIRST_RUN, $close, GatewayOutcome::Succeeded);
@@ -173,6 +180,7 @@ final class RecordGatewayOutcomeTest extends TestCase
 
         $claim = $this->journal->asSystem(new ClaimGatewayOperationCommand(self::RUN));
         $this->assertInstanceOf(ClaimedGatewayOperation::class, $claim);
+
         $outcome = new RecordGatewayOutcomeCommand(
             self::RUN,
             $claim->operation->operationId,
@@ -186,6 +194,7 @@ final class RecordGatewayOutcomeTest extends TestCase
 
         $this->assertCount(1, $this->received);
         $this->assertInstanceOf(ShareActivated::class, $this->received[0]);
+
         $this->assertSame(
             [
                 $this->share->id,
@@ -200,6 +209,7 @@ final class RecordGatewayOutcomeTest extends TestCase
                 $this->received[0]->share->scopeVersion,
             ],
         );
+
         $this->assertStringNotContainsString(
             (string) $this->share->fresh()?->token_ciphertext,
             serialize($this->received[0]),
@@ -236,6 +246,7 @@ final class RecordGatewayOutcomeTest extends TestCase
     private function outcome(string $runId, ClaimedGatewayOperation|null $claim, GatewayOutcome $outcome): void
     {
         $this->assertNotNull($claim);
+
         $this->journal->asSystem(new RecordGatewayOutcomeCommand(
             $runId,
             $claim->operation->operationId,

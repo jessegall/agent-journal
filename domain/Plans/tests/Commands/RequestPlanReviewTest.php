@@ -145,6 +145,7 @@ final class RequestPlanReviewTest extends TestCase
     {
         $this->journal->owner();
         $task = $this->journal->fixtures(TaskFixtures::class)->task('Read', self::BRIEF)->taskCalled('Read');
+
         $plan = $this->journal->fixtures(PlanFixtures::class)
             ->plan('Release', title: 'Build the release page')
             ->phaseWithTask('Release', 'Reading', $task->assignmentIdentity())

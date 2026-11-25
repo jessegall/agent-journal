@@ -65,6 +65,7 @@ final class WaiveTaskWaitTest extends TestCase
 
         $wait = TaskWait::findBetween($this->second->id, $this->first->id);
         $this->assertNotNull($wait?->waived_at);
+
         $this->assertSame([
             $this->journal->ownerUser()->id,
             'Done by hand.',
@@ -72,6 +73,7 @@ final class WaiveTaskWaitTest extends TestCase
             $wait->waived_by_id,
             $wait->waive_reason,
         ]);
+
         $this->assertSame([$this->second->id], $this->waits()->readyAmong([$this->second->id]));
     }
 

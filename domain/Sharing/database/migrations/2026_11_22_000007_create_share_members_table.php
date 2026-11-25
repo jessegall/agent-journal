@@ -26,6 +26,7 @@ return new class extends Migration
                 'share_id',
                 'scope_version',
             ]);
+
             $table->index('link_id');
         });
     }

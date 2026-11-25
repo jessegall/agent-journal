@@ -29,6 +29,7 @@ final class AddPhaseTest extends TestCase
         parent::setUp();
 
         $this->journal->owner();
+
         $this->plan = $this->journal->fixtures(PlanFixtures::class)
             ->plan('Release', 'Ship it.', PlanType::Build)
             ->planCalled('Release');
@@ -55,10 +56,12 @@ final class AddPhaseTest extends TestCase
             CommandInputInvalid::class,
             'title:',
         );
+
         $this->assertThrows(
             fn () => $this->journal->run(new AddPhaseCommand('01jd8x0g9m3qz6v4k2t7r00000', 'Read')),
             PlanMissing::class,
         );
+
         $this->assertSame(0, Phase::query()->count());
     }
 }

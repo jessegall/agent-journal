@@ -177,6 +177,7 @@ final class PartRun extends Model implements EventSource, ReadableModel
             ...$this->stream_offsets,
             $chunk->stream->value => $chunk->offset + $chunk->length,
         ];
+
         $this->assertSaved($this->save());
         $this->raise(new PartRunCaptured($this->id));
     }

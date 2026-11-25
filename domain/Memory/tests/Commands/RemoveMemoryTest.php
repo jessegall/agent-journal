@@ -28,6 +28,7 @@ final class RemoveMemoryTest extends TestCase
             ->agent('Keeper', 'read-only-helper')
             ->agent('Other', 'read-only-helper')
             ->actAs('Keeper');
+
         $this->memory = $this->journal->fixtures(MemoryFixtures::class)
             ->memory('Note', 'Keeper', 'Forget me.', 4)
             ->memoryCalled('Note');
@@ -49,6 +50,7 @@ final class RemoveMemoryTest extends TestCase
             fn () => $this->journal->run(new RemoveMemoryCommand($this->memory->id)),
             RecordUnavailable::class,
         );
+
         $this->journal->actAs('Keeper');
         $this->assertSame(1, Memory::query()->count());
     }

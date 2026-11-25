@@ -233,6 +233,7 @@ final class StartTaskTest extends TestCase
     public function test_the_start_and_its_repeat_each_name_the_actor_that_started_the_task(): void
     {
         $agent = Agent::create('Worker', 'main-agent', $this->localProject());
+
         $this->session = $this->app->make(StartSessions::class)
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;
@@ -252,6 +253,7 @@ final class StartTaskTest extends TestCase
     public function test_the_plan_holding_the_task_at_its_start_is_the_one_told_after_the_commit(): void
     {
         $agent = Agent::create('Worker', 'main-agent', $this->localProject());
+
         $this->session = $this->app->make(StartSessions::class)
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;
@@ -269,6 +271,7 @@ final class StartTaskTest extends TestCase
     public function test_a_task_in_no_phase_tells_no_plan(): void
     {
         $agent = Agent::create('Worker', 'main-agent', $this->localProject());
+
         $this->session = $this->app->make(StartSessions::class)
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;
@@ -283,6 +286,7 @@ final class StartTaskTest extends TestCase
     public function test_with_plans_switched_off_the_start_works_and_tells_no_plan(): void
     {
         $agent = Agent::create('Worker', 'main-agent', $this->localProject());
+
         $this->session = $this->app->make(StartSessions::class)
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;
@@ -302,12 +306,14 @@ final class StartTaskTest extends TestCase
     public function test_a_failure_after_the_push_leaves_no_task_run_or_stack_change(): void
     {
         $agent = Agent::create('Worker', 'main-agent', $this->localProject());
+
         $this->session = $this->app->make(StartSessions::class)
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;
 
         $task = $this->tasks()->task('task')->taskCalled('task');
         $stackRows = AgentStackRow::query()->withoutGlobalScopes()->count();
+
         $this->app->instance(ListenerRegistry::class, new ListenerRegistry([
             TaskStarted::class => [
                 CountPhaseTaskStates::class.'@handle',
@@ -367,6 +373,7 @@ final class StartTaskTest extends TestCase
     private function recordedSends(): Closure
     {
         $sent = [];
+
         $events = [
             TaskStarted::class,
             TaskFinished::class,
@@ -410,6 +417,7 @@ final class StartTaskTest extends TestCase
     private function heard(string $event): callable
     {
         $heard = [];
+
         $this->app->make(Dispatcher::class)->listen($event, function (object $sent) use (&$heard): void {
             $heard[] = $sent;
         });

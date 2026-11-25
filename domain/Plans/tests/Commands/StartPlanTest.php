@@ -58,6 +58,7 @@ final class StartPlanTest extends TestCase
         $this->journal->run(new StartPlanCommand($plan));
 
         $this->plans->assertStatus('Release', PlanStatus::Started);
+
         $this->journal->assertEvent(
             PlanStarted::class,
             fn (PlanStarted $event) => $event->planId === $plan && $event->startedBy->type === User::storedType(),

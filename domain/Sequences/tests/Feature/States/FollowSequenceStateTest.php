@@ -79,11 +79,13 @@ final class FollowSequenceStateTest extends TestCase
         $run = new SequenceRun();
         $run->id = self::RUN;
         $run->number = 4;
+
         $run->steps = [
             'Read the brief',
             'Write the code',
             'Run the tests',
         ];
+
         $run->current_step = 1;
 
         return $this->journal->pushState(

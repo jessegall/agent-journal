@@ -88,6 +88,7 @@ final class WebServiceProvider extends ServiceProvider
         $this->app->alias(DraftProducers::class, DraftProducersContract::class);
         $this->app->bind(InstalledVersionContract::class, InstalledVersion::class);
         $this->app->bind(ProtectedViewsContract::class, ProtectedViews::class);
+
         $this->app->bind(
             InstallationFaults::class,
             fn () => new InstallationFaults(
@@ -95,6 +96,7 @@ final class WebServiceProvider extends ServiceProvider
                 FilePath::in(Place::Project, 'storage/installation/faults'),
             ),
         );
+
         $this->app->bind(ReaderRequestsContract::class, ReaderRequests::class);
         $this->app->bind(WindowResultsContract::class, WindowResults::class);
         $this->app->bind(UiOwnerAvailabilityContract::class, UiOwnerAvailability::class);
@@ -169,7 +171,9 @@ final class WebServiceProvider extends ServiceProvider
             'auth',
             'journal.user',
         ]]);
+
         $broadcast->channel(UserChannel::PATTERN, UserChannel::class);
+
         $events->listen(JobProcessing::class, [
             PageChangeBroadcastLog::class,
             'record',

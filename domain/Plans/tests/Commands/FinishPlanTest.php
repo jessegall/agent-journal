@@ -68,6 +68,7 @@ final class FinishPlanTest extends TestCase
 
         $this->owner = $this->journal->owner()->ownerUser();
         $this->plans = $this->journal->fixtures(PlanFixtures::class);
+
         $this->journal->observeEvents(
             AccessSettings::class,
             CurrentActorSetter::class,
@@ -138,10 +139,12 @@ final class FinishPlanTest extends TestCase
         }
 
         $planned = $this->plans->plan('Planned')->planCalled('Planned');
+
         $this->assertThrows(
             fn () => $this->bus()->run(new FinishPlanCommand($planned->id, 1, 'Done.')),
             PlanHasUnfinishedTasks::class,
         );
+
         $this->assertSame(PlanStatus::Started, $plan->fresh()?->status);
     }
 
@@ -153,17 +156,21 @@ final class FinishPlanTest extends TestCase
         $this->caller = TestStart::start();
 
         $this->caller->openStack($this->app);
+
         $create = [
             'title' => 'Release', 'brief' => 'Ship the release.', 'type' => 'build', 'request_key' => 'make-plan',
         ];
+
         $id = $this->journal->mcpTool($this->caller, 'plans_create', $create)->assertOk()
             ->assertJsonPath('result.isError', false)->json('result.structuredContent.plan_id');
+
         $this->journal->agentCall(
             $this->caller,
             'POST',
             '/agent/plans/create',
             $create,
         )->assertOk()->assertJsonPath('plan_id', $id);
+
         $first = $this->phase($id, 'Build', 'make-build-phase');
         $second = $this->phase($id, 'Check', 'make-check-phase');
         $build = Task::factory()->create();
@@ -176,10 +183,13 @@ final class FinishPlanTest extends TestCase
             'plans_start',
             ['plan_id' => $id, 'request_key' => 'start-plan'],
         )->assertOk();
+
         $this->assertFalse($started->json('result.isError'), $started->getContent());
         $started->assertJsonPath('result.structuredContent.state', 'started');
+
         $this->journal->mcpTool($this->caller, 'phases_read', ['phase_id' => $first])->assertOk()
             ->assertJsonPath('result.structuredContent.task_ids', [$build->id]);
+
         $this->journal->actAsUserId(($this->ownerId));
         $bus = $this->app->make(CommandBus::class);
         $bus->run(new FinishTaskCommand($build->id, 0, 'Done.'));
@@ -195,6 +205,7 @@ final class FinishPlanTest extends TestCase
             ->assertJsonPath('result.structuredContent.phases.0.phase_id', $first)
             ->assertJsonPath('result.structuredContent.phases.1.phase_id', $second)
             ->json('result.structuredContent');
+
         $this->assertSame($read, $this->resource("journal://v1/plans/{$id}?view=context"));
 
         $finish = [
@@ -203,14 +214,17 @@ final class FinishPlanTest extends TestCase
             'note' => 'Release complete.',
             'request_key' => 'finish-plan',
         ];
+
         $this->journal->mcpTool($this->caller, 'plans_finish', $finish)->assertOk()
             ->assertJsonPath('result.isError', false)->assertJsonPath('result.structuredContent.state', 'done');
+
         $this->journal->agentCall(
             $this->caller,
             'POST',
             '/agent/plans/finish',
             $finish,
         )->assertOk()->assertJsonPath('plan_id', $id);
+
         $this->journal->mcpTool($this->caller, 'plans_read', ['plan_id' => $id, 'view' => 'context'])->assertOk()
             ->assertJsonPath('result.structuredContent.finish_note', self::RELEASE_NOTE);
     }

@@ -15,8 +15,8 @@ use Domain\Sequences\Policies\SequencePolicy;
  *
  * @extends Command<null>
  */
-#[Authorize(SequencePolicy::class, AccessType::Create)]
 #[RepeatableRead]
+#[Authorize(SequencePolicy::class, AccessType::Create)]
 final readonly class StartSequenceCommand extends Command
 {
     public function __construct(

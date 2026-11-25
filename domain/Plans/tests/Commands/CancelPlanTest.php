@@ -56,6 +56,7 @@ final class CancelPlanTest extends TestCase
 
         $this->owner = $this->journal->owner()->ownerUser();
         $this->plans = $this->journal->fixtures(PlanFixtures::class);
+
         $this->journal->observeEvents(
             AccessSettings::class,
             CurrentActorSetter::class,
@@ -115,10 +116,12 @@ final class CancelPlanTest extends TestCase
             CommandInputInvalid::class,
             'reason:',
         );
+
         $this->assertThrows(
             fn () => $this->bus()->run(new CancelPlanCommand($plan->id, 1, 'Not needed.', PlanStatus::Planned)),
             PlanRevisionChanged::class,
         );
+
         $this->assertSame(PlanStatus::Started, $plan->fresh()?->status);
     }
 

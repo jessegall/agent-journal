@@ -49,12 +49,14 @@ final readonly class CodexDriver
     public function modelRefusal(string $directory): string|null
     {
         $secondsLimit = 90;
+
         $process = $this->start([
             'exec',
             '--json',
             '--skip-git-repo-check',
             'Reply with OK.',
         ], $directory);
+
         $process->closeInput();
 
         foreach (explode("\n", $process->finish($secondsLimit)) as $line) {
@@ -86,6 +88,7 @@ final readonly class CodexDriver
             'login',
             'status',
         ], $directory);
+
         $output = $process->finish();
 
         $isSignedIn = $this->files->exists($this->accountFile($directory, 'auth.json'));

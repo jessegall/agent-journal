@@ -26,6 +26,7 @@ return new class extends Migration
                 'task_id',
                 'sequence',
             ]);
+
             $table->index([
                 'task_id',
                 'sequence',

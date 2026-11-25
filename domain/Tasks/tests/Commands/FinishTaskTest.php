@@ -73,6 +73,7 @@ final class FinishTaskTest extends TestCase
             [TaskStatus::Finished, 'Built and tested.'],
             [$this->task->refresh()->status, $this->task->result_note],
         );
+
         $this->assertTrue($this->app->make(AssignedTaskResolver::class)->currentForCaller()->isEmpty());
     }
 
@@ -85,10 +86,12 @@ final class FinishTaskTest extends TestCase
             CommandInputInvalid::class,
             'note:',
         );
+
         $this->assertThrows(
             fn () => $this->journal->actAs('Second')->run(new FinishTaskCommand($this->task->id, $this->run, 'Mine.')),
             ActorNotAllowed::class,
         );
+
         $this->assertSame(TaskStatus::Started, $this->task->refresh()->status);
     }
 
@@ -129,9 +132,11 @@ final class FinishTaskTest extends TestCase
             TaskBlocked::class,
             TaskCancelled::class,
         ]);
+
         $this->journal->actAsUserId(TestIds::of(7));
 
         $bus = $this->app->make(CommandBus::class);
+
         [$finished, $blocked, $cancelled] = [
             $this->task('Finish'),
             $this->task('Block'),
@@ -168,6 +173,7 @@ final class FinishTaskTest extends TestCase
             TaskBlocked::class,
             TaskCancelled::class,
         ]);
+
         $this->journal->actAsUserId(TestIds::of(7));
 
         $this->expectExceptionObject(TaskMissing::forId(TestIds::of(999999)));
@@ -186,6 +192,7 @@ final class FinishTaskTest extends TestCase
             TaskBlocked::class,
             TaskCancelled::class,
         ]);
+
         $this->journal->actAsUserId(TestIds::of(7));
 
         $task = $this->task('Taken');

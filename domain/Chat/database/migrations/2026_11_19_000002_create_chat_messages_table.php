@@ -25,11 +25,13 @@ return new class extends Migration
                 'source_type',
                 'source_id',
             ]);
+
             $table->index([
                 'inbox_id',
                 'created_at',
                 'id',
             ]);
+
             $table->index([
                 'inbox_id',
                 'group_number',

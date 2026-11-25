@@ -32,6 +32,7 @@ final class EditMemoryTest extends TestCase
             ->agent('Keeper', 'read-only-helper')
             ->agent('Other', 'read-only-helper')
             ->actAs('Keeper');
+
         $this->memory = $this->journal->fixtures(MemoryFixtures::class)
             ->memory('Note', 'Keeper', 'First words.', 4)
             ->memoryCalled('Note');
@@ -55,6 +56,7 @@ final class EditMemoryTest extends TestCase
             fn () => $this->journal->run(new EditMemoryCommand($this->memory->id, 1, 'Stale words.', null)),
             MemoryRevisionChanged::class,
         );
+
         $this->assertSame(['Newer words.', 2], [$this->memory->refresh()->text, $this->memory->revision]);
     }
 
@@ -65,6 +67,7 @@ final class EditMemoryTest extends TestCase
             CommandInputInvalid::class,
             'text:',
         );
+
         $this->assertThrows(
             fn () => $this->journal->run(new EditMemoryCommand($this->memory->id, 1, null, null)),
             CommandInputInvalid::class,
@@ -82,6 +85,7 @@ final class EditMemoryTest extends TestCase
             fn () => $this->journal->run(new EditMemoryCommand($this->memory->id, 1, 'Taken.', null)),
             RecordUnavailable::class,
         );
+
         $this->assertSame('First words.', $this->memory->refresh()->text);
     }
 }

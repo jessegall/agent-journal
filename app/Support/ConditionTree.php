@@ -198,6 +198,7 @@ final readonly class ConditionTree
             $key,
             '',
         ];
+
         $accessType = AccessType::tryFrom($access);
 
         $definition = array_find(
@@ -258,6 +259,7 @@ final readonly class ConditionTree
             'key',
             'parameters',
         ]);
+
         $key = $node->field('key', 'is not an owner-prefixed key such as plans.active-plan');
         $parameters = $node->hasField('parameters') ? $node->field('parameters', 'is not an object') : [];
 

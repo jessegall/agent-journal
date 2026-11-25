@@ -56,20 +56,24 @@ final class ShareReadPathTest extends TestCase
             ShareReadRefused::class,
             ShareReadRefused::tooDeep(4)->getMessage(),
         );
+
         $this->assertThrows(
             fn () => ShareReadPath::parse('notes/pamphlets.pamphlet/'.TestIds::of(1), $this->root, $this->records),
             ShareReadRefused::class,
             'circle',
         );
+
         $this->assertThrows(
             fn () => ShareReadPath::parse('records/pamphlets.note/'.TestIds::of(2), $this->root, $this->records),
             UnknownShareRelation::class,
         );
+
         $this->assertThrows(
             fn () => ShareReadPath::parse('notes/pamphlets.note/12', $this->root, $this->records),
             ShareReadRefused::class,
             ShareReadRefused::malformedPath()->getMessage(),
         );
+
         $this->assertThrows(
             fn () => ShareReadPath::parse('notes/pamphlets.note', $this->root, $this->records),
             ShareReadRefused::class,
@@ -81,11 +85,13 @@ final class ShareReadPathTest extends TestCase
     {
         $cursors = $this->app->make(ShareCursors::class);
         $place = new ShareCursor(TestIds::of(9), 1, '', 'notes', ShareCursor::ORDER_WRITTEN_THEN_ID, '');
+
         $text = $cursors->write(
             new ShareCursor(TestIds::of(9), 1, '', 'notes', ShareCursor::ORDER_WRITTEN_THEN_ID, 'after-50'),
         );
 
         $this->assertSame('after-50', $cursors->read($text, $place)->continuation);
+
         $this->assertThrows(
             fn () => $cursors->read(
                 $text,
@@ -94,6 +100,7 @@ final class ShareReadPathTest extends TestCase
             ShareReadRefused::class,
             ShareReadRefused::staleCursor()->getMessage(),
         );
+
         $this->assertThrows(
             fn () => $cursors->read(
                 $text,
@@ -101,6 +108,7 @@ final class ShareReadPathTest extends TestCase
             ),
             ShareReadRefused::class,
         );
+
         $this->assertThrows(fn () => $cursors->read($text.'x', $place), ShareReadRefused::class);
     }
 }

@@ -27,6 +27,7 @@ return new class extends Migration
                 'dependent_task_id',
                 'created_at',
             ]);
+
             $table->index([
                 'prerequisite_task_id',
                 'created_at',

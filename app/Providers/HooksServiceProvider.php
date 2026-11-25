@@ -161,6 +161,7 @@ final class HooksServiceProvider extends ServiceProvider
         $pendingWork->register(PendingAgentMessages::class);
         $actors->registerStackSessions(Agent::class, ActorStackSessionProvider::class);
         $this->loadCoreRoutes('hooks/hooks.php');
+
         $this->commands([
             PruneHookHistoryCommand::class,
             RelayHookCommand::class,

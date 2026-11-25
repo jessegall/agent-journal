@@ -94,6 +94,7 @@ final readonly class EvidenceRuns
             $permit->working_folder,
             $permit->candidate_rules->items(),
         );
+
         $permit->assertUsable($runner, $requestId, $this->digestOf($classification));
 
         if ($permit->wasStartedBy($requestId)) {

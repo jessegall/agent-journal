@@ -75,6 +75,7 @@ final readonly class AuthenticateHost
 
         try {
             $handle = fn (): Response => $next($request);
+
             $response = $this->entrance->through(
                 CommandEntry::HostControl,
                 fn (): Response => $this->actors->actAsSystem('host request', $handle),
@@ -136,6 +137,7 @@ final readonly class AuthenticateHost
             || $response instanceof JsonResponse
             ? $response->exception
             : null;
+
         $reason = $exception?->getMessage() ?? Response::$statusTexts[$response->getStatusCode()] ?? 'Server error';
 
         return mb_substr($reason, 0, 300);

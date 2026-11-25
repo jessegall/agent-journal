@@ -24,6 +24,7 @@ final readonly class ReviseProposalController
             ...$call->declaration,
             'request_id' => $call->proposal,
         ]);
+
         $command = new ReviseRuleProposalCommand($call->proposal, (int) $call->expectedRevision, $declared->proposed);
 
         return ProposalReceived::from($commands->run($command)->toArray());

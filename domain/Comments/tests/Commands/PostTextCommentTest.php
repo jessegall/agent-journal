@@ -125,6 +125,7 @@ final class PostTextCommentTest extends TestCase
             ),
             TargetHasNoText::class,
         );
+
         $this->assertSame(0, Comment::query()->count());
     }
 
@@ -132,6 +133,7 @@ final class PostTextCommentTest extends TestCase
     {
         $this->host = $this->journal->enrolledHost();
         $project = Project::create('shop', 'Shop');
+
         $this->binding = ProjectBinding::create(
             Host::query()->findOrFail($this->host->hostId),
             $project,
@@ -152,6 +154,7 @@ final class PostTextCommentTest extends TestCase
         $this->assertSame([$digest], Comment::query()->pluck('version_id')->all());
 
         $this->expectException(InvalidTextRange::class);
+
         $this->bus()->run(
             new PostTextCommentCommand($target, 'Past the end', TextRange::lines($digest, 9, 9), (string) Str::uuid()),
         );
@@ -161,6 +164,7 @@ final class PostTextCommentTest extends TestCase
     {
         $this->host = $this->journal->enrolledHost();
         $project = Project::create('shop', 'Shop');
+
         $this->binding = ProjectBinding::create(
             Host::query()->findOrFail($this->host->hostId),
             $project,
@@ -171,6 +175,7 @@ final class PostTextCommentTest extends TestCase
 
         $this->notifyWhole('first');
         $this->actAsOwner();
+
         $this->bus()->run(new PostTextCommentCommand(
             $this->target(),
             'Keep this one.',
@@ -210,6 +215,7 @@ final class PostTextCommentTest extends TestCase
             $this->text()->version($page)->id,
             $this->text()->version($page)->lineCount,
         ]);
+
         $this->assertSame(
             ['Plan'],
             array_map(
@@ -217,6 +223,7 @@ final class PostTextCommentTest extends TestCase
                 $this->text()->sections($page, '1', 0, PageSize::from(null))->sections,
             ),
         );
+
         $this->assertStringContainsString(
             self::SECOND_LINE,
             $this->text()->read($page, '1', TextSelection::from(['firstLine' => 1]))->text,
@@ -225,6 +232,7 @@ final class PostTextCommentTest extends TestCase
         $this->bus()->run(
             new PostTextCommentCommand($page, 'Which lines?', TextRange::lines('1', 2, 3), (string) Str::uuid()),
         );
+
         $this->bus()->run(new PostCommentCommand($page, 'About the page.', (string) Str::uuid()));
         $items = $this->app->make(CommentResolver::class)->list($page, new IdListPage())->comments;
 

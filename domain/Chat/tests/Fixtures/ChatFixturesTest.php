@@ -20,6 +20,7 @@ final class ChatFixturesTest extends TestCase
     {
         $chat = $this->journal->owner()->agent('Planner')->chat('Owner', 'Planner')->chatOf('Owner', 'Planner');
         $message = $this->journal->post('Planner', $chat, 'Keep this.');
+
         $pins = $this->journal->fixtures(ChatFixtures::class)
             ->pin($chat, $message, 'Owner')
             ->pin($chat, $message, 'Planner');

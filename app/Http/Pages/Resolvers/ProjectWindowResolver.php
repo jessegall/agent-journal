@@ -45,10 +45,12 @@ final readonly class ProjectWindowResolver implements PageResolver
         }
 
         $open = $this->request->openFolders();
+
         $answers = $this->files->folders($binding, [
             '',
             ...$open,
         ]);
+
         $root = $answers->of('');
 
         $state = match ($root->state) {

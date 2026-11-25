@@ -33,6 +33,7 @@ final class WithdrawPlanReviewTest extends TestCase
         parent::setUp();
 
         $this->journal->owner();
+
         $this->plan = $this->journal->fixtures(PlanFixtures::class)
             ->plan('Release', 'Ship it.', PlanType::Build)
             ->planCalled('Release');
@@ -47,6 +48,7 @@ final class WithdrawPlanReviewTest extends TestCase
         $this->journal->run(new WithdrawPlanReviewCommand($this->plan->id));
 
         $review = PlanReviewEdition::query()->findOrFail($reviewId);
+
         $this->assertSame(
             [PlanReviewStatus::Withdrawn, $this->journal->ownerUser()->id, PlanStatus::Planned],
             [$review->status, $review->decided_by_id, $this->plan->refresh()->status],

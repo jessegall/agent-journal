@@ -81,9 +81,11 @@ final class SaveSharePreviewTest extends TestCase
         $this->journal->owner();
         $this->publications = new BinderPublications();
         $this->app->instance(BinderPublications::class, $this->publications);
+
         $this->configuration = ShareGatewayConfiguration::create(
             new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []),
         );
+
         $this->root = TestActors::record('binders.binder', 1);
 
         foreach ([
@@ -101,10 +103,12 @@ final class SaveSharePreviewTest extends TestCase
             TestIds::of(101),
             TestIds::of(103),
         ]);
+
         $preview = SharePreview::query()->findOrFail($saved->previewId);
 
         $this->assertCount(3, $saved->candidates->linked);
         $this->assertSame($preview->checksum, $saved->checksum);
+
         $this->assertSame(
             [
                 TestIds::of(101),
@@ -112,6 +116,7 @@ final class SaveSharePreviewTest extends TestCase
             ],
             array_map(fn (ShareSelectedTarget $target) => $target->record->id, $preview->selection->items()),
         );
+
         $this->assertSame($this->configuration->configuration_version, $preview->configuration_version);
     }
 
@@ -144,6 +149,7 @@ final class SaveSharePreviewTest extends TestCase
             1,
             $preview->consumeFor($this->journal->ownerUser()->id, $saved->checksum, $this->current()),
         );
+
         $this->assertThrows(
             fn () => $preview->consumeFor($this->journal->ownerUser()->id, $saved->checksum, $this->current()),
             SharePreviewRefused::class,
@@ -157,6 +163,7 @@ final class SaveSharePreviewTest extends TestCase
             TestIds::of(101),
             TestIds::of(102),
         ]);
+
         $preview = SharePreview::query()->findOrFail($saved->previewId);
 
         $this->assertThrows(
@@ -164,6 +171,7 @@ final class SaveSharePreviewTest extends TestCase
             SharePreviewRefused::class,
             SharePreviewRefused::foreign($saved->previewId)->getMessage(),
         );
+
         $this->assertThrows(
             fn () => $preview->consumeFor($this->journal->ownerUser()->id, str_repeat('0', 64), $this->current()),
             SharePreviewRefused::class,
@@ -182,30 +190,37 @@ final class SaveSharePreviewTest extends TestCase
     public function test_a_plan_previews_as_a_summary_root_with_its_linked_document_as_a_candidate(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(TestActors::user(1), new OwnerAuthority('test'));
+
         $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
         # Goal
         Ship it.
 
         TEXT));
+
         $document = Document::query()->where('number', 1)->sole();
+
         $plan = Plan::factory()->create([
             'title' => self::PLAN_TITLE,
             'type' => PlanType::Build,
         ]);
+
         $this->planStructure()->addPhase($plan, self::SECRET_PHASE);
         Link::createForModels($plan, $document);
 
         $candidates = $this->app->make(ShareScope::class)->discover($plan->shareIdentity(), $this->budget());
+
         $content = $this->app->make(ShareRecordRegistry::class)->provider(Plan::linkType())->content(
             new ShareContentRead($plan->shareIdentity()),
             $this->budget(),
         );
 
         $this->assertSame(self::PLAN_TITLE, $candidates->root->title);
+
         $this->assertSame(
             [$document->id],
             array_map(fn (ShareLinkedCandidate $candidate) => $candidate->recordId(), $candidates->linked),
         );
+
         $this->assertSame('Design', $candidates->linked[0]->card->title);
         $this->assertStringContainsString(self::PLAN_TITLE, $content->body);
         $this->assertStringNotContainsString(self::SECRET_PHASE, $content->body);

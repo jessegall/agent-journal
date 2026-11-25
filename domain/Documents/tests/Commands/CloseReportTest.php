@@ -120,10 +120,12 @@ final class CloseReportTest extends TestCase
         ];
 
         $first = $this->journal->agentCall($reviewer, 'POST', '/agent/reports/comment', $comment)->assertOk()->json();
+
         $this->assertSame(
             $first,
             $this->journal->agentCall($reviewer, 'POST', '/agent/reports/comment', $comment)->assertOk()->json(),
         );
+
         $this->assertSame($comment['body'], Comment::query()->sole()->body);
 
         $this->journal->agentCall($reviewer, 'POST', '/agent/reports/close', [

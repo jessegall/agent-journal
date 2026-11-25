@@ -64,10 +64,12 @@ final class UnassignPlanWorkTest extends TestCase
 
         $this->journal->owner()->idleAgent('Builder', 'read-only-helper');
         $this->builder = AssigneeIdentity::of($this->journal->agentCalled('Builder'));
+
         $tasks = $this->journal->fixtures(TaskFixtures::class)
             ->task('Open')
             ->finishedTask('Finished')
             ->cancelledTask('Cancelled');
+
         $plans = $this->journal->fixtures(PlanFixtures::class)
             ->plan('Release')
             ->phaseWithTask('Release', 'Working', $tasks->taskCalled('Open')->assignmentIdentity())
@@ -78,8 +80,10 @@ final class UnassignPlanWorkTest extends TestCase
                 $tasks->taskCalled('Cancelled')->assignmentIdentity(),
             )
             ->phase('Release', 'Empty');
+
         $this->plan = $plans->planCalled('Release');
         $this->open = $tasks->taskCalled('Open');
+
         [$this->working, $this->over, $this->empty] = [
             $plans->phaseCalled('Working'),
             $plans->phaseCalled('Over'),

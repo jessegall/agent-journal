@@ -80,6 +80,7 @@ final class RetryShareTest extends TestCase
         $this->assertSame(ShareStatus::Pending, $summary->state);
         $this->assertSame(2, ShareGatewayOperation::query()->where('type', GatewayOperationType::Open->value)->count());
         $this->assertEquals($share->expires_at, Share::query()->findOrFail($share->id)->expires_at);
+
         $this->assertTrue(
             ShareAudit::query()->readAll('two audits')->get()->contains(
                 fn (ShareAudit $audit) => $audit->type === ShareAuditType::Retried,
@@ -94,6 +95,7 @@ final class RetryShareTest extends TestCase
         $revoked = $this->share([]);
         $revoked->status = ShareStatus::Revoked;
         $revoked->save();
+
         $proposal = Share::create(
             $this->root,
             CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS),
@@ -120,6 +122,7 @@ final class RetryShareTest extends TestCase
     private function share(array $selectedIds): Share
     {
         $saved = $this->preview($this->root, $selectedIds);
+
         $summary = $this->runOwner(
             fn (string $key) => new CreateShareCommand(
                 $saved->previewId,

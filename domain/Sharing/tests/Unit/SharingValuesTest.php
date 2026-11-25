@@ -48,10 +48,12 @@ final class SharingValuesTest extends TestCase
             ShareStatus::Active,
             ShareStatus::Failed,
         ], $live);
+
         $this->assertSame([
             ShareStatus::Revoked,
             ShareStatus::Expired,
         ], $terminal);
+
         $this->assertSame([
             ShareStatus::Pending,
             ShareStatus::Failed,
@@ -63,6 +65,7 @@ final class SharingValuesTest extends TestCase
         $reads = array_values(array_filter(ShareAuditType::cases(), fn (ShareAuditType $type) => $type->isRead()));
 
         $this->assertCount(12, ShareAuditType::cases());
+
         $this->assertSame([
             ShareAuditType::ReadAllowed,
             ShareAuditType::ReadDenied,
@@ -77,6 +80,7 @@ final class SharingValuesTest extends TestCase
         $this->assertEquals([$comments], ShareRelationSet::owned('comments', 'share-comment')->relations);
         $this->assertEquals([$records], ShareRelationSet::linked('records', 'share-linked-record')->relations);
         $this->assertSame([], ShareRelationSet::none()->relations);
+
         $this->assertEquals(
             [
                 $comments,

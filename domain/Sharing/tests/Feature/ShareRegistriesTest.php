@@ -79,6 +79,7 @@ final class ShareRegistriesTest extends TestCase
             ShareRecordInvalid::class,
             ShareRecordInvalid::notShareable('tests.thing', PamphletShareProvider::class)->getMessage(),
         );
+
         $this->assertThrows(
             fn () => $records->register(
                 new ShareRecordDefinition('tests.thing', Pamphlet::class, Pamphlet::class, []),
@@ -86,6 +87,7 @@ final class ShareRegistriesTest extends TestCase
             ShareRecordInvalid::class,
             ShareRecordInvalid::notAProvider('tests.thing', Pamphlet::class)->getMessage(),
         );
+
         $this->assertThrows(
             fn () => $records->register(
                 new ShareRecordDefinition('Tests\\Thing', Pamphlet::class, PamphletShareProvider::class, []),
@@ -101,14 +103,17 @@ final class ShareRegistriesTest extends TestCase
         $records->checkRelations();
 
         $this->assertFalse($records->has('Tests\\Fixtures\\Domains\\Pamphlets\\Pamphlet'));
+
         $this->assertThrows(
             fn () => $records->get('Tests\\Fixtures\\Domains\\Pamphlets\\Pamphlet'),
             UnknownShareRecordType::class,
         );
+
         $this->assertThrows(
             fn () => $records->relation('pamphlets.pamphlet', 'shareRelations'),
             UnknownShareRelation::class,
         );
+
         $this->assertThrows(fn () => $records->relation('pamphlets.note', 'notes'), UnknownShareRelation::class);
     }
 
@@ -122,16 +127,19 @@ final class ShareRegistriesTest extends TestCase
             'ngrok',
             'press',
         ], $gateways->keys());
+
         $this->assertThrows(
             fn () => $gateways->register('press', PressGateway::class),
             ShareGatewayInvalid::class,
             ShareGatewayInvalid::repeated('press')->getMessage(),
         );
+
         $this->assertThrows(
             fn () => $gateways->register('pamphlet', Pamphlet::class),
             ShareGatewayInvalid::class,
             ShareGatewayInvalid::notAGateway('pamphlet', Pamphlet::class)->getMessage(),
         );
+
         $this->assertThrows(fn () => $gateways->get('carrier-pigeon'), UnknownShareGateway::class);
     }
 }

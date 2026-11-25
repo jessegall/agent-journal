@@ -102,6 +102,7 @@ final class RecoverDocumentTest extends TestCase
             $result->revisionNumber,
             $result->isPublished,
         ]);
+
         $this->assertSame(TestIds::of(9), $this->documents()->revisions(1, 1)[1]->authorId);
 
         $this->assertSame(

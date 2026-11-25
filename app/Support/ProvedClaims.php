@@ -36,6 +36,7 @@ final readonly class ProvedClaims
             fn (ClaimAuthorization $proof) => $proof->inbox_member_id,
             array_values($proofs),
         ))));
+
         $valid = [];
 
         foreach ($claims as $claim) {

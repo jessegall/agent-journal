@@ -67,6 +67,7 @@ final class RecordGatewayHealthTest extends TestCase
     private function outcome(string $runId, ClaimedGatewayOperation|null $claim, GatewayOutcome $outcome): void
     {
         $this->assertNotNull($claim);
+
         $this->journal->asSystem(new RecordGatewayOutcomeCommand(
             $runId,
             $claim->operation->operationId,

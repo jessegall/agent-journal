@@ -54,6 +54,7 @@ final class ChangeSequenceTest extends TestCase
             ),
             SequenceChangedMeanwhile::class,
         );
+
         $this->assertSame([2, 'merge'], [$this->sequence->refresh()->version, $this->sequence->steps[0]->id]);
     }
 

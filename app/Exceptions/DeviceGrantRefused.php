@@ -47,6 +47,7 @@ final class DeviceGrantRefused extends RuntimeException implements CodedRefusal,
         $refusal = new self('Poll this device code at most once every five seconds.');
         $refusal->status = 429;
         $refusal->refusalCode = RefusalCode::Busy;
+
         $refusal->outcome = [
             'outcome' => 'slow_down',
             'interval' => DeviceGrant::POLL_SECONDS_MINIMUM,
@@ -94,6 +95,7 @@ final class DeviceGrantRefused extends RuntimeException implements CodedRefusal,
 
         $refusal->status = 409;
         $refusal->refusalCode = RefusalCode::StateBlocked;
+
         $refusal->outcome = [
             'outcome' => 'already_issued',
             'reference' => $reference,
@@ -110,6 +112,7 @@ final class DeviceGrantRefused extends RuntimeException implements CodedRefusal,
 
         $refusal->status = 410;
         $refusal->refusalCode = RefusalCode::Forbidden;
+
         $refusal->outcome = [
             'outcome' => 'revoked',
             'reference' => $reference,

@@ -67,6 +67,7 @@ final readonly class TypeOwners
             ...array_values($this->claims),
             'shared',
         ]));
+
         sort($keys);
 
         return $keys;

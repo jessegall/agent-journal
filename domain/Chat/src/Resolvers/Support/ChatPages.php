@@ -56,10 +56,12 @@ final readonly class ChatPages
     public function pageFor(AgentOption|null $agent, Inbox $inbox, string|null $dockToken): ConversationData
     {
         $viewer = ActorIdentity::of($this->actors->actor());
+
         $members = [
             ...InboxMember::resolveAttachedTo([$inbox->id], User::class),
             ...InboxMember::resolveAttachedTo([$inbox->id], Agent::class),
         ];
+
         $names = $this->labels->labelsFor($members);
         $drivers = $this->agentDrivers->driversOf($members);
         $capabilities = $this->capabilitiesOf($viewer, $inbox, count($members));
@@ -92,11 +94,13 @@ final readonly class ChatPages
     public function entriesBefore(string $inboxId, string|null $beforeId): ChatRowsPageData
     {
         $cursor = $beforeId === null ? null : ChatMessage::query()->ofInbox($inboxId)->findOrFail($beforeId);
+
         $rows = ChatMessage::query()
             ->pageBefore($inboxId, $cursor)
             ->withSource()
             ->limit(ChatMessage::PAGE_SIZE + 1)
             ->get();
+
         $shown = $rows->take(ChatMessage::PAGE_SIZE)->reverse()->values();
 
         return ChatRowsPageData::from([
@@ -130,10 +134,12 @@ final readonly class ChatPages
     {
         $authors = array_values($rows->map(fn (ChatMessage $row) => $row->author)->all());
         $names = $this->labels->labelsFor($authors);
+
         $events = $this->dock->cardsOf($rows
             ->filter(fn (ChatMessage $row) => $row->type === ChatMessageType::Event)
             ->mapWithKeys(fn (ChatMessage $row) => [$row->id => new DockIdentity($row->source_type, $row->source_id)])
             ->all());
+
         $viewer = ActorIdentity::of($this->actors->actor());
         $readIds = $this->readIdsAmong($rows);
         $questions = $this->questionsAmong($rows);
@@ -219,6 +225,7 @@ final readonly class ChatPages
             strval(...),
             $rows->where('type', ChatMessageType::Question)->pluck('source_id')->all(),
         ));
+
         $questions = [];
 
         foreach ($this->questions->shownByIds($ids) as $question) {

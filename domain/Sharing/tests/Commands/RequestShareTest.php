@@ -93,15 +93,18 @@ final class RequestShareTest extends TestCase
         parent::setUp();
 
         $this->owner = $this->journal->owner()->ownerUser();
+
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forUser($this->owner->id),
             new OwnerAuthority('test'),
         );
+
         $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
         # Goal
         Ship it.
 
         TEXT));
+
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->root = Document::query()->where('number', 1)->sole()->shareIdentity();
         $this->configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
@@ -114,12 +117,15 @@ final class RequestShareTest extends TestCase
         $proposal = Share::query()->sole();
 
         $this->assertEquals(new ShareProposalStatus($proposal->number, ShareStatus::Proposed), $status);
+
         $this->assertSame([
             'number',
             'state',
         ], array_keys(get_object_vars($status)));
+
         $this->assertNull($proposal->token_digest);
         $this->assertNull($proposal->owner_user_id);
+
         $this->assertSame(
             [
                 Agent::storedType(),
@@ -130,8 +136,10 @@ final class RequestShareTest extends TestCase
                 $proposal->requester_id,
             ],
         );
+
         $this->assertSame(0, ShareGatewayOperation::query()->count());
         $audit = ShareAudit::query()->readAll('one audit')->sole();
+
         $this->assertSame([
             ShareAuditType::Created,
             Agent::storedType(),
@@ -166,6 +174,7 @@ final class RequestShareTest extends TestCase
             ),
             CommandAdmissionRefused::class,
         );
+
         $this->assertSame(0, Share::query()->count());
     }
 
@@ -209,6 +218,7 @@ final class RequestShareTest extends TestCase
             ->expectsOutputToContain('"state":"proposed"')
             ->doesntExpectOutputToContain('http')
             ->assertExitCode(0);
+
         $this->artisan('share:status', ['--json' => true])->expectsOutputToContain('"proposals"')->assertExitCode(0);
 
         $this->assertSame(ShareStatus::Proposed, Share::query()->sole()->status);
@@ -236,6 +246,7 @@ final class RequestShareTest extends TestCase
             CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS),
             new ShareProposal(ActorIdentity::ofClass(Agent::class, $this->start->agent->id)),
         );
+
         $now = CarbonImmutable::now();
         $rows = [];
 

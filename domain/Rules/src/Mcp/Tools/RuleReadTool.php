@@ -48,6 +48,7 @@ final class RuleReadTool extends JournalReadTool
     protected function read(ToolArguments $arguments): ToolResult
     {
         $rule = $this->rules->rule($arguments->ulid('rule_id'));
+
         $text = array_filter([
             'text' => $rule->text,
             'reason' => $rule->reason,

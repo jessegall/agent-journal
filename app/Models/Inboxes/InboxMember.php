@@ -153,6 +153,7 @@ final class InboxMember extends Model implements EventSource, ReadableModel
             ->pluck('actor_id')
             ->unique()
             ->all();
+
         $identities = array_map(fn (string $actorId) => ActorIdentity::fromStored($type, $actorId), $actorIds);
 
         return array_values($identities);

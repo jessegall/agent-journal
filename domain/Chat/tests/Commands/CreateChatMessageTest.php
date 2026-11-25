@@ -41,6 +41,7 @@ final class CreateChatMessageTest extends TestCase
         );
 
         $chatMessage = ChatMessage::query()->withoutGlobalScopes()->findOrFail($chatMessageId);
+
         $this->assertSame(
             [$this->chat->id, $source->getMorphClass(), $source->id, ChatMessageType::Message],
             [$chatMessage->inbox_id, $chatMessage->source_type, $chatMessage->source_id, $chatMessage->type],
@@ -55,12 +56,14 @@ final class CreateChatMessageTest extends TestCase
             fn () => $this->journal->run(new CreateChatMessageCommand($this->chat->id, 'nowhere.thing', 'x', ChatMessageType::Event)),
             ChatSourceRefused::class,
         );
+
         $this->assertThrows(
             fn () => $this->journal->run(
                 new CreateChatMessageCommand($this->chat->id, $this->chat->getMorphClass(), $this->chat->id, ChatMessageType::Event),
             ),
             ChatSourceRefused::class,
         );
+
         $this->assertSame($before, ChatMessage::query()->withoutGlobalScopes()->count());
     }
 }

@@ -25,6 +25,7 @@ final readonly class RecordChatMessage implements Listener
     public function handle(MessageSent $event): void
     {
         $message = Message::query()->findOrFail($event->messageId);
+
         $type = $event->targetMessageId !== null && Emoji::isOne($message->body)
             ? ChatMessageType::Reaction
             : ChatMessageType::Message;

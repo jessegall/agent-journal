@@ -50,6 +50,7 @@ final readonly class RunStateCommand implements Listener
                 ? CommandOriginStatus::Eligible
                 : CommandOriginStatus::TargetUnavailable),
         ));
+
         $status = $this->commands->requiresRequestKey($command::class)
             ? $this->requestKey->independently($this->keyOf($answered), $run)
             : $run();

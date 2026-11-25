@@ -35,10 +35,12 @@ final class CreateReminderTest extends TestCase
         $reminderId = $this->journal->run(new CreateReminderCommand('Read the review', self::DUE_AT));
 
         $reminder = Reminder::query()->findOrFail($reminderId);
+
         $this->assertSame(
             ['Read the review', ReminderStatus::Open, ActorIdentity::of($this->journal->ownerUser())->id],
             [$reminder->title, $reminder->status, $reminder->owningActor()->id],
         );
+
         $this->assertTrue(CarbonImmutable::parse(self::DUE_AT)->equalTo($reminder->due_at));
     }
 
@@ -49,6 +51,7 @@ final class CreateReminderTest extends TestCase
             CommandInputInvalid::class,
             'title:',
         );
+
         $this->assertThrows(
             fn () => $this->journal->run(new CreateReminderCommand(
                 str_repeat('a', Reminder::TITLE_CHARACTER_LIMIT + 1),
@@ -57,6 +60,7 @@ final class CreateReminderTest extends TestCase
             CommandInputInvalid::class,
             'title:',
         );
+
         $this->assertThrows(
             fn () => $this->journal->run(new CreateReminderCommand('Read the review', 'next week')),
             CommandInputInvalid::class,

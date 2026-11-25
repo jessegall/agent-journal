@@ -29,6 +29,7 @@ final class EditPlanTest extends TestCase
         parent::setUp();
 
         $this->journal->owner();
+
         $this->plan = $this->journal->fixtures(PlanFixtures::class)
             ->plan('First', 'First brief', PlanType::Build)
             ->planCalled('First');
@@ -42,6 +43,7 @@ final class EditPlanTest extends TestCase
 
         $this->plan->refresh();
         $this->assertSame(2, $revision);
+
         $this->assertSame(
             ['First', 'Second brief', PlanType::Fix],
             [$this->plan->title, $this->plan->brief, $this->plan->type],
@@ -56,6 +58,7 @@ final class EditPlanTest extends TestCase
             fn () => $this->journal->run(new EditPlanCommand($this->plan->id, 1, 'Stale')),
             PlanRevisionChanged::class,
         );
+
         $this->assertSame(['Second', 2], [$this->plan->refresh()->title, $this->plan->revision]);
     }
 
@@ -68,6 +71,7 @@ final class EditPlanTest extends TestCase
             CommandInputInvalid::class,
             'title:',
         );
+
         $this->assertSame(1, $this->plan->refresh()->revision);
     }
 }

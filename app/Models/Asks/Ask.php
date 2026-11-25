@@ -102,11 +102,13 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
         ProfileKey|null $routeProfile = null,
     ): self {
         $work = $subject->work->isFree() ? 'free' : $subject->work->key;
+
         $digest = hash('sha256', json_encode([
             $type->key,
             $body,
             $work,
         ], JSON_THROW_ON_ERROR));
+
         $ask = new self();
 
         $ask->setRawAttributes([

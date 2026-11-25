@@ -172,10 +172,12 @@ final readonly class TaskWindowResolver implements PageResolver
     private function waitActionsOf(string $taskId): TaskWaitActionsData
     {
         $task = Task::findForId($taskId);
+
         $allowed = $this->authorizer->filterActions(TaskPolicy::class, $task, [
             AccessType::Edit,
             AccessType::Admin,
         ]);
+
         $hasEnded = $task->status->hasEnded();
         $search = $this->request->prerequisiteSearch();
 

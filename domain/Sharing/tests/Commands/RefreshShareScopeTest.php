@@ -73,10 +73,12 @@ final class RefreshShareScopeTest extends TestCase
         $summary = $this->runOwner(
             fn (string $key) => new RefreshShareScopeCommand($share->id, $saved->previewId, $saved->checksum, $key),
         );
+
         $refreshed = Share::query()->findOrFail($share->id);
 
         $this->assertSame($share->id, $summary->shareId);
         $this->assertSame(Share::FIRST_SCOPE_VERSION + 1, $refreshed->scope_version);
+
         $this->assertSame(
             [[
                 TestIds::of(102),
@@ -89,9 +91,11 @@ final class RefreshShareScopeTest extends TestCase
                 ],
             )->all(),
         );
+
         $this->assertSame($share->token_digest, $refreshed->token_digest);
         $this->assertSame($share->token_ciphertext, $refreshed->token_ciphertext);
         $this->assertEquals($share->expires_at, $refreshed->expires_at);
+
         $this->assertTrue(
             ShareAudit::query()->readAll('two audits')->get()->contains(
                 fn (ShareAudit $audit) => $audit->type === ShareAuditType::ScopeRefreshed,
@@ -111,6 +115,7 @@ final class RefreshShareScopeTest extends TestCase
             ShareRefreshRefused::class,
             ShareRefreshRefused::otherRoot($share->id)->getMessage(),
         );
+
         $this->assertSame(Share::FIRST_SCOPE_VERSION, Share::query()->findOrFail($share->id)->scope_version);
     }
 
@@ -120,6 +125,7 @@ final class RefreshShareScopeTest extends TestCase
     private function share(array $selectedIds): Share
     {
         $saved = $this->preview($this->root, $selectedIds);
+
         $summary = $this->runOwner(
             fn (string $key) => new CreateShareCommand(
                 $saved->previewId,

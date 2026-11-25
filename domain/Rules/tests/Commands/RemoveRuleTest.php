@@ -41,6 +41,7 @@ final class RemoveRuleTest extends TestCase
 
         Event::fake([RuleRemoved::class]);
         $this->journal->agent('Planner')->owner();
+
         $this->active = $this->journal->fixtures(RuleFixtures::class)
             ->holdingRule('Held', 'Held rule.', proposer: 'Planner', approver: 'Owner')
             ->ruleCalled('Held');
@@ -62,6 +63,7 @@ final class RemoveRuleTest extends TestCase
             fn () => $this->journal->run(new RemoveRuleCommand($this->active->id)),
             CommandAdmissionRefused::class,
         );
+
         $this->assertSame(RuleStatus::Active, $this->active->refresh()->status);
     }
 

@@ -76,10 +76,12 @@ final class ProfileDraft extends Model implements ReadableModel
 
         foreach ($profiles as $profile) {
             $draft = new self();
+
             $draft->setRawAttributes([
                 'id' => (string) Str::ulid(),
                 'profile_key' => $profile,
             ]);
+
             $draft->insertIfAbsent();
         }
 

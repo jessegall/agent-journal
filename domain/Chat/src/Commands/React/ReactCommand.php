@@ -16,9 +16,9 @@ use App\Support\Command;
  *
  * @extends Command<string>
  */
-#[Authorize(MessagePolicy::class, AccessType::Create)]
-#[RetainedActorRequestKey]
 #[RepeatableRead]
+#[RetainedActorRequestKey]
+#[Authorize(MessagePolicy::class, AccessType::Create)]
 final readonly class ReactCommand extends Command
 {
     public function __construct(public string $messageId, public string $emoji) {}

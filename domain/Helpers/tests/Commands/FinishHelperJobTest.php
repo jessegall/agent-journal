@@ -26,10 +26,12 @@ final class FinishHelperJobTest extends TestCase
         $helpers->runLifecycle(new FinishHelperJobCommand($job->id, 'stop-attempt:attempt-1'));
 
         $finished = HelperJob::query()->acrossActors()->findOrFail($job->id);
+
         $this->assertSame(
             [JobStatus::Finished, 'stop-attempt:attempt-1'],
             [$finished->status, $finished->stop_evidence_reference],
         );
+
         $this->assertNotNull($finished->finished_at);
     }
 

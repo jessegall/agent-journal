@@ -36,11 +36,13 @@ final readonly class MorphAliases
             foreach (FolderClasses::in($path, Model::class) as $class) {
                 $place = array_diff(array_slice(explode('\\', $class), 1, -1), ['Models']);
                 $areas = array_map(fn (string $area) => Str::kebab($area), $place);
+
                 $alias = implode('.', [
                     'core',
                     ...$areas,
                     self::modelName($class),
                 ]);
+
                 $map[$alias] = $class;
             }
         }

@@ -89,6 +89,7 @@ final readonly class ToolRules
         foreach (self::GH_READS as $group => $verbs) {
             foreach ($verbs as $verb) {
                 $id = "core.gh.{$group}-{$verb}";
+
                 $rules[] = CommandRule::forProgram($id, $gh, [
                     $group,
                     $verb,
@@ -99,6 +100,7 @@ final readonly class ToolRules
         foreach (self::GH_WRITES as $group => $verbs) {
             foreach ($verbs as $verb) {
                 $id = "core.gh.{$group}-{$verb}";
+
                 $rules[] = CommandRule::forProgram($id, $gh, [
                     $group,
                     $verb,

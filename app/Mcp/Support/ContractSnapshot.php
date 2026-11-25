@@ -30,6 +30,7 @@ final readonly class ContractSnapshot
             ...ProtocolVersion::serverSupported(),
             ...ProtocolVersion::initializeSupported(),
         ]);
+
         sort($versions);
         $refusals = array_column(RefusalCode::cases(), 'value');
         sort($refusals);

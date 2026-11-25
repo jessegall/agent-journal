@@ -40,6 +40,7 @@ final class BeginUploadTest extends TestCase
             ),
             UploadInvalid::class,
         );
+
         $this->assertSame(0, TextUpload::query()->count());
     }
 }

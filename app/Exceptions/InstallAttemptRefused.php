@@ -56,6 +56,7 @@ final class InstallAttemptRefused extends RuntimeException implements CodedRefus
     public static function movedOn(string $reference, int $version): self
     {
         $refusal = new self("Install attempt {$reference} changed since you saw it; it is at version {$version} now.");
+
         $refusal->outcome = [
             'reference' => $reference,
             'version' => $version,
@@ -67,6 +68,7 @@ final class InstallAttemptRefused extends RuntimeException implements CodedRefus
     public static function spent(string $reference, string $bindingId): self
     {
         $refusal = new self("Install attempt {$reference} was already used: it connected binding {$bindingId}.");
+
         $refusal->outcome = [
             'reference' => $reference,
             'state' => 'spent',
@@ -79,6 +81,7 @@ final class InstallAttemptRefused extends RuntimeException implements CodedRefus
     public static function cancelled(string $reference): self
     {
         $refusal = new self("Install attempt {$reference} was cancelled; start a new one for another line.");
+
         $refusal->outcome = [
             'reference' => $reference,
             'state' => 'cancelled',

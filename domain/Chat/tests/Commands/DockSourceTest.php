@@ -103,13 +103,16 @@ final class DockSourceTest extends TestCase
         parent::setUp();
 
         $this->owner = $this->journal->owner()->ownerUser();
+
         $this->agentId = $this->journal->idleAgent('Builder')
             ->startSession('Builder', 'Builder')
             ->sessionCalled('Builder')->agent_id;
+
         $this->journal->inboxes()->pairChat(
             ActorIdentity::of($this->owner),
             ActorIdentity::ofClass(Agent::class, $this->agentId),
         );
+
         $this->task = Task::factory()->create(['title' => 'Ship the dock']);
         $this->journal->actAsUserId($this->owner->id);
         $this->conversationId = $this->app->make(DockRequests::class)->inboxWith($this->agentId)->id;
@@ -127,6 +130,7 @@ final class DockSourceTest extends TestCase
             $added->outcome,
             $present->outcome,
         ]);
+
         $this->assertSame($added->placementId, $present->placementId);
         $this->assertSame(1, DockPlacement::query()->count());
     }
@@ -168,12 +172,15 @@ final class DockSourceTest extends TestCase
         $placementId = $this->journal->mcpTool($caller, 'dock_add', $add)->assertOk()
             ->assertJsonPath('result.structuredContent.outcome', 'added')
             ->json('result.structuredContent.placementId');
+
         $listed = $this->journal->mcpTool($caller, 'dock_list')->assertOk()
             ->assertJsonPath('result.structuredContent.placements.0.placementId', $placementId)
             ->assertJsonPath('result.structuredContent.placements.0.title', self::PLACEMENT_TITLE)
             ->assertJsonPath('result.structuredContent.placements.0.state', 'shown')
             ->json('result.structuredContent.placements.0');
+
         $this->journal->relayAgentCommands($caller);
+
         $this->artisan('dock:list', ['--json' => true])
             ->expectsOutputToContain((string) json_encode($listed, JSON_UNESCAPED_SLASHES))
             ->assertExitCode(0);
@@ -184,6 +191,7 @@ final class DockSourceTest extends TestCase
             'source_id' => $this->task->id,
             'request_key' => 'dock-remove',
         ])->assertOk()->assertJsonPath('result.structuredContent.outcome', 'removed');
+
         $this->journal->mcpTool($caller, 'dock_add', $add)->assertOk()
             ->assertJsonPath('result.structuredContent.outcome', 'added')
             ->assertJsonPath('result.structuredContent.placementId', $placementId);
@@ -202,6 +210,7 @@ final class DockSourceTest extends TestCase
             'name' => 'dock_add',
             'arguments' => ['type' => 'tasks.task', 'id' => $this->task->id, 'request_key' => 'forged-dock'],
         ])->assertBadRequest()->assertJsonPath('error.code', -32602);
+
         $this->journal->relayAgentCommands($helper);
         $this->artisan('dock:add', ['type' => 'tasks.task', 'id' => $this->task->id])->assertFailed();
 
@@ -270,6 +279,7 @@ final class DockSourceTest extends TestCase
     public function test_a_message_docked_from_its_row_answers_added_then_present_and_shows_its_first_line(): void
     {
         $owner = $this->journal->ownerUser();
+
         $session = $this->journal->idleAgent('Dock builder')
             ->startSession('Dock builder', 'Dock builder')
             ->sessionCalled('Dock builder');
@@ -302,6 +312,7 @@ final class DockSourceTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->agent = TestStart::start();
+
         $this->chatInboxId = $this->journal->inboxes()->pairChat(
             ActorIdentity::of($this->owner),
             ActorIdentity::of($this->agent->agent),
@@ -319,10 +330,13 @@ final class DockSourceTest extends TestCase
                 ['inboxId' => $this->chatInboxId, 'type' => Note::linkType(), 'id' => $ownersNote->id],
             )
             ->assertJson(['outcome' => 'added']);
+
         $this->journal->relayAgentCommands($this->agent);
+
         $this->artisan('dock:add', ['type' => Note::linkType(), 'id' => $agentsNote->id, '--json' => true])
             ->expectsOutputToContain('"outcome":"added"')
             ->assertExitCode(0);
+
         $this->journal->mcpTool($this->agent, 'dock_list')->assertOk()
             ->assertJsonPath('result.structuredContent.placements.0.state', 'unavailable')
             ->assertJsonPath('result.structuredContent.placements.0.title', '')
@@ -330,6 +344,7 @@ final class DockSourceTest extends TestCase
             ->assertJsonPath('result.structuredContent.placements.1.state', 'shown');
 
         $placement = DockPlacement::query()->where('dockable_id', $agentsNote->id)->sole();
+
         $this->journal->mcpTool($this->agent, 'dock_remove', [
             'placement_id' => $placement->id,
             'type' => Note::linkType(),

@@ -168,6 +168,7 @@ final readonly class MountRules
 
         $folder = self::SESSIONS_ROOT.'/'.$sessionId;
         $files = ManifestMount::daemonBind($folder, self::SESSION_TARGET, false);
+
         $settings = ManifestMount::daemonBind(
             $folder.'/'.self::MANAGED_SETTINGS_FOLDER.'/'.self::MANAGED_SETTINGS_FILE,
             self::MANAGED_SETTINGS_TARGET,

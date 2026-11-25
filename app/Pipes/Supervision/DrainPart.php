@@ -28,6 +28,7 @@ final readonly class DrainPart implements Pipe
             $isKept = $stream === OutputStream::Stdout && strlen($stdout) < StepOutcome::KEPT_OUTPUT_BYTE_LIMIT;
             $stdout .= $isKept ? $bytes : '';
         };
+
         $drained = $spawned->process->drain($keep, SpawnedProcess::DRAIN_SECONDS, $queued->state->stop);
 
         return new DrainedPart($spawned, $stdout, $drained);

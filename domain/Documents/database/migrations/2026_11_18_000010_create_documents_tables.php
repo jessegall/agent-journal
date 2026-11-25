@@ -44,6 +44,7 @@ return new class extends Migration
                 'number_group_id',
                 'number',
             ]);
+
             $table->unique([
                 'document_id',
                 'number',

@@ -67,7 +67,9 @@ final class OpenDocumentTest extends TestCase
             $opened->version,
             $opened->baseRevisionNumber,
         ]);
+
         $this->assertSame($opened->token, $again->token);
+
         $this->assertSame([
             '1 Goal',
             '2 Steps',

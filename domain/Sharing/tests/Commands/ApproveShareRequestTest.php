@@ -86,15 +86,18 @@ final class ApproveShareRequestTest extends TestCase
         parent::setUp();
 
         $this->owner = $this->journal->owner()->ownerUser();
+
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forUser($this->owner->id),
             new OwnerAuthority('test'),
         );
+
         $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
         # Goal
         Ship it.
 
         TEXT));
+
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->root = Document::query()->where('number', 1)->sole()->shareIdentity();
         $this->configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
@@ -104,6 +107,7 @@ final class ApproveShareRequestTest extends TestCase
     public function test_the_owner_approves_a_proposal_into_a_pending_grant(): void
     {
         $facts = [];
+
         Event::listen([
             ShareRequested::class,
             ShareCreated::class,
@@ -113,6 +117,7 @@ final class ApproveShareRequestTest extends TestCase
                 $fact->share->state,
             ];
         });
+
         $this->request('01JD8X0G9M3QZ6V4K2PROPOSE1');
         $proposal = Share::query()->sole();
 
@@ -120,6 +125,7 @@ final class ApproveShareRequestTest extends TestCase
         $this->journal->actAsUserId($this->owner->id);
         $saved = $this->preview();
         $this->app->make(RequestKey::class)->set('01JD8X0G9M3QZ6V4K2APPROVE1');
+
         $summary = $this->app->make(CommandBus::class)->run(
             new ApproveShareRequestCommand(
                 $proposal->id,
@@ -129,6 +135,7 @@ final class ApproveShareRequestTest extends TestCase
                 '01JD8X0G9M3QZ6V4K2APPROVE1',
             ),
         );
+
         $granted = Share::query()->findOrFail($proposal->id);
 
         $this->assertSame([
@@ -138,18 +145,22 @@ final class ApproveShareRequestTest extends TestCase
             $summary->shareId,
             $summary->state,
         ]);
+
         $this->assertSame($this->owner->id, $granted->owner_user_id);
         $this->assertSame(Share::FIRST_SCOPE_VERSION, $granted->scope_version);
         $this->assertNotNull($granted->token_digest);
+
         $this->assertEqualsWithDelta(
             CarbonImmutable::now()->addHour()->getTimestamp(),
             $granted->expires_at->getTimestamp(),
             5,
         );
+
         $this->assertSame(
             GatewayOperationType::Open,
             ShareGatewayOperation::query()->readAll('one operation')->sole()->type,
         );
+
         $this->assertTrue(
             ShareAudit::query()->readAll('two audits')->get()->contains(
                 fn (ShareAudit $audit) => $audit->type === ShareAuditType::Approved,
@@ -171,6 +182,7 @@ final class ApproveShareRequestTest extends TestCase
         );
 
         $this->journal->actAsAgentIds($this->start->agent->id, $this->start->session->id);
+
         $this->assertEquals(
             [new ShareProposalStatus($granted->number, ShareStatus::Pending)],
             $this->app->make(ProposalStatusResolver::class)->ownProposals(),

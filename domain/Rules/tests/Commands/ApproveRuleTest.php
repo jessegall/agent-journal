@@ -44,6 +44,7 @@ final class ApproveRuleTest extends TestCase
 
         Event::fake([RuleApproved::class]);
         $this->journal->agent('Planner')->owner();
+
         $this->proposed = $this->journal->fixtures(RuleFixtures::class)
             ->proposedRule('Proposed', 'No phase waits on the user.', 'Planner', 'Agents keep forgetting it.')
             ->ruleCalled('Proposed');
@@ -54,10 +55,12 @@ final class ApproveRuleTest extends TestCase
         $this->journal->run(new ApproveRuleCommand($this->proposed->id));
 
         $this->assertSame(RuleStatus::Active, $this->proposed->refresh()->status);
+
         $this->assertSame(
             ["Rule {$this->proposed->number}: No phase waits on the user."],
             array_map(TestText::words(...), $this->app->make(ActiveRules::class)->reminders()),
         );
+
         Event::assertDispatched(
             RuleApproved::class,
             fn (RuleApproved $event) => $event->ruleId === $this->proposed->id,
@@ -72,6 +75,7 @@ final class ApproveRuleTest extends TestCase
             fn () => $this->journal->run(new ApproveRuleCommand($this->proposed->id)),
             CommandAdmissionRefused::class,
         );
+
         $this->assertSame(RuleStatus::Proposed, $this->proposed->refresh()->status);
         Event::assertNotDispatched(RuleApproved::class);
     }
@@ -84,6 +88,7 @@ final class ApproveRuleTest extends TestCase
             fn () => $this->journal->run(new ApproveRuleCommand($this->proposed->id)),
             RuleNotProposed::class,
         );
+
         $this->assertSame(RuleStatus::Denied, $this->proposed->refresh()->status);
     }
 

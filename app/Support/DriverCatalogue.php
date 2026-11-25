@@ -122,6 +122,7 @@ final class DriverCatalogue implements DriverCatalogueContract
         $driver = $this->forKey($this->keyFor($family, $driverType));
         $registration = $driver->descriptor();
         $support = $driver->capabilities(BoundTarget::beforePlacement());
+
         $support->assertSupports([
             ...$registration->profileRequirements,
             ...$neededCapabilities,

@@ -16,6 +16,6 @@ use App\Support\Command;
  *
  * @extends Command<string>
  */
-#[Authorize(MessagePolicy::class, AccessType::Create)]
 #[RepeatableRead]
+#[Authorize(MessagePolicy::class, AccessType::Create)]
 final readonly class DeliverClosingWordsCommand extends Command {}

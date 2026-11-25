@@ -36,6 +36,7 @@ final class UnpinMessageTest extends TestCase
     public function test_a_member_takes_away_their_own_pin_and_leaves_the_others(): void
     {
         $chat = $this->journal->chatOf('Owner', 'Planner');
+
         $pins = $this->journal->fixtures(ChatFixtures::class)
             ->pin($chat, $this->message, 'Owner')
             ->pin($chat, $this->message, 'Planner');

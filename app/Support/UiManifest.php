@@ -46,6 +46,7 @@ final readonly class UiManifest
         $root = $this->files->realPath($base);
         $components = $this->components($base, $root);
         $folders = $this->domainFolders($root);
+
         $hash = substr(sha1((string) json_encode([
             $components,
             $folders,

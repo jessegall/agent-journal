@@ -35,6 +35,7 @@ return new class extends Migration
                 'target_id',
                 'id',
             ]);
+
             $table->unique([
                 'author_type',
                 'author_id',

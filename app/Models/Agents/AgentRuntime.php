@@ -268,6 +268,7 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
             ->inSequenceOrder()
             ->readAll('the open setting requests of one runtime decide what it has requested')
             ->get();
+
         $lastOfEachOperation = $open->keyBy(fn (DriverRequest $request) => $request->operation->value);
 
         $modelChange = $lastOfEachOperation->get(DriverOperation::ChangeModel->value);

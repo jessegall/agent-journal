@@ -72,6 +72,7 @@ final class CommentOnDocumentTest extends TestCase
         parent::setUp();
 
         $this->journal->owner();
+
         $this->journal->run(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
         # Goal
         Ship the editor.
@@ -87,6 +88,7 @@ final class CommentOnDocumentTest extends TestCase
         $commentId = $this->journal->run(new CommentOnDocumentCommand('1', 'Looks good.'));
 
         $comment = Comment::query()->findOrFail($commentId);
+
         $this->assertSame(
             [Document::linkType(), Document::query()->sole()->id, 'Looks good.', $this->journal->ownerUser()->id],
             [$comment->target_type, $comment->target_id, $comment->body, $comment->author_id],
@@ -99,6 +101,7 @@ final class CommentOnDocumentTest extends TestCase
             fn () => $this->journal->run(new CommentOnDocumentCommand('99', 'Lost.')),
             DocumentMissing::class,
         );
+
         $this->assertSame(0, Comment::query()->count());
     }
 
@@ -113,8 +116,10 @@ final class CommentOnDocumentTest extends TestCase
             'Looks right.',
             'Which editor?',
         ], array_map(fn ($item) => $item->comment->body, $items));
+
         $this->assertInstanceOf(RecordCommentView::class, $items[0]);
         $this->assertInstanceOf(TextCommentView::class, $items[1]);
+
         $this->assertSame([
             '1',
             'the editor',
@@ -122,6 +127,7 @@ final class CommentOnDocumentTest extends TestCase
             $items[1]->anchor->versionId,
             $items[1]->anchor->quote,
         ]);
+
         $this->assertSame('1', $this->documents()->show(1)->revision);
     }
 
@@ -194,6 +200,7 @@ final class CommentOnDocumentTest extends TestCase
 
         $this->assertStringContainsString(self::THIRD_PART, $sectionPlace->part->text);
         $this->assertInstanceOf(TextCommentLocation::class, $linesPlace);
+
         $this->assertSame([
             2,
             5,
@@ -227,6 +234,7 @@ final class CommentOnDocumentTest extends TestCase
         );
 
         $comment = $this->comments()->list($this->document(), new IdListPage())->comments[0]->comment;
+
         $this->assertSame([
             Agent::storedType(),
             $agent->id,

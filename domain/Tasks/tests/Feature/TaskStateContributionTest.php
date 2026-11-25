@@ -53,6 +53,7 @@ final class TaskStateContributionTest extends TestCase
     public function test_a_failed_push_rolls_the_start_back(): void
     {
         $task = $this->tasks->task('Write the walk')->taskCalled('Write the walk');
+
         AgentStackRow::query()->withoutGlobalScopes()->forTarget($this->writerTarget())->sole()->closeAt(
             CarbonImmutable::now(),
         );
@@ -63,6 +64,7 @@ final class TaskStateContributionTest extends TestCase
         } catch (StackAlreadyClosed) {
             $stored = $task->fresh();
             $this->assertNotNull($stored);
+
             $this->assertSame([
                 TaskStatus::Open,
                 0,
@@ -126,6 +128,7 @@ final class TaskStateContributionTest extends TestCase
             "tasks.work {$first->id} 1",
             "tasks.work {$second->id} 1",
         ], $this->taskFrames());
+
         $this->assertSame($first->number, $tasks->currentForCaller()->get()->number);
     }
 
@@ -144,6 +147,7 @@ final class TaskStateContributionTest extends TestCase
             "tasks.work {$blocked->id} 1",
             "tasks.work {$cancelled->id} 1",
         ], $this->taskFrames());
+
         $this->assertTrue($this->app->make(AssignedTaskResolver::class)->currentForCaller()->isEmpty());
     }
 
@@ -160,6 +164,7 @@ final class TaskStateContributionTest extends TestCase
         $this->journal->run(new FocusTaskCommand($first->id));
 
         $this->assertSame([$first->id], $this->focusedTaskIds());
+
         $this->assertSame([
             "tasks.work {$second->id} 1",
             "tasks.work {$first->id} 1",

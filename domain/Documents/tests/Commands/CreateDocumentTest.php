@@ -296,6 +296,7 @@ final class CreateDocumentTest extends TestCase
             ActorContext::forAgent(TestIds::of($agent)),
             TestStartAuthority::forAgent(TestIds::of($agent)),
         );
+
         $call = new SignedCall(TestIds::of(500 + $agent), CarbonImmutable::now(), str_repeat('0', 64));
         $context = new AgentContext(TestIds::of($agent), TestIds::of($agent * 10), $call, null);
         $this->app->instance(AgentContext::class, $context);

@@ -36,6 +36,7 @@ final class SequenceFixturesTest extends TestCase
             'Close',
             ['Read the brief.'],
         );
+
         AgentStackRow::query()->withoutGlobalScopes()->where(
             'session_id',
             $this->journal->sessionOf('Ada')->id,

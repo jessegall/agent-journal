@@ -72,6 +72,7 @@ final class PlanFixtures
     ): self {
         $this->aliases->claim($name);
         $owner = $this->journal->ownerUser();
+
         $plan = Plan::factory()->create([
             'title' => $title ?? $name,
             'brief' => $brief,
@@ -80,6 +81,7 @@ final class PlanFixtures
             'creator_type' => $owner->actorType(),
             'creator_id' => $owner->actorId(),
         ]);
+
         $this->aliases->remember($name, $plan);
 
         return $this;
@@ -99,6 +101,7 @@ final class PlanFixtures
     {
         $planId = (string) $this->aliases->read(Plan::class, $plan);
         $this->aliases->claim($name);
+
         $this->aliases->rememberResult(
             $name,
             $this->journal->asOwner(new AddPhaseCommand($planId, $title ?? $name)),

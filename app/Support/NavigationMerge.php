@@ -79,10 +79,12 @@ final readonly class NavigationMerge
 
         foreach ($this->listedChildren($navigation) as $child) {
             $listed = count($contributionPaths);
+
             $contributionPaths[$listed] = [
                 ...$path,
                 $child->key,
             ];
+
             array_push($children, ...$this->gathered($child, $path, $listed, $occurrences, $contributionPaths));
         }
 

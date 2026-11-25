@@ -32,6 +32,7 @@ return new class extends Migration
             $table->timestampsTz();
 
             $table->index('status');
+
             $table->unique([
                 'number_group_id',
                 'number',
@@ -56,6 +57,7 @@ return new class extends Migration
                 'number_group_id',
                 'number',
             ]);
+
             $table->index([
                 'plan_id',
                 'number',
@@ -76,6 +78,7 @@ return new class extends Migration
                 'phase_id',
                 'position',
             ]);
+
             $table->index([
                 'phase_id',
                 'position',

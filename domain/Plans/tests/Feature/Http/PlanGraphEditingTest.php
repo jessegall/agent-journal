@@ -38,15 +38,18 @@ final class PlanGraphEditingTest extends TestCase
         parent::setUp();
 
         $this->owner = $this->journal->owner()->ownerUser();
+
         $made = $this->journal->fixtures(TaskFixtures::class)
             ->task('Design the graph')
             ->task('Build the graph')
             ->task('Ship the graph');
+
         $this->tasks = [
             'design' => $made->taskCalled('Design the graph'),
             'build' => $made->taskCalled('Build the graph'),
             'ship' => $made->taskCalled('Ship the graph'),
         ];
+
         $this->plan = $this->journal->fixtures(PlanFixtures::class)
             ->plan('Ship', title: 'Ship the graph')
             ->phaseWithTask('Ship', 'Design', $this->tasks['design']->assignmentIdentity())
@@ -72,6 +75,7 @@ final class PlanGraphEditingTest extends TestCase
             'ship',
             'build',
         ]], $this->waits());
+
         $this->graphAction('apply')->assertSessionHas('refusal_code', 'plan-graph-change-missing');
     }
 
@@ -110,6 +114,7 @@ final class PlanGraphEditingTest extends TestCase
                 'design',
             ],
         ], $this->waits());
+
         $this->graphAction('undo')->assertSessionHas('refusal_code', 'plan-graph-change-missing');
     }
 

@@ -116,6 +116,7 @@ final class HelperFixtures
     public function assertPendingSteering(string $job, string $sender, string $text): self
     {
         $from = $this->journal->actorCalled($sender);
+
         $waiting = HelperMessage::query()
             ->acrossActors()
             ->where('helper_identity_id', $this->identityOf($job)->id)

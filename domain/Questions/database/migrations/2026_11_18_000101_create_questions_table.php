@@ -29,6 +29,7 @@ return new class extends Migration
                 'created_at',
                 'id',
             ]);
+
             $table->index([
                 'target_type',
                 'target_id',

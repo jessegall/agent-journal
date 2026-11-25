@@ -31,6 +31,7 @@ final readonly class HandManagedSettingsToHost implements Listener
         }
 
         $settings = $this->files->read(FilePath::in(Place::Project, self::TEMPLATE));
+
         $event->additions->addFolder(new StartFolder(
             MountRules::MANAGED_SETTINGS_FOLDER,
             [new StartFile(MountRules::MANAGED_SETTINGS_FILE, $settings)],

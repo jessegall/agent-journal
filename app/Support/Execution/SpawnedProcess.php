@@ -86,6 +86,7 @@ final class SpawnedProcess
         StopSignalContract $stop = new StopSignal(),
     ): bool {
         $deadline = null;
+
         $streams = array_filter([
             1 => $this->pipes[1] ?? null,
             2 => $this->pipes[2] ?? null,

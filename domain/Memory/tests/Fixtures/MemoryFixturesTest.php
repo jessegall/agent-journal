@@ -22,9 +22,11 @@ final class MemoryFixturesTest extends TestCase
         $memories = $this->journal->owner()->agent('Keeper', 'read-only-helper')->fixtures(MemoryFixtures::class)
             ->memory('Plan', 'Keeper', 'First words.', 4)
             ->assertRevision('Plan', revision: 1, weight: 4, text: 'First words.');
+
         $id = $memories->memoryCalled('Plan')->id;
 
         $this->journal->runAs('Keeper', new EditMemoryCommand($id, 1, 'Newer words.', 9));
+
         $this->journal->assertRefused(
             MemoryRevisionChanged::class,
             fn () => $this->journal->runAs('Keeper', new EditMemoryCommand($id, 1, 'Stale words.', null)),

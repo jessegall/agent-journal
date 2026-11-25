@@ -33,6 +33,7 @@ final readonly class SendMessageHandler implements CommandHandler
         }
 
         $inbox = Inbox::findLockedById($command->inboxId);
+
         $target = $command->targetMessageNumber === null
             ? null
             : Message::query()->inInbox($inbox->id)->withNumber($command->targetMessageNumber)->firstOrFail();

@@ -74,6 +74,7 @@ final class NavigationAnswerTool extends JournalWriteTool
         $choose = $arguments->optionalText('choose');
         $confirm = $arguments->optionalText('confirm');
         $parameter = $arguments->optionalText('type_parameter');
+
         $given = array_filter([
             $keys !== [],
             $choose !== null,

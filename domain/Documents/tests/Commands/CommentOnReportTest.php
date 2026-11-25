@@ -35,6 +35,7 @@ final class CommentOnReportTest extends TestCase
         $commentId = $this->journal->run(new CommentOnReportCommand('1', 'Looks good.'));
 
         $comment = Comment::query()->findOrFail($commentId);
+
         $this->assertSame(
             [Report::linkType(), Report::query()->sole()->id, 'Looks good.', $this->journal->ownerUser()->id],
             [$comment->target_type, $comment->target_id, $comment->body, $comment->author_id],
@@ -47,6 +48,7 @@ final class CommentOnReportTest extends TestCase
             fn () => $this->journal->run(new CommentOnReportCommand('99', 'Lost.')),
             ReportMissing::class,
         );
+
         $this->assertSame(0, Comment::query()->count());
     }
 }

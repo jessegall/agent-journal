@@ -110,6 +110,7 @@ final readonly class CodexSignIn implements SignInProtocol
             'id' => self::ACCOUNT_REQUEST,
             'params' => [],
         ]));
+
         $process->waitFor(fn (string $output) => self::answerIn($output, self::ACCOUNT_REQUEST) !== null);
         $account = self::accountIn($process->output());
         $status = $this->verify($directory);

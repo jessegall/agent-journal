@@ -58,12 +58,14 @@ final class TaskFixtures
     {
         $this->aliases->claim($name);
         $owner = $this->journal->ownerUser();
+
         $task = Task::factory()->create([
             'title' => $name,
             'status' => $status,
             'creator_type' => $owner->actorType(),
             'creator_id' => $owner->actorId(),
         ]);
+
         $this->aliases->remember($name, $task);
 
         return $this;
@@ -175,6 +177,7 @@ final class TaskFixtures
     public function assertWait(string $task, string $prerequisite, bool $isSatisfied, bool $isWaived = false): self
     {
         $before = $this->taskCalled($prerequisite);
+
         $wait = TaskWait::findBetween($this->taskCalled($task)->id, $before->id)
             ?? Assert::fail("{$task} does not wait on {$prerequisite}.");
 

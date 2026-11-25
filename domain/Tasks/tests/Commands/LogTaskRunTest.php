@@ -66,6 +66,7 @@ final class LogTaskRunTest extends TestCase
             'Line 4.',
             'Line 5.',
         ], self::texts($newest->lines));
+
         $this->assertSame([
             4,
             5,
@@ -73,10 +74,12 @@ final class LogTaskRunTest extends TestCase
             $newest->olderBefore,
             $newest->newerAfter,
         ]);
+
         $this->assertSame([
             'Line 2.',
             'Line 3.',
         ], self::texts($older->lines));
+
         $this->assertSame([
             'Line 4.',
             'Line 5.',

@@ -28,6 +28,7 @@ trait ReadsAutoAssignmentChange
     {
         try {
             $fields = $this->changeFields((int) $this->option('size'));
+
             $change = $call([
                 ...$fields,
                 'requestKey' => $this->requestKey(),

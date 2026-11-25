@@ -29,6 +29,7 @@ final class FinishReminderTest extends TestCase
         parent::setUp();
 
         $this->journal->user('Colleague')->owner();
+
         $this->reminder = $this->journal->fixtures(ReminderFixtures::class)
             ->reminder('Book the room', 'Owner', CarbonImmutable::parse('2026-11-30 09:00'))
             ->reminderCalled('Book the room');
@@ -59,6 +60,7 @@ final class FinishReminderTest extends TestCase
             fn () => $this->journal->run(new FinishReminderCommand($this->reminder->id)),
             RecordUnavailable::class,
         );
+
         $this->journal->actAs('Owner');
         $this->assertSame(ReminderStatus::Open, $this->reminder->refresh()->status);
     }

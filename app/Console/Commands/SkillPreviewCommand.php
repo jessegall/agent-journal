@@ -70,6 +70,7 @@ final class SkillPreviewCommand extends Command
         }
 
         $this->line("Skill {$audience['key']} reaches {$audience['audience']}.");
+
         $this->table([
             'Agent',
             'Name',

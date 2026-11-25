@@ -246,6 +246,7 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
             ->forTarget($target)
             ->lockForUpdate()
             ->firstOr(StackMissing::throwing()->forTarget($target->description()));
+
         $row->assertOpen($target);
 
         return $row;
@@ -272,6 +273,7 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
             ->authorizedFor($target)
             ->lockForUpdate()
             ->firstOr(StackMissing::throwing()->forTarget($target->description()));
+
         $row->assertOpen($target);
 
         return $row;

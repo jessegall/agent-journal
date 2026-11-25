@@ -148,14 +148,17 @@ final class SettleDocumentTest extends TestCase
         $events = $this->app->make(Dispatcher::class);
         $plain = [DocumentCreated::class, DocumentOpened::class, ReportFiled::class, RecordSettled::class];
         $events->listen($plain, fn (object $fact) => $this->facts[] = class_basename($fact));
+
         $events->listen(
             DocumentDraftSaved::class,
             fn (DocumentDraftSaved $saved) => $this->facts[] = "DocumentDraftSaved v{$saved->version}",
         );
+
         $events->listen(
             DocumentClosed::class,
             fn (DocumentClosed $closed) => $this->facts[] = "DocumentClosed {$closed->revisionNumber}",
         );
+
         $events->listen(
             DocumentPublished::class,
             fn (DocumentPublished $published) => $this->facts[] = "DocumentPublished {$published->revisionNumber}",

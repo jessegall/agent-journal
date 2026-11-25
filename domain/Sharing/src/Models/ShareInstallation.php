@@ -60,10 +60,12 @@ final class ShareInstallation extends Model implements EventSource, ReadableMode
     public static function create(): self
     {
         $installation = new self();
+
         $installation->setRawAttributes([
             'id' => $installation->newUniqueId(),
             'name' => self::NAME,
         ]);
+
         $installation->insertIfAbsent();
 
         return self::query()->named(self::NAME)->lockForUpdate()->firstOrFail();

@@ -36,12 +36,14 @@ final class ShareFixtures
         CarbonImmutable $expiresAt,
     ): self {
         $this->aliases->claim($name);
+
         $grant = new ShareGrant(
             $this->journal->ownerUser()->id,
             $configuration->id,
             $configuration->configuration_version,
             ShareToken::generate(),
         );
+
         $this->aliases->remember($name, Share::create($root, $expiresAt, $grant));
 
         return $this;
@@ -75,6 +77,7 @@ final class ShareFixtures
             [$share->root_type, $share->root_id, $share->owner_user_id, $share->configuration_version, $share->status],
             "The share {$name} was granted otherwise.",
         );
+
         Assert::assertTrue($expiresAt->equalTo($share->expires_at), "The share {$name} ends at another time.");
 
         return $this;

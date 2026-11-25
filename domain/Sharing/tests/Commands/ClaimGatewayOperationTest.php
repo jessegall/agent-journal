@@ -51,11 +51,13 @@ final class ClaimGatewayOperationTest extends TestCase
         $this->assertSame(GatewayOperationType::Open, $claim->type);
         $this->assertSame(1, $claim->operation->endpointVersion);
         $this->assertSame(64, strlen($claim->operation->leaseToken));
+
         $this->assertEqualsWithDelta(
             CarbonImmutable::now()->addSeconds(90)->getTimestamp(),
             $claim->operation->leaseEndsAt,
             2,
         );
+
         $this->assertSame($this->configuration->id, $claim->operation->configurationId());
         $this->assertNull($this->claim(self::FIRST_RUN), self::HELD_OPERATION);
     }

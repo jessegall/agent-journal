@@ -26,6 +26,7 @@ return new class extends Migration
                 'actor_type',
                 'actor_id',
             ]);
+
             $table->unique([
                 'helper_actor_type',
                 'helper_actor_id',
@@ -81,6 +82,7 @@ return new class extends Migration
                 'actor_type',
                 'actor_id',
             ]);
+
             $table->unique([
                 'actor_type',
                 'actor_id',

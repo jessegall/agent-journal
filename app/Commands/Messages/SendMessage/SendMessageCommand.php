@@ -18,9 +18,9 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  *
  * @extends Command<string>
  */
-#[Authorize(MessagePolicy::class, AccessType::Create)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]
+#[Authorize(MessagePolicy::class, AccessType::Create)]
 final readonly class SendMessageCommand extends Command
 {
     public function __construct(

@@ -68,6 +68,7 @@ final readonly class RedeemProjectInvitationHandler implements CommandHandler
         $binding = ProjectBinding::create($host, $project, $environment, $mainAgent, $folder);
         $invitation->spendOn($binding);
         $attempt->spendOn($binding);
+
         ConnectionAudit::createForBinding(
             ConnectionAuditType::Redeemed,
             ConnectionAuditActor::Host,

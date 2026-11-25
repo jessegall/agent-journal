@@ -26,6 +26,7 @@ return new class extends Migration
                 'dependent_task_id',
                 'prerequisite_task_id',
             ]);
+
             $table->index('prerequisite_task_id');
         });
     }

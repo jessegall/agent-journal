@@ -68,13 +68,16 @@ final class UndockSourceTest extends TestCase
         parent::setUp();
 
         $this->owner = $this->journal->owner()->ownerUser();
+
         $this->agentId = $this->journal->idleAgent('Builder')
             ->startSession('Builder', 'Builder')
             ->sessionCalled('Builder')->agent_id;
+
         $this->journal->inboxes()->pairChat(
             ActorIdentity::of($this->owner),
             ActorIdentity::ofClass(Agent::class, $this->agentId),
         );
+
         $this->task = Task::factory()->create(['title' => 'Ship the dock']);
         $this->journal->actAsUserId($this->owner->id);
         $this->conversationId = $this->app->make(DockRequests::class)->inboxWith($this->agentId)->id;

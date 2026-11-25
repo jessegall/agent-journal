@@ -30,14 +30,17 @@ final readonly class ChatCandidatesController
         ActorLabels $labels,
     ): array {
         $chats->assertManages($input->inboxId);
+
         $members = array_map(
             fn (ActorIdentity $member) => $member->id,
             InboxMember::resolveAttachedTo([$input->inboxId], User::class),
         );
+
         $candidates = array_values(array_map(
             fn (string $userId) => ActorIdentity::ofClass(User::class, $userId),
             array_diff($eligibility->invitableUserIds(null, self::CANDIDATE_LIMIT), $members),
         ));
+
         $names = $labels->labelsFor($candidates);
 
         return ['candidates' => array_map(fn (ActorIdentity $candidate) => ParticipantData::from([

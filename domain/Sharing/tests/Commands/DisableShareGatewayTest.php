@@ -86,13 +86,16 @@ final class DisableShareGatewayTest extends TestCase
                 ),
             ),
         );
+
         $this->assertSame(3, ShareAudit::query()->where('type', ShareAuditType::Revoked->value)->count());
+
         $this->assertSame(
             [GatewayOperationType::Close],
             ShareGatewayOperation::query()->readAll('one close')->get()->map(
                 fn (ShareGatewayOperation $operation) => $operation->type,
             )->all(),
         );
+
         $disabled = ShareGatewayConfiguration::query()->findOrFail($configuration->id);
         $this->assertNotNull($disabled->disabled_at);
         $this->assertFalse($disabled->is_default);

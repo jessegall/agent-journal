@@ -50,10 +50,12 @@ final class ApprovePlanReviewTest extends TestCase
         parent::setUp();
 
         $this->journal->owner();
+
         $this->task = $this->journal->fixtures(TaskFixtures::class)->task(
             'Write',
             'Write the page.',
         )->taskCalled('Write');
+
         $this->plan = $this->journal->fixtures(PlanFixtures::class)
             ->plan('Release', title: 'Build the release page')
             ->phaseWithTask('Release', 'Writing', $this->task->assignmentIdentity())

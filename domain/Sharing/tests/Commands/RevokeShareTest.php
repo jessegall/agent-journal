@@ -86,6 +86,7 @@ final class RevokeShareTest extends TestCase
         $this->configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
         $this->share = $this->grantForADay(TestActors::record('binders.binder', 1), $this->configuration);
         ShareGatewayOperation::create($this->configuration, GatewayOperationType::Open);
+
         Event::listen([
             ShareActivated::class,
             ShareRevoked::class,

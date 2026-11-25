@@ -52,10 +52,12 @@ final class SaveMemoryTest extends TestCase
         $memoryId = $this->journal->run(new SaveMemoryCommand('Run migrate:fresh after a create-migration edit.', 7));
 
         $memory = Memory::query()->findOrFail($memoryId);
+
         $this->assertSame(
             ['Run migrate:fresh after a create-migration edit.', 7, 1],
             [$memory->text, $memory->weight, $memory->revision],
         );
+
         $this->assertSame(
             $memoryId,
             Memory::query()->ownedBy(ActorIdentity::of($this->journal->agentCalled('Keeper')))->sole()->id,
@@ -78,11 +80,13 @@ final class SaveMemoryTest extends TestCase
             CommandInputInvalid::class,
             'text:',
         );
+
         $this->assertThrows(
             fn () => $this->journal->run(new SaveMemoryCommand('Light.', Memory::LIGHTEST - 1)),
             CommandInputInvalid::class,
             'weight:',
         );
+
         $this->assertThrows(
             fn () => $this->journal->run(new SaveMemoryCommand('Heavy.', Memory::HEAVIEST + 1)),
             CommandInputInvalid::class,

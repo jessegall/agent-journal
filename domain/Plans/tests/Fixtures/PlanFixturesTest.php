@@ -71,6 +71,7 @@ final class PlanFixturesTest extends TestCase
             plan: 'Second',
             number: 1,
         );
+
         $this->assertNotSame($plans->phaseCalled('First build')->id, $plans->phaseCalled('Second build')->id);
     }
 

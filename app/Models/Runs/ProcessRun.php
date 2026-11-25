@@ -414,6 +414,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
             'syntax_node',
             'attempt',
         ]);
+
         $last = $parts->last();
         $title = $last === null ? 'Process run' : "Run of {$last->operation}";
         $ended = self::areAllPartsFinal($parts);

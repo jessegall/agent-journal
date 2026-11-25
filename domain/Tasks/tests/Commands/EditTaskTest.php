@@ -45,11 +45,13 @@ final class EditTaskTest extends TestCase
             fn () => $this->journal->run(new EditTaskCommand($this->task->id, 1, 'Stale')),
             TaskRevisionChanged::class,
         );
+
         $this->assertThrows(
             fn () => $this->journal->run(new EditTaskCommand($this->task->id, 2)),
             CommandInputInvalid::class,
             'title:',
         );
+
         $this->assertSame(['Second', 2], [$this->task->refresh()->title, $this->task->revision]);
     }
 

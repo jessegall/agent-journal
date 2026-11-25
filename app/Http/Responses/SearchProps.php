@@ -122,6 +122,7 @@ final readonly class SearchProps
             $answer->directOpen,
             ...$answer->hits,
         ];
+
         $pages = $this->pagesOf($shown);
         $direct = $answer->directOpen === null ? null : PaletteHitData::of($answer->directOpen, $pages[0] ?? null);
         $hits = [];

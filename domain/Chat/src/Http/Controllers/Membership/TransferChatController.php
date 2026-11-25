@@ -26,6 +26,7 @@ final readonly class TransferChatController
         Redirector $redirect,
     ): RedirectResponse {
         $chats->attached($input->inboxId);
+
         $commands->run(new HandOverInboxCommand(
             $input->inboxId,
             ActorIdentity::of($actors->actor()),

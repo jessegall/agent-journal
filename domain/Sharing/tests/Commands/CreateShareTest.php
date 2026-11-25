@@ -135,13 +135,16 @@ final class CreateShareTest extends TestCase
         $this->assertSame($share->number, $summary->number);
         $this->assertSame(Share::FIRST_SCOPE_VERSION, $share->scope_version);
         $this->assertSame([TestIds::of(101)], ShareMember::query()->readAll('one member')->pluck('target_id')->all());
+
         $this->assertSame(
             GatewayOperationType::Open,
             ShareGatewayOperation::query()->readAll('one operation')->sole()->type,
         );
+
         $this->assertSame(ShareAuditType::Created, ShareAudit::query()->readAll('one audit')->sole()->type);
         $this->assertTrue(SharePreview::query()->readAll('one preview')->sole()->consumed_at !== null);
         $this->assertSame(ShareToken::digestOf((string) $share->token_ciphertext), $share->token_digest);
+
         $this->assertEqualsWithDelta(
             CarbonImmutable::now()->addMinutes(ShareDuration::STANDARD_MINUTES)->getTimestamp(),
             $share->expires_at->getTimestamp(),
@@ -149,6 +152,7 @@ final class CreateShareTest extends TestCase
         );
 
         $links = $this->app->make(ShareLinkResolver::class);
+
         $this->assertTrue(
             $links->linkFor(ActorContext::of($this->journal->ownerUser()), $share->id)->isEmpty(),
             self::PENDING_HAS_NO_ADDRESS,
@@ -161,6 +165,7 @@ final class CreateShareTest extends TestCase
             FakeShareGateway::PUBLIC_ORIGIN.'/s/'.$share->token_ciphertext,
             $links->linkFor(ActorContext::of($this->journal->ownerUser()), $share->id)->get(),
         );
+
         $this->assertTrue(
             $links->linkFor(TestActors::user(8), $share->id)->isEmpty(),
             self::OWNER_ONLY_ADDRESS,
@@ -174,10 +179,12 @@ final class CreateShareTest extends TestCase
         $receipt = CommandReceipt::query()->sole();
 
         $this->assertStringNotContainsString($token, (string) json_encode($receipt->getAttributes()));
+
         $this->assertStringNotContainsString(
             FakeShareGateway::PUBLIC_ORIGIN,
             (string) json_encode($receipt->getAttributes()),
         );
+
         $this->assertSame([
             'shareId',
             'number',
@@ -206,6 +213,7 @@ final class CreateShareTest extends TestCase
             ),
             RequestKeyMissing::class,
         );
+
         $this->assertSame(0, Share::query()->count());
     }
 
@@ -219,6 +227,7 @@ final class CreateShareTest extends TestCase
             Share::query()->findOrFail($short->shareId)->expires_at->getTimestamp(),
             5,
         );
+
         $this->assertEqualsWithDelta(
             CarbonImmutable::now()->addDays(30)->getTimestamp(),
             Share::query()->findOrFail($long->shareId)->expires_at->getTimestamp(),
@@ -294,14 +303,17 @@ final class CreateShareTest extends TestCase
     {
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forUser($this->owner->id),
             new OwnerAuthority('test'),
         );
+
         $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
         # Goal
         Ship it.
         TEXT));
+
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->document = Document::query()->where('number', 1)->sole();
 
@@ -309,6 +321,7 @@ final class CreateShareTest extends TestCase
             ActorContext::forUser($this->owner->id),
             new OwnerAuthority('test'),
         );
+
         $this->app->make(CommandBus::class)->run(
             new SaveSharePreviewCommand(
                 $this->document->shareIdentity()->type,
@@ -317,6 +330,7 @@ final class CreateShareTest extends TestCase
                 $this->configuration->id,
             ),
         );
+
         $this->app->make(CurrentActorSetter::class)->clear();
         $preview = SharePreview::query()->sole();
 
@@ -327,14 +341,18 @@ final class CreateShareTest extends TestCase
                 '--minutes' => '60',
             ],
         )->expectsOutputToContain('is pending')->assertExitCode(0);
+
         $share = Share::query()->sole();
+
         $this->artisan('share:list')->expectsOutputToContain($share->id)->doesntExpectOutputToContain(
             FakeShareGateway::PUBLIC_ORIGIN,
         )->assertExitCode(0);
+
         $this->artisan('share:url', ['share' => $share->id])->assertExitCode(1);
 
         $share->status = ShareStatus::Active;
         $share->save();
+
         $this->artisan('share:url', ['share' => $share->id])->expectsOutputToContain(
             FakeShareGateway::PUBLIC_ORIGIN.'/s/',
         )->assertExitCode(0);
@@ -343,7 +361,9 @@ final class CreateShareTest extends TestCase
             'share:revoke',
             ['share' => $share->id],
         )->expectsOutputToContain('is revoked')->assertExitCode(0);
+
         $this->artisan('share:url', ['share' => $share->id])->assertExitCode(1);
+
         $this->assertStringNotContainsString(
             FakeShareGateway::PUBLIC_ORIGIN,
             (string) json_encode($this->app->make(ConnectionInterface::class)->table('command_receipts')->get()->all()),
@@ -361,6 +381,7 @@ final class CreateShareTest extends TestCase
 
         DB::transaction(fn () => ShareInstallation::create());
         $this->journal->actAsUserId($this->journal->ownerUser()->id);
+
         $saved = $this->app->make(CommandBus::class)->run(
             new SaveSharePreviewCommand('binders.binder', TestIds::of(1), [], $second->id),
         );
@@ -374,6 +395,7 @@ final class CreateShareTest extends TestCase
             $secondCreator->table('shares')->insert($this->lastSlotRow($first));
 
             $this->app->instance(OperationDeadline::class, new OperationDeadline(500));
+
             $this->assertThrows(
                 fn () => $this->createRacing($saved, '01JD8X0G9M3QZ6V4K2RACE0001'),
                 StackLockTimedOut::class,
@@ -392,6 +414,7 @@ final class CreateShareTest extends TestCase
             fn () => $this->createRacing($saved, '01JD8X0G9M3QZ6V4K2RACE0002'),
             ShareQuotaReached::class,
         );
+
         $this->assertSame(Share::LIVE_LIMIT, Share::query()->count());
         $this->assertSame(0, Share::query()->where('share_gateway_configuration_id', $second->id)->count());
     }
@@ -463,6 +486,7 @@ final class CreateShareTest extends TestCase
         $this->app->forgetScopedInstances();
         $this->journal->actAsUserId($this->journal->ownerUser()->id);
         $this->app->make(RequestKey::class)->set($key);
+
         $summary = $this->app->make(CommandBus::class)->run(
             new CreateShareCommand($saved->previewId, $saved->checksum, ShareDuration::STANDARD_MINUTES, $key),
         );

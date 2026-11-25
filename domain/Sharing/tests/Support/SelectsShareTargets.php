@@ -28,6 +28,7 @@ trait SelectsShareTargets
             $source,
             $target->linkId,
         );
+
         $root = new ShareRecordCard($source, 'Source', '1');
 
         return new ConsumedPreview($configuration, $source, [$target], new ShareCandidates($root, [$candidate]));

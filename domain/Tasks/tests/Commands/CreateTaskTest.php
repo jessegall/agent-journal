@@ -81,6 +81,7 @@ final class CreateTaskTest extends TestCase
             CommandInputInvalid::class,
             "{$field}:",
         );
+
         $this->assertSame(0, Task::query()->count());
     }
 

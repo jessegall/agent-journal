@@ -17,6 +17,7 @@ final readonly class HideLeftInboxNotificationsHandler extends QuestionCommandHa
     public function handle(HideLeftInboxNotificationsCommand $command): int
     {
         $recipient = ActorIdentity::fromStored($command->recipientType, $command->recipientId);
+
         $questions = Question::query()->ofInbox($command->inboxId)->withTargetType($recipient->type)
             ->ofTarget($recipient->id)->keys();
 

@@ -49,6 +49,7 @@ final class McpServiceProvider extends ServiceProvider
     public function boot(RateLimiter $limiter): void
     {
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/mcp.php');
+
         $this->commands([
             ContractSnapshotCommand::class,
             RelayCommand::class,

@@ -62,6 +62,7 @@ final class PolicyCatalogue implements PolicyCatalogueContract
         }
 
         $this->modelOwners->put($model, $owner);
+
         $this->byPolicy->put($definition->policy, [
             $owner,
             $definition,

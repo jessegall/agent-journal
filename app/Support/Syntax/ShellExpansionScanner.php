@@ -376,6 +376,7 @@ final readonly class ShellExpansionScanner
         $delimiterStart += $stripsTabs ? 1 : 0;
         $delimiterStart += strspn($cursor->source, " \t", $delimiterStart);
         $delimiterLength = strcspn($cursor->source, " \t\n;&|<>()", $delimiterStart);
+
         $delimiter = str_replace([
             "'",
             '"',

@@ -42,6 +42,7 @@ final class DocumentRevisionResource extends PublicationResource implements HasU
             'id',
             'revision',
         ]);
+
         $id = $arguments->recordReference('id');
         $revision = $arguments->recordReference('revision');
 

@@ -43,6 +43,7 @@ final class OwnerSharePolicyTest extends TestCase
         parent::setUp();
 
         $this->ownerId = TestIds::of(1);
+
         $admission = new class($this) implements AdmittedRecipients, JournalAdmission
         {
             public function __construct(private readonly OwnerSharePolicyTest $test) {}
@@ -62,6 +63,7 @@ final class OwnerSharePolicyTest extends TestCase
                 return [$this->test->ownerId()];
             }
         };
+
         $this->app->instance(JournalAdmission::class, $admission);
         $this->app->instance(AdmittedRecipients::class, $admission);
     }
@@ -79,6 +81,7 @@ final class OwnerSharePolicyTest extends TestCase
         $this->assertFalse($policy->mayManage(TestActors::user(2)));
         $this->assertFalse($policy->mayManage(ActorContext::forAgent($this->ownerId)));
         $this->assertThrows(fn () => $policy->assertManager(TestActors::user(2)), SharingNotAllowed::class);
+
         $this->assertThrows(
             fn () => $policy->assertManager(ActorContext::forAgent(TestIds::of(3))),
             SharingNotAllowed::class,
@@ -88,6 +91,7 @@ final class OwnerSharePolicyTest extends TestCase
     public function test_an_owner_change_ends_earlier_grants_and_the_new_owner_still_manages(): void
     {
         $policy = $this->app->make(OwnerSharePolicy::class);
+
         $share = Share::create(
             TestActors::record('pamphlets.pamphlet', 4),
             CarbonImmutable::now()->addDays(7),
@@ -98,6 +102,7 @@ final class OwnerSharePolicyTest extends TestCase
                 ShareToken::generate(),
             ),
         );
+
         $proposal = Share::create(
             TestActors::record('pamphlets.pamphlet', 4),
             CarbonImmutable::now()->addDays(7),

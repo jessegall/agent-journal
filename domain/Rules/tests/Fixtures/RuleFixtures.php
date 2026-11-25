@@ -65,6 +65,7 @@ final class RuleFixtures
         $rule = $this->ruleCalled($name);
 
         Assert::assertSame(RuleStatus::Active, $rule->status, "The rule {$name} does not hold.");
+
         Assert::assertTrue(
             Rule::query()->active()->whereKey($rule->id)->exists(),
             "The rule {$name} is not among those that hold.",

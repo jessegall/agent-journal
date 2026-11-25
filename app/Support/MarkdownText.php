@@ -282,10 +282,12 @@ final readonly class MarkdownText
     {
         $section = $this->section($number);
         $lines = explode("\n", $this->text);
+
         $replacement = explode("\n", str_replace([
             "\r\n",
             "\r",
         ], "\n", rtrim($text, "\n")));
+
         $newLevel = self::headingLevel($replacement[0]);
 
         if ($section->level > 0 && $newLevel === 0) {
@@ -386,6 +388,7 @@ final readonly class MarkdownText
             'html_input' => 'escape',
             'allow_unsafe_links' => false,
         ]);
+
         $environment->addExtension(new CommonMarkCoreExtension());
 
         if ($firstLine !== null) {

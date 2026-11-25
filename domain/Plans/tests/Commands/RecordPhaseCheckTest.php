@@ -38,10 +38,12 @@ final class RecordPhaseCheckTest extends TestCase
 
         $this->journal->owner();
         $this->task = $this->journal->fixtures(TaskFixtures::class)->task('Write it')->taskCalled('Write it');
+
         $this->phase = $this->journal->fixtures(PlanFixtures::class)
             ->plan('Checked phase')
             ->phaseWithTask('Checked phase', 'Build', $this->task->assignmentIdentity())
             ->phaseCalled('Build');
+
         $this->openAcmeRequest();
         $this->approvePair();
     }
@@ -63,16 +65,19 @@ final class RecordPhaseCheckTest extends TestCase
     public function test_a_run_without_a_result_and_a_superseded_receipt_are_refused(): void
     {
         $part = $this->normalRun(0, self::PASSED_OUTPUT);
+
         $first = $this->journal->actAsAgentIds(
             $this->start->agent->id,
             $this->start->session->id,
         )->runUnkeyed(new AssessPartOutputCommand($part->id));
+
         $this->journal->actAsAgentIds(
             $this->start->agent->id,
             $this->start->session->id,
         )->runUnkeyed(new AssessPartOutputCommand($part->id));
 
         $superseded = new RecordPhaseCheckCommand($this->phase->id, $first);
+
         $this->assertThrows(
             fn () => $this->journal->runAsStart($this->start, $superseded),
             PhaseCheckRefused::class,
@@ -95,6 +100,7 @@ final class RecordPhaseCheckTest extends TestCase
         Task::query()->whereKey($this->task->id)->update(['updated_at' => now()->addMinute()]);
 
         $stale = new RecordPhaseCheckCommand($this->phase->id, $receipt);
+
         $this->assertThrows(
             fn () => $this->journal->runAsStart($this->start, $stale),
             PhaseCheckRefused::class,

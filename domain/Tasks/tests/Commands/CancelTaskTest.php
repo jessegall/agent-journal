@@ -54,15 +54,18 @@ final class CancelTaskTest extends TestCase
         );
 
         $this->journal->actAs('First');
+
         $this->assertThrows(
             fn () => $this->journal->run(new CancelTaskCommand($this->task->id, 'Stale.', expectedRunNumber: 2)),
             TaskChangedSinceRead::class,
         );
+
         $this->assertThrows(
             fn () => $this->journal->run(new CancelTaskCommand($this->task->id, ' ')),
             CommandInputInvalid::class,
             'reason:',
         );
+
         $this->assertSame(TaskStatus::Started, $this->task->refresh()->status);
     }
 

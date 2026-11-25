@@ -59,6 +59,7 @@ final class GatewayStartsTest extends TestCase
                 $endpoint->publicOrigin,
             ],
         );
+
         $this->assertFalse($child->hasReceivedSignal(15));
 
         $this->app->make(GatewayChildren::class)->stop('run-1:3');
@@ -80,6 +81,7 @@ final class GatewayStartsTest extends TestCase
             GatewayOpenFailed::class,
             GatewayOpenFailed::unexpectedAddress('fake')->getMessage(),
         );
+
         $this->assertTrue($child->hasReceivedSignal(15));
     }
 
@@ -97,6 +99,7 @@ final class GatewayStartsTest extends TestCase
             GatewayOpenFailed::class,
             self::NO_ADDRESS,
         );
+
         $this->assertFalse($child->hasReceivedSignal(15));
     }
 

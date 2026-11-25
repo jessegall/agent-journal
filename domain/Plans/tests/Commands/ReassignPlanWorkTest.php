@@ -64,10 +64,12 @@ final class ReassignPlanWorkTest extends TestCase
 
         $this->journal->owner()->idleAgent('Builder', 'read-only-helper');
         $this->builder = AssigneeIdentity::of($this->journal->agentCalled('Builder'));
+
         $tasks = $this->journal->fixtures(TaskFixtures::class)
             ->task('Open')
             ->finishedTask('Finished')
             ->cancelledTask('Cancelled');
+
         $plans = $this->journal->fixtures(PlanFixtures::class)
             ->plan('Release')
             ->phaseWithTask('Release', 'Working', $tasks->taskCalled('Open')->assignmentIdentity())
@@ -78,8 +80,10 @@ final class ReassignPlanWorkTest extends TestCase
                 $tasks->taskCalled('Cancelled')->assignmentIdentity(),
             )
             ->phase('Release', 'Empty');
+
         $this->plan = $plans->planCalled('Release');
         $this->open = $tasks->taskCalled('Open');
+
         [$this->working, $this->over, $this->empty] = [
             $plans->phaseCalled('Working'),
             $plans->phaseCalled('Over'),
@@ -90,11 +94,13 @@ final class ReassignPlanWorkTest extends TestCase
     public function test_a_phase_cascade_moves_to_the_new_holder_with_its_tasks(): void
     {
         $root = $this->assignWork($this->working->assignmentIdentity(), $this->builder)->outcomes[0]->current;
+
         $reviewer = AssigneeIdentity::of(
             $this->journal->idleAgent('Reviewer', 'read-only-helper')->agentCalled('Reviewer'),
         );
 
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
+
         $this->app->make(CommandBus::class)->run(
             new ReassignPlanWorkCommand($this->working->assignmentIdentity(), $root->reference, $reviewer),
         );

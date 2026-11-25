@@ -39,6 +39,7 @@ final class AskQuestionTest extends TestCase
         $questionId = $this->journal->run($this->ask('Which database?', QuestionType::Open));
 
         $question = Question::query()->findOrFail($questionId);
+
         $this->assertSame(
             [
                 'Which database?',
@@ -66,6 +67,7 @@ final class AskQuestionTest extends TestCase
             CommandInputInvalid::class,
             'text:',
         );
+
         $this->assertThrows(
             fn () => $this->journal->run($this->ask('Which?', QuestionType::Open, ['A', 'B'])),
             QuestionRefused::class,
@@ -97,6 +99,7 @@ final class AskQuestionTest extends TestCase
         );
 
         $this->journal->actAs('Stranger');
+
         $this->assertThrows(
             fn () => $this->journal->run($this->ask('Which?', QuestionType::Open)),
             InboxUnavailable::class,

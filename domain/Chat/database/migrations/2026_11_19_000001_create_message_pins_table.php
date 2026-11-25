@@ -25,6 +25,7 @@ return new class extends Migration
                 'inbox_id',
                 'message_id',
             ]);
+
             $table->index([
                 'actor_type',
                 'actor_id',

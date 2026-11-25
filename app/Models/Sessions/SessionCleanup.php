@@ -96,10 +96,12 @@ final class SessionCleanup extends Model implements EventSource, ReadableModel
         }
 
         $removed = array_map(fn (CleanupStep $step) => $step->value, $report->removedSteps);
+
         $this->removed_steps = array_values(array_unique([
             ...$this->removed_steps,
             ...$removed,
         ]));
+
         $this->recovery_location = $report->keptWorkspace ?? $this->recovery_location;
         $this->last_error = $report->failure;
         $this->attempts += $report->hasFailed() ? 1 : 0;

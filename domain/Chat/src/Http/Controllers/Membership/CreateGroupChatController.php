@@ -24,6 +24,7 @@ final readonly class CreateGroupChatController
     public function __invoke(CreateGroupInput $input, PairChats $chats, ResponseFactory $inertia): RedirectResponse
     {
         $chats->assertMayCreate();
+
         $inboxId = $chats->openGroup(
             $input->title,
             array_map(fn (string $userId) => ActorIdentity::ofClass(User::class, $userId), $input->userIds),

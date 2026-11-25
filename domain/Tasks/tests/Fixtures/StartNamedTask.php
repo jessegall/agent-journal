@@ -39,6 +39,7 @@ final readonly class StartNamedTask implements StartScenario
             $this->task,
             creator: $journal->userCalled($this->owner),
         );
+
         $task = $tasks->taskCalled($this->task);
         $number = $journal->actAs($this->worker)->run(new StartTaskCommand($task->id));
 

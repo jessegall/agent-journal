@@ -79,6 +79,7 @@ final readonly class SignInHost implements SignInHostContract
             'address' => $challenge->address,
             'code' => $challenge->code,
         ]);
+
         $this->send('profiles.sign-in-host.challenge', ['attempt' => $claimed->attemptId], $body);
     }
 
@@ -114,6 +115,7 @@ final readonly class SignInHost implements SignInHostContract
             'generation' => $claimed->generation,
             'result' => $accountCheck->value,
         ]);
+
         $this->send('profiles.account-host.check', ['account' => $claimed->accountId], $body);
     }
 

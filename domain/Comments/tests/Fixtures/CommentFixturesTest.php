@@ -53,6 +53,7 @@ final class CommentFixturesTest extends TestCase
         $page = NotePage::written("# Plan\nFirst line.\nSecond line.\n");
         $other = new RecordIdentity(NotePage::linkType(), NotePage::written("# Other\n")->id);
         $target = new RecordIdentity(NotePage::linkType(), $page->id);
+
         $comments = $this->journal->fixtures(CommentFixtures::class)
             ->textComment('Which', $target, 'Owner', 'Which lines?', TextRange::lines('1', 2, 3))
             ->recordComment('Whole', $target, 'Writer', 'All of it.');

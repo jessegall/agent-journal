@@ -149,10 +149,12 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
     public function addSteering(string $steering): void
     {
         $this->moveTo($this->status);
+
         $this->steering = [
             ...$this->steering,
             $steering,
         ];
+
         $this->assertSaved($this->save());
         $this->raise(new HelperJobSteered($this->id, $steering));
     }

@@ -24,10 +24,12 @@ final class StartScenariosTest extends TestCase
 
         $this->assertSame($first->session->id, $second->session->id);
         $this->assertNotSame($first->session->id, $other->session->id);
+
         $this->assertSame(
             [$first->task->id, $second->task->id, $other->task->id],
             [$first->run->task_id, $second->run->task_id, $other->run->task_id],
         );
+
         $this->journal->fixtures(TaskFixtures::class)
             ->assertStarted('Draft', by: 'Writer')
             ->assertStarted('Edit', by: 'Writer')

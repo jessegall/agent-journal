@@ -42,6 +42,7 @@ final readonly class PlanTaskWindowResolver implements PageResolver
         $taskId = $ids[$position];
 
         $task = $this->tasks->details($taskId, ReadView::Context);
+
         $back = route('plans.plan', [
             'plan' => $plan->number,
             ...$this->request->returnQuery(),

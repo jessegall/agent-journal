@@ -82,6 +82,7 @@ final readonly class SkillStatusResolver
                 $started->skill_keys,
                 true,
             ) ? SkillGeneration::findForPublication($started)->entry($key) : null;
+
             $startedDigest = $startedEntry === null ? null : $startedEntry->digest;
             $currentDigest = $deliveredEntry === null ? null : $deliveredEntry->digest;
 

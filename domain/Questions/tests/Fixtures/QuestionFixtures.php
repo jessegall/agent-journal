@@ -39,6 +39,7 @@ final class QuestionFixtures
     ): self {
         $this->aliases->claim($name);
         $sender = $this->journal->actorCalled($asker);
+
         $question = Question::create(
             $inbox->id,
             $sender,
@@ -47,6 +48,7 @@ final class QuestionFixtures
             $type,
             $options,
         );
+
         $this->aliases->remember($name, $question);
 
         return $this;
@@ -79,6 +81,7 @@ final class QuestionFixtures
             [$question->target_type, $question->target_id, $question->answer],
             "{$name} was answered otherwise.",
         );
+
         Assert::assertNotNull($question->answered_at, "{$name} has no answer time.");
 
         return $this;
@@ -90,6 +93,7 @@ final class QuestionFixtures
     public function assertAnswerNotice(string $name, string $recipient): self
     {
         $to = $this->journal->actorCalled($recipient);
+
         $notices = QuestionAnswerNotice::query()
             ->where('question_id', $this->questionCalled($name)->id)
             ->where('recipient_type', $to->type)
@@ -97,6 +101,7 @@ final class QuestionFixtures
             ->get();
 
         Assert::assertCount(1, $notices, "{$recipient} was not given one notice of the answer to {$name}.");
+
         Assert::assertNotNull(
             $notices->sole()->delivered_at,
             "The notice of {$name} to {$recipient} was not delivered.",

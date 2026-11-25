@@ -36,6 +36,7 @@ final class PlansSeeder extends Seeder
             'title' => self::BUILD_TITLE,
             'type' => PlanType::Build,
         ]);
+
         $structure->addTasks($structure->addPhase($build, 'Read the plans'), $readingTaskIds);
         $structure->addTasks($structure->addPhase($build, 'Start a plan'), $startingTaskIds);
 
@@ -43,6 +44,7 @@ final class PlansSeeder extends Seeder
             'title' => 'Fix the login redirect',
             'type' => PlanType::Fix,
         ]);
+
         $structure->addTasks($structure->addPhase($fix, 'Reproduce it'), $reproducingTaskIds);
 
         Plan::factory()->create([

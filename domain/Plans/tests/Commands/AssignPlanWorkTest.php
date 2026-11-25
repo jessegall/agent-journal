@@ -78,10 +78,12 @@ final class AssignPlanWorkTest extends TestCase
 
         $this->journal->owner()->idleAgent('Builder', 'read-only-helper');
         $this->builder = AssigneeIdentity::of($this->journal->agentCalled('Builder'));
+
         $tasks = $this->journal->fixtures(TaskFixtures::class)
             ->task('Open')
             ->finishedTask('Finished')
             ->cancelledTask('Cancelled');
+
         $plans = $this->journal->fixtures(PlanFixtures::class)
             ->plan('Release')
             ->phaseWithTask('Release', 'Working', $tasks->taskCalled('Open')->assignmentIdentity())
@@ -92,8 +94,10 @@ final class AssignPlanWorkTest extends TestCase
                 $tasks->taskCalled('Cancelled')->assignmentIdentity(),
             )
             ->phase('Release', 'Empty');
+
         $this->plan = $plans->planCalled('Release');
         $this->open = $tasks->taskCalled('Open');
+
         [$this->working, $this->over, $this->empty] = [
             $plans->phaseCalled('Working'),
             $plans->phaseCalled('Over'),
@@ -106,6 +110,7 @@ final class AssignPlanWorkTest extends TestCase
         $result = $this->assignWork($this->plan->assignmentIdentity(), $this->builder);
 
         $this->assertCount(4, $result->changes);
+
         $this->assertEqualsCanonicalizing([
             [Plan::linkType(), $this->plan->id],
             [Phase::linkType(), $this->working->id],
@@ -144,6 +149,7 @@ final class AssignPlanWorkTest extends TestCase
         $this->planStructure()->addPhase($this->plan, 'Added later');
 
         $this->assertSame(4, AssignmentRecord::query()->count());
+
         $this->assertFalse(
             AssignmentRecord::query()->where('record_type', 'tasks.task')->where('record_id', $late->id)->exists(),
         );
@@ -174,6 +180,7 @@ final class AssignPlanWorkTest extends TestCase
                 ),
             )
             ->assertExitCode(0);
+
         $this->artisan(
             'plan:unassign-work',
             [
@@ -184,6 +191,7 @@ final class AssignPlanWorkTest extends TestCase
             ],
         )
             ->expectsOutputToContain('The journal refused the call (')->assertExitCode(1);
+
         $this->artisan('plan:assign-work', ['type' => Plan::linkType(), 'id' => $plan->id, '--to' => 'nobody'])
             ->expectsOutputToContain('type:id')->assertExitCode(1);
     }

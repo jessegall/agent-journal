@@ -76,6 +76,7 @@ final readonly class DocumentsShow extends DocumentsPage
     ): LayoutPartData {
         $number = (int) $document->number;
         $label = "doc {$number}";
+
         $feedback = DocumentFeedbackPartData::from([
             'recipients' => array_map(
                 fn (AgentOption $agent) => new DocumentRecipientData($agent->agentId, $agent->name),

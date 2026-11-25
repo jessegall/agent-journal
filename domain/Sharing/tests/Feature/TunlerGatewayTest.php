@@ -39,6 +39,7 @@ final class TunlerGatewayTest extends TestCase
         mkdir($this->folder.'/config', 0700, true);
         file_put_contents($this->folder.'/tunler', "#!/bin/sh\n");
         chmod($this->folder.'/tunler', 0755);
+
         config([
             'sharing.tunler.binary' => $this->folder.'/tunler',
             'sharing.tunler.config_dir' => $this->folder.'/config',
@@ -46,10 +47,12 @@ final class TunlerGatewayTest extends TestCase
             'sharing.tunler.subdomain' => 'docs',
             'sharing.rate_limit_store' => 'array',
         ]);
+
         $this->processes = new Processes();
         $this->app->instance(Processes::class, $this->processes);
         $this->http = new HttpClient();
         $this->app->instance(HttpClient::class, $this->http);
+
         $this->app->instance(PublicAddresses::class, new class extends PublicAddresses
         {
             public function isPublic(string $host): bool
@@ -76,6 +79,7 @@ final class TunlerGatewayTest extends TestCase
                 '*status*' => '{"logged_in": false, "host": "other.test"}',
             ],
         );
+
         config(['sharing.tunler.subdomain' => null]);
 
         $this->assertSame([
@@ -112,6 +116,7 @@ final class TunlerGatewayTest extends TestCase
             $endpoint->publicOrigin,
             $endpoint->processReference,
         ]);
+
         $this->processes->assertRan(
             fn ($process) => str_contains(implode(' ', (array) $process->command), '8090 --domain=docs --inspect=0'),
         );
@@ -152,6 +157,7 @@ final class TunlerGatewayTest extends TestCase
         $this->app->instance(HttpClient::class, $this->http);
 
         $this->assertSame(['The public origin redirected the probe.'], $this->gateway()->health($endpoint)->problems);
+
         $this->assertFalse(
             $this->gateway()->health(
                 new GatewayEndpoint('run-1', 1, 'http://docs.example.test', 'run-1:1'),

@@ -31,6 +31,7 @@ final class DenyRuleTest extends TestCase
 
         Event::fake([RuleDenied::class]);
         $this->journal->agent('Planner')->owner();
+
         $this->proposed = $this->journal->fixtures(RuleFixtures::class)
             ->proposedRule('Proposed', 'No phase waits on the user.', 'Planner', 'Agents keep forgetting it.')
             ->ruleCalled('Proposed');

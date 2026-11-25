@@ -51,6 +51,7 @@ final class ShareScopeTest extends TestCase
             fn () => $this->scope()->discover(TestActors::record('binders.unknown', 1), $this->budget()),
             UnknownShareRecordType::class,
         );
+
         $this->assertThrows(
             fn () => $this->scope()->discover(
                 new RecordIdentity('binders.binder', BinderShareProvider::HIDDEN_ROOT_ID),
@@ -85,6 +86,7 @@ final class ShareScopeTest extends TestCase
 
         for ($number = 0; $number < $count; $number++) {
             $target = [self::TARGET_TYPES[$number % 3], TestIds::of($firstNumber + $number)];
+
             [$source, $other] = $number % 2 === 0 ? [
                 [
                     $root->type,
@@ -98,6 +100,7 @@ final class ShareScopeTest extends TestCase
                     $root->id,
                 ],
             ];
+
             $rows[] = [
                 'id' => strtolower((string) str()->ulid()),
                 'source_type' => $source[0],

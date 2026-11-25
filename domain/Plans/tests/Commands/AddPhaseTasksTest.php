@@ -101,6 +101,7 @@ final class AddPhaseTasksTest extends TestCase
         $phase = $this->structure()->addPhase($plan, 'Work');
         [$first, $second, $third] = Task::factory()->count(3)->create()->all();
         $this->journal->actAsUserId($this->journal->ownerUser()->id);
+
         $this->structure()->addTasks($phase, [
             $first->id,
             $second->id,

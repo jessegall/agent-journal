@@ -38,6 +38,7 @@ final readonly class SpawnedPart
         $this->process->drain(
             fn (OutputStream $stream, string $bytes) => $state->events->output($part, $stream, $bytes),
         );
+
         $end = $this->process->wait();
         $state->events->ended($part, $end, $isDrained);
 

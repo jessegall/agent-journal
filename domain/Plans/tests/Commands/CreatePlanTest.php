@@ -35,10 +35,12 @@ final class CreatePlanTest extends TestCase
         $planId = $this->journal->run(new CreatePlanCommand('Release', 'Ship version 6.', PlanType::Build));
 
         $plan = Plan::query()->findOrFail($planId);
+
         $this->assertSame(
             ['Ship version 6.', PlanType::Build, PlanStatus::Planned, 1],
             [$plan->brief, $plan->type, $plan->status, $plan->revision],
         );
+
         $this->assertSame(
             [User::storedType(), $this->journal->ownerUser()->id],
             [$plan->creator_type, $plan->creator_id],
@@ -80,6 +82,7 @@ final class CreatePlanTest extends TestCase
             CommandInputInvalid::class,
             "{$field}:",
         );
+
         $this->assertSame(0, Plan::query()->count());
     }
 }

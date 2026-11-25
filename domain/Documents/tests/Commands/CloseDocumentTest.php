@@ -100,6 +100,7 @@ final class CloseDocumentTest extends TestCase
         $closed = $this->bus()->run(new CloseDocumentCommand($draft->target()));
 
         $this->assertSame(3, $draft->version);
+
         $this->assertSame([
             2,
             true,
@@ -133,6 +134,7 @@ final class CloseDocumentTest extends TestCase
             $first->revisionNumber,
             $first->isPublished,
         ]);
+
         $this->assertEquals($first, $repeated);
         $this->assertSame(1, DocumentClose::query()->count());
         $this->assertSame('1', $this->documents()->show(1)->revision);
@@ -143,14 +145,17 @@ final class CloseDocumentTest extends TestCase
         $events = $this->app->make(Dispatcher::class);
         $plain = [DocumentCreated::class, DocumentOpened::class, ReportFiled::class, RecordSettled::class];
         $events->listen($plain, fn (object $fact) => $this->facts[] = class_basename($fact));
+
         $events->listen(
             DocumentDraftSaved::class,
             fn (DocumentDraftSaved $saved) => $this->facts[] = "DocumentDraftSaved v{$saved->version}",
         );
+
         $events->listen(
             DocumentClosed::class,
             fn (DocumentClosed $closed) => $this->facts[] = "DocumentClosed {$closed->revisionNumber}",
         );
+
         $events->listen(
             DocumentPublished::class,
             fn (DocumentPublished $published) => $this->facts[] = "DocumentPublished {$published->revisionNumber}",
@@ -175,14 +180,17 @@ final class CloseDocumentTest extends TestCase
         $events = $this->app->make(Dispatcher::class);
         $plain = [DocumentCreated::class, DocumentOpened::class, ReportFiled::class, RecordSettled::class];
         $events->listen($plain, fn (object $fact) => $this->facts[] = class_basename($fact));
+
         $events->listen(
             DocumentDraftSaved::class,
             fn (DocumentDraftSaved $saved) => $this->facts[] = "DocumentDraftSaved v{$saved->version}",
         );
+
         $events->listen(
             DocumentClosed::class,
             fn (DocumentClosed $closed) => $this->facts[] = "DocumentClosed {$closed->revisionNumber}",
         );
+
         $events->listen(
             DocumentPublished::class,
             fn (DocumentPublished $published) => $this->facts[] = "DocumentPublished {$published->revisionNumber}",
@@ -215,6 +223,7 @@ final class CloseDocumentTest extends TestCase
         DB::transaction(fn () => $this->endSession(8, 80));
 
         $this->assertSame(0, DocumentDraft::query()->count());
+
         $this->assertSame([
             '2',
             '1',

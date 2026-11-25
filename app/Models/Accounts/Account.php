@@ -738,6 +738,7 @@ final class Account extends Model implements EventSource, ReadableModel
         $account = self::query()->whereKey($accountId)->lockForUpdate()->firstOr(
             AccountMissing::throwing()->for($accountId),
         );
+
         $account->assertNotRemoved();
 
         return $account;
@@ -791,6 +792,7 @@ final class Account extends Model implements EventSource, ReadableModel
             ->ofDriver($driver)
             ->lockForUpdate()
             ->firstOr(AccountUnavailable::throwing()->forStart($driver, StartUnavailableReason::ChosenAccountMissing));
+
         $account->assertAvailable();
         $account->assertReviewed($reviewedSignIn);
 

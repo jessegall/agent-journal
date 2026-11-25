@@ -90,10 +90,12 @@ final class PostCommentTest extends TestCase
         $again = $this->journal->run(new PostCommentCommand($this->note, self::QUESTION, $key));
 
         $this->assertSame($first, $again);
+
         $this->assertThrows(
             fn () => $this->journal->run(new PostCommentCommand($this->note, 'Another question.', $key)),
             SubmissionKeyConflict::class,
         );
+
         $this->assertSame(1, Comment::query()->count());
     }
 
@@ -105,6 +107,7 @@ final class PostCommentTest extends TestCase
             fn () => $this->journal->run(new PostCommentCommand($missing, self::QUESTION, (string) Str::uuid())),
             RecordUnavailable::class,
         );
+
         $this->assertSame(0, Comment::query()->count());
     }
 
@@ -164,6 +167,7 @@ final class PostCommentTest extends TestCase
                 ],
             )
             ->assertUnprocessable();
+
         $this->actingAs($this->journal->ownerUser())
             ->postJson(
                 '/comments/post',
@@ -205,6 +209,7 @@ final class PostCommentTest extends TestCase
             ),
             range(1, 3),
         );
+
         $wanted = [
             ...array_map(fn (string $id) => new RecordIdentity(Comment::linkType(), $id), $ids),
             new RecordIdentity(Comment::linkType(), strtolower((string) Str::ulid())),
@@ -218,6 +223,7 @@ final class PostCommentTest extends TestCase
             array_fill(0, 3, "comment on note {$this->noteNumber()}"),
             array_map(fn ($card) => $card->label, $cards),
         );
+
         $this->assertSame(self::FIRST_ABSTRACT, $cards[0]->abstract);
         $this->assertLessThanOrEqual(4, $queries);
     }

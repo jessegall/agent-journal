@@ -27,6 +27,7 @@ final class ReadQuestionTest extends TestCase
         parent::setUp();
 
         $this->journal->owner()->agent('Planner')->agent('Stranger')->chat('Owner', 'Planner');
+
         $this->question = $this->journal->fixtures(QuestionFixtures::class)
             ->question('Database', $this->journal->chatOf('Owner', 'Planner'), 'Planner', 'Owner')
             ->questionCalled('Database');

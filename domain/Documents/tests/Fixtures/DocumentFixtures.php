@@ -74,6 +74,7 @@ final class DocumentFixtures
     {
         $number = (string) $this->documentCalled($name)->number;
         $opened = $this->journal->runAs($editor, new OpenDocumentCommand($number));
+
         $this->journal->runAs(
             $editor,
             new ReplaceDocumentBodyCommand(new DraftTarget($number, $opened->token, $opened->version), $body),

@@ -74,10 +74,12 @@ final class SupervisorLink extends Model implements EventSource, ReadableModel
     {
         $key = AskTypeKey::routeOf($type);
         $this->routes = $routes;
+
         $this->versions = [
             ...$this->versions,
             $key => $this->versionFor($type) + 1,
         ];
+
         $this->assertSaved($this->save());
         $this->raise(new SupervisorLinkChanged($this->id));
     }

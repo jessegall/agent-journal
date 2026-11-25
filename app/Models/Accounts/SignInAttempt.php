@@ -133,9 +133,11 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
         CarbonImmutable $expiresAt,
     ): self {
         $attempt = new self();
+
         $attempt->account_protocol = $accountOrDriver instanceof Account
             ? $accountOrDriver->account_protocol
             : $accountOrDriver;
+
         $attempt->method = $method;
         $attempt->actor_type = $starter->type;
         $attempt->actor_id = $starter->id;
@@ -547,6 +549,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
         $driver = self::query()->withoutGlobalScope(
             AccountOwnerScope::class,
         )->whereKey($attemptId)->value('account_protocol');
+
         self::assertDriverFound($driver, $attemptId);
 
         return $driver;

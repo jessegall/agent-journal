@@ -53,6 +53,7 @@ final class PrivateAccountProcess
             $path,
             'r',
         ], $readFiles);
+
         $streams = [
             0 => [
                 'pipe',
@@ -67,6 +68,7 @@ final class PrivateAccountProcess
                 'w',
             ],
         ] + $files;
+
         $process = proc_open($arguments, $streams, $pipes, $workingDirectory, $environment);
 
         if (! is_resource($process)) {

@@ -38,10 +38,12 @@ final readonly class DraftTokens
     public function keep(int $documentNumber, string $token, int $version): void
     {
         $drafts = $this->all();
+
         $drafts["doc {$documentNumber}"] = [
             'token' => $token,
             'version' => $version,
         ];
+
         $this->files->write($this->path(), json_encode($drafts, JSON_THROW_ON_ERROR));
     }
 

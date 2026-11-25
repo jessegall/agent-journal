@@ -526,6 +526,7 @@ final class Host extends Model implements EventSource, ReadableModel
                 $driverType,
             ),
         ));
+
         self::assertServesStart($hosts, $driver, $driverType);
 
         return $hosts[0];

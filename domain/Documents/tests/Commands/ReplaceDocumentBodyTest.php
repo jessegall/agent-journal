@@ -34,6 +34,7 @@ final class ReplaceDocumentBodyTest extends TestCase
             fn () => $this->journal->run(new ReplaceDocumentBodyCommand($opened->target(), "# Goal\nStale.\n")),
             DraftConflict::class,
         );
+
         $this->assertStringContainsString('Ship it twice.', DocumentDraft::query()->sole()->body);
     }
 }

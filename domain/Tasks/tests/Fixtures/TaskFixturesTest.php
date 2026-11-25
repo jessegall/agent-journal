@@ -61,6 +61,7 @@ final class TaskFixturesTest extends TestCase
             'Build',
             'Design',
         )->waitFor('Ship', 'Design');
+
         $this->tasks->assertWait('Build', 'Design', isSatisfied: false)->waiveWait('Ship', 'Design', 'Not needed.');
 
         $this->tasks->startRun('Design', 'Ada');

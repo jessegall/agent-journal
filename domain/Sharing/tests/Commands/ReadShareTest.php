@@ -81,18 +81,23 @@ final class ReadShareTest extends TestCase
 
         $this->journal->owner();
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::of($this->journal->ownerUser()), new OwnerAuthority('test'));
+
         $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
         # Goal
         Ship it.
 
         TEXT));
+
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->document = Document::query()->where('number', 1)->sole();
+
         $this->plan = Plan::factory()->create([
             'title' => 'Version 6',
             'type' => PlanType::Build,
         ]);
+
         Link::createForModels($this->plan, $this->document);
+
         $this->configuration = ShareGatewayConfiguration::create(
             new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []),
         );
@@ -105,6 +110,7 @@ final class ReadShareTest extends TestCase
         $page = $this->read($token);
 
         $this->assertTrue($page->isAllowed);
+
         $this->assertSame(
             [
                 'Design',
@@ -121,6 +127,7 @@ final class ReadShareTest extends TestCase
                 $page->body,
             ],
         );
+
         $this->assertSame([ShareAuditType::ReadAllowed], $this->auditTypes());
     }
 
@@ -142,6 +149,7 @@ final class ReadShareTest extends TestCase
 
         $this->assertFalse($denied->isAllowed);
         $this->assertSame('', $denied->body);
+
         $this->assertSame([
             ShareAuditType::ReadDenied,
             ShareAuditType::ReadDenied,
@@ -193,11 +201,13 @@ final class ReadShareTest extends TestCase
     public function test_a_linked_record_whose_disclosure_is_withdrawn_is_denied_while_its_sibling_still_reads(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::of($this->journal->ownerUser()), new OwnerAuthority('test'));
+
         $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Notes', 'What we learned', <<<'TEXT'
         # Notes
         Keep it.
 
         TEXT));
+
         $this->app->make(CurrentActorSetter::class)->clear();
         $sibling = Document::query()->where('number', 2)->sole();
         Link::createForModels($this->plan, $sibling);
@@ -206,6 +216,7 @@ final class ReadShareTest extends TestCase
 
         $documents = [$this->document, $sibling];
         $documentIds = array_map(fn (Document $document) => $document->id, $documents);
+
         $links = Link::query()
             ->whereIn('target_id', $documentIds)
             ->orWhereIn('source_id', $documentIds)
@@ -219,6 +230,7 @@ final class ReadShareTest extends TestCase
                     $link->source_id,
                 ], true),
             );
+
             $target = new ShareSelectedTarget($document->shareIdentity(), $link->id, '1');
             $selected = $this->selected($this->configuration, $this->plan->shareIdentity(), $target);
             ShareMember::createMany($share, $selected);
@@ -256,6 +268,7 @@ final class ReadShareTest extends TestCase
                     'terminal_at' => CarbonImmutable::now(),
                 ],
             );
+
             $revoker->commit();
         } finally {
             if ($revoker->transactionLevel() > 0) {
@@ -275,6 +288,7 @@ final class ReadShareTest extends TestCase
     private function activeShare(RecordIdentity $root, CarbonImmutable $expiresAt): string
     {
         $token = ShareToken::generate();
+
         $share = Share::create(
             $root,
             $expiresAt,
@@ -285,6 +299,7 @@ final class ReadShareTest extends TestCase
                 $token,
             ),
         );
+
         $share->status = ShareStatus::Active;
         $share->save();
 

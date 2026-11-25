@@ -24,6 +24,7 @@ final readonly class ProposeRuleController
             ...$call->declaration,
             'request_id' => $call->requestKey->value,
         ]);
+
         $command = new ProposeCommandRuleCommand($call->commandRequest, $declared->requestId, $declared->proposed);
 
         return ProposalReceived::from($commands->run($command)->toArray());

@@ -86,6 +86,7 @@ final class ApplyTaskWaitsTest extends TestCase
             $this->tasks[3]->id,
             $this->tasks[2]->id,
         ]], $this->waits());
+
         $this->assertSame($this->version(), $version);
         $batches = TaskWaitHistory::query()->whereNotNull('batch_id')->pluck('batch_id')->all();
         $this->assertCount(3, $batches);

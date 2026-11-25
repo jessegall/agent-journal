@@ -67,14 +67,17 @@ final class PermissionRevocation extends Model implements ReadableModel
     ): self {
         $permissionRevocation = new self();
         $permissionRevocation->permission_source = $source;
+
         $permissionRevocation->revoked_classes = array_map(
             fn (CommandClass $class) => $class->value,
             $classes->classes,
         );
+
         $permissionRevocation->revoked_patterns = RevokedPatternData::collect(
             array_map(fn (CommandPattern $pattern) => new RevokedPatternData($pattern->words), $patterns->patterns),
             DataCollection::class,
         );
+
         $permissionRevocation->revoked_by_type = $by->type;
         $permissionRevocation->revoked_by_id = $by->id;
         $permissionRevocation->revoked_at = CarbonImmutable::now();

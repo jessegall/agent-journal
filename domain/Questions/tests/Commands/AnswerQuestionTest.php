@@ -64,6 +64,7 @@ final class AnswerQuestionTest extends TestCase
         );
 
         $this->journal->actAs('Planner');
+
         $this->assertThrows(
             fn () => $this->journal->run(new AnswerQuestionCommand($question->id, 'Myself.')),
             QuestionRefused::class,
@@ -72,11 +73,13 @@ final class AnswerQuestionTest extends TestCase
 
         $this->journal->actAs('Owner');
         $this->journal->run(new AnswerQuestionCommand($question->id, 'Postgres.'));
+
         $this->assertThrows(
             fn () => $this->journal->run(new AnswerQuestionCommand($question->id, 'SQLite.')),
             QuestionRefused::class,
             QuestionRefused::alreadyAnswered($question->id)->getMessage(),
         );
+
         $this->assertSame('Postgres.', $question->refresh()->answer);
     }
 
@@ -89,6 +92,7 @@ final class AnswerQuestionTest extends TestCase
             QuestionRefused::class,
             QuestionRefused::notAnOption($question->id)->getMessage(),
         );
+
         $this->assertNull($question->refresh()->answer);
     }
 
