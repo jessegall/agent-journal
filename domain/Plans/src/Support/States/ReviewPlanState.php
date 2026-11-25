@@ -8,7 +8,7 @@ use App\Attributes\States\StateType;
 use App\Enums\Engine\FrameReuse;
 use App\Enums\Sessions\SessionTransferType;
 use App\Events\Hooks\HelperFinishedOnRecord;
-use App\Events\Hooks\HelperSentOnRecord;
+use App\Events\Hooks\HelperAssigned;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
 use App\Support\RecordIdentity;
@@ -89,7 +89,7 @@ final class ReviewPlanState extends AgentState
         }
     }
 
-    public function onHelperSentOnRecord(HelperSentOnRecord $event): void
+    public function onHelperAssigned(HelperAssigned $event): void
     {
         if ($this->isAbout($event->subject)) {
             $this->reviewersOut = $this->reviewersOut->adding($event->helperAgentId);

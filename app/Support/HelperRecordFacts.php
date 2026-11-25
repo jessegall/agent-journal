@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Events\HelperRecordFacts as HelperRecordFactsContract;
 use App\Events\Hooks\HelperFinishedOnRecord;
-use App\Events\Hooks\HelperSentOnRecord;
+use App\Events\Hooks\HelperAssigned;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
@@ -21,9 +21,9 @@ final readonly class HelperRecordFacts implements HelperRecordFactsContract
         private Dispatcher $events,
     ) {}
 
-    public function sent(RecordIdentity $subject, string $agentId): void
+    public function assigned(RecordIdentity $subject, string $agentId): void
     {
-        $this->facts->publishAfterCommit(new HelperSentOnRecord($subject, $agentId));
+        $this->facts->publishAfterCommit(new HelperAssigned($subject, $agentId));
     }
 
     public function finished(RecordIdentity $subject, string $agentId): void

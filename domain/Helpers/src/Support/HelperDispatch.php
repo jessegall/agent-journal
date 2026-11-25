@@ -398,7 +398,7 @@ final readonly class HelperDispatch
         $this->responsibilities->assign($job->assignmentIdentity(), AssigneeIdentity::ofActorIdentity($helper));
 
         $purpose->subject_record->forAll(
-            fn (RecordIdentity $subject) => $this->helperFacts->sent($subject, $helper->id),
+            fn (RecordIdentity $subject) => $this->helperFacts->assigned($subject, $helper->id),
         );
 
         $start = $this->commands->run(new StartOwnedAgentCommand(new OwnerStartRequest(

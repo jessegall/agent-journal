@@ -6,7 +6,7 @@ namespace Domain\Plans\Tests\Feature\States;
 
 use App\Enums\Hooks\AnswerType;
 use App\Events\Hooks\HelperFinishedOnRecord;
-use App\Events\Hooks\HelperSentOnRecord;
+use App\Events\Hooks\HelperAssigned;
 use App\Support\Inputs\StopRequested;
 use App\Support\RecordIdentity;
 use Domain\Plans\Enums\PlanReviewStatus;
@@ -55,7 +55,7 @@ final class ReviewPlanStateTest extends TestCase
     {
         $this->reviewing()->given(
             [
-                new HelperSentOnRecord($this->plan(), TestIds::of(7)),
+                new HelperAssigned($this->plan(), TestIds::of(7)),
                 $this->stop(),
             ],
             function (StateObservation $state) {
@@ -80,8 +80,8 @@ final class ReviewPlanStateTest extends TestCase
         $this->reviewing()
             ->given(
                 [
-                    new HelperSentOnRecord($this->plan(), $seven),
-                    new HelperSentOnRecord($this->plan(), $eight),
+                    new HelperAssigned($this->plan(), $seven),
+                    new HelperAssigned($this->plan(), $eight),
                     new HelperFinishedOnRecord($this->plan(), $seven),
                 ],
                 fn (StateObservation $state) => $state->assertValue('reviewersOut.agentIds', [$eight]),
@@ -100,7 +100,7 @@ final class ReviewPlanStateTest extends TestCase
         $other = new RecordIdentity(Plan::linkType(), TestIds::of(6));
 
         $this->reviewing()->given(
-            new HelperSentOnRecord($other, TestIds::of(7)),
+            new HelperAssigned($other, TestIds::of(7)),
             fn (StateObservation $state) => $state->assertValue('reviewersOut.agentIds', []),
         );
     }

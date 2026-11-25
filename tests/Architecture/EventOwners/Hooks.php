@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Events\Hooks\ContextStarted;
 use App\Events\Hooks\HelperCompletionCertified;
 use App\Events\Hooks\HelperFinishedOnRecord;
-use App\Events\Hooks\HelperSentOnRecord;
+use App\Events\Hooks\HelperAssigned;
 use App\Events\Hooks\HelperStopHeld;
 use App\Events\Hooks\HookCallRecorded;
 use App\Events\Hooks\StateCommandAnswered;
@@ -33,7 +33,7 @@ return [
             'app/Support/StopCertification.php',
         ],
     ],
-    HelperSentOnRecord::class => [
+    HelperAssigned::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [

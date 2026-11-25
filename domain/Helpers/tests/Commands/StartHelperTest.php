@@ -15,7 +15,7 @@ use App\Enums\Agents\ExecutionModeType;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Projects\CapabilityStatusType;
 use App\Enums\Projects\HostCapabilityType;
-use App\Events\Hooks\HelperSentOnRecord;
+use App\Events\Hooks\HelperAssigned;
 use App\Exceptions\AccountContainerUnsupported;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Models\Agents\Agent;
@@ -284,7 +284,7 @@ final class StartHelperTest extends TestCase
 
         $heard = [];
 
-        Event::listen(HelperSentOnRecord::class, function (HelperSentOnRecord $event) use (&$heard): void {
+        Event::listen(HelperAssigned::class, function (HelperAssigned $event) use (&$heard): void {
             $heard[] = $event;
         });
 
