@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Attributes\InCommandTransaction;
+use App\Attributes\Listeners\InCommandTransaction;
 use App\Commands\Runs\ReadPartLive\ReadPartLiveCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Events\Listener;

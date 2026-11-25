@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Attributes\JournalRoute;
+use App\Attributes\Console\JournalRoute;
 use Illuminate\Console\Command;
 
 /**

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\StateLoading;
 
-use App\Attributes\StateType;
-use App\Attributes\Ticks;
+use App\Attributes\States\StateType;
+use App\Attributes\States\Ticks;
 use App\Contracts\Work\WorkOccurrenceGuard;
 use App\Enums\Sessions\SessionTransferType;
 use App\Exceptions\StateTypeUnknown;

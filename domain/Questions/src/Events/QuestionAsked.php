@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Questions\Events;
 
-use App\Attributes\TransactionListenerConsent;
+use App\Attributes\Listeners\TransactionListenerConsent;
 use App\Support\ActorIdentity;
 
 /**

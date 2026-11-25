@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\Agents\StartProfileMain;
 
-use App\Attributes\Authorize;
+use App\Attributes\Commands\Authorize;
 use App\Enums\Agents\AccessType;
 use App\Enums\Drivers\DriverType;
 use App\Policies\ProfileAdministrationPolicy;

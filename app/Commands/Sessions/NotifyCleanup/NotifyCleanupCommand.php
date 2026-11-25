@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\Sessions\NotifyCleanup;
 
-use App\Attributes\Entry;
+use App\Attributes\Commands\Entry;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Sessions\CleanupState;
 use App\Support\Command;

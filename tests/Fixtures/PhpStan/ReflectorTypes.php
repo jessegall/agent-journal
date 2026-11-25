@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\PhpStan;
 
-use App\Attributes\RetainedActorRequestKey;
+use App\Attributes\Commands\RetainedActorRequestKey;
 use App\Concerns\Reflects;
 use App\Support\Reflector;
 use Tests\Fixtures\Reflection\Attributes\Marker;
@@ -30,12 +30,12 @@ class ReflectorTypes
 
     public function attributeTypes(): void
     {
-        assertType('App\Attributes\RetainedActorRequestKey', $this->reflect()->attribute(RetainedActorRequestKey::class));
+        assertType('App\Attributes\Commands\RetainedActorRequestKey', $this->reflect()->attribute(RetainedActorRequestKey::class));
         assertType(
-            'PhpOption\Option<App\Attributes\RetainedActorRequestKey>',
+            'PhpOption\Option<App\Attributes\Commands\RetainedActorRequestKey>',
             $this->reflect()->attributes(RetainedActorRequestKey::class)->first(),
         );
-        assertType('App\Attributes\RetainedActorRequestKey', $this->reflect()->attributes(RetainedActorRequestKey::class)->first()->get());
+        assertType('App\Attributes\Commands\RetainedActorRequestKey', $this->reflect()->attributes(RetainedActorRequestKey::class)->first()->get());
 
         foreach (static::reflect(Parcel::class)->attributes(Marker::class) as $marker) {
             assertType('Tests\Fixtures\Reflection\Attributes\Marker', $marker);

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\Accounts\BeginSignInAgain;
 
-use App\Attributes\Authorize;
-use App\Attributes\RetainedActorRequestKey;
+use App\Attributes\Commands\Authorize;
+use App\Attributes\Commands\RetainedActorRequestKey;
 use App\Contracts\Bus\TargetedCommand;
 use App\Enums\Agents\AccessType;
 use App\Policies\AccountPolicy;

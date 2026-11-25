@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Commands\Access\RevokeEnvironmentAccess;
 
-use App\Attributes\Authorize;
+use App\Attributes\Commands\Authorize;
 use App\Enums\Agents\AccessType;
-use App\Support\Command;
 use App\Policies\EnvironmentAccessPolicy;
+use App\Support\Command;
 
 /**
  * The owner revokes a user's grant to an environment's chats, and every chat the user lost there ends for it.

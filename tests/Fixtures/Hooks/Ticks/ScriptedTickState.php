@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Ticks;
 
-use App\Attributes\Ticks;
+use App\Attributes\States\Ticks;
 use App\Contracts\Work\TickableState;
 use App\Support\States\AgentState;
 use App\Support\Ticks\TickCommands;

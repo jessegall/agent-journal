@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Contracts;
 
-use App\Attributes\TransactionListenerConsent;
+use App\Attributes\Listeners\TransactionListenerConsent;
 use App\Contracts\Events\Event;
 use Domain\Tasks\Enums\TaskState;
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Commands\CreatePlan;
 
-use App\Attributes\Authorize;
-use App\Attributes\OneLine;
+use App\Attributes\Commands\Authorize;
+use App\Attributes\Validation\OneLine;
 use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use Domain\Plans\Enums\PlanType;

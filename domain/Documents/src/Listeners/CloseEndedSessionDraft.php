@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Listeners;
 
-use App\Attributes\InCommandTransaction;
+use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
 use App\Contracts\Sessions\SessionProvenance;
 use App\Events\Sessions\SessionClosed;

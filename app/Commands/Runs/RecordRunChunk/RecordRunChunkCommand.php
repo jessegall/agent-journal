@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\Runs\RecordRunChunk;
 
-use App\Attributes\Authorize;
+use App\Attributes\Commands\Authorize;
 use App\Enums\Agents\AccessType;
 use App\Enums\Processes\OutputStream;
 use App\Policies\ProcessPolicy;

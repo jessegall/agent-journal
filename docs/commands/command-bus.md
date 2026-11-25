@@ -24,7 +24,7 @@ replaced by `Handler`, in the same folder.
 ```php
 namespace Domain\Rules\Commands\ProposeRule;
 
-use App\Attributes\Authorize;
+use App\Attributes\Commands\Authorize;
 use App\Support\Command;
 use App\Enums\Agents\AccessType;
 use Domain\Rules\Policies\RulePolicy;
@@ -110,12 +110,12 @@ $commands->run(new FinishTask($taskId));
 
 A command declares what input it takes on its constructor properties, with Spatie's validation attributes
 (`Spatie\LaravelData\Attributes\Validation\Max`, `Min`, `Between`, `Required`, `Filled`, `Regex`, `In`,
-`RequiredWithout` and the rest) and Core's `App\Attributes\OneLine`, which refuses a line break between two words
+`RequiredWithout` and the rest) and Core's `App\Attributes\Validation\OneLine`, which refuses a line break between two words
 of a title or an abstract. A limit several commands share is a constant on the model it describes, and the attribute
 names it:
 
 ```php
-use App\Attributes\OneLine;
+use App\Attributes\Validation\OneLine;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Required;
 

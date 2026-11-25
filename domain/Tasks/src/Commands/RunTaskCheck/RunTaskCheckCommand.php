@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands\RunTaskCheck;
 
-use App\Attributes\Authorize;
+use App\Attributes\Commands\Authorize;
 use App\Contracts\Bus\RecordCommand;
 use App\Enums\Agents\AccessType;
 use App\Support\Command;

@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Bus\Shop\Commands\LooseItem;
 
 use Tests\Fixtures\Bus\Policies\FixturePolicy;
 use App\Enums\Agents\AccessType;
-use App\Attributes\Authorize;
+use App\Attributes\Commands\Authorize;
 use App\Support\ActorContext;
 use App\Contracts\Bus\Command;
 use App\Exceptions\CommandDispatcherMissing;

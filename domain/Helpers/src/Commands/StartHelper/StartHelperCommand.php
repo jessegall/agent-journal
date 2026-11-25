@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Commands\StartHelper;
 
-use App\Attributes\Authorize;
+use App\Attributes\Commands\Authorize;
 use App\Enums\Agents\AccessType;
 use App\Enums\Drivers\DriverType;
 use App\Support\Command;

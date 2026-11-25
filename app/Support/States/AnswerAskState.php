@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\States;
 
-use App\Attributes\StateType;
+use App\Attributes\States\StateType;
 use App\Commands\Asks\OfferNextAsk\OfferNextAskCommand;
 use App\Enums\Engine\FrameReuse;
 use App\Enums\Sessions\SessionTransferType;

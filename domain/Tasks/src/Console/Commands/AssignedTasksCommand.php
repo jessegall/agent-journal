@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Console\Commands;
 
-use App\Attributes\JournalRoute;
+use App\Attributes\Console\JournalRoute;
 use App\Console\Concerns\RunsCallPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use Domain\Tasks\Calls\ListAssignedTasksCall;

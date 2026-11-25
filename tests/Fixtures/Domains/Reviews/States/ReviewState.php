@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Reviews\States;
 
-use App\Attributes\StateType;
+use App\Attributes\States\StateType;
 use App\Contracts\Settings\EnabledSettingsGroup;
 use App\Contracts\Work\ConditionalState;
 use App\Enums\Sessions\SessionTransferType;

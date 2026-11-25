@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes;
 
-use App\Attributes\StateType;
+use App\Attributes\States\StateType;
 use App\Contracts\Bus\Command;
 use App\Enums\Engine\NoSubject;
 use App\Enums\Sessions\SessionTransferType;

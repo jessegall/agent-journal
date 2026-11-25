@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Commands\ReplaceDocumentBody;
 
-use App\Attributes\Authorize;
+use App\Attributes\Commands\Authorize;
 use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use Domain\Documents\Policies\DocumentPolicy;

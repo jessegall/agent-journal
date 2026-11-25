@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Commands\UndockSource;
 
-use App\Attributes\RetainedActorRequestKey;
+use App\Attributes\Commands\RetainedActorRequestKey;
 use App\Support\Command;
 use Domain\Chat\Values\DockResult;
 

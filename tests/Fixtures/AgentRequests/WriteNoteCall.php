@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\AgentRequests;
 
-use App\Attributes\Endpoint;
-use App\Attributes\InPath;
+use App\Attributes\Api\Endpoint;
+use App\Attributes\Api\InPath;
 use App\Casts\CallKeyCast;
 use App\Contracts\Domains\JournalCall;
 use App\Enums\Processes\CallEffect;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Attributes\DecodesAnyJson;
+use App\Attributes\Rules\DecodesAnyJson;
 
 /**
  * The shape of a saved layout, its grid and detached panels, as the page wrote it: the server keeps it as given and

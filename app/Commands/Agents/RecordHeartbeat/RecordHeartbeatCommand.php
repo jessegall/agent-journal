@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\Agents\RecordHeartbeat;
 
-use App\Attributes\Authorize;
-use App\Attributes\Effect;
+use App\Attributes\Commands\Authorize;
+use App\Attributes\Commands\Effect;
 use App\Enums\Agents\AccessType;
 use App\Enums\Engine\CommandEffectType;
 use App\Policies\AgentPolicy;

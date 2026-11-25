@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Commands\UnpinMessage;
 
-use App\Attributes\Authorize;
-use App\Attributes\RetainedActorRequestKey;
+use App\Attributes\Commands\Authorize;
+use App\Attributes\Commands\RetainedActorRequestKey;
 use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use Domain\Chat\Policies\MessagePinPolicy;

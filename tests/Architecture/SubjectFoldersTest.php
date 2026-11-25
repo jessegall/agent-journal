@@ -8,8 +8,9 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
- * A model or an enum sits in the folder of its subject, such as app/Models/Messages/Message.php or
- * app/Enums/Accounts/AccountState.php, never directly in app/Models or app/Enums (user message 22317).
+ * A model, an enum or an attribute sits in the folder of its subject or kind, such as app/Models/Messages/Message.php,
+ * app/Enums/Accounts/AccountState.php or app/Attributes/Commands/Authorize.php, never directly in app/Models, app/Enums
+ * or app/Attributes (user messages 22317, 22006).
  */
 final class SubjectFoldersTest extends TestCase
 {
@@ -21,6 +22,7 @@ final class SubjectFoldersTest extends TestCase
         return [
             'models' => ['Models'],
             'enums' => ['Enums'],
+            'attributes' => ['Attributes'],
         ];
     }
 

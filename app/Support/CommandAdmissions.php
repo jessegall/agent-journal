@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Attributes\Authorize;
+use App\Attributes\Commands\Authorize;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Bus\Command;
 use App\Enums\Profiles\AccessRuleType;

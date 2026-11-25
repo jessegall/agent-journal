@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\Accounts\NotifySignIn;
 
-use App\Attributes\Entry;
+use App\Attributes\Commands\Entry;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Accounts\SignInOutcome;
 use App\Support\Command;

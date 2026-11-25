@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\QuestionReminders\States;
 
-use App\Attributes\StateType;
-use App\Attributes\Ticks;
+use App\Attributes\States\StateType;
+use App\Attributes\States\Ticks;
 use App\Enums\Sessions\SessionTransferType;
 use App\Contracts\Work\TickableState;
 use App\Support\States\AgentState;

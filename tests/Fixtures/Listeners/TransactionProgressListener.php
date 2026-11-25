@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Listeners;
 
-use App\Attributes\InCommandTransaction;
+use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Navigation\UserInterfaceUpdater;
 
 /**

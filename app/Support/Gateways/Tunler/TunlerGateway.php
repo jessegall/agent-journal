@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Gateways\Tunler;
 
-use App\Attributes\OutsideThePlaces;
+use App\Attributes\Rules\OutsideThePlaces;
 use App\Contracts\Files\Files;
 use App\Contracts\Sharing\ShareGateway;
 use App\Enums\Files\Place;

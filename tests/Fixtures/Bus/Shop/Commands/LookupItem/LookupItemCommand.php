@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Bus\Shop\Commands\LookupItem;
 
 use App\Enums\Agents\AccessType;
-use App\Attributes\Authorize;
+use App\Attributes\Commands\Authorize;
 use App\Support\Command;
 use Spatie\LaravelData\Attributes\Validation\Exists;
 use Tests\Fixtures\Bus\Models\FixtureWork;

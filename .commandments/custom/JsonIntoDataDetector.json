@@ -62,7 +62,7 @@
                         [
                             "annotated",
                             "$a",
-                            "App\\Attributes\\DecodesAnyJson"
+                            "App\\Attributes\\Rules\\DecodesAnyJson"
                         ]
                     ]
                 ]

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Attributes\OutsideThePlaces;
+use App\Attributes\Rules\OutsideThePlaces;
 use App\Enums\Files\PlaceExemption;
 use App\Enums\Processes\ShellDialect;
 

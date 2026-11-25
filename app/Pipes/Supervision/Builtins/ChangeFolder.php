@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Pipes\Supervision\Builtins;
 
-use App\Attributes\OutsideThePlaces;
+use App\Attributes\Rules\OutsideThePlaces;
 use App\Contracts\Bus\Pipe;
 use App\Enums\Files\PlaceExemption;
 use App\Enums\Runs\ExitStatus;

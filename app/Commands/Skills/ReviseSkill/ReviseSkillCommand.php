@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\Skills\ReviseSkill;
 
-use App\Attributes\Authorize;
+use App\Attributes\Commands\Authorize;
 use App\Enums\Agents\AccessType;
 use App\Policies\SkillAuthoringPolicy;
 use App\Support\Command;

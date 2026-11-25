@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Attributes\Endpoint;
-use App\Attributes\InPath;
+use App\Attributes\Api\Endpoint;
+use App\Attributes\Api\InPath;
 use App\Exceptions\EndpointDeclarationInvalid;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Mappers\NameMapper;

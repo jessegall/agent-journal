@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Concerns;
 
-use App\Attributes\DecodesAnyJson;
+use App\Attributes\Rules\DecodesAnyJson;
 use App\Contracts\Bus\PipelineDefinition;
 use App\Contracts\Domains\CallSender;
 use App\Contracts\Domains\JournalCall;

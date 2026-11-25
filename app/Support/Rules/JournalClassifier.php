@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Rules;
 
-use App\Attributes\OutsideThePlaces;
+use App\Attributes\Rules\OutsideThePlaces;
 use App\Contracts\Processes\ProgramClassifier;
 use App\Enums\CommandRules\CommandClass;
 use App\Enums\CommandRules\CommandType;

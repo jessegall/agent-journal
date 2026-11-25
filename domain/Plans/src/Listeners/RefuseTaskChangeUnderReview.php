@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Listeners;
 
-use App\Attributes\InCommandTransaction;
+use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
 use Domain\Plans\Exceptions\PlanUnderReview;
 use Domain\Plans\Models\Phase;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Attributes\RequiresInterface;
+use App\Attributes\Rules\RequiresInterface;
 use App\Exceptions\TraitInterfaceMissing;
 
 /**

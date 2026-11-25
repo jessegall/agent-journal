@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Attributes\StateType;
+use App\Attributes\States\StateType;
 use App\Support\ReflectedProperty;
 use App\Support\Reflector;
 use App\Support\Stack\StateTypes;

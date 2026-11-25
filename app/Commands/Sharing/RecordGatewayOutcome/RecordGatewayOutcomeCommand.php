@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\Sharing\RecordGatewayOutcome;
 
-use App\Attributes\Entry;
+use App\Attributes\Commands\Entry;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Sharing\GatewayOutcome;
 use App\Support\Command;

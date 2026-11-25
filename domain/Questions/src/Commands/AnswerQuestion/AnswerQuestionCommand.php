@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Questions\Commands\AnswerQuestion;
 
-use App\Attributes\RepeatableRead;
-use App\Attributes\RetainedActorRequestKey;
+use App\Attributes\Commands\RepeatableRead;
+use App\Attributes\Commands\RetainedActorRequestKey;
 use App\Support\Command;
 use Spatie\LaravelData\Attributes\Validation\Required;
 

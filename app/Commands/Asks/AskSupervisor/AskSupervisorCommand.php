@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\Asks\AskSupervisor;
 
-use App\Attributes\Authorize;
-use App\Attributes\RepeatableRead;
+use App\Attributes\Commands\Authorize;
+use App\Attributes\Commands\RepeatableRead;
 use App\Enums\Agents\AccessType;
 use App\Enums\Asks\CoreAskType;
 use App\Policies\AskPolicy;

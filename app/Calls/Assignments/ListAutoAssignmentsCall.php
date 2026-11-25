@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Calls\Assignments;
 
-use App\Attributes\Endpoint;
+use App\Attributes\Api\Endpoint;
 use App\Contracts\Domains\JournalCall;
 use App\Data\Assignments\AutoAssignmentPageData;
 use App\Enums\Processes\CallEffect;

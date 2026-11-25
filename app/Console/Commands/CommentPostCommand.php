@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Attributes\JournalRoute;
+use App\Attributes\Console\JournalRoute;
 use App\Calls\Comments\CommentPlace;
 use App\Calls\Comments\PostCommentCall;
 use App\Console\Concerns\RunsCallPipelines;

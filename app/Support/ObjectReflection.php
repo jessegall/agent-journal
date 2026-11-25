@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Attributes\ScriptMember;
-use App\Attributes\ScriptObject;
+use App\Attributes\Scripts\ScriptMember;
+use App\Attributes\Scripts\ScriptObject;
 use App\Contracts\Authorization\OperationNames;
 use App\Contracts\Reflection\ReflectorFactory;
 use App\Exceptions\ScriptDefinitionRefused;

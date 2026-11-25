@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Commands\Assignments\AssignRecordForMaintenance;
 
-use App\Attributes\Effect;
-use App\Attributes\Entry;
-use App\Attributes\RepeatableRead;
+use App\Attributes\Commands\Effect;
+use App\Attributes\Commands\Entry;
+use App\Attributes\Commands\RepeatableRead;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Engine\CommandEffectType;
 use App\Support\AssigneeIdentity;

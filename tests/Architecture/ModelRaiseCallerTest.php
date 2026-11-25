@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Attributes\InCommandTransaction as TransactionListener;
+use App\Attributes\Listeners\InCommandTransaction as TransactionListener;
 use App\Support\CommandRegistry;
 use Tests\Architecture\Support\CommandReach;
 use Tests\Architecture\Support\DomainFiles;

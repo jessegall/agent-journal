@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Calls;
 
-use App\Attributes\Endpoint;
+use App\Attributes\Api\Endpoint;
 use App\Calls\Assignments\Concerns\NamesRecipient;
 use App\Casts\CallKeyCast;
 use App\Contracts\Domains\JournalCall;

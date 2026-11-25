@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Drivers;
 
-use App\Attributes\DecodesAnyJson;
+use App\Attributes\Rules\DecodesAnyJson;
 use App\Contracts\Files\Files;
 use App\Enums\Files\Permissions;
 use App\Support\ContainerManifest;

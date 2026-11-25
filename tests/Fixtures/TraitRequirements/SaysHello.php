@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\TraitRequirements;
 
-use App\Attributes\RequiresInterface;
+use App\Attributes\Rules\RequiresInterface;
 
 /**
  * A trait that needs its class to implement Greets.

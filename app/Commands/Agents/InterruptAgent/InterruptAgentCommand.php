@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\Agents\InterruptAgent;
 
-use App\Attributes\Authorize;
+use App\Attributes\Commands\Authorize;
 use App\Contracts\Bus\AgentStackCommand;
 use App\Enums\Agents\AccessType;
 use App\Policies\AgentPolicy;

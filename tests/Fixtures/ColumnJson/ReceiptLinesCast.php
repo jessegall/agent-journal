@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\ColumnJson;
 
-use App\Attributes\DecodesAnyJson;
+use App\Attributes\Rules\DecodesAnyJson;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;
 

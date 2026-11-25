@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Commands\Asks\RouteAsk;
 
-use App\Attributes\Authorize;
-use App\Attributes\Effect;
-use App\Attributes\RepeatableRead;
+use App\Attributes\Commands\Authorize;
+use App\Attributes\Commands\Effect;
+use App\Attributes\Commands\RepeatableRead;
 use App\Enums\Agents\AccessType;
 use App\Enums\Asks\AskRouteStatus;
 use App\Enums\Engine\CommandEffectType;

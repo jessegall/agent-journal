@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Attributes\Authorize;
-use App\Attributes\Entry;
-use App\Attributes\RepeatableRead;
-use App\Attributes\RequiresRequestKey;
+use App\Attributes\Commands\Authorize;
+use App\Attributes\Commands\Entry;
+use App\Attributes\Commands\RepeatableRead;
+use App\Attributes\Commands\RequiresRequestKey;
 use App\Commands\Desks\ProvisionActorDesk\ProvisionActorDeskCommand;
 use App\Support\CommandRegistry;
 use App\Support\Reflector;

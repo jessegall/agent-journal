@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Attributes\DecodesAnyJson;
+use App\Attributes\Rules\DecodesAnyJson;
 use App\Enums\CommandRules\FramingType;
 use App\Enums\CommandRules\OutputEncoding;
 use App\Enums\CommandRules\StreamUse;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Boundary\Events\Tasks\Events;
 
-use App\Attributes\TransactionListenerConsent;
+use App\Attributes\Listeners\TransactionListenerConsent;
 use App\Contracts\Events\Event;
 
 /**

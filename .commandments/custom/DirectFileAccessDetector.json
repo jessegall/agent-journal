@@ -80,7 +80,7 @@
                         [
                             "annotated",
                             "$a",
-                            "App\\Attributes\\OutsideThePlaces"
+                            "App\\Attributes\\Rules\\OutsideThePlaces"
                         ]
                     ]
                 ]

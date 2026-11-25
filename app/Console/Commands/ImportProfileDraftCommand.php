@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Attributes\DecodesAnyJson;
+use App\Attributes\Rules\DecodesAnyJson;
 use App\Commands\Profiles\SaveProfileDraft\SaveProfileDraftCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Files\Files;

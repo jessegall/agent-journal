@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\Messages\DeliverClosingWords;
 
-use App\Attributes\RepeatableRead;
+use App\Attributes\Commands\RepeatableRead;
 use App\Support\Command;
 
 /**

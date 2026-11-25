@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Drivers;
 
-use App\Attributes\OutsideThePlaces;
+use App\Attributes\Rules\OutsideThePlaces;
 use App\Enums\Files\PlaceExemption;
 use App\Exceptions\FolderTrustRefused;
 

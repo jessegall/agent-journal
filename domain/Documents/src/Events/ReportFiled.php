@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Events;
 
-use App\Attributes\TransactionListenerConsent;
+use App\Attributes\Listeners\TransactionListenerConsent;
 use App\Contracts\Navigation\UserInterfaceUpdater;
 use App\Support\ActorContext;
 

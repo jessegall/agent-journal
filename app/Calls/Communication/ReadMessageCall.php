@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Calls\Communication;
 
-use App\Attributes\Endpoint;
+use App\Attributes\Api\Endpoint;
 use App\Casts\CallKeyCast;
 use App\Contracts\Domains\JournalCall;
 use App\Data\Messages\MessageView;

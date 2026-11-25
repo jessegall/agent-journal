@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\Navigation\MarkMenuEntryStale;
 
-use App\Attributes\Entry;
+use App\Attributes\Commands\Entry;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Navigation\NavigationReason;
 use App\Support\Command;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\Drivers\ClaimDriverRequests;
 
-use App\Attributes\Entry;
+use App\Attributes\Commands\Entry;
 use App\Enums\Accounts\CommandEntry;
 use App\Support\ClaimedRequests;
 use App\Support\Command;

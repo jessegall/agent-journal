@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\Sessions\RecordUserHeartbeat;
 
-use App\Attributes\Authorize;
+use App\Attributes\Commands\Authorize;
 use App\Enums\Agents\AccessType;
 use App\Policies\PresencePolicy;
 use App\Support\Command;

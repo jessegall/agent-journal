@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\Agents\DeliverAgent;
 
-use App\Attributes\Authorize;
+use App\Attributes\Commands\Authorize;
 use App\Contracts\Bus\AgentStackCommand;
 use App\Contracts\Drivers\MessagePart;
 use App\Data\Messages\MessageTextData;

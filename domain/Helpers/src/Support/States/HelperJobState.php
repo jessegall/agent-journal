@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Support\States;
 
-use App\Attributes\StateType;
+use App\Attributes\States\StateType;
 use App\Enums\Engine\FrameReuse;
 use App\Enums\Sessions\SessionTransferType;
 use App\Support\Decisions\ContextLine;

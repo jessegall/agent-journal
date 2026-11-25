@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Attributes\JournalRoute;
+use App\Attributes\Console\JournalRoute;
 use App\Calls\Agents\RecordHeartbeatCall;
 use App\Contracts\Domains\JournalCall;
 use App\Enums\CommandRules\JournalRouteType;

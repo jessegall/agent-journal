@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Concerns;
 
-use App\Attributes\RequiresInterface;
+use App\Attributes\Rules\RequiresInterface;
 use App\Contracts\Domains\DomainBootstrapper;
 use App\Contracts\Records\StateProvider;
 use App\Support\Bootstrappers\RegisterStates;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\Projects\RequestProjectRead;
 
-use App\Attributes\Authorize;
+use App\Attributes\Commands\Authorize;
 use App\Enums\Agents\AccessType;
 use App\Enums\Projects\ProjectReadType;
 use App\Policies\ConnectionsPolicy;

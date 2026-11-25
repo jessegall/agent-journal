@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Calls\Assignments;
 
-use App\Attributes\Endpoint;
+use App\Attributes\Api\Endpoint;
 use App\Calls\Assignments\Concerns\NamesAssignedRecord;
 use App\Calls\Assignments\Concerns\NamesExpectedAssignment;
 use App\Calls\Assignments\Concerns\NamesRecipient;

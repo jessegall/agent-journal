@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Messages;
 
-use App\Attributes\TransactionListenerConsent;
+use App\Attributes\Listeners\TransactionListenerConsent;
 use App\Support\ActorIdentity;
 
 /**

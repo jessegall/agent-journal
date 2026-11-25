@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Attributes;
+namespace App\Attributes\Console;
 
 use App\Enums\CommandRules\CommandClass;
 use App\Enums\CommandRules\JournalRouteType;

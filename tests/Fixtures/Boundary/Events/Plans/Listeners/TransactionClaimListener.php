@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Boundary\Events\Plans\Listeners;
 
-use App\Attributes\InCommandTransaction;
+use App\Attributes\Listeners\InCommandTransaction;
 use Tests\Fixtures\Boundary\Events\Tasks\Events\TaskClaimed;
 
 /**

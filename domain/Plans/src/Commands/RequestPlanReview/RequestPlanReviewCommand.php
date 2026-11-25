@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Commands\RequestPlanReview;
 
-use App\Attributes\Authorize;
+use App\Attributes\Commands\Authorize;
 use App\Enums\Agents\AccessType;
 use App\Support\ActorIdentity;
 use App\Support\Command;

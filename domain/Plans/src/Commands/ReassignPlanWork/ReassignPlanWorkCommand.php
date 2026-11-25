@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Commands\ReassignPlanWork;
 
-use App\Attributes\Authorize;
-use App\Attributes\RepeatableRead;
-use App\Attributes\RetainedActorRequestKey;
+use App\Attributes\Commands\Authorize;
+use App\Attributes\Commands\RepeatableRead;
+use App\Attributes\Commands\RetainedActorRequestKey;
 use App\Enums\Agents\AccessType;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentReference;

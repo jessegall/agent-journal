@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Bus;
 
-use App\Attributes\OneLine;
+use App\Attributes\Validation\OneLine;
 use Spatie\LaravelData\Data;
 
 /**

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Attributes;
+namespace App\Attributes\States;
 
 use App\Contracts\Work\WorkOccurrenceGuard;
 use Attribute;

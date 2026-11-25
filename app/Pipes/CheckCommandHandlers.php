@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Pipes;
 
-use App\Attributes\Authorize;
+use App\Attributes\Commands\Authorize;
 use App\Contracts\Actors\Actor;
 use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Authorization\RecordPolicy;

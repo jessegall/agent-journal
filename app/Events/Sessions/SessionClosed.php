@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Sessions;
 
-use App\Attributes\TransactionListenerConsent;
+use App\Attributes\Listeners\TransactionListenerConsent;
 
 /**
  * A start's journal session ended, raised inside the transaction that ended it.

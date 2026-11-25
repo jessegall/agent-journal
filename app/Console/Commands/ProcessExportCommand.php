@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Attributes\JournalRoute;
-use App\Attributes\OutsideThePlaces;
+use App\Attributes\Console\JournalRoute;
+use App\Attributes\Rules\OutsideThePlaces;
 use App\Calls\Processes\ProcessCalls;
 use App\Console\Concerns\RunsCallPipelines;
 use App\Enums\CommandRules\CommandClass;

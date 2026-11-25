@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Attributes;
+namespace App\Attributes\Api;
 
 use App\Enums\Processes\CallEffect;
 use App\Enums\Processes\ReceiptOwner;

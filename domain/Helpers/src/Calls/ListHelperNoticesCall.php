@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Calls;
 
-use App\Attributes\Endpoint;
+use App\Attributes\Api\Endpoint;
 use App\Contracts\Domains\JournalCall;
 use App\Enums\Processes\CallEffect;
 use Domain\Helpers\Data\HelperNoticeListData;

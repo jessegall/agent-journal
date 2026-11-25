@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Attributes\OutsideThePlaces;
+use App\Attributes\Rules\OutsideThePlaces;
 use App\Data\Images\PackageFileData;
 use App\Enums\Files\PlaceExemption;
 use App\Values\ScriptBinding;

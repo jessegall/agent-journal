@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Attributes\DecodesAnyJson;
+use App\Attributes\Rules\DecodesAnyJson;
 use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Skills\SkillCondition;
 use App\Enums\Agents\AccessType;

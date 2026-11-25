@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Casts;
 
-use App\Attributes\DecodesAnyJson;
+use App\Attributes\Rules\DecodesAnyJson;
 use App\Exceptions\SettingsDocumentInvalid;
 use App\Support\SettingKey;
 use App\Support\Storage\EncodedSetting;

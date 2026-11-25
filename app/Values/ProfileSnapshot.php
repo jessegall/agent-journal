@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Attributes\Authorize;
+use App\Attributes\Commands\Authorize;
 use App\Contracts\Authorization\Policy;
 use App\Contracts\Bus\Command;
 use App\Data\Profiles\ProfileAuthorization;

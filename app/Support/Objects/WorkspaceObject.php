@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Objects;
 
-use App\Attributes\ScriptMember;
-use App\Attributes\ScriptObject;
+use App\Attributes\Scripts\ScriptMember;
+use App\Attributes\Scripts\ScriptObject;
 use App\Contracts\Files\WorkspaceReader;
 use App\Values\ScriptContext;
 use App\Values\WorkspaceFacts;

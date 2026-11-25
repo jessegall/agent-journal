@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Domains\QuestionReminders\Commands\SendQuestionReminder;
 
 use App\Values\StackTarget;
-use App\Attributes\Authorize;
+use App\Attributes\Commands\Authorize;
 use App\Support\Command;
 use App\Enums\Agents\AccessType;
 use Tests\Fixtures\Bus\Policies\FixturePolicy;

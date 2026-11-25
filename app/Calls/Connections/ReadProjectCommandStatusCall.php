@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Calls\Connections;
 
-use App\Attributes\Endpoint;
+use App\Attributes\Api\Endpoint;
 use App\Contracts\Domains\JournalCall;
 use App\Enums\Processes\CallEffect;
 use App\Exceptions\VerbNotServed;

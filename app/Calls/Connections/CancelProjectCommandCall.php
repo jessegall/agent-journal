@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Calls\Connections;
 
-use App\Attributes\Endpoint;
-use App\Attributes\InPath;
+use App\Attributes\Api\Endpoint;
+use App\Attributes\Api\InPath;
 use App\Contracts\Domains\JournalCall;
 use App\Enums\Processes\CallEffect;
 use App\Values\CallAccepted;

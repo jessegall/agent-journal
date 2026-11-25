@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\Drivers\NotifyRuntimeActivity;
 
-use App\Attributes\Entry;
+use App\Attributes\Commands\Entry;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Drivers\HoldReason;
 use App\Enums\Runs\RuntimeActivity;

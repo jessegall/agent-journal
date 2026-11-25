@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Attributes\JournalRoute;
+use App\Attributes\Console\JournalRoute;
 use App\Calls\Text\ListTextSectionsCall;
 use App\Console\Concerns\RunsCallPipelines;
 use App\Enums\CommandRules\JournalRouteType;

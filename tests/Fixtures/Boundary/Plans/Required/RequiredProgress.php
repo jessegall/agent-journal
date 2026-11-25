@@ -7,8 +7,8 @@ namespace Tests\Fixtures\Boundary\Plans\Required;
 use App\Exceptions\RaisedOutsideUnit;
 use App\Exceptions\RowWriteRefused;
 use App\Contracts\Bus\CommandFacts;
-use App\Attributes\InCommandTransaction;
-use App\Attributes\TransactionListenerConsent;
+use App\Attributes\Listeners\InCommandTransaction;
+use App\Attributes\Listeners\TransactionListenerConsent;
 
 /**
  * A domain listener the command's transaction requires, using the seams and exceptions Core exports for it.

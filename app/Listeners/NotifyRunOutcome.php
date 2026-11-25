@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Attributes\InCommandTransaction;
+use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
 use App\Contracts\Notifications\Notifications;
 use App\Data\Notifications\NotificationTarget;

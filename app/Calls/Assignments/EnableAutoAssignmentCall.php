@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Calls\Assignments;
 
-use App\Attributes\Endpoint;
-use App\Attributes\PresentList;
+use App\Attributes\Api\Endpoint;
+use App\Attributes\Api\PresentList;
 use App\Calls\Assignments\Concerns\NamesAssignmentPool;
 use App\Calls\Assignments\Concerns\NamesAutoAssignment;
 use App\Casts\CallKeyCast;

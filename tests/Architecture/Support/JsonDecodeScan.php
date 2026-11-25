@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Attributes\DecodesAnyJson;
+use App\Attributes\Rules\DecodesAnyJson;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\NodeFinder;

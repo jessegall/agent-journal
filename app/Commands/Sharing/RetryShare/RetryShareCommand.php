@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\Sharing\RetryShare;
 
-use App\Attributes\Authorize;
-use App\Attributes\RequiresRequestKey;
+use App\Attributes\Commands\Authorize;
+use App\Attributes\Commands\RequiresRequestKey;
 use App\Enums\Agents\AccessType;
 use App\Policies\SharingPolicy;
 use App\Support\Command;

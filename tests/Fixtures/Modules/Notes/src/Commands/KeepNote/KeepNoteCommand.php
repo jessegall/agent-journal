@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Modules\Notes\Commands\KeepNote;
 
 use App\Enums\Agents\AccessType;
-use App\Attributes\Authorize;
-use App\Attributes\RequiresRequestKey;
+use App\Attributes\Commands\Authorize;
+use App\Attributes\Commands\RequiresRequestKey;
 use App\Support\Command;
 use Tests\Fixtures\Modules\Notes\Models\NotePage;
 use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;

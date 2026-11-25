@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Commands\Access\GrantEnvironmentAccess;
 
-use App\Attributes\Authorize;
+use App\Attributes\Commands\Authorize;
 use App\Enums\Agents\AccessType;
 use App\Enums\Messages\InboxPermission;
-use App\Support\Command;
 use App\Policies\EnvironmentAccessPolicy;
+use App\Support\Command;
 
 /**
  * The owner admits a user to the chats of an environment, this installation when none is named, with the permissions

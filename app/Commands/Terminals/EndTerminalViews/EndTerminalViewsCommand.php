@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\Terminals\EndTerminalViews;
 
-use App\Attributes\Entry;
+use App\Attributes\Commands\Entry;
 use App\Enums\Accounts\CommandEntry;
 use App\Support\Command;
 

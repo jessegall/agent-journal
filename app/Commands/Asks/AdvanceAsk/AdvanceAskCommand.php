@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\Asks\AdvanceAsk;
 
-use App\Attributes\Entry;
-use App\Attributes\RepeatableRead;
+use App\Attributes\Commands\Entry;
+use App\Attributes\Commands\RepeatableRead;
 use App\Enums\Accounts\CommandEntry;
 use App\Support\Command;
 

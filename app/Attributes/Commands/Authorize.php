@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Attributes;
+namespace App\Attributes\Commands;
 
 use App\Contracts\Authorization\Policy;
 use App\Enums\Agents\AccessType;

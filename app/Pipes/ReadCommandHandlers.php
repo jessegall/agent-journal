@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Pipes;
 
-use App\Attributes\Authorize;
-use App\Attributes\Effect;
-use App\Attributes\Entry;
-use App\Attributes\RepeatableRead;
-use App\Attributes\RequiresRequestKey;
-use App\Attributes\RetainedActorRequestKey;
+use App\Attributes\Commands\Authorize;
+use App\Attributes\Commands\Effect;
+use App\Attributes\Commands\Entry;
+use App\Attributes\Commands\RepeatableRead;
+use App\Attributes\Commands\RequiresRequestKey;
+use App\Attributes\Commands\RetainedActorRequestKey;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\Pipe;
 use App\Exceptions\CommandDeclarationInvalid;

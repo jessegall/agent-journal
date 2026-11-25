@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Pipes;
 
-use App\Attributes\InCommandTransaction;
-use App\Attributes\TransactionListenerConsent;
+use App\Attributes\Listeners\InCommandTransaction;
+use App\Attributes\Listeners\TransactionListenerConsent;
 use App\Contracts\Bus\Pipe;
 use App\Exceptions\InvalidListener;
 use App\Support\ListenerDeclarations;

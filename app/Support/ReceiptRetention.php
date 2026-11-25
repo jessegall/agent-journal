@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Attributes\RequiresRequestKey;
-use App\Attributes\RetainedActorRequestKey;
+use App\Attributes\Commands\RequiresRequestKey;
+use App\Attributes\Commands\RetainedActorRequestKey;
 use App\Exceptions\CommandDeclarationInvalid;
 use Carbon\CarbonImmutable;
 
