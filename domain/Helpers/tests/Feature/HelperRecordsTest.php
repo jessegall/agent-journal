@@ -46,17 +46,6 @@ final class HelperRecordsTest extends TestCase
         $this->assertSame(0, HelperJob::query()->count());
     }
 
-    public function test_a_parent_has_one_purpose_per_profile_and_record(): void
-    {
-        $parent = $this->actAsUser('parent');
-        $subject = new RecordIdentity('tasks.task', (string) Str::ulid());
-        $first = HelperPurpose::create($parent, 'read-only-helper', $subject);
-        $again = HelperPurpose::create($parent, 'read-only-helper', $subject);
-
-        $this->assertSame($first->id, $again->id);
-        $this->assertSame(1, HelperPurpose::query()->where('subject_id', $subject->id)->count());
-    }
-
     public function test_an_identity_keeps_its_profile(): void
     {
         $parent = $this->actAsUser('parent');

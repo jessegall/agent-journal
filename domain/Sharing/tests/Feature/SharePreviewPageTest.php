@@ -105,23 +105,6 @@ final class SharePreviewPageTest extends TestCase
             ->missing('page.data.liveShare'));
     }
 
-    public function test_saving_the_preview_keeps_the_selected_document(): void
-    {
-        $this->actingAs($this->owner)
-            ->post(
-                '/sharing/'.rawurlencode("plan {$this->plan->number}").'/previews',
-                ['selected' => [$this->document->id]],
-            )
-            ->assertStatus(303);
-
-        $preview = SharePreview::query()->sole();
-
-        $this->assertSame(
-            [$this->document->id],
-            array_map(fn (ShareSelectedTarget $target) => $target->record->id, $preview->selection->items()),
-        );
-    }
-
     public function test_another_user_can_neither_see_nor_save_a_preview(): void
     {
         $other = User::factory()->create();

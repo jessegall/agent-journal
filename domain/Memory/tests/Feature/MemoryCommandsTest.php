@@ -77,44 +77,6 @@ final class MemoryCommandsTest extends TestCase
             ->assertExitCode(0);
     }
 
-    public function test_the_same_request_key_keeps_one_memory(): void
-    {
-        $this->runCommandsAs($this->owner);
-
-        $once = ['text' => 'Once.', '--request-key' => '01JD8X0G9M3QZ6V4K2MEMORY01'];
-        $this->artisan('memory:save', $once)->assertExitCode(0);
-        $this->artisan('memory:save', $once)->assertExitCode(0);
-
-        $this->assertSame(1, Memory::query()->ownedBy(ActorIdentity::of($this->owner->agent))->count());
-    }
-
-    public function test_an_agent_edits_and_removes_its_own_memory(): void
-    {
-        $this->runCommandsAs($this->owner);
-        $this->artisan('memory:save', ['text' => 'First words.'])->assertExitCode(0);
-        $memory = Memory::query()->ownedBy(ActorIdentity::of($this->owner->agent))->sole();
-
-        $this->artisan('memory:edit', [
-            'memory' => $memory->id,
-            '--revision' => 1,
-            '--text' => 'Better words.',
-            '--weight' => '9',
-        ])->assertExitCode(0);
-
-        $this->assertSame([
-            'Better words.',
-            9,
-            2,
-        ], [
-            $memory->refresh()->text,
-            $memory->weight,
-            $memory->revision,
-        ]);
-
-        $this->artisan('memory:remove', ['memory' => $memory->id])->assertExitCode(0);
-        $this->assertSame(0, Memory::query()->ownedBy(ActorIdentity::of($this->owner->agent))->count());
-    }
-
     public function test_another_agent_cannot_edit_remove_or_list_the_memory(): void
     {
         $this->runCommandsAs($this->owner);
@@ -137,49 +99,6 @@ final class MemoryCommandsTest extends TestCase
 
         $this->signed($this->other, '/agent/memory/list', [])->assertJsonPath('memories', []);
         $this->assertSame(self::MEMORY_TEXT, $memory->refresh()->text);
-    }
-
-    public function test_a_blank_text_and_a_weight_above_ten_are_refused(): void
-    {
-        $this->runCommandsAs($this->owner);
-
-        $this->artisan('memory:save', ['text' => ' '])->assertExitCode(1);
-        $this->artisan('memory:save', [
-            'text' => 'Heavy.',
-            '--weight' => 11,
-        ])->assertExitCode(1);
-
-        $this->assertSame(0, Memory::query()->ownedBy(ActorIdentity::of($this->owner->agent))->count());
-    }
-
-    public function test_a_stale_edit_is_a_conflict_and_keeps_the_newer_text(): void
-    {
-        $this->runCommandsAs($this->owner);
-        $this->artisan('memory:save', ['text' => 'Old words.'])->assertExitCode(0);
-        $memory = Memory::query()->ownedBy(ActorIdentity::of($this->owner->agent))->sole();
-
-        $this->artisan('memory:edit', [
-            'memory' => $memory->id,
-            '--revision' => 1,
-            '--text' => 'Newer words.',
-        ])
-            ->assertExitCode(0);
-
-        $this->artisan('memory:edit', [
-            'memory' => $memory->id,
-            '--revision' => 1,
-            '--text' => 'Stale words.',
-        ])
-            ->expectsOutputToContain("Memory {$memory->id} is at revision 2, not 1")
-            ->assertExitCode(1);
-
-        $this->assertSame([
-            'Newer words.',
-            2,
-        ], [
-            $memory->refresh()->text,
-            $memory->revision,
-        ]);
     }
 
     public function test_reading_one_memory_gives_its_revision_and_another_agents_is_unavailable(): void

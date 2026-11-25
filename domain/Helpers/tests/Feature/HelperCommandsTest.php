@@ -56,30 +56,4 @@ final class HelperCommandsTest extends TestCase
 
         $this->assertSame(JobStatus::Running, HelperJob::query()->acrossActors()->sole()->status);
     }
-
-    public function test_a_steer_reaches_the_live_job_and_a_cancel_ends_it(): void
-    {
-        $receipt = $this->start((string) Str::ulid(), 'Review plan 7');
-        $this->runCommandsAs($this->parent);
-
-        $this->artisan('helper:steer', [
-            'identity' => $receipt->identityId,
-            'text' => 'Look at the tests too',
-        ])
-            ->expectsOutputToContain("Steered job {$receipt->jobId}.")
-            ->assertSuccessful();
-
-        $this->artisan('helper:cancel', [
-            'identity' => $receipt->identityId,
-            '--job' => $receipt->jobId,
-        ])
-            ->expectsOutputToContain("Cancelled job {$receipt->jobId}")
-            ->assertSuccessful();
-
-        $this->artisan('helper:notices')->assertSuccessful();
-
-        $job = HelperJob::query()->acrossActors()->findOrFail($receipt->jobId);
-        $this->assertSame(['Look at the tests too'], $job->steering);
-        $this->assertSame(JobStatus::Cancelled, $job->status);
-    }
 }

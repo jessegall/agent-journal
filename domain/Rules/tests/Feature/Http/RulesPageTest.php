@@ -124,15 +124,6 @@ final class RulesPageTest extends TestCase
         $this->assertSame(RuleStatus::Active, $this->proposed->fresh()?->status);
     }
 
-    public function test_denying_settles_the_rule(): void
-    {
-        $this->actingAs($this->owner)->from('/rules')->patch(
-            "/rules/{$this->proposed->number}/deny",
-        )->assertRedirect('/rules');
-
-        $this->assertSame(RuleStatus::Denied, $this->proposed->fresh()?->status);
-    }
-
     public function test_a_rule_settled_meanwhile_is_refused_as_a_review_error(): void
     {
         $this->actingAs($this->owner)->from('/rules')

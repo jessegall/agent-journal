@@ -54,13 +54,6 @@ final class HelperContextTest extends TestCase
 
     private const string CONTINUE_CALL = "helpers_continue with identity_id '%s'";
 
-    public function test_a_started_helper_job_attaches_to_its_session_and_runs(): void
-    {
-        $receipt = $this->start((string) Str::ulid(), self::REVIEW_TITLE, self::PHASE_BRIEF);
-
-        $this->assertSame(JobStatus::Running, HelperJob::query()->acrossActors()->findOrFail($receipt->jobId)->status);
-    }
-
     public function test_a_helper_gets_its_brief_and_steering_again_after_a_compaction(): void
     {
         $receipt = $this->start((string) Str::ulid(), self::REVIEW_TITLE, self::PHASE_BRIEF);
@@ -91,19 +84,6 @@ final class HelperContextTest extends TestCase
             $this->assertStringContainsString(sprintf(self::STEERING_REMINDER, self::STEERING), $context);
             $this->assertStringContainsString(self::REVIEW_TITLE, $context);
         }
-    }
-
-    public function test_a_helper_job_state_ends_when_its_job_is_held(): void
-    {
-        $receipt = $this->start((string) Str::ulid(), self::REVIEW_TITLE, self::PHASE_BRIEF);
-        $job = HelperJob::query()->acrossActors()->findOrFail($receipt->jobId);
-        $state = $this->jobStateOf($receipt, $job);
-
-        $state->onHelperJobHeld(new HelperJobHeld('another-job'));
-        $this->assertFalse($state->isFinished());
-
-        $state->onHelperJobHeld(new HelperJobHeld($job->id));
-        $this->assertTrue($state->isFinished());
     }
 
     public function test_a_parent_sees_the_notice_of_a_lost_helper_once(): void

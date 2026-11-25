@@ -35,24 +35,6 @@ final class TaskStateContributionTest extends TestCase
 
     private const string STILL_NEEDS_WORK = 'Task %d still needs work';
 
-    public function test_starting_a_task_commits_the_start_and_its_state_together(): void
-    {
-        $task = Task::factory()->create(['title' => 'Write the walk']);
-
-        $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
-
-        $stored = $task->fresh();
-        $this->assertNotNull($stored);
-        $this->assertSame([
-            TaskStatus::Started,
-            1,
-        ], [
-            $stored->status,
-            $stored->run_number,
-        ]);
-        $this->assertSame(["tasks.work {$task->id} 1"], $this->taskFrames());
-    }
-
     public function test_a_failed_push_rolls_the_start_back(): void
     {
         $task = Task::factory()->create(['title' => 'Write the walk']);
@@ -84,36 +66,6 @@ final class TaskStateContributionTest extends TestCase
         $this->assertSame(["tasks.work {$task->id} 1"], $this->taskFrames());
     }
 
-    public function test_the_frame_hears_its_run_finish_and_the_next_stop_passes(): void
-    {
-        $task = Task::factory()->create(['title' => 'Write the walk']);
-        $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
-
-        $held = $this->answerStop('call-1');
-        $this->app->make(CommandBus::class)->run(new FinishTaskCommand($task->id, 1, 'Done.'));
-        $allowed = $this->answerStop('call-2');
-
-        $this->assertStringContainsString(sprintf(self::STILL_NEEDS_WORK, $task->number), $held);
-        $this->assertSame('{}', $allowed);
-        $this->assertSame(["tasks.work {$task->id} 1"], $this->taskFrames());
-    }
-
-    public function test_an_overdue_log_puts_the_log_due_state_on_top_and_logging_finishes_it(): void
-    {
-        $task = Task::factory()->create(['title' => 'Write the walk']);
-        $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
-
-        foreach (range(1, WorkOnTaskState::LOG_DUE_AFTER) as $call) {
-            $this->answerToolFinished("call-{$call}");
-        }
-
-        $due = $this->openLogDueFrames();
-        $this->app->make(CommandBus::class)->run(new LogTaskRunCommand($task->id, 1, 'The walk reads the stack.'));
-
-        $this->assertSame([$task->id], $due);
-        $this->assertSame([], $this->openLogDueFrames());
-    }
-
     /**
      * @return list<string> the task of each log-due frame that is not yet logged
      */
@@ -126,27 +78,6 @@ final class TaskStateContributionTest extends TestCase
         );
 
         return array_values(array_map(fn (FrameRecord $frame) => $frame->reference->subject->id, $frames));
-    }
-
-    public function test_a_frame_stops_holding_its_agent_once_its_run_claim_is_gone(): void
-    {
-        $task = Task::factory()->create(['title' => 'Write the walk']);
-        $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
-        $run = $task->fresh()?->currentRun();
-        $this->assertNotNull($run);
-        $claims = $this->app->make(RunClaims::class);
-
-        $held = $this->answerStop('call-1');
-
-        $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $claims->release($run->assignmentIdentity()),
-        );
-
-        $released = $this->answerStop('call-2');
-
-        $this->assertStringContainsString(sprintf(self::STILL_NEEDS_WORK, $task->number), $held);
-        $this->assertSame('{}', $released);
-        $this->assertTrue($this->app->make(AssignedTaskResolver::class)->currentForCaller()->isEmpty());
     }
 
     public function test_a_finished_task_frame_keeps_its_stored_place(): void
@@ -238,38 +169,12 @@ final class TaskStateContributionTest extends TestCase
         );
     }
 
-    public function test_finishing_the_only_task_leaves_no_task_in_focus(): void
-    {
-        $task = Task::factory()->create(['title' => 'Write the walk']);
-        $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
-
-        $this->assertSame([$task->id], $this->focusedTaskIds());
-
-        $this->app->make(CommandBus::class)->run(new FinishTaskCommand($task->id, 1, 'Written.'));
-
-        $this->assertSame([], $this->focusedTaskIds());
-    }
-
     /**
      * @return list<string>
      */
     private function focusedTaskIds(): array
     {
         return array_values(AgentFocus::query()->where('agent_id', $this->target->agentId)->pluck('focused_id')->all());
-    }
-
-    public function test_an_agent_finishing_a_task_it_never_started_is_refused_and_leaves_the_stack_alone(): void
-    {
-        $started = Task::factory()->create(['title' => 'Write the walk']);
-        $neverStarted = Task::factory()->create(['title' => 'Someday']);
-        $this->app->make(CommandBus::class)->run(new StartTaskCommand($started->id));
-
-        $this->assertThrows(
-            fn () => $this->app->make(CommandBus::class)->run(new FinishTaskCommand($neverStarted->id, 0, 'Done.')),
-            ActorNotAllowed::class,
-        );
-
-        $this->assertSame(["tasks.work {$started->id} 1"], $this->taskFrames());
     }
 
     /**

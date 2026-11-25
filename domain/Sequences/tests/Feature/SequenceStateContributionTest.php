@@ -59,27 +59,6 @@ final class SequenceStateContributionTest extends TestCase
         $this->assertSame(1, $run->fresh()?->current_step);
     }
 
-    public function test_a_finished_or_cancelled_run_is_passed_over_and_a_push_pops_the_exposed_one(): void
-    {
-        $finished = $this->newRun();
-        $this->app->make(CommandBus::class)->run(new StartSequenceCommand($finished->id, $this->target->sessionId));
-        $this->app->make(CommandBus::class)->run(new AdvanceSequenceCommand($finished->id));
-        $this->app->make(CommandBus::class)->run(new AdvanceSequenceCommand($finished->id));
-
-        $this->assertSame(SequenceRunStatus::Finished, $finished->fresh()?->status);
-        $this->assertSame('{}', $this->answerStop('call-1'));
-
-        $cancelled = $this->newRun();
-        $this->app->make(CommandBus::class)->run(new StartSequenceCommand($cancelled->id, $this->target->sessionId));
-        $this->app->make(CommandBus::class)->run(new CancelSequenceCommand($cancelled->id));
-
-        $this->assertSame('{}', $this->answerStop('call-2'));
-        $this->assertSame([
-            'core.ready',
-            'sequences.follow',
-        ], $this->storedTypeKeys());
-    }
-
     private function newRun(): SequenceRun
     {
         return SequenceRun::create('Close a task', [

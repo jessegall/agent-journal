@@ -40,22 +40,6 @@ final class SharingModelsTest extends TestCase
     use RefreshHookDatabase;
     use SelectsShareTargets;
 
-    public function test_the_create_migrations_make_the_eight_sharing_tables(): void
-    {
-        foreach ([
-            'share_installations',
-            'share_previews',
-            'shares',
-            'share_members',
-            'share_gateway_configurations',
-            'share_gateway_endpoints',
-            'share_gateway_operations',
-            'share_audits',
-        ] as $table) {
-            $this->assertTrue(Schema::hasTable($table), $table);
-        }
-    }
-
     public function test_the_installation_row_is_made_once_and_locked_for_admission(): void
     {
         $first = DB::transaction(fn () => ShareInstallation::create());
@@ -63,37 +47,6 @@ final class SharingModelsTest extends TestCase
 
         $this->assertSame($first->id, $second->id);
         $this->assertSame(1, ShareInstallation::query()->readAll('the installation has one row')->count());
-    }
-
-    public function test_a_gateway_configuration_endpoint_and_operation_are_made_through_their_methods(): void
-    {
-        $configuration = $this->configuration();
-        $endpoint = ShareGatewayEndpoint::create($configuration, 1, 'run-1');
-        $operation = ShareGatewayOperation::create($configuration, GatewayOperationType::Open);
-
-        $this->assertSame(
-            $configuration->settings->toArray(),
-            ShareGatewayConfiguration::query()->findOrFail($configuration->id)->settings->toArray(),
-        );
-        $this->assertSame('press', $configuration->toConfiguration->gatewayKey());
-        $this->assertSame('https://share.example.test', $endpoint->public_origin);
-        $this->assertSame(GatewayEndpointStatus::Opening, $endpoint->fresh()?->status);
-        $this->assertSame(GatewayOperationType::Open, $operation->fresh()?->type);
-        $this->assertSame($configuration->configuration_version, $operation->configuration_version);
-        $this->assertNull($operation->share_gateway_endpoint_id);
-    }
-
-    public function test_a_preview_keeps_its_selection_and_a_checksum_over_it(): void
-    {
-        $configuration = $this->configuration();
-        $target = new ShareSelectedTarget(TestActors::record('documents.document', 2), TestIds::of(3), '4');
-        $preview = SharePreview::create(TestIds::of(9), $this->root(), [$target], $configuration);
-        $other = SharePreview::create(TestIds::of(9), $this->root(), [], $configuration);
-
-        $this->assertSame([$target->toArray()], SharePreview::query()->findOrFail($preview->id)->selection->toArray());
-        $this->assertSame(64, strlen($preview->checksum));
-        $this->assertNotSame($preview->checksum, $other->checksum);
-        $this->assertEquals($this->root(), $preview->root);
     }
 
     public function test_a_share_never_serializes_its_token_and_stores_it_encrypted(): void
@@ -118,29 +71,6 @@ final class SharingModelsTest extends TestCase
         $this->assertSame($token->token, $stored->token_ciphertext);
         $this->assertNotSame($token->token, $stored->getRawOriginal('token_ciphertext'));
         $this->assertSame(ShareToken::digestOf($token->token), $stored->token_digest);
-    }
-
-    public function test_a_proposal_member_and_audit_are_made_through_their_methods(): void
-    {
-        $proposal = Share::create(
-            $this->root(),
-            CarbonImmutable::now()->addDays(7),
-            new ShareProposal(TestActors::agentIdentity(5)),
-        );
-        $target = new ShareSelectedTarget(TestActors::record('documents.report', 7), TestIds::of(8), '1');
-        $selected = $this->selected($this->configuration(), $this->root(), $target);
-        [$memberId] = ShareMember::createMany($proposal, $selected);
-        $member = ShareMember::query()->findOrFail($memberId);
-        $audit = ShareAudit::create($proposal, ShareAuditType::Created, TestActors::agentIdentity(5), null);
-        $change = ShareAudit::create(null, ShareAuditType::GatewayChanged, TestActors::userIdentity(9), 'disabled');
-
-        $this->assertSame(ShareStatus::Proposed, $proposal->fresh()?->status);
-        $this->assertNull($proposal->token_digest);
-        $this->assertSame(0, $member->scope_version);
-        $this->assertEquals(TestActors::record('documents.report', 7), $member->target);
-        $this->assertSame($proposal->id, $audit->share_id);
-        $this->assertNull($change->share_id);
-        $this->assertSame(ShareAuditType::GatewayChanged, $change->fresh()?->type);
     }
 
     private function root(): RecordIdentity

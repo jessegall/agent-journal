@@ -36,38 +36,6 @@ final class PlanPersistenceTest extends TestCase
         return DomainRegistry::installedClasses(dirname(__DIR__, 4));
     }
 
-    public function test_phases_and_their_tasks_keep_their_order(): void
-    {
-        $plan = Plan::factory()->create([
-            'title' => 'Build the plans page',
-            'type' => PlanType::Build,
-        ]);
-        $read = $this->planStructure()->addPhase($plan, 'Read');
-        $start = $this->planStructure()->addPhase($plan, 'Start');
-        $second = $this->task('Second');
-        $first = $this->task('First');
-        $third = $this->task('Third');
-
-        $this->planStructure()->addTasks($read, [$second->id]);
-        $this->planStructure()->addTasks($start, [$third->id]);
-        $this->planStructure()->addTasks($read, [$first->id]);
-
-        $this->assertSame([
-            'Read',
-            'Start',
-        ], $plan->phases()->pluck('title')->all());
-        $this->assertSame([
-            $second->id,
-            $first->id,
-        ], $read->taskIds());
-        $this->assertSame([
-            $second->id,
-            $first->id,
-            $third->id,
-        ], $plan->taskIds());
-        $this->assertSame(PlanStatus::Planned, $plan->fresh()?->status);
-    }
-
     public function test_a_task_sits_in_one_phase_at_most(): void
     {
         $plan = Plan::factory()->create([

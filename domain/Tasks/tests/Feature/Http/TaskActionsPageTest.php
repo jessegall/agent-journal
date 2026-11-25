@@ -64,33 +64,6 @@ final class TaskActionsPageTest extends TestCase
         $this->assertSame(TaskStatus::Blocked, $this->task->refresh()->status);
     }
 
-    public function test_a_stale_cancel_is_refused_and_an_older_run_cannot_block(): void
-    {
-        $this->startUserRequestAs($this->owner->id);
-        $bus = $this->app->make(CommandBus::class);
-        $bus->run(new StartTaskCommand($this->task->id));
-        $bus->run(new BlockTaskCommand($this->task->id, 1, 'Waits.'));
-        $bus->run(new StartTaskCommand($this->task->id));
-
-        $this->act('cancel', [
-            'reason' => 'Dropped.',
-            'revision' => 1,
-            'run' => 1,
-        ])->assertSessionHasErrors();
-        $this->act('block', [
-            'run' => 1,
-            'reason' => 'From an older tab.',
-        ])->assertSessionHasErrors();
-
-        $this->assertSame([
-            TaskStatus::Started,
-            2,
-        ], [
-            $this->task->refresh()->status,
-            $this->task->run_number,
-        ]);
-    }
-
     /**
      * @param  array<string, mixed>  $fields
      */

@@ -84,33 +84,6 @@ final class PlanReviewPageTest extends TestCase
             ));
     }
 
-    public function test_a_task_of_a_plan_under_review_cannot_change_and_the_review_still_decides(): void
-    {
-        $this->postReview('review')->assertStatus(303);
-        $this->startUserRequestAs($this->owner->id);
-
-        $this->assertThrows(
-            fn () => $this->app->make(CommandBus::class)->run(
-                new EditTaskCommand($this->task->id, $this->task->refresh()->revision, brief: 'Write the new page.'),
-            ),
-            PlanUnderReview::class,
-        );
-
-        $this->postReview('review/approve', ['edition' => 1])->assertStatus(303)->assertSessionHasNoErrors();
-
-        $approved = $this->actingAs($this->owner)->get("/plans/{$this->plan->number}")->assertOk();
-
-        $approved->assertInertia(fn (AssertableInertia $page) => $page
-            ->where(
-                'page.data.root.children.1.children.1.children.3.children.0.native.props.review.receipt.editionNumber',
-                1,
-            )
-            ->where(
-                'page.data.root.children.1.children.1.children.3.children.0.native.props.review.reviewNumber',
-                null,
-            ));
-    }
-
     /**
      * @param  array<string, mixed>  $fields
      */

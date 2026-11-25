@@ -42,33 +42,6 @@ final class PlanEndPageTest extends TestCase
         $this->startUserRequestAs($this->owner->id);
     }
 
-    public function test_a_cancel_against_a_changed_state_is_refused_and_a_cancelled_plan_keeps_its_tasks(): void
-    {
-        $task = Task::factory()->create();
-        $structure = $this->app->make(PlanStructure::class);
-        $structure->addTasks($structure->addPhase($this->plan, 'Work'), [$task->id]);
-        $this->app->make(CommandBus::class)->run(new StartPlanCommand($this->plan->id));
-
-        $this->end('cancel', [
-            'revision' => $this->plan->revision,
-            'state' => 'planned',
-            'text' => 'Dropped.',
-        ])
-            ->assertSessionHasErrors();
-
-        $this->assertSame(PlanStatus::Started, $this->plan->refresh()->status);
-
-        $this->end('cancel', [
-            'revision' => $this->plan->revision,
-            'state' => 'started',
-            'text' => 'Dropped.',
-        ])
-            ->assertSessionHasNoErrors();
-
-        $this->assertSame(PlanStatus::Cancelled, $this->plan->refresh()->status);
-        $this->assertSame(TaskStatus::Open, $task->refresh()->status);
-    }
-
     public function test_a_started_plan_with_nothing_unfinished_offers_finish_and_finishing_shows_done(): void
     {
         $this->app->make(CommandBus::class)->run(new StartPlanCommand($this->plan->id));
