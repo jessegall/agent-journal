@@ -32,8 +32,8 @@ final class QueryMethodRemoval implements ModelHookInterface
         }
 
         collect(ReflectedType::of($model)->methods())
-            ->filter(fn (ReflectedMethod $method): bool => $this->isScope($method))
-            ->map(fn (ReflectedMethod $method): string => $this->scopeName($method))
+            ->filter(fn (ReflectedMethod $method) => $this->isScope($method))
+            ->map(fn (ReflectedMethod $method) => $this->scopeName($method))
             ->merge(self::QUERY_METHODS)
             ->each(fn (string $name) => $command->unsetMethod($name));
     }

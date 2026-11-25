@@ -31,7 +31,7 @@ final class CastPropertyTypes implements ModelHookInterface
     public function run(ModelsCommand $command, Model $model): void
     {
         $columns = collect($model->getConnection()->getSchemaBuilder()->getColumns($model->getTable()));
-        $nullableColumns = $columns->filter(fn (array $column): bool => $column['nullable'])->pluck('name');
+        $nullableColumns = $columns->filter(fn (array $column) => $column['nullable'])->pluck('name');
 
         collect($model->getCasts())
             ->keys()
@@ -40,8 +40,8 @@ final class CastPropertyTypes implements ModelHookInterface
         $command->castPropertiesType($model);
 
         collect($model->getCasts())
-            ->filter(fn (string $cast): bool => $this->isDataCast($cast))
-            ->map(fn (string $cast): string => $this->dataType($cast))
+            ->filter(fn (string $cast) => $this->isDataCast($cast))
+            ->map(fn (string $cast) => $this->dataType($cast))
             ->merge($this->statedColumnTypes($model))
             ->each(fn (string $type, string $column) => $command->setProperty(
                 $column,
@@ -56,7 +56,7 @@ final class CastPropertyTypes implements ModelHookInterface
     private function isDataCast(string $cast): bool
     {
         return $this->isDataCollectionCast($cast) || ReflectedType::find($cast)
-            ->map(fn (ReflectedType $type): bool => $type->implements(BaseData::class))
+            ->map(fn (ReflectedType $type) => $type->implements(BaseData::class))
             ->getOrElse(false);
     }
 
@@ -84,7 +84,7 @@ final class CastPropertyTypes implements ModelHookInterface
         return ReflectedType::of($model)
             ->method('casts')
             ->docComment()
-            ->map(fn (string $comment): Collection => $this->columnTags($comment))
+            ->map(fn (string $comment) => $this->columnTags($comment))
             ->getOrElse(collect());
     }
 
@@ -99,7 +99,7 @@ final class CastPropertyTypes implements ModelHookInterface
         $tags = $docParser->parse(new TokenIterator(new Lexer($config)->tokenize($comment)))->getTagsByName('@column');
 
         return collect($tags)
-            ->map(fn (PhpDocTagNode $tag): array => explode(' ', (string) $tag->value, 2))
-            ->mapWithKeys(fn (array $columnAndType): array => [$columnAndType[0] => $columnAndType[1]]);
+            ->map(fn (PhpDocTagNode $tag) => explode(' ', (string) $tag->value, 2))
+            ->mapWithKeys(fn (array $columnAndType) => [$columnAndType[0] => $columnAndType[1]]);
     }
 }
