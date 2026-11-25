@@ -4,14 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Web;
 
-use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Actors\CurrentUserResolver;
 use App\Http\Responses\LoaderProps;
-use App\Http\Responses\NotificationProps;
-use App\Http\Responses\PageReadProps;
-use App\Http\Responses\SearchProps;
 use App\Support\Web\AppContext;
-use App\Values\InboxMemberAuthority;
 use Closure;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -35,10 +30,6 @@ class HandleInertiaRequests extends Middleware
     public function __construct(
         private readonly AppContext $context,
         private readonly LoaderProps $loaders,
-        private readonly CurrentActor $actors,
-        private readonly NotificationProps $notifications,
-        private readonly PageReadProps $pageReads,
-        private readonly SearchProps $search,
         private readonly CurrentUserResolver $users,
         private readonly ResponseFactory $inertia,
     ) {}
@@ -84,17 +75,6 @@ class HandleInertiaRequests extends Middleware
             ...$this->context->data($request)->toArray(),
             // The one loader call the request names, answered now so it can come back under either key.
             ...$this->loaders->of($request),
-            // The bell's notifications, read only by a partial reload that names them.
-            ...($this->isInboxMember() ? [] : $this->notifications->of($request)),
-            // The keyboard palette's search and its scope picker, read only by a partial reload that names them.
-            ...($this->isInboxMember() ? [] : $this->search->of($request)),
-            // The reads pages declare beside their own result, each read only by a partial reload that names it.
-            ...$this->pageReads->of($request),
         ];
-    }
-
-    private function isInboxMember(): bool
-    {
-        return $this->actors->hasActor() && $this->actors->authority() instanceof InboxMemberAuthority;
     }
 }

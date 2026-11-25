@@ -42,6 +42,7 @@ use App\Data\Web\LoaderReplyData;
 use App\Data\Web\ViewerData;
 use App\Declarations\ActionRoute;
 use App\Declarations\DomainClient;
+use App\Declarations\Loader;
 use App\Declarations\NavigationItem;
 use App\Declarations\Page;
 use App\Declarations\Slot;
@@ -53,11 +54,6 @@ use App\Enums\Web\LoaderStatus;
 use App\Enums\Web\ViewerType;
 use App\Enums\Web\WindowPlace;
 use App\Enums\Web\WindowStatus;
-use App\Http\Controllers\Agents\CheckCapacityController;
-use App\Http\Controllers\Agents\StartPreviewController;
-use App\Http\Controllers\Drafts\DraftQuestionsController;
-use App\Http\Controllers\Drafts\DraftRecordController;
-use App\Http\Controllers\Profiles\StartReceiptController;
 use App\Http\Controllers\Runtimes\CancelRuntimeRequestController;
 use App\Http\Controllers\Runtimes\CancelScriptRuntimeRequestController;
 use App\Http\Controllers\Runtimes\ReleaseRuntimeHoldController;
@@ -80,6 +76,11 @@ use App\Http\Controllers\Terminal\SubmitPrivateInputController;
 use App\Http\Controllers\Terminal\TakeTerminalControlController;
 use App\Http\Controllers\Terminal\TerminalControlReceiptController;
 use App\Http\Controllers\Terminal\TerminalFrameController;
+use App\Http\Loaders\Agents\CapacityLoader;
+use App\Http\Loaders\Agents\StartPreviewLoader;
+use App\Http\Loaders\Drafts\DraftQuestionsLoader;
+use App\Http\Loaders\Drafts\DraftRecordLoader;
+use App\Http\Loaders\Profiles\StartReceiptLoader;
 use App\Http\Pages\Resolvers\ActivityWindowResolver;
 use App\Http\Pages\Resolvers\AskDetailResolver;
 use App\Http\Pages\Resolvers\AskInboxResolver;
@@ -166,12 +167,12 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
             Page::make('home', 'Home', Icon::Home, HomeWindowResolver::class, 'Home.vue')
                 ->at('')
                 ->slots(Slot::make('bar', SlotContextType::Nothing))
-                ->actions(
-                    ActionRoute::get('drafts/{noun}/questions', DraftQuestionsController::class, 'draft-questions'),
-                    ActionRoute::get('drafts/{noun}/record', DraftRecordController::class, 'draft-record'),
-                    ActionRoute::get('profiles/starts/{request}', StartReceiptController::class, 'start-receipt'),
-                    ActionRoute::get('agents/{agent}/capacity', CheckCapacityController::class, 'capacity'),
-                    ActionRoute::get('agents/{agent}/start-preview', StartPreviewController::class, 'start-preview'),
+                ->loaders(
+                    Loader::make('draft-questions', DraftQuestionsLoader::class),
+                    Loader::make('draft-record', DraftRecordLoader::class),
+                    Loader::make('start-receipt', StartReceiptLoader::class),
+                    Loader::make('capacity', CapacityLoader::class),
+                    Loader::make('start-preview', StartPreviewLoader::class),
                 ),
             Page::make('asks', 'Asks', Icon::Speech, AskInboxResolver::class, 'Asks.vue')->at('asks')->onHome(26),
             Page::make('ask', 'Ask', Icon::Speech, AskDetailResolver::class, 'AskDetail.vue')->at('asks/{ask}'),

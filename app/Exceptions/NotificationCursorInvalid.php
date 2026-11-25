@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Contracts\Refusals\CodedRefusal;
+use App\Contracts\Refusals\FieldRefusal;
 use App\Enums\Engine\RefusalCode;
 use Illuminate\Http\JsonResponse;
 use RuntimeException;
@@ -12,11 +13,16 @@ use RuntimeException;
 /**
  * A notification cursor that is malformed or was issued for another scope.
  */
-final class NotificationCursorInvalid extends RuntimeException implements CodedRefusal
+final class NotificationCursorInvalid extends RuntimeException implements CodedRefusal, FieldRefusal
 {
     public static function create(): self
     {
         return new self('This notification cursor is not valid for you.');
+    }
+
+    public function fieldErrors(): array
+    {
+        return ['cursor' => $this->getMessage()];
     }
 
     public function refusalCode(): RefusalCode
@@ -32,7 +38,7 @@ final class NotificationCursorInvalid extends RuntimeException implements CodedR
         return new JsonResponse(
             [
                 'message' => $this->getMessage(),
-                'errors' => ['cursor' => [$this->getMessage()]],
+                'errors' => array_map(fn (string $message) => [$message], $this->fieldErrors()),
             ],
             $this->refusalCode()->status(),
         );

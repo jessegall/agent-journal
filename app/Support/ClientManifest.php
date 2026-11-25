@@ -7,6 +7,7 @@ namespace App\Support;
 use App\Contracts\Files\Files;
 use App\Declarations\RegisteredPage;
 use App\Exceptions\ClientManifestInvalid;
+use App\Support\Types\LoaderTypes;
 use App\Support\Types\PagePropTypes;
 use App\Values\FilePath;
 use Illuminate\Contracts\View\Factory;
@@ -14,9 +15,9 @@ use Throwable;
 
 /**
  * Writes the browser build's view of the installed domains from the checked declarations: the component map, the
- * TypeScript include list and paths, the Vite aliases, the Tailwind sources and the server's component map. All five
- * are rendered and checked first and then replaced together under one content hash, so a failure leaves the previous
- * build whole. It reads no actor and no request.
+ * TypeScript include list and paths, the Vite aliases, the Tailwind sources, the loader descriptors and the server's
+ * component map. All of them are rendered and checked first and then replaced together under one content hash, so a
+ * failure leaves the previous build whole. It reads no actor and no request.
  */
 final readonly class ClientManifest
 {
@@ -34,6 +35,7 @@ final readonly class ClientManifest
         private ClientDeclarations $declarations,
         private Factory $views,
         private PagePropTypes $propTypes,
+        private LoaderTypes $loaderTypes,
         private Files $files,
     ) {}
 
@@ -81,6 +83,11 @@ final readonly class ClientManifest
                 'imports' => $this->propTypes->imports(),
                 'pages' => $this->propTypes->pageProps(),
                 'windows' => $this->propTypes->windowProps(),
+            ]),
+            'resources/js/generated/loaders.ts' => $this->render('loaders.ts', [
+                'hash' => $hash,
+                'imports' => $this->loaderTypes->imports(),
+                'loaders' => $this->loaderTypes->descriptors(),
             ]),
             'resources/js/generated/ui-prop-checks.ts' => $this->render(
                 'ui-prop-checks.ts',

@@ -1,5 +1,5 @@
 import type { VisitOptions } from '@inertiajs/core';
-import type { NotificationChangePage, NotificationPage } from '@/generated/types/core';
+import type { NotificationChangePage, NotificationPage } from '@/types/generated';
 import { read, readAll, readTarget } from '@/routes/communication/notifications';
 import { router } from '@inertiajs/vue3';
 import { PropReadFailed, reloadProp } from '@kit/pageReads';

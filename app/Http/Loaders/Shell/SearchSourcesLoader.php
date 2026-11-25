@@ -1,0 +1,33 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Loaders\Shell;
+
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Search\SearchSources;
+use App\Data\Palette\PaletteSourcesData;
+use App\Data\Palette\SearchSourcesInput;
+use App\Enums\Search\SearchSurface;
+use App\Support\ActorReference;
+use App\Values\SearchReader;
+
+/**
+ * A page of the sources the palette's scope picker offers the viewer, which works before two characters are typed.
+ */
+final readonly class SearchSourcesLoader
+{
+    public function __construct(private SearchSources $eligibility, private CurrentActor $actors) {}
+
+    public function __invoke(SearchSourcesInput $input): PaletteSourcesData
+    {
+        $reader = new SearchReader(ActorReference::of($this->actors->actor()), SearchSurface::Palette);
+        $page = $this->eligibility->discover($reader, trim((string) $input->prefix), after: $input->after);
+
+        return PaletteSourcesData::from([
+            'prefix' => $page->prefix,
+            'sources' => $page->sources,
+            'nextAfter' => $page->nextAfter,
+        ]);
+    }
+}

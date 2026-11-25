@@ -12,6 +12,7 @@ use App\Declarations\Loader;
 use App\Declarations\Page;
 use App\Enums\Navigation\Icon;
 use App\Exceptions\LoaderInputUnreadable;
+use App\Exceptions\NotificationCursorInvalid;
 use App\Http\Responses\LoaderProps;
 use App\Support\ActorReference;
 use App\Support\ClientDeclarations;
@@ -127,6 +128,18 @@ final class LoaderPropsTest extends TestCase
         $this->assertSame(['token', 'status', 'errors'], array_keys($answer['loaderFailure']));
         $this->assertSame('invalid', $answer['loaderFailure']['status']);
         $this->assertArrayHasKey('shelfId', $answer['loaderFailure']['errors']);
+    }
+
+    public function test_a_field_the_reader_refuses_is_invalid_with_its_message(): void
+    {
+        $this->assertSame(
+            ['loaderFailure' => [
+                'token' => 't1',
+                'status' => 'invalid',
+                'errors' => ['cursor' => NotificationCursorInvalid::create()->getMessage()],
+            ]],
+            $this->answered('library.refusing', ['shelfId' => 'bad-cursor']),
+        );
     }
 
     public function test_a_refusal_or_a_missing_row_or_page_from_the_reader_is_unavailable_and_a_fault_is_not(): void

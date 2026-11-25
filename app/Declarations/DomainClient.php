@@ -41,6 +41,11 @@ final readonly class DomainClient
     public const string DECLARED_LAYOUT = 'DeclaredLayout.vue';
 
     /**
+     * The namespace of Core's page owners, which share it and so name their types in a list.
+     */
+    private const string CORE_NAMESPACE = 'App';
+
+    /**
      * @param  list<Page>  $pages
      * @param  list<NavigationItem>  $navigation
      * @param  list<Section>  $sections
@@ -72,7 +77,7 @@ final readonly class DomainClient
      */
     public static function ofCore(object $module, string $name, string $scriptFolder): self
     {
-        return self::of($module, $name, 'App', dirname(__DIR__, 2).'/resources/js/'.$scriptFolder);
+        return self::of($module, $name, self::CORE_NAMESPACE, dirname(__DIR__, 2).'/resources/js/'.$scriptFolder);
     }
 
     /**
@@ -249,7 +254,7 @@ final readonly class DomainClient
 
     /**
      * Refuses a loader reader that is not an invokable class of the declaring owner taking exactly one Data and
-     * returning a Data, both types of this owner, so the generated imports resolve.
+     * returning a Data, both types this owner generates, so the generated imports resolve.
      *
      * @param  class-string  $reader
      */
@@ -272,9 +277,19 @@ final readonly class DomainClient
                 throw ClientResolverInvalid::loaderShape($declaration, $reader);
             }
 
-            if (! in_array($dataClass, $this->types, true)) {
+            if (! $this->ownsType($dataClass)) {
                 throw ClientResolverInvalid::loaderTypeNotOwned($declaration, $dataClass, $this->name);
             }
         }
+    }
+
+    /**
+     * Whether a class's generated type is this owner's, as the type owners read it: one its types list names, or, for
+     * a domain, one in its namespace.
+     */
+    private function ownsType(string $className): bool
+    {
+        return in_array($className, $this->types, true)
+            || ($this->namespace !== self::CORE_NAMESPACE && $this->owns($className));
     }
 }

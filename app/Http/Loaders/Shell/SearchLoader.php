@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Responses;
+namespace App\Http\Loaders\Shell;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Hosts\ServedEnvironment;
@@ -11,7 +11,7 @@ use App\Contracts\Search\RecordSearch;
 use App\Contracts\Search\SearchSources;
 use App\Data\Palette\PaletteHitData;
 use App\Data\Palette\PaletteSearchData;
-use App\Data\Palette\PaletteSourcesData;
+use App\Data\Palette\SearchInput;
 use App\Enums\Search\SearchSurface;
 use App\Exceptions\SearchWordsInvalid;
 use App\Mcp\Support\DeclaredSearch;
@@ -23,29 +23,15 @@ use App\Values\SearchOwner;
 use App\Values\SearchReader;
 use App\Values\SearchRequest;
 use App\Values\SearchWords;
-use Illuminate\Http\Request;
-use Inertia\ResponseFactory;
+use Illuminate\Contracts\Session\Session;
 
 /**
- * The keyboard palette's search props, read only when a partial reload asks for them: one search call of the
- * common search service for the signed-in user, bound to the palette, and a page of the sources its scope picker
- * offers, which works before two characters are typed. The agent tool answers the same words with the same hits in
- * the same order for the same access.
+ * The keyboard palette's search: one call of the common search service for the viewer, bound to the palette, with
+ * each hit's page; words too short to search give the hints of the eligible sources. The agent tool answers the same
+ * words with the same hits in the same order for the same access.
  */
-final readonly class SearchProps
+final readonly class SearchLoader
 {
-    public const string QUERY = 'searchQuery';
-
-    public const string WITHIN = 'searchWithin';
-
-    public const string LIMIT = 'searchLimit';
-
-    public const string CONTINUATION = 'searchContinuation';
-
-    public const string PREFIX = 'searchPrefix';
-
-    public const string AFTER = 'searchSourcesAfter';
-
     private const string TOO_SHORT = 'too_short';
 
     public function __construct(
@@ -54,49 +40,23 @@ final readonly class SearchProps
         private RecordResolver $records,
         private CurrentActor $actors,
         private ServedEnvironment $environment,
-        private ResponseFactory $inertia,
+        private Session $session,
     ) {}
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function of(Request $request): array
+    public function __invoke(SearchInput $input): PaletteSearchData
     {
-        return [
-            'search' => $this->inertia->optional(fn () => $this->search($request)),
-            'searchSources' => $this->inertia->optional(fn () => $this->sources($request)),
-        ];
-    }
-
-    private function search(Request $request): PaletteSearchData
-    {
-        $continuation = self::textOf($request, self::CONTINUATION);
-        $query = self::textOf($request, self::QUERY);
-
-        if ($continuation === null && mb_strlen(trim((string) $query)) < SearchWords::CHARACTER_MINIMUM) {
-            return $this->tooShort((string) $query);
+        if ($input->continuation === null && mb_strlen(trim((string) $input->query)) < SearchWords::CHARACTER_MINIMUM) {
+            return $this->tooShort((string) $input->query);
         }
 
-        $answer = $this->coordinator->search($this->owner($request), $this->reader(), SearchRequest::parse(
-            query: $continuation === null ? $query : null,
-            within: $continuation === null ? self::textOf($request, self::WITHIN) : null,
-            limit: $request->filled(self::LIMIT) ? $request->integer(self::LIMIT) : null,
-            continuation: $continuation,
+        $answer = $this->coordinator->search($this->owner(), $this->reader(), SearchRequest::parse(
+            query: $input->continuation === null ? $input->query : null,
+            within: $input->continuation === null ? $input->within : null,
+            limit: $input->limit,
+            continuation: $input->continuation,
         ));
 
         return $this->dataOf($answer);
-    }
-
-    private function sources(Request $request): PaletteSourcesData
-    {
-        $prefix = trim((string) self::textOf($request, self::PREFIX));
-        $page = $this->eligibility->discover($this->reader(), $prefix, after: self::textOf($request, self::AFTER));
-
-        return PaletteSourcesData::from([
-            'prefix' => $page->prefix,
-            'sources' => $page->sources,
-            'nextAfter' => $page->nextAfter,
-        ]);
     }
 
     /**
@@ -131,14 +91,12 @@ final readonly class SearchProps
             $hits[] = PaletteHitData::of($hit, $pages[$index + ($direct === null ? 0 : 1)] ?? null);
         }
 
-        $alternatives = $answer->scope === null ? [] : $answer->scope->sources;
-
         $fields = [
             'status' => $answer->status->value,
             'hits' => $hits,
             'directOpenLabel' => $answer->directOpen === null ? null : "Open {$answer->directOpen->snippet}",
             'hints' => [],
-            'alternatives' => $alternatives,
+            'alternatives' => $answer->scope === null ? [] : $answer->scope->sources,
             'narrowerScopes' => $answer->narrowerScopes,
             'reason' => $answer->reason,
             'continuation' => $answer->continuation,
@@ -183,10 +141,10 @@ final readonly class SearchProps
         return $this->eligibility->source($this->reader(), $hit->sourceKey);
     }
 
-    private function owner(Request $request): SearchOwner
+    private function owner(): SearchOwner
     {
         return new SearchOwner(
-            $request->session()->getId(),
+            $this->session->getId(),
             ActorReference::of($this->actors->actor()),
             implode(',', $this->environment->environmentIds()),
             DeclaredSearch::TOOL,
@@ -197,14 +155,5 @@ final readonly class SearchProps
     private function reader(): SearchReader
     {
         return new SearchReader(ActorReference::of($this->actors->actor()), SearchSurface::Palette);
-    }
-
-    private static function textOf(Request $request, string $parameter): string|null
-    {
-        if ($request->filled($parameter)) {
-            return $request->string($parameter)->toString();
-        }
-
-        return null;
     }
 }

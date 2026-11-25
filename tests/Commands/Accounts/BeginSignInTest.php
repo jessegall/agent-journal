@@ -9,12 +9,14 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Data\Accounts\SignInAttemptData;
 use App\Enums\Accounts\SignInMethod;
 use App\Exceptions\SignInMethodMissing;
+use App\Http\Responses\LoaderProps;
 use App\Jobs\SignInDeadline;
 use App\Models\Access\User;
 use App\Models\Accounts\SignInAttempt;
 use App\Support\ActorReference;
 use App\Values\OwnerAuthority;
 use App\Values\SignInStarted;
+use App\Values\Web\LoaderInput;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Testing\TestResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -50,6 +52,8 @@ final class BeginSignInTest extends TestCase
     private string $root;
 
     private const string NO_STORE_HEADER = 'no-store, private';
+
+    private const string RECEIPT_PROP = 'load_accounts_sign_in_receipt';
 
     protected function setUp(): void
     {
@@ -140,14 +144,14 @@ final class BeginSignInTest extends TestCase
         $this->start('tab-2', 'oauth')->assertStatus(303);
 
         $attempt = SignInAttempt::query()->withoutGlobalScopes()->sole();
-        $first = $this->receipt('tab-1')->assertOk()->assertHeader('Cache-Control', self::NO_STORE_HEADER);
-        $second = $this->receipt('tab-2')->assertOk();
+        $this->receiptCall('tab-1', $this->journal->ownerUser())->assertHeader('Cache-Control', self::NO_STORE_HEADER);
+        $first = $this->receipt('tab-1');
 
         $this->assertSame(
             ['status' => 'started', 'attemptId' => $attempt->id, 'type' => 'new_account', 'method' => 'oauth'],
-            array_intersect_key($first->json(), array_flip(['status', 'attemptId', 'type', 'method'])),
+            array_intersect_key($first, array_flip(['status', 'attemptId', 'type', 'method'])),
         );
-        $this->assertSame($first->json(), $second->json());
+        $this->assertSame($first, $this->receipt('tab-2'));
     }
 
     public function test_a_rejoining_key_still_names_the_ended_attempt_and_its_actual_method(): void
@@ -164,10 +168,10 @@ final class BeginSignInTest extends TestCase
             ->post("/accounts/sign-ins/{$attempt->id}/cancel")
             ->assertStatus(303);
 
-        $receipt = $this->receipt('tab-2')->assertOk();
-        $this->assertSame($attempt->id, $receipt->json('attemptId'));
-        $this->assertSame('api_key', $receipt->json('method'));
-        $this->assertSame($attempt->refresh()->status->value, $receipt->json('state'));
+        $receipt = $this->receipt('tab-2');
+        $this->assertSame($attempt->id, $receipt['attemptId']);
+        $this->assertSame('api_key', $receipt['method']);
+        $this->assertSame($attempt->refresh()->status->value, $receipt['state']);
         $this->assertFalse($attempt->isLive());
     }
 
@@ -180,7 +184,7 @@ final class BeginSignInTest extends TestCase
 
         $this->start('tab-1', 'api_key')->assertStatus(303)->assertSessionHasErrors('command');
         $this->assertSame(1, SignInAttempt::query()->withoutGlobalScopes()->count());
-        $this->assertSame(['status' => 'unknown'], array_filter($this->receipt('never-used')->assertOk()->json()));
+        $this->assertSame(['status' => 'unknown'], array_filter($this->receipt('never-used')));
     }
 
     public function test_another_owners_key_names_nothing(): void
@@ -191,10 +195,9 @@ final class BeginSignInTest extends TestCase
         $this->start('tab-1', 'oauth')->assertStatus(303);
 
         $stranger = User::factory()->create();
-        $answer = $this->actingAs($stranger)
-            ->getJson('/accounts/sign-ins/receipt?key=tab-1&driver=claude-code');
+        $props = $this->receiptCall('tab-1', $stranger)->viewData('page')['props'];
 
-        $this->assertNotSame('started', $answer->json('status'));
+        $this->assertNotSame('started', $props[self::RECEIPT_PROP]['value']['status'] ?? null);
     }
 
     private function begin(string $requestKey): SignInStarted
@@ -205,11 +208,31 @@ final class BeginSignInTest extends TestCase
     /**
      * @return TestResponse<Response>
      */
-    private function receipt(string $key): TestResponse
+    /**
+     * The receipt the accounts page's sign-in receipt loader answers the owner for a request key.
+     *
+     * @return array<string, mixed>
+     */
+    private function receipt(string $key): array
     {
-        return $this->actingAs($this->journal->ownerUser())->getJson(
-            "/accounts/sign-ins/receipt?key={$key}&driver=claude-code",
-        );
+        $props = $this->receiptCall($key, $this->journal->ownerUser())->assertOk()->viewData('page')['props'];
+
+        return $props[self::RECEIPT_PROP]['value'];
+    }
+
+    /**
+     * The accounts page asked for its sign-in receipt loader, as the browser asks for it.
+     *
+     * @return TestResponse<Response>
+     */
+    private function receiptCall(string $key, User $viewer): TestResponse
+    {
+        $call = (string) json_encode(['token' => 't1', 'input' => ['key' => $key, 'driver' => 'claude-code']]);
+
+        return $this->actingAs($viewer)->get('/accounts', [
+            LoaderProps::HEADER => 'accounts.sign-in-receipt',
+            LoaderInput::HEADER => rtrim(strtr(base64_encode($call), '+/', '-_'), '='),
+        ]);
     }
 
     /**

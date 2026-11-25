@@ -1,4 +1,5 @@
-import type { NotificationChangePage, NotificationItem, NotificationPage } from '@/generated/types/core';
+import type { NotificationItem } from '@/generated/types/core';
+import type { NotificationChangePage, NotificationPage } from '@/types/generated';
 import { computed, ref, shallowRef } from 'vue';
 import type { ComputedRef, Ref } from 'vue';
 

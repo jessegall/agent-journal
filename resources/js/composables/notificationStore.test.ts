@@ -1,4 +1,4 @@
-import type { NotificationPage } from '@/generated/types/core';
+import type { NotificationPage } from '@/types/generated';
 import { describe, expect, it, vi } from 'vitest';
 import { LEASE_MILLISECONDS, NotificationRequestFailed, notificationStore } from './notificationStore';
 import type { NotificationClient } from './notificationStore';

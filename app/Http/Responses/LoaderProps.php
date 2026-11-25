@@ -8,6 +8,7 @@ use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Inboxes\InboxMemberRoutes;
 use App\Contracts\Navigation\ClientOwnerAvailability;
+use App\Contracts\Refusals\FieldRefusal;
 use App\Data\Web\LoaderReplyData;
 use App\Declarations\RegisteredLoader;
 use App\Enums\Web\LoaderStatus;
@@ -26,7 +27,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * The answer to the one loader call a partial reload names in its X-Journal-Loader header, as a shared prop: under the
- * loader's own prop when it answers, under loaderFailure when its input is invalid or it is unavailable to the viewer.
+ * loader's own prop when it answers, under loaderFailure when its input is invalid, by its rules or by the reader's
+ * refusal of a field, or it is unavailable to the viewer.
  * Unavailable is said the same way whatever the reason, and the checks before the reader run no query of it.
  */
 final readonly class LoaderProps
@@ -99,18 +101,17 @@ final readonly class LoaderProps
         try {
             $input = $loader->inputClass::validateAndCreate($call->input);
         } catch (ValidationException $invalid) {
-            return [self::FAILURE => LoaderReplyData::from([
-                'token' => $call->token,
-                'status' => LoaderStatus::Invalid,
-                'value' => new Optional(),
-                'errors' => array_map(fn (array $messages) => (string) reset($messages), $invalid->errors()),
-            ])];
+            $errors = array_map(fn (array $messages) => (string) reset($messages), $invalid->errors());
+
+            return [self::FAILURE => self::invalid($call, $errors)];
         }
 
         try {
             $value = $this->read($loader, $input);
         } catch (CommandRefusal|ModelNotFoundException|NotFoundHttpException) {
             return [self::FAILURE => self::unavailable($call)];
+        } catch (FieldRefusal $refusal) {
+            return [self::FAILURE => self::invalid($call, $refusal->fieldErrors())];
         }
 
         return [$loader->prop => LoaderReplyData::from([
@@ -124,6 +125,19 @@ final readonly class LoaderProps
     private function read(RegisteredLoader $loader, Data $input): Data
     {
         return $this->container->make($loader->reader)($input);
+    }
+
+    /**
+     * @param  array<string, string>  $errors  the message of each invalid field, by its name
+     */
+    private static function invalid(LoaderInput $call, array $errors): LoaderReplyData
+    {
+        return LoaderReplyData::from([
+            'token' => $call->token,
+            'status' => LoaderStatus::Invalid,
+            'value' => new Optional(),
+            'errors' => $errors,
+        ]);
     }
 
     private static function unavailable(LoaderInput $call): LoaderReplyData
