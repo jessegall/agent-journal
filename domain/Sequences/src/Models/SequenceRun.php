@@ -224,20 +224,6 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
 
     // ----------[ Asserts ]----------
 
-    /**
-     * Refuses a run that is not there for the actor.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws SequenceRunMissing
-     */
-    private static function assertFound(self|null $row, string $id): void
-    {
-        if ($row === null) {
-            throw SequenceRunMissing::forId($id);
-        }
-    }
-
     // ----------[ Internals ]----------
 
     /**
@@ -290,10 +276,7 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
     public static function lockedById(string $id): self
     {
         // A run belongs to no actor until it is started, so its start may also take a run nobody follows yet.
-        $row = self::lockedForActorOrUnheld($id);
-        self::assertFound($row, $id);
-
-        return $row;
+        return self::lockedForActorOrUnheld($id, SequenceRunMissing::throwing()->forId($id));
     }
 
     // ----------[ Scopes ]----------

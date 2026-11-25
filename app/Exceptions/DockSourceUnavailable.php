@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Contracts\Bus\CommandRefusal;
+use App\Exceptions\Concerns\ThrowsLater;
 use RuntimeException;
 use Throwable;
 
@@ -14,6 +15,9 @@ use Throwable;
  */
 final class DockSourceUnavailable extends RuntimeException implements CommandRefusal
 {
+    /** @use ThrowsLater<DockSourceUnavailable> */
+    use ThrowsLater;
+
     public static function of(string $type, string $id): self
     {
         return new self("No {$type} {$id} can be docked.");

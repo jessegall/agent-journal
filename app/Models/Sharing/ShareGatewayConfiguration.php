@@ -166,34 +166,6 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
 
     // ----------[ Asserts ]----------
 
-    /**
-     * Refuses a configuration that is not there or not enabled.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws ShareGatewayUnavailable
-     */
-    private static function assertUsable(self|null $row, string $configurationId): void
-    {
-        if ($row === null) {
-            throw ShareGatewayUnavailable::forConfiguration($configurationId);
-        }
-    }
-
-    /**
-     * Refuses an installation with no enabled default gateway.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws ShareGatewayUnavailable
-     */
-    private static function assertDefaultFound(self|null $row): void
-    {
-        if ($row === null) {
-            throw ShareGatewayUnavailable::noDefault();
-        }
-    }
-
     // ----------[ Queries ]----------
 
     /**
@@ -203,10 +175,10 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
      */
     public static function usable(string $configurationId): self
     {
-        $row = self::query()->enabled()->whereKey($configurationId)->first();
-        self::assertUsable($row, $configurationId);
-
-        return $row;
+        return self::query()
+            ->enabled()
+            ->whereKey($configurationId)
+            ->firstOr(ShareGatewayUnavailable::throwing()->forConfiguration($configurationId));
     }
 
     /**
@@ -216,10 +188,11 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
      */
     public static function lockUsable(string $configurationId): self
     {
-        $row = self::query()->enabled()->whereKey($configurationId)->lockForUpdate()->first();
-        self::assertUsable($row, $configurationId);
-
-        return $row;
+        return self::query()
+            ->enabled()
+            ->whereKey($configurationId)
+            ->lockForUpdate()
+            ->firstOr(ShareGatewayUnavailable::throwing()->forConfiguration($configurationId));
     }
 
     /**
@@ -283,10 +256,7 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
      */
     public static function usableDefault(): self
     {
-        $row = self::query()->enabled()->markedDefault()->first();
-        self::assertDefaultFound($row);
-
-        return $row;
+        return self::query()->enabled()->markedDefault()->firstOr(ShareGatewayUnavailable::throwing()->noDefault());
     }
 
     // ----------[ Scopes ]----------

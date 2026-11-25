@@ -163,26 +163,6 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
         }
     }
 
-    /**
-     * Refuses a number or id no report holds.
-     *
-     * @phpstan-assert self $report
-     *
-     * @throws ReportMissing
-     */
-    private static function assertFound(self|null $report, int|string $reference): void
-    {
-        if ($report !== null) {
-            return;
-        }
-
-        if (is_int($reference)) {
-            throw ReportMissing::numbered($reference);
-        }
-
-        throw ReportMissing::identified($reference);
-    }
-
     // ----------[ Queries ]----------
 
     public static function lockedForClosing(int|string $reference): self
@@ -190,16 +170,10 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
         $reports = self::query()->lockForUpdate();
 
         if (is_int($reference)) {
-            $report = $reports->numberedInJournal($reference)->first();
-            self::assertFound($report, $reference);
-
-            return $report;
+            return $reports->numberedInJournal($reference)->firstOr(ReportMissing::throwing()->numbered($reference));
         }
 
-        $report = $reports->whereKey($reference)->first();
-        self::assertFound($report, $reference);
-
-        return $report;
+        return $reports->whereKey($reference)->firstOr(ReportMissing::throwing()->identified($reference));
     }
 
     /**

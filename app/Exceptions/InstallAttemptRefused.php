@@ -8,6 +8,7 @@ use App\Concerns\RendersRefusal;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\RefusalCode;
+use App\Exceptions\Concerns\ThrowsLater;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use RuntimeException;
@@ -19,6 +20,9 @@ use RuntimeException;
 final class InstallAttemptRefused extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
+
+    /** @use ThrowsLater<InstallAttemptRefused> */
+    use ThrowsLater;
 
     private int $status = 409;
 

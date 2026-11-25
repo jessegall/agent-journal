@@ -6,6 +6,7 @@ namespace App\Exceptions;
 
 use App\Contracts\Bus\CommandRefusal;
 use App\Enums\MenuEntryState;
+use App\Exceptions\Concerns\ThrowsLater;
 use RuntimeException;
 
 /**
@@ -13,6 +14,9 @@ use RuntimeException;
  */
 final class MenuEntryRefused extends RuntimeException implements CommandRefusal
 {
+    /** @use ThrowsLater<MenuEntryRefused> */
+    use ThrowsLater;
+
     public static function notFound(string $entryId): self
     {
         return new self("There is no menu entry {$entryId}.");

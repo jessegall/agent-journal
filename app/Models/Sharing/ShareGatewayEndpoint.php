@@ -151,20 +151,6 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
 
     // ----------[ Asserts ]----------
 
-    /**
-     * Refuses an endpoint version the run does not hold.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws GatewayLeaseRefused
-     */
-    private static function assertHeld(self|null $row, string $configurationId, int $version): void
-    {
-        if ($row === null) {
-            throw GatewayLeaseRefused::forEndpoint($configurationId, $version);
-        }
-    }
-
     // ----------[ Queries ]----------
 
     /**
@@ -238,15 +224,11 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
      */
     public static function lockHeldBy(string $configurationId, int $version, string $runId): self
     {
-        $row = self::query()
+        return self::query()
             ->ofConfiguration($configurationId)
             ->atVersion($version)
             ->ofRun($runId)
-            ->lockForUpdate()
-            ->first();
-        self::assertHeld($row, $configurationId, $version);
-
-        return $row;
+            ->lockForUpdate()->firstOr(GatewayLeaseRefused::throwing()->forEndpoint($configurationId, $version));
     }
 
     // ----------[ Scopes ]----------

@@ -8,6 +8,7 @@ use App\Concerns\RendersRefusal;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\RefusalCode;
+use App\Exceptions\Concerns\ThrowsLater;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -17,6 +18,9 @@ use Symfony\Component\HttpFoundation\Response;
 final class OperationUnavailable extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
+
+    /** @use ThrowsLater<OperationUnavailable> */
+    use ThrowsLater;
 
     public static function for(string $key): self
     {

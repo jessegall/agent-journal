@@ -163,20 +163,6 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
     // ----------[ Asserts ]----------
 
     /**
-     * Refuses a target with no stack row.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws StackMissing
-     */
-    private static function assertStackFound(self|null $row, StackTarget $target): void
-    {
-        if ($row === null) {
-            throw StackMissing::forTarget($target->description());
-        }
-    }
-
-    /**
      * Refuses a stack that is already closed.
      *
      * @throws StackAlreadyClosed
@@ -256,8 +242,10 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
      */
     public static function lockFor(StackTarget $target): self
     {
-        $row = self::query()->forTarget($target)->lockForUpdate()->first();
-        self::assertStackFound($row, $target);
+        $row = self::query()
+            ->forTarget($target)
+            ->lockForUpdate()
+            ->firstOr(StackMissing::throwing()->forTarget($target->description()));
         $row->assertOpen($target);
 
         return $row;
@@ -271,10 +259,7 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
      */
     public static function lockKeptFor(Builder $query, StackTarget $target): self
     {
-        $row = $query->lockForUpdate()->first();
-        self::assertStackFound($row, $target);
-
-        return $row;
+        return $query->lockForUpdate()->firstOr(StackMissing::throwing()->forTarget($target->description()));
     }
 
     /**
@@ -283,8 +268,10 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
      */
     public static function lockAuthorizedFor(StackTarget $target): self
     {
-        $row = self::query()->authorizedFor($target)->lockForUpdate()->first();
-        self::assertStackFound($row, $target);
+        $row = self::query()
+            ->authorizedFor($target)
+            ->lockForUpdate()
+            ->firstOr(StackMissing::throwing()->forTarget($target->description()));
         $row->assertOpen($target);
 
         return $row;

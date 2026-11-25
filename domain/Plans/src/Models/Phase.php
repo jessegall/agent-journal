@@ -215,20 +215,6 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
     // ----------[ Asserts ]----------
 
     /**
-     * Refuses a plan without a phase of that number.
-     *
-     * @phpstan-assert self $phase
-     *
-     * @throws PhaseMissing
-     */
-    private static function assertNumberedIn(self|null $phase, Plan $plan, int $number): void
-    {
-        if ($phase === null) {
-            throw PhaseMissing::numbered($plan->number, $number);
-        }
-    }
-
-    /**
      * Refuses a change made against a revision of the phase that is no longer current.
      *
      * @throws PhaseRevisionChanged
@@ -237,20 +223,6 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
     {
         if ($this->revision !== $expectedRevision) {
             throw PhaseRevisionChanged::for($this->number, $expectedRevision, $this->revision);
-        }
-    }
-
-    /**
-     * Refuses a number no phase of the plan holds.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws RecordUnavailable
-     */
-    private static function assertFound(self|null $row, int $number): void
-    {
-        if ($row === null) {
-            throw RecordUnavailable::numbered('phase', $number);
         }
     }
 
@@ -263,10 +235,10 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
      */
     public static function findNumberedIn(Plan $plan, int $number): self
     {
-        $phase = $plan->phases()->numbered($number)->first();
-        self::assertNumberedIn($phase, $plan, $number);
-
-        return $phase;
+        return $plan
+            ->phases()
+            ->numbered($number)
+            ->firstOr(PhaseMissing::throwing()->numbered($plan->number, $number));
     }
 
     /**
@@ -276,10 +248,10 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
      */
     public static function numberedIn(string $planId, int $number): self
     {
-        $row = self::query()->ofPlan($planId)->numbered($number)->first();
-        self::assertFound($row, $number);
-
-        return $row;
+        return self::query()
+            ->ofPlan($planId)
+            ->numbered($number)
+            ->firstOr(RecordUnavailable::throwing()->numbered('phase', $number));
     }
 
     /**

@@ -237,20 +237,6 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
     // ----------[ Asserts ]----------
 
     /**
-     * Refuses a reference none of the owner's attempts holds.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws InstallAttemptRefused
-     */
-    private static function assertFound(self|null $row, string $reference): void
-    {
-        if ($row === null) {
-            throw InstallAttemptRefused::unknown($reference);
-        }
-    }
-
-    /**
      * @throws InstallAttemptRefused
      */
     private function assertChangeable(int|null $seenVersion): void
@@ -294,10 +280,11 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
      */
     public static function lockOfOwner(string $userId, string $reference): self
     {
-        $row = self::query()->ofOwner($userId)->withReference($reference)->lockForUpdate()->first();
-        self::assertFound($row, $reference);
-
-        return $row;
+        return self::query()
+            ->ofOwner($userId)
+            ->withReference($reference)
+            ->lockForUpdate()
+            ->firstOr(InstallAttemptRefused::throwing()->unknown($reference));
     }
 
     public static function lockById(string $id): self

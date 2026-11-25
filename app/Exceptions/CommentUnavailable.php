@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Contracts\Bus\CommandRefusal;
+use App\Exceptions\Concerns\ThrowsLater;
 use RuntimeException;
 
 /**
@@ -12,6 +13,9 @@ use RuntimeException;
  */
 final class CommentUnavailable extends RuntimeException implements CommandRefusal
 {
+    /** @use ThrowsLater<CommentUnavailable> */
+    use ThrowsLater;
+
     public static function for(string $commentId): self
     {
         return new self("Comment {$commentId} is not available.");

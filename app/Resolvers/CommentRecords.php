@@ -61,7 +61,7 @@ final readonly class CommentRecords implements CommentResolver
         $record = $this->commentable($target);
 
         $comment = self::commentsOf($record)->whereKey($commentId)->firstOr(
-            fn () => throw CommentUnavailable::for($commentId),
+            CommentUnavailable::throwing()->for($commentId),
         );
 
         $subject = $comment->subject();

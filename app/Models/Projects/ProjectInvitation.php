@@ -147,34 +147,6 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
     // ----------[ Asserts ]----------
 
     /**
-     * Refuses a ticket no pending invitation holds.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws InvitationUnusable
-     */
-    private static function assertTicketUsable(self|null $row): void
-    {
-        if ($row === null) {
-            throw InvitationUnusable::forTicket();
-        }
-    }
-
-    /**
-     * Refuses an invitation that is not pending.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws InvitationUnusable
-     */
-    private static function assertPending(self|null $row, string $id): void
-    {
-        if ($row === null) {
-            throw InvitationUnusable::forId($id);
-        }
-    }
-
-    /**
      * Refuses an invitation with no install attempt.
      *
      * @phpstan-assert !null $this->install_attempt_id
@@ -198,10 +170,7 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
      */
     public static function redeemableFor(string $ticket): self
     {
-        $row = self::query()->pending()->withTicket($ticket)->first();
-        self::assertTicketUsable($row);
-
-        return $row;
+        return self::query()->pending()->withTicket($ticket)->firstOr(InvitationUnusable::throwing()->forTicket());
     }
 
     /**
@@ -211,10 +180,11 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
      */
     public static function lockRedeemableFor(string $ticket): self
     {
-        $row = self::query()->pending()->withTicket($ticket)->lockForUpdate()->first();
-        self::assertTicketUsable($row);
-
-        return $row;
+        return self::query()
+            ->pending()
+            ->withTicket($ticket)
+            ->lockForUpdate()
+            ->firstOr(InvitationUnusable::throwing()->forTicket());
     }
 
     /**
@@ -235,10 +205,11 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
      */
     public static function lockPending(string $id): self
     {
-        $row = self::query()->pending()->whereKey($id)->lockForUpdate()->first();
-        self::assertPending($row, $id);
-
-        return $row;
+        return self::query()
+            ->pending()
+            ->whereKey($id)
+            ->lockForUpdate()
+            ->firstOr(InvitationUnusable::throwing()->forId($id));
     }
 
     // ----------[ Scopes ]----------

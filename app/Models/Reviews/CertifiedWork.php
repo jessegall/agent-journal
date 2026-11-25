@@ -65,20 +65,6 @@ final class CertifiedWork extends Model implements ReadableModel
 
     // ----------[ Asserts ]----------
 
-    /**
-     * Refuses work the certificate does not certify.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws HelperWorkUncertified
-     */
-    private static function assertCertified(self|null $row, RecordIdentity $work, string $certificate): void
-    {
-        if ($row === null) {
-            throw HelperWorkUncertified::for($work, $certificate);
-        }
-    }
-
     // ----------[ Queries ]----------
 
     /**
@@ -109,13 +95,9 @@ final class CertifiedWork extends Model implements ReadableModel
      */
     public static function of(RecordIdentity $work, string $certificate): self
     {
-        $row = self::query()
+        return self::query()
             ->ofWork($work)
-            ->withCertificate($certificate)
-            ->first();
-        self::assertCertified($row, $work, $certificate);
-
-        return $row;
+            ->withCertificate($certificate)->firstOr(HelperWorkUncertified::throwing()->for($work, $certificate));
     }
 
     // ----------[ Scopes ]----------

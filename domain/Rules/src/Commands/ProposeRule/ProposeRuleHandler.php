@@ -18,7 +18,7 @@ final readonly class ProposeRuleHandler extends RuleCommandHandler
         if ($command->replacesRuleId !== null) {
             Rule::query()->findOr(
                 $command->replacesRuleId,
-                fn () => throw RuleMissing::withId($command->replacesRuleId),
+                RuleMissing::throwing()->withId($command->replacesRuleId),
             );
         }
 

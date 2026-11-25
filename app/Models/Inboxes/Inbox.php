@@ -116,34 +116,6 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
 
     // ----------[ Asserts ]----------
 
-    /**
-     * Refuses an actor with no personal inbox yet.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws InboxUnavailable
-     */
-    private static function assertPersonalFound(self|null $row, ActorIdentity $actor): void
-    {
-        if ($row === null) {
-            throw InboxUnavailable::forActor($actor->id);
-        }
-    }
-
-    /**
-     * Refuses an inbox that is not there.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws InboxUnavailable
-     */
-    private static function assertFound(self|null $row, string $id): void
-    {
-        if ($row === null) {
-            throw InboxUnavailable::forId($id);
-        }
-    }
-
     // ----------[ Queries ]----------
 
     /**
@@ -169,10 +141,7 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
      */
     public static function personalOf(ActorIdentity $actor): self
     {
-        $row = self::query()->personalTo($actor)->first();
-        self::assertPersonalFound($row, $actor);
-
-        return $row;
+        return self::query()->personalTo($actor)->firstOr(InboxUnavailable::throwing()->forActor($actor->id));
     }
 
     /**
@@ -182,10 +151,7 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
      */
     public static function lockedById(string $id): self
     {
-        $row = self::query()->whereKey($id)->lockForUpdate()->first();
-        self::assertFound($row, $id);
-
-        return $row;
+        return self::query()->whereKey($id)->lockForUpdate()->firstOr(InboxUnavailable::throwing()->forId($id));
     }
 
     public function inboxId(): string

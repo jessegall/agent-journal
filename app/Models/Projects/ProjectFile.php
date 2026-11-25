@@ -90,8 +90,7 @@ final class ProjectFile extends Model implements Commentable, Numbered, Readable
         $kept = $this->versions()
             ->withDigestWhenNamed($version)
             ->newestFirst()
-            ->first();
-        self::assertVersionKept($kept, $version);
+            ->firstOr(TextVersionUnavailable::throwing()->named($version ?? 'current'));
 
         return TextVersion::from([
             'id' => $kept->digest,
@@ -112,20 +111,6 @@ final class ProjectFile extends Model implements Commentable, Numbered, Readable
     }
 
     // ----------[ Asserts ]----------
-
-    /**
-     * Refuses a version of the file that is not kept.
-     *
-     * @phpstan-assert ProjectFileVersion $kept
-     *
-     * @throws TextVersionUnavailable
-     */
-    private static function assertVersionKept(ProjectFileVersion|null $kept, string|null $version): void
-    {
-        if ($kept === null) {
-            throw TextVersionUnavailable::named($version ?? 'current');
-        }
-    }
 
     // ----------[ Queries ]----------
 

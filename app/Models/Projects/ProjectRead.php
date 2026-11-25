@@ -222,20 +222,6 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
 
     // ----------[ Asserts ]----------
 
-    /**
-     * Refuses a read that is not there.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws ProjectReadRefused
-     */
-    private static function assertFound(self|null $row, string $readId): void
-    {
-        if ($row === null) {
-            throw ProjectReadRefused::missing($readId);
-        }
-    }
-
     // ----------[ Internals ]----------
 
     private function settle(ProjectReadState $state): void
@@ -295,10 +281,10 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
      */
     public static function lockById(string $readId): self
     {
-        $row = self::query()->whereKey($readId)->lockForUpdate()->first();
-        self::assertFound($row, $readId);
-
-        return $row;
+        return self::query()
+            ->whereKey($readId)
+            ->lockForUpdate()
+            ->firstOr(ProjectReadRefused::throwing()->missing($readId));
     }
 
     // ----------[ Scopes ]----------

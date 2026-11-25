@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
+use App\Exceptions\Concerns\ThrowsLater;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
@@ -13,6 +14,9 @@ use RuntimeException;
  */
 final class ModelMissing extends RuntimeException
 {
+    /** @use ThrowsLater<ModelMissing> */
+    use ThrowsLater;
+
     /**
      * @param  class-string<Model>  $model
      */

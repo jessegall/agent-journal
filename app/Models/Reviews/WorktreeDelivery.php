@@ -77,9 +77,9 @@ final class WorktreeDelivery extends Model implements ReadableModel
     {
         $earlier = self::query()->ofDelivery($submission->deliveryId)->lockForUpdate()->first();
 
-        self::assertSameCommit($earlier, $submission);
-
         if ($earlier instanceof self) {
+            $earlier->assertSameCommit($submission);
+
             return $earlier;
         }
 
@@ -113,9 +113,9 @@ final class WorktreeDelivery extends Model implements ReadableModel
      *
      * @throws DeliveryRefused
      */
-    private static function assertSameCommit(self|null $earlier, DeliverySubmission $submission): void
+    private function assertSameCommit(DeliverySubmission $submission): void
     {
-        if ($earlier instanceof self && $earlier->delivered_tip !== $submission->deliveredTip) {
+        if ($this->delivered_tip !== $submission->deliveredTip) {
             throw DeliveryRefused::otherCommit($submission->deliveryId);
         }
     }

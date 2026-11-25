@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
+use App\Exceptions\Concerns\ThrowsLater;
 use LogicException;
 
 /**
@@ -11,6 +12,9 @@ use LogicException;
  */
 final class StopAttemptMissing extends LogicException
 {
+    /** @use ThrowsLater<StopAttemptMissing> */
+    use ThrowsLater;
+
     public static function for(string $attemptId): self
     {
         return new self(sprintf('The current session has no stop attempt %s.', $attemptId));

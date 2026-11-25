@@ -234,20 +234,6 @@ final class TextUpload extends Model implements EventSource, ReadableModel
         }
     }
 
-    /**
-     * Refuses an upload that is not there or has expired.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws UploadExpired
-     */
-    private static function assertUnexpired(self|null $row): void
-    {
-        if ($row === null) {
-            throw UploadExpired::forUpload();
-        }
-    }
-
     // ----------[ Internals ]----------
 
     private function body(): string
@@ -271,18 +257,16 @@ final class TextUpload extends Model implements EventSource, ReadableModel
 
     public static function locked(string $id): self
     {
-        $row = self::query()->unexpired()->whereKey($id)->lockForUpdate()->first();
-        self::assertUnexpired($row);
-
-        return $row;
+        return self::query()
+            ->unexpired()
+            ->whereKey($id)
+            ->lockForUpdate()
+            ->firstOr(UploadExpired::throwing()->forUpload());
     }
 
     public static function sealed(string $id): self
     {
-        $row = self::query()->unexpired()->alreadySealed()->find($id);
-        self::assertUnexpired($row);
-
-        return $row;
+        return self::query()->unexpired()->alreadySealed()->findOr($id, UploadExpired::throwing()->forUpload());
     }
 
     /**
@@ -293,10 +277,12 @@ final class TextUpload extends Model implements EventSource, ReadableModel
     public static function sealedFor(SessionProvenance $sessions, string $sessionId, string $id): self
     {
         $uploads = self::query()->withoutGlobalScope(self::SESSION_SCOPE);
-        $row = $sessions->fromSession($uploads, $sessionId)->unexpired()->alreadySealed()->find($id);
-        self::assertUnexpired($row);
 
-        return $row;
+        return $sessions
+            ->fromSession($uploads, $sessionId)
+            ->unexpired()
+            ->alreadySealed()
+            ->findOr($id, UploadExpired::throwing()->forUpload());
     }
 
     // ----------[ Scopes ]----------

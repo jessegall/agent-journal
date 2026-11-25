@@ -239,20 +239,6 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
 
     // ----------[ Asserts ]----------
 
-    /**
-     * Refuses a start key the host claimed no start under.
-     *
-     * @phpstan-assert self $start
-     *
-     * @throws ProcessStartUnknown
-     */
-    private static function assertClaimed(self|null $start, string $startKey): void
-    {
-        if ($start === null) {
-            throw ProcessStartUnknown::for($startKey);
-        }
-    }
-
     // ----------[ Queries ]----------
 
     /**
@@ -339,14 +325,10 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
      */
     public static function claimedBy(string $hostId, string $startKey): self
     {
-        $start = self::supervised()
+        return self::supervised()
             ->onHost($hostId)
             ->underStartKey($startKey)
-            ->lockForUpdate()
-            ->first();
-        self::assertClaimed($start, $startKey);
-
-        return $start;
+            ->lockForUpdate()->firstOr(ProcessStartUnknown::throwing()->for($startKey));
     }
 
     /**

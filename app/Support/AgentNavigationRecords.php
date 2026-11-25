@@ -65,7 +65,7 @@ final readonly class AgentNavigationRecords implements NavigationReader
     public function menuEntry(ActorIdentity $owner, string $id): array
     {
         $entry = MenuEntry::query()->ownedBy($owner)->whereKey($id)->firstOr(
-            fn () => throw MenuEntryRefused::notFound($id),
+            MenuEntryRefused::throwing()->notFound($id),
         );
 
         return [
@@ -91,7 +91,7 @@ final readonly class AgentNavigationRecords implements NavigationReader
     public function navigationRequest(string $id, int $firstRound): array
     {
         $navigation = NavigationRequest::query()->acrossActors()->whereKey($id)->firstOr(
-            fn () => throw NavigationRaiseRefused::unknownRequest($id),
+            NavigationRaiseRefused::throwing()->unknownRequest($id),
         );
 
         $this->transaction->run(fn () => $this->answering->checkAnswerer($navigation));

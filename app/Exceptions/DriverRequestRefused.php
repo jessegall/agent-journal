@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Contracts\Bus\CommandRefusal;
+use App\Exceptions\Concerns\ThrowsLater;
 use App\Values\StackTarget;
 use RuntimeException;
 use Throwable;
@@ -14,6 +15,9 @@ use Throwable;
  */
 final class DriverRequestRefused extends RuntimeException implements CommandRefusal
 {
+    /** @use ThrowsLater<DriverRequestRefused> */
+    use ThrowsLater;
+
     public static function noRuntime(StackTarget $target): self
     {
         return new self("Agent {$target->agentId} has no runtime in session {$target->sessionId}.");

@@ -22,7 +22,7 @@ final readonly class RuleDetailRecords implements RuleDetailsResolver
     public function rule(string $ruleId): RuleDetails
     {
         $this->actors->actor();
-        $rule = Rule::query()->findOr($ruleId, fn () => throw RuleMissing::withId($ruleId));
+        $rule = Rule::query()->findOr($ruleId, RuleMissing::throwing()->withId($ruleId));
         $replaced = $rule->replaces_rule_id === null ? null : Rule::query()->find($rule->replaces_rule_id);
 
         return $rule->details($replaced?->number);

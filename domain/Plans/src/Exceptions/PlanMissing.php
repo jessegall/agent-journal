@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Exceptions;
 
 use App\Contracts\Bus\CommandRefusal;
+use App\Exceptions\Concerns\ThrowsLater;
 use RuntimeException;
 
 /**
@@ -12,6 +13,9 @@ use RuntimeException;
  */
 final class PlanMissing extends RuntimeException implements CommandRefusal
 {
+    /** @use ThrowsLater<PlanMissing> */
+    use ThrowsLater;
+
     public static function withId(string $planId): self
     {
         return new self("Plan {$planId} does not exist.");

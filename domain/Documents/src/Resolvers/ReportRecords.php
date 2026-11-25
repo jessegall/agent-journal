@@ -107,9 +107,9 @@ final readonly class ReportRecords implements ReportResolver
         $reports = Report::query()->sharedPublished();
 
         if (is_int($reference)) {
-            return $reports->where('number', $reference)->firstOr(fn () => throw ReportMissing::numbered($reference));
+            return $reports->where('number', $reference)->firstOr(ReportMissing::throwing()->numbered($reference));
         }
 
-        return $reports->whereKey($reference)->firstOr(fn () => throw ReportMissing::identified($reference));
+        return $reports->whereKey($reference)->firstOr(ReportMissing::throwing()->identified($reference));
     }
 }

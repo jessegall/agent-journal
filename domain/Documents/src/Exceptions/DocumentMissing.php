@@ -7,6 +7,7 @@ namespace Domain\Documents\Exceptions;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\RefusalCode;
+use App\Exceptions\Concerns\ThrowsLater;
 use RuntimeException;
 
 /**
@@ -15,6 +16,9 @@ use RuntimeException;
  */
 final class DocumentMissing extends RuntimeException implements CodedRefusal, CommandRefusal
 {
+    /** @use ThrowsLater<DocumentMissing> */
+    use ThrowsLater;
+
     public static function numbered(int $number): self
     {
         return new self("There is no doc {$number} to read.");

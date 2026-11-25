@@ -67,7 +67,7 @@ final class AdvisoryEngineLock
     private function connection(): Connection
     {
         $connection = $this->databases->connection($this->settings->connection);
-        $connection->setReconnector(fn () => throw EngineConnectionLost::onConnection($this->settings->connection));
+        $connection->setReconnector(EngineConnectionLost::throwing()->onConnection($this->settings->connection));
 
         return $connection;
     }

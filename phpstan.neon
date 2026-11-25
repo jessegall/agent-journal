@@ -34,3 +34,10 @@ parameters:
 rules:
     - Tests\Architecture\PhpStan\TypedClassConstantRule
     - Tests\Architecture\PhpStan\RawReflectionRule
+
+services:
+    # A ThrowingCall's next call answers a closure that throws, not the exception its @mixin names.
+    -
+        class: Tests\Architecture\PhpStan\ThrowingCallMethods
+        tags:
+            - phpstan.broker.methodsClassReflectionExtension

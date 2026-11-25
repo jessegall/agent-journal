@@ -51,7 +51,7 @@ final readonly class PlanAssignmentGroup
 
     private function forPhase(RecordIdentity $root): AssignmentGroup
     {
-        $phase = Phase::query()->findOr($root->id, fn () => throw RecordUnavailable::for($root));
+        $phase = Phase::query()->findOr($root->id, RecordUnavailable::throwing()->for($root));
         Plan::lockStructure($phase->plan_id);
         self::assertWithinLimit(1 + $phase->total_tasks);
 

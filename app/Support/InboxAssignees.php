@@ -25,7 +25,7 @@ final readonly class InboxAssignees implements AssigneeProvider
         $this->actors->actor();
 
         return Inbox::query()->ownedByCore()->whereKey($recipient->id)->sharedLock()->firstOr(
-            fn () => throw AssigneeUnavailable::forActor($recipient),
+            AssigneeUnavailable::throwing()->forActor($recipient),
         );
     }
 
@@ -37,7 +37,7 @@ final readonly class InboxAssignees implements AssigneeProvider
         $this->actors->actor();
 
         return Inbox::query()->ownedByCore()->whereKey($recipient->id)->lockForUpdate()->firstOr(
-            fn () => throw AssigneeUnavailable::forActor($recipient),
+            AssigneeUnavailable::throwing()->forActor($recipient),
         );
     }
 

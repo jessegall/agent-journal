@@ -42,7 +42,7 @@ final readonly class RetainedDrafts implements DraftReader
     public function requireReadable(string $id): RetainedDraft
     {
         $this->actors->actor();
-        $draft = RetainedDraft::forRecovery()->findOr($id, fn () => throw DraftMissing::unavailable());
+        $draft = RetainedDraft::forRecovery()->findOr($id, DraftMissing::throwing()->unavailable());
 
         if ($this->mayAdminister() || $this->provenance->isFromCurrentSession($draft)) {
             return $draft;

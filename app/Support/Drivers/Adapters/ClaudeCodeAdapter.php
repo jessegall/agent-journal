@@ -160,7 +160,7 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
     public function callFor(HookPayload $hookInput, HookIdentity $hook): DriverCall
     {
         $event = $hookInput->event()->getOrCall(
-            static fn () => throw UnsupportedHook::for(self::DRIVER, $hookInput->hookEventName),
+            UnsupportedHook::throwing()->for(self::DRIVER, $hookInput->hookEventName),
         );
 
         return match ($event) {

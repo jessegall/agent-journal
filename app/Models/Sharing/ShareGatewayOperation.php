@@ -182,20 +182,6 @@ final class ShareGatewayOperation extends Model implements EventSource, Readable
 
     // ----------[ Asserts ]----------
 
-    /**
-     * Refuses an operation that is not there.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws GatewayLeaseRefused
-     */
-    private static function assertFound(self|null $row, string $id): void
-    {
-        if ($row === null) {
-            throw GatewayLeaseRefused::forOperation($id);
-        }
-    }
-
     // ----------[ Queries ]----------
 
     /**
@@ -246,10 +232,7 @@ final class ShareGatewayOperation extends Model implements EventSource, Readable
      */
     public static function of(string $id): self
     {
-        $row = self::query()->whereKey($id)->first();
-        self::assertFound($row, $id);
-
-        return $row;
+        return self::query()->whereKey($id)->firstOr(GatewayLeaseRefused::throwing()->forOperation($id));
     }
 
     /**

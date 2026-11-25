@@ -22,7 +22,7 @@ final readonly class SequenceRunDocking implements DockableProvider
         return SequenceRun::query()
             ->acrossActors()
             ->whereKey($id)
-            ->firstOr(fn () => throw DockSourceUnavailable::of($definition->type, $id));
+            ->firstOr(DockSourceUnavailable::throwing()->of($definition->type, $id));
     }
 
     public function cardsFor(DockDefinition $definition, array $ids, CardContext $context): array

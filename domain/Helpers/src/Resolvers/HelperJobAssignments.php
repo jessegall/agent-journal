@@ -19,7 +19,7 @@ final readonly class HelperJobAssignments implements AssignableProvider
     public function requireAssignable(RecordIdentity $record): Assignable
     {
         return HelperJob::query()->whereKey($record->id)->lock('for key share')->firstOr(
-            fn () => throw RecordUnavailable::for($record),
+            RecordUnavailable::throwing()->for($record),
         );
     }
 

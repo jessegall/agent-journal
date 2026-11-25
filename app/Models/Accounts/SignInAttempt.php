@@ -454,20 +454,6 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Refuses an attempt that is not there for the caller.
-     *
-     * @phpstan-assert self $attempt
-     *
-     * @throws SignInAttemptMissing
-     */
-    private static function assertFound(self|null $attempt, string $attemptId): void
-    {
-        if ($attempt === null) {
-            throw SignInAttemptMissing::for($attemptId);
-        }
-    }
-
-    /**
      * Refuses an attempt whose driver could not be read: the attempt is not there.
      *
      * @phpstan-assert string $driver
@@ -544,10 +530,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      */
     public static function lockedForOwner(string $attemptId): self
     {
-        $attempt = self::query()->whereKey($attemptId)->lockForUpdate()->first();
-        self::assertFound($attempt, $attemptId);
-
-        return $attempt;
+        return self::query()->whereKey($attemptId)->lockForUpdate()->firstOr(SignInAttemptMissing::throwing()->for($attemptId));
     }
 
     /**
@@ -557,14 +540,10 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      */
     public static function lockedForJournal(string $attemptId): self
     {
-        $attempt = self::query()
+        return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
             ->whereKey($attemptId)
-            ->lockForUpdate()
-            ->first();
-        self::assertFound($attempt, $attemptId);
-
-        return $attempt;
+            ->lockForUpdate()->firstOr(SignInAttemptMissing::throwing()->for($attemptId));
     }
 
     /**
@@ -647,14 +626,10 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      */
     public static function runBy(string $hostId, string $attemptId): self
     {
-        $attempt = self::query()
+        return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
             ->whereKey($attemptId)
-            ->runOnHost($hostId)
-            ->first();
-        self::assertFound($attempt, $attemptId);
-
-        return $attempt;
+            ->runOnHost($hostId)->firstOr(SignInAttemptMissing::throwing()->for($attemptId));
     }
 
     /**

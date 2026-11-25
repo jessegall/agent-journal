@@ -28,7 +28,7 @@ final readonly class NotifyEntryReplayedHandler implements CommandHandler
         $runtime = $this->runtimes->lockedFor($command->hostId, $command->runtimeId);
 
         $entry = MenuEntry::query()->acrossActors()->whereKey($command->entryId)->lockForUpdate()->firstOr(
-            fn () => throw NavigationRaiseRefused::unknownEntry($command->entryId),
+            NavigationRaiseRefused::throwing()->unknownEntry($command->entryId),
         );
 
         $entry->recordReplay($command->operationKey, $runtime->driver_build);

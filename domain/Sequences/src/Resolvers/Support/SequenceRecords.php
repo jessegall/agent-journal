@@ -22,7 +22,7 @@ final readonly class SequenceRecords
 
     public function get(string $runId): SequenceRun
     {
-        return SequenceRun::query()->forActor()->findOr($runId, fn () => throw SequenceRunMissing::forId($runId));
+        return SequenceRun::query()->forActor()->findOr($runId, SequenceRunMissing::throwing()->forId($runId));
     }
 
     /**
@@ -33,7 +33,7 @@ final readonly class SequenceRecords
     public function numbered(int $number): SequenceRun
     {
         return SequenceRun::query()->forActor()->numberedInJournal($number)->firstOr(
-            fn () => throw SequenceRunMissing::forNumber($number),
+            SequenceRunMissing::throwing()->forNumber($number),
         );
     }
 
@@ -92,6 +92,6 @@ final readonly class SequenceRecords
     {
         return SequenceRun::query()
             ->ownedBy($follower)
-            ->findOr($runId, fn () => throw SequenceRunMissing::forId($runId));
+            ->findOr($runId, SequenceRunMissing::throwing()->forId($runId));
     }
 }

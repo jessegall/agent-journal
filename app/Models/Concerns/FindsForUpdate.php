@@ -18,7 +18,7 @@ trait FindsForUpdate
     public static function ownForUpdate(string $id): static
     {
         return static::query()->whereKey($id)->lockForUpdate()->firstOr(
-            fn () => throw ModelMissing::for(static::class, $id),
+            ModelMissing::throwing()->for(static::class, $id),
         );
     }
 }

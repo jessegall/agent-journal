@@ -141,34 +141,6 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
     // ----------[ Asserts ]----------
 
     /**
-     * Refuses a document without its current revision.
-     *
-     * @phpstan-assert self $revision
-     *
-     * @throws DocumentMissing
-     */
-    private static function assertCurrentFound(self|null $revision, Document $document): void
-    {
-        if ($revision === null) {
-            throw DocumentMissing::numbered($document->number);
-        }
-    }
-
-    /**
-     * Refuses a version no published revision holds.
-     *
-     * @phpstan-assert self $revision
-     *
-     * @throws TextVersionUnavailable
-     */
-    private static function assertPublished(self|null $revision, string $version): void
-    {
-        if ($revision === null) {
-            throw TextVersionUnavailable::named($version);
-        }
-    }
-
-    /**
      * Refuses a version that is not a revision number.
      *
      * @throws TextVersionUnavailable
@@ -199,10 +171,9 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
      */
     public static function findCurrentOf(Document $document): self
     {
-        $revision = $document->currentRevision;
-        self::assertCurrentFound($revision, $document);
+        $document->assertHasCurrentRevision();
 
-        return $revision;
+        return $document->currentRevision;
     }
 
     /**
@@ -213,17 +184,20 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
     public static function findPublishedOf(Document $document, string|null $version): self
     {
         if ($version === null) {
-            $revision = $document->revisions()->whereKey($document->current_revision_id)->closed()->first();
-            self::assertPublished($revision, 'current');
-
-            return $revision;
+            return $document
+                ->revisions()
+                ->whereKey($document->current_revision_id)
+                ->closed()
+                ->firstOr(TextVersionUnavailable::throwing()->named('current'));
         }
 
         self::assertVersionNumber($version);
-        $revision = $document->revisions()->numbered((int) $version)->closed()->first();
-        self::assertPublished($revision, $version);
 
-        return $revision;
+        return $document
+            ->revisions()
+            ->numbered((int) $version)
+            ->closed()
+            ->firstOr(TextVersionUnavailable::throwing()->named($version));
     }
 
     // ----------[ Scopes ]----------

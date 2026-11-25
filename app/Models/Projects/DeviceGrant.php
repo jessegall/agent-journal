@@ -246,34 +246,6 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Refuses a code no pending grant holds.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws DeviceGrantRefused
-     */
-    private static function assertCodeKnown(self|null $row): void
-    {
-        if ($row === null) {
-            throw DeviceGrantRefused::unknownCode();
-        }
-    }
-
-    /**
-     * Refuses a grant that is not issued, approved, unexpired and on a live binding.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws DeviceGrantRefused
-     */
-    private static function assertUsable(self|null $row): void
-    {
-        if ($row === null) {
-            throw DeviceGrantRefused::notUsable();
-        }
-    }
-
-    /**
      * Refuses a poll sooner than the interval; it leaves the last poll as it was, so polling fast never moves it on.
      *
      * @throws DeviceGrantRefused
@@ -348,10 +320,12 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
      */
     public static function lockPendingByUserCode(string $code): self
     {
-        $row = self::query()->with('binding')->withUserCode($code)->pendingWithLiveCode()->lockForUpdate()->first();
-        self::assertCodeKnown($row);
-
-        return $row;
+        return self::query()
+            ->with('binding')
+            ->withUserCode($code)
+            ->pendingWithLiveCode()
+            ->lockForUpdate()
+            ->firstOr(DeviceGrantRefused::throwing()->unknownCode());
     }
 
     /**
@@ -361,10 +335,11 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
      */
     public static function lockByDeviceCode(string $digest): self
     {
-        $row = self::query()->with('binding')->withDeviceCode($digest)->lockForUpdate()->first();
-        self::assertCodeKnown($row);
-
-        return $row;
+        return self::query()
+            ->with('binding')
+            ->withDeviceCode($digest)
+            ->lockForUpdate()
+            ->firstOr(DeviceGrantRefused::throwing()->unknownCode());
     }
 
     /**
@@ -374,10 +349,11 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
      */
     public static function usableByDigest(string $digest): self
     {
-        $row = self::query()->with('binding')->withGrantDigest($digest)->usableNow()->first();
-        self::assertUsable($row);
-
-        return $row;
+        return self::query()
+            ->with('binding')
+            ->withGrantDigest($digest)
+            ->usableNow()
+            ->firstOr(DeviceGrantRefused::throwing()->notUsable());
     }
 
     /**

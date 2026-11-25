@@ -8,6 +8,7 @@ use App\Concerns\RendersRefusal;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\RefusalCode;
+use App\Exceptions\Concerns\ThrowsLater;
 use App\Support\AssigneeIdentity;
 use RuntimeException;
 use Throwable;
@@ -15,6 +16,9 @@ use Throwable;
 final class AssigneeUnavailable extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
+
+    /** @use ThrowsLater<AssigneeUnavailable> */
+    use ThrowsLater;
 
     public static function forActor(AssigneeIdentity $actor, Throwable|null $previous = null): self
     {

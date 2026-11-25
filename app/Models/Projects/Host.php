@@ -367,10 +367,9 @@ final class Host extends Model implements EventSource, ReadableModel
      */
     public function startFolder(): string
     {
-        $folder = $this->start_roots[0] ?? null;
-        $this->assertStartFolder($folder);
+        $this->assertHasStartRoot();
 
-        return $folder;
+        return $this->start_roots[0];
     }
 
     // ----------[ Accessors ]----------
@@ -409,19 +408,13 @@ final class Host extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Refuses a secret no host holds, and the secret of a revoked host.
-     *
-     * @phpstan-assert self $host
+     * Refuses the secret of a revoked host.
      *
      * @throws HostCredentialRejected
      */
-    private static function assertCredentialLive(self|null $host): void
+    private function assertNotRevoked(): void
     {
-        if ($host === null) {
-            throw HostCredentialRejected::unknown();
-        }
-
-        if ($host->isRevoked()) {
+        if ($this->isRevoked()) {
             throw HostCredentialRejected::revoked();
         }
     }
@@ -429,13 +422,13 @@ final class Host extends Model implements EventSource, ReadableModel
     /**
      * Refuses a start no serving host can run.
      *
-     * @phpstan-assert self $host
+     * @param  list<self>  $hosts  the serving hosts that can run it
      *
      * @throws HostUnavailable
      */
-    private static function assertServesStart(self|null $host, string $driver, DriverType $driverType): void
+    private static function assertServesStart(array $hosts, string $driver, DriverType $driverType): void
     {
-        if ($host === null) {
+        if ($hosts === []) {
             throw HostUnavailable::forStart($driver, $driverType);
         }
     }
@@ -443,13 +436,11 @@ final class Host extends Model implements EventSource, ReadableModel
     /**
      * Refuses a host with no start folder declared.
      *
-     * @phpstan-assert string $folder
-     *
      * @throws HostUnavailable
      */
-    private function assertStartFolder(string|null $folder): void
+    private function assertHasStartRoot(): void
     {
-        if ($folder === null) {
+        if (($this->start_roots[0] ?? null) === null) {
             throw HostUnavailable::withoutStartFolder($this->id);
         }
     }
@@ -484,8 +475,8 @@ final class Host extends Model implements EventSource, ReadableModel
      */
     public static function forSecret(string $secret): self
     {
-        $host = self::query()->withSecret($secret)->first();
-        self::assertCredentialLive($host);
+        $host = self::query()->withSecret($secret)->firstOr(HostCredentialRejected::throwing()->unknown());
+        $host->assertNotRevoked();
 
         return $host;
     }
@@ -538,13 +529,13 @@ final class Host extends Model implements EventSource, ReadableModel
         ExecutionModeType $placement,
         DriverType $driverType,
     ): self {
-        $host = array_find(
+        $hosts = array_values(array_filter(
             self::servingEnrolled(),
             fn (self $host) => $host->runsPlacement($placement) && $host->declaresRun($driver, $build, $placement, $driverType),
-        );
-        self::assertServesStart($host, $driver, $driverType);
+        ));
+        self::assertServesStart($hosts, $driver, $driverType);
 
-        return $host;
+        return $hosts[0];
     }
 
     // ----------[ Scopes ]----------

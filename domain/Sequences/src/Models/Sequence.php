@@ -120,20 +120,6 @@ final class Sequence extends Model implements EventSource, ReadableModel
 
     // ----------[ Asserts ]----------
 
-    /**
-     * Refuses a sequence that is not there.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws SequenceMissing
-     */
-    private static function assertFound(self|null $row, string $id): void
-    {
-        if ($row === null) {
-            throw SequenceMissing::forId($id);
-        }
-    }
-
     // ----------[ Queries ]----------
 
     /**
@@ -141,10 +127,7 @@ final class Sequence extends Model implements EventSource, ReadableModel
      */
     public static function byId(string $id): self
     {
-        $row = self::query()->whereKey($id)->first();
-        self::assertFound($row, $id);
-
-        return $row;
+        return self::query()->whereKey($id)->firstOr(SequenceMissing::throwing()->forId($id));
     }
 
     /**
@@ -154,10 +137,7 @@ final class Sequence extends Model implements EventSource, ReadableModel
      */
     public static function lockedById(string $id): self
     {
-        $row = self::query()->whereKey($id)->lockForUpdate()->first();
-        self::assertFound($row, $id);
-
-        return $row;
+        return self::query()->whereKey($id)->lockForUpdate()->firstOr(SequenceMissing::throwing()->forId($id));
     }
 
     /**

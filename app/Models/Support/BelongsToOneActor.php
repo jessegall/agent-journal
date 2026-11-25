@@ -7,6 +7,7 @@ namespace App\Models\Support;
 use App\Contracts\Actors\CurrentActor;
 use App\Enums\ActorType;
 use App\Support\ActorIdentity;
+use Closure;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -93,16 +94,19 @@ trait BelongsToOneActor
 
     /**
      * The row locked for a change that must happen once, among the actor's own rows or the rows no actor holds yet,
-     * such as a run nobody follows; null when the actor may not have it.
+     * such as a run nobody follows; the missing closure fails the read when the actor may not have it.
+     *
+     * @param  Closure(): never  $missing
      */
-    public static function lockedForActorOrUnheld(string $id): static|null
+    public static function lockedForActorOrUnheld(string $id, Closure $missing): static
     {
-        return static::query()->forActor()->whereKey($id)->lockForUpdate()->first()
-            ?? static::query()
+        return static::query()->forActor()->whereKey($id)->lockForUpdate()->firstOr(
+            fn () => static::query()
                 ->withoutGlobalScope(static::ownerScope())
                 ->whereNull('actor_id')
                 ->whereKey($id)
                 ->lockForUpdate()
-                ->first();
+                ->firstOr($missing),
+        );
     }
 }

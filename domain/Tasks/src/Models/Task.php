@@ -373,20 +373,6 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
     }
 
     /**
-     * Refuses a task that is not there.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws TaskMissing
-     */
-    private static function assertFound(self|null $row, string $id): void
-    {
-        if ($row === null) {
-            throw TaskMissing::forId($id);
-        }
-    }
-
-    /**
      * Refuses a candidate limit below one or above what an ordered list of ids holds.
      *
      * @throws CandidateLimitInvalid
@@ -458,10 +444,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
      */
     public static function ofId(string $id): self
     {
-        $row = self::query()->whereKey($id)->first();
-        self::assertFound($row, $id);
-
-        return $row;
+        return self::query()->whereKey($id)->firstOr(TaskMissing::throwing()->forId($id));
     }
 
     /**
@@ -492,10 +475,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
      */
     public static function lockedById(string $id): self
     {
-        $row = self::query()->whereKey($id)->lockForUpdate()->first();
-        self::assertFound($row, $id);
-
-        return $row;
+        return self::query()->whereKey($id)->lockForUpdate()->firstOr(TaskMissing::throwing()->forId($id));
     }
 
     /**

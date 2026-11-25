@@ -26,7 +26,7 @@ final readonly class PlanDocking implements DockableProvider
 
     public function requireReadable(DockDefinition $definition, string $id): Dockable
     {
-        $plan = Plan::query()->whereKey($id)->firstOr(fn () => throw DockSourceUnavailable::of($definition->type, $id));
+        $plan = Plan::query()->whereKey($id)->firstOr(DockSourceUnavailable::throwing()->of($definition->type, $id));
 
         return $this->docked($plan->newCollection([$plan]))[0];
     }

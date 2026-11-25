@@ -17,7 +17,7 @@ final readonly class InboxDestinationProvider implements DestinationProvider
     public function destinationsFor(AssigneeIdentity $requested): Destinations
     {
         $inbox = Inbox::query()->ownedByCore()->whereKey($requested->id)->sharedLock()->firstOr(
-            fn () => throw AssigneeUnavailable::forActor($requested),
+            AssigneeUnavailable::throwing()->forActor($requested),
         );
 
         return new ResolvedDestinations($inbox, $inbox);

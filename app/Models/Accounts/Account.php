@@ -571,24 +571,10 @@ final class Account extends Model implements EventSource, ReadableModel
      *
      * @throws AccountMissing
      */
-    private static function assertPresent(self|null $account, string $accountId): void
+    private function assertNotRemoved(): void
     {
-        if ($account === null || $account->state === AccountState::Removed) {
-            throw AccountMissing::for($accountId);
-        }
-    }
-
-    /**
-     * Refuses a start whose chosen account is not one of the driver's.
-     *
-     * @phpstan-assert self $account
-     *
-     * @throws AccountUnavailable
-     */
-    private static function assertChosenFound(self|null $account, string $driver): void
-    {
-        if ($account === null) {
-            throw AccountUnavailable::forStart($driver, StartUnavailableReason::ChosenAccountMissing);
+        if ($this->state === AccountState::Removed) {
+            throw AccountMissing::for($this->id);
         }
     }
 
@@ -752,8 +738,8 @@ final class Account extends Model implements EventSource, ReadableModel
      */
     public static function lockedForChange(string $accountId): self
     {
-        $account = self::query()->whereKey($accountId)->lockForUpdate()->first();
-        self::assertPresent($account, $accountId);
+        $account = self::query()->whereKey($accountId)->lockForUpdate()->firstOr(AccountMissing::throwing()->for($accountId));
+        $account->assertNotRemoved();
 
         return $account;
     }
@@ -805,9 +791,7 @@ final class Account extends Model implements EventSource, ReadableModel
             ->whereKey($accountId)
             ->ofDriver($driver)
             ->lockForUpdate()
-            ->first();
-
-        self::assertChosenFound($account, $driver);
+            ->firstOr(AccountUnavailable::throwing()->forStart($driver, StartUnavailableReason::ChosenAccountMissing));
         $account->assertAvailable();
         $account->assertReviewed($reviewedSignIn);
 

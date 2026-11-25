@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
+use App\Exceptions\Concerns\ThrowsLater;
 use App\Support\RecordIdentity;
 use RuntimeException;
 
@@ -12,6 +13,9 @@ use RuntimeException;
  */
 final class HelperWorkUncertified extends RuntimeException
 {
+    /** @use ThrowsLater<HelperWorkUncertified> */
+    use ThrowsLater;
+
     public static function for(RecordIdentity $work, string $certificate): self
     {
         return new self(

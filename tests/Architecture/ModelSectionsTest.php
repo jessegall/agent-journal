@@ -45,6 +45,12 @@ final class ModelSectionsTest extends TestCase
 
     private const string BUILDER_OF_ONE_CONSTRUCTOR = 'builder draft serves only the constructor open: inline it';
 
+    private const string NULLABLE_ASSERT = 'assert assertFound takes the nullable $row: an assert guards a precondition';
+
+    private const string JUDGED_READ = 'method ofId reads $row and then judges it for absence';
+
+    private const string LATE_ASSERT = 'method reopen calls an assert after its work: call each assert first';
+
     public function test_every_model_method_sits_in_a_known_section_in_order(): void
     {
         $check = new Process(
@@ -95,6 +101,16 @@ final class ModelSectionsTest extends TestCase
         $output = $this->checkOutput('tests/Fixtures/ModelSections/BatchNamedCreate.php');
 
         $this->assertStringContainsString(self::BATCH_WITHOUT_IDS, $output);
+    }
+
+    public function test_an_assert_judging_a_read_and_an_assert_after_the_work_are_flagged(): void
+    {
+        $output = $this->checkOutput('tests/Fixtures/ModelSections/AssertsThatJudgeReads.php');
+
+        $this->assertStringContainsString(self::NULLABLE_ASSERT, $output);
+        $this->assertStringContainsString(self::JUDGED_READ, $output);
+        $this->assertStringContainsString(self::LATE_ASSERT, $output);
+        $this->assertStringNotContainsString('method close calls an assert', $output);
     }
 
     public function test_an_accessor_in_accessors_is_clean(): void

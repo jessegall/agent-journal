@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Contracts\Bus\CommandRefusal;
+use App\Exceptions\Concerns\ThrowsLater;
 use RuntimeException;
 
 /**
@@ -13,6 +14,9 @@ use RuntimeException;
  */
 final class ProjectReadRefused extends RuntimeException implements CommandRefusal
 {
+    /** @use ThrowsLater<ProjectReadRefused> */
+    use ThrowsLater;
+
     public static function missing(string $readId): self
     {
         return new self("Project read {$readId} does not exist.");

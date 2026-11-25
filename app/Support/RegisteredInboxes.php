@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Inboxes\LabeledInbox;
 use App\Contracts\Inboxes\InboxProvider;
 use App\Contracts\Inboxes\InboxRegistration;
 use App\Contracts\Inboxes\InboxResolver;
+use App\Contracts\Inboxes\LabeledInbox;
 use App\Contracts\Inboxes\NamedInboxes;
 use App\Exceptions\InboxProviderInvalid;
 use App\Exceptions\InboxUnavailable;
@@ -41,7 +41,7 @@ final class RegisteredInboxes implements InboxRegistration, InboxResolver
 
     public function resolve(string $inboxId): LabeledInbox
     {
-        $record = Inbox::query()->findOr($inboxId, fn () => throw InboxUnavailable::forId($inboxId));
+        $record = Inbox::query()->findOr($inboxId, InboxUnavailable::throwing()->forId($inboxId));
         $providerClass = $this->providers->find($record->provider_key)->getOrThrow(InboxUnavailable::forId($inboxId));
 
         return Container::getInstance()->make($providerClass)->inboxFor($record->id, $record->provider_id);
@@ -65,7 +65,4 @@ final class RegisteredInboxes implements InboxRegistration, InboxResolver
 
         throw InboxUnavailable::forName($name);
     }
-
-
-
 }

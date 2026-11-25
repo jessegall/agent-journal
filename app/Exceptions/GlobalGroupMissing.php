@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
+use App\Exceptions\Concerns\ThrowsLater;
 use RuntimeException;
 
 /**
@@ -11,6 +12,9 @@ use RuntimeException;
  */
 final class GlobalGroupMissing extends RuntimeException
 {
+    /** @use ThrowsLater<GlobalGroupMissing> */
+    use ThrowsLater;
+
     public static function named(string $name): self
     {
         return new self("The global number group {$name} is missing; run php artisan numbers:install.");

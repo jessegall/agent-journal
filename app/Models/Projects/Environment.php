@@ -78,20 +78,6 @@ final class Environment extends Model implements EventSource, ReadableModel
 
     // ----------[ Asserts ]----------
 
-    /**
-     * Refuses a line whose environment is not the project's.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws InvitationUnusable
-     */
-    private static function assertFoundForLine(self|null $row): void
-    {
-        if ($row === null) {
-            throw InvitationUnusable::forTicket();
-        }
-    }
-
     // ----------[ Queries ]----------
 
     /**
@@ -102,10 +88,11 @@ final class Environment extends Model implements EventSource, ReadableModel
      */
     public static function lockOfProjectForLine(string $id, string $projectId): self
     {
-        $row = self::query()->whereKey($id)->ofProject($projectId)->lockForUpdate()->first();
-        self::assertFoundForLine($row);
-
-        return $row;
+        return self::query()
+            ->whereKey($id)
+            ->ofProject($projectId)
+            ->lockForUpdate()
+            ->firstOr(InvitationUnusable::throwing()->forTicket());
     }
 
     /**

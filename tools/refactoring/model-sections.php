@@ -279,6 +279,112 @@ function inlineFaultsOf(string $source, Class_ $class): array
 }
 
 /**
+ * Whether a statement calls one of the model's own asserts: $this->assertX(...), self::assertX(...) or
+ * static::assertX(...).
+ */
+function isOwnAssert(Node\Stmt $statement): bool
+{
+    $call = $statement instanceof Node\Stmt\Expression ? $statement->expr : null;
+    $isOwn = $call instanceof Node\Expr\MethodCall && $call->var instanceof Node\Expr\Variable && $call->var->name === 'this'
+        || $call instanceof StaticCall && $call->class instanceof Name && in_array($call->class->toLowerString(), ['self', 'static'], true);
+
+    return $isOwn && $call->name instanceof Identifier && str_starts_with($call->name->toString(), 'assert');
+}
+
+/**
+ * The read a statement binds, as the name of its variable, when it reads one row that may be missing: ->first() or
+ * ->find(...); null for any other statement.
+ */
+function readRowOf(Node\Stmt $statement): string|null
+{
+    $assign = $statement instanceof Node\Stmt\Expression ? $statement->expr : null;
+    $read = $assign instanceof Node\Expr\Assign ? $assign->expr : null;
+    $isRowRead = $read instanceof Node\Expr\MethodCall && $read->name instanceof Identifier
+        && in_array($read->name->toString(), ['first', 'find'], true);
+
+    return $isRowRead && $assign->var instanceof Node\Expr\Variable && is_string($assign->var->name) ? $assign->var->name : null;
+}
+
+/**
+ * Whether a statement fails the read for its absence: hands the variable to an assert, or throws when it is null.
+ */
+function judgesAbsence(Node\Stmt $statement, string $variable): bool
+{
+    $handed = isOwnAssert($statement) && array_any(
+        $statement->expr->getArgs(),
+        fn (Node\Arg $argument) => $argument->value instanceof Node\Expr\Variable && $argument->value->name === $variable,
+    );
+    $throws = $statement instanceof Node\Stmt\If_
+        && array_any($statement->stmts, fn (Node $node) => $node instanceof Node\Stmt\Expression && $node->expr instanceof Node\Expr\Throw_);
+    $compared = $throws && new NodeFinder()->findFirst([$statement->cond], fn (Node $node) => $node instanceof Node\Expr\BinaryOp\Identical
+        && ($node->left instanceof Node\Expr\Variable && $node->left->name === $variable || $node->right instanceof Node\Expr\Variable && $node->right->name === $variable)
+        && ($node->left instanceof Node\Expr\ConstFetch || $node->right instanceof Node\Expr\ConstFetch)) !== null;
+
+    return $handed || $compared;
+}
+
+/**
+ * The faults of the model's asserts (user messages 22147 to 22152) as "line<TAB>fault": an assert guards a
+ * precondition, so it never takes a nullable model; a method calls its own asserts before its work; and a row read
+ * that is judged for absence right after it is a firstOr or findOr that fails with the exception's throwing().
+ *
+ * @return list<string>
+ */
+function assertFaultsOf(Class_ $class): array
+{
+    $faults = [];
+
+    foreach ($class->getMethods() as $method) {
+        $name = $method->name->toString();
+
+        foreach (str_starts_with($name, 'assert') ? $method->params : [] as $param) {
+            $types = $param->type instanceof UnionType ? $param->type->types : [$param->type];
+            $isNullable = $param->type instanceof NullableType
+                || array_any($types, fn ($type) => $type instanceof Identifier && $type->toLowerString() === 'null');
+            $inner = $param->type instanceof NullableType ? [$param->type->type] : $types;
+            $takesModel = array_any($inner, fn ($type) => $type instanceof Name);
+
+            if ($isNullable && $takesModel && $param->var instanceof Node\Expr\Variable) {
+                $faults[] = "{$method->getStartLine()}\tassert {$name} takes the nullable \${$param->var->name}: an assert guards a"
+                    .' precondition, so read the row with firstOr or findOr instead';
+            }
+        }
+
+        $statements = array_values($method->stmts ?? []);
+        $hasWorked = false;
+
+        foreach ($statements as $at => $statement) {
+            $row = readRowOf($statement);
+            $next = $statements[$at + 1] ?? null;
+
+            if ($row !== null && $next !== null && judgesAbsence($next, $row)) {
+                $faults[] = "{$statement->getStartLine()}\tmethod {$name} reads \${$row} and then judges it for absence: read it"
+                    .' with firstOr or findOr and the exception\'s throwing()';
+            }
+
+            // An assert of what a call returned (assertSaved($this->save())) checks that call, not a precondition.
+            $checksACall = isOwnAssert($statement) && array_any(
+                $statement->expr->getArgs(),
+                fn (Node\Arg $argument) => $argument->value instanceof Node\Expr\CallLike,
+            );
+
+            if (isOwnAssert($statement) && ! $checksACall && $hasWorked) {
+                $faults[] = "{$statement->getStartLine()}\tmethod {$name} calls an assert after its work: call each assert first";
+            }
+
+            $isBinding = $statement instanceof Node\Stmt\Expression && $statement->expr instanceof Node\Expr\Assign
+                && $statement->expr->var instanceof Node\Expr\Variable && $statement->expr->var->name !== 'this';
+            // A leave-early guard (if (...) { return ...; }) decides that nothing is to be done, which is no work.
+            $isGuard = $statement instanceof Node\Stmt\If_ && $statement->else === null && $statement->elseifs === []
+                && array_all($statement->stmts, fn (Node $node) => $node instanceof Node\Stmt\Return_);
+            $hasWorked = $hasWorked || ! isOwnAssert($statement) && ! $isBinding && ! $isGuard || $checksACall;
+        }
+    }
+
+    return $faults;
+}
+
+/**
  * A constructor is named create, or createFor and what it is made from when the model has several (user message
  * 22052); one that writes a batch through insertRows is createMany or createManyFor and returns the ids it wrote
  * (user message 22070). None for any other method.
@@ -407,6 +513,7 @@ function faultsOf(string $source, Class_ $class): array
     return [
         ...sectionFaults($source, $class, SECTIONS, $check),
         ...inlineFaultsOf($source, $class),
+        ...assertFaultsOf($class),
     ];
 }
 

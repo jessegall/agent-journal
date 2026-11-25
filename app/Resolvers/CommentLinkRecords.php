@@ -44,7 +44,7 @@ final readonly class CommentLinkRecords implements RecordProvider
     public function requireReadable(RecordIdentity $record): Comment
     {
         $comment = Comment::query()->whereKey($record->id)->firstOr(
-            fn () => throw RecordUnavailable::forActor($record),
+            RecordUnavailable::throwing()->forActor($record),
         );
 
         $this->records->requireReadable($comment->target());

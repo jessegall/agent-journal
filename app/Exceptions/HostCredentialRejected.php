@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
+use App\Exceptions\Concerns\ThrowsLater;
 use RuntimeException;
 
 /**
@@ -11,6 +12,9 @@ use RuntimeException;
  */
 final class HostCredentialRejected extends RuntimeException
 {
+    /** @use ThrowsLater<HostCredentialRejected> */
+    use ThrowsLater;
+
     public static function missing(): self
     {
         return new self('A host call needs its host credential as a bearer token.');

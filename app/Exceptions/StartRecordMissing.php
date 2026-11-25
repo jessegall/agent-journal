@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Contracts\Bus\CommandRefusal;
+use App\Exceptions\Concerns\ThrowsLater;
 use RuntimeException;
 
 /**
@@ -12,6 +13,9 @@ use RuntimeException;
  */
 final class StartRecordMissing extends RuntimeException implements CommandRefusal
 {
+    /** @use ThrowsLater<StartRecordMissing> */
+    use ThrowsLater;
+
     public static function forRequest(string $requestId): self
     {
         return new self("No start request {$requestId} is yours.");

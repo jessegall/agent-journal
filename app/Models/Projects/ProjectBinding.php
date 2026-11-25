@@ -425,34 +425,6 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     // ----------[ Asserts ]----------
 
     /**
-     * Refuses a host and nonce that name no binding to recover.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws BindingUnrecoverable
-     */
-    private static function assertRecoverable(self|null $row): void
-    {
-        if ($row === null) {
-            throw BindingUnrecoverable::generic();
-        }
-    }
-
-    /**
-     * Refuses a binding the host does not hold.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws PresenceRefused
-     */
-    private static function assertOfHost(self|null $row, string $id): void
-    {
-        if ($row === null) {
-            throw PresenceRefused::notReadableBy($id);
-        }
-    }
-
-    /**
      * Refuses a report from another boot while the live one has not been taken over.
      *
      * @throws PresenceRefused
@@ -504,10 +476,10 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
      */
     public static function ofHostByNonce(string $hostId, string $installationNonce): self
     {
-        $row = self::query()->onHost($hostId)->withInstallationNonce($installationNonce)->first();
-        self::assertRecoverable($row);
-
-        return $row;
+        return self::query()
+            ->onHost($hostId)
+            ->withInstallationNonce($installationNonce)
+            ->firstOr(BindingUnrecoverable::throwing()->generic());
     }
 
     /**
@@ -517,10 +489,10 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
      */
     public static function ofHost(string $hostId, string $id): self
     {
-        $row = self::query()->whereKey($id)->onHost($hostId)->first();
-        self::assertOfHost($row, $id);
-
-        return $row;
+        return self::query()
+            ->whereKey($id)
+            ->onHost($hostId)
+            ->firstOr(PresenceRefused::throwing()->notReadableBy($id));
     }
 
     /**

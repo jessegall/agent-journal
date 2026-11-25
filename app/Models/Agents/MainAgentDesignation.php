@@ -50,20 +50,6 @@ final class MainAgentDesignation extends Model implements ReadableModel
 
     // ----------[ Asserts ]----------
 
-    /**
-     * Refuses an installation with no main agent designated yet.
-     *
-     * @phpstan-assert self $designation
-     *
-     * @throws MainAgentMissing
-     */
-    private static function assertDesignated(self|null $designation): void
-    {
-        if ($designation === null) {
-            throw MainAgentMissing::forInstallation();
-        }
-    }
-
     // ----------[ Queries ]----------
 
     /**
@@ -71,8 +57,7 @@ final class MainAgentDesignation extends Model implements ReadableModel
      */
     public static function designatedAgent(): Agent
     {
-        $designation = self::query()->with('agent')->first();
-        self::assertDesignated($designation);
+        $designation = self::query()->with('agent')->firstOr(MainAgentMissing::throwing()->forInstallation());
 
         return $designation->agent;
     }

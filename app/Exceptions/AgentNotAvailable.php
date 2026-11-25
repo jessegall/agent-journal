@@ -7,11 +7,15 @@ namespace App\Exceptions;
 use App\Concerns\RendersRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\RefusalCode;
+use App\Exceptions\Concerns\ThrowsLater;
 use RuntimeException;
 
 final class AgentNotAvailable extends RuntimeException implements CodedRefusal
 {
     use RendersRefusal;
+
+    /** @use ThrowsLater<AgentNotAvailable> */
+    use ThrowsLater;
 
     public static function forAgent(string $agentId): self
     {

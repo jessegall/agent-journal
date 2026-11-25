@@ -9,6 +9,7 @@ use App\Contracts\Refusals\CodedRefusal;
 use App\Contracts\Refusals\StartRefusal;
 use App\Enums\RefusalCode;
 use App\Enums\ResumeRefusal;
+use App\Exceptions\Concerns\ThrowsLater;
 use RuntimeException;
 
 /**
@@ -17,6 +18,9 @@ use RuntimeException;
 final class ResumeRefused extends RuntimeException implements CodedRefusal, StartRefusal
 {
     use RendersRefusal;
+
+    /** @use ThrowsLater<ResumeRefused> */
+    use ThrowsLater;
 
     private function __construct(public readonly ResumeRefusal $refusal)
     {

@@ -8,6 +8,7 @@ use App\Concerns\RendersRefusal;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\RefusalCode;
+use App\Exceptions\Concerns\ThrowsLater;
 use RuntimeException;
 
 /**
@@ -16,6 +17,9 @@ use RuntimeException;
 final class ShareGatewayUnavailable extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
+
+    /** @use ThrowsLater<ShareGatewayUnavailable> */
+    use ThrowsLater;
 
     public static function forConfiguration(string $configurationId): self
     {

@@ -57,7 +57,7 @@ final readonly class RuntimeRecords implements RuntimeResolver
     private function visibleRuntimeOf(string $sessionId): AgentRuntime
     {
         return $this->visibleRuntimes()->with('session')->where('agent_session_id', $sessionId)->limit(1)->firstOr(
-            fn () => throw StackTargetRefused::forTarget("session {$sessionId}"),
+            StackTargetRefused::throwing()->forTarget("session {$sessionId}"),
         );
     }
 

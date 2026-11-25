@@ -36,20 +36,6 @@ final class GlobalGroup extends Model implements ReadableModel
 
     // ----------[ Asserts ]----------
 
-    /**
-     * Refuses an installation whose journal group was never made.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws GlobalGroupMissing
-     */
-    private static function assertJournalGroup(self|null $row): void
-    {
-        if ($row === null) {
-            throw GlobalGroupMissing::named(self::JOURNAL);
-        }
-    }
-
     // ----------[ Queries ]----------
 
     /**
@@ -57,10 +43,7 @@ final class GlobalGroup extends Model implements ReadableModel
      */
     public static function journal(): self
     {
-        $row = self::query()->named(self::JOURNAL)->first();
-        self::assertJournalGroup($row);
-
-        return $row;
+        return self::query()->named(self::JOURNAL)->firstOr(GlobalGroupMissing::throwing()->named(self::JOURNAL));
     }
 
     /**

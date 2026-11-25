@@ -20,7 +20,7 @@ final readonly class AgentLifecycle
     public function lockShared(string $agentId): Agent
     {
         $agent = Agent::query()->whereKey($agentId)->sharedLock()->firstOr(
-            fn () => throw AgentNotAvailable::forAgent($agentId),
+            AgentNotAvailable::throwing()->forAgent($agentId),
         );
 
         if ($agent->isRetired()) {
@@ -36,7 +36,7 @@ final readonly class AgentLifecycle
     public function lockExclusive(string $agentId): Agent
     {
         return Agent::query()->whereKey($agentId)->lockForUpdate()->firstOr(
-            fn () => throw AgentNotAvailable::forAgent($agentId),
+            AgentNotAvailable::throwing()->forAgent($agentId),
         );
     }
 

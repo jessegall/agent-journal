@@ -204,7 +204,7 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bind(NavigationExpiryContract::class, NavigationExpiry::class);
         $this->app->scoped(CurrentAgentRuntimes::class);
         $this->app->scoped(ActorAttention::class, CurrentRuntimeAttention::class);
-        $this->app->scoped(AgentContext::class, fn () => throw AgentContextMissing::forRequest());
+        $this->app->scoped(AgentContext::class, AgentContextMissing::throwing()->forRequest());
         $this->app->scoped(AgentAssignees::class);
         $this->app->bind(AgentAuthority::class, AgentAuthorityRecords::class);
         $this->app->bind(CallSender::class, SignedCallSender::class);

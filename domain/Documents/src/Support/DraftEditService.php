@@ -34,7 +34,7 @@ final readonly class DraftEditService
         $document = Document::lockedForEditing($target->documentKey());
 
         $draft = DocumentDraft::query()->where('document_id', $document->id)->where('token', $target->token)->firstOr(
-            fn () => throw DraftMissing::forDocument($document->number),
+            DraftMissing::throwing()->forDocument($document->number),
         );
 
         $this->assertDraftEditor($draft, $this->editors);

@@ -198,20 +198,6 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
         }
     }
 
-    /**
-     * Refuses a rule that is not there.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws RuleMissing
-     */
-    private static function assertFound(self|null $row, string $ruleId): void
-    {
-        if ($row === null) {
-            throw RuleMissing::withId($ruleId);
-        }
-    }
-
     // ----------[ Internals ]----------
 
     private function closeProposal(RuleState $outcome): void
@@ -229,10 +215,7 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
      */
     public static function lockedById(string $ruleId): self
     {
-        $row = self::query()->whereKey($ruleId)->lockForUpdate()->first();
-        self::assertFound($row, $ruleId);
-
-        return $row;
+        return self::query()->whereKey($ruleId)->lockForUpdate()->firstOr(RuleMissing::throwing()->withId($ruleId));
     }
 
     // ----------[ Scopes ]----------

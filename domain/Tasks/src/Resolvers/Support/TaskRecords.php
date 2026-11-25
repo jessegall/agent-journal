@@ -14,7 +14,7 @@ final readonly class TaskRecords
 {
     public function get(string $taskId): Task
     {
-        return Task::query()->findOr($taskId, fn () => throw TaskMissing::forId($taskId));
+        return Task::query()->findOr($taskId, TaskMissing::throwing()->forId($taskId));
     }
 
     /**

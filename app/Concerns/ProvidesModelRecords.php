@@ -40,7 +40,7 @@ trait ProvidesModelRecords
         $record = $this->readableRecords()->where(
             'number',
             $number,
-        )->firstOr(fn () => throw RecordUnavailable::numbered(
+        )->firstOr(RecordUnavailable::throwing()->numbered(
             $this->referenceWord(),
             $number,
         ));
@@ -59,7 +59,7 @@ trait ProvidesModelRecords
     public function requireReadable(RecordIdentity $record): Model
     {
         return $this->readableRecords()->whereKey($record->id)->firstOr(
-            fn () => throw RecordUnavailable::forActor($record),
+            RecordUnavailable::throwing()->forActor($record),
         );
     }
 

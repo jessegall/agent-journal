@@ -32,7 +32,7 @@ final readonly class PhaseAssignmentProvider implements AssignableProvider
 
         return Phase::query()->whereKey(
             $record->id,
-        )->lock('for key share')->firstOr(fn () => throw RecordUnavailable::for($record));
+        )->lock('for key share')->firstOr(RecordUnavailable::throwing()->for($record));
     }
 
     /**

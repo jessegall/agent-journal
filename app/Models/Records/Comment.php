@@ -216,12 +216,12 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
     /**
      * Refuses an anchor with no known type or a column its type needs left empty, as a corrupt comment.
      *
-     * @phpstan-assert TextAnchorType $type
-     *
      * @throws CommentAnchorCorrupt
      */
-    private function assertAnchorComplete(TextAnchorType|null $type): void
+    private function assertAnchorComplete(): void
     {
+        $type = TextAnchorType::tryFrom((string) $this->anchor_type);
+
         if ($type === null) {
             throw CommentAnchorCorrupt::for($this->id, IncompleteTextAnchor::withoutType());
         }
@@ -252,8 +252,8 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
      */
     private function anchor(): TextAnchor
     {
-        $type = $this->anchor_type === null ? null : TextAnchorType::tryFrom($this->anchor_type);
-        $this->assertAnchorComplete($type);
+        $this->assertAnchorComplete();
+        $type = TextAnchorType::from((string) $this->anchor_type);
 
         $column = fn (string $field, string $name): string|int => $this->getAttribute($name);
         $isQuote = $type === TextAnchorType::Quote;

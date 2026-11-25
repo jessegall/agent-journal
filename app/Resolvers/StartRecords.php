@@ -45,7 +45,7 @@ final readonly class StartRecords implements StartRecordResolver
     {
         $record = StartRecord::query()
             ->where('request_id', $requestId)
-            ->firstOr(fn () => throw StartRecordMissing::forRequest($requestId));
+            ->firstOr(StartRecordMissing::throwing()->forRequest($requestId));
 
         if (! $record->wasRequestedBy(ActorIdentity::of($this->actors->actor())) && ! $this->maintainsAgents()) {
             throw StartRecordMissing::forRequest($requestId);

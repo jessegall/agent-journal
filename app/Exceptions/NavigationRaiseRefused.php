@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Contracts\Bus\CommandRefusal;
+use App\Exceptions\Concerns\ThrowsLater;
 use RuntimeException;
 
 /**
@@ -12,6 +13,9 @@ use RuntimeException;
  */
 final class NavigationRaiseRefused extends RuntimeException implements CommandRefusal
 {
+    /** @use ThrowsLater<NavigationRaiseRefused> */
+    use ThrowsLater;
+
     public static function notAKeyScript(string $requestId): self
     {
         return new self("Request {$requestId} runs no key script, so it has no goal to navigate to.");

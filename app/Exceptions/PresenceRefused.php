@@ -8,6 +8,7 @@ use App\Concerns\RendersRefusal;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\RefusalCode;
+use App\Exceptions\Concerns\ThrowsLater;
 use RuntimeException;
 
 /**
@@ -17,6 +18,9 @@ use RuntimeException;
 final class PresenceRefused extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
+
+    /** @use ThrowsLater<PresenceRefused> */
+    use ThrowsLater;
 
     private int $status = 403;
 

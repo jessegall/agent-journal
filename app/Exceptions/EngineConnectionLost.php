@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
+use App\Exceptions\Concerns\ThrowsLater;
 use RuntimeException;
 
 /**
@@ -12,6 +13,9 @@ use RuntimeException;
  */
 final class EngineConnectionLost extends RuntimeException
 {
+    /** @use ThrowsLater<EngineConnectionLost> */
+    use ThrowsLater;
+
     public static function onConnection(string $connection): self
     {
         return new self("The engine's database connection {$connection} was lost; the engine does not reconnect.");

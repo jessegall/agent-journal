@@ -27,7 +27,7 @@ final readonly class TaskDocking implements DockableProvider
 
     public function requireReadable(DockDefinition $definition, string $id): Dockable
     {
-        $task = Task::query()->whereKey($id)->firstOr(fn () => throw DockSourceUnavailable::of($definition->type, $id));
+        $task = Task::query()->whereKey($id)->firstOr(DockSourceUnavailable::throwing()->of($definition->type, $id));
 
         return $this->docked($task->newCollection([$task]))[0];
     }

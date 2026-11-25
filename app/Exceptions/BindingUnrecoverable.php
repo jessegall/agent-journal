@@ -7,6 +7,7 @@ namespace App\Exceptions;
 use App\Concerns\RendersRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\RefusalCode;
+use App\Exceptions\Concerns\ThrowsLater;
 use RuntimeException;
 use Throwable;
 
@@ -17,6 +18,9 @@ use Throwable;
 final class BindingUnrecoverable extends RuntimeException implements CodedRefusal
 {
     use RendersRefusal;
+
+    /** @use ThrowsLater<BindingUnrecoverable> */
+    use ThrowsLater;
 
     public static function generic(Throwable|null $cause = null): self
     {

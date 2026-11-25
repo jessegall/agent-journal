@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
+use App\Exceptions\Concerns\ThrowsLater;
 use LogicException;
 
 /**
@@ -11,6 +12,9 @@ use LogicException;
  */
 final class UnsupportedHook extends LogicException
 {
+    /** @use ThrowsLater<UnsupportedHook> */
+    use ThrowsLater;
+
     public static function for(string $driver, string $method): self
     {
         return new self("The {$driver} adapter does not map {$method}.");

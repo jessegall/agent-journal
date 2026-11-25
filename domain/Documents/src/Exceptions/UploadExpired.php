@@ -7,10 +7,14 @@ namespace Domain\Documents\Exceptions;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\RefusalCode;
+use App\Exceptions\Concerns\ThrowsLater;
 use RuntimeException;
 
 final class UploadExpired extends RuntimeException implements CodedRefusal, CommandRefusal
 {
+    /** @use ThrowsLater<UploadExpired> */
+    use ThrowsLater;
+
     public static function forUpload(): self
     {
         return new self('This upload is unavailable.');

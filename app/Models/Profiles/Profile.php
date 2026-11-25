@@ -78,20 +78,6 @@ final class Profile extends Model implements EventSource, ReadableModel
 
     // ----------[ Asserts ]----------
 
-    /**
-     * Refuses a profile key no profile holds.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws ProfileMissing
-     */
-    private static function assertFound(self|null $row, ProfileKey $key): void
-    {
-        if ($row === null) {
-            throw ProfileMissing::for($key);
-        }
-    }
-
     // ----------[ Queries ]----------
 
     /**
@@ -101,10 +87,7 @@ final class Profile extends Model implements EventSource, ReadableModel
      */
     public static function lockByKey(ProfileKey $key): self
     {
-        $row = self::query()->withKey($key)->lockForUpdate()->first();
-        self::assertFound($row, $key);
-
-        return $row;
+        return self::query()->withKey($key)->lockForUpdate()->firstOr(ProfileMissing::throwing()->for($key));
     }
 
     /**
@@ -114,10 +97,7 @@ final class Profile extends Model implements EventSource, ReadableModel
      */
     public static function byKey(ProfileKey $key): self
     {
-        $row = self::query()->withKey($key)->first();
-        self::assertFound($row, $key);
-
-        return $row;
+        return self::query()->withKey($key)->firstOr(ProfileMissing::throwing()->for($key));
     }
 
     public static function hasCurrent(ProfileKey $key): bool

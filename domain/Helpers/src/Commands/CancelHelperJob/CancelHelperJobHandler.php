@@ -24,7 +24,7 @@ final readonly class CancelHelperJobHandler extends HelperCommandHandler
     public function handle(CancelHelperJobCommand $command): string
     {
         $job = HelperJob::query()->open()->whereKey($command->jobId)->lockForUpdate()->firstOr(
-            fn () => throw HelperUnavailable::toYou(),
+            HelperUnavailable::throwing()->toYou(),
         );
 
         if ($job->state->isLive()) {

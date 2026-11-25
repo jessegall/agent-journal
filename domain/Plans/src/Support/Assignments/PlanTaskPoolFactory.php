@@ -82,6 +82,6 @@ final readonly class PlanTaskPoolFactory implements AssignmentPoolFactory
             throw PlanPoolRefused::noPlanTarget(self::KEY);
         }
 
-        return Plan::query()->findOr($pool->target->id, fn () => throw PlanMissing::withId($pool->target->id));
+        return Plan::query()->findOr($pool->target->id, PlanMissing::throwing()->withId($pool->target->id));
     }
 }

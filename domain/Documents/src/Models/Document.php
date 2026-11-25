@@ -270,23 +270,18 @@ final class Document extends Model implements Commentable, Dockable, EventSource
     // ----------[ Asserts ]----------
 
     /**
-     * Refuses a number or id no document holds.
+     * Refuses a document without its current revision; every published document has one from the moment it is
+     * created.
      *
-     * @phpstan-assert self $document
+     * @phpstan-assert !null $this->currentRevision
      *
      * @throws DocumentMissing
      */
-    private static function assertFound(self|null $document, int|string $reference): void
+    public function assertHasCurrentRevision(): void
     {
-        if ($document !== null) {
-            return;
+        if ($this->currentRevision === null) {
+            throw DocumentMissing::numbered($this->number);
         }
-
-        if (is_int($reference)) {
-            throw DocumentMissing::numbered($reference);
-        }
-
-        throw DocumentMissing::identified($reference);
     }
 
     // ----------[ Internals ]----------
@@ -315,16 +310,10 @@ final class Document extends Model implements Commentable, Dockable, EventSource
         $query = self::query()->with('currentRevision')->lockForUpdate();
 
         if (is_int($number)) {
-            $document = $query->numberedInJournal($number)->first();
-            self::assertFound($document, $number);
-
-            return $document;
+            return $query->numberedInJournal($number)->firstOr(DocumentMissing::throwing()->numbered($number));
         }
 
-        $document = $query->whereKey($number)->first();
-        self::assertFound($document, $number);
-
-        return $document;
+        return $query->whereKey($number)->firstOr(DocumentMissing::throwing()->identified($number));
     }
 
     // ----------[ Scopes ]----------

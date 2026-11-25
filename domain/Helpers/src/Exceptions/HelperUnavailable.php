@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Helpers\Exceptions;
 
 use App\Contracts\Bus\CommandRefusal;
+use App\Exceptions\Concerns\ThrowsLater;
 use RuntimeException;
 
 /**
@@ -13,6 +14,9 @@ use RuntimeException;
  */
 final class HelperUnavailable extends RuntimeException implements CommandRefusal
 {
+    /** @use ThrowsLater<HelperUnavailable> */
+    use ThrowsLater;
+
     public static function forIndependentReview(string $profileKey): self
     {
         return new self(

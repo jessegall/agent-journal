@@ -18,7 +18,7 @@ final readonly class NavigationRequestProvider implements AssignableProvider
     public function requireAssignable(RecordIdentity $record): Assignable
     {
         return NavigationRequest::query()->acrossActors()->whereKey($record->id)->lock('for key share')->firstOr(
-            fn () => throw RecordUnavailable::for($record),
+            RecordUnavailable::throwing()->for($record),
         );
     }
 

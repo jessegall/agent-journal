@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Exceptions;
 
+use App\Exceptions\Concerns\ThrowsLater;
 use RuntimeException;
 
 /**
@@ -11,6 +12,9 @@ use RuntimeException;
  */
 final class PhaseMissing extends RuntimeException
 {
+    /** @use ThrowsLater<PhaseMissing> */
+    use ThrowsLater;
+
     public static function withId(string $phaseId): self
     {
         return new self("Phase {$phaseId} does not exist.");

@@ -180,20 +180,6 @@ final class SharePreview extends Model implements EventSource, ReadableModel
         }
     }
 
-    /**
-     * Refuses a preview that is not there.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws SharePreviewRefused
-     */
-    private static function assertFound(self|null $row, string $previewId): void
-    {
-        if ($row === null) {
-            throw SharePreviewRefused::unknown($previewId);
-        }
-    }
-
     // ----------[ Internals ]----------
 
     /**
@@ -240,10 +226,7 @@ final class SharePreview extends Model implements EventSource, ReadableModel
      */
     public static function of(string $previewId): self
     {
-        $row = self::query()->whereKey($previewId)->first();
-        self::assertFound($row, $previewId);
-
-        return $row;
+        return self::query()->whereKey($previewId)->firstOr(SharePreviewRefused::throwing()->unknown($previewId));
     }
 
     /**
@@ -253,10 +236,10 @@ final class SharePreview extends Model implements EventSource, ReadableModel
      */
     public static function lockFor(string $previewId): self
     {
-        $row = self::query()->whereKey($previewId)->lockForUpdate()->first();
-        self::assertFound($row, $previewId);
-
-        return $row;
+        return self::query()
+            ->whereKey($previewId)
+            ->lockForUpdate()
+            ->firstOr(SharePreviewRefused::throwing()->unknown($previewId));
     }
 
     /**

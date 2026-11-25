@@ -17,7 +17,7 @@ final readonly class StartPlanHandler extends PlanCommandHandler
     public function handle(StartPlanCommand $command): void
     {
         $plan = Plan::query()->whereKey($command->planId)->lockForUpdate()->firstOr(
-            fn () => throw PlanMissing::withId($command->planId),
+            PlanMissing::throwing()->withId($command->planId),
         );
 
         $plan->startOnce($command->dispatchedBy());

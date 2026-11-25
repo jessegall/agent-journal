@@ -9,6 +9,7 @@ use App\Contracts\Refusals\CodedRefusal;
 use App\Contracts\Refusals\StartRefusal;
 use App\Enums\RefusalCode;
 use App\Enums\StartUnavailableReason;
+use App\Exceptions\Concerns\ThrowsLater;
 use RuntimeException;
 
 /**
@@ -17,6 +18,9 @@ use RuntimeException;
 final class AccountUnavailable extends RuntimeException implements CodedRefusal, StartRefusal
 {
     use RendersRefusal;
+
+    /** @use ThrowsLater<AccountUnavailable> */
+    use ThrowsLater;
 
     public function __construct(
         string $message,

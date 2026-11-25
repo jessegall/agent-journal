@@ -8,6 +8,7 @@ use App\Concerns\RendersRefusal;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\RefusalCode;
+use App\Exceptions\Concerns\ThrowsLater;
 use App\Support\RecordIdentity;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
@@ -15,6 +16,9 @@ use RuntimeException;
 final class RecordUnavailable extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
+
+    /** @use ThrowsLater<RecordUnavailable> */
+    use ThrowsLater;
 
     public static function for(RecordIdentity $record): self
     {

@@ -294,20 +294,6 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Refuses a publication that is not there.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws SkillPublicationMissing
-     */
-    private static function assertFound(self|null $row, string $publicationId): void
-    {
-        if ($row === null) {
-            throw SkillPublicationMissing::for($publicationId);
-        }
-    }
-
-    /**
      * Refuses a move its present state does not allow.
      *
      * @throws SkillPublicationFailed
@@ -386,10 +372,10 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
      */
     public static function lockById(string $publicationId): self
     {
-        $row = self::query()->whereKey($publicationId)->lockForUpdate()->first();
-        self::assertFound($row, $publicationId);
-
-        return $row;
+        return self::query()
+            ->whereKey($publicationId)
+            ->lockForUpdate()
+            ->firstOr(SkillPublicationMissing::throwing()->for($publicationId));
     }
 
     /**

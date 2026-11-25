@@ -8,6 +8,7 @@ use App\Concerns\RendersRefusal;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\RefusalCode;
+use App\Exceptions\Concerns\ThrowsLater;
 use App\Values\ProfileKey;
 use RuntimeException;
 
@@ -17,6 +18,9 @@ use RuntimeException;
 final class ProfileMissing extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
+
+    /** @use ThrowsLater<ProfileMissing> */
+    use ThrowsLater;
 
     public static function for(ProfileKey $key): self
     {

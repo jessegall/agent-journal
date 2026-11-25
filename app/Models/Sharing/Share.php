@@ -461,20 +461,6 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
         }
     }
 
-    /**
-     * Refuses a share that is not proposed now.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws ShareProposalUnavailable
-     */
-    private static function assertProposed(self|null $row, string $id): void
-    {
-        if ($row === null) {
-            throw ShareProposalUnavailable::for($id);
-        }
-    }
-
     // ----------[ Internals ]----------
 
     private static function forRoot(RecordIdentity $root, ShareState $state, CarbonImmutable $expiresAt): self
@@ -614,10 +600,11 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      */
     public static function lockProposal(string $id): self
     {
-        $row = self::query()->whereKey($id)->proposedNow()->lockForUpdate()->first();
-        self::assertProposed($row, $id);
-
-        return $row;
+        return self::query()
+            ->whereKey($id)
+            ->proposedNow()
+            ->lockForUpdate()
+            ->firstOr(ShareProposalUnavailable::throwing()->for($id));
     }
 
     /**

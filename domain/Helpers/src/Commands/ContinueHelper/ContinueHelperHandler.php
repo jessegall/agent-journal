@@ -33,7 +33,7 @@ final readonly class ContinueHelperHandler extends HelperCommandHandler
             ->whereKey($command->jobId)
             ->where('helper_identity_id', $command->identityId)
             ->lockForUpdate()
-            ->firstOr(fn () => throw HelperUnavailable::toYou());
+            ->firstOr(HelperUnavailable::throwing()->toYou());
 
         if ($this->starts->hasRequest($job, $command->requestId)) {
             return $this->records->receiptOf($job->id);

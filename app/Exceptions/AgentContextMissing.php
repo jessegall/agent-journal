@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
+use App\Exceptions\Concerns\ThrowsLater;
 use LogicException;
 
 /**
@@ -11,6 +12,9 @@ use LogicException;
  */
 final class AgentContextMissing extends LogicException
 {
+    /** @use ThrowsLater<AgentContextMissing> */
+    use ThrowsLater;
+
     public static function forRequest(): self
     {
         return new self(
