@@ -7,8 +7,6 @@ namespace App\Values;
 /**
  * One item of a host's protection report: whether the pinned client keeps its tools from it there, the native run
  * that showed it, or why it is not kept.
- *
- * @phpstan-type StoredItem array{item: string, enforced: bool, evidence: string, reason: string}
  */
 final readonly class ProtectedItem
 {
@@ -22,32 +20,11 @@ final readonly class ProtectedItem
     ) {}
 
     /**
-     * @param  StoredItem  $stored
-     */
-    public static function fromStored(array $stored): self
-    {
-        return new self($stored['item'], $stored['enforced'], $stored['evidence'], $stored['reason']);
-    }
-
-    /**
      * Whether the pinned client has a native mechanism for this item and only the recorded run that shows it hold is
      * missing, as the host words it (tools/journal-agent/host/protection.go, judgeItem).
      */
     public function awaitsEvidenceOnly(): bool
     {
         return ! $this->isEnforced && str_starts_with($this->reason, self::EVIDENCE_MISSING);
-    }
-
-    /**
-     * @return StoredItem
-     */
-    public function stored(): array
-    {
-        return [
-            'item' => $this->item,
-            'enforced' => $this->isEnforced,
-            'evidence' => $this->evidence,
-            'reason' => $this->reason,
-        ];
     }
 }

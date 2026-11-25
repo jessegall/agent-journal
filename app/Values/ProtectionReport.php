@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Data\Profiles\ProtectedItemData;
+use App\Data\Profiles\ProtectionReportData;
 use App\Enums\LaunchProfileType;
 
 /**
  * What a contained host found of a driver's protected arrangement in the agent image (journal-agent protection),
  * item by item; a driver no contained host has reported has no items.
- *
- * @phpstan-import-type StoredItem from ProtectedItem
- *
- * @phpstan-type StoredReport array{driver: string, build: string, platform: string, items: list<StoredItem>}
  */
 final readonly class ProtectionReport
 {
@@ -32,19 +30,6 @@ final readonly class ProtectionReport
     public static function unreported(string $driver, string $build, string $platform): self
     {
         return new self($driver, $build, $platform, []);
-    }
-
-    /**
-     * @param  StoredReport  $stored
-     */
-    public static function fromStored(array $stored): self
-    {
-        return new self(
-            $stored['driver'],
-            $stored['build'],
-            $stored['platform'],
-            array_map(ProtectedItem::fromStored(...), $stored['items']),
-        );
     }
 
     /**
@@ -69,16 +54,18 @@ final readonly class ProtectionReport
     }
 
     /**
-     * @return StoredReport
+     * The report as a host row keeps it.
      */
-    public function stored(): array
+    public function data(): ProtectionReportData
     {
-        return [
-            'driver' => $this->driver,
-            'build' => $this->build,
-            'platform' => $this->platform,
-            'items' => array_map(fn (ProtectedItem $item): array => $item->stored(), $this->items),
-        ];
+        $items = array_map(fn (ProtectedItem $item) => ProtectedItemData::from([
+            'item' => $item->item,
+            'isEnforced' => $item->isEnforced,
+            'evidence' => $item->evidence,
+            'reason' => $item->reason,
+        ]), $this->items);
+
+        return new ProtectionReportData($this->driver, $this->build, $this->platform, $items);
     }
 
     /**

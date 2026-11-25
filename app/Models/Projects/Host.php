@@ -11,6 +11,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Data\Hosts\EnrolledDescriptorData;
 use App\Data\Hosts\FailedHostCallData;
+use App\Data\Profiles\ProtectionReportData;
 use App\Enums\ArrangementType;
 use App\Enums\DriverType;
 use App\Enums\ExecutionModeType;
@@ -40,14 +41,13 @@ use Spatie\LaravelData\DataCollection;
 /**
  * A machine enrolled to run agent drivers: an infrastructure principal with its own credential, never an actor.
  *
- * @phpstan-import-type StoredReport from ProtectionReport
  *
  * @property string $id
  * @property string $installation_name
  * @property string $credential_hash
  * @property list<string> $start_roots
  * @property ArrangementType $arrangement
- * @property array<string, StoredReport> $protection
+ * @property DataCollection<string, ProtectionReportData> $protection
  * @property DataCollection<int, EnrolledDescriptorData> $descriptors
  * @property CarbonImmutable|null $revoked_at
  * @property CarbonImmutable|null $last_answered_at
@@ -82,7 +82,7 @@ final class Host extends Model implements EventSource, ReadableModel
         return [
             'arrangement' => ArrangementType::class,
             'start_roots' => 'array',
-            'protection' => 'array',
+            'protection' => DataCollection::class.':'.ProtectionReportData::class,
             'descriptors' => DataCollection::class.':'.EnrolledDescriptorData::class,
             'browser_input' => 'boolean',
             'browser_keys' => 'boolean',
@@ -122,10 +122,9 @@ final class Host extends Model implements EventSource, ReadableModel
 
     public function recordProtection(ProtectionReport $report): void
     {
-        $this->protection = [
-            ...$this->protection,
-            $report->key() => $report->stored(),
-        ];
+        $reports = $this->protection->all();
+        $reports[$report->key()] = $report->data();
+        $this->protection = $reports;
         $this->assertSaved($this->save());
         $this->raise(new HostProtectionRecorded($this->id));
     }
@@ -348,11 +347,13 @@ final class Host extends Model implements EventSource, ReadableModel
     {
         $key = $unreported->key();
 
-        if (! array_key_exists($key, $this->protection)) {
+        $reports = $this->protection->all();
+
+        if (! array_key_exists($key, $reports)) {
             return $unreported;
         }
 
-        return ProtectionReport::fromStored($this->protection[$key]);
+        return $reports[$key]->report();
     }
 
     // ----------[ Calculations ]----------
