@@ -33,11 +33,6 @@ final class ProvenSkillReadTest extends TestCase
         yield 'whole read' => [self::call('Read', ['file_path' => self::FILE]), ReadEvidence::FullFileRead];
 
         yield 'shell cat' => [self::call('Bash', ['command' => 'cat '.self::FILE]), ReadEvidence::FullFileRead];
-
-        yield 'skills show' => [
-            self::call('mcp__journal__skills_show', ['key' => 'journal-plans']),
-            ReadEvidence::JournalShow,
-        ];
     }
 
     /**

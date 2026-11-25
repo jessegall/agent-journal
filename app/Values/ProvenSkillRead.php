@@ -11,8 +11,7 @@ use App\Support\Inputs\Values\ToolResult;
 
 /**
  * A finished tool call that proves an agent read one skill whole: Claude's Skill tool, a Read of a whole delivered
- * SKILL.md, a shell cat of one, or the journal's skills_show tool. A listing, a partial read or anything else proves
- * nothing.
+ * SKILL.md or a shell cat of one. A listing, a partial read or anything else proves nothing.
  */
 final readonly class ProvenSkillRead
 {
@@ -34,7 +33,7 @@ final readonly class ProvenSkillRead
             return null;
         }
 
-        return self::skillTool($call) ?? self::fileRead($call) ?? self::shellRead($call) ?? self::journalShow($call);
+        return self::skillTool($call) ?? self::fileRead($call) ?? self::shellRead($call);
     }
 
     private static function skillTool(ToolResult $call): self|null
@@ -67,17 +66,6 @@ final readonly class ProvenSkillRead
 
         if (preg_match(self::SHELL_READ, $command, $match) === 1) {
             return self::fromPath($match[2], ReadEvidence::FullFileRead);
-        }
-
-        return null;
-    }
-
-    private static function journalShow(ToolResult $call): self|null
-    {
-        $key = str_ends_with($call->toolName, 'skills_show') ? $call->arguments->textArgument('key') : null;
-
-        if ($key !== null) {
-            return new self($key, ReadEvidence::JournalShow);
         }
 
         return null;

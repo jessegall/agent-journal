@@ -15,8 +15,11 @@ final readonly class VisibleToProfiles
      */
     public array $profiles;
 
-    public function __construct(DiscoveryProfile ...$profiles)
+    /**
+     * At least one profile: a tool no profile sees could never be called, since every caller is a start of one.
+     */
+    public function __construct(DiscoveryProfile $profile, DiscoveryProfile ...$more)
     {
-        $this->profiles = array_values($profiles);
+        $this->profiles = [$profile, ...array_values($more)];
     }
 }
