@@ -23,6 +23,7 @@ use App\Support\Storage\FrameRecords;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Contracts\Events\Dispatcher;
 use Tests\Fixtures\Hooks\AllowedStops;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
@@ -30,6 +31,7 @@ use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Fixtures\Hooks\InMemoryTasks;
 use Tests\Fixtures\Hooks\InMemoryTaskState;
 use Tests\Fixtures\Hooks\SwitchableState;
+use Tests\Support\DomainBoot;
 use Tests\Support\RegistersTestStates;
 use Tests\Support\TestText;
 use Tests\TestCase;
@@ -41,6 +43,14 @@ use Tests\TestCase;
 final class StackRestorerTest extends TestCase
 {
     use RegistersTestStates;
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     private InMemoryTasks $tasks;
 

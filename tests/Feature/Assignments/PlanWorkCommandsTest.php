@@ -9,11 +9,14 @@ use App\Models\Records\AssignmentRecord;
 use App\Support\Access\AccessSettings;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\PlansDomain;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -39,6 +42,14 @@ final class PlanWorkCommandsTest extends TestCase
         'phase_tasks',
         'assignments',
     ];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(PlansDomain::class, TasksDomain::class);
+    }
 
     private TestStart $main;
 

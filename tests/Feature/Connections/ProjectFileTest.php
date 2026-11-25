@@ -30,9 +30,11 @@ use App\Values\InboxMemberAuthority;
 use App\Values\TextRange;
 use Carbon\CarbonImmutable;
 use Domain\Comments\Commands\PostTextComment\PostTextCommentCommand;
+use Domain\Comments\CommentsDomain;
 use Domain\Comments\Models\Comment;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsHostCalls;
 use Tests\Support\StartsAgentRequests;
@@ -57,6 +59,14 @@ final class ProjectFileTest extends TestCase
     private const string PATH = 'src/main.go';
 
     private const string SOURCE = "package main\n\nfunc main() {}\n";
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(CommentsDomain::class);
+    }
 
     private EnrolledHost $host;
 

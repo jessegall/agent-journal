@@ -38,8 +38,10 @@ use Carbon\CarbonImmutable;
 use Closure;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
@@ -64,6 +66,14 @@ final class HookStartTest extends TestCase
         'process_runs',
         'command_requests',
     ];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     public function test_the_isolated_settings_hold_only_the_journal_hooks_and_turn_off_the_child_tool(): void
     {

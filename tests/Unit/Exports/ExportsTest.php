@@ -9,15 +9,25 @@ use App\Support\Exports;
 use ArrayObject;
 use Domain\Plans\Events\PlanProgressChanged;
 use Domain\Plans\Events\PlanStarted;
+use Domain\Plans\PlansDomain;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use stdClass;
+use Tests\Support\DomainBoot;
 
 /**
  * An owner's exports are built one list at a time, never change once built, and refuse a malformed declaration.
  */
 final class ExportsTest extends TestCase
 {
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(PlansDomain::class);
+    }
+
     public function test_each_list_keeps_the_order_its_names_were_added_in(): void
     {
         $exports = Exports::make()->events(PlanStarted::class)->events(

@@ -14,16 +14,21 @@ use App\Support\Inputs\ContextCompacted;
 use App\Support\Inputs\Values\CompactionDetails;
 use App\Support\OperationDeadline;
 use App\Support\Stack\HookAnswer;
+use Domain\Memory\MemoryDomain;
 use Domain\Memory\Models\Memory;
 use Domain\Rules\Models\Rule;
+use Domain\Rules\RulesDomain;
 use Domain\Sequences\Commands\StartSequence\StartSequenceCommand;
 use Domain\Sequences\Models\SequenceRun;
+use Domain\Sequences\SequencesDomain;
 use Domain\Sequences\Support\States\FollowSequenceState;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommittedHookStack;
+use Tests\Support\DomainBoot;
 use Tests\Support\HoldingRules;
 use Tests\Support\TestActors;
 use Tests\Support\TestText;
@@ -42,6 +47,14 @@ final class HookCompactionTest extends TestCase
     private const string QUESTION_TEXT = 'Question 10 is still open.';
 
     private const string MEMORY_REMINDER = 'Memory: %s';
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(MemoryDomain::class, RulesDomain::class, SequencesDomain::class, TasksDomain::class);
+    }
 
     private Task $task;
 

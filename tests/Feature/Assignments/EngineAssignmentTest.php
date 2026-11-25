@@ -20,7 +20,9 @@ use App\Support\RequestKey;
 use App\Support\SystemActor;
 use App\Values\TrustedEntryAuthority;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
@@ -30,6 +32,14 @@ final class EngineAssignmentTest extends TestCase
     use StartsAgentRequests;
 
     private const array TABLES = ['assignments', 'command_receipts', 'tasks', 'agents'];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     public function test_fill_scope_can_assign_but_cannot_reassign_or_unassign(): void
     {

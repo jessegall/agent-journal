@@ -20,13 +20,16 @@ use App\Support\PoolReference;
 use App\Support\Storage\DatabaseAutoAssignments;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\PlansDomain;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\TaskType;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\HasAutoAssignmentWorker;
 use Tests\TestCase;
 
@@ -54,6 +57,14 @@ final class AutoAssignmentStatusTest extends TestCase
         'assignments',
         'auto_assignments',
     ];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(PlansDomain::class, TasksDomain::class);
+    }
 
     public function test_without_a_row_it_is_off(): void
     {

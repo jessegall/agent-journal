@@ -14,6 +14,7 @@ use App\Support\ReflectedProperty;
 use App\Support\Reflector;
 use App\Support\Stack\StateTypes;
 use Domain\Sharing\Events\ShareActivated;
+use Domain\Sharing\SharingDomain;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Events\Dispatcher;
@@ -26,12 +27,21 @@ use Tests\Fixtures\Domains\Shelves\Listeners\CountShareActivated;
 use Tests\Fixtures\Domains\Shelves\ShelvesDomain;
 use Tests\Fixtures\Domains\Tasks\TaskList;
 use Tests\Fixtures\Domains\Tasks\TasksDomain;
+use Tests\Support\DomainBoot;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 final class DomainServiceProviderTest extends TestCase
 {
     use RefreshHookDatabase;
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(SharingDomain::class);
+    }
 
     private mixed $discoveryPathsBefore;
 

@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Tests\Unit\Hooks;
 
 use Domain\Plans\Models\Plan;
+use Domain\Plans\PlansDomain;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\States\WorkOnTaskState;
+use Domain\Tasks\TasksDomain;
+use Tests\Support\DomainBoot;
 use Tests\Support\TestText;
 use Tests\TestCase;
 
@@ -15,6 +18,14 @@ use Tests\TestCase;
  */
 final class ForegroundInstructionsTest extends TestCase
 {
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(PlansDomain::class, TasksDomain::class);
+    }
+
     public function test_a_task_frame_names_its_task_and_run(): void
     {
         $state = new WorkOnTaskState('task-12', 12, 3);

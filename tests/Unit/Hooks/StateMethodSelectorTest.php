@@ -19,13 +19,23 @@ use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Events\TaskStarted;
+use Domain\Tasks\TasksDomain;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\InheritState;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
+use Tests\Support\DomainBoot;
 use Tests\Support\TestActors;
 
 final class StateMethodSelectorTest extends TestCase
 {
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
+
     public function test_hooks_and_events_select_every_live_frame_that_declares_the_method_top_first(): void
     {
         $ordinary = new class extends InheritState

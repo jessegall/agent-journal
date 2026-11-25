@@ -19,7 +19,9 @@ use App\Support\AssigneeDefinition;
 use App\Support\LinkTypeRegistry;
 use App\Support\Registry\AssignmentRegistry;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\PlansDomain;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Tests\Support\DomainBoot;
 use Tests\TestCase;
 
 /**
@@ -29,6 +31,14 @@ use Tests\TestCase;
  */
 final class AssignmentRegistryTest extends TestCase
 {
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(PlansDomain::class);
+    }
+
     private AssignmentRegistry $registry;
 
     protected function setUp(): void

@@ -33,11 +33,14 @@ use Domain\Plans\Commands\StartPlan\StartPlanCommand;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\PlansDomain;
 use Domain\Rules\Commands\ApproveRule\ApproveRuleCommand;
 use Domain\Rules\Exceptions\RuleNotProposed;
 use Domain\Rules\Models\Rule;
+use Domain\Rules\RulesDomain;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -57,6 +60,7 @@ use Tests\Fixtures\Modules\Notes\CommandMiddleware\TrimMessages;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\UppercasesText;
 use Tests\Fixtures\Modules\Notes\Commands\RefuseNote\RefuseNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
+use Tests\Support\DomainBoot;
 use Tests\Support\HoldingRules;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
@@ -72,6 +76,14 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     use WritesInboxMessages;
 
     private const string TRIMMED_TEXT = 'Trim me';
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(PlansDomain::class, RulesDomain::class, TasksDomain::class);
+    }
 
     protected function tearDown(): void
     {

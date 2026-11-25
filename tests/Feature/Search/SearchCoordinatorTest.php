@@ -35,6 +35,7 @@ use Tests\Fixtures\Search\CollectingLogger;
 use Tests\Fixtures\Search\MutableReadGrant;
 use Tests\Fixtures\Search\OpenSearchAccess;
 use Tests\Fixtures\Search\SwitchedOffDomains;
+use Tests\Support\DomainBoot;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -56,6 +57,14 @@ final class SearchCoordinatorTest extends TestCase
     private const string RULE_C = '01ARZ3NDEKTSV4RRFFQ69G5FCC';
 
     private const string RULE_D = '01ARZ3NDEKTSV4RRFFQ69G5FDD';
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     private CollectingLogger $log;
 

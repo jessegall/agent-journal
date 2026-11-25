@@ -7,10 +7,14 @@ namespace Tests\Feature\Mcp;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\PlansDomain;
 use Domain\Rules\Models\Rule;
+use Domain\Rules\RulesDomain;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -34,6 +38,14 @@ final class SearchToolTest extends TestCase
         'tasks', 'plans', 'phases', 'phase_tasks', 'rules', 'documents', 'document_revisions', 'reports',
         'inboxes', 'inbox_members', 'assignments', 'messages',
     ];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(PlansDomain::class, RulesDomain::class, TasksDomain::class);
+    }
 
     public function test_the_six_scoped_searches_return_their_records(): void
     {

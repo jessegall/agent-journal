@@ -21,8 +21,10 @@ use App\Values\ExecutionContext;
 use App\Values\RunEvent;
 use Carbon\CarbonImmutable;
 use Domain\Memory\Calls\MemoryCalls;
+use Domain\Memory\MemoryDomain;
 use Domain\Memory\Models\Memory;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\DomainBoot;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
@@ -39,6 +41,14 @@ final class CallRecoveryTest extends TestCase
     use SendsSignedCalls;
 
     private const string RECORD_ADVICE = 'Check the record';
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(MemoryDomain::class);
+    }
 
     private TestStart $start;
 

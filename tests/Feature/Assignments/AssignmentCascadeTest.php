@@ -20,9 +20,12 @@ use App\Support\AssignmentReference;
 use App\Support\RecordIdentity;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\PlansDomain;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
@@ -38,6 +41,14 @@ final class AssignmentCascadeTest extends TestCase
     use StartsAgentRequests;
 
     private const array TABLES = ['users', 'agents', 'tasks', 'plans', 'assignments'];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(PlansDomain::class, TasksDomain::class);
+    }
 
     private AssigneeIdentity $builder;
 

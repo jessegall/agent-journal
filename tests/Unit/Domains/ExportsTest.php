@@ -16,12 +16,14 @@ use Domain\Tasks\Contracts\TaskResolver;
 use Domain\Tasks\Events\TaskFinished;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Resolvers\VisibleTasks;
+use Domain\Tasks\TasksDomain;
 use Domain\Tasks\Values\TaskSummary;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Domains\Leaky\LeakyDomain;
 use Tests\Fixtures\Domains\Nesting\Inner\InnerDomain;
 use Tests\Fixtures\Domains\Nesting\NestingDomain;
+use Tests\Support\DomainBoot;
 
 /**
  * The exports are checked when the application starts: every name exists, lies inside its owner and sits in the
@@ -29,6 +31,14 @@ use Tests\Fixtures\Domains\Nesting\NestingDomain;
  */
 final class ExportsTest extends TestCase
 {
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
+
     public function test_empty_exports_export_nothing_and_are_no_wildcard(): void
     {
         $this->assertSame([], ExportValidator::check('Tasks', 'Domain\\Tasks', DeclaredExports::make()->build())->all());
@@ -126,5 +136,4 @@ final class ExportsTest extends TestCase
 
         DomainRegistry::from([NestingDomain::class, InnerDomain::class]);
     }
-
 }

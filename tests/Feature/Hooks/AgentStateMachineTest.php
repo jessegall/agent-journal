@@ -22,8 +22,10 @@ use App\Support\Stack\HookAnswer;
 use App\Support\Storage\WalkStep;
 use Closure;
 use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Hooks\TestFailure;
 use Tests\Support\CommittedHookStack;
+use Tests\Support\DomainBoot;
 use Tests\Support\TestActors;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -33,6 +35,14 @@ final class AgentStateMachineTest extends TestCase
     use CommittedHookStack;
 
     private const string ADMISSION_PREFIX = 'journal process run --admission ';
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     public function test_a_stop_is_answered_recorded_and_the_stack_saved_in_one_commit(): void
     {

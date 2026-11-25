@@ -6,8 +6,10 @@ namespace Tests\Feature\Mcp;
 
 use Domain\Reminders\Enums\ReminderStatus;
 use Domain\Reminders\Models\Reminder;
+use Domain\Reminders\RemindersDomain;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\SendsMcpFrames;
 use Tests\TestCase;
 
@@ -20,6 +22,14 @@ final class ReminderToolsTest extends TestCase
     use SendsMcpFrames;
 
     private const array TABLES = ['agents', 'agent_sessions', 'session_tokens', 'agent_stacks', 'reminders', 'command_receipts'];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(RemindersDomain::class);
+    }
 
     public function test_an_agent_creates_a_reminder_and_finishes_it_through_the_tools(): void
     {

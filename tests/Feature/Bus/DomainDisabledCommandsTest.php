@@ -12,8 +12,10 @@ use App\Support\CommandScope;
 use App\Support\MiddlewareDeclaration;
 use Domain\Plans\Commands\StartPlan\StartPlanCommand;
 use Domain\Plans\Commands\StartPlan\StartPlanHandler;
+use Domain\Plans\PlansDomain;
 use Tests\Fixtures\Modules\Cards\Commands\ShuffleDeck\ShuffleDeckCommand;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RefusesAll;
+use Tests\Support\DomainBoot;
 use Tests\Support\TestIds;
 
 /**
@@ -25,6 +27,14 @@ final class DomainDisabledCommandsTest extends CommandBusTestCase
     private const string HANDLER_BUILT = 'The handler of a switched-off domain was built.';
 
     private const string MIDDLEWARE_BUILT = 'Middleware of a switched-off domain was built.';
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(PlansDomain::class);
+    }
 
     public function test_a_switched_off_domains_command_is_refused_for_everyone_without_building_its_handler(): void
     {

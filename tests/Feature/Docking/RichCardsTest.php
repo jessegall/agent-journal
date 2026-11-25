@@ -10,19 +10,24 @@ use App\Models\Access\User;
 use App\Models\Inboxes\Inbox;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
+use Domain\Chat\ChatDomain;
 use Domain\Chat\Support\DockProjection;
 use Domain\Documents\Commands\CloseReport\CloseReportCommand;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;
+use Domain\Documents\DocumentsDomain;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\PlansDomain;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Events\TaskCancelled;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Fixtures\Modules\Notes\Providers\NotesServiceProvider;
 use Tests\Fixtures\Modules\Notes\Support\ReleaseReview;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\InstallsNotesModule;
 use Tests\Support\OpensPairChats;
 use Tests\Support\SendsMcpFrames;
@@ -77,6 +82,14 @@ final class RichCardsTest extends TestCase
         'reports',
         'dock_placements',
     ];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(ChatDomain::class, DocumentsDomain::class, PlansDomain::class, TasksDomain::class);
+    }
 
     private TestStart $agent;
 

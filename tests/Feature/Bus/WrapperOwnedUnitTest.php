@@ -10,6 +10,7 @@ use App\Support\CommandNesting;
 use App\Support\ListenerRegistry;
 use App\Support\Publication;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Schema;
@@ -18,6 +19,7 @@ use Tests\Fixtures\Contracts\NotesFirstRename;
 use Tests\Fixtures\Contracts\RaisingRow;
 use Tests\Fixtures\Contracts\RowNoted;
 use Tests\Fixtures\Contracts\RowRenamed;
+use Tests\Support\DomainBoot;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -28,6 +30,14 @@ use Tests\TestCase;
 final class WrapperOwnedUnitTest extends TestCase
 {
     use RefreshHookDatabase;
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     /**
      * @var list<string>

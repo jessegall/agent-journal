@@ -33,8 +33,10 @@ use App\Values\AgentText;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Closure;
+use Domain\Sequences\SequencesDomain;
 use Domain\Sequences\Support\States\FollowSequenceState;
 use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\TasksDomain;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Tests\Fixtures\Boundary\Events\Tasks\Events\TaskClosed;
@@ -52,12 +54,21 @@ use Tests\Fixtures\Hooks\Stacks\FinishedSubjects;
 use Tests\Fixtures\Hooks\Stacks\SingleState;
 use Tests\Fixtures\Hooks\StopAnswerState;
 use Tests\Fixtures\Hooks\SwitchableState;
+use Tests\Support\DomainBoot;
 use Tests\Support\TestActors;
 use Tests\Support\TestText;
 use Tests\TestCase;
 
 final class AgentStackTest extends TestCase
 {
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(SequencesDomain::class, TasksDomain::class);
+    }
+
     public function test_the_top_denial_answers_a_stop_and_no_state_below_it_is_asked(): void
     {
         $stop = $this->stop();

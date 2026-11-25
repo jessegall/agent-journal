@@ -30,9 +30,11 @@ use App\Values\StartPolicy;
 use App\Values\StartRequest;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use PhpOption\None;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\DomainBoot;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -46,6 +48,14 @@ use Tests\TestCase;
 final class ContinueStackTest extends TestCase
 {
     use RefreshHookDatabase;
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     public function test_a_resumed_session_carries_owed_work_and_leaves_session_only_frames(): void
     {

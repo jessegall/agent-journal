@@ -15,9 +15,11 @@ use App\Support\Access\AccessSettings;
 use App\Support\AssigneeIdentity;
 use App\Support\IdListPage;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
 use Tests\TestCase;
@@ -32,6 +34,14 @@ final class AssignmentResolversTest extends TestCase
     use StartsAgentRequests;
 
     private const array TABLES = ['users', 'agents', 'tasks', 'assignments'];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     private User $owner;
 

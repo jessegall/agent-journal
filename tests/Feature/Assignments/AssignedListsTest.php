@@ -12,15 +12,18 @@ use App\Support\NumberedPage;
 use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\PlansDomain;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Values\AssignedPlanFilters;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Domain\Tasks\Values\TaskFilters;
 use Illuminate\Support\Str;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 use Tests\Support\UsesSecondConnection;
@@ -38,6 +41,14 @@ final class AssignedListsTest extends TestCase
     use UsesSecondConnection;
 
     private const array TABLES = ['agents', 'tasks', 'plans', 'phases', 'phase_tasks', 'assignments'];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(PlansDomain::class, TasksDomain::class);
+    }
 
     private Agent $main;
 

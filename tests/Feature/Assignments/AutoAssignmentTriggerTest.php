@@ -31,13 +31,23 @@ use App\Support\SystemActor;
 use App\Values\TrustedEntryAuthority;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Support\Assignments\TaskAssigner;
+use Domain\Tasks\TasksDomain;
 use Psr\Log\LoggerInterface;
+use Tests\Support\DomainBoot;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
 final class AutoAssignmentTriggerTest extends TestCase
 {
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
+
     protected function setUp(): void
     {
         parent::setUp();

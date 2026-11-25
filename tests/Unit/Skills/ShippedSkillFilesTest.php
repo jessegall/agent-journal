@@ -13,14 +13,22 @@ use App\Support\Shipped\ProfilesSkill;
 use App\Support\Shipped\ShellSkill;
 use App\Support\Shipped\SkillsSkill;
 use App\Values\SkillOwner;
+use Domain\Chat\ChatDomain;
 use Domain\Chat\Support\Skills\ChatSkill;
+use Domain\Memory\MemoryDomain;
 use Domain\Memory\Support\Skills\MemorySkill;
+use Domain\Plans\PlansDomain;
 use Domain\Plans\Support\Skills\PlanSkill;
+use Domain\Reminders\RemindersDomain;
 use Domain\Reminders\Support\Skills\RemindersSkill;
+use Domain\Rules\RulesDomain;
 use Domain\Rules\Support\Skills\RulesSkill;
+use Domain\Sequences\SequencesDomain;
 use Domain\Sequences\Support\Skills\SequencesSkill;
 use Domain\Tasks\Support\Skills\TasksSkill;
+use Domain\Tasks\TasksDomain;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Support\DomainBoot;
 use Tests\TestCase;
 
 /**
@@ -29,6 +37,14 @@ use Tests\TestCase;
  */
 final class ShippedSkillFilesTest extends TestCase
 {
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(ChatDomain::class, MemoryDomain::class, PlansDomain::class, RemindersDomain::class, RulesDomain::class, SequencesDomain::class, TasksDomain::class);
+    }
+
     /**
      * @return iterable<string, array{class-string<Skill>, string, string, string}>
      */

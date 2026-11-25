@@ -19,10 +19,12 @@ use App\Support\RecordIdentity;
 use App\Support\Registry\AssignmentRegistry;
 use App\Support\Storage\DatabaseAssignmentQuery;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Database\Eloquent\Builder;
 use RuntimeException;
 use Tests\Fixtures\Domains\Errands\ErrandsDomain;
 use Tests\Fixtures\Domains\Errands\ErrandWork;
+use Tests\Support\DomainBoot;
 use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
@@ -40,6 +42,14 @@ final class AssignmentQueryTest extends TestCase
     use StartsAgentRequests;
 
     private const string COUNT_FAILED = 'The count failed.';
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     private AssigneeIdentity $builder;
 

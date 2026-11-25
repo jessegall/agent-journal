@@ -11,7 +11,9 @@ use App\Support\ScopedReadMeter;
 use App\Values\OwnerAuthority;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Resolvers\TaskRecords;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Database\Eloquent\Factories\Sequence;
+use Tests\Support\DomainBoot;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -24,6 +26,14 @@ use Tests\TestCase;
 final class RepeatedReadTest extends TestCase
 {
     use RefreshHookDatabase;
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     protected function setUp(): void
     {

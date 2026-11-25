@@ -9,10 +9,19 @@ use App\Support\DomainEntry;
 use App\Support\DomainRegistry;
 use Domain\Documents\DocumentsDomain;
 use Domain\Tasks\TasksDomain;
+use Tests\Support\DomainBoot;
 use Tests\TestCase;
 
 final class DomainListTest extends TestCase
 {
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(DocumentsDomain::class, TasksDomain::class);
+    }
+
     public function test_the_registry_holds_exactly_the_approved_domains(): void
     {
         $registry = $this->app->make(DomainRegistry::class);

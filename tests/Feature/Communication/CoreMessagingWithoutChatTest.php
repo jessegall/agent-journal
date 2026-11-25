@@ -15,6 +15,7 @@ use App\Support\Stack\StateTypes;
 use App\Support\States\AnswerMessageState;
 use App\Support\States\Support\AnswerMessageStateReference;
 use Domain\Chat\ChatDomain;
+use Tests\Support\DomainBoot;
 use Tests\TestCase;
 
 /**
@@ -24,6 +25,14 @@ use Tests\TestCase;
  */
 final class CoreMessagingWithoutChatTest extends TestCase
 {
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(ChatDomain::class);
+    }
+
     public function test_chat_registers_no_messaging_mechanics(): void
     {
         $chat = new ChatDomain();

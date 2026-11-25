@@ -13,11 +13,13 @@ use App\Support\AssigneeList;
 use App\Support\AssigneeName;
 use App\Support\IdListPage;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
 use Mockery;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
@@ -40,6 +42,14 @@ final class AssignmentReadToolsTest extends TestCase
         'assignments',
         'agent_stacks',
     ];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     private TestStart $caller;
 

@@ -16,10 +16,13 @@ use App\Support\Inputs\SessionStarted;
 use App\Support\Inputs\Values\SessionStartDetails;
 use App\Support\OperationDeadline;
 use App\Support\Stack\HookAnswer;
+use Domain\Memory\MemoryDomain;
 use Domain\Memory\Models\Memory;
 use Domain\Rules\Models\Rule;
+use Domain\Rules\RulesDomain;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommittedHookStack;
+use Tests\Support\DomainBoot;
 use Tests\Support\HoldingRules;
 use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\TestActors;
@@ -41,6 +44,14 @@ final class SessionContextTest extends TestCase
     private const string MEMORY_TEXT = 'Use plain words.';
 
     private const string MEMORY_REMINDER = 'Memory: %s';
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(MemoryDomain::class, RulesDomain::class);
+    }
 
     private const string OMITTED_NOTICE = '1 more reminders did not fit this context; '
         .'read your memories with memories_list.';

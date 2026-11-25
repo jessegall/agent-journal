@@ -13,9 +13,11 @@ use App\Support\Stack\StateTypes;
 use App\Values\GroupReference;
 use App\Values\OwnerAuthority;
 use Domain\Tasks\Support\States\WorkOnTaskState;
+use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Domains\QuestionReminders\QuestionRemindersDomain;
 use Tests\Fixtures\Domains\QuestionReminders\States\AwaitAnswerState;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\InstallsCommandModules;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -28,6 +30,14 @@ final class DomainStateTypesTest extends TestCase
 {
     use CommitsHookRows;
     use InstallsCommandModules;
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     /**
      * The bus commits the switch command for real, so this table is emptied around each test.

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Events;
 
-use App\Contracts\Bus\CommandBus;
 use App\Contracts\Asks\AnsweredAtOnce;
+use App\Contracts\Bus\CommandBus;
 use App\Support\ActorContext;
 use App\Support\DeclaredType;
 use App\Support\ReflectedMethod;
@@ -18,6 +18,7 @@ use Domain\Plans\Events\PlanCancelled;
 use Domain\Plans\Events\PlanFinished;
 use Domain\Plans\Events\PlanStarted;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\PlansDomain;
 use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
 use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
@@ -28,12 +29,14 @@ use Domain\Tasks\Events\TaskCancelled;
 use Domain\Tasks\Events\TaskFinished;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Events\Dispatcher;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -63,6 +66,14 @@ final class EventPayloadTest extends TestCase
         'claim_authorizations',
         'command_receipts',
     ];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(PlansDomain::class, TasksDomain::class);
+    }
 
     /**
      * The kinds a fact's payload may not hold anywhere inside it.

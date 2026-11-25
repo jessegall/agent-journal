@@ -20,7 +20,9 @@ use App\Support\PoolReference;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\Assignments\OpenTaskPoolFactory;
+use Domain\Tasks\TasksDomain;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\HasAutoAssignmentWorker;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -44,6 +46,14 @@ final class AutoAssignmentCommandsTest extends TestCase
         'auto_assignments',
         'command_receipts',
     ];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     public function test_the_owner_enables_a_named_pool_for_an_agent(): void
     {

@@ -11,11 +11,14 @@ use App\Support\Registry\AssignmentRegistry;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\PlansDomain;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Tasks\Contracts\TaskAssignmentResolver;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
@@ -31,6 +34,14 @@ final class AssignableRecordsTest extends TestCase
     use StartsAgentRequests;
 
     private const array TABLES = ['tasks', 'plans', 'phases', 'phase_tasks'];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(PlansDomain::class, TasksDomain::class);
+    }
 
     private AssignmentRegistry $registry;
 

@@ -16,10 +16,12 @@ use App\Support\ActorIdentity;
 use App\Support\DefaultDrivers;
 use App\Values\AccountLabel;
 use Carbon\CarbonImmutable;
+use Domain\Chat\ChatDomain;
 use Domain\Chat\Support\ChatInboxes;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Finder\Finder;
 use Tests\Support\Agents\HostContract;
+use Tests\Support\DomainBoot;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\RunsKeyedCommands;
@@ -56,6 +58,14 @@ final class PageRequestContractTest extends TestCase
     private const string RECORDED_QUESTION = '01JPAGEREQUESTQUESTION0000';
 
     private const string RECORDED_ATTEMPT = '01JPAGEREQUESTATTEMPT00000';
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(ChatDomain::class);
+    }
 
     private User $member;
 

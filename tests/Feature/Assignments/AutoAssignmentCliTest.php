@@ -7,9 +7,11 @@ namespace Tests\Feature\Assignments;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\SendsSignedCalls;
 use Tests\TestCase;
 
@@ -33,6 +35,14 @@ final class AutoAssignmentCliTest extends TestCase
         'auto_assignments',
         'command_receipts',
     ];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     private TestStart $main;
 

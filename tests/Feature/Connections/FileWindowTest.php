@@ -18,11 +18,13 @@ use App\Support\ActorIdentity;
 use App\Support\PersonalInboxes;
 use App\Values\ProjectFileText;
 use Closure;
+use Domain\Comments\CommentsDomain;
 use Domain\Comments\Models\Comment;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\ConnectsProjects;
+use Tests\Support\DomainBoot;
 use Tests\TestCase;
 
 /**
@@ -46,6 +48,14 @@ final class FileWindowTest extends TestCase
     private const string README = 'README.md';
 
     private const string PROP = 'window_connections_file';
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(CommentsDomain::class);
+    }
 
     public function test_a_file_waits_for_the_host_then_shows_its_lines_and_digest(): void
     {

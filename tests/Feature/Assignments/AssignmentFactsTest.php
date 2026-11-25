@@ -17,6 +17,7 @@ use App\Support\AssigneeIdentity;
 use App\Support\RecordIdentity;
 use App\Support\Reflector;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Exception;
 use Illuminate\Database\DatabaseTransactionsManager;
 use Illuminate\Database\QueryException;
@@ -25,6 +26,7 @@ use PDOException;
 use RuntimeException;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
@@ -39,6 +41,14 @@ final class AssignmentFactsTest extends TestCase
     use StartsAgentRequests;
 
     private const array TABLES = ['users', 'agents', 'tasks', 'assignments'];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     /**
      * @var list<AssignmentsChanged>

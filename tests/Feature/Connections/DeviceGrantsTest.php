@@ -21,11 +21,13 @@ use App\Values\InstallTicket;
 use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\ConnectsProjects;
+use Tests\Support\DomainBoot;
 use Tests\TestCase;
 
 /**
@@ -49,6 +51,14 @@ final class DeviceGrantsTest extends TestCase
     ];
 
     private const string NONCE = 'nonce-aaaaaaaaaaaaaaaa';
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     public function test_the_shell_gets_a_url_and_code_and_its_grant_once_the_owner_approves(): void
     {

@@ -20,6 +20,7 @@ use App\Values\DockedOutput;
 use App\Values\PartEnd;
 use App\Values\PartKey;
 use Carbon\CarbonImmutable;
+use Domain\Chat\ChatDomain;
 use Domain\Chat\Listeners\RemoveDeletedSource;
 use Domain\Chat\Models\DockPlacement;
 use Domain\Chat\Support\DockProjection;
@@ -29,6 +30,7 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Modules\Notes\Events\NoteRemoved;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\InstallsNotesModule;
 use Tests\Support\OpensPairChats;
@@ -79,6 +81,14 @@ final class ProcessAndCleanupDockTest extends TestCase
         'evidence_reads',
         'dock_placements',
     ];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(ChatDomain::class);
+    }
 
     private TestStart $agent;
 

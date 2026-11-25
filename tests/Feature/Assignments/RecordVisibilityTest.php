@@ -10,8 +10,10 @@ use App\Models\Agents\Agent;
 use App\Support\Access\AccessSettings;
 use App\Support\RecordIdentity;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\InstallsNotesModule;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
@@ -29,6 +31,14 @@ final class RecordVisibilityTest extends TestCase
     use StartsAgentRequests;
 
     private const array TABLES = ['tasks', 'users', 'agents', 'number_groups'];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     private Agent $writer;
 

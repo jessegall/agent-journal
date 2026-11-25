@@ -51,9 +51,11 @@ use App\Values\WorkReference;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
@@ -74,6 +76,14 @@ final class AskRecordsTest extends TestCase
         'assignments', 'command_receipts', 'session_tokens', 'agent_sessions', 'agents', 'profile_revisions', 'profiles',
         'agent_stacks', 'tasks',
     ];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     public function test_the_internal_route_holds_an_ask_and_public_assignment_cannot_change_it(): void
     {

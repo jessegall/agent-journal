@@ -29,7 +29,9 @@ use App\Support\PoolReference;
 use App\Support\SystemActor;
 use App\Values\TrustedEntryAuthority;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\HasAutoAssignmentWorker;
 use Tests\TestCase;
 
@@ -42,6 +44,14 @@ final class ClaimAutoAssignmentTest extends TestCase
         'assignments', 'auto_assignments', 'command_receipts',
         'tasks', 'agents', 'agent_sessions', 'session_tokens', 'users',
     ];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     public function test_a_claim_fills_one_slot_and_later_claims_leave_the_full_fact_unchanged(): void
     {

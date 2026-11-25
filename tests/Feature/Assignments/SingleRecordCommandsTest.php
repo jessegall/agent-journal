@@ -10,10 +10,12 @@ use App\Models\Agents\AgentSession;
 use App\Models\Records\AssignmentRecord;
 use App\Support\Access\AccessSettings;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -29,6 +31,14 @@ final class SingleRecordCommandsTest extends TestCase
     use SendsSignedCalls;
 
     private const array TABLES = ['users', 'agents', 'agent_sessions', 'session_tokens', 'tasks', 'assignments'];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     private User $owner;
 

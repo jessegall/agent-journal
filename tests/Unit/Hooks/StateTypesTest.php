@@ -22,12 +22,14 @@ use App\Support\States\ReadyState;
 use Carbon\CarbonImmutable;
 use Closure;
 use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Events\Dispatcher;
 use Tests\Fixtures\Hooks\AllowedStops;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\InMemoryTasks;
 use Tests\Fixtures\Hooks\InMemoryTaskState;
 use Tests\Fixtures\Hooks\TestFailure;
+use Tests\Support\DomainBoot;
 use Tests\Support\FakeServerClock;
 use Tests\TestCase;
 
@@ -37,6 +39,14 @@ use Tests\TestCase;
  */
 final class StateTypesTest extends TestCase
 {
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
+
     public function test_a_registered_type_is_found_by_its_key(): void
     {
         $type = RegisteredStateType::named('tasks.work', InMemoryTaskState::class);

@@ -13,10 +13,13 @@ use App\Support\AssignmentGroup;
 use App\Support\RecordIdentity;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\PlansDomain;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -30,6 +33,14 @@ final class PlanCascadeToolsTest extends TestCase
         'users', 'agents', 'agent_sessions', 'agent_stacks', 'session_tokens',
         'tasks', 'plans', 'phases', 'phase_tasks', 'assignments', 'command_receipts',
     ];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(PlansDomain::class, TasksDomain::class);
+    }
 
     private TestStart $caller;
 

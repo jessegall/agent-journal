@@ -8,9 +8,12 @@ use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\PlansDomain;
 use Domain\Rules\Models\Rule;
+use Domain\Rules\RulesDomain;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\TestIds;
@@ -32,6 +35,14 @@ final class DeclaredPlansAndRulesSearchTest extends TestCase
         'users', 'plans', 'rules', 'agents', 'agent_sessions', 'session_tokens', 'agent_stacks', 'hook_calls',
         'command_receipts',
     ];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(PlansDomain::class, RulesDomain::class);
+    }
 
     private TestStart $caller;
 

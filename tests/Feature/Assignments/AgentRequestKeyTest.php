@@ -8,9 +8,11 @@ use App\Models\Access\User;
 use App\Models\Records\AssignmentRecord;
 use App\Support\Access\AccessSettings;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Database\ConnectionInterface;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\SendsSignedCalls;
 use Tests\TestCase;
 
@@ -34,6 +36,14 @@ final class AgentRequestKeyTest extends TestCase
     ];
 
     private const string KEY = '01JD8X0G9M3QZ6V4K2CLIKEY001';
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     private TestStart $main;
 

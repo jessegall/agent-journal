@@ -19,6 +19,7 @@ use App\Support\DomainEntry;
 use App\Support\UiDeclarations;
 use App\Support\Web\PageProps;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
+use Domain\Documents\DocumentsDomain;
 use Domain\Documents\Models\Document;
 use Illuminate\Validation\ValidationException;
 use Tests\Fixtures\UiDeclarations\Desk\NotesResolver;
@@ -28,6 +29,7 @@ use Tests\Fixtures\UiDeclarations\Shelf\ReaderCalls;
 use Tests\Fixtures\UiDeclarations\Shelf\RecordNotesResolver;
 use Tests\Fixtures\UiDeclarations\Shelf\ShelfDomain;
 use Tests\Fixtures\UiDeclarations\Shelf\ShelfResolver;
+use Tests\Support\DomainBoot;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
@@ -42,6 +44,14 @@ final class PagePropsTest extends TestCase
 {
     use RefreshHookDatabase;
     use StartsAgentRequests;
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(DocumentsDomain::class);
+    }
 
     private ReaderCalls $calls;
 

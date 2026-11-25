@@ -26,9 +26,11 @@ use Carbon\CarbonImmutable;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\BackdatesSessions;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
@@ -50,6 +52,14 @@ final class HookRecoveryTest extends TestCase
         'tasks',
         'links',
     ];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     public function test_silence_first_makes_the_session_silent_and_keeps_the_start_working(): void
     {

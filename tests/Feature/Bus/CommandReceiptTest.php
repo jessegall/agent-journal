@@ -17,12 +17,14 @@ use App\Models\Records\AssignmentRecord;
 use App\Support\AssigneeIdentity;
 use App\Support\RequestKey;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Modules\Notes\Commands\IgnoreFailedNote\IgnoreFailedNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\RefuseNote\RefuseNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
+use Tests\Support\DomainBoot;
 
 /**
  * A keyed write of an agent session runs once: a repeat answers from its receipt without the handler, a different
@@ -31,6 +33,14 @@ use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 final class CommandReceiptTest extends CommandBusTestCase
 {
     private const string KEY = '01JD8X0G9M3QZ6V4K2RECEIPT1';
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     private TestStart $start;
 

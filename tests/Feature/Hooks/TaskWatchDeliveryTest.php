@@ -16,18 +16,28 @@ use App\Support\StackTransaction;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Events\TaskCancelled;
 use Domain\Tasks\Events\TaskFinished;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Contracts\Events\Dispatcher;
 use Psr\Log\LoggerInterface;
 use Tests\Fixtures\Agents\RecordedAttention;
 use Tests\Fixtures\Domains\Tasks\States\TaskWatchDomain;
 use Tests\Fixtures\Domains\Tasks\States\TaskWatchLog;
 use Tests\Support\CommittedHookStack;
+use Tests\Support\DomainBoot;
 use Tests\Support\InstallsCommandModules;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
 final class TaskWatchDeliveryTest extends TestCase
 {
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
+
     use CommittedHookStack {
         setUpCommittedHookStack as private setUpBaseStack;
     }

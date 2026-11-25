@@ -17,8 +17,10 @@ use App\Support\PersonalInboxes;
 use App\Support\RequestKey;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\InstallsInboxes;
 use Tests\Support\StartsOwnerRequest;
 use Tests\TestCase;
@@ -42,6 +44,14 @@ final class ForwardedAssignmentTest extends TestCase
         'assignments',
         'command_receipts',
     ];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     public function test_a_task_given_to_the_actor_at_main_is_held_by_main_and_names_both(): void
     {

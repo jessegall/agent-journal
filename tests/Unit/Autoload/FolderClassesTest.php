@@ -8,8 +8,10 @@ use App\Contracts\Bus\Command;
 use App\Mcp\Tools\JournalTool;
 use App\Mcp\Tools\OverviewReadTool;
 use App\Support\FolderClasses;
+use Domain\Chat\ChatDomain;
 use Domain\Chat\Commands\PinMessage\PinMessageCommand;
 use Illuminate\Console\Command as ConsoleCommand;
+use Tests\Support\DomainBoot;
 use Tests\TestCase;
 
 /**
@@ -18,6 +20,14 @@ use Tests\TestCase;
  */
 final class FolderClassesTest extends TestCase
 {
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(ChatDomain::class);
+    }
+
     public function test_every_class_of_the_type_in_the_folder_is_found_by_name(): void
     {
         $commands = FolderClasses::in(base_path('domain/Chat/src/Commands/*'), Command::class);

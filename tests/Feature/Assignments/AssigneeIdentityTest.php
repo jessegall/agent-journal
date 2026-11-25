@@ -17,8 +17,10 @@ use App\Support\AssigneeIdentity;
 use App\Support\Reflector;
 use App\Support\RequestKey;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
@@ -32,6 +34,14 @@ final class AssigneeIdentityTest extends TestCase
     use StartsAgentRequests;
 
     private const array TABLES = ['users', 'agents', 'tasks', 'assignments', 'command_receipts'];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     public function test_an_assignee_is_not_an_actor_by_contract(): void
     {

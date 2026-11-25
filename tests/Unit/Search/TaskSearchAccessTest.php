@@ -16,7 +16,9 @@ use App\Values\ReadRequest;
 use App\Values\SearchReader;
 use Domain\Tasks\Support\Mcp\TaskReadResult;
 use Domain\Tasks\Support\TaskSearchAccess;
+use Domain\Tasks\TasksDomain;
 use PHPUnit\Framework\TestCase;
+use Tests\Support\DomainBoot;
 
 /**
  * An agent holding tasks_read for task A only may search Tasks, sees only A among its admitted ids and may open
@@ -29,6 +31,14 @@ final class TaskSearchAccessTest extends TestCase
     private const string TASK_B = '01ARZ3NDEKTSV4RRFFQ69G5FAB';
 
     private const string ACTOR_ID = '01ARZ3NDEKTSV4RRFFQ69G5FAC';
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     public function test_a_read_scoped_to_task_a_names_only_a(): void
     {

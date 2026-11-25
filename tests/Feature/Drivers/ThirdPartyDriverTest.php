@@ -24,8 +24,10 @@ use App\Values\DriverRegistration;
 use App\Values\HostDescriptor;
 use App\Values\OwnerAuthority;
 use App\Values\ProviderKey;
+use Domain\Chat\ChatDomain;
 use Domain\Chat\Data\DriverChoiceData;
 use Tests\Fixtures\Drivers\AcmeReaderCapabilities;
+use Tests\Support\DomainBoot;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -36,6 +38,14 @@ use Tests\TestCase;
 final class ThirdPartyDriverTest extends TestCase
 {
     use RefreshHookDatabase;
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(ChatDomain::class);
+    }
 
     public function test_a_package_registers_a_one_mode_family_and_the_picker_lists_it_by_its_label(): void
     {

@@ -13,11 +13,13 @@ use App\Support\ReceiptCaller;
 use App\Support\ReceiptRetention;
 use App\Support\RequestKey;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Database\ConnectionInterface;
 use stdClass;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Mcp\CascadeResult;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\StartsTestAgent;
@@ -46,6 +48,14 @@ final class OperationsReadTest extends TestCase
     ];
 
     private const string KEY = '01JD8X0G9M3QZ6V4K2OPERATN1';
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     public function test_a_completed_assignment_write_reads_back_with_its_outcome(): void
     {

@@ -9,14 +9,17 @@ use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\DockDefinitions;
+use Domain\Chat\ChatDomain;
 use Domain\Chat\Models\DockPlacement;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;
+use Domain\Documents\DocumentsDomain;
 use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Fixtures\Modules\Notes\Providers\NotesServiceProvider;
 use Tests\Fixtures\Modules\Notes\Support\NotesTally;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\InstallsNotesModule;
 use Tests\Support\OpensPairChats;
 use Tests\Support\SendsMcpFrames;
@@ -63,6 +66,14 @@ final class ExternalOwnerDockTest extends TestCase
         'reports',
         'dock_placements',
     ];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(ChatDomain::class, DocumentsDomain::class);
+    }
 
     private User $owner;
 

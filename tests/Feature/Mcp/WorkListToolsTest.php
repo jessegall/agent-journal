@@ -9,10 +9,13 @@ use App\Support\Access\AccessSettings;
 use App\Support\AssigneeIdentity;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\PlansDomain;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
@@ -39,6 +42,14 @@ final class WorkListToolsTest extends TestCase
         'agent_stacks',
         'core_mcp_retained_pages',
     ];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(PlansDomain::class, TasksDomain::class);
+    }
 
     private TestStart $caller;
 

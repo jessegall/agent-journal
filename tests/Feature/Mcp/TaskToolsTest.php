@@ -8,8 +8,10 @@ use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskLogEntry;
+use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -32,6 +34,14 @@ final class TaskToolsTest extends TestCase
         'users', 'tasks', 'task_runs', 'task_log_entries', 'agents', 'agent_sessions', 'session_tokens', 'agent_stacks',
         'hook_calls', 'links', 'assignments', 'claim_authorizations', 'command_receipts',
     ];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     private TestStart $caller;
 

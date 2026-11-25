@@ -14,7 +14,9 @@ use App\Support\ProfileProposal;
 use App\Support\UnreadProfileRules;
 use App\Values\ProfileBase;
 use App\Values\ProfileKey;
+use Domain\Rules\RulesDomain;
 use Domain\Rules\Support\ProfileRuleRecords;
+use Tests\Support\DomainBoot;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
@@ -29,6 +31,14 @@ final class ProfileDescriptionTest extends TestCase
     use StartsAgentRequests;
 
     private const string DESCRIPTION = 'Reads every change and says what is wrong with it.';
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(RulesDomain::class);
+    }
 
     private User $owner;
 

@@ -7,18 +7,18 @@ namespace Tests\Support;
 use App\Support\Domain;
 
 /**
- * The domains a domain's tests boot: the domain itself and every domain it requires, directly or through another.
+ * The domains a test boots: the domains it names and every domain they require, directly or through another.
  */
 final readonly class DomainBoot
 {
     /**
-     * @param  class-string<Domain>  $domain
+     * @param  class-string<Domain>  ...$domains
      * @return list<class-string<Domain>>
      */
-    public static function withRequirements(string $domain): array
+    public static function withRequirements(string ...$domains): array
     {
         $booted = [];
-        $pending = [$domain];
+        $pending = $domains;
 
         while ($pending !== []) {
             $next = array_shift($pending);

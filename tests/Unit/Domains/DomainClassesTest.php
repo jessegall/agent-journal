@@ -18,9 +18,18 @@ use Domain\Sequences\SequencesDomain;
 use Domain\Tasks\TasksDomain;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Tests\Support\DomainBoot;
 
 final class DomainClassesTest extends TestCase
 {
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(ChatDomain::class, CommentsDomain::class, DocumentsDomain::class, HelpersDomain::class, MemoryDomain::class, PlansDomain::class, QuestionsDomain::class, RemindersDomain::class, RulesDomain::class, SequencesDomain::class, TasksDomain::class);
+    }
+
     public function test_documents_are_registered_and_require_chat_and_comments(): void
     {
         $domains = require dirname(__DIR__, 3).'/bootstrap/domains.php';

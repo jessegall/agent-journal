@@ -13,16 +13,19 @@ use App\Values\AccountLabel;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Events\PlanProgressChanged;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\PlansDomain;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Events\TaskFinished;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\UiDeclarations\Shelf\ShelfMoved;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\WatchesPageChanges;
 use Tests\TestCase;
@@ -34,6 +37,14 @@ final class PageChangeTest extends TestCase
 {
     use CommitsHookRows;
     use WatchesPageChanges;
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(PlansDomain::class, TasksDomain::class);
+    }
 
     /**
      * The changes commit for real, so a rolled back one is judged by the real transaction manager.

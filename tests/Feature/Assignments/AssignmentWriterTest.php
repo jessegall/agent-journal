@@ -19,10 +19,12 @@ use App\Support\AssigneeIdentity;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Str;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
@@ -41,6 +43,14 @@ final class AssignmentWriterTest extends TestCase
     use UsesSecondConnection;
 
     private const array TABLES = ['users', 'agents', 'tasks', 'assignments'];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     private User $owner;
 

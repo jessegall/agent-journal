@@ -21,11 +21,13 @@ use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\TestStartAuthority;
 use Tests\Support\TestText;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -40,6 +42,14 @@ final class HookEndpointTest extends TestCase
     private const string ADMISSION_PREFIX = 'journal process run --admission ';
 
     private const string SECRET_DETAIL = 'secret detail';
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     /**
      * The tables these tests commit to, the runtime its start opens included, emptied around each test.

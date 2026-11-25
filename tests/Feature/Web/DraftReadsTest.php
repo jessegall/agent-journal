@@ -10,13 +10,18 @@ use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
 use App\Support\AccountDraftProducer;
 use App\Support\DraftProducerRegistry;
+use Domain\Documents\DocumentsDomain;
 use Domain\Documents\Support\DocumentDraftProducer;
+use Domain\Plans\PlansDomain;
 use Domain\Plans\Support\PlanDraftProducer;
+use Domain\Sequences\SequencesDomain;
 use Domain\Sequences\Support\SequenceDraftProducer;
 use Domain\Tasks\Support\TaskDraftProducer;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\UiDeclarations\StubDraftProducer;
+use Tests\Support\DomainBoot;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -29,6 +34,14 @@ final class DraftReadsTest extends TestCase
     use RefreshHookDatabase;
 
     private const string TITLE = 'Ship-it';
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(DocumentsDomain::class, PlansDomain::class, SequencesDomain::class, TasksDomain::class);
+    }
 
     private User $owner;
 

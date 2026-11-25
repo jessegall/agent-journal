@@ -10,9 +10,11 @@ use App\Exceptions\ReadLimitTooLarge;
 use App\Exceptions\ReadReasonMissing;
 use App\Exceptions\ReadShapeUnsupported;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\ValidationException;
 use Tests\Support\CountsReads;
+use Tests\Support\DomainBoot;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -26,6 +28,14 @@ final class BoundedReadsTest extends TestCase
 {
     use CountsReads;
     use RefreshHookDatabase;
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     /**
      * @var list<string>

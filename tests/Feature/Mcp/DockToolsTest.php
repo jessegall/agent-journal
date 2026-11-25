@@ -7,10 +7,13 @@ namespace Tests\Feature\Mcp;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
+use Domain\Chat\ChatDomain;
 use Domain\Chat\Models\DockPlacement;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\OpensPairChats;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\SendsSignedCalls;
@@ -48,6 +51,14 @@ final class DockToolsTest extends TestCase
         'number_groups',
         'dock_placements',
     ];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(ChatDomain::class, TasksDomain::class);
+    }
 
     private User $owner;
 

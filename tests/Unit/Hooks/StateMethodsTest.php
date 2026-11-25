@@ -13,12 +13,22 @@ use App\Support\References\StateReference;
 use App\Support\States\AgentState;
 use App\Support\States\Exceptions\InvalidStateClass;
 use Domain\Tasks\Events\TaskStarted;
+use Domain\Tasks\TasksDomain;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use stdClass;
+use Tests\Support\DomainBoot;
 
 final class StateMethodsTest extends TestCase
 {
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
+
     public function test_loader_metadata_requires_a_concrete_state_class(): void
     {
         $this->expectException(InvalidStateClass::class);

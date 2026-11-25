@@ -62,10 +62,7 @@ final class DockCommandsTest extends TestCase
      */
     protected static function bootedDomains(): array
     {
-        return array_values(array_unique([
-            ...DomainBoot::withRequirements(ChatDomain::class),
-            ...DomainBoot::withRequirements(TasksDomain::class),
-        ]));
+        return DomainBoot::withRequirements(ChatDomain::class, TasksDomain::class);
     }
 
     protected function setUp(): void

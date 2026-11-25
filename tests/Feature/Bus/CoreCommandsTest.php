@@ -112,7 +112,9 @@ use Domain\Sharing\Commands\ReadShare\ReadShareCommand;
 use Domain\Sharing\Commands\RecordGatewayHealth\RecordGatewayHealthCommand;
 use Domain\Sharing\Commands\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
 use Domain\Sharing\Commands\ReopenSharedGateways\ReopenSharedGatewaysCommand;
+use Domain\Sharing\SharingDomain;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordAll;
+use Tests\Support\DomainBoot;
 
 /**
  * Core's own commands: a module uses them without declaring Core, every one but Core's private
@@ -121,6 +123,14 @@ use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordAll;
 final class CoreCommandsTest extends CommandBusTestCase
 {
     private const string EVERY_CLASS = "Every class of a Core Commands folder is one of Core's commands.";
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(SharingDomain::class);
+    }
 
     public function test_core_lists_its_commands_and_exports_them(): void
     {

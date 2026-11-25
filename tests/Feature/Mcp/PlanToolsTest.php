@@ -11,11 +11,14 @@ use App\Support\ActorContext;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Exceptions\StartDenied;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\PlansDomain;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -39,6 +42,14 @@ final class PlanToolsTest extends TestCase
         'users', 'agents', 'agent_sessions', 'agent_stacks', 'session_tokens',
         'tasks', 'plans', 'phases', 'phase_tasks', 'assignments', 'command_receipts',
     ];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(PlansDomain::class, TasksDomain::class);
+    }
 
     private TestStart $caller;
 

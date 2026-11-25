@@ -11,8 +11,10 @@ use App\Support\AvailableListener;
 use App\Support\ListenerRegistry;
 use App\Support\Stack\StateTypes;
 use Domain\Memory\Listeners\SupplyMemories;
+use Domain\Memory\MemoryDomain;
 use stdClass;
 use Tests\Fixtures\Listeners\CountingListener;
+use Tests\Support\DomainBoot;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Settings\SwitchesDomainsOff;
 use Tests\TestCase;
@@ -25,6 +27,14 @@ final class DomainListenerGateTest extends TestCase
 {
     use RefreshHookDatabase;
     use SwitchesDomainsOff;
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(MemoryDomain::class);
+    }
 
     public function test_a_gated_listener_runs_only_while_its_domain_is_available_asked_at_delivery(): void
     {

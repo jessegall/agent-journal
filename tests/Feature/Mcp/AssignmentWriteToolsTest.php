@@ -8,9 +8,11 @@ use App\Events\Assignments\AssignmentsChanged;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\SendsSignedCalls;
 use Tests\TestCase;
@@ -31,6 +33,14 @@ final class AssignmentWriteToolsTest extends TestCase
         'agent_stacks',
         'command_receipts',
     ];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     private TestStart $caller;
 

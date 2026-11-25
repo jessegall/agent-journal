@@ -13,8 +13,10 @@ use Domain\Reminders\Commands\FinishReminder\FinishReminderCommand;
 use Domain\Reminders\Enums\ReminderStatus;
 use Domain\Reminders\Exceptions\ReminderEnded;
 use Domain\Reminders\Models\Reminder;
+use Domain\Reminders\RemindersDomain;
 use Domain\Reminders\Resolvers\Support\OwnReminders;
 use Domain\Reminders\Values\ReminderCard;
+use Tests\Support\DomainBoot;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
@@ -29,6 +31,14 @@ final class RemindersTest extends TestCase
     use StartsAgentRequests;
 
     private const string TITLE = 'Read the review';
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(RemindersDomain::class);
+    }
 
     private User $owner;
 

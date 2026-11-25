@@ -26,6 +26,7 @@ use App\Values\ShellCommand;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Hooks\AllowedStops;
 use Tests\Fixtures\Hooks\AnswerStates;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
@@ -35,6 +36,7 @@ use Tests\Fixtures\Hooks\InMemoryTasks;
 use Tests\Fixtures\Hooks\InMemoryTaskState;
 use Tests\Fixtures\Hooks\Stacks\FinishableState;
 use Tests\Fixtures\Hooks\Stacks\FinishedSubjects;
+use Tests\Support\DomainBoot;
 use Tests\Support\TestText;
 use Tests\TestCase;
 
@@ -44,6 +46,14 @@ use Tests\TestCase;
  */
 final class TransparentFramesTest extends TestCase
 {
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
+
     public function test_a_finished_top_is_passed_over_and_the_plan_below_is_the_top(): void
     {
         $stack = $this->stack($this->ready(), $this->plan(), $this->task(hasFinished: true));

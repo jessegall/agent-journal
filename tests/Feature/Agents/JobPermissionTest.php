@@ -22,8 +22,10 @@ use App\Values\StartProfileAuthority;
 use App\Values\WithheldGrant;
 use Domain\Rules\Commands\ProposeRule\ProposeRuleCommand;
 use Domain\Rules\Policies\RulePolicy;
+use Domain\Rules\RulesDomain;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\Agents\HasContainerSupport;
+use Tests\Support\DomainBoot;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
@@ -43,6 +45,14 @@ final class JobPermissionTest extends TestCase
     private const string EXECUTOR = 'journal-executor';
 
     private const string WRITER = 'journal-writer';
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(RulesDomain::class);
+    }
 
     private User $owner;
 

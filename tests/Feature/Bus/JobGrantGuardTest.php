@@ -17,10 +17,13 @@ use App\Values\AccessDecision;
 use App\Values\AgentText;
 use App\Values\ReadRequest;
 use Domain\Rules\Commands\ProposeRule\ProposeRuleCommand;
+use Domain\Rules\RulesDomain;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\TestActors;
@@ -43,6 +46,14 @@ final class JobGrantGuardTest extends TestCase
         'assignments',
         'command_receipts',
     ];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(RulesDomain::class, TasksDomain::class);
+    }
 
     protected function setUp(): void
     {

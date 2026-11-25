@@ -7,13 +7,18 @@ namespace Tests\Feature;
 use App\Exceptions\ActorContextMissing;
 use App\Exceptions\CrossOwnerReadRefused;
 use App\Support\ActorIdentity;
+use Domain\Memory\MemoryDomain;
 use Domain\Memory\Models\Memory;
 use Domain\Rules\Models\Rule;
+use Domain\Rules\RulesDomain;
 use Domain\Sequences\Models\SequenceRun;
 use Domain\Sequences\Resolvers\Support\SequenceRecords;
+use Domain\Sequences\SequencesDomain;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Tests\Support\DomainBoot;
 use Tests\Support\HoldingRules;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
@@ -27,6 +32,14 @@ final class AgentVisibilityTest extends TestCase
     use StartsAgentRequests;
 
     private const string AGENT_ONE_RUN = 'Run of agent 1';
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(MemoryDomain::class, RulesDomain::class, SequencesDomain::class, TasksDomain::class);
+    }
 
     protected function setUp(): void
     {

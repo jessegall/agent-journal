@@ -26,13 +26,17 @@ use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;
+use Domain\Documents\DocumentsDomain;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\Report;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\PlansDomain;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TestStartAuthority;
@@ -47,6 +51,14 @@ final class RecordLinksTest extends TestCase
 {
     use CommitsHookRows;
     use WritesInboxMessages;
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(DocumentsDomain::class, PlansDomain::class, TasksDomain::class);
+    }
 
     /**
      * The bus commits these commands for real, so these tables are emptied around each test.

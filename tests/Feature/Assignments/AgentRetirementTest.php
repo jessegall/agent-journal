@@ -22,11 +22,13 @@ use App\Support\CredentialLookup;
 use App\Support\SessionTokens;
 use App\Support\StartSessions;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -42,6 +44,14 @@ final class AgentRetirementTest extends TestCase
 {
     use CommitsHookRows;
     use StartsAgentRequests;
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     /**
      * How often the forked child looks for the waiting retirement before it gives up and commits anyway.

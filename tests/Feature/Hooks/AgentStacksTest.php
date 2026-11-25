@@ -35,6 +35,7 @@ use App\Support\Storage\StoredFrames;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -47,6 +48,7 @@ use Tests\Fixtures\Hooks\InMemoryTasks;
 use Tests\Fixtures\Hooks\InMemoryTaskState;
 use Tests\Fixtures\Hooks\SwitchableState;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\UsesSecondConnection;
@@ -58,6 +60,14 @@ final class AgentStacksTest extends TestCase
     use CommitsHookRows;
 
     private const array TABLES = ['agent_stacks', 'settings_records'];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     use UsesSecondConnection;
 

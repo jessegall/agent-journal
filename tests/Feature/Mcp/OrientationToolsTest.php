@@ -9,11 +9,13 @@ use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
 use App\Support\AssigneeIdentity;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Http\Response;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
@@ -37,6 +39,14 @@ final class OrientationToolsTest extends TestCase
         'assignments',
         'agent_stacks',
     ];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
 
     private TestStart $caller;
 

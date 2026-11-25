@@ -29,6 +29,7 @@ use Domain\Plans\Events\PlanStarted;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseTask;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\PlansDomain;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
@@ -36,6 +37,7 @@ use Domain\Tasks\Events\TaskFinished;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Events\TransactionCommitting;
 use Illuminate\Events\Dispatcher;
@@ -43,6 +45,7 @@ use Illuminate\Support\Facades\Bus;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\RunsKeyedCommands;
 use Tests\Support\Settings\SwitchesDomainsOff;
 use Tests\Support\StartsAgentRequests;
@@ -88,6 +91,14 @@ final class BaselineTimelinesTest extends TestCase
         'session_processes',
         'account_notices',
     ];
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(PlansDomain::class, TasksDomain::class);
+    }
 
     /**
      * The models whose saves the timelines show.

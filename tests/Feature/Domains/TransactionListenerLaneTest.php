@@ -64,6 +64,14 @@ use Tests\TestCase;
  */
 final class TransactionListenerLaneTest extends TestCase
 {
+    /**
+     * Every installed domain, since the lane lists the transaction listeners of them all.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
+    }
+
     public function test_a_transaction_listener_is_in_the_transaction_lane_and_not_the_dispatchers_from_both_maps(): void
     {
         $policy = $this->policyFor($this->app->make(DomainRegistry::class));
