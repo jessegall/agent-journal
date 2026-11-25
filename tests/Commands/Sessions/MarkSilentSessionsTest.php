@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Agents;
+namespace Tests\Commands\Sessions;
 
 use App\Commands\Sessions\MarkSilentSessions\MarkSilentSessionsCommand;
 use App\Contracts\Bus\CommandBus;
@@ -31,7 +31,7 @@ use Tests\TestCase;
  * Each engine pass sweeps for silent sessions under its agents.silence grant: a session past its presence window turns
  * silent and keeps its credential and stack; the sweep command refuses the engine without that grant.
  */
-final class SilenceSweepOnTickTest extends TestCase
+final class MarkSilentSessionsTest extends TestCase
 {
     use BackdatesSessions;
     use CommitsHookRows;

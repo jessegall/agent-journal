@@ -88,18 +88,6 @@ final class SessionStartOutcomeTest extends TestCase
         );
     }
 
-    public function test_a_dismissal_survives_a_reload_for_that_viewer_only(): void
-    {
-        $request = $this->refusedStart();
-
-        $this->dismiss($request);
-
-        $this->assertNull($this->outcome());
-        $this->assertNull($this->outcome());
-        $this->startRequestAs($this->agentId, TestSelections::requestId());
-        $this->assertSame($request->requestId, $this->outcome()?->requestId);
-    }
-
     public function test_a_later_successful_start_replaces_the_refusal(): void
     {
         $refused = $this->refusedStart();

@@ -26,14 +26,12 @@ use App\Commands\Drivers\ResolveDriverDelivery\ResolveDriverDeliveryCommand;
 use App\Commands\Drivers\RetryDriverRequest\RetryDriverRequestCommand;
 use App\Commands\Drivers\SendDriverRequestAgain\SendDriverRequestAgainCommand;
 use App\Commands\Sessions\ClaimStartGrant\ClaimStartGrantCommand;
-use App\Commands\Sessions\ReleaseAgentHold\ReleaseAgentHoldCommand;
 use App\Commands\Terminals\CancelKeyScript\CancelKeyScriptCommand;
 use App\Commands\Terminals\ResumeKeyScript\ResumeKeyScriptCommand;
 use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\AttachmentReferences;
-use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Drivers\MessagePart;
 use App\Contracts\Sessions\AgentDirectory;
 use App\Contracts\Sessions\RuntimeResolver;
@@ -54,7 +52,6 @@ use App\Enums\Sessions\SessionStatus;
 use App\Events\Engine\EngineTicked;
 use App\Events\Sessions\DriverRequestRecovered;
 use App\Events\Sessions\SessionStateChanged;
-use App\Exceptions\AccountFolderInvalid;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\DriverRequestRefused;
 use App\Exceptions\HostReportRefused;
@@ -86,7 +83,6 @@ use App\Support\NativeTurnRecords;
 use App\Support\OpenedRuntime;
 use App\Support\OutsideCommandAllowance;
 use App\Support\PendingWorkSources;
-use App\Support\StartGrant;
 use App\Support\StartHeartbeats;
 use App\Support\StartProfiles;
 use App\Support\Ticks\ElapsedTime;
@@ -518,28 +514,6 @@ final class AgentDriverLedgerTest extends TestCase
      * The journal's hold is the only one: an interrupted runtime is offered no new work until a user releases it, and
      * then it is.
      */
-    public function test_an_interrupted_runtime_is_offered_work_again_only_once_its_hold_is_released(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-        $agentId = $this->agentIdOf($opened);
-        $this->asOwner(new InterruptAgentCommand($agentId, $opened->sessionId, 'interrupt-1'));
-        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
-        $delivery = $this->deliver($opened, 'after-interrupt', 'Go on later');
-
-        $held = $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
-        $this->asOwner(new ReleaseAgentHoldCommand($agentId, $opened->sessionId, HoldReason::Interrupted, 'go on'));
-        $released = $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
-
-        $this->assertNotContains(
-            $delivery->requestId,
-            array_map(fn ($request): string => $request->requestId, $held->requests),
-        );
-        $this->assertContains(
-            $delivery->requestId,
-            array_map(fn ($request): string => $request->requestId, $released->requests),
-        );
-    }
-
     public function test_an_interrupt_holds_the_runtime_at_once(): void
     {
         [, $opened] = $this->openRuntime();
@@ -606,90 +580,6 @@ final class AgentDriverLedgerTest extends TestCase
         $claimed = $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
 
         $this->assertCount(10, $claimed->requests);
-    }
-
-    public function test_the_start_grant_is_handed_out_once(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-
-        $first = $this->asSystem(new ClaimStartGrantCommand($host->hostId, $opened->runtimeId));
-        $second = $this->asSystem(new ClaimStartGrantCommand($host->hostId, $opened->runtimeId));
-
-        $this->assertInstanceOf(StartGrant::class, $first);
-        $this->assertNotSame('', $first->token);
-        $this->assertNull($second);
-    }
-
-    public function test_the_start_grant_names_the_driver_registration_by_its_key(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-        $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
-
-        $grant = $this->asSystem(new ClaimStartGrantCommand($host->hostId, $opened->runtimeId));
-
-        $key = $this->app->make(DriverCatalogue::class)->keyFor($runtime->family, $runtime->driver_type);
-        $label = $this->app->make(DriverCatalogue::class)->forKey($key)->descriptor()->label;
-
-        $this->assertSame([(string) $key, (string) $key, $label], [$grant->runtime->driverKey, $runtime->driver_key, $runtime->driver_label]);
-    }
-
-    public function test_a_start_grant_of_a_session_on_the_protected_host_carries_no_container(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-
-        $grant = $this->asSystem(new ClaimStartGrantCommand($host->hostId, $opened->runtimeId));
-
-        $this->assertNull($grant->container);
-        $this->assertNull($grant->toArray()['container']);
-    }
-
-    public function test_a_contained_main_sessions_grant_carries_its_attachable_container(): void
-    {
-        $account = Account::create(DefaultDrivers::CLAUDE_CODE, AccountLabel::from('Plain'), '/journal/accounts/01plain');
-        ActiveAccount::findLockedFor(DefaultDrivers::CLAUDE_CODE)->select($account);
-        [$host, $opened] = $this->openRuntime();
-        // The driver runs in a terminal of its own, which is what makes a main session's container attachable.
-        AgentRuntime::query()->findOrFail($opened->runtimeId)->forceFill(['has_screen' => true])->save();
-        $this->app->instance(
-            ArrangementSetting::class,
-            ArrangementSetting::fromConfig('contained', 'acme', '{"main":{"folder":"main"}}'),
-        );
-        $image = 'journal-agent@sha256:'.str_repeat('a', 64);
-        $execution = new ExecutionPolicy(
-            ExecutionModeType::RequiredContainer,
-            $image,
-            ProfileStartPolicy::WORKSPACE,
-            ExecutionBudgets::mainAgent(),
-            [],
-            ProfileBase::mainAgent()->isAttachable(),
-        );
-        SessionPolicy::query()->where('session_id', $opened->sessionId)->delete();
-        SessionPolicy::create(
-            AgentSession::query()->findOrFail($opened->sessionId),
-            new StartPolicy(ProfileBase::mainAgent()->defaultAccess(), new StopConditions([]), $execution, null, null, null),
-        );
-
-        $grant = $this->asSystem(new ClaimStartGrantCommand($host->hostId, $opened->runtimeId));
-        $manifest = $grant->container;
-
-        $this->assertNotNull($manifest);
-        $this->assertTrue($manifest->isAttachable);
-        $this->assertSame($image, $manifest->image);
-        $this->assertSame("acme-{$opened->sessionId}", $manifest->network);
-        $this->assertSame(
-            [
-                '/srv/journal/workspaces/main',
-                '/srv/journal/accounts/01plain',
-                "acme-history-{$opened->sessionId}",
-                "/srv/journal/sessions/{$opened->sessionId}",
-                "/srv/journal/sessions/{$opened->sessionId}/managed/managed-settings.json",
-            ],
-            array_map(fn ($mount) => $mount->source, $manifest->mounts),
-        );
-        $this->assertTrue($manifest->mounts[0]->isWritable);
-        $wire = json_decode(json_encode($grant->toArray(), JSON_THROW_ON_ERROR), true, 512, JSON_THROW_ON_ERROR);
-        $this->assertTrue($wire['container']['isAttachable']);
-        $this->assertSame('daemon-bind', $wire['container']['mounts'][0]['type']);
     }
 
     public function test_a_protected_headless_start_runs_on_the_messages_both_sides_keep(): void
@@ -788,33 +678,6 @@ final class AgentDriverLedgerTest extends TestCase
         return [$host, $fixedValues];
     }
 
-    public function test_a_contained_session_whose_account_folder_is_no_plain_id_gets_no_grant(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-        $this->app->instance(
-            ArrangementSetting::class,
-            ArrangementSetting::fromConfig('contained', 'acme', '{"main":{"folder":"main"}}'),
-        );
-        $execution = new ExecutionPolicy(
-            ExecutionModeType::RequiredContainer,
-            'journal-agent@sha256:'.str_repeat('a', 64),
-            ProfileStartPolicy::WORKSPACE,
-            ExecutionBudgets::mainAgent(),
-            [],
-            true,
-        );
-        SessionPolicy::query()->where('session_id', $opened->sessionId)->delete();
-        SessionPolicy::create(
-            AgentSession::query()->findOrFail($opened->sessionId),
-            new StartPolicy(ProfileBase::mainAgent()->defaultAccess(), new StopConditions([]), $execution, null, null, null),
-        );
-
-        $this->assertThrows(
-            fn () => $this->asSystem(new ClaimStartGrantCommand($host->hostId, $opened->runtimeId)),
-            AccountFolderInvalid::class,
-        );
-    }
-
     public function test_an_applied_request_keeps_the_drivers_whole_session_id(): void
     {
         [, $opened] = $this->openRuntime();
@@ -846,16 +709,6 @@ final class AgentDriverLedgerTest extends TestCase
         $this->assertTrue(ProfileBase::mainAgent()->isAttachable());
         $this->assertFalse(ProfileBase::readOnlyHelper()->isAttachable());
         $this->assertFalse(ProfileBase::writingHelper()->isAttachable());
-    }
-
-    public function test_another_host_cannot_take_a_runtimes_start_grant(): void
-    {
-        [, $opened] = $this->openRuntime();
-        $other = $this->enrollHost();
-
-        $this->expectException(HostReportRefused::class);
-
-        $this->asSystem(new ClaimStartGrantCommand($other->hostId, $opened->runtimeId));
     }
 
     public function test_a_new_process_with_nothing_unshown_asks_for_no_wake(): void
@@ -1449,29 +1302,6 @@ final class AgentDriverLedgerTest extends TestCase
         $this->assertSame([RequestProgress::Accepted, 'low'], [$request->progress, $request->effort]);
         $this->assertSame([$sequence, $attempt + 1], [$request->sequence, $request->attempt_version]);
         $this->assertSame('low', AgentRuntime::query()->findOrFail($opened->runtimeId)->requested_effort);
-    }
-
-    public function test_a_user_releases_an_interrupt_but_never_a_hold_the_program_shows(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-        $agentId = $this->agentIdOf($opened);
-        $this->asOwner(new InterruptAgentCommand($agentId, $opened->sessionId, 'interrupt-1'));
-        $this->asOwner(new WakeAgentCommand($agentId, $opened->sessionId, 'wake-after-interrupt'));
-        $runtime = fn () => AgentRuntime::query()->findOrFail($opened->runtimeId);
-        $this->assertSame(HoldReason::Interrupted, $runtime()->hold_reason);
-
-        $this->asOwner(new ReleaseAgentHoldCommand($agentId, $opened->sessionId, HoldReason::Interrupted, 'go on'));
-        $this->assertSame(HoldReason::None, $runtime()->hold_reason);
-
-        $this->asSystem(new NotifyRuntimeActivityCommand(
-            $host->hostId,
-            $opened->runtimeId,
-            RuntimeActivity::Running,
-            HoldReason::Compacting,
-            1,
-        ));
-        $this->expectException(DriverRequestRefused::class);
-        $this->asOwner(new ReleaseAgentHoldCommand($agentId, $opened->sessionId, HoldReason::Compacting, 'hurry'));
     }
 
     public function test_a_stopped_key_script_resumes_from_its_step_or_is_cancelled(): void

@@ -45,8 +45,8 @@ final class AnswerMessageStateTest extends TestCase
     {
         $scenario = $this->answering();
 
-        $scenario->given($this->sent(TestActors::userIdentity(1)))->assertStillActive();
-        $scenario->given($this->sent(TestActors::agentIdentity(3)))->assertStillActive();
+        $scenario->given($this->sent(TestActors::userIdentity(1)))->assertActive();
+        $scenario->given($this->sent(TestActors::agentIdentity(3)))->assertActive();
         $scenario->given($this->sent($this->agent()))->assertPopped();
     }
 
@@ -54,14 +54,14 @@ final class AnswerMessageStateTest extends TestCase
     {
         $this->answering()
             ->given(new MessageSent('reply-1', self::INBOX, 2, 'message-9', $this->agent()))
-            ->assertStillActive();
+            ->assertActive();
     }
 
     public function test_the_agent_leaving_the_inbox_ends_it(): void
     {
         $this->answering()
             ->given(new InboxLeft('inbox-9', $this->agent()))
-            ->assertStillActive()
+            ->assertActive()
             ->given(new InboxLeft(self::INBOX, $this->agent()))
             ->assertPopped();
     }
@@ -91,7 +91,7 @@ final class AnswerMessageStateTest extends TestCase
 
     public function test_a_tick_leaves_it_as_it_was(): void
     {
-        $this->answering()->given(StateScenario::tick())->assertStillActive();
+        $this->answering()->given(StateScenario::tick())->assertActive();
     }
 
     private function answering(): StateScenario

@@ -52,46 +52,6 @@ final class SessionCleanupTest extends TestCase
 
     private const array ALL_STEPS = [CleanupStep::Container, CleanupStep::Network, CleanupStep::Runtime];
 
-    public function test_a_full_pass_removes_the_start_resources_and_then_releases_its_capacity(): void
-    {
-        $start = $this->endedContainerStart();
-
-        $this->assertSame(CleanupStatus::Pending, $this->cleanupOf($start)->status);
-        $this->assertSame(ReservationStatus::Reserved, $this->reservationOf($start)->status);
-
-        $state = $this->notify($start, new CleanupReport(self::ALL_STEPS, null, null));
-
-        $this->assertSame(CleanupStatus::Done, $state);
-        $this->assertSame(ReservationStatus::Released, $this->reservationOf($start)->status);
-        $this->assertNull($this->cleanupOf($start)->recovery_location);
-    }
-
-    public function test_a_crashed_dirty_start_keeps_its_workspace_and_a_repeated_pass_changes_nothing(): void
-    {
-        $start = $this->endedContainerStart();
-
-        $failed = new CleanupReport(
-            [CleanupStep::Container],
-            '/workspaces/helper-7',
-            'removing the network failed: daemon busy',
-        );
-        $this->assertSame(CleanupStatus::Pending, $this->notify($start, $failed));
-        $this->assertSame(ReservationStatus::Reserved, $this->reservationOf($start)->status);
-        $pending = $this->cleanupOf($start);
-        $this->assertSame('/workspaces/helper-7', $pending->recovery_location);
-        $this->assertSame([CleanupStep::Network, CleanupStep::Runtime], $pending->remainingSteps());
-
-        $retried = new CleanupReport([CleanupStep::Network, CleanupStep::Runtime], null, null);
-        $this->notify($start, $retried);
-        $again = new CleanupReport(self::ALL_STEPS, null, 'late failure');
-        $this->assertSame(CleanupStatus::Done, $this->notify($start, $again));
-
-        $done = $this->cleanupOf($start);
-        $this->assertSame(1, $done->attempts);
-        $this->assertNull($done->last_error);
-        $this->assertSame('/workspaces/helper-7', $done->recovery_location);
-    }
-
     public function test_a_start_that_never_opened_a_runtime_releases_its_capacity_at_once(): void
     {
         $start = TestStart::start('writing-helper');

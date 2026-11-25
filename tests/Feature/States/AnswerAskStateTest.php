@@ -27,7 +27,7 @@ final class AnswerAskStateTest extends TestCase
     {
         $this->answering()
             ->given(new AskHopAssigned(self::ASK, self::HOP, 'question', TestActors::agentIdentity(1)))
-            ->assertStillActive()
+            ->assertActive()
             ->given(new AskHopAssigned(self::ASK, 'hop-2', 'question', TestActors::agentIdentity(3)))
             ->assertPopped();
     }

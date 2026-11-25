@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Agents;
+namespace Tests\Commands\Sessions;
 
 use App\Commands\Sessions\RecordStopConditionResults\RecordStopConditionResultsCommand;
 use App\Enums\Hooks\AnswerType;
@@ -35,7 +35,7 @@ use Tests\TestCase;
  * runner itself is proven by tools/journal-agent/host/stop_conditions_test.go.
  */
 #[TimeLimit(seconds: 3, reason: 'It starts a test agent session and empties the hook tables.')]
-final class StopConditionRunnerTest extends TestCase
+final class RecordStopConditionResultsTest extends TestCase
 {
     use AsksTheStopGate;
     use RefreshHookDatabase;

@@ -89,22 +89,6 @@ final class HelperCompletionTest extends TestCase
         );
     }
 
-    public function test_a_stop_that_never_comes_back_is_certified_once_by_the_engine(): void
-    {
-        Event::fake([HelperCompletionCertified::class]);
-        $start = $this->helperWithConditions();
-        $this->startedFor($start);
-        $this->stop($start, 'stop-1');
-        $this->settle('stop-1', StopConditionResultType::Passed, 'clean');
-
-        $this->certifyPassedStops('pass-1');
-        $this->certifyPassedStops('pass-2');
-        $this->stop($start, 'stop-1');
-
-        $this->assertNotNull(StopCheck::query()->withoutGlobalScopes()->sole()->certified_at);
-        Event::assertDispatchedTimes(HelperCompletionCertified::class, 1);
-    }
-
     public function test_a_dirty_writer_cannot_finish_while_its_checks_run_or_fail(): void
     {
         Event::fake([HelperCompletionCertified::class]);

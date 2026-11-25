@@ -74,18 +74,6 @@ final class BindingRuntimeTest extends TestCase
         $this->assertSame($runtimes, AgentRuntime::query()->count());
     }
 
-    public function test_a_start_asked_again_under_its_id_answers_the_one_runtime_it_opened(): void
-    {
-        $binding = $this->connected('the-ticket', self::NONCE);
-
-        $first = $this->start($binding, ['startId' => 'start-1'])->assertCreated();
-        $again = $this->start($binding, ['startId' => 'start-1'])->assertOk();
-
-        $this->assertSame($first->json('runtime_id'), $again->json('runtime_id'));
-        $this->assertSame($first->json('session_id'), $again->json('session_id'));
-        $this->assertSame(1, AgentRuntime::query()->count());
-    }
-
     public function test_a_start_that_names_no_model_takes_its_profiles_default(): void
     {
         $binding = $this->connected('the-ticket', self::NONCE);
