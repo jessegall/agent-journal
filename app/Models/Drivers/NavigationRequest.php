@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Drivers;
 
-use App\Casts\NavigationScreenCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Assignments\Assignable;
@@ -87,7 +86,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
         return [
             'goal_parameters' => 'array',
             'reason' => NavigationReason::class,
-            'screen' => NavigationScreenCast::class,
+            'screen' => NavigationScreen::class,
             'raise_rows' => 'array',
             'sent_steps' => 'array',
             'state' => NavigationState::class,

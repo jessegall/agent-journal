@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Records;
 
-use App\Casts\PoolReferenceCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -13,7 +12,6 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Events\Assignments\AutoAssignmentConfigured;
 use App\Exceptions\AssignmentTypeUnavailable;
-use App\Exceptions\AutoAssignmentPoolUnreadable;
 use App\Models\Support\HasActorColumns;
 use App\Support\ActorIdentity;
 use App\Support\AutoAssignmentFact;
@@ -31,6 +29,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use PhpOption\Option;
+use Spatie\LaravelData\Exceptions\CannotCreateData;
 
 /**
  * @property string $id
@@ -62,7 +61,7 @@ final class AutoAssignment extends Model implements EventSource, ReadableModel
         return [
             'actor_type' => ActorType::class,
             'enabled' => 'boolean',
-            'pool' => PoolReferenceCast::class,
+            'pool' => PoolReference::class,
             'size' => 'integer',
             'configuration_revision' => 'integer',
             'last_served_at' => 'immutable_datetime',
@@ -131,7 +130,7 @@ final class AutoAssignment extends Model implements EventSource, ReadableModel
     // ----------[ Transformers ]----------
 
     /**
-     * @throws AutoAssignmentPoolUnreadable
+     * @throws CannotCreateData
      * @throws AssignmentTypeUnavailable
      */
     public function toFact(): AutoAssignmentFact

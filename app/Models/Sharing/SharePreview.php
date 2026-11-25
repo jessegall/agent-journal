@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Sharing;
 
-use App\Casts\SelectedTargetsCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
@@ -26,13 +25,14 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use PhpOption\Option;
+use Spatie\LaravelData\DataCollection;
 
 /**
  * @property string $id
  * @property string $owner_user_id
  * @property string $root_type
  * @property string $root_id
- * @property array $selection
+ * @property DataCollection<int, ShareSelectedTarget> $selection
  * @property string $share_gateway_configuration_id
  * @property int $configuration_version
  * @property string $checksum
@@ -59,7 +59,7 @@ final class SharePreview extends Model implements EventSource, ReadableModel
     protected function casts(): array
     {
         return [
-            'selection' => SelectedTargetsCast::class,
+            'selection' => DataCollection::class.':'.ShareSelectedTarget::class,
             'configuration_version' => 'integer',
             'expires_at' => 'immutable_datetime',
             'consumed_at' => 'immutable_datetime',
@@ -83,7 +83,7 @@ final class SharePreview extends Model implements EventSource, ReadableModel
         $preview->owner_user_id = $ownerUserId;
         $preview->root_type = $root->type;
         $preview->root_id = $root->id;
-        $preview->selection = $selection;
+        $preview->selection = ShareSelectedTarget::collect($selection, DataCollection::class);
         $preview->share_gateway_configuration_id = $configuration->id;
         $preview->configuration_version = $configuration->configuration_version;
         $preview->checksum = self::checksumOf($ownerUserId, $root, $selection, $configuration);
@@ -107,9 +107,8 @@ final class SharePreview extends Model implements EventSource, ReadableModel
     {
         $this->assertConsumableBy($ownerUserId);
 
-        $selection = $current->selection(
-            array_map(fn (ShareSelectedTarget $target) => $target->record->id, $this->selection),
-        );
+        $records = array_map(fn (ShareSelectedTarget $target) => $target->record->id, $this->selection->items());
+        $selection = $current->selection($records);
 
         $this->assertUnchanged($ownerUserId, $checksum, $selection);
 

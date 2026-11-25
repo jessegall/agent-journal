@@ -7,12 +7,13 @@ namespace App\Support;
 use App\Concerns\ComparesTypeAndId;
 use App\Exceptions\InvalidRecordIdentity;
 use Illuminate\Support\Str;
+use Spatie\LaravelData\Data;
 
 /**
  * A record by its link alias, such as tasks.task, and its ULID. Whether the alias is registered is checked when
  * the record is resolved, not here.
  */
-final readonly class RecordIdentity
+final class RecordIdentity extends Data
 {
     use ComparesTypeAndId;
 
@@ -22,8 +23,8 @@ final readonly class RecordIdentity
      * @throws InvalidRecordIdentity
      */
     public function __construct(
-        public string $type,
-        public string $id,
+        public readonly string $type,
+        public readonly string $id,
     ) {
         self::assertKnownType($type);
 

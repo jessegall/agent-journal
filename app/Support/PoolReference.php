@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Exceptions\InvalidRecordIds;
+use Spatie\LaravelData\Data;
 
 /**
  * Which pool an auto-assignment draws from: its pool key, the record it is about when the pool needs one, and the
  * record ids it lists, each once and at most 1,000. The pool's factory checks the rest of its shape.
  */
-final readonly class PoolReference
+final class PoolReference extends Data
 {
     /**
      * @param  list<string>  $recordIds
@@ -18,9 +19,9 @@ final readonly class PoolReference
      * @throws InvalidRecordIds
      */
     public function __construct(
-        public string $type,
-        public RecordIdentity|null $target,
-        public array $recordIds,
+        public readonly string $type,
+        public readonly RecordIdentity|null $target,
+        public readonly array $recordIds,
     ) {
         new OrderedRecordIds($recordIds);
     }

@@ -40,7 +40,7 @@ final class HelperReceiptData extends Data
 
     public static function fromHelperReceipt(HelperReceipt $receipt): self
     {
-        $launch = $receipt->launchDetails;
+        $launchDetails = $receipt->launchDetails;
         $start = $receipt->start;
         $selection = $start->selection;
         $requested = $selection->requested;

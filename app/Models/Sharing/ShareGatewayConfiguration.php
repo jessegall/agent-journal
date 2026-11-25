@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Sharing;
 
-use App\Casts\GatewaySettingsCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
@@ -53,7 +52,7 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
     {
         return [
             'configuration_version' => 'integer',
-            'settings' => GatewaySettingsCast::class,
+            'settings' => GatewaySettings::class,
             'is_default' => 'boolean',
             'disabled_at' => 'immutable_datetime',
         ];

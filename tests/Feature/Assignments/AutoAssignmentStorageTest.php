@@ -11,7 +11,6 @@ use App\Contracts\Time\ServerClock;
 use App\Enums\AutoAssignmentClaimType;
 use App\Exceptions\AssignmentTransactionRequired;
 use App\Exceptions\AutoAssignmentMissing;
-use App\Exceptions\AutoAssignmentPoolUnreadable;
 use App\Exceptions\AutoAssignmentRevisionChanged;
 use App\Exceptions\AutoAssignmentSizeInvalid;
 use App\Models\Records\AutoAssignment;
@@ -30,6 +29,7 @@ use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Spatie\LaravelData\Exceptions\CannotCreateData;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
@@ -263,7 +263,7 @@ final class AutoAssignmentStorageTest extends TestCase
         $this->write(fn (DatabaseAutoAssignments $writer) => $writer->enable($this->input(self::open(), 1), 0));
         DB::table('auto_assignments')->update(['pool' => json_encode(['type' => 'tasks.open'])]);
 
-        $this->expectException(AutoAssignmentPoolUnreadable::class);
+        $this->expectException(CannotCreateData::class);
 
         $this->fact();
     }

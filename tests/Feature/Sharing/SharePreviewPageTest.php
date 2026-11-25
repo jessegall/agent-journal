@@ -115,7 +115,7 @@ final class SharePreviewPageTest extends TestCase
 
         $this->assertSame(
             [$this->document->id],
-            array_map(fn (ShareSelectedTarget $target) => $target->record->id, $preview->selection),
+            array_map(fn (ShareSelectedTarget $target) => $target->record->id, $preview->selection->items()),
         );
     }
 

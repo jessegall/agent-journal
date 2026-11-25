@@ -34,7 +34,7 @@ final class SavedSharePreviewData extends Data
         return new self(
             $preview->id,
             $preview->checksum,
-            array_map(fn (ShareSelectedTarget $target) => $target->record->id, $preview->selection),
+            array_map(fn (ShareSelectedTarget $target) => $target->record->id, $preview->selection->items()),
             $preview->expires_at->toIso8601String(),
         );
     }

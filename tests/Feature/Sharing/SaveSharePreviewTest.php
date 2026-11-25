@@ -75,7 +75,7 @@ final class SaveSharePreviewTest extends TestCase
         $this->assertSame($preview->checksum, $saved->checksum);
         $this->assertSame(
             [TestIds::of(101), TestIds::of(103)],
-            array_map(fn (ShareSelectedTarget $target) => $target->record->id, $preview->selection),
+            array_map(fn (ShareSelectedTarget $target) => $target->record->id, $preview->selection->items()),
         );
         $this->assertSame($this->configuration->configuration_version, $preview->configuration_version);
     }

@@ -13,11 +13,11 @@ use App\Enums\AutoAssignmentState;
 use App\Exceptions\AssignmentPoolTooLarge;
 use App\Exceptions\AssignmentPoolUnavailable;
 use App\Exceptions\AssignmentTypeUnavailable;
-use App\Exceptions\AutoAssignmentPoolUnreadable;
 use App\Models\Records\AutoAssignment;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
+use Spatie\LaravelData\Exceptions\CannotCreateData;
 
 /**
  * Works out where a stored auto-assignment stands now, in order: unreadable, its domain off, off, its actor inactive,
@@ -44,7 +44,7 @@ final readonly class AutoAssignmentStatuses
                 $this->providers->recordOwner($fact->key->assignableType),
                 $this->providers->poolOwner($fact->pool->type),
             ];
-        } catch (AutoAssignmentPoolUnreadable|AssignmentTypeUnavailable) {
+        } catch (CannotCreateData|AssignmentTypeUnavailable) {
             return AutoAssignmentStatus::unreadable($row->enabled, $row->configuration_revision);
         }
 
