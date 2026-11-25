@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature\States;
 
+use App\Contracts\Processes\ShellCommandParser;
 use App\Enums\Hooks\AnswerType;
-use App\Enums\Hooks\ToolOutcome;
-use App\Support\Inputs\ToolFinished;
-use App\Support\Inputs\Values\DriverToolInput;
-use App\Support\Inputs\Values\ToolResult;
 use Domain\Tasks\Events\TaskLogged;
 use Domain\Tasks\Support\States\LogDueState;
 use Domain\Tasks\Support\States\Support\LogDueStateReference;
 use Domain\Tasks\Tests\TestCase;
-use Tests\Support\StateScenario;
-use Tests\Support\TestActors;
+use Tests\Fixtures\Hooks\ListedCommandParser;
+use Tests\Support\CommitsHookRows;
+use Tests\Support\Seeding\SessionHooks;
+use Tests\Support\Seeding\StateHandle;
+use Tests\Support\Seeding\StateObservation;
 use Tests\Support\TestIds;
-use Tests\Support\TestsStates;
 
 /**
  * The log-due state on the real engine: work passes while its budget of tool uses lasts and is refused once it is
@@ -24,43 +23,58 @@ use Tests\Support\TestsStates;
  */
 final class LogDueStateTest extends TestCase
 {
-    use TestsStates;
+    use CommitsHookRows;
+
+    /**
+     * Facts reach a stack once its change commits, so these tests commit and empty what they wrote.
+     */
+    private const array TABLES = ['agent_stacks', 'command_receipts'];
+
+    private SessionHooks $hooks;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->app->scoped(ShellCommandParser::class, fn () => new ListedCommandParser());
+        $this->journal->owner()->agent('Writer');
+        $this->hooks = $this->journal->hooksFor($this->journal->sessionOf('Writer'));
+    }
 
     public function test_work_passes_until_the_budget_is_spent_and_is_refused_after(): void
     {
-        $scenario = $this->logDue();
+        $uses = array_fill(0, LogDueState::TOOL_USE_LIMIT - 1, $this->hooks->toolFinished());
 
-        for ($use = 1; $use < LogDueState::TOOL_USE_LIMIT; $use++) {
-            $scenario->given($this->toolFinished());
-        }
-
-        $this->assertSame(AnswerType::Delegate, $scenario->given($this->shell('composer update'))->lastStateAnswer());
-
-        $scenario->given($this->toolFinished());
-
-        $this->assertSame(AnswerType::Deny, $scenario->given($this->shell('composer update'))->lastStateAnswer());
-        $this->assertSame(AnswerType::Delegate, $scenario->given($this->shell('git status'))->lastStateAnswer());
+        $this->logDue()
+            ->given(
+                [...$uses, $this->hooks->shell('composer update')],
+                fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Delegate),
+            )
+            ->given(
+                [$this->hooks->toolFinished(), $this->hooks->shell('composer update')],
+                fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Deny),
+            )
+            ->given(
+                $this->hooks->shell('git status'),
+                fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Delegate),
+            );
     }
 
     public function test_a_log_on_its_task_ends_it_and_a_log_on_another_does_not(): void
     {
         $this->logDue()
-            ->given(new TaskLogged(TestIds::of(43), 'entry-1'))
-            ->assertActive()
-            ->given(new TaskLogged(TestIds::of(42), 'entry-2'))
-            ->assertPopped();
+            ->given(new TaskLogged(TestIds::of(43), 'entry-1'), fn (StateObservation $state) => $state->assertLive())
+            ->given(
+                new TaskLogged(TestIds::of(42), 'entry-2'),
+                fn (StateObservation $state) => $state->assertFinished(),
+            );
     }
 
-    private function logDue(): StateScenario
+    private function logDue(): StateHandle
     {
-        return $this->scenario(LogDueStateReference::forTask(TestIds::of(42), 42));
-    }
-
-    private function toolFinished(): ToolFinished
-    {
-        return new ToolFinished(
-            TestActors::hookIdentity(1, 10, 'call-1', self::inputDigest()),
-            new ToolResult('Bash', ToolOutcome::Succeeded, new DriverToolInput(['command' => 'ls'])),
+        return $this->journal->pushState(
+            $this->journal->sessionOf('Writer'),
+            LogDueStateReference::forTask(TestIds::of(42), 42),
         );
     }
 }

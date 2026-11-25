@@ -12,8 +12,6 @@ use App\Providers\DomainEventServiceProvider;
 use App\Support\ActorIdentity;
 use App\Support\Drivers\DriverCapabilities;
 use App\Support\Inputs\StopRequested;
-use App\Support\Inputs\Values\HookIdentity;
-use App\Support\Inputs\Values\StopDetails;
 use App\Support\References\StateReference;
 use App\Support\References\SubjectReference;
 use Domain\Tasks\Enums\TaskStatus;
@@ -207,12 +205,7 @@ final class JournalStatesTest extends TestCase
 
     private function stop(): StopRequested
     {
-        $session = $this->writerSession();
-
-        return new StopRequested(
-            new HookIdentity($session->agent_id, $session->id, 'stop-1', hash('sha256', 'stop')),
-            new StopDetails('turn-1', false, ''),
-        );
+        return $this->journal->hooksFor($this->writerSession())->stop();
     }
 
     private function assertOwnerActs(): void

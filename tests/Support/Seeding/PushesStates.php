@@ -9,7 +9,9 @@ use App\Enums\Drivers\RewriteSupport;
 use App\Models\Agents\AgentSession;
 use App\Support\AgentStacks;
 use App\Support\Drivers\DriverCapabilities;
+use App\Support\Inputs\Contracts\HookInput;
 use App\Support\References\StateReference;
+use App\Support\Stack\HookAnswer;
 use App\Values\StackTarget;
 
 /**
@@ -44,6 +46,22 @@ trait PushesStates
         $target = $on instanceof AgentSession ? $on->target : $on;
 
         return $this->stateHandle(new StateStack($this->app, $target), $reference);
+    }
+
+    /**
+     * Sends one hook through the session's state machine as its agent and returns the answer its stack gave.
+     */
+    public function answerHook(AgentSession|StackTarget $on, HookInput $input, DriverCapabilities $driver): HookAnswer
+    {
+        return $this->requests->answerHook($on instanceof AgentSession ? $on->target : $on, $input, $driver);
+    }
+
+    /**
+     * The hook inputs of the session, signed for it.
+     */
+    public function hooksFor(AgentSession|StackTarget $on): SessionHooks
+    {
+        return new SessionHooks($on instanceof AgentSession ? $on->target : $on);
     }
 
     private function stateHandle(StateStack $stack, StateReference $reference): StateHandle
