@@ -148,26 +148,6 @@ final class Link extends MorphPivot implements EventSource, ReadableModel
             ?? self::createForColumns($source->getMorphClass(), (string) $source->getKey(), $targetType, $targetId);
     }
 
-    /**
-     * Narrows a query of records the caller may read to those linked, in either direction, to the record of this
-     * link alias and id.
-     *
-     * @template TBuilder of Builder<*>
-     *
-     * @param  TBuilder  $records
-     * @return TBuilder
-     */
-    public static function narrowToLinked(Builder $records, string $type, string $id): Builder
-    {
-        $other = $records->getModel();
-        $key = $other->getQualifiedKeyName();
-        $otherType = $other->getMorphClass();
-        $asTargets = self::query()->withSourceKey($type, $id)->where('target_type', $otherType)->select('target_id');
-        $asSources = self::query()->withTargetKey($type, $id)->where('source_type', $otherType)->select('source_id');
-
-        return $records->where(fn (Builder $linked) => $linked->whereIn($key, $asTargets)->orWhereIn($key, $asSources));
-    }
-
     // ----------[ Scopes ]----------
 
     /**
@@ -252,5 +232,27 @@ final class Link extends MorphPivot implements EventSource, ReadableModel
     protected function withTargetKey(Builder $query, string $type, string $id): void
     {
         $query->where('target_type', $type)->where('target_id', $id);
+    }
+
+    /**
+     * The links whose target is of the type.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function toTargetType(Builder $query, string $type): void
+    {
+        $query->where('target_type', $type);
+    }
+
+    /**
+     * The links whose source is of the type.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function fromSourceType(Builder $query, string $type): void
+    {
+        $query->where('source_type', $type);
     }
 }

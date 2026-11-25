@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Notifications;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -87,10 +89,9 @@ final class NotificationChange extends Model implements ReadableModel
     public static function between(string $scopeId, int $afterVersion, int $throughVersion, int $limit): array
     {
         return array_values(self::query()
-            ->where('scope_id', $scopeId)
-            ->where('version', '>', $afterVersion)
-            ->where('version', '<=', $throughVersion)
-            ->orderBy('version')
+            ->ofScope($scopeId)
+            ->versionedBetween($afterVersion, $throughVersion)
+            ->inVersionOrder()
             ->readUpTo($limit)
             ->get()
             ->all());
@@ -103,8 +104,43 @@ final class NotificationChange extends Model implements ReadableModel
      */
     public static function oldestVersionOf(string $scopeId): Option
     {
-        $version = self::query()->where('scope_id', $scopeId)->min('version');
+        $version = self::query()->ofScope($scopeId)->min('version');
 
         return Option::fromValue($version === null ? null : (int) $version);
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The scope's changes.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofScope(Builder $query, string $scopeId): void
+    {
+        $query->where('scope_id', $scopeId);
+    }
+
+    /**
+     * The changes after the one version, through the other.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function versionedBetween(Builder $query, int $afterVersion, int $throughVersion): void
+    {
+        $query->where('version', '>', $afterVersion)->where('version', '<=', $throughVersion);
+    }
+
+    /**
+     * The changes in the order of their version.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inVersionOrder(Builder $query): void
+    {
+        $query->orderBy('version');
     }
 }

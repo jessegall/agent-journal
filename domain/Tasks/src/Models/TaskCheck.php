@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
@@ -155,7 +156,7 @@ final class TaskCheck extends Model implements EventSource, ReadableModel
      */
     public static function ofProcessRun(string $runId): self|null
     {
-        return self::query()->where('process_run_id', $runId)->first();
+        return self::query()->ofRun($runId)->first();
     }
 
     /**
@@ -165,8 +166,41 @@ final class TaskCheck extends Model implements EventSource, ReadableModel
      */
     public static function pageOf(string $taskId, string|null $afterId, int $limit): Collection
     {
-        return self::query()->where('task_id', $taskId)
-            ->when($afterId !== null, fn (Builder $query) => $query->where('id', '<', $afterId))
-            ->newestFirst()->limit($limit)->get();
+        return self::query()->ofTask($taskId)->olderThan($afterId)->newestFirst()->limit($limit)->get();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The run's check.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofRun(Builder $query, string $runId): void
+    {
+        $query->where('process_run_id', $runId);
+    }
+
+    /**
+     * The task's checks.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofTask(Builder $query, string $taskId): void
+    {
+        $query->where('task_id', $taskId);
+    }
+
+    /**
+     * The checks older than that check; all of them with none.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function olderThan(Builder $query, string|null $afterId): void
+    {
+        $query->when($afterId !== null, fn (Builder $older) => $older->where('id', '<', $afterId));
     }
 }

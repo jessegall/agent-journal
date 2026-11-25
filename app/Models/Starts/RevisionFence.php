@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Starts;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -62,7 +64,7 @@ final class RevisionFence extends Model implements EventSource, ReadableModel
         $fence->setAttribute($fence->getKeyName(), $fence->newUniqueId());
         $fence->insertIfAbsent();
 
-        return self::query()->where('profile_key', $key)->where('profile_revision', $revision)->sole();
+        return self::query()->ofRevision($key, $revision)->sole();
     }
 
     /**
@@ -72,8 +74,43 @@ final class RevisionFence extends Model implements EventSource, ReadableModel
      */
     public static function pending(int $limit): array
     {
-        $pending = self::query()->whereNull('reconciled_at')->orderBy('created_at')->readExactly($limit)->get();
+        $pending = self::query()->unreconciled()->oldestFirst()->readExactly($limit)->get();
 
         return array_values($pending->all());
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The fence of the profile's revision.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofRevision(Builder $query, string $key, int $revision): void
+    {
+        $query->where('profile_key', $key)->where('profile_revision', $revision);
+    }
+
+    /**
+     * The fences not reconciled yet.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unreconciled(Builder $query): void
+    {
+        $query->whereNull('reconciled_at');
+    }
+
+    /**
+     * The fences oldest first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function oldestFirst(Builder $query): void
+    {
+        $query->orderBy('created_at');
     }
 }

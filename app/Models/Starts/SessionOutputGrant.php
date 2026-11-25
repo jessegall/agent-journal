@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Starts;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsRowSets;
 use App\Concerns\Linkable;
@@ -107,7 +109,7 @@ final class SessionOutputGrant extends Model implements ReadableModel
      */
     public static function heldBy(string $sessionId): array
     {
-        $grants = self::query()->where('session_id', $sessionId)->readLimit(self::MOST_GRANTS)->get();
+        $grants = self::query()->ofSession($sessionId)->readLimit(self::MOST_GRANTS)->get();
 
         return $grants->mapWithKeys(fn (self $grant) => [$grant->conversation_id => $grant->paths])->all();
     }
@@ -120,12 +122,36 @@ final class SessionOutputGrant extends Model implements ReadableModel
     public static function currentOf(ProcessStart $start): array
     {
         $grants = self::query()
-            ->where('session_id', $start->session_id)
-            ->where('start_id', $start->id)
-            ->where('mapping_generation', $start->output_generation)
+            ->currentMappingOf($start)
             ->readLimit(self::MOST_GRANTS)
             ->get();
 
         return array_values($grants->map(fn (self $grant) => $grant->paths)->all());
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The session's grants.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofSession(Builder $query, string $sessionId): void
+    {
+        $query->where('session_id', $sessionId);
+    }
+
+    /**
+     * The grants of the start's current output mapping.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function currentMappingOf(Builder $query, ProcessStart $start): void
+    {
+        $query->ofSession($start->session_id)
+            ->where('start_id', $start->id)
+            ->where('mapping_generation', $start->output_generation);
     }
 }

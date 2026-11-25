@@ -57,7 +57,7 @@ final class InboxMember extends Model implements EventSource
      */
     public static function leave(string $inboxId, ActorIdentity $actor, CarbonImmutable $at): void
     {
-        $member = self::query()->active()->ofActor($actor)->where('inbox_id', $inboxId)->first();
+        $member = self::query()->active()->ofActor($actor)->ofInbox($inboxId)->first();
 
         if ($member === null) {
             return;
@@ -88,7 +88,7 @@ final class InboxMember extends Model implements EventSource
      */
     public static function isAttached(string $inboxId, ActorIdentity $actor): bool
     {
-        return self::query()->active()->ofActor($actor)->where('inbox_id', $inboxId)->exists();
+        return self::query()->active()->ofActor($actor)->ofInbox($inboxId)->exists();
     }
 
     /**
@@ -113,7 +113,7 @@ final class InboxMember extends Model implements EventSource
      */
     public static function activeOf(string $inboxId, ActorIdentity $actor): Option
     {
-        return Option::fromValue(self::query()->active()->where('inbox_id', $inboxId)->ofActor($actor)->first());
+        return Option::fromValue(self::query()->active()->ofInbox($inboxId)->ofActor($actor)->first());
     }
 
     /**
@@ -126,8 +126,8 @@ final class InboxMember extends Model implements EventSource
     {
         return self::query()
             ->active()
-            ->whereIn('inbox_id', $inboxIds)
-            ->where('actor_type', $type->value)
+            ->ofInboxes($inboxIds)
+            ->ofActorType($type)
             ->distinct()
             ->pluck('actor_id')
             ->map(fn (string $actorId) => new ActorIdentity($type, $actorId))
@@ -162,5 +162,39 @@ final class InboxMember extends Model implements EventSource
     protected function ofParticipant(Builder $query, MessageParticipant $participant): void
     {
         $query->where('actor_type', $participant->participantType())->where('actor_id', $participant->participantId());
+    }
+
+    /**
+     * The inbox's members.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofInbox(Builder $query, string $inboxId): void
+    {
+        $query->where('inbox_id', $inboxId);
+    }
+
+    /**
+     * The members of the inboxes.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $inboxIds
+     */
+    #[Scope]
+    protected function ofInboxes(Builder $query, array $inboxIds): void
+    {
+        $query->whereIn('inbox_id', $inboxIds);
+    }
+
+    /**
+     * The members of that actor type.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofActorType(Builder $query, ActorType $type): void
+    {
+        $query->where('actor_type', $type->value);
     }
 }

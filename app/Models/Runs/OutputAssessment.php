@@ -94,7 +94,7 @@ final class OutputAssessment extends Model implements ReadableModel
         ReplayedOutput $replayed,
         OutputValidation $validation,
     ): self {
-        $previous = self::query()->where('part_run_id', $part->id)->latest('created_at')->first();
+        $previous = self::query()->ofPart($part)->newestFirst()->first();
 
         return self::query()->create([
             'project_key' => $run->project_key,
@@ -154,7 +154,7 @@ final class OutputAssessment extends Model implements ReadableModel
      */
     public static function latestOf(PartRun $part): self|null
     {
-        return self::query()->where('part_run_id', $part->id)->latest('created_at')->first();
+        return self::query()->ofPart($part)->newestFirst()->first();
     }
 
     // ----------[ Scopes ]----------
@@ -166,5 +166,16 @@ final class OutputAssessment extends Model implements ReadableModel
     protected function ofProject(Builder $query, string $projectKey): void
     {
         $query->where('project_key', $projectKey);
+    }
+
+    /**
+     * The part's assessments.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofPart(Builder $query, PartRun $part): void
+    {
+        $query->where('part_run_id', $part->id);
     }
 }

@@ -171,11 +171,10 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
      */
     public static function lockRunningOf(ShareGatewayConfiguration $configuration, string $runId): Option
     {
-        return Option::fromValue(
-            self::query()->ofConfiguration(
-                $configuration->id,
-            )->ofRun($runId)->stillRunning()->orderByDesc('endpoint_version')->lockForUpdate()->first(),
-        );
+        $endpoint = self::query()->ofConfiguration($configuration->id)->ofRun($runId)->stillRunning()
+            ->newestVersionFirst()->lockForUpdate()->first();
+
+        return Option::fromValue($endpoint);
     }
 
     /**
@@ -185,11 +184,9 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
      */
     public static function newestRunningOf(ShareGatewayConfiguration $configuration): Option
     {
-        return Option::fromValue(
-            self::query()->ofConfiguration(
-                $configuration->id,
-            )->stillRunning()->orderByDesc('endpoint_version')->first(),
-        );
+        $endpoint = self::query()->ofConfiguration($configuration->id)->stillRunning()->newestVersionFirst()->first();
+
+        return Option::fromValue($endpoint);
     }
 
     /**
@@ -200,10 +197,7 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
     public static function openOfRun(string $runId): array
     {
         return array_values(
-            self::query()->ofRun($runId)->where(
-                'state',
-                GatewayEndpointState::Open->value,
-            )->oldestFirst()->limit(Share::LIVE_LIMIT)->get()->all(),
+            self::query()->ofRun($runId)->open()->oldestFirst()->limit(Share::LIVE_LIMIT)->get()->all(),
         );
     }
 
@@ -243,7 +237,7 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
     {
         $row = self::query()
             ->ofConfiguration($configurationId)
-            ->where('endpoint_version', $version)
+            ->atVersion($version)
             ->ofRun($runId)
             ->lockForUpdate()
             ->first();
@@ -288,5 +282,38 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
     protected function stillRunning(Builder $query): void
     {
         $query->whereIn('state', [GatewayEndpointState::Opening->value, GatewayEndpointState::Open->value]);
+    }
+
+    /**
+     * The endpoints newest version first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function newestVersionFirst(Builder $query): void
+    {
+        $query->orderByDesc('endpoint_version');
+    }
+
+    /**
+     * The open endpoints.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function open(Builder $query): void
+    {
+        $query->where('state', GatewayEndpointState::Open->value);
+    }
+
+    /**
+     * The endpoint of that version.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function atVersion(Builder $query, int $version): void
+    {
+        $query->where('endpoint_version', $version);
     }
 }

@@ -25,6 +25,6 @@ final readonly class LinkAccess
      */
     public function among(Builder $visibleModels): Builder
     {
-        return Link::narrowToLinked($visibleModels, $this->model->getMorphClass(), (string) $this->model->getKey());
+        return LinkedRecords::narrow($visibleModels, $this->model->getMorphClass(), (string) $this->model->getKey());
     }
 }

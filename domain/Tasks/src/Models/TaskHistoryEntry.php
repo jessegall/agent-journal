@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
@@ -142,7 +144,7 @@ final class TaskHistoryEntry extends Model implements ReadableModel
 
     private static function lastSequenceOf(string $taskId): int
     {
-        return (int) self::query()->where('task_id', $taskId)->max('sequence');
+        return (int) self::query()->ofTask($taskId)->max('sequence');
     }
 
     // ----------[ Queries ]----------
@@ -154,8 +156,41 @@ final class TaskHistoryEntry extends Model implements ReadableModel
      */
     public static function pageOf(string $taskId, int|null $beforeSequence, int $limit): Collection
     {
-        return self::query()->where('task_id', $taskId)
-            ->when($beforeSequence !== null, fn ($query) => $query->where('sequence', '<', $beforeSequence))
-            ->orderByDesc('sequence')->newestFirst()->limit($limit)->get();
+        return self::query()->ofTask($taskId)->before($beforeSequence)->newestSequenceFirst()->newestFirst()->limit($limit)->get();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The task's history.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofTask(Builder $query, string $taskId): void
+    {
+        $query->where('task_id', $taskId);
+    }
+
+    /**
+     * The entries before that sequence number; all of them with none.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function before(Builder $query, int|null $sequence): void
+    {
+        $query->when($sequence !== null, fn (Builder $earlier) => $earlier->where('sequence', '<', $sequence));
+    }
+
+    /**
+     * The entries newest sequence number first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function newestSequenceFirst(Builder $query): void
+    {
+        $query->orderByDesc('sequence');
     }
 }

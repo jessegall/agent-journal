@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Access\Models;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
-use App\Concerns\TakesPartInMessages;
-use App\Contracts\Messages\MessageReceiver;
-use App\Contracts\Messages\MessageSender;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
+use App\Concerns\TakesPartInMessages;
 use App\Contracts\Assignments\Assignee;
+use App\Contracts\Messages\MessageReceiver;
+use App\Contracts\Messages\MessageSender;
 use App\Contracts\Questions\AnswersQuestions;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
@@ -22,7 +20,9 @@ use Domain\Access\Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -52,27 +52,27 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements
+    AnswersQuestions,
+    Assignee,
     MessageReceiver,
     MessageSender,
-    Assignee,
-    AnswersQuestions,
     MustVerifyEmail,
     PasskeyUser,
     ReadableModel
 {
-    use TakesPartInMessages;
     use BoundedReads;
-
     /**
      * @use HasFactory<UserFactory>
      */
     use HasFactory;
 
     use HasUlids;
+
     use InsertsAbsentRows;
     use Linkable;
     use Notifiable;
     use PasskeyAuthenticatable;
+    use TakesPartInMessages;
     use TwoFactorAuthenticatable;
 
     /**
@@ -97,7 +97,11 @@ class User extends Authenticatable implements
      */
     public static function create(string $name, string $email, string $password): self
     {
-        return self::query()->create(['name' => $name, 'email' => $email, 'password' => $password]);
+        return self::query()->create([
+            'name' => $name,
+            'email' => $email,
+            'password' => $password,
+        ]);
     }
 
     // ----------[ Mutations ]----------

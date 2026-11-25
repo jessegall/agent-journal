@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Reviews;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
@@ -80,7 +82,7 @@ final class CertifiedWork extends Model implements ReadableModel
     public static function record(StartRecord $start, string $certificate): self
     {
         $work = $start->ownerWork;
-        $policy = SessionPolicy::query()->where('session_id', $start->session_id)->sole();
+        $policy = SessionPolicy::query()->ofSessions([$start->session_id])->sole();
 
         $certified = new self([
             'certificate' => $certificate,
@@ -93,7 +95,7 @@ final class CertifiedWork extends Model implements ReadableModel
         $certified->setAttribute($certified->getKeyName(), $certified->newUniqueId());
         $certified->insertIfAbsent();
 
-        return self::query()->where('certificate', $certificate)->sole();
+        return self::query()->withCertificate($certificate)->sole();
     }
 
     /**
@@ -102,11 +104,35 @@ final class CertifiedWork extends Model implements ReadableModel
     public static function of(RecordIdentity $work, string $certificate): self
     {
         $row = self::query()
-            ->where('work_type', $work->type)
-            ->where('work_id', $work->id)
-            ->where('certificate', $certificate)->first();
+            ->ofWork($work)
+            ->withCertificate($certificate)
+            ->first();
         self::assertCertified($row, $work, $certificate);
 
         return $row;
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The work the certificate certifies.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withCertificate(Builder $query, string $certificate): void
+    {
+        $query->where('certificate', $certificate);
+    }
+
+    /**
+     * The certifications of the work.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofWork(Builder $query, RecordIdentity $work): void
+    {
+        $query->where('work_type', $work->type)->where('work_id', $work->id);
     }
 }

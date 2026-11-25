@@ -170,7 +170,7 @@ final class Skill extends Model implements EventSource, Numbered, ReadableModel
 
     public static function keyTaken(SkillKey $key): bool
     {
-        return self::query()->where('key', $key->key)->exists();
+        return self::query()->withKey($key)->exists();
     }
 
     /**
@@ -182,8 +182,8 @@ final class Skill extends Model implements EventSource, Numbered, ReadableModel
     {
         return array_values(
             self::query()->visibleIn($environment)
-                ->whereNull('retired_at')
-                ->orderBy('key')
+                ->unretired()
+                ->inKeyOrder()
                 ->readExactly($limit)
                 ->get()
                 ->all(),
@@ -203,5 +203,38 @@ final class Skill extends Model implements EventSource, Numbered, ReadableModel
         $query->where(
             fn (Builder $visible) => $visible->whereNull('environment')->orWhere('environment', $environment),
         );
+    }
+
+    /**
+     * The skill of that key.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withKey(Builder $query, SkillKey $key): void
+    {
+        $query->where('key', $key->key);
+    }
+
+    /**
+     * The skills not retired.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unretired(Builder $query): void
+    {
+        $query->whereNull('retired_at');
+    }
+
+    /**
+     * The skills in the order of their key.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inKeyOrder(Builder $query): void
+    {
+        $query->orderBy('key');
     }
 }

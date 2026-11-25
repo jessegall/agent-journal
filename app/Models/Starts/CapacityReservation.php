@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Starts;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -59,7 +61,7 @@ final class CapacityReservation extends Model implements ReadableModel
      */
     public static function create(string $startRequestId, ExecutionBudgets $budgets, HostCapacity $capacity): self
     {
-        $existing = self::query()->where('start_request_id', $startRequestId)->first();
+        $existing = self::query()->ofStartRequest($startRequestId)->first();
 
         if ($existing !== null) {
             return $existing;
@@ -108,7 +110,7 @@ final class CapacityReservation extends Model implements ReadableModel
             return null;
         }
 
-        $held = self::query()->where('state', ReservationState::Reserved);
+        $held = self::query()->reserved();
 
         return match (true) {
             (int) $held->clone()->sum('cpu_cores') + $budgets->cpuCores > $capacity->cpuCores => CapacityResource::Cpu,
@@ -127,8 +129,32 @@ final class CapacityReservation extends Model implements ReadableModel
     public static function isHeldFor(string $startRequestId): bool
     {
         return self::query()
-            ->where('start_request_id', $startRequestId)
-            ->where('state', ReservationState::Reserved)
+            ->ofStartRequest($startRequestId)
+            ->reserved()
             ->exists();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The start request's reservation.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofStartRequest(Builder $query, string $startRequestId): void
+    {
+        $query->where('start_request_id', $startRequestId);
+    }
+
+    /**
+     * The reservations still held.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function reserved(Builder $query): void
+    {
+        $query->where('state', ReservationState::Reserved);
     }
 }

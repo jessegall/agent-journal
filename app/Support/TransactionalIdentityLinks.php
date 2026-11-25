@@ -35,6 +35,6 @@ final readonly class TransactionalIdentityLinks implements IdentityLinks
 
     public function among(Builder $records, RecordIdentity $other): Builder
     {
-        return Link::narrowToLinked($records, $other->type, $other->id);
+        return LinkedRecords::narrow($records, $other->type, $other->id);
     }
 }
