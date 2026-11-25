@@ -5,31 +5,75 @@ declare(strict_types=1);
 namespace Tests\Hooks;
 
 use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Drivers\DriverCatalogue;
+use App\Enums\Agents\StackStatus;
 use App\Enums\Drivers\DriverFailure;
+use App\Enums\Drivers\DriverType;
+use App\Enums\Engine\NoSubject;
+use App\Enums\Hooks\AnswerType;
 use App\Enums\Hooks\HookEvent;
+use App\Enums\Sessions\SessionStatus;
 use App\Events\Sessions\DriverFailed;
+use App\Events\Sessions\StartSettingsRequested;
+use App\Exceptions\CredentialRejected;
+use App\Exceptions\RetentionTooShort;
+use App\Exceptions\StoredValueInvalid;
 use App\Models\Agents\AgentSession;
+use App\Models\Agents\AgentStackRow;
 use App\Models\Drivers\FailureReceipt;
 use App\Models\Drivers\HookCall;
+use App\Models\Records\Link;
 use App\Support\ActorContext;
 use App\Support\AgentContext;
+use App\Support\CredentialLookup;
 use App\Support\DefaultDrivers;
+use App\Support\Drivers\Contracts\DriverAdapters;
+use App\Support\HookRetryWindow;
+use App\Support\Inputs\Values\HookIdentity;
+use App\Support\IsolatedHookSettings;
+use App\Support\Octane\GiveRequestItsTimeLimit;
 use App\Support\OperationDeadline;
+use App\Support\PruneHookHistory;
+use App\Support\References\StateReference;
+use App\Support\References\SubjectReference;
+use App\Support\RetentionPeriods;
 use App\Support\SignedCall;
 use App\Support\StackTransaction;
+use App\Support\StartedAgent;
+use App\Support\StartHeartbeats;
+use App\Support\StartSessions;
 use App\Support\StartStacks;
+use App\Support\Storage\FrameRecord;
+use App\Support\Storage\FrameRecords;
+use App\Support\Storage\RecordedAnswer;
+use App\Support\Storage\RecordedSteps;
+use App\Support\Storage\WalkStep;
+use App\Support\Ticks\TickingTypes;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
+use Domain\Tasks\Commands\StartTask\StartTaskCommand;
+use Domain\Tasks\Enums\TaskStatus;
+use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\DatabaseManager;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Testing\TestResponse;
+use Laravel\Octane\Events\RequestReceived;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\Agents\BackdatesSessions;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsHook;
+use Tests\Support\HookDatabase;
+use Tests\Support\TestActors;
+use Tests\Support\TestIds;
 use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
@@ -48,9 +92,23 @@ use Tests\TestCase;
 #[TestsHook(DefaultDrivers::CLAUDE_CODE, HookEvent::SessionEnd)]
 final class ClaudeCodeHooksTest extends TestCase
 {
+    use BackdatesSessions;
     use CommitsHookRows;
 
     private const string SECRET_DETAIL = 'secret detail';
+
+    private const string OWN_SUBAGENTS_RULE = 'rule 36';
+
+    private const string STACK_CLOSED_AT = '2026-11-17 08:00:00';
+
+    /**
+     * The day the retention cases start on, so each counts its days from a fixed clock.
+     */
+    private const string RETENTION_START = '2026-11-01 08:00:00';
+
+    private const string HOST_EXIT_CODE = 'exit code 137';
+
+    private const string HOST_EXIT_EVIDENCE = 'host reported exit: %s';
 
     /**
      * The domains this test uses beside core.
@@ -256,6 +314,401 @@ final class ClaudeCodeHooksTest extends TestCase
         $this->hook('another-driver', $this->stopBody())->assertNotFound();
     }
 
+    public function test_a_call_from_inside_a_native_subagent_is_refused_before_the_stack(): void
+    {
+        $body = (string) json_encode([
+            'session_id' => 'session-redacted',
+            'hook_event_name' => 'PreToolUse',
+            'tool_name' => 'Bash',
+            'tool_input' => ['command' => 'ls'],
+            'agent_id' => 'child-1',
+            'agent_type' => 'general-purpose',
+        ]);
+
+        $reply = $this->hook('claude-code', $body)->assertOk();
+
+        $this->assertStringContainsString(self::OWN_SUBAGENTS_RULE, $reply->json('stdout'));
+        $this->assertSame(0, HookCall::query()->authorizedFor($this->target())->count());
+    }
+
+    public function test_both_drivers_of_a_family_answer_hooks_through_one_adapter(): void
+    {
+        $drivers = $this->app->make(DriverCatalogue::class);
+        $adapters = $this->app->make(DriverAdapters::class);
+
+        foreach (DefaultDrivers::familyKeys() as $family) {
+            $terminal = $drivers->forKey($drivers->keyFor($family, DriverType::Terminal))->descriptor();
+            $headless = $drivers->forKey($drivers->keyFor($family, DriverType::Headless))->descriptor();
+
+            $this->assertSame(
+                $adapters->for($terminal->hookProtocol),
+                $adapters->for($headless->hookProtocol),
+                $family,
+            );
+        }
+    }
+
+    public function test_every_program_start_denies_each_native_child_tool(): void
+    {
+        foreach (DefaultDrivers::familyKeys() as $driver) {
+            $settings = new IsolatedHookSettings();
+            $this->app->make(Dispatcher::class)->dispatch(new StartSettingsRequested($driver, $settings));
+            $denied = json_decode($settings->content(), true, flags: JSON_THROW_ON_ERROR)['permissions']['deny'];
+
+            $childTools = $this->app->make(DriverAdapters::class)->for($driver)->nativeChildTools();
+            $this->assertNotSame([], $childTools, $driver);
+
+            foreach ($childTools as $toolName) {
+                $this->assertContains($toolName, $denied, "{$driver}/{$toolName}");
+            }
+        }
+    }
+
+    public function test_a_received_request_starts_with_the_configured_time_limit(): void
+    {
+        config(['octane.max_execution_time' => 45]);
+        $limitBefore = (int) ini_get('max_execution_time');
+        set_time_limit(7);
+
+        $this->app->make(GiveRequestItsTimeLimit::class)
+            ->handle(new RequestReceived($this->app, $this->app, $this->app->make('request')));
+
+        $limit = (int) ini_get('max_execution_time');
+        set_time_limit($limitBefore);
+        $this->assertSame(45, $limit);
+    }
+
+    public function test_a_long_silence_never_ends_the_session_and_keeps_the_credential_and_the_stack(): void
+    {
+        $started = $this->startIdleAgent();
+        $task = $this->startTask($started);
+
+        $this->startedSecondsAgo($started, 17 * 60);
+        $this->heartbeats()->markSilentStarts();
+        $this->heartbeats()->markSilentStarts();
+
+        $this->assertSame(SessionStatus::Silent, $started->session->refresh()->status);
+        $this->assertNull($started->session->refresh()->end_evidence);
+        $this->assertSame(
+            $started->session->id,
+            $this->app->make(CredentialLookup::class)->sessionFor($started->token)->id,
+        );
+        $this->assertSame(StackStatus::Active, $this->stackOf($started)->status);
+        $this->assertSame(
+            ['core.ready', 'tasks.work'],
+            array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->stackOf($started)->frames->all()),
+        );
+        $this->assertSame(TaskStatus::Started, $task->fresh()?->status);
+        $this->assertSame(0, HookCall::query()->acrossEveryAgent()->count());
+    }
+
+    public function test_a_session_keeps_an_end_reason_longer_than_a_short_text_column(): void
+    {
+        $started = $this->startIdleAgent();
+        $reason = str_repeat('the agent image leaves an item unenforced; ', 12);
+
+        $started->session->endWithEvidenceAt(CarbonImmutable::now(), $reason);
+
+        $this->assertSame($reason, $started->session->refresh()->end_evidence);
+    }
+
+    public function test_the_host_reporting_an_exit_ends_the_session_at_once(): void
+    {
+        $started = $this->startIdleAgent();
+
+        $this->heartbeats()->markExited($started->session, self::HOST_EXIT_CODE);
+
+        $this->assertSame(SessionStatus::Ended, $started->session->refresh()->status);
+        $this->assertSame(sprintf(self::HOST_EXIT_EVIDENCE, self::HOST_EXIT_CODE), $started->session->refresh()->end_evidence);
+        $this->assertSame(StackStatus::Closed, $this->stackOf($started)->status);
+        $this->expectException(CredentialRejected::class);
+        $this->app->make(CredentialLookup::class)->sessionFor($started->token);
+    }
+
+    public function test_a_replacement_start_starts_from_its_own_bottom_and_copies_nothing(): void
+    {
+        $exited = $this->startIdleAgent();
+        $this->startTask($exited);
+        $this->heartbeats()->markExited($exited->session, 'killed');
+
+        $replacement = $this->app->make(StartSessions::class)->start(
+            $exited->session->loadMissing('agent')->agent,
+            TestSelections::of('claude-code'),
+            TestSelections::requestId(),
+        );
+
+        $this->assertNotSame($exited->session->id, $replacement->session->id);
+        $this->assertSame(
+            ['core.ready'],
+            array_map(
+                fn (FrameRecord $frame) => $frame->reference->typeKey,
+                $this->stackOf($replacement)->frames->all(),
+            ),
+        );
+    }
+
+    private function startIdleAgent(): StartedAgent
+    {
+        return $this->app->make(StartSessions::class)->start(
+            $this->journal->idleAgent('Test agent', 'main-agent')->agentCalled('Test agent'),
+            TestSelections::of('claude-code'),
+            TestSelections::requestId(),
+        );
+    }
+
+    private function startTask(StartedAgent $started): Task
+    {
+        $task = Task::factory()->create(['title' => 'Write the walk']);
+        $this->app->instance(
+            AgentContext::class,
+            new AgentContext(
+                $started->session->agent_id,
+                $started->session->id,
+                new SignedCall('setup', CarbonImmutable::now(), hash('sha256', 'setup')),
+                null,
+            ),
+        );
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent($started->session->agent_id),
+            TestStartAuthority::forAgent($started->session->agent_id),
+        );
+        $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
+        $this->app->forgetScopedInstances();
+
+        return $task;
+    }
+
+    private function stackOf(StartedAgent $started): AgentStackRow
+    {
+        return AgentStackRow::query()->authorizedFor(
+            new StackTarget($started->session->agent_id, $started->session->id),
+        )->sole();
+    }
+
+    private function heartbeats(): StartHeartbeats
+    {
+        return $this->app->make(StartHeartbeats::class);
+    }
+
+    public function test_the_tests_run_on_the_dedicated_postgres_database(): void
+    {
+        $this->asStoredAgent();
+        $this->assertSame('pgsql', DB::connection()->getDriverName());
+        $this->assertSame(HookDatabase::expectedName($this->app), DB::connection()->getDatabaseName());
+    }
+
+    public function test_both_tables_hold_their_payloads_as_jsonb_without_foreign_keys(): void
+    {
+        $this->asStoredAgent();
+        $this->assertSame('jsonb', $this->columnType('agent_stacks', 'frames'));
+        $this->assertSame('jsonb', $this->columnType('hook_calls', 'answer'));
+        $this->assertSame('jsonb', $this->columnType('hook_calls', 'steps'));
+        $this->assertSame(0, DB::table('information_schema.table_constraints')
+            ->whereIn('table_name', ['agent_stacks', 'hook_calls'])
+            ->where('constraint_type', 'FOREIGN KEY')
+            ->count());
+    }
+
+    public function test_a_stack_keeps_its_frames_exactly(): void
+    {
+        $this->asStoredAgent();
+        $frames = $this->storedFrames();
+        $row = new AgentStackRow();
+        $row->startFor(TestActors::stack(7, 9), $frames, new TickingTypes([]));
+
+        $stored = AgentStackRow::query()->forTarget(TestActors::stack(7, 9))->sole();
+
+        $this->assertEquals($frames, $stored->frames);
+        $this->assertSame(
+            [TestIds::of(7), TestIds::of(9), 1],
+            [$stored->agent_id, $stored->session_id, $stored->version],
+        );
+        $this->assertSame(StackStatus::Active, $stored->status);
+    }
+
+    public function test_saving_frames_raises_the_version_and_closing_records_the_time(): void
+    {
+        $this->asStoredAgent();
+        $row = new AgentStackRow();
+        $row->startFor(TestActors::stack(7, 9), $this->storedFrames(), new TickingTypes([]));
+        $bottomOnly = new FrameRecords([$this->storedFrames()->all()[0]]);
+
+        $row->saveFrames($bottomOnly, new TickingTypes([]));
+        $row->closeAt(CarbonImmutable::parse('2026-11-17 08:00:00'));
+        $stored = $row->fresh();
+
+        $this->assertNotNull($stored);
+        $this->assertSame(2, $stored->version);
+        $this->assertEquals($bottomOnly, $stored->frames);
+        $this->assertSame(StackStatus::Closed, $stored->status);
+        $this->assertSame(self::STACK_CLOSED_AT, $stored->closed_at?->format('Y-m-d H:i:s'));
+    }
+
+    public function test_one_agent_and_session_has_one_stack(): void
+    {
+        $this->asStoredAgent();
+        new AgentStackRow()->startFor(TestActors::stack(7, 9), $this->storedFrames(), new TickingTypes([]));
+
+        $this->expectException(QueryException::class);
+
+        new AgentStackRow()->startFor(TestActors::stack(7, 9), $this->storedFrames(), new TickingTypes([]));
+    }
+
+    public function test_a_hook_call_keeps_its_answer_bytes_and_steps_exactly(): void
+    {
+        $this->asStoredAgent();
+        $response = "{\"decision\":\"block\",\"reason\":\"Task 42 still needs work: finish it.\"}\n\t\u{00e9}\u{1F600}";
+        $steps = RecordedSteps::of([
+            WalkStep::from(
+                [
+                    'frameId' => 'frame-2',
+                    'stateType' => 'tasks.work',
+                    'hookMethod' => 'onStop',
+                    'answer' => AnswerType::Delegate,
+                    'contextCount' => 2,
+                ],
+            ),
+            WalkStep::from(
+                [
+                    'frameId' => 'frame-1',
+                    'stateType' => 'hooks.main_ready',
+                    'hookMethod' => 'onStop',
+                    'answer' => AnswerType::Deny,
+                    'contextCount' => 1,
+                ],
+            ),
+        ]);
+        $call = new HookCall();
+        $call->recordFor($this->storedHook(), RecordedAnswer::of(AnswerType::Deny, $response), $steps);
+
+        $stored = HookCall::query()->sole();
+
+        $this->assertSame($response, $stored->answer->stdout);
+        $this->assertSame(AnswerType::Deny, $stored->answer->type);
+        $this->assertSame($steps->toArray(), $stored->steps->toArray());
+        $this->assertSame(['hook-1', str_repeat('a', 64)], [$stored->event_id, $stored->input_digest]);
+    }
+
+    public function test_one_hook_id_is_recorded_once_per_agent_and_session(): void
+    {
+        $this->asStoredAgent();
+        new HookCall()->recordFor($this->storedHook(), RecordedAnswer::of(AnswerType::Allow, '{}'), RecordedSteps::of([]));
+
+        $this->expectException(QueryException::class);
+
+        new HookCall()->recordFor($this->storedHook(), RecordedAnswer::of(AnswerType::Allow, '{}'), RecordedSteps::of([]));
+    }
+
+    public function test_the_agent_and_session_cannot_be_mass_assigned(): void
+    {
+        $this->asStoredAgent();
+        $this->assertFalse(new AgentStackRow()->isFillable('agent_id'));
+        $this->assertFalse(new AgentStackRow()->isFillable('session_id'));
+        $this->assertFalse(new HookCall()->isFillable('agent_id'));
+        $this->assertFalse(new HookCall()->isFillable('session_id'));
+    }
+
+    public function test_frames_in_an_unknown_version_are_refused(): void
+    {
+        $this->asStoredAgent();
+        new AgentStackRow()->startFor(TestActors::stack(7, 9), $this->storedFrames(), new TickingTypes([]));
+        DB::table('agent_stacks')->update(['frames' => '{"version":2,"frames":[]}']);
+
+        $this->expectException(StoredValueInvalid::class);
+
+        AgentStackRow::query()->sole()->frames;
+    }
+
+    public function test_steps_without_their_fields_are_refused(): void
+    {
+        $this->asStoredAgent();
+        new HookCall()->recordFor($this->storedHook(), RecordedAnswer::of(AnswerType::Allow, '{}'), RecordedSteps::of([]));
+        DB::table('hook_calls')->update(['steps' => '{"version":1,"steps":[{"frameId":"frame-1"}]}']);
+
+        $this->expectException(StoredValueInvalid::class);
+
+        HookCall::query()->sole()->steps;
+    }
+
+    public function test_a_stack_and_a_hook_call_can_be_linked(): void
+    {
+        $this->asStoredAgent();
+        $stack = new AgentStackRow();
+        $stack->startFor(TestActors::stack(7, 9), $this->storedFrames(), new TickingTypes([]));
+        $call = new HookCall();
+        $call->recordFor($this->storedHook(), RecordedAnswer::of(AnswerType::Allow, '{}'), RecordedSteps::of([]));
+
+        Link::createForModels($stack, $call);
+
+        $this->assertTrue($call->isLinkedTo($stack));
+    }
+
+    public function test_calls_past_seven_days_go_and_newer_calls_stay(): void
+    {
+        CarbonImmutable::setTestNow(self::RETENTION_START);
+        $this->retainedStack(1);
+        $this->recordCall(1, 'old');
+        $this->moveDays(5);
+        $this->recordCall(1, 'recent');
+        $this->moveDays(3);
+
+        $pruned = $this->app->make(PruneHookHistory::class)->prune();
+
+        $this->assertSame(1, $pruned->hookCalls);
+        $this->assertSame(['recent'], HookCall::query()->authorizedFor(self::retainedTarget(1))->pluck('event_id')->all());
+    }
+
+    public function test_closed_stacks_past_thirty_days_go_and_active_or_recently_closed_stacks_stay(): void
+    {
+        CarbonImmutable::setTestNow(self::RETENTION_START);
+        $this->retainedStack(1)->closeAt(CarbonImmutable::now());
+        $this->retainedStack(2);
+        $this->moveDays(25);
+        $this->retainedStack(3)->closeAt(CarbonImmutable::now());
+        $this->moveDays(6);
+
+        $pruned = $this->app->make(PruneHookHistory::class)->prune();
+
+        $this->assertSame(1, $pruned->closedStacks);
+        $this->assertFalse(AgentStackRow::query()->authorizedFor(self::retainedTarget(1))->exists());
+        $this->assertTrue(AgentStackRow::query()->authorizedFor(self::retainedTarget(2))->exists());
+        $this->assertTrue(AgentStackRow::query()->authorizedFor(self::retainedTarget(3))->exists());
+    }
+
+    public function test_pruning_removes_the_links_of_what_it_removes(): void
+    {
+        CarbonImmutable::setTestNow(self::RETENTION_START);
+        $stack = $this->retainedStack(1);
+        Link::createForModels($stack, $this->recordCall(1, 'old'));
+        $this->moveDays(8);
+
+        $this->app->make(PruneHookHistory::class)->prune();
+
+        $this->assertSame(0, Link::query()->count());
+    }
+
+    public function test_a_call_retention_a_retry_could_outlive_is_refused(): void
+    {
+        $this->expectException(RetentionTooShort::class);
+
+        new RetentionPeriods(hookCallDays: 0)->assertLongerThan(new HookRetryWindow(300));
+    }
+
+    public function test_the_command_prunes_in_batches_and_says_how_much(): void
+    {
+        CarbonImmutable::setTestNow(self::RETENTION_START);
+        $this->app->instance(RetentionPeriods::class, new RetentionPeriods(batchSize: 2));
+        $this->retainedStack(1);
+
+        foreach (['a', 'b', 'c', 'd', 'e'] as $hookId) {
+            $this->recordCall(1, $hookId);
+        }
+
+        $this->moveDays(8);
+
+        $this->artisan('hooks:prune')->expectsOutput('Removed 5 hook calls and 0 closed stacks, and the raw output of 0 stop results.')->assertSuccessful();
+    }
+
     /**
      * @return TestResponse<Response>
      */
@@ -326,5 +779,103 @@ final class ClaudeCodeHooksTest extends TestCase
             'tool_name' => 'Bash',
             'tool_input' => ['command' => $command],
         ]);
+    }
+
+    /**
+     * Agent 7 with session 9, which hold no rows: the storage cases write their own stack and calls for it.
+     */
+    private function asStoredAgent(): void
+    {
+        $this->app->instance(
+            AgentContext::class,
+            new AgentContext(
+                TestIds::of(7),
+                TestIds::of(9),
+                new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)),
+                null,
+            ),
+        );
+    }
+
+    private function storedFrames(): FrameRecords
+    {
+        return new FrameRecords([
+            new FrameRecord(
+                'frame-1',
+                new StateReference('core.ready', NoSubject::None),
+                true,
+                1,
+                CarbonImmutable::now(),
+            ),
+            new FrameRecord(
+                'frame-2',
+                new StateReference('tasks.work', new SubjectReference('42', 3)),
+                false,
+                1,
+                CarbonImmutable::now(),
+            ),
+        ]);
+    }
+
+    private function storedHook(): HookIdentity
+    {
+        return TestActors::hookIdentity(7, 9, 'hook-1', str_repeat('a', 64));
+    }
+
+    private function columnType(string $table, string $column): string
+    {
+        return (string) DB::table('information_schema.columns')
+            ->where('table_name', $table)
+            ->where('column_name', $column)
+            ->value('data_type');
+    }
+
+    /**
+     * The stack of test agent $agent, whose session is ten times its number.
+     */
+    private static function retainedTarget(int $agent): StackTarget
+    {
+        return TestActors::stack($agent, $agent * 10);
+    }
+
+    private function retainedStack(int $agent): AgentStackRow
+    {
+        $row = new AgentStackRow();
+        $row->startFor(
+            self::retainedTarget($agent),
+            new FrameRecords(
+                [
+                    new FrameRecord(
+                        'ready',
+                        new StateReference('core.ready', NoSubject::None),
+                        true,
+                        1,
+                        CarbonImmutable::now(),
+                    ),
+                ],
+            ),
+            new TickingTypes([]),
+        );
+
+        return $row;
+    }
+
+    private function recordCall(int $agent, string $hookId): HookCall
+    {
+        $target = self::retainedTarget($agent);
+        $call = new HookCall();
+        $call->recordFor(
+            new HookIdentity($target->agentId, $target->sessionId, $hookId, str_repeat('a', 64)),
+            RecordedAnswer::of(AnswerType::Allow, '{}'),
+            RecordedSteps::of([]),
+        );
+
+        return $call;
+    }
+
+    private function moveDays(int $days): void
+    {
+        CarbonImmutable::setTestNow(CarbonImmutable::now()->addDays($days));
+        $this->travelTo(CarbonImmutable::now());
     }
 }
