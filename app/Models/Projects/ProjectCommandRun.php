@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -210,7 +212,7 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
      */
     public static function lockByRequest(string $requestKey): array
     {
-        return array_values(self::query()->where('request_key', $requestKey)->lockForUpdate()->limit(1)->get()->all());
+        return array_values(self::query()->ofRequest($requestKey)->lockForUpdate()->limit(1)->get()->all());
     }
 
     /**
@@ -221,8 +223,7 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
      */
     public static function ofRequestBy(string $requestKey, string $agentId, string $bindingId): array
     {
-        return array_values(self::query()->where('request_key', $requestKey)->where('agent_id', $agentId)
-            ->where('binding_id', $bindingId)->limit(1)->get()->all());
+        return array_values(self::query()->ofRequest($requestKey)->ofAgent($agentId)->ofBinding($bindingId)->limit(1)->get()->all());
     }
 
     /**
@@ -233,8 +234,53 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
      */
     public static function lockRunningOf(ProjectBinding $binding): array
     {
-        return array_values(self::query()->where('binding_id', $binding->id)
-            ->whereIn('state', CommandRunState::active())->lockForUpdate()
+        return array_values(self::query()->ofBinding($binding->id)->active()->lockForUpdate()
             ->readAll('a binding runs a few journal verbs at once')->get()->all());
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The run made under the request key.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofRequest(Builder $query, string $requestKey): void
+    {
+        $query->where('request_key', $requestKey);
+    }
+
+    /**
+     * The agent's runs.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofAgent(Builder $query, string $agentId): void
+    {
+        $query->where('agent_id', $agentId);
+    }
+
+    /**
+     * The binding's runs.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofBinding(Builder $query, string $bindingId): void
+    {
+        $query->where('binding_id', $bindingId);
+    }
+
+    /**
+     * The runs still going.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function active(Builder $query): void
+    {
+        $query->whereIn('state', CommandRunState::active());
     }
 }

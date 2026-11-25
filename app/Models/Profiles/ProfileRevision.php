@@ -218,7 +218,7 @@ final class ProfileRevision extends Model implements ReadableModel
      */
     public static function numbered(Profile $profile, int $revision): self
     {
-        return self::query()->ofProfile($profile)->where('revision', $revision)->firstOrFail();
+        return self::query()->ofProfile($profile)->atRevision($revision)->firstOrFail();
     }
 
     /**
@@ -231,8 +231,7 @@ final class ProfileRevision extends Model implements ReadableModel
             return [];
         }
 
-        return self::query()->join('profiles', 'profiles.current_revision_id', '=', 'profile_revisions.id')
-            ->whereIn('profiles.key', $keys)
+        return self::query()->currentOfProfiles($keys)
             ->select([
                 'profiles.key as profile_key',
                 'profile_revisions.script_source',
@@ -253,10 +252,8 @@ final class ProfileRevision extends Model implements ReadableModel
         $profiles = [];
 
         self::query()
-            ->join('profiles', 'profiles.current_revision_id', '=', 'profile_revisions.id')
-            ->whereNull('profiles.retired_at')
+            ->currentOfUnretiredProfiles()
             ->select(['profile_revisions.*', 'profiles.key as profile_key'])
-            ->orderBy('profile_revisions.id')
             ->readInChunks(50, function ($revisions) use (&$profiles): void {
                 foreach ($revisions as $revision) {
                     $profiles[] = new SupervisorProfile(
@@ -279,5 +276,42 @@ final class ProfileRevision extends Model implements ReadableModel
     protected function ofProfile(Builder $query, Profile $profile): void
     {
         $query->where('profile_id', $profile->id);
+    }
+
+    /**
+     * The revision of that number.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function atRevision(Builder $query, int $revision): void
+    {
+        $query->where('revision', $revision);
+    }
+
+    /**
+     * The current revision of each profile of those keys, joined to its profile.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $keys
+     */
+    #[Scope]
+    protected function currentOfProfiles(Builder $query, array $keys): void
+    {
+        $query->join('profiles', 'profiles.current_revision_id', '=', 'profile_revisions.id')
+            ->whereIn('profiles.key', $keys);
+    }
+
+    /**
+     * The current revision of each profile not retired, joined to its profile, in id order.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function currentOfUnretiredProfiles(Builder $query): void
+    {
+        $query->join('profiles', 'profiles.current_revision_id', '=', 'profile_revisions.id')
+            ->whereNull('profiles.retired_at')
+            ->orderBy('profile_revisions.id');
     }
 }

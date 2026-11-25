@@ -99,7 +99,7 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
      */
     public static function create(string $userId, string $idempotencyKey, Environment|null $joins): self
     {
-        $earlier = self::query()->ofOwner($userId)->where('idempotency_key', $idempotencyKey)->lockForUpdate()
+        $earlier = self::query()->ofOwner($userId)->withIdempotencyKey($idempotencyKey)->lockForUpdate()
             ->limit(1)->get()->all();
 
         foreach ($earlier as $attempt) {
@@ -284,7 +284,7 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
      */
     public static function lockOfOwner(string $userId, string $reference): self
     {
-        $row = self::query()->ofOwner($userId)->where('reference', $reference)->lockForUpdate()->first();
+        $row = self::query()->ofOwner($userId)->withReference($reference)->lockForUpdate()->first();
         self::assertFound($row, $reference);
 
         return $row;
@@ -305,14 +305,13 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
         $since = CarbonImmutable::now()->subDays(self::LISTED_DAYS);
 
         return self::query()->ofOwner($userId)
-            ->where(fn (Builder $listed) => $listed->where('state', InstallAttemptState::Open)
-                ->orWhere('updated_at', '>=', $since))
+            ->openOrChangedSince($since)
             ->with([
                 'invitations' => RelationRead::complete(max: self::LINE_LIMIT)->constraint(),
                 'project',
                 'environment',
             ])
-            ->orderByDesc('created_at')->newestFirst()
+            ->newestFirst()
             ->cursorPaginate(self::PAGE_LIMIT, cursor: $cursor);
     }
 
@@ -327,5 +326,39 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
     protected function ofOwner(Builder $query, string $userId): void
     {
         $query->where('owner_user_id', $userId);
+    }
+
+    /**
+     * The attempt made under that idempotency key.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withIdempotencyKey(Builder $query, string $key): void
+    {
+        $query->where('idempotency_key', $key);
+    }
+
+    /**
+     * The attempt of that reference.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withReference(Builder $query, string $reference): void
+    {
+        $query->where('reference', $reference);
+    }
+
+    /**
+     * The attempts still open, or changed since that moment.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function openOrChangedSince(Builder $query, CarbonImmutable $since): void
+    {
+        $query->where(fn (Builder $listed) => $listed->where('state', InstallAttemptState::Open)
+            ->orWhere('updated_at', '>=', $since));
     }
 }

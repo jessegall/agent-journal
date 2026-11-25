@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -31,6 +34,7 @@ final class ProjectFileVersion extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use OrdersById;
     use Linkable;
 
     public const string LINK_TYPE = 'projects.file-version';
@@ -59,5 +63,29 @@ final class ProjectFileVersion extends Model implements ReadableModel
         $version->save();
 
         return $version;
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The version of that digest.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withDigest(Builder $query, string $digest): void
+    {
+        $query->where('digest', $digest);
+    }
+
+    /**
+     * The version of that digest; every version with none named.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withDigestWhenNamed(Builder $query, string|null $digest): void
+    {
+        $query->when($digest !== null, fn (Builder $named) => $named->where('digest', $digest));
     }
 }

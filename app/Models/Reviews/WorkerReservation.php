@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Reviews;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -123,16 +125,10 @@ final class WorkerReservation extends Model implements EventSource, ReadableMode
             $reservation->insertIfAbsent();
         }
 
+        $sortedHolders = array_values($keys);
         $rows = self::query()
-            ->where(function ($rows) use ($keys): void {
-                foreach ($keys as $holder) {
-                    $rows->orWhere(
-                        fn ($row) => $row->where('holder_type', $holder->type)->where('holder_id', $holder->id),
-                    );
-                }
-            })
-            ->orderBy('holder_type')
-            ->orderBy('holder_id')
+            ->heldByAnyOf($sortedHolders)
+            ->inHolderOrder()
             ->lockForUpdate()
             ->readExactly(count($keys))
             ->get();
@@ -144,5 +140,36 @@ final class WorkerReservation extends Model implements EventSource, ReadableMode
         ksort($locked);
 
         return $locked;
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The reservations of any of the holders.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<AssigneeIdentity>  $holders
+     */
+    #[Scope]
+    protected function heldByAnyOf(Builder $query, array $holders): void
+    {
+        $query->where(function (Builder $rows) use ($holders): void {
+            foreach ($holders as $holder) {
+                $rows->orWhere(
+                    fn (Builder $row) => $row->where('holder_type', $holder->type)->where('holder_id', $holder->id),
+                );
+            }
+        });
+    }
+
+    /**
+     * The reservations in the order of their holder.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inHolderOrder(Builder $query): void
+    {
+        $query->orderBy('holder_type')->orderBy('holder_id');
     }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
@@ -498,7 +500,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
      */
     public static function ofHostByNonce(string $hostId, string $installationNonce): self
     {
-        $row = self::query()->where('host_id', $hostId)->where('installation_nonce', $installationNonce)->first();
+        $row = self::query()->onHost($hostId)->withInstallationNonce($installationNonce)->first();
         self::assertRecoverable($row);
 
         return $row;
@@ -511,7 +513,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
      */
     public static function ofHost(string $hostId, string $id): self
     {
-        $row = self::query()->whereKey($id)->where('host_id', $hostId)->first();
+        $row = self::query()->whereKey($id)->onHost($hostId)->first();
         self::assertOfHost($row, $id);
 
         return $row;
@@ -525,7 +527,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
      */
     public static function pageAfter(string|null $cursor): CursorPaginator
     {
-        return self::query()->with(['project', 'environment', 'host'])->orderBy('created_at')->oldestFirst()
+        return self::query()->with(['project', 'environment', 'host'])->oldestFirst()
             ->cursorPaginate(self::PAGE_LIMIT, cursor: $cursor);
     }
 
@@ -536,8 +538,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
      */
     public static function ofMainAgent(string $agentId): array
     {
-        return array_values(self::query()->with('project')->where('main_agent_id', $agentId)
-            ->where('readiness', '!=', BindingReadiness::Revoked)->limit(1)->get()->all());
+        return array_values(self::query()->with('project')->withMainAgent($agentId)->unrevoked()->limit(1)->get()->all());
     }
 
     /**
@@ -550,9 +551,9 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     public static function lastHeardFromIn(array $environmentIds): Option
     {
         return self::query()
-            ->where('readiness', '!=', BindingReadiness::Revoked)
-            ->when($environmentIds !== [], fn ($query) => $query->whereIn('environment_id', $environmentIds))
-            ->orderByRaw('last_contact_at desc nulls last')
+            ->unrevoked()
+            ->inEnvironmentsWhenNamed($environmentIds)
+            ->lastHeardFromFirst()
             ->firstOption();
     }
 
@@ -569,7 +570,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
      */
     public static function isMainAgentOfRevokedBinding(string $agentId): bool
     {
-        return self::query()->where('main_agent_id', $agentId)->where('readiness', BindingReadiness::Revoked)->exists();
+        return self::query()->withMainAgent($agentId)->revoked()->exists();
     }
 
     /**
@@ -579,9 +580,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
      */
     public static function liveIdOfLocalHost(string $hostId): array
     {
-        return array_values(self::query()->where('host_id', $hostId)
-            ->where('readiness', '!=', BindingReadiness::Revoked)
-            ->whereHas('host', fn ($host) => $host->where('arrangement', ArrangementType::Local))
+        return array_values(self::query()->onHost($hostId)->unrevoked()->onLocalHost()
             ->limit(1)->pluck('id')->all());
     }
 
@@ -591,5 +590,96 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     public static function lockById(string $id): self
     {
         return self::query()->with('host')->whereKey($id)->lockForUpdate()->firstOrFail();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The host's bindings.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function onHost(Builder $query, string $hostId): void
+    {
+        $query->where('host_id', $hostId);
+    }
+
+    /**
+     * The binding redeemed under the installation nonce.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withInstallationNonce(Builder $query, string $nonce): void
+    {
+        $query->where('installation_nonce', $nonce);
+    }
+
+    /**
+     * The bindings whose main agent this is.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withMainAgent(Builder $query, string $agentId): void
+    {
+        $query->where('main_agent_id', $agentId);
+    }
+
+    /**
+     * The bindings not revoked.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unrevoked(Builder $query): void
+    {
+        $query->where('readiness', '!=', BindingReadiness::Revoked);
+    }
+
+    /**
+     * The revoked bindings.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function revoked(Builder $query): void
+    {
+        $query->where('readiness', BindingReadiness::Revoked);
+    }
+
+    /**
+     * The bindings of the environments; every project's with none named.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $environmentIds
+     */
+    #[Scope]
+    protected function inEnvironmentsWhenNamed(Builder $query, array $environmentIds): void
+    {
+        $query->when($environmentIds !== [], fn (Builder $named) => $named->whereIn('environment_id', $environmentIds));
+    }
+
+    /**
+     * The bindings heard from last first, those never heard from at the end.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function lastHeardFromFirst(Builder $query): void
+    {
+        $query->orderByRaw('last_contact_at desc nulls last');
+    }
+
+    /**
+     * The bindings a local host serves.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function onLocalHost(Builder $query): void
+    {
+        $query->whereHas('host', fn (Builder $host) => $host->where('arrangement', ArrangementType::Local));
     }
 }

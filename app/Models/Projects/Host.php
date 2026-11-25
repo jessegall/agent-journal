@@ -242,7 +242,7 @@ final class Host extends Model implements EventSource, ReadableModel
      */
     public function isConnectedFolderRelay(): bool
     {
-        return ProjectBinding::query()->where('host_id', $this->id)->exists();
+        return ProjectBinding::query()->onHost($this->id)->exists();
     }
 
     /**
@@ -456,7 +456,7 @@ final class Host extends Model implements EventSource, ReadableModel
      */
     public static function forSecret(string $secret): self
     {
-        $host = self::query()->where('credential_hash', self::hashOf($secret))->first();
+        $host = self::query()->withSecret($secret)->first();
         self::assertCredentialLive($host);
 
         return $host;
@@ -469,9 +469,9 @@ final class Host extends Model implements EventSource, ReadableModel
     public static function containedProtectionOf(ProtectionReport $unreported): ProtectionReport
     {
         $host = self::query()
-            ->where('arrangement', ArrangementType::Contained)
-            ->whereNull('revoked_at')
-            ->latest('updated_at')
+            ->contained()
+            ->unrevoked()
+            ->recentlyUpdatedFirst()
             ->first();
 
         if ($host === null) {
@@ -490,7 +490,7 @@ final class Host extends Model implements EventSource, ReadableModel
     {
         return array_values(
             self::query()
-                ->whereNull('revoked_at')
+                ->unrevoked()
                 ->enrolled()
                 ->readAll('an installation enrolls a handful of hosts')
                 ->get()
@@ -534,5 +534,49 @@ final class Host extends Model implements EventSource, ReadableModel
                 ->from('project_bindings')
                 ->whereColumn('project_bindings.host_id', 'hosts.id'),
         );
+    }
+
+    /**
+     * The host that holds the secret.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withSecret(Builder $query, string $secret): void
+    {
+        $query->where('credential_hash', self::hashOf($secret));
+    }
+
+    /**
+     * The hosts that run agents in containers.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function contained(Builder $query): void
+    {
+        $query->where('arrangement', ArrangementType::Contained);
+    }
+
+    /**
+     * The hosts not revoked.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unrevoked(Builder $query): void
+    {
+        $query->whereNull('revoked_at');
+    }
+
+    /**
+     * The hosts most recently updated first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function recentlyUpdatedFirst(Builder $query): void
+    {
+        $query->latest('updated_at');
     }
 }

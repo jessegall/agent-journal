@@ -179,7 +179,7 @@ final class TextUpload extends Model implements EventSource, ReadableModel
      */
     private function assertSameChunkAt(int $position, string $text): void
     {
-        $chunk = TextUploadChunk::query()->where('upload_id', $this->id)->where('position', $position)->sole();
+        $chunk = TextUploadChunk::query()->ofUpload($this->id)->atPosition($position)->sole();
 
         if ($chunk->text !== $text) {
             throw UploadChunkConflict::atPosition();
@@ -247,7 +247,7 @@ final class TextUpload extends Model implements EventSource, ReadableModel
     private function body(): string
     {
         $body = '';
-        $chunks = TextUploadChunk::query()->where('upload_id', $this->id)->orderBy('position');
+        $chunks = TextUploadChunk::query()->ofUpload($this->id)->inPositionOrder();
 
         foreach ($chunks->readExactly($this->next_index)->cursor() as $chunk) {
             $body .= $chunk->text;
@@ -273,7 +273,7 @@ final class TextUpload extends Model implements EventSource, ReadableModel
 
     public static function sealed(string $id): self
     {
-        $row = self::query()->unexpired()->whereNotNull('sealed_at')->find($id);
+        $row = self::query()->unexpired()->alreadySealed()->find($id);
         self::assertUnexpired($row);
 
         return $row;
@@ -287,7 +287,7 @@ final class TextUpload extends Model implements EventSource, ReadableModel
     public static function sealedFor(SessionProvenance $sessions, string $sessionId, string $id): self
     {
         $uploads = self::query()->withoutGlobalScope(self::SESSION_SCOPE);
-        $row = $sessions->fromSession($uploads, $sessionId)->unexpired()->whereNotNull('sealed_at')->find($id);
+        $row = $sessions->fromSession($uploads, $sessionId)->unexpired()->alreadySealed()->find($id);
         self::assertUnexpired($row);
 
         return $row;
@@ -302,5 +302,16 @@ final class TextUpload extends Model implements EventSource, ReadableModel
     protected function unexpired(Builder $query): void
     {
         $query->where('expires_at', '>', CarbonImmutable::now());
+    }
+
+    /**
+     * The uploads already sealed.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function alreadySealed(Builder $query): void
+    {
+        $query->whereNotNull('sealed_at');
     }
 }

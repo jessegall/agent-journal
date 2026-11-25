@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -156,13 +157,7 @@ final class TaskRun extends Model implements Assignable, EventSource, ReadableMo
         }
 
         return self::query()
-            ->where(function (Builder $query) use ($pairs): void {
-                foreach ($pairs as [$taskId, $runNumber]) {
-                    $query->orWhere(
-                        fn (Builder $pair) => $pair->where('task_id', $taskId)->where('run_number', $runNumber),
-                    );
-                }
-            })
+            ->ofAnyPair($pairs)
             ->limit(count($pairs))
             ->get();
     }
@@ -172,6 +167,35 @@ final class TaskRun extends Model implements Assignable, EventSource, ReadableMo
      */
     public static function ofTask(Task $task, int $number): self|null
     {
-        return self::query()->where('task_id', $task->id)->where('run_number', $number)->first();
+        return self::query()->ofRun($task->id, $number)->first();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The task's run of that number.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofRun(Builder $query, string $taskId, int $runNumber): void
+    {
+        $query->where('task_id', $taskId)->where('run_number', $runNumber);
+    }
+
+    /**
+     * The runs of any of the task and run number pairs.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<array{0: string, 1: int}>  $pairs
+     */
+    #[Scope]
+    protected function ofAnyPair(Builder $query, array $pairs): void
+    {
+        $query->where(function (Builder $any) use ($pairs): void {
+            foreach ($pairs as [$taskId, $runNumber]) {
+                $any->orWhere(fn (Builder $pair) => $pair->ofRun($taskId, $runNumber));
+            }
+        });
     }
 }

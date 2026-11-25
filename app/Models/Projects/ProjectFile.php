@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\HasComments;
 use App\Concerns\HasNumber;
@@ -77,7 +79,7 @@ final class ProjectFile extends Model implements Commentable, Numbered, Readable
      */
     public function versionWith(string $digest): Option
     {
-        return $this->versions()->where('digest', $digest)->firstOption();
+        return $this->versions()->withDigest($digest)->firstOption();
     }
 
     /**
@@ -88,8 +90,8 @@ final class ProjectFile extends Model implements Commentable, Numbered, Readable
     public function textVersion(string|null $version = null): TextVersion
     {
         $kept = $this->versions()
-            ->when($version !== null, fn ($versions) => $versions->where('digest', $version))
-            ->latest()
+            ->withDigestWhenNamed($version)
+            ->newestFirst()
             ->first();
         self::assertVersionKept($kept, $version);
 
@@ -136,6 +138,19 @@ final class ProjectFile extends Model implements Commentable, Numbered, Readable
      */
     public static function atPath(string $bindingId, string $path): Option
     {
-        return self::query()->where('binding_id', $bindingId)->where('path', $path)->firstOption();
+        return self::query()->atPathOf($bindingId, $path)->firstOption();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The binding's file at the path.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function atPathOf(Builder $query, string $bindingId, string $path): void
+    {
+        $query->where('binding_id', $bindingId)->where('path', $path);
     }
 }

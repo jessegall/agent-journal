@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Starts;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -146,7 +148,7 @@ final class CleanupOperation extends Model implements EventSource, ReadableModel
         $operation->setAttribute($operation->getKeyName(), $operation->newUniqueId());
         $operation->insertIfAbsent();
 
-        return self::query()->where('start_request_id', $session->start_request_id)->sole();
+        return self::query()->ofStartRequest($session->start_request_id)->sole();
     }
 
     /**
@@ -157,9 +159,9 @@ final class CleanupOperation extends Model implements EventSource, ReadableModel
     public static function pendingOn(string $hostId, int $limit): array
     {
         $pending = self::query()
-            ->where('host_id', $hostId)
-            ->where('state', CleanupState::Pending)
-            ->orderBy('created_at')
+            ->onHost($hostId)
+            ->pending()
+            ->oldestFirst()
             ->readExactly($limit)
             ->get();
 
@@ -168,6 +170,63 @@ final class CleanupOperation extends Model implements EventSource, ReadableModel
 
     public static function ofSessionOn(string $hostId, string $sessionId): self
     {
-        return self::query()->where('host_id', $hostId)->where('agent_session_id', $sessionId)->firstOrFail();
+        return self::query()->onHost($hostId)->ofSession($sessionId)->firstOrFail();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The start request's cleanup.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofStartRequest(Builder $query, string $startRequestId): void
+    {
+        $query->where('start_request_id', $startRequestId);
+    }
+
+    /**
+     * The cleanups on the host.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function onHost(Builder $query, string $hostId): void
+    {
+        $query->where('host_id', $hostId);
+    }
+
+    /**
+     * The cleanups still to do.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function pending(Builder $query): void
+    {
+        $query->where('state', CleanupState::Pending);
+    }
+
+    /**
+     * The session's cleanup.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofSession(Builder $query, string $sessionId): void
+    {
+        $query->where('agent_session_id', $sessionId);
+    }
+
+    /**
+     * The cleanups oldest first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function oldestFirst(Builder $query): void
+    {
+        $query->orderBy('created_at');
     }
 }

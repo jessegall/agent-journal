@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -52,5 +54,40 @@ final class TextUploadChunk extends Model implements ReadableModel
     public function upload(): BelongsTo
     {
         return $this->belongsTo(TextUpload::class, 'upload_id');
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The upload's chunks.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofUpload(Builder $query, string $uploadId): void
+    {
+        $query->where('upload_id', $uploadId);
+    }
+
+    /**
+     * The chunk at that position.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function atPosition(Builder $query, int $position): void
+    {
+        $query->where('position', $position);
+    }
+
+    /**
+     * The chunks in the order of their position.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inPositionOrder(Builder $query): void
+    {
+        $query->orderBy('position');
     }
 }

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\Reviews;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -72,6 +75,7 @@ final class CodeReview extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use OrdersById;
     use HasWorkColumns;
     use Linkable;
     use RaisesEvents;
@@ -196,7 +200,7 @@ final class CodeReview extends Model implements EventSource, ReadableModel
         $review->setAttribute($review->getKeyName(), $review->newUniqueId());
         $review->insertIfAbsent();
 
-        return self::query()->where('certificate', $reservation->certificate)->sole();
+        return self::query()->withCertificate($reservation->certificate)->sole();
     }
 
     /**
@@ -205,8 +209,8 @@ final class CodeReview extends Model implements EventSource, ReadableModel
     public static function openFor(AskReference $ask): self
     {
         $row = self::query()
-            ->where('ask_id', $ask->id)
-            ->where('state', CodeReviewState::Open->value)
+            ->ofAsk($ask)
+            ->inOpenState()
             ->lockForUpdate()->first();
         self::assertOpenFound($row, $ask);
 
@@ -219,10 +223,55 @@ final class CodeReview extends Model implements EventSource, ReadableModel
     public static function latestFor(RecordIdentity $work): self
     {
         return self::query()
-            ->where('work_type', $work->type)
-            ->where('work_id', $work->id)
-            ->latest()
+            ->ofWork($work)
+            ->newestFirst()
             ->lockForUpdate()
             ->firstOrFail();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The review of the certified work.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withCertificate(Builder $query, string $certificate): void
+    {
+        $query->where('certificate', $certificate);
+    }
+
+    /**
+     * The review the ask carries.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofAsk(Builder $query, AskReference $ask): void
+    {
+        $query->where('ask_id', $ask->id);
+    }
+
+    /**
+     * The open reviews.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inOpenState(Builder $query): void
+    {
+        $query->where('state', CodeReviewState::Open->value);
+    }
+
+    /**
+     * The reviews of the work.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofWork(Builder $query, RecordIdentity $work): void
+    {
+        $query->where('work_type', $work->type)->where('work_id', $work->id);
     }
 }
