@@ -31,6 +31,7 @@ use App\Values\OwnerAuthority;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -40,6 +41,7 @@ use Tests\TestCase;
  * starts no second process, and a claim of a program that cannot start here ends the start with its refusal.
  */
 #[TimeLimit(seconds: 5, reason: 'It enrolls a host, opens runtimes and commits each start step, emptying many tables.')]
+#[TestsCommand(ClaimStartCommand::class)]
 final class ClaimStartTest extends TestCase
 {
     use CommitsHookRows;

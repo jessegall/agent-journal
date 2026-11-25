@@ -18,6 +18,7 @@ use App\Support\SkillTargets;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\File;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Skills\HasSkillTargets;
 use Tests\Support\Skills\IntendsSkillPublications;
 use Tests\TestCase;
@@ -25,6 +26,7 @@ use Tests\TestCase;
 /**
  * A prune retires a publication that ended more than thirty days ago and keeps a recent one.
  */
+#[TestsCommand(PruneSkillPublicationsCommand::class)]
 final class PruneSkillPublicationsTest extends TestCase
 {
     use CommitsHookRows;

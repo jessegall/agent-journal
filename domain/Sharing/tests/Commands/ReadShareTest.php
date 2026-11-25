@@ -36,6 +36,7 @@ use Domain\Sharing\Tests\TestCase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestActors;
 use Tests\Support\TimeLimits\TimeLimit;
 use Throwable;
@@ -47,6 +48,7 @@ use Throwable;
  * denied while its sibling reads; a read waits for a revoke holding the share and is denied once it committed.
  */
 #[TimeLimit(seconds: 10, reason: 'It commits real bus reads and empties fourteen tables around each test.')]
+#[TestsCommand(ReadShareCommand::class)]
 final class ReadShareTest extends TestCase
 {
     use CommitsHookRows;

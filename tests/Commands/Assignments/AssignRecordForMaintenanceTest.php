@@ -22,8 +22,10 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
+#[TestsCommand(AssignRecordForMaintenanceCommand::class)]
 final class AssignRecordForMaintenanceTest extends TestCase
 {
     use CommitsHookRows;

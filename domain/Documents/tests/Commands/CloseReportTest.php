@@ -21,11 +21,13 @@ use Domain\Documents\Models\Report;
 use Domain\Documents\Models\TextUpload;
 use Domain\Documents\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 
 /**
  * An agent closes only the reports it created.
  */
+#[TestsCommand(CloseReportCommand::class)]
 final class CloseReportTest extends TestCase
 {
     use CommitsHookRows;

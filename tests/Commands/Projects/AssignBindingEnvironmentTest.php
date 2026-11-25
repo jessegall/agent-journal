@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
+use App\Commands\Projects\AssignBindingEnvironment\AssignBindingEnvironmentCommand;
 use App\Models\Projects\Environment;
 use App\Models\Projects\ProjectBinding;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\ConnectsProjects;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * A binding with no environment starts nothing until the owner assigns one.
  */
+#[TestsCommand(AssignBindingEnvironmentCommand::class)]
 final class AssignBindingEnvironmentTest extends TestCase
 {
     use CommitsHookRows;

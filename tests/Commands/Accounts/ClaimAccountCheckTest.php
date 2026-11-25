@@ -18,6 +18,7 @@ use App\Values\AccountLabel;
 use App\Values\ClaimedAccountCheck;
 use App\Values\OwnerAuthority;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -26,6 +27,7 @@ use Tests\TestCase;
  * A host claims the next account that asks for a check, and nothing while no account asks.
  */
 #[TimeLimit(seconds: 4, reason: 'It commits account changes through the bus and empties five tables per test.')]
+#[TestsCommand(ClaimAccountCheckCommand::class)]
 final class ClaimAccountCheckTest extends TestCase
 {
     use CommitsHookRows;

@@ -10,11 +10,13 @@ use App\Models\Drivers\DriverRequest;
 use App\Models\Projects\Host;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * The owner asks the host to start and to stop recording a runtime.
  */
+#[TestsCommand(RecordRuntimeCommand::class)]
 final class RecordRuntimeTest extends TestCase
 {
     use CommitsHookRows;

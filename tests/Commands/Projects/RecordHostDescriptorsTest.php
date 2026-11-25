@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
+use App\Commands\Projects\RecordHostDescriptors\RecordHostDescriptorsCommand;
 use App\Models\Projects\Host;
 use App\Support\EnrolledHost;
 use App\Support\HostDescriptorEnrollment;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * A host reports the drivers it can run, and each is enrolled or marked unavailable with its reason.
  */
+#[TestsCommand(RecordHostDescriptorsCommand::class)]
 final class RecordHostDescriptorsTest extends TestCase
 {
     use CommitsHookRows;

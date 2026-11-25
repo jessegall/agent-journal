@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Settings;
 
+use App\Commands\Settings\SetStringSetting\SetStringSettingCommand;
 use App\Contracts\Settings\SettingsResolver;
 use App\Enums\Settings\SettingsOutcome;
 use App\Values\SettingsChange;
 use Domain\Rules\RulesDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\InstallsCommandModules;
 use Tests\Support\Settings\ChangesReviewsSettings;
 use Tests\Support\Settings\UsesReviewsSettings;
@@ -18,6 +20,7 @@ use Tests\TestCase;
 /**
  * The owner sets a text setting, and setting it to the same text again changes nothing.
  */
+#[TestsCommand(SetStringSettingCommand::class)]
 final class SetStringSettingTest extends TestCase
 {
     use ChangesReviewsSettings;

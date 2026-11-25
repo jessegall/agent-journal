@@ -31,6 +31,7 @@ use App\Values\StartPolicy;
 use App\Values\StartRequest;
 use Tests\Fixtures\Agents\CountingImageVerifier;
 use Tests\Fixtures\Agents\TestSelections;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -38,6 +39,7 @@ use Tests\TestCase;
 /**
  * A viewer dismisses an agent's last start outcome, and the dismissal survives a reload for that viewer only.
  */
+#[TestsCommand(DismissSessionStartOutcomeCommand::class)]
 final class DismissSessionStartOutcomeTest extends TestCase
 {
     use RefreshHookDatabase;

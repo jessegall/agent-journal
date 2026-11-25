@@ -27,6 +27,7 @@ use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Links\Note;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -34,6 +35,7 @@ use Tests\TestCase;
  * Maintenance cancels the starts of an account that no host claimed yet, so they never make a process, and says the
  * account's use changed only when it cancelled one.
  */
+#[TestsCommand(CancelAccountUsesCommand::class)]
 final class CancelAccountUsesTest extends TestCase
 {
     use CommitsHookRows;

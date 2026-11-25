@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
+use App\Commands\Projects\RevokeProjectInvitation\RevokeProjectInvitationCommand;
 use App\Commands\Settings\SetBooleanSetting\SetBooleanSettingCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Values\ReleaseManifest;
@@ -13,11 +14,13 @@ use Illuminate\Log\Events\MessageLogged;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\IssuesInstallLines;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * A revoked install line answers the generic failure.
  */
+#[TestsCommand(RevokeProjectInvitationCommand::class)]
 final class RevokeProjectInvitationTest extends TestCase
 {
     use CommitsHookRows;

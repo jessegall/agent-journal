@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Accounts;
 
+use App\Commands\Accounts\RecordUsageWindow\RecordUsageWindowCommand;
 use App\Enums\Accounts\AccountProcessRole;
 use App\Enums\Agents\SessionProcessStatus;
 use App\Models\Accounts\Account;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -21,6 +23,7 @@ use Tests\TestCase;
  * A host reports a usage window under a claimed start, and it lands on the start's account with its used share.
  */
 #[TimeLimit(seconds: 4, reason: 'It enrolls hosts and sends signed calls, emptying several tables.')]
+#[TestsCommand(RecordUsageWindowCommand::class)]
 final class RecordUsageWindowTest extends TestCase
 {
     use CommitsHookRows;

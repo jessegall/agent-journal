@@ -14,6 +14,7 @@ use App\Support\PrivateValues;
 use App\Values\PrivateSubmission;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\Terminals\TakesTerminalControl;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -23,6 +24,7 @@ use Tests\TestCase;
  * A private value typed into an open private entry reaches the host once and is stored nowhere.
  */
 #[TimeLimit(seconds: 3, reason: 'It commits real rows on the hook database and empties its tables around each test.')]
+#[TestsCommand(SubmitPrivateInputCommand::class)]
 final class SubmitPrivateInputTest extends TestCase
 {
     use CommitsHookRows;

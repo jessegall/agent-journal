@@ -31,12 +31,14 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\InstallsNotesModule;
 
 /**
  * A user docks a source in a conversation once: a second dock of it answers the placement it has, and an agent the
  * user cannot see or a conversation the user takes no part in is refused before anything is docked.
  */
+#[TestsCommand(DockSourceCommand::class)]
 final class DockSourceTest extends TestCase
 {
     use CommitsHookRows;

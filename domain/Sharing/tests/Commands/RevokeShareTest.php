@@ -28,6 +28,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestActors;
 use Tests\Support\TimeLimits\TimeLimit;
 
@@ -35,6 +36,7 @@ use Tests\Support\TimeLimits\TimeLimit;
  * A revoke that rolls back raises nothing, and a second revoke of an ended share raises nothing.
  */
 #[TimeLimit(seconds: 5, reason: 'Its commands commit for real, and it empties nine tables around each test.')]
+#[TestsCommand(RevokeShareCommand::class)]
 final class RevokeShareTest extends TestCase
 {
     use CommitsHookRows;

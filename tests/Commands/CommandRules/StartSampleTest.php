@@ -11,6 +11,7 @@ use App\Enums\CommandRules\RequestHoldReason;
 use App\Exceptions\SampleRefused;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Processes\AcmeDeclarations;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -18,6 +19,7 @@ use Tests\TestCase;
 /**
  * A sample run before the owner approved it is refused, naming the step it waits on.
  */
+#[TestsCommand(StartSampleCommand::class)]
 final class StartSampleTest extends TestCase
 {
     use RefreshHookDatabase;

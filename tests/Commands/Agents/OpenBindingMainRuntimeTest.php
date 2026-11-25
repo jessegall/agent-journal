@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
+use App\Commands\Agents\OpenBindingMainRuntime\OpenBindingMainRuntimeCommand;
 use App\Commands\Inboxes\InstallInboxes\InstallInboxesCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Drivers\DriverCatalogue;
@@ -23,6 +24,7 @@ use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\ConnectsProjects;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -30,6 +32,7 @@ use Tests\TestCase;
  * A binding's relay opens its main agent's runtime: a start that names no model takes its profile's default, and the
  * server's own main agent stays attached to the main inbox.
  */
+#[TestsCommand(OpenBindingMainRuntimeCommand::class)]
 final class OpenBindingMainRuntimeTest extends TestCase
 {
     use CommitsHookRows;

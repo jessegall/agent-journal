@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Commands\Projects;
 
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
+use App\Commands\Projects\RecordHostProtection\RecordHostProtectionCommand;
 use App\Contracts\Drivers\DriverCompatibilities;
 use App\Enums\Projects\ArrangementType;
 use App\Support\ArrangementSetting;
@@ -15,6 +16,7 @@ use App\Support\DefaultDrivers;
 use App\Support\EnrolledHost;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -23,6 +25,7 @@ use Tests\TestCase;
  * them and why, one with every item enforced admits it, and a driver whose signed-in starts run protected is admitted by
  * its protected report only.
  */
+#[TestsCommand(RecordHostProtectionCommand::class)]
 final class RecordHostProtectionTest extends TestCase
 {
     use RefreshHookDatabase;

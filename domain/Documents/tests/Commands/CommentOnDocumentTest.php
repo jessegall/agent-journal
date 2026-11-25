@@ -34,12 +34,14 @@ use Domain\Documents\Models\Document;
 use Domain\Documents\Tests\TestCase;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 
 /**
  * A reader comments on a document named by its number or id, as themselves; a document that is not there is refused
  * and keeps no comment.
  */
+#[TestsCommand(CommentOnDocumentCommand::class)]
 final class CommentOnDocumentTest extends TestCase
 {
     use CommitsHookRows;

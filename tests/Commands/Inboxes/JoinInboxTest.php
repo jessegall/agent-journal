@@ -8,11 +8,13 @@ use App\Commands\Inboxes\JoinInbox\JoinInboxCommand;
 use App\Commands\Inboxes\OpenInbox\OpenInboxCommand;
 use App\Models\Inboxes\InboxMember;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * An actor joins an inbox and is attached to it.
  */
+#[TestsCommand(JoinInboxCommand::class)]
 final class JoinInboxTest extends TestCase
 {
     use CommitsHookRows;

@@ -11,6 +11,7 @@ use App\Events\Processes\RuleRejected;
 use App\Models\CommandRules\ClassificationRule;
 use App\Models\CommandRules\RuleProposal;
 use Illuminate\Support\Facades\Event;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
@@ -19,6 +20,7 @@ use Tests\TestCase;
 /**
  * The owner rejects a proposal, which leaves the request rejected and tells its author.
  */
+#[TestsCommand(RejectRuleProposalCommand::class)]
 final class RejectRuleProposalTest extends TestCase
 {
     use RefreshHookDatabase;

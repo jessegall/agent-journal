@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
+use App\Commands\Projects\RecoverProjectBinding\RecoverProjectBindingCommand;
 use App\Models\Projects\Host;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
@@ -11,12 +12,14 @@ use Illuminate\Testing\TestResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\ConnectsProjects;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * A relay that redeemed a line but lost the reply gets its binding back by a call signed with its credential; any
  * other caller gets one generic failure.
  */
+#[TestsCommand(RecoverProjectBindingCommand::class)]
 final class RecoverProjectBindingTest extends TestCase
 {
     use CommitsHookRows;

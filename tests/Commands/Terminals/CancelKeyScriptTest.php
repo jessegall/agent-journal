@@ -9,11 +9,13 @@ use App\Enums\Navigation\NavigationStatus;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Engine\RunsEnginePasses;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * Cancelling a key script cancels its request.
  */
+#[TestsCommand(CancelKeyScriptCommand::class)]
 final class CancelKeyScriptTest extends TestCase
 {
     use CommitsHookRows;

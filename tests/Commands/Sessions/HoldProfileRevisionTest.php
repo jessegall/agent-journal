@@ -6,12 +6,14 @@ namespace Tests\Commands\Sessions;
 
 use App\Commands\Sessions\HoldProfileRevision\HoldProfileRevisionCommand;
 use App\Models\Profiles\ProfileRevisionHold;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
  * A revoked profile revision is held, so the sessions still running on it are stopped and reconciled later.
  */
+#[TestsCommand(HoldProfileRevisionCommand::class)]
 final class HoldProfileRevisionTest extends TestCase
 {
     use RefreshHookDatabase;

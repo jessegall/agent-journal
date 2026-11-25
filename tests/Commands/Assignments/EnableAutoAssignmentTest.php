@@ -22,12 +22,14 @@ use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * The owner gives an agent a named pool of tasks to take on its own, kept in the pool's order at its first revision;
  * an agent enabling itself is refused and nothing is stored.
  */
+#[TestsCommand(EnableAutoAssignmentCommand::class)]
 final class EnableAutoAssignmentTest extends TestCase
 {
     use CommitsHookRows;

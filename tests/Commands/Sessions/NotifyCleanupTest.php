@@ -16,6 +16,7 @@ use App\Values\CleanupReport;
 use App\Values\ExecutionBudgets;
 use App\Values\HostCapacity;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -25,6 +26,7 @@ use Tests\TestCase;
  * workspace, and a repeated pass changes nothing.
  */
 #[TimeLimit(seconds: 4, reason: 'It starts test agent sessions and opens their runtimes.')]
+#[TestsCommand(NotifyCleanupCommand::class)]
 final class NotifyCleanupTest extends TestCase
 {
     use RefreshHookDatabase;

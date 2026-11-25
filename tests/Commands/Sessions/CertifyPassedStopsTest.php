@@ -40,6 +40,7 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\AsksTheStopGate;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -48,6 +49,7 @@ use Tests\TestCase;
  * A stop whose checks passed but that never came back is certified once by the engine.
  */
 #[TimeLimit(seconds: 5, reason: 'It starts test agent sessions, opens a runtime and empties the hook tables.')]
+#[TestsCommand(CertifyPassedStopsCommand::class)]
 final class CertifyPassedStopsTest extends TestCase
 {
     use AsksTheStopGate;

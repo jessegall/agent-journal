@@ -36,6 +36,7 @@ use Illuminate\Support\Str;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\Agents\ServesEveryCombination;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -45,6 +46,7 @@ use Tests\TestCase;
  * switch makes one switch whose stage is read back, a switch expecting another session is stale, a switch to the codex
  * terminal is refused before any switch exists, and a switch keeps the registration its target was pinned to.
  */
+#[TestsCommand(SwitchAgentDriverCommand::class)]
 final class SwitchAgentDriverTest extends TestCase
 {
     use HasContainerSupport;

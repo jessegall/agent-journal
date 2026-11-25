@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Commands\Notifications;
 
 use App\Commands\Notifications\MarkAllNotificationsRead\MarkAllNotificationsReadCommand;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -12,6 +13,7 @@ use Tests\TestCase;
  * A user marks every notification read up to the one they saw last, and says whether that finished it; later
  * notifications stay unread.
  */
+#[TestsCommand(MarkAllNotificationsReadCommand::class)]
 final class MarkAllNotificationsReadTest extends TestCase
 {
     use RefreshHookDatabase;

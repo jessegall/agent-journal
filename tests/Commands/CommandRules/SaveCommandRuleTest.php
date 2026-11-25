@@ -25,6 +25,7 @@ use App\Values\ProgramSpellings;
 use App\Values\RuleScope;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Tests\Fixtures\Processes\AcmeDeclarations;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
@@ -34,6 +35,7 @@ use Tests\TestCase;
  * A second approval on the same base fails naming the active revision, and a check saved without a request is
  * refused.
  */
+#[TestsCommand(SaveCommandRuleCommand::class)]
 final class SaveCommandRuleTest extends TestCase
 {
     use RefreshHookDatabase;

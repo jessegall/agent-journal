@@ -10,12 +10,14 @@ use App\Models\Access\User;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Support\ActorIdentity;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
  * A new actor gets its personal inbox with itself as its member.
  */
+#[TestsCommand(ProvisionActorInboxCommand::class)]
 final class ProvisionActorInboxTest extends TestCase
 {
     use RefreshHookDatabase;

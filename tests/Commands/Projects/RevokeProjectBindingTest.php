@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
+use App\Commands\Projects\RevokeProjectBinding\RevokeProjectBindingCommand;
 use App\Enums\Connections\BindingReadiness;
 use App\Enums\Connections\ConnectionAuditType;
 use App\Exceptions\HostRoleRefused;
@@ -19,11 +20,13 @@ use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\ConnectsProjects;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * Two tabs revoking one binding get its one revocation time and one audit entry.
  */
+#[TestsCommand(RevokeProjectBindingCommand::class)]
 final class RevokeProjectBindingTest extends TestCase
 {
     use CommitsHookRows;

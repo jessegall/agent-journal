@@ -24,6 +24,7 @@ use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -31,6 +32,7 @@ use Tests\TestCase;
  * A record given to an actor at main is held by main and names both, an actor in no forwarding inbox keeps it, and
  * a changed recipient under the same key conflicts.
  */
+#[TestsCommand(AssignRecordCommand::class)]
 final class AssignRecordTest extends TestCase
 {
     use CommitsHookRows;

@@ -74,6 +74,7 @@ use Tests\Fixtures\Agents\CountingImageVerifier;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\ServesEveryCombination;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\FixedServerClock;
 use Tests\Support\TestIds;
 use Tests\Support\WithActiveAccount;
@@ -83,6 +84,7 @@ use Tests\TestCase;
  * Every Core start runs StartAgentCommand: one session per request id, refused for a retired or busy agent, and a receipt
  * that never carries the start token, which only the host's own read gives.
  */
+#[TestsCommand(StartAgentCommand::class)]
 final class StartAgentTest extends TestCase
 {
     use CommitsHookRows;

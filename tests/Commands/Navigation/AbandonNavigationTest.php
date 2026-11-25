@@ -23,12 +23,14 @@ use App\Values\NavigationAnswer;
 use App\Values\OwnerAuthority;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
 /**
  * Giving up abandons the request and ends its key script entry as unavailable.
  */
+#[TestsCommand(AbandonNavigationCommand::class)]
 final class AbandonNavigationTest extends TestCase
 {
     use CommitsHookRows;

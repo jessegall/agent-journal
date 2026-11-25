@@ -18,6 +18,7 @@ use App\Support\Command;
 use App\Support\JournalCommands;
 use Illuminate\Support\Facades\Bus;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -26,6 +27,7 @@ use Tests\TestCase;
  * An inconclusive check waits for the owner's recheck.
  */
 #[TimeLimit(seconds: 4, reason: 'It commits accounts, attempts and starts through the bus and empties seven tables.')]
+#[TestsCommand(RecheckAccountCommand::class)]
 final class RecheckAccountTest extends TestCase
 {
     use CommitsHookRows;

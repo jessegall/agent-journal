@@ -13,11 +13,13 @@ use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 
 /**
  * A title over its limit is refused and the draft keeps its text.
  */
+#[TestsCommand(ChangeDocumentDetailsCommand::class)]
 final class ChangeDocumentDetailsTest extends TestCase
 {
     use CommitsHookRows;

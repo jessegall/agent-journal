@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Terminals;
 
+use App\Commands\Terminals\TakeTerminalControl\TakeTerminalControlCommand;
 use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Enums\Drivers\DriverOperation;
 use App\Enums\Terminals\TerminalControlRefusal;
@@ -13,6 +14,7 @@ use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\TerminalGrant;
 use App\Models\Projects\Host;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\InspectOnlyAuthorizer;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\Terminals\TakesTerminalControl;
@@ -24,6 +26,7 @@ use Tests\TestCase;
  * is refused, and a host that does not carry out browser input stays watch-only.
  */
 #[TimeLimit(seconds: 3, reason: 'It commits real rows on the hook database and empties its tables around each test.')]
+#[TestsCommand(TakeTerminalControlCommand::class)]
 final class TakeTerminalControlTest extends TestCase
 {
     use CommitsHookRows;

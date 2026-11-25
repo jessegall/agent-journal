@@ -21,6 +21,7 @@ use App\Values\AccountLabel;
 use App\Values\OwnerAuthority;
 use Illuminate\Support\Facades\Bus;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
@@ -30,6 +31,7 @@ use Tests\TestCase;
  * Removing an account cancels its running sign-in and leaves no replacement chosen.
  */
 #[TimeLimit(seconds: 4, reason: 'It commits accounts, attempts and starts through the bus and empties seven tables.')]
+#[TestsCommand(RemoveAccountCommand::class)]
 final class RemoveAccountTest extends TestCase
 {
     use CommitsHookRows;

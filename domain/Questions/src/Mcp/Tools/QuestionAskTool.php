@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Questions\Mcp\Tools;
 
+use App\Attributes\Bus\Dispatches;
 use App\Contracts\Actors\ActorTypes;
 use App\Contracts\Bus\Command;
-use App\Attributes\Bus\Dispatches;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\MessageWriteTool;
 use App\Support\ActorIdentity;

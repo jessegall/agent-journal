@@ -7,6 +7,7 @@ namespace Tests\Commands\Access;
 use App\Commands\Access\GrantEnvironmentAccess\GrantEnvironmentAccessCommand;
 use App\Enums\Messages\InboxPermission;
 use App\Models\Access\EnvironmentUserGrant;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -14,6 +15,7 @@ use Tests\TestCase;
  * The owner grants a user access to the journal with what they may do, kept with who granted it; a second grant
  * replaces the first, which is kept as revoked.
  */
+#[TestsCommand(GrantEnvironmentAccessCommand::class)]
 final class GrantEnvironmentAccessTest extends TestCase
 {
     use RefreshHookDatabase;

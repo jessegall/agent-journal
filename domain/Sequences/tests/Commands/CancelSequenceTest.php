@@ -9,10 +9,12 @@ use Domain\Sequences\Enums\SequenceRunStatus;
 use Domain\Sequences\Tests\Fixtures\SequenceFixtures;
 use Domain\Sequences\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * A running sequence is cancelled and stays at the step it reached.
  */
+#[TestsCommand(CancelSequenceCommand::class)]
 final class CancelSequenceTest extends TestCase
 {
     use CommitsHookRows;

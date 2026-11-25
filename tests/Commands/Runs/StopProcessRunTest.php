@@ -9,6 +9,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Enums\Runs\LifecycleStatus;
 use App\Exceptions\StopRefused;
 use App\Values\PartKey;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -16,6 +17,7 @@ use Tests\TestCase;
  * The agent that started a run stops it with a reason, which leaves it stopped and stale; a run that already ended
  * is refused.
  */
+#[TestsCommand(StopProcessRunCommand::class)]
 final class StopProcessRunTest extends TestCase
 {
     use RefreshHookDatabase;

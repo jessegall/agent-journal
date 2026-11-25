@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
+use App\Commands\Projects\RevokeDeviceGrant\RevokeDeviceGrantCommand;
 use App\Enums\Connections\BindingReadiness;
 use App\Models\Projects\DeviceGrant;
 use App\Models\Projects\ProjectBinding;
@@ -16,12 +17,14 @@ use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\ConnectsProjects;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * A revoked grant is refused while the binding stays connected, and revoking one terminal's sign-in leaves the other
  * working.
  */
+#[TestsCommand(RevokeDeviceGrantCommand::class)]
 final class RevokeDeviceGrantTest extends TestCase
 {
     use CommitsHookRows;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Settings;
 
+use App\Commands\Settings\SetStringChoice\SetStringChoiceCommand;
 use App\Contracts\Settings\EnabledSettingsGroup;
 use App\Contracts\Settings\SettingsResolver;
 use App\Enums\Settings\SettingsOutcome;
@@ -11,6 +12,7 @@ use App\Values\SettingsChange;
 use Domain\Rules\RulesDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\InstallsCommandModules;
 use Tests\Support\Settings\ChangesReviewsSettings;
 use Tests\Support\Settings\UsesReviewsSettings;
@@ -19,6 +21,7 @@ use Tests\TestCase;
 /**
  * The owner picks one of a setting's named choices, and picking it again changes nothing.
  */
+#[TestsCommand(SetStringChoiceCommand::class)]
 final class SetStringChoiceTest extends TestCase
 {
     use ChangesReviewsSettings;

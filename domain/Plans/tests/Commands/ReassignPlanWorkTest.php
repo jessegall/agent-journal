@@ -22,11 +22,13 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * A user hands a phase's work given out at once to another holder: the phase and its open tasks move to them
  * together.
  */
+#[TestsCommand(ReassignPlanWorkCommand::class)]
 final class ReassignPlanWorkTest extends TestCase
 {
     use CommitsHookRows;

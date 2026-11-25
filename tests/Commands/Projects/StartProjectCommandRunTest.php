@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Commands\Projects;
 
 use App\Api\Connections\ProjectCommandFrame;
+use App\Commands\Projects\StartProjectCommandRun\StartProjectCommandRunCommand;
 use App\Enums\Connections\BindingReadiness;
 use App\Enums\Connections\CommandRunStatus;
 use App\Enums\Projects\ArrangementType;
@@ -23,6 +24,7 @@ use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
@@ -30,6 +32,7 @@ use Tests\TestCase;
  * piped input under the same request id is refused, a verb that is no journal route, another agent's binding and a host
  * credential alone are refused, and a revoke ends the agent's streams.
  */
+#[TestsCommand(StartProjectCommandRunCommand::class)]
 final class StartProjectCommandRunTest extends TestCase
 {
     use CommitsHookRows;

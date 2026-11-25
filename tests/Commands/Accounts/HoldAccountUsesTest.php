@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Links\Note;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
@@ -25,6 +26,7 @@ use Tests\TestCase;
 /**
  * An agent may neither read nor maintain account uses.
  */
+#[TestsCommand(HoldAccountUsesCommand::class)]
 final class HoldAccountUsesTest extends TestCase
 {
     use CommitsHookRows;

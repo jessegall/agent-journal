@@ -7,12 +7,14 @@ namespace Tests\Commands\Runs;
 use App\Commands\Runs\MarkRunsStale\MarkRunsStaleCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Values\PartKey;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
  * Every unfinished run of a project is marked stale with the reason and counted.
  */
+#[TestsCommand(MarkRunsStaleCommand::class)]
 final class MarkRunsStaleTest extends TestCase
 {
     use RefreshHookDatabase;

@@ -13,6 +13,7 @@ use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Models\Runs\ResultReceipt;
 use App\Values\PartKey;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Processes\StartsWithApprovedAcmePair;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
@@ -22,6 +23,7 @@ use Tests\TestCase;
  * A replay of an ended part appends a linked assessment and runs nothing again; an evidence run and an unended part
  * are not replayed.
  */
+#[TestsCommand(ReplayAssessmentCommand::class)]
 final class ReplayAssessmentTest extends TestCase
 {
     use RefreshHookDatabase;

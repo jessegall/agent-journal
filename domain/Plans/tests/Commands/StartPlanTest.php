@@ -17,11 +17,13 @@ use Domain\Plans\Tests\TestCase;
 use Domain\Plans\Values\PlanFilters;
 use Tests\Fixtures\Hooks\TestFailure;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * A planned plan starts once and says who started it; a paused plan, a start that rolls back and a request with no
  * actor leave it as it was and announce nothing.
  */
+#[TestsCommand(StartPlanCommand::class)]
 final class StartPlanTest extends TestCase
 {
     use CommitsHookRows;

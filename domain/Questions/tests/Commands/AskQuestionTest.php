@@ -12,12 +12,14 @@ use Domain\Questions\Exceptions\QuestionRefused;
 use Domain\Questions\Models\Question;
 use Domain\Questions\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * A member of a chat asks another member an open question or a choice between options: it keeps its text, asker,
  * target and trimmed options; a blank text, an open question with options, a choice without two distinct options, a
  * chat the asker is not in and a target outside the chat are refused and ask nothing.
  */
+#[TestsCommand(AskQuestionCommand::class)]
 final class AskQuestionTest extends TestCase
 {
     use CommitsHookRows;

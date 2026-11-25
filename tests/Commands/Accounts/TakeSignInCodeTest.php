@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Commands\Accounts;
 
 use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
+use App\Commands\Accounts\TakeSignInCode\TakeSignInCodeCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Enums\Accounts\SignInMethod;
 use App\Enums\Accounts\SignInStatus;
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -26,6 +28,7 @@ use Tests\TestCase;
  * with the answer erased, and a failed answer flashes no code into the session.
  */
 #[TimeLimit(seconds: 5, reason: 'It enrolls hosts, sends signed calls and runs a short host process.')]
+#[TestsCommand(TakeSignInCodeCommand::class)]
 final class TakeSignInCodeTest extends TestCase
 {
     use CommitsHookRows;

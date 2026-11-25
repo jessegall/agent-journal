@@ -11,11 +11,13 @@ use App\Models\Projects\Host;
 use App\Support\EnrolledHost;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * A claimed key script carries its script and resumes from the step the host reported.
  */
+#[TestsCommand(ResumeKeyScriptCommand::class)]
 final class ResumeKeyScriptTest extends TestCase
 {
     use CommitsHookRows;

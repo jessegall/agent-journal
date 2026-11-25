@@ -45,6 +45,7 @@ use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Contracts\Events\Dispatcher;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TestStartAuthority;
@@ -54,6 +55,7 @@ use Tests\Support\TestStartAuthority;
  * the title and abstract are kept trimmed, and an empty title, a two-line abstract or too many links leave no row and
  * name the field.
  */
+#[TestsCommand(CreateDocumentCommand::class)]
 final class CreateDocumentTest extends TestCase
 {
     use CommitsHookRows;

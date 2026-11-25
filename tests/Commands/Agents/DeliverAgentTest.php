@@ -20,6 +20,7 @@ use App\Values\DriverReceipt;
 use Illuminate\Support\Str;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
@@ -28,6 +29,7 @@ use Tests\TestCase;
  * are numbered in the order they were accepted, an applied request keeps the driver's whole session id, and a message
  * over the limit is refused before it is accepted.
  */
+#[TestsCommand(DeliverAgentCommand::class)]
 final class DeliverAgentTest extends TestCase
 {
     use CommitsHookRows;

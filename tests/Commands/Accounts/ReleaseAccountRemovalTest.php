@@ -33,6 +33,7 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
@@ -42,6 +43,7 @@ use Tests\TestCase;
  * The journal releases a removed account for cleanup only once no process runs on it, and only once.
  */
 #[TimeLimit(seconds: 4, reason: 'It commits accounts, attempts and starts through the bus and empties seven tables.')]
+#[TestsCommand(ReleaseAccountRemovalCommand::class)]
 final class ReleaseAccountRemovalTest extends TestCase
 {
     use CommitsHookRows;

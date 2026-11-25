@@ -11,11 +11,13 @@ use Domain\Memory\Models\Memory;
 use Domain\Memory\Tests\TestCase;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * An agent keeps a memory of its own with its text and weight; the same request sent again keeps one memory, and a
  * blank text or a weight outside one to ten is refused naming the field and keeps nothing.
  */
+#[TestsCommand(SaveMemoryCommand::class)]
 final class SaveMemoryTest extends TestCase
 {
     use CommitsHookRows;

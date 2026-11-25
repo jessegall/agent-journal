@@ -28,6 +28,7 @@ use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 
 /**
@@ -35,6 +36,7 @@ use Tests\Support\TestIds;
  * the holder and a phase whose tasks are all over is skipped; a task that vanished aborts the whole of it, and work
  * added later takes no holder from it.
  */
+#[TestsCommand(AssignPlanWorkCommand::class)]
 final class AssignPlanWorkTest extends TestCase
 {
     use CommitsHookRows;

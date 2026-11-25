@@ -10,12 +10,14 @@ use App\Exceptions\DriverRequestRefused;
 use App\Models\Agents\AgentRuntime;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * The owner moves a lost runtime to a new process: only a runtime needing attention at the generation read is
  * reassigned, and it starts again as its next generation.
  */
+#[TestsCommand(ReassignAgentRuntimeCommand::class)]
 final class ReassignAgentRuntimeTest extends TestCase
 {
     use CommitsHookRows;

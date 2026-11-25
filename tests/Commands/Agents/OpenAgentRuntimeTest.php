@@ -59,6 +59,7 @@ use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Skills\PublishesSkills;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -66,6 +67,7 @@ use Tests\TestCase;
 /**
  * Opening a runtime records its first delivery, and a folder outside the host's roots is refused.
  */
+#[TestsCommand(OpenAgentRuntimeCommand::class)]
 final class OpenAgentRuntimeTest extends TestCase
 {
     use CommitsHookRows;

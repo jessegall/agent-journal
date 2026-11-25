@@ -15,6 +15,7 @@ use Domain\Rules\Tests\Fixtures\RuleFixtures;
 use Domain\Rules\Tests\TestCase;
 use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestText;
 
@@ -23,6 +24,7 @@ use Tests\Support\TestText;
  * approved; a rule to replace that is not there, an empty text or reason and one past its limit are refused, while a
  * text and reason at their limits are kept.
  */
+#[TestsCommand(ProposeRuleCommand::class)]
 final class ProposeRuleTest extends TestCase
 {
     use RefreshHookDatabase;

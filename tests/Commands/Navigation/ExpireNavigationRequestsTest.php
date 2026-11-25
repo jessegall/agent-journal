@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Navigation;
 
+use App\Commands\Navigation\ExpireNavigationRequests\ExpireNavigationRequestsCommand;
 use App\Enums\Drivers\HoldReason;
 use App\Enums\Drivers\RequestOutcome;
 use App\Enums\Drivers\RequestProgress;
@@ -19,12 +20,14 @@ use Carbon\CarbonImmutable;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Engine\RunsEnginePasses;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * The engine registers the expiry sweep, and a request past its time expires on the next pass and ends its key
  * script.
  */
+#[TestsCommand(ExpireNavigationRequestsCommand::class)]
 final class ExpireNavigationRequestsTest extends TestCase
 {
     use CommitsHookRows;

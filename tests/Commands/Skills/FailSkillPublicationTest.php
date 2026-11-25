@@ -12,6 +12,7 @@ use App\Exceptions\SkillPublicationStale;
 use App\Models\Skills\SkillPublication;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Skills\HasSkillTargets;
 use Tests\Support\Skills\IntendsSkillPublications;
 use Tests\TestCase;
@@ -19,6 +20,7 @@ use Tests\TestCase;
 /**
  * A publication that could not be written is failed with its reason and lets go of its worker.
  */
+#[TestsCommand(FailSkillPublicationCommand::class)]
 final class FailSkillPublicationTest extends TestCase
 {
     use CommitsHookRows;

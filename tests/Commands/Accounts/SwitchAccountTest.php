@@ -21,6 +21,7 @@ use App\Values\AccountLabel;
 use App\Values\OwnerAuthority;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
@@ -30,6 +31,7 @@ use Tests\TestCase;
  * against an older selection is refused, a refused choice leaves the other program's default alone, an account that
  * must sign in again or is removed cannot be chosen, and an agent can neither switch nor rename.
  */
+#[TestsCommand(SwitchAccountCommand::class)]
 final class SwitchAccountTest extends TestCase
 {
     use CommitsHookRows;

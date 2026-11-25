@@ -18,11 +18,13 @@ use App\Values\BrowserInputCapabilities;
 use App\Values\DriverReceipt;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * An uncertain delivery is resolved, not retried, and a wake has no delivery to resolve.
  */
+#[TestsCommand(ResolveDriverDeliveryCommand::class)]
 final class ResolveDriverDeliveryTest extends TestCase
 {
     use CommitsHookRows;

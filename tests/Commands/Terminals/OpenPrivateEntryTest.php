@@ -9,6 +9,7 @@ use App\Enums\Drivers\DriverOperation;
 use App\Exceptions\TerminalControlRefused;
 use App\Models\Projects\Host;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\Terminals\TakesTerminalControl;
 use Tests\TestCase;
@@ -17,6 +18,7 @@ use Tests\TestCase;
  * The holder opens a private entry at the next sequence, which asks the host to open it; an entry out of sequence is
  * refused.
  */
+#[TestsCommand(OpenPrivateEntryCommand::class)]
 final class OpenPrivateEntryTest extends TestCase
 {
     use CommitsHookRows;

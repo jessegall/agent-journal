@@ -15,12 +15,14 @@ use App\Models\CommandRules\RuleProposal;
 use App\Values\ProposalReceipt;
 use App\Values\ProposedRule;
 use Tests\Fixtures\Processes\AcmeDeclarations;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
  * The author revises a proposal to its second revision; another agent cannot.
  */
+#[TestsCommand(ReviseRuleProposalCommand::class)]
 final class ReviseRuleProposalTest extends TestCase
 {
     use RefreshHookDatabase;

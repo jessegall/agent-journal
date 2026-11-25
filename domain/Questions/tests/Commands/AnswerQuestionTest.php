@@ -13,12 +13,14 @@ use Domain\Questions\Models\QuestionAnswerNotice;
 use Domain\Questions\Tests\Fixtures\QuestionFixtures;
 use Domain\Questions\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * The target of a question answers it once: the answer is kept trimmed with its time and the asking agent's running
  * session is told; a blank answer, an answer from anyone else, a second answer and a choice answered outside its
  * options are refused and keep the question as it was.
  */
+#[TestsCommand(AnswerQuestionCommand::class)]
 final class AnswerQuestionTest extends TestCase
 {
     use CommitsHookRows;

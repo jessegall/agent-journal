@@ -14,12 +14,14 @@ use App\Support\EnrolledHost;
 use App\Values\BrowserInputCapabilities;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * A setting the host staged counts as applied only on its turn's evidence: the model the output names confirms a model
  * change, while an effort change stays unconfirmed.
  */
+#[TestsCommand(ChangeAgentModelCommand::class)]
 final class ChangeAgentModelTest extends TestCase
 {
     use CommitsHookRows;

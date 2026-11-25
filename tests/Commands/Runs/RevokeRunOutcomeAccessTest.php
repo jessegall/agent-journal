@@ -20,6 +20,7 @@ use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\RunOutcomes;
 use App\Values\OwnerAuthority;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\Support\TestRunAdmissions;
@@ -28,6 +29,7 @@ use Tests\TestCase;
 /**
  * An entitled user reads only a run's safe summary, and nothing more once the entitlement is revoked.
  */
+#[TestsCommand(RevokeRunOutcomeAccessCommand::class)]
 final class RevokeRunOutcomeAccessTest extends TestCase
 {
     use RefreshHookDatabase;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Drivers;
 
+use App\Commands\Drivers\NotifyEntryReplayed\NotifyEntryReplayedCommand;
 use App\Contracts\Actors\ActorAttention;
 use App\Enums\Navigation\NavigationCompletion;
 use App\Enums\Navigation\NavigationReason;
@@ -20,12 +21,14 @@ use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\RecordedAttention;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
  * A host reports a menu entry it replayed: the replay counts once per operation and lists the build it ran on.
  */
+#[TestsCommand(NotifyEntryReplayedCommand::class)]
 final class NotifyEntryReplayedTest extends TestCase
 {
     use CommitsHookRows;

@@ -12,6 +12,7 @@ use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Support\OutputRecorder;
 use Illuminate\Support\Facades\Storage;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
@@ -20,6 +21,7 @@ use Tests\TestCase;
 /**
  * A preview lists what goes and a clean marks the output removed; a run that has not ended keeps its output.
  */
+#[TestsCommand(CleanProcessOutputCommand::class)]
 final class CleanProcessOutputTest extends TestCase
 {
     use RefreshHookDatabase;

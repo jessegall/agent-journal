@@ -10,6 +10,7 @@ use App\Models\Agents\Agent;
 use App\Models\CommandRules\EvidencePermit;
 use App\Support\ActorIdentity;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -17,6 +18,7 @@ use Tests\TestCase;
 /**
  * The owner issues an evidence permit for a known line, made out to its runner; an unknown line gets no permit.
  */
+#[TestsCommand(IssueEvidencePermitCommand::class)]
 final class IssueEvidencePermitTest extends TestCase
 {
     use RefreshHookDatabase;

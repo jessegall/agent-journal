@@ -20,6 +20,7 @@ use Domain\Rules\Tests\Fixtures\RuleFixtures;
 use Domain\Rules\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\Support\TestText;
 
@@ -27,6 +28,7 @@ use Tests\Support\TestText;
  * The user approves a proposed rule, which then holds; an agent may not approve one, and a rule already reviewed is
  * refused and stays as it was.
  */
+#[TestsCommand(ApproveRuleCommand::class)]
 final class ApproveRuleTest extends TestCase
 {
     use CommitsHookRows;

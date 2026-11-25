@@ -9,11 +9,13 @@ use Domain\Memory\Commands\RemoveMemory\RemoveMemoryCommand;
 use Domain\Memory\Models\Memory;
 use Domain\Memory\Tests\Fixtures\MemoryFixtures;
 use Domain\Memory\Tests\TestCase;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 
 /**
  * An agent removes a memory of its own; another agent's memory is not there for it and stays.
  */
+#[TestsCommand(RemoveMemoryCommand::class)]
 final class RemoveMemoryTest extends TestCase
 {
     use RefreshHookDatabase;

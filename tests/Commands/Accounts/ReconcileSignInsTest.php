@@ -18,6 +18,7 @@ use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Bus;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -26,6 +27,7 @@ use Tests\TestCase;
  * A restarted runner ends only the sign-ins it lost.
  */
 #[TimeLimit(seconds: 3, reason: 'It commits attempts through the bus and empties four tables per test.')]
+#[TestsCommand(ReconcileSignInsCommand::class)]
 final class ReconcileSignInsTest extends TestCase
 {
     use CommitsHookRows;

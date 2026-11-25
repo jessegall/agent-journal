@@ -29,6 +29,7 @@ use App\Values\SupervisorTarget;
 use App\Values\TrustedEntryAuthority;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\FixedServerClock;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -37,6 +38,7 @@ use Tests\TestCase;
  * Two days close an ask, and the owner's late reply keeps the outcome it closed with.
  */
 #[TimeLimit(seconds: 6, reason: 'It activates the profiles and routes several asks through the bus.')]
+#[TestsCommand(ReplyToAskCommand::class)]
 final class ReplyToAskTest extends TestCase
 {
     use CommitsHookRows;

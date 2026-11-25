@@ -13,12 +13,14 @@ use Domain\Documents\Exceptions\DraftHeld;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 
 /**
  * An open starts a draft at version one and opening again returns the same draft; another user is refused naming
  * the holder, who cannot open a second document.
  */
+#[TestsCommand(OpenDocumentCommand::class)]
 final class OpenDocumentTest extends TestCase
 {
     use CommitsHookRows;

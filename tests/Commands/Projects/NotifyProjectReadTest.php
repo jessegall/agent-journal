@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
+use App\Commands\Projects\NotifyProjectRead\NotifyProjectReadCommand;
 use App\Enums\Projects\ProjectReadFailure;
 use App\Enums\Projects\ProjectReadStatus;
 use App\Enums\Projects\ProjectReadType;
@@ -22,12 +23,14 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * A host reports a read: a folder read keeps its entries, another host's, a repeated or an out-of-bounds report changes
  * nothing, a failure from the allowlist settles the read, and a late answer to an expired read changes nothing.
  */
+#[TestsCommand(NotifyProjectReadCommand::class)]
 final class NotifyProjectReadTest extends TestCase
 {
     use CommitsHookRows;

@@ -10,10 +10,12 @@ use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * An agent running two tasks focuses on one of them and its focus moves there; focusing on it again leaves it there.
  */
+#[TestsCommand(FocusTaskCommand::class)]
 final class FocusTaskTest extends TestCase
 {
     use CommitsHookRows;

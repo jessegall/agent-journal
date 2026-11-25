@@ -25,6 +25,7 @@ use App\Values\OwnerAuthority;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -32,6 +33,7 @@ use Tests\TestCase;
  * The owner retries a switch whose start failed, which starts the replacement again under the same request; with no
  * host connected that start fails anew, naming why. A switch whose start has not failed is refused.
  */
+#[TestsCommand(RetryDriverSwitchCommand::class)]
 final class RetryDriverSwitchTest extends TestCase
 {
     use CommitsHookRows;

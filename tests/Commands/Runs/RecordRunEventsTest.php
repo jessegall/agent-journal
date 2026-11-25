@@ -8,12 +8,14 @@ use App\Commands\Runs\RecordRunEvents\RecordRunEventsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Runs\RunEventType;
 use App\Values\PartKey;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
  * The runner sends a batch of a run's events; a heartbeat in it keeps the run alive.
  */
+#[TestsCommand(RecordRunEventsCommand::class)]
 final class RecordRunEventsTest extends TestCase
 {
     use RefreshHookDatabase;

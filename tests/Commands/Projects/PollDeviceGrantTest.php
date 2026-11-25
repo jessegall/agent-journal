@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
+use App\Commands\Projects\PollDeviceGrant\PollDeviceGrantCommand;
 use App\Models\Projects\DeviceGrant;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
@@ -11,12 +12,14 @@ use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\ConnectsProjects;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * A terminal polls its device grant: an expired code is refused, a poll too soon slows down and keeps the request
  * waiting, and a lost successful poll answers already issued with the reference.
  */
+#[TestsCommand(PollDeviceGrantCommand::class)]
 final class PollDeviceGrantTest extends TestCase
 {
     use CommitsHookRows;

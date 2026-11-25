@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
+use App\Commands\Agents\NotifyFailure\NotifyFailureCommand;
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Contracts\Actors\CurrentActorSetter;
@@ -23,6 +24,7 @@ use App\Values\OwnerAuthority;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -31,6 +33,7 @@ use Tests\TestCase;
  * A host reports that a claimed start failed: the start stops with proof, and a second report changes nothing.
  */
 #[TimeLimit(seconds: 4, reason: 'It opens runtimes, enrolls hosts and sends signed calls, emptying many tables.')]
+#[TestsCommand(NotifyFailureCommand::class)]
 final class NotifyFailureTest extends TestCase
 {
     use CommitsHookRows;

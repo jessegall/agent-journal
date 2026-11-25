@@ -23,6 +23,7 @@ use App\Values\StartRequest;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\ServesEveryCombination;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -31,6 +32,7 @@ use Tests\TestCase;
  * Continuing a start makes one successor session that runs with the account chosen now, whoever asks how often; the
  * old session keeps its own account.
  */
+#[TestsCommand(ContinueStartCommand::class)]
 final class ContinueStartTest extends TestCase
 {
     use RefreshHookDatabase;

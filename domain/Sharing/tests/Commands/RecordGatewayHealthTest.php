@@ -19,12 +19,14 @@ use Domain\Sharing\Support\ClaimedGatewayOperation;
 use Domain\Sharing\Tests\Fixtures\ShareFixtures;
 use Domain\Sharing\Tests\Support\FakeShareGateway;
 use Domain\Sharing\Tests\TestCase;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 
 /**
  * A gateway run notes a healthy endpoint and never moves a share's deadline.
  */
+#[TestsCommand(RecordGatewayHealthCommand::class)]
 final class RecordGatewayHealthTest extends TestCase
 {
     use RefreshHookDatabase;

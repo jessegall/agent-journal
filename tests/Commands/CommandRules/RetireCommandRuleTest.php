@@ -17,6 +17,7 @@ use App\Values\CommandRule;
 use App\Values\ProgramSpellings;
 use App\Values\RuleScope;
 use Tests\Fixtures\Processes\AcmeDeclarations;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
 use Tests\Support\TestRunAdmissions;
@@ -25,6 +26,7 @@ use Tests\TestCase;
 /**
  * Retiring a rule makes an admission queued under it refuse on its start.
  */
+#[TestsCommand(RetireCommandRuleCommand::class)]
 final class RetireCommandRuleTest extends TestCase
 {
     use RefreshHookDatabase;

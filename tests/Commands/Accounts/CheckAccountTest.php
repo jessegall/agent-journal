@@ -19,6 +19,7 @@ use App\Support\JournalCommands;
 use App\Values\AccountLabel;
 use App\Values\OwnerAuthority;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -28,6 +29,7 @@ use Tests\TestCase;
  * nothing.
  */
 #[TimeLimit(seconds: 4, reason: 'It commits account changes through the bus and empties five tables per test.')]
+#[TestsCommand(CheckAccountCommand::class)]
 final class CheckAccountTest extends TestCase
 {
     use CommitsHookRows;

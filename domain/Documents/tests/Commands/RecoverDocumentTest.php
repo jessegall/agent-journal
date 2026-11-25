@@ -20,12 +20,14 @@ use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Tests\TestCase;
 use Domain\Documents\Values\DraftTarget;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 
 /**
  * A user recovers an agent's draft and the revision keeps the agent as author; a blank reason is refused and the
  * draft stays held, and an agent cannot recover a draft.
  */
+#[TestsCommand(RecoverDocumentCommand::class)]
 final class RecoverDocumentTest extends TestCase
 {
     use CommitsHookRows;

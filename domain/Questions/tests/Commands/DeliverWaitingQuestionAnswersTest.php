@@ -10,11 +10,13 @@ use Domain\Questions\Models\QuestionAnswerNotice;
 use Domain\Questions\Tests\Fixtures\QuestionFixtures;
 use Domain\Questions\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * The journal hands an agent's running session the notices of answers it has not had yet, oldest first, and counts
  * them; a notice already delivered is not sent again.
  */
+#[TestsCommand(DeliverWaitingQuestionAnswersCommand::class)]
 final class DeliverWaitingQuestionAnswersTest extends TestCase
 {
     use CommitsHookRows;

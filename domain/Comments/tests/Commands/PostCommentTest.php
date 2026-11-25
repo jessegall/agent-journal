@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\InstallsNotesModule;
 
 /**
@@ -28,6 +29,7 @@ use Tests\Support\InstallsNotesModule;
  * sent again is the same comment while another body under its key is a conflict, and a record that is not there takes
  * no comment.
  */
+#[TestsCommand(PostCommentCommand::class)]
 final class PostCommentTest extends TestCase
 {
     use CommitsHookRows;

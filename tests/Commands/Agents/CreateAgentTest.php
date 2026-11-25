@@ -9,12 +9,14 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Sessions\AgentResolver;
 use App\Exceptions\CommandInputInvalid;
 use App\Models\Agents\Agent;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
  * Core creates helper agents through CreateAgentCommand, and refuses a blank name.
  */
+#[TestsCommand(CreateAgentCommand::class)]
 final class CreateAgentTest extends TestCase
 {
     use RefreshHookDatabase;

@@ -41,6 +41,7 @@ use Illuminate\Support\Str;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\Agents\ServesEveryCombination;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -51,6 +52,7 @@ use Tests\TestCase;
  * as it was, an explicit start runs the chosen account and driver type, an automatic codex start on the terminal default
  * and a start the host cannot run are refused before a session, and an explicit resume continues the chosen thread.
  */
+#[TestsCommand(StartProfileMainCommand::class)]
 final class StartProfileMainTest extends TestCase
 {
     use HasContainerSupport;

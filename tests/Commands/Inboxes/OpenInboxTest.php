@@ -7,12 +7,14 @@ namespace Tests\Commands\Inboxes;
 use App\Commands\Inboxes\OpenInbox\OpenInboxCommand;
 use App\Models\Inboxes\InboxMember;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * A provider opens its inbox with its members; opening it again finds the same inbox and adds only a member not yet
  * in it.
  */
+#[TestsCommand(OpenInboxCommand::class)]
 final class OpenInboxTest extends TestCase
 {
     use CommitsHookRows;

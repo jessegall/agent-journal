@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Navigation;
 
+use App\Commands\Navigation\RaiseNavigation\RaiseNavigationCommand;
 use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Assignments\AssignmentStorage;
@@ -42,6 +43,7 @@ use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\RecordedAttention;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -49,6 +51,7 @@ use Tests\TestCase;
  * A host whose key script stalled on a screen raises a navigation request for it, once for the same operation; a
  * report from an attempt the request has moved past is refused and raises nothing.
  */
+#[TestsCommand(RaiseNavigationCommand::class)]
 final class RaiseNavigationTest extends TestCase
 {
     use CommitsHookRows;

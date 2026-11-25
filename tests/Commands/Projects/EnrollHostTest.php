@@ -7,6 +7,7 @@ namespace Tests\Commands\Projects;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Enums\Projects\ArrangementType;
 use App\Models\Projects\Host;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -14,6 +15,7 @@ use Tests\TestCase;
  * A host enrolls with its installation name, start roots and arrangement, and gets its id and a secret that the
  * journal keeps only as a digest.
  */
+#[TestsCommand(EnrollHostCommand::class)]
 final class EnrollHostTest extends TestCase
 {
     use RefreshHookDatabase;

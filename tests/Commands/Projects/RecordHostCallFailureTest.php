@@ -25,6 +25,7 @@ use App\Values\StartRequest;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\ServesEveryCombination;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\FixedServerClock;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\WithActiveAccount;
@@ -33,6 +34,7 @@ use Tests\TestCase;
 /**
  * A start while every host fails waits past the presence window and ends after half an hour.
  */
+#[TestsCommand(RecordHostCallFailureCommand::class)]
 final class RecordHostCallFailureTest extends TestCase
 {
     use RefreshHookDatabase;

@@ -12,12 +12,14 @@ use Domain\Reminders\Exceptions\ReminderEnded;
 use Domain\Reminders\Models\Reminder;
 use Domain\Reminders\Tests\Fixtures\ReminderFixtures;
 use Domain\Reminders\Tests\TestCase;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 
 /**
  * Its owner finishes an open reminder, which is then done; a finished one cannot be finished again, and another
  * user's reminder is not there for them.
  */
+#[TestsCommand(FinishReminderCommand::class)]
 final class FinishReminderTest extends TestCase
 {
     use RefreshHookDatabase;

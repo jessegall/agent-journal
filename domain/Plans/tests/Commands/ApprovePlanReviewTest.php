@@ -21,11 +21,13 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * A reviewer approves the open review of a plan: one decision is kept that a replay under its key returns, and the
  * plan may start; a decision on a review that was withdrawn is refused with its outcome.
  */
+#[TestsCommand(ApprovePlanReviewCommand::class)]
 final class ApprovePlanReviewTest extends TestCase
 {
     use CommitsHookRows;

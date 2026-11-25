@@ -51,12 +51,14 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Tasks\FailsAfterPush;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Settings\SwitchesDomainsOff;
 
 /**
  * An agent starts a task: it opens the task's first run, claimed by the agent, and a retry under the same key gets
  * that run; another agent is refused while it runs, and a task that ended is not started again.
  */
+#[TestsCommand(StartTaskCommand::class)]
 final class StartTaskTest extends TestCase
 {
     use CommitsHookRows;

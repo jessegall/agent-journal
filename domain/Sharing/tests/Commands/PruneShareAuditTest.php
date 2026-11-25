@@ -17,6 +17,7 @@ use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Tests\Fixtures\ShareFixtures;
 use Domain\Sharing\Tests\Support\FakeShareGateway;
 use Domain\Sharing\Tests\TestCase;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 
@@ -25,6 +26,7 @@ use Tests\Support\TestActors;
  * each counted on its share with the time of pruning and one AuditPruned fact; recent rows and live shares' steps
  * stay; a second run with nothing to prune writes nothing.
  */
+#[TestsCommand(PruneShareAuditCommand::class)]
 final class PruneShareAuditTest extends TestCase
 {
     use RefreshHookDatabase;

@@ -10,11 +10,13 @@ use Domain\Chat\Exceptions\ReactionRefused;
 use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Domain\Chat\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * A member reacts to a message with one emoji, sent as a reply to it in its inbox; anything but one emoji is refused
  * and sends nothing.
  */
+#[TestsCommand(ReactCommand::class)]
 final class ReactTest extends TestCase
 {
     use CommitsHookRows;

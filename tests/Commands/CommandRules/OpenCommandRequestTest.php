@@ -8,6 +8,7 @@ use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
 use App\Enums\CommandRules\RequestHoldReason;
 use App\Enums\CommandRules\RequestStatus;
 use App\Models\CommandRules\CommandRequest;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -15,6 +16,7 @@ use Tests\TestCase;
  * An agent opens a request for an unknown command: opening twice gives the same request with its propose step, another
  * project or agent gets its own, and a fresh read gives the same state and next step.
  */
+#[TestsCommand(OpenCommandRequestCommand::class)]
 final class OpenCommandRequestTest extends TestCase
 {
     use RefreshHookDatabase;

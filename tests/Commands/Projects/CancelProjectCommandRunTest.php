@@ -19,12 +19,14 @@ use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * The journal cancels an agent's running project command by its request key; another agent's cancel leaves it
  * running.
  */
+#[TestsCommand(CancelProjectCommandRunCommand::class)]
 final class CancelProjectCommandRunTest extends TestCase
 {
     use CommitsHookRows;

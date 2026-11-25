@@ -10,6 +10,7 @@ use App\Enums\Terminals\TerminalDraftChoice;
 use App\Exceptions\TerminalControlRefused;
 use App\Models\Projects\Host;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\Terminals\TakesTerminalControl;
 use Tests\TestCase;
@@ -18,6 +19,7 @@ use Tests\TestCase;
  * The holder chooses what happens to a draft at the next sequence, which goes to the host; a choice out of sequence is
  * refused naming the expected one.
  */
+#[TestsCommand(ChooseTerminalDraftCommand::class)]
 final class ChooseTerminalDraftTest extends TestCase
 {
     use CommitsHookRows;

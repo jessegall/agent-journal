@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
+use App\Commands\Projects\RecordHostCallAnswered\RecordHostCallAnsweredCommand;
 use App\Enums\Projects\HostRouteRole;
 use App\Models\Projects\Host;
 use App\Support\HostLinkAlarms;
@@ -11,6 +12,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Route;
 use RuntimeException;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
@@ -18,6 +20,7 @@ use Tests\TestCase;
  * and the alarm clears by itself on the next call the journal answers; the calls a host reports failed on its own side
  * are kept with it.
  */
+#[TestsCommand(RecordHostCallAnsweredCommand::class)]
 final class RecordHostCallAnsweredTest extends TestCase
 {
     use CommitsHookRows;

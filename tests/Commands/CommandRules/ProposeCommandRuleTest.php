@@ -26,6 +26,7 @@ use App\Values\ProposalReceipt;
 use App\Values\ProposedRule;
 use App\Values\RuleScope;
 use Tests\Fixtures\Processes\AcmeDeclarations;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -34,6 +35,7 @@ use Tests\TestCase;
  * one without its exit policy stays a draft naming the field, a check cannot be relabelled as ordinary, and the same
  * request id makes no duplicate while another payload under it is refused.
  */
+#[TestsCommand(ProposeCommandRuleCommand::class)]
 final class ProposeCommandRuleTest extends TestCase
 {
     use RefreshHookDatabase;

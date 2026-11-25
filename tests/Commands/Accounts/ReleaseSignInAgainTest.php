@@ -7,6 +7,7 @@ namespace Tests\Commands\Accounts;
 use App\Commands\Accounts\BeginSignInAgain\BeginSignInAgainCommand;
 use App\Commands\Accounts\CancelSignIn\CancelSignInCommand;
 use App\Commands\Accounts\ReconcileAccounts\ReconcileAccountsCommand;
+use App\Commands\Accounts\ReleaseSignInAgain\ReleaseSignInAgainCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Accounts\AccountProcessRole;
 use App\Enums\Accounts\CommandEntry;
@@ -26,6 +27,7 @@ use Illuminate\Support\Str;
 use RuntimeException;
 use Tests\Fixtures\Profiles\FailsAfterRelease;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -35,6 +37,7 @@ use Tests\TestCase;
  * ended.
  */
 #[TimeLimit(seconds: 4, reason: 'It commits accounts, attempts and starts through the bus and empties seven tables.')]
+#[TestsCommand(ReleaseSignInAgainCommand::class)]
 final class ReleaseSignInAgainTest extends TestCase
 {
     use CommitsHookRows;

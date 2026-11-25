@@ -23,10 +23,12 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * A user takes back a phase's work given out at once: the phase and its tasks lose their holder together.
  */
+#[TestsCommand(UnassignPlanWorkCommand::class)]
 final class UnassignPlanWorkTest extends TestCase
 {
     use CommitsHookRows;

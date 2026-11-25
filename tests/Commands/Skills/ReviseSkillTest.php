@@ -20,6 +20,7 @@ use App\Values\SkillDraft;
 use App\Values\SkillRevisionResult;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TestStartAuthority;
@@ -30,6 +31,7 @@ use Throwable;
  * A revise gives the next revision and keeps the first readable; a revise against an old revision is refused naming
  * the latest.
  */
+#[TestsCommand(ReviseSkillCommand::class)]
 final class ReviseSkillTest extends TestCase
 {
     use CommitsHookRows;

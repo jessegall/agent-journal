@@ -8,6 +8,7 @@ use App\Commands\Runs\RecordRunChunk\RecordRunChunkCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Processes\OutputStream;
 use App\Values\PartKey;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -15,6 +16,7 @@ use Tests\TestCase;
  * The runner sends a part's output in chunks at their offset, and the journal answers how far it has kept; a chunk
  * sent again at an offset already kept adds nothing.
  */
+#[TestsCommand(RecordRunChunkCommand::class)]
 final class RecordRunChunkTest extends TestCase
 {
     use RefreshHookDatabase;

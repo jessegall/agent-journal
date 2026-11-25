@@ -11,6 +11,7 @@ use App\Enums\Terminals\TerminalGrantStatus;
 use App\Models\Drivers\TerminalGrant;
 use App\Models\Projects\Host;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\Terminals\TakesTerminalControl;
 use Tests\TestCase;
@@ -18,6 +19,7 @@ use Tests\TestCase;
 /**
  * A viewer cancels a take the host has not answered yet, which asks the host once to cancel it.
  */
+#[TestsCommand(CancelTerminalTakeCommand::class)]
 final class CancelTerminalTakeTest extends TestCase
 {
     use CommitsHookRows;

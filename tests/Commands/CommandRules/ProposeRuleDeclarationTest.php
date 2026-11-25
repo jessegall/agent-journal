@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\CommandRules;
 
+use App\Commands\CommandRules\ProposeRuleDeclaration\ProposeRuleDeclarationCommand;
 use App\Declarations\RuleDeclaration;
 use App\Enums\CommandRules\RequestStatus;
 use App\Mcp\Tools\CommandRequestShowTool;
@@ -11,12 +12,14 @@ use App\Mcp\Tools\CommandTypeProposeTool;
 use App\Values\RuleExample;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Processes\AcmeDeclarations;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
  * An agent proposes a declaration file through its tool, which moves the request on; the request reads it back.
  */
+#[TestsCommand(ProposeRuleDeclarationCommand::class)]
 final class ProposeRuleDeclarationTest extends TestCase
 {
     use RefreshHookDatabase;

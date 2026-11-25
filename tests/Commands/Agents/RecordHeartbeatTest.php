@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
@@ -28,6 +29,7 @@ use Tests\TestCase;
  * A heartbeat of a running session records the database server's time and makes a silent session active again; an
  * ended, revoked or retired one is refused and nothing is written.
  */
+#[TestsCommand(RecordHeartbeatCommand::class)]
 final class RecordHeartbeatTest extends TestCase
 {
     use CommitsHookRows;

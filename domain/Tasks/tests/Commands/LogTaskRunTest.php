@@ -14,11 +14,13 @@ use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Domain\Tasks\Values\TaskLogLine;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * A task run's log keeps its lines against the run current when they were written, in order, and is read a bounded
  * page at a time in either direction.
  */
+#[TestsCommand(LogTaskRunCommand::class)]
 final class LogTaskRunTest extends TestCase
 {
     use CommitsHookRows;

@@ -27,6 +27,7 @@ use App\Values\SettingReference;
 use App\Values\SettingsChange;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\CountsReads;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\InstallsCommandModules;
 use Tests\Support\Settings\ChangesReviewsSettings;
 use Tests\Support\Settings\UsesReviewsSettings;
@@ -36,6 +37,7 @@ use Tests\TestCase;
 /**
  * The owner switches a group off once, its settings kept, and switching it off again changes nothing.
  */
+#[TestsCommand(DisableSettingGroupCommand::class)]
 final class DisableSettingGroupTest extends TestCase
 {
     use ChangesReviewsSettings;

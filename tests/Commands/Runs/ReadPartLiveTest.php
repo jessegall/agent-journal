@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Runs;
 
+use App\Commands\Runs\ReadPartLive\ReadPartLiveCommand;
 use App\Enums\Runs\InterpretationStatus;
 use App\Enums\Runs\PositionPurpose;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ReaderPosition;
 use App\Resolvers\Support\ActivityProjection;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Processes\StartsWithApprovedAcmePair;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -17,6 +19,7 @@ use Tests\TestCase;
  * A part is read live into a provisional position, and an oversized record fails the reader alone while capture goes
  * on.
  */
+#[TestsCommand(ReadPartLiveCommand::class)]
 final class ReadPartLiveTest extends TestCase
 {
     use RefreshHookDatabase;

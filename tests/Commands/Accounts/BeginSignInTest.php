@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Testing\TestResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -28,6 +29,7 @@ use Tests\TestCase;
  * sign-in service took up says so after a while.
  */
 #[TimeLimit(seconds: 3, reason: 'It commits attempts and accounts through the bus and empties five tables per test.')]
+#[TestsCommand(BeginSignInCommand::class)]
 final class BeginSignInTest extends TestCase
 {
     use CommitsHookRows;

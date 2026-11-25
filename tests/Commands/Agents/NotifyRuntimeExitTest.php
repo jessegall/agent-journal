@@ -25,12 +25,14 @@ use App\Values\DriverReceipt;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Engine\RunsEnginePasses;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * A verified exit ends the session, a confirmed stop ends and revokes it with no request left open, and retiring an
  * agent with a running runtime stops it through its host.
  */
+#[TestsCommand(NotifyRuntimeExitCommand::class)]
 final class NotifyRuntimeExitTest extends TestCase
 {
     use CommitsHookRows;

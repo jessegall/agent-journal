@@ -20,12 +20,14 @@ use App\Values\BrowserInputCapabilities;
 use App\Values\DriverReceipt;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * Retrying a failed request starts a new attempt and refuses reports of the old one; a request the host reported
  * unavailable stays unavailable and a failure stays failed.
  */
+#[TestsCommand(RetryDriverRequestCommand::class)]
 final class RetryDriverRequestTest extends TestCase
 {
     use CommitsHookRows;

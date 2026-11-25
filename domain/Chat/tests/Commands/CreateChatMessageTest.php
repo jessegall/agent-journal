@@ -12,11 +12,13 @@ use Domain\Chat\Models\ChatMessage;
 use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Domain\Chat\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * A record with an author shows in a chat as a message of its type, kept with the record it shows; a source type the
  * journal does not know and a record without an author are refused and show nothing.
  */
+#[TestsCommand(CreateChatMessageCommand::class)]
 final class CreateChatMessageTest extends TestCase
 {
     use CommitsHookRows;

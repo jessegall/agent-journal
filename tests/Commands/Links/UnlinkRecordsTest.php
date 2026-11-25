@@ -11,11 +11,13 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * A reader takes away the link between two records, named either way round, and both records stay.
  */
+#[TestsCommand(UnlinkRecordsCommand::class)]
 final class UnlinkRecordsTest extends TestCase
 {
     use CommitsHookRows;

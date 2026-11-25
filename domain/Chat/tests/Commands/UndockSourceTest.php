@@ -23,11 +23,13 @@ use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * A user undocks a placement: undocking on chat's own page returns there, a retried dock under the first key answers
  * the first time even after the placement is gone, and a guessed placement is nothing to act on.
  */
+#[TestsCommand(UndockSourceCommand::class)]
 final class UndockSourceTest extends TestCase
 {
     use CommitsHookRows;

@@ -15,10 +15,12 @@ use App\Support\ProfileProposal;
 use App\Values\AskTypeKey;
 use App\Values\ProfileActivation;
 use App\Values\SupervisorTarget;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
+#[TestsCommand(ChangeSupervisorCommand::class)]
 final class ChangeSupervisorTest extends TestCase
 {
     use RefreshHookDatabase;

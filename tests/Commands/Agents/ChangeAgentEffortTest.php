@@ -11,12 +11,14 @@ use App\Exceptions\DriverRequestRefused;
 use App\Models\Drivers\DriverRequest;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * A later effort supersedes an earlier one that has not run, and an unknown effort is refused before anything is
  * accepted.
  */
+#[TestsCommand(ChangeAgentEffortCommand::class)]
 final class ChangeAgentEffortTest extends TestCase
 {
     use CommitsHookRows;

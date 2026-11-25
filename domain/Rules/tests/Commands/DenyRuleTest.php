@@ -13,12 +13,14 @@ use Domain\Rules\Models\Rule;
 use Domain\Rules\Tests\Fixtures\RuleFixtures;
 use Domain\Rules\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 
 /**
  * The user denies a proposed rule, which never holds; an agent may not deny one, and a rule that already holds cannot
  * be denied.
  */
+#[TestsCommand(DenyRuleCommand::class)]
 final class DenyRuleTest extends TestCase
 {
     use RefreshHookDatabase;

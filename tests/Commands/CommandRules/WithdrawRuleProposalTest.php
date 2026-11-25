@@ -15,12 +15,14 @@ use App\Models\CommandRules\RuleProposal;
 use App\Values\ProposalReceipt;
 use App\Values\ProposedRule;
 use Tests\Fixtures\Processes\AcmeDeclarations;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
  * Only the author withdraws a proposal, and a withdrawn proposal takes no new revision.
  */
+#[TestsCommand(WithdrawRuleProposalCommand::class)]
 final class WithdrawRuleProposalTest extends TestCase
 {
     use RefreshHookDatabase;

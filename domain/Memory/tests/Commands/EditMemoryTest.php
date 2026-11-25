@@ -11,6 +11,7 @@ use Domain\Memory\Exceptions\MemoryRevisionChanged;
 use Domain\Memory\Models\Memory;
 use Domain\Memory\Tests\Fixtures\MemoryFixtures;
 use Domain\Memory\Tests\TestCase;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 
 /**
@@ -18,6 +19,7 @@ use Tests\Support\RefreshHookDatabase;
  * stale revision is a conflict that keeps the newer text, a blank text or nothing to change is refused, and another
  * agent's memory is not there for it.
  */
+#[TestsCommand(EditMemoryCommand::class)]
 final class EditMemoryTest extends TestCase
 {
     use RefreshHookDatabase;

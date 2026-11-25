@@ -21,11 +21,13 @@ use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * The owner switches an agent's pool off at the revision they read.
  */
+#[TestsCommand(DisableAutoAssignmentCommand::class)]
 final class DisableAutoAssignmentTest extends TestCase
 {
     use CommitsHookRows;

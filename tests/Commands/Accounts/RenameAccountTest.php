@@ -22,6 +22,7 @@ use App\Values\OwnerAuthority;
 use Illuminate\Events\Dispatcher;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -29,6 +30,7 @@ use Tests\TestCase;
  * A rename trims the name and refuses one another account holds, and two tabs renaming one account refuse the second
  * until it saves again.
  */
+#[TestsCommand(RenameAccountCommand::class)]
 final class RenameAccountTest extends TestCase
 {
     use CommitsHookRows;

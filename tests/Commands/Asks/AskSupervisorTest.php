@@ -16,9 +16,11 @@ use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
+#[TestsCommand(AskSupervisorCommand::class)]
 final class AskSupervisorTest extends TestCase
 {
     use CommitsHookRows;

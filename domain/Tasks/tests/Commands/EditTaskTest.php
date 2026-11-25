@@ -10,12 +10,14 @@ use Domain\Tasks\Exceptions\TaskRevisionChanged;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 
 /**
  * A task's title or brief changes at the revision its editor read and moves the revision on; a stale revision is a
  * conflict that keeps the newer text, and an edit with neither title nor brief is refused naming the title.
  */
+#[TestsCommand(EditTaskCommand::class)]
 final class EditTaskTest extends TestCase
 {
     use RefreshHookDatabase;

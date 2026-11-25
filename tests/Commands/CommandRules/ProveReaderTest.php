@@ -10,6 +10,7 @@ use App\Exceptions\ReaderProofFailed;
 use App\Exceptions\RevisionImmutable;
 use App\Models\Runs\ReaderProof;
 use App\Models\Runs\ReaderRevision;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -18,6 +19,7 @@ use Tests\TestCase;
  * The journal proves a draft reader itself, by replaying it over real samples it captured for the request, one per
  * exit branch, after the request's actor read them.
  */
+#[TestsCommand(ProveReaderCommand::class)]
 final class ProveReaderTest extends TestCase
 {
     use RefreshHookDatabase;

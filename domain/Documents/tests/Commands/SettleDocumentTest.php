@@ -28,12 +28,14 @@ use Domain\Documents\Models\Report;
 use Domain\Documents\Tests\TestCase;
 use Illuminate\Contracts\Events\Dispatcher;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 
 /**
  * A user settles a document with a reason, kept trimmed, and a changed revision makes it active again; a blank or
  * long reason, another reason and an open draft are refused, and the same reason again changes nothing.
  */
+#[TestsCommand(SettleDocumentCommand::class)]
 final class SettleDocumentTest extends TestCase
 {
     use CommitsHookRows;

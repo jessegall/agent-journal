@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Commands\Accounts;
 
 use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
+use App\Commands\Accounts\NotifySignIn\NotifySignInCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Data\Accounts\SignInAttemptData;
 use App\Enums\Accounts\SignInMethod;
@@ -19,6 +20,7 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -27,6 +29,7 @@ use Tests\TestCase;
  * shows the generic failure, and a success after the deadline ends expired while a later failure changes nothing.
  */
 #[TimeLimit(seconds: 5, reason: 'It enrolls hosts, sends signed calls and runs a short host process.')]
+#[TestsCommand(NotifySignInCommand::class)]
 final class NotifySignInTest extends TestCase
 {
     use CommitsHookRows;

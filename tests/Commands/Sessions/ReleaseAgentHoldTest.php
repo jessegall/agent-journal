@@ -19,12 +19,14 @@ use App\Values\BrowserInputCapabilities;
 use App\Values\DriverReceipt;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * A user releases an interrupted runtime, which is offered work again only then, but never a hold the program
  * shows.
  */
+#[TestsCommand(ReleaseAgentHoldCommand::class)]
 final class ReleaseAgentHoldTest extends TestCase
 {
     use CommitsHookRows;

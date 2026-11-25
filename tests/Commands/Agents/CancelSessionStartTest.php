@@ -29,11 +29,13 @@ use PhpOption\None;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * A ready report after the start was cancelled changes nothing.
  */
+#[TestsCommand(CancelSessionStartCommand::class)]
 final class CancelSessionStartTest extends TestCase
 {
     use CommitsHookRows;

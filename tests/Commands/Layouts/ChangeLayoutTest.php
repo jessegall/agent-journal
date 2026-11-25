@@ -9,12 +9,14 @@ use App\Data\Layouts\LayoutShape;
 use App\Models\Access\User;
 use App\Models\Records\Layout;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
  * A user renames and reshapes a layout of theirs; another user's layout is not there for them and stays as it was.
  */
+#[TestsCommand(ChangeLayoutCommand::class)]
 final class ChangeLayoutTest extends TestCase
 {
     use RefreshHookDatabase;

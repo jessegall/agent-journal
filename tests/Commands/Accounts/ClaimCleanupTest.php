@@ -35,6 +35,7 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
@@ -45,6 +46,7 @@ use Tests\TestCase;
  * once its processes ended.
  */
 #[TimeLimit(seconds: 4, reason: 'It commits accounts, attempts and starts through the bus and empties seven tables.')]
+#[TestsCommand(ClaimCleanupCommand::class)]
 final class ClaimCleanupTest extends TestCase
 {
     use CommitsHookRows;

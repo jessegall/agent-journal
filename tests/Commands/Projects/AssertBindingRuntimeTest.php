@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Commands\Projects;
 
 use App\Commands\Inboxes\InstallInboxes\InstallInboxesCommand;
+use App\Commands\Projects\AssertBindingRuntime\AssertBindingRuntimeCommand;
 use App\Enums\Accounts\CommandEntry;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
@@ -14,6 +15,7 @@ use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\ConnectsProjects;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -21,6 +23,7 @@ use Tests\TestCase;
  * A start through a binding is checked before any runtime: another folder root, id or agent, and a program the
  * binding may not start, are refused by name.
  */
+#[TestsCommand(AssertBindingRuntimeCommand::class)]
 final class AssertBindingRuntimeTest extends TestCase
 {
     use CommitsHookRows;

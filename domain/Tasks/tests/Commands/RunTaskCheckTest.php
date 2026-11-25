@@ -22,12 +22,14 @@ use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 
 /**
  * A worker makes a process run it opened a check of its current task run, once; a run of another caller and the
  * same run named again are refused.
  */
+#[TestsCommand(RunTaskCheckCommand::class)]
 final class RunTaskCheckTest extends TestCase
 {
     use CommitsHookRows;

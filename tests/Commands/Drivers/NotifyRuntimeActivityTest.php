@@ -34,6 +34,7 @@ use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Agents\CountedPendingWork;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
@@ -41,6 +42,7 @@ use Tests\TestCase;
  * idle wake with nothing pending starts no turn while one with work goes to the host, a heartbeat keeps the report
  * fresh, a report of an older generation is refused, and only a change of state tells the pages.
  */
+#[TestsCommand(NotifyRuntimeActivityCommand::class)]
 final class NotifyRuntimeActivityTest extends TestCase
 {
     use CommitsHookRows;

@@ -12,10 +12,12 @@ use Domain\Tasks\Models\TaskWait;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * The owner waives a wait with a reason, kept with who and when, and the task is ready; an empty reason is refused.
  */
+#[TestsCommand(WaiveTaskWaitCommand::class)]
 final class WaiveTaskWaitTest extends TestCase
 {
     use CommitsHookRows;

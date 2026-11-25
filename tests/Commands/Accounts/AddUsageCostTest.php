@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Accounts;
 
+use App\Commands\Accounts\AddUsageCost\AddUsageCostCommand;
 use App\Enums\Accounts\AccountProcessRole;
 use App\Enums\Agents\SessionProcessStatus;
 use App\Events\Accounts\AccountsChanged;
@@ -20,6 +21,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -29,6 +31,7 @@ use Tests\TestCase;
  * report names: another host is refused, a retry is acknowledged once more, and a removed account takes none.
  */
 #[TimeLimit(seconds: 4, reason: 'It enrolls hosts and sends signed calls, emptying several tables.')]
+#[TestsCommand(AddUsageCostCommand::class)]
 final class AddUsageCostTest extends TestCase
 {
     use CommitsHookRows;

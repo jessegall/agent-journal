@@ -18,11 +18,13 @@ use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * The journal keeps the process id a project command runs under, on its run.
  */
+#[TestsCommand(RecordProjectCommandProcessCommand::class)]
 final class RecordProjectCommandProcessTest extends TestCase
 {
     use CommitsHookRows;

@@ -29,6 +29,7 @@ use Domain\Sharing\Tests\Support\FakeShareGateway;
 use Domain\Sharing\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestActors;
 
 /**
@@ -36,6 +37,7 @@ use Tests\Support\TestActors;
  * activates nothing, a replay activates and audits once, a failed open fails the pending share once, and an open after
  * the share ended keeps it ended and asks for a close.
  */
+#[TestsCommand(RecordGatewayOutcomeCommand::class)]
 final class RecordGatewayOutcomeTest extends TestCase
 {
     use CommitsHookRows;

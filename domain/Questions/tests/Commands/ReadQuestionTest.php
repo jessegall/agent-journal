@@ -10,10 +10,12 @@ use Domain\Questions\Models\Question;
 use Domain\Questions\Tests\Fixtures\QuestionFixtures;
 use Domain\Questions\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * The asker and the target of a question read it; anyone else is refused.
  */
+#[TestsCommand(ReadQuestionCommand::class)]
 final class ReadQuestionTest extends TestCase
 {
     use CommitsHookRows;

@@ -20,12 +20,14 @@ use App\Values\BrowserInputCapabilities;
 use App\Values\DriverReceipt;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * A host claims the waiting requests of its own runtimes only, a batch at a time even with more runtimes than a batch,
  * and a stop or an interrupt is claimed past a full batch of normal work.
  */
+#[TestsCommand(ClaimDriverRequestsCommand::class)]
 final class ClaimDriverRequestsTest extends TestCase
 {
     private const int RUNTIMES_PAST_A_BATCH = 10;

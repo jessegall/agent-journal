@@ -28,6 +28,7 @@ use Domain\Documents\Tests\TestCase;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\TestIds;
 
@@ -35,6 +36,7 @@ use Tests\Support\TestIds;
  * A close turns a draft's saves into exactly one next revision; an unchanged draft adds none, and a repeated close
  * returns the first outcome.
  */
+#[TestsCommand(CloseDocumentCommand::class)]
 final class CloseDocumentTest extends TestCase
 {
     use CommitsHookRows;

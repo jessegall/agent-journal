@@ -6,6 +6,7 @@ namespace Tests\Commands\CommandRules;
 
 use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
 use App\Commands\CommandRules\ProposeCommandRule\ProposeCommandRuleCommand;
+use App\Commands\CommandRules\ProposeReader\ProposeReaderCommand;
 use App\Enums\CommandRules\RequestHoldReason;
 use App\Enums\CommandRules\RequestStatus;
 use App\Models\Agents\Agent;
@@ -14,6 +15,7 @@ use App\Models\Runs\ReaderRevision;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Processes\AcmeDeclarations;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -22,6 +24,7 @@ use Tests\TestCase;
  * An agent proposes a reader for its request, which is a draft that unlocks nothing; a definition without the summary
  * rule the contract requires, or for a declaration revision that is missing, is refused.
  */
+#[TestsCommand(ProposeReaderCommand::class)]
 final class ProposeReaderTest extends TestCase
 {
     use RefreshHookDatabase;

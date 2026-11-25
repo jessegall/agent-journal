@@ -19,6 +19,7 @@ use Domain\Helpers\Tests\TestCase;
 use Domain\Helpers\Values\HelperReceipt;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Str;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 
@@ -28,6 +29,7 @@ use Tests\Support\TimeLimits\TimeLimit;
  * command and a live one as uncertain.
  */
 #[TimeLimit(seconds: 8, reason: 'It activates profiles and starts agent sessions for several dispatches.')]
+#[TestsCommand(ContinueHelperCommand::class)]
 final class ContinueHelperTest extends TestCase
 {
     use DispatchesHelpers;

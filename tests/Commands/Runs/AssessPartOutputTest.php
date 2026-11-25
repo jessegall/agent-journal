@@ -15,6 +15,7 @@ use App\Models\Runs\PartRun;
 use App\Models\Runs\ResultReceipt;
 use App\Values\OutputProblem;
 use Illuminate\Support\Facades\Event;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Processes\StartsWithApprovedAcmePair;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -23,6 +24,7 @@ use Tests\TestCase;
  * A check's run gets a result receipt only through the evidence validator, from a valid assessment by its approved
  * reader; anything else is a stored assessment with problem codes and no result.
  */
+#[TestsCommand(AssessPartOutputCommand::class)]
 final class AssessPartOutputTest extends TestCase
 {
     use RefreshHookDatabase;

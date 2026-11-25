@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Commands\Accounts;
 
 use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
+use App\Commands\Accounts\PublishSignInChallenge\PublishSignInChallengeCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Enums\Accounts\SignInMethod;
 use App\Jobs\SignInDeadline;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -21,6 +23,7 @@ use Tests\TestCase;
  * pages publishes no link while a stranger reads nothing.
  */
 #[TimeLimit(seconds: 5, reason: 'It enrolls hosts, sends signed calls and runs a short host process.')]
+#[TestsCommand(PublishSignInChallengeCommand::class)]
 final class PublishSignInChallengeTest extends TestCase
 {
     use CommitsHookRows;

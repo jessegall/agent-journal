@@ -12,10 +12,12 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * An agent takes a task out of its focus; unfocusing a task it does not focus on leaves the focus where it is.
  */
+#[TestsCommand(UnfocusTaskCommand::class)]
 final class UnfocusTaskTest extends TestCase
 {
     use CommitsHookRows;

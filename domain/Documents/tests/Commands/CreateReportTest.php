@@ -15,10 +15,12 @@ use Domain\Documents\Models\Document;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * A report is filed under its own numbers, and a document number never selects it.
  */
+#[TestsCommand(CreateReportCommand::class)]
 final class CreateReportTest extends TestCase
 {
     use CommitsHookRows;

@@ -9,12 +9,14 @@ use App\Data\Layouts\LayoutShape;
 use App\Models\Access\User;
 use App\Models\Records\Layout;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
  * A user deletes a layout of theirs; another user's layout is not there for them and stays.
  */
+#[TestsCommand(DeleteLayoutCommand::class)]
 final class DeleteLayoutTest extends TestCase
 {
     use RefreshHookDatabase;

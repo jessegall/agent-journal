@@ -31,12 +31,14 @@ use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Links\Note;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
  * Maintenance cancels the unclaimed starts of an account and settles only once the claimed ones exited.
  */
+#[TestsCommand(SettleAccountUsesCommand::class)]
 final class SettleAccountUsesTest extends TestCase
 {
     use CommitsHookRows;

@@ -24,12 +24,14 @@ use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
  * A pool that is not offered or not valid leaves the agent's pool as it was.
  */
+#[TestsCommand(ConfigureAutoAssignmentCommand::class)]
 final class ConfigureAutoAssignmentTest extends TestCase
 {
     use CommitsHookRows;

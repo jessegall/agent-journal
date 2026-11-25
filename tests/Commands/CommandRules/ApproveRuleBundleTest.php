@@ -15,6 +15,7 @@ use App\Values\CommandRule;
 use App\Values\ExecutionContext;
 use App\Values\RuleBundle;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -23,6 +24,7 @@ use Tests\TestCase;
  * A module's rule bundle classifies commands only once the owner activates its exact digest; a changed bundle cannot
  * be activated with the old digest.
  */
+#[TestsCommand(ApproveRuleBundleCommand::class)]
 final class ApproveRuleBundleTest extends TestCase
 {
     use RefreshHookDatabase;

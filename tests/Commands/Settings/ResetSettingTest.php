@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Settings;
 
+use App\Commands\Settings\ResetSetting\ResetSettingCommand;
 use App\Enums\Settings\SettingsOutcome;
 use App\Models\Records\SettingsRecord;
 use App\Support\Storage\EncodedSetting;
@@ -13,6 +14,7 @@ use App\Values\SettingsChange;
 use Domain\Rules\RulesDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\InstallsCommandModules;
 use Tests\Support\Settings\ChangesReviewsSettings;
 use Tests\Support\Settings\UsesReviewsSettings;
@@ -22,6 +24,7 @@ use Tests\TestCase;
  * Resetting one invalid override removes only it and keeps its siblings byte for byte, and resetting a setting
  * without an override changes nothing.
  */
+#[TestsCommand(ResetSettingCommand::class)]
 final class ResetSettingTest extends TestCase
 {
     use ChangesReviewsSettings;

@@ -26,6 +26,7 @@ use Domain\Sharing\Tests\TestCase;
 use Illuminate\Log\Events\MessageLogged;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 
@@ -34,6 +35,7 @@ use Tests\Support\TestActors;
  * an unregistered gateway or a missing secret is refused, a gateway becomes the default only once it is ready, and
  * secrets are entered at a hidden prompt so their bytes appear in no row, receipt or log.
  */
+#[TestsCommand(ConfigureShareGatewayCommand::class)]
 final class ConfigureShareGatewayTest extends TestCase
 {
     use RefreshHookDatabase;

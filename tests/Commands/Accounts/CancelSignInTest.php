@@ -20,6 +20,7 @@ use App\Support\Command;
 use App\Support\JournalCommands;
 use Illuminate\Support\Facades\Bus;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -30,6 +31,7 @@ use Tests\TestCase;
  * failed renewal lets the account go at once, and an older attempt's end never releases a newer writer.
  */
 #[TimeLimit(seconds: 4, reason: 'It commits accounts, attempts and starts through the bus and empties seven tables.')]
+#[TestsCommand(CancelSignInCommand::class)]
 final class CancelSignInTest extends TestCase
 {
     use CommitsHookRows;

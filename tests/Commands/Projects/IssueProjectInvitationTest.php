@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
+use App\Commands\Projects\IssueProjectInvitation\IssueProjectInvitationCommand;
 use App\Commands\Settings\SetBooleanSetting\SetBooleanSettingCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Connections\ReleaseOfferData;
@@ -20,12 +21,14 @@ use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\IssuesInstallLines;
 use Tests\Support\Connections\PublicRelease;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * The owner gets one install line whose script downloads and no log or row holds its ticket; a viewer and a signed-out
  * visitor are refused, asking again replaces the line, and no line is issued while connecting projects is off.
  */
+#[TestsCommand(IssueProjectInvitationCommand::class)]
 final class IssueProjectInvitationTest extends TestCase
 {
     use CommitsHookRows;

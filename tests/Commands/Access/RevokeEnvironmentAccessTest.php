@@ -8,12 +8,14 @@ use App\Commands\Access\GrantEnvironmentAccess\GrantEnvironmentAccessCommand;
 use App\Commands\Access\RevokeEnvironmentAccess\RevokeEnvironmentAccessCommand;
 use App\Enums\Messages\InboxPermission;
 use App\Models\Access\EnvironmentUserGrant;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
  * The owner revokes a user's access, which keeps the grant as revoked; revoking a user with no access changes nothing.
  */
+#[TestsCommand(RevokeEnvironmentAccessCommand::class)]
 final class RevokeEnvironmentAccessTest extends TestCase
 {
     use RefreshHookDatabase;

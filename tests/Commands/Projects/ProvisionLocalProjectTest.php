@@ -12,6 +12,7 @@ use App\Models\Access\User;
 use App\Models\Projects\Environment;
 use App\Models\Projects\Project;
 use App\Support\JournalCommands;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -19,6 +20,7 @@ use Tests\TestCase;
  * The journal provisions the installation's own project: one project of the key, its Main environment and the owner's
  * grant of every permission on that environment's real id; provisioning again makes nothing twice.
  */
+#[TestsCommand(ProvisionLocalProjectCommand::class)]
 final class ProvisionLocalProjectTest extends TestCase
 {
     use RefreshHookDatabase;

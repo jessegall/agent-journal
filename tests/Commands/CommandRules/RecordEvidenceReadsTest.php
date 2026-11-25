@@ -6,6 +6,7 @@ namespace Tests\Commands\CommandRules;
 
 use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
 use App\Commands\CommandRules\ProposeCommandRule\ProposeCommandRuleCommand;
+use App\Commands\CommandRules\RecordEvidenceReads\RecordEvidenceReadsCommand;
 use App\Enums\CommandRules\RequestHoldReason;
 use App\Enums\Processes\OutputStream;
 use App\Enums\Runs\RunMode;
@@ -21,6 +22,7 @@ use App\Values\PartKey;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Processes\AcmeDeclarations;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestRunAdmissions;
@@ -30,6 +32,7 @@ use Tests\TestCase;
  * A sample's evidence counts as read only after its envelope and every written stream were read; stream reads without
  * the envelope do not count.
  */
+#[TestsCommand(RecordEvidenceReadsCommand::class)]
 final class RecordEvidenceReadsTest extends TestCase
 {
     use RefreshHookDatabase;

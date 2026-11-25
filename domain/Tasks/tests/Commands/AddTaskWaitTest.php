@@ -11,11 +11,13 @@ use Domain\Tasks\Models\TaskWait;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * A task is made to wait on another; a wait that would close a cycle and a task waiting on itself are refused and
  * add nothing.
  */
+#[TestsCommand(AddTaskWaitCommand::class)]
 final class AddTaskWaitTest extends TestCase
 {
     use CommitsHookRows;

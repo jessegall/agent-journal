@@ -7,6 +7,7 @@ namespace Tests\Commands\Notifications;
 use App\Commands\Notifications\MarkTargetNotificationRead\MarkTargetNotificationReadCommand;
 use App\Exceptions\NotificationUnavailable;
 use App\Resolvers\RunNotificationTarget;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -14,6 +15,7 @@ use Tests\TestCase;
  * A user who opens what a notification points at marks that notification read; a target with no notification of
  * theirs is not there.
  */
+#[TestsCommand(MarkTargetNotificationReadCommand::class)]
 final class MarkTargetNotificationReadTest extends TestCase
 {
     use RefreshHookDatabase;

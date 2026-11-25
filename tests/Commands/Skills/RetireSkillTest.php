@@ -19,12 +19,14 @@ use App\Values\SkillDraft;
 use App\Values\SkillRevisionResult;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestActors;
 use Tests\TestCase;
 
 /**
  * Retiring a skill removes it from the list and keeps its revisions; another owner cannot retire it.
  */
+#[TestsCommand(RetireSkillCommand::class)]
 final class RetireSkillTest extends TestCase
 {
     use CommitsHookRows;

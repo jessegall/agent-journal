@@ -11,11 +11,13 @@ use Domain\Documents\Exceptions\DraftConflict;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * The writer of an open draft replaces its whole body; a save on a version older than the draft's is refused and the
  * first save stands.
  */
+#[TestsCommand(ReplaceDocumentBodyCommand::class)]
 final class ReplaceDocumentBodyTest extends TestCase
 {
     use CommitsHookRows;

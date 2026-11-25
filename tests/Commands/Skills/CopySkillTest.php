@@ -17,12 +17,14 @@ use App\Values\OwnerAuthority;
 use App\Values\SkillKey;
 use App\Values\SkillRevisionResult;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestActors;
 use Tests\TestCase;
 
 /**
  * Copying a shipped skill snapshots its text and the digest of its source.
  */
+#[TestsCommand(CopySkillCommand::class)]
 final class CopySkillTest extends TestCase
 {
     use CommitsHookRows;

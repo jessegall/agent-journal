@@ -18,11 +18,13 @@ use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 
 /**
  * Plans puts tasks into phases by id, after Tasks confirmed they exist.
  */
+#[TestsCommand(AddPhaseTasksCommand::class)]
 final class AddPhaseTasksTest extends TestCase
 {
     use CommitsHookRows;

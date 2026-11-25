@@ -37,6 +37,7 @@ use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\RecordedAttention;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
@@ -44,6 +45,7 @@ use Tests\TestCase;
  * Done moves an answered request to proving and queues a proof round; a proof that is empty, was already on the
  * screen or comes too early is refused.
  */
+#[TestsCommand(ProveNavigationCommand::class)]
 final class ProveNavigationTest extends TestCase
 {
     use CommitsHookRows;

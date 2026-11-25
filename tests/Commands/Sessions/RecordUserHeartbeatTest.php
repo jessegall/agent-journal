@@ -6,12 +6,14 @@ namespace Tests\Commands\Sessions;
 
 use App\Commands\Sessions\RecordUserHeartbeat\RecordUserHeartbeatCommand;
 use App\Models\Presence\UserPresence;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
  * A signed-in user's page beats, and however often it beats the user keeps one presence with the time of the last.
  */
+#[TestsCommand(RecordUserHeartbeatCommand::class)]
 final class RecordUserHeartbeatTest extends TestCase
 {
     use RefreshHookDatabase;

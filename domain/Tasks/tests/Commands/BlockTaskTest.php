@@ -16,11 +16,13 @@ use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Domain\Tasks\Values\TaskTransition;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * The agent that runs a task blocks it with the reason it waits; a run that is not the current one and a blank or
  * empty reason are refused, and the task still runs.
  */
+#[TestsCommand(BlockTaskCommand::class)]
 final class BlockTaskTest extends TestCase
 {
     use CommitsHookRows;

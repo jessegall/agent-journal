@@ -15,12 +15,14 @@ use App\Values\SectionDraft;
 use App\Values\SkillDraft;
 use App\Values\SkillRevisionResult;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
  * Restoring an old revision appends its content as a new revision.
  */
+#[TestsCommand(RestoreSkillCommand::class)]
 final class RestoreSkillTest extends TestCase
 {
     use CommitsHookRows;

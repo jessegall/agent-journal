@@ -29,9 +29,11 @@ use App\Values\SupervisorTarget;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
+#[TestsCommand(RouteAskCommand::class)]
 final class RouteAskTest extends TestCase
 {
     use CommitsHookRows;

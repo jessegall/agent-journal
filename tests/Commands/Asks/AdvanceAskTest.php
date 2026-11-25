@@ -30,6 +30,7 @@ use App\Values\SupervisorTarget;
 use App\Values\TrustedEntryAuthority;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\FixedServerClock;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -39,6 +40,7 @@ use Tests\TestCase;
  * keeps answering never lets its queue escalate.
  */
 #[TimeLimit(seconds: 6, reason: 'It activates the profiles and routes several asks through the bus.')]
+#[TestsCommand(AdvanceAskCommand::class)]
 final class AdvanceAskTest extends TestCase
 {
     use CommitsHookRows;

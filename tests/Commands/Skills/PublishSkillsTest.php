@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Commands\Skills;
 
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
+use App\Commands\Skills\PublishSkills\PublishSkillsCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Skills\SkillPublisher as SkillPublisherContract;
@@ -40,6 +41,7 @@ use Tests\Fixtures\Skills\FullDiskPublisher;
 use Tests\Fixtures\Skills\RecordingStack;
 use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Skills\AdmitsMainAgentSkills;
 use Tests\Support\Skills\IntendsSkillPublications;
 use Tests\Support\Skills\PublishesSkills;
@@ -52,6 +54,7 @@ use Tests\TestCase;
  * A pending publication is staged in bounded steps and activated by switching the journal's own pointer; a failed
  * write keeps the previous pointer, a target the journal does not own is left alone, and a stale worker stops.
  */
+#[TestsCommand(PublishSkillsCommand::class)]
 final class PublishSkillsTest extends TestCase
 {
     use AdmitsMainAgentSkills;

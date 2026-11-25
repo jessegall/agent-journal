@@ -14,6 +14,7 @@ use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
 
@@ -21,6 +22,7 @@ use Tests\Support\RefreshHookDatabase;
  * A phase relies only on a current validated result receipt published after its tasks last changed; an evidence
  * run, a run without a result, a superseded receipt and a receipt from before the last task change are refused.
  */
+#[TestsCommand(RecordPhaseCheckCommand::class)]
 final class RecordPhaseCheckTest extends TestCase
 {
     use RefreshHookDatabase;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
+use App\Commands\Agents\NotifyRunning\NotifyRunningCommand;
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Contracts\Actors\CurrentActorSetter;
@@ -23,6 +24,7 @@ use App\Values\OwnerAuthority;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -32,6 +34,7 @@ use Tests\TestCase;
  * agent only once it runs, and a running report that comes after the start ended keeps no mode.
  */
 #[TimeLimit(seconds: 4, reason: 'It opens runtimes, enrolls hosts and sends signed calls, emptying many tables.')]
+#[TestsCommand(NotifyRunningCommand::class)]
 final class NotifyRunningTest extends TestCase
 {
     use CommitsHookRows;

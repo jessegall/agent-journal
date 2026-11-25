@@ -25,12 +25,14 @@ use Illuminate\Database\ConnectionInterface;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 
 /**
  * The agent that runs a task finishes it with its note and works on it no more; another agent is refused, and a note
  * past its limit is refused before the run ends.
  */
+#[TestsCommand(FinishTaskCommand::class)]
 final class FinishTaskTest extends TestCase
 {
     use CommitsHookRows;

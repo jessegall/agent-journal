@@ -53,6 +53,7 @@ use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\InstallsNotesModule;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -66,6 +67,7 @@ use Throwable;
  * given in the meantime still releases that work.
  */
 #[TimeLimit(seconds: 5, reason: 'Retirement waits out locks another connection holds.')]
+#[TestsCommand(RetireAgentCommand::class)]
 final class RetireAgentTest extends TestCase
 {
     use CommitsHookRows;

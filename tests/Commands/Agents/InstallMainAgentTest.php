@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
+use App\Commands\Agents\InstallMainAgent\InstallMainAgentCommand;
 use App\Exceptions\MainAgentMissing;
 use App\Models\Agents\Agent;
 use App\Models\Agents\MainAgentDesignation;
 use App\Values\ProfileBase;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * An installation has one designated main agent, created by agents:install once; Home and admission read it only
  * through the designation.
  */
+#[TestsCommand(InstallMainAgentCommand::class)]
 final class InstallMainAgentTest extends TestCase
 {
     use CommitsHookRows;

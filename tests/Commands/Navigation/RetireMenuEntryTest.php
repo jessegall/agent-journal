@@ -15,12 +15,14 @@ use App\Values\MenuStep;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
  * Only the owner retires a menu entry, and no lookup finds it after.
  */
+#[TestsCommand(RetireMenuEntryCommand::class)]
 final class RetireMenuEntryTest extends TestCase
 {
     use CommitsHookRows;

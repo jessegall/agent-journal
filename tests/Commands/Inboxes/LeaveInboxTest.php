@@ -8,11 +8,13 @@ use App\Commands\Inboxes\LeaveInbox\LeaveInboxCommand;
 use App\Commands\Inboxes\OpenInbox\OpenInboxCommand;
 use App\Models\Inboxes\InboxMember;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * A member leaves an inbox and is no longer attached; an actor that is not a member leaves nothing behind.
  */
+#[TestsCommand(LeaveInboxCommand::class)]
 final class LeaveInboxTest extends TestCase
 {
     use CommitsHookRows;

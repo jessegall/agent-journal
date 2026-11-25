@@ -17,12 +17,14 @@ use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Bus;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
  * An attempt with no account looks no account up when it expires.
  */
+#[TestsCommand(ExpireSignInAttemptCommand::class)]
 final class ExpireSignInAttemptTest extends TestCase
 {
     use CommitsHookRows;

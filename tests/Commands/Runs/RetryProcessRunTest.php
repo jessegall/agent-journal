@@ -19,6 +19,7 @@ use App\Values\ExecutionContext;
 use App\Values\OwnerAuthority;
 use App\Values\PartKey;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\TestCase;
@@ -26,6 +27,7 @@ use Tests\TestCase;
 /**
  * A retry admits the same line as a new run, and the lost one stays lost.
  */
+#[TestsCommand(RetryProcessRunCommand::class)]
 final class RetryProcessRunTest extends TestCase
 {
     use RefreshHookDatabase;

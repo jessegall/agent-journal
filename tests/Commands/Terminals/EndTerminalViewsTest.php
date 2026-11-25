@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Terminals;
 
+use App\Commands\Terminals\EndTerminalViews\EndTerminalViewsCommand;
 use App\Events\Engine\EngineTicked;
 use App\Models\Drivers\TerminalView;
 use App\Support\EnginePass;
@@ -11,6 +12,7 @@ use App\Support\EngineTickedDelivery;
 use App\Support\Ticks\ElapsedTime;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\Terminals\TakesTerminalControl;
 use Tests\TestCase;
@@ -19,6 +21,7 @@ use Tests\TestCase;
  * The engine ends every view whose lease ran out unrenewed and every live view of a stopped runtime, and prunes old
  * ended views; a live view stays.
  */
+#[TestsCommand(EndTerminalViewsCommand::class)]
 final class EndTerminalViewsTest extends TestCase
 {
     use CommitsHookRows;

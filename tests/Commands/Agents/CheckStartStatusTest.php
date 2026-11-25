@@ -32,6 +32,7 @@ use PhpOption\None;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
@@ -39,6 +40,7 @@ use Tests\TestCase;
  * a refusal keeps its proof, a host with no ready report leaves the start uncertain with its message held, and so does
  * a check no host answers within its minute.
  */
+#[TestsCommand(CheckStartStatusCommand::class)]
 final class CheckStartStatusTest extends TestCase
 {
     use CommitsHookRows;

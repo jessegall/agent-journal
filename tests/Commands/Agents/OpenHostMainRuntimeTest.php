@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
+use App\Commands\Agents\OpenHostMainRuntime\OpenHostMainRuntimeCommand;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
@@ -14,12 +15,14 @@ use App\Support\EnrolledHost;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * A host opens the main agent's runtime in one of its folders: it answers the new session and runtime, and the agent
  * takes the main inbox over from the main agent before it.
  */
+#[TestsCommand(OpenHostMainRuntimeCommand::class)]
 final class OpenHostMainRuntimeTest extends TestCase
 {
     use CommitsHookRows;

@@ -69,6 +69,7 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\HostContract;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
@@ -76,6 +77,7 @@ use Tests\TestCase;
  * runtime for attention, an applied stop keeps stopping until its exit is proved, and a stopped key script resumes from
  * its step or is cancelled.
  */
+#[TestsCommand(NotifyRequestProgressCommand::class)]
 final class NotifyRequestProgressTest extends TestCase
 {
     use CommitsHookRows;

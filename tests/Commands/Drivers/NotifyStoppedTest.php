@@ -25,6 +25,7 @@ use App\Support\OpenedRuntime;
 use App\Values\OwnerAuthority;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -38,6 +39,7 @@ use Tests\TestCase;
     seconds: 5,
     reason: 'It opens runtimes, enrolls hosts and commits maintenance steps, emptying many tables.',
 )]
+#[TestsCommand(NotifyStoppedCommand::class)]
 final class NotifyStoppedTest extends TestCase
 {
     use CommitsHookRows;

@@ -11,11 +11,13 @@ use App\Models\Drivers\DriverTurn;
 use App\Models\Projects\Host;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * A host reports a turn: a started turn runs and a finished one leaves the runtime idle.
  */
+#[TestsCommand(NotifyDriverTurnCommand::class)]
 final class NotifyDriverTurnTest extends TestCase
 {
     use CommitsHookRows;

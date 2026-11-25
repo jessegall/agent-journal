@@ -41,12 +41,14 @@ use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Fixtures\Modules\Notes\Models\NotePage;
 use Tests\Fixtures\Modules\Notes\Models\NoteSnapshot;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\InstallsNotesModule;
 
 /**
  * A reader comments on lines of a record's text: the comment is anchored to those lines of the version read, and a
  * record without text refuses a comment that points at text and keeps none.
  */
+#[TestsCommand(PostTextCommentCommand::class)]
 final class PostTextCommentTest extends TestCase
 {
     use CommitsHookRows;

@@ -21,6 +21,7 @@ use App\Values\StopConditions;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\AsksTheStopGate;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestText;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -33,6 +34,7 @@ use Tests\TestCase;
  * runner itself is proven by tools/journal-agent/host/stop_conditions_test.go.
  */
 #[TimeLimit(seconds: 3, reason: 'It starts a test agent session and empties the hook tables.')]
+#[TestsCommand(RecordStopConditionResultsCommand::class)]
 final class RecordStopConditionResultsTest extends TestCase
 {
     use AsksTheStopGate;

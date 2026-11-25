@@ -31,6 +31,7 @@ use Domain\Sharing\Tests\Support\RegistersShareDomains;
 use Domain\Sharing\Tests\TestCase;
 use Tests\Fixtures\Domains\Binders\BinderPublications;
 use Tests\Fixtures\Domains\Binders\BindersDomain;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
@@ -39,6 +40,7 @@ use Tests\Support\TestIds;
  * A retry of a failed share adds one open request and keeps its deadline; a share that expired, was revoked or is
  * only proposed is refused.
  */
+#[TestsCommand(RetryShareCommand::class)]
 final class RetryShareTest extends TestCase
 {
     use RefreshHookDatabase;

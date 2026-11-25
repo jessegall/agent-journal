@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Runs;
 
+use App\Commands\Runs\ReconcileLostRuns\ReconcileLostRunsCommand;
 use App\Contracts\Admission\ShellAdmission;
 use App\Enums\Processes\ShellDialect;
 use App\Enums\Runs\CaptureStatus;
@@ -15,12 +16,14 @@ use App\Models\Runs\ResultReceipt;
 use App\Values\ExecutionContext;
 use App\Values\PartKey;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
  * A silent run is lost with no status and incomplete capture, and a run that still beats is left alone.
  */
+#[TestsCommand(ReconcileLostRunsCommand::class)]
 final class ReconcileLostRunsTest extends TestCase
 {
     use RefreshHookDatabase;

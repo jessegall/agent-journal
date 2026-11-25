@@ -21,6 +21,7 @@ use App\Support\InitialWakeSettlement;
 use App\Support\OpenedRuntime;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
@@ -28,6 +29,7 @@ use Tests\TestCase;
  * wake keeps the session and its start, a proved unstarted initial wake ends the start once with its reason, and a
  * generic refusal of the initial wake keeps the start for reconciliation.
  */
+#[TestsCommand(WakeAgentCommand::class)]
 final class WakeAgentTest extends TestCase
 {
     use CommitsHookRows;

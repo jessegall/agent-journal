@@ -15,6 +15,7 @@ use App\Models\CommandRules\EvidencePermit;
 use App\Values\CommandRule;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Processes\AcmeDeclarations;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
@@ -24,6 +25,7 @@ use Tests\TestCase;
  * The owner approves a sample run of a proposed declaration; an agent cannot, and a declaration without effects
  * cannot be approved for a sample.
  */
+#[TestsCommand(ApproveSampleCommand::class)]
 final class ApproveSampleTest extends TestCase
 {
     use RefreshHookDatabase;

@@ -29,12 +29,14 @@ use App\Values\DriverReceipt;
 use App\Values\OwnerAuthority;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * Stopping an agent: a stopping runtime refuses new requests, two stops of one generation converge on one request, a
  * stop waiting for its helpers says so, and ending the main stops its helpers first.
  */
+#[TestsCommand(StopAgentCommand::class)]
 final class StopAgentTest extends TestCase
 {
     use CommitsHookRows;

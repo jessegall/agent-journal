@@ -44,6 +44,7 @@ use Tests\Fixtures\Skills\FullDiskPublisher;
 use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Skills\PublishesSkills;
 use Tests\TestCase;
 
@@ -52,6 +53,7 @@ use Tests\TestCase;
  * container of a contained main session and none on the protected host, and is refused for an account folder that
  * is no plain id and to another host.
  */
+#[TestsCommand(ClaimStartGrantCommand::class)]
 final class ClaimStartGrantTest extends TestCase
 {
     use CommitsHookRows;

@@ -11,12 +11,14 @@ use Domain\Reminders\Commands\CreateReminder\CreateReminderCommand;
 use Domain\Reminders\Enums\ReminderStatus;
 use Domain\Reminders\Models\Reminder;
 use Domain\Reminders\Tests\TestCase;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 
 /**
  * A user makes a reminder of their own with its title and due time, open until it is finished; a blank or too long
  * title and a due time that is no date are refused naming the field and make nothing.
  */
+#[TestsCommand(CreateReminderCommand::class)]
 final class CreateReminderTest extends TestCase
 {
     use RefreshHookDatabase;

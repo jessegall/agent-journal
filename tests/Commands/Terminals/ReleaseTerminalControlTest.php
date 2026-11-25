@@ -10,6 +10,7 @@ use App\Enums\Terminals\TerminalGrantStatus;
 use App\Models\Drivers\TerminalGrant;
 use App\Models\Projects\Host;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\Terminals\TakesTerminalControl;
 use Tests\TestCase;
@@ -17,6 +18,7 @@ use Tests\TestCase;
 /**
  * The holder gives control back, which asks the host once to release it; a grant already given back asks nothing more.
  */
+#[TestsCommand(ReleaseTerminalControlCommand::class)]
 final class ReleaseTerminalControlTest extends TestCase
 {
     use CommitsHookRows;

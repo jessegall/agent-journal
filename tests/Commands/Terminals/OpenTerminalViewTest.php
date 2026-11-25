@@ -19,6 +19,7 @@ use App\Support\DriverRequestEndings;
 use App\Support\WatchedRuntimes;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
@@ -30,6 +31,7 @@ use Tests\TestCase;
  * agent, a viewer past the limit of views, an unknown agent and an actor without inspect are refused, and a retried
  * request gives its first outcome.
  */
+#[TestsCommand(OpenTerminalViewCommand::class)]
 final class OpenTerminalViewTest extends TestCase
 {
     use OpensTerminalRuntimes;

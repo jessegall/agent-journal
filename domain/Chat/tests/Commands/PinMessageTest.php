@@ -11,11 +11,13 @@ use Domain\Chat\Resolvers\Support\MessagePinRecords;
 use Domain\Chat\Tests\Support\OpensTeamInboxMessage;
 use Domain\Chat\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * A pin is its owner's alone, one per message and inbox, made only on a message the owner can read, and
  * listed only while the owner still can: it hides when access goes and comes back with it.
  */
+#[TestsCommand(PinMessageCommand::class)]
 final class PinMessageTest extends TestCase
 {
     use CommitsHookRows;

@@ -10,6 +10,7 @@ use App\Models\Runs\OutputChunk;
 use App\Models\Runs\PartRun;
 use App\Support\OutputRecorder;
 use Illuminate\Support\Facades\Storage;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
@@ -18,6 +19,7 @@ use Tests\TestCase;
 /**
  * Restored output counts only when every byte matches.
  */
+#[TestsCommand(VerifyRestoredOutputCommand::class)]
 final class VerifyRestoredOutputTest extends TestCase
 {
     use RefreshHookDatabase;

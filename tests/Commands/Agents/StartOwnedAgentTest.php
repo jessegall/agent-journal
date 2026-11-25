@@ -25,6 +25,7 @@ use App\Values\StartPolicy;
 use App\Values\StartRequest;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\ServesEveryCombination;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\Support\WithActiveAccount;
@@ -34,6 +35,7 @@ use Tests\TestCase;
  * An owner starts an agent it owns for a piece of work: the agent gets one session, a repeated request answers the
  * same start, and the receipt names how it runs.
  */
+#[TestsCommand(StartOwnedAgentCommand::class)]
 final class StartOwnedAgentTest extends TestCase
 {
     use RefreshHookDatabase;

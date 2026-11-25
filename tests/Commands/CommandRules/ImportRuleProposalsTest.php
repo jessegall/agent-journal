@@ -14,12 +14,14 @@ use App\Models\CommandRules\RuleRevision;
 use App\Values\CommandClassSet;
 use App\Values\RuleExample;
 use Tests\Fixtures\Processes\AcmeDeclarations;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
  * Importing a declaration file makes proposals only; an invalid file is refused naming its fields.
  */
+#[TestsCommand(ImportRuleProposalsCommand::class)]
 final class ImportRuleProposalsTest extends TestCase
 {
     use RefreshHookDatabase;

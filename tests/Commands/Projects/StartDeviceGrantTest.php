@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
+use App\Commands\Projects\StartDeviceGrant\StartDeviceGrantCommand;
 use App\Models\Projects\DeviceGrant;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
@@ -11,11 +12,13 @@ use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\ConnectsProjects;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * Two terminals get two references, and a repeated start finds its own.
  */
+#[TestsCommand(StartDeviceGrantCommand::class)]
 final class StartDeviceGrantTest extends TestCase
 {
     use CommitsHookRows;

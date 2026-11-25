@@ -26,11 +26,13 @@ use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * A plan is cancelled with its reason and keeps every task and assignment as they were; a reason past its limit and
  * a plan no longer in the state the caller saw are refused.
  */
+#[TestsCommand(CancelPlanCommand::class)]
 final class CancelPlanTest extends TestCase
 {
     use CommitsHookRows;

@@ -12,12 +12,14 @@ use App\Models\Drivers\DriverTurn;
 use App\Models\Messages\Message;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * The words an agent's turn ended on are sent, once, to the inbox of the message it read last; with no words offered
  * or nothing read they are refused and nothing is sent.
  */
+#[TestsCommand(DeliverClosingWordsCommand::class)]
 final class DeliverClosingWordsTest extends TestCase
 {
     use CommitsHookRows;

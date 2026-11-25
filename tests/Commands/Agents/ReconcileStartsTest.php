@@ -30,6 +30,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -38,6 +39,7 @@ use Tests\TestCase;
  * A restarted host's claimed start stays possibly running until its exit is proven.
  */
 #[TimeLimit(seconds: 5, reason: 'It enrolls a host, opens runtimes and commits each start step, emptying many tables.')]
+#[TestsCommand(ReconcileStartsCommand::class)]
 final class ReconcileStartsTest extends TestCase
 {
     use CommitsHookRows;

@@ -15,12 +15,14 @@ use Domain\Sharing\Support\ClaimedGatewayOperation;
 use Domain\Sharing\Tests\Fixtures\ShareFixtures;
 use Domain\Sharing\Tests\Support\FakeShareGateway;
 use Domain\Sharing\Tests\TestCase;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 
 /**
  * A gateway run claims the next operation under a ninety second lease on a new endpoint version.
  */
+#[TestsCommand(ClaimGatewayOperationCommand::class)]
 final class ClaimGatewayOperationTest extends TestCase
 {
     use RefreshHookDatabase;

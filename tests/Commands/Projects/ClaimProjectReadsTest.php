@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
+use App\Commands\Projects\ClaimProjectReads\ClaimProjectReadsCommand;
 use App\Enums\Projects\ProjectReadStatus;
 use App\Enums\Projects\ProjectReadType;
 use App\Models\Access\User;
@@ -19,11 +20,13 @@ use App\Values\BindingFolder;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * A host claims a read of its own project once, and its report answers it.
  */
+#[TestsCommand(ClaimProjectReadsCommand::class)]
 final class ClaimProjectReadsTest extends TestCase
 {
     use CommitsHookRows;

@@ -27,6 +27,7 @@ use Domain\Sharing\Tests\Support\RegistersShareDomains;
 use Domain\Sharing\Tests\TestCase;
 use Tests\Fixtures\Domains\Binders\BinderPublications;
 use Tests\Fixtures\Domains\Binders\BindersDomain;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
@@ -35,6 +36,7 @@ use Tests\Support\TestIds;
  * A refresh replaces a share's members at the next scope version and keeps its token and deadline; a preview of
  * another root is refused.
  */
+#[TestsCommand(RefreshShareScopeCommand::class)]
 final class RefreshShareScopeTest extends TestCase
 {
     use RefreshHookDatabase;

@@ -7,6 +7,7 @@ namespace Tests\Commands\Runs;
 use App\Commands\Runs\StopLeftoverProcesses\StopLeftoverProcessesCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Values\PartKey;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -14,6 +15,7 @@ use Tests\TestCase;
  * A user stops what a lost run left running, which marks the run stale; a run that is not lost has nothing to stop
  * and is refused.
  */
+#[TestsCommand(StopLeftoverProcessesCommand::class)]
 final class StopLeftoverProcessesTest extends TestCase
 {
     use RefreshHookDatabase;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
+use App\Commands\Projects\FinishProjectCommandRun\FinishProjectCommandRunCommand;
 use App\Enums\Connections\CommandRunStatus;
 use App\Enums\Projects\ArrangementType;
 use App\Models\Projects\Environment;
@@ -18,11 +19,13 @@ use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * A run whose worker died reads interrupted or unknown and is never run again.
  */
+#[TestsCommand(FinishProjectCommandRunCommand::class)]
 final class FinishProjectCommandRunTest extends TestCase
 {
     use CommitsHookRows;

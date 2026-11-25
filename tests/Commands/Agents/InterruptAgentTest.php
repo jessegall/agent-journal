@@ -9,11 +9,13 @@ use App\Enums\Drivers\HoldReason;
 use App\Models\Agents\AgentRuntime;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * An interrupt holds the runtime at once.
  */
+#[TestsCommand(InterruptAgentCommand::class)]
 final class InterruptAgentTest extends TestCase
 {
     use CommitsHookRows;

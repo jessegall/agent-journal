@@ -35,6 +35,7 @@ use Domain\Sharing\Tests\TestCase;
 use Tests\Fixtures\Domains\Binders\BinderPublications;
 use Tests\Fixtures\Domains\Binders\BindersDomain;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 
@@ -42,6 +43,7 @@ use Tests\Support\TestIds;
  * The owner saves a preview of a root with some of its linked candidates and gets a checksum; anyone else is refused,
  * and the preview is consumed once, only while its selection still shows the same links and published versions.
  */
+#[TestsCommand(SaveSharePreviewCommand::class)]
 final class SaveSharePreviewTest extends TestCase
 {
     use CommitsHookRows;

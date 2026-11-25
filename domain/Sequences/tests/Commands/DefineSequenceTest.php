@@ -10,11 +10,13 @@ use Domain\Sequences\Models\Sequence;
 use Domain\Sequences\Tests\TestCase;
 use Domain\Sequences\Values\SequenceStep;
 use Illuminate\Support\Facades\Event;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 
 /**
  * A user defines a sequence: it keeps its name and steps at its first version and says it was defined.
  */
+#[TestsCommand(DefineSequenceCommand::class)]
 final class DefineSequenceTest extends TestCase
 {
     use RefreshHookDatabase;

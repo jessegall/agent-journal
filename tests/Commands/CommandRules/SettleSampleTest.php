@@ -25,6 +25,7 @@ use App\Values\SampleOutcome;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Processes\AcmeDeclarations;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
@@ -34,6 +35,7 @@ use Tests\TestCase;
  * An approved sample runs once and leaves the request awaiting proof with the run; a failed capture gives the request
  * back to the owner.
  */
+#[TestsCommand(SettleSampleCommand::class)]
 final class SettleSampleTest extends TestCase
 {
     use RefreshHookDatabase;

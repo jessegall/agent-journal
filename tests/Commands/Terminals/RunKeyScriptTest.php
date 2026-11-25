@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Terminals;
 
+use App\Commands\Terminals\RunKeyScript\RunKeyScriptCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\ActorNotAllowed;
@@ -15,6 +16,7 @@ use App\Support\ActorContext;
 use App\Support\EnrolledHost;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
@@ -22,6 +24,7 @@ use Tests\TestCase;
  * The owner runs a key script on an agent's runtime, which queues it as one request; an unknown script and one with a
  * parameter it does not declare are refused.
  */
+#[TestsCommand(RunKeyScriptCommand::class)]
 final class RunKeyScriptTest extends TestCase
 {
     use CommitsHookRows;

@@ -18,11 +18,13 @@ use Domain\Rules\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * The user removes a rule that holds, which then no longer does; an agent may not remove one, and a rule that is not
  * there is refused by name.
  */
+#[TestsCommand(RemoveRuleCommand::class)]
 final class RemoveRuleTest extends TestCase
 {
     use CommitsHookRows;

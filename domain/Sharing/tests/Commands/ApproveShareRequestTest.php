@@ -35,6 +35,7 @@ use Domain\Sharing\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -46,6 +47,7 @@ use Tests\Support\TimeLimits\TimeLimit;
     seconds: 10,
     reason: 'It commits a document and a hundred proposals, and empties the sharing and agent tables around each test.',
 )]
+#[TestsCommand(ApproveShareRequestCommand::class)]
 final class ApproveShareRequestTest extends TestCase
 {
     use CommitsHookRows;

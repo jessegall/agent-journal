@@ -21,12 +21,14 @@ use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Engine\RunsEnginePasses;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * The engine settles the timing checkpoints of a batch of frames in one statement, moves them on the next settlement,
  * only under a grant that covers their stacks, and loses them with their pruned stack.
  */
+#[TestsCommand(SettleFrameTimesCommand::class)]
 final class SettleFrameTimesTest extends TestCase
 {
     use CommitsHookRows;

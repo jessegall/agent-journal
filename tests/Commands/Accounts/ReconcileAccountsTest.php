@@ -13,6 +13,7 @@ use App\Models\Accounts\SignInAttempt;
 use App\Support\JournalCommands;
 use Illuminate\Support\Facades\Bus;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -21,6 +22,7 @@ use Tests\TestCase;
  * The sweep ends an overdue attempt, and signing in again holds the folder once.
  */
 #[TimeLimit(seconds: 3, reason: 'It commits attempts and accounts through the bus and empties five tables per test.')]
+#[TestsCommand(ReconcileAccountsCommand::class)]
 final class ReconcileAccountsTest extends TestCase
 {
     use CommitsHookRows;

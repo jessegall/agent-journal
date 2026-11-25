@@ -13,11 +13,13 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * After a record's assignment is taken away, a retry of the first assign under the same key returns its first result.
  */
+#[TestsCommand(UnassignRecordCommand::class)]
 final class UnassignRecordTest extends TestCase
 {
     use CommitsHookRows;

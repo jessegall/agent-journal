@@ -33,8 +33,10 @@ use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
+#[TestsCommand(ClaimAutoAssignmentCommand::class)]
 final class ClaimAutoAssignmentTest extends TestCase
 {
     use CommitsHookRows;

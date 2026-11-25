@@ -33,6 +33,7 @@ use Domain\Sharing\Tests\TestCase;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Domains\Binders\BinderPublications;
 use Tests\Fixtures\Domains\Binders\BindersDomain;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 
@@ -40,6 +41,7 @@ use Tests\Support\TestActors;
  * Disabling a gateway revokes its shares before one close, a preview without a gateway is refused once the default
  * is disabled, and a closing endpoint version is never opened again.
  */
+#[TestsCommand(DisableShareGatewayCommand::class)]
 final class DisableShareGatewayTest extends TestCase
 {
     use RefreshHookDatabase;

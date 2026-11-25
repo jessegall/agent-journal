@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Navigation;
 
+use App\Commands\Navigation\InterruptNavigation\InterruptNavigationCommand;
 use App\Enums\Drivers\HoldReason;
 use App\Enums\Navigation\NavigationStatus;
 use App\Models\Drivers\DriverRequest;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Engine\RunsEnginePasses;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * The host's report that the user took over interrupts the request once and holds its key script for attention.
  */
+#[TestsCommand(InterruptNavigationCommand::class)]
 final class InterruptNavigationTest extends TestCase
 {
     use CommitsHookRows;

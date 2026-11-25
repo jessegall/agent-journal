@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
+use App\Commands\Projects\RequestProjectRead\RequestProjectReadCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Hosts\ProjectFiles;
 use App\Enums\Projects\ProjectReadStatus;
@@ -26,6 +27,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -34,6 +36,7 @@ use Tests\TestCase;
  * The owner asks for a read of the project: it is pending until the host answers, the same question asked again reuses
  * the recent read, a member who is not the owner may not read, and a path over the limit is refused by name.
  */
+#[TestsCommand(RequestProjectReadCommand::class)]
 final class RequestProjectReadTest extends TestCase
 {
     use CommitsHookRows;

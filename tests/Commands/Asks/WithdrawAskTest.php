@@ -19,9 +19,11 @@ use App\Support\ProfileProposal;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
+#[TestsCommand(WithdrawAskCommand::class)]
 final class WithdrawAskTest extends TestCase
 {
     use CommitsHookRows;

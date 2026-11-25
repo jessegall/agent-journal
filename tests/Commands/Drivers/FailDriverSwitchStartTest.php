@@ -22,12 +22,14 @@ use App\Values\OwnerAuthority;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
  * A replacement start the journal could not make fails the switch with its reason.
  */
+#[TestsCommand(FailDriverSwitchStartCommand::class)]
 final class FailDriverSwitchStartTest extends TestCase
 {
     use CommitsHookRows;

@@ -6,11 +6,13 @@ namespace Tests\Commands\Messages;
 
 use App\Commands\Messages\ReadUnreadMessages\ReadUnreadMessagesCommand;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * A member reads every message it has not read yet, oldest first, and a second read finds none.
  */
+#[TestsCommand(ReadUnreadMessagesCommand::class)]
 final class ReadUnreadMessagesTest extends TestCase
 {
     use CommitsHookRows;

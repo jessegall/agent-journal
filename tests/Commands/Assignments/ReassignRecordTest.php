@@ -17,11 +17,13 @@ use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * An agent and a user are assigned a record and it is reassigned from one to the other.
  */
+#[TestsCommand(ReassignRecordCommand::class)]
 final class ReassignRecordTest extends TestCase
 {
     use CommitsHookRows;

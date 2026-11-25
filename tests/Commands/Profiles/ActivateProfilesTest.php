@@ -68,6 +68,7 @@ use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -76,6 +77,7 @@ use Tests\TestCase;
  * The owner activates profiles: each activation is kept with the actor that sent it as its author, and a second
  * activation adds the next revision while the first stays readable.
  */
+#[TestsCommand(ActivateProfilesCommand::class)]
 final class ActivateProfilesTest extends TestCase
 {
     use CommitsHookRows;

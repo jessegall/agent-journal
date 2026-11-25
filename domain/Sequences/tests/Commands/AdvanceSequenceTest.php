@@ -8,10 +8,12 @@ use Domain\Sequences\Commands\AdvanceSequence\AdvanceSequenceCommand;
 use Domain\Sequences\Tests\Fixtures\SequenceFixtures;
 use Domain\Sequences\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * A running sequence goes to its next step, and finishes once its last step is done.
  */
+#[TestsCommand(AdvanceSequenceCommand::class)]
 final class AdvanceSequenceTest extends TestCase
 {
     use CommitsHookRows;

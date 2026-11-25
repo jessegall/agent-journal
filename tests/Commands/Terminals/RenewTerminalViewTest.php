@@ -21,6 +21,7 @@ use App\Values\RuntimeIntent;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\FakeServerClock;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\RefreshHookDatabase;
@@ -30,6 +31,7 @@ use Tests\TestCase;
  * Renewing a view moves its expiry; a closed or lapsed view is refused, not reopened, and a delayed renew never
  * touches a sibling view on a replacement runtime.
  */
+#[TestsCommand(RenewTerminalViewCommand::class)]
 final class RenewTerminalViewTest extends TestCase
 {
     use OpensTerminalRuntimes;

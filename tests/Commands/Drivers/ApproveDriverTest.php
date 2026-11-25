@@ -24,12 +24,14 @@ use App\Values\ProviderKey;
 use Domain\Chat\ChatDomain;
 use Tests\Fixtures\Drivers\AcmeReaderCapabilities;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
  * A host enrolls a third-party driver only once its build is approved, and only the approved build.
  */
+#[TestsCommand(ApproveDriverCommand::class)]
 final class ApproveDriverTest extends TestCase
 {
     use RefreshHookDatabase;

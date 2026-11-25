@@ -29,6 +29,7 @@ use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\RecordedAttention;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
@@ -37,6 +38,7 @@ use Tests\TestCase;
  * stale round, another actor's round or a parameter the goal lacks stores nothing, and a control key or an endless
  * label never becomes an answer.
  */
+#[TestsCommand(AnswerNavigationCommand::class)]
 final class AnswerNavigationTest extends TestCase
 {
     use CommitsHookRows;

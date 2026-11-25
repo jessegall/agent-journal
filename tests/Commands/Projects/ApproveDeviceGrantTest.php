@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
+use App\Commands\Projects\ApproveDeviceGrant\ApproveDeviceGrantCommand;
 use App\Enums\Connections\ConnectionAuditType;
 use App\Models\Access\User;
 use App\Models\Projects\ConnectionAudit;
@@ -17,12 +18,14 @@ use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\ConnectsProjects;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * The shell gets a url and a code and its grant once the owner approves; the approval window reads the committed
  * state of the request.
  */
+#[TestsCommand(ApproveDeviceGrantCommand::class)]
 final class ApproveDeviceGrantTest extends TestCase
 {
     use CommitsHookRows;

@@ -7,12 +7,14 @@ namespace Tests\Commands\Inboxes;
 use App\Commands\Inboxes\InstallInboxes\InstallInboxesCommand;
 use App\Enums\Accounts\CommandEntry;
 use App\Models\Inboxes\Inbox;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
  * The journal installs its named inboxes, the main inbox among them; installing again adds none.
  */
+#[TestsCommand(InstallInboxesCommand::class)]
 final class InstallInboxesTest extends TestCase
 {
     use RefreshHookDatabase;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Accounts;
 
+use App\Commands\Accounts\RecordAccountFailure\RecordAccountFailureCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Enums\Drivers\DriverFailure;
 use App\Events\Sessions\DriverFailed;
@@ -14,6 +15,7 @@ use App\Support\DefaultDrivers;
 use App\Values\AccountLabel;
 use App\Values\OwnerAuthority;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -23,6 +25,7 @@ use Tests\TestCase;
  * check.
  */
 #[TimeLimit(seconds: 4, reason: 'It commits account changes through the bus and empties five tables per test.')]
+#[TestsCommand(RecordAccountFailureCommand::class)]
 final class RecordAccountFailureTest extends TestCase
 {
     use CommitsHookRows;

@@ -32,6 +32,7 @@ use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TestStartAuthority;
@@ -41,6 +42,7 @@ use Tests\TestCase;
  * A reader links one record to another once, whichever way round it is named again; a record that is not there is
  * refused and links nothing.
  */
+#[TestsCommand(LinkRecordsCommand::class)]
 final class LinkRecordsTest extends TestCase
 {
     use CommitsHookRows;

@@ -8,11 +8,13 @@ use App\Commands\Inboxes\HandOverInbox\HandOverInboxCommand;
 use App\Commands\Inboxes\OpenInbox\OpenInboxCommand;
 use App\Models\Inboxes\InboxMember;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * A member hands its place in an inbox over to another actor, who joins as it leaves.
  */
+#[TestsCommand(HandOverInboxCommand::class)]
 final class HandOverInboxTest extends TestCase
 {
     use CommitsHookRows;

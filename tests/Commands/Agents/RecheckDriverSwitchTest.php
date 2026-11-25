@@ -21,12 +21,14 @@ use App\Values\OwnerAuthority;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
  * The owner rechecks a switch that waits on the host: a stop with no reported process is marked unconfirmed and waits.
  */
+#[TestsCommand(RecheckDriverSwitchCommand::class)]
 final class RecheckDriverSwitchTest extends TestCase
 {
     use CommitsHookRows;

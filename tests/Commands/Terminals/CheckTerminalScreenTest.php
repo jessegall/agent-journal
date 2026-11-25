@@ -8,6 +8,7 @@ use App\Commands\Terminals\CheckTerminalScreen\CheckTerminalScreenCommand;
 use App\Enums\Drivers\DriverOperation;
 use App\Models\Projects\Host;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\Terminals\TakesTerminalControl;
 use Tests\TestCase;
@@ -15,6 +16,7 @@ use Tests\TestCase;
 /**
  * The holder asks the host to check the screen again.
  */
+#[TestsCommand(CheckTerminalScreenCommand::class)]
 final class CheckTerminalScreenTest extends TestCase
 {
     use CommitsHookRows;

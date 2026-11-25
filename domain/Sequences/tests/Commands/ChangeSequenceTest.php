@@ -10,12 +10,14 @@ use Domain\Sequences\Models\Sequence;
 use Domain\Sequences\Tests\Fixtures\SequenceFixtures;
 use Domain\Sequences\Tests\TestCase;
 use Domain\Sequences\Values\SequenceStep;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 
 /**
  * A user changes a sequence at the version they opened: it goes one version on and a run it already started keeps
  * its own steps; a change from an older version is refused and keeps the newer steps.
  */
+#[TestsCommand(ChangeSequenceCommand::class)]
 final class ChangeSequenceTest extends TestCase
 {
     use RefreshHookDatabase;

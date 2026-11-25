@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Commands\Accounts;
 
 use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
+use App\Commands\Accounts\ClaimSignIn\ClaimSignInCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Enums\Accounts\SignInMethod;
 use App\Enums\Accounts\SignInStatus;
@@ -16,6 +17,7 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -24,6 +26,7 @@ use Tests\TestCase;
  * reach no attempt.
  */
 #[TimeLimit(seconds: 5, reason: 'It enrolls hosts, sends signed calls and runs a short host process.')]
+#[TestsCommand(ClaimSignInCommand::class)]
 final class ClaimSignInTest extends TestCase
 {
     use CommitsHookRows;

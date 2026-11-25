@@ -27,6 +27,7 @@ use App\Values\RuleScope;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Processes\AcmeDeclarations;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
@@ -36,6 +37,7 @@ use Tests\TestCase;
  * The owner approves a proven pair of declaration and reader and the rule is active; an agent cannot approve, and an
  * approval without a proof or with another reader's proof is refused.
  */
+#[TestsCommand(ApproveRuleProposalCommand::class)]
 final class ApproveRuleProposalTest extends TestCase
 {
     use RefreshHookDatabase;

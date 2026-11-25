@@ -18,12 +18,14 @@ use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Tests\TestCase;
 use Domain\Documents\Values\DraftTarget;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 
 /**
  * A save replaces text in the open draft; a save on an old version, an edit with no open draft and an edit the text
  * refuses name their cause and change nothing.
  */
+#[TestsCommand(ReplaceDocumentTextCommand::class)]
 final class ReplaceDocumentTextTest extends TestCase
 {
     use CommitsHookRows;

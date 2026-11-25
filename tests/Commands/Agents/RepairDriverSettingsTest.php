@@ -15,11 +15,13 @@ use App\Models\Drivers\DriverRequest;
 use App\Values\BrowserInputCapabilities;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * The owner repairs a failed effort change, which is repaired in its own place in the queue.
  */
+#[TestsCommand(RepairDriverSettingsCommand::class)]
 final class RepairDriverSettingsTest extends TestCase
 {
     use CommitsHookRows;

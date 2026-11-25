@@ -7,12 +7,14 @@ namespace Tests\Commands\Records;
 use App\Commands\Records\InstallNumbers\InstallNumbersCommand;
 use App\Enums\Accounts\CommandEntry;
 use App\Models\Records\GlobalGroup;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
  * Installing the journal's numbers makes its one number group, and installing again keeps that one.
  */
+#[TestsCommand(InstallNumbersCommand::class)]
 final class InstallNumbersTest extends TestCase
 {
     use RefreshHookDatabase;

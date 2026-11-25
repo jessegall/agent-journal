@@ -19,6 +19,7 @@ use Domain\Helpers\Tests\Support\DispatchesHelpers;
 use Domain\Helpers\Tests\TestCase;
 use Domain\Helpers\Values\HelperReceipt;
 use Domain\Helpers\Values\HelperWork;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 
@@ -27,6 +28,7 @@ use Tests\Support\TimeLimits\TimeLimit;
  * a busy, unfinished, retired or foreign helper refuses with its own refusal.
  */
 #[TimeLimit(seconds: 5, reason: 'It activates profiles and starts agent sessions for several dispatches.')]
+#[TestsCommand(SendHelperCommand::class)]
 final class SendHelperTest extends TestCase
 {
     use DispatchesHelpers;

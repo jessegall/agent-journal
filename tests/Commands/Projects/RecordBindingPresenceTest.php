@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Commands\Projects;
 
 use App\Commands\Inboxes\InstallInboxes\InstallInboxesCommand;
+use App\Commands\Projects\RecordBindingPresence\RecordBindingPresenceCommand;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Connections\BindingReadiness;
 use App\Models\Agents\AgentRuntime;
@@ -15,6 +16,7 @@ use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\ConnectsProjects;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -23,6 +25,7 @@ use Tests\TestCase;
  * setup or a replayed sequence changes nothing, a new boot takes over a live one only when it asks, another host is
  * refused, and the binding reads offline once its presence expires.
  */
+#[TestsCommand(RecordBindingPresenceCommand::class)]
 final class RecordBindingPresenceTest extends TestCase
 {
     use CommitsHookRows;

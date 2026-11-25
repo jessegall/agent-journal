@@ -19,9 +19,11 @@ use App\Values\DraftExpectations;
 use App\Values\ProfileKey;
 use App\Values\ScriptSource;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
+#[TestsCommand(SaveProfileDraftCommand::class)]
 final class SaveProfileDraftTest extends TestCase
 {
     use CommitsHookRows;

@@ -17,11 +17,13 @@ use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * A reviewer asks for changes to the open review of a plan with a reason: the review keeps the decision and reason,
  * and the plan is planned again; an empty reason is refused, and a review already decided is refused with its outcome.
  */
+#[TestsCommand(RequestPlanChangesCommand::class)]
 final class RequestPlanChangesTest extends TestCase
 {
     use CommitsHookRows;

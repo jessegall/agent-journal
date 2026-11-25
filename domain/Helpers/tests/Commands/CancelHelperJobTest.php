@@ -13,6 +13,7 @@ use Domain\Helpers\Tests\Support\DispatchesHelpers;
 use Domain\Helpers\Tests\TestCase;
 use Domain\Helpers\Values\HelperReceipt;
 use Illuminate\Contracts\Events\Dispatcher;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 
@@ -20,6 +21,7 @@ use Tests\Support\TimeLimits\TimeLimit;
  * A parent cancels a job of its helper, which marks it cancelled.
  */
 #[TimeLimit(seconds: 8, reason: 'It activates profiles and starts agent sessions for several dispatches.')]
+#[TestsCommand(CancelHelperJobCommand::class)]
 final class CancelHelperJobTest extends TestCase
 {
     use DispatchesHelpers;

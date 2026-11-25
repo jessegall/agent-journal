@@ -8,12 +8,14 @@ use App\Commands\Layouts\SaveLayout\SaveLayoutCommand;
 use App\Data\Layouts\LayoutShape;
 use App\Models\Access\User;
 use App\Models\Records\Layout;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
  * A user saves the screen's layout under a name, kept as theirs with its shape.
  */
+#[TestsCommand(SaveLayoutCommand::class)]
 final class SaveLayoutTest extends TestCase
 {
     use RefreshHookDatabase;

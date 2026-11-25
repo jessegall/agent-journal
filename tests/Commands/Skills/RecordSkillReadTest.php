@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Commands\Skills;
 
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
+use App\Commands\Skills\RecordSkillRead\RecordSkillReadCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Hooks\ContextStartType;
 use App\Enums\Hooks\ToolOutcome;
@@ -36,6 +37,7 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Skills\AdmitsMainAgentSkills;
 use Tests\Support\Skills\FinishesToolCalls;
 use Tests\Support\Skills\MakesUserGuideSkill;
@@ -47,6 +49,7 @@ use Tests\TestCase;
  * A proven whole read of a delivered skill leaves one receipt with the delivered digest; a listing leaves none; after
  * a compaction the skill reads as unread.
  */
+#[TestsCommand(RecordSkillReadCommand::class)]
 final class RecordSkillReadTest extends TestCase
 {
     use AdmitsMainAgentSkills;

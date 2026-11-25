@@ -16,6 +16,7 @@ use App\Values\ProfileRevisionReference;
 use App\Values\ScriptContext;
 use App\Values\WorkReference;
 use App\Values\WorkspaceReadReference;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -26,6 +27,7 @@ use Tests\TestCase;
  * outcome is recorded once on the run that waits on it and resumes it.
  */
 #[TimeLimit(seconds: 4, reason: 'It starts a test agent session and records host answers.')]
+#[TestsCommand(NotifyWorkspaceReadCommand::class)]
 final class NotifyWorkspaceReadTest extends TestCase
 {
     use RefreshHookDatabase;

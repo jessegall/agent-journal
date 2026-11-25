@@ -26,11 +26,13 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * A plan under review holds still. Requesting a review puts the plan in Reviewing and refuses
  * every change to it, its phases and its tasks until the review is withdrawn or decided; no copy of the plan is made.
  */
+#[TestsCommand(RequestPlanReviewCommand::class)]
 final class RequestPlanReviewTest extends TestCase
 {
     use CommitsHookRows;

@@ -48,6 +48,7 @@ use Domain\Helpers\Values\HelperWork;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 
@@ -58,6 +59,7 @@ use Tests\Support\TimeLimits\TimeLimit;
  * helper's reservation.
  */
 #[TimeLimit(seconds: 5, reason: 'It activates profiles and starts agent sessions for several dispatches.')]
+#[TestsCommand(StartHelperCommand::class)]
 final class StartHelperTest extends TestCase
 {
     use DispatchesHelpers;

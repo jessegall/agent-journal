@@ -30,12 +30,14 @@ use Tests\Support\Agents\BackdatesSessions;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Engine\RunsEnginePasses;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * Each engine pass sweeps for silent sessions under its agents.silence grant: a session past its presence window turns
  * silent and keeps its credential and stack; the sweep command refuses the engine without that grant.
  */
+#[TestsCommand(MarkSilentSessionsCommand::class)]
 final class MarkSilentSessionsTest extends TestCase
 {
     use BackdatesSessions;

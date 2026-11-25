@@ -10,6 +10,7 @@ use App\Models\Profiles\PermissionRevocation;
 use App\Values\CommandClassSet;
 use App\Values\CommandPermissions;
 use App\Values\ProcessGrants;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -17,6 +18,7 @@ use Tests\TestCase;
  * The owner revokes command classes from a permission source, which narrows its next admission while the classes
  * left stay admitted.
  */
+#[TestsCommand(RevokeCommandPermissionsCommand::class)]
 final class RevokeCommandPermissionsTest extends TestCase
 {
     use RefreshHookDatabase;

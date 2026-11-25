@@ -15,11 +15,13 @@ use Domain\Plans\Models\PlanReviewEdition;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * Whoever asked for a review withdraws it: the review is kept as withdrawn by them and the plan is planned again; a
  * plan with no review open is refused.
  */
+#[TestsCommand(WithdrawPlanReviewCommand::class)]
 final class WithdrawPlanReviewTest extends TestCase
 {
     use CommitsHookRows;

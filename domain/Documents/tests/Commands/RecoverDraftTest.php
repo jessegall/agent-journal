@@ -33,7 +33,9 @@ use Domain\Documents\Values\DraftTarget;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
+#[TestsCommand(RecoverDraftCommand::class)]
 final class RecoverDraftTest extends TestCase
 {
     use CommitsHookRows;

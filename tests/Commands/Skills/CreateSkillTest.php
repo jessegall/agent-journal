@@ -25,6 +25,7 @@ use App\Values\SkillRevisionResult;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TestStartAuthority;
@@ -36,6 +37,7 @@ use Throwable;
  * is refused, an agent is refused before any row changes, invalid keys, conditions and limits save nothing, and a save
  * says skills changed while a replay says nothing.
  */
+#[TestsCommand(CreateSkillCommand::class)]
 final class CreateSkillTest extends TestCase
 {
     use CommitsHookRows;

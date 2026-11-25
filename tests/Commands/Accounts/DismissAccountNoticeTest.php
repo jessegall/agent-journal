@@ -21,6 +21,7 @@ use App\Support\DefaultDrivers;
 use App\Values\AccountLabel;
 use App\Values\OwnerAuthority;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\Support\TestStartAuthority;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -30,6 +31,7 @@ use Tests\TestCase;
  * Dismissing a notice or choosing a working account resolves the notices, and an agent sees none.
  */
 #[TimeLimit(seconds: 4, reason: 'It commits starts and notices through the bus and empties many tables.')]
+#[TestsCommand(DismissAccountNoticeCommand::class)]
 final class DismissAccountNoticeTest extends TestCase
 {
     use CommitsHookRows;

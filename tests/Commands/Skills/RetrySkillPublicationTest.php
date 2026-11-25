@@ -18,6 +18,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\File;
 use Tests\Fixtures\Skills\FullDiskPublisher;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Skills\HasSkillTargets;
 use Tests\Support\Skills\IntendsSkillPublications;
 use Tests\Support\TestIds;
@@ -26,6 +27,7 @@ use Tests\TestCase;
 /**
  * A failed publication is tried again: it is pending once more without its error.
  */
+#[TestsCommand(RetrySkillPublicationCommand::class)]
 final class RetrySkillPublicationTest extends TestCase
 {
     use CommitsHookRows;

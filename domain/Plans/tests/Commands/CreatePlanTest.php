@@ -12,6 +12,7 @@ use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Tests\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 
 /**
@@ -19,6 +20,7 @@ use Tests\Support\RefreshHookDatabase;
  * brief at their limits are kept, and a title that is empty, too long or on two lines, or a brief past its limit, is
  * refused naming the field and keeps nothing.
  */
+#[TestsCommand(CreatePlanCommand::class)]
 final class CreatePlanTest extends TestCase
 {
     use RefreshHookDatabase;

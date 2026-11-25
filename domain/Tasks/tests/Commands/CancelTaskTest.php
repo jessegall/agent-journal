@@ -14,11 +14,13 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * The agent that runs a task cancels it with its reason; another agent, a run that moved on since it was read, a
  * blank reason and a task that already ended are refused.
  */
+#[TestsCommand(CancelTaskCommand::class)]
 final class CancelTaskTest extends TestCase
 {
     use CommitsHookRows;

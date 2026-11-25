@@ -31,6 +31,7 @@ use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 
 /**
@@ -38,6 +39,7 @@ use Tests\Support\TestIds;
  * that check once, and becomes the task's proof. A run of another caller is refused, and a receipt of a run no check
  * names binds nothing.
  */
+#[TestsCommand(BindTaskCheckCommand::class)]
 final class BindTaskCheckTest extends TestCase
 {
     use CommitsHookRows;

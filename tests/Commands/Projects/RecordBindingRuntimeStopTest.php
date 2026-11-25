@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
+use App\Commands\Projects\RecordBindingRuntimeStop\RecordBindingRuntimeStopCommand;
 use App\Models\Projects\ProjectBinding;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
@@ -11,11 +12,13 @@ use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\ConnectsProjects;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * An ended lease reads stop unconfirmed until its stop receipt arrives, which counts once.
  */
+#[TestsCommand(RecordBindingRuntimeStopCommand::class)]
 final class RecordBindingRuntimeStopTest extends TestCase
 {
     use CommitsHookRows;

@@ -9,11 +9,13 @@ use Domain\Helpers\Enums\JobStatus;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Tests\Fixtures\HelperFixtures;
 use Domain\Helpers\Tests\TestCase;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 
 /**
  * A start that was cancelled cancels its open job; a job that already finished keeps its end.
  */
+#[TestsCommand(CancelStartedHelperJobCommand::class)]
 final class CancelStartedHelperJobTest extends TestCase
 {
     use RefreshHookDatabase;

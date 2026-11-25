@@ -9,6 +9,7 @@ use App\Enums\Drivers\DriverOperation;
 use App\Models\Drivers\TerminalGrant;
 use App\Models\Projects\Host;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\Terminals\TakesTerminalControl;
 use Tests\TestCase;
@@ -16,6 +17,7 @@ use Tests\TestCase;
 /**
  * The holder renews control, which moves the grant's expiry on and tells the host.
  */
+#[TestsCommand(RenewTerminalControlCommand::class)]
 final class RenewTerminalControlTest extends TestCase
 {
     use CommitsHookRows;

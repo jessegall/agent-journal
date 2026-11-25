@@ -52,6 +52,7 @@ use Illuminate\Support\Str;
 use Tests\Fixtures\Domains\Binders\BinderPublications;
 use Tests\Fixtures\Domains\Binders\BindersDomain;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -61,6 +62,7 @@ use Tests\Support\TimeLimits\TimeLimit;
  * scope version 1, an open request for its gateway and its audit, answers with its id, number and state only, and
  * runs once per key. The duration is checked and the 101st live share refused.
  */
+#[TestsCommand(CreateShareCommand::class)]
 final class CreateShareTest extends TestCase
 {
     use CommitsHookRows;

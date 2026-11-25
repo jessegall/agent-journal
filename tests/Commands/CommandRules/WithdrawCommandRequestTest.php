@@ -10,6 +10,7 @@ use App\Enums\CommandRules\RequestHoldReason;
 use App\Enums\CommandRules\RequestStatus;
 use App\Exceptions\RequestTransitionRefused;
 use App\Models\CommandRules\CommandRequest;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -17,6 +18,7 @@ use Tests\TestCase;
  * An agent withdraws its request, which stays readable while a new attempt opens a new one; another agent cannot
  * withdraw it, and no state is skipped.
  */
+#[TestsCommand(WithdrawCommandRequestCommand::class)]
 final class WithdrawCommandRequestTest extends TestCase
 {
     use RefreshHookDatabase;

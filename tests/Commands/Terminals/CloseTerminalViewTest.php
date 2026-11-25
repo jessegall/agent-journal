@@ -11,6 +11,7 @@ use App\Models\Drivers\TerminalView;
 use App\Support\WatchedRuntimes;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
@@ -20,6 +21,7 @@ use Tests\TestCase;
  * Closing one viewer's view keeps the runtime watched until the last one closes, and the runtime's status counts its
  * watchers.
  */
+#[TestsCommand(CloseTerminalViewCommand::class)]
 final class CloseTerminalViewTest extends TestCase
 {
     use OpensTerminalRuntimes;

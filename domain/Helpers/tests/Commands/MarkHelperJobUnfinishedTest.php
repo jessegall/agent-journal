@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Helpers\Tests\Commands;
 
 use App\Events\Sessions\SessionStartEnded;
+use Domain\Helpers\Commands\MarkHelperJobUnfinished\MarkHelperJobUnfinishedCommand;
 use Domain\Helpers\Enums\JobStatus;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Models\HelperNotice;
@@ -12,6 +13,7 @@ use Domain\Helpers\Tests\Support\DispatchesHelpers;
 use Domain\Helpers\Tests\TestCase;
 use Domain\Helpers\Values\HelperReceipt;
 use Illuminate\Contracts\Events\Dispatcher;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 
@@ -19,6 +21,7 @@ use Tests\Support\TimeLimits\TimeLimit;
  * An attempt that ended leaves its open job unfinished, with a notice that holds the exact continue command.
  */
 #[TimeLimit(seconds: 8, reason: 'It activates profiles and starts agent sessions for several dispatches.')]
+#[TestsCommand(MarkHelperJobUnfinishedCommand::class)]
 final class MarkHelperJobUnfinishedTest extends TestCase
 {
     use DispatchesHelpers;

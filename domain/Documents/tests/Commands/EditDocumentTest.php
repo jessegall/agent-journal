@@ -22,7 +22,9 @@ use Domain\Documents\Models\TextUpload;
 use Domain\Documents\Tests\TestCase;
 use Domain\Documents\Values\DraftTarget;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
+#[TestsCommand(EditDocumentCommand::class)]
 final class EditDocumentTest extends TestCase
 {
     use CommitsHookRows;

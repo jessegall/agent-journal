@@ -7,12 +7,14 @@ namespace Tests\Commands\Profiles;
 use App\Commands\Profiles\InstallBuiltInProfiles\InstallBuiltInProfilesCommand;
 use App\Enums\Accounts\CommandEntry;
 use App\Models\Profiles\Profile;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
  * The journal installs its built-in profiles, the main agent's among them; installing again adds no profile.
  */
+#[TestsCommand(InstallBuiltInProfilesCommand::class)]
 final class InstallBuiltInProfilesTest extends TestCase
 {
     use RefreshHookDatabase;

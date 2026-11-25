@@ -19,6 +19,7 @@ use App\Values\ProfileKey;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -26,6 +27,7 @@ use Tests\TestCase;
  * The owner revokes profiles: a revoked profile is retired for its readers and keeps its identity when it is
  * activated again, and an unknown key is refused.
  */
+#[TestsCommand(RevokeProfilesCommand::class)]
 final class RevokeProfilesTest extends TestCase
 {
     use CommitsHookRows;

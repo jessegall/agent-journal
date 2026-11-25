@@ -22,6 +22,7 @@ use App\Values\CleanupProgress;
 use App\Values\OwnerAuthority;
 use Illuminate\Support\Facades\Bus;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
@@ -31,6 +32,7 @@ use Tests\TestCase;
  * The owner retries an unfinished sign-in's cleanup by its attempt.
  */
 #[TimeLimit(seconds: 4, reason: 'It commits accounts, attempts and starts through the bus and empties seven tables.')]
+#[TestsCommand(RetryAttemptCleanupCommand::class)]
 final class RetryAttemptCleanupTest extends TestCase
 {
     use CommitsHookRows;

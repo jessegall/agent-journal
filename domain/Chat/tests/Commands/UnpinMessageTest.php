@@ -10,10 +10,12 @@ use Domain\Chat\Commands\UnpinMessage\UnpinMessageCommand;
 use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Domain\Chat\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * A member takes away their own pin of a message and leaves another member's; a message outside the inbox is refused.
  */
+#[TestsCommand(UnpinMessageCommand::class)]
 final class UnpinMessageTest extends TestCase
 {
     use CommitsHookRows;

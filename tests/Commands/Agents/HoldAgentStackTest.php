@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
+use App\Commands\Agents\HoldAgentStack\HoldAgentStackCommand;
 use App\Enums\Engine\NoSubject;
 use App\Enums\Hooks\AnswerType;
 use App\Models\Agents\AgentStackRow;
@@ -18,10 +19,12 @@ use App\Support\Storage\RecordedSteps;
 use App\Support\Ticks\TickingTypes;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\TestCase;
 
+#[TestsCommand(HoldAgentStackCommand::class)]
 final class HoldAgentStackTest extends TestCase
 {
     use RefreshHookDatabase;

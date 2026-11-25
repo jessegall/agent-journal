@@ -29,11 +29,13 @@ use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * A started plan whose tasks are all done finishes with its note, once, saying who finished it; a plan with tasks
  * still open, a plan not started and an empty or long note are refused.
  */
+#[TestsCommand(FinishPlanCommand::class)]
 final class FinishPlanTest extends TestCase
 {
     use CommitsHookRows;

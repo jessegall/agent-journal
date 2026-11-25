@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Commands\Sessions;
 
 use App\Commands\Inboxes\InstallInboxes\InstallInboxesCommand;
+use App\Commands\Sessions\RecordBindingRuntime\RecordBindingRuntimeCommand;
 use App\Enums\Accounts\CommandEntry;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Projects\ProjectBinding;
@@ -13,6 +14,7 @@ use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\ConnectsProjects;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -20,6 +22,7 @@ use Tests\TestCase;
  * A start through a binding records the runtime it opened, so the same start asked again under its id answers that
  * one runtime.
  */
+#[TestsCommand(RecordBindingRuntimeCommand::class)]
 final class RecordBindingRuntimeTest extends TestCase
 {
     use CommitsHookRows;

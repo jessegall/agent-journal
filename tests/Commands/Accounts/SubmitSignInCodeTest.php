@@ -20,6 +20,7 @@ use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -30,6 +31,7 @@ use Tests\TestCase;
  * taken only while the attempt waits, and a codex device sign-in takes no answer.
  */
 #[TimeLimit(seconds: 3, reason: 'It commits attempts through the bus and empties three tables per test.')]
+#[TestsCommand(SubmitSignInCodeCommand::class)]
 final class SubmitSignInCodeTest extends TestCase
 {
     use CommitsHookRows;

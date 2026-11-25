@@ -33,6 +33,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
@@ -45,6 +46,7 @@ use Tests\TestCase;
  * no account, and a cancelled attempt ignores a late result.
  */
 #[TimeLimit(seconds: 3, reason: 'It commits attempts and accounts through the bus and empties five tables per test.')]
+#[TestsCommand(CompleteSignInCommand::class)]
 final class CompleteSignInTest extends TestCase
 {
     use CommitsHookRows;

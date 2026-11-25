@@ -9,6 +9,7 @@ use App\Commands\Terminals\OpenPrivateEntry\OpenPrivateEntryCommand;
 use App\Enums\Drivers\DriverOperation;
 use App\Models\Projects\Host;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\Terminals\TakesTerminalControl;
 use Tests\TestCase;
@@ -16,6 +17,7 @@ use Tests\TestCase;
 /**
  * The holder cancels an open private entry, which asks the host to close it.
  */
+#[TestsCommand(CancelPrivateEntryCommand::class)]
 final class CancelPrivateEntryTest extends TestCase
 {
     use CommitsHookRows;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\CommandRules;
 
+use App\Commands\CommandRules\SaveCommandAlias\SaveCommandAliasCommand;
 use App\Contracts\Bus\CommandClassifier;
 use App\Enums\CommandRules\CommandClass;
 use App\Enums\CommandRules\CommandType;
@@ -12,6 +13,7 @@ use App\Models\CommandRules\CommandAlias;
 use App\Support\Syntax\TreeParser;
 use App\Values\Classification;
 use App\Values\ExecutionContext;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -19,6 +21,7 @@ use Tests\TestCase;
  * The owner saves an alias, and saving it again takes the next revision; the alias shows its body, id, revision and
  * purpose.
  */
+#[TestsCommand(SaveCommandAliasCommand::class)]
 final class SaveCommandAliasTest extends TestCase
 {
     use RefreshHookDatabase;

@@ -14,7 +14,9 @@ use Domain\Documents\Commands\CommitUpload\CommitUploadCommand;
 use Domain\Documents\Enums\UploadType;
 use Domain\Documents\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
+#[TestsCommand(AppendUploadCommand::class)]
 final class AppendUploadTest extends TestCase
 {
     use CommitsHookRows;

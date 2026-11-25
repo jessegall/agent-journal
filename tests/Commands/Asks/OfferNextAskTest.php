@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Commands\Asks;
 
 use App\Commands\Asks\AskSupervisor\AskSupervisorCommand;
+use App\Commands\Asks\OfferNextAsk\OfferNextAskCommand;
 use App\Commands\Asks\ReplyToAsk\ReplyToAskCommand;
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Actors\ActorAttention;
@@ -30,9 +31,11 @@ use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
+#[TestsCommand(OfferNextAskCommand::class)]
 final class OfferNextAskTest extends TestCase
 {
     use CommitsHookRows;

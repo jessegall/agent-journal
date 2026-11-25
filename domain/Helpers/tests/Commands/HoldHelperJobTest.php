@@ -10,12 +10,14 @@ use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Models\HelperNotice;
 use Domain\Helpers\Tests\Fixtures\HelperFixtures;
 use Domain\Helpers\Tests\TestCase;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 
 /**
  * A stop that failed its checks holds the open job for repair with its evidence and tells the parent which helper
  * and job wait; a job that already ended is left as it was.
  */
+#[TestsCommand(HoldHelperJobCommand::class)]
 final class HoldHelperJobTest extends TestCase
 {
     use RefreshHookDatabase;

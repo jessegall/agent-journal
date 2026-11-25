@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
+use App\Commands\Agents\RenewRuntimeLease\RenewRuntimeLeaseCommand;
 use App\Enums\Drivers\DriverType;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
@@ -17,12 +18,14 @@ use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\ConnectsProjects;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * A live main runtime renews its lease by server time; an ended session and another agent's runtime in the binding
  * root are refused their lease.
  */
+#[TestsCommand(RenewRuntimeLeaseCommand::class)]
 final class RenewRuntimeLeaseTest extends TestCase
 {
     use CommitsHookRows;

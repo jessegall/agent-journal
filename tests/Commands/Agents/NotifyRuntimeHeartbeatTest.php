@@ -10,12 +10,14 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * A heartbeat of the current generation refreshes the session; one of a restarted program is taken and one of a
  * replaced generation is refused.
  */
+#[TestsCommand(NotifyRuntimeHeartbeatCommand::class)]
 final class NotifyRuntimeHeartbeatTest extends TestCase
 {
     use CommitsHookRows;

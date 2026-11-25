@@ -13,6 +13,7 @@ use Domain\Helpers\Tests\Support\DispatchesHelpers;
 use Domain\Helpers\Tests\TestCase;
 use Domain\Helpers\Values\HelperReceipt;
 use Illuminate\Contracts\Events\Dispatcher;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 
@@ -21,6 +22,7 @@ use Tests\Support\TimeLimits\TimeLimit;
  * command that continues it.
  */
 #[TimeLimit(seconds: 8, reason: 'It activates profiles and starts agent sessions for several dispatches.')]
+#[TestsCommand(SteerHelperCommand::class)]
 final class SteerHelperTest extends TestCase
 {
     use DispatchesHelpers;

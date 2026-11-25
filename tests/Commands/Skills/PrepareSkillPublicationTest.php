@@ -10,6 +10,7 @@ use App\Exceptions\SkillPublicationStale;
 use App\Models\Skills\SkillPublication;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Skills\HasSkillTargets;
 use Tests\Support\Skills\IntendsSkillPublications;
 use Tests\TestCase;
@@ -18,6 +19,7 @@ use Tests\TestCase;
  * The worker holding a publication stages its files and is told how far it got; a worker whose fence another claim
  * has passed is stopped.
  */
+#[TestsCommand(PrepareSkillPublicationCommand::class)]
 final class PrepareSkillPublicationTest extends TestCase
 {
     use CommitsHookRows;

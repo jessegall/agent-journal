@@ -9,11 +9,13 @@ use Domain\Helpers\Enums\JobStatus;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Tests\Fixtures\HelperFixtures;
 use Domain\Helpers\Tests\TestCase;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 
 /**
  * A certified stop finishes the open job with its evidence and time; a job that already ended is left as it was.
  */
+#[TestsCommand(FinishHelperJobCommand::class)]
 final class FinishHelperJobTest extends TestCase
 {
     use RefreshHookDatabase;

@@ -19,11 +19,13 @@ use App\Values\BrowserInputCapabilities;
 use App\Values\DriverReceipt;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * An uncertain delivery is sent again only once it is confirmed as a possible duplicate.
  */
+#[TestsCommand(SendDriverRequestAgainCommand::class)]
 final class SendDriverRequestAgainTest extends TestCase
 {
     use CommitsHookRows;

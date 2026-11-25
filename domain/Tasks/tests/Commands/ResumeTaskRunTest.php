@@ -25,11 +25,13 @@ use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * A released run is resumed explicitly: a direct holder that lost and regained the task cannot use its old claim but
  * resumes afresh.
  */
+#[TestsCommand(ResumeTaskRunCommand::class)]
 final class ResumeTaskRunTest extends TestCase
 {
     use CommitsHookRows;

@@ -6,6 +6,7 @@ namespace Tests\Commands\Drivers;
 
 use App\Commands\Agents\DeliverAgent\DeliverAgentCommand;
 use App\Commands\Drivers\ClaimDriverRequests\ClaimDriverRequestsCommand;
+use App\Commands\Drivers\InterruptStuckTurns\InterruptStuckTurnsCommand;
 use App\Commands\Drivers\InterruptStuckTurns\InterruptStuckTurnsHandler;
 use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Enums\Drivers\DriverOperation;
@@ -23,11 +24,13 @@ use App\Values\DriverReceipt;
 use Carbon\CarbonImmutable;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * A turn running past the limit is interrupted once, however many engine passes see it.
  */
+#[TestsCommand(InterruptStuckTurnsCommand::class)]
 final class InterruptStuckTurnsTest extends TestCase
 {
     use CommitsHookRows;

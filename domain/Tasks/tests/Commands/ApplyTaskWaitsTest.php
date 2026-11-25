@@ -17,11 +17,13 @@ use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Domain\Tasks\Values\TaskWaitPair;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * Several waits change at once only against the graph version they were read at, and any change
  * the batch cannot make leaves every wait as it was.
  */
+#[TestsCommand(ApplyTaskWaitsCommand::class)]
 final class ApplyTaskWaitsTest extends TestCase
 {
     use CommitsHookRows;

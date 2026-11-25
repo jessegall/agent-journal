@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Navigation;
 
+use App\Commands\Navigation\MarkMenuEntryStale\MarkMenuEntryStaleCommand;
 use App\Enums\Navigation\NavigationCompletion;
 use App\Enums\Navigation\NavigationReason;
 use App\Models\Drivers\DriverRequest;
@@ -12,12 +13,14 @@ use App\Support\EnrolledHost;
 use App\Values\MenuStep;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * A host whose replay of the owner's menu entry failed on a build marks the entry stale there with why and the screen
  * it saw; marking it again keeps the first mark, and an entry the owner does not have is refused.
  */
+#[TestsCommand(MarkMenuEntryStaleCommand::class)]
 final class MarkMenuEntryStaleTest extends TestCase
 {
     use CommitsHookRows;

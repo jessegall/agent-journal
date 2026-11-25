@@ -18,12 +18,14 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 
 /**
  * A user or agent makes a task: it is open at its first revision with its brief and creator; a title at its limit is
  * kept, and an empty title or a title or brief past its limit is refused naming the field and makes nothing.
  */
+#[TestsCommand(CreateTaskCommand::class)]
 final class CreateTaskTest extends TestCase
 {
     use CommitsHookRows;

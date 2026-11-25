@@ -32,6 +32,7 @@ use Tests\Fixtures\Modules\Notes\Commands\SetIntegerSettingThenFail\SetIntegerSe
 use Tests\Fixtures\Modules\Notes\Exceptions\NoteWorkFailed;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\InstallsCommandModules;
 use Tests\Support\Settings\ChangesReviewsSettings;
 use Tests\Support\Settings\UsesReviewsSettings;
@@ -44,6 +45,7 @@ use Tests\TestCase;
  * again changes nothing, a value equal to the default is kept as an override, and a stale revision, a second first
  * write, a switched-off group, another actor, a wrong type or a value past a bound is refused and changes nothing.
  */
+#[TestsCommand(SetIntegerSettingCommand::class)]
 final class SetIntegerSettingTest extends TestCase
 {
     use ChangesReviewsSettings;

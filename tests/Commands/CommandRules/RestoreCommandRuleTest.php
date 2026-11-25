@@ -21,6 +21,7 @@ use App\Values\OwnerApproval;
 use App\Values\ProgramSpellings;
 use App\Values\RuleScope;
 use Tests\Fixtures\Processes\AcmeDeclarations;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
@@ -29,6 +30,7 @@ use Tests\TestCase;
 /**
  * A retired rule restored needs a new approval before it is active again.
  */
+#[TestsCommand(RestoreCommandRuleCommand::class)]
 final class RestoreCommandRuleTest extends TestCase
 {
     use RefreshHookDatabase;

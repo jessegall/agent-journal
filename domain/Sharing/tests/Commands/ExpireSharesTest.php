@@ -14,6 +14,7 @@ use Domain\Sharing\Support\ShareExpiry;
 use Domain\Sharing\Tests\Fixtures\ShareFixtures;
 use Domain\Sharing\Tests\Support\FakeShareGateway;
 use Domain\Sharing\Tests\TestCase;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 
@@ -21,6 +22,7 @@ use Tests\Support\TestActors;
  * The sharing supervisor ends every share past its deadline as expired and counts them; a share still within its
  * deadline stays as it is.
  */
+#[TestsCommand(ExpireSharesCommand::class)]
 final class ExpireSharesTest extends TestCase
 {
     use RefreshHookDatabase;

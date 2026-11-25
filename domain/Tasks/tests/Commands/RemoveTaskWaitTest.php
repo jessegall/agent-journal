@@ -14,11 +14,13 @@ use Domain\Tasks\Models\TaskWaitHistory;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * A wait whose prerequisite was cancelled still holds its task until it is removed; the removal frees the task and
  * the history keeps every change.
  */
+#[TestsCommand(RemoveTaskWaitCommand::class)]
 final class RemoveTaskWaitTest extends TestCase
 {
     use CommitsHookRows;

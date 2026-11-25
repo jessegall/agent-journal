@@ -11,6 +11,7 @@ use Domain\Plans\Exceptions\PlanRevisionChanged;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 
 /**
@@ -18,6 +19,7 @@ use Tests\Support\RefreshHookDatabase;
  * revision on; an edit at a stale revision is a conflict that keeps the newer text, and a title past its limit is
  * refused naming the field.
  */
+#[TestsCommand(EditPlanCommand::class)]
 final class EditPlanTest extends TestCase
 {
     use RefreshHookDatabase;

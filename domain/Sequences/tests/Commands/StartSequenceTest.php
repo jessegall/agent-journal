@@ -7,17 +7,20 @@ namespace Domain\Sequences\Tests\Commands;
 use App\Exceptions\StackAlreadyClosed;
 use App\Models\Agents\AgentStackRow;
 use Carbon\CarbonImmutable;
+use Domain\Sequences\Commands\StartSequence\StartSequenceCommand;
 use Domain\Sequences\Enums\SequenceRunStatus;
 use Domain\Sequences\Support\States\Support\FollowSequenceStateReference;
 use Domain\Sequences\Tests\Fixtures\SequenceFixtures;
 use Domain\Sequences\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Seeding\StateObservation;
 
 /**
  * An agent starts a run in its session: the run runs at its first step, follows the agent and puts its state on the
  * agent's stack in the same commit; a push that fails rolls the start back.
  */
+#[TestsCommand(StartSequenceCommand::class)]
 final class StartSequenceTest extends TestCase
 {
     use CommitsHookRows;

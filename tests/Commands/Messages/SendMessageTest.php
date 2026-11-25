@@ -30,6 +30,7 @@ use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Communication\FailingMessageListener;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
@@ -37,6 +38,7 @@ use Tests\TestCase;
  * its target by number, a resent request gives back the same message, and an inbox the sender is not attached to, an
  * unknown target or a blank body is refused and leaves nothing.
  */
+#[TestsCommand(SendMessageCommand::class)]
 final class SendMessageTest extends TestCase
 {
     use CommitsHookRows;

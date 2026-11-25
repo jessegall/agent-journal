@@ -26,6 +26,7 @@ use Illuminate\Database\DatabaseManager;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Skills\Guide\BrokenGuideSkill;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Skills\HasSkillTargets;
 use Tests\Support\Skills\IntendsSkillPublications;
 use Tests\Support\TestIds;
@@ -35,6 +36,7 @@ use Tests\TestCase;
  * A refresh renders the catalogue as one immutable generation, reuses it when nothing changed, keeps the last good one
  * when a shipped skill is broken, and asks for a publication for each running session whose selection changed.
  */
+#[TestsCommand(RefreshSkillsCommand::class)]
 final class RefreshSkillsTest extends TestCase
 {
     use CommitsHookRows;

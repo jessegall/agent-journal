@@ -9,12 +9,14 @@ use Domain\Documents\Enums\UploadType;
 use Domain\Documents\Exceptions\UploadInvalid;
 use Domain\Documents\Models\TextUpload;
 use Domain\Documents\Tests\TestCase;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 
 /**
  * An agent begins an upload in its session of a declared type, size and digest, which waits for its parts; a size past the upload
  * limit is refused and begins nothing.
  */
+#[TestsCommand(BeginUploadCommand::class)]
 final class BeginUploadTest extends TestCase
 {
     use RefreshHookDatabase;

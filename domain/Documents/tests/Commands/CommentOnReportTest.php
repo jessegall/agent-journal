@@ -11,11 +11,13 @@ use Domain\Documents\Exceptions\ReportMissing;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
  * A reader comments on a report named by its number or id, as themselves; a report that is not there is refused
  * and keeps no comment.
  */
+#[TestsCommand(CommentOnReportCommand::class)]
 final class CommentOnReportTest extends TestCase
 {
     use CommitsHookRows;

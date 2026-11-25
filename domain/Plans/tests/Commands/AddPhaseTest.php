@@ -12,12 +12,14 @@ use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 
 /**
  * A user adds phases to a plan, each after the last; a title past its limit and a plan that is not there are refused
  * and add nothing.
  */
+#[TestsCommand(AddPhaseCommand::class)]
 final class AddPhaseTest extends TestCase
 {
     use RefreshHookDatabase;

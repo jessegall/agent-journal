@@ -18,7 +18,9 @@ use Domain\Documents\Support\UploadStore;
 use Domain\Documents\Tests\TestCase;
 use Illuminate\Database\DatabaseManager;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 
+#[TestsCommand(CommitUploadCommand::class)]
 final class CommitUploadTest extends TestCase
 {
     use CommitsHookRows;

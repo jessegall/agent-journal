@@ -21,6 +21,7 @@ use App\Values\CleanupProgress;
 use App\Values\OwnerAuthority;
 use Illuminate\Support\Facades\Bus;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
@@ -30,6 +31,7 @@ use Tests\TestCase;
  * A cleanup out of tries waits for the owner's retry in the same generation.
  */
 #[TimeLimit(seconds: 4, reason: 'It commits accounts, attempts and starts through the bus and empties seven tables.')]
+#[TestsCommand(RetryAccountCleanupCommand::class)]
 final class RetryAccountCleanupTest extends TestCase
 {
     use CommitsHookRows;

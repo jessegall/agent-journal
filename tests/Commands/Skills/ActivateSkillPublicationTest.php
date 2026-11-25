@@ -13,6 +13,7 @@ use App\Exceptions\SkillPublicationStale;
 use App\Models\Skills\SkillPublication;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Skills\HasSkillTargets;
 use Tests\Support\Skills\IntendsSkillPublications;
 use Tests\TestCase;
@@ -21,6 +22,7 @@ use Tests\TestCase;
  * The holder of a publication whose files are all staged makes it the target's active skills and it is delivered;
  * a publication with files still to stage is refused and stays undelivered.
  */
+#[TestsCommand(ActivateSkillPublicationCommand::class)]
 final class ActivateSkillPublicationTest extends TestCase
 {
     use CommitsHookRows;

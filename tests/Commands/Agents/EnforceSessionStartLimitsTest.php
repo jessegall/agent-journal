@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
+use App\Commands\Agents\EnforceSessionStartLimits\EnforceSessionStartLimitsCommand;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\Agents\ConversationModeType;
 use App\Enums\Drivers\DriverType;
@@ -23,6 +24,7 @@ use App\Values\StartRequest;
 use PhpOption\None;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -32,6 +34,7 @@ use Tests\TestCase;
  * stops the sessions of its revision and is reconciled once none runs.
  */
 #[TimeLimit(seconds: 4, reason: 'It starts test agent sessions and opens their runtimes.')]
+#[TestsCommand(EnforceSessionStartLimitsCommand::class)]
 final class EnforceSessionStartLimitsTest extends TestCase
 {
     use RefreshHookDatabase;

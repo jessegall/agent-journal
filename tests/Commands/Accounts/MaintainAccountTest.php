@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Accounts;
 
+use App\Commands\Accounts\MaintainAccount\MaintainAccountCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Drivers\DriverCompatibilities;
 use App\Enums\Accounts\SignInMethod;
@@ -18,6 +19,7 @@ use App\Support\Compatibility\DriverCompatibility;
 use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -31,6 +33,7 @@ use Tests\TestCase;
     seconds: 5,
     reason: 'It opens runtimes, enrolls hosts and commits maintenance steps, emptying many tables.',
 )]
+#[TestsCommand(MaintainAccountCommand::class)]
 final class MaintainAccountTest extends TestCase
 {
     use CommitsHookRows;

@@ -30,6 +30,7 @@ use App\Values\StopPreparationRequest;
 use App\Values\WorkReference;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\Support\TestText;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -39,6 +40,7 @@ use Tests\TestCase;
  * A step's outcome is recorded once and resumes the run that waits on it.
  */
 #[TimeLimit(seconds: 4, reason: 'It starts a test agent session and records host answers.')]
+#[TestsCommand(RecordScriptStepResultCommand::class)]
 final class RecordScriptStepResultTest extends TestCase
 {
     use CommitsHookRows;

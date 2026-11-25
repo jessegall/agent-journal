@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
+use App\Commands\Projects\RedeemProjectInvitation\RedeemProjectInvitationCommand;
 use App\Models\Agents\Agent;
 use App\Models\Projects\Environment;
 use App\Models\Projects\Host;
@@ -16,12 +17,14 @@ use Illuminate\Testing\TestResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\ConnectsProjects;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * One redemption of an install line makes exactly one host, one binding and one main agent, in one transaction; every
  * other redemption of it gets the same generic failure.
  */
+#[TestsCommand(RedeemProjectInvitationCommand::class)]
 final class RedeemProjectInvitationTest extends TestCase
 {
     use CommitsHookRows;

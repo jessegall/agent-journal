@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Commands\Agents;
 
 use App\Commands\Agents\StartProfileMain\StartProfileMainCommand;
+use App\Commands\Agents\StartSwitchReplacement\StartSwitchReplacementCommand;
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Accounts\AccountUses;
 use App\Contracts\Bus\CommandBus;
@@ -33,6 +34,7 @@ use Illuminate\Support\Str;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\Agents\ServesEveryCombination;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -40,6 +42,7 @@ use Tests\TestCase;
 /**
  * After a proven stop the replacement starts, and a refused one fails the switch.
  */
+#[TestsCommand(StartSwitchReplacementCommand::class)]
 final class StartSwitchReplacementTest extends TestCase
 {
     use HasContainerSupport;

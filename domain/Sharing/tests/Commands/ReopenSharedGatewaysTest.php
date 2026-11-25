@@ -15,6 +15,7 @@ use Domain\Sharing\Tests\Fixtures\ShareFixtures;
 use Domain\Sharing\Tests\Support\FakeShareGateway;
 use Domain\Sharing\Tests\TestCase;
 use Illuminate\Support\Str;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 
@@ -22,6 +23,7 @@ use Tests\Support\TestActors;
  * A new gateway run asks once for an open of every gateway that still has live shares and counts them; a gateway
  * already waiting to open is asked for nothing more.
  */
+#[TestsCommand(ReopenSharedGatewaysCommand::class)]
 final class ReopenSharedGatewaysTest extends TestCase
 {
     use RefreshHookDatabase;

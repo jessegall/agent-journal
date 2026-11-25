@@ -8,12 +8,14 @@ use App\Commands\Messages\ReadMessage\ReadMessageCommand;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Messages\MessageReadEntry;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * A member reads a message of an inbox it is attached to and the read is kept; a message of an inbox it is not
  * attached to is refused and nothing is kept.
  */
+#[TestsCommand(ReadMessageCommand::class)]
 final class ReadMessageTest extends TestCase
 {
     use CommitsHookRows;

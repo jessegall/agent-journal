@@ -7,6 +7,7 @@ namespace Tests\Commands\Notifications;
 use App\Commands\Notifications\MarkNotificationRead\MarkNotificationReadCommand;
 use App\Exceptions\NotificationUnavailable;
 use App\Models\Notifications\NotificationReceipt;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -14,6 +15,7 @@ use Tests\TestCase;
  * A user marks one of their notifications read and the others stay unread; a notification of someone else is not
  * there for them.
  */
+#[TestsCommand(MarkNotificationReadCommand::class)]
 final class MarkNotificationReadTest extends TestCase
 {
     use RefreshHookDatabase;

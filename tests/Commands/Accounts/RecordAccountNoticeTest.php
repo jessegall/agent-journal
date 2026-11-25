@@ -29,6 +29,7 @@ use Illuminate\Events\Dispatcher;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\ServesEveryCombination;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -36,6 +37,7 @@ use Tests\TestCase;
 /**
  * Recording a notice again counts it and refreshes the page for the same notice.
  */
+#[TestsCommand(RecordAccountNoticeCommand::class)]
 final class RecordAccountNoticeTest extends TestCase
 {
     use CommitsHookRows;

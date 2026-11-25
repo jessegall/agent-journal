@@ -19,12 +19,14 @@ use App\Values\DriverReceipt;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
  * Cancelling a setting request puts the requested settings back and is recorded; a request changed since it was read
  * is refused.
  */
+#[TestsCommand(CancelDriverRequestCommand::class)]
 final class CancelDriverRequestTest extends TestCase
 {
     use CommitsHookRows;

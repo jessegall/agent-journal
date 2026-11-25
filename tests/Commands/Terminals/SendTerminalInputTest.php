@@ -18,6 +18,7 @@ use App\Models\Projects\Host;
 use App\Support\TerminalInput;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\Terminals\TakesTerminalControl;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -29,6 +30,7 @@ use Tests\TestCase;
  * refused at the server.
  */
 #[TimeLimit(seconds: 3, reason: 'It commits real rows on the hook database and empties its tables around each test.')]
+#[TestsCommand(SendTerminalInputCommand::class)]
 final class SendTerminalInputTest extends TestCase
 {
     use CommitsHookRows;
