@@ -8,11 +8,19 @@ use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Events\Messages\MessageSent;
 use App\Exceptions\CommandInputInvalid;
 use App\Exceptions\InboxUnavailable;
+use App\Models\Agents\Agent;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Agents\AgentSession;
 use App\Models\Messages\Message;
 use App\Support\ActorIdentity;
+use App\Support\DomainRegistry;
+use App\Support\StartSessions;
+use Domain\Chat\Http\Requests\ConversationRequest;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
+use Inertia\Testing\AssertableInertia;
+use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
@@ -37,11 +45,32 @@ final class SendMessageTest extends TestCase
         'assignments',
         'command_receipts',
         'messages',
+        'agent_sessions',
+        'session_tokens',
+        'agent_stacks',
+        'hook_calls',
+        'links',
+        'plans',
+        'rules',
     ];
 
     private string $ownInboxId;
 
     private string $builderInboxId;
+
+    private AgentSession $session;
+
+    private string $chatInboxId;
+
+    private int $sends = 0;
+
+    /**
+     * Every installed domain, since the chat send route the page posts to is the Chat domain's.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
+    }
 
     protected function setUp(): void
     {
@@ -116,5 +145,94 @@ final class SendMessageTest extends TestCase
             self::BODY_REQUIRED,
         );
         $this->assertSame(0, Message::query()->withoutGlobalScopes()->count());
+    }
+
+    public function test_a_sent_message_keeps_its_indentation_and_returns_to_the_conversation(): void
+    {
+        $agent = Agent::create('Chat builder', 'main-agent', $this->localProject());
+        $this->session = $this->app->make(StartSessions::class)->start(
+            $agent,
+            TestSelections::of('claude-code'),
+            TestSelections::requestId(),
+        )->session;
+        $this->chatInboxId = $this->journal->inboxes()->pairChat(
+            ActorIdentity::of($this->journal->ownerUser()),
+            ActorIdentity::of($agent),
+        )->id;
+
+        $body = <<<'TEXT'
+          Please check:
+            - the indented line
+
+        then answer.  
+
+        TEXT;
+
+        $home = route(
+            'home',
+            ConversationRequest::queryFor($this->session->agent_id),
+            false,
+        );
+
+        $this->actingAs($this->journal->ownerUser())->from($home)->post(
+            '/chat/messages',
+            [...$this->pair(), 'body' => $body, ...$this->seenSession()],
+        )
+            ->assertStatus(303)
+            ->assertRedirect($home);
+
+        $this->assertSame([$body], Message::query()->withoutGlobalScopes()->pluck('body')->all());
+        $this->actingAs($this->journal->ownerUser())->get($home)->assertInertia(fn (AssertableInertia $page) => $page
+            ->reloadOnly('window_chat_conversation', fn (AssertableInertia $reload) => $reload
+                ->where('window_chat_conversation.data.conversation.inboxId', $this->chatInboxId)
+                ->where('window_chat_conversation.data.conversation.sessionId', (string) $this->session->id)));
+    }
+
+    public function test_a_message_written_for_a_session_the_agent_no_longer_runs_is_not_delivered(): void
+    {
+        $agent = Agent::create('Chat builder', 'main-agent', $this->localProject());
+        $this->session = $this->app->make(StartSessions::class)->start(
+            $agent,
+            TestSelections::of('claude-code'),
+            TestSelections::requestId(),
+        )->session;
+        $this->chatInboxId = $this->journal->inboxes()->pairChat(
+            ActorIdentity::of($this->journal->ownerUser()),
+            ActorIdentity::of($agent),
+        )->id;
+
+        $outdated = [...$this->seenSession(), 'expectedSessionId' => strtolower((string) Str::ulid())];
+
+        $this->actingAs($this->journal->ownerUser())->from('/')
+            ->post('/chat/messages', [...$this->pair(), 'body' => 'Still there?', ...$outdated])
+            ->assertRedirect('/')
+            ->assertSessionHasErrors(
+                ['session' => 'The agent now runs another session. Send the message again to reach it.'],
+            );
+        $this->assertSame(0, Message::query()->withoutGlobalScopes()->count());
+    }
+
+    /**
+     * The agent a send goes to and the session the sender saw it run.
+     *
+     * @return array{agent: string, expectedSessionId: string, expectedGeneration: int}
+     */
+    private function seenSession(): array
+    {
+        return [
+            'agent' => $this->session->agent_id,
+            'expectedSessionId' => $this->session->id,
+            'expectedGeneration' => AgentRuntime::findForSession($this->session->id)?->process_generation ?? 0,
+        ];
+    }
+
+    /**
+     * The pair's chat inbox and a request key of the send's own.
+     *
+     * @return array{inboxId: string, requestKey: string}
+     */
+    private function pair(): array
+    {
+        return ['inboxId' => $this->chatInboxId, 'requestKey' => 'home-send-'.++$this->sends];
     }
 }
