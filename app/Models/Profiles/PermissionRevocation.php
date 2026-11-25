@@ -8,6 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
 use App\Contracts\Records\ReadableModel;
+use App\Data\Profiles\RevokedPatternData;
 use App\Enums\CommandClass;
 use App\Support\ActorIdentity;
 use App\Values\CommandClassSet;
@@ -22,6 +23,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Spatie\LaravelData\DataCollection;
 
 /**
  * Classes and exact commands taken away from a permission source, such as a role; every later admission is narrowed
@@ -30,7 +32,7 @@ use Illuminate\Support\Collection;
  * @property string $id
  * @property string $permission_source
  * @property list<string> $revoked_classes
- * @property list<list<string>> $revoked_patterns
+ * @property DataCollection<int, RevokedPatternData> $revoked_patterns
  * @property string $revoked_by_type
  * @property string $revoked_by_id
  * @property CarbonImmutable $revoked_at
@@ -61,7 +63,7 @@ final class PermissionRevocation extends Model implements ReadableModel
     {
         return [
             'revoked_classes' => 'array',
-            'revoked_patterns' => 'array',
+            'revoked_patterns' => DataCollection::class.':'.RevokedPatternData::class,
             'revoked_at' => 'immutable_datetime',
         ];
     }
@@ -77,7 +79,7 @@ final class PermissionRevocation extends Model implements ReadableModel
         return self::query()->create([
             'permission_source' => $source,
             'revoked_classes' => array_map(fn (CommandClass $class) => $class->value, $classes->classes),
-            'revoked_patterns' => array_map(fn (CommandPattern $pattern) => $pattern->toArray(), $patterns->patterns),
+            'revoked_patterns' => array_map(fn (CommandPattern $pattern) => new RevokedPatternData($pattern->words), $patterns->patterns),
             'revoked_by_type' => $by->type->value,
             'revoked_by_id' => $by->id,
             'revoked_at' => CarbonImmutable::now(),
@@ -95,7 +97,10 @@ final class PermissionRevocation extends Model implements ReadableModel
             foreach ($revocations as $revocation) {
                 $permissions = $permissions->revoking(
                     CommandClassSet::of(...array_map(CommandClass::from(...), $revocation->revoked_classes)),
-                    CommandPatternSet::of(...array_map(CommandPattern::fromArray(...), $revocation->revoked_patterns)),
+                    CommandPatternSet::of(...array_map(
+                        fn (RevokedPatternData $pattern) => CommandPattern::fromArray($pattern->words),
+                        $revocation->revoked_patterns->all(),
+                    )),
                 );
             }
         });
