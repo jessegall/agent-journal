@@ -77,7 +77,7 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
             'actor_type' => $actor->type,
             'actor_id' => $actor->id,
             'text' => $text,
-            'sequence' => (int) self::query()->where('task_id', $task->id)->max('sequence') + 1,
+            'sequence' => (int) self::query()->ofTask($task->id)->max('sequence') + 1,
         ]);
 
         $entry->assertSaved($entry->save());
@@ -125,8 +125,7 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
      */
     public static function pageAfter(string $taskId, int $sequence, int $limit): Collection
     {
-        return self::query()->where('task_id', $taskId)->where('sequence', '>', $sequence)
-            ->orderBy('sequence')->oldestFirst()->limit($limit)->get();
+        return self::query()->ofTask($taskId)->after($sequence)->inSequenceOrder()->oldestFirst()->limit($limit)->get();
     }
 
     /**
@@ -134,9 +133,7 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
      */
     public static function pageBefore(string $taskId, int|null $sequence, int $limit): Collection
     {
-        return self::query()->where('task_id', $taskId)
-            ->when($sequence !== null, fn (Builder $query) => $query->where('sequence', '<', $sequence))
-            ->orderByDesc('sequence')->newestFirst()->limit($limit)->get();
+        return self::query()->ofTask($taskId)->before($sequence)->newestSequenceFirst()->newestFirst()->limit($limit)->get();
     }
 
     // ----------[ Scopes ]----------
@@ -163,5 +160,60 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
     {
         $query->where(fn (Builder $later) => $later->where('task_id', '>', $taskId)
             ->orWhere(fn (Builder $same) => $same->where('task_id', $taskId)->where('id', '>', $entryId)));
+    }
+
+    /**
+     * The task's log.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofTask(Builder $query, string $taskId): void
+    {
+        $query->where('task_id', $taskId);
+    }
+
+    /**
+     * The entries after that sequence number.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function after(Builder $query, int $sequence): void
+    {
+        $query->where('sequence', '>', $sequence);
+    }
+
+    /**
+     * The entries before that sequence number; all of them with none.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function before(Builder $query, int|null $sequence): void
+    {
+        $query->when($sequence !== null, fn (Builder $earlier) => $earlier->where('sequence', '<', $sequence));
+    }
+
+    /**
+     * The entries in the order of their sequence number.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inSequenceOrder(Builder $query): void
+    {
+        $query->orderBy('sequence');
+    }
+
+    /**
+     * The entries newest sequence number first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function newestSequenceFirst(Builder $query): void
+    {
+        $query->orderByDesc('sequence');
     }
 }

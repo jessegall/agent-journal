@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Reviews;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -217,7 +219,7 @@ final class MergeAttempt extends Model implements EventSource, ReadableModel
         $attempt->setAttribute($attempt->getKeyName(), $attempt->newUniqueId());
         $attempt->insertIfAbsent();
 
-        return self::query()->where('decision_id', $approved->decision->id)->lockForUpdate()->sole();
+        return self::query()->ofDecision($approved->decision->id)->lockForUpdate()->sole();
     }
 
     /**
@@ -228,9 +230,9 @@ final class MergeAttempt extends Model implements EventSource, ReadableModel
     public static function unacknowledged(int $limit): array
     {
         return array_values(self::query()
-            ->whereIn('state', MergeAttemptState::terminalValues())
-            ->whereNull('acknowledged_at')
-            ->orderBy('updated_at')
+            ->ended()
+            ->notAcknowledged()
+            ->leastRecentlyUpdatedFirst()
             ->readExactly($limit)
             ->get()
             ->all());
@@ -244,9 +246,9 @@ final class MergeAttempt extends Model implements EventSource, ReadableModel
     public static function interrupted(Carbon $before, int $limit): array
     {
         return array_values(self::query()
-            ->whereNotIn('state', MergeAttemptState::terminalValues())
-            ->where('updated_at', '<', $before)
-            ->orderBy('updated_at')
+            ->unended()
+            ->updatedBefore($before)
+            ->leastRecentlyUpdatedFirst()
             ->readExactly($limit)
             ->get()
             ->all());
@@ -257,6 +259,96 @@ final class MergeAttempt extends Model implements EventSource, ReadableModel
      */
     public static function hasMerged(string $askId): bool
     {
-        return self::query()->where('ask_id', $askId)->where('state', MergeAttemptState::Merged)->exists();
+        return self::query()->ofAsk($askId)->inMergedState()->exists();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The decision's attempt.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofDecision(Builder $query, string $decisionId): void
+    {
+        $query->where('decision_id', $decisionId);
+    }
+
+    /**
+     * The attempts in a final state.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ended(Builder $query): void
+    {
+        $query->whereIn('state', MergeAttemptState::terminalValues());
+    }
+
+    /**
+     * The attempts not in a final state.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unended(Builder $query): void
+    {
+        $query->whereNotIn('state', MergeAttemptState::terminalValues());
+    }
+
+    /**
+     * The attempts no one acknowledged yet.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function notAcknowledged(Builder $query): void
+    {
+        $query->whereNull('acknowledged_at');
+    }
+
+    /**
+     * The attempts last updated before that moment.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function updatedBefore(Builder $query, Carbon $before): void
+    {
+        $query->where('updated_at', '<', $before);
+    }
+
+    /**
+     * The attempts updated longest ago first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function leastRecentlyUpdatedFirst(Builder $query): void
+    {
+        $query->orderBy('updated_at');
+    }
+
+    /**
+     * The ask's attempts.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofAsk(Builder $query, string $askId): void
+    {
+        $query->where('ask_id', $askId);
+    }
+
+    /**
+     * The attempts that merged.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inMergedState(Builder $query): void
+    {
+        $query->where('state', MergeAttemptState::Merged);
     }
 }
