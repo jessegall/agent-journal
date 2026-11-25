@@ -21,6 +21,7 @@ use Domain\Sharing\Support\ShareGrant;
 use Domain\Sharing\Support\ShareLinkedCandidate;
 use Domain\Sharing\Support\ShareSelectedTarget;
 use Domain\Sharing\Support\ShareToken;
+use Domain\Sharing\Tests\Support\SelectsShareTargets;
 use Domain\Sharing\Tests\TestCase;
 use Illuminate\Database\ConnectionInterface;
 use RuntimeException;
@@ -36,6 +37,7 @@ use Tests\Support\TestIds;
 final class LinkRemovalTest extends TestCase
 {
     use RefreshHookDatabase;
+    use SelectsShareTargets;
 
     private Agent $source;
 
@@ -64,11 +66,10 @@ final class LinkRemovalTest extends TestCase
                 ShareToken::generate(),
             ),
         );
-        $this->member = ShareMember::createMany(
-            $share,
-            $this->identityOf($this->source),
-            new ShareSelectedTarget($this->identityOf($this->target), $link->id, '1'),
-        );
+        $target = new ShareSelectedTarget($this->identityOf($this->target), $link->id, '1');
+        $selected = $this->selected($configuration, $this->identityOf($this->source), $target);
+        [$memberId] = ShareMember::createMany($share, $selected);
+        $this->member = ShareMember::query()->findOrFail($memberId);
     }
 
     public function test_removing_the_link_ends_its_approval_in_the_same_transaction(): void

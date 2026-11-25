@@ -7,19 +7,20 @@ namespace Domain\Sharing\Tests\Feature;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
-use Domain\Sharing\Enums\ShareState;
-use Domain\Sharing\Models\Share;
-use Domain\Sharing\Models\ShareGatewayConfiguration;
 use App\Support\Access\AccessSettings;
 use App\Support\GatewaySettings;
 use App\Support\RecordIdentity;
-use Domain\Sharing\Support\ShareGrant;
-use Domain\Sharing\Support\ShareReadLimits;
-use Domain\Sharing\Support\ShareToken;
 use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Models\Document;
+use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Models\Share;
+use Domain\Sharing\Models\ShareGatewayConfiguration;
+use Domain\Sharing\Support\ShareGrant;
+use Domain\Sharing\Support\ShareReadLimits;
+use Domain\Sharing\Support\ShareToken;
+use Domain\Sharing\Tests\TestCase;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Foundation\Application;
@@ -28,7 +29,6 @@ use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * The share-only listener: a valid link answers with the safe headers and no cookie; other methods, upgrades and
@@ -78,7 +78,7 @@ final class SharingListenerTest extends TestCase
 
     public function createApplication(): Application
     {
-        $app = require Application::inferBasePath().'/bootstrap/sharing.php';
+        $app = require dirname(__DIR__, 2).'/bootstrap/app.php';
         $app->make(Kernel::class)->bootstrap();
 
         return $app;

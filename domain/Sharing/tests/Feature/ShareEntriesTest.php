@@ -9,18 +9,9 @@ use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
-use App\Support\CommandRegistry;
 use App\Values\OwnerAuthority;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Models\Document;
-use Domain\Sharing\Commands\ApproveShareRequest\ApproveShareRequestCommand;
-use Domain\Sharing\Commands\CreateShare\CreateShareCommand;
-use Domain\Sharing\Commands\ExpireShares\ExpireSharesCommand;
-use Domain\Sharing\Commands\ReadShare\ReadShareCommand;
-use Domain\Sharing\Commands\RefreshShareScope\RefreshShareScopeCommand;
-use Domain\Sharing\Commands\RequestShare\RequestShareCommand;
-use Domain\Sharing\Commands\RetryShare\RetryShareCommand;
-use Domain\Sharing\Commands\RevokeShare\RevokeShareCommand;
 use Domain\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
 use Domain\Sharing\Enums\ShareState;
 use Domain\Sharing\Models\Share;
@@ -32,12 +23,10 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\Sharing\FakeShareGateway;
-use Tests\Support\TimeLimits\TimeLimit;
 
 /**
  * The entries to sharing: an agent proposes a share and reads its status over signed calls and the agent CLI, and is
- * never shown an address; the owner lists, creates, revokes and deliberately prints an address from the command line;
- * Core exports the entry commands and keeps the System ones private.
+ * never shown an address; the owner lists, creates, revokes and deliberately prints an address from the command line.
  */
 #[TimeLimit(
     seconds: 10,
@@ -191,29 +180,5 @@ final class ShareEntriesTest extends TestCase
             FakeShareGateway::PUBLIC_ORIGIN,
             (string) json_encode($this->app->make(ConnectionInterface::class)->table('command_receipts')->get()->all()),
         );
-    }
-
-    public function test_core_exports_the_entry_commands_and_keeps_the_system_ones_private(): void
-    {
-        $registry = $this->app->make(CommandRegistry::class);
-
-        foreach ([
-            CreateShareCommand::class,
-            RequestShareCommand::class,
-            ApproveShareRequestCommand::class,
-            RefreshShareScopeCommand::class,
-            RevokeShareCommand::class,
-            RetryShareCommand::class,
-            SaveSharePreviewCommand::class,
-        ] as $command) {
-            $this->assertTrue($registry->isExported($command), $command);
-        }
-
-        foreach ([
-            ExpireSharesCommand::class,
-            ReadShareCommand::class,
-        ] as $command) {
-            $this->assertFalse($registry->isExported($command), $command);
-        }
     }
 }

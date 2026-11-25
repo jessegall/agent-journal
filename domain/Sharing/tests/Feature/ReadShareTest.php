@@ -30,6 +30,7 @@ use Domain\Sharing\Support\SharedPage;
 use Domain\Sharing\Support\ShareGrant;
 use Domain\Sharing\Support\ShareSelectedTarget;
 use Domain\Sharing\Support\ShareToken;
+use Domain\Sharing\Tests\Support\SelectsShareTargets;
 use Domain\Sharing\Tests\TestCase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -51,6 +52,7 @@ final class ReadShareTest extends TestCase
 {
     use CommitsHookRows;
     use RunsTrustedCommands;
+    use SelectsShareTargets;
 
     private const array TABLES = [
         'share_audits',
@@ -157,11 +159,9 @@ final class ReadShareTest extends TestCase
 
         $this->assertFalse($this->read($token, $step)->isAllowed);
 
-        ShareMember::createMany(
-            $share,
-            $this->plan->shareIdentity(),
-            new ShareSelectedTarget($this->document->shareIdentity(), $linkId, '1'),
-        );
+        $target = new ShareSelectedTarget($this->document->shareIdentity(), $linkId, '1');
+        $selected = $this->selected($this->configuration, $this->plan->shareIdentity(), $target);
+        ShareMember::createMany($share, $selected);
         $root = $this->read($token);
         $linked = $this->read($token, $step);
 
@@ -221,11 +221,9 @@ final class ReadShareTest extends TestCase
                     $link->source_id,
                 ], true),
             );
-            ShareMember::createMany(
-                $share,
-                $this->plan->shareIdentity(),
-                new ShareSelectedTarget($document->shareIdentity(), $link->id, '1'),
-            );
+            $target = new ShareSelectedTarget($document->shareIdentity(), $link->id, '1');
+            $selected = $this->selected($this->configuration, $this->plan->shareIdentity(), $target);
+            ShareMember::createMany($share, $selected);
         }
 
         $this->assertTrue($this->read($token, "records/documents.document/{$this->document->id}")->isAllowed);

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Feature;
 
+use App\Support\GatewaySettings;
+use App\Support\RecordIdentity;
+use Carbon\CarbonImmutable;
 use Domain\Sharing\Enums\GatewayEndpointState;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\ShareAuditType;
@@ -16,19 +19,17 @@ use Domain\Sharing\Models\ShareGatewayOperation;
 use Domain\Sharing\Models\ShareInstallation;
 use Domain\Sharing\Models\ShareMember;
 use Domain\Sharing\Models\SharePreview;
-use App\Support\GatewaySettings;
-use App\Support\RecordIdentity;
 use Domain\Sharing\Support\ShareGrant;
 use Domain\Sharing\Support\ShareProposal;
 use Domain\Sharing\Support\ShareSelectedTarget;
 use Domain\Sharing\Support\ShareToken;
-use Carbon\CarbonImmutable;
+use Domain\Sharing\Tests\Support\SelectsShareTargets;
+use Domain\Sharing\Tests\TestCase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * The sharing tables and models: the create migrations make all eight tables, each model is made through its own
@@ -37,6 +38,7 @@ use Domain\Sharing\Tests\TestCase;
 final class SharingModelsTest extends TestCase
 {
     use RefreshHookDatabase;
+    use SelectsShareTargets;
 
     public function test_the_create_migrations_make_the_eight_sharing_tables(): void
     {
@@ -69,9 +71,9 @@ final class SharingModelsTest extends TestCase
         $endpoint = ShareGatewayEndpoint::create($configuration, 1, 'run-1');
         $operation = ShareGatewayOperation::create($configuration, GatewayOperationType::Open);
 
-        $this->assertEquals(
-            $configuration->settings,
-            ShareGatewayConfiguration::query()->findOrFail($configuration->id)->settings,
+        $this->assertSame(
+            $configuration->settings->toArray(),
+            ShareGatewayConfiguration::query()->findOrFail($configuration->id)->settings->toArray(),
         );
         $this->assertSame('press', $configuration->toConfiguration->gatewayKey());
         $this->assertSame('https://share.example.test', $endpoint->public_origin);
@@ -88,7 +90,7 @@ final class SharingModelsTest extends TestCase
         $preview = SharePreview::create(TestIds::of(9), $this->root(), [$target], $configuration);
         $other = SharePreview::create(TestIds::of(9), $this->root(), [], $configuration);
 
-        $this->assertEquals([$target], SharePreview::query()->findOrFail($preview->id)->selection);
+        $this->assertSame([$target->toArray()], SharePreview::query()->findOrFail($preview->id)->selection->toArray());
         $this->assertSame(64, strlen($preview->checksum));
         $this->assertNotSame($preview->checksum, $other->checksum);
         $this->assertEquals($this->root(), $preview->root);
@@ -125,11 +127,10 @@ final class SharingModelsTest extends TestCase
             CarbonImmutable::now()->addDays(7),
             new ShareProposal(TestActors::agentIdentity(5)),
         );
-        $member = ShareMember::createMany(
-            $proposal,
-            $this->root(),
-            new ShareSelectedTarget(TestActors::record('documents.report', 7), TestIds::of(8), '1'),
-        );
+        $target = new ShareSelectedTarget(TestActors::record('documents.report', 7), TestIds::of(8), '1');
+        $selected = $this->selected($this->configuration(), $this->root(), $target);
+        [$memberId] = ShareMember::createMany($proposal, $selected);
+        $member = ShareMember::query()->findOrFail($memberId);
         $audit = ShareAudit::create($proposal, ShareAuditType::Created, TestActors::agentIdentity(5), null);
         $change = ShareAudit::create(null, ShareAuditType::GatewayChanged, TestActors::userIdentity(9), 'disabled');
 

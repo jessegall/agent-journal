@@ -8,25 +8,26 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Sharing\ShareStatusResolver;
 use App\Models\Access\User;
-use Domain\Sharing\Models\Share;
-use Domain\Sharing\Models\ShareGatewayConfiguration;
-use Domain\Sharing\Models\ShareMember;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Support\GatewaySettings;
-use Domain\Sharing\Support\ShareGrant;
-use Domain\Sharing\Support\ShareSelectedTarget;
-use Domain\Sharing\Support\ShareToken;
 use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Models\Document;
+use Domain\Sharing\Models\Share;
+use Domain\Sharing\Models\ShareGatewayConfiguration;
+use Domain\Sharing\Models\ShareMember;
+use Domain\Sharing\Support\ShareGrant;
+use Domain\Sharing\Support\ShareSelectedTarget;
+use Domain\Sharing\Support\ShareToken;
+use Domain\Sharing\Tests\Support\SelectsShareTargets;
+use Domain\Sharing\Tests\TestCase;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * Whether a record is public now: the root of a live, unexpired share or an approved member of its current scope; the
@@ -39,6 +40,7 @@ use Domain\Sharing\Tests\TestCase;
 final class ShareStatusTest extends TestCase
 {
     use CommitsHookRows;
+    use SelectsShareTargets;
 
     private const array TABLES = [
         'users',
@@ -113,11 +115,9 @@ final class ShareStatusTest extends TestCase
                 ShareToken::generate(),
             ),
         );
-        ShareMember::createMany(
-            $share,
-            $root,
-            new ShareSelectedTarget($this->document->shareIdentity(), TestIds::of(6), '1'),
-        );
+        $target = new ShareSelectedTarget($this->document->shareIdentity(), TestIds::of(6), '1');
+        $selected = $this->selected($this->configuration, $root, $target);
+        ShareMember::createMany($share, $selected);
 
         $this->assertTrue($status->isPubliclyShared($root));
         $this->assertTrue($status->isPubliclyShared($this->document->shareIdentity()));
@@ -127,7 +127,7 @@ final class ShareStatusTest extends TestCase
     {
         $this->actingAs($this->owner)->get('/documents/docs/1')->assertOk()->assertInertia(
             fn (AssertableInertia $page) => $page
-                ->where('page.data.root.children.1.children.1.children.5.children.0.children.1.key', 'comments'),
+                ->where('page.data.root.children.1.children.1.children.4.children.0.children.1.key', 'comments'),
         );
 
         Share::create(
@@ -143,7 +143,7 @@ final class ShareStatusTest extends TestCase
 
         $this->actingAs($this->owner)->get('/documents/docs/1')->assertOk()->assertInertia(
             fn (AssertableInertia $page) => $page
-                ->where('page.data.root.children.1.children.1.children.5.children.0.children.0.key', 'public'),
+                ->where('page.data.root.children.1.children.1.children.4.children.0.children.0.key', 'public'),
         );
     }
 }
