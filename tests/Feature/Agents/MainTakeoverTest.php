@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\Desks\InstallDesks\InstallDesksCommand;
+use App\Commands\Inboxes\InstallInboxes\InstallInboxesCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
-use App\Contracts\Chat\MainSeatTakeover;
 use App\Enums\Accounts\CommandEntry;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
-use App\Models\Desks\DeskRecord;
-use App\Support\BuiltInDesks;
+use App\Models\Inboxes\Inbox;
 use App\Support\EntryDispatchers;
+use App\Support\MainInboxHandover;
 use App\Support\RegisteredInboxes;
 use Tests\Support\MessagingTestCase;
 
@@ -25,7 +24,7 @@ final class MainTakeoverTest extends MessagingTestCase
     public function test_a_second_agent_takes_main_over_and_fences_the_first(): void
     {
         $this->app->make(EntryDispatchers::class)
-            ->runAsJournal(CommandEntry::HostControl, 'desk install', new InstallDesksCommand());
+            ->runAsJournal(CommandEntry::HostControl, 'inbox install', new InstallInboxesCommand());
 
         $this->takeOver($this->builder);
         $this->takeOver($this->builder);
@@ -44,13 +43,13 @@ final class MainTakeoverTest extends MessagingTestCase
     private function takeOver(AgentSession $session): void
     {
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(MainSeatTakeover::class)->takeOver($this->agentOf($session)),
+            fn () => $this->app->make(MainInboxHandover::class)->takeOver($this->agentOf($session)),
         );
     }
 
     private function isSeatedAtMain(AgentSession $session): bool
     {
-        $mainInboxId = DeskRecord::query()->named(BuiltInDesks::MAIN)->sole()->inboxId();
+        $mainInboxId = Inbox::main()->id;
         $seated = $this->app->make(RegisteredInboxes::class)->inboxIdsOf($this->actorOf($session));
         $inboxIds = $seated->pluck('inbox_id')->all();
 

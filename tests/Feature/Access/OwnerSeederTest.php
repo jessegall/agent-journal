@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Tests\Feature\Access;
 
 use App\Models\Access\User;
-use App\Models\Desks\DeskRecord;
+use App\Models\Inboxes\Inbox;
 use Database\Seeders\OwnerSeeder;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
 /**
  * Foundation permissions: the owner seeder reaches the bus through the exported JournalCommands contract, and
- * seeding twice makes the owner and provisions its desk once.
+ * seeding twice makes the owner and provisions its inbox once.
  */
 final class OwnerSeederTest extends TestCase
 {
@@ -25,14 +25,14 @@ final class OwnerSeederTest extends TestCase
         'command_receipts',
     ];
 
-    public function test_seeding_twice_makes_the_owner_and_provisions_its_desk_once(): void
+    public function test_seeding_twice_makes_the_owner_and_provisions_its_inbox_once(): void
     {
         $this->seed(OwnerSeeder::class);
-        $seats = DeskRecord::query()->withoutGlobalScopes()->count();
+        $inboxes = Inbox::query()->withoutGlobalScopes()->count();
         $this->seed(OwnerSeeder::class);
 
         $this->assertSame(1, User::query()->count());
-        $this->assertGreaterThan(0, $seats);
-        $this->assertSame($seats, DeskRecord::query()->withoutGlobalScopes()->count());
+        $this->assertGreaterThan(0, $inboxes);
+        $this->assertSame($inboxes, Inbox::query()->withoutGlobalScopes()->count());
     }
 }

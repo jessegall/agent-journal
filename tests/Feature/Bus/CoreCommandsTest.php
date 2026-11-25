@@ -63,7 +63,6 @@ use App\Commands\CommandRules\WithdrawRuleProposal\WithdrawRuleProposalCommand;
 use App\Commands\Drivers\FailDriverSwitchStart\FailDriverSwitchStartCommand;
 use App\Commands\Drivers\NotifyStopped\NotifyStoppedCommand;
 use App\Commands\Drivers\RetryDriverSwitch\RetryDriverSwitchCommand;
-use App\Commands\Notifications\HideUnseatedNotifications\HideUnseatedNotificationsCommand;
 use App\Commands\Notifications\MarkAllNotificationsRead\MarkAllNotificationsReadCommand;
 use App\Commands\Notifications\MarkNotificationRead\MarkNotificationReadCommand;
 use App\Commands\Notifications\MarkTargetNotificationRead\MarkTargetNotificationReadCommand;
@@ -248,7 +247,6 @@ final class CoreCommandsTest extends CommandBusTestCase
             ReplyToAskCommand::class,
             RouteAskCommand::class,
             WithdrawAskCommand::class,
-            HideUnseatedNotificationsCommand::class,
             MarkAllNotificationsReadCommand::class,
             MarkNotificationReadCommand::class,
             MarkTargetNotificationReadCommand::class,

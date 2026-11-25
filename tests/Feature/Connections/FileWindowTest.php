@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Connections;
 
 use App\Contracts\Assignments\AssignmentTransaction;
-use App\Contracts\Chat\ActorDesks;
 use App\Enums\Connections\FileWindowState;
 use App\Enums\Projects\ProjectReadFailure;
 use App\Http\Pages\Resolvers\FileWindowResolver;
@@ -15,8 +14,8 @@ use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectFile;
 use App\Models\Projects\ProjectFileVersion;
 use App\Models\Projects\ProjectRead;
-use App\Models\Scopes\MessageVisibility;
 use App\Support\ActorIdentity;
+use App\Support\PersonalInboxes;
 use App\Values\ProjectFileText;
 use Closure;
 use Domain\Comments\Models\Comment;
@@ -39,6 +38,7 @@ final class FileWindowTest extends TestCase
         'project_reads', 'command_receipts', 'connection_audits', 'project_invitations', 'install_attempts',
         'project_bindings', 'project_environments', 'projects', 'agent_runtimes', 'agents', 'hosts',
         'settings_records', 'users', 'comments', 'project_file_versions', 'project_files', 'number_groups', 'messages',
+        'inboxes', 'inbox_members',
     ];
 
     private const string NONCE = 'nonce-aaaaaaaaaaaaaaaa';
@@ -135,7 +135,7 @@ final class FileWindowTest extends TestCase
         $this->readyFolder();
         $agent = ProjectBinding::query()->firstOrFail()->main_agent_id;
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(ActorDesks::class)->provision(ActorIdentity::ofClass(User::class, $this->owner->id), 'Own'),
+            fn () => $this->app->make(PersonalInboxes::class)->provision(ActorIdentity::ofClass(User::class, $this->owner->id), 'Own'),
         );
         $key = ['Idempotency-Key' => (string) Str::ulid()];
         $message = [
@@ -151,7 +151,7 @@ final class FileWindowTest extends TestCase
 
         $this->assertSame(
             ['About README.md, lines 2 to 3: Why two?'],
-            Message::query()->withoutGlobalScope(MessageVisibility::class)->pluck('body')->all(),
+            Message::query()->withoutGlobalScopes()->pluck('body')->all(),
         );
     }
 

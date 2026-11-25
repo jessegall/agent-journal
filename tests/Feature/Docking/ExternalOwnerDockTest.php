@@ -80,7 +80,7 @@ final class ExternalOwnerDockTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->agent = TestStart::start();
-        $this->chatInboxId = $this->pairChat(ActorIdentity::of($this->owner), ActorIdentity::of($this->agent->agent))->inbox_id;
+        $this->chatInboxId = $this->pairChat(ActorIdentity::of($this->owner), ActorIdentity::of($this->agent->agent))->id;
     }
 
     protected function tearDown(): void

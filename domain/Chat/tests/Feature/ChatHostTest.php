@@ -52,7 +52,7 @@ final class ChatHostTest extends TestCase
         $chatInboxId = $this->pairChat(
             ActorIdentity::of($owner),
             ActorIdentity::ofClass(Agent::class, $session->agent_id),
-        )->inbox_id;
+        )->id;
 
         $window = ConversationRequest::queryFor($session->agent_id);
 

@@ -4,18 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature;
 
-use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Processes\RunClaims;
-use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\CommandInputInvalid;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
-use App\Models\Records\AssignmentRecord;
 use App\Support\ActorIdentity;
-use App\Support\DeskSeatService;
-use App\Support\DeskService;
-use App\Support\SeatChange;
 use App\Support\StartSessions;
 use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
 use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
@@ -32,8 +26,8 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 
 /**
- * A task run is its own record claimed through Core: starting opens run 1 claimed by the starter, finishing ends the
- * claim and keeps the run, and an actor that lost its desk seat cannot finish the desk's run.
+ * A task run is its own record claimed through Core: starting opens run 1 claimed by the starter, and finishing ends
+ * the claim and keeps the run.
  */
 final class TaskRunTest extends TestCase
 {
@@ -95,44 +89,6 @@ final class TaskRunTest extends TestCase
         $bus->run(new FinishTaskCommand($task->id, 1, str_repeat('a', Task::NOTE_CHARACTER_LIMIT)));
 
         $this->assertSame(TaskState::Finished, $task->refresh()->state);
-    }
-
-    public function test_an_actor_that_lost_its_desk_seat_cannot_finish_the_desk_run(): void
-    {
-        $desk = $this->app->make(DeskService::class)->openNamed('team', 'Team', 1, false);
-        $leaving = $this->started('First');
-        $arriving = $this->started('Second');
-        $task = Task::factory()->create();
-        AssignmentRecord::create($task->assignmentIdentity(), $desk->assigneeIdentity());
-        $this->startUserRequestAs($this->owner->id);
-
-        $seat = $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(DeskSeatService::class)->seat(
-                $desk->id,
-                ActorIdentity::of($leaving->agent()->firstOrFail()),
-            ),
-        );
-
-        $this->startRequestAs($leaving->agent_id, $leaving->id);
-        $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
-
-        $this->startUserRequestAs($this->owner->id);
-
-        $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(DeskSeatService::class)->replace(
-            new SeatChange(
-                $desk->id,
-                $seat->seatId,
-                $seat->reference,
-                ActorIdentity::of($arriving->agent()->firstOrFail()),
-            ),
-        ));
-
-        $this->startRequestAs($leaving->agent_id, $leaving->id);
-
-        $this->assertThrows(
-            fn () => $this->app->make(CommandBus::class)->run(new FinishTaskCommand($task->id, 1, 'Done')),
-            ActorNotAllowed::class,
-        );
     }
 
     private function holderOf(TaskRun $run): ActorIdentity|null

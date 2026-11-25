@@ -11,7 +11,6 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
-use App\Contracts\Chat\MainSeatTakeover;
 use App\Enums\Drivers\DriverOperation;
 use App\Enums\Drivers\RequestOutcome;
 use App\Enums\Drivers\RequestProgress;
@@ -24,11 +23,12 @@ use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\NavigationRequest;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
+use App\Support\MainInboxHandover;
 use App\Values\NavigationAnswer;
 use App\Values\OwnerAuthority;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\InstallsDesks;
+use Tests\Support\InstallsInboxes;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
@@ -40,7 +40,7 @@ use Tests\TestCase;
 final class AnswerNavigationTest extends TestCase
 {
     use CommitsHookRows;
-    use InstallsDesks;
+    use InstallsInboxes;
     use RaisesNavigationRequests;
     use RunsTrustedCommands;
 
@@ -72,7 +72,7 @@ final class AnswerNavigationTest extends TestCase
         $this->main = Agent::create('Main', 'main-agent');
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(MainSeatTakeover::class)->takeOver($this->main),
+            fn () => $this->app->make(MainInboxHandover::class)->takeOver($this->main),
         );
     }
 

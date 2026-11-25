@@ -165,7 +165,7 @@ final class DockAdmissionTest extends TestCase
         $this->expectException(ConversationUnavailable::class);
 
         $this->runKeyed(
-            new DockSourceCommand($strangers->inbox_id, 'tasks.task', $this->task->id),
+            new DockSourceCommand($strangers->id, 'tasks.task', $this->task->id),
             (string) Str::ulid(),
         );
     }

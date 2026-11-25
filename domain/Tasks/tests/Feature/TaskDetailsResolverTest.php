@@ -5,16 +5,12 @@ declare(strict_types=1);
 namespace Domain\Tasks\Tests\Feature;
 
 use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\CommandRules\ReadView;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Support\ActorContext;
-use App\Support\ActorIdentity;
 use App\Support\AgentContext;
-use App\Support\DeskSeatService;
-use App\Support\DeskService;
 use App\Support\NumberedPage;
 use App\Support\SignedCall;
 use App\Support\StartSessions;
@@ -23,7 +19,6 @@ use Carbon\CarbonImmutable;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Contracts\TaskDetailsResolver;
 use Domain\Tasks\Contracts\TaskListResolver;
-use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
@@ -31,10 +26,8 @@ use Domain\Tasks\Values\TaskFilters;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
-use Spatie\LaravelData\Optional;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\ActsAsOwner;
-use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 use Tests\Support\TestStartAuthority;
@@ -66,57 +59,6 @@ final class TaskDetailsResolverTest extends TestCase
         'claim_authorizations',
         'inboxes',
     ];
-
-    public function test_a_task_held_by_a_desk_and_run_by_its_occupant_shows_both_separately(): void
-    {
-        $desk = $this->app->make(DeskService::class)->openNamed('team', 'Team', 1, false);
-        $runner = $this->start('Runner');
-        $task = Task::factory()->create([
-            'title' => 'Split work',
-            'brief' => self::BRIEF,
-        ]);
-        $this->asUser();
-
-        $this->app->make(AssignmentWriterInTransaction::class)->assign(
-            $task->assignmentIdentity(),
-            $desk->assigneeIdentity(),
-        );
-
-        $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(DeskSeatService::class)->seat(
-            $desk->id,
-            ActorIdentity::ofClass(Agent::class, $runner->agent_id),
-        ));
-
-        $this->actAs($runner);
-        $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
-        $this->asUser();
-
-        $details = $this->app->make(TaskDetailsResolver::class)->details($task->id, ReadView::Context);
-
-        $this->assertSame($desk->id, $details->holder->get()->holder()->id);
-
-        $this->assertSame(
-            [
-                $runner->agent_id,
-                'Runner',
-                1,
-                TaskState::Started,
-            ],
-            [
-                $details->execution?->actorId,
-                $details->execution?->actorLabel,
-                $details->execution?->runNumber,
-                $details->execution?->state,
-            ],
-        );
-
-        $this->assertSame(self::BRIEF, $details->text->brief);
-
-        $this->assertInstanceOf(
-            Optional::class,
-            $this->app->make(TaskDetailsResolver::class)->details($task->id, ReadView::Summary)->text,
-        );
-    }
 
     #[TimeLimit(3, 'It creates twenty tasks, each with its own session and run, before the read.')]
     public function test_a_page_of_20_cards_reads_its_runs_in_one_query(): void

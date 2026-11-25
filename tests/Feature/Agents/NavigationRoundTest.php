@@ -24,7 +24,7 @@ use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\RecordedAttention;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\InstallsDesks;
+use Tests\Support\InstallsInboxes;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsHostCalls;
 use Tests\TestCase;
@@ -36,7 +36,7 @@ use Tests\TestCase;
 final class NavigationRoundTest extends TestCase
 {
     use CommitsHookRows;
-    use InstallsDesks;
+    use InstallsInboxes;
     use RaisesNavigationRequests;
     use RunsTrustedCommands;
     use SendsHostCalls;

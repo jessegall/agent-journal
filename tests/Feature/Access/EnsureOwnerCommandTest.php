@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Access;
 
 use App\Models\Access\User;
-use App\Models\Desks\DeskRecord;
+use App\Models\Inboxes\Inbox;
 use Illuminate\Support\Facades\Hash;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
@@ -25,7 +25,7 @@ final class EnsureOwnerCommandTest extends TestCase
         'command_receipts',
     ];
 
-    public function test_it_makes_the_owner_with_its_desk_once(): void
+    public function test_it_makes_the_owner_with_its_inbox_once(): void
     {
         config([
             'access.owner_email' => 'owner@journal.test',
@@ -33,13 +33,13 @@ final class EnsureOwnerCommandTest extends TestCase
         ]);
 
         $this->artisan('access:owner-ensure')->assertSuccessful();
-        $desks = DeskRecord::query()->withoutGlobalScopes()->count();
+        $inboxes = Inbox::query()->withoutGlobalScopes()->count();
         $this->artisan('access:owner-ensure')->assertSuccessful();
 
         $owner = User::query()->where('email', 'owner@journal.test')->sole();
         $this->assertTrue(Hash::check('first-secret', $owner->password));
-        $this->assertGreaterThan(0, $desks);
-        $this->assertSame($desks, DeskRecord::query()->withoutGlobalScopes()->count());
+        $this->assertGreaterThan(0, $inboxes);
+        $this->assertSame($inboxes, Inbox::query()->withoutGlobalScopes()->count());
     }
 
     public function test_a_changed_password_setting_resets_the_owner_password(): void

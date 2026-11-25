@@ -6,16 +6,16 @@ namespace Tests\Feature\Agents;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Assignments\AssignmentTransaction;
-use App\Contracts\Chat\MainSeatTakeover;
 use App\Enums\Navigation\NavigationState;
 use App\Models\Drivers\NavigationRequest;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
+use App\Support\MainInboxHandover;
 use App\Values\OwnerAuthority;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\InstallsDesks;
+use Tests\Support\InstallsInboxes;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsMcpFrames;
 use Tests\TestCase;
@@ -27,7 +27,7 @@ use Tests\TestCase;
 final class NavigationToolsTest extends TestCase
 {
     use CommitsHookRows;
-    use InstallsDesks;
+    use InstallsInboxes;
     use RaisesNavigationRequests;
     use RunsTrustedCommands;
     use SendsMcpFrames;
@@ -64,7 +64,7 @@ final class NavigationToolsTest extends TestCase
         $this->main = TestStart::start();
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(MainSeatTakeover::class)->takeOver($this->main->agent),
+            fn () => $this->app->make(MainInboxHandover::class)->takeOver($this->main->agent),
         );
     }
 

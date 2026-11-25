@@ -91,7 +91,7 @@ final class DockSectionTest extends TestCase
         $inboxId = $this->pairChat(
             ActorIdentity::of($owner),
             ActorIdentity::ofClass(Agent::class, $session->agent_id),
-        )->inbox_id;
+        )->id;
 
         $dock = ['inboxId' => $inboxId, 'type' => Message::linkType(), 'id' => $message->id];
 

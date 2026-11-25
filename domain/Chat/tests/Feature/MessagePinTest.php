@@ -8,7 +8,7 @@ use App\Exceptions\MessageMissing;
 use Domain\Chat\Commands\PinMessage\PinMessageCommand;
 use Domain\Chat\Models\MessagePin;
 use Domain\Chat\Resolvers\Support\MessagePinRecords;
-use Domain\Chat\Tests\Support\OpensTeamDeskMessage;
+use Domain\Chat\Tests\Support\OpensTeamInboxMessage;
 use Domain\Chat\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsKeyedCommands;
@@ -22,7 +22,7 @@ use Tests\Support\WritesInboxMessages;
 final class MessagePinTest extends TestCase
 {
     use CommitsHookRows;
-    use OpensTeamDeskMessage;
+    use OpensTeamInboxMessage;
     use RunsKeyedCommands;
     use StartsAgentRequests;
     use WritesInboxMessages;
@@ -67,18 +67,18 @@ final class MessagePinTest extends TestCase
         $this->asAgent($this->builder);
         $this->pin();
 
-        $this->replaceOccupant($this->reviewer[0]);
+        $this->replaceMember($this->builder[0], $this->reviewer[0]);
         $this->asAgent($this->builder);
         $this->assertSame([], $this->pinned());
 
-        $this->replaceOccupant($this->builder[0]);
+        $this->replaceMember($this->reviewer[0], $this->builder[0]);
         $this->asAgent($this->builder);
         $this->assertSame([$this->messageId], array_column($this->pinned(), 'id'));
     }
 
     private function pin(): void
     {
-        $this->runOnBus(new PinMessageCommand($this->desk->inboxId(), $this->messageId));
+        $this->runOnBus(new PinMessageCommand($this->team->id, $this->messageId));
     }
 
     /**

@@ -7,9 +7,9 @@ namespace Tests\Feature\Docking;
 use App\Contracts\Bus\CommandBus;
 use App\Events\Web\PageChanged;
 use App\Models\Access\User;
+use App\Models\Inboxes\Inbox;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
-use Domain\Chat\Models\Conversation;
 use Domain\Chat\Support\DockProjection;
 use Domain\Documents\Commands\CloseReport\CloseReportCommand;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;
@@ -81,7 +81,7 @@ final class RichCardsTest extends TestCase
 
     private TestStart $agent;
 
-    private Conversation $conversation;
+    private Inbox $conversation;
 
     protected function setUp(): void
     {

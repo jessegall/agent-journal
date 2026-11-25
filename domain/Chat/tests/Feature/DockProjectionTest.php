@@ -6,6 +6,7 @@ namespace Domain\Chat\Tests\Feature;
 
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
+use App\Models\Inboxes\Inbox;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\Cards\DockIdentity;
@@ -13,7 +14,6 @@ use App\Support\Sources\Contracts\DockRegistration;
 use App\Support\Wire\EncodedCard;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Data\DockPageData;
-use Domain\Chat\Models\Conversation;
 use Domain\Chat\Models\DockPlacement;
 use Domain\Chat\Support\DockProjection;
 use Domain\Chat\Tests\TestCase;
@@ -57,7 +57,7 @@ final class DockProjectionTest extends TestCase
 
     private User $owner;
 
-    private Conversation $conversation;
+    private Inbox $conversation;
 
     protected function setUp(): void
     {

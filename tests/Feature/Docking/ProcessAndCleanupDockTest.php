@@ -8,6 +8,7 @@ use App\Enums\Processes\OutputStream;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\CommandRules\EvidenceRead;
+use App\Models\Inboxes\Inbox;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Support\Access\AccessSettings;
@@ -20,7 +21,6 @@ use App\Values\PartEnd;
 use App\Values\PartKey;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Listeners\RemoveDeletedSource;
-use Domain\Chat\Models\Conversation;
 use Domain\Chat\Models\DockPlacement;
 use Domain\Chat\Support\DockProjection;
 use Illuminate\Database\ConnectionInterface;
@@ -83,7 +83,7 @@ final class ProcessAndCleanupDockTest extends TestCase
 
     private TestStart $agent;
 
-    private Conversation $conversation;
+    private Inbox $conversation;
 
     protected function setUp(): void
     {
@@ -167,7 +167,7 @@ final class ProcessAndCleanupDockTest extends TestCase
         $this->callMcpTool($this->agent, 'dock_add', [
             'type' => Note::linkType(),
             'id' => $note->id,
-            'chat' => $elsewhere->inbox_id,
+            'chat' => $elsewhere->id,
             'request_key' => 'dock-elsewhere',
         ])->assertJsonPath('result.structuredContent.outcome', 'added');
 

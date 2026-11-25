@@ -82,7 +82,7 @@ final class HomePageTest extends TestCase
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
         )->session;
-        $this->chatInboxId = $this->pairChat(ActorIdentity::of($this->owner), ActorIdentity::of($agent))->inbox_id;
+        $this->chatInboxId = $this->pairChat(ActorIdentity::of($this->owner), ActorIdentity::of($agent))->id;
         Plan::factory()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
     }
 

@@ -4,18 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Activity;
 
-use App\Commands\Messages\AskChatQuestion\AskChatQuestionCommand;
-use App\Commands\Messages\ReplyToMessage\ReplyToMessageCommand;
-use App\Enums\Agents\ActivityLevel;
 use App\Enums\Agents\ActivityType;
 use App\Enums\Hooks\ToolOutcome;
 use App\Events\Hooks\HelperReportedOnRecord;
 use App\Events\Hooks\ToolCallFinished;
-use App\Events\Messages\ChatMessageAccepted;
 use App\Events\Sessions\ActivityRecorded;
 use App\Events\Sessions\StartAccepted;
 use App\Models\Agents\ActivityEntry;
-use App\Support\ActorIdentity;
 use App\Support\Inputs\Values\DriverToolInput;
 use App\Support\Inputs\Values\ToolResult;
 use App\Support\RecordIdentity;
@@ -24,8 +19,6 @@ use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\Support\MessagingTestCase;
-use Tests\Support\OpensPairChats;
-use Tests\Support\ShowsMessageBatches;
 
 /**
  * What agents read, ran, edited, started and posted becomes one activity entry each, at its type's level, and tells
@@ -33,9 +26,6 @@ use Tests\Support\ShowsMessageBatches;
  */
 final class ActivityRecordersTest extends MessagingTestCase
 {
-    use OpensPairChats;
-    use ShowsMessageBatches;
-
     protected const array TABLES = [...parent::TABLES, 'activity_entries', 'conversations', 'direct_chats'];
 
     public function test_a_finished_read_command_and_edit_are_each_one_entry_and_tell_open_pages(): void
@@ -73,22 +63,6 @@ final class ActivityRecordersTest extends MessagingTestCase
             $this->builder->agent_id,
             ActivityEntry::query()->where('type', ActivityType::HelperStarted->value)->firstOrFail()->actor()->id,
         );
-    }
-
-    public function test_an_agents_post_in_a_chat_with_a_user_is_an_entry_and_one_between_agents_is_not(): void
-    {
-        $withOwner = $this->pairChat(ActorIdentity::of($this->owner), $this->actorOf($this->builder));
-        $betweenAgents = $this->pairChat($this->actorOf($this->reviewer), $this->actorOf($this->builder));
-        $questionId = $this->runOnBus(new AskChatQuestionCommand($withOwner->inbox_id, 'Ready?', 'ask-key'));
-
-        $this->asAgent($this->builder);
-        $this->runOnBus($this->claimSpeech($withOwner->inbox_id, $questionId));
-        $replyId = $this->runOnBus(new ReplyToMessageCommand($questionId, null, 'The tests pass.'));
-        $this->app->make(Dispatcher::class)->dispatch(
-            new ChatMessageAccepted($replyId, $this->actorOf($this->builder), $betweenAgents->inbox_id),
-        );
-
-        $this->assertSame([['posted', 'The tests pass.', ActivityLevel::Notable->value]], $this->entries());
     }
 
     /**

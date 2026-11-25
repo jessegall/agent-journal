@@ -7,7 +7,6 @@ namespace Tests\Feature\Agents;
 use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Assignments\AssignmentTransaction;
-use App\Contracts\Chat\MainSeatTakeover;
 use App\Enums\Drivers\HoldReason;
 use App\Enums\Navigation\MenuEntryState;
 use App\Enums\Navigation\NavigationCompletion;
@@ -22,6 +21,7 @@ use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\EnrolledHost;
+use App\Support\MainInboxHandover;
 use App\Support\NavigationLibrary;
 use App\Support\OpenedRuntime;
 use App\Values\MenuStep;
@@ -33,7 +33,7 @@ use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\RecordedAttention;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\InstallsDesks;
+use Tests\Support\InstallsInboxes;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsHostCalls;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -47,7 +47,7 @@ use Tests\TestCase;
 final class NavigationRaiseRouteTest extends TestCase
 {
     use CommitsHookRows;
-    use InstallsDesks;
+    use InstallsInboxes;
     use OpensLedgerRuntimes;
     use RunsTrustedCommands;
     use SendsHostCalls;
@@ -414,7 +414,7 @@ final class NavigationRaiseRouteTest extends TestCase
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(MainSeatTakeover::class)->takeOver($agent),
+            fn () => $this->app->make(MainInboxHandover::class)->takeOver($agent),
         );
     }
 }

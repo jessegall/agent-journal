@@ -4,19 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature;
 
-use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Processes\RunClaims;
-use App\Exceptions\RunClaimRefused;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Records\AssignmentRecord;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
-use App\Support\DeskSeatService;
-use App\Support\DeskService;
 use App\Support\RequestKey;
-use App\Support\SeatChange;
 use App\Support\StartSessions;
 use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
 use Domain\Tasks\Commands\ResumeTaskRun\ResumeTaskRunCommand;
@@ -33,8 +28,8 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 
 /**
- * A released run is resumed explicitly: a new desk occupant takes it with the same number while the former one is
- * refused, and a direct holder that lost and regained the task cannot use its old claim but resumes afresh.
+ * A released run is resumed explicitly: a direct holder that lost and regained the task cannot use its old claim but
+ * resumes afresh.
  */
 final class ResumeTaskRunTest extends TestCase
 {
@@ -57,45 +52,6 @@ final class ResumeTaskRunTest extends TestCase
         'claim_authorizations',
         'command_receipts',
     ];
-
-    public function test_a_new_occupant_resumes_the_run_and_the_previous_one_is_refused(): void
-    {
-        $desk = $this->app->make(DeskService::class)->openNamed('team', 'Team', 1, false);
-        $leaving = $this->started('First');
-        $arriving = $this->started('Second');
-        $task = Task::factory()->create();
-        AssignmentRecord::create($task->assignmentIdentity(), $desk->assigneeIdentity());
-        $this->startUserRequestAs($this->owner->id);
-
-        $seat = $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(DeskSeatService::class)->seat(
-                $desk->id,
-                ActorIdentity::of($leaving->agent()->firstOrFail()),
-            ),
-        );
-
-        $this->runAs($leaving, new StartTaskCommand($task->id));
-        $run = TaskRun::query()->where('task_id', $task->id)->sole();
-        $this->startUserRequestAs($this->owner->id);
-
-        $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(DeskSeatService::class)->replace(
-            new SeatChange(
-                $desk->id,
-                $seat->seatId,
-                $seat->reference,
-                ActorIdentity::of($arriving->agent()->firstOrFail()),
-            ),
-        ));
-
-        $this->assertSame(1, $this->runAs($arriving, new ResumeTaskRunCommand($run->id)));
-        $this->assertTrue($this->holderOf($run)?->isSameAs(ActorIdentity::of($arriving->agent()->firstOrFail())));
-        $this->assertSame(1, TaskRun::query()->where('task_id', $task->id)->count());
-
-        $this->assertThrows(
-            fn () => $this->runAs($leaving, new ResumeTaskRunCommand($run->id)),
-            RunClaimRefused::class,
-        );
-    }
 
     public function test_a_direct_holder_that_regained_the_task_resumes_afresh(): void
     {

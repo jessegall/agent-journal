@@ -4,22 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Commands\Desks\InstallDesks\InstallDesksCommand;
-use App\Contracts\Assignments\AssignmentStorage;
+use App\Commands\Inboxes\InstallInboxes\InstallInboxesCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
-use App\Contracts\Chat\MainSeatTakeover;
 use App\Contracts\Sessions\ProfileResolver;
 use App\Enums\Accounts\CommandEntry;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
-use App\Models\Desks\DeskRecord;
-use App\Models\Desks\DeskSeat;
+use App\Models\Inboxes\Inbox;
+use App\Models\Inboxes\InboxMember;
 use App\Models\Projects\ProjectBinding;
 use App\Support\ActorIdentity;
-use App\Support\BuiltInDesks;
 use App\Support\EntryDispatchers;
-use App\Support\SeatOccupant;
+use App\Support\MainInboxHandover;
 use App\Values\ProfileKey;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
@@ -47,7 +44,7 @@ final class BindingRuntimeTest extends TestCase
     private const array TABLES = [
         'connection_audits', 'project_invitations', 'install_attempts', 'binding_runtimes', 'project_bindings',
         'project_environments', 'projects', 'agent_runtimes', 'agent_sessions', 'agents', 'hosts', 'settings_records',
-        'users', 'accounts', 'active_accounts', 'inboxes',
+        'users', 'accounts', 'active_accounts', 'inboxes', 'inbox_members',
     ];
 
     private const string NONCE = 'nonce-aaaaaaaaaaaaaaaa';
@@ -58,7 +55,7 @@ final class BindingRuntimeTest extends TestCase
 
         $this->chooseActiveAccounts();
         $this->app->make(EntryDispatchers::class)
-            ->runAsJournal(CommandEntry::HostControl, 'desk install', new InstallDesksCommand());
+            ->runAsJournal(CommandEntry::HostControl, 'inbox install', new InstallInboxesCommand());
     }
 
     public function test_another_folder_root_id_or_agent_is_refused_before_any_runtime(): void
@@ -97,24 +94,20 @@ final class BindingRuntimeTest extends TestCase
         $this->assertSame($profile->model, AgentSession::query()->findOrFail($started->json('session_id'))->model);
     }
 
-    public function test_a_binding_runtime_leaves_the_servers_main_agent_seated(): void
+    public function test_a_binding_runtime_leaves_the_servers_main_agent_attached_to_main(): void
     {
         $serverMain = Agent::create('Server main', 'main-agent');
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(MainSeatTakeover::class)->takeOver($serverMain),
+            fn () => $this->app->make(MainInboxHandover::class)->takeOver($serverMain),
         );
         $binding = $this->connected('the-ticket', self::NONCE);
 
         $this->start($binding, [])->assertCreated();
 
-        $main = DeskRecord::query()->named(BuiltInDesks::MAIN)->sole();
-        $seat = DeskSeat::query()->ofDesk($main)->sole();
-        $occupant = $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(AssignmentStorage::class)->lockCurrent($seat->assignmentIdentity()),
+        $this->assertSame(
+            [ActorIdentity::of($serverMain)->text()],
+            array_map(fn (ActorIdentity $member) => $member->text(), InboxMember::attachedTo([Inbox::main()->id], Agent::class)),
         );
-
-        $this->assertTrue($occupant->isDefined());
-        $this->assertTrue(SeatOccupant::of($occupant->get())->isSameAs(ActorIdentity::of($serverMain)));
         $this->assertTrue(Agent::query()->findOrFail($serverMain->id)->currentRuntime()->isEmpty());
     }
 

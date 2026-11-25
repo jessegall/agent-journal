@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Domain\Documents\Tests\Feature;
 
 use App\Contracts\Bus\CommandBus;
+use App\Data\Messages\MessageTextData;
+use App\Enums\Drivers\DriverOperation;
 use App\Events\Sessions\SessionClosed;
 use App\Models\Agents\Agent;
-use App\Models\Messages\Message;
+use App\Models\Drivers\DriverRequest;
 use App\Models\Sessions\SessionPolicy;
-use App\Support\ActorIdentity;
 use App\Support\AgentSessions;
-use App\Support\DeskService;
 use App\Support\StackTransaction;
 use App\Values\AccessPolicy;
 use App\Values\OperationGrant;
@@ -35,13 +35,11 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
-use Tests\Support\WritesInboxMessages;
 
 final class DocumentDraftTest extends TestCase
 {
     use CommitsHookRows;
     use StartsAgentRequests;
-    use WritesInboxMessages;
 
     private const array TABLES = [
         'agents',
@@ -57,7 +55,7 @@ final class DocumentDraftTest extends TestCase
         'document_closes',
         'retained_drafts',
         'number_groups',
-        'messages',
+        'driver_requests',
         'assignments',
     ];
 
@@ -73,9 +71,6 @@ final class DocumentDraftTest extends TestCase
             TestSelections::requestId(),
             $parent->session,
         );
-
-        $this->app->make(DeskService::class)->installSourceDesk('system', 'System');
-        $inbox = $this->inboxOf(ActorIdentity::of($parent->agent));
 
         $this->startRequestAs($child->id, $session->id);
         $bus = $this->app->make(CommandBus::class);
@@ -95,9 +90,10 @@ final class DocumentDraftTest extends TestCase
         $kept = RetainedDraft::query()->sole();
         $this->assertSame(0, DocumentDraft::query()->count());
         $this->assertSame('1', $this->app->make(DocumentResolver::class)->show($created->number)->revision);
-        $notice = Message::query()->acrossInboxes()->where('destination_inbox_id', $inbox->inboxId())->sole();
-        $this->assertStringContainsString($kept->id, $notice->body);
-        $this->assertStringNotContainsString($badText, $notice->body);
+        $notice = DriverRequest::query()->where('operation', DriverOperation::Deliver)->sole()->parts[0];
+        $this->assertInstanceOf(MessageTextData::class, $notice);
+        $this->assertStringContainsString($kept->id, $notice->text);
+        $this->assertStringNotContainsString($badText, $notice->text);
 
         $other->startRequest($this->app);
         $this->assertThrows(fn () => $this->app->make(DraftReader::class)->draft($kept->id), DraftMissing::class);

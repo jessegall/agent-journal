@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Feature;
 
-use App\Commands\Desks\InstallDesks\InstallDesksCommand;
+use App\Commands\Inboxes\InstallInboxes\InstallInboxesCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
-use App\Contracts\Chat\MainSeatTakeover;
 use App\Enums\Accounts\CommandEntry;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\EntryDispatchers;
+use App\Support\MainInboxHandover;
 use App\Support\StartSessions;
 use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Chat\Models\Conversation;
@@ -56,7 +56,7 @@ final class RecipientChoiceTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
 
         $this->app->make(EntryDispatchers::class)
-            ->runAsJournal(CommandEntry::HostControl, 'desk install', new InstallDesksCommand());
+            ->runAsJournal(CommandEntry::HostControl, 'inbox install', new InstallInboxesCommand());
 
         $this->inboxOf(ActorIdentity::of($owner));
         $main = $this->start('Main');
@@ -64,7 +64,7 @@ final class RecipientChoiceTest extends TestCase
         $this->startUserRequestAs($owner->id);
 
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(MainSeatTakeover::class)->takeOver(Agent::query()->findOrFail($main[0])),
+            fn () => $this->app->make(MainInboxHandover::class)->takeOver(Agent::query()->findOrFail($main[0])),
         );
 
         $mainShown = $this->destinationShownFor($owner, $main[0]);

@@ -903,7 +903,7 @@ final class AgentDriverLedgerTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($user->id));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($user->id), new OwnerAuthority('test'));
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
-        $this->app->make(CommandBus::class)->run(new PostChatMessageCommand($chat->inbox_id, 'Plan?', 'plan-1'));
+        $this->app->make(CommandBus::class)->run(new PostChatMessageCommand($chat->id, 'Plan?', 'plan-1'));
         $this->app->make(RequestKey::class)->forget();
         $asked = $this->wakesAskedOf($opened);
         $restart = new NotifyRuntimeActivityCommand($host->hostId, $opened->runtimeId, RuntimeActivity::Idle, HoldReason::None, 2);

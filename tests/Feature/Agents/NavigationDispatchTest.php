@@ -8,16 +8,15 @@ use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Assignments\AssignmentStorage;
 use App\Contracts\Assignments\AssignmentTransaction;
-use App\Contracts\Chat\MainSeatTakeover;
 use App\Enums\Navigation\NavigationAnswerer;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
-use App\Models\Desks\DeskRecord;
 use App\Models\Drivers\NavigationRequest;
+use App\Models\Inboxes\Inbox;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
-use App\Support\BuiltInDesks;
+use App\Support\MainInboxHandover;
 use App\Support\NavigationDispatch;
 use App\Support\PendingWorkSources;
 use App\Values\OwnerAuthority;
@@ -25,18 +24,18 @@ use Closure;
 use Tests\Fixtures\Agents\RecordedAttention;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\InstallsDesks;
+use Tests\Support\InstallsInboxes;
 use Tests\Support\RunsTrustedCommands;
 use Tests\TestCase;
 
 /**
- * A navigation request of a helper's runtime goes to the main desk and wakes its occupant once per round; the main
- * agent's own runtime keeps its hold for the user; with nobody seated the request waits at the desk.
+ * A navigation request of a helper's runtime goes to the main inbox and wakes its member once per round; the main
+ * agent's own runtime keeps its hold for the user; with nobody attached the request waits at the inbox.
  */
 final class NavigationDispatchTest extends TestCase
 {
     use CommitsHookRows;
-    use InstallsDesks;
+    use InstallsInboxes;
     use RaisesNavigationRequests;
     use RunsTrustedCommands;
 
@@ -67,21 +66,21 @@ final class NavigationDispatchTest extends TestCase
         $this->app->bind(ActorAttention::class, fn () => $this->attention);
     }
 
-    public function test_a_helpers_request_goes_to_the_main_desk_and_wakes_its_occupant_once_per_round(): void
+    public function test_a_helpers_request_goes_to_the_main_inbox_and_wakes_its_member_once_per_round(): void
     {
         $main = $this->seatMain();
         $navigation = $this->raise($this->stalledScript(), 'raise-1');
         $dispatch = $this->app->make(NavigationDispatch::class);
 
         $answerer = $this->inTransaction(fn () => $dispatch->answererFor($this->runtimeOf($navigation)));
-        $this->assertSame(NavigationAnswerer::MainDesk, $answerer);
+        $this->assertSame(NavigationAnswerer::MainInbox, $answerer);
         $this->inTransaction(fn () => $dispatch->deliver($navigation, 1));
         $this->inTransaction(fn () => $dispatch->deliver($navigation, 1));
         $this->inTransaction(fn () => $dispatch->deliver($navigation, 2));
 
         $holder = $this->holderOf($navigation);
-        $mainDesk = DeskRecord::query()->named(BuiltInDesks::MAIN)->sole();
-        $this->assertSame([$mainDesk->assigneeIdentity()->type, $mainDesk->id], [$holder->type, $holder->id]);
+        $mainInbox = Inbox::main();
+        $this->assertSame([$mainInbox->assigneeIdentity()->type, $mainInbox->id], [$holder->type, $holder->id]);
         $keys = array_column($this->attention->wakes, 1);
         $this->assertCount(3, $keys);
         $this->assertSame($keys[0], $keys[1]);
@@ -103,7 +102,7 @@ final class NavigationDispatchTest extends TestCase
         $this->assertSame(NavigationAnswerer::User, $answerer);
     }
 
-    public function test_with_nobody_seated_the_request_waits_at_the_desk_and_wakes_nobody(): void
+    public function test_with_nobody_attached_the_request_waits_at_the_inbox_and_wakes_nobody(): void
     {
         $navigation = $this->raise($this->stalledScript(), 'raise-1');
 
@@ -111,8 +110,8 @@ final class NavigationDispatchTest extends TestCase
         $this->inTransaction(fn () => $dispatch->deliver($navigation, 1));
 
         $this->assertSame([], $this->attention->wakes);
-        $mainDesk = DeskRecord::query()->named(BuiltInDesks::MAIN)->sole();
-        $this->assertSame($mainDesk->id, $this->holderOf($navigation)->id);
+        $mainInbox = Inbox::main();
+        $this->assertSame($mainInbox->id, $this->holderOf($navigation)->id);
     }
 
     private function seatMain(): Agent
@@ -126,7 +125,7 @@ final class NavigationDispatchTest extends TestCase
     private function seat(Agent $agent): void
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
-        $this->inTransaction(fn () => $this->app->make(MainSeatTakeover::class)->takeOver($agent));
+        $this->inTransaction(fn () => $this->app->make(MainInboxHandover::class)->takeOver($agent));
     }
 
     /**
