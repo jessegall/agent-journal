@@ -132,6 +132,110 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
         return $read;
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * Marks the read handed out to its host, so a second poll does not hand it out again.
+     */
+    public function markClaimed(CarbonImmutable $now): void
+    {
+        $this->claimed_at = $now;
+        $this->assertSaved($this->save());
+        $this->raise(new ProjectReadClaimed($this->id));
+    }
+
+    /**
+     * Answers a folder read with its entries, cut to the entry limit and marked cut when the host or the limit cut it.
+     *
+     * @param  list<ProjectEntry>  $entries
+     */
+    public function answerWithEntries(array $entries, bool $isTruncated): void
+    {
+        $this->entries = array_map(
+            fn (ProjectEntry $entry) => $entry->fields(),
+            array_slice($entries, 0, self::DIRECTORY_ENTRY_LIMIT),
+        );
+
+        $this->is_truncated = $isTruncated || count($entries) > self::DIRECTORY_ENTRY_LIMIT;
+        $this->settle(ProjectReadState::Answered);
+        $this->raise(new ProjectReadAnsweredWithEntries($this->id));
+    }
+
+    /**
+     * Answers a file read with its text, the digest and size of the whole file, and whether the text was cut.
+     */
+    public function answerWithText(ProjectFileText $text, bool $isTruncated): void
+    {
+        $this->text = $text->text;
+        $this->digest = $text->digest;
+        $this->size = $text->size;
+        $this->is_truncated = $isTruncated;
+        $this->settle(ProjectReadState::Answered);
+        $this->raise(new ProjectReadAnsweredWithText($this->id));
+    }
+
+    public function fail(ProjectReadFailure $failure): void
+    {
+        $this->failure = $failure;
+        $this->settle(ProjectReadState::Failed);
+        $this->raise(new ProjectReadFailed($this->id, $failure));
+    }
+
+    // ----------[ Getters ]----------
+
+    public function isSettled(): bool
+    {
+        return $this->state->isSettled();
+    }
+
+    public function isExpired(): bool
+    {
+        return $this->state === ProjectReadState::Expired;
+    }
+
+    /**
+     * Whether the read is of a project this host runs.
+     */
+    public function isOfHost(string $hostId): bool
+    {
+        return ProjectBinding::query()->whereKey($this->binding_id)->where('host_id', $hostId)->exists();
+    }
+
+    private function settle(ProjectReadState $state): void
+    {
+        $this->state = $state;
+        $this->answered_at = CarbonImmutable::now();
+        $this->save();
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * The folder's entries as the host listed them; none for a file or an unanswered read.
+     *
+     * @return Attribute<list<ProjectEntry>, never>
+     */
+    protected function listedEntries(): Attribute
+    {
+        return Attribute::get(fn () => array_map(ProjectEntry::fromFields(...), $this->entries ?? []));
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a read that is not there.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws ProjectReadRefused
+     */
+    private static function assertFound(self|null $row, string $readId): void
+    {
+        if ($row === null) {
+            throw ProjectReadRefused::missing($readId);
+        }
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -196,109 +300,5 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
         self::assertFound($row, $readId);
 
         return $row;
-    }
-
-    // ----------[ Mutations ]----------
-
-    /**
-     * Marks the read handed out to its host, so a second poll does not hand it out again.
-     */
-    public function markClaimed(CarbonImmutable $now): void
-    {
-        $this->claimed_at = $now;
-        $this->assertSaved($this->save());
-        $this->raise(new ProjectReadClaimed($this->id));
-    }
-
-    /**
-     * Answers a folder read with its entries, cut to the entry limit and marked cut when the host or the limit cut it.
-     *
-     * @param  list<ProjectEntry>  $entries
-     */
-    public function answerWithEntries(array $entries, bool $isTruncated): void
-    {
-        $this->entries = array_map(
-            fn (ProjectEntry $entry) => $entry->fields(),
-            array_slice($entries, 0, self::DIRECTORY_ENTRY_LIMIT),
-        );
-
-        $this->is_truncated = $isTruncated || count($entries) > self::DIRECTORY_ENTRY_LIMIT;
-        $this->settle(ProjectReadState::Answered);
-        $this->raise(new ProjectReadAnsweredWithEntries($this->id));
-    }
-
-    /**
-     * Answers a file read with its text, the digest and size of the whole file, and whether the text was cut.
-     */
-    public function answerWithText(ProjectFileText $text, bool $isTruncated): void
-    {
-        $this->text = $text->text;
-        $this->digest = $text->digest;
-        $this->size = $text->size;
-        $this->is_truncated = $isTruncated;
-        $this->settle(ProjectReadState::Answered);
-        $this->raise(new ProjectReadAnsweredWithText($this->id));
-    }
-
-    public function fail(ProjectReadFailure $failure): void
-    {
-        $this->failure = $failure;
-        $this->settle(ProjectReadState::Failed);
-        $this->raise(new ProjectReadFailed($this->id, $failure));
-    }
-
-    // ----------[ Answers ]----------
-
-    public function isSettled(): bool
-    {
-        return $this->state->isSettled();
-    }
-
-    public function isExpired(): bool
-    {
-        return $this->state === ProjectReadState::Expired;
-    }
-
-    /**
-     * Whether the read is of a project this host runs.
-     */
-    public function isOfHost(string $hostId): bool
-    {
-        return ProjectBinding::query()->whereKey($this->binding_id)->where('host_id', $hostId)->exists();
-    }
-
-    private function settle(ProjectReadState $state): void
-    {
-        $this->state = $state;
-        $this->answered_at = CarbonImmutable::now();
-        $this->save();
-    }
-
-    // ----------[ Accessors ]----------
-
-    /**
-     * The folder's entries as the host listed them; none for a file or an unanswered read.
-     *
-     * @return Attribute<list<ProjectEntry>, never>
-     */
-    protected function listedEntries(): Attribute
-    {
-        return Attribute::get(fn () => array_map(ProjectEntry::fromFields(...), $this->entries ?? []));
-    }
-
-    // ----------[ Asserts ]----------
-
-    /**
-     * Refuses a read that is not there.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws ProjectReadRefused
-     */
-    private static function assertFound(self|null $row, string $readId): void
-    {
-        if ($row === null) {
-            throw ProjectReadRefused::missing($readId);
-        }
     }
 }

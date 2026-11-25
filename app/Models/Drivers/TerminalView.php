@@ -118,17 +118,6 @@ final class TerminalView extends Model implements EventSource, ReadableModel
         return $view;
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * Keeps the view live for one lease from now.
-     */
-    public function renew(CarbonImmutable $now): void
-    {
-        $this->expires_at = $now->addSeconds(self::LEASE_SECONDS);
-        $this->save();
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -149,7 +138,7 @@ final class TerminalView extends Model implements EventSource, ReadableModel
         $this->raise(new TerminalViewClosed($this->id));
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     /**
      * Whether the view still watches the runtime as it ran when the view opened or last followed it.
@@ -189,6 +178,17 @@ final class TerminalView extends Model implements EventSource, ReadableModel
     public function runtime(): BelongsTo
     {
         return $this->belongsTo(AgentRuntime::class, 'agent_runtime_id');
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * Keeps the view live for one lease from now.
+     */
+    public function renew(CarbonImmutable $now): void
+    {
+        $this->expires_at = $now->addSeconds(self::LEASE_SECONDS);
+        $this->save();
     }
 
     // ----------[ Scopes ]----------

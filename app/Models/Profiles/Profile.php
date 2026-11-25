@@ -53,6 +53,41 @@ final class Profile extends Model implements EventSource, ReadableModel
         ];
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * Takes the profile out of new starts; its key and revisions stay.
+     */
+    public function retire(): void
+    {
+        $this->retired_at = CarbonImmutable::now();
+        $this->assertSaved($this->save());
+        $this->raise(new ProfileRetired($this->id));
+    }
+
+    // ----------[ Getters ]----------
+
+    public function isRetired(): bool
+    {
+        return $this->retired_at !== null;
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a profile key no profile holds.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws ProfileMissing
+     */
+    private static function assertFound(self|null $row, ProfileKey $key): void
+    {
+        if ($row === null) {
+            throw ProfileMissing::for($key);
+        }
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -94,41 +129,6 @@ final class Profile extends Model implements EventSource, ReadableModel
     public static function listed(int $limit): array
     {
         return array_values(self::query()->orderBy('key')->readExactly($limit)->get()->all());
-    }
-
-    // ----------[ Mutations ]----------
-
-    /**
-     * Takes the profile out of new starts; its key and revisions stay.
-     */
-    public function retire(): void
-    {
-        $this->retired_at = CarbonImmutable::now();
-        $this->assertSaved($this->save());
-        $this->raise(new ProfileRetired($this->id));
-    }
-
-    // ----------[ Answers ]----------
-
-    public function isRetired(): bool
-    {
-        return $this->retired_at !== null;
-    }
-
-    // ----------[ Asserts ]----------
-
-    /**
-     * Refuses a profile key no profile holds.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws ProfileMissing
-     */
-    private static function assertFound(self|null $row, ProfileKey $key): void
-    {
-        if ($row === null) {
-            throw ProfileMissing::for($key);
-        }
     }
 
     // ----------[ Scopes ]----------

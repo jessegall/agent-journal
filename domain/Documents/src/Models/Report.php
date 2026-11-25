@@ -92,11 +92,7 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
 
     protected static function booted(): void
     {
-        self::updating(function (self $report): void {
-            if (array_diff(array_keys($report->getDirty()), ['attention', 'updated_at']) !== []) {
-                throw RecordImmutable::for('report');
-            }
-        });
+        self::updating(fn (self $report) => $report->assertOnlyAttentionEdited());
     }
 
     // ----------[ Constructors ]----------
@@ -119,52 +115,6 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
         $report->raise(new ReportFiled($report->id, $report->number, ActorContext::of($author)));
 
         return $report;
-    }
-
-    // ----------[ Queries ]----------
-
-    public static function lockedForClosing(int|string $reference): self
-    {
-        $reports = self::query()->lockForUpdate();
-
-        if (is_int($reference)) {
-            return $reports->where('number', $reference)->firstOr(fn () => throw ReportMissing::numbered($reference));
-        }
-
-        return $reports->whereKey($reference)->firstOr(fn () => throw ReportMissing::identified($reference));
-    }
-
-    /**
-     * The report as a search found it: its card with a snippet around the words.
-     */
-    public function searchResult(string $words): PublicationCard
-    {
-        return PublicationCard::from([
-            ...$this->card->all(),
-            'snippet' => $this->snippetFor($words),
-            'foundIn' => 'report',
-        ]);
-    }
-
-    /**
-     * A report's text, filed once: version 1 is its only version.
-     */
-    public function textVersion(string|null $version = null): TextVersion
-    {
-        return TextVersion::ofOnlyMarkdown($version, 'Report', $this->body);
-    }
-
-    public function identifyFor(DockDefinition $definition): DockIdentity
-    {
-        return $definition->identity($this->id);
-    }
-
-    /**
-     * Its card in a dock: what it is called and where it stands, with Open when the viewer may open it.
-     */
-    public function composeDockCard(CardContext $context): DockCard
-    {
-        return new ReportDockCard($this, $context)->card;
     }
 
     // ----------[ Accessors ]----------
@@ -203,6 +153,92 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
         return Attribute::get(
             fn () => new ShareRecordCard($this->shareIdentity(), $this->title, '1'),
         )->withoutObjectCaching();
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses an edit of anything but a report's attention: what a report found stays as it was written.
+     *
+     * @throws RecordImmutable
+     */
+    private function assertOnlyAttentionEdited(): void
+    {
+        if (array_diff(array_keys($this->getDirty()), ['attention', 'updated_at']) !== []) {
+            throw RecordImmutable::for('report');
+        }
+    }
+
+    /**
+     * Refuses a number or id no report holds.
+     *
+     * @phpstan-assert self $report
+     *
+     * @throws ReportMissing
+     */
+    private static function assertFound(self|null $report, int|string $reference): void
+    {
+        if ($report !== null) {
+            return;
+        }
+
+        if (is_int($reference)) {
+            throw ReportMissing::numbered($reference);
+        }
+
+        throw ReportMissing::identified($reference);
+    }
+
+    // ----------[ Queries ]----------
+
+    public static function lockedForClosing(int|string $reference): self
+    {
+        $reports = self::query()->lockForUpdate();
+
+        if (is_int($reference)) {
+            $report = $reports->where('number', $reference)->first();
+            self::assertFound($report, $reference);
+
+            return $report;
+        }
+
+        $report = $reports->whereKey($reference)->first();
+        self::assertFound($report, $reference);
+
+        return $report;
+    }
+
+    /**
+     * The report as a search found it: its card with a snippet around the words.
+     */
+    public function searchResult(string $words): PublicationCard
+    {
+        return PublicationCard::from([
+            ...$this->card->all(),
+            'snippet' => $this->snippetFor($words),
+            'foundIn' => 'report',
+        ]);
+    }
+
+    /**
+     * A report's text, filed once: version 1 is its only version.
+     */
+    public function textVersion(string|null $version = null): TextVersion
+    {
+        return TextVersion::ofOnlyMarkdown($version, 'Report', $this->body);
+    }
+
+    public function identifyFor(DockDefinition $definition): DockIdentity
+    {
+        return $definition->identity($this->id);
+    }
+
+    /**
+     * Its card in a dock: what it is called and where it stands, with Open when the viewer may open it.
+     */
+    public function composeDockCard(CardContext $context): DockCard
+    {
+        return new ReportDockCard($this, $context)->card;
     }
 
     // ----------[ Scopes ]----------

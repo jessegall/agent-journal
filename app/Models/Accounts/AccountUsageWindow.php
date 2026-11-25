@@ -84,6 +84,29 @@ final class AccountUsageWindow extends Model implements EventSource, ReadableMod
         $window->raise(new AccountUsageChanged($account->account_protocol, $account->id));
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * Replaces every field of the window with a newer reading, so a reset of an earlier reading never stays.
+     */
+    public function replaceWith(string $driver, UsageWindowReading $reading): void
+    {
+        $this->fillWith($reading);
+        $this->saveReading($driver);
+    }
+
+    // ----------[ Internals ]----------
+
+    private function fillWith(UsageWindowReading $reading): void
+    {
+        $this->used_percent = $reading->usedPercent;
+        $this->duration_minutes = $reading->durationMinutes;
+        $this->resets_at = $reading->resetTime();
+        $this->observed_at = $reading->source->observedTime();
+        $this->source_id = $reading->source->id;
+        $this->source_order = $reading->source->order;
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -128,28 +151,5 @@ final class AccountUsageWindow extends Model implements EventSource, ReadableMod
         }
 
         return $grouped;
-    }
-
-    // ----------[ Mutations ]----------
-
-    /**
-     * Replaces every field of the window with a newer reading, so a reset of an earlier reading never stays.
-     */
-    public function replaceWith(string $driver, UsageWindowReading $reading): void
-    {
-        $this->fillWith($reading);
-        $this->saveReading($driver);
-    }
-
-    // ----------[ Internals ]----------
-
-    private function fillWith(UsageWindowReading $reading): void
-    {
-        $this->used_percent = $reading->usedPercent;
-        $this->duration_minutes = $reading->durationMinutes;
-        $this->resets_at = $reading->resetTime();
-        $this->observed_at = $reading->source->observedTime();
-        $this->source_id = $reading->source->id;
-        $this->source_order = $reading->source->order;
     }
 }

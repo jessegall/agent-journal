@@ -43,6 +43,18 @@ final class SkillContextEpoch extends Model implements EventSource, ReadableMode
         ];
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * Starts the session's next context after a clear or compaction.
+     */
+    public function advance(): void
+    {
+        $this->epoch++;
+        $this->assertSaved($this->save());
+        $this->raise(new SkillContextEpochAdvanced($this->id));
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -63,17 +75,5 @@ final class SkillContextEpoch extends Model implements EventSource, ReadableMode
     public static function currentOf(string $sessionId): int
     {
         return self::query()->where('session_id', $sessionId)->first()->epoch ?? 0;
-    }
-
-    // ----------[ Mutations ]----------
-
-    /**
-     * Starts the session's next context after a clear or compaction.
-     */
-    public function advance(): void
-    {
-        $this->epoch++;
-        $this->assertSaved($this->save());
-        $this->raise(new SkillContextEpochAdvanced($this->id));
     }
 }

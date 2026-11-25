@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Models;
 
-use App\Contracts\Records\AuthoredModel;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
+use App\Contracts\Records\AuthoredModel;
+use App\Enums\ActorType;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Messages\Message;
 use App\Models\Questions\Question;
-use App\Enums\ActorType;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Enums\ChatMessageType;
@@ -79,8 +79,9 @@ final class ChatMessage extends Model implements EventSource
             return $existing;
         }
 
-        $latest = self::query()->newestInInbox($inboxId)->lockForUpdate()->first();
         $author = $source->author();
+        $latest = self::lockNewestInInbox($inboxId);
+
         $entry = self::query()->create([
             'inbox_id' => $inboxId,
             'source_type' => $source->getMorphClass(),
@@ -96,40 +97,6 @@ final class ChatMessage extends Model implements EventSource
         return $entry;
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The entry that shows the source, or none while it is not recorded yet.
-     */
-    public static function findForSource(AuthoredModel $source): self|null
-    {
-        return self::query()->forSource($source)->first();
-    }
-
-    /**
-     * The entry that shows the message, or none while it is not recorded yet.
-     */
-    public static function findForMessage(string $messageId): self|null
-    {
-        return self::query()->forSourceKey(Message::LINK_TYPE, $messageId)->first();
-    }
-
-    /**
-     * The card that shows the question, or none while it is not recorded yet.
-     */
-    public static function findForQuestion(string $questionId): self|null
-    {
-        return self::query()->forSourceKey(Question::LINK_TYPE, $questionId)->first();
-    }
-
-    /**
-     * The event that shows the record, or none while it is not recorded yet.
-     */
-    public static function findForEvent(AuthoredModel $record): self|null
-    {
-        return self::query()->forSource($record)->where('type', ChatMessageType::Event)->first();
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -142,7 +109,7 @@ final class ChatMessage extends Model implements EventSource
         $this->raise(new ChatMessageChanged($this->inbox_id, $this->id));
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     /**
      * The actor who made the entry's source.
@@ -210,6 +177,48 @@ final class ChatMessage extends Model implements EventSource
         return $this->created_at->diffInSeconds($at) <= ChatGrouping::WINDOW_SECONDS;
     }
 
+    // ----------[ Queries ]----------
+
+    /**
+     * The entry that shows the source, or none while it is not recorded yet.
+     */
+    public static function findForSource(AuthoredModel $source): self|null
+    {
+        return self::query()->forSource($source)->first();
+    }
+
+    /**
+     * The entry that shows the message, or none while it is not recorded yet.
+     */
+    public static function findForMessage(string $messageId): self|null
+    {
+        return self::query()->forSourceKey(Message::LINK_TYPE, $messageId)->first();
+    }
+
+    /**
+     * The card that shows the question, or none while it is not recorded yet.
+     */
+    public static function findForQuestion(string $questionId): self|null
+    {
+        return self::query()->forSourceKey(Question::LINK_TYPE, $questionId)->first();
+    }
+
+    /**
+     * The event that shows the record, or none while it is not recorded yet.
+     */
+    public static function findForEvent(AuthoredModel $record): self|null
+    {
+        return self::query()->forSource($record)->ofType(ChatMessageType::Event)->first();
+    }
+
+    /**
+     * The inbox's newest entry, locked so the next entry's group is worked out from it alone; none in an empty inbox.
+     */
+    public static function lockNewestInInbox(string $inboxId): self|null
+    {
+        return self::query()->newestInInbox($inboxId)->lockForUpdate()->first();
+    }
+
     // ----------[ Scopes ]----------
 
     /**
@@ -221,6 +230,17 @@ final class ChatMessage extends Model implements EventSource
     protected function newestInInbox(Builder $query, string $inboxId): void
     {
         $query->where('inbox_id', $inboxId)->latest('created_at')->latest('id');
+    }
+
+    /**
+     * The entries of the type.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofType(Builder $query, ChatMessageType $type): void
+    {
+        $query->where('type', $type);
     }
 
     /**

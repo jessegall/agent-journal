@@ -94,6 +94,27 @@ final class AccountUsageCost extends Model implements EventSource, ReadableModel
         $entry->raise(new AccountUsageChanged($account->account_protocol, $account->id));
     }
 
+    // ----------[ Asserts ]----------
+
+    /**
+     * @throws UsageCostConflict
+     */
+    private function assertRecords(UsageCost $cost): void
+    {
+        if ($this->usd === $cost->usd->amount && $this->observed_at->getTimestamp() === $cost->observedAt) {
+            return;
+        }
+
+        throw UsageCostConflict::for($cost->sourceId);
+    }
+
+    // ----------[ Internals ]----------
+
+    private function monthCost(CarbonImmutable $start): MonthCost
+    {
+        return new MonthCost($start, UsdAmount::from($this->usd), $this->observations, $this->observed_at);
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -123,24 +144,5 @@ final class AccountUsageCost extends Model implements EventSource, ReadableModel
         }
 
         return $costs;
-    }
-
-    // ----------[ Internals ]----------
-
-    /**
-     * @throws UsageCostConflict
-     */
-    private function assertRecords(UsageCost $cost): void
-    {
-        if ($this->usd === $cost->usd->amount && $this->observed_at->getTimestamp() === $cost->observedAt) {
-            return;
-        }
-
-        throw UsageCostConflict::for($cost->sourceId);
-    }
-
-    private function monthCost(CarbonImmutable $start): MonthCost
-    {
-        return new MonthCost($start, UsdAmount::from($this->usd), $this->observations, $this->observed_at);
     }
 }

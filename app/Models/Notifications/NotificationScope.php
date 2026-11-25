@@ -87,38 +87,6 @@ final class NotificationScope extends Model implements EventSource, ReadableMode
         return $scope;
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The recipient's scope, when it has ever received a notification.
-     *
-     * @return Option<self>
-     */
-    public static function findFor(string $key, ActorIdentity $recipient): Option
-    {
-        return Option::fromValue(self::query()->ofRecipient($key, $recipient)->first());
-    }
-
-    /**
-     * The user a scope belongs to, when its recipient is a user; an agent's scope has no browser to tell.
-     *
-     * @return Option<string>
-     */
-    public static function userOf(string $id): Option
-    {
-        $scope = self::query()->whereKey($id)->where('recipient_type', ActorType::User->value)->first();
-
-        return Option::fromValue($scope?->recipient_id);
-    }
-
-    /**
-     * The recipient's scope under its row lock, for a change of its receipts or its count.
-     */
-    public static function lockedFor(string $key, ActorIdentity $recipient): self
-    {
-        return self::query()->ofRecipient($key, $recipient)->lockForUpdate()->firstOrFail();
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -196,6 +164,38 @@ final class NotificationScope extends Model implements EventSource, ReadableMode
         $this->mutation_version++;
         $this->assertSaved($this->save());
         $this->raise(new NotificationsChanged($this->id));
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The recipient's scope, when it has ever received a notification.
+     *
+     * @return Option<self>
+     */
+    public static function findFor(string $key, ActorIdentity $recipient): Option
+    {
+        return Option::fromValue(self::query()->ofRecipient($key, $recipient)->first());
+    }
+
+    /**
+     * The user a scope belongs to, when its recipient is a user; an agent's scope has no browser to tell.
+     *
+     * @return Option<string>
+     */
+    public static function userOf(string $id): Option
+    {
+        $scope = self::query()->whereKey($id)->where('recipient_type', ActorType::User->value)->first();
+
+        return Option::fromValue($scope?->recipient_id);
+    }
+
+    /**
+     * The recipient's scope under its row lock, for a change of its receipts or its count.
+     */
+    public static function lockedFor(string $key, ActorIdentity $recipient): self
+    {
+        return self::query()->ofRecipient($key, $recipient)->lockForUpdate()->firstOrFail();
     }
 
     // ----------[ Scopes ]----------

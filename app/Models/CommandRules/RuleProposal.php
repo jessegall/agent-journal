@@ -156,33 +156,7 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
         $this->raise(new RuleProposalAdopted($this->id));
     }
 
-    // ----------[ Answers ]----------
-
-    /**
-     * Refuses a revision by anyone but the author, or made against a revision that is no longer current.
-     *
-     * @throws RuleProposalRefused
-     */
-    public function assertRevisableAt(int $expectedRevision, ActorIdentity $author): void
-    {
-        $this->assertAuthor($author);
-
-        if ($expectedRevision !== $this->current_revision) {
-            throw RuleProposalRefused::stale($this->id, $expectedRevision, $this->current_revision);
-        }
-    }
-
-    /**
-     * Refuses a revision once the proposal ended.
-     *
-     * @throws RuleProposalRefused
-     */
-    public function assertAcceptsRevision(): void
-    {
-        if (! $this->state->canAcceptRevision()) {
-            throw RuleProposalRefused::ended($this->id, $this->state);
-        }
-    }
+    // ----------[ Getters ]----------
 
     /**
      * The owner approved the current revision; the proposal is ended.
@@ -200,20 +174,6 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
     public function reject(): void
     {
         $this->end(ProposalState::Rejected);
-    }
-
-    /**
-     * @throws RuleProposalRefused
-     */
-    public function assertReviewable(int $expectedRevision): void
-    {
-        if ($this->state !== ProposalState::Pending) {
-            throw RuleProposalRefused::notPending($this->id, $this->state);
-        }
-
-        if ($expectedRevision !== $this->current_revision) {
-            throw RuleProposalRefused::stale($this->id, $expectedRevision, $this->current_revision);
-        }
     }
 
     public function isAuthoredBy(ActorIdentity $actor): bool
@@ -242,6 +202,46 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
     // ----------[ Asserts ]----------
 
     /**
+     * Refuses a revision by anyone but the author, or made against a revision that is no longer current.
+     *
+     * @throws RuleProposalRefused
+     */
+    public function assertRevisableAt(int $expectedRevision, ActorIdentity $author): void
+    {
+        $this->assertAuthor($author);
+
+        if ($expectedRevision !== $this->current_revision) {
+            throw RuleProposalRefused::stale($this->id, $expectedRevision, $this->current_revision);
+        }
+    }
+
+    /**
+     * Refuses a revision once the proposal ended.
+     *
+     * @throws RuleProposalRefused
+     */
+    public function assertAcceptsRevision(): void
+    {
+        if (! $this->state->canAcceptRevision()) {
+            throw RuleProposalRefused::ended($this->id, $this->state);
+        }
+    }
+
+    /**
+     * @throws RuleProposalRefused
+     */
+    public function assertReviewable(int $expectedRevision): void
+    {
+        if ($this->state !== ProposalState::Pending) {
+            throw RuleProposalRefused::notPending($this->id, $this->state);
+        }
+
+        if ($expectedRevision !== $this->current_revision) {
+            throw RuleProposalRefused::stale($this->id, $expectedRevision, $this->current_revision);
+        }
+    }
+
+    /**
      * Refuses a change to a proposal that already ended.
      *
      * @throws RuleProposalRefused
@@ -265,6 +265,16 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
         }
     }
 
+    /**
+     * @throws RuleProposalRefused
+     */
+    private function assertAuthor(ActorIdentity $actor): void
+    {
+        if (! $this->isAuthoredBy($actor)) {
+            throw RuleProposalRefused::notTheAuthor($this->id);
+        }
+    }
+
     // ----------[ Internals ]----------
 
     /**
@@ -276,16 +286,6 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
 
         $this->state = $state;
         $this->save();
-    }
-
-    /**
-     * @throws RuleProposalRefused
-     */
-    private function assertAuthor(ActorIdentity $actor): void
-    {
-        if (! $this->isAuthoredBy($actor)) {
-            throw RuleProposalRefused::notTheAuthor($this->id);
-        }
     }
 
     // ----------[ Scopes ]----------

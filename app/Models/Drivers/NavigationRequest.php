@@ -165,32 +165,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
         return $navigation;
     }
 
-    // ----------[ Queries ]----------
-
-    public static function raisedForOperation(string $runtimeId, string $operationKey): self|null
-    {
-        return self::query()->acrossActors()
-            ->where('agent_runtime_id', $runtimeId)
-            ->where('operation_key', $operationKey)
-            ->first();
-    }
-
-    public static function isSameMenuOpenElsewhere(
-        ActorIdentity $owner,
-        AgentRuntime $runtime,
-        ScriptGoal $goal,
-        string $fingerprint,
-    ): bool {
-        return self::query()->ownedBy($owner)->open()
-            ->where('agent_runtime_id', '!=', $runtime->id)
-            ->where('family', $runtime->family)
-            ->where('build', $runtime->driver_build)
-            ->where('fingerprint', $fingerprint)
-            ->where('goal_key', $goal->key())
-            ->exists();
-    }
-
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     /**
      * The proven path was saved as the menu entry.
@@ -365,6 +340,31 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     {
         $this->row_version++;
         $this->save();
+    }
+
+    // ----------[ Queries ]----------
+
+    public static function raisedForOperation(string $runtimeId, string $operationKey): self|null
+    {
+        return self::query()->acrossActors()
+            ->where('agent_runtime_id', $runtimeId)
+            ->where('operation_key', $operationKey)
+            ->first();
+    }
+
+    public static function isSameMenuOpenElsewhere(
+        ActorIdentity $owner,
+        AgentRuntime $runtime,
+        ScriptGoal $goal,
+        string $fingerprint,
+    ): bool {
+        return self::query()->ownedBy($owner)->open()
+            ->where('agent_runtime_id', '!=', $runtime->id)
+            ->where('family', $runtime->family)
+            ->where('build', $runtime->driver_build)
+            ->where('fingerprint', $fingerprint)
+            ->where('goal_key', $goal->key())
+            ->exists();
     }
 
     // ----------[ Scopes ]----------

@@ -60,11 +60,7 @@ final class HelperIdentity extends Model implements EventSource, ReadableModel
 
     protected static function booted(): void
     {
-        self::updating(function (self $identity): void {
-            if ($identity->isDirty(self::FIXED_COLUMNS)) {
-                throw HelperIdentityFixed::forIdentity($identity->id);
-            }
-        });
+        self::updating(fn (self $identity) => $identity->assertFixedColumnsUnedited());
     }
 
     // ----------[ Constructors ]----------
@@ -88,18 +84,6 @@ final class HelperIdentity extends Model implements EventSource, ReadableModel
         $identity->save();
 
         return $identity;
-    }
-
-    // ----------[ Queries ]----------
-
-    /**
-     * The helper designated for the profile, whoever holds it.
-     *
-     * @return Option<self>
-     */
-    public static function designatedFor(string $profileKey): Option
-    {
-        return Option::fromValue(self::query()->acrossActors()->where('designated_profile', $profileKey)->first());
     }
 
     // ----------[ Mutations ]----------
@@ -144,6 +128,32 @@ final class HelperIdentity extends Model implements EventSource, ReadableModel
         return Attribute::get(
             fn () => new ActorIdentity(ActorType::from($this->helper_actor_type), $this->helper_actor_id),
         )->withoutObjectCaching();
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses an edit of the columns that fix who the helper is.
+     *
+     * @throws HelperIdentityFixed
+     */
+    private function assertFixedColumnsUnedited(): void
+    {
+        if ($this->isDirty(self::FIXED_COLUMNS)) {
+            throw HelperIdentityFixed::forIdentity($this->id);
+        }
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The helper designated for the profile, whoever holds it.
+     *
+     * @return Option<self>
+     */
+    public static function designatedFor(string $profileKey): Option
+    {
+        return Option::fromValue(self::query()->acrossActors()->where('designated_profile', $profileKey)->first());
     }
 
     // ----------[ Scopes ]----------

@@ -130,132 +130,6 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
         return $runtime;
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The runtime a session opens on a host, as its intent describes it, not saved yet.
-     */
-    public static function existsForSession(string $sessionId): bool
-    {
-        return self::query()->where('agent_session_id', $sessionId)->exists();
-    }
-
-    /**
-     * Whether the session has a runtime and may still act: a runtime of an ended session takes no more work.
-     */
-    public static function runsForSession(string $sessionId): bool
-    {
-        return self::query()
-            ->where('agent_session_id', $sessionId)
-            ->whereHas('session', fn (Builder $session) => $session->running())
-            ->exists();
-    }
-
-    /**
-     * The host the session's runtime ran on, or none when it never opened one.
-     *
-     * @return Option<string>
-     */
-    public static function hostOfSession(string $sessionId): Option
-    {
-        return Option::fromValue(self::query()->where('agent_session_id', $sessionId)->value('host_id'));
-    }
-
-    /**
-     * The session of the host's own runtime; another host's runtime is not found.
-     */
-    public static function sessionOfHostRuntime(string $hostId, string $runtimeId): string
-    {
-        return self::query()->whereKey($runtimeId)->where('host_id', $hostId)->firstOrFail()->agent_session_id;
-    }
-
-    /**
-     * When the current process generation of the session's runtime began; none for a session the host never
-     * started, such as one the owner runs in its own terminal.
-     *
-     * @return Option<CarbonImmutable>
-     */
-    public static function generationStartOfSession(string $sessionId): Option
-    {
-        $runtime = self::query()->where('agent_session_id', $sessionId)->first();
-
-        return Option::fromValue($runtime?->generation_started_at);
-    }
-
-    /**
-     * Whether the session's runtime is there and not already stopping or stopped.
-     */
-    public static function isRunningForSession(string $sessionId): bool
-    {
-        return self::query()
-            ->where('agent_session_id', $sessionId)
-            ->whereNotIn('activity', [RuntimeActivity::Stopping, RuntimeActivity::Stopped])
-            ->exists();
-    }
-
-    /**
-     * The runtimes of the session's running helpers that are not stopping yet, each with its session.
-     *
-     * @return list<self>
-     */
-    public static function runningHelpersOf(string $sessionId): array
-    {
-        return array_values(self::query()
-            ->with('session')
-            ->whereNotIn('activity', [RuntimeActivity::Stopping, RuntimeActivity::Stopped])
-            ->whereHas('session', fn (Builder $sessions) => $sessions
-                ->where('parent_session_id', $sessionId)
-                ->whereIn('status', SessionStatus::running()))
-            ->readAll('every running helper of one session is stopped before the session itself')
-            ->get()
-            ->all());
-    }
-
-    /**
-     * Of the sessions given, those with a helper whose runtime is not proven stopped yet, so their own stop waits.
-     *
-     * @param  list<string>  $ids
-     * @return list<string>
-     */
-    public static function sessionsWaitingOnHelpers(array $ids): array
-    {
-        $sessionsWithRunningHelpers = AgentSession::query()
-            ->whereIn('parent_session_id', $ids)
-            ->whereIn(
-                'id',
-                self::query()->where('activity', '!=', RuntimeActivity::Stopped)->select('agent_session_id'),
-            )
-            ->readAll('every helper still running holds back the stop of the session it helps')
-            ->pluck('parent_session_id')
-            ->all();
-
-        return array_values(array_filter($ids, fn (string $id) => in_array($id, $sessionsWithRunningHelpers, true)));
-    }
-
-    /**
-     * The runtime of that session; none before the session opened one.
-     */
-    public static function ofSession(string $sessionId): self|null
-    {
-        return self::query()->where('agent_session_id', $sessionId)->first();
-    }
-
-    /**
-     * The driver key of each session's runtime, keyed by session; a session that opened no runtime is left out.
-     *
-     * @param  list<string>  $ids
-     * @return array<string, string>
-     */
-    public static function driverKeysOfSessions(array $ids): array
-    {
-        return self::query()
-            ->whereIn('agent_session_id', $ids)
-            ->limit(count($ids))
-            ->pluck('driver_key', 'agent_session_id')
-            ->map(fn (mixed $key) => (string) $key)
-            ->all();
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -518,7 +392,7 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
         return $this->process_generation === $processGeneration;
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     /**
      * How many live terminal views watch the runtime, counted once with the runtime when it was read with its watchers.
@@ -588,6 +462,132 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
     private static function liveViews(Builder $views): void
     {
         $views->acrossActors()->live();
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The runtime a session opens on a host, as its intent describes it, not saved yet.
+     */
+    public static function existsForSession(string $sessionId): bool
+    {
+        return self::query()->where('agent_session_id', $sessionId)->exists();
+    }
+
+    /**
+     * Whether the session has a runtime and may still act: a runtime of an ended session takes no more work.
+     */
+    public static function runsForSession(string $sessionId): bool
+    {
+        return self::query()
+            ->where('agent_session_id', $sessionId)
+            ->whereHas('session', fn (Builder $session) => $session->running())
+            ->exists();
+    }
+
+    /**
+     * The host the session's runtime ran on, or none when it never opened one.
+     *
+     * @return Option<string>
+     */
+    public static function hostOfSession(string $sessionId): Option
+    {
+        return Option::fromValue(self::query()->where('agent_session_id', $sessionId)->value('host_id'));
+    }
+
+    /**
+     * The session of the host's own runtime; another host's runtime is not found.
+     */
+    public static function sessionOfHostRuntime(string $hostId, string $runtimeId): string
+    {
+        return self::query()->whereKey($runtimeId)->where('host_id', $hostId)->firstOrFail()->agent_session_id;
+    }
+
+    /**
+     * When the current process generation of the session's runtime began; none for a session the host never
+     * started, such as one the owner runs in its own terminal.
+     *
+     * @return Option<CarbonImmutable>
+     */
+    public static function generationStartOfSession(string $sessionId): Option
+    {
+        $runtime = self::query()->where('agent_session_id', $sessionId)->first();
+
+        return Option::fromValue($runtime?->generation_started_at);
+    }
+
+    /**
+     * Whether the session's runtime is there and not already stopping or stopped.
+     */
+    public static function isRunningForSession(string $sessionId): bool
+    {
+        return self::query()
+            ->where('agent_session_id', $sessionId)
+            ->whereNotIn('activity', [RuntimeActivity::Stopping, RuntimeActivity::Stopped])
+            ->exists();
+    }
+
+    /**
+     * The runtimes of the session's running helpers that are not stopping yet, each with its session.
+     *
+     * @return list<self>
+     */
+    public static function runningHelpersOf(string $sessionId): array
+    {
+        return array_values(self::query()
+            ->with('session')
+            ->whereNotIn('activity', [RuntimeActivity::Stopping, RuntimeActivity::Stopped])
+            ->whereHas('session', fn (Builder $sessions) => $sessions
+                ->where('parent_session_id', $sessionId)
+                ->whereIn('status', SessionStatus::running()))
+            ->readAll('every running helper of one session is stopped before the session itself')
+            ->get()
+            ->all());
+    }
+
+    /**
+     * Of the sessions given, those with a helper whose runtime is not proven stopped yet, so their own stop waits.
+     *
+     * @param  list<string>  $ids
+     * @return list<string>
+     */
+    public static function sessionsWaitingOnHelpers(array $ids): array
+    {
+        $sessionsWithRunningHelpers = AgentSession::query()
+            ->whereIn('parent_session_id', $ids)
+            ->whereIn(
+                'id',
+                self::query()->where('activity', '!=', RuntimeActivity::Stopped)->select('agent_session_id'),
+            )
+            ->readAll('every helper still running holds back the stop of the session it helps')
+            ->pluck('parent_session_id')
+            ->all();
+
+        return array_values(array_filter($ids, fn (string $id) => in_array($id, $sessionsWithRunningHelpers, true)));
+    }
+
+    /**
+     * The runtime of that session; none before the session opened one.
+     */
+    public static function ofSession(string $sessionId): self|null
+    {
+        return self::query()->where('agent_session_id', $sessionId)->first();
+    }
+
+    /**
+     * The driver key of each session's runtime, keyed by session; a session that opened no runtime is left out.
+     *
+     * @param  list<string>  $ids
+     * @return array<string, string>
+     */
+    public static function driverKeysOfSessions(array $ids): array
+    {
+        return self::query()
+            ->whereIn('agent_session_id', $ids)
+            ->limit(count($ids))
+            ->pluck('driver_key', 'agent_session_id')
+            ->map(fn (mixed $key) => (string) $key)
+            ->all();
     }
 
     // ----------[ Scopes ]----------

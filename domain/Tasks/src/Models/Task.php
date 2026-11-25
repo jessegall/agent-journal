@@ -167,130 +167,6 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
         ]);
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The summary of the task a task frame stands for; none when the frame names no task that exists.
-     *
-     * @return Option<TaskSummary>
-     */
-    public static function summaryOf(StateReference $frame): Option
-    {
-        if (! $frame->subject instanceof SubjectReference) {
-            return None::create();
-        }
-
-        $task = self::query()->whereKey($frame->subject->id)->first();
-
-        if ($task === null) {
-            return None::create();
-        }
-
-        return new Some($task->summary);
-    }
-
-    /**
-     * Holds the lock of the graph of waits of each environment, in order, to the end of the transaction; every change
-     * of a wait and every fresh start takes it before any task row.
-     *
-     * @param  list<string>  $environments  '' for the tasks made here
-     */
-    public static function lockWaitGraphs(array $environments): void
-    {
-        $ordered = array_values(array_unique($environments));
-        sort($ordered);
-
-        foreach ($ordered as $environment) {
-            self::query()->getConnection()->select('select pg_advisory_xact_lock(hashtext(?))', [
-                "task-waits:{$environment}",
-            ]);
-        }
-    }
-
-    /**
-     * The task locked for a start: the graph of waits of its environment first, then its own row, so a start and a
-     * change of its waits never check against each other's stale state.
-     *
-     * @throws TaskMissing
-     */
-    public static function lockedForStart(string $id): self
-    {
-        self::lockWaitGraphs([(string) self::query()->whereKey($id)->value('environment_id')]);
-
-        return self::lockedById($id);
-    }
-
-    /**
-     * The task with this id, unlocked; none is refused as missing.
-     *
-     * @throws TaskMissing
-     */
-    public static function ofId(string $id): self
-    {
-        return self::query()->whereKey($id)->firstOr(fn () => throw TaskMissing::forId($id));
-    }
-
-    /**
-     * The tasks with these ids, each with the columns a list of waits shows, by id; an id with no task is left out.
-     *
-     * @param  list<string>  $ids
-     * @return array<string, self>
-     */
-    public static function ofIds(array $ids): array
-    {
-        if ($ids === []) {
-            return [];
-        }
-
-        $unique = array_values(array_unique($ids));
-
-        return self::query()->whereKey($unique)->readExactly(count($unique))
-            ->get(['id', 'number', 'title', 'state'])->keyBy('id')->all();
-    }
-
-    /**
-     * The task read under its row lock, for a change that must happen once.
-     */
-    public static function lockedById(string $id): self
-    {
-        return self::query()->whereKey($id)->lockForUpdate()->firstOr(fn () => throw TaskMissing::forId($id));
-    }
-
-    /**
-     * The number the task with this id shows.
-     */
-    public static function numberOf(string $id): int
-    {
-        return (int) self::query()->whereKey($id)->readExactly(1)->value('number');
-    }
-
-    /**
-     * At most limit open tasks of the pool's members that nobody holds: every open task by id, or the listed ones in
-     * their listed order. The filtering happens in the query, before its limit.
-     *
-     * @throws CandidateLimitInvalid
-     */
-    public static function candidates(PoolMembers $members, QueryBuilder $assignedIds, int $limit): OrderedRecordIds
-    {
-        if ($limit < 1 || $limit > OrderedRecordIds::LARGEST) {
-            throw CandidateLimitInvalid::for($limit, OrderedRecordIds::LARGEST);
-        }
-
-        if ($members->type === PoolMembersType::Ordered && $members->ids->ids === []) {
-            return new OrderedRecordIds([]);
-        }
-
-        $query = self::query()->where('state', TaskState::Open)->outsideSelectedIds($assignedIds)
-            ->outsideSelectedIds(TaskWait::unmetDependentIds());
-
-        $ordered = match ($members->type) {
-            PoolMembersType::All => $query->orderBy('id'),
-            PoolMembersType::Ordered => $query->whereIn('id', $members->ids->ids)->inListedOrder($members->ids),
-        };
-
-        return new OrderedRecordIds(array_values($ordered->readExactly($limit)->pluck('id')->all()));
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -313,9 +189,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
      */
     public function start(ActorIdentity $actor): void
     {
-        if ($this->state->hasEnded()) {
-            throw TaskRestartRefused::forTask($this->number, $this->state->value);
-        }
+        $this->assertNotEnded();
 
         if ($this->state !== TaskState::Started) {
             $this->run_number++;
@@ -354,7 +228,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
         $this->raise(new TaskCancelled($this->id, $previousState, (string) Str::ulid()));
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     public function isOpenForAssignment(): bool
     {
@@ -397,16 +271,6 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
     public function focusIdentity(): RecordIdentity
     {
         return $this->assignmentIdentity();
-    }
-
-    /**
-     * @throws TaskChangedSinceRead when the task is not started
-     */
-    public function assertFocusable(): void
-    {
-        if ($this->state !== TaskState::Started) {
-            throw TaskChangedSinceRead::notFocusable($this->number, $this->state);
-        }
     }
 
     /**
@@ -484,6 +348,184 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
             TaskState::Cancelled => $this->cancel_reason,
             TaskState::Open, TaskState::Started => null,
         });
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * @throws TaskChangedSinceRead when the task is not started
+     */
+    public function assertFocusable(): void
+    {
+        if ($this->state !== TaskState::Started) {
+            throw TaskChangedSinceRead::notFocusable($this->number, $this->state);
+        }
+    }
+
+    /**
+     * Refuses to start a task that already ended.
+     *
+     * @throws TaskRestartRefused
+     */
+    private function assertNotEnded(): void
+    {
+        if ($this->state->hasEnded()) {
+            throw TaskRestartRefused::forTask($this->number, $this->state->value);
+        }
+    }
+
+    /**
+     * Refuses a task that is not there.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws TaskMissing
+     */
+    private static function assertFound(self|null $row, string $id): void
+    {
+        if ($row === null) {
+            throw TaskMissing::forId($id);
+        }
+    }
+
+    /**
+     * Refuses a candidate limit below one or above what an ordered list of ids holds.
+     *
+     * @throws CandidateLimitInvalid
+     */
+    private static function assertCandidateLimit(int $limit): void
+    {
+        if ($limit < 1 || $limit > OrderedRecordIds::LARGEST) {
+            throw CandidateLimitInvalid::for($limit, OrderedRecordIds::LARGEST);
+        }
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The summary of the task a task frame stands for; none when the frame names no task that exists.
+     *
+     * @return Option<TaskSummary>
+     */
+    public static function summaryOf(StateReference $frame): Option
+    {
+        if (! $frame->subject instanceof SubjectReference) {
+            return None::create();
+        }
+
+        $task = self::query()->whereKey($frame->subject->id)->first();
+
+        if ($task === null) {
+            return None::create();
+        }
+
+        return new Some($task->summary);
+    }
+
+    /**
+     * Holds the lock of the graph of waits of each environment, in order, to the end of the transaction; every change
+     * of a wait and every fresh start takes it before any task row.
+     *
+     * @param  list<string>  $environments  '' for the tasks made here
+     */
+    public static function lockWaitGraphs(array $environments): void
+    {
+        $ordered = array_values(array_unique($environments));
+        sort($ordered);
+
+        foreach ($ordered as $environment) {
+            self::query()->getConnection()->select('select pg_advisory_xact_lock(hashtext(?))', [
+                "task-waits:{$environment}",
+            ]);
+        }
+    }
+
+    /**
+     * The task locked for a start: the graph of waits of its environment first, then its own row, so a start and a
+     * change of its waits never check against each other's stale state.
+     *
+     * @throws TaskMissing
+     */
+    public static function lockedForStart(string $id): self
+    {
+        self::lockWaitGraphs([(string) self::query()->whereKey($id)->value('environment_id')]);
+
+        return self::lockedById($id);
+    }
+
+    /**
+     * The task with this id, unlocked; none is refused as missing.
+     *
+     * @throws TaskMissing
+     */
+    public static function ofId(string $id): self
+    {
+        $row = self::query()->whereKey($id)->first();
+        self::assertFound($row, $id);
+
+        return $row;
+    }
+
+    /**
+     * The tasks with these ids, each with the columns a list of waits shows, by id; an id with no task is left out.
+     *
+     * @param  list<string>  $ids
+     * @return array<string, self>
+     */
+    public static function ofIds(array $ids): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+
+        $unique = array_values(array_unique($ids));
+
+        return self::query()->whereKey($unique)->readExactly(count($unique))
+            ->get(['id', 'number', 'title', 'state'])->keyBy('id')->all();
+    }
+
+    /**
+     * The task read under its row lock, for a change that must happen once.
+     */
+    public static function lockedById(string $id): self
+    {
+        $row = self::query()->whereKey($id)->lockForUpdate()->first();
+        self::assertFound($row, $id);
+
+        return $row;
+    }
+
+    /**
+     * The number the task with this id shows.
+     */
+    public static function numberOf(string $id): int
+    {
+        return (int) self::query()->whereKey($id)->readExactly(1)->value('number');
+    }
+
+    /**
+     * At most limit open tasks of the pool's members that nobody holds: every open task by id, or the listed ones in
+     * their listed order. The filtering happens in the query, before its limit.
+     *
+     * @throws CandidateLimitInvalid
+     */
+    public static function candidates(PoolMembers $members, QueryBuilder $assignedIds, int $limit): OrderedRecordIds
+    {
+        self::assertCandidateLimit($limit);
+
+        if ($members->type === PoolMembersType::Ordered && $members->ids->ids === []) {
+            return new OrderedRecordIds([]);
+        }
+
+        $query = self::query()->where('state', TaskState::Open)->outsideSelectedIds($assignedIds)
+            ->outsideSelectedIds(TaskWait::unmetDependentIds());
+
+        $ordered = match ($members->type) {
+            PoolMembersType::All => $query->orderBy('id'),
+            PoolMembersType::Ordered => $query->whereIn('id', $members->ids->ids)->inListedOrder($members->ids),
+        };
+
+        return new OrderedRecordIds(array_values($ordered->readExactly($limit)->pluck('id')->all()));
     }
 
     // ----------[ Scopes ]----------

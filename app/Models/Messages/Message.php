@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Messages;
 
+use App\Contracts\Records\ReadableModel;
+use App\Concerns\BoundedReads;
 use App\Contracts\Records\AuthoredModel;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -35,12 +37,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $body
  * @property int $number
  * @property string|null $target_message_id
- * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable $created_at
  * @property CarbonImmutable|null $updated_at
  */
 #[Fillable(['inbox_id', 'number', 'sender_type', 'sender_id', 'body', 'target_message_id'])]
-final class Message extends Model implements AuthoredModel, EventSource
+final class Message extends Model implements AuthoredModel, EventSource, ReadableModel
 {
+    use BoundedReads;
     use HasUlids;
     use Linkable;
     use RaisesEvents;
@@ -74,7 +77,7 @@ final class Message extends Model implements AuthoredModel, EventSource
         return $message;
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     /**
      * Who sent the message.

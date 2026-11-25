@@ -121,17 +121,7 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
         return $comment;
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * A comment reaches no other record; it is shared only through its parent.
-     */
-    public static function shareRelations(): ShareRelationSet
-    {
-        return ShareRelationSet::none();
-    }
-
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     public function shareIdentity(): RecordIdentity
     {
@@ -292,6 +282,16 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
         $comment->author_session_id = $sessionId;
 
         return $comment;
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * A comment reaches no other record; it is shared only through its parent.
+     */
+    public static function shareRelations(): ShareRelationSet
+    {
+        return ShareRelationSet::none();
     }
 
     // ----------[ Scopes ]----------

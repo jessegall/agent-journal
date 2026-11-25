@@ -103,6 +103,56 @@ final class CommandRequest extends Model implements ReadableModel
         ]);
     }
 
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<NextStep, never>
+     */
+    protected function nextStep(): Attribute
+    {
+        return Attribute::get(fn () => $this->state->nextStep($this->id, $this->operation))->withoutObjectCaching();
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses an approval of a request that does not wait for one.
+     */
+    private function assertAwaitingApproval(): void
+    {
+        if ($this->state !== RequestState::AwaitingApproval) {
+            throw $this->refusal(RequestState::Active);
+        }
+    }
+
+    /**
+     * Refuses a move its present state does not allow.
+     */
+    private function assertMoveAllowed(RequestState $next): void
+    {
+        if (! $this->state->allows($next)) {
+            throw $this->refusal($next);
+        }
+    }
+
+    // ----------[ Internals ]----------
+
+    /**
+     * @throws RequestTransitionRefused
+     */
+    private function moveTo(RequestState $next): void
+    {
+        $this->assertMoveAllowed($next);
+
+        $this->state = $next;
+        $this->save();
+    }
+
+    private function refusal(RequestState $next): RequestTransitionRefused
+    {
+        return RequestTransitionRefused::from($this->state, $next, implode('; ', $this->nextStep->steps));
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -295,56 +345,6 @@ final class CommandRequest extends Model implements ReadableModel
     public function withdraw(): void
     {
         $this->moveTo(RequestState::Withdrawn);
-    }
-
-    // ----------[ Accessors ]----------
-
-    /**
-     * @return Attribute<NextStep, never>
-     */
-    protected function nextStep(): Attribute
-    {
-        return Attribute::get(fn () => $this->state->nextStep($this->id, $this->operation))->withoutObjectCaching();
-    }
-
-    // ----------[ Asserts ]----------
-
-    /**
-     * Refuses an approval of a request that does not wait for one.
-     */
-    private function assertAwaitingApproval(): void
-    {
-        if ($this->state !== RequestState::AwaitingApproval) {
-            throw $this->refusal(RequestState::Active);
-        }
-    }
-
-    /**
-     * Refuses a move its present state does not allow.
-     */
-    private function assertMoveAllowed(RequestState $next): void
-    {
-        if (! $this->state->allows($next)) {
-            throw $this->refusal($next);
-        }
-    }
-
-    // ----------[ Internals ]----------
-
-    /**
-     * @throws RequestTransitionRefused
-     */
-    private function moveTo(RequestState $next): void
-    {
-        $this->assertMoveAllowed($next);
-
-        $this->state = $next;
-        $this->save();
-    }
-
-    private function refusal(RequestState $next): RequestTransitionRefused
-    {
-        return RequestTransitionRefused::from($this->state, $next, implode('; ', $this->nextStep->steps));
     }
 
     // ----------[ Scopes ]----------

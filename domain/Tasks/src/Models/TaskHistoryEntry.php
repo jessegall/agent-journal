@@ -104,21 +104,7 @@ final class TaskHistoryEntry extends Model implements ReadableModel
         return $entry;
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * At most limit of the task's entries before the sequence, newest first, ordered by (sequence, id).
-     *
-     * @return Collection<int, self>
-     */
-    public static function pageOf(string $taskId, int|null $beforeSequence, int $limit): Collection
-    {
-        return self::query()->where('task_id', $taskId)
-            ->when($beforeSequence !== null, fn ($query) => $query->where('sequence', '<', $beforeSequence))
-            ->orderByDesc('sequence')->orderByDesc('id')->limit($limit)->get();
-    }
-
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     /**
      * The entries of one task in their order; the table has no updated_at.
@@ -155,5 +141,19 @@ final class TaskHistoryEntry extends Model implements ReadableModel
     private static function lastSequenceOf(string $taskId): int
     {
         return (int) self::query()->where('task_id', $taskId)->max('sequence');
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * At most limit of the task's entries before the sequence, newest first, ordered by (sequence, id).
+     *
+     * @return Collection<int, self>
+     */
+    public static function pageOf(string $taskId, int|null $beforeSequence, int $limit): Collection
+    {
+        return self::query()->where('task_id', $taskId)
+            ->when($beforeSequence !== null, fn ($query) => $query->where('sequence', '<', $beforeSequence))
+            ->orderByDesc('sequence')->orderByDesc('id')->limit($limit)->get();
     }
 }

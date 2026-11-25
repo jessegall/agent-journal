@@ -46,6 +46,18 @@ final class UserPresence extends Model implements EventSource, ReadableModel
         ];
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * The user was seen at this beat.
+     */
+    public function beatAt(CarbonImmutable $time): void
+    {
+        $this->last_heartbeat_at = $time;
+        $this->assertSaved($this->save());
+        $this->raise(new UserPresenceConfirmed($this->id));
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -58,18 +70,6 @@ final class UserPresence extends Model implements EventSource, ReadableModel
         $presence->insertIfAbsent();
 
         return self::query()->where('user_id', $userId)->lockForUpdate()->sole();
-    }
-
-    // ----------[ Mutations ]----------
-
-    /**
-     * The user was seen at this beat.
-     */
-    public function beatAt(CarbonImmutable $time): void
-    {
-        $this->last_heartbeat_at = $time;
-        $this->assertSaved($this->save());
-        $this->raise(new UserPresenceConfirmed($this->id));
     }
 
     // ----------[ Scopes ]----------

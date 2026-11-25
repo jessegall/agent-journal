@@ -83,6 +83,36 @@ final class Reminder extends Model implements EventSource, ReadableModel
         return $reminder;
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * Marks an open reminder done; one already done or cancelled is refused.
+     *
+     * @throws ReminderEnded
+     */
+    public function finish(): void
+    {
+        $this->assertWaiting();
+
+        $this->status = ReminderStatus::Done;
+        $this->assertSaved($this->save());
+        $this->raise(new ReminderFinished($this->id));
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses to finish a reminder that already ended.
+     *
+     * @throws ReminderEnded
+     */
+    private function assertWaiting(): void
+    {
+        if (! $this->status->isWaiting()) {
+            throw ReminderEnded::as($this->id, $this->status);
+        }
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -96,23 +126,5 @@ final class Reminder extends Model implements EventSource, ReadableModel
         $query->orderByRaw('case when status = ? then 0 else 1 end', [ReminderStatus::Open->value])
             ->orderBy('due_at')
             ->orderBy('id');
-    }
-
-    // ----------[ Mutations ]----------
-
-    /**
-     * Marks an open reminder done; one already done or cancelled is refused.
-     *
-     * @throws ReminderEnded
-     */
-    public function finish(): void
-    {
-        if (! $this->status->isWaiting()) {
-            throw ReminderEnded::as($this->id, $this->status);
-        }
-
-        $this->status = ReminderStatus::Done;
-        $this->assertSaved($this->save());
-        $this->raise(new ReminderFinished($this->id));
     }
 }

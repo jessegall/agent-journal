@@ -84,15 +84,6 @@ final class Memory extends Model implements EventSource, Numbered, ReadableModel
         return $memory;
     }
 
-    // ----------[ Queries ]----------
-
-    public function saveFor(ActorIdentity $actor): void
-    {
-        $this->belongTo($actor);
-        $this->assertSaved($this->save());
-        $this->raise(new MemorySaved($this->id));
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -107,10 +98,19 @@ final class Memory extends Model implements EventSource, Numbered, ReadableModel
         $this->raise(new MemoryRevised($this->id));
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     public function isAtRevision(int $expectedRevision): bool
     {
         return $this->revision === $expectedRevision;
+    }
+
+    // ----------[ Queries ]----------
+
+    public function saveFor(ActorIdentity $actor): void
+    {
+        $this->belongTo($actor);
+        $this->assertSaved($this->save());
+        $this->raise(new MemorySaved($this->id));
     }
 }

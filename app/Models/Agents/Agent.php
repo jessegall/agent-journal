@@ -80,49 +80,6 @@ final class Agent extends Model implements
         return self::query()->create(['name' => $name, 'profile_key' => $profileKey]);
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The agent with this id, if there is one.
-     *
-     * @return Option<self>
-     */
-    public static function withId(string $id): Option
-    {
-        return self::query()->whereKey($id)->firstOption();
-    }
-
-    /**
-     * @return Option<ActorIdentity>
-     */
-    public static function soleActorForProfile(string $profile): Option
-    {
-        $matches = self::query()
-            ->where('profile_key', $profile)
-            ->whereNull('retired_at')
-            ->limit(2)
-            ->get();
-
-        if ($matches->count() !== 1) {
-            return None::create();
-        }
-
-        return Some::create(ActorIdentity::of($matches->sole()));
-    }
-
-    /**
-     * These agents by id, in one query, for trusted Core work over many sessions.
-     *
-     * @param  list<string>  $ids
-     * @return array<string, self>
-     */
-    public static function byIds(array $ids): array
-    {
-        $agents = self::query()->whereKey($ids)->readExactly(max(1, count($ids)))->get();
-
-        return $agents->keyBy('id')->all();
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -165,7 +122,7 @@ final class Agent extends Model implements
         $this->raise(new AgentRetired($this->id));
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     /**
      * The driver type a launch runs: the one it names, then the agent's saved preference, then its profile's default.
@@ -214,5 +171,48 @@ final class Agent extends Model implements
         $target = new StackTarget($this->id, $this->current_session_id);
 
         return Some::create(new RunningRuntime($target, $this->runtime_generation));
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The agent with this id, if there is one.
+     *
+     * @return Option<self>
+     */
+    public static function withId(string $id): Option
+    {
+        return self::query()->whereKey($id)->firstOption();
+    }
+
+    /**
+     * @return Option<ActorIdentity>
+     */
+    public static function soleActorForProfile(string $profile): Option
+    {
+        $matches = self::query()
+            ->where('profile_key', $profile)
+            ->whereNull('retired_at')
+            ->limit(2)
+            ->get();
+
+        if ($matches->count() !== 1) {
+            return None::create();
+        }
+
+        return Some::create(ActorIdentity::of($matches->sole()));
+    }
+
+    /**
+     * These agents by id, in one query, for trusted Core work over many sessions.
+     *
+     * @param  list<string>  $ids
+     * @return array<string, self>
+     */
+    public static function byIds(array $ids): array
+    {
+        $agents = self::query()->whereKey($ids)->readExactly(max(1, count($ids)))->get();
+
+        return $agents->keyBy('id')->all();
     }
 }

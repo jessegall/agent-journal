@@ -49,38 +49,7 @@ final class ProfileDraft extends Model implements ReadableModel
             ?? new self(['profile_key' => $profile->key, 'revision' => 0]);
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * @param  list<string>  $profiles
-     * @return array<string, self>
-     */
-    public static function lockForProfiles(array $profiles): array
-    {
-        if ($profiles === []) {
-            return [];
-        }
-
-        sort($profiles);
-
-        foreach ($profiles as $profile) {
-            $draft = new self();
-            $draft->setRawAttributes(['id' => (string) Str::ulid(), 'profile_key' => $profile]);
-            $draft->insertIfAbsent();
-        }
-
-        return self::query()
-            ->whereIn('profile_key', $profiles)
-            ->orderBy('profile_key')
-            ->lockForUpdate()
-            ->with('currentRevision')
-            ->readExactly(count($profiles))
-            ->get()
-            ->keyBy('profile_key')
-            ->all();
-    }
-
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     public function sourceAt(int $expected): ScriptSource
     {
@@ -111,5 +80,36 @@ final class ProfileDraft extends Model implements ReadableModel
         if ($expected !== $this->revision) {
             throw ProfileDraftRefused::stale(ProfileKey::from($this->profile_key), $expected, $this->revision);
         }
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * @param  list<string>  $profiles
+     * @return array<string, self>
+     */
+    public static function lockForProfiles(array $profiles): array
+    {
+        if ($profiles === []) {
+            return [];
+        }
+
+        sort($profiles);
+
+        foreach ($profiles as $profile) {
+            $draft = new self();
+            $draft->setRawAttributes(['id' => (string) Str::ulid(), 'profile_key' => $profile]);
+            $draft->insertIfAbsent();
+        }
+
+        return self::query()
+            ->whereIn('profile_key', $profiles)
+            ->orderBy('profile_key')
+            ->lockForUpdate()
+            ->with('currentRevision')
+            ->readExactly(count($profiles))
+            ->get()
+            ->keyBy('profile_key')
+            ->all();
     }
 }

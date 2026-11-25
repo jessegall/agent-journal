@@ -78,6 +78,24 @@ final class CapacityReservation extends Model implements ReadableModel
         );
     }
 
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a start whose budgets do not fit beside every reservation still held.
+     *
+     * @throws CapacityUnavailable
+     */
+    private static function assertFits(ExecutionBudgets $budgets, HostCapacity $capacity): void
+    {
+        $shortage = self::shortageOf($budgets, $capacity);
+
+        if ($shortage === null) {
+            return;
+        }
+
+        throw CapacityUnavailable::because($shortage, $shortage->shortage());
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -112,23 +130,5 @@ final class CapacityReservation extends Model implements ReadableModel
             ->where('start_request_id', $startRequestId)
             ->where('state', ReservationState::Reserved)
             ->exists();
-    }
-
-    // ----------[ Internals ]----------
-
-    /**
-     * Refuses a start whose budgets do not fit beside every reservation still held.
-     *
-     * @throws CapacityUnavailable
-     */
-    private static function assertFits(ExecutionBudgets $budgets, HostCapacity $capacity): void
-    {
-        $shortage = self::shortageOf($budgets, $capacity);
-
-        if ($shortage === null) {
-            return;
-        }
-
-        throw CapacityUnavailable::because($shortage, $shortage->shortage());
     }
 }

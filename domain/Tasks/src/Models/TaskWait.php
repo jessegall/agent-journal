@@ -83,6 +83,58 @@ final class TaskWait extends Model implements EventSource, ReadableModel
         return $wait;
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * Waives the wait for the actor with a reason; the dependent no longer waits on it.
+     */
+    public function waive(ActorIdentity $actor, string $reason): void
+    {
+        $this->waived_at = Carbon::now();
+        $this->waived_by_type = $actor->type;
+        $this->waived_by_id = $actor->id;
+        $this->waive_reason = $reason;
+        $this->assertSaved($this->save());
+
+        $this->raise(new TaskWaitChanged(
+            $this->id,
+            $this->dependent_task_id,
+            $this->prerequisite_task_id,
+            TaskWaitChange::Waived,
+        ));
+    }
+
+    /**
+     * Removes the wait; its history keeps that it was there.
+     */
+    public function remove(): void
+    {
+        $this->delete();
+
+        $this->raise(new TaskWaitChanged(
+            $this->id,
+            $this->dependent_task_id,
+            $this->prerequisite_task_id,
+            TaskWaitChange::Removed,
+        ));
+    }
+
+    // ----------[ Getters ]----------
+
+    public function isWaived(): bool
+    {
+        return $this->waived_at !== null;
+    }
+
+    /**
+     * The one rule of a wait: met once it is waived or its prerequisite is finished. Open, started, blocked, cancelled
+     * and a prerequisite that is gone (no state) all leave it outstanding.
+     */
+    public function isSatisfiedBy(TaskState|null $prerequisiteState): bool
+    {
+        return $this->isWaived() || $prerequisiteState === TaskState::Finished;
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -186,57 +238,5 @@ final class TaskWait extends Model implements EventSource, ReadableModel
     {
         return self::query()->whereIn('dependent_task_id', $dependentIds)
             ->readAll('the direct waits of the tasks asked about')->get();
-    }
-
-    // ----------[ Mutations ]----------
-
-    /**
-     * Waives the wait for the actor with a reason; the dependent no longer waits on it.
-     */
-    public function waive(ActorIdentity $actor, string $reason): void
-    {
-        $this->waived_at = Carbon::now();
-        $this->waived_by_type = $actor->type;
-        $this->waived_by_id = $actor->id;
-        $this->waive_reason = $reason;
-        $this->assertSaved($this->save());
-
-        $this->raise(new TaskWaitChanged(
-            $this->id,
-            $this->dependent_task_id,
-            $this->prerequisite_task_id,
-            TaskWaitChange::Waived,
-        ));
-    }
-
-    /**
-     * Removes the wait; its history keeps that it was there.
-     */
-    public function remove(): void
-    {
-        $this->delete();
-
-        $this->raise(new TaskWaitChanged(
-            $this->id,
-            $this->dependent_task_id,
-            $this->prerequisite_task_id,
-            TaskWaitChange::Removed,
-        ));
-    }
-
-    // ----------[ Answers ]----------
-
-    public function isWaived(): bool
-    {
-        return $this->waived_at !== null;
-    }
-
-    /**
-     * The one rule of a wait: met once it is waived or its prerequisite is finished. Open, started, blocked, cancelled
-     * and a prerequisite that is gone (no state) all leave it outstanding.
-     */
-    public function isSatisfiedBy(TaskState|null $prerequisiteState): bool
-    {
-        return $this->isWaived() || $prerequisiteState === TaskState::Finished;
     }
 }

@@ -99,54 +99,6 @@ final class ShareGatewayOperation extends Model implements EventSource, Readable
         return $operation;
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The id of the oldest operation no run holds now: never claimed, or claimed under a lease that ran out without an
-     * outcome.
-     *
-     * @return Option<string>
-     */
-    public static function nextClaimable(): Option
-    {
-        return Option::fromValue(self::query()->claimable()->orderBy('id')->value('id'))->map(strval(...));
-    }
-
-    /**
-     * Which of these configurations already have an open waiting, by configuration id.
-     *
-     * @param  list<string>  $ids
-     * @return list<string>
-     */
-    public static function configurationsWaitingToOpen(array $ids): array
-    {
-        return array_values(array_unique(self::query()
-            ->unfinished()
-            ->whereIn('share_gateway_configuration_id', $ids)
-            ->ofType(GatewayOperationType::Open)
-            ->readAll('one unfinished open at most per configuration a run reopens')
-            ->pluck('share_gateway_configuration_id')
-            ->all()));
-    }
-
-    /**
-     * The operation of this id, read without a lock to learn which configuration to lock first.
-     *
-     * @throws GatewayLeaseRefused
-     */
-    public static function of(string $id): self
-    {
-        return self::query()->whereKey($id)->firstOr(fn () => throw GatewayLeaseRefused::forOperation($id));
-    }
-
-    /**
-     * The operation of this id, locked until the transaction ends.
-     */
-    public static function lockById(string $id): self
-    {
-        return self::lockedById($id);
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -185,7 +137,7 @@ final class ShareGatewayOperation extends Model implements EventSource, Readable
         $this->raise(new ShareGatewayOperationFinished($this->id, $outcome));
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     /**
      * Whether no run holds the operation now and it has no outcome.
@@ -215,6 +167,73 @@ final class ShareGatewayOperation extends Model implements EventSource, Readable
     public function hasOutcome(): bool
     {
         return $this->outcome_code !== null;
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses an operation that is not there.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws GatewayLeaseRefused
+     */
+    private static function assertFound(self|null $row, string $id): void
+    {
+        if ($row === null) {
+            throw GatewayLeaseRefused::forOperation($id);
+        }
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The id of the oldest operation no run holds now: never claimed, or claimed under a lease that ran out without an
+     * outcome.
+     *
+     * @return Option<string>
+     */
+    public static function nextClaimable(): Option
+    {
+        return Option::fromValue(self::query()->claimable()->orderBy('id')->value('id'))->map(strval(...));
+    }
+
+    /**
+     * Which of these configurations already have an open waiting, by configuration id.
+     *
+     * @param  list<string>  $ids
+     * @return list<string>
+     */
+    public static function configurationsWaitingToOpen(array $ids): array
+    {
+        return array_values(array_unique(self::query()
+            ->unfinished()
+            ->whereIn('share_gateway_configuration_id', $ids)
+            ->ofType(GatewayOperationType::Open)
+            ->readAll('one unfinished open at most per configuration a run reopens')
+            ->pluck('share_gateway_configuration_id')
+            ->all()));
+    }
+
+    /**
+     * The operation of this id, read without a lock to learn which configuration to lock first.
+     *
+     * @throws GatewayLeaseRefused
+     */
+    public static function of(string $id): self
+    {
+        $row = self::query()->whereKey($id)->first();
+        self::assertFound($row, $id);
+
+        return $row;
+    }
+
+    /**
+     * The operation of this id, locked until the transaction ends.
+     */
+    public static function lockById(string $id): self
+    {
+        return self::lockedById($id);
     }
 
     // ----------[ Scopes ]----------

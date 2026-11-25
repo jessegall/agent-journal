@@ -65,7 +65,7 @@ final class ReaderRevision extends Model implements ReadableModel
 
     protected static function booted(): void
     {
-        self::updating(fn (self $revision) => throw RevisionImmutable::reader($revision->id));
+        self::updating(fn (self $revision) => $revision->assertUnedited());
     }
 
     // ----------[ Constructors ]----------
@@ -97,7 +97,7 @@ final class ReaderRevision extends Model implements ReadableModel
         return $this->proofs()->exists();
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     /**
      * @throws ReaderDefinitionInvalid
@@ -123,6 +123,18 @@ final class ReaderRevision extends Model implements ReadableModel
     public function commandRequest(): BelongsTo
     {
         return $this->belongsTo(CommandRequest::class);
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses every edit: it stays as it was written.
+     *
+     * @throws RevisionImmutable
+     */
+    private function assertUnedited(): never
+    {
+        throw RevisionImmutable::reader($this->id);
     }
 
     // ----------[ Scopes ]----------

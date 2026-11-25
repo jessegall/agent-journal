@@ -62,9 +62,7 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
 
     protected static function booted(): void
     {
-        self::updating(function (self $revision): void {
-            throw RecordImmutable::for('revision');
-        });
+        self::updating(fn (self $revision) => $revision->assertUnedited());
     }
 
     // ----------[ Constructors ]----------
@@ -134,6 +132,18 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
     public function document(): BelongsTo
     {
         return $this->belongsTo(Document::class);
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses every edit: a revision stays as it was written.
+     *
+     * @throws RecordImmutable
+     */
+    private function assertUnedited(): never
+    {
+        throw RecordImmutable::for('revision');
     }
 
     // ----------[ Scopes ]----------

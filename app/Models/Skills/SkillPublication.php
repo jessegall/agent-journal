@@ -114,6 +114,253 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
         ]);
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * Takes the publication for one worker under a new fencing version and a lease; answers that version.
+     */
+    public function claim(string $holder, CarbonImmutable $leaseUntil): int
+    {
+        $this->moveTo(PublicationState::Preparing);
+        $this->fencing_version++;
+        $this->lease_holder = $holder;
+        $this->lease_until = $leaseUntil;
+        $this->save();
+        $this->raise(new SkillPublicationClaimed($this->id, $this->fencing_version));
+
+        return $this->fencing_version;
+    }
+
+    /**
+     * @throws SkillPublicationStale when a newer worker holds it
+     */
+    public function recordProgress(int $fence, int $filesStaged): void
+    {
+        $this->assertHeldBy($fence);
+        $this->progress = $filesStaged;
+        $this->save();
+        $this->raise(new SkillPublicationProgressed($this->id, $filesStaged));
+    }
+
+    /**
+     * @throws SkillPublicationStale when a newer worker holds it
+     */
+    public function deliver(int $fence, PublicationManifest $manifest): void
+    {
+        $this->assertHeldBy($fence);
+        $this->moveTo(PublicationState::Delivered);
+        $this->manifest = $manifest->jsonSerialize();
+        $this->open_key = null;
+        $this->lease_holder = null;
+        $this->lease_until = null;
+        $this->save();
+        $this->raiseMoved();
+    }
+
+    public function fail(string $reason): void
+    {
+        $this->moveTo(PublicationState::Failed);
+        $this->error = $reason;
+        $this->open_key = null;
+        $this->lease_holder = null;
+        $this->lease_until = null;
+        $this->save();
+        $this->raiseMoved();
+    }
+
+    /**
+     * A failed publication waits again for a worker, with the same immutable generation; once the target has a newer
+     * publication, only a refresh makes a new one.
+     */
+    public function retry(): void
+    {
+        $this->assertNewest();
+        $this->moveTo(PublicationState::Pending);
+        $this->error = null;
+        $this->open_key = self::openKeyOf($this->session_id, $this->target);
+        $this->save();
+        $this->raiseMoved();
+    }
+
+    public function supersede(): void
+    {
+        $this->moveTo(PublicationState::Superseded);
+        $this->open_key = null;
+        $this->save();
+        $this->raiseMoved();
+    }
+
+    public function retire(): void
+    {
+        $this->moveTo(PublicationState::Retired);
+        $this->save();
+        $this->raiseMoved();
+    }
+
+    // ----------[ Getters ]----------
+
+    /**
+     * The immutable generation this publication delivers.
+     */
+    public function generation(): SkillGeneration
+    {
+        return SkillGeneration::query()->whereKey($this->generation_id)->firstOrFail();
+    }
+
+    public function isHeldBy(int $fence): bool
+    {
+        return $this->fencing_version === $fence;
+    }
+
+    public function isClaimable(CarbonImmutable $now): bool
+    {
+        if ($this->state === PublicationState::Pending) {
+            return true;
+        }
+
+        return $this->state === PublicationState::Preparing
+            && ($this->lease_until === null || $this->lease_until->lessThan($now));
+    }
+
+    /**
+     * Whether it was ever delivered whole: only then does it hold a manifest.
+     */
+    public function wasDelivered(): bool
+    {
+        return $this->manifest !== null;
+    }
+
+    /**
+     * Whether a failed publication may still be retried by hand.
+     */
+    public function awaitsRetry(CarbonImmutable $retentionStart): bool
+    {
+        return $this->state === PublicationState::Failed && ! $this->endedBefore($retentionStart);
+    }
+
+    public function endedBefore(CarbonImmutable $moment): bool
+    {
+        return $this->updated_at !== null && $this->updated_at->lessThan($moment);
+    }
+
+    public static function openKeyOf(string $sessionId, string $target): string
+    {
+        return $sessionId.'|'.$target;
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * The one name of its session's target, so publications of one target are counted together.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function targetName(): Attribute
+    {
+        return Attribute::get(fn () => self::openKeyOf($this->session_id, $this->target));
+    }
+
+    /**
+     * @return Attribute<PublicationStatus, never>
+     */
+    protected function status(): Attribute
+    {
+        return Attribute::get(fn () => new PublicationStatus(
+            $this->id,
+            $this->session_id,
+            $this->state,
+            $this->generation_id,
+            $this->selection_digest,
+            $this->target,
+            $this->error,
+        ))->withoutObjectCaching();
+    }
+
+    /**
+     * The open key of this publication's session target.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function targetKey(): Attribute
+    {
+        return Attribute::get(fn () => self::openKeyOf($this->session_id, $this->target));
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a retry of a publication a newer one for the same target replaced.
+     *
+     * @throws SkillPublicationFailed
+     */
+    private function assertNewest(): void
+    {
+        $hasNewer = self::query()
+            ->forTarget($this->session_id, $this->target)
+            ->where('created_at', '>', $this->created_at)
+            ->exists();
+
+        if ($hasNewer) {
+            throw SkillPublicationFailed::newerExists($this->id);
+        }
+    }
+
+    /**
+     * Refuses a publication that is not there.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws SkillPublicationMissing
+     */
+    private static function assertFound(self|null $row, string $publicationId): void
+    {
+        if ($row === null) {
+            throw SkillPublicationMissing::for($publicationId);
+        }
+    }
+
+    /**
+     * Refuses a move its present state does not allow.
+     *
+     * @throws SkillPublicationFailed
+     */
+    private function assertMayMoveTo(PublicationState $next): void
+    {
+        if (! $this->state->canMoveTo($next)) {
+            throw SkillPublicationFailed::transition($this->state, $next);
+        }
+    }
+
+    /**
+     * @throws SkillPublicationStale when a newer worker holds it
+     */
+    private function assertHeldBy(int $fence): void
+    {
+        if (! $this->isHeldBy($fence)) {
+            throw SkillPublicationStale::for($fence, $this->fencing_version);
+        }
+    }
+
+    // ----------[ Internals ]----------
+
+    /**
+     * @throws SkillPublicationFailed
+     */
+    private function moveTo(PublicationState $next): void
+    {
+        $this->assertMayMoveTo($next);
+
+        $this->state = $next;
+    }
+
+    /**
+     * Raised after the save, so the fact belongs to the committed move.
+     */
+    private function raiseMoved(): void
+    {
+        $this->raise(new SkillPublicationMoved($this->id, $this->session_id, $this->state));
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -147,9 +394,10 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
      */
     public static function lockById(string $publicationId): self
     {
-        return self::query()->whereKey($publicationId)->lockForUpdate()->firstOr(
-            fn () => throw SkillPublicationMissing::for($publicationId),
-        );
+        $row = self::query()->whereKey($publicationId)->lockForUpdate()->first();
+        self::assertFound($row, $publicationId);
+
+        return $row;
     }
 
     /**
@@ -272,218 +520,6 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
             ->unique('session_id');
 
         return array_values($latest->all());
-    }
-
-    // ----------[ Mutations ]----------
-
-    /**
-     * Takes the publication for one worker under a new fencing version and a lease; answers that version.
-     */
-    public function claim(string $holder, CarbonImmutable $leaseUntil): int
-    {
-        $this->moveTo(PublicationState::Preparing);
-        $this->fencing_version++;
-        $this->lease_holder = $holder;
-        $this->lease_until = $leaseUntil;
-        $this->save();
-        $this->raise(new SkillPublicationClaimed($this->id, $this->fencing_version));
-
-        return $this->fencing_version;
-    }
-
-    /**
-     * @throws SkillPublicationStale when a newer worker holds it
-     */
-    public function recordProgress(int $fence, int $filesStaged): void
-    {
-        $this->assertHeldBy($fence);
-        $this->progress = $filesStaged;
-        $this->save();
-        $this->raise(new SkillPublicationProgressed($this->id, $filesStaged));
-    }
-
-    /**
-     * @throws SkillPublicationStale when a newer worker holds it
-     */
-    public function deliver(int $fence, PublicationManifest $manifest): void
-    {
-        $this->assertHeldBy($fence);
-        $this->moveTo(PublicationState::Delivered);
-        $this->manifest = $manifest->jsonSerialize();
-        $this->open_key = null;
-        $this->lease_holder = null;
-        $this->lease_until = null;
-        $this->save();
-        $this->raiseMoved();
-    }
-
-    public function fail(string $reason): void
-    {
-        $this->moveTo(PublicationState::Failed);
-        $this->error = $reason;
-        $this->open_key = null;
-        $this->lease_holder = null;
-        $this->lease_until = null;
-        $this->save();
-        $this->raiseMoved();
-    }
-
-    /**
-     * A failed publication waits again for a worker, with the same immutable generation; once the target has a newer
-     * publication, only a refresh makes a new one.
-     */
-    public function retry(): void
-    {
-        $newer = self::query()
-            ->forTarget($this->session_id, $this->target)
-            ->where('created_at', '>', $this->created_at)
-            ->exists();
-
-        if ($newer) {
-            throw SkillPublicationFailed::newerExists($this->id);
-        }
-
-        $this->moveTo(PublicationState::Pending);
-        $this->error = null;
-        $this->open_key = self::openKeyOf($this->session_id, $this->target);
-        $this->save();
-        $this->raiseMoved();
-    }
-
-    public function supersede(): void
-    {
-        $this->moveTo(PublicationState::Superseded);
-        $this->open_key = null;
-        $this->save();
-        $this->raiseMoved();
-    }
-
-    public function retire(): void
-    {
-        $this->moveTo(PublicationState::Retired);
-        $this->save();
-        $this->raiseMoved();
-    }
-
-    // ----------[ Answers ]----------
-
-    /**
-     * The immutable generation this publication delivers.
-     */
-    public function generation(): SkillGeneration
-    {
-        return SkillGeneration::query()->whereKey($this->generation_id)->firstOrFail();
-    }
-
-    public function isHeldBy(int $fence): bool
-    {
-        return $this->fencing_version === $fence;
-    }
-
-    public function isClaimable(CarbonImmutable $now): bool
-    {
-        if ($this->state === PublicationState::Pending) {
-            return true;
-        }
-
-        return $this->state === PublicationState::Preparing
-            && ($this->lease_until === null || $this->lease_until->lessThan($now));
-    }
-
-    /**
-     * Whether it was ever delivered whole: only then does it hold a manifest.
-     */
-    public function wasDelivered(): bool
-    {
-        return $this->manifest !== null;
-    }
-
-    /**
-     * Whether a failed publication may still be retried by hand.
-     */
-    public function awaitsRetry(CarbonImmutable $retentionStart): bool
-    {
-        return $this->state === PublicationState::Failed && ! $this->endedBefore($retentionStart);
-    }
-
-    public function endedBefore(CarbonImmutable $moment): bool
-    {
-        return $this->updated_at !== null && $this->updated_at->lessThan($moment);
-    }
-
-    public static function openKeyOf(string $sessionId, string $target): string
-    {
-        return $sessionId.'|'.$target;
-    }
-
-    // ----------[ Accessors ]----------
-
-    /**
-     * The one name of its session's target, so publications of one target are counted together.
-     *
-     * @return Attribute<string, never>
-     */
-    protected function targetName(): Attribute
-    {
-        return Attribute::get(fn () => self::openKeyOf($this->session_id, $this->target));
-    }
-
-    /**
-     * @return Attribute<PublicationStatus, never>
-     */
-    protected function status(): Attribute
-    {
-        return Attribute::get(fn () => new PublicationStatus(
-            $this->id,
-            $this->session_id,
-            $this->state,
-            $this->generation_id,
-            $this->selection_digest,
-            $this->target,
-            $this->error,
-        ))->withoutObjectCaching();
-    }
-
-    /**
-     * The open key of this publication's session target.
-     *
-     * @return Attribute<string, never>
-     */
-    protected function targetKey(): Attribute
-    {
-        return Attribute::get(fn () => self::openKeyOf($this->session_id, $this->target));
-    }
-
-    // ----------[ Internals ]----------
-
-    /**
-     * @throws SkillPublicationFailed
-     */
-    private function moveTo(PublicationState $next): void
-    {
-        if (! $this->state->canMoveTo($next)) {
-            throw SkillPublicationFailed::transition($this->state, $next);
-        }
-
-        $this->state = $next;
-    }
-
-    /**
-     * Raised after the save, so the fact belongs to the committed move.
-     */
-    private function raiseMoved(): void
-    {
-        $this->raise(new SkillPublicationMoved($this->id, $this->session_id, $this->state));
-    }
-
-    /**
-     * @throws SkillPublicationStale when a newer worker holds it
-     */
-    private function assertHeldBy(int $fence): void
-    {
-        if (! $this->isHeldBy($fence)) {
-            throw SkillPublicationStale::for($fence, $this->fencing_version);
-        }
     }
 
     // ----------[ Scopes ]----------

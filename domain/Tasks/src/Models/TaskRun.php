@@ -77,6 +77,61 @@ final class TaskRun extends Model implements Assignable, EventSource, ReadableMo
         return $run;
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * @throws TaskRunFinished
+     */
+    public function finish(string $outcome): void
+    {
+        $this->assertNotFinished();
+
+        $this->state = TaskRunState::Finished;
+        $this->outcome = $outcome;
+        $this->assertSaved($this->save());
+        $this->raise(new TaskRunEnded($this->id, $this->task_id));
+    }
+
+    // ----------[ Getters ]----------
+
+    public function isFinished(): bool
+    {
+        return $this->state === TaskRunState::Finished;
+    }
+
+    public function assignmentIdentity(): RecordIdentity
+    {
+        return new RecordIdentity(self::LINK_TYPE, $this->id);
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * The actor that started the run.
+     *
+     * @return Attribute<ActorIdentity, never>
+     */
+    protected function starter(): Attribute
+    {
+        return Attribute::get(
+            fn () => new ActorIdentity(ActorType::from($this->started_by_type), $this->started_by_id),
+        )->withoutObjectCaching();
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses to finish a run that already finished.
+     *
+     * @throws TaskRunFinished
+     */
+    private function assertNotFinished(): void
+    {
+        if ($this->isFinished()) {
+            throw TaskRunFinished::forRun($this->id);
+        }
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -118,48 +173,5 @@ final class TaskRun extends Model implements Assignable, EventSource, ReadableMo
     public static function ofTask(Task $task, int $number): self|null
     {
         return self::query()->where('task_id', $task->id)->where('run_number', $number)->first();
-    }
-
-    // ----------[ Mutations ]----------
-
-    /**
-     * @throws TaskRunFinished
-     */
-    public function finish(string $outcome): void
-    {
-        if ($this->isFinished()) {
-            throw TaskRunFinished::forRun($this->id);
-        }
-
-        $this->state = TaskRunState::Finished;
-        $this->outcome = $outcome;
-        $this->assertSaved($this->save());
-        $this->raise(new TaskRunEnded($this->id, $this->task_id));
-    }
-
-    // ----------[ Answers ]----------
-
-    public function isFinished(): bool
-    {
-        return $this->state === TaskRunState::Finished;
-    }
-
-    public function assignmentIdentity(): RecordIdentity
-    {
-        return new RecordIdentity(self::LINK_TYPE, $this->id);
-    }
-
-    // ----------[ Accessors ]----------
-
-    /**
-     * The actor that started the run.
-     *
-     * @return Attribute<ActorIdentity, never>
-     */
-    protected function starter(): Attribute
-    {
-        return Attribute::get(
-            fn () => new ActorIdentity(ActorType::from($this->started_by_type), $this->started_by_id),
-        )->withoutObjectCaching();
     }
 }

@@ -69,6 +69,103 @@ final class StopAttempt extends Model implements EventSource, ReadableModel
         ];
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * Records that one submission of the host's results settled the attempt, with what its refusing conditions said.
+     */
+    public function settle(StopAttemptState $state, string $submissionDigest, string $failureSummary): void
+    {
+        $this->state = $state;
+        $this->submission_digest = $submissionDigest;
+        $this->assertSaved($this->save());
+        $this->raise(new StopAttemptSettled($this->id, $state, $this->outcomeOf($failureSummary)));
+    }
+
+    /**
+     * Marks this passed attempt as the certificate of the session's completion.
+     */
+    public function certify(): void
+    {
+        $this->certified_at = Carbon::now();
+        $this->assertSaved($this->save());
+        $this->raise(new StopAttemptCertified($this->id));
+    }
+
+    // ----------[ Getters ]----------
+
+    /**
+     * Whether results run under this policy digest and workspace generation belong to this attempt.
+     */
+    public function isFor(string $policyDigest, int $workspaceGeneration): bool
+    {
+        return hash_equals($this->policy_digest, $policyDigest)
+            && $this->workspace_generation === $workspaceGeneration;
+    }
+
+    /**
+     * Whether the reported definitions are exactly the conditions this attempt asked for.
+     *
+     * @param  array<string, string>  $definitionHashes  condition key => hash of the definition the host ran
+     */
+    public function asksFor(array $definitionHashes): bool
+    {
+        $asked = $this->condition_hashes;
+        ksort($asked);
+        ksort($definitionHashes);
+
+        return $asked === $definitionHashes;
+    }
+
+    /**
+     * The attempt's outcome: the same for two attempts that settled alike, with the same failures under the same
+     * policy and workspace generation.
+     */
+    public function outcomeOf(string $failureSummary): string
+    {
+        return hash('sha256', implode("\n", [
+            $this->state->value,
+            $this->policy_digest,
+            (string) $this->workspace_generation,
+            $failureSummary,
+        ]));
+    }
+
+    public function isSettled(): bool
+    {
+        return $this->state !== StopAttemptState::Pending;
+    }
+
+    public function wasSubmittedAs(string $submissionDigest): bool
+    {
+        return $this->submission_digest !== null && hash_equals($this->submission_digest, $submissionDigest);
+    }
+
+    public function isCertified(): bool
+    {
+        return $this->certified_at !== null;
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<StopAttemptReference, never>
+     */
+    protected function reference(): Attribute
+    {
+        return Attribute::get(fn () => new StopAttemptReference($this->id))->withoutObjectCaching();
+    }
+
+    // ----------[ Relations ]----------
+
+    /**
+     * @return HasMany<StopResult, $this>
+     */
+    public function results(): HasMany
+    {
+        return $this->hasMany(StopResult::class);
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -167,102 +264,5 @@ final class StopAttempt extends Model implements EventSource, ReadableModel
             ->readExactly($count)
             ->get()
             ->all());
-    }
-
-    // ----------[ Mutations ]----------
-
-    /**
-     * Records that one submission of the host's results settled the attempt, with what its refusing conditions said.
-     */
-    public function settle(StopAttemptState $state, string $submissionDigest, string $failureSummary): void
-    {
-        $this->state = $state;
-        $this->submission_digest = $submissionDigest;
-        $this->assertSaved($this->save());
-        $this->raise(new StopAttemptSettled($this->id, $state, $this->outcomeOf($failureSummary)));
-    }
-
-    /**
-     * Marks this passed attempt as the certificate of the session's completion.
-     */
-    public function certify(): void
-    {
-        $this->certified_at = Carbon::now();
-        $this->assertSaved($this->save());
-        $this->raise(new StopAttemptCertified($this->id));
-    }
-
-    // ----------[ Answers ]----------
-
-    /**
-     * Whether results run under this policy digest and workspace generation belong to this attempt.
-     */
-    public function isFor(string $policyDigest, int $workspaceGeneration): bool
-    {
-        return hash_equals($this->policy_digest, $policyDigest)
-            && $this->workspace_generation === $workspaceGeneration;
-    }
-
-    /**
-     * Whether the reported definitions are exactly the conditions this attempt asked for.
-     *
-     * @param  array<string, string>  $definitionHashes  condition key => hash of the definition the host ran
-     */
-    public function asksFor(array $definitionHashes): bool
-    {
-        $asked = $this->condition_hashes;
-        ksort($asked);
-        ksort($definitionHashes);
-
-        return $asked === $definitionHashes;
-    }
-
-    /**
-     * The attempt's outcome: the same for two attempts that settled alike, with the same failures under the same
-     * policy and workspace generation.
-     */
-    public function outcomeOf(string $failureSummary): string
-    {
-        return hash('sha256', implode("\n", [
-            $this->state->value,
-            $this->policy_digest,
-            (string) $this->workspace_generation,
-            $failureSummary,
-        ]));
-    }
-
-    public function isSettled(): bool
-    {
-        return $this->state !== StopAttemptState::Pending;
-    }
-
-    public function wasSubmittedAs(string $submissionDigest): bool
-    {
-        return $this->submission_digest !== null && hash_equals($this->submission_digest, $submissionDigest);
-    }
-
-    public function isCertified(): bool
-    {
-        return $this->certified_at !== null;
-    }
-
-    // ----------[ Accessors ]----------
-
-    /**
-     * @return Attribute<StopAttemptReference, never>
-     */
-    protected function reference(): Attribute
-    {
-        return Attribute::get(fn () => new StopAttemptReference($this->id))->withoutObjectCaching();
-    }
-
-    // ----------[ Relations ]----------
-
-    /**
-     * @return HasMany<StopResult, $this>
-     */
-    public function results(): HasMany
-    {
-        return $this->hasMany(StopResult::class);
     }
 }

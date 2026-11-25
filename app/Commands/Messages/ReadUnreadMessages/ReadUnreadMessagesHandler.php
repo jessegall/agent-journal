@@ -6,10 +6,11 @@ namespace App\Commands\Messages\ReadUnreadMessages;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Time\ServerClock;
-use App\Data\Messages\MessageView;
 use App\Models\Messages\Message;
 use App\Models\Messages\MessageReadEntry;
 use App\Support\MessageParticipants;
+use App\Support\ShownMessage;
+use App\Support\ShownMessages;
 
 /**
  * Returns the reader's unread messages and records a read of each one it returns, and only of those.
@@ -18,10 +19,7 @@ final readonly class ReadUnreadMessagesHandler implements CommandHandler
 {
     public function __construct(private ServerClock $clock, private MessageParticipants $participants) {}
 
-    /**
-     * @return list<MessageView>
-     */
-    public function handle(ReadUnreadMessagesCommand $command): array
+    public function handle(ReadUnreadMessagesCommand $command): ShownMessages
     {
         $reader = $this->participants->reader($command->dispatchedBy());
         $messages = Message::query()->unreadBy($reader)->limit(ReadUnreadMessagesCommand::LIMIT)->get();
@@ -31,6 +29,6 @@ final readonly class ReadUnreadMessagesHandler implements CommandHandler
             MessageReadEntry::record($message, $reader, $at);
         }
 
-        return $messages->map(MessageView::of(...))->values()->all();
+        return new ShownMessages($messages->map(ShownMessage::of(...))->values()->all());
     }
 }

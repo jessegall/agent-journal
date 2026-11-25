@@ -60,7 +60,7 @@ final class ReaderProof extends Model implements ReadableModel
 
     protected static function booted(): void
     {
-        self::updating(fn (self $proof) => throw RevisionImmutable::proof($proof->id));
+        self::updating(fn (self $proof) => $proof->assertUnedited());
     }
 
     // ----------[ Constructors ]----------
@@ -83,6 +83,18 @@ final class ReaderProof extends Model implements ReadableModel
             'actor_type' => $prover->type->value,
             'actor_id' => $prover->id,
         ]);
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses every edit: it stays as it was written.
+     *
+     * @throws RevisionImmutable
+     */
+    private function assertUnedited(): never
+    {
+        throw RevisionImmutable::proof($this->id);
     }
 
     // ----------[ Scopes ]----------

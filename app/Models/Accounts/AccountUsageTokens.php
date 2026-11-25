@@ -86,6 +86,32 @@ final class AccountUsageTokens extends Model implements EventSource, ReadableMod
         $snapshot->raise(new AccountUsageChanged($account->account_protocol, $account->id));
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * Replaces the thread's count with a newer one; totals are the driver's own, so they are never added up.
+     */
+    public function replaceWith(string $driver, ThreadTokens $tokens): void
+    {
+        $this->fillWith($tokens);
+        $this->saveReading($driver);
+    }
+
+    // ----------[ Internals ]----------
+
+    private function fillWith(ThreadTokens $tokens): void
+    {
+        $this->total = $tokens->total;
+        $this->input = $tokens->input;
+        $this->cached_input = $tokens->cachedInput;
+        $this->output = $tokens->output;
+        $this->reasoning_output = $tokens->reasoningOutput;
+        $this->last_turn_total = $tokens->lastTurnTotal;
+        $this->observed_at = $tokens->source->observedTime();
+        $this->source_id = $tokens->source->id;
+        $this->source_order = $tokens->source->order;
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -132,31 +158,5 @@ final class AccountUsageTokens extends Model implements EventSource, ReadableMod
         }
 
         return $newest;
-    }
-
-    // ----------[ Mutations ]----------
-
-    /**
-     * Replaces the thread's count with a newer one; totals are the driver's own, so they are never added up.
-     */
-    public function replaceWith(string $driver, ThreadTokens $tokens): void
-    {
-        $this->fillWith($tokens);
-        $this->saveReading($driver);
-    }
-
-    // ----------[ Internals ]----------
-
-    private function fillWith(ThreadTokens $tokens): void
-    {
-        $this->total = $tokens->total;
-        $this->input = $tokens->input;
-        $this->cached_input = $tokens->cachedInput;
-        $this->output = $tokens->output;
-        $this->reasoning_output = $tokens->reasoningOutput;
-        $this->last_turn_total = $tokens->lastTurnTotal;
-        $this->observed_at = $tokens->source->observedTime();
-        $this->source_id = $tokens->source->id;
-        $this->source_order = $tokens->source->order;
     }
 }

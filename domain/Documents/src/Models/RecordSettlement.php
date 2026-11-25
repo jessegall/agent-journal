@@ -51,9 +51,7 @@ final class RecordSettlement extends Model implements ReadableModel
 
     protected static function booted(): void
     {
-        self::updating(function (self $settlement): void {
-            throw RecordImmutable::for('settlement');
-        });
+        self::updating(fn (self $settlement) => $settlement->assertUnedited());
     }
 
     // ----------[ Constructors ]----------
@@ -84,6 +82,18 @@ final class RecordSettlement extends Model implements ReadableModel
     protected function card(): Attribute
     {
         return Attribute::get(fn () => RecordViews::settlementCard($this))->withoutObjectCaching();
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses every edit: a settlement stays as it was written.
+     *
+     * @throws RecordImmutable
+     */
+    private function assertUnedited(): never
+    {
+        throw RecordImmutable::for('settlement');
     }
 
     // ----------[ Scopes ]----------

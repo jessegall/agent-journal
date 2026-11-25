@@ -95,6 +95,93 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
         return $invitation;
     }
 
+    // ----------[ Mutations ]----------
+
+    public function revoke(): void
+    {
+        $this->revoked_at = CarbonImmutable::now();
+        $this->assertSaved($this->save());
+        $this->raise(new ProjectInvitationRevoked($this->id, $this->revoked_at));
+    }
+
+    /**
+     * Records the one redemption of the line and the binding it made.
+     */
+    public function spendOn(ProjectBinding $binding): void
+    {
+        $this->spent_at = CarbonImmutable::now();
+        $this->binding_id = $binding->id;
+        $this->assertSaved($this->save());
+        $this->raise(new ProjectInvitationSpent($this->id, $binding->id, $this->spent_at));
+    }
+
+    /**
+     * Whether the line can still be redeemed at this server time: not revoked, not spent and not expired.
+     */
+    public function isRedeemableAt(CarbonImmutable $now): bool
+    {
+        return $this->revoked_at === null && $this->spent_at === null && $this->expires_at->isAfter($now);
+    }
+
+    // ----------[ Getters ]----------
+
+    /**
+     * The install attempt this line belongs to, locked until the transaction ends; a line issued before attempts
+     * existed has none and cannot be used.
+     *
+     * @throws InvitationUnusable
+     */
+    public function lockAttempt(): InstallAttempt
+    {
+        $this->assertHasAttempt();
+
+        return InstallAttempt::lockById($this->install_attempt_id);
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a ticket no pending invitation holds.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws InvitationUnusable
+     */
+    private static function assertTicketUsable(self|null $row): void
+    {
+        if ($row === null) {
+            throw InvitationUnusable::forTicket();
+        }
+    }
+
+    /**
+     * Refuses an invitation that is not pending.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws InvitationUnusable
+     */
+    private static function assertPending(self|null $row, string $id): void
+    {
+        if ($row === null) {
+            throw InvitationUnusable::forId($id);
+        }
+    }
+
+    /**
+     * Refuses an invitation with no install attempt.
+     *
+     * @phpstan-assert !null $this->install_attempt_id
+     *
+     * @throws InvitationUnusable
+     */
+    private function assertHasAttempt(): void
+    {
+        if ($this->install_attempt_id === null) {
+            throw InvitationUnusable::forId($this->id);
+        }
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -146,93 +233,6 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
         self::assertPending($row, $id);
 
         return $row;
-    }
-
-    // ----------[ Mutations ]----------
-
-    public function revoke(): void
-    {
-        $this->revoked_at = CarbonImmutable::now();
-        $this->assertSaved($this->save());
-        $this->raise(new ProjectInvitationRevoked($this->id, $this->revoked_at));
-    }
-
-    /**
-     * Records the one redemption of the line and the binding it made.
-     */
-    public function spendOn(ProjectBinding $binding): void
-    {
-        $this->spent_at = CarbonImmutable::now();
-        $this->binding_id = $binding->id;
-        $this->assertSaved($this->save());
-        $this->raise(new ProjectInvitationSpent($this->id, $binding->id, $this->spent_at));
-    }
-
-    /**
-     * Whether the line can still be redeemed at this server time: not revoked, not spent and not expired.
-     */
-    public function isRedeemableAt(CarbonImmutable $now): bool
-    {
-        return $this->revoked_at === null && $this->spent_at === null && $this->expires_at->isAfter($now);
-    }
-
-    // ----------[ Answers ]----------
-
-    /**
-     * The install attempt this line belongs to, locked until the transaction ends; a line issued before attempts
-     * existed has none and cannot be used.
-     *
-     * @throws InvitationUnusable
-     */
-    public function lockAttempt(): InstallAttempt
-    {
-        $this->assertHasAttempt();
-
-        return InstallAttempt::lockById($this->install_attempt_id);
-    }
-
-    /**
-     * Refuses a ticket no pending invitation holds.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws InvitationUnusable
-     */
-    private static function assertTicketUsable(self|null $row): void
-    {
-        if ($row === null) {
-            throw InvitationUnusable::forTicket();
-        }
-    }
-
-    // ----------[ Asserts ]----------
-
-    /**
-     * Refuses an invitation that is not pending.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws InvitationUnusable
-     */
-    private static function assertPending(self|null $row, string $id): void
-    {
-        if ($row === null) {
-            throw InvitationUnusable::forId($id);
-        }
-    }
-
-    /**
-     * Refuses an invitation with no install attempt.
-     *
-     * @phpstan-assert !null $this->install_attempt_id
-     *
-     * @throws InvitationUnusable
-     */
-    private function assertHasAttempt(): void
-    {
-        if ($this->install_attempt_id === null) {
-            throw InvitationUnusable::forId($this->id);
-        }
     }
 
     // ----------[ Scopes ]----------

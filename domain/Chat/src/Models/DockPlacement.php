@@ -89,29 +89,6 @@ final class DockPlacement extends Model implements EventSource, ReadableModel
         return $placement;
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The placement of the source in the chat, when it is docked there.
-     */
-    public static function docked(Inbox $inbox, DockIdentity $source): self|null
-    {
-        return self::query()->inInbox($inbox)->ofSource($source)->lockForUpdate()->first();
-    }
-
-    /**
-     * The placement of this id in the chat, when it still docks this source there.
-     */
-    public static function matching(Inbox $inbox, string $placementId, DockIdentity $source): self|null
-    {
-        return self::query()
-            ->inInbox($inbox)
-            ->ofSource($source)
-            ->whereKey($placementId)
-            ->lockForUpdate()
-            ->first();
-    }
-
     // ----------[ Mutations ]----------
 
     public function remove(): void
@@ -142,6 +119,29 @@ final class DockPlacement extends Model implements EventSource, ReadableModel
         return Attribute::get(
             fn () => new DockIdentity($this->dockable_type, $this->dockable_id),
         )->withoutObjectCaching();
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The placement of the source in the chat, when it is docked there.
+     */
+    public static function docked(Inbox $inbox, DockIdentity $source): self|null
+    {
+        return self::query()->inInbox($inbox)->ofSource($source)->lockForUpdate()->first();
+    }
+
+    /**
+     * The placement of this id in the chat, when it still docks this source there.
+     */
+    public static function matching(Inbox $inbox, string $placementId, DockIdentity $source): self|null
+    {
+        return self::query()
+            ->inInbox($inbox)
+            ->ofSource($source)
+            ->whereKey($placementId)
+            ->lockForUpdate()
+            ->first();
     }
 
     // ----------[ Scopes ]----------

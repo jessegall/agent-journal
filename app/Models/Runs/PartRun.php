@@ -152,10 +152,7 @@ final class PartRun extends Model implements EventSource, ReadableModel
      */
     public function finishDraining(): void
     {
-        if (! $this->end->hasEnded()) {
-            throw PartTransitionRefused::notDrained();
-        }
-
+        $this->assertDrained();
         $this->moveTo(LifecycleState::Ended);
         $this->streams_drained = true;
         $this->ended_at = CarbonImmutable::now();
@@ -294,6 +291,32 @@ final class PartRun extends Model implements EventSource, ReadableModel
         return $this->hasMany(OutputChunk::class);
     }
 
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses to finish draining a part whose streams have not ended.
+     *
+     * @throws PartTransitionRefused
+     */
+    private function assertDrained(): void
+    {
+        if (! $this->end->hasEnded()) {
+            throw PartTransitionRefused::notDrained();
+        }
+    }
+
+    /**
+     * Refuses a move its present lifecycle does not allow.
+     *
+     * @throws PartTransitionRefused
+     */
+    private function assertMayMoveTo(LifecycleState $next): void
+    {
+        if (! $this->lifecycle->canMoveTo($next)) {
+            throw PartTransitionRefused::between($this->lifecycle, $next);
+        }
+    }
+
     // ----------[ Internals ]----------
 
     private function finishAs(LifecycleState $state): void
@@ -305,9 +328,7 @@ final class PartRun extends Model implements EventSource, ReadableModel
 
     private function moveTo(LifecycleState $next): void
     {
-        if (! $this->lifecycle->canMoveTo($next)) {
-            throw PartTransitionRefused::between($this->lifecycle, $next);
-        }
+        $this->assertMayMoveTo($next);
 
         $this->lifecycle = $next;
     }

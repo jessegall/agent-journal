@@ -54,24 +54,6 @@ final class ReaderPosition extends Model implements EventSource, ReadableModel
         ];
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The live position of a reader in a part, started empty the first time.
-     */
-    public static function of(PartRun $part, ReaderRevision $revision): self
-    {
-        return self::madeFor($part, $revision, PositionPurpose::Live, new ReaderCheckpoint());
-    }
-
-    /**
-     * A replay's own position, apart from the live one: it starts again from the first byte each time.
-     */
-    public static function replayOf(PartRun $part, ReaderRevision $revision, ReaderCheckpoint $consumed): self
-    {
-        return self::madeFor($part, $revision, PositionPurpose::Replay, $consumed);
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -103,7 +85,7 @@ final class ReaderPosition extends Model implements EventSource, ReadableModel
         $this->raise(new ReaderPositionAdvanced($this->id));
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     public function hasFailed(): bool
     {
@@ -133,5 +115,23 @@ final class ReaderPosition extends Model implements EventSource, ReadableModel
         $position->insertIfAbsent();
 
         return self::query()->where($identity)->sole();
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The live position of a reader in a part, started empty the first time.
+     */
+    public static function of(PartRun $part, ReaderRevision $revision): self
+    {
+        return self::madeFor($part, $revision, PositionPurpose::Live, new ReaderCheckpoint());
+    }
+
+    /**
+     * A replay's own position, apart from the live one: it starts again from the first byte each time.
+     */
+    public static function replayOf(PartRun $part, ReaderRevision $revision, ReaderCheckpoint $consumed): self
+    {
+        return self::madeFor($part, $revision, PositionPurpose::Replay, $consumed);
     }
 }

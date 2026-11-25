@@ -50,6 +50,15 @@ final class ModuleRuleBundle extends Model implements ReadableModel
         return ['approved_at' => 'datetime'];
     }
 
+    // ----------[ Getters ]----------
+
+    public function approves(RuleBundle $bundle): bool
+    {
+        return $this->module === $bundle->module
+            && $this->version === $bundle->version
+            && $this->digest === $bundle->digest();
+    }
+
     // ----------[ Queries ]----------
 
     public static function approve(string $projectKey, RuleBundle $bundle, ActorIdentity $approver): self
@@ -66,15 +75,6 @@ final class ModuleRuleBundle extends Model implements ReadableModel
         $approval->insertIfAbsent();
 
         return self::query()->where($identity)->sole();
-    }
-
-    // ----------[ Answers ]----------
-
-    public function approves(RuleBundle $bundle): bool
-    {
-        return $this->module === $bundle->module
-            && $this->version === $bundle->version
-            && $this->digest === $bundle->digest();
     }
 
     // ----------[ Scopes ]----------

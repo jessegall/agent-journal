@@ -60,24 +60,6 @@ final class ClassificationRule extends Model implements EventSource, ReadableMod
         ];
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The project's classification rule of a declaration, or a new one not yet active when it has none.
-     */
-    public static function forRule(string $projectKey, CommandRule $rule): self
-    {
-        return self::query()
-            ->ofProject($projectKey)
-            ->ofRule($rule->scope, $rule->id)
-            ->firstOrNew([], [
-                'project_key' => $projectKey,
-                'scope' => $rule->scope,
-                'rule_id' => $rule->id,
-                'active_revision' => 0,
-            ]);
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -96,7 +78,7 @@ final class ClassificationRule extends Model implements EventSource, ReadableMod
         $this->raise(new ClassificationRuleRetired($this->id, $reason));
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     /**
      * Makes a newer approved revision the active one.
@@ -124,16 +106,6 @@ final class ClassificationRule extends Model implements EventSource, ReadableMod
         $this->point($earlier, "Revision {$earlier->revision} restored.");
     }
 
-    /**
-     * @throws ClassificationRuleRefused
-     */
-    public function assertExpectedRevision(int $revision): void
-    {
-        if ($revision !== $this->active_revision) {
-            throw ClassificationRuleRefused::stale($this->rule_id, $revision, $this->active_revision);
-        }
-    }
-
     // ----------[ Relations ]----------
 
     /**
@@ -145,6 +117,16 @@ final class ClassificationRule extends Model implements EventSource, ReadableMod
     }
 
     // ----------[ Asserts ]----------
+
+    /**
+     * @throws ClassificationRuleRefused
+     */
+    public function assertExpectedRevision(int $revision): void
+    {
+        if ($revision !== $this->active_revision) {
+            throw ClassificationRuleRefused::stale($this->rule_id, $revision, $this->active_revision);
+        }
+    }
 
     /**
      * Refuses a rule that is not active.
@@ -170,6 +152,16 @@ final class ClassificationRule extends Model implements EventSource, ReadableMod
         }
     }
 
+    /**
+     * @throws ClassificationRuleRefused
+     */
+    private function assertOwnRevision(RuleRevision $revision): void
+    {
+        if (! $revision->belongsToRule($this)) {
+            throw ClassificationRuleRefused::otherRule($this->rule_id, $revision->rule_id);
+        }
+    }
+
     // ----------[ Internals ]----------
 
     private function point(RuleRevision $revision, string $reason): void
@@ -181,14 +173,22 @@ final class ClassificationRule extends Model implements EventSource, ReadableMod
         $this->save();
     }
 
+    // ----------[ Queries ]----------
+
     /**
-     * @throws ClassificationRuleRefused
+     * The project's classification rule of a declaration, or a new one not yet active when it has none.
      */
-    private function assertOwnRevision(RuleRevision $revision): void
+    public static function forRule(string $projectKey, CommandRule $rule): self
     {
-        if (! $revision->belongsToRule($this)) {
-            throw ClassificationRuleRefused::otherRule($this->rule_id, $revision->rule_id);
-        }
+        return self::query()
+            ->ofProject($projectKey)
+            ->ofRule($rule->scope, $rule->id)
+            ->firstOrNew([], [
+                'project_key' => $projectKey,
+                'scope' => $rule->scope,
+                'rule_id' => $rule->id,
+                'active_revision' => 0,
+            ]);
     }
 
     // ----------[ Scopes ]----------

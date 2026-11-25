@@ -68,19 +68,7 @@ final class ProjectFile extends Model implements Commentable, Numbered, Readable
         return $file;
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The file at this path of the connected folder, if its host ever read it whole.
-     *
-     * @return Option<self>
-     */
-    public static function atPath(string $bindingId, string $path): Option
-    {
-        return self::query()->where('binding_id', $bindingId)->where('path', $path)->firstOption();
-    }
-
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     /**
      * The kept version with this digest, if the file was read with it before.
@@ -137,5 +125,17 @@ final class ProjectFile extends Model implements Commentable, Numbered, Readable
         if ($kept === null) {
             throw TextVersionUnavailable::named($version ?? 'current');
         }
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The file at this path of the connected folder, if its host ever read it whole.
+     *
+     * @return Option<self>
+     */
+    public static function atPath(string $bindingId, string $path): Option
+    {
+        return self::query()->where('binding_id', $bindingId)->where('path', $path)->firstOption();
     }
 }

@@ -124,47 +124,6 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
         return self::lockById($attempt->id);
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The owner's attempt of this reference, locked until the transaction ends.
-     *
-     * @throws InstallAttemptRefused
-     */
-    public static function lockOfOwner(string $userId, string $reference): self
-    {
-        $row = self::query()->ofOwner($userId)->where('reference', $reference)->lockForUpdate()->first();
-        self::assertFound($row, $reference);
-
-        return $row;
-    }
-
-    public static function lockById(string $id): self
-    {
-        return self::lockedById($id);
-    }
-
-    /**
-     * One page of the owner's attempts, newest first: every open one, and the settled ones of the last LISTED_DAYS.
-     *
-     * @return CursorPaginator<int, self>
-     */
-    public static function listedFor(string $userId, string|null $cursor): CursorPaginator
-    {
-        $since = CarbonImmutable::now()->subDays(self::LISTED_DAYS);
-
-        return self::query()->ofOwner($userId)
-            ->where(fn (Builder $listed) => $listed->where('state', InstallAttemptState::Open)
-                ->orWhere('updated_at', '>=', $since))
-            ->with([
-                'invitations' => RelationRead::complete(max: self::LINE_LIMIT)->constraint(),
-                'project',
-                'environment',
-            ])
-            ->orderByDesc('created_at')->orderByDesc('id')
-            ->cursorPaginate(self::PAGE_LIMIT, cursor: $cursor);
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -207,7 +166,7 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
         $this->raise(new InstallAttemptSpent($this->id, $binding->id, CarbonImmutable::now()));
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     /**
      * Where the attempt stands now: an open attempt whose line can no longer be redeemed reads as expired.
@@ -279,6 +238,24 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
         }
     }
 
+    /**
+     * @throws InstallAttemptRefused
+     */
+    private function assertChangeable(int|null $seenVersion): void
+    {
+        if ($this->state === InstallAttemptState::Spent) {
+            throw InstallAttemptRefused::spent($this->reference, (string) $this->binding_id);
+        }
+
+        if ($this->state === InstallAttemptState::Cancelled) {
+            throw InstallAttemptRefused::cancelled($this->reference);
+        }
+
+        if ($seenVersion !== null && $seenVersion !== $this->version) {
+            throw InstallAttemptRefused::movedOn($this->reference, $this->version);
+        }
+    }
+
     // ----------[ Internals ]----------
 
     /**
@@ -296,22 +273,45 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
         return $project.' / '.$environment;
     }
 
+    // ----------[ Queries ]----------
+
     /**
+     * The owner's attempt of this reference, locked until the transaction ends.
+     *
      * @throws InstallAttemptRefused
      */
-    private function assertChangeable(int|null $seenVersion): void
+    public static function lockOfOwner(string $userId, string $reference): self
     {
-        if ($this->state === InstallAttemptState::Spent) {
-            throw InstallAttemptRefused::spent($this->reference, (string) $this->binding_id);
-        }
+        $row = self::query()->ofOwner($userId)->where('reference', $reference)->lockForUpdate()->first();
+        self::assertFound($row, $reference);
 
-        if ($this->state === InstallAttemptState::Cancelled) {
-            throw InstallAttemptRefused::cancelled($this->reference);
-        }
+        return $row;
+    }
 
-        if ($seenVersion !== null && $seenVersion !== $this->version) {
-            throw InstallAttemptRefused::movedOn($this->reference, $this->version);
-        }
+    public static function lockById(string $id): self
+    {
+        return self::lockedById($id);
+    }
+
+    /**
+     * One page of the owner's attempts, newest first: every open one, and the settled ones of the last LISTED_DAYS.
+     *
+     * @return CursorPaginator<int, self>
+     */
+    public static function listedFor(string $userId, string|null $cursor): CursorPaginator
+    {
+        $since = CarbonImmutable::now()->subDays(self::LISTED_DAYS);
+
+        return self::query()->ofOwner($userId)
+            ->where(fn (Builder $listed) => $listed->where('state', InstallAttemptState::Open)
+                ->orWhere('updated_at', '>=', $since))
+            ->with([
+                'invitations' => RelationRead::complete(max: self::LINE_LIMIT)->constraint(),
+                'project',
+                'environment',
+            ])
+            ->orderByDesc('created_at')->orderByDesc('id')
+            ->cursorPaginate(self::PAGE_LIMIT, cursor: $cursor);
     }
 
     // ----------[ Scopes ]----------

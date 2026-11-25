@@ -16,6 +16,8 @@ final readonly class ReadMessageController
 {
     public function __invoke(ReadMessageCall $call, CommandBus $commands): MessageView
     {
-        return $commands->run(new ReadMessageCommand($call->messageId));
+        $message = $commands->run(new ReadMessageCommand($call->messageId));
+
+        return MessageView::of($message);
     }
 }

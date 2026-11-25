@@ -177,6 +177,324 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
         return $share;
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * Turns the proposal into the owner's grant under a gateway configuration with a new token, at its first scope
+     * version and with its own deadline, waiting for its gateway.
+     */
+    public function approveAs(
+        string $ownerUserId,
+        ShareGatewayConfiguration $configuration,
+        ShareToken $token,
+        CarbonImmutable $expiresAt,
+    ): void {
+        $this->state = ShareState::Pending;
+        $this->owner_user_id = $ownerUserId;
+        $this->scope_version = self::FIRST_SCOPE_VERSION;
+        $this->expires_at = $expiresAt;
+        $this->share_gateway_configuration_id = $configuration->id;
+        $this->configuration_version = $configuration->configuration_version;
+        $this->token_digest = $token->digest;
+        $this->token_ciphertext = $token->token;
+        $this->assertSaved($this->save());
+        $this->raise(new ShareCreated($this->fact));
+    }
+
+    /**
+     * Ends the share as revoked or expired once and raises that fact; false, with nothing changed, when it had already
+     * ended. Its token can no longer be read back, while its digest stays so a read with the old token is denied.
+     *
+     * @throws ShareEndInvalid
+     */
+    public function end(ShareState $terminal): bool
+    {
+        $this->assertEndsAs($terminal);
+
+        if ($this->state->isTerminal()) {
+            return false;
+        }
+
+        $endedAt = CarbonImmutable::now();
+        $this->state = $terminal;
+        $this->terminal_at = $endedAt;
+        $this->token_ciphertext = null;
+        $this->assertSaved($this->save());
+
+        match ($terminal) {
+            ShareState::Revoked => $this->raise(new ShareRevoked($this->factAt($endedAt))),
+            ShareState::Expired => $this->raise(new ShareExpired($this->factAt($endedAt))),
+        };
+
+        return true;
+    }
+
+    /**
+     * Moves the share to its next scope version, whose members are approved next; earlier members stop counting.
+     */
+    public function advanceScope(): void
+    {
+        $this->scope_version++;
+        $this->assertSaved($this->save());
+        $this->raise(new ShareScopeChanged($this->fact));
+    }
+
+    /**
+     * Puts a pending or failed share back to waiting for its gateway, keeping its token and deadline.
+     *
+     * @throws ShareRetryRefused when the share may not be retried or its deadline passed
+     */
+    public function retryOpening(): void
+    {
+        $this->assertRetryable();
+
+        $this->state = ShareState::Pending;
+        $this->save();
+        $this->raise(new ShareRetried($this->factAt(CarbonImmutable::now())));
+    }
+
+    /**
+     * Keeps the count of the audit rows pruning removed, and when it last pruned, so the share's history stays
+     * counted after its details are gone.
+     */
+    public function countPruned(int $allowedReads, int $deniedReads, int $lifecycleRows, CarbonImmutable $at): void
+    {
+        $this->pruned_allowed_reads += $allowedReads;
+        $this->pruned_denied_reads += $deniedReads;
+        $this->pruned_lifecycle_rows += $lifecycleRows;
+        $this->last_pruned_at = $at;
+        $this->save();
+        $this->raise(new SharePruned($this->id, $at));
+    }
+
+    /**
+     * Its gateway serves it now.
+     */
+    public function activate(): void
+    {
+        $this->state = ShareState::Active;
+        $this->assertSaved($this->save());
+        $this->raise(new ShareActivated($this->fact));
+    }
+
+    /**
+     * Its gateway could not open; the owner may retry before the deadline.
+     */
+    public function failActivation(): void
+    {
+        $this->state = ShareState::Failed;
+        $this->assertSaved($this->save());
+        $this->raise(new ShareFailed($this->fact));
+    }
+
+    // ----------[ Getters ]----------
+
+    /**
+     * The key of the gateway the share is served under; none for a proposal, which has no gateway yet.
+     */
+    public function gatewayKey(): string|null
+    {
+        if ($this->share_gateway_configuration_id === null) {
+            return null;
+        }
+
+        return ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id)->gateway_key;
+    }
+
+    /**
+     * The newest endpoint still running for the share's gateway configuration; none for a proposal.
+     *
+     * @return Option<ShareGatewayEndpoint>
+     */
+    public function newestRunningEndpoint(): Option
+    {
+        if ($this->share_gateway_configuration_id === null) {
+            return None::create();
+        }
+
+        return ShareGatewayEndpoint::newestRunningOf(
+            ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id),
+        );
+    }
+
+    /**
+     * Whether no other live, unexpired share is served by this share's gateway configuration.
+     */
+    public function isLastLiveOfItsConfiguration(): bool
+    {
+        return $this->share_gateway_configuration_id !== null
+            && ! self::query()
+                ->liveNow()
+                ->servedBy($this->share_gateway_configuration_id)
+                ->whereKeyNot($this->id)
+                ->exists();
+    }
+
+    /**
+     * Whether a public read may proceed: the share is active and its deadline has not passed, whatever the state
+     * column has caught up with.
+     */
+    public function isReadableNow(): bool
+    {
+        return $this->state === ShareState::Active && $this->expires_at->isFuture();
+    }
+
+    /**
+     * The public address of the share while it is active and unexpired; nothing for a proposal or an ended share.
+     *
+     * @return Option<string>
+     */
+    public function ownerUrl(): Option
+    {
+        if (! $this->isReadableNow()
+            || $this->token_ciphertext === null
+            || $this->share_gateway_configuration_id === null) {
+            return None::create();
+        }
+
+        return Option::fromValue(
+            ShareGatewayConfiguration::query()->findOrFail(
+                $this->share_gateway_configuration_id,
+            )->shareUrl($this->token_ciphertext),
+        );
+    }
+
+    /**
+     * Whether one of these users granted the share; a proposal was granted by nobody.
+     *
+     * @param  list<string>  $userIds
+     */
+    public function isGrantedByOneOf(array $userIds): bool
+    {
+        return $this->owner_user_id !== null && in_array($this->owner_user_id, $userIds, true);
+    }
+
+    /**
+     * The enabled gateway configuration the owner's grant is served under.
+     *
+     * @throws ShareGatewayUnavailable when the share is a proposal or its configuration was disabled
+     */
+    public function gatewayConfiguration(): ShareGatewayConfiguration
+    {
+        $this->assertHasGateway();
+
+        return ShareGatewayConfiguration::usable($this->share_gateway_configuration_id);
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * What a lifecycle event tells about the share as it stands now.
+     *
+     * @return Attribute<ShareFact, never>
+     */
+    protected function fact(): Attribute
+    {
+        return Attribute::get(fn () => $this->factAt(CarbonImmutable::now()))->withoutObjectCaching();
+    }
+
+    /**
+     * What the owner learns of the share: its id, number and state, never its token.
+     *
+     * @return Attribute<ShareSummary, never>
+     */
+    protected function summary(): Attribute
+    {
+        return Attribute::get(
+            fn () => new ShareSummary($this->id, $this->number, $this->state),
+        )->withoutObjectCaching();
+    }
+
+    /**
+     * What the requesting agent learns of its proposal: its number and state, nothing more.
+     *
+     * @return Attribute<ShareProposalStatus, never>
+     */
+    protected function proposalStatus(): Attribute
+    {
+        return Attribute::get(fn () => new ShareProposalStatus($this->number, $this->state))->withoutObjectCaching();
+    }
+
+    /**
+     * @return Attribute<RecordIdentity, never>
+     */
+    protected function root(): Attribute
+    {
+        return Attribute::get(fn () => new RecordIdentity($this->root_type, $this->root_id))->withoutObjectCaching();
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses an end that is neither a revoke nor an expiry.
+     *
+     * @throws ShareEndInvalid
+     */
+    private function assertEndsAs(ShareState $terminal): void
+    {
+        if ($terminal !== ShareState::Revoked && $terminal !== ShareState::Expired) {
+            throw ShareEndInvalid::for($this->id, $terminal);
+        }
+    }
+
+    /**
+     * Refuses a retry of a share whose state allows none, or that has expired.
+     *
+     * @throws ShareRetryRefused
+     */
+    private function assertRetryable(): void
+    {
+        if (! $this->expires_at->isFuture()) {
+            throw ShareRetryRefused::for($this->id, ShareState::Expired);
+        }
+
+        if (! $this->state->mayRetry()) {
+            throw ShareRetryRefused::for($this->id, $this->state);
+        }
+    }
+
+    /**
+     * Refuses a share proposed with no gateway configuration.
+     *
+     * @phpstan-assert !null $this->share_gateway_configuration_id
+     *
+     * @throws ShareGatewayUnavailable
+     */
+    private function assertHasGateway(): void
+    {
+        if ($this->share_gateway_configuration_id === null) {
+            throw ShareGatewayUnavailable::forProposal($this->id);
+        }
+    }
+
+    /**
+     * Refuses a share that is not proposed now.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws ShareProposalUnavailable
+     */
+    private static function assertProposed(self|null $row, string $id): void
+    {
+        if ($row === null) {
+            throw ShareProposalUnavailable::for($id);
+        }
+    }
+
+    // ----------[ Internals ]----------
+
+    private static function forRoot(RecordIdentity $root, ShareState $state, CarbonImmutable $expiresAt): self
+    {
+        $share = new self();
+        $share->state = $state;
+        $share->root_type = $root->type;
+        $share->root_id = $root->id;
+        $share->scope_version = 0;
+        $share->expires_at = $expiresAt;
+
+        return $share;
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -302,9 +620,10 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      */
     public static function lockProposal(string $id): self
     {
-        return self::query()->whereKey($id)->proposedNow()->lockForUpdate()->firstOr(
-            fn () => throw ShareProposalUnavailable::for($id),
-        );
+        $row = self::query()->whereKey($id)->proposedNow()->lockForUpdate()->first();
+        self::assertProposed($row, $id);
+
+        return $row;
     }
 
     /**
@@ -428,272 +747,6 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     public static function lockForRead(string $id): self
     {
         return self::query()->whereKey($id)->sharedLock()->firstOrFail();
-    }
-
-    // ----------[ Mutations ]----------
-
-    /**
-     * Turns the proposal into the owner's grant under a gateway configuration with a new token, at its first scope
-     * version and with its own deadline, waiting for its gateway.
-     */
-    public function approveAs(
-        string $ownerUserId,
-        ShareGatewayConfiguration $configuration,
-        ShareToken $token,
-        CarbonImmutable $expiresAt,
-    ): void {
-        $this->state = ShareState::Pending;
-        $this->owner_user_id = $ownerUserId;
-        $this->scope_version = self::FIRST_SCOPE_VERSION;
-        $this->expires_at = $expiresAt;
-        $this->share_gateway_configuration_id = $configuration->id;
-        $this->configuration_version = $configuration->configuration_version;
-        $this->token_digest = $token->digest;
-        $this->token_ciphertext = $token->token;
-        $this->assertSaved($this->save());
-        $this->raise(new ShareCreated($this->fact));
-    }
-
-    /**
-     * Ends the share as revoked or expired once and raises that fact; false, with nothing changed, when it had already
-     * ended. Its token can no longer be read back, while its digest stays so a read with the old token is denied.
-     *
-     * @throws ShareEndInvalid
-     */
-    public function end(ShareState $terminal): bool
-    {
-        if ($terminal !== ShareState::Revoked && $terminal !== ShareState::Expired) {
-            throw ShareEndInvalid::for($this->id, $terminal);
-        }
-
-        if ($this->state->isTerminal()) {
-            return false;
-        }
-
-        $endedAt = CarbonImmutable::now();
-        $this->state = $terminal;
-        $this->terminal_at = $endedAt;
-        $this->token_ciphertext = null;
-        $this->assertSaved($this->save());
-
-        match ($terminal) {
-            ShareState::Revoked => $this->raise(new ShareRevoked($this->factAt($endedAt))),
-            ShareState::Expired => $this->raise(new ShareExpired($this->factAt($endedAt))),
-        };
-
-        return true;
-    }
-
-    /**
-     * Moves the share to its next scope version, whose members are approved next; earlier members stop counting.
-     */
-    public function advanceScope(): void
-    {
-        $this->scope_version++;
-        $this->assertSaved($this->save());
-        $this->raise(new ShareScopeChanged($this->fact));
-    }
-
-    /**
-     * Puts a pending or failed share back to waiting for its gateway, keeping its token and deadline.
-     *
-     * @throws ShareRetryRefused when the share may not be retried or its deadline passed
-     */
-    public function retryOpening(): void
-    {
-        if (! $this->state->mayRetry() || ! $this->expires_at->isFuture()) {
-            throw ShareRetryRefused::for($this->id, $this->expires_at->isFuture() ? $this->state : ShareState::Expired);
-        }
-
-        $this->state = ShareState::Pending;
-        $this->save();
-        $this->raise(new ShareRetried($this->factAt(CarbonImmutable::now())));
-    }
-
-    /**
-     * Keeps the count of the audit rows pruning removed, and when it last pruned, so the share's history stays
-     * counted after its details are gone.
-     */
-    public function countPruned(int $allowedReads, int $deniedReads, int $lifecycleRows, CarbonImmutable $at): void
-    {
-        $this->pruned_allowed_reads += $allowedReads;
-        $this->pruned_denied_reads += $deniedReads;
-        $this->pruned_lifecycle_rows += $lifecycleRows;
-        $this->last_pruned_at = $at;
-        $this->save();
-        $this->raise(new SharePruned($this->id, $at));
-    }
-
-    /**
-     * Its gateway serves it now.
-     */
-    public function activate(): void
-    {
-        $this->state = ShareState::Active;
-        $this->assertSaved($this->save());
-        $this->raise(new ShareActivated($this->fact));
-    }
-
-    /**
-     * Its gateway could not open; the owner may retry before the deadline.
-     */
-    public function failActivation(): void
-    {
-        $this->state = ShareState::Failed;
-        $this->assertSaved($this->save());
-        $this->raise(new ShareFailed($this->fact));
-    }
-
-    // ----------[ Answers ]----------
-
-    /**
-     * The key of the gateway the share is served under; none for a proposal, which has no gateway yet.
-     */
-    public function gatewayKey(): string|null
-    {
-        if ($this->share_gateway_configuration_id === null) {
-            return null;
-        }
-
-        return ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id)->gateway_key;
-    }
-
-    /**
-     * The newest endpoint still running for the share's gateway configuration; none for a proposal.
-     *
-     * @return Option<ShareGatewayEndpoint>
-     */
-    public function newestRunningEndpoint(): Option
-    {
-        if ($this->share_gateway_configuration_id === null) {
-            return None::create();
-        }
-
-        return ShareGatewayEndpoint::newestRunningOf(
-            ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id),
-        );
-    }
-
-    /**
-     * Whether no other live, unexpired share is served by this share's gateway configuration.
-     */
-    public function isLastLiveOfItsConfiguration(): bool
-    {
-        return $this->share_gateway_configuration_id !== null
-            && ! self::query()
-                ->liveNow()
-                ->servedBy($this->share_gateway_configuration_id)
-                ->whereKeyNot($this->id)
-                ->exists();
-    }
-
-    /**
-     * Whether a public read may proceed: the share is active and its deadline has not passed, whatever the state
-     * column has caught up with.
-     */
-    public function isReadableNow(): bool
-    {
-        return $this->state === ShareState::Active && $this->expires_at->isFuture();
-    }
-
-    /**
-     * The public address of the share while it is active and unexpired; nothing for a proposal or an ended share.
-     *
-     * @return Option<string>
-     */
-    public function ownerUrl(): Option
-    {
-        if (! $this->isReadableNow()
-            || $this->token_ciphertext === null
-            || $this->share_gateway_configuration_id === null) {
-            return None::create();
-        }
-
-        return Option::fromValue(
-            ShareGatewayConfiguration::query()->findOrFail(
-                $this->share_gateway_configuration_id,
-            )->shareUrl($this->token_ciphertext),
-        );
-    }
-
-    /**
-     * Whether one of these users granted the share; a proposal was granted by nobody.
-     *
-     * @param  list<string>  $userIds
-     */
-    public function isGrantedByOneOf(array $userIds): bool
-    {
-        return $this->owner_user_id !== null && in_array($this->owner_user_id, $userIds, true);
-    }
-
-    /**
-     * The enabled gateway configuration the owner's grant is served under.
-     *
-     * @throws ShareGatewayUnavailable when the share is a proposal or its configuration was disabled
-     */
-    public function gatewayConfiguration(): ShareGatewayConfiguration
-    {
-        if ($this->share_gateway_configuration_id === null) {
-            throw ShareGatewayUnavailable::forProposal($this->id);
-        }
-
-        return ShareGatewayConfiguration::usable($this->share_gateway_configuration_id);
-    }
-
-    // ----------[ Accessors ]----------
-
-    /**
-     * What a lifecycle event tells about the share as it stands now.
-     *
-     * @return Attribute<ShareFact, never>
-     */
-    protected function fact(): Attribute
-    {
-        return Attribute::get(fn () => $this->factAt(CarbonImmutable::now()))->withoutObjectCaching();
-    }
-
-    /**
-     * What the owner learns of the share: its id, number and state, never its token.
-     *
-     * @return Attribute<ShareSummary, never>
-     */
-    protected function summary(): Attribute
-    {
-        return Attribute::get(
-            fn () => new ShareSummary($this->id, $this->number, $this->state),
-        )->withoutObjectCaching();
-    }
-
-    /**
-     * What the requesting agent learns of its proposal: its number and state, nothing more.
-     *
-     * @return Attribute<ShareProposalStatus, never>
-     */
-    protected function proposalStatus(): Attribute
-    {
-        return Attribute::get(fn () => new ShareProposalStatus($this->number, $this->state))->withoutObjectCaching();
-    }
-
-    /**
-     * @return Attribute<RecordIdentity, never>
-     */
-    protected function root(): Attribute
-    {
-        return Attribute::get(fn () => new RecordIdentity($this->root_type, $this->root_id))->withoutObjectCaching();
-    }
-
-    // ----------[ Internals ]----------
-
-    private static function forRoot(RecordIdentity $root, ShareState $state, CarbonImmutable $expiresAt): self
-    {
-        $share = new self();
-        $share->state = $state;
-        $share->root_type = $root->type;
-        $share->root_id = $root->id;
-        $share->scope_version = 0;
-        $share->expires_at = $expiresAt;
-
-        return $share;
     }
 
     // ----------[ Scopes ]----------

@@ -201,6 +201,166 @@ final class StartRecord extends Model implements EventSource, ReadableModel
         ]);
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * The host took the start's bootstrap: its driver is proving which conversation it runs.
+     */
+    public function prepareIdentity(): void
+    {
+        $this->readiness = StartReadiness::PreparingIdentity;
+        $this->assertSaved($this->save());
+        $this->raise(new StartIdentityPrepared($this->id));
+    }
+
+    /**
+     * The driver proved the conversation it runs, so the messages held for it go out; one already bound to another
+     * conversation answers false and stays held.
+     */
+    public function bindIdentity(string $nativeId): bool
+    {
+        if ($this->native_id !== null && $this->native_id !== $nativeId) {
+            return false;
+        }
+
+        $this->native_id = $nativeId;
+        $this->readiness = StartReadiness::Ready;
+        $this->assertSaved($this->save());
+        $this->raise(new StartIdentityBound($this->id, $nativeId));
+
+        return true;
+    }
+
+    /**
+     * The bootstrap's end was not seen, so whether the driver runs the right conversation is unknown and its messages
+     * stay held until a later report proves it.
+     */
+    public function markIdentityUncertain(): void
+    {
+        $this->readiness = StartReadiness::Uncertain;
+        $this->assertSaved($this->save());
+        $this->raise(new StartIdentityBecameUncertain($this->id));
+    }
+
+    /**
+     * Check status found no proof of the start's conversation, so a start still unverified is uncertain and its
+     * messages stay held; a start that was proved, refused or cancelled meanwhile keeps its state.
+     */
+    public function markReadinessUnseen(): void
+    {
+        if (! $this->readiness->isUnverified()) {
+            return;
+        }
+
+        $this->markIdentityUncertain();
+    }
+
+    /**
+     * The owner cancelled the start while its session was not yet verified: no later report makes it ready.
+     */
+    public function cancelVerification(): void
+    {
+        if (! $this->readiness->takesReadiness() || $this->readiness === StartReadiness::Ready) {
+            return;
+        }
+
+        $this->readiness = StartReadiness::Cancelled;
+        $this->assertSaved($this->save());
+        $this->raise(new StartVerificationCancelled($this->id));
+    }
+
+    public function startedAs(AgentSession $session): void
+    {
+        $this->session_id = $session->id;
+        $this->disposition = StartDisposition::Started;
+        $this->assertSaved($this->save());
+        $ownerWork = $this->owner_reference === null ? null : $this->ownerWork;
+        $this->raise(new StartSessionOpened($this->id, $this->agent_id, $session->id, $ownerWork));
+    }
+
+    /**
+     * The start was refused: the record keeps the reason and the time as its receipt, and names no session.
+     */
+    public function refuse(StartRefusal $refusal): void
+    {
+        $this->refuseFor($refusal->reason());
+    }
+
+    /**
+     * The start was refused for this reason after it was accepted, such as by the host that could not wake it: the
+     * record keeps the reason as its receipt, and its session stays named.
+     */
+    public function refuseFor(
+        StartRefusalType|StartPreflightRefusal|ResumeRefusal|StartUnavailableReason|HostRefusal $reason,
+    ): void {
+        $this->disposition = StartDisposition::Refused;
+        $this->readiness = StartReadiness::Refused;
+        $this->refusal_reason = $reason->value;
+        $this->refused_at = CarbonImmutable::now();
+        $this->assertSaved($this->save());
+        $this->raise(new StartRecordRefused($this->id, $reason->value));
+    }
+
+    /**
+     * An intent whose start failed for a reason that is no refusal, and that started nothing, leaves its key free.
+     */
+    public function forgetIntent(): void
+    {
+        if ($this->disposition !== StartDisposition::Accepted || $this->session_id !== null) {
+            return;
+        }
+
+        $this->delete();
+        $this->raise(new StartIntentForgotten($this->id));
+    }
+
+    // ----------[ Getters ]----------
+
+    public function wasRequestedBy(ActorIdentity $actor): bool
+    {
+        return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id)->isSameAs($actor);
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * The work this start was made for, as its owner names it.
+     *
+     * @return Attribute<RecordIdentity, never>
+     */
+    protected function ownerWork(): Attribute
+    {
+        return Attribute::get(function () {
+            [$type, $id] = explode(':', (string) $this->owner_reference, 2);
+
+            return new RecordIdentity($type, $id);
+        })->withoutObjectCaching();
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * @throws StartRequestConflict
+     */
+    private function assertDigest(StartRequest $request): void
+    {
+        if (! hash_equals($this->payload_digest, $request->digest())) {
+            throw StartRequestConflict::forRequest($request->requestId);
+        }
+    }
+
+    /**
+     * @throws StartRefusalReplayed
+     */
+    private function assertNotRefused(): void
+    {
+        if ($this->disposition !== StartDisposition::Refused) {
+            return;
+        }
+
+        throw StartRefusalReplayed::forRequest($this->request_id, (string) $this->refusal_reason);
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -343,166 +503,6 @@ final class StartRecord extends Model implements EventSource, ReadableModel
             ->where('session_id', $sessionId)
             ->where('conversation_mode', ConversationModeType::Resume->value)
             ->exists();
-    }
-
-    // ----------[ Mutations ]----------
-
-    /**
-     * The host took the start's bootstrap: its driver is proving which conversation it runs.
-     */
-    public function prepareIdentity(): void
-    {
-        $this->readiness = StartReadiness::PreparingIdentity;
-        $this->assertSaved($this->save());
-        $this->raise(new StartIdentityPrepared($this->id));
-    }
-
-    /**
-     * The driver proved the conversation it runs, so the messages held for it go out; one already bound to another
-     * conversation answers false and stays held.
-     */
-    public function bindIdentity(string $nativeId): bool
-    {
-        if ($this->native_id !== null && $this->native_id !== $nativeId) {
-            return false;
-        }
-
-        $this->native_id = $nativeId;
-        $this->readiness = StartReadiness::Ready;
-        $this->assertSaved($this->save());
-        $this->raise(new StartIdentityBound($this->id, $nativeId));
-
-        return true;
-    }
-
-    /**
-     * The bootstrap's end was not seen, so whether the driver runs the right conversation is unknown and its messages
-     * stay held until a later report proves it.
-     */
-    public function markIdentityUncertain(): void
-    {
-        $this->readiness = StartReadiness::Uncertain;
-        $this->assertSaved($this->save());
-        $this->raise(new StartIdentityBecameUncertain($this->id));
-    }
-
-    /**
-     * Check status found no proof of the start's conversation, so a start still unverified is uncertain and its
-     * messages stay held; a start that was proved, refused or cancelled meanwhile keeps its state.
-     */
-    public function markReadinessUnseen(): void
-    {
-        if (! $this->readiness->isUnverified()) {
-            return;
-        }
-
-        $this->markIdentityUncertain();
-    }
-
-    /**
-     * The owner cancelled the start while its session was not yet verified: no later report makes it ready.
-     */
-    public function cancelVerification(): void
-    {
-        if (! $this->readiness->takesReadiness() || $this->readiness === StartReadiness::Ready) {
-            return;
-        }
-
-        $this->readiness = StartReadiness::Cancelled;
-        $this->assertSaved($this->save());
-        $this->raise(new StartVerificationCancelled($this->id));
-    }
-
-    public function startedAs(AgentSession $session): void
-    {
-        $this->session_id = $session->id;
-        $this->disposition = StartDisposition::Started;
-        $this->assertSaved($this->save());
-        $ownerWork = $this->owner_reference === null ? null : $this->ownerWork;
-        $this->raise(new StartSessionOpened($this->id, $this->agent_id, $session->id, $ownerWork));
-    }
-
-    /**
-     * The start was refused: the record keeps the reason and the time as its receipt, and names no session.
-     */
-    public function refuse(StartRefusal $refusal): void
-    {
-        $this->refuseFor($refusal->reason());
-    }
-
-    /**
-     * The start was refused for this reason after it was accepted, such as by the host that could not wake it: the
-     * record keeps the reason as its receipt, and its session stays named.
-     */
-    public function refuseFor(
-        StartRefusalType|StartPreflightRefusal|ResumeRefusal|StartUnavailableReason|HostRefusal $reason,
-    ): void {
-        $this->disposition = StartDisposition::Refused;
-        $this->readiness = StartReadiness::Refused;
-        $this->refusal_reason = $reason->value;
-        $this->refused_at = CarbonImmutable::now();
-        $this->assertSaved($this->save());
-        $this->raise(new StartRecordRefused($this->id, $reason->value));
-    }
-
-    /**
-     * An intent whose start failed for a reason that is no refusal, and that started nothing, leaves its key free.
-     */
-    public function forgetIntent(): void
-    {
-        if ($this->disposition !== StartDisposition::Accepted || $this->session_id !== null) {
-            return;
-        }
-
-        $this->delete();
-        $this->raise(new StartIntentForgotten($this->id));
-    }
-
-    // ----------[ Answers ]----------
-
-    public function wasRequestedBy(ActorIdentity $actor): bool
-    {
-        return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id)->isSameAs($actor);
-    }
-
-    // ----------[ Accessors ]----------
-
-    /**
-     * The work this start was made for, as its owner names it.
-     *
-     * @return Attribute<RecordIdentity, never>
-     */
-    protected function ownerWork(): Attribute
-    {
-        return Attribute::get(function () {
-            [$type, $id] = explode(':', (string) $this->owner_reference, 2);
-
-            return new RecordIdentity($type, $id);
-        })->withoutObjectCaching();
-    }
-
-    // ----------[ Internals ]----------
-
-    /**
-     * @throws StartRequestConflict
-     */
-    private function assertDigest(StartRequest $request): void
-    {
-        if (! hash_equals($this->payload_digest, $request->digest())) {
-            throw StartRequestConflict::forRequest($request->requestId);
-        }
-    }
-
-    /**
-     * @throws StartRefusalReplayed
-     */
-    private function assertNotRefused(): void
-    {
-        if ($this->disposition !== StartDisposition::Refused) {
-            return;
-        }
-
-        throw StartRefusalReplayed::forRequest($this->request_id, (string) $this->refusal_reason);
     }
 
     // ----------[ Scopes ]----------

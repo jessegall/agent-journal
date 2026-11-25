@@ -15,5 +15,4 @@ Route::middleware('journal.agent')
         $calls->register(Calls\DockAddController::class)->name('dock.add');
         $calls->register(Calls\DockListController::class)->name('dock.list');
         $calls->register(Calls\DockRemoveController::class)->name('dock.remove');
-        $calls->register(Calls\RetryDeliveryController::class)->name('deliveries.retry');
     });

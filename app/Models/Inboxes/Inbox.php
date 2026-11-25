@@ -91,6 +91,50 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
         return $inbox;
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * Takes the number of the inbox's next message on this locked row: the first message of an inbox is 1.
+     */
+    public function takeMessageNumber(): int
+    {
+        $this->last_message_number++;
+        $this->assertSaved($this->save());
+        $this->raise(new InboxMessageNumberTaken($this->id));
+
+        return $this->last_message_number;
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses an actor with no personal inbox yet.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws InboxUnavailable
+     */
+    private static function assertPersonalFound(self|null $row, ActorIdentity $actor): void
+    {
+        if ($row === null) {
+            throw InboxUnavailable::forActor($actor->id);
+        }
+    }
+
+    /**
+     * Refuses an inbox that is not there.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws InboxUnavailable
+     */
+    private static function assertFound(self|null $row, string $id): void
+    {
+        if ($row === null) {
+            throw InboxUnavailable::forId($id);
+        }
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -158,50 +202,6 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
     public function members(): HasMany
     {
         return $this->hasMany(InboxMember::class);
-    }
-
-    // ----------[ Mutations ]----------
-
-    /**
-     * Takes the number of the inbox's next message on this locked row: the first message of an inbox is 1.
-     */
-    public function takeMessageNumber(): int
-    {
-        $this->last_message_number++;
-        $this->assertSaved($this->save());
-        $this->raise(new InboxMessageNumberTaken($this->id));
-
-        return $this->last_message_number;
-    }
-
-    // ----------[ Asserts ]----------
-
-    /**
-     * Refuses an actor with no personal inbox yet.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws InboxUnavailable
-     */
-    private static function assertPersonalFound(self|null $row, ActorIdentity $actor): void
-    {
-        if ($row === null) {
-            throw InboxUnavailable::forActor($actor->id);
-        }
-    }
-
-    /**
-     * Refuses an inbox that is not there.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws InboxUnavailable
-     */
-    private static function assertFound(self|null $row, string $id): void
-    {
-        if ($row === null) {
-            throw InboxUnavailable::forId($id);
-        }
     }
 
     // ----------[ Scopes ]----------

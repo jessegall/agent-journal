@@ -76,34 +76,6 @@ final class Sequence extends Model implements EventSource, ReadableModel
         return $sequence;
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * @throws SequenceMissing
-     */
-    public static function byId(string $id): self
-    {
-        return self::query()->whereKey($id)->firstOr(fn () => throw SequenceMissing::forId($id));
-    }
-
-    /**
-     * The sequence read under its row lock, for a change that must not cross another.
-     *
-     * @throws SequenceMissing
-     */
-    public static function lockedById(string $id): self
-    {
-        return self::query()->whereKey($id)->lockForUpdate()->firstOr(fn () => throw SequenceMissing::forId($id));
-    }
-
-    /**
-     * @return HasMany<SequenceRun, $this>
-     */
-    public function runs(): HasMany
-    {
-        return $this->hasMany(SequenceRun::class);
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -138,5 +110,55 @@ final class Sequence extends Model implements EventSource, ReadableModel
     protected function stepList(): Attribute
     {
         return Attribute::get(fn () => array_values(SequenceStepData::collect($this->steps)));
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a sequence that is not there.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws SequenceMissing
+     */
+    private static function assertFound(self|null $row, string $id): void
+    {
+        if ($row === null) {
+            throw SequenceMissing::forId($id);
+        }
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * @throws SequenceMissing
+     */
+    public static function byId(string $id): self
+    {
+        $row = self::query()->whereKey($id)->first();
+        self::assertFound($row, $id);
+
+        return $row;
+    }
+
+    /**
+     * The sequence read under its row lock, for a change that must not cross another.
+     *
+     * @throws SequenceMissing
+     */
+    public static function lockedById(string $id): self
+    {
+        $row = self::query()->whereKey($id)->lockForUpdate()->first();
+        self::assertFound($row, $id);
+
+        return $row;
+    }
+
+    /**
+     * @return HasMany<SequenceRun, $this>
+     */
+    public function runs(): HasMany
+    {
+        return $this->hasMany(SequenceRun::class);
     }
 }

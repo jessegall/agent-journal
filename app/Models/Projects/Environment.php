@@ -73,6 +73,22 @@ final class Environment extends Model implements EventSource, ReadableModel
         return $environment;
     }
 
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a line whose environment is not the project's.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws InvitationUnusable
+     */
+    private static function assertFoundForLine(self|null $row): void
+    {
+        if ($row === null) {
+            throw InvitationUnusable::forTicket();
+        }
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -118,22 +134,6 @@ final class Environment extends Model implements EventSource, ReadableModel
     {
         return array_values(self::query()->whereIn('project_id', $ids)->orderBy('label')
             ->readUpTo(self::LISTED_LIMIT * max(count($ids), 1))->get()->all());
-    }
-
-    // ----------[ Asserts ]----------
-
-    /**
-     * Refuses a line whose environment is not the project's.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws InvitationUnusable
-     */
-    private static function assertFoundForLine(self|null $row): void
-    {
-        if ($row === null) {
-            throw InvitationUnusable::forTicket();
-        }
     }
 
     // ----------[ Scopes ]----------

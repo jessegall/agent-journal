@@ -126,52 +126,6 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
         return $switch;
     }
 
-    // ----------[ Queries ]----------
-
-    public static function ofRequest(string $requestId): self|null
-    {
-        return self::query()->where('request_id', $requestId)->lockForUpdate()->first();
-    }
-
-    /**
-     * The open switch waiting for the stop of this session, locked.
-     */
-    public static function stoppingOf(string $sessionId): self|null
-    {
-        return self::query()
-            ->where('expected_session_id', $sessionId)
-            ->whereIn('stage', [DriverSwitchStage::Stopping->value, DriverSwitchStage::StopUnconfirmed->value])
-            ->lockForUpdate()
-            ->first();
-    }
-
-    /**
-     * The open switch waiting for this replacement session to run, locked.
-     */
-    public static function startingOf(string $sessionId): self|null
-    {
-        return self::query()
-            ->where('replacement_session_id', $sessionId)
-            ->whereIn('stage', [DriverSwitchStage::Starting->value, DriverSwitchStage::StartUnconfirmed->value])
-            ->lockForUpdate()
-            ->first();
-    }
-
-    /**
-     * The agent's switch that has not ended, locked; the caller holds the agent's lifecycle lock first.
-     */
-    public static function openOf(string $agentId): self|null
-    {
-        return self::query()
-            ->where('agent_id', $agentId)
-            ->whereNotIn('stage', array_map(
-                fn (DriverSwitchStage $stage) => $stage->value,
-                array_filter(DriverSwitchStage::cases(), fn (DriverSwitchStage $stage) => $stage->isFinal()),
-            ))
-            ->lockForUpdate()
-            ->first();
-    }
-
     // ----------[ Mutations ]----------
 
     public function markPreflighted(): void
@@ -325,5 +279,51 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
         $this->stage = $next;
         $this->failure_reason = $reason;
         $this->assertSaved($this->save());
+    }
+
+    // ----------[ Queries ]----------
+
+    public static function ofRequest(string $requestId): self|null
+    {
+        return self::query()->where('request_id', $requestId)->lockForUpdate()->first();
+    }
+
+    /**
+     * The open switch waiting for the stop of this session, locked.
+     */
+    public static function stoppingOf(string $sessionId): self|null
+    {
+        return self::query()
+            ->where('expected_session_id', $sessionId)
+            ->whereIn('stage', [DriverSwitchStage::Stopping->value, DriverSwitchStage::StopUnconfirmed->value])
+            ->lockForUpdate()
+            ->first();
+    }
+
+    /**
+     * The open switch waiting for this replacement session to run, locked.
+     */
+    public static function startingOf(string $sessionId): self|null
+    {
+        return self::query()
+            ->where('replacement_session_id', $sessionId)
+            ->whereIn('stage', [DriverSwitchStage::Starting->value, DriverSwitchStage::StartUnconfirmed->value])
+            ->lockForUpdate()
+            ->first();
+    }
+
+    /**
+     * The agent's switch that has not ended, locked; the caller holds the agent's lifecycle lock first.
+     */
+    public static function openOf(string $agentId): self|null
+    {
+        return self::query()
+            ->where('agent_id', $agentId)
+            ->whereNotIn('stage', array_map(
+                fn (DriverSwitchStage $stage) => $stage->value,
+                array_filter(DriverSwitchStage::cases(), fn (DriverSwitchStage $stage) => $stage->isFinal()),
+            ))
+            ->lockForUpdate()
+            ->first();
     }
 }

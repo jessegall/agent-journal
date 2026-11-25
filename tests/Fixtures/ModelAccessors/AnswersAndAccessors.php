@@ -17,7 +17,7 @@ use RuntimeException;
  */
 final class AnswersAndAccessors extends Model
 {
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     public function isDone(): bool
     {

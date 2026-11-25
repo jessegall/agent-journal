@@ -23,7 +23,7 @@ final readonly class AnswerQuestionHandler implements CommandHandler
      * @throws InboxUnavailable
      * @throws QuestionRefused
      */
-    public function handle(AnswerQuestionCommand $command): null
+    public function handle(AnswerQuestionCommand $command): void
     {
         $answerer = ActorIdentity::of($command->dispatchedBy());
         $question = Question::lockedById($command->questionId);
@@ -33,7 +33,5 @@ final readonly class AnswerQuestionHandler implements CommandHandler
         }
 
         $question->answer($answerer, trim($command->answer), $this->clock->now());
-
-        return null;
     }
 }

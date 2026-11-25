@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Questions;
 
+use App\Contracts\Records\ReadableModel;
+use App\Concerns\BoundedReads;
 use App\Contracts\Records\AuthoredModel;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
@@ -38,8 +40,9 @@ use Illuminate\Database\Eloquent\Model;
     'inbox_id', 'sender_type', 'sender_id', 'target_type', 'target_id', 'text', 'type', 'options', 'answer',
     'answered_at',
 ])]
-final class Question extends Model implements AuthoredModel, EventSource
+final class Question extends Model implements AuthoredModel, EventSource, ReadableModel
 {
+    use BoundedReads;
     use HasUlids;
     use RaisesEvents;
 
@@ -86,13 +89,6 @@ final class Question extends Model implements AuthoredModel, EventSource
         return $question;
     }
 
-    // ----------[ Queries ]----------
-
-    public static function lockedById(string $id): self
-    {
-        return self::query()->whereKey($id)->lockForUpdate()->firstOrFail();
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -111,7 +107,7 @@ final class Question extends Model implements AuthoredModel, EventSource
         $this->raise(new QuestionAnswered($this->id, $this->inbox_id, $answerer));
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     public function sender(): ActorIdentity
     {
@@ -153,5 +149,12 @@ final class Question extends Model implements AuthoredModel, EventSource
         if ($this->type === QuestionType::Choice && ! in_array($answer, $this->options, true)) {
             throw QuestionRefused::notAnOption($this->id);
         }
+    }
+
+    // ----------[ Queries ]----------
+
+    public static function lockedById(string $id): self
+    {
+        return self::query()->whereKey($id)->lockForUpdate()->firstOrFail();
     }
 }

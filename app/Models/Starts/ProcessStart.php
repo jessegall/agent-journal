@@ -115,181 +115,6 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
         return $start;
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The named read of the supervisor and the account-use read, across every agent's starts.
-     *
-     * @return ReadBuilder<self>
-     */
-    public static function supervised(): ReadBuilder
-    {
-        return self::query()->withoutGlobalScope(ProcessStartScope::class);
-    }
-
-    /**
-     * The session's start that may still run, locked: the newest one not cancelled or stopped; none for a session
-     * the journal does not supervise.
-     */
-    public static function lockedCurrentOf(string $sessionId): self|null
-    {
-        return self::supervised()
-            ->unresolved()
-            ->where('session_id', $sessionId)
-            ->orderByDesc('created_at')
-            ->lockForUpdate()
-            ->first();
-    }
-
-    /**
-     * The session's start that may still run, for reading what it granted; none when no start runs.
-     */
-    public static function currentOf(string $sessionId): self|null
-    {
-        return self::supervised()->unresolved()->where('session_id', $sessionId)->orderByDesc('created_at')->first();
-    }
-
-    /**
-     * The session's latest start, for telling which account and generation a failure it reports belongs to.
-     */
-    public static function latestOfSession(string $sessionId): self|null
-    {
-        return self::supervised()->where('session_id', $sessionId)->orderByDesc('created_at')->first();
-    }
-
-    /**
-     * The id of each of these sessions' latest supervised start, by session; a session the journal does not supervise
-     * is not in it. A host's claim binds its report to it.
-     *
-     * @param  list<string>  $ids
-     * @return array<string, string>
-     */
-    public static function latestIdsOfSessions(array $ids): array
-    {
-        return self::supervised()
-            ->whereIn('session_id', $ids)
-            ->whereNotExists(fn (QueryBuilder $newer) => $newer->from('process_starts', 'newer')
-                ->whereColumn('newer.session_id', 'process_starts.session_id')
-                ->where(fn (QueryBuilder $later) => $later
-                    ->whereColumn('newer.created_at', '>', 'process_starts.created_at')
-                    ->orWhere(fn (QueryBuilder $sameTime) => $sameTime
-                        ->whereColumn('newer.created_at', 'process_starts.created_at')
-                        ->whereColumn('newer.id', '>', 'process_starts.id'))))
-            ->readExactly(count($ids))
-            ->pluck('id', 'session_id')
-            ->all();
-    }
-
-    /**
-     * Why each of these agents' latest start was refused, by agent; an agent whose latest start was not refused is not
-     * in it. Home reads the agents it shows at once, one latest start for each.
-     *
-     * @param  list<string>  $agentIds
-     * @return array<string, string>
-     */
-    public static function refusalsOf(array $agentIds): array
-    {
-        $latest = self::supervised()
-            ->whereIn('agent_id', $agentIds)
-            ->whereNotExists(fn (QueryBuilder $newer) => $newer->from('process_starts', 'newer')
-                ->whereColumn('newer.agent_id', 'process_starts.agent_id')
-                ->where(fn (QueryBuilder $later) => $later->whereColumn(
-                    'newer.created_at',
-                    '>',
-                    'process_starts.created_at',
-                )
-                    ->orWhere(fn (QueryBuilder $sameTime) => $sameTime->whereColumn(
-                        'newer.created_at',
-                        'process_starts.created_at',
-                    )
-                        ->whereColumn('newer.id', '>', 'process_starts.id'))))
-            ->readExactly(count($agentIds))
-            ->get();
-
-        return $latest->filter(fn (self $start) => $start->refusal !== null)->mapWithKeys(
-            fn (self $start) => [$start->agent_id => (string) $start->refusal],
-        )->all();
-    }
-
-    /**
-     * The start the host claimed, by its key, locked; another host's start is as unknown as a missing one.
-     *
-     * @throws ProcessStartUnknown
-     */
-    public static function claimedBy(string $hostId, string $startKey): self
-    {
-        $start = self::supervised()
-            ->where('host_id', $hostId)
-            ->where('start_key', $startKey)
-            ->lockForUpdate()
-            ->first();
-
-        if ($start === null) {
-            throw ProcessStartUnknown::for($startKey);
-        }
-
-        return $start;
-    }
-
-    /**
-     * The keys of the host's starts that may still have a process, for its restart reconciliation.
-     *
-     * @return list<string>
-     */
-    public static function unresolvedKeysOf(string $hostId): array
-    {
-        $keys = self::supervised()
-            ->where('host_id', $hostId)
-            ->unresolved()
-            ->orderBy('created_at')
-            ->readAll('a host reconciles every start it may still run')
-            ->pluck('start_key');
-
-        return array_values(array_map(strval(...), $keys->all()));
-    }
-
-    /**
-     * How many starts on the account may still have or make a process, for the account-use read.
-     */
-    public static function unresolvedCountOf(RecordIdentity $account): int
-    {
-        return self::supervised()->onAccount($account)->unresolved()->count();
-    }
-
-    /**
-     * The sessions of the starts on the account that may still have or make a process, oldest first.
-     *
-     * @return list<string>
-     */
-    public static function unresolvedSessionIdsOf(RecordIdentity $account): array
-    {
-        $sessionIds = self::supervised()
-            ->onAccount($account)
-            ->unresolved()
-            ->orderBy('created_at')
-            ->readAll('every start that may still use a held account must end before its sign-in changes')
-            ->pluck('session_id');
-
-        return array_values(array_unique(array_map(strval(...), $sessionIds->all())));
-    }
-
-    /**
-     * The sessions of the host's starts that may still have a process, the only sessions whose stop attempts it runs.
-     *
-     * @return list<string>
-     */
-    public static function unresolvedSessionIdsOn(string $hostId): array
-    {
-        $sessionIds = self::supervised()
-            ->where('host_id', $hostId)
-            ->unresolved()
-            ->orderBy('created_at')
-            ->readAll('a host runs the stop conditions of every session it may still run')
-            ->pluck('session_id');
-
-        return array_values(array_unique(array_map(strval(...), $sessionIds->all())));
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -408,6 +233,194 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
         return Attribute::get(
             fn () => new RecordIdentity($this->account_type, $this->account_id),
         )->withoutObjectCaching();
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a start key the host claimed no start under.
+     *
+     * @phpstan-assert self $start
+     *
+     * @throws ProcessStartUnknown
+     */
+    private static function assertClaimed(self|null $start, string $startKey): void
+    {
+        if ($start === null) {
+            throw ProcessStartUnknown::for($startKey);
+        }
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The named read of the supervisor and the account-use read, across every agent's starts.
+     *
+     * @return ReadBuilder<self>
+     */
+    public static function supervised(): ReadBuilder
+    {
+        return self::query()->withoutGlobalScope(ProcessStartScope::class);
+    }
+
+    /**
+     * The session's start that may still run, locked: the newest one not cancelled or stopped; none for a session
+     * the journal does not supervise.
+     */
+    public static function lockedCurrentOf(string $sessionId): self|null
+    {
+        return self::supervised()
+            ->unresolved()
+            ->where('session_id', $sessionId)
+            ->orderByDesc('created_at')
+            ->lockForUpdate()
+            ->first();
+    }
+
+    /**
+     * The session's start that may still run, for reading what it granted; none when no start runs.
+     */
+    public static function currentOf(string $sessionId): self|null
+    {
+        return self::supervised()->unresolved()->where('session_id', $sessionId)->orderByDesc('created_at')->first();
+    }
+
+    /**
+     * The session's latest start, for telling which account and generation a failure it reports belongs to.
+     */
+    public static function latestOfSession(string $sessionId): self|null
+    {
+        return self::supervised()->where('session_id', $sessionId)->orderByDesc('created_at')->first();
+    }
+
+    /**
+     * The id of each of these sessions' latest supervised start, by session; a session the journal does not supervise
+     * is not in it. A host's claim binds its report to it.
+     *
+     * @param  list<string>  $ids
+     * @return array<string, string>
+     */
+    public static function latestIdsOfSessions(array $ids): array
+    {
+        return self::supervised()
+            ->whereIn('session_id', $ids)
+            ->whereNotExists(fn (QueryBuilder $newer) => $newer->from('process_starts', 'newer')
+                ->whereColumn('newer.session_id', 'process_starts.session_id')
+                ->where(fn (QueryBuilder $later) => $later
+                    ->whereColumn('newer.created_at', '>', 'process_starts.created_at')
+                    ->orWhere(fn (QueryBuilder $sameTime) => $sameTime
+                        ->whereColumn('newer.created_at', 'process_starts.created_at')
+                        ->whereColumn('newer.id', '>', 'process_starts.id'))))
+            ->readExactly(count($ids))
+            ->pluck('id', 'session_id')
+            ->all();
+    }
+
+    /**
+     * Why each of these agents' latest start was refused, by agent; an agent whose latest start was not refused is not
+     * in it. Home reads the agents it shows at once, one latest start for each.
+     *
+     * @param  list<string>  $agentIds
+     * @return array<string, string>
+     */
+    public static function refusalsOf(array $agentIds): array
+    {
+        $latest = self::supervised()
+            ->whereIn('agent_id', $agentIds)
+            ->whereNotExists(fn (QueryBuilder $newer) => $newer->from('process_starts', 'newer')
+                ->whereColumn('newer.agent_id', 'process_starts.agent_id')
+                ->where(fn (QueryBuilder $later) => $later->whereColumn(
+                    'newer.created_at',
+                    '>',
+                    'process_starts.created_at',
+                )
+                    ->orWhere(fn (QueryBuilder $sameTime) => $sameTime->whereColumn(
+                        'newer.created_at',
+                        'process_starts.created_at',
+                    )
+                        ->whereColumn('newer.id', '>', 'process_starts.id'))))
+            ->readExactly(count($agentIds))
+            ->get();
+
+        return $latest->filter(fn (self $start) => $start->refusal !== null)->mapWithKeys(
+            fn (self $start) => [$start->agent_id => (string) $start->refusal],
+        )->all();
+    }
+
+    /**
+     * The start the host claimed, by its key, locked; another host's start is as unknown as a missing one.
+     *
+     * @throws ProcessStartUnknown
+     */
+    public static function claimedBy(string $hostId, string $startKey): self
+    {
+        $start = self::supervised()
+            ->where('host_id', $hostId)
+            ->where('start_key', $startKey)
+            ->lockForUpdate()
+            ->first();
+        self::assertClaimed($start, $startKey);
+
+        return $start;
+    }
+
+    /**
+     * The keys of the host's starts that may still have a process, for its restart reconciliation.
+     *
+     * @return list<string>
+     */
+    public static function unresolvedKeysOf(string $hostId): array
+    {
+        $keys = self::supervised()
+            ->where('host_id', $hostId)
+            ->unresolved()
+            ->orderBy('created_at')
+            ->readAll('a host reconciles every start it may still run')
+            ->pluck('start_key');
+
+        return array_values(array_map(strval(...), $keys->all()));
+    }
+
+    /**
+     * How many starts on the account may still have or make a process, for the account-use read.
+     */
+    public static function unresolvedCountOf(RecordIdentity $account): int
+    {
+        return self::supervised()->onAccount($account)->unresolved()->count();
+    }
+
+    /**
+     * The sessions of the starts on the account that may still have or make a process, oldest first.
+     *
+     * @return list<string>
+     */
+    public static function unresolvedSessionIdsOf(RecordIdentity $account): array
+    {
+        $sessionIds = self::supervised()
+            ->onAccount($account)
+            ->unresolved()
+            ->orderBy('created_at')
+            ->readAll('every start that may still use a held account must end before its sign-in changes')
+            ->pluck('session_id');
+
+        return array_values(array_unique(array_map(strval(...), $sessionIds->all())));
+    }
+
+    /**
+     * The sessions of the host's starts that may still have a process, the only sessions whose stop attempts it runs.
+     *
+     * @return list<string>
+     */
+    public static function unresolvedSessionIdsOn(string $hostId): array
+    {
+        $sessionIds = self::supervised()
+            ->where('host_id', $hostId)
+            ->unresolved()
+            ->orderBy('created_at')
+            ->readAll('a host runs the stop conditions of every session it may still run')
+            ->pluck('session_id');
+
+        return array_values(array_unique(array_map(strval(...), $sessionIds->all())));
     }
 
     // ----------[ Scopes ]----------

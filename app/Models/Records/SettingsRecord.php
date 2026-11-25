@@ -68,6 +68,19 @@ final class SettingsRecord extends Model implements EventSource, ReadableModel
         $record->insertIfAbsent();
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * Stores the changed document as the next revision: one revision for however many entries it changed.
+     */
+    public function revise(SettingsDocument $document): void
+    {
+        $this->document = $document;
+        $this->revision++;
+        $this->assertSaved($this->save());
+        $this->raise(new SettingsRevised($this->id));
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -98,19 +111,6 @@ final class SettingsRecord extends Model implements EventSource, ReadableModel
     public static function lockedForOwner(string $owner): self
     {
         return self::query()->ownedBy($owner)->lockForUpdate()->firstOrFail();
-    }
-
-    // ----------[ Mutations ]----------
-
-    /**
-     * Stores the changed document as the next revision: one revision for however many entries it changed.
-     */
-    public function revise(SettingsDocument $document): void
-    {
-        $this->document = $document;
-        $this->revision++;
-        $this->assertSaved($this->save());
-        $this->raise(new SettingsRevised($this->id));
     }
 
     // ----------[ Scopes ]----------

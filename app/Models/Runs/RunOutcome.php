@@ -81,6 +81,32 @@ final class RunOutcome extends Model implements EventSource, ReadableModel
         return $outcome;
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * A genuine signed result replaces the provisional one in place, keeping the row and its read state elsewhere.
+     */
+    public function correct(RunLogicalResult $result, RunResultSource $source): void
+    {
+        $this->result = $result;
+        $this->source = $source;
+        $this->version++;
+        $this->assertSaved($this->save());
+        $this->raise(new RunOutcomeRecorded($this->run_id, $this->attempt_id, $result, true));
+    }
+
+    // ----------[ Getters ]----------
+
+    public function isProvisional(): bool
+    {
+        return ! $this->source->isAuthoritative();
+    }
+
+    public function isResult(RunLogicalResult $result): bool
+    {
+        return $this->result === $result;
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -101,31 +127,5 @@ final class RunOutcome extends Model implements EventSource, ReadableModel
     public static function lockedForAttempt(string $attemptId): Option
     {
         return Option::fromValue(self::query()->where('attempt_id', $attemptId)->lockForUpdate()->first());
-    }
-
-    // ----------[ Mutations ]----------
-
-    /**
-     * A genuine signed result replaces the provisional one in place, keeping the row and its read state elsewhere.
-     */
-    public function correct(RunLogicalResult $result, RunResultSource $source): void
-    {
-        $this->result = $result;
-        $this->source = $source;
-        $this->version++;
-        $this->assertSaved($this->save());
-        $this->raise(new RunOutcomeRecorded($this->run_id, $this->attempt_id, $result, true));
-    }
-
-    // ----------[ Answers ]----------
-
-    public function isProvisional(): bool
-    {
-        return ! $this->source->isAuthoritative();
-    }
-
-    public function isResult(RunLogicalResult $result): bool
-    {
-        return $this->result === $result;
     }
 }

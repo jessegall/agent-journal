@@ -98,6 +98,54 @@ class User extends Authenticatable implements
         return self::query()->create(['name' => $name, 'email' => $email, 'password' => $password]);
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * Disables the account: it is never admitted again until it is enabled.
+     */
+    public function disable(CarbonImmutable $at): void
+    {
+        $this->disabled_at = $at;
+        $this->save();
+    }
+
+    public function enable(): void
+    {
+        $this->disabled_at = null;
+        $this->save();
+    }
+
+    /**
+     * Stores a new password; the hashed cast hashes it.
+     */
+    public function changePassword(string $password): void
+    {
+        $this->password = $password;
+        $this->save();
+    }
+
+    // ----------[ Getters ]----------
+
+    public function isDisabled(): bool
+    {
+        return $this->disabled_at !== null;
+    }
+
+    public function assigneeIdentity(): AssigneeIdentity
+    {
+        return AssigneeIdentity::of($this);
+    }
+
+    public function actorType(): ActorType
+    {
+        return ActorType::User;
+    }
+
+    public function actorId(): string
+    {
+        return $this->id;
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -128,53 +176,5 @@ class User extends Authenticatable implements
         }
 
         return null;
-    }
-
-    // ----------[ Mutations ]----------
-
-    /**
-     * Disables the account: it is never admitted again until it is enabled.
-     */
-    public function disable(CarbonImmutable $at): void
-    {
-        $this->disabled_at = $at;
-        $this->save();
-    }
-
-    public function enable(): void
-    {
-        $this->disabled_at = null;
-        $this->save();
-    }
-
-    /**
-     * Stores a new password; the hashed cast hashes it.
-     */
-    public function changePassword(string $password): void
-    {
-        $this->password = $password;
-        $this->save();
-    }
-
-    // ----------[ Answers ]----------
-
-    public function isDisabled(): bool
-    {
-        return $this->disabled_at !== null;
-    }
-
-    public function assigneeIdentity(): AssigneeIdentity
-    {
-        return AssigneeIdentity::of($this);
-    }
-
-    public function actorType(): ActorType
-    {
-        return ActorType::User;
-    }
-
-    public function actorId(): string
-    {
-        return $this->id;
     }
 }

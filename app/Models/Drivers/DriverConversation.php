@@ -57,6 +57,49 @@ final class DriverConversation extends Model implements ReadableModel
         ]);
     }
 
+    // ----------[ Getters ]----------
+
+    /**
+     * Whether a session of this agent, started for this context, may continue the conversation.
+     */
+    public function admits(string $agentId, string|null $contextReference): bool
+    {
+        return $this->agent_id === $agentId && $this->context_reference === $contextReference;
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * @throws ResumeRefused
+     */
+    public function assertContinuableBy(string $agentId, string $driver, string|null $contextReference): void
+    {
+        $refusal = match (true) {
+            $this->agent_id !== $agentId => ResumeRefusal::OtherAgent,
+            $this->resume_protocol !== $driver => ResumeRefusal::OtherDriver,
+            $this->context_reference !== $contextReference => ResumeRefusal::OtherContext,
+            default => null,
+        };
+
+        if ($refusal !== null) {
+            throw ResumeRefused::because($refusal);
+        }
+    }
+
+    /**
+     * Refuses a resume of a conversation that is not there.
+     *
+     * @phpstan-assert self $conversation
+     *
+     * @throws ResumeRefused
+     */
+    private static function assertConversationFound(self|null $conversation): void
+    {
+        if ($conversation === null) {
+            throw ResumeRefused::because(ResumeRefusal::ConversationMissing);
+        }
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -92,49 +135,6 @@ final class DriverConversation extends Model implements ReadableModel
         $conversation->assertContinuableBy($agentId, $driver, $contextReference);
 
         return $conversation->native_id;
-    }
-
-    // ----------[ Answers ]----------
-
-    /**
-     * @throws ResumeRefused
-     */
-    public function assertContinuableBy(string $agentId, string $driver, string|null $contextReference): void
-    {
-        $refusal = match (true) {
-            $this->agent_id !== $agentId => ResumeRefusal::OtherAgent,
-            $this->resume_protocol !== $driver => ResumeRefusal::OtherDriver,
-            $this->context_reference !== $contextReference => ResumeRefusal::OtherContext,
-            default => null,
-        };
-
-        if ($refusal !== null) {
-            throw ResumeRefused::because($refusal);
-        }
-    }
-
-    /**
-     * Whether a session of this agent, started for this context, may continue the conversation.
-     */
-    public function admits(string $agentId, string|null $contextReference): bool
-    {
-        return $this->agent_id === $agentId && $this->context_reference === $contextReference;
-    }
-
-    // ----------[ Asserts ]----------
-
-    /**
-     * Refuses a resume of a conversation that is not there.
-     *
-     * @phpstan-assert self $conversation
-     *
-     * @throws ResumeRefused
-     */
-    private static function assertConversationFound(self|null $conversation): void
-    {
-        if ($conversation === null) {
-            throw ResumeRefused::because(ResumeRefusal::ConversationMissing);
-        }
     }
 
     // ----------[ Scopes ]----------

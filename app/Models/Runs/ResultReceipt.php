@@ -106,7 +106,7 @@ final class ResultReceipt extends Model implements EventSource, ReadableModel
         $this->raise(new ResultReceiptSuperseded($this->id, $newer->id));
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     /**
      * The canonical operation of the part this receipt is the result of.

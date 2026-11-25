@@ -57,11 +57,7 @@ final class SkillGeneration extends Model implements EventSource, ReadableModel
 
     protected static function booted(): void
     {
-        self::updating(function (self $generation): void {
-            if ($generation->isDirty(['entries', 'catalogue_digest', 'registration_digest'])) {
-                throw SkillGenerationImmutable::for($generation->id);
-            }
-        });
+        self::updating(fn (self $generation) => $generation->assertContentUnedited());
     }
 
     // ----------[ Constructors ]----------
@@ -88,24 +84,6 @@ final class SkillGeneration extends Model implements EventSource, ReadableModel
                 'error_reason' => $errorReason,
             ],
         );
-    }
-
-    // ----------[ Queries ]----------
-
-    /**
-     * The newest ready generation, or null before the first refresh.
-     */
-    public static function latestReady(): self|null
-    {
-        return self::query()->inState(GenerationState::Ready)->orderByDesc('created_at')->orderByDesc('id')->first();
-    }
-
-    /**
-     * The newest generation of any state, for status.
-     */
-    public static function latest(): self|null
-    {
-        return self::query()->orderByDesc('created_at')->orderByDesc('id')->first();
     }
 
     // ----------[ Mutations ]----------
@@ -143,6 +121,38 @@ final class SkillGeneration extends Model implements EventSource, ReadableModel
         return Attribute::get(
             fn () => new GenerationStatus($this->id, $this->state, $this->catalogue_digest, $this->error_reason),
         )->withoutObjectCaching();
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses an edit of a generation's entries or digests: what a generation holds stays as it was written.
+     *
+     * @throws SkillGenerationImmutable
+     */
+    private function assertContentUnedited(): void
+    {
+        if ($this->isDirty(['entries', 'catalogue_digest', 'registration_digest'])) {
+            throw SkillGenerationImmutable::for($this->id);
+        }
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The newest ready generation, or null before the first refresh.
+     */
+    public static function latestReady(): self|null
+    {
+        return self::query()->inState(GenerationState::Ready)->orderByDesc('created_at')->orderByDesc('id')->first();
+    }
+
+    /**
+     * The newest generation of any state, for status.
+     */
+    public static function latest(): self|null
+    {
+        return self::query()->orderByDesc('created_at')->orderByDesc('id')->first();
     }
 
     // ----------[ Scopes ]----------

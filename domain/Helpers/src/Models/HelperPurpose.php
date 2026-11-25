@@ -53,6 +53,51 @@ final class HelperPurpose extends Model implements ReadableModel
         return ['purpose_type' => PurposeType::class];
     }
 
+    // ----------[ Accessors ]----------
+
+    /**
+     * The record the purpose is about, such as a plan to review; none for a free purpose.
+     *
+     * @return Attribute<Option<RecordIdentity>, never>
+     */
+    protected function subjectRecord(): Attribute
+    {
+        return Attribute::get(fn () => $this->subjectRecordOf($this->subject_type, $this->subject_id));
+    }
+
+    // ----------[ Internals ]----------
+
+    /**
+     * @return Option<RecordIdentity>
+     */
+    private function subjectRecordOf(string|null $type, string|null $id): Option
+    {
+        if ($type === null || $id === null) {
+            return None::create();
+        }
+
+        return new Some(new RecordIdentity($type, $id));
+    }
+
+    private static function start(
+        ActorIdentity $parent,
+        string $profileKey,
+        PurposeType $type,
+        RecordIdentity|null $subject,
+        string $label,
+    ): self {
+        $purpose = new self();
+        $purpose->profile_key = $profileKey;
+        $purpose->purpose_type = $type;
+        $purpose->subject_type = $subject?->type;
+        $purpose->subject_id = $subject?->id;
+        $purpose->label = $label;
+        $purpose->belongTo($parent);
+        $purpose->save();
+
+        return $purpose;
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -107,50 +152,5 @@ final class HelperPurpose extends Model implements ReadableModel
         }
 
         return $same->where('subject_type', $purpose->subject_type)->where('subject_id', $purpose->subject_id);
-    }
-
-    // ----------[ Accessors ]----------
-
-    /**
-     * The record the purpose is about, such as a plan to review; none for a free purpose.
-     *
-     * @return Attribute<Option<RecordIdentity>, never>
-     */
-    protected function subjectRecord(): Attribute
-    {
-        return Attribute::get(fn () => $this->subjectRecordOf($this->subject_type, $this->subject_id));
-    }
-
-    // ----------[ Internals ]----------
-
-    /**
-     * @return Option<RecordIdentity>
-     */
-    private function subjectRecordOf(string|null $type, string|null $id): Option
-    {
-        if ($type === null || $id === null) {
-            return None::create();
-        }
-
-        return new Some(new RecordIdentity($type, $id));
-    }
-
-    private static function start(
-        ActorIdentity $parent,
-        string $profileKey,
-        PurposeType $type,
-        RecordIdentity|null $subject,
-        string $label,
-    ): self {
-        $purpose = new self();
-        $purpose->profile_key = $profileKey;
-        $purpose->purpose_type = $type;
-        $purpose->subject_type = $subject?->type;
-        $purpose->subject_id = $subject?->id;
-        $purpose->label = $label;
-        $purpose->belongTo($parent);
-        $purpose->save();
-
-        return $purpose;
     }
 }

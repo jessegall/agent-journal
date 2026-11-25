@@ -101,74 +101,6 @@ final class MergeAttempt extends Model implements EventSource, ReadableModel
         ];
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The attempt of an approval, prepared once; a replay finds it.
-     */
-    public static function retain(ApprovedHead $approved): self
-    {
-        $attempt = new self([
-            'decision_id' => $approved->decision->id,
-            'work_type' => $approved->work->type,
-            'work_id' => $approved->work->id,
-            'certificate' => $approved->certificate,
-            ...$approved->admitted->asColumns('actor'),
-            'ask_id' => $approved->askId,
-            'ask_version' => $approved->version,
-            'target_branch' => $approved->targetBranch,
-            'base' => $approved->base,
-            'head' => $approved->head,
-            'import_ref' => $approved->importRef,
-            'state' => MergeAttemptState::Prepared,
-        ]);
-
-        $attempt->setAttribute($attempt->getKeyName(), $attempt->newUniqueId());
-        $attempt->insertIfAbsent();
-
-        return self::query()->where('decision_id', $approved->decision->id)->lockForUpdate()->sole();
-    }
-
-    /**
-     * Ended attempts supervision has not settled yet, oldest first.
-     *
-     * @return list<self>
-     */
-    public static function unacknowledged(int $limit): array
-    {
-        return array_values(self::query()
-            ->whereIn('state', MergeAttemptState::terminalValues())
-            ->whereNull('acknowledged_at')
-            ->orderBy('updated_at')
-            ->readExactly($limit)
-            ->get()
-            ->all());
-    }
-
-    /**
-     * Attempts a run left before they ended, for the engine to inspect, oldest first.
-     *
-     * @return list<self>
-     */
-    public static function interrupted(Carbon $before, int $limit): array
-    {
-        return array_values(self::query()
-            ->whereNotIn('state', MergeAttemptState::terminalValues())
-            ->where('updated_at', '<', $before)
-            ->orderBy('updated_at')
-            ->readExactly($limit)
-            ->get()
-            ->all());
-    }
-
-    /**
-     * Whether an attempt for the ask merged: the one evidence that a merge ask ended merged.
-     */
-    public static function hasMerged(string $askId): bool
-    {
-        return self::query()->where('ask_id', $askId)->where('state', MergeAttemptState::Merged)->exists();
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -258,5 +190,73 @@ final class MergeAttempt extends Model implements EventSource, ReadableModel
     protected function resultRef(): Attribute
     {
         return Attribute::get(fn () => "refs/journal/merge/{$this->id}");
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The attempt of an approval, prepared once; a replay finds it.
+     */
+    public static function retain(ApprovedHead $approved): self
+    {
+        $attempt = new self([
+            'decision_id' => $approved->decision->id,
+            'work_type' => $approved->work->type,
+            'work_id' => $approved->work->id,
+            'certificate' => $approved->certificate,
+            ...$approved->admitted->asColumns('actor'),
+            'ask_id' => $approved->askId,
+            'ask_version' => $approved->version,
+            'target_branch' => $approved->targetBranch,
+            'base' => $approved->base,
+            'head' => $approved->head,
+            'import_ref' => $approved->importRef,
+            'state' => MergeAttemptState::Prepared,
+        ]);
+
+        $attempt->setAttribute($attempt->getKeyName(), $attempt->newUniqueId());
+        $attempt->insertIfAbsent();
+
+        return self::query()->where('decision_id', $approved->decision->id)->lockForUpdate()->sole();
+    }
+
+    /**
+     * Ended attempts supervision has not settled yet, oldest first.
+     *
+     * @return list<self>
+     */
+    public static function unacknowledged(int $limit): array
+    {
+        return array_values(self::query()
+            ->whereIn('state', MergeAttemptState::terminalValues())
+            ->whereNull('acknowledged_at')
+            ->orderBy('updated_at')
+            ->readExactly($limit)
+            ->get()
+            ->all());
+    }
+
+    /**
+     * Attempts a run left before they ended, for the engine to inspect, oldest first.
+     *
+     * @return list<self>
+     */
+    public static function interrupted(Carbon $before, int $limit): array
+    {
+        return array_values(self::query()
+            ->whereNotIn('state', MergeAttemptState::terminalValues())
+            ->where('updated_at', '<', $before)
+            ->orderBy('updated_at')
+            ->readExactly($limit)
+            ->get()
+            ->all());
+    }
+
+    /**
+     * Whether an attempt for the ask merged: the one evidence that a merge ask ended merged.
+     */
+    public static function hasMerged(string $askId): bool
+    {
+        return self::query()->where('ask_id', $askId)->where('state', MergeAttemptState::Merged)->exists();
     }
 }

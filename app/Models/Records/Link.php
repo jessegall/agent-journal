@@ -79,38 +79,6 @@ final class Link extends MorphPivot implements EventSource, ReadableModel
         return $link;
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The link between a model and a record named only by its link alias and id, made now when there is none yet;
-     * the named record is never loaded.
-     */
-    public static function connectKey(Model $source, string $targetType, string $targetId): self
-    {
-        return self::query()->touching($source)->touchingKey($targetType, $targetId)->first()
-            ?? self::create($source->getMorphClass(), (string) $source->getKey(), $targetType, $targetId);
-    }
-
-    /**
-     * Narrows a query of records the caller may read to those linked, in either direction, to the record of this
-     * link alias and id.
-     *
-     * @template TBuilder of Builder<*>
-     *
-     * @param  TBuilder  $records
-     * @return TBuilder
-     */
-    public static function narrowToLinked(Builder $records, string $type, string $id): Builder
-    {
-        $other = $records->getModel();
-        $key = $other->getQualifiedKeyName();
-        $otherType = $other->getMorphClass();
-        $asTargets = self::query()->withSourceKey($type, $id)->where('target_type', $otherType)->select('target_id');
-        $asSources = self::query()->withTargetKey($type, $id)->where('source_type', $otherType)->select('source_id');
-
-        return $records->where(fn (Builder $linked) => $linked->whereIn($key, $asTargets)->orWhereIn($key, $asSources));
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -122,7 +90,7 @@ final class Link extends MorphPivot implements EventSource, ReadableModel
         $this->raise(new LinkRemoved($this->id));
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     /**
      * The record on the other side of this link from the one given, by its link alias and id.
@@ -166,6 +134,38 @@ final class Link extends MorphPivot implements EventSource, ReadableModel
     public function target(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The link between a model and a record named only by its link alias and id, made now when there is none yet;
+     * the named record is never loaded.
+     */
+    public static function connectKey(Model $source, string $targetType, string $targetId): self
+    {
+        return self::query()->touching($source)->touchingKey($targetType, $targetId)->first()
+            ?? self::create($source->getMorphClass(), (string) $source->getKey(), $targetType, $targetId);
+    }
+
+    /**
+     * Narrows a query of records the caller may read to those linked, in either direction, to the record of this
+     * link alias and id.
+     *
+     * @template TBuilder of Builder<*>
+     *
+     * @param  TBuilder  $records
+     * @return TBuilder
+     */
+    public static function narrowToLinked(Builder $records, string $type, string $id): Builder
+    {
+        $other = $records->getModel();
+        $key = $other->getQualifiedKeyName();
+        $otherType = $other->getMorphClass();
+        $asTargets = self::query()->withSourceKey($type, $id)->where('target_type', $otherType)->select('target_id');
+        $asSources = self::query()->withTargetKey($type, $id)->where('source_type', $otherType)->select('source_id');
+
+        return $records->where(fn (Builder $linked) => $linked->whereIn($key, $asTargets)->orWhereIn($key, $asSources));
     }
 
     // ----------[ Scopes ]----------

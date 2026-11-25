@@ -44,61 +44,7 @@ final class ClaimAuthorization extends Model implements ReadableModel
         return ['basis_type' => ClaimBasis::class];
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * A task run claimed through the claimant's membership of the inbox that holds the task.
-     */
-    public static function forInboxRun(AssignmentReference $claim, InboxMember $member, AssignmentReference $work): self
-    {
-        return self::prove($claim, ClaimBasis::InboxRun, $member->id, $work->id);
-    }
-
-    /**
-     * A task run claimed by the actor that holds the task itself.
-     */
-    public static function forDirectRun(AssignmentReference $claim, AssignmentReference $work): self
-    {
-        return self::prove($claim, ClaimBasis::DirectRun, null, $work->id);
-    }
-
-    /**
-     * The proof behind one claim, when it has one.
-     */
-    public static function ofClaim(string $assignmentId): self|null
-    {
-        return self::query()->where('claim_assignment_id', $assignmentId)->first();
-    }
-
-    /**
-     * The ids of the claims that stand on this exact assignment, as a subquery.
-     *
-     * @return Builder<self>
-     */
-    public static function claimIdsFor(AssignmentReference $source): Builder
-    {
-        return self::query()
-            ->select('claim_assignment_id')
-            ->where('work_assignment_id', $source->id);
-    }
-
-    /**
-     * The proofs behind these claims, keyed by claim assignment id.
-     *
-     * @param  list<string>  $assignmentIds
-     * @return array<string, self>
-     */
-    public static function ofClaims(array $assignmentIds): array
-    {
-        return self::query()
-            ->whereIn('claim_assignment_id', $assignmentIds)
-            ->readExactly(count($assignmentIds))
-            ->get()
-            ->keyBy('claim_assignment_id')
-            ->all();
-    }
-
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     /**
      * Whether the exact assignments the claim stands on still exist and are still held as they were proved.
@@ -157,5 +103,59 @@ final class ClaimAuthorization extends Model implements ReadableModel
         $proof->save();
 
         return $proof;
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * A task run claimed through the claimant's membership of the inbox that holds the task.
+     */
+    public static function forInboxRun(AssignmentReference $claim, InboxMember $member, AssignmentReference $work): self
+    {
+        return self::prove($claim, ClaimBasis::InboxRun, $member->id, $work->id);
+    }
+
+    /**
+     * A task run claimed by the actor that holds the task itself.
+     */
+    public static function forDirectRun(AssignmentReference $claim, AssignmentReference $work): self
+    {
+        return self::prove($claim, ClaimBasis::DirectRun, null, $work->id);
+    }
+
+    /**
+     * The proof behind one claim, when it has one.
+     */
+    public static function ofClaim(string $assignmentId): self|null
+    {
+        return self::query()->where('claim_assignment_id', $assignmentId)->first();
+    }
+
+    /**
+     * The ids of the claims that stand on this exact assignment, as a subquery.
+     *
+     * @return Builder<self>
+     */
+    public static function claimIdsFor(AssignmentReference $source): Builder
+    {
+        return self::query()
+            ->select('claim_assignment_id')
+            ->where('work_assignment_id', $source->id);
+    }
+
+    /**
+     * The proofs behind these claims, keyed by claim assignment id.
+     *
+     * @param  list<string>  $assignmentIds
+     * @return array<string, self>
+     */
+    public static function ofClaims(array $assignmentIds): array
+    {
+        return self::query()
+            ->whereIn('claim_assignment_id', $assignmentIds)
+            ->readExactly(count($assignmentIds))
+            ->get()
+            ->keyBy('claim_assignment_id')
+            ->all();
     }
 }

@@ -104,51 +104,6 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
         return $phase;
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The phase with this number in the plan, counted within the plan; none is refused as unavailable.
-     *
-     * @throws RecordUnavailable
-     */
-    public static function numberedIn(string $planId, int $number): self
-    {
-        return self::query()->where('plan_id', $planId)->where('number', $number)->firstOr(
-            fn () => throw RecordUnavailable::numbered('phase', $number),
-        );
-    }
-
-    /**
-     * The current phase's number of each plan that has phases, read from the phase tallies in one grouped query: the
-     * first phase with fewer finished tasks than tasks, else the last; zero of zero counts as complete.
-     *
-     * @param  list<string>  $planIds
-     * @return array<string, int>
-     */
-    public static function currentNumbersOf(array $planIds): array
-    {
-        return self::query()->whereIn('plan_id', $planIds)
-            ->selectRaw(
-                'plan_id, coalesce(min(case when finished_tasks < total_tasks then number end), max(number)) as current',
-            )
-            ->groupBy('plan_id')
-            ->readAll('one row of each listed plan')
-            ->pluck('current', 'plan_id')
-            ->map(fn (mixed $number) => (int) $number)
-            ->all();
-    }
-
-    /**
-     * At most limit of the plan's phases after the phase numbered after, in the plan's order, with their tallies.
-     *
-     * @return EloquentCollection<int, self>
-     */
-    public static function headingsIn(string $planId, int $after, int $limit): EloquentCollection
-    {
-        return self::query()->where('plan_id', $planId)->where('number', '>', $after)
-            ->orderBy('number')->orderBy('id')->readUpTo($limit)->get();
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -175,19 +130,7 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
         $this->raise(new PhaseProgressRecorded($this->id));
     }
 
-    // ----------[ Answers ]----------
-
-    /**
-     * Refuses a change made against a revision of the phase that is no longer current.
-     *
-     * @throws PhaseRevisionChanged
-     */
-    public function assertAtRevision(int $expectedRevision): void
-    {
-        if ($this->revision !== $expectedRevision) {
-            throw PhaseRevisionChanged::for($this->number, $expectedRevision, $this->revision);
-        }
-    }
+    // ----------[ Getters ]----------
 
     /**
      * @return list<string>
@@ -273,6 +216,80 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
     public function plan(): BelongsTo
     {
         return $this->belongsTo(Plan::class);
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a change made against a revision of the phase that is no longer current.
+     *
+     * @throws PhaseRevisionChanged
+     */
+    public function assertAtRevision(int $expectedRevision): void
+    {
+        if ($this->revision !== $expectedRevision) {
+            throw PhaseRevisionChanged::for($this->number, $expectedRevision, $this->revision);
+        }
+    }
+
+    /**
+     * Refuses a number no phase of the plan holds.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws RecordUnavailable
+     */
+    private static function assertFound(self|null $row, int $number): void
+    {
+        if ($row === null) {
+            throw RecordUnavailable::numbered('phase', $number);
+        }
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The phase with this number in the plan, counted within the plan; none is refused as unavailable.
+     *
+     * @throws RecordUnavailable
+     */
+    public static function numberedIn(string $planId, int $number): self
+    {
+        $row = self::query()->where('plan_id', $planId)->where('number', $number)->first();
+        self::assertFound($row, $number);
+
+        return $row;
+    }
+
+    /**
+     * The current phase's number of each plan that has phases, read from the phase tallies in one grouped query: the
+     * first phase with fewer finished tasks than tasks, else the last; zero of zero counts as complete.
+     *
+     * @param  list<string>  $planIds
+     * @return array<string, int>
+     */
+    public static function currentNumbersOf(array $planIds): array
+    {
+        return self::query()->whereIn('plan_id', $planIds)
+            ->selectRaw(
+                'plan_id, coalesce(min(case when finished_tasks < total_tasks then number end), max(number)) as current',
+            )
+            ->groupBy('plan_id')
+            ->readAll('one row of each listed plan')
+            ->pluck('current', 'plan_id')
+            ->map(fn (mixed $number) => (int) $number)
+            ->all();
+    }
+
+    /**
+     * At most limit of the plan's phases after the phase numbered after, in the plan's order, with their tallies.
+     *
+     * @return EloquentCollection<int, self>
+     */
+    public static function headingsIn(string $planId, int $after, int $limit): EloquentCollection
+    {
+        return self::query()->where('plan_id', $planId)->where('number', '>', $after)
+            ->orderBy('number')->orderBy('id')->readUpTo($limit)->get();
     }
 
     // ----------[ Scopes ]----------

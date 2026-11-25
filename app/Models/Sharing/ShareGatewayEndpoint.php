@@ -83,6 +83,83 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
         return $endpoint;
     }
 
+    // ----------[ Mutations ]----------
+
+    public function moveTo(GatewayEndpointState $state): void
+    {
+        $this->state = $state;
+        $this->assertSaved($this->save());
+        $this->raise(new ShareGatewayEndpointMoved($this->id, $state));
+    }
+
+    /**
+     * Notes a healthy report; an unhealthy one leaves the last healthy time to age.
+     */
+    public function recordHealthy(): void
+    {
+        $this->last_health_at = CarbonImmutable::now();
+        $this->assertSaved($this->save());
+        $this->raise(new ShareGatewayEndpointFoundHealthy($this->id));
+    }
+
+    // ----------[ Getters ]----------
+
+    /**
+     * The key of the gateway this endpoint's configuration uses.
+     */
+    public function gatewayKey(): string
+    {
+        return ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id)->gateway_key;
+    }
+
+    /**
+     * Whether the endpoint answered a health check within the last 45 seconds.
+     */
+    public function isHealthy(): bool
+    {
+        return $this->last_health_at !== null && $this->last_health_at->isAfter(
+            CarbonImmutable::now()->subSeconds(self::HEALTHY_SECONDS),
+        );
+    }
+
+    public function isVersion(int $version): bool
+    {
+        return $this->endpoint_version === $version;
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * The endpoint as its gateway knows it: run, version, public origin and the reference its program is kept under.
+     *
+     * @return Attribute<GatewayEndpoint, never>
+     */
+    protected function toGatewayEndpoint(): Attribute
+    {
+        return Attribute::get(fn () => new GatewayEndpoint(
+            $this->run_id,
+            $this->endpoint_version,
+            $this->public_origin,
+            GatewayEndpoint::referenceOf($this->run_id, $this->endpoint_version),
+        ))->withoutObjectCaching();
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses an endpoint version the run does not hold.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws GatewayLeaseRefused
+     */
+    private static function assertHeld(self|null $row, string $configurationId, int $version): void
+    {
+        if ($row === null) {
+            throw GatewayLeaseRefused::forEndpoint($configurationId, $version);
+        }
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -162,73 +239,15 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
      */
     public static function lockHeldBy(string $configurationId, int $version, string $runId): self
     {
-        return self::query()->ofConfiguration($configurationId)->where(
-            'endpoint_version',
-            $version,
-        )->ofRun($runId)->lockForUpdate()->firstOr(
-            fn () => throw GatewayLeaseRefused::forEndpoint($configurationId, $version),
-        );
-    }
+        $row = self::query()
+            ->ofConfiguration($configurationId)
+            ->where('endpoint_version', $version)
+            ->ofRun($runId)
+            ->lockForUpdate()
+            ->first();
+        self::assertHeld($row, $configurationId, $version);
 
-    // ----------[ Mutations ]----------
-
-    public function moveTo(GatewayEndpointState $state): void
-    {
-        $this->state = $state;
-        $this->assertSaved($this->save());
-        $this->raise(new ShareGatewayEndpointMoved($this->id, $state));
-    }
-
-    /**
-     * Notes a healthy report; an unhealthy one leaves the last healthy time to age.
-     */
-    public function recordHealthy(): void
-    {
-        $this->last_health_at = CarbonImmutable::now();
-        $this->assertSaved($this->save());
-        $this->raise(new ShareGatewayEndpointFoundHealthy($this->id));
-    }
-
-    // ----------[ Answers ]----------
-
-    /**
-     * The key of the gateway this endpoint's configuration uses.
-     */
-    public function gatewayKey(): string
-    {
-        return ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id)->gateway_key;
-    }
-
-    /**
-     * Whether the endpoint answered a health check within the last 45 seconds.
-     */
-    public function isHealthy(): bool
-    {
-        return $this->last_health_at !== null && $this->last_health_at->isAfter(
-            CarbonImmutable::now()->subSeconds(self::HEALTHY_SECONDS),
-        );
-    }
-
-    public function isVersion(int $version): bool
-    {
-        return $this->endpoint_version === $version;
-    }
-
-    // ----------[ Accessors ]----------
-
-    /**
-     * The endpoint as its gateway knows it: run, version, public origin and the reference its program is kept under.
-     *
-     * @return Attribute<GatewayEndpoint, never>
-     */
-    protected function toGatewayEndpoint(): Attribute
-    {
-        return Attribute::get(fn () => new GatewayEndpoint(
-            $this->run_id,
-            $this->endpoint_version,
-            $this->public_origin,
-            GatewayEndpoint::referenceOf($this->run_id, $this->endpoint_version),
-        ))->withoutObjectCaching();
+        return $row;
     }
 
     // ----------[ Scopes ]----------

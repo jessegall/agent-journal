@@ -52,6 +52,20 @@ final class DriverApproval extends Model implements EventSource, ReadableModel
         return self::query()->firstOrNew(['driver_key' => (string) $key]);
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * Approves the driver with these builds, replacing any builds approved before.
+     *
+     * @param  list<string>  $pins
+     */
+    public function approveBuilds(array $pins): void
+    {
+        $this->build_pins = $pins;
+        $this->assertSaved($this->save());
+        $this->raise(new DriverBuildsApproved($this->id));
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -68,19 +82,5 @@ final class DriverApproval extends Model implements EventSource, ReadableModel
             ->get()
             ->mapWithKeys(fn (self $approval) => [$approval->driver_key => $approval->build_pins])
             ->all();
-    }
-
-    // ----------[ Mutations ]----------
-
-    /**
-     * Approves the driver with these builds, replacing any builds approved before.
-     *
-     * @param  list<string>  $pins
-     */
-    public function approveBuilds(array $pins): void
-    {
-        $this->build_pins = $pins;
-        $this->assertSaved($this->save());
-        $this->raise(new DriverBuildsApproved($this->id));
     }
 }

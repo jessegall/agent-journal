@@ -83,52 +83,6 @@ final class ShareAudit extends Model implements ReadableModel
         return $audit;
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * One page of the share's audit rows, newest first, starting after the given id; one more row than the page holds
-     * is read so the caller knows whether another follows.
-     *
-     * @return list<self>
-     */
-    public static function pageOf(Share $share, string|null $after, int $rows): array
-    {
-        $query = self::query()->ofShare($share)->orderByDesc('id');
-        $query->when($after, fn (Builder $query, string $id) => $query->olderThan($id));
-
-        return array_values($query->readExactly($rows + 1)->get()->all());
-    }
-
-    /**
-     * The audit rows past their retention, oldest first and locked, at most the given number: a public read after 30
-     * days, a step of a share's life 365 days after the share ended. The installation's own rows are kept.
-     *
-     * @return list<self>
-     */
-    public static function lockPastRetention(CarbonImmutable $now, int $most): array
-    {
-        $reads = array_map(fn (ShareAuditType $type) => $type->value, ShareAuditType::readTypes());
-        $endedLongAgo = Share::endedBefore($now->subDays(self::LIFECYCLE_DAYS));
-
-        return array_values(self::query()
-            ->whereNotNull('share_id')
-            ->where(fn (Builder $query) => $query
-                ->where(
-                    fn (Builder $readEntries) => $readEntries->whereIn('type', $reads)->where(
-                        'created_at',
-                        '<',
-                        $now->subDays(self::READ_DAYS),
-                    ),
-                )
-                ->orWhere(
-                    fn (Builder $lifecycle) => $lifecycle->whereNotIn('type', $reads)->whereIn(
-                        'share_id',
-                        $endedLongAgo,
-                    ),
-                ))
-            ->orderBy('id')->lockForUpdate()->readExactly($most)->get()->all());
-    }
-
     // ----------[ Accessors ]----------
 
     /**
@@ -175,6 +129,52 @@ final class ShareAudit extends Model implements ReadableModel
         $audit->reason_code = $reasonCode;
 
         return $audit;
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * One page of the share's audit rows, newest first, starting after the given id; one more row than the page holds
+     * is read so the caller knows whether another follows.
+     *
+     * @return list<self>
+     */
+    public static function pageOf(Share $share, string|null $after, int $rows): array
+    {
+        $query = self::query()->ofShare($share)->orderByDesc('id');
+        $query->when($after, fn (Builder $query, string $id) => $query->olderThan($id));
+
+        return array_values($query->readExactly($rows + 1)->get()->all());
+    }
+
+    /**
+     * The audit rows past their retention, oldest first and locked, at most the given number: a public read after 30
+     * days, a step of a share's life 365 days after the share ended. The installation's own rows are kept.
+     *
+     * @return list<self>
+     */
+    public static function lockPastRetention(CarbonImmutable $now, int $most): array
+    {
+        $reads = array_map(fn (ShareAuditType $type) => $type->value, ShareAuditType::readTypes());
+        $endedLongAgo = Share::endedBefore($now->subDays(self::LIFECYCLE_DAYS));
+
+        return array_values(self::query()
+            ->whereNotNull('share_id')
+            ->where(fn (Builder $query) => $query
+                ->where(
+                    fn (Builder $readEntries) => $readEntries->whereIn('type', $reads)->where(
+                        'created_at',
+                        '<',
+                        $now->subDays(self::READ_DAYS),
+                    ),
+                )
+                ->orWhere(
+                    fn (Builder $lifecycle) => $lifecycle->whereNotIn('type', $reads)->whereIn(
+                        'share_id',
+                        $endedLongAgo,
+                    ),
+                ))
+            ->orderBy('id')->lockForUpdate()->readExactly($most)->get()->all());
     }
 
     // ----------[ Scopes ]----------

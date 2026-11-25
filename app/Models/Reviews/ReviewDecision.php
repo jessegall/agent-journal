@@ -90,22 +90,6 @@ final class ReviewDecision extends Model implements EventSource, ReadableModel
         return $made;
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The id of the approval whose merge the ask asks for, when one names it.
-     */
-    public static function idMerging(string $askId): string|null
-    {
-        $id = self::query()->where('merge_ask_id', $askId)->value('id');
-
-        if ($id === null) {
-            return null;
-        }
-
-        return (string) $id;
-    }
-
     // ----------[ Mutations ]----------
 
     public function linkMerge(Ask $merge): void
@@ -123,5 +107,21 @@ final class ReviewDecision extends Model implements EventSource, ReadableModel
     public function review(): BelongsTo
     {
         return $this->belongsTo(CodeReview::class, 'code_review_id');
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The id of the approval whose merge the ask asks for, when one names it.
+     */
+    public static function idMerging(string $askId): string|null
+    {
+        $id = self::query()->where('merge_ask_id', $askId)->value('id');
+
+        if ($id === null) {
+            return null;
+        }
+
+        return (string) $id;
     }
 }

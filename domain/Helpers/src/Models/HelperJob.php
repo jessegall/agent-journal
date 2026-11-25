@@ -122,37 +122,6 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
         return $job;
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * Whether the helper already had a job of this purpose: the same subject, or the same named work.
-     */
-    public static function existsFor(HelperIdentity $identity, HelperPurpose $purpose): bool
-    {
-        return self::query()->acrossActors()
-            ->where('helper_identity_id', $identity->id)
-            ->whereIn('helper_purpose_id', HelperPurpose::sameAs($purpose)->select('id'))
-            ->exists();
-    }
-
-    /**
-     * The newest jobs of every helper, at most the limit, newest first.
-     *
-     * @return Collection<int, self>
-     */
-    public static function newest(int $limit): Collection
-    {
-        return self::query()->acrossActors()->latest()->orderByDesc('id')->limit($limit)->get();
-    }
-
-    /**
-     * How many jobs of every helper are not yet finished, cancelled or failed.
-     */
-    public static function openCount(): int
-    {
-        return self::query()->acrossActors()->open()->count();
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -301,15 +270,58 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
         return Attribute::get(fn () => $this->source_snapshot['subjects']);
     }
 
-    // ----------[ Internals ]----------
+    // ----------[ Asserts ]----------
 
-    private function moveTo(JobState $state): void
+    /**
+     * Refuses a move of a job that already finished.
+     *
+     * @throws HelperJobFinished
+     */
+    private function assertNotFinished(): void
     {
         if ($this->state->isFinal()) {
             throw HelperJobFinished::forJob($this->id, $this->state->value);
         }
+    }
+
+    // ----------[ Internals ]----------
+
+    private function moveTo(JobState $state): void
+    {
+        $this->assertNotFinished();
 
         $this->state = $state;
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * Whether the helper already had a job of this purpose: the same subject, or the same named work.
+     */
+    public static function existsFor(HelperIdentity $identity, HelperPurpose $purpose): bool
+    {
+        return self::query()->acrossActors()
+            ->where('helper_identity_id', $identity->id)
+            ->whereIn('helper_purpose_id', HelperPurpose::sameAs($purpose)->select('id'))
+            ->exists();
+    }
+
+    /**
+     * The newest jobs of every helper, at most the limit, newest first.
+     *
+     * @return Collection<int, self>
+     */
+    public static function newest(int $limit): Collection
+    {
+        return self::query()->acrossActors()->latest()->orderByDesc('id')->limit($limit)->get();
+    }
+
+    /**
+     * How many jobs of every helper are not yet finished, cancelled or failed.
+     */
+    public static function openCount(): int
+    {
+        return self::query()->acrossActors()->open()->count();
     }
 
     // ----------[ Scopes ]----------

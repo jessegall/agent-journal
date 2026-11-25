@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Questions\ReadQuestion;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Data\Questions\QuestionView;
+use App\Support\ShownQuestion;
 use App\Exceptions\QuestionRefused;
 use App\Models\Questions\Question;
 use App\Support\ActorIdentity;
@@ -18,7 +18,7 @@ final readonly class ReadQuestionHandler implements CommandHandler
     /**
      * @throws QuestionRefused
      */
-    public function handle(ReadQuestionCommand $command): QuestionView
+    public function handle(ReadQuestionCommand $command): ShownQuestion
     {
         $reader = ActorIdentity::of($command->dispatchedBy());
         $question = Question::query()->findOrFail($command->questionId);
@@ -27,6 +27,6 @@ final readonly class ReadQuestionHandler implements CommandHandler
             throw QuestionRefused::notInvolved($question->id);
         }
 
-        return QuestionView::of($question);
+        return ShownQuestion::of($question);
     }
 }

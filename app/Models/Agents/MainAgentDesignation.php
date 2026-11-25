@@ -38,32 +38,6 @@ final class MainAgentDesignation extends Model implements ReadableModel
         return self::query()->create(['agent_id' => $agent->id]);
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * @throws MainAgentMissing
-     */
-    public static function designatedAgent(): Agent
-    {
-        $designation = self::query()->with('agent')->first();
-        self::assertDesignated($designation);
-
-        return $designation->agent;
-    }
-
-    /**
-     * @return Option<string>
-     */
-    public static function designatedAgentId(): Option
-    {
-        return Option::fromValue(self::query()->value('agent_id'));
-    }
-
-    public static function isDesignated(): bool
-    {
-        return self::query()->exists();
-    }
-
     // ----------[ Relations ]----------
 
     /**
@@ -88,5 +62,31 @@ final class MainAgentDesignation extends Model implements ReadableModel
         if ($designation === null) {
             throw MainAgentMissing::forInstallation();
         }
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * @throws MainAgentMissing
+     */
+    public static function designatedAgent(): Agent
+    {
+        $designation = self::query()->with('agent')->first();
+        self::assertDesignated($designation);
+
+        return $designation->agent;
+    }
+
+    /**
+     * @return Option<string>
+     */
+    public static function designatedAgentId(): Option
+    {
+        return Option::fromValue(self::query()->value('agent_id'));
+    }
+
+    public static function isDesignated(): bool
+    {
+        return self::query()->exists();
     }
 }

@@ -66,9 +66,7 @@ final class TextUpload extends Model implements EventSource, ReadableModel
 
     public static function create(UploadType $type, int $bytes, string $digest): self
     {
-        if ($bytes < 1 || $bytes > self::BYTE_LIMIT || ! self::isDigest($digest)) {
-            throw UploadInvalid::forDeclaration();
-        }
+        self::assertDeclarationValid($bytes, $digest);
 
         return self::query()->create([
             'type' => $type,
@@ -76,36 +74,6 @@ final class TextUpload extends Model implements EventSource, ReadableModel
             'digest' => strtolower($digest),
             'expires_at' => CarbonImmutable::now()->addDay(),
         ]);
-    }
-
-    // ----------[ Queries ]----------
-
-    public static function locked(string $id): self
-    {
-        return self::query()->unexpired()->whereKey($id)->lockForUpdate()->firstOr(
-            fn () => throw UploadExpired::forUpload(),
-        );
-    }
-
-    public static function sealed(string $id): self
-    {
-        return self::query()->unexpired()->whereNotNull('sealed_at')->findOr(
-            $id,
-            fn () => throw UploadExpired::forUpload(),
-        );
-    }
-
-    /**
-     * The sealed upload as the given session reads it: its own uploads only.
-     *
-     * @throws UploadExpired
-     */
-    public static function sealedFor(SessionProvenance $sessions, string $sessionId, string $id): self
-    {
-        return $sessions->fromSession(self::query()->withoutGlobalScope(self::SESSION_SCOPE), $sessionId)
-            ->unexpired()
-            ->whereNotNull('sealed_at')
-            ->findOr($id, fn () => throw UploadExpired::forUpload());
     }
 
     // ----------[ Mutations ]----------
@@ -119,27 +87,15 @@ final class TextUpload extends Model implements EventSource, ReadableModel
      */
     public function hasReceivedChunk(int $position, string $text, string $digest): bool
     {
-        $bytes = strlen($text);
-
-        if ($bytes < 1 || $bytes > self::CHUNK_BYTES || ! mb_check_encoding($text, 'UTF-8')
-            || ! hash_equals(hash('sha256', $text), strtolower($digest))) {
-            throw UploadInvalid::forChunk();
-        }
+        self::assertChunkValid($text, $digest);
 
         if ($position >= 0 && $position < $this->next_index) {
-            $chunk = TextUploadChunk::query()->where('upload_id', $this->id)->where('position', $position)->sole();
-
-            if ($chunk->text !== $text) {
-                throw UploadChunkConflict::atPosition();
-            }
+            $this->assertSameChunkAt($position, $text);
 
             return true;
         }
 
-        if ($position !== $this->next_index || $this->received_bytes + $bytes > $this->bytes
-            || $this->sealed_at !== null) {
-            throw UploadInvalid::forChunk();
-        }
+        $this->assertNextChunk($position, strlen($text));
 
         return false;
     }
@@ -161,9 +117,7 @@ final class TextUpload extends Model implements EventSource, ReadableModel
             return;
         }
 
-        if ($this->received_bytes !== $this->bytes || ! hash_equals($this->digest, hash('sha256', $this->body()))) {
-            throw UploadIncomplete::forUpload();
-        }
+        $this->assertComplete();
 
         $this->sealed_at = CarbonImmutable::now();
         $this->assertSaved($this->save());
@@ -172,13 +126,7 @@ final class TextUpload extends Model implements EventSource, ReadableModel
 
     public function consume(UploadType $type): string
     {
-        if ($this->type !== $type || $this->consumed_at !== null) {
-            throw UploadExpired::forUpload();
-        }
-
-        if ($this->sealed_at === null) {
-            throw UploadIncomplete::forUpload();
-        }
+        $this->assertConsumableAs($type);
 
         $body = $this->body();
         $this->consumed_at = CarbonImmutable::now();
@@ -188,11 +136,110 @@ final class TextUpload extends Model implements EventSource, ReadableModel
         return $body;
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     public function attachmentText(): string
     {
         return $this->body();
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a declared size outside the limit, or a digest that is not one.
+     *
+     * @throws UploadInvalid
+     */
+    private static function assertDeclarationValid(int $bytes, string $digest): void
+    {
+        if ($bytes < 1 || $bytes > self::BYTE_LIMIT || ! self::isDigest($digest)) {
+            throw UploadInvalid::forDeclaration();
+        }
+    }
+
+    /**
+     * Refuses a chunk that is empty, too large, not UTF-8, or does not match its digest.
+     *
+     * @throws UploadInvalid
+     */
+    private static function assertChunkValid(string $text, string $digest): void
+    {
+        $bytes = strlen($text);
+
+        if ($bytes < 1 || $bytes > self::CHUNK_BYTES || ! mb_check_encoding($text, 'UTF-8')
+            || ! hash_equals(hash('sha256', $text), strtolower($digest))) {
+            throw UploadInvalid::forChunk();
+        }
+    }
+
+    /**
+     * Refuses a chunk sent again at a position that holds another text.
+     *
+     * @throws UploadChunkConflict
+     */
+    private function assertSameChunkAt(int $position, string $text): void
+    {
+        $chunk = TextUploadChunk::query()->where('upload_id', $this->id)->where('position', $position)->sole();
+
+        if ($chunk->text !== $text) {
+            throw UploadChunkConflict::atPosition();
+        }
+    }
+
+    /**
+     * Refuses a chunk that is not the next one, overruns the declared size, or comes after the seal.
+     *
+     * @throws UploadInvalid
+     */
+    private function assertNextChunk(int $position, int $bytes): void
+    {
+        if ($position !== $this->next_index || $this->received_bytes + $bytes > $this->bytes
+            || $this->sealed_at !== null) {
+            throw UploadInvalid::forChunk();
+        }
+    }
+
+    /**
+     * Refuses a seal of an upload that is short of its size or does not match its digest.
+     *
+     * @throws UploadIncomplete
+     */
+    private function assertComplete(): void
+    {
+        if ($this->received_bytes !== $this->bytes || ! hash_equals($this->digest, hash('sha256', $this->body()))) {
+            throw UploadIncomplete::forUpload();
+        }
+    }
+
+    /**
+     * Refuses an upload of another type or already used as expired, and one not sealed as incomplete.
+     *
+     * @throws UploadExpired
+     * @throws UploadIncomplete
+     */
+    private function assertConsumableAs(UploadType $type): void
+    {
+        if ($this->type !== $type || $this->consumed_at !== null) {
+            throw UploadExpired::forUpload();
+        }
+
+        if ($this->sealed_at === null) {
+            throw UploadIncomplete::forUpload();
+        }
+    }
+
+    /**
+     * Refuses an upload that is not there or has expired.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws UploadExpired
+     */
+    private static function assertUnexpired(self|null $row): void
+    {
+        if ($row === null) {
+            throw UploadExpired::forUpload();
+        }
     }
 
     // ----------[ Internals ]----------
@@ -212,6 +259,38 @@ final class TextUpload extends Model implements EventSource, ReadableModel
     private static function isDigest(string $digest): bool
     {
         return strlen($digest) === 64 && ctype_xdigit($digest);
+    }
+
+    // ----------[ Queries ]----------
+
+    public static function locked(string $id): self
+    {
+        $row = self::query()->unexpired()->whereKey($id)->lockForUpdate()->first();
+        self::assertUnexpired($row);
+
+        return $row;
+    }
+
+    public static function sealed(string $id): self
+    {
+        $row = self::query()->unexpired()->whereNotNull('sealed_at')->find($id);
+        self::assertUnexpired($row);
+
+        return $row;
+    }
+
+    /**
+     * The sealed upload as the given session reads it: its own uploads only.
+     *
+     * @throws UploadExpired
+     */
+    public static function sealedFor(SessionProvenance $sessions, string $sessionId, string $id): self
+    {
+        $uploads = self::query()->withoutGlobalScope(self::SESSION_SCOPE);
+        $row = $sessions->fromSession($uploads, $sessionId)->unexpired()->whereNotNull('sealed_at')->find($id);
+        self::assertUnexpired($row);
+
+        return $row;
     }
 
     // ----------[ Scopes ]----------

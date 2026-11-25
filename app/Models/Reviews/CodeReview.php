@@ -89,6 +89,90 @@ final class CodeReview extends Model implements EventSource, ReadableModel
         return ['state' => CodeReviewState::class, 'import_attempts' => 'integer'];
     }
 
+    // ----------[ Mutations ]----------
+
+    public function failImport(string $reason): void
+    {
+        $this->import_attempts++;
+        $this->import_failure = $reason;
+        $this->assertSaved($this->save());
+        $this->raise(new CodeReviewImportFailed($this->id));
+    }
+
+    /**
+     * Opens the review on what the import brought in and the ask its reviewer answers, keeping the first target of
+     * that ask as the review's origin role, whoever answers it in the end.
+     */
+    public function open(HelperImportReceipt $import, Ask $ask): void
+    {
+        $this->state = CodeReviewState::Open;
+        $this->import_ref = $import->ref;
+        $this->base = $import->base;
+        $this->head = $import->head;
+        $this->import_failure = null;
+        $this->ask_id = $ask->id;
+        $this->origin_target = $ask->pending_target;
+        $this->assertSaved($this->save());
+        $this->raise(new CodeReviewOpened($this->id, $ask->id));
+    }
+
+    public function settle(CodeReviewState $state): void
+    {
+        $this->state = $state;
+        $this->assertSaved($this->save());
+        $this->raise(new CodeReviewSettled($this->id, $state));
+    }
+
+    // ----------[ Getters ]----------
+
+    public function isAwaitingImport(): bool
+    {
+        return $this->state === CodeReviewState::AwaitingImport;
+    }
+
+    public function hasImportAttemptsLeft(): bool
+    {
+        return $this->import_attempts < self::IMPORT_ATTEMPT_LIMIT;
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<ActorIdentity, never>
+     */
+    protected function worker(): Attribute
+    {
+        return Attribute::get(
+            fn () => new ActorIdentity(ActorType::from($this->worker_type), $this->worker_id),
+        )->withoutObjectCaching();
+    }
+
+    // ----------[ Relations ]----------
+
+    /**
+     * @return HasOne<ReviewDecision, $this>
+     */
+    public function decision(): HasOne
+    {
+        return $this->hasOne(ReviewDecision::class);
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses an ask with no open review.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws CodeReviewRefused
+     */
+    private static function assertOpenFound(self|null $row, AskReference $ask): void
+    {
+        if ($row === null) {
+            throw CodeReviewRefused::notOpen($ask->id);
+        }
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -140,89 +224,5 @@ final class CodeReview extends Model implements EventSource, ReadableModel
             ->latest()
             ->lockForUpdate()
             ->firstOrFail();
-    }
-
-    // ----------[ Mutations ]----------
-
-    public function failImport(string $reason): void
-    {
-        $this->import_attempts++;
-        $this->import_failure = $reason;
-        $this->assertSaved($this->save());
-        $this->raise(new CodeReviewImportFailed($this->id));
-    }
-
-    /**
-     * Opens the review on what the import brought in and the ask its reviewer answers, keeping the first target of
-     * that ask as the review's origin role, whoever answers it in the end.
-     */
-    public function open(HelperImportReceipt $import, Ask $ask): void
-    {
-        $this->state = CodeReviewState::Open;
-        $this->import_ref = $import->ref;
-        $this->base = $import->base;
-        $this->head = $import->head;
-        $this->import_failure = null;
-        $this->ask_id = $ask->id;
-        $this->origin_target = $ask->pending_target;
-        $this->assertSaved($this->save());
-        $this->raise(new CodeReviewOpened($this->id, $ask->id));
-    }
-
-    public function settle(CodeReviewState $state): void
-    {
-        $this->state = $state;
-        $this->assertSaved($this->save());
-        $this->raise(new CodeReviewSettled($this->id, $state));
-    }
-
-    // ----------[ Answers ]----------
-
-    public function isAwaitingImport(): bool
-    {
-        return $this->state === CodeReviewState::AwaitingImport;
-    }
-
-    public function hasImportAttemptsLeft(): bool
-    {
-        return $this->import_attempts < self::IMPORT_ATTEMPT_LIMIT;
-    }
-
-    // ----------[ Accessors ]----------
-
-    /**
-     * @return Attribute<ActorIdentity, never>
-     */
-    protected function worker(): Attribute
-    {
-        return Attribute::get(
-            fn () => new ActorIdentity(ActorType::from($this->worker_type), $this->worker_id),
-        )->withoutObjectCaching();
-    }
-
-    // ----------[ Relations ]----------
-
-    /**
-     * @return HasOne<ReviewDecision, $this>
-     */
-    public function decision(): HasOne
-    {
-        return $this->hasOne(ReviewDecision::class);
-    }
-
-    // ----------[ Asserts ]----------
-
-    /**
-     * Refuses an ask with no open review.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws CodeReviewRefused
-     */
-    private static function assertOpenFound(self|null $row, AskReference $ask): void
-    {
-        if ($row === null) {
-            throw CodeReviewRefused::notOpen($ask->id);
-        }
     }
 }

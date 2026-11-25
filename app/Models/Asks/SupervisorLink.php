@@ -58,6 +58,24 @@ final class SupervisorLink extends Model implements EventSource, ReadableModel
         return $link;
     }
 
+    // ----------[ Mutations ]----------
+
+    public function change(SupervisorRoutes $routes, AskTypeKey|null $type): void
+    {
+        $key = AskTypeKey::routeOf($type);
+        $this->routes = $routes;
+        $this->versions = [...$this->versions, $key => $this->versionFor($type) + 1];
+        $this->assertSaved($this->save());
+        $this->raise(new SupervisorLinkChanged($this->id));
+    }
+
+    // ----------[ Getters ]----------
+
+    public function versionFor(AskTypeKey|null $type): int
+    {
+        return $this->versions[AskTypeKey::routeOf($type)] ?? 0;
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -74,23 +92,5 @@ final class SupervisorLink extends Model implements EventSource, ReadableModel
         });
 
         return $routes;
-    }
-
-    // ----------[ Mutations ]----------
-
-    public function change(SupervisorRoutes $routes, AskTypeKey|null $type): void
-    {
-        $key = AskTypeKey::routeOf($type);
-        $this->routes = $routes;
-        $this->versions = [...$this->versions, $key => $this->versionFor($type) + 1];
-        $this->assertSaved($this->save());
-        $this->raise(new SupervisorLinkChanged($this->id));
-    }
-
-    // ----------[ Answers ]----------
-
-    public function versionFor(AskTypeKey|null $type): int
-    {
-        return $this->versions[AskTypeKey::routeOf($type)] ?? 0;
     }
 }

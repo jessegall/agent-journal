@@ -65,6 +65,13 @@ final class SkillRequest extends Model implements ReadableModel
         ]);
     }
 
+    // ----------[ Getters ]----------
+
+    public function sentWith(string $inputDigest): bool
+    {
+        return hash_equals($this->input_digest, $inputDigest);
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -73,12 +80,5 @@ final class SkillRequest extends Model implements ReadableModel
     public static function earlier(ActorIdentity $actor, string $requestId): self|null
     {
         return self::query()->byActor($actor)->where('request_id', $requestId)->first();
-    }
-
-    // ----------[ Answers ]----------
-
-    public function sentWith(string $inputDigest): bool
-    {
-        return hash_equals($this->input_digest, $inputDigest);
     }
 }

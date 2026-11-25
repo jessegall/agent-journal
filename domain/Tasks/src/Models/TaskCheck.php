@@ -90,28 +90,6 @@ final class TaskCheck extends Model implements EventSource, ReadableModel
         return $check;
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The check bound to the process run, if any.
-     */
-    public static function ofProcessRun(string $runId): self|null
-    {
-        return self::query()->where('process_run_id', $runId)->first();
-    }
-
-    /**
-     * At most limit of the task's checks after the check id, newest first.
-     *
-     * @return Collection<int, self>
-     */
-    public static function pageOf(string $taskId, string|null $afterId, int $limit): Collection
-    {
-        return self::query()->where('task_id', $taskId)
-            ->when($afterId !== null, fn (Builder $query) => $query->where('id', '<', $afterId))
-            ->orderByDesc('id')->limit($limit)->get();
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -130,7 +108,7 @@ final class TaskCheck extends Model implements EventSource, ReadableModel
         $this->raise(new TaskCheckRecorded($this->task_id, $this->id));
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     public function isBound(): bool
     {
@@ -166,5 +144,27 @@ final class TaskCheck extends Model implements EventSource, ReadableModel
             CarbonImmutable::parse($this->created_at),
             $this->bound_at === null ? null : CarbonImmutable::parse($this->bound_at),
         ));
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The check bound to the process run, if any.
+     */
+    public static function ofProcessRun(string $runId): self|null
+    {
+        return self::query()->where('process_run_id', $runId)->first();
+    }
+
+    /**
+     * At most limit of the task's checks after the check id, newest first.
+     *
+     * @return Collection<int, self>
+     */
+    public static function pageOf(string $taskId, string|null $afterId, int $limit): Collection
+    {
+        return self::query()->where('task_id', $taskId)
+            ->when($afterId !== null, fn (Builder $query) => $query->where('id', '<', $afterId))
+            ->orderByDesc('id')->limit($limit)->get();
     }
 }

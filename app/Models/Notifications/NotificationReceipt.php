@@ -78,6 +78,86 @@ final class NotificationReceipt extends Model implements EventSource, ReadableMo
         return $receipt;
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * Marks the receipt read once; a second call changes nothing and keeps the first read time.
+     */
+    public function markRead(CarbonImmutable $at): bool
+    {
+        if ($this->read_at !== null) {
+            return false;
+        }
+
+        $this->read_at = $at;
+        $this->assertSaved($this->save());
+        $this->raise(new NotificationReceiptRead($this->id));
+
+        return true;
+    }
+
+    /**
+     * Hides the receipt from its recipient's list and count; hiding it again changes nothing.
+     */
+    public function hide(CarbonImmutable $at): bool
+    {
+        if ($this->hidden_at !== null) {
+            return false;
+        }
+
+        $this->hidden_at = $at;
+        $this->assertSaved($this->save());
+        $this->raise(new NotificationReceiptHidden($this->id));
+
+        return true;
+    }
+
+    /**
+     * Shows a hidden receipt again; a visible one stays as it is.
+     */
+    public function reveal(): bool
+    {
+        if ($this->hidden_at === null) {
+            return false;
+        }
+
+        $this->hidden_at = null;
+        $this->assertSaved($this->save());
+        $this->raise(new NotificationReceiptRevealed($this->id));
+
+        return true;
+    }
+
+    // ----------[ Getters ]----------
+
+    public function isNew(): bool
+    {
+        return $this->wasRecentlyCreated;
+    }
+
+    public function isHidden(): bool
+    {
+        return $this->hidden_at !== null;
+    }
+
+    /**
+     * Whether the receipt counts toward its scope's unread count: unread and not hidden.
+     */
+    public function isCounted(): bool
+    {
+        return $this->read_at === null && $this->hidden_at === null;
+    }
+
+    // ----------[ Relations ]----------
+
+    /**
+     * @return BelongsTo<NotificationOccurrence, $this>
+     */
+    public function occurrence(): BelongsTo
+    {
+        return $this->belongsTo(NotificationOccurrence::class, 'occurrence_id');
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -215,85 +295,5 @@ final class NotificationReceipt extends Model implements EventSource, ReadableMo
             ->where('scope_id', $scopeId)
             ->whereIn('occurrence_id', NotificationOccurrence::query()->keyed($occurrenceKey)->select('id'))
             ->first());
-    }
-
-    // ----------[ Mutations ]----------
-
-    /**
-     * Marks the receipt read once; a second call changes nothing and keeps the first read time.
-     */
-    public function markRead(CarbonImmutable $at): bool
-    {
-        if ($this->read_at !== null) {
-            return false;
-        }
-
-        $this->read_at = $at;
-        $this->assertSaved($this->save());
-        $this->raise(new NotificationReceiptRead($this->id));
-
-        return true;
-    }
-
-    /**
-     * Hides the receipt from its recipient's list and count; hiding it again changes nothing.
-     */
-    public function hide(CarbonImmutable $at): bool
-    {
-        if ($this->hidden_at !== null) {
-            return false;
-        }
-
-        $this->hidden_at = $at;
-        $this->assertSaved($this->save());
-        $this->raise(new NotificationReceiptHidden($this->id));
-
-        return true;
-    }
-
-    /**
-     * Shows a hidden receipt again; a visible one stays as it is.
-     */
-    public function reveal(): bool
-    {
-        if ($this->hidden_at === null) {
-            return false;
-        }
-
-        $this->hidden_at = null;
-        $this->assertSaved($this->save());
-        $this->raise(new NotificationReceiptRevealed($this->id));
-
-        return true;
-    }
-
-    // ----------[ Answers ]----------
-
-    public function isNew(): bool
-    {
-        return $this->wasRecentlyCreated;
-    }
-
-    public function isHidden(): bool
-    {
-        return $this->hidden_at !== null;
-    }
-
-    /**
-     * Whether the receipt counts toward its scope's unread count: unread and not hidden.
-     */
-    public function isCounted(): bool
-    {
-        return $this->read_at === null && $this->hidden_at === null;
-    }
-
-    // ----------[ Relations ]----------
-
-    /**
-     * @return BelongsTo<NotificationOccurrence, $this>
-     */
-    public function occurrence(): BelongsTo
-    {
-        return $this->belongsTo(NotificationOccurrence::class, 'occurrence_id');
     }
 }

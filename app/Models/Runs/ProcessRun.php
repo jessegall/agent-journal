@@ -180,24 +180,6 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
         return $run;
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The run with that id whichever actor owns it, for the journal's own work on a run it was handed.
-     */
-    public static function ofAnyActor(string $id): self
-    {
-        return self::query()->acrossActors()->findOrFail($id);
-    }
-
-    /**
-     * The run under its row lock, whichever actor owns it: the lock its attempt's one result is recorded under.
-     */
-    public static function lockedForOutcome(string $id): self
-    {
-        return self::query()->acrossActors()->whereKey($id)->lockForUpdate()->firstOrFail();
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -314,7 +296,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
         $this->raise(new ProcessRunOutcomeUserRevoked($this->id));
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     /**
      * Whether its result may answer the agent: an evidence run never gets a result receipt.
@@ -344,10 +326,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
      */
     public function stopLeftoverProcesses(): void
     {
-        if ($this->lifecycle !== LifecycleState::Lost) {
-            throw RetryRefused::notLost($this->id);
-        }
-
+        $this->assertLost();
         $this->markStale('stopped: the run was lost and a user stopped what survived');
     }
 
@@ -490,6 +469,20 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
         return $this->hasMany(ProcessEvent::class);
     }
 
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses to stop what survived a run that was not lost.
+     *
+     * @throws RetryRefused
+     */
+    private function assertLost(): void
+    {
+        if ($this->lifecycle !== LifecycleState::Lost) {
+            throw RetryRefused::notLost($this->id);
+        }
+    }
+
     // ----------[ Internals ]----------
 
     /**
@@ -520,6 +513,24 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
     private static function areAllPartsFinal(Collection $parts): bool
     {
         return $parts->isNotEmpty() && $parts->every(fn (PartRun $part): bool => $part->lifecycle->isFinal());
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The run with that id whichever actor owns it, for the journal's own work on a run it was handed.
+     */
+    public static function ofAnyActor(string $id): self
+    {
+        return self::query()->acrossActors()->findOrFail($id);
+    }
+
+    /**
+     * The run under its row lock, whichever actor owns it: the lock its attempt's one result is recorded under.
+     */
+    public static function lockedForOutcome(string $id): self
+    {
+        return self::query()->acrossActors()->whereKey($id)->lockForUpdate()->firstOrFail();
     }
 
     // ----------[ Scopes ]----------

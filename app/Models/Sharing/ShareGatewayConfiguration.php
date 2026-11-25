@@ -82,6 +82,118 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
         return $configuration;
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * Takes the gateway out of use: no new share or preview uses it, and it is no longer the default. The provider's
+     * account and domain are left as they are.
+     */
+    public function disable(): void
+    {
+        $this->disabled_at = CarbonImmutable::now();
+        $this->is_default = false;
+        $this->assertSaved($this->save());
+        $this->raise($this->changedEvent());
+    }
+
+    /**
+     * Makes this revision the one new shares use when the owner names none; the caller first ends every other default.
+     */
+    public function makeDefault(): void
+    {
+        $this->is_default = true;
+        $this->save();
+        $this->raise(new ShareGatewayMadeDefault($this->id));
+    }
+
+    // ----------[ Getters ]----------
+
+    public function isDisabled(): bool
+    {
+        return $this->disabled_at !== null;
+    }
+
+    /**
+     * The public address a share's token opens under this configuration.
+     */
+    public function shareUrl(string $token): string
+    {
+        return rtrim($this->settings->publicOrigin, '/').'/s/'.$token;
+    }
+
+    /**
+     * Whether the newest running endpoint of this revision answers; null while none runs.
+     */
+    public function endpointHealth(): bool|null
+    {
+        return ShareGatewayEndpoint::newestRunningOf($this)
+            ->map(fn (ShareGatewayEndpoint $endpoint) => $endpoint->isHealthy())
+            ->getOrElse(null);
+    }
+
+    /**
+     * The shares this revision's gateway serves that have not ended, which disabling it would revoke.
+     *
+     * @return list<Share>
+     */
+    public function unendedShares(): array
+    {
+        return Share::unendedOf($this->id);
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * How this gateway's forwarded requests name the visitor: none until a gateway's fixture proves the header it
+     * overwrites.
+     *
+     * @return Attribute<SourceAddressRule, never>
+     */
+    protected function sourceAddressRule(): Attribute
+    {
+        return Attribute::get(fn () => SourceAddressRule::none())->withoutObjectCaching();
+    }
+
+    /**
+     * @return Attribute<GatewayConfiguration, never>
+     */
+    protected function toConfiguration(): Attribute
+    {
+        return Attribute::get(
+            fn () => new GatewayConfiguration($this->id, $this->configuration_version, $this->settings),
+        )->withoutObjectCaching();
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a configuration that is not there or not enabled.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws ShareGatewayUnavailable
+     */
+    private static function assertUsable(self|null $row, string $configurationId): void
+    {
+        if ($row === null) {
+            throw ShareGatewayUnavailable::forConfiguration($configurationId);
+        }
+    }
+
+    /**
+     * Refuses an installation with no enabled default gateway.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws ShareGatewayUnavailable
+     */
+    private static function assertDefaultFound(self|null $row): void
+    {
+        if ($row === null) {
+            throw ShareGatewayUnavailable::noDefault();
+        }
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -91,9 +203,10 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
      */
     public static function usable(string $configurationId): self
     {
-        return self::query()->enabled()->whereKey($configurationId)->firstOr(
-            fn () => throw ShareGatewayUnavailable::forConfiguration($configurationId),
-        );
+        $row = self::query()->enabled()->whereKey($configurationId)->first();
+        self::assertUsable($row, $configurationId);
+
+        return $row;
     }
 
     /**
@@ -103,9 +216,10 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
      */
     public static function lockUsable(string $configurationId): self
     {
-        return self::query()->enabled()->whereKey($configurationId)->lockForUpdate()->firstOr(
-            fn () => throw ShareGatewayUnavailable::forConfiguration($configurationId),
-        );
+        $row = self::query()->enabled()->whereKey($configurationId)->lockForUpdate()->first();
+        self::assertUsable($row, $configurationId);
+
+        return $row;
     }
 
     /**
@@ -169,89 +283,10 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
      */
     public static function usableDefault(): self
     {
-        return self::query()->enabled()->markedDefault()->firstOr(fn () => throw ShareGatewayUnavailable::noDefault());
-    }
+        $row = self::query()->enabled()->markedDefault()->first();
+        self::assertDefaultFound($row);
 
-    // ----------[ Mutations ]----------
-
-    /**
-     * Takes the gateway out of use: no new share or preview uses it, and it is no longer the default. The provider's
-     * account and domain are left as they are.
-     */
-    public function disable(): void
-    {
-        $this->disabled_at = CarbonImmutable::now();
-        $this->is_default = false;
-        $this->assertSaved($this->save());
-        $this->raise($this->changedEvent());
-    }
-
-    /**
-     * Makes this revision the one new shares use when the owner names none; the caller first ends every other default.
-     */
-    public function makeDefault(): void
-    {
-        $this->is_default = true;
-        $this->save();
-        $this->raise(new ShareGatewayMadeDefault($this->id));
-    }
-
-    // ----------[ Answers ]----------
-
-    public function isDisabled(): bool
-    {
-        return $this->disabled_at !== null;
-    }
-
-    /**
-     * The public address a share's token opens under this configuration.
-     */
-    public function shareUrl(string $token): string
-    {
-        return rtrim($this->settings->publicOrigin, '/').'/s/'.$token;
-    }
-
-    /**
-     * Whether the newest running endpoint of this revision answers; null while none runs.
-     */
-    public function endpointHealth(): bool|null
-    {
-        return ShareGatewayEndpoint::newestRunningOf($this)
-            ->map(fn (ShareGatewayEndpoint $endpoint) => $endpoint->isHealthy())
-            ->getOrElse(null);
-    }
-
-    /**
-     * The shares this revision's gateway serves that have not ended, which disabling it would revoke.
-     *
-     * @return list<Share>
-     */
-    public function unendedShares(): array
-    {
-        return Share::unendedOf($this->id);
-    }
-
-    // ----------[ Accessors ]----------
-
-    /**
-     * How this gateway's forwarded requests name the visitor: none until a gateway's fixture proves the header it
-     * overwrites.
-     *
-     * @return Attribute<SourceAddressRule, never>
-     */
-    protected function sourceAddressRule(): Attribute
-    {
-        return Attribute::get(fn () => SourceAddressRule::none())->withoutObjectCaching();
-    }
-
-    /**
-     * @return Attribute<GatewayConfiguration, never>
-     */
-    protected function toConfiguration(): Attribute
-    {
-        return Attribute::get(
-            fn () => new GatewayConfiguration($this->id, $this->configuration_version, $this->settings),
-        )->withoutObjectCaching();
+        return $row;
     }
 
     // ----------[ Scopes ]----------

@@ -72,6 +72,49 @@ final class ShareInstallation extends Model implements EventSource, ReadableMode
         return self::query()->named(self::NAME)->lockForUpdate()->firstOrFail();
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * Holds the gateways for the supervisor run: a run newer than the holder takes them over, the holder renews its
+     * lease, and an older run is refused. Run ids are ULIDs, so a later start sorts after an earlier one. Returns
+     * whether the run took them over just now.
+     *
+     * @throws GatewayRunStale
+     */
+    public function holdFor(string $runId): bool
+    {
+        $this->assertRunNotStale($runId);
+
+        $takesOver = $this->run_id !== $runId;
+        $this->run_id = $runId;
+        $this->run_lease_ends_at = CarbonImmutable::now()->addSeconds(self::RUN_LEASE_SECONDS);
+        $this->assertSaved($this->save());
+        $this->raise(new ShareInstallationHeld($this->id, $runId));
+
+        return $takesOver;
+    }
+
+    // ----------[ Getters ]----------
+
+    public function isCurrentRun(string $runId): bool
+    {
+        return $this->run_id === $runId;
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a run older than the one that holds the installation.
+     *
+     * @throws GatewayRunStale
+     */
+    private function assertRunNotStale(string $runId): void
+    {
+        if ($this->run_id !== null && strcmp($runId, $this->run_id) < 0) {
+            throw GatewayRunStale::for($runId);
+        }
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -84,37 +127,6 @@ final class ShareInstallation extends Model implements EventSource, ReadableMode
             '>',
             CarbonImmutable::now(),
         )->exists();
-    }
-
-    // ----------[ Mutations ]----------
-
-    /**
-     * Holds the gateways for the supervisor run: a run newer than the holder takes them over, the holder renews its
-     * lease, and an older run is refused. Run ids are ULIDs, so a later start sorts after an earlier one. Returns
-     * whether the run took them over just now.
-     *
-     * @throws GatewayRunStale
-     */
-    public function holdFor(string $runId): bool
-    {
-        if ($this->run_id !== null && strcmp($runId, $this->run_id) < 0) {
-            throw GatewayRunStale::for($runId);
-        }
-
-        $takesOver = $this->run_id !== $runId;
-        $this->run_id = $runId;
-        $this->run_lease_ends_at = CarbonImmutable::now()->addSeconds(self::RUN_LEASE_SECONDS);
-        $this->assertSaved($this->save());
-        $this->raise(new ShareInstallationHeld($this->id, $runId));
-
-        return $takesOver;
-    }
-
-    // ----------[ Answers ]----------
-
-    public function isCurrentRun(string $runId): bool
-    {
-        return $this->run_id === $runId;
     }
 
     // ----------[ Scopes ]----------

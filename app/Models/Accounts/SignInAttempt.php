@@ -168,6 +168,334 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
             ->first();
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * A completed reconnect hands the account its staging folder and keeps the folder it displaced, owing that
+     * folder's cleanup, in the same transaction.
+     */
+    public function displace(Account $account): void
+    {
+        $this->state = SignInState::Complete;
+        $this->result_account_id = $account->id;
+        $this->directory = (string) $account->directory;
+        $this->cleanup_pending = true;
+        $this->save();
+        $this->raise(new SignInAttemptDisplaced($this->account_protocol, $this->id, $account->id));
+    }
+
+    /**
+     * Keeps the keyed fingerprint of the key or token the owner gave, never the value itself.
+     */
+    public function keepFingerprint(string $fingerprint): void
+    {
+        $this->fingerprint = $fingerprint;
+        $this->save();
+        $this->raise(new SignInAttemptFingerprinted($this->account_protocol, $this->id));
+    }
+
+    /**
+     * Ends a live attempt in the given state; an attempt that made no account still owes the deletion of its folder.
+     */
+    public function end(SignInState $state): void
+    {
+        $this->state = $state;
+        $this->cleanup_pending = $state !== SignInState::Complete;
+        $this->assertSaved($this->save());
+        $this->raise(new SignInAttemptEnded($this->account_protocol, $this->id, $state));
+    }
+
+    /**
+     * The driver's sign-in started and now waits for its user; only from here may a verified result complete it.
+     */
+    public function waitForUser(): void
+    {
+        if ($this->state !== SignInState::Starting) {
+            return;
+        }
+
+        $this->state = SignInState::Waiting;
+        $this->save();
+        $this->raise(new SignInAttemptHandedToUser($this->account_protocol, $this->id));
+    }
+
+    /**
+     * The user's answer, under its request key, went to the driver, which now checks it; the key is the answer's
+     * receipt, so a repeat of it is known.
+     */
+    public function acceptAnswer(string $submissionKey): void
+    {
+        $this->state = SignInState::Checking;
+        $this->submission_key = $submissionKey;
+        $this->save();
+        $this->raise(new SignInAttemptAnswerAccepted($this->account_protocol, $this->id));
+    }
+
+    /**
+     * The host takes the attempt to run its driver's sign-in.
+     */
+    public function claimOn(string $hostId): void
+    {
+        $this->process_reference = $hostId;
+        $this->save();
+        $this->raise(new SignInAttemptClaimed($this->account_protocol, $this->id, $hostId));
+    }
+
+    /**
+     * The attempt writes in the account's sign-in generation it now holds the folder for.
+     */
+    public function writeInGeneration(int $generation): void
+    {
+        $this->generation = $generation;
+        $this->save();
+        $this->raise(new SignInAttemptGenerationSet($this->account_protocol, $this->id, $generation));
+    }
+
+    /**
+     * Applies what a host proved of the attempt's cleanup: its store's proof is kept, and the cleanup ends only once
+     * the folder is gone too: its own staging folder, or the folder a completed reconnect displaced.
+     */
+    public function applyCleanup(CleanupProgress $progress): bool
+    {
+        if (! $this->cleanup_pending) {
+            return false;
+        }
+
+        if ($this->recordCleanupTry($progress)) {
+            $this->cleanup_pending = false;
+            $this->directory = null;
+        }
+
+        $this->save();
+        $this->raise(new SignInAttemptCleanupApplied($this->account_protocol, $this->id, ! $this->cleanup_pending));
+
+        return ! $this->cleanup_pending;
+    }
+
+    /**
+     * The owner asks for the cleanup of an unfinished sign-in's staging folder again, by the attempt alone, even when
+     * its folder is already gone: the host still has to show the driver's sign-in is gone.
+     */
+    public function retryCleanup(): void
+    {
+        if (! $this->cleanup_pending) {
+            return;
+        }
+
+        $this->resetCleanupTries();
+        $this->raise(new SignInAttemptCleanupRetried($this->account_protocol, $this->id));
+    }
+
+    /**
+     * Every process on the account's folder ended: a host may now take the attempt.
+     */
+    public function releaseForHost(): void
+    {
+        $this->waits_for_uses = false;
+        $this->assertSaved($this->save());
+        $this->raise(new SignInAttemptReleased($this->account_protocol, $this->id, $this->account_id));
+    }
+
+    // ----------[ Getters ]----------
+
+    /**
+     * Whether a renewal has not started on the host yet because agents still run on the account it renews.
+     */
+    public function isWaitingForAgents(): bool
+    {
+        return $this->waits_for_uses && $this->state === SignInState::Starting;
+    }
+
+    /**
+     * Whether no sign-in service has taken up the attempt this long after it was asked for: the journal's sign-in
+     * service is not running or cannot reach the journal.
+     */
+    public function isUnclaimedSince(CarbonImmutable $now): bool
+    {
+        return $this->state === SignInState::Starting
+            && ! $this->waits_for_uses
+            && $this->process_reference === null
+            && $this->created_at !== null
+            && $this->created_at->addSeconds(self::UNCLAIMED_SECONDS)->lessThanOrEqualTo($now);
+    }
+
+    public function isPublishedIn(int $generation): bool
+    {
+        $published = [
+            SignInState::Complete,
+            SignInState::DifferentAccount,
+            SignInState::AlreadyAdded,
+            SignInState::Unverified,
+        ];
+
+        return in_array($this->state, $published, true) && $this->generation === $generation;
+    }
+
+    /**
+     * Whether the answer under this request key is the one the attempt already took.
+     */
+    public function hasTakenAnswer(string $submissionKey): bool
+    {
+        return $this->submission_key !== null && hash_equals($this->submission_key, $submissionKey);
+    }
+
+    public function isLive(): bool
+    {
+        return $this->state->isLive();
+    }
+
+    public function isExpiredAt(CarbonImmutable $now): bool
+    {
+        return $this->expires_at <= $now;
+    }
+
+    /**
+     * Ends a live attempt in the given state at this moment: an attempt that already ended keeps its result, and one
+     * at or past its deadline ends Expired whatever was asked. Answers the state the attempt is in afterwards.
+     */
+    public function finishAt(SignInState $state, CarbonImmutable $now, string|null $reason = null): SignInState
+    {
+        if (! $this->isLive()) {
+            return $this->state;
+        }
+
+        if ($this->isExpiredAt($now)) {
+            $this->finish(SignInState::Expired);
+
+            return SignInState::Expired;
+        }
+
+        $this->refusal = $reason;
+        $this->finish($state);
+
+        return $state;
+    }
+
+    /**
+     * A new account came of the attempt: it ends complete and names that account as its result.
+     */
+    public function completeWith(Account $account): void
+    {
+        $this->result_account_id = $account->id;
+        $this->end(SignInState::Complete);
+    }
+
+    /**
+     * The key or login is one an account already holds: the attempt ends already added and names that account.
+     */
+    public function finishMatching(Account $account): void
+    {
+        $this->result_account_id = $account->id;
+        $this->finish(SignInState::AlreadyAdded);
+    }
+
+    /**
+     * Ends the attempt and lets go of the account folder it wrote, so a later attempt may write it; an account signed
+     * in again that may have changed is checked before starts use it again.
+     */
+    public function finish(SignInState $state): void
+    {
+        $this->end($state);
+        $this->raise(new SignInAttemptFinished($this->account_protocol, $this->id, $this->account_id));
+    }
+
+    public function awaitsCleanupRetry(): bool
+    {
+        return $this->cleanup_pending && $this->hasUsedEveryCleanupTry();
+    }
+
+    /**
+     * Whether a sign-in result the host reports still speaks for this attempt: it is live, within its deadline, and
+     * made in the attempt's sign-in generation.
+     */
+    public function accepts(int $generation, CarbonImmutable $now): bool
+    {
+        return $this->state->canComplete() && ! $this->isExpiredAt($now) && $this->generation === $generation;
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<SignInType::NewAccount|SignInType::SignInAgain, never>
+     */
+    protected function type(): Attribute
+    {
+        return Attribute::get(
+            fn (): SignInType => $this->account_id === null ? SignInType::NewAccount : SignInType::SignInAgain,
+        )->withoutObjectCaching();
+    }
+
+    // ----------[ Relations ]----------
+
+    /**
+     * @return BelongsTo<Account, $this>
+     */
+    public function account(): BelongsTo
+    {
+        return $this->belongsTo(Account::class);
+    }
+
+    /**
+     * The account the attempt made, renewed or matched; read under the reader's own account scope, so a reader who may
+     * not read that account finds none.
+     *
+     * @return BelongsTo<Account, $this>
+     */
+    public function resultAccount(): BelongsTo
+    {
+        return $this->belongsTo(Account::class, 'result_account_id');
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * @throws SignInAnswerRefused
+     */
+    public function assertWaitsForAnswer(CarbonImmutable $now): void
+    {
+        if ($this->state !== SignInState::Waiting || $this->isExpiredAt($now)) {
+            throw SignInAnswerRefused::notWaiting($this->id);
+        }
+    }
+
+    /**
+     * Refuses an attempt that is not there for the caller.
+     *
+     * @phpstan-assert self $attempt
+     *
+     * @throws SignInAttemptMissing
+     */
+    private static function assertFound(self|null $attempt, string $attemptId): void
+    {
+        if ($attempt === null) {
+            throw SignInAttemptMissing::for($attemptId);
+        }
+    }
+
+    /**
+     * Refuses an attempt whose driver could not be read: the attempt is not there.
+     *
+     * @phpstan-assert string $driver
+     *
+     * @throws SignInAttemptMissing
+     */
+    private static function assertDriverFound(mixed $driver, string $attemptId): void
+    {
+        if (! is_string($driver)) {
+            throw SignInAttemptMissing::for($attemptId);
+        }
+    }
+
+    // ----------[ Internals ]----------
+
+    private function begin(CarbonImmutable $expiresAt): void
+    {
+        $this->state = SignInState::Starting;
+        $this->expires_at = $expiresAt;
+        $this->assertSaved($this->save());
+        $this->raise(new SignInAttemptStarted($this->account_protocol, $this->id, $this->account_id));
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -376,334 +704,6 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
             ->pluck('id');
 
         return array_values(array_map(strval(...), $ids->all()));
-    }
-
-    // ----------[ Mutations ]----------
-
-    /**
-     * A completed reconnect hands the account its staging folder and keeps the folder it displaced, owing that
-     * folder's cleanup, in the same transaction.
-     */
-    public function displace(Account $account): void
-    {
-        $this->state = SignInState::Complete;
-        $this->result_account_id = $account->id;
-        $this->directory = (string) $account->directory;
-        $this->cleanup_pending = true;
-        $this->save();
-        $this->raise(new SignInAttemptDisplaced($this->account_protocol, $this->id, $account->id));
-    }
-
-    /**
-     * Keeps the keyed fingerprint of the key or token the owner gave, never the value itself.
-     */
-    public function keepFingerprint(string $fingerprint): void
-    {
-        $this->fingerprint = $fingerprint;
-        $this->save();
-        $this->raise(new SignInAttemptFingerprinted($this->account_protocol, $this->id));
-    }
-
-    /**
-     * Ends a live attempt in the given state; an attempt that made no account still owes the deletion of its folder.
-     */
-    public function end(SignInState $state): void
-    {
-        $this->state = $state;
-        $this->cleanup_pending = $state !== SignInState::Complete;
-        $this->assertSaved($this->save());
-        $this->raise(new SignInAttemptEnded($this->account_protocol, $this->id, $state));
-    }
-
-    /**
-     * The driver's sign-in started and now waits for its user; only from here may a verified result complete it.
-     */
-    public function waitForUser(): void
-    {
-        if ($this->state !== SignInState::Starting) {
-            return;
-        }
-
-        $this->state = SignInState::Waiting;
-        $this->save();
-        $this->raise(new SignInAttemptHandedToUser($this->account_protocol, $this->id));
-    }
-
-    /**
-     * The user's answer, under its request key, went to the driver, which now checks it; the key is the answer's
-     * receipt, so a repeat of it is known.
-     */
-    public function acceptAnswer(string $submissionKey): void
-    {
-        $this->state = SignInState::Checking;
-        $this->submission_key = $submissionKey;
-        $this->save();
-        $this->raise(new SignInAttemptAnswerAccepted($this->account_protocol, $this->id));
-    }
-
-    /**
-     * The host takes the attempt to run its driver's sign-in.
-     */
-    public function claimOn(string $hostId): void
-    {
-        $this->process_reference = $hostId;
-        $this->save();
-        $this->raise(new SignInAttemptClaimed($this->account_protocol, $this->id, $hostId));
-    }
-
-    /**
-     * The attempt writes in the account's sign-in generation it now holds the folder for.
-     */
-    public function writeInGeneration(int $generation): void
-    {
-        $this->generation = $generation;
-        $this->save();
-        $this->raise(new SignInAttemptGenerationSet($this->account_protocol, $this->id, $generation));
-    }
-
-    /**
-     * Applies what a host proved of the attempt's cleanup: its store's proof is kept, and the cleanup ends only once
-     * the folder is gone too: its own staging folder, or the folder a completed reconnect displaced.
-     */
-    public function applyCleanup(CleanupProgress $progress): bool
-    {
-        if (! $this->cleanup_pending) {
-            return false;
-        }
-
-        if ($this->recordCleanupTry($progress)) {
-            $this->cleanup_pending = false;
-            $this->directory = null;
-        }
-
-        $this->save();
-        $this->raise(new SignInAttemptCleanupApplied($this->account_protocol, $this->id, ! $this->cleanup_pending));
-
-        return ! $this->cleanup_pending;
-    }
-
-    /**
-     * The owner asks for the cleanup of an unfinished sign-in's staging folder again, by the attempt alone, even when
-     * its folder is already gone: the host still has to show the driver's sign-in is gone.
-     */
-    public function retryCleanup(): void
-    {
-        if (! $this->cleanup_pending) {
-            return;
-        }
-
-        $this->resetCleanupTries();
-        $this->raise(new SignInAttemptCleanupRetried($this->account_protocol, $this->id));
-    }
-
-    /**
-     * Every process on the account's folder ended: a host may now take the attempt.
-     */
-    public function releaseForHost(): void
-    {
-        $this->waits_for_uses = false;
-        $this->assertSaved($this->save());
-        $this->raise(new SignInAttemptReleased($this->account_protocol, $this->id, $this->account_id));
-    }
-
-    // ----------[ Answers ]----------
-
-    /**
-     * Whether a renewal has not started on the host yet because agents still run on the account it renews.
-     */
-    public function isWaitingForAgents(): bool
-    {
-        return $this->waits_for_uses && $this->state === SignInState::Starting;
-    }
-
-    /**
-     * Whether no sign-in service has taken up the attempt this long after it was asked for: the journal's sign-in
-     * service is not running or cannot reach the journal.
-     */
-    public function isUnclaimedSince(CarbonImmutable $now): bool
-    {
-        return $this->state === SignInState::Starting
-            && ! $this->waits_for_uses
-            && $this->process_reference === null
-            && $this->created_at !== null
-            && $this->created_at->addSeconds(self::UNCLAIMED_SECONDS)->lessThanOrEqualTo($now);
-    }
-
-    public function isPublishedIn(int $generation): bool
-    {
-        $published = [
-            SignInState::Complete,
-            SignInState::DifferentAccount,
-            SignInState::AlreadyAdded,
-            SignInState::Unverified,
-        ];
-
-        return in_array($this->state, $published, true) && $this->generation === $generation;
-    }
-
-    /**
-     * Whether the answer under this request key is the one the attempt already took.
-     */
-    public function hasTakenAnswer(string $submissionKey): bool
-    {
-        return $this->submission_key !== null && hash_equals($this->submission_key, $submissionKey);
-    }
-
-    /**
-     * @throws SignInAnswerRefused
-     */
-    public function assertWaitsForAnswer(CarbonImmutable $now): void
-    {
-        if ($this->state !== SignInState::Waiting || $this->isExpiredAt($now)) {
-            throw SignInAnswerRefused::notWaiting($this->id);
-        }
-    }
-
-    public function isLive(): bool
-    {
-        return $this->state->isLive();
-    }
-
-    public function isExpiredAt(CarbonImmutable $now): bool
-    {
-        return $this->expires_at <= $now;
-    }
-
-    /**
-     * Ends a live attempt in the given state at this moment: an attempt that already ended keeps its result, and one
-     * at or past its deadline ends Expired whatever was asked. Answers the state the attempt is in afterwards.
-     */
-    public function finishAt(SignInState $state, CarbonImmutable $now, string|null $reason = null): SignInState
-    {
-        if (! $this->isLive()) {
-            return $this->state;
-        }
-
-        if ($this->isExpiredAt($now)) {
-            $this->finish(SignInState::Expired);
-
-            return SignInState::Expired;
-        }
-
-        $this->refusal = $reason;
-        $this->finish($state);
-
-        return $state;
-    }
-
-    /**
-     * A new account came of the attempt: it ends complete and names that account as its result.
-     */
-    public function completeWith(Account $account): void
-    {
-        $this->result_account_id = $account->id;
-        $this->end(SignInState::Complete);
-    }
-
-    /**
-     * The key or login is one an account already holds: the attempt ends already added and names that account.
-     */
-    public function finishMatching(Account $account): void
-    {
-        $this->result_account_id = $account->id;
-        $this->finish(SignInState::AlreadyAdded);
-    }
-
-    /**
-     * Ends the attempt and lets go of the account folder it wrote, so a later attempt may write it; an account signed
-     * in again that may have changed is checked before starts use it again.
-     */
-    public function finish(SignInState $state): void
-    {
-        $this->end($state);
-        $this->raise(new SignInAttemptFinished($this->account_protocol, $this->id, $this->account_id));
-    }
-
-    public function awaitsCleanupRetry(): bool
-    {
-        return $this->cleanup_pending && $this->hasUsedEveryCleanupTry();
-    }
-
-    /**
-     * Whether a sign-in result the host reports still speaks for this attempt: it is live, within its deadline, and
-     * made in the attempt's sign-in generation.
-     */
-    public function accepts(int $generation, CarbonImmutable $now): bool
-    {
-        return $this->state->canComplete() && ! $this->isExpiredAt($now) && $this->generation === $generation;
-    }
-
-    // ----------[ Accessors ]----------
-
-    /**
-     * @return Attribute<SignInType::NewAccount|SignInType::SignInAgain, never>
-     */
-    protected function type(): Attribute
-    {
-        return Attribute::get(
-            fn (): SignInType => $this->account_id === null ? SignInType::NewAccount : SignInType::SignInAgain,
-        )->withoutObjectCaching();
-    }
-
-    // ----------[ Relations ]----------
-
-    /**
-     * @return BelongsTo<Account, $this>
-     */
-    public function account(): BelongsTo
-    {
-        return $this->belongsTo(Account::class);
-    }
-
-    /**
-     * The account the attempt made, renewed or matched; read under the reader's own account scope, so a reader who may
-     * not read that account finds none.
-     *
-     * @return BelongsTo<Account, $this>
-     */
-    public function resultAccount(): BelongsTo
-    {
-        return $this->belongsTo(Account::class, 'result_account_id');
-    }
-
-    // ----------[ Asserts ]----------
-
-    /**
-     * Refuses an attempt that is not there for the caller.
-     *
-     * @phpstan-assert self $attempt
-     *
-     * @throws SignInAttemptMissing
-     */
-    private static function assertFound(self|null $attempt, string $attemptId): void
-    {
-        if ($attempt === null) {
-            throw SignInAttemptMissing::for($attemptId);
-        }
-    }
-
-    /**
-     * Refuses an attempt whose driver could not be read: the attempt is not there.
-     *
-     * @phpstan-assert string $driver
-     *
-     * @throws SignInAttemptMissing
-     */
-    private static function assertDriverFound(mixed $driver, string $attemptId): void
-    {
-        if (! is_string($driver)) {
-            throw SignInAttemptMissing::for($attemptId);
-        }
-    }
-
-    // ----------[ Internals ]----------
-
-    private function begin(CarbonImmutable $expiresAt): void
-    {
-        $this->state = SignInState::Starting;
-        $this->expires_at = $expiresAt;
-        $this->assertSaved($this->save());
-        $this->raise(new SignInAttemptStarted($this->account_protocol, $this->id, $this->account_id));
     }
 
     // ----------[ Scopes ]----------

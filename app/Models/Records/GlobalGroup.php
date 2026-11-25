@@ -34,6 +34,22 @@ final class GlobalGroup extends Model implements ReadableModel
 
     public const string JOURNAL = 'journal';
 
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses an installation whose journal group was never made.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws GlobalGroupMissing
+     */
+    private static function assertJournalGroup(self|null $row): void
+    {
+        if ($row === null) {
+            throw GlobalGroupMissing::named(self::JOURNAL);
+        }
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -57,22 +73,6 @@ final class GlobalGroup extends Model implements ReadableModel
         $group->insertIfAbsent();
 
         return self::query()->where('name', self::JOURNAL)->sole();
-    }
-
-    // ----------[ Asserts ]----------
-
-    /**
-     * Refuses an installation whose journal group was never made.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws GlobalGroupMissing
-     */
-    private static function assertJournalGroup(self|null $row): void
-    {
-        if ($row === null) {
-            throw GlobalGroupMissing::named(self::JOURNAL);
-        }
     }
 
     // ----------[ Scopes ]----------

@@ -85,6 +85,29 @@ final class ConnectionAudit extends Model implements ReadableModel
         return self::record($type, $actorType, $actorId, null, $binding->project_id, $binding->id);
     }
 
+    // ----------[ Internals ]----------
+
+    private static function record(
+        ConnectionAuditType $type,
+        ConnectionAuditActor $actorType,
+        string $actorId,
+        string|null $invitationId,
+        string|null $projectId,
+        string|null $bindingId,
+    ): self {
+        $audit = new self();
+        $audit->type = $type;
+        $audit->actor_type = $actorType;
+        $audit->actor_id = $actorId;
+        $audit->invitation_id = $invitationId;
+        $audit->project_id = $projectId;
+        $audit->binding_id = $bindingId;
+        $audit->outcome = self::DONE;
+        $audit->save();
+
+        return $audit;
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -113,28 +136,5 @@ final class ConnectionAudit extends Model implements ReadableModel
             ->where('step_rank', '<=', self::SUPPORT_RECORD_LIMIT)
             ->orderByDesc('created_at')->orderByDesc('id')
             ->readExactly(count($ids) * self::SUPPORT_RECORD_LIMIT)->get()->all());
-    }
-
-    // ----------[ Internals ]----------
-
-    private static function record(
-        ConnectionAuditType $type,
-        ConnectionAuditActor $actorType,
-        string $actorId,
-        string|null $invitationId,
-        string|null $projectId,
-        string|null $bindingId,
-    ): self {
-        $audit = new self();
-        $audit->type = $type;
-        $audit->actor_type = $actorType;
-        $audit->actor_id = $actorId;
-        $audit->invitation_id = $invitationId;
-        $audit->project_id = $projectId;
-        $audit->binding_id = $bindingId;
-        $audit->outcome = self::DONE;
-        $audit->save();
-
-        return $audit;
     }
 }

@@ -24,8 +24,11 @@ require_once __DIR__.'/models.php';
 require_once __DIR__.'/sections.php';
 require_once __DIR__.'/php-parse.php';
 
+/** The sections a method is placed in by what it is, never kept in because it sits there. */
+const BY_LOOKS = ['Accessors', 'Asserts'];
+
 const SECTIONS = [
-    'Constructors', 'Queries', 'Mutations', 'Answers', 'Accessors', 'Relations', 'Asserts', 'Internals', 'Scopes',
+    'Constructors', 'Mutations', 'Getters', 'Accessors', 'Relations', 'Asserts', 'Internals', 'Queries', 'Scopes',
 ];
 
 const RELATIONS = [
@@ -72,7 +75,7 @@ function sectionOf(ClassMethod $method, string $body): string
         $method->isStatic() && preg_match(ROW_MAKES, $body) === 1 => 'Constructors',
         $method->isStatic() => 'Queries',
         $returns === 'void' || preg_match(ROW_WRITES, $body) === 1 => 'Mutations',
-        default => 'Answers',
+        default => 'Getters',
     };
 }
 
@@ -125,6 +128,16 @@ function faultsOf(string $source, Class_ $class): array
             return "method {$name} is outside a section";
         }
 
+        $isAssert = str_starts_with($name, 'assert');
+
+        if ($isAssert && $section !== 'Asserts') {
+            return "assert method {$name} sits in {$section}, not in Asserts";
+        }
+
+        if (! $isAssert && $section === 'Asserts') {
+            return "method {$name} is no assert method, so it does not belong in Asserts";
+        }
+
         if (isAccessor($method) === ($section === 'Accessors')) {
             return null;
         }
@@ -168,12 +181,31 @@ function currentSectionOf(array $marked, ClassMethod $method): string|null
     $current = null;
 
     foreach ($marked as $offset => $name) {
-        if ($offset < startOf($method) && in_array($name, SECTIONS, true) && $name !== 'Accessors') {
+        if ($offset < startOf($method) && in_array($name, SECTIONS, true) && ! in_array($name, BY_LOOKS, true)) {
             $current = $name;
         }
     }
 
     return $current;
+}
+
+/**
+ * The section the fixer puts a method in: an accessor in Accessors and an assert method in Asserts always, any other
+ * method in the section it already sits in, or where its looks put it.
+ *
+ * @param  array<int, string>  $marked
+ */
+function placedSection(array $marked, ClassMethod $method, string $body): string
+{
+    if (isAccessor($method)) {
+        return 'Accessors';
+    }
+
+    if (str_starts_with($method->name->toString(), 'assert')) {
+        return 'Asserts';
+    }
+
+    return currentSectionOf($marked, $method) ?? sectionOf($method, $body);
 }
 
 /**
@@ -208,8 +240,7 @@ function sorted(string $source, Class_ $class): string
         }
 
         $body = substr($source, startOf($method), $method->getEndFilePos() + 1 - startOf($method));
-        $section = isAccessor($method) ? 'Accessors' : currentSectionOf($marked, $method) ?? sectionOf($method, $body);
-        $sections[$section][] = textOf($source, $method);
+        $sections[placedSection($marked, $method, $body)][] = textOf($source, $method);
     }
 
     $parts = $preamble;

@@ -78,6 +78,86 @@ final class Skill extends Model implements EventSource, Numbered, ReadableModel
         );
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * Makes the revision just written the skill's current one, and announces the change.
+     */
+    public function makeCurrent(SkillRevision $revision): void
+    {
+        $this->current_revision_id = $revision->id;
+        $this->assertSaved($this->save());
+        $this->raise(new SkillsChanged($this->id, $revision->revision));
+    }
+
+    /**
+     * Takes the skill out of every future selection, when its owner asks; its revisions stay readable. Answers the
+     * revision that was current.
+     *
+     * @throws SkillOwnerRequired
+     */
+    public function retireBy(ActorIdentity $actor): SkillRevision
+    {
+        $this->assertOwnedBy($actor);
+
+        $this->retired_at = CarbonImmutable::now();
+        $this->assertSaved($this->save());
+        $current = SkillRevision::currentOf($this);
+        $this->raise(new SkillsChanged($this->id, $current->revision));
+
+        return $current;
+    }
+
+    // ----------[ Getters ]----------
+
+    public function isRetired(): bool
+    {
+        return $this->retired_at !== null;
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<SkillKey, never>
+     */
+    protected function skillKey(): Attribute
+    {
+        return Attribute::get(fn () => SkillKey::from($this->key))->withoutObjectCaching();
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a write to a retired skill, or one made against a revision that is no longer current.
+     *
+     * @throws SkillRetired
+     * @throws SkillRevisionConflict
+     */
+    public function assertWritableAt(int $expectedRevision): void
+    {
+        if ($this->isRetired()) {
+            throw SkillRetired::for($this->key);
+        }
+
+        $latest = SkillRevision::currentOf($this)->revision;
+
+        if ($latest !== $expectedRevision) {
+            throw SkillRevisionConflict::latest($this->key, $latest);
+        }
+    }
+
+    /**
+     * Refuses a retire by anyone but the skill's owner.
+     *
+     * @throws SkillOwnerRequired
+     */
+    private function assertOwnedBy(ActorIdentity $actor): void
+    {
+        if ($this->owner_type !== $actor->type || $this->owner_id !== $actor->id) {
+            throw SkillOwnerRequired::toRetire($this->key);
+        }
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -108,74 +188,6 @@ final class Skill extends Model implements EventSource, Numbered, ReadableModel
                 ->get()
                 ->all(),
         );
-    }
-
-    // ----------[ Mutations ]----------
-
-    /**
-     * Makes the revision just written the skill's current one, and announces the change.
-     */
-    public function makeCurrent(SkillRevision $revision): void
-    {
-        $this->current_revision_id = $revision->id;
-        $this->assertSaved($this->save());
-        $this->raise(new SkillsChanged($this->id, $revision->revision));
-    }
-
-    /**
-     * Takes the skill out of every future selection, when its owner asks; its revisions stay readable. Answers the
-     * revision that was current.
-     *
-     * @throws SkillOwnerRequired
-     */
-    public function retireBy(ActorIdentity $actor): SkillRevision
-    {
-        if ($this->owner_type !== $actor->type || $this->owner_id !== $actor->id) {
-            throw SkillOwnerRequired::toRetire($this->key);
-        }
-
-        $this->retired_at = CarbonImmutable::now();
-        $this->assertSaved($this->save());
-        $current = SkillRevision::currentOf($this);
-        $this->raise(new SkillsChanged($this->id, $current->revision));
-
-        return $current;
-    }
-
-    // ----------[ Answers ]----------
-
-    /**
-     * Refuses a write to a retired skill, or one made against a revision that is no longer current.
-     *
-     * @throws SkillRetired
-     * @throws SkillRevisionConflict
-     */
-    public function assertWritableAt(int $expectedRevision): void
-    {
-        if ($this->isRetired()) {
-            throw SkillRetired::for($this->key);
-        }
-
-        $latest = SkillRevision::currentOf($this)->revision;
-
-        if ($latest !== $expectedRevision) {
-            throw SkillRevisionConflict::latest($this->key, $latest);
-        }
-    }
-
-    public function isRetired(): bool
-    {
-        return $this->retired_at !== null;
-    }
-
-    // ----------[ Accessors ]----------
-
-    /**
-     * @return Attribute<SkillKey, never>
-     */
-    protected function skillKey(): Attribute
-    {
-        return Attribute::get(fn () => SkillKey::from($this->key))->withoutObjectCaching();
     }
 
     // ----------[ Scopes ]----------

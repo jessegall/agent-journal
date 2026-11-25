@@ -8,11 +8,11 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * A model whose accessor sits under Answers, and whose Accessors section holds a method that is no accessor.
+ * A model whose accessor sits under Getters, and whose Accessors section holds a method that is no accessor.
  */
 final class AccessorOutsideAccessors extends Model
 {
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     /**
      * @return Attribute<int, never>

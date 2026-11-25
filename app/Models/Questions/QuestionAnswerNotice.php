@@ -39,19 +39,6 @@ final class QuestionAnswerNotice extends Model implements EventSource
         return ['delivered_at' => 'immutable_datetime'];
     }
 
-    // ----------[ Queries ]----------
-
-    public static function write(Question $question, string $agentId): self
-    {
-        $notice = self::query()->firstOrCreate(['question_id' => $question->id], ['agent_id' => $agentId]);
-
-        if ($notice->wasRecentlyCreated) {
-            $notice->raise(new QuestionAnswerNoticeWritten($notice->id, $question->id, $agentId));
-        }
-
-        return $notice;
-    }
-
     // ----------[ Mutations ]----------
 
     public function markDelivered(CarbonImmutable $at): void
@@ -62,7 +49,7 @@ final class QuestionAnswerNotice extends Model implements EventSource
         $this->raise(new QuestionAnswerNoticeDelivered($this->id, $this->question_id));
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     /**
      * The key a delivery of this notice is sent under, the same on every retry.
@@ -80,6 +67,19 @@ final class QuestionAnswerNotice extends Model implements EventSource
     public function question(): BelongsTo
     {
         return $this->belongsTo(Question::class);
+    }
+
+    // ----------[ Queries ]----------
+
+    public static function write(Question $question, string $agentId): self
+    {
+        $notice = self::query()->firstOrCreate(['question_id' => $question->id], ['agent_id' => $agentId]);
+
+        if ($notice->wasRecentlyCreated) {
+            $notice->raise(new QuestionAnswerNoticeWritten($notice->id, $question->id, $agentId));
+        }
+
+        return $notice;
     }
 
     // ----------[ Scopes ]----------

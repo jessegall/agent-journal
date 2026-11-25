@@ -111,6 +111,219 @@ final class AgentSession extends Model implements EventSource, ReadableModel
         ];
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * Records the selection and the start request once; a session never changes the driver or model it ran.
+     *
+     * @throws SessionSelectionFixed
+     */
+    public function useSelection(SelectedDriver $selection, string $requestId): void
+    {
+        $this->assertSelectionOpen();
+
+        $this->driver_key = $selection->driver;
+        $this->model = $selection->model;
+        $this->requested_model_type = $selection->requested->type;
+        $this->requested_model = $selection->requested->model;
+        $this->driver_source = $selection->source->driverSource;
+        $this->profile_key = $selection->source->profileKey;
+        $this->profile_revision = $selection->source->profileRevision;
+        $this->start_request_id = $requestId;
+        $this->assertSaved($this->save());
+        $this->raise(new AgentSessionSelectionUsed($this->id, $requestId));
+    }
+
+    /**
+     * Records the skill generation the session's driver was spawned with.
+     */
+    public function recordSkillGeneration(string $generationId): void
+    {
+        $this->skill_generation_id = $generationId;
+        $this->assertSaved($this->save());
+        $this->raise(new AgentSessionSkillsGenerated($this->id, $generationId));
+    }
+
+    public function enterConversation(DriverConversation $conversation): void
+    {
+        $this->current_conversation_id = $conversation->id;
+        $this->assertSaved($this->save());
+        $this->raise(new AgentSessionConversationEntered($this->id));
+    }
+
+    /**
+     * Keeps the label of the driver the session was pinned to at launch, which it shows for good, even after that
+     * registration is gone.
+     */
+    public function keepDriverLabel(string $label): void
+    {
+        $this->driver_label = $label;
+        $this->assertSaved($this->save());
+        $this->raise(new AgentSessionDriverLabelKept($this->id, $label));
+    }
+
+    public function endAt(CarbonImmutable $time): void
+    {
+        $this->status = SessionStatus::Ended;
+        $this->ended_at = $time;
+        $this->assertSaved($this->save());
+        $this->raise(new AgentSessionEnded($this->id));
+    }
+
+    /**
+     * A sign of life from the host: a silent session is active again.
+     */
+    public function recordHeartbeatAt(CarbonImmutable $time): void
+    {
+        $this->last_heartbeat_at = $time;
+        $this->silent_since = null;
+        $this->status = $this->status === SessionStatus::Silent ? SessionStatus::Active : $this->status;
+        $this->assertSaved($this->save());
+        $this->raise(new AgentSessionHeartbeatRecorded($this->id));
+    }
+
+    // ----------[ Getters ]----------
+
+    /**
+     * Starts the session of one start with the driver and model it runs and the request that started it.
+     *
+     * @throws SessionSelectionFixed
+     */
+    public function startFor(Agent $agent, self|null $parent, SelectedDriver $selection, string $requestId): void
+    {
+        $this->agent_id = $agent->id;
+        $this->parent_session_id = $parent?->id;
+        $this->status = SessionStatus::Active;
+        $this->useSelection($selection, $requestId);
+    }
+
+    /**
+     * This session as a use of the account it ran with; it runs until it ends.
+     */
+    public function useOf(RecordIdentity $account): AccountUse
+    {
+        return new AccountUse(
+            $account,
+            $this->id,
+            $this->agent_id,
+            $this->selection->driver,
+            AccountProcessRole::Execution,
+            CarbonImmutable::instance($this->created_at),
+            $this->ended_at,
+        );
+    }
+
+    /**
+     * The driver ended without an end hook, and the evidence says how the journal knows.
+     */
+    public function endWithEvidenceAt(CarbonImmutable $time, string $evidence): void
+    {
+        $this->end_evidence = $evidence;
+        $this->endAt($time);
+    }
+
+    public function isActive(): bool
+    {
+        return $this->status->isRunning();
+    }
+
+    /**
+     * How the session's container has the workspace, from its start's access declaration and whether it helps
+     * another session, never from the profile's name: read-only without a grant to change files, the main's own
+     * workspace for a session that helps none, and its own clone for a helper that writes.
+     */
+    public function workspaceUse(AccessPolicy $access): WorkspaceUse
+    {
+        if (! $access->changesFiles()) {
+            return WorkspaceUse::ReadOnly;
+        }
+
+        if ($this->parent_session_id === null) {
+            return WorkspaceUse::Shared;
+        }
+
+        return WorkspaceUse::OwnCheckout;
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * The selection this session was started with, rebuilt from its row.
+     *
+     * @return Attribute<SelectedDriver, never>
+     */
+    protected function selection(): Attribute
+    {
+        return Attribute::get(function () {
+            $requested = $this->requested_model_type === ModelSelectionType::Named
+                ? ModelSelection::named((string) $this->requested_model)
+                : ModelSelection::profileDefault();
+
+            return new SelectedDriver(
+                (string) $this->driver_key,
+                $this->model,
+                $requested,
+                new SelectionSource($this->driver_source, $this->profile_key, $this->profile_revision),
+            );
+        })->withoutObjectCaching();
+    }
+
+    /**
+     * @return Attribute<StackTarget, never>
+     */
+    protected function target(): Attribute
+    {
+        return Attribute::get(fn () => new StackTarget($this->agent_id, $this->id))->withoutObjectCaching();
+    }
+
+    // ----------[ Relations ]----------
+
+    /**
+     * @return HasMany<ConversationVisit, $this>
+     */
+    public function visits(): HasMany
+    {
+        return $this->hasMany(ConversationVisit::class, 'session_id');
+    }
+
+    /**
+     * @return BelongsTo<DriverConversation, $this>
+     */
+    public function currentConversation(): BelongsTo
+    {
+        return $this->belongsTo(DriverConversation::class, 'current_conversation_id');
+    }
+
+    /**
+     * @return HasOne<StartToken, $this>
+     */
+    public function startToken(): HasOne
+    {
+        return $this->hasOne(StartToken::class, 'agent_session_id');
+    }
+
+    /**
+     * @return BelongsTo<Agent, $this>
+     */
+    public function agent(): BelongsTo
+    {
+        return $this->belongsTo(Agent::class);
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a selection for a session whose model is already fixed.
+     *
+     * @throws SessionSelectionFixed
+     */
+    private function assertSelectionOpen(): void
+    {
+        if ($this->getAttribute('model') !== null) {
+            throw SessionSelectionFixed::forSession($this->id);
+        }
+    }
+
     // ----------[ Queries ]----------
 
     public static function selectedMessage(string $sessionId): string|null
@@ -295,219 +508,6 @@ final class AgentSession extends Model implements EventSource, ReadableModel
         $running = self::query()->runningFor($target->agentId)->whereKey($target->sessionId)->sharedLock()->first();
 
         return $running !== null;
-    }
-
-    // ----------[ Mutations ]----------
-
-    /**
-     * Records the selection and the start request once; a session never changes the driver or model it ran.
-     *
-     * @throws SessionSelectionFixed
-     */
-    public function useSelection(SelectedDriver $selection, string $requestId): void
-    {
-        $this->assertSelectionOpen();
-
-        $this->driver_key = $selection->driver;
-        $this->model = $selection->model;
-        $this->requested_model_type = $selection->requested->type;
-        $this->requested_model = $selection->requested->model;
-        $this->driver_source = $selection->source->driverSource;
-        $this->profile_key = $selection->source->profileKey;
-        $this->profile_revision = $selection->source->profileRevision;
-        $this->start_request_id = $requestId;
-        $this->assertSaved($this->save());
-        $this->raise(new AgentSessionSelectionUsed($this->id, $requestId));
-    }
-
-    /**
-     * Records the skill generation the session's driver was spawned with.
-     */
-    public function recordSkillGeneration(string $generationId): void
-    {
-        $this->skill_generation_id = $generationId;
-        $this->assertSaved($this->save());
-        $this->raise(new AgentSessionSkillsGenerated($this->id, $generationId));
-    }
-
-    public function enterConversation(DriverConversation $conversation): void
-    {
-        $this->current_conversation_id = $conversation->id;
-        $this->assertSaved($this->save());
-        $this->raise(new AgentSessionConversationEntered($this->id));
-    }
-
-    /**
-     * Keeps the label of the driver the session was pinned to at launch, which it shows for good, even after that
-     * registration is gone.
-     */
-    public function keepDriverLabel(string $label): void
-    {
-        $this->driver_label = $label;
-        $this->assertSaved($this->save());
-        $this->raise(new AgentSessionDriverLabelKept($this->id, $label));
-    }
-
-    public function endAt(CarbonImmutable $time): void
-    {
-        $this->status = SessionStatus::Ended;
-        $this->ended_at = $time;
-        $this->assertSaved($this->save());
-        $this->raise(new AgentSessionEnded($this->id));
-    }
-
-    /**
-     * A sign of life from the host: a silent session is active again.
-     */
-    public function recordHeartbeatAt(CarbonImmutable $time): void
-    {
-        $this->last_heartbeat_at = $time;
-        $this->silent_since = null;
-        $this->status = $this->status === SessionStatus::Silent ? SessionStatus::Active : $this->status;
-        $this->assertSaved($this->save());
-        $this->raise(new AgentSessionHeartbeatRecorded($this->id));
-    }
-
-    // ----------[ Answers ]----------
-
-    /**
-     * Starts the session of one start with the driver and model it runs and the request that started it.
-     *
-     * @throws SessionSelectionFixed
-     */
-    public function startFor(Agent $agent, self|null $parent, SelectedDriver $selection, string $requestId): void
-    {
-        $this->agent_id = $agent->id;
-        $this->parent_session_id = $parent?->id;
-        $this->status = SessionStatus::Active;
-        $this->useSelection($selection, $requestId);
-    }
-
-    /**
-     * This session as a use of the account it ran with; it runs until it ends.
-     */
-    public function useOf(RecordIdentity $account): AccountUse
-    {
-        return new AccountUse(
-            $account,
-            $this->id,
-            $this->agent_id,
-            $this->selection->driver,
-            AccountProcessRole::Execution,
-            CarbonImmutable::instance($this->created_at),
-            $this->ended_at,
-        );
-    }
-
-    /**
-     * The driver ended without an end hook, and the evidence says how the journal knows.
-     */
-    public function endWithEvidenceAt(CarbonImmutable $time, string $evidence): void
-    {
-        $this->end_evidence = $evidence;
-        $this->endAt($time);
-    }
-
-    public function isActive(): bool
-    {
-        return $this->status->isRunning();
-    }
-
-    /**
-     * How the session's container has the workspace, from its start's access declaration and whether it helps
-     * another session, never from the profile's name: read-only without a grant to change files, the main's own
-     * workspace for a session that helps none, and its own clone for a helper that writes.
-     */
-    public function workspaceUse(AccessPolicy $access): WorkspaceUse
-    {
-        if (! $access->changesFiles()) {
-            return WorkspaceUse::ReadOnly;
-        }
-
-        if ($this->parent_session_id === null) {
-            return WorkspaceUse::Shared;
-        }
-
-        return WorkspaceUse::OwnCheckout;
-    }
-
-    // ----------[ Accessors ]----------
-
-    /**
-     * The selection this session was started with, rebuilt from its row.
-     *
-     * @return Attribute<SelectedDriver, never>
-     */
-    protected function selection(): Attribute
-    {
-        return Attribute::get(function () {
-            $requested = $this->requested_model_type === ModelSelectionType::Named
-                ? ModelSelection::named((string) $this->requested_model)
-                : ModelSelection::profileDefault();
-
-            return new SelectedDriver(
-                (string) $this->driver_key,
-                $this->model,
-                $requested,
-                new SelectionSource($this->driver_source, $this->profile_key, $this->profile_revision),
-            );
-        })->withoutObjectCaching();
-    }
-
-    /**
-     * @return Attribute<StackTarget, never>
-     */
-    protected function target(): Attribute
-    {
-        return Attribute::get(fn () => new StackTarget($this->agent_id, $this->id))->withoutObjectCaching();
-    }
-
-    // ----------[ Relations ]----------
-
-    /**
-     * @return HasMany<ConversationVisit, $this>
-     */
-    public function visits(): HasMany
-    {
-        return $this->hasMany(ConversationVisit::class, 'session_id');
-    }
-
-    /**
-     * @return BelongsTo<DriverConversation, $this>
-     */
-    public function currentConversation(): BelongsTo
-    {
-        return $this->belongsTo(DriverConversation::class, 'current_conversation_id');
-    }
-
-    /**
-     * @return HasOne<StartToken, $this>
-     */
-    public function startToken(): HasOne
-    {
-        return $this->hasOne(StartToken::class, 'agent_session_id');
-    }
-
-    /**
-     * @return BelongsTo<Agent, $this>
-     */
-    public function agent(): BelongsTo
-    {
-        return $this->belongsTo(Agent::class);
-    }
-
-    // ----------[ Asserts ]----------
-
-    /**
-     * Refuses a selection for a session whose model is already fixed.
-     *
-     * @throws SessionSelectionFixed
-     */
-    private function assertSelectionOpen(): void
-    {
-        if ($this->getAttribute('model') !== null) {
-            throw SessionSelectionFixed::forSession($this->id);
-        }
     }
 
     // ----------[ Scopes ]----------

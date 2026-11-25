@@ -90,7 +90,7 @@ final class SkillRevision extends Model implements ReadableModel
 
     protected static function booted(): void
     {
-        self::updating(fn (self $revision) => throw SkillRevisionImmutable::for($revision->id));
+        self::updating(fn (self $revision) => $revision->assertUnedited());
     }
 
     // ----------[ Constructors ]----------
@@ -123,6 +123,52 @@ final class SkillRevision extends Model implements ReadableModel
             'source_digest' => $sourceDigest,
             'input_digest' => $draft->digest(),
         ]);
+    }
+
+    // ----------[ Getters ]----------
+
+    /**
+     * The revision's condition, read through the condition tree as it stands today.
+     */
+    public function conditionThrough(ConditionTree $tree): SkillCondition
+    {
+        return $tree->hydrate($this->condition);
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * The revision's content as a draft, as a restore submits it again.
+     *
+     * @return Attribute<SkillDraft, never>
+     */
+    protected function draft(): Attribute
+    {
+        return Attribute::get(fn () => new SkillDraft(
+            $this->name,
+            $this->description,
+            array_map(
+                fn (SkillSection $section) => new SectionDraft(
+                    $section->key,
+                    $section->heading,
+                    $section->storedText(),
+                ),
+                $this->sections,
+            ),
+            json_encode($this->condition, JSON_THROW_ON_ERROR),
+        ))->withoutObjectCaching();
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses every edit: a revision stays as it was written.
+     *
+     * @throws SkillRevisionImmutable
+     */
+    private function assertUnedited(): never
+    {
+        throw SkillRevisionImmutable::for($this->id);
     }
 
     // ----------[ Queries ]----------
@@ -162,40 +208,6 @@ final class SkillRevision extends Model implements ReadableModel
     public static function historyOf(Skill $skill, int $limit): array
     {
         return array_values(self::query()->ofSkill($skill)->orderByDesc('revision')->readExactly($limit)->get()->all());
-    }
-
-    // ----------[ Answers ]----------
-
-    /**
-     * The revision's condition, read through the condition tree as it stands today.
-     */
-    public function conditionThrough(ConditionTree $tree): SkillCondition
-    {
-        return $tree->hydrate($this->condition);
-    }
-
-    // ----------[ Accessors ]----------
-
-    /**
-     * The revision's content as a draft, as a restore submits it again.
-     *
-     * @return Attribute<SkillDraft, never>
-     */
-    protected function draft(): Attribute
-    {
-        return Attribute::get(fn () => new SkillDraft(
-            $this->name,
-            $this->description,
-            array_map(
-                fn (SkillSection $section) => new SectionDraft(
-                    $section->key,
-                    $section->heading,
-                    $section->storedText(),
-                ),
-                $this->sections,
-            ),
-            json_encode($this->condition, JSON_THROW_ON_ERROR),
-        ))->withoutObjectCaching();
     }
 
     // ----------[ Scopes ]----------

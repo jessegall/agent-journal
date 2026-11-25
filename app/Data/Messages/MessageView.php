@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Messages;
 
-use App\Models\Messages\Message;
+use App\Support\ShownMessage;
 use Spatie\LaravelData\Data;
 
 /**
@@ -23,17 +23,17 @@ final class MessageView extends Data
         public readonly string $sentAt,
     ) {}
 
-    public static function of(Message $message): self
+    public static function of(ShownMessage $message): self
     {
         return new self(
             $message->id,
-            $message->inbox_id,
-            $message->sender_type,
-            $message->sender_id,
+            $message->inboxId,
+            $message->senderType,
+            $message->senderId,
             $message->body,
             $message->number,
-            $message->target_message_id,
-            $message->created_at?->toIso8601String() ?? '',
+            $message->targetMessageId,
+            $message->sentAt,
         );
     }
 }

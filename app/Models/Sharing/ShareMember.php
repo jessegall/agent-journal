@@ -87,6 +87,18 @@ final class ShareMember extends Model implements ReadableModel
         return $member;
     }
 
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<RecordIdentity, never>
+     */
+    protected function target(): Attribute
+    {
+        return Attribute::get(
+            fn () => new RecordIdentity($this->target_type, $this->target_id),
+        )->withoutObjectCaching();
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -180,18 +192,6 @@ final class ShareMember extends Model implements ReadableModel
         }
 
         return $grouped;
-    }
-
-    // ----------[ Accessors ]----------
-
-    /**
-     * @return Attribute<RecordIdentity, never>
-     */
-    protected function target(): Attribute
-    {
-        return Attribute::get(
-            fn () => new RecordIdentity($this->target_type, $this->target_id),
-        )->withoutObjectCaching();
     }
 
     // ----------[ Scopes ]----------

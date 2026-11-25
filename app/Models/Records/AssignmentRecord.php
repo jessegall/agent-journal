@@ -95,6 +95,19 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
         ]);
     }
 
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<Assignment, never>
+     */
+    protected function toAssignment(): Attribute
+    {
+        return Attribute::get(fn () => new Assignment(
+            new RecordIdentity($this->record_type, $this->record_id),
+            new AssignmentReference($this->id, new AssigneeIdentity($this->holder_type, $this->holder_id)),
+        ))->withoutObjectCaching();
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -167,19 +180,6 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
             ->whereIn('record_id', $ids)
             ->get()
             ->all());
-    }
-
-    // ----------[ Accessors ]----------
-
-    /**
-     * @return Attribute<Assignment, never>
-     */
-    protected function toAssignment(): Attribute
-    {
-        return Attribute::get(fn () => new Assignment(
-            new RecordIdentity($this->record_type, $this->record_id),
-            new AssignmentReference($this->id, new AssigneeIdentity($this->holder_type, $this->holder_id)),
-        ))->withoutObjectCaching();
     }
 
     // ----------[ Scopes ]----------

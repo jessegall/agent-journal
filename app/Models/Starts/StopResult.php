@@ -101,6 +101,16 @@ final class StopResult extends Model implements ReadableModel
         return $stopRecord;
     }
 
+    // ----------[ Relations ]----------
+
+    /**
+     * @return BelongsTo<StopAttempt, $this>
+     */
+    public function attempt(): BelongsTo
+    {
+        return $this->belongsTo(StopAttempt::class, 'stop_attempt_id');
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -121,15 +131,5 @@ final class StopResult extends Model implements ReadableModel
             $this->truncated,
             $this->summary,
         );
-    }
-
-    // ----------[ Relations ]----------
-
-    /**
-     * @return BelongsTo<StopAttempt, $this>
-     */
-    public function attempt(): BelongsTo
-    {
-        return $this->belongsTo(StopAttempt::class, 'stop_attempt_id');
     }
 }

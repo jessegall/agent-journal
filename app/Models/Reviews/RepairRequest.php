@@ -66,6 +66,41 @@ final class RepairRequest extends Model implements EventSource, ReadableModel
         return ['state' => RepairRequestState::class];
     }
 
+    // ----------[ Mutations ]----------
+
+    public function settle(RepairRequestState $state): void
+    {
+        $this->state = $state;
+        $this->assertSaved($this->save());
+        $this->raise(new RepairRequestSettled($this->id, $state));
+    }
+
+    // ----------[ Getters ]----------
+
+    /**
+     * How many repairs this work was sent back for before this one.
+     */
+    public function earlierRounds(): int
+    {
+        return self::query()
+            ->where('work_type', $this->work_type)
+            ->where('work_id', $this->work_id)
+            ->whereKeyNot($this->id)
+            ->count();
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<ActorIdentity, never>
+     */
+    protected function worker(): Attribute
+    {
+        return Attribute::get(
+            fn () => new ActorIdentity(ActorType::from($this->worker_type), $this->worker_id),
+        )->withoutObjectCaching();
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -93,40 +128,5 @@ final class RepairRequest extends Model implements EventSource, ReadableModel
         $repair->insertIfAbsent();
 
         return self::query()->where('source', $source)->sole();
-    }
-
-    // ----------[ Mutations ]----------
-
-    public function settle(RepairRequestState $state): void
-    {
-        $this->state = $state;
-        $this->assertSaved($this->save());
-        $this->raise(new RepairRequestSettled($this->id, $state));
-    }
-
-    // ----------[ Answers ]----------
-
-    /**
-     * How many repairs this work was sent back for before this one.
-     */
-    public function earlierRounds(): int
-    {
-        return self::query()
-            ->where('work_type', $this->work_type)
-            ->where('work_id', $this->work_id)
-            ->whereKeyNot($this->id)
-            ->count();
-    }
-
-    // ----------[ Accessors ]----------
-
-    /**
-     * @return Attribute<ActorIdentity, never>
-     */
-    protected function worker(): Attribute
-    {
-        return Attribute::get(
-            fn () => new ActorIdentity(ActorType::from($this->worker_type), $this->worker_id),
-        )->withoutObjectCaching();
     }
 }

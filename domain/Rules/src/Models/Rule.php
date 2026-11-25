@@ -109,16 +109,6 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
         return $rule;
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The rule read under its row lock, for a change that must happen once.
-     */
-    public static function lockedById(string $ruleId): self
-    {
-        return self::query()->whereKey($ruleId)->lockForUpdate()->firstOr(fn () => throw RuleMissing::withId($ruleId));
-    }
-
     // ----------[ Mutations ]----------
 
     public function remove(): void
@@ -128,7 +118,7 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
         $this->raise(new RuleRemoved($this->id));
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     /**
      * Makes the proposal hold, approved by an actor other than the one who proposed it.
@@ -137,15 +127,7 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
      */
     public function approveBy(ActorIdentity $approver): void
     {
-        $proposer = $this->proposer_type === null ? null : new ActorIdentity(
-            $this->proposer_type,
-            (string) $this->proposer_id,
-        );
-
-        if ($proposer !== null && $proposer->isSameAs($approver)) {
-            throw RuleSelfApproval::forRule();
-        }
-
+        $this->assertNotProposedBy($approver);
         $this->closeProposal(RuleState::Active);
         $this->raise(new RuleApproved($this->id));
     }
@@ -178,16 +160,73 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
         );
     }
 
-    // ----------[ Internals ]----------
+    // ----------[ Asserts ]----------
 
-    private function closeProposal(RuleState $outcome): void
+    /**
+     * Refuses an approval by the actor who proposed the rule.
+     *
+     * @throws RuleSelfApproval
+     */
+    private function assertNotProposedBy(ActorIdentity $approver): void
+    {
+        if ($this->proposer_type === null) {
+            return;
+        }
+
+        $proposer = new ActorIdentity($this->proposer_type, (string) $this->proposer_id);
+
+        if ($proposer->isSameAs($approver)) {
+            throw RuleSelfApproval::forRule();
+        }
+    }
+
+    /**
+     * Refuses to close a rule that is not proposed.
+     *
+     * @throws RuleNotProposed
+     */
+    private function assertProposed(): void
     {
         if ($this->state !== RuleState::Proposed) {
             throw RuleNotProposed::inState($this->state->value);
         }
+    }
+
+    /**
+     * Refuses a rule that is not there.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws RuleMissing
+     */
+    private static function assertFound(self|null $row, string $ruleId): void
+    {
+        if ($row === null) {
+            throw RuleMissing::withId($ruleId);
+        }
+    }
+
+    // ----------[ Internals ]----------
+
+    private function closeProposal(RuleState $outcome): void
+    {
+        $this->assertProposed();
 
         $this->state = $outcome;
         $this->assertSaved($this->save());
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The rule read under its row lock, for a change that must happen once.
+     */
+    public static function lockedById(string $ruleId): self
+    {
+        $row = self::query()->whereKey($ruleId)->lockForUpdate()->first();
+        self::assertFound($row, $ruleId);
+
+        return $row;
     }
 
     // ----------[ Scopes ]----------

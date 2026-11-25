@@ -108,42 +108,6 @@ final class SharePreview extends Model implements EventSource, ReadableModel
         return $preview;
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The preview of this id, read without a lock to learn which configuration to lock first.
-     *
-     * @throws SharePreviewRefused
-     */
-    public static function of(string $previewId): self
-    {
-        return self::query()->whereKey($previewId)->firstOr(fn () => throw SharePreviewRefused::unknown($previewId));
-    }
-
-    /**
-     * The preview of this id, locked until the transaction ends so it is consumed once.
-     *
-     * @throws SharePreviewRefused
-     */
-    public static function lockFor(string $previewId): self
-    {
-        return self::query()->whereKey($previewId)->lockForUpdate()->firstOr(
-            fn () => throw SharePreviewRefused::unknown($previewId),
-        );
-    }
-
-    /**
-     * The owner's newest preview of the root that is neither used nor expired, if there is one.
-     *
-     * @return Option<self>
-     */
-    public static function openFor(string $ownerUserId, RecordIdentity $root): Option
-    {
-        return Option::fromValue(
-            self::query()->ownedBy($ownerUserId)->ofRoot($root)->stillOpen()->orderByDesc('id')->first(),
-        );
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -156,28 +120,13 @@ final class SharePreview extends Model implements EventSource, ReadableModel
      */
     public function consumeFor(string $ownerUserId, string $checksum, ShareCandidates $current): array
     {
-        if ($this->owner_user_id !== $ownerUserId) {
-            throw SharePreviewRefused::foreign($this->id);
-        }
-
-        if ($this->consumed_at !== null) {
-            throw SharePreviewRefused::consumed($this->id);
-        }
-
-        if (! $this->expires_at->isFuture()) {
-            throw SharePreviewRefused::expired($this->id);
-        }
+        $this->assertConsumableBy($ownerUserId);
 
         $selection = $current->selection(
             array_map(fn (ShareSelectedTarget $target) => $target->record->id, $this->selection),
         );
 
-        $configuration = ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id);
-
-        if ($checksum !== $this->checksum
-            || self::checksumOf($ownerUserId, $this->root, $selection, $configuration) !== $this->checksum) {
-            throw SharePreviewRefused::changed($this->id);
-        }
+        $this->assertUnchanged($ownerUserId, $checksum, $selection);
 
         $this->consumed_at = CarbonImmutable::now();
         $this->assertSaved($this->save());
@@ -194,6 +143,59 @@ final class SharePreview extends Model implements EventSource, ReadableModel
     protected function root(): Attribute
     {
         return Attribute::get(fn () => new RecordIdentity($this->root_type, $this->root_id))->withoutObjectCaching();
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a preview of another owner, one already used, and one that expired.
+     *
+     * @throws SharePreviewRefused
+     */
+    private function assertConsumableBy(string $ownerUserId): void
+    {
+        if ($this->owner_user_id !== $ownerUserId) {
+            throw SharePreviewRefused::foreign($this->id);
+        }
+
+        if ($this->consumed_at !== null) {
+            throw SharePreviewRefused::consumed($this->id);
+        }
+
+        if (! $this->expires_at->isFuture()) {
+            throw SharePreviewRefused::expired($this->id);
+        }
+    }
+
+    /**
+     * Refuses a preview whose checksum the caller or the records it shows no longer match.
+     *
+     * @param  list<ShareSelectedTarget>  $selection
+     *
+     * @throws SharePreviewRefused
+     */
+    private function assertUnchanged(string $ownerUserId, string $checksum, array $selection): void
+    {
+        $configuration = ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id);
+
+        if ($checksum !== $this->checksum
+            || self::checksumOf($ownerUserId, $this->root, $selection, $configuration) !== $this->checksum) {
+            throw SharePreviewRefused::changed($this->id);
+        }
+    }
+
+    /**
+     * Refuses a preview that is not there.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws SharePreviewRefused
+     */
+    private static function assertFound(self|null $row, string $previewId): void
+    {
+        if ($row === null) {
+            throw SharePreviewRefused::unknown($previewId);
+        }
     }
 
     // ----------[ Internals ]----------
@@ -230,6 +232,46 @@ final class SharePreview extends Model implements EventSource, ReadableModel
                 ],
                 JSON_THROW_ON_ERROR,
             ),
+        );
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The preview of this id, read without a lock to learn which configuration to lock first.
+     *
+     * @throws SharePreviewRefused
+     */
+    public static function of(string $previewId): self
+    {
+        $row = self::query()->whereKey($previewId)->first();
+        self::assertFound($row, $previewId);
+
+        return $row;
+    }
+
+    /**
+     * The preview of this id, locked until the transaction ends so it is consumed once.
+     *
+     * @throws SharePreviewRefused
+     */
+    public static function lockFor(string $previewId): self
+    {
+        $row = self::query()->whereKey($previewId)->lockForUpdate()->first();
+        self::assertFound($row, $previewId);
+
+        return $row;
+    }
+
+    /**
+     * The owner's newest preview of the root that is neither used nor expired, if there is one.
+     *
+     * @return Option<self>
+     */
+    public static function openFor(string $ownerUserId, RecordIdentity $root): Option
+    {
+        return Option::fromValue(
+            self::query()->ownedBy($ownerUserId)->ofRoot($root)->stillOpen()->orderByDesc('id')->first(),
         );
     }
 

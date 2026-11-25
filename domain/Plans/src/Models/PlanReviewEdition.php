@@ -89,51 +89,6 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
         ]);
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The plan's edition still asked for, if any.
-     */
-    public static function requestedOf(string $planId): self|null
-    {
-        return self::query()->where('plan_id', $planId)->where('state', PlanReviewState::Requested)
-            ->orderByDesc('number')->first();
-    }
-
-    /**
-     * The plan's edition with this number, if any.
-     */
-    public static function numberedIn(string $planId, int $number): self|null
-    {
-        return self::query()->where('plan_id', $planId)->where('number', $number)->first();
-    }
-
-    /**
-     * The plan's latest edition, whatever its state, if any.
-     */
-    public static function latestOf(string $planId): self|null
-    {
-        return self::query()->where('plan_id', $planId)->orderByDesc('number')->first();
-    }
-
-    /**
-     * The plan's latest approved edition, current or historical, if any.
-     */
-    public static function latestApprovalOf(string $planId): self|null
-    {
-        return self::query()->where('plan_id', $planId)->where('state', PlanReviewState::Approved)
-            ->orderByDesc('number')->first();
-    }
-
-    /**
-     * The plan's latest approved edition that still matches the plan, if any.
-     */
-    public static function currentApprovalOf(string $planId): self|null
-    {
-        return self::query()->where('plan_id', $planId)->where('state', PlanReviewState::Approved)
-            ->where('is_historical', false)->orderByDesc('number')->first();
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -188,5 +143,50 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
         $this->decision_request_key = $requestKey;
         $this->decision_reason = $reason;
         $this->save();
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The plan's edition still asked for, if any.
+     */
+    public static function requestedOf(string $planId): self|null
+    {
+        return self::query()->where('plan_id', $planId)->where('state', PlanReviewState::Requested)
+            ->orderByDesc('number')->first();
+    }
+
+    /**
+     * The plan's edition with this number, if any.
+     */
+    public static function numberedIn(string $planId, int $number): self|null
+    {
+        return self::query()->where('plan_id', $planId)->where('number', $number)->first();
+    }
+
+    /**
+     * The plan's latest edition, whatever its state, if any.
+     */
+    public static function latestOf(string $planId): self|null
+    {
+        return self::query()->where('plan_id', $planId)->orderByDesc('number')->first();
+    }
+
+    /**
+     * The plan's latest approved edition, current or historical, if any.
+     */
+    public static function latestApprovalOf(string $planId): self|null
+    {
+        return self::query()->where('plan_id', $planId)->where('state', PlanReviewState::Approved)
+            ->orderByDesc('number')->first();
+    }
+
+    /**
+     * The plan's latest approved edition that still matches the plan, if any.
+     */
+    public static function currentApprovalOf(string $planId): self|null
+    {
+        return self::query()->where('plan_id', $planId)->where('state', PlanReviewState::Approved)
+            ->where('is_historical', false)->orderByDesc('number')->first();
     }
 }

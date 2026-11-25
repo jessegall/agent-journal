@@ -40,7 +40,7 @@ final class FixtureNote extends Model implements EventSource
         $this->save();
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     public function isFinished(): bool
     {

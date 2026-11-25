@@ -68,6 +68,15 @@ final class HelperNotice extends Model implements EventSource, ReadableModel
         return $notice;
     }
 
+    // ----------[ Mutations ]----------
+
+    public function markDelivered(): void
+    {
+        $this->delivered_at = CarbonImmutable::now();
+        $this->assertSaved($this->save());
+        $this->raise(new HelperNoticeDelivered($this->id));
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -85,14 +94,5 @@ final class HelperNotice extends Model implements EventSource, ReadableModel
             ->limit(self::DELIVERED_LIMIT)
             ->get()
             ->all());
-    }
-
-    // ----------[ Mutations ]----------
-
-    public function markDelivered(): void
-    {
-        $this->delivered_at = CarbonImmutable::now();
-        $this->assertSaved($this->save());
-        $this->raise(new HelperNoticeDelivered($this->id));
     }
 }

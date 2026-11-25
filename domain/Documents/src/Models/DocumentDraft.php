@@ -119,7 +119,7 @@ final class DocumentDraft extends Model implements EventSource, ReadableModel
         $this->raise(new DocumentDraftSaved($this->document_id, $this->version));
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     public function isEditedBy(ActorIdentity $editor): bool
     {

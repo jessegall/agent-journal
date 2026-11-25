@@ -57,6 +57,112 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
         ];
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * The owner's choice of the account new starts use, announced on the Accounts page when it changed anything.
+     *
+     * @throws AccountUnavailable
+     */
+    public function switchTo(Account $account): bool
+    {
+        if (! $this->select($account)) {
+            return false;
+        }
+
+        $this->raise(new AccountSwitched($this->account_protocol, $account->id));
+
+        return true;
+    }
+
+    /**
+     * Makes the account the one new starts use, and answers whether that changed anything: choosing the one already
+     * chosen does not. Starts already running keep the account they started with.
+     *
+     * @throws AccountUnavailable
+     */
+    public function select(Account $account): bool
+    {
+        $account->assertAvailable();
+
+        if ($this->account_id === $account->id) {
+            return false;
+        }
+
+        $this->account_id = $account->id;
+        $this->has_selected = true;
+        $this->change_number++;
+        $this->assertSaved($this->save());
+        $this->raise(new ActiveAccountSelected($this->account_protocol, $account->id));
+
+        return true;
+    }
+
+    /**
+     * Leaves the driver with no chosen account, as when the chosen one must sign in again or is removed.
+     */
+    public function clear(): void
+    {
+        if ($this->account_id === null) {
+            return;
+        }
+
+        $this->account_id = null;
+        $this->change_number++;
+        $this->save();
+        $this->raise(new ActiveAccountCleared($this->account_protocol));
+    }
+
+    // ----------[ Getters ]----------
+
+    /**
+     * Chooses the account when the driver never had one chosen, as for its first signed-in account.
+     */
+    public function chooseFirst(Account $account): void
+    {
+        if ($this->has_selected) {
+            return;
+        }
+
+        $this->select($account);
+    }
+
+    /**
+     * Leaves the driver with no chosen account when the given one was chosen, as when it must sign in again.
+     */
+    public function clearIfChosen(Account $account): void
+    {
+        if ($this->account_id === $account->id) {
+            $this->clear();
+        }
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * @throws AccountSelectionChanged when the choice changed since the change number the caller saw
+     */
+    public function assertAtChange(int $number): void
+    {
+        if ($this->change_number !== $number) {
+            throw AccountSelectionChanged::forDriver($this->account_protocol);
+        }
+    }
+
+    /**
+     * Refuses a start for a driver with no account chosen.
+     *
+     * @phpstan-assert string $accountId
+     *
+     * @throws AccountUnavailable
+     */
+    private static function assertAccountChosen(string|null $accountId, string $driver): void
+    {
+        if ($accountId === null) {
+            throw AccountUnavailable::forStart($driver, StartUnavailableReason::NoAccount);
+        }
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -120,112 +226,6 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
     public static function listed(): array
     {
         return array_values(self::query()->orderBy('account_protocol')->readAll('one row per driver')->get()->all());
-    }
-
-    // ----------[ Mutations ]----------
-
-    /**
-     * The owner's choice of the account new starts use, announced on the Accounts page when it changed anything.
-     *
-     * @throws AccountUnavailable
-     */
-    public function switchTo(Account $account): bool
-    {
-        if (! $this->select($account)) {
-            return false;
-        }
-
-        $this->raise(new AccountSwitched($this->account_protocol, $account->id));
-
-        return true;
-    }
-
-    /**
-     * Makes the account the one new starts use, and answers whether that changed anything: choosing the one already
-     * chosen does not. Starts already running keep the account they started with.
-     *
-     * @throws AccountUnavailable
-     */
-    public function select(Account $account): bool
-    {
-        $account->assertAvailable();
-
-        if ($this->account_id === $account->id) {
-            return false;
-        }
-
-        $this->account_id = $account->id;
-        $this->has_selected = true;
-        $this->change_number++;
-        $this->assertSaved($this->save());
-        $this->raise(new ActiveAccountSelected($this->account_protocol, $account->id));
-
-        return true;
-    }
-
-    /**
-     * Leaves the driver with no chosen account, as when the chosen one must sign in again or is removed.
-     */
-    public function clear(): void
-    {
-        if ($this->account_id === null) {
-            return;
-        }
-
-        $this->account_id = null;
-        $this->change_number++;
-        $this->save();
-        $this->raise(new ActiveAccountCleared($this->account_protocol));
-    }
-
-    // ----------[ Answers ]----------
-
-    /**
-     * @throws AccountSelectionChanged when the choice changed since the change number the caller saw
-     */
-    public function assertAtChange(int $number): void
-    {
-        if ($this->change_number !== $number) {
-            throw AccountSelectionChanged::forDriver($this->account_protocol);
-        }
-    }
-
-    /**
-     * Chooses the account when the driver never had one chosen, as for its first signed-in account.
-     */
-    public function chooseFirst(Account $account): void
-    {
-        if ($this->has_selected) {
-            return;
-        }
-
-        $this->select($account);
-    }
-
-    /**
-     * Leaves the driver with no chosen account when the given one was chosen, as when it must sign in again.
-     */
-    public function clearIfChosen(Account $account): void
-    {
-        if ($this->account_id === $account->id) {
-            $this->clear();
-        }
-    }
-
-    // ----------[ Asserts ]----------
-
-    /**
-     * Refuses a start for a driver with no account chosen.
-     *
-     * @phpstan-assert string $accountId
-     *
-     * @throws AccountUnavailable
-     */
-    private static function assertAccountChosen(string|null $accountId, string $driver): void
-    {
-        if ($accountId === null) {
-            throw AccountUnavailable::forStart($driver, StartUnavailableReason::NoAccount);
-        }
     }
 
     // ----------[ Scopes ]----------

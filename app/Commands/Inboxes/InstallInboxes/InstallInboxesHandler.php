@@ -11,10 +11,8 @@ final readonly class InstallInboxesHandler implements CommandHandler
 {
     public function __construct(private BuiltInInboxes $inboxes) {}
 
-    public function handle(InstallInboxesCommand $command): null
+    public function handle(InstallInboxesCommand $command): void
     {
         $this->inboxes->install();
-
-        return null;
     }
 }

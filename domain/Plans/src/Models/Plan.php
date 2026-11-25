@@ -166,43 +166,6 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
         ]);
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * Locks a plan's row for update, so its phases and their tasks hold still until the transaction ends. Every change
-     * of a plan's membership and every cascade over it takes this lock first; a future move between plans takes both
-     * plans' locks in id order.
-     */
-    public static function lockStructure(string $planId): self
-    {
-        return self::lockedById($planId);
-    }
-
-    /**
-     * Locks the plan as lockStructure does for a change of its content, its phases or its tasks, which a plan under
-     * review refuses.
-     *
-     * @throws PlanUnderReview
-     */
-    public static function lockForChange(string $planId): self
-    {
-        $plan = self::lockStructure($planId);
-
-        if ($plan->state === PlanState::Reviewing) {
-            throw PlanUnderReview::forPlan($plan->number);
-        }
-
-        return $plan;
-    }
-
-    /**
-     * A plan is shared as a summary root; the documents and reports linked to it are the owner's to select.
-     */
-    public static function shareRelations(): ShareRelationSet
-    {
-        return ShareRelationSet::linked('records', 'share-linked-record');
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -252,9 +215,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
             return false;
         }
 
-        if (! $this->state->canStart()) {
-            throw StartDenied::inState($this->number, $this->state->value);
-        }
+        $this->assertStartable();
 
         $this->state = PlanState::Started;
         $this->assertSaved($this->save());
@@ -274,9 +235,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
      */
     public function requestReview(PlanReviewEdition $review, array $reviewers): void
     {
-        if ($this->state !== PlanState::Planned) {
-            throw PlanReviewRefused::notPlanned($this->number, $this->state->value);
-        }
+        $this->assertPlanned();
 
         $this->state = PlanState::Reviewing;
         $this->assertSaved($this->save());
@@ -290,9 +249,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
      */
     public function withdrawReview(string $editionId): void
     {
-        if ($this->state !== PlanState::Reviewing) {
-            throw PlanReviewRefused::notReviewing($this->number, $this->state->value);
-        }
+        $this->assertReviewing();
 
         $this->state = PlanState::Planned;
         $this->assertSaved($this->save());
@@ -306,9 +263,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
      */
     public function settleReview(string $editionId, PlanReviewState $decision): void
     {
-        if ($this->state !== PlanState::Reviewing) {
-            throw PlanReviewRefused::notReviewing($this->number, $this->state->value);
-        }
+        $this->assertReviewing();
 
         $this->state = PlanState::Planned;
         $this->assertSaved($this->save());
@@ -336,7 +291,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
         ));
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     /**
      * Whether the plan is being worked: started, and neither finished nor cancelled.
@@ -353,9 +308,10 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
      */
     public function phaseNumbered(int $number): Phase
     {
-        return $this->phases()->where('number', $number)->firstOr(
-            fn () => throw PhaseMissing::numbered($this->number, $number),
-        );
+        $phase = $this->phases()->where('number', $number)->first();
+        $this->assertHasPhase($phase, $number);
+
+        return $phase;
     }
 
     /**
@@ -385,9 +341,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
      */
     public function poolTaskIds(): array
     {
-        if ($this->state !== PlanState::Started) {
-            throw AssignmentPoolUnavailable::inState("Plan {$this->number}", $this->state->value);
-        }
+        $this->assertStarted();
 
         $taskIds = PhaseTask::query()
             ->inPlanOrder($this->id)
@@ -395,9 +349,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
             ->pluck('phase_tasks.task_id')
             ->all();
 
-        if (count($taskIds) > OrderedRecordIds::LARGEST) {
-            throw AssignmentPoolTooLarge::holding("Plan {$this->number}", OrderedRecordIds::LARGEST);
-        }
+        $this->assertPoolFits($taskIds);
 
         return array_map(strval(...), array_values($taskIds));
     }
@@ -516,6 +468,130 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
     public function phases(): HasMany
     {
         return $this->hasMany(Phase::class)->orderBy('number');
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a start from a state that allows none.
+     *
+     * @throws StartDenied
+     */
+    private function assertStartable(): void
+    {
+        if (! $this->state->canStart()) {
+            throw StartDenied::inState($this->number, $this->state->value);
+        }
+    }
+
+    /**
+     * Refuses a review of a plan that is not planned.
+     *
+     * @throws PlanReviewRefused
+     */
+    private function assertPlanned(): void
+    {
+        if ($this->state !== PlanState::Planned) {
+            throw PlanReviewRefused::notPlanned($this->number, $this->state->value);
+        }
+    }
+
+    /**
+     * Refuses to end a review of a plan that is not under review.
+     *
+     * @throws PlanReviewRefused
+     */
+    private function assertReviewing(): void
+    {
+        if ($this->state !== PlanState::Reviewing) {
+            throw PlanReviewRefused::notReviewing($this->number, $this->state->value);
+        }
+    }
+
+    /**
+     * Refuses a number no phase of the plan holds.
+     *
+     * @phpstan-assert Phase $phase
+     *
+     * @throws PhaseMissing
+     */
+    private function assertHasPhase(Phase|null $phase, int $number): void
+    {
+        if ($phase === null) {
+            throw PhaseMissing::numbered($this->number, $number);
+        }
+    }
+
+    /**
+     * Refuses the assignment pool of a plan that has not started.
+     *
+     * @throws AssignmentPoolUnavailable
+     */
+    private function assertStarted(): void
+    {
+        if ($this->state !== PlanState::Started) {
+            throw AssignmentPoolUnavailable::inState("Plan {$this->number}", $this->state->value);
+        }
+    }
+
+    /**
+     * Refuses a pool larger than an ordered list of ids holds.
+     *
+     * @param  array<int, mixed>  $taskIds
+     *
+     * @throws AssignmentPoolTooLarge
+     */
+    private function assertPoolFits(array $taskIds): void
+    {
+        if (count($taskIds) > OrderedRecordIds::LARGEST) {
+            throw AssignmentPoolTooLarge::holding("Plan {$this->number}", OrderedRecordIds::LARGEST);
+        }
+    }
+
+    /**
+     * Refuses a change to a plan under review.
+     *
+     * @throws PlanUnderReview
+     */
+    private function assertNotUnderReview(): void
+    {
+        if ($this->state === PlanState::Reviewing) {
+            throw PlanUnderReview::forPlan($this->number);
+        }
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * Locks a plan's row for update, so its phases and their tasks hold still until the transaction ends. Every change
+     * of a plan's membership and every cascade over it takes this lock first; a future move between plans takes both
+     * plans' locks in id order.
+     */
+    public static function lockStructure(string $planId): self
+    {
+        return self::lockedById($planId);
+    }
+
+    /**
+     * Locks the plan as lockStructure does for a change of its content, its phases or its tasks, which a plan under
+     * review refuses.
+     *
+     * @throws PlanUnderReview
+     */
+    public static function lockForChange(string $planId): self
+    {
+        $plan = self::lockStructure($planId);
+        $plan->assertNotUnderReview();
+
+        return $plan;
+    }
+
+    /**
+     * A plan is shared as a summary root; the documents and reports linked to it are the owner's to select.
+     */
+    public static function shareRelations(): ShareRelationSet
+    {
+        return ShareRelationSet::linked('records', 'share-linked-record');
     }
 
     // ----------[ Scopes ]----------

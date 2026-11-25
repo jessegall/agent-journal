@@ -132,7 +132,14 @@ final class EvidencePermit extends Model implements EventSource, ReadableModel
         $this->raise(new EvidencePermitExpired($this->id));
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
+
+    public function wasStartedBy(string $requestId): bool
+    {
+        return $this->consumed_at !== null && $this->request_id === $requestId;
+    }
+
+    // ----------[ Asserts ]----------
 
     /**
      * Checks that this actor may use the permit now for this request; the same request id again is allowed and the
@@ -157,11 +164,6 @@ final class EvidencePermit extends Model implements EventSource, ReadableModel
         if ($this->classification_digest !== $classificationDigest) {
             throw EvidencePermitRefused::changed();
         }
-    }
-
-    public function wasStartedBy(string $requestId): bool
-    {
-        return $this->consumed_at !== null && $this->request_id === $requestId;
     }
 
     // ----------[ Internals ]----------

@@ -139,225 +139,6 @@ final class Account extends Model implements EventSource, ReadableModel
         return $account;
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The method the account signed in by, read by the journal for a start on it; none for an account that is gone.
-     */
-    public static function methodOf(string $accountId): SignInMethod|null
-    {
-        return self::query()->withoutGlobalScope(AccountOwnerScope::class)->whereKey($accountId)->first()?->method;
-    }
-
-    /**
-     * The first free label of the driver for a new account: the proposed one, else its numbered variants from 2.
-     */
-    public static function freeLabel(string $driver, AccountLabel $proposed): AccountLabel
-    {
-        $label = $proposed;
-
-        for ($number = 2; self::labelIsTaken($driver, $label); $number++) {
-            $label = $proposed->numbered($number);
-        }
-
-        return $label;
-    }
-
-    /**
-     * The driver's account, not removed, that holds the principal a verified sign-in proved; none for a sign-in that
-     * proved no subject.
-     */
-    public static function holdingPrincipal(string $driver, SignInIdentity $identity): self|null
-    {
-        if ($identity->subject === null) {
-            return null;
-        }
-
-        return self::query()
-            ->withoutGlobalScope(AccountOwnerScope::class)
-            ->where('account_protocol', $driver)
-            ->where('subject', $identity->subject)
-            ->where('state', '!=', AccountState::Removed->value)
-            ->limit(20)
-            ->get()
-            ->first(fn (self $account) => $account->isSamePrincipal($identity));
-    }
-
-    /**
-     * Whether another account of the attempt's driver, not removed, already signs in by the key or token the attempt
-     * was given; an attempt without a key holds none.
-     */
-    public static function holdingKeyOf(SignInAttempt $attempt): self|null
-    {
-        if ($attempt->fingerprint === null) {
-            return null;
-        }
-
-        return self::query()
-            ->withoutGlobalScope(AccountOwnerScope::class)
-            ->where('account_protocol', $attempt->account_protocol)
-            ->where('fingerprint', $attempt->fingerprint)
-            ->where('state', '!=', AccountState::Removed->value)
-            ->when($attempt->account_id !== null, fn ($accounts) => $accounts->whereKeyNot($attempt->account_id))
-            ->first();
-    }
-
-    /**
-     * The account the owner may change, locked for the rest of the transaction; a removed account keeps its name for
-     * history and is never changed again.
-     *
-     * @throws AccountMissing
-     */
-    public static function lockedForChange(string $accountId): self
-    {
-        $account = self::query()->whereKey($accountId)->lockForUpdate()->first();
-        self::assertPresent($account, $accountId);
-
-        return $account;
-    }
-
-    /**
-     * The owner's accounts that are not removed, by driver and name.
-     *
-     * @return list<self>
-     */
-    public static function listed(): array
-    {
-        $accounts = self::query()
-            ->where('state', '<>', AccountState::Removed->value)
-            ->orderBy('account_protocol')
-            ->orderBy('label_key')
-            ->readAll('the owner sees every saved account at once')
-            ->get();
-
-        return array_values($accounts->all());
-    }
-
-    /**
-     * The chosen account, locked for a start and refused unless it accepts starts; the start path's own read,
-     * which no request's actor limits.
-     *
-     * @throws AccountUnavailable
-     */
-    public static function lockedForStart(string $accountId): self
-    {
-        $account = self::query()
-            ->withoutGlobalScope(AccountOwnerScope::class)
-            ->whereKey($accountId)
-            ->lockForUpdate()
-            ->firstOrFail();
-
-        $account->assertAvailable();
-
-        return $account;
-    }
-
-    /**
-     * The account the owner chose for a start, locked and checked again: only the owner reads it, it runs the
-     * driver, it accepts starts and its sign-in is still the one the owner reviewed. The saved default is untouched.
-     *
-     * @throws AccountUnavailable
-     */
-    public static function lockedChosenForStart(string $driver, string $accountId, int $reviewedSignIn): self
-    {
-        $account = self::query()
-            ->whereKey($accountId)
-            ->ofDriver($driver)
-            ->lockForUpdate()
-            ->first();
-
-        self::assertChosenFound($account, $driver);
-        $account->assertAvailable();
-        $account->assertReviewed($reviewedSignIn);
-
-        return $account;
-    }
-
-    /**
-     * The account locked for the journal's own maintenance or the host that signs it in, whoever acts.
-     */
-    public static function lockedForJournal(string $accountId): self
-    {
-        return self::query()
-            ->withoutGlobalScope(AccountOwnerScope::class)
-            ->whereKey($accountId)
-            ->lockForUpdate()
-            ->firstOrFail();
-    }
-
-    /**
-     * The next account whose check a host runs, for the journal's host transport whoever acts; none when none waits.
-     * A held account whose last check could not tell waits for the owner's recheck.
-     */
-    public static function nextDueForCheck(): self|null
-    {
-        return self::query()
-            ->withoutGlobalScope(AccountOwnerScope::class)
-            ->whereNotNull('check_requested_generation')
-            ->whereNull('check_inconclusive_at')
-            ->orderBy('updated_at')
-            ->lockForUpdate()
-            ->first();
-    }
-
-    /**
-     * The driver of an account, for the journal's own maintenance or the host, read before its locks are taken.
-     */
-    public static function driverForJournal(string $accountId): string
-    {
-        $driver = self::query()->withoutGlobalScope(
-            AccountOwnerScope::class,
-        )->whereKey($accountId)->value('account_protocol');
-
-        return (string) $driver;
-    }
-
-    /**
-     * The driver of the account the owner may change, read before its locks are taken in their order.
-     *
-     * @throws AccountMissing
-     */
-    public static function driverOf(string $accountId): string
-    {
-        $driver = self::query()->whereKey($accountId)->value('account_protocol');
-        self::assertDriverFound($driver, $accountId);
-
-        return $driver;
-    }
-
-    /**
-     * The removed accounts whose processes are all gone and whose sign-in or folder a host has still to clean.
-     */
-    public static function nextDueForCleanup(): self|null
-    {
-        return self::query()
-            ->withoutGlobalScope(AccountOwnerScope::class)
-            ->where('state', AccountState::Removing->value)
-            ->where('cleanup_released', true)
-            ->where('cleanup_tries', '<', CleanupProgress::MOST_TRIES)
-            ->whereNotNull('directory')
-            ->orderBy('updated_at')
-            ->first();
-    }
-
-    /**
-     * The accounts being removed that still wait for their processes to end.
-     *
-     * @return list<string>
-     */
-    public static function waitingForCleanupIds(int $limit): array
-    {
-        $ids = self::query()
-            ->withoutGlobalScope(AccountOwnerScope::class)
-            ->where('state', AccountState::Removing->value)
-            ->where('cleanup_released', false)
-            ->orderBy('updated_at')
-            ->readExactly($limit)
-            ->pluck('id');
-
-        return array_values(array_map(strval(...), $ids->all()));
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -635,7 +416,7 @@ final class Account extends Model implements EventSource, ReadableModel
         $this->raise(new AccountRemoved($this->account_protocol, $this->id));
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     /**
      * Whether the sign-in and this account both name the provider's own verified subject, so they can be compared at
@@ -651,32 +432,6 @@ final class Account extends Model implements EventSource, ReadableModel
         return $this->subject !== null
             && $identity->subject === $this->subject
             && $identity->workspace === $this->workspace;
-    }
-
-    /**
-     * Refuses a start on an account that is not signed in or is held for maintenance.
-     *
-     * @throws AccountUnavailable
-     */
-    public function assertAvailable(): void
-    {
-        $reason = $this->startUnavailableReason;
-
-        if ($reason !== null) {
-            throw AccountUnavailable::forStart($this->account_protocol, $reason);
-        }
-    }
-
-    /**
-     * Refuses a chosen account whose sign-in changed after the owner reviewed it.
-     *
-     * @throws AccountUnavailable
-     */
-    public function assertReviewed(int $signIn): void
-    {
-        if ($this->sign_in_generation !== $signIn) {
-            throw AccountUnavailable::forStart($this->account_protocol, StartUnavailableReason::ChosenAccountChanged);
-        }
     }
 
     /**
@@ -775,6 +530,32 @@ final class Account extends Model implements EventSource, ReadableModel
     }
 
     // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a start on an account that is not signed in or is held for maintenance.
+     *
+     * @throws AccountUnavailable
+     */
+    public function assertAvailable(): void
+    {
+        $reason = $this->startUnavailableReason;
+
+        if ($reason !== null) {
+            throw AccountUnavailable::forStart($this->account_protocol, $reason);
+        }
+    }
+
+    /**
+     * Refuses a chosen account whose sign-in changed after the owner reviewed it.
+     *
+     * @throws AccountUnavailable
+     */
+    public function assertReviewed(int $signIn): void
+    {
+        if ($this->sign_in_generation !== $signIn) {
+            throw AccountUnavailable::forStart($this->account_protocol, StartUnavailableReason::ChosenAccountChanged);
+        }
+    }
 
     /**
      * Refuses an account that is not there or was removed.
@@ -891,6 +672,225 @@ final class Account extends Model implements EventSource, ReadableModel
     {
         $this->label = $label->label;
         $this->label_key = $label->key();
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The method the account signed in by, read by the journal for a start on it; none for an account that is gone.
+     */
+    public static function methodOf(string $accountId): SignInMethod|null
+    {
+        return self::query()->withoutGlobalScope(AccountOwnerScope::class)->whereKey($accountId)->first()?->method;
+    }
+
+    /**
+     * The first free label of the driver for a new account: the proposed one, else its numbered variants from 2.
+     */
+    public static function freeLabel(string $driver, AccountLabel $proposed): AccountLabel
+    {
+        $label = $proposed;
+
+        for ($number = 2; self::labelIsTaken($driver, $label); $number++) {
+            $label = $proposed->numbered($number);
+        }
+
+        return $label;
+    }
+
+    /**
+     * The driver's account, not removed, that holds the principal a verified sign-in proved; none for a sign-in that
+     * proved no subject.
+     */
+    public static function holdingPrincipal(string $driver, SignInIdentity $identity): self|null
+    {
+        if ($identity->subject === null) {
+            return null;
+        }
+
+        return self::query()
+            ->withoutGlobalScope(AccountOwnerScope::class)
+            ->where('account_protocol', $driver)
+            ->where('subject', $identity->subject)
+            ->where('state', '!=', AccountState::Removed->value)
+            ->limit(20)
+            ->get()
+            ->first(fn (self $account) => $account->isSamePrincipal($identity));
+    }
+
+    /**
+     * Whether another account of the attempt's driver, not removed, already signs in by the key or token the attempt
+     * was given; an attempt without a key holds none.
+     */
+    public static function holdingKeyOf(SignInAttempt $attempt): self|null
+    {
+        if ($attempt->fingerprint === null) {
+            return null;
+        }
+
+        return self::query()
+            ->withoutGlobalScope(AccountOwnerScope::class)
+            ->where('account_protocol', $attempt->account_protocol)
+            ->where('fingerprint', $attempt->fingerprint)
+            ->where('state', '!=', AccountState::Removed->value)
+            ->when($attempt->account_id !== null, fn ($accounts) => $accounts->whereKeyNot($attempt->account_id))
+            ->first();
+    }
+
+    /**
+     * The account the owner may change, locked for the rest of the transaction; a removed account keeps its name for
+     * history and is never changed again.
+     *
+     * @throws AccountMissing
+     */
+    public static function lockedForChange(string $accountId): self
+    {
+        $account = self::query()->whereKey($accountId)->lockForUpdate()->first();
+        self::assertPresent($account, $accountId);
+
+        return $account;
+    }
+
+    /**
+     * The owner's accounts that are not removed, by driver and name.
+     *
+     * @return list<self>
+     */
+    public static function listed(): array
+    {
+        $accounts = self::query()
+            ->where('state', '<>', AccountState::Removed->value)
+            ->orderBy('account_protocol')
+            ->orderBy('label_key')
+            ->readAll('the owner sees every saved account at once')
+            ->get();
+
+        return array_values($accounts->all());
+    }
+
+    /**
+     * The chosen account, locked for a start and refused unless it accepts starts; the start path's own read,
+     * which no request's actor limits.
+     *
+     * @throws AccountUnavailable
+     */
+    public static function lockedForStart(string $accountId): self
+    {
+        $account = self::query()
+            ->withoutGlobalScope(AccountOwnerScope::class)
+            ->whereKey($accountId)
+            ->lockForUpdate()
+            ->firstOrFail();
+
+        $account->assertAvailable();
+
+        return $account;
+    }
+
+    /**
+     * The account the owner chose for a start, locked and checked again: only the owner reads it, it runs the
+     * driver, it accepts starts and its sign-in is still the one the owner reviewed. The saved default is untouched.
+     *
+     * @throws AccountUnavailable
+     */
+    public static function lockedChosenForStart(string $driver, string $accountId, int $reviewedSignIn): self
+    {
+        $account = self::query()
+            ->whereKey($accountId)
+            ->ofDriver($driver)
+            ->lockForUpdate()
+            ->first();
+
+        self::assertChosenFound($account, $driver);
+        $account->assertAvailable();
+        $account->assertReviewed($reviewedSignIn);
+
+        return $account;
+    }
+
+    /**
+     * The account locked for the journal's own maintenance or the host that signs it in, whoever acts.
+     */
+    public static function lockedForJournal(string $accountId): self
+    {
+        return self::query()
+            ->withoutGlobalScope(AccountOwnerScope::class)
+            ->whereKey($accountId)
+            ->lockForUpdate()
+            ->firstOrFail();
+    }
+
+    /**
+     * The next account whose check a host runs, for the journal's host transport whoever acts; none when none waits.
+     * A held account whose last check could not tell waits for the owner's recheck.
+     */
+    public static function nextDueForCheck(): self|null
+    {
+        return self::query()
+            ->withoutGlobalScope(AccountOwnerScope::class)
+            ->whereNotNull('check_requested_generation')
+            ->whereNull('check_inconclusive_at')
+            ->orderBy('updated_at')
+            ->lockForUpdate()
+            ->first();
+    }
+
+    /**
+     * The driver of an account, for the journal's own maintenance or the host, read before its locks are taken.
+     */
+    public static function driverForJournal(string $accountId): string
+    {
+        $driver = self::query()->withoutGlobalScope(
+            AccountOwnerScope::class,
+        )->whereKey($accountId)->value('account_protocol');
+
+        return (string) $driver;
+    }
+
+    /**
+     * The driver of the account the owner may change, read before its locks are taken in their order.
+     *
+     * @throws AccountMissing
+     */
+    public static function driverOf(string $accountId): string
+    {
+        $driver = self::query()->whereKey($accountId)->value('account_protocol');
+        self::assertDriverFound($driver, $accountId);
+
+        return $driver;
+    }
+
+    /**
+     * The removed accounts whose processes are all gone and whose sign-in or folder a host has still to clean.
+     */
+    public static function nextDueForCleanup(): self|null
+    {
+        return self::query()
+            ->withoutGlobalScope(AccountOwnerScope::class)
+            ->where('state', AccountState::Removing->value)
+            ->where('cleanup_released', true)
+            ->where('cleanup_tries', '<', CleanupProgress::MOST_TRIES)
+            ->whereNotNull('directory')
+            ->orderBy('updated_at')
+            ->first();
+    }
+
+    /**
+     * The accounts being removed that still wait for their processes to end.
+     *
+     * @return list<string>
+     */
+    public static function waitingForCleanupIds(int $limit): array
+    {
+        $ids = self::query()
+            ->withoutGlobalScope(AccountOwnerScope::class)
+            ->where('state', AccountState::Removing->value)
+            ->where('cleanup_released', false)
+            ->orderBy('updated_at')
+            ->readExactly($limit)
+            ->pluck('id');
+
+        return array_values(array_map(strval(...), $ids->all()));
     }
 
     // ----------[ Scopes ]----------

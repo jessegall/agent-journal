@@ -161,25 +161,6 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
         return $run;
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * @return BelongsTo<Sequence, $this>
-     */
-    public function sequence(): BelongsTo
-    {
-        return $this->belongsTo(Sequence::class);
-    }
-
-    /**
-     * The run read under its row lock, among those the actor may see, for a change that must happen once.
-     */
-    public static function lockedById(string $id): self
-    {
-        // A run belongs to no actor until it is started, so its start may also take a run nobody follows yet.
-        return self::lockedForActorOrUnheld($id) ?? throw SequenceRunMissing::forId($id);
-    }
-
     // ----------[ Mutations ]----------
 
     public function startFor(ActorIdentity $follower, string $sessionId): void
@@ -229,7 +210,7 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
         return "step {$step} of ".count($this->steps).' · '.$this->steps[$step - 1];
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     public function identifyFor(DockDefinition $definition): DockIdentity
     {
@@ -274,5 +255,43 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
             $isRunning => new StateLabel($key, 'Running', Tone::Note),
             default => new StateLabel($key, 'Waiting', Tone::Neutral),
         };
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a run that is not there for the actor.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws SequenceRunMissing
+     */
+    private static function assertFound(self|null $row, string $id): void
+    {
+        if ($row === null) {
+            throw SequenceRunMissing::forId($id);
+        }
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * @return BelongsTo<Sequence, $this>
+     */
+    public function sequence(): BelongsTo
+    {
+        return $this->belongsTo(Sequence::class);
+    }
+
+    /**
+     * The run read under its row lock, among those the actor may see, for a change that must happen once.
+     */
+    public static function lockedById(string $id): self
+    {
+        // A run belongs to no actor until it is started, so its start may also take a run nobody follows yet.
+        $row = self::lockedForActorOrUnheld($id);
+        self::assertFound($row, $id);
+
+        return $row;
     }
 }

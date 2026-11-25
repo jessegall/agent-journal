@@ -74,9 +74,7 @@ final class DocumentClose extends Model implements EventSource, ReadableModel
 
     protected static function booted(): void
     {
-        self::updating(function (self $close): void {
-            throw RecordImmutable::for('draft close');
-        });
+        self::updating(fn (self $close) => $close->assertUnedited());
     }
 
     // ----------[ Constructors ]----------
@@ -129,5 +127,17 @@ final class DocumentClose extends Model implements EventSource, ReadableModel
     protected function card(): Attribute
     {
         return Attribute::get(fn () => RecordViews::closeCard($this))->withoutObjectCaching();
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses every edit: a draft close stays as it was written.
+     *
+     * @throws RecordImmutable
+     */
+    private function assertUnedited(): never
+    {
+        throw RecordImmutable::for('draft close');
     }
 }

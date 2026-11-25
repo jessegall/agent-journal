@@ -110,86 +110,6 @@ final class Host extends Model implements EventSource, ReadableModel
         ]);
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The stored form of a host secret: its hash, so the secret itself is never kept.
-     */
-    public static function hashOf(string $secret): string
-    {
-        return hash('sha256', $secret);
-    }
-
-    /**
-     * The host a secret belongs to, if it is enrolled and not revoked.
-     *
-     * @throws HostCredentialRejected
-     */
-    public static function forSecret(string $secret): self
-    {
-        $host = self::query()->where('credential_hash', self::hashOf($secret))->first();
-        self::assertCredentialLive($host);
-
-        return $host;
-    }
-
-    /**
-     * The protection a contained host of this installation last reported for the driver's build on the platform a
-     * launch profile names, or the unreported one asked for when no contained host has.
-     */
-    public static function containedProtectionOf(ProtectionReport $unreported): ProtectionReport
-    {
-        $host = self::query()
-            ->where('arrangement', ArrangementType::Contained)
-            ->whereNull('revoked_at')
-            ->latest('updated_at')
-            ->first();
-
-        if ($host === null) {
-            return $unreported;
-        }
-
-        return $host->protectionOf($unreported);
-    }
-
-    /**
-     * The enrolled hosts that are not revoked; an installation has a handful.
-     *
-     * @return list<self>
-     */
-    public static function servingEnrolled(): array
-    {
-        return array_values(
-            self::query()
-                ->whereNull('revoked_at')
-                ->enrolled()
-                ->readAll('an installation enrolls a handful of hosts')
-                ->get()
-                ->all(),
-        );
-    }
-
-    /**
-     * The first serving enrolled host that runs this placement and declared the driver build and driver type; a relay
-     * host starts only through its binding.
-     *
-     * @throws HostUnavailable
-     */
-    public static function runningStart(
-        string $driver,
-        string $build,
-        ExecutionModeType $placement,
-        DriverType $driverType,
-    ): self {
-        $host = array_find(
-            self::servingEnrolled(),
-            fn (self $host) => $host->runsPlacement($placement) && $host->declaresRun($driver, $build, $placement, $driverType),
-        );
-        self::assertServesStart($host, $driver, $driverType);
-
-        return $host;
-    }
-
     // ----------[ Mutations ]----------
 
     public function recordProtection(ProtectionReport $report): void
@@ -282,7 +202,7 @@ final class Host extends Model implements EventSource, ReadableModel
         $this->raise(new HostRevoked($this->id));
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     /**
      * Whether the host runs starts of this placement: a contained host in containers, a local one on the host.
@@ -413,18 +333,6 @@ final class Host extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Refuses a host that reports another arrangement than the one it was enrolled with.
-     *
-     * @throws HostArrangementRefused
-     */
-    public function assertEnrolledAs(ArrangementType $reported): void
-    {
-        if ($reported !== $this->arrangement) {
-            throw HostArrangementRefused::unlikeEnrollment($reported, $this->arrangement);
-        }
-    }
-
-    /**
      * Whether an answered call has anything to keep: a failure its route ends, failures the host reported, or a last
      * answer older than a minute, so a quiet host shows while a busy one writes its row once a minute.
      *
@@ -471,6 +379,20 @@ final class Host extends Model implements EventSource, ReadableModel
         return $folder;
     }
 
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a host that reports another arrangement than the one it was enrolled with.
+     *
+     * @throws HostArrangementRefused
+     */
+    public function assertEnrolledAs(ArrangementType $reported): void
+    {
+        if ($reported !== $this->arrangement) {
+            throw HostArrangementRefused::unlikeEnrollment($reported, $this->arrangement);
+        }
+    }
+
     /**
      * Refuses a secret no host holds, and the secret of a revoked host.
      *
@@ -488,8 +410,6 @@ final class Host extends Model implements EventSource, ReadableModel
             throw HostCredentialRejected::revoked();
         }
     }
-
-    // ----------[ Asserts ]----------
 
     /**
      * Refuses a start no serving host can run.
@@ -517,6 +437,86 @@ final class Host extends Model implements EventSource, ReadableModel
         if ($folder === null) {
             throw HostUnavailable::withoutStartFolder($this->id);
         }
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The stored form of a host secret: its hash, so the secret itself is never kept.
+     */
+    public static function hashOf(string $secret): string
+    {
+        return hash('sha256', $secret);
+    }
+
+    /**
+     * The host a secret belongs to, if it is enrolled and not revoked.
+     *
+     * @throws HostCredentialRejected
+     */
+    public static function forSecret(string $secret): self
+    {
+        $host = self::query()->where('credential_hash', self::hashOf($secret))->first();
+        self::assertCredentialLive($host);
+
+        return $host;
+    }
+
+    /**
+     * The protection a contained host of this installation last reported for the driver's build on the platform a
+     * launch profile names, or the unreported one asked for when no contained host has.
+     */
+    public static function containedProtectionOf(ProtectionReport $unreported): ProtectionReport
+    {
+        $host = self::query()
+            ->where('arrangement', ArrangementType::Contained)
+            ->whereNull('revoked_at')
+            ->latest('updated_at')
+            ->first();
+
+        if ($host === null) {
+            return $unreported;
+        }
+
+        return $host->protectionOf($unreported);
+    }
+
+    /**
+     * The enrolled hosts that are not revoked; an installation has a handful.
+     *
+     * @return list<self>
+     */
+    public static function servingEnrolled(): array
+    {
+        return array_values(
+            self::query()
+                ->whereNull('revoked_at')
+                ->enrolled()
+                ->readAll('an installation enrolls a handful of hosts')
+                ->get()
+                ->all(),
+        );
+    }
+
+    /**
+     * The first serving enrolled host that runs this placement and declared the driver build and driver type; a relay
+     * host starts only through its binding.
+     *
+     * @throws HostUnavailable
+     */
+    public static function runningStart(
+        string $driver,
+        string $build,
+        ExecutionModeType $placement,
+        DriverType $driverType,
+    ): self {
+        $host = array_find(
+            self::servingEnrolled(),
+            fn (self $host) => $host->runsPlacement($placement) && $host->declaresRun($driver, $build, $placement, $driverType),
+        );
+        self::assertServesStart($host, $driver, $driverType);
+
+        return $host;
     }
 
     // ----------[ Scopes ]----------

@@ -53,14 +53,4 @@ final readonly class ChatCalls
             'requestKey' => $requestKey,
         ]));
     }
-
-    public function retryDelivery(
-        string $range,
-        CallKey $requestKey = new CallKey(),
-    ): CallAccepted {
-        return $this->sender->send(RetryDeliveryCall::from([
-            'range' => $range,
-            'requestKey' => $requestKey,
-        ]));
-    }
 }

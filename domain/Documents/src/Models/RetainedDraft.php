@@ -52,7 +52,7 @@ final class RetainedDraft extends Model implements EventSource, ReadableModel
 
     protected static function booted(): void
     {
-        self::updating(fn () => throw RecordImmutable::for('retained draft'));
+        self::updating(fn (self $draft) => $draft->assertUnedited());
     }
 
     // ----------[ Constructors ]----------
@@ -74,16 +74,6 @@ final class RetainedDraft extends Model implements EventSource, ReadableModel
         $kept->raise(new DraftKept($kept->id, $kept->document_id, $parent));
 
         return $kept;
-    }
-
-    // ----------[ Queries ]----------
-
-    /**
-     * @return Builder<self>
-     */
-    public static function forRecovery(): Builder
-    {
-        return self::query()->withoutGlobalScope(self::DRAFT_SCOPE);
     }
 
     // ----------[ Accessors ]----------
@@ -110,5 +100,27 @@ final class RetainedDraft extends Model implements EventSource, ReadableModel
         return Attribute::get(
             fn () => new DraftText($this->title, $this->abstract, MarkdownText::workingBody($this->body)),
         )->withoutObjectCaching();
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses every edit: a retained draft stays as it was written.
+     *
+     * @throws RecordImmutable
+     */
+    private function assertUnedited(): never
+    {
+        throw RecordImmutable::for('retained draft');
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * @return Builder<self>
+     */
+    public static function forRecovery(): Builder
+    {
+        return self::query()->withoutGlobalScope(self::DRAFT_SCOPE);
     }
 }

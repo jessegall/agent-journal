@@ -139,40 +139,6 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
         return $entry;
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * @param  non-empty-list<MenuStep>  $steps
-     */
-    public static function lockForPath(NavigationRequest $navigation, array $steps): self|null
-    {
-        return self::query()->ownedBy($navigation->actor())->current()->forDriver($navigation->family)
-            ->matching($steps[0]->fingerprint, $navigation->goal)
-            ->whereRaw('steps::jsonb = ?::jsonb', [json_encode(self::storedSteps($steps), JSON_THROW_ON_ERROR)])
-            ->lockForUpdate()
-            ->recentFirst()
-            ->first();
-    }
-
-    /**
-     * @param  list<string>  $declinedEntries
-     */
-    public static function replayFor(
-        ActorIdentity $owner,
-        AgentRuntime $runtime,
-        ScriptGoal $goal,
-        string $fingerprint,
-        array $declinedEntries,
-    ): self|null {
-        $menuQuery = self::query()->ownedBy($owner)->current()->forDriver($runtime->family)
-            ->matching($fingerprint, $goal)->whereNotIn('id', $declinedEntries)->recentFirst();
-
-        $build = $runtime->driver_build;
-        $current = (clone $menuQuery)->whereJsonContains('builds', [['build' => $build, 'stale' => false]])->first();
-
-        return $current ?? $menuQuery->whereJsonDoesntContain('builds', [['build' => $build]])->first();
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -310,6 +276,40 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
         $builds[$build->build] = $build;
         $this->builds = array_values($builds);
         $this->save();
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * @param  non-empty-list<MenuStep>  $steps
+     */
+    public static function lockForPath(NavigationRequest $navigation, array $steps): self|null
+    {
+        return self::query()->ownedBy($navigation->actor())->current()->forDriver($navigation->family)
+            ->matching($steps[0]->fingerprint, $navigation->goal)
+            ->whereRaw('steps::jsonb = ?::jsonb', [json_encode(self::storedSteps($steps), JSON_THROW_ON_ERROR)])
+            ->lockForUpdate()
+            ->recentFirst()
+            ->first();
+    }
+
+    /**
+     * @param  list<string>  $declinedEntries
+     */
+    public static function replayFor(
+        ActorIdentity $owner,
+        AgentRuntime $runtime,
+        ScriptGoal $goal,
+        string $fingerprint,
+        array $declinedEntries,
+    ): self|null {
+        $menuQuery = self::query()->ownedBy($owner)->current()->forDriver($runtime->family)
+            ->matching($fingerprint, $goal)->whereNotIn('id', $declinedEntries)->recentFirst();
+
+        $build = $runtime->driver_build;
+        $current = (clone $menuQuery)->whereJsonContains('builds', [['build' => $build, 'stale' => false]])->first();
+
+        return $current ?? $menuQuery->whereJsonDoesntContain('builds', [['build' => $build]])->first();
     }
 
     // ----------[ Scopes ]----------

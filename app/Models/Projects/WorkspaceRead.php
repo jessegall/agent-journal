@@ -85,75 +85,6 @@ final class WorkspaceRead extends Model implements EventSource, ReadableModel
         ];
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * Retains the read for its reference once; asking again finds the same read.
-     */
-    public static function retain(WorkspaceReadReference $reference, ActorIdentity $actor, WorkReference $work): self
-    {
-        $read = new self([
-            'read_reference' => $reference->key,
-            'actor_type' => $actor->type->value,
-            'actor_id' => $actor->id,
-            'work' => $work->key,
-        ]);
-        $read->setAttribute($read->getKeyName(), $read->newUniqueId());
-        $read->insertIfAbsent();
-
-        return self::query()->where('read_reference', $reference->key)->sole();
-    }
-
-    /**
-     * The reads waiting for the host the actors' runtimes run on, oldest first.
-     *
-     * @return list<self>
-     */
-    public static function pendingOn(string $hostId, int $limit): array
-    {
-        $agentsOnHost = AgentSession::query()
-            ->whereIn('id', AgentRuntime::query()->where('host_id', $hostId)->select('agent_session_id'))
-            ->select('agent_id');
-
-        $pending = self::query()
-            ->whereNull('sampled_at')
-            ->where('actor_type', 'agent')
-            ->whereIn('actor_id', $agentsOnHost)
-            ->orderBy('created_at')
-            ->readExactly($limit)
-            ->get();
-
-        return array_values($pending->all());
-    }
-
-    /**
-     * The newest sample of the agent's workspace that names a verified commit, none or one: what a child of that agent
-     * starts from.
-     *
-     * @return list<WorkspaceFacts>
-     */
-    public static function latestCommitReadOf(string $agentId): array
-    {
-        $read = self::query()->where('actor_type', 'agent')->where('actor_id', $agentId)
-            ->where('binding_id', '!=', '')->where('head_oid', '!=', '')->whereNotNull('sampled_at')
-            ->latest('sampled_at')->limit(1)->get();
-
-        $facts = [];
-
-        foreach ($read as $row) {
-            foreach ($row->facts as $sample) {
-                $facts[] = $sample;
-            }
-        }
-
-        return $facts;
-    }
-
-    public static function byReference(WorkspaceReadReference $reference): self
-    {
-        return self::query()->where('read_reference', $reference->key)->firstOrFail();
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -222,5 +153,74 @@ final class WorkspaceRead extends Model implements EventSource, ReadableModel
     protected function reference(): Attribute
     {
         return Attribute::get(fn () => new WorkspaceReadReference($this->read_reference))->withoutObjectCaching();
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * Retains the read for its reference once; asking again finds the same read.
+     */
+    public static function retain(WorkspaceReadReference $reference, ActorIdentity $actor, WorkReference $work): self
+    {
+        $read = new self([
+            'read_reference' => $reference->key,
+            'actor_type' => $actor->type->value,
+            'actor_id' => $actor->id,
+            'work' => $work->key,
+        ]);
+        $read->setAttribute($read->getKeyName(), $read->newUniqueId());
+        $read->insertIfAbsent();
+
+        return self::query()->where('read_reference', $reference->key)->sole();
+    }
+
+    /**
+     * The reads waiting for the host the actors' runtimes run on, oldest first.
+     *
+     * @return list<self>
+     */
+    public static function pendingOn(string $hostId, int $limit): array
+    {
+        $agentsOnHost = AgentSession::query()
+            ->whereIn('id', AgentRuntime::query()->where('host_id', $hostId)->select('agent_session_id'))
+            ->select('agent_id');
+
+        $pending = self::query()
+            ->whereNull('sampled_at')
+            ->where('actor_type', 'agent')
+            ->whereIn('actor_id', $agentsOnHost)
+            ->orderBy('created_at')
+            ->readExactly($limit)
+            ->get();
+
+        return array_values($pending->all());
+    }
+
+    /**
+     * The newest sample of the agent's workspace that names a verified commit, none or one: what a child of that agent
+     * starts from.
+     *
+     * @return list<WorkspaceFacts>
+     */
+    public static function latestCommitReadOf(string $agentId): array
+    {
+        $read = self::query()->where('actor_type', 'agent')->where('actor_id', $agentId)
+            ->where('binding_id', '!=', '')->where('head_oid', '!=', '')->whereNotNull('sampled_at')
+            ->latest('sampled_at')->limit(1)->get();
+
+        $facts = [];
+
+        foreach ($read as $row) {
+            foreach ($row->facts as $sample) {
+                $facts[] = $sample;
+            }
+        }
+
+        return $facts;
+    }
+
+    public static function byReference(WorkspaceReadReference $reference): self
+    {
+        return self::query()->where('read_reference', $reference->key)->firstOrFail();
     }
 }

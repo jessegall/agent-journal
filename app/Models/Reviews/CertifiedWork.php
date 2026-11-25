@@ -43,6 +43,34 @@ final class CertifiedWork extends Model implements ReadableModel
     use InsertsAbsentRows;
     use Linkable;
 
+    // ----------[ Accessors ]----------
+
+    /**
+     * The parent repository's ref the commits are imported under: one per certificate, never a branch.
+     *
+     * @return Attribute<non-falsy-string, never>
+     */
+    protected function importRef(): Attribute
+    {
+        return Attribute::get(fn () => "refs/helpers/{$this->work_type}/{$this->work_id}/{$this->certificate}");
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses work the certificate does not certify.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws HelperWorkUncertified
+     */
+    private static function assertCertified(self|null $row, RecordIdentity $work, string $certificate): void
+    {
+        if ($row === null) {
+            throw HelperWorkUncertified::for($work, $certificate);
+        }
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -80,33 +108,5 @@ final class CertifiedWork extends Model implements ReadableModel
         self::assertCertified($row, $work, $certificate);
 
         return $row;
-    }
-
-    // ----------[ Accessors ]----------
-
-    /**
-     * The parent repository's ref the commits are imported under: one per certificate, never a branch.
-     *
-     * @return Attribute<non-falsy-string, never>
-     */
-    protected function importRef(): Attribute
-    {
-        return Attribute::get(fn () => "refs/helpers/{$this->work_type}/{$this->work_id}/{$this->certificate}");
-    }
-
-    // ----------[ Asserts ]----------
-
-    /**
-     * Refuses work the certificate does not certify.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws HelperWorkUncertified
-     */
-    private static function assertCertified(self|null $row, RecordIdentity $work, string $certificate): void
-    {
-        if ($row === null) {
-            throw HelperWorkUncertified::for($work, $certificate);
-        }
     }
 }

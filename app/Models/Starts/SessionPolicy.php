@@ -68,7 +68,7 @@ final class SessionPolicy extends Model implements ReadableModel
 
     protected static function booted(): void
     {
-        self::updating(fn (self $policy) => throw SessionPolicyFrozen::forSession($policy->session_id));
+        self::updating(fn (self $policy) => $policy->assertUnedited());
     }
 
     // ----------[ Constructors ]----------
@@ -91,38 +91,6 @@ final class SessionPolicy extends Model implements ReadableModel
         $frozen->save();
 
         return $frozen;
-    }
-
-    // ----------[ Queries ]----------
-
-    /**
-     * When each session's launch must have ended: its start plus the wall budget frozen with it, by session id. A
-     * session without a frozen policy has no budget and is not named.
-     *
-     * @param  list<AgentSession>  $sessions
-     * @return array<string, CarbonImmutable>
-     */
-    public static function wallDeadlinesOf(array $sessions): array
-    {
-        if ($sessions === []) {
-            return [];
-        }
-
-        $starts = [];
-
-        foreach ($sessions as $session) {
-            $starts[$session->id] = CarbonImmutable::instance($session->created_at);
-        }
-
-        $policies = self::query()->whereIn('session_id', array_keys($starts))->readExactly(count($starts))->get();
-        $deadlines = [];
-
-        foreach ($policies as $policy) {
-            $wallSeconds = $policy->execution_policy->budgets->wallSeconds;
-            $deadlines[$policy->session_id] = $starts[$policy->session_id]->addSeconds($wallSeconds);
-        }
-
-        return $deadlines;
     }
 
     // ----------[ Accessors ]----------
@@ -159,5 +127,49 @@ final class SessionPolicy extends Model implements ReadableModel
 
             return $labels;
         });
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses every edit: a session's policy is fixed when the session starts.
+     *
+     * @throws SessionPolicyFrozen
+     */
+    private function assertUnedited(): never
+    {
+        throw SessionPolicyFrozen::forSession($this->session_id);
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * When each session's launch must have ended: its start plus the wall budget frozen with it, by session id. A
+     * session without a frozen policy has no budget and is not named.
+     *
+     * @param  list<AgentSession>  $sessions
+     * @return array<string, CarbonImmutable>
+     */
+    public static function wallDeadlinesOf(array $sessions): array
+    {
+        if ($sessions === []) {
+            return [];
+        }
+
+        $starts = [];
+
+        foreach ($sessions as $session) {
+            $starts[$session->id] = CarbonImmutable::instance($session->created_at);
+        }
+
+        $policies = self::query()->whereIn('session_id', array_keys($starts))->readExactly(count($starts))->get();
+        $deadlines = [];
+
+        foreach ($policies as $policy) {
+            $wallSeconds = $policy->execution_policy->budgets->wallSeconds;
+            $deadlines[$policy->session_id] = $starts[$policy->session_id]->addSeconds($wallSeconds);
+        }
+
+        return $deadlines;
     }
 }

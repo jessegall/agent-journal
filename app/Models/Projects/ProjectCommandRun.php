@@ -93,43 +93,6 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
         return $run;
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The run of this request id, locked until the transaction ends, if one was started.
-     *
-     * @return list<self>
-     */
-    public static function lockByRequest(string $requestKey): array
-    {
-        return array_values(self::query()->where('request_key', $requestKey)->lockForUpdate()->limit(1)->get()->all());
-    }
-
-    /**
-     * The run of this request id that this agent asked for on this binding, if there is one; another agent's or
-     * another binding's is none.
-     *
-     * @return list<self>
-     */
-    public static function ofRequestBy(string $requestKey, string $agentId, string $bindingId): array
-    {
-        return array_values(self::query()->where('request_key', $requestKey)->where('agent_id', $agentId)
-            ->where('binding_id', $bindingId)->limit(1)->get()->all());
-    }
-
-    /**
-     * The binding's command streams that may still run, locked until the transaction ends; a binding runs a few at
-     * once.
-     *
-     * @return list<self>
-     */
-    public static function lockRunningOf(ProjectBinding $binding): array
-    {
-        return array_values(self::query()->where('binding_id', $binding->id)
-            ->whereIn('state', CommandRunState::active())->lockForUpdate()
-            ->readAll('a binding runs a few journal verbs at once')->get()->all());
-    }
-
     // ----------[ Mutations ]----------
 
     public function recordProcess(int $pid): void
@@ -189,7 +152,7 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
         $this->raise(new ProjectCommandReconciled($this->id, $settled));
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     /**
      * Whether the run may still be running: running, or asked to cancel and not yet stopped.
@@ -236,5 +199,42 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
     protected function recordedFrames(): Attribute
     {
         return Attribute::get(fn () => array_map(CommandFrame::fromRecord(...), $this->frames));
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The run of this request id, locked until the transaction ends, if one was started.
+     *
+     * @return list<self>
+     */
+    public static function lockByRequest(string $requestKey): array
+    {
+        return array_values(self::query()->where('request_key', $requestKey)->lockForUpdate()->limit(1)->get()->all());
+    }
+
+    /**
+     * The run of this request id that this agent asked for on this binding, if there is one; another agent's or
+     * another binding's is none.
+     *
+     * @return list<self>
+     */
+    public static function ofRequestBy(string $requestKey, string $agentId, string $bindingId): array
+    {
+        return array_values(self::query()->where('request_key', $requestKey)->where('agent_id', $agentId)
+            ->where('binding_id', $bindingId)->limit(1)->get()->all());
+    }
+
+    /**
+     * The binding's command streams that may still run, locked until the transaction ends; a binding runs a few at
+     * once.
+     *
+     * @return list<self>
+     */
+    public static function lockRunningOf(ProjectBinding $binding): array
+    {
+        return array_values(self::query()->where('binding_id', $binding->id)
+            ->whereIn('state', CommandRunState::active())->lockForUpdate()
+            ->readAll('a binding runs a few journal verbs at once')->get()->all());
     }
 }

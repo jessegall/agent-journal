@@ -43,18 +43,6 @@ final class CommandAlias extends Model implements ReadableModel
         return ['argument_grammar' => 'array', 'revision' => 'integer'];
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The project's alias of this name, or a new one at revision 0 that is saved with its first body.
-     */
-    public static function forName(string $projectKey, string $name): self
-    {
-        return self::query()->named($name, $projectKey)->first() ?? new self(
-            ['project_key' => $projectKey, 'name' => $name, 'revision' => 0],
-        );
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -89,6 +77,18 @@ final class CommandAlias extends Model implements ReadableModel
             $this->body_digest,
             $this->argument_grammar,
         ))->withoutObjectCaching();
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The project's alias of this name, or a new one at revision 0 that is saved with its first body.
+     */
+    public static function forName(string $projectKey, string $name): self
+    {
+        return self::query()->named($name, $projectKey)->first() ?? new self(
+            ['project_key' => $projectKey, 'name' => $name, 'revision' => 0],
+        );
     }
 
     // ----------[ Scopes ]----------

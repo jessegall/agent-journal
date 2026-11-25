@@ -132,54 +132,6 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
         );
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The request keys of those receipts the current caller may read back, keyed by receipt id; another caller's
-     * receipts are left out.
-     *
-     * @param  list<string>  $ids
-     * @return array<string, string>
-     */
-    public static function readableKeysOf(array $ids): array
-    {
-        if ($ids === []) {
-            return [];
-        }
-
-        return self::query()->whereIn('id', $ids)->pluck('request_key', 'id')->all();
-    }
-
-    /**
-     * The caller's receipt of the command under the key, read without a lock, if it has one.
-     */
-    public static function readFor(ReceiptCaller $caller, string $command, string $requestKey): self|null
-    {
-        $query = self::query()->withoutGlobalScope('caller');
-        $caller->limit($query);
-
-        return $query->where('command', $command)
-            ->where('contract_major', self::CONTRACT_MAJOR)
-            ->where('request_key', $requestKey)
-            ->first();
-    }
-
-    /**
-     * The caller's receipt of the command under the key, locked for this transaction, if it has one.
-     *
-     * @param  class-string  $command
-     */
-    public static function lockedFor(ReceiptCaller $caller, string $command, string $requestKey): self|null
-    {
-        $query = self::query()->withoutGlobalScope('caller');
-        $caller->limit($query);
-
-        return $query->where('command', $command)->where(
-            'contract_major',
-            self::CONTRACT_MAJOR,
-        )->where('request_key', $requestKey)->lockForUpdate()->first();
-    }
-
     // ----------[ Mutations ]----------
 
     public function complete(mixed $reply): void
@@ -210,7 +162,7 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
         $this->raise(new CommandReceiptRefused($this->id, $code));
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     /**
      * Whether this receipt's key may answer the command: the key expired and is used again, or it holds this command.
@@ -315,6 +267,54 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
             'answers_until' => $retention->answersUntil($now),
             'refuses_until' => $retention->refusesUntil($now),
         ];
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The request keys of those receipts the current caller may read back, keyed by receipt id; another caller's
+     * receipts are left out.
+     *
+     * @param  list<string>  $ids
+     * @return array<string, string>
+     */
+    public static function readableKeysOf(array $ids): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+
+        return self::query()->whereIn('id', $ids)->pluck('request_key', 'id')->all();
+    }
+
+    /**
+     * The caller's receipt of the command under the key, read without a lock, if it has one.
+     */
+    public static function readFor(ReceiptCaller $caller, string $command, string $requestKey): self|null
+    {
+        $query = self::query()->withoutGlobalScope('caller');
+        $caller->limit($query);
+
+        return $query->where('command', $command)
+            ->where('contract_major', self::CONTRACT_MAJOR)
+            ->where('request_key', $requestKey)
+            ->first();
+    }
+
+    /**
+     * The caller's receipt of the command under the key, locked for this transaction, if it has one.
+     *
+     * @param  class-string  $command
+     */
+    public static function lockedFor(ReceiptCaller $caller, string $command, string $requestKey): self|null
+    {
+        $query = self::query()->withoutGlobalScope('caller');
+        $caller->limit($query);
+
+        return $query->where('command', $command)->where(
+            'contract_major',
+            self::CONTRACT_MAJOR,
+        )->where('request_key', $requestKey)->lockForUpdate()->first();
     }
 
     // ----------[ Scopes ]----------

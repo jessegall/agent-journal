@@ -143,110 +143,6 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         return $binding;
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The binding this host's redemption made under its installation nonce.
-     *
-     * @throws BindingUnrecoverable
-     */
-    public static function ofHostByNonce(string $hostId, string $installationNonce): self
-    {
-        $row = self::query()->where('host_id', $hostId)->where('installation_nonce', $installationNonce)->first();
-        self::assertRecoverable($row);
-
-        return $row;
-    }
-
-    /**
-     * The binding of this host, whatever its readiness; another host's binding is refused.
-     *
-     * @throws PresenceRefused
-     */
-    public static function ofHost(string $hostId, string $id): self
-    {
-        $row = self::query()->whereKey($id)->where('host_id', $hostId)->first();
-        self::assertOfHost($row, $id);
-
-        return $row;
-    }
-
-    /**
-     * One page of the connected folders, PAGE_LIMIT at a time, oldest first by creation time and then id, with the
-     * project, environment and host each names; the cursor reads the next slice in the same order.
-     *
-     * @return CursorPaginator<int, self>
-     */
-    public static function pageAfter(string|null $cursor): CursorPaginator
-    {
-        return self::query()->with(['project', 'environment', 'host'])->orderBy('created_at')->orderBy('id')
-            ->cursorPaginate(self::PAGE_LIMIT, cursor: $cursor);
-    }
-
-    /**
-     * The binding whose main agent this is, with its project, if the agent works in a connected folder: none or one.
-     *
-     * @return list<self>
-     */
-    public static function ofMainAgent(string $agentId): array
-    {
-        return array_values(self::query()->with('project')->where('main_agent_id', $agentId)
-            ->where('readiness', '!=', BindingReadiness::Revoked)->limit(1)->get()->all());
-    }
-
-    /**
-     * The connected folder heard from last, among these environments' or, with none named, among every project's:
-     * the one a Project window shows.
-     *
-     * @param  list<string>  $environmentIds
-     * @return Option<self>
-     */
-    public static function lastHeardFromIn(array $environmentIds): Option
-    {
-        return self::query()
-            ->where('readiness', '!=', BindingReadiness::Revoked)
-            ->when($environmentIds !== [], fn ($query) => $query->whereIn('environment_id', $environmentIds))
-            ->orderByRaw('last_contact_at desc nulls last')
-            ->firstOption();
-    }
-
-    /**
-     * The binding's authority generation, which every lease renewal of its runtimes must carry.
-     */
-    public static function authorityGenerationOf(string $bindingId): int
-    {
-        return self::query()->whereKey($bindingId)->firstOrFail()->authority_generation;
-    }
-
-    /**
-     * Whether this agent is the main agent of a revoked binding, whose every call is refused.
-     */
-    public static function isMainAgentOfRevokedBinding(string $agentId): bool
-    {
-        return self::query()->where('main_agent_id', $agentId)->where('readiness', BindingReadiness::Revoked)->exists();
-    }
-
-    /**
-     * The id of the live binding a local host serves, none or one: each binding has a host of its own.
-     *
-     * @return list<string>
-     */
-    public static function liveIdOfLocalHost(string $hostId): array
-    {
-        return array_values(self::query()->where('host_id', $hostId)
-            ->where('readiness', '!=', BindingReadiness::Revoked)
-            ->whereHas('host', fn ($host) => $host->where('arrangement', ArrangementType::Local))
-            ->limit(1)->pluck('id')->all());
-    }
-
-    /**
-     * The binding of this id, locked until the transaction ends.
-     */
-    public static function lockById(string $id): self
-    {
-        return self::query()->with('host')->whereKey($id)->lockForUpdate()->firstOrFail();
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -357,7 +253,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         $this->raise(new ProjectBindingEnvironmentAssigned($this->id, $environment->id, CarbonImmutable::now()));
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     public function isRevoked(): bool
     {
@@ -589,5 +485,109 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         }
 
         return BindingReadiness::Ready;
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The binding this host's redemption made under its installation nonce.
+     *
+     * @throws BindingUnrecoverable
+     */
+    public static function ofHostByNonce(string $hostId, string $installationNonce): self
+    {
+        $row = self::query()->where('host_id', $hostId)->where('installation_nonce', $installationNonce)->first();
+        self::assertRecoverable($row);
+
+        return $row;
+    }
+
+    /**
+     * The binding of this host, whatever its readiness; another host's binding is refused.
+     *
+     * @throws PresenceRefused
+     */
+    public static function ofHost(string $hostId, string $id): self
+    {
+        $row = self::query()->whereKey($id)->where('host_id', $hostId)->first();
+        self::assertOfHost($row, $id);
+
+        return $row;
+    }
+
+    /**
+     * One page of the connected folders, PAGE_LIMIT at a time, oldest first by creation time and then id, with the
+     * project, environment and host each names; the cursor reads the next slice in the same order.
+     *
+     * @return CursorPaginator<int, self>
+     */
+    public static function pageAfter(string|null $cursor): CursorPaginator
+    {
+        return self::query()->with(['project', 'environment', 'host'])->orderBy('created_at')->orderBy('id')
+            ->cursorPaginate(self::PAGE_LIMIT, cursor: $cursor);
+    }
+
+    /**
+     * The binding whose main agent this is, with its project, if the agent works in a connected folder: none or one.
+     *
+     * @return list<self>
+     */
+    public static function ofMainAgent(string $agentId): array
+    {
+        return array_values(self::query()->with('project')->where('main_agent_id', $agentId)
+            ->where('readiness', '!=', BindingReadiness::Revoked)->limit(1)->get()->all());
+    }
+
+    /**
+     * The connected folder heard from last, among these environments' or, with none named, among every project's:
+     * the one a Project window shows.
+     *
+     * @param  list<string>  $environmentIds
+     * @return Option<self>
+     */
+    public static function lastHeardFromIn(array $environmentIds): Option
+    {
+        return self::query()
+            ->where('readiness', '!=', BindingReadiness::Revoked)
+            ->when($environmentIds !== [], fn ($query) => $query->whereIn('environment_id', $environmentIds))
+            ->orderByRaw('last_contact_at desc nulls last')
+            ->firstOption();
+    }
+
+    /**
+     * The binding's authority generation, which every lease renewal of its runtimes must carry.
+     */
+    public static function authorityGenerationOf(string $bindingId): int
+    {
+        return self::query()->whereKey($bindingId)->firstOrFail()->authority_generation;
+    }
+
+    /**
+     * Whether this agent is the main agent of a revoked binding, whose every call is refused.
+     */
+    public static function isMainAgentOfRevokedBinding(string $agentId): bool
+    {
+        return self::query()->where('main_agent_id', $agentId)->where('readiness', BindingReadiness::Revoked)->exists();
+    }
+
+    /**
+     * The id of the live binding a local host serves, none or one: each binding has a host of its own.
+     *
+     * @return list<string>
+     */
+    public static function liveIdOfLocalHost(string $hostId): array
+    {
+        return array_values(self::query()->where('host_id', $hostId)
+            ->where('readiness', '!=', BindingReadiness::Revoked)
+            ->whereHas('host', fn ($host) => $host->where('arrangement', ArrangementType::Local))
+            ->limit(1)->pluck('id')->all());
+    }
+
+    /**
+     * The binding of this id, locked until the transaction ends.
+     */
+    public static function lockById(string $id): self
+    {
+        return self::query()->with('host')->whereKey($id)->lockForUpdate()->firstOrFail();
     }
 }

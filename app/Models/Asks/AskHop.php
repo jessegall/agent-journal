@@ -83,6 +83,54 @@ final class AskHop extends Model implements EventSource, ReadableModel
         return $hop;
     }
 
+    // ----------[ Mutations ]----------
+
+    public function answer(string $body, string $attention): void
+    {
+        $this->result = $body;
+        $this->attention = $attention;
+        $this->save();
+        $this->raise(new AskHopAnswered($this->ask_id, $this->id));
+    }
+
+    public function recordWake(string $wake): void
+    {
+        $this->wake = $wake;
+        $this->save();
+        $this->raise(new AskHopWakeRecorded($this->ask_id, $this->id, $wake));
+    }
+
+    public function recordAttention(string $attention): void
+    {
+        $this->attention = $attention;
+        $this->save();
+        $this->raise(new AskHopAttentionRecorded($this->ask_id, $this->id, $attention));
+    }
+
+    // ----------[ Getters ]----------
+
+    public function isHeldByAgent(): bool
+    {
+        return $this->actor()->type->isAgent();
+    }
+
+    public function lockDelivery(): self
+    {
+        return self::lockedById($this->id);
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * The holder as one text, to group the hops of one holder's queue.
+     *
+     * @return Attribute<non-falsy-string, never>
+     */
+    protected function holderKey(): Attribute
+    {
+        return Attribute::get(fn () => "{$this->actor_type}:{$this->actor_id}");
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -202,54 +250,6 @@ final class AskHop extends Model implements EventSource, ReadableModel
     public static function hasHeld(Ask $ask, ActorIdentity $actor): bool
     {
         return self::query()->where('ask_id', $ask->id)->byActor($actor)->exists();
-    }
-
-    // ----------[ Mutations ]----------
-
-    public function answer(string $body, string $attention): void
-    {
-        $this->result = $body;
-        $this->attention = $attention;
-        $this->save();
-        $this->raise(new AskHopAnswered($this->ask_id, $this->id));
-    }
-
-    public function recordWake(string $wake): void
-    {
-        $this->wake = $wake;
-        $this->save();
-        $this->raise(new AskHopWakeRecorded($this->ask_id, $this->id, $wake));
-    }
-
-    public function recordAttention(string $attention): void
-    {
-        $this->attention = $attention;
-        $this->save();
-        $this->raise(new AskHopAttentionRecorded($this->ask_id, $this->id, $attention));
-    }
-
-    // ----------[ Answers ]----------
-
-    public function isHeldByAgent(): bool
-    {
-        return $this->actor()->type->isAgent();
-    }
-
-    public function lockDelivery(): self
-    {
-        return self::lockedById($this->id);
-    }
-
-    // ----------[ Accessors ]----------
-
-    /**
-     * The holder as one text, to group the hops of one holder's queue.
-     *
-     * @return Attribute<non-falsy-string, never>
-     */
-    protected function holderKey(): Attribute
-    {
-        return Attribute::get(fn () => "{$this->actor_type}:{$this->actor_id}");
     }
 
     // ----------[ Scopes ]----------

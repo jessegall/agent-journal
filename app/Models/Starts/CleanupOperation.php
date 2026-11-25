@@ -73,6 +73,61 @@ final class CleanupOperation extends Model implements EventSource, ReadableModel
         ];
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * Records one pass of the host: the removed resources add to those removed before, a kept workspace becomes the
+     * recovery location, and a failure counts an attempt. A pass on a finished cleanup changes nothing.
+     */
+    public function recordPass(CleanupReport $report): void
+    {
+        if ($this->state !== CleanupState::Pending) {
+            return;
+        }
+
+        $removed = array_map(fn (CleanupStep $step) => $step->value, $report->removedSteps);
+        $this->removed_steps = array_values(array_unique([...$this->removed_steps, ...$removed]));
+        $this->recovery_location = $report->keptWorkspace ?? $this->recovery_location;
+        $this->last_error = $report->failure;
+        $this->attempts += $report->hasFailed() ? 1 : 0;
+        $this->state = $this->stateAfterPass();
+        $this->assertSaved($this->save());
+        $this->raise(new CleanupPassRecorded($this->id, $this->state));
+    }
+
+    // ----------[ Getters ]----------
+
+    public function isDone(): bool
+    {
+        return $this->state === CleanupState::Done;
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * The resources the host has not removed yet.
+     *
+     * @return Attribute<list{0?: CleanupStep, 1?: CleanupStep, 2?: CleanupStep}, never>
+     */
+    protected function remainingSteps(): Attribute
+    {
+        return Attribute::get(fn () => array_values(array_filter(
+            CleanupStep::cases(),
+            fn (CleanupStep $step) => ! in_array($step->value, $this->removed_steps, true),
+        )));
+    }
+
+    // ----------[ Internals ]----------
+
+    private function stateAfterPass(): CleanupState
+    {
+        return match (true) {
+            $this->remainingSteps === [] => CleanupState::Done,
+            $this->attempts >= self::ATTEMPT_LIMIT => CleanupState::Failed,
+            default => CleanupState::Pending,
+        };
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -114,60 +169,5 @@ final class CleanupOperation extends Model implements EventSource, ReadableModel
     public static function ofSessionOn(string $hostId, string $sessionId): self
     {
         return self::query()->where('host_id', $hostId)->where('agent_session_id', $sessionId)->firstOrFail();
-    }
-
-    // ----------[ Mutations ]----------
-
-    /**
-     * Records one pass of the host: the removed resources add to those removed before, a kept workspace becomes the
-     * recovery location, and a failure counts an attempt. A pass on a finished cleanup changes nothing.
-     */
-    public function recordPass(CleanupReport $report): void
-    {
-        if ($this->state !== CleanupState::Pending) {
-            return;
-        }
-
-        $removed = array_map(fn (CleanupStep $step) => $step->value, $report->removedSteps);
-        $this->removed_steps = array_values(array_unique([...$this->removed_steps, ...$removed]));
-        $this->recovery_location = $report->keptWorkspace ?? $this->recovery_location;
-        $this->last_error = $report->failure;
-        $this->attempts += $report->hasFailed() ? 1 : 0;
-        $this->state = $this->stateAfterPass();
-        $this->assertSaved($this->save());
-        $this->raise(new CleanupPassRecorded($this->id, $this->state));
-    }
-
-    // ----------[ Answers ]----------
-
-    public function isDone(): bool
-    {
-        return $this->state === CleanupState::Done;
-    }
-
-    // ----------[ Accessors ]----------
-
-    /**
-     * The resources the host has not removed yet.
-     *
-     * @return Attribute<list{0?: CleanupStep, 1?: CleanupStep, 2?: CleanupStep}, never>
-     */
-    protected function remainingSteps(): Attribute
-    {
-        return Attribute::get(fn () => array_values(array_filter(
-            CleanupStep::cases(),
-            fn (CleanupStep $step) => ! in_array($step->value, $this->removed_steps, true),
-        )));
-    }
-
-    // ----------[ Internals ]----------
-
-    private function stateAfterPass(): CleanupState
-    {
-        return match (true) {
-            $this->remainingSteps === [] => CleanupState::Done,
-            $this->attempts >= self::ATTEMPT_LIMIT => CleanupState::Failed,
-            default => CleanupState::Pending,
-        };
     }
 }

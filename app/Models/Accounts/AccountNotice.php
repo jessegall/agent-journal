@@ -67,6 +67,28 @@ final class AccountNotice extends Model implements EventSource, ReadableModel
         return $notice;
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * Counts the notice once more: it happened again while it was open.
+     */
+    public function countAgain(): void
+    {
+        $this->times++;
+        $this->assertSaved($this->save());
+        $this->raise(new AccountNoticeRecorded($this->driver, $this->id));
+    }
+
+    /**
+     * Closes the notice: the owner dismissed it, or the driver's accounts work again.
+     */
+    public function resolveAt(CarbonImmutable $now): void
+    {
+        $this->resolved_at = $now;
+        $this->assertSaved($this->save());
+        $this->raise(new AccountNoticeResolved($this->driver, $this->id));
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -110,28 +132,6 @@ final class AccountNotice extends Model implements EventSource, ReadableModel
     public static function openNotices(): array
     {
         return array_values(self::query()->open()->latest()->limit(20)->get()->all());
-    }
-
-    // ----------[ Mutations ]----------
-
-    /**
-     * Counts the notice once more: it happened again while it was open.
-     */
-    public function countAgain(): void
-    {
-        $this->times++;
-        $this->assertSaved($this->save());
-        $this->raise(new AccountNoticeRecorded($this->driver, $this->id));
-    }
-
-    /**
-     * Closes the notice: the owner dismissed it, or the driver's accounts work again.
-     */
-    public function resolveAt(CarbonImmutable $now): void
-    {
-        $this->resolved_at = $now;
-        $this->assertSaved($this->save());
-        $this->raise(new AccountNoticeResolved($this->driver, $this->id));
     }
 
     // ----------[ Scopes ]----------

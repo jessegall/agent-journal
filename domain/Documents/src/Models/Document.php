@@ -119,24 +119,6 @@ final class Document extends Model implements Commentable, Dockable, EventSource
         return $document;
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The document of this number, locked for the transaction: the one lock every writer of a document takes first.
-     *
-     * @throws DocumentMissing
-     */
-    public static function lockedForEditing(int|string $number): self
-    {
-        $query = self::query()->with('currentRevision')->lockForUpdate();
-
-        if (is_int($number)) {
-            return $query->where('number', $number)->firstOr(fn () => throw DocumentMissing::numbered($number));
-        }
-
-        return $query->whereKey($number)->firstOr(fn () => throw DocumentMissing::identified($number));
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -167,7 +149,7 @@ final class Document extends Model implements Commentable, Dockable, EventSource
         $this->raise(new DocumentPublished($this->id, $this->number, $revision->number));
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     /**
      * How the document's drafts ended, newest first.
@@ -235,18 +217,17 @@ final class Document extends Model implements Commentable, Dockable, EventSource
     public function publishedRevision(string|null $version): DocumentRevision
     {
         if ($version === null) {
-            return $this->revisions()->whereKey($this->current_revision_id)->whereNotNull('closed_at')->firstOr(
-                fn () => throw TextVersionUnavailable::named('current'),
-            );
+            $revision = $this->revisions()->whereKey($this->current_revision_id)->whereNotNull('closed_at')->first();
+            self::assertPublished($revision, 'current');
+
+            return $revision;
         }
 
-        if (! ctype_digit($version)) {
-            throw TextVersionUnavailable::named($version);
-        }
+        self::assertVersionNumber($version);
+        $revision = $this->revisions()->where('number', (int) $version)->whereNotNull('closed_at')->first();
+        self::assertPublished($revision, $version);
 
-        return $this->revisions()->where('number', (int) $version)->whereNotNull('closed_at')->firstOr(
-            fn () => throw TextVersionUnavailable::named($version),
-        );
+        return $revision;
     }
 
     public function identifyFor(DockDefinition $definition): DockIdentity
@@ -310,9 +291,11 @@ final class Document extends Model implements Commentable, Dockable, EventSource
      */
     protected function currentRevisionOrFail(): Attribute
     {
-        return Attribute::get(
-            fn () => $this->currentRevision ?? throw DocumentMissing::numbered($this->number),
-        )->withoutObjectCaching();
+        return Attribute::get(function (): DocumentRevision {
+            $this->assertHasCurrentRevision();
+
+            return $this->currentRevision;
+        })->withoutObjectCaching();
     }
 
     // ----------[ Relations ]----------
@@ -341,6 +324,92 @@ final class Document extends Model implements Commentable, Dockable, EventSource
     public function currentRevision(): BelongsTo
     {
         return $this->belongsTo(DocumentRevision::class, 'current_revision_id');
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a version that names no closed revision of the document.
+     *
+     * @phpstan-assert DocumentRevision $revision
+     *
+     * @throws TextVersionUnavailable
+     */
+    private static function assertPublished(DocumentRevision|null $revision, string $version): void
+    {
+        if ($revision === null) {
+            throw TextVersionUnavailable::named($version);
+        }
+    }
+
+    /**
+     * Refuses a version that is not a revision number.
+     *
+     * @throws TextVersionUnavailable
+     */
+    private static function assertVersionNumber(string $version): void
+    {
+        if (! ctype_digit($version)) {
+            throw TextVersionUnavailable::named($version);
+        }
+    }
+
+    /**
+     * Refuses a document without its current revision.
+     *
+     * @phpstan-assert !null $this->currentRevision
+     *
+     * @throws DocumentMissing
+     */
+    private function assertHasCurrentRevision(): void
+    {
+        if ($this->currentRevision === null) {
+            throw DocumentMissing::numbered($this->number);
+        }
+    }
+
+    /**
+     * Refuses a number or id no document holds.
+     *
+     * @phpstan-assert self $document
+     *
+     * @throws DocumentMissing
+     */
+    private static function assertFound(self|null $document, int|string $reference): void
+    {
+        if ($document !== null) {
+            return;
+        }
+
+        if (is_int($reference)) {
+            throw DocumentMissing::numbered($reference);
+        }
+
+        throw DocumentMissing::identified($reference);
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The document of this number, locked for the transaction: the one lock every writer of a document takes first.
+     *
+     * @throws DocumentMissing
+     */
+    public static function lockedForEditing(int|string $number): self
+    {
+        $query = self::query()->with('currentRevision')->lockForUpdate();
+
+        if (is_int($number)) {
+            $document = $query->where('number', $number)->first();
+            self::assertFound($document, $number);
+
+            return $document;
+        }
+
+        $document = $query->whereKey($number)->first();
+        self::assertFound($document, $number);
+
+        return $document;
     }
 
     // ----------[ Scopes ]----------

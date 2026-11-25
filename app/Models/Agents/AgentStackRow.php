@@ -99,6 +99,92 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
         return $row->insertIfAbsent();
     }
 
+    // ----------[ Mutations ]----------
+
+    public function startFor(StackTarget $target, FrameRecords $frames, TickingTypes $ticking): void
+    {
+        $this->agent_id = $target->agentId;
+        $this->session_id = $target->sessionId;
+        $this->version = 1;
+        $this->frames = $frames;
+        $this->has_ticking_frames = $frames->holdTicking($ticking);
+        $this->status = StackStatus::Active;
+        $this->assertSaved($this->save());
+        $this->raise(new AgentStackStarted($this->id));
+    }
+
+    /**
+     * Keeps this stack and its hook calls past their retention, for an investigation.
+     */
+    public function holdForInvestigation(CarbonImmutable $time): void
+    {
+        $this->held_at = $time;
+        $this->assertSaved($this->save());
+        $this->raise(new AgentStackHeldForInvestigation($this->id));
+    }
+
+    public function saveFrames(FrameRecords $frames, TickingTypes $ticking): void
+    {
+        $this->frames = $frames;
+        $this->has_ticking_frames = $frames->holdTicking($ticking);
+        $this->version++;
+        $this->assertSaved($this->save());
+        $this->raise(new AgentStackFramesSaved($this->id));
+    }
+
+    public function closeAt(CarbonImmutable $time): void
+    {
+        $this->status = StackStatus::Closed;
+        $this->closed_at = $time;
+        $this->assertSaved($this->save());
+        $this->raise(new AgentStackClosed($this->id));
+    }
+
+    public function isActive(): bool
+    {
+        return $this->status === StackStatus::Active;
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * The agent and session whose stack this is.
+     *
+     * @return Attribute<StackTarget, never>
+     */
+    protected function target(): Attribute
+    {
+        return Attribute::get(fn () => new StackTarget($this->agent_id, $this->session_id))->withoutObjectCaching();
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a target with no stack row.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws StackMissing
+     */
+    private static function assertStackFound(self|null $row, StackTarget $target): void
+    {
+        if ($row === null) {
+            throw StackMissing::forTarget($target->description());
+        }
+    }
+
+    /**
+     * Refuses a stack that is already closed.
+     *
+     * @throws StackAlreadyClosed
+     */
+    private function assertOpen(StackTarget $target): void
+    {
+        if (! $this->isActive()) {
+            throw StackAlreadyClosed::forTarget($target->description());
+        }
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -215,92 +301,6 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
         return array_values(self::query()->historyOf($actor)->whereIn('session_id', $sessions)
             ->where('status', StackStatus::Active->value)
             ->orderBy('session_id')->lockForUpdate()->readExactly(count($sessions))->get()->all());
-    }
-
-    // ----------[ Mutations ]----------
-
-    public function startFor(StackTarget $target, FrameRecords $frames, TickingTypes $ticking): void
-    {
-        $this->agent_id = $target->agentId;
-        $this->session_id = $target->sessionId;
-        $this->version = 1;
-        $this->frames = $frames;
-        $this->has_ticking_frames = $frames->holdTicking($ticking);
-        $this->status = StackStatus::Active;
-        $this->assertSaved($this->save());
-        $this->raise(new AgentStackStarted($this->id));
-    }
-
-    /**
-     * Keeps this stack and its hook calls past their retention, for an investigation.
-     */
-    public function holdForInvestigation(CarbonImmutable $time): void
-    {
-        $this->held_at = $time;
-        $this->assertSaved($this->save());
-        $this->raise(new AgentStackHeldForInvestigation($this->id));
-    }
-
-    public function saveFrames(FrameRecords $frames, TickingTypes $ticking): void
-    {
-        $this->frames = $frames;
-        $this->has_ticking_frames = $frames->holdTicking($ticking);
-        $this->version++;
-        $this->assertSaved($this->save());
-        $this->raise(new AgentStackFramesSaved($this->id));
-    }
-
-    public function closeAt(CarbonImmutable $time): void
-    {
-        $this->status = StackStatus::Closed;
-        $this->closed_at = $time;
-        $this->assertSaved($this->save());
-        $this->raise(new AgentStackClosed($this->id));
-    }
-
-    public function isActive(): bool
-    {
-        return $this->status === StackStatus::Active;
-    }
-
-    // ----------[ Accessors ]----------
-
-    /**
-     * The agent and session whose stack this is.
-     *
-     * @return Attribute<StackTarget, never>
-     */
-    protected function target(): Attribute
-    {
-        return Attribute::get(fn () => new StackTarget($this->agent_id, $this->session_id))->withoutObjectCaching();
-    }
-
-    // ----------[ Asserts ]----------
-
-    /**
-     * Refuses a target with no stack row.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws StackMissing
-     */
-    private static function assertStackFound(self|null $row, StackTarget $target): void
-    {
-        if ($row === null) {
-            throw StackMissing::forTarget($target->description());
-        }
-    }
-
-    /**
-     * Refuses a stack that is already closed.
-     *
-     * @throws StackAlreadyClosed
-     */
-    private function assertOpen(StackTarget $target): void
-    {
-        if (! $this->isActive()) {
-            throw StackAlreadyClosed::forTarget($target->description());
-        }
     }
 
     // ----------[ Scopes ]----------

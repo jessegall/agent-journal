@@ -288,7 +288,7 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
         $this->raise(new DriverRequestWakeAcknowledged($this->id, $acknowledged));
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     /**
      * Its runtime's process ended for good: a stop has been done, anything else can no longer be.

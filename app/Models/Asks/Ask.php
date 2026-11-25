@@ -90,6 +90,141 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
         return new AskReference(new self()->newUniqueId());
     }
 
+    // ----------[ Mutations ]----------
+
+    public function accept(): void
+    {
+        $this->version++;
+        $this->pending_target = null;
+        $this->save();
+        $this->raise(new AskAccepted($this->id));
+    }
+
+    /**
+     * Names the next target of an escalation, for the routing that follows in the same transaction.
+     */
+    public function escalateTo(SupervisorTarget $target): void
+    {
+        $this->pending_target = $target->key;
+        $this->save();
+        $this->raise(new AskEscalated($this->id, $target->key));
+    }
+
+    /**
+     * Adds the owner's late text to an unanswered ask as a new version; its outcome and time stay as they were.
+     */
+    public function answerLate(string $text): void
+    {
+        $this->late_answer = $text;
+        $this->version++;
+        $this->save();
+        $this->raise(new AskAnsweredLate($this->id));
+    }
+
+    public function close(): void
+    {
+        $this->version++;
+        $this->open = false;
+        $this->pending_target = null;
+        $this->assertSaved($this->save());
+        $this->raise(new AskClosed($this->id, $this->type_key->key));
+    }
+
+    // ----------[ Getters ]----------
+
+    public function replay(AskTypeKey $type, string $body): AskReference
+    {
+        $this->assertSameSubmission($type, $body);
+
+        return $this->reference;
+    }
+
+    public function assignmentIdentity(): RecordIdentity
+    {
+        return new RecordIdentity(self::LINK_TYPE, $this->id);
+    }
+
+    public function requirePending(int $version): SupervisorTarget
+    {
+        $this->assertPendingAt($version);
+
+        return SupervisorTarget::parse($this->pending_target);
+    }
+
+    public function closeUnanswered(UnansweredReason $reason): void
+    {
+        $this->outcome = $reason;
+        $this->close();
+    }
+
+    public function isUnanswered(): bool
+    {
+        return ! $this->open && $this->outcome !== null;
+    }
+
+    public function hasOutlived(CarbonImmutable $now): bool
+    {
+        return CarbonImmutable::instance($this->created_at)->addHours(self::LIFETIME_HOURS) <= $now;
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<AskReference, never>
+     */
+    protected function reference(): Attribute
+    {
+        return Attribute::get(fn () => new AskReference($this->id))->withoutObjectCaching();
+    }
+
+    /**
+     * @return Attribute<WorkReference, never>
+     */
+    protected function workReference(): Attribute
+    {
+        return Attribute::get(fn () => new WorkReference($this->work))->withoutObjectCaching();
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a repeated submission whose content differs from the first one under its key.
+     *
+     * @throws AskRefused
+     */
+    private function assertSubmittedAs(string $digest): void
+    {
+        if (! hash_equals($this->submission_hash, $digest)) {
+            throw AskRefused::submissionChanged();
+        }
+    }
+
+    /**
+     * Refuses a replay that names another type or body than the ask holds.
+     *
+     * @throws AskRefused
+     */
+    private function assertSameSubmission(AskTypeKey $type, string $body): void
+    {
+        if ($type->key !== $this->type_key->key || $body !== $this->body) {
+            throw AskRefused::submissionChanged();
+        }
+    }
+
+    /**
+     * Refuses an ask that closed, moved on from the version named, or waits on no one.
+     *
+     * @phpstan-assert !null $this->pending_target
+     *
+     * @throws AskRefused
+     */
+    private function assertPendingAt(int $version): void
+    {
+        if (! $this->open || $this->version !== $version || $this->pending_target === null) {
+            throw AskRefused::routeChanged();
+        }
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -190,141 +325,6 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
     public static function lockedForMaintenance(string $id): self
     {
         return self::query()->acrossActors()->whereKey($id)->lockForUpdate()->firstOrFail();
-    }
-
-    // ----------[ Mutations ]----------
-
-    public function accept(): void
-    {
-        $this->version++;
-        $this->pending_target = null;
-        $this->save();
-        $this->raise(new AskAccepted($this->id));
-    }
-
-    /**
-     * Names the next target of an escalation, for the routing that follows in the same transaction.
-     */
-    public function escalateTo(SupervisorTarget $target): void
-    {
-        $this->pending_target = $target->key;
-        $this->save();
-        $this->raise(new AskEscalated($this->id, $target->key));
-    }
-
-    /**
-     * Adds the owner's late text to an unanswered ask as a new version; its outcome and time stay as they were.
-     */
-    public function answerLate(string $text): void
-    {
-        $this->late_answer = $text;
-        $this->version++;
-        $this->save();
-        $this->raise(new AskAnsweredLate($this->id));
-    }
-
-    public function close(): void
-    {
-        $this->version++;
-        $this->open = false;
-        $this->pending_target = null;
-        $this->assertSaved($this->save());
-        $this->raise(new AskClosed($this->id, $this->type_key->key));
-    }
-
-    // ----------[ Answers ]----------
-
-    public function replay(AskTypeKey $type, string $body): AskReference
-    {
-        $this->assertSameSubmission($type, $body);
-
-        return $this->reference;
-    }
-
-    public function assignmentIdentity(): RecordIdentity
-    {
-        return new RecordIdentity(self::LINK_TYPE, $this->id);
-    }
-
-    public function requirePending(int $version): SupervisorTarget
-    {
-        $this->assertPendingAt($version);
-
-        return SupervisorTarget::parse($this->pending_target);
-    }
-
-    public function closeUnanswered(UnansweredReason $reason): void
-    {
-        $this->outcome = $reason;
-        $this->close();
-    }
-
-    public function isUnanswered(): bool
-    {
-        return ! $this->open && $this->outcome !== null;
-    }
-
-    public function hasOutlived(CarbonImmutable $now): bool
-    {
-        return CarbonImmutable::instance($this->created_at)->addHours(self::LIFETIME_HOURS) <= $now;
-    }
-
-    // ----------[ Accessors ]----------
-
-    /**
-     * @return Attribute<AskReference, never>
-     */
-    protected function reference(): Attribute
-    {
-        return Attribute::get(fn () => new AskReference($this->id))->withoutObjectCaching();
-    }
-
-    /**
-     * @return Attribute<WorkReference, never>
-     */
-    protected function workReference(): Attribute
-    {
-        return Attribute::get(fn () => new WorkReference($this->work))->withoutObjectCaching();
-    }
-
-    // ----------[ Asserts ]----------
-
-    /**
-     * Refuses a repeated submission whose content differs from the first one under its key.
-     *
-     * @throws AskRefused
-     */
-    private function assertSubmittedAs(string $digest): void
-    {
-        if (! hash_equals($this->submission_hash, $digest)) {
-            throw AskRefused::submissionChanged();
-        }
-    }
-
-    /**
-     * Refuses a replay that names another type or body than the ask holds.
-     *
-     * @throws AskRefused
-     */
-    private function assertSameSubmission(AskTypeKey $type, string $body): void
-    {
-        if ($type->key !== $this->type_key->key || $body !== $this->body) {
-            throw AskRefused::submissionChanged();
-        }
-    }
-
-    /**
-     * Refuses an ask that closed, moved on from the version named, or waits on no one.
-     *
-     * @phpstan-assert !null $this->pending_target
-     *
-     * @throws AskRefused
-     */
-    private function assertPendingAt(int $version): void
-    {
-        if (! $this->open || $this->version !== $version || $this->pending_target === null) {
-            throw AskRefused::routeChanged();
-        }
     }
 
     // ----------[ Scopes ]----------

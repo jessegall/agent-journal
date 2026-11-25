@@ -6,13 +6,13 @@ namespace App\Commands\Messages\ReadMessage;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Time\ServerClock;
-use App\Data\Messages\MessageView;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Messages\Message;
 use App\Models\Messages\MessageReadEntry;
 use App\Support\ActorIdentity;
 use App\Support\MessageParticipants;
+use App\Support\ShownMessage;
 
 /**
  * Returns the message to a reader attached to its inbox and records that reader's read.
@@ -24,7 +24,7 @@ final readonly class ReadMessageHandler implements CommandHandler
     /**
      * @throws InboxUnavailable
      */
-    public function handle(ReadMessageCommand $command): MessageView
+    public function handle(ReadMessageCommand $command): ShownMessage
     {
         $reader = $this->participants->reader($command->dispatchedBy());
         $message = Message::query()->findOrFail($command->messageId);
@@ -35,6 +35,6 @@ final readonly class ReadMessageHandler implements CommandHandler
 
         MessageReadEntry::record($message, $reader, $this->clock->now());
 
-        return MessageView::of($message);
+        return ShownMessage::of($message);
     }
 }

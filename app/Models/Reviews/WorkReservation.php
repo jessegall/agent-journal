@@ -56,6 +56,46 @@ final class WorkReservation extends Model implements EventSource, ReadableModel
         return ['generation' => 'integer', 'handed_off_at' => 'datetime', 'released_at' => 'datetime'];
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * Marks the review of this work open, so the handoff runs no more.
+     */
+    public function handOff(): void
+    {
+        if ($this->handed_off_at !== null) {
+            return;
+        }
+
+        $this->handed_off_at = Carbon::now();
+        $this->assertSaved($this->save());
+        $this->raise(new WorkReservationHandedOff($this->id));
+    }
+
+    /**
+     * Ends the reservation when the work's chain ends, so its actor and checkout go back to normal cleanup.
+     */
+    public function release(): void
+    {
+        if ($this->released_at !== null) {
+            return;
+        }
+
+        $this->released_at = Carbon::now();
+        $this->assertSaved($this->save());
+        $this->raise(new WorkReservationReleased($this->id));
+    }
+
+    // ----------[ Getters ]----------
+
+    /**
+     * @return BelongsTo<CertifiedWork, $this>
+     */
+    public function certifiedWork(): BelongsTo
+    {
+        return $this->belongsTo(CertifiedWork::class, 'certificate', 'certificate');
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -127,45 +167,5 @@ final class WorkReservation extends Model implements EventSource, ReadableModel
             ->where('actor_id', $actor->id)
             ->whereNull('released_at')
             ->exists();
-    }
-
-    // ----------[ Mutations ]----------
-
-    /**
-     * Marks the review of this work open, so the handoff runs no more.
-     */
-    public function handOff(): void
-    {
-        if ($this->handed_off_at !== null) {
-            return;
-        }
-
-        $this->handed_off_at = Carbon::now();
-        $this->assertSaved($this->save());
-        $this->raise(new WorkReservationHandedOff($this->id));
-    }
-
-    /**
-     * Ends the reservation when the work's chain ends, so its actor and checkout go back to normal cleanup.
-     */
-    public function release(): void
-    {
-        if ($this->released_at !== null) {
-            return;
-        }
-
-        $this->released_at = Carbon::now();
-        $this->assertSaved($this->save());
-        $this->raise(new WorkReservationReleased($this->id));
-    }
-
-    // ----------[ Answers ]----------
-
-    /**
-     * @return BelongsTo<CertifiedWork, $this>
-     */
-    public function certifiedWork(): BelongsTo
-    {
-        return $this->belongsTo(CertifiedWork::class, 'certificate', 'certificate');
     }
 }

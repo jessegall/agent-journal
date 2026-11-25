@@ -9,7 +9,7 @@ use App\Support\Command;
 /**
  * Reads a question the actor in hand asked or was asked, with its answer once there is one.
  *
- * @extends Command<\App\Data\Questions\QuestionView>
+ * @extends Command<\App\Support\ShownQuestion>
  */
 final readonly class ReadQuestionCommand extends Command
 {

@@ -115,6 +115,166 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
         return $grant;
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * Gives a pending grant the device code of a start sent again under its key, as the one before never reached the
+     * terminal.
+     */
+    public function restartWith(string $codeDigest): void
+    {
+        $this->device_code_digest = $codeDigest;
+        $this->assertSaved($this->save());
+        $this->raise(new DeviceGrantRestarted($this->id));
+    }
+
+    public function approveBy(string $userId): void
+    {
+        $this->approved_by_user_id = $userId;
+        $this->state = DeviceGrantState::Approved;
+        $this->assertSaved($this->save());
+        $this->raise(new DeviceGrantApproved($this->id, $userId));
+    }
+
+    /**
+     * Records a poll; refuses one sooner than POLL_SECONDS_MINIMUM after the last.
+     *
+     * @throws DeviceGrantRefused
+     */
+    public function recordPoll(): void
+    {
+        $now = CarbonImmutable::now();
+        $this->assertPollDue($now);
+
+        $this->last_polled_at = $now;
+        $this->assertSaved($this->save());
+        $this->raise(new DeviceGrantPolled($this->id));
+    }
+
+    /**
+     * Hands the approved grant to the shell once, by the digest of the grant it receives.
+     */
+    public function issue(string $digest): void
+    {
+        $this->grant_digest = $digest;
+        $this->grant_expires_at = CarbonImmutable::now()->addHours(self::GRANT_HOURS);
+        $this->state = DeviceGrantState::Issued;
+        $this->assertSaved($this->save());
+        $this->raise(new DeviceGrantIssued($this->id));
+    }
+
+    public function revoke(): void
+    {
+        $this->state = DeviceGrantState::Revoked;
+        $this->assertSaved($this->save());
+        $this->raise(new DeviceGrantRevoked($this->id));
+    }
+
+    // ----------[ Getters ]----------
+
+    public function isApproved(): bool
+    {
+        return $this->state === DeviceGrantState::Approved;
+    }
+
+    /**
+     * Where the request stands for the owner at this server time: pending, approved and awaiting collection, issued,
+     * expired before approval, or revoked.
+     */
+    public function approvalStateAt(CarbonImmutable $now): string
+    {
+        if ($this->state === DeviceGrantState::Pending && ! $now->lessThan($this->code_expires_at)) {
+            return 'expired';
+        }
+
+        return $this->state->value;
+    }
+
+    public function isCodeExpired(): bool
+    {
+        return ! CarbonImmutable::now()->lessThan($this->code_expires_at);
+    }
+
+    // ----------[ Relations ]----------
+
+    /**
+     * @return BelongsTo<ProjectBinding, $this>
+     */
+    public function binding(): BelongsTo
+    {
+        return $this->belongsTo(ProjectBinding::class);
+    }
+
+    /**
+     * @return BelongsTo<Environment, $this>
+     */
+    public function environment(): BelongsTo
+    {
+        return $this->belongsTo(Environment::class);
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Answers what a poll of a grant past its approval gets: the bearer went out once, so a repeated poll learns its
+     * reference to withdraw it, and a revoked grant says so.
+     *
+     * @throws DeviceGrantRefused
+     */
+    public function assertNotCollected(): void
+    {
+        if ($this->state === DeviceGrantState::Revoked) {
+            throw DeviceGrantRefused::revoked((string) $this->reference);
+        }
+
+        if ($this->state === DeviceGrantState::Issued) {
+            throw DeviceGrantRefused::alreadyIssued((string) $this->reference);
+        }
+    }
+
+    /**
+     * Refuses a code no pending grant holds.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws DeviceGrantRefused
+     */
+    private static function assertCodeKnown(self|null $row): void
+    {
+        if ($row === null) {
+            throw DeviceGrantRefused::unknownCode();
+        }
+    }
+
+    /**
+     * Refuses a grant that is not issued, approved, unexpired and on a live binding.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws DeviceGrantRefused
+     */
+    private static function assertUsable(self|null $row): void
+    {
+        if ($row === null) {
+            throw DeviceGrantRefused::notUsable();
+        }
+    }
+
+    /**
+     * Refuses a poll sooner than the interval; it leaves the last poll as it was, so polling fast never moves it on.
+     *
+     * @throws DeviceGrantRefused
+     */
+    private function assertPollDue(CarbonImmutable $now): void
+    {
+        $isTooSoon = $this->last_polled_at !== null
+            && $this->last_polled_at->addSeconds(self::POLL_SECONDS_MINIMUM)->isAfter($now);
+
+        if ($isTooSoon) {
+            throw DeviceGrantRefused::pollingTooFast();
+        }
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -219,165 +379,5 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
         return array_values(self::query()->where('binding_id', $binding->id)
             ->where('state', '!=', DeviceGrantState::Revoked)->lockForUpdate()
             ->readAll('a binding has a device grant per shell that asked')->get()->all());
-    }
-
-    // ----------[ Mutations ]----------
-
-    /**
-     * Gives a pending grant the device code of a start sent again under its key, as the one before never reached the
-     * terminal.
-     */
-    public function restartWith(string $codeDigest): void
-    {
-        $this->device_code_digest = $codeDigest;
-        $this->assertSaved($this->save());
-        $this->raise(new DeviceGrantRestarted($this->id));
-    }
-
-    public function approveBy(string $userId): void
-    {
-        $this->approved_by_user_id = $userId;
-        $this->state = DeviceGrantState::Approved;
-        $this->assertSaved($this->save());
-        $this->raise(new DeviceGrantApproved($this->id, $userId));
-    }
-
-    /**
-     * Records a poll; refuses one sooner than POLL_SECONDS_MINIMUM after the last.
-     *
-     * @throws DeviceGrantRefused
-     */
-    public function recordPoll(): void
-    {
-        $now = CarbonImmutable::now();
-        $this->assertPollDue($now);
-
-        $this->last_polled_at = $now;
-        $this->assertSaved($this->save());
-        $this->raise(new DeviceGrantPolled($this->id));
-    }
-
-    /**
-     * Hands the approved grant to the shell once, by the digest of the grant it receives.
-     */
-    public function issue(string $digest): void
-    {
-        $this->grant_digest = $digest;
-        $this->grant_expires_at = CarbonImmutable::now()->addHours(self::GRANT_HOURS);
-        $this->state = DeviceGrantState::Issued;
-        $this->assertSaved($this->save());
-        $this->raise(new DeviceGrantIssued($this->id));
-    }
-
-    public function revoke(): void
-    {
-        $this->state = DeviceGrantState::Revoked;
-        $this->assertSaved($this->save());
-        $this->raise(new DeviceGrantRevoked($this->id));
-    }
-
-    // ----------[ Answers ]----------
-
-    public function isApproved(): bool
-    {
-        return $this->state === DeviceGrantState::Approved;
-    }
-
-    /**
-     * Where the request stands for the owner at this server time: pending, approved and awaiting collection, issued,
-     * expired before approval, or revoked.
-     */
-    public function approvalStateAt(CarbonImmutable $now): string
-    {
-        if ($this->state === DeviceGrantState::Pending && ! $now->lessThan($this->code_expires_at)) {
-            return 'expired';
-        }
-
-        return $this->state->value;
-    }
-
-    /**
-     * Answers what a poll of a grant past its approval gets: the bearer went out once, so a repeated poll learns its
-     * reference to withdraw it, and a revoked grant says so.
-     *
-     * @throws DeviceGrantRefused
-     */
-    public function assertNotCollected(): void
-    {
-        if ($this->state === DeviceGrantState::Revoked) {
-            throw DeviceGrantRefused::revoked((string) $this->reference);
-        }
-
-        if ($this->state === DeviceGrantState::Issued) {
-            throw DeviceGrantRefused::alreadyIssued((string) $this->reference);
-        }
-    }
-
-    public function isCodeExpired(): bool
-    {
-        return ! CarbonImmutable::now()->lessThan($this->code_expires_at);
-    }
-
-    // ----------[ Relations ]----------
-
-    /**
-     * @return BelongsTo<ProjectBinding, $this>
-     */
-    public function binding(): BelongsTo
-    {
-        return $this->belongsTo(ProjectBinding::class);
-    }
-
-    /**
-     * @return BelongsTo<Environment, $this>
-     */
-    public function environment(): BelongsTo
-    {
-        return $this->belongsTo(Environment::class);
-    }
-
-    // ----------[ Asserts ]----------
-
-    /**
-     * Refuses a code no pending grant holds.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws DeviceGrantRefused
-     */
-    private static function assertCodeKnown(self|null $row): void
-    {
-        if ($row === null) {
-            throw DeviceGrantRefused::unknownCode();
-        }
-    }
-
-    /**
-     * Refuses a grant that is not issued, approved, unexpired and on a live binding.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws DeviceGrantRefused
-     */
-    private static function assertUsable(self|null $row): void
-    {
-        if ($row === null) {
-            throw DeviceGrantRefused::notUsable();
-        }
-    }
-
-    /**
-     * Refuses a poll sooner than the interval; it leaves the last poll as it was, so polling fast never moves it on.
-     *
-     * @throws DeviceGrantRefused
-     */
-    private function assertPollDue(CarbonImmutable $now): void
-    {
-        $isTooSoon = $this->last_polled_at !== null
-            && $this->last_polled_at->addSeconds(self::POLL_SECONDS_MINIMUM)->isAfter($now);
-
-        if ($isTooSoon) {
-            throw DeviceGrantRefused::pollingTooFast();
-        }
     }
 }

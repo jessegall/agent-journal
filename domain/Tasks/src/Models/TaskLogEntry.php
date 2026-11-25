@@ -84,30 +84,7 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
         return $entry;
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * At most limit of the task's lines after the sequence, oldest first, or before it, newest first.
-     *
-     * @return Collection<int, self>
-     */
-    public static function pageAfter(string $taskId, int $sequence, int $limit): Collection
-    {
-        return self::query()->where('task_id', $taskId)->where('sequence', '>', $sequence)
-            ->orderBy('sequence')->orderBy('id')->limit($limit)->get();
-    }
-
-    /**
-     * @return Collection<int, self>
-     */
-    public static function pageBefore(string $taskId, int|null $sequence, int $limit): Collection
-    {
-        return self::query()->where('task_id', $taskId)
-            ->when($sequence !== null, fn (Builder $query) => $query->where('sequence', '<', $sequence))
-            ->orderByDesc('sequence')->orderByDesc('id')->limit($limit)->get();
-    }
-
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     /**
      * The lines of one task in their order; the table has no updated_at.
@@ -135,6 +112,29 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
             $this->sequence,
             CarbonImmutable::parse($this->created_at),
         ));
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * At most limit of the task's lines after the sequence, oldest first, or before it, newest first.
+     *
+     * @return Collection<int, self>
+     */
+    public static function pageAfter(string $taskId, int $sequence, int $limit): Collection
+    {
+        return self::query()->where('task_id', $taskId)->where('sequence', '>', $sequence)
+            ->orderBy('sequence')->orderBy('id')->limit($limit)->get();
+    }
+
+    /**
+     * @return Collection<int, self>
+     */
+    public static function pageBefore(string $taskId, int|null $sequence, int $limit): Collection
+    {
+        return self::query()->where('task_id', $taskId)
+            ->when($sequence !== null, fn (Builder $query) => $query->where('sequence', '<', $sequence))
+            ->orderByDesc('sequence')->orderByDesc('id')->limit($limit)->get();
     }
 
     // ----------[ Scopes ]----------

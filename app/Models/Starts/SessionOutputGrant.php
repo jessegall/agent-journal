@@ -78,6 +78,18 @@ final class SessionOutputGrant extends Model implements ReadableModel
         return $grant;
     }
 
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<SessionOutputPaths, never>
+     */
+    protected function paths(): Attribute
+    {
+        return Attribute::get(
+            fn () => new SessionOutputPaths($this->transcript_path, $this->output_directory),
+        )->withoutObjectCaching();
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -107,17 +119,5 @@ final class SessionOutputGrant extends Model implements ReadableModel
             ->get();
 
         return array_values($grants->map(fn (self $grant) => $grant->paths)->all());
-    }
-
-    // ----------[ Accessors ]----------
-
-    /**
-     * @return Attribute<SessionOutputPaths, never>
-     */
-    protected function paths(): Attribute
-    {
-        return Attribute::get(
-            fn () => new SessionOutputPaths($this->transcript_path, $this->output_directory),
-        )->withoutObjectCaching();
     }
 }

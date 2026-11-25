@@ -77,7 +77,7 @@ final class OutputAssessment extends Model implements ReadableModel
 
     protected static function booted(): void
     {
-        self::updating(fn (self $assessment) => throw RevisionImmutable::assessment($assessment->id));
+        self::updating(fn (self $assessment) => $assessment->assertUnedited());
     }
 
     // ----------[ Constructors ]----------
@@ -110,21 +110,23 @@ final class OutputAssessment extends Model implements ReadableModel
         ]);
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The newest assessment of that part's output; none before its first.
-     */
-    public static function latestOf(PartRun $part): self|null
-    {
-        return self::query()->where('part_run_id', $part->id)->latest('created_at')->first();
-    }
-
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     public function isValid(): bool
     {
         return $this->interpretation === InterpretationState::Valid && $this->problems === [];
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses every edit: it stays as it was written.
+     *
+     * @throws RevisionImmutable
+     */
+    private function assertUnedited(): never
+    {
+        throw RevisionImmutable::assessment($this->id);
     }
 
     // ----------[ Internals ]----------
@@ -143,6 +145,16 @@ final class OutputAssessment extends Model implements ReadableModel
         }
 
         return InterpretationState::Invalid;
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The newest assessment of that part's output; none before its first.
+     */
+    public static function latestOf(PartRun $part): self|null
+    {
+        return self::query()->where('part_run_id', $part->id)->latest('created_at')->first();
     }
 
     // ----------[ Scopes ]----------

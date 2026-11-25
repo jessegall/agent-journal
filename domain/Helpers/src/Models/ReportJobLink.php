@@ -76,6 +76,13 @@ final class ReportJobLink extends Model implements EventSource, ReadableModel
         return $link;
     }
 
+    // ----------[ Getters ]----------
+
+    public function isFor(HelperJob $job): bool
+    {
+        return $this->helper_job_id === $job->id;
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -86,12 +93,5 @@ final class ReportJobLink extends Model implements EventSource, ReadableModel
     public static function ofReport(string $reportId): Option
     {
         return Option::fromValue(self::query()->where('report_id', $reportId)->first());
-    }
-
-    // ----------[ Answers ]----------
-
-    public function isFor(HelperJob $job): bool
-    {
-        return $this->helper_job_id === $job->id;
     }
 }

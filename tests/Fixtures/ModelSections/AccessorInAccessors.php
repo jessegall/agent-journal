@@ -8,11 +8,11 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * A model whose accessor sits in Accessors, after its Answers.
+ * A model whose accessor sits in Accessors, after its Getters.
  */
 final class AccessorInAccessors extends Model
 {
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     public function isDone(): bool
     {

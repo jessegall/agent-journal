@@ -42,6 +42,15 @@ final class RevisionFence extends Model implements EventSource, ReadableModel
         return ['profile_revision' => 'integer', 'reconciled_at' => 'immutable_datetime'];
     }
 
+    // ----------[ Mutations ]----------
+
+    public function markReconciledAt(CarbonImmutable $time): void
+    {
+        $this->reconciled_at = $time;
+        $this->assertSaved($this->save());
+        $this->raise(new RevisionFenceReconciled($this->id));
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -66,14 +75,5 @@ final class RevisionFence extends Model implements EventSource, ReadableModel
         $pending = self::query()->whereNull('reconciled_at')->orderBy('created_at')->readExactly($limit)->get();
 
         return array_values($pending->all());
-    }
-
-    // ----------[ Mutations ]----------
-
-    public function markReconciledAt(CarbonImmutable $time): void
-    {
-        $this->reconciled_at = $time;
-        $this->assertSaved($this->save());
-        $this->raise(new RevisionFenceReconciled($this->id));
     }
 }

@@ -154,6 +154,50 @@ final class ProfileRevision extends Model implements ReadableModel
         ]);
     }
 
+    // ----------[ Getters ]----------
+
+    public function snapshot(ProfileKey $key): ProfileSnapshot
+    {
+        return ProfileSnapshots::of($this, $key);
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * The script this revision runs; a revision without one has none.
+     *
+     * @return Attribute<None|Some<ProfileScript>, never>
+     */
+    protected function script(): Attribute
+    {
+        return Attribute::get(function (): Option {
+            if ($this->compiled_script === null || $this->script_definition_digest === null) {
+                return None::create();
+            }
+
+            return new Some(new ProfileScript(
+                $this->script_source,
+                new CompiledScript($this->compiled_script, $this->script_definition_digest),
+            ));
+        })->withoutObjectCaching();
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses a profile whose current revision is not there.
+     *
+     * @phpstan-assert self $row
+     *
+     * @throws ProfileMissing
+     */
+    private static function assertCurrentFound(self|null $row, Profile $profile): void
+    {
+        if ($row === null) {
+            throw ProfileMissing::for(ProfileKey::from($profile->key));
+        }
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -224,50 +268,6 @@ final class ProfileRevision extends Model implements ReadableModel
             });
 
         return $profiles;
-    }
-
-    // ----------[ Answers ]----------
-
-    public function snapshot(ProfileKey $key): ProfileSnapshot
-    {
-        return ProfileSnapshots::of($this, $key);
-    }
-
-    // ----------[ Accessors ]----------
-
-    /**
-     * The script this revision runs; a revision without one has none.
-     *
-     * @return Attribute<None|Some<ProfileScript>, never>
-     */
-    protected function script(): Attribute
-    {
-        return Attribute::get(function (): Option {
-            if ($this->compiled_script === null || $this->script_definition_digest === null) {
-                return None::create();
-            }
-
-            return new Some(new ProfileScript(
-                $this->script_source,
-                new CompiledScript($this->compiled_script, $this->script_definition_digest),
-            ));
-        })->withoutObjectCaching();
-    }
-
-    // ----------[ Asserts ]----------
-
-    /**
-     * Refuses a profile whose current revision is not there.
-     *
-     * @phpstan-assert self $row
-     *
-     * @throws ProfileMissing
-     */
-    private static function assertCurrentFound(self|null $row, Profile $profile): void
-    {
-        if ($row === null) {
-            throw ProfileMissing::for(ProfileKey::from($profile->key));
-        }
     }
 
     // ----------[ Scopes ]----------

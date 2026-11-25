@@ -131,13 +131,6 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
         return $run;
     }
 
-    // ----------[ Queries ]----------
-
-    public static function lockedForStep(string $runId): self
-    {
-        return self::query()->acrossActors()->whereKey($runId)->lockForUpdate()->firstOrFail();
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -190,7 +183,7 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
         $this->raise(new ProfileRunFinished($this->id, $state));
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Getters ]----------
 
     /**
      * The actor's last run on this work that ended before this one began.
@@ -272,5 +265,12 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
     private function recordedResult(string $reference): ProfileStepResult|null
     {
         return $this->results()->where('step_reference', $reference)->first();
+    }
+
+    // ----------[ Queries ]----------
+
+    public static function lockedForStep(string $runId): self
+    {
+        return self::query()->acrossActors()->whereKey($runId)->lockForUpdate()->firstOrFail();
     }
 }
