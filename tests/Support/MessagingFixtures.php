@@ -21,7 +21,6 @@ use Tests\Fixtures\Agents\TestSelections;
 trait MessagingFixtures
 {
     use CommitsHookRows;
-    use OpensDriverRuntimes;
     use OpensPairChats;
     use WritesInboxMessages;
 
@@ -120,7 +119,7 @@ trait MessagingFixtures
         $session = $this->app->make(StartSessions::class)
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;
-        $this->openDriverRuntime($session);
+        $this->journal->syntheticRuntime($session);
         $this->inboxOf(ActorIdentity::of($agent));
 
         return $session;

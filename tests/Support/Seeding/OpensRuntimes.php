@@ -7,6 +7,7 @@ namespace Tests\Support\Seeding;
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Enums\Drivers\DriverType;
+use App\Models\Agents\AgentSession;
 use App\Support\AgentRuntimes;
 use App\Support\EnrolledHost;
 use App\Support\OpenedRuntime;
@@ -25,9 +26,10 @@ trait OpensRuntimes
     private array $hosts = [];
 
     /**
-     * An open headless runtime for the agent's one session, so a command that needs a runtime to wake has one.
+     * An open headless runtime for the named agent's one session, or for this session, so a command that needs a
+     * runtime to wake has one.
      */
-    public function syntheticRuntime(string $agent): self
+    public function syntheticRuntime(string|AgentSession $agent): self
     {
         $intent = new RuntimeIntent(
             'host-1',
@@ -40,7 +42,7 @@ trait OpensRuntimes
             null,
             null,
         );
-        $this->app->make(AgentRuntimes::class)->open($this->sessionOf($agent), $intent, 'start-token');
+        $this->app->make(AgentRuntimes::class)->open(is_string($agent) ? $this->sessionOf($agent) : $agent, $intent, 'start-token');
 
         return $this;
     }

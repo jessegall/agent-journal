@@ -11,7 +11,6 @@ use App\Support\ActorIdentity;
 use App\Support\CredentialLookup;
 use App\Support\StartSessions;
 use Tests\Fixtures\Agents\TestSelections;
-use Tests\Support\OpensDriverRuntimes;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -21,7 +20,6 @@ use Tests\TestCase;
  */
 final class ActorRuntimeResolverTest extends TestCase
 {
-    use OpensDriverRuntimes;
     use RefreshHookDatabase;
 
     public function test_restarting_fences_the_older_runtime_and_only_the_current_one_resolves(): void
@@ -29,9 +27,9 @@ final class ActorRuntimeResolverTest extends TestCase
         $agent = Agent::create('Builder', 'main-agent', $this->localProject());
         $starts = $this->app->make(StartSessions::class);
         $older = $starts->start($agent, TestSelections::of('claude-code'), TestSelections::requestId());
-        $this->openDriverRuntime($older->session);
+        $this->journal->syntheticRuntime($older->session);
         $newer = $starts->start($agent->refresh(), TestSelections::of('claude-code'), TestSelections::requestId());
-        $this->openDriverRuntime($newer->session);
+        $this->journal->syntheticRuntime($newer->session);
 
         $current = $this->app->make(CurrentAgentRuntimes::class)->currentFor(ActorIdentity::of($agent))->get();
 
