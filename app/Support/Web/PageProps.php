@@ -28,6 +28,15 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 final readonly class PageProps
 {
+    /**
+     * The props every declared page has, besides one per section and, on Home, one per window.
+     */
+    public const string TITLE = 'title';
+
+    public const string PAGE = 'page';
+
+    public const string INSPECTOR = 'inspector';
+
     public function __construct(
         private ClientDeclarations $declarations,
         private WindowResults $windowResults,
@@ -45,8 +54,8 @@ final readonly class PageProps
     public function forPage(RegisteredPage $page, DeclaredPageRequest $request): array
     {
         $props = [
-            'title' => $page->page->title,
-            'page' => $this->live->value(fn () => $this->ownPageResult($page, $request)),
+            self::TITLE => $page->page->title,
+            self::PAGE => $this->live->value(fn () => $this->ownPageResult($page, $request)),
         ];
 
         $route = $request->route() instanceof Route ? $request->route() : null;
@@ -58,7 +67,7 @@ final readonly class PageProps
             );
         }
 
-        $props['inspector'] = $this->live->optional(fn () => $this->inspectorResult($request));
+        $props[self::INSPECTOR] = $this->live->optional(fn () => $this->inspectorResult($request));
 
         // The record open in the inspector mounts its own sections, read with its route rather than the page's.
         foreach ($this->inspectedPage($request)->map($this->sectionsOf(...))->getOrElse([]) as $section) {

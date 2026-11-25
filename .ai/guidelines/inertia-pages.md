@@ -10,9 +10,18 @@ node_modules, and this project's rule for pages.
   `sendPageAction(route, data, { only })` from `@kit/pageActions` or `keyedPost` from `@kit/keyedPost`. The controller
   answers with a redirect back through `App\Http\Responses\PageActionAnswers` (`back()`, `backWithNotice()`,
   `backWith()`), never with JSON; a refusal comes back as the page's errors. A flashed `notice` shows as a toast.
-- A page reads extra data by a partial reload: a read a page declares with `ActionRoute::get` is a shared optional prop
-  `read_<route name>`, read with `readPage(routeName, query)` from `@kit/pageReads`; the bell reads `notifications` the
-  same way.
+- A page reads extra data through a loader it declares with `Loader::make(key, Reader::class)` on its `Page`
+  (`->loaders(...)`; the shell's own loaders are in `App\Pages\ShellLoaders`). The frontend calls
+  `load(descriptor, input)` or, riding on a write, `loadAfter(descriptor, input, send)` from `@kit/loaders`, with the
+  typed descriptors generated into `resources/js/generated/loaders.ts`. The call is a same-page partial reload whose
+  `X-Journal-Loader` header names the loader; `App\Http\Responses\LoaderProps` answers it under `load_<key>` or
+  `loaderFailure` (ok, invalid or unavailable).
+- What every page receives is the typed app context: `App\Data\Web\AppContextData`, built by
+  `App\Support\Web\AppContext` with `ContextLazy` fields and read with `useAppContext()` from `@kit/appContext`.
+- Pages stay current through Inertia live props: `App\Support\Web\LiveProps` marks a page's props live on the
+  viewer's `journal.user` channel, `resources/js/framework/liveTransport.ts` carries them over the tab's one
+  connection, and `composables/usePageChanges.ts` takes over each live reload as an async read that never cancels a
+  form or a navigation.
 - JSON is only for machine clients: the agent CLI's calls, the relay and the terminal's control stream. A sign-in
   challenge stays its own no-store request, so no page prop or history entry holds its secret.
 - A post from a page with open state passes `only` and `preserveState` (rule 56).
