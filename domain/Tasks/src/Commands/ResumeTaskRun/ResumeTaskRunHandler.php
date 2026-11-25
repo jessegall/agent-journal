@@ -19,7 +19,7 @@ use Domain\Tasks\Exceptions\TaskRunFinished;
 use Domain\Tasks\Exceptions\TaskRunStale;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
-use Domain\Tasks\Support\States\Support\WorkingOnTaskStateReference;
+use Domain\Tasks\Support\States\Support\WorkOnTaskStateReference;
 
 final readonly class ResumeTaskRunHandler extends TaskCommandHandler
 {
@@ -57,7 +57,7 @@ final readonly class ResumeTaskRunHandler extends TaskCommandHandler
         $actor = ActorIdentity::of($command->dispatchedBy());
         $claim = $this->claims->take($run->assignmentIdentity(), $task->assignmentIdentity(), $actor);
 
-        $this->stacks->activateForCaller(WorkingOnTaskStateReference::forTask($task));
+        $this->stacks->activateForCaller(WorkOnTaskStateReference::forTask($task));
 
         $this->facts->publishAfterCommit(
             new TaskRunClaimed($task->id, $run->run_number, $actor, $claim->assignmentIds()),
@@ -71,7 +71,7 @@ final readonly class ResumeTaskRunHandler extends TaskCommandHandler
      */
     private function assertNotCovered(Task $task): void
     {
-        foreach ($this->states->ofCaller(WorkingOnTaskStateReference::TYPE_KEY) as $current) {
+        foreach ($this->states->ofCaller(WorkOnTaskStateReference::TYPE_KEY) as $current) {
             $subject = $current->subject;
 
             if ($subject instanceof SubjectReference && $subject->id !== $task->id) {

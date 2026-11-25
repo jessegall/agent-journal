@@ -109,7 +109,7 @@ final class AccountStorageTest extends TestCase
     {
         $account = $this->account('Work');
         $account->assertAvailable();
-        $this->assertSame('/journal/accounts/work', $account->directoryForStart);
+        $this->assertSame('/journal/accounts/work', $account->directoryForStart());
 
         $account->beginRemoval();
 

@@ -460,10 +460,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "17c03398835df8ffb982fd9c97a1015a49bda9b4",
-        "old_path": "domain/Sequences/src/States/FollowingSequenceState.php",
-        "old_class": "Domain\\Sequences\\States\\FollowingSequenceState",
-        "final_path": "domain/Sequences/src/Support/States/FollowingSequenceState.php",
-        "final_class": "Domain\\Sequences\\Support\\States\\FollowingSequenceState",
+        "old_path": "domain/Sequences/src/States/FollowSequenceState.php",
+        "old_class": "Domain\\Sequences\\States\\FollowSequenceState",
+        "final_path": "domain/Sequences/src/Support/States/FollowSequenceState.php",
+        "final_class": "Domain\\Sequences\\Support\\States\\FollowSequenceState",
         "status": "move",
         "kind": "class",
         "generator": {
@@ -473,7 +473,7 @@
         "phase": 3,
         "batch": "Sequences",
         "consumers": [
-            "domain/Sequences/tests/Unit/States/FollowingSequenceTest.php",
+            "domain/Sequences/tests/Unit/States/FollowSequenceTest.php",
             "tools/refactoring/layout/manifest-Sequences.json"
         ],
         "ownership_checks": [],
@@ -503,10 +503,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "86289f121656e3e4f864adc4960bf345b596f39b",
-        "old_path": "domain/Sequences/src/States/Support/FollowingSequenceStateReference.php",
-        "old_class": "Domain\\Sequences\\States\\Support\\FollowingSequenceStateReference",
-        "final_path": "domain/Sequences/src/Support/States/Support/FollowingSequenceStateReference.php",
-        "final_class": "Domain\\Sequences\\Support\\States\\Support\\FollowingSequenceStateReference",
+        "old_path": "domain/Sequences/src/States/Support/FollowSequenceStateReference.php",
+        "old_class": "Domain\\Sequences\\States\\Support\\FollowSequenceStateReference",
+        "final_path": "domain/Sequences/src/Support/States/Support/FollowSequenceStateReference.php",
+        "final_class": "Domain\\Sequences\\Support\\States\\Support\\FollowSequenceStateReference",
         "status": "move",
         "kind": "class",
         "generator": {

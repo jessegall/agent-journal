@@ -18,7 +18,7 @@ use Domain\Memory\Models\Memory;
 use Domain\Rules\Models\Rule;
 use Domain\Sequences\Commands\StartSequence\StartSequenceCommand;
 use Domain\Sequences\Models\SequenceRun;
-use Domain\Sequences\Support\States\FollowingSequenceState;
+use Domain\Sequences\Support\States\FollowSequenceState;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
@@ -76,7 +76,7 @@ final class HookCompactionTest extends TestCase
             array_values(array_filter($context, fn (string $line) => str_contains($line, 'An old rule.'))),
         );
         $this->assertContains(
-            TestText::words(new FollowingSequenceState($this->run->id, $this->run->number, $this->run->steps)->instruction()->get()),
+            TestText::words(new FollowSequenceState($this->run->id, $this->run->number, $this->run->steps)->instruction()->get()),
             $context,
         );
     }
@@ -105,7 +105,7 @@ final class HookCompactionTest extends TestCase
 
         $this->assertSame(TaskState::Started, $this->task->fresh()?->state);
         $this->assertSame(1, $this->run->fresh()?->current_step);
-        $this->assertSame(['core.ready', 'tasks.working', 'sequences.following'], $this->storedTypeKeys());
+        $this->assertSame(['core.ready', 'tasks.work', 'sequences.follow'], $this->storedTypeKeys());
     }
 
     public function test_a_replayed_compaction_runs_no_reminder_listener(): void

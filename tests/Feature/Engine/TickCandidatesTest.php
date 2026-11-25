@@ -17,11 +17,11 @@ use App\Values\TickCandidate;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Hooks\Stacks\FinishedSubjects;
-use Tests\Fixtures\Hooks\Ticks\TickingState;
+use Tests\Fixtures\Hooks\Ticks\TickState;
 use Tests\Fixtures\Hooks\Ticks\UnreadState;
 use Tests\Support\BuildsTickingStacks;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\Engine\TickingFramePlace;
+use Tests\Support\Engine\TickFramePlace;
 use Tests\TestCase;
 
 /**
@@ -47,10 +47,10 @@ final class TickCandidatesTest extends TestCase
         $this->finished = new FinishedSubjects();
         $this->app->instance(FinishedSubjects::class, $this->finished);
         Event::listen(StateTypesRequested::class, function (StateTypesRequested $event): void {
-            $event->registry->register(RegisteredStateType::named('test.ticking', TickingState::class));
+            $event->registry->register(RegisteredStateType::named('test.ticking', TickState::class));
             $event->registry->register(RegisteredStateType::named('test.plain', UnreadState::class));
             $event->registry->register(
-                RegisteredStateType::named('test.switchable', TickingState::class)->switchedBy(fn (): bool => $this->isSwitchedOn),
+                RegisteredStateType::named('test.switchable', TickState::class)->switchedBy(fn (): bool => $this->isSwitchedOn),
             );
         });
     }
@@ -135,7 +135,7 @@ final class TickCandidatesTest extends TestCase
     /**
      * A running session's stack with the given number of ticking frames named after the prefix.
      *
-     * @return list<TickingFramePlace>
+     * @return list<TickFramePlace>
      */
     private function stackWith(int $tickingFrames, string $prefix): array
     {
@@ -143,20 +143,20 @@ final class TickCandidatesTest extends TestCase
         $row = $this->tickingStack('test.ticking', $subjects, CarbonImmutable::now());
 
         return array_map(
-            fn (int $index) => new TickingFramePlace($row->id, $index + 2, $subjects[$index]),
+            fn (int $index) => new TickFramePlace($row->id, $index + 2, $subjects[$index]),
             array_keys($subjects),
         );
     }
 
     /**
-     * @param  list<TickingFramePlace>  $frames
+     * @param  list<TickFramePlace>  $frames
      * @return list<string>
      */
     private function inStackOrder(array $frames): array
     {
-        usort($frames, fn (TickingFramePlace $one, TickingFramePlace $other) => $one->compare($other));
+        usort($frames, fn (TickFramePlace $one, TickFramePlace $other) => $one->compare($other));
 
-        return array_map(fn (TickingFramePlace $frame) => $frame->frameId, $frames);
+        return array_map(fn (TickFramePlace $frame) => $frame->frameId, $frames);
     }
 
     private function nextBatch(int $limit): TickBatch

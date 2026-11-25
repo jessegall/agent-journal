@@ -25,7 +25,7 @@ use App\Support\Stack\AgentStack;
 use App\Support\Stack\Frames\Frame;
 use App\Support\Stack\HookAnswer;
 use App\Support\States\AgentState;
-use App\Support\States\AwaitingSkillsState;
+use App\Support\States\AwaitSkillsState;
 use App\Support\States\ReadyState;
 use App\Support\Storage\WalkStep;
 use App\Values\AccessDecision;
@@ -33,13 +33,13 @@ use App\Values\AgentText;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Closure;
-use Domain\Sequences\Support\States\FollowingSequenceState;
+use Domain\Sequences\Support\States\FollowSequenceState;
 use Domain\Tasks\Enums\TaskState;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Tests\Fixtures\Boundary\Events\Tasks\Events\TaskClosed;
 use Tests\Fixtures\Hooks\AllowedStops;
-use Tests\Fixtures\Hooks\AnsweringStates;
+use Tests\Fixtures\Hooks\AnswerStates;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
@@ -89,7 +89,7 @@ final class AgentStackTest extends TestCase
     public function test_a_pushed_sequence_answers_the_next_stop_before_the_task(): void
     {
         $factory = new InMemoryStateFactory([
-            'sequences.following' => fn () => new FollowingSequenceState(
+            'sequences.follow' => fn () => new FollowSequenceState(
                 'run-8',
                 8,
                 ['Run the phase tests.'],
@@ -99,13 +99,13 @@ final class AgentStackTest extends TestCase
             $this->ready(),
             new Frame(
                 'task-42',
-                $this->reference('tasks.working', '42'),
+                $this->reference('tasks.work', '42'),
                 new InMemoryTaskState(42, 1, new InMemoryTasks([42 => TaskState::Started])),
                 CarbonImmutable::now(),
             ),
         ], $factory, new StackTarget('agent-1', 'session-1'));
 
-        $stack = $stack->withStateOnTop($this->reference('sequences.following', '8'));
+        $stack = $stack->withStateOnTop($this->reference('sequences.follow', '8'));
         $answer = $stack->answer($this->stop(), TestText::renderer());
 
         $this->assertSame(['ready', 'task-42', 'pushed-1'], $stack->frameIds());
@@ -137,7 +137,7 @@ final class AgentStackTest extends TestCase
 
         $this->assertSame(['guide delegate', 'ready deny'], $this->stepsOf($file));
 
-        $pending = $this->frame('skills', new AwaitingSkillsState('publication-1'));
+        $pending = $this->frame('skills', new AwaitSkillsState('publication-1'));
         $guarded = $this->stack($this->ready(), $pending, $passing);
 
         $this->assertSame(['guide delegate', 'skills deny'], $this->stepsOf($guarded->answer(HookInputs::all()['shell command'], TestText::renderer())));
@@ -171,7 +171,7 @@ final class AgentStackTest extends TestCase
     {
         $stack = $this->stack(
             $this->ready(),
-            $this->frame('sequence', new FollowingSequenceState('run-8', 8, ['Run the phase tests.'])),
+            $this->frame('sequence', new FollowSequenceState('run-8', 8, ['Run the phase tests.'])),
             $this->answeringFrame(true),
             $this->frame('guide', ScriptedState::passing()),
         );
@@ -383,7 +383,7 @@ final class AgentStackTest extends TestCase
     {
         $stack = $this->exampleStack(TaskState::Started, doesMessageWait: true);
 
-        $this->assertSame($stack, $stack->withStateOnTop($this->reference('tasks.working', '42')));
+        $this->assertSame($stack, $stack->withStateOnTop($this->reference('tasks.work', '42')));
         $this->assertSame(['ready', 'task-42', 'message-95'], $stack->frameIds());
     }
 
@@ -477,7 +477,7 @@ final class AgentStackTest extends TestCase
 
         $this->assertSame(['ready', 'task-42', 'message-95'], array_map(fn ($record) => $record->id, $records));
         $this->assertSame([true, false, false], array_map(fn ($record) => $record->isBottom, $records));
-        $this->assertTrue($records[1]->reference->isSameAs($this->reference('tasks.working', '42')));
+        $this->assertTrue($records[1]->reference->isSameAs($this->reference('tasks.work', '42')));
     }
 
     public function test_a_step_keeps_its_typed_labels_through_an_array(): void
@@ -504,7 +504,7 @@ final class AgentStackTest extends TestCase
         $stack = $this->stack(
             $this->ready(),
             $this->answeringFrame(true),
-            new Frame('task-42', $this->reference('tasks.working', '42'), $task, CarbonImmutable::now()),
+            new Frame('task-42', $this->reference('tasks.work', '42'), $task, CarbonImmutable::now()),
             $this->frame('guide', ScriptedState::passing()),
         );
 
@@ -519,7 +519,7 @@ final class AgentStackTest extends TestCase
             $this->ready(),
             new Frame(
                 'task-42',
-                $this->reference('tasks.working', '42'),
+                $this->reference('tasks.work', '42'),
                 new InMemoryTaskState(42, 1, new InMemoryTasks([42 => TaskState::Started])),
                 CarbonImmutable::now(),
             ),
@@ -537,7 +537,7 @@ final class AgentStackTest extends TestCase
             $this->frame('review', new SwitchableState(false)),
             new Frame(
                 'task-42',
-                $this->reference('tasks.working', '42'),
+                $this->reference('tasks.work', '42'),
                 new InMemoryTaskState(42, 1, new InMemoryTasks([42 => TaskState::Started])),
                 CarbonImmutable::now(),
             ),
@@ -554,7 +554,7 @@ final class AgentStackTest extends TestCase
             $this->ready(),
             new Frame(
                 'task-42',
-                $this->reference('tasks.working', '42'),
+                $this->reference('tasks.work', '42'),
                 new InMemoryTaskState(42, 1, new InMemoryTasks([42 => $taskState])),
                 CarbonImmutable::now(),
             ),
@@ -613,12 +613,12 @@ final class AgentStackTest extends TestCase
 
     private function answeringFrame(bool $doesMessageWait): Frame
     {
-        $reference = $this->reference('core.messages.answering', '95');
+        $reference = $this->reference('core.messages.answer', '95');
 
         return new Frame(
             'message-95',
             $reference,
-            $doesMessageWait ? AnsweringStates::holding('95') : AnsweringStates::answered(),
+            $doesMessageWait ? AnswerStates::holding('95') : AnswerStates::answered(),
             CarbonImmutable::now(),
         );
     }

@@ -27,7 +27,7 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Hooks\Stacks\FinishableState;
 use Tests\Fixtures\Hooks\Stacks\FinishedSubjects;
 use Tests\Fixtures\Hooks\Ticks\ScriptedOccurrenceGuard;
-use Tests\Fixtures\Hooks\Ticks\TickingState;
+use Tests\Fixtures\Hooks\Ticks\TickState;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsAsEngine;
 use Tests\Support\TestStartAuthority;
@@ -54,7 +54,7 @@ final class TickingStackFlagTest extends TestCase
         $this->app->instance(FinishedSubjects::class, $this->finished);
         $this->app->instance(ScriptedOccurrenceGuard::class, new ScriptedOccurrenceGuard());
         Event::listen(StateTypesRequested::class, function (StateTypesRequested $event): void {
-            $event->registry->register(RegisteredStateType::named('test.ticking', TickingState::class));
+            $event->registry->register(RegisteredStateType::named('test.ticking', TickState::class));
             $event->registry->register(RegisteredStateType::named('test.plain', FinishableState::class));
         });
     }

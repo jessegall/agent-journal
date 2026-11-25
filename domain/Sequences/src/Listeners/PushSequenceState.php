@@ -9,7 +9,7 @@ use App\Contracts\Events\Listener;
 use App\Contracts\Work\AgentStack;
 use Domain\Sequences\Events\SequenceStarted;
 use Domain\Sequences\Resolvers\Support\SequenceRecords;
-use Domain\Sequences\Support\States\Support\FollowingSequenceStateReference;
+use Domain\Sequences\Support\States\Support\FollowSequenceStateReference;
 
 /**
  * Puts the started run on the agent's stack in the same transaction as the start.
@@ -26,7 +26,7 @@ final readonly class PushSequenceState implements Listener
     {
         $this->stacks->push(
             $event->target,
-            FollowingSequenceStateReference::forRun($this->runs->followedBy($event->target, $event->runId)),
+            FollowSequenceStateReference::forRun($this->runs->followedBy($event->target, $event->runId)),
         );
     }
 }

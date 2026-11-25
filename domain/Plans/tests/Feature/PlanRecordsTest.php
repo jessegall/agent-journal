@@ -16,7 +16,7 @@ use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Resolvers\PlanRecords;
 use Domain\Plans\Support\PlanStructure;
-use Domain\Plans\Support\States\Support\WorkingOnPlanStateReference;
+use Domain\Plans\Support\States\Support\WorkOnPlanStateReference;
 use Domain\Plans\Tests\TestCase;
 use Domain\Plans\Values\PlanCard;
 use Domain\Plans\Values\PlanFilters;
@@ -114,7 +114,7 @@ final class PlanRecordsTest extends TestCase
             CurrentState::class,
             new FixedCurrentState(
                 new StackTarget($agent->id, TestIds::of(10)),
-                [WorkingOnPlanStateReference::TYPE_KEY => WorkingOnPlanStateReference::forPlan($this->build->id)],
+                [WorkOnPlanStateReference::TYPE_KEY => WorkOnPlanStateReference::forPlan($this->build->id)],
             ),
         );
 

@@ -14,7 +14,7 @@ use App\Support\References\StateReference;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Resolvers\Support\TaskExecutions;
-use Domain\Tasks\Support\States\Support\WorkingOnTaskStateReference;
+use Domain\Tasks\Support\States\Support\WorkOnTaskStateReference;
 use Domain\Tasks\Values\TaskFilters;
 use Domain\Tasks\Values\TaskList;
 use PhpOption\Option;
@@ -36,7 +36,7 @@ final readonly class AssignedTasks implements AssignedTaskResolver
 
     public function currentForCaller(): Option
     {
-        return $this->states->ofCaller(WorkingOnTaskStateReference::TYPE_KEY)
+        return $this->states->ofCaller(WorkOnTaskStateReference::TYPE_KEY)
             ->flatMap(fn (StateReference $frame) => Task::summaryOf($frame));
     }
 

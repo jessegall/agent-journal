@@ -28,7 +28,7 @@ use App\Support\Stack\HookAnswer;
 use App\Support\StateEvents\StateEventDispatch;
 use App\Support\StateEvents\StateEventScope;
 use App\Values\StackTarget;
-use Tests\Fixtures\Hooks\MessagingState;
+use Tests\Fixtures\Hooks\MessageState;
 use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\TestActors;
@@ -67,7 +67,7 @@ final class AgentMessageDeliveryTest extends TestCase
         $first = $this->answerPrompt('call-2');
         $second = $this->answerPrompt('call-3');
 
-        $this->assertSame(MessagingState::TEXT, $this->contextOf($first));
+        $this->assertSame(MessageState::TEXT, $this->contextOf($first));
         $this->assertSame('{}', $second);
         $this->assertSame(0, PendingAgentMessage::countFor($this->target->actorIdentity()));
         $this->assertFalse(
@@ -90,7 +90,7 @@ final class AgentMessageDeliveryTest extends TestCase
             fn (HookAnswer $answer) => DriverReplies::allowTool($answer->context),
         )->stdout;
 
-        $this->assertSame(MessagingState::TEXT, $this->contextOf($reply));
+        $this->assertSame(MessageState::TEXT, $this->contextOf($reply));
         $this->assertSame(0, PendingAgentMessage::countFor($this->target->actorIdentity()));
         $this->assertSame(0, DriverRequest::query()->where('operation', DriverOperation::Wake)->count());
     }

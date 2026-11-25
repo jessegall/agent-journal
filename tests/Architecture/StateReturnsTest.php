@@ -17,7 +17,7 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 15, reason: 'It parses every PHP file of app and the domains.')]
 final class StateReturnsTest extends TestCase
 {
-    private const string FIXTURE = 'tests/Fixtures/StateReturns/ArrayAnsweringState.php';
+    private const string FIXTURE = 'tests/Fixtures/StateReturns/ArrayAnswerState.php';
 
     public function test_no_state_method_or_listener_gives_an_array(): void
     {

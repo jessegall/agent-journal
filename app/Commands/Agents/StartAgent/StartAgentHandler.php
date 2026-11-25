@@ -169,7 +169,7 @@ final readonly class StartAgentHandler implements CommandHandler
 
         return new RuntimeIntent(
             $host->id,
-            $host->startFolder,
+            $host->startFolder(),
             $driver,
             $build,
             $driver,

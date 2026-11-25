@@ -8,7 +8,7 @@ use App\Attributes\InCommandTransaction;
 use App\Contracts\Events\Listener;
 use App\Contracts\Work\AgentStack;
 use Domain\Plans\Events\PlanReviewRequested;
-use Domain\Plans\Support\States\Support\ReviewingPlanStateReference;
+use Domain\Plans\Support\States\Support\ReviewPlanStateReference;
 
 /**
  * Puts the review on each reviewer's stack in the same transaction as the request, so both commit or neither does; a
@@ -21,7 +21,7 @@ final readonly class PushPlanReviewState implements Listener
 
     public function handle(PlanReviewRequested $event): void
     {
-        $reference = ReviewingPlanStateReference::forPlan($event->planId, $event->planNumber);
+        $reference = ReviewPlanStateReference::forPlan($event->planId, $event->planNumber);
 
         foreach ($event->reviewers as $reviewer) {
             $this->stacks->pushFor($reviewer, $reference);

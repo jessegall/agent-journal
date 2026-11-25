@@ -32,9 +32,13 @@ require_once __DIR__.'/php-parse.php';
 const SCALAR_TYPES = '/^(string|int|float|non-falsy-string|non-empty-string|positive-int|negative-int|non-negative-int|'
     .'numeric-string|lowercase-string|int<[^>]*>)$/';
 
-/** What an accessor's closure, or an answer that may become one, must never do. */
-const SIDE_EFFECTS = '/->(save|update|delete|forceDelete|increment|decrement|forceFill|fill|touch|push|restore)\(|'
-    .'\bdispatch\(|\bevent\(|->dispatch\(|->run\(|file_get_contents|file_put_contents|Process::/';
+/**
+ * What an accessor's closure, or an answer that may become one, must never do: write, dispatch, run, throw, assert or
+ * change the model (user message 22137); an accessor only reads its row.
+ */
+const SIDE_EFFECTS = '/->(save|update|delete|forceDelete|increment|decrement|forceFill|fill|touch|push|restore|raise)\(|'
+    .'\bdispatch\(|\bevent\(|->dispatch\(|->run\(|file_get_contents|file_put_contents|Process::|\bthrow\b|'
+    .'\$this->assert\w*\(|self::assert\w*\(|\$this->\w+\s*(=[^=>]|\?\?=|\+=|-=|\.=)/';
 
 /** What a body does when it reads rows, which an accessor never does, so such an answer stays a method. */
 const ROW_READS = '/::query\(|->query\(|\b(self|static)::\w*[wW]here|DB::|->load(Missing|Count)?\(|'
@@ -49,15 +53,6 @@ const METHOD_RETURNS = [
     'self',
     'Attribute',
     'Builder',
-];
-
-/** The return types whose value PHP passes as a copy, so an accessor of one needs no object caching turned off. */
-const COPIED_RETURNS = [
-    'string',
-    'int',
-    'float',
-    'array',
-    'null',
 ];
 
 /**
@@ -235,7 +230,13 @@ function accessorFaultsOf(string $source, string $class, Class_ $model): array
         $body = substr($source, $method->getStartFilePos(), $method->getEndFilePos() + 1 - $method->getStartFilePos());
 
         if (isAccessor($method) && preg_match(SIDE_EFFECTS, $body) === 1) {
-            $faults[] = "{$method->getStartLine()}\taccessor {$name} writes, dispatches or runs something";
+            $faults[] = "{$method->getStartLine()}\taccessor {$name} has a side effect: it writes, throws, asserts, "
+                .'dispatches or runs something, so make it a plain method';
+        }
+
+        if (isAccessor($method) && str_contains($body, 'withoutObjectCaching')) {
+            $faults[] = "{$method->getStartLine()}\taccessor {$name} turns off object caching, which an accessor of a "
+                .'scalar never needs';
         }
 
         if (isAccessor($method) && readsRows($source, $class, $model, $method, [])) {
@@ -341,25 +342,15 @@ function accessorClosureOf(string $source, ClassMethod $method): string
 }
 
 /**
- * The method rewritten as a protected accessor, its object results computed afresh on every read.
+ * The method rewritten as a protected accessor.
  */
 function accessorOf(string $source, ClassMethod $method): string
 {
     $returned = returnedTypeOf($source, $method);
-    $declared = substr(
-        $source,
-        $method->returnType->getStartFilePos(),
-        $method->returnType->getEndFilePos() + 1 - $method->returnType->getStartFilePos(),
-    );
-    $isCopied = array_all(
-        explode('|', ltrim($declared, '?')),
-        fn (string $part) => in_array($part, COPIED_RETURNS, true),
-    );
-    $caching = $isCopied ? '' : '->withoutObjectCaching()';
 
     return accessorDocOf($method, $returned)
         ."    protected function {$method->name->toString()}(): Attribute\n    {\n"
-        .'        return Attribute::get('.accessorClosureOf($source, $method).")$caching;\n    }";
+        .'        return Attribute::get('.accessorClosureOf($source, $method).");\n    }";
 }
 
 /**

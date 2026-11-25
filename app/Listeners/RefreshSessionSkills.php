@@ -22,7 +22,7 @@ use App\Support\SkillPublications;
 use App\Support\SkillSelection;
 use App\Support\SkillTargets;
 use App\Support\StartDriver;
-use App\Support\States\Support\AwaitingSkillsStateReference;
+use App\Support\States\Support\AwaitSkillsStateReference;
 use App\Values\AgentText;
 use App\Values\DriverKey;
 use App\Values\SelectedSkills;
@@ -80,7 +80,7 @@ final readonly class RefreshSessionSkills implements Listener
         }
 
         if ($publication->state->awaitsDelivery()) {
-            $this->stacks->push($event->target, AwaitingSkillsStateReference::forPublication($publication));
+            $this->stacks->push($event->target, AwaitSkillsStateReference::forPublication($publication));
             $this->facts->publishAfterCommit(new SessionSkillsIntended($publication->id));
         }
 

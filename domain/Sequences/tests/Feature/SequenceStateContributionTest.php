@@ -23,7 +23,7 @@ use Domain\Sequences\Commands\CancelSequence\CancelSequenceCommand;
 use Domain\Sequences\Commands\StartSequence\StartSequenceCommand;
 use Domain\Sequences\Enums\SequenceRunState;
 use Domain\Sequences\Models\SequenceRun;
-use Domain\Sequences\Support\States\FollowingSequenceState;
+use Domain\Sequences\Support\States\FollowSequenceState;
 use Domain\Sequences\Tests\TestCase;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\TestIds;
@@ -60,7 +60,7 @@ final class SequenceStateContributionTest extends TestCase
 
         $this->assertSame([
             'core.ready',
-            'sequences.following',
+            'sequences.follow',
         ], $this->storedTypeKeys());
     }
 
@@ -119,7 +119,7 @@ final class SequenceStateContributionTest extends TestCase
         $this->assertSame('{}', $this->answerStop('call-2'));
         $this->assertSame([
             'core.ready',
-            'sequences.following',
+            'sequences.follow',
         ], $this->storedTypeKeys());
     }
 
@@ -136,7 +136,7 @@ final class SequenceStateContributionTest extends TestCase
         $values = ['runId' => $run->id, 'runNumber' => $run->number, 'steps' => $run->steps, 'currentStep' => $step];
 
         return TestText::words($this->app->make(StateBuilder::class)
-            ->build(RegisteredStateType::of(FollowingSequenceState::class), $values)
+            ->build(RegisteredStateType::of(FollowSequenceState::class), $values)
             ->instruction()
             ->get());
     }

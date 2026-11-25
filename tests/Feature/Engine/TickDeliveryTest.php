@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Engine;
 
-use App\Commands\Sessions\MarkSilentSessions\MarkSilentSessionsCommand;
 use App\Commands\Agents\SettleFrameTimes\SettleFrameTimesCommand;
+use App\Commands\Sessions\MarkSilentSessions\MarkSilentSessionsCommand;
 use App\Contracts\Time\MonotonicClock;
 use App\Contracts\Time\ServerClock;
 use App\Events\Hooks\StateTypesRequested;
@@ -22,7 +22,7 @@ use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Hooks\Ticks\ScriptedOccurrenceGuard;
-use Tests\Fixtures\Hooks\Ticks\ScriptedTickingState;
+use Tests\Fixtures\Hooks\Ticks\ScriptedTickState;
 use Tests\Fixtures\Hooks\Ticks\TickScript;
 use Tests\Fixtures\Hooks\Ticks\UnreadState;
 use Tests\Support\BuildsTickingStacks;
@@ -65,7 +65,7 @@ final class TickDeliveryTest extends TestCase
         $this->app->instance(TickScript::class, $this->script);
         $this->app->instance(ScriptedOccurrenceGuard::class, $this->guard);
         Event::listen(StateTypesRequested::class, function (StateTypesRequested $event): void {
-            $event->registry->register(RegisteredStateType::named('test.ticking', ScriptedTickingState::class));
+            $event->registry->register(RegisteredStateType::named('test.ticking', ScriptedTickState::class));
             $event->registry->register(RegisteredStateType::named('test.plain', UnreadState::class));
         });
         $this->entry = CarbonImmutable::parse('2026-11-18 12:00:10');

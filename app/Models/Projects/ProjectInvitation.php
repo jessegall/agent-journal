@@ -19,7 +19,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -130,21 +129,19 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
         return $this->revoked_at === null && $this->spent_at === null && $this->expires_at->isAfter($now);
     }
 
-    // ----------[ Accessors ]----------
+    // ----------[ Calculations ]----------
 
     /**
      * The id of the install attempt this line belongs to; reading it on a line issued before attempts existed, which
      * has none and cannot be used, fails.
      *
-     * @return Attribute<string, never>
+     * @throws InvitationUnusable
      */
-    protected function attemptId(): Attribute
+    public function attemptId(): string
     {
-        return Attribute::get(function (): string {
-            $this->assertHasAttempt();
+        $this->assertHasAttempt();
 
-            return $this->install_attempt_id;
-        });
+        return $this->install_attempt_id;
     }
 
     // ----------[ Asserts ]----------

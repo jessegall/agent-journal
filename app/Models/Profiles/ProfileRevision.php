@@ -165,9 +165,7 @@ final class ProfileRevision extends Model implements ReadableModel
             return ProfileScript::empty();
         }
 
-        $compiled = new CompiledScript($this->compiled_script, $this->script_definition_digest);
-
-        return new ProfileScript($this->script_source, $compiled);
+        return new ProfileScript($this->script_source, new CompiledScript($this->compiled_script, $this->script_definition_digest));
     }
 
     // ----------[ Asserts ]----------

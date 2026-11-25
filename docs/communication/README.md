@@ -58,7 +58,7 @@ A send asks every member of the destination to attend (`InboxAttention`, one `Me
 whose current session runs under a driver is woken inside the send's transaction (`AgentWakes`); one without a runtime
 is recorded as such. The hooks report pending inbox work (`PendingInboxWork`), and before the stack is restored they
 accept incoming work: `MessageAnswerActivation` gives an agent one answering frame for its oldest standing claim, named
-by that claim (`AnsweringMessageStateReference::forClaim`), which finishes when the question is answered or the claim
+by that claim (`AnswerMessageStateReference::forClaim`), which finishes when the question is answered or the claim
 ends.
 
 ## Entries

@@ -41,7 +41,7 @@ final class HookInputTest extends TestCase
     #[DataProvider('inputs')]
     public function test_each_input_asks_the_state_for_its_own_hook_method(HookInput $input, string $method): void
     {
-        $recording = new RecordingState();
+        $recording = new RecordState();
         $plainState = new class extends AgentState {};
 
         $this->assertSame($method, $input->methodName());

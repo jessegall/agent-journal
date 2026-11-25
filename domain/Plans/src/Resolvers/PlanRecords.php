@@ -16,7 +16,7 @@ use App\Support\References\SubjectReference;
 use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
-use Domain\Plans\Support\States\Support\WorkingOnPlanStateReference;
+use Domain\Plans\Support\States\Support\WorkOnPlanStateReference;
 use Domain\Plans\Values\AssignedPlanFilters;
 use Domain\Plans\Values\AssignedPlanList;
 use Domain\Plans\Values\PlanCard;
@@ -104,7 +104,7 @@ final readonly class PlanRecords implements PlanResolver
      */
     private function focusedPlanId(): Option
     {
-        return $this->states->ofCaller(WorkingOnPlanStateReference::TYPE_KEY)
+        return $this->states->ofCaller(WorkOnPlanStateReference::TYPE_KEY)
             ->flatMap(
                 fn (
                     StateReference $frame,

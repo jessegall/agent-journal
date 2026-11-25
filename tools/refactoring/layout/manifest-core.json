@@ -91905,10 +91905,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "003f4ed5f7408c008c5aa53c7bb139d45a8f8ee5",
-        "old_path": "app/Support/States/AnsweringAskState.php",
-        "old_class": "App\\Support\\States\\AnsweringAskState",
-        "final_path": "app/Support/States/AnsweringAskState.php",
-        "final_class": "App\\Support\\States\\AnsweringAskState",
+        "old_path": "app/Support/States/AnswerAskState.php",
+        "old_class": "App\\Support\\States\\AnswerAskState",
+        "final_path": "app/Support/States/AnswerAskState.php",
+        "final_class": "App\\Support\\States\\AnswerAskState",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -91924,10 +91924,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "a0b0a04f9af732b829fc034183c682fab7508f90",
-        "old_path": "app/Support/States/AnsweringMessageState.php",
-        "old_class": "App\\Support\\States\\AnsweringMessageState",
-        "final_path": "app/Support/States/AnsweringMessageState.php",
-        "final_class": "App\\Support\\States\\AnsweringMessageState",
+        "old_path": "app/Support/States/AnswerMessageState.php",
+        "old_class": "App\\Support\\States\\AnswerMessageState",
+        "final_path": "app/Support/States/AnswerMessageState.php",
+        "final_class": "App\\Support\\States\\AnswerMessageState",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -91943,10 +91943,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "a1d727f00a7dbdfe5e0a194831b2da64d4f44537",
-        "old_path": "app/Support/States/AwaitingSkillsState.php",
-        "old_class": "App\\Support\\States\\AwaitingSkillsState",
-        "final_path": "app/Support/States/AwaitingSkillsState.php",
-        "final_class": "App\\Support\\States\\AwaitingSkillsState",
+        "old_path": "app/Support/States/AwaitSkillsState.php",
+        "old_class": "App\\Support\\States\\AwaitSkillsState",
+        "final_path": "app/Support/States/AwaitSkillsState.php",
+        "final_class": "App\\Support\\States\\AwaitSkillsState",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -92057,10 +92057,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "b4ec4c878fdfaa14818c949e9881a68927ed8eeb",
-        "old_path": "app/Support/States/Support/AnsweringMessageStateReference.php",
-        "old_class": "App\\Support\\States\\Support\\AnsweringMessageStateReference",
-        "final_path": "app/Support/States/Support/AnsweringMessageStateReference.php",
-        "final_class": "App\\Support\\States\\Support\\AnsweringMessageStateReference",
+        "old_path": "app/Support/States/Support/AnswerMessageStateReference.php",
+        "old_class": "App\\Support\\States\\Support\\AnswerMessageStateReference",
+        "final_path": "app/Support/States/Support/AnswerMessageStateReference.php",
+        "final_class": "App\\Support\\States\\Support\\AnswerMessageStateReference",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -92095,10 +92095,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "ebd53ad735917ac5877eed112bc691adda20e043",
-        "old_path": "app/Support/States/Support/AwaitingSkillsStateReference.php",
-        "old_class": "App\\Support\\States\\Support\\AwaitingSkillsStateReference",
-        "final_path": "app/Support/States/Support/AwaitingSkillsStateReference.php",
-        "final_class": "App\\Support\\States\\Support\\AwaitingSkillsStateReference",
+        "old_path": "app/Support/States/Support/AwaitSkillsStateReference.php",
+        "old_class": "App\\Support\\States\\Support\\AwaitSkillsStateReference",
+        "final_path": "app/Support/States/Support/AwaitSkillsStateReference.php",
+        "final_class": "App\\Support\\States\\Support\\AwaitSkillsStateReference",
         "status": "stay",
         "kind": "class",
         "generator": {

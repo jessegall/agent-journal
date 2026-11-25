@@ -14,7 +14,7 @@ use App\Support\States\AgentState;
 interface StateProvider
 {
     /**
-     * Every agent state class of the domain, such as [WorkingOnTaskState::class]; each names its own type.
+     * Every agent state class of the domain, such as [WorkOnTaskState::class]; each names its own type.
      *
      * @return list<class-string<AgentState>>
      */

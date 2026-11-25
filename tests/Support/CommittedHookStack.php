@@ -45,8 +45,8 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Hooks\InMemoryTasks;
 use Tests\Fixtures\Hooks\InMemoryTaskState;
 use Tests\Fixtures\Hooks\ListedCommandParser;
-use Tests\Fixtures\Hooks\MessagingState;
-use Tests\Fixtures\Hooks\RewritingState;
+use Tests\Fixtures\Hooks\MessageState;
+use Tests\Fixtures\Hooks\RewriteState;
 use Tests\Fixtures\Hooks\ScriptedState;
 
 /**
@@ -83,8 +83,8 @@ trait CommittedHookStack
         $this->registerTestState('test.tasks', InMemoryTaskState::class);
         $this->registerTestState('guide', ScriptedState::class);
         $this->makeStatesWith(ScriptedState::class, fn () => ScriptedState::passing());
-        $this->registerTestState('test.messaging', MessagingState::class);
-        $this->registerTestState('test.rewriting', RewritingState::class);
+        $this->registerTestState('test.messaging', MessageState::class);
+        $this->registerTestState('test.rewriting', RewriteState::class);
         $this->callAs('call-1');
         $this->app->make(StackTransaction::class)->run(
             fn () => $this->app->make(StartStacks::class)->open($this->target),

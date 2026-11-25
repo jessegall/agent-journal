@@ -24,7 +24,7 @@ use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\States\Support\LogDueStateReference;
-use Domain\Tasks\Support\States\WorkingOnTaskState;
+use Domain\Tasks\Support\States\WorkOnTaskState;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -50,7 +50,7 @@ final class TaskStateContributionTest extends TestCase
             $stored->state,
             $stored->run_number,
         ]);
-        $this->assertSame(["tasks.working {$task->id} 1"], $this->taskFrames());
+        $this->assertSame(["tasks.work {$task->id} 1"], $this->taskFrames());
     }
 
     public function test_a_failed_push_rolls_the_start_back(): void
@@ -81,7 +81,7 @@ final class TaskStateContributionTest extends TestCase
         $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
         $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
 
-        $this->assertSame(["tasks.working {$task->id} 1"], $this->taskFrames());
+        $this->assertSame(["tasks.work {$task->id} 1"], $this->taskFrames());
     }
 
     public function test_the_frame_hears_its_run_finish_and_the_next_stop_passes(): void
@@ -95,7 +95,7 @@ final class TaskStateContributionTest extends TestCase
 
         $this->assertStringContainsString(sprintf(self::STILL_NEEDS_WORK, $task->number), $held);
         $this->assertSame('{}', $allowed);
-        $this->assertSame(["tasks.working {$task->id} 1"], $this->taskFrames());
+        $this->assertSame(["tasks.work {$task->id} 1"], $this->taskFrames());
     }
 
     public function test_an_overdue_log_puts_the_log_due_state_on_top_and_logging_finishes_it(): void
@@ -103,7 +103,7 @@ final class TaskStateContributionTest extends TestCase
         $task = Task::factory()->create(['title' => 'Write the walk']);
         $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
 
-        foreach (range(1, WorkingOnTaskState::LOG_DUE_AFTER) as $call) {
+        foreach (range(1, WorkOnTaskState::LOG_DUE_AFTER) as $call) {
             $this->answerToolFinished("call-{$call}");
         }
 
@@ -160,8 +160,8 @@ final class TaskStateContributionTest extends TestCase
         $commands->run(new FinishTaskCommand($second->id, 1, 'Done.'));
 
         $this->assertSame([
-            "tasks.working {$first->id} 1",
-            "tasks.working {$second->id} 1",
+            "tasks.work {$first->id} 1",
+            "tasks.work {$second->id} 1",
         ], $this->taskFrames());
     }
 
@@ -173,7 +173,7 @@ final class TaskStateContributionTest extends TestCase
 
         $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
 
-        $this->assertSame(["tasks.working {$task->id} 2"], $this->taskFrames());
+        $this->assertSame(["tasks.work {$task->id} 2"], $this->taskFrames());
     }
 
     #[TimeLimit(seconds: 3, reason: 'It runs four task commands through the bus, each with its stack transaction.')]
@@ -190,8 +190,8 @@ final class TaskStateContributionTest extends TestCase
         $this->app->make(CommandBus::class)->run(new FinishTaskCommand($second->id, 1, 'Fixed.'));
 
         $this->assertSame([
-            "tasks.working {$first->id} 1",
-            "tasks.working {$second->id} 1",
+            "tasks.work {$first->id} 1",
+            "tasks.work {$second->id} 1",
         ], $this->taskFrames());
         $this->assertSame($first->number, $tasks->currentForCaller()->get()->number);
     }
@@ -208,8 +208,8 @@ final class TaskStateContributionTest extends TestCase
         $this->app->make(CommandBus::class)->run(new BlockTaskCommand($blocked->id, 1, 'Waits for review.'));
 
         $this->assertSame([
-            "tasks.working {$blocked->id} 1",
-            "tasks.working {$cancelled->id} 1",
+            "tasks.work {$blocked->id} 1",
+            "tasks.work {$cancelled->id} 1",
         ], $this->taskFrames());
         $this->assertTrue($this->app->make(AssignedTaskResolver::class)->currentForCaller()->isEmpty());
     }
@@ -228,8 +228,8 @@ final class TaskStateContributionTest extends TestCase
 
         $this->assertSame([$first->id], $this->focusedTaskIds());
         $this->assertSame([
-            "tasks.working {$second->id} 1",
-            "tasks.working {$first->id} 1",
+            "tasks.work {$second->id} 1",
+            "tasks.work {$first->id} 1",
         ], $this->taskFrames());
 
         $this->assertSame(
@@ -269,7 +269,7 @@ final class TaskStateContributionTest extends TestCase
             ActorNotAllowed::class,
         );
 
-        $this->assertSame(["tasks.working {$started->id} 1"], $this->taskFrames());
+        $this->assertSame(["tasks.work {$started->id} 1"], $this->taskFrames());
     }
 
     /**

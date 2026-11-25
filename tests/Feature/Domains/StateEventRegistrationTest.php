@@ -9,7 +9,7 @@ use App\Providers\DomainEventServiceProvider;
 use App\Support\Delivery\StateEventBridge;
 use Illuminate\Events\Dispatcher;
 use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
-use Tests\Fixtures\Modules\Notes\WritingNoteState;
+use Tests\Fixtures\Modules\Notes\WriteNoteState;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\RegistersNoteStates;
 use Tests\Support\SetsEventCachePath;
@@ -48,8 +48,8 @@ final class StateEventRegistrationTest extends TestCase
         $events = $provider->discoverEvents();
         $expected = implode('|', [
             NoteWritten::class,
-            WritingNoteState::class,
-            WritingNoteState::class,
+            WriteNoteState::class,
+            WriteNoteState::class,
             'onNoteWritten',
             'Notes',
         ]);

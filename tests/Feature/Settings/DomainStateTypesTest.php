@@ -12,9 +12,9 @@ use App\Support\Stack\StateTypes;
 use App\Values\GroupReference;
 use App\Values\OwnerAuthority;
 use Domain\Access\Support\AccessSettings;
-use Domain\Tasks\Support\States\WorkingOnTaskState;
+use Domain\Tasks\Support\States\WorkOnTaskState;
 use Tests\Fixtures\Domains\QuestionReminders\QuestionRemindersDomain;
-use Tests\Fixtures\Domains\QuestionReminders\States\AwaitingAnswerState;
+use Tests\Fixtures\Domains\QuestionReminders\States\AwaitAnswerState;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsCommandModules;
 use Tests\Support\TestIds;
@@ -37,9 +37,9 @@ final class DomainStateTypesTest extends TestCase
     public function test_a_domain_state_type_is_registered_from_its_state_class(): void
     {
         $types = $this->app->make(StateTypes::class)->registry();
-        $working = $types->get('tasks.working');
+        $working = $types->get('tasks.work');
 
-        $this->assertSame(WorkingOnTaskState::class, $working->stateClass);
+        $this->assertSame(WorkOnTaskState::class, $working->stateClass);
         $this->assertSame(1, $working->schemaVersion);
         $this->assertTrue($types->get('core.ready')->isEnabled());
     }
@@ -49,10 +49,10 @@ final class DomainStateTypesTest extends TestCase
         $this->bootModules(QuestionRemindersDomain::class);
         $types = $this->app->make(StateTypes::class);
 
-        $this->assertSame(AwaitingAnswerState::class, $types->registry()->get(AwaitingAnswerState::TYPE_KEY)->stateClass);
+        $this->assertSame(AwaitAnswerState::class, $types->registry()->get(AwaitAnswerState::TYPE_KEY)->stateClass);
 
-        $this->assertTrue($types->ticking()->contains(AwaitingAnswerState::TYPE_KEY));
-        $this->assertFalse($types->ticking()->contains('tasks.working'));
+        $this->assertTrue($types->ticking()->contains(AwaitAnswerState::TYPE_KEY));
+        $this->assertFalse($types->ticking()->contains('tasks.work'));
     }
 
     public function test_switching_the_owner_off_switches_its_state_type_off(): void
@@ -60,7 +60,7 @@ final class DomainStateTypesTest extends TestCase
         $ownerId = TestIds::of(7);
         $this->app->instance(AccessSettings::class, new AccessSettings($ownerId));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($ownerId), new OwnerAuthority('test'));
-        $working = $this->app->make(StateTypes::class)->registry()->get('tasks.working');
+        $working = $this->app->make(StateTypes::class)->registry()->get('tasks.work');
         $this->assertTrue($working->isEnabled());
 
         $this->app->make(CommandBus::class)->run(

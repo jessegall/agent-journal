@@ -11,7 +11,7 @@ use App\Models\Agents\AgentStackRow;
 use App\Models\Messages\Message;
 use App\Support\MessageAnswerActivation;
 use App\Support\References\StateReference;
-use App\Support\States\Support\AnsweringMessageStateReference;
+use App\Support\States\Support\AnswerMessageStateReference;
 use App\Support\Storage\FrameRecord;
 use PhpOption\Option;
 use Tests\Support\MessagingTestCase;
@@ -63,7 +63,7 @@ final class MessageActivationTest extends MessagingTestCase
     {
         $frames = AgentStackRow::query()->withoutGlobalScopes()->get()
             ->flatMap(fn (AgentStackRow $row) => $row->frames->all())
-            ->filter(fn (FrameRecord $frame) => $frame->reference->typeKey === AnsweringMessageStateReference::TYPE_KEY);
+            ->filter(fn (FrameRecord $frame) => $frame->reference->typeKey === AnswerMessageStateReference::TYPE_KEY);
 
         return $frames->sole()->values['waitingIds'];
     }
@@ -73,6 +73,6 @@ final class MessageActivationTest extends MessagingTestCase
      */
     private function currentFrame(): Option
     {
-        return $this->app->make(CurrentState::class)->ofCaller(AnsweringMessageStateReference::TYPE_KEY);
+        return $this->app->make(CurrentState::class)->ofCaller(AnswerMessageStateReference::TYPE_KEY);
     }
 }

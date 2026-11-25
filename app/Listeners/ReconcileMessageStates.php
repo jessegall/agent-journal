@@ -11,8 +11,8 @@ use App\Events\Sessions\SessionOpened;
 use App\Models\Agents\Agent;
 use App\Models\Messages\Message;
 use App\Support\ActorIdentity;
-use App\Support\States\Support\AnsweringMessageStateReference;
-use App\Support\States\Support\ReadingMessageStateReference;
+use App\Support\States\Support\AnswerMessageStateReference;
+use App\Support\States\Support\ReadMessageStateReference;
 
 /**
  * A session that opens finds its agent's messages again: each inbox with unread messages since the agent joined gets
@@ -34,7 +34,7 @@ final readonly class ReconcileMessageStates implements Listener
         $inboxIds = Message::query()->unreadBy($model)->limit(self::MESSAGE_LIMIT)->pluck('inbox_id')->unique();
 
         foreach ($inboxIds as $inboxId) {
-            $reading = ReadingMessageStateReference::forInbox((string) $inboxId, $agent->id);
+            $reading = ReadMessageStateReference::forInbox((string) $inboxId, $agent->id);
 
             $this->stacks->pushFor($agent, $reading);
         }
@@ -42,7 +42,7 @@ final readonly class ReconcileMessageStates implements Listener
         $unanswered = Message::query()->unansweredBy($model)->limit(self::MESSAGE_LIMIT)->get();
 
         foreach ($unanswered as $message) {
-            $this->stacks->pushFor($agent, AnsweringMessageStateReference::forMessage($message, $agent->id));
+            $this->stacks->pushFor($agent, AnswerMessageStateReference::forMessage($message, $agent->id));
         }
     }
 }

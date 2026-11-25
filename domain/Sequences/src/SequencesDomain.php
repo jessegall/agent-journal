@@ -36,7 +36,7 @@ use Domain\Sequences\Policies\SequencePolicy;
 use Domain\Sequences\Policies\StoredSequencePolicy;
 use Domain\Sequences\Support\SequenceDraftProducer;
 use Domain\Sequences\Support\Skills\SequencesSkill;
-use Domain\Sequences\Support\States\FollowingSequenceState;
+use Domain\Sequences\Support\States\FollowSequenceState;
 
 final class SequencesDomain extends Domain implements
     CommandProvider,
@@ -140,7 +140,7 @@ final class SequencesDomain extends Domain implements
 
     public function states(): array
     {
-        return [FollowingSequenceState::class];
+        return [FollowSequenceState::class];
     }
 
     public function skills(): array

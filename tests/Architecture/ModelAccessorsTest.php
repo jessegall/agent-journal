@@ -31,7 +31,7 @@ final class ModelAccessorsTest extends TestCase
     {
         preg_match_all('/\t(?:answer|accessor) (\w+)/', $this->checkOutput(self::FIXTURE), $flagged);
 
-        $this->assertSame(['heading', 'savedTitle', 'words'], $flagged[1]);
+        $this->assertSame(['heading', 'savedTitle', 'words', 'checkedTitle', 'shoutedTitle'], $flagged[1]);
     }
 
     private function checkOutput(string ...$paths): string

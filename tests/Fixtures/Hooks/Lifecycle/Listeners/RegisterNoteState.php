@@ -6,12 +6,12 @@ namespace Tests\Fixtures\Hooks\Lifecycle\Listeners;
 
 use App\Events\Hooks\StateTypesRequested;
 use App\Support\StateLoading\RegisteredStateType;
-use Tests\Fixtures\Hooks\Lifecycle\ReadingNoteState;
+use Tests\Fixtures\Hooks\Lifecycle\ReadNoteState;
 
 final class RegisterNoteState
 {
     public function handle(StateTypesRequested $event): void
     {
-        $event->registry->register(RegisteredStateType::named('notes.reading', ReadingNoteState::class));
+        $event->registry->register(RegisteredStateType::named('notes.reading', ReadNoteState::class));
     }
 }

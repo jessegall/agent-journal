@@ -49,12 +49,12 @@
         "domain/Plans/src/Mcp/StartPlanTool.php": "0adf06a8c0c8a26f1d5678675444a89d25befb98",
         "domain/Plans/src/Mcp/UnassignPlanWorkTool.php": "6d4e6155d06c18935b8ecb45145c716c975fb5e7",
         "domain/Plans/src/Skills/PlanSkill.php": "a134f826447dff92b58ffab56a514a0a1eaf28a5",
-        "domain/Plans/src/States/ReviewingPlanState.php": "85fc51348fa5c2ad0bbf1059f8d2fd3123937688",
+        "domain/Plans/src/States/ReviewPlanState.php": "85fc51348fa5c2ad0bbf1059f8d2fd3123937688",
         "domain/Plans/src/States/Support/ReviewingPlanStateFactory.php": "ca4cb9e4cfe11a54a540ebefe31392544f780aa6",
-        "domain/Plans/src/States/Support/ReviewingPlanStateReference.php": "a84790b2780139ba4fa73a0d5d318214822d7dab",
+        "domain/Plans/src/States/Support/ReviewPlanStateReference.php": "a84790b2780139ba4fa73a0d5d318214822d7dab",
         "domain/Plans/src/States/Support/WorkingOnPlanStateFactory.php": "af89fdc71af4be7e6496468e298b2afeb8a1a08c",
-        "domain/Plans/src/States/Support/WorkingOnPlanStateReference.php": "e633aed0f9b75dc999b24e1b503b0ce0a979aedc",
-        "domain/Plans/src/States/WorkingOnPlanState.php": "b3eabaaa04a3d48909bf59af846e23d42e9e340f",
+        "domain/Plans/src/States/Support/WorkOnPlanStateReference.php": "e633aed0f9b75dc999b24e1b503b0ce0a979aedc",
+        "domain/Plans/src/States/WorkOnPlanState.php": "b3eabaaa04a3d48909bf59af846e23d42e9e340f",
         "domain/Plans/src/Routes/agent.php": "df8fd466063b9576afa910dab2ef29653751b120"
     },
     "edits": {
@@ -258,7 +258,7 @@
             "result": "c95fd15aceaa5f1d0edbf4bae16cc94086dc34a1",
             "move": "batch"
         },
-        "domain/Plans/tests/Unit/States/ReviewingPlanStateTest.php": {
+        "domain/Plans/tests/Unit/States/ReviewPlanStateTest.php": {
             "prior": "87853b7a06a62f9fdb02672a841ca45450434292",
             "result": "90efe69f9492012c08533381c4d8a01496459745",
             "move": "batch"

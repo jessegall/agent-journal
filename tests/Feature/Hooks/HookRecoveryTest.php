@@ -110,7 +110,7 @@ final class HookRecoveryTest extends TestCase
         );
         $this->assertSame(StackStatus::Active, $this->stackOf($started)->status);
         $this->assertSame(
-            ['core.ready', 'tasks.working'],
+            ['core.ready', 'tasks.work'],
             array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->stackOf($started)->frames->all()),
         );
         $this->assertSame(TaskState::Started, $task->fresh()?->state);

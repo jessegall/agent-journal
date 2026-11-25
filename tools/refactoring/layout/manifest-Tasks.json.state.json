@@ -78,8 +78,8 @@
         "domain/Tasks/src/Mcp/TasksListTool.php": "81461b717ce4e48b76c2bc4618eee9c17d56354d",
         "domain/Tasks/src/Skills/TasksSkill.php": "d45be0b0e5f12c49ea7192f44b713621e94f64a0",
         "domain/Tasks/src/States/Support/WorkingOnTaskStateFactory.php": "a107839c55069c67d7e373dbf18bf7cf8e3e50f1",
-        "domain/Tasks/src/States/Support/WorkingOnTaskStateReference.php": "4cbbc38592a3f5ee90f211e3c45ecc362b97541c",
-        "domain/Tasks/src/States/WorkingOnTaskState.php": "852ecc6e11c89e9fbc11bb329be091a49cb0f590",
+        "domain/Tasks/src/States/Support/WorkOnTaskStateReference.php": "4cbbc38592a3f5ee90f211e3c45ecc362b97541c",
+        "domain/Tasks/src/States/WorkOnTaskState.php": "852ecc6e11c89e9fbc11bb329be091a49cb0f590",
         "domain/Tasks/src/Routes/agent.php": "401c6f0e3d845c2973929f6076747cd80f9268d9"
     },
     "edits": {
@@ -418,7 +418,7 @@
             "result": "eb0997a6fc372a54a1a049215e7c5ac67a80c40e",
             "move": "batch"
         },
-        "domain/Tasks/tests/Unit/States/WorkingOnTaskTest.php": {
+        "domain/Tasks/tests/Unit/States/WorkOnTaskTest.php": {
             "prior": "d7126eaebab47dba0c1115f9f71922d0ec064778",
             "result": "654528f92f79db842c763ebd411b0dc4f5a93077",
             "move": "batch"

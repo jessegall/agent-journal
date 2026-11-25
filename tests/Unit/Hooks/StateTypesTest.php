@@ -39,30 +39,30 @@ final class StateTypesTest extends TestCase
 {
     public function test_a_registered_type_is_found_by_its_key(): void
     {
-        $type = RegisteredStateType::named('tasks.working', InMemoryTaskState::class);
+        $type = RegisteredStateType::named('tasks.work', InMemoryTaskState::class);
         $registry = new StateTypeRegistry();
         $registry->register($type);
 
-        $this->assertTrue($registry->has('tasks.working'));
-        $this->assertSame($type, $registry->get('tasks.working'));
-        $this->assertFalse($registry->has('core.messages.answering'));
+        $this->assertTrue($registry->has('tasks.work'));
+        $this->assertSame($type, $registry->get('tasks.work'));
+        $this->assertFalse($registry->has('core.messages.answer'));
     }
 
     public function test_an_unknown_key_is_an_error(): void
     {
         $this->expectException(StateTypeUnknown::class);
 
-        new StateTypeRegistry()->get('core.messages.answering');
+        new StateTypeRegistry()->get('core.messages.answer');
     }
 
     public function test_a_key_registered_twice_is_an_error(): void
     {
         $registry = new StateTypeRegistry();
-        $registry->register(RegisteredStateType::named('tasks.working', InMemoryTaskState::class));
+        $registry->register(RegisteredStateType::named('tasks.work', InMemoryTaskState::class));
 
         $this->expectException(StateTypeRepeated::class);
 
-        $registry->register(RegisteredStateType::named('tasks.working', InMemoryTaskState::class));
+        $registry->register(RegisteredStateType::named('tasks.work', InMemoryTaskState::class));
     }
 
     public function test_nothing_is_registered_after_the_registry_is_frozen(): void
@@ -72,7 +72,7 @@ final class StateTypesTest extends TestCase
 
         $this->expectException(StateTypesFrozen::class);
 
-        $registry->register(RegisteredStateType::named('tasks.working', InMemoryTaskState::class));
+        $registry->register(RegisteredStateType::named('tasks.work', InMemoryTaskState::class));
     }
 
     public function test_the_types_are_built_once_with_cores_states_and_every_listener_type(): void
@@ -81,7 +81,7 @@ final class StateTypesTest extends TestCase
         $buildCount = 0;
         $events->listen(StateTypesRequested::class, function (StateTypesRequested $event) use (&$buildCount) {
             $buildCount++;
-            $event->registry->register(RegisteredStateType::named('tasks.working', InMemoryTaskState::class));
+            $event->registry->register(RegisteredStateType::named('tasks.work', InMemoryTaskState::class));
         });
         $types = new StateTypes($events, $this->app);
 
@@ -90,7 +90,7 @@ final class StateTypesTest extends TestCase
 
         $this->assertSame($first, $second);
         $this->assertSame(1, $buildCount);
-        $this->assertTrue($first->has('tasks.working'));
+        $this->assertTrue($first->has('tasks.work'));
         $this->assertSame(ReadyState::class, $first->get(ReadyState::TYPE_KEY)->stateClass);
     }
 
@@ -129,7 +129,7 @@ final class StateTypesTest extends TestCase
                 throw TestFailure::listenerFailed();
             }
 
-            $event->registry->register(RegisteredStateType::named('tasks.working', InMemoryTaskState::class));
+            $event->registry->register(RegisteredStateType::named('tasks.work', InMemoryTaskState::class));
         });
         $types = new StateTypes($events, $this->app);
 
@@ -140,7 +140,7 @@ final class StateTypesTest extends TestCase
             $this->assertSame(1, $attempts);
         }
 
-        $this->assertTrue($types->registry()->has('tasks.working'));
+        $this->assertTrue($types->registry()->has('tasks.work'));
         $this->assertSame(2, $attempts);
     }
 
@@ -152,12 +152,12 @@ final class StateTypesTest extends TestCase
         $events->listen(
             StateTypesRequested::class,
             fn (StateTypesRequested $event) => $event->registry->register(
-                RegisteredStateType::named('tasks.working', InMemoryTaskState::class),
+                RegisteredStateType::named('tasks.work', InMemoryTaskState::class),
             ),
         );
         $factory = $this->app->make(RegisteredStateFactory::class, ['types' => new StateTypes($events, $this->app)]);
         $values = ['number' => 42, 'runNumber' => 1];
-        $reference = new StateReference('tasks.working', new SubjectReference('42', 1), $values);
+        $reference = new StateReference('tasks.work', new SubjectReference('42', 1), $values);
 
         $first = $factory->frameFor($reference);
         $second = $factory->frameFor($reference);

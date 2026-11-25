@@ -27,7 +27,7 @@ use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskState;
 use Tests\Fixtures\Hooks\AllowedStops;
-use Tests\Fixtures\Hooks\AnsweringStates;
+use Tests\Fixtures\Hooks\AnswerStates;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
@@ -110,7 +110,7 @@ final class TransparentFramesTest extends TestCase
     {
         $before = $this->stack($this->ready(), $this->plan(), $this->task(hasFinished: true));
 
-        $after = $before->withoutExposedInactive()->withStateOnTop($this->reference('tasks.working', '42'));
+        $after = $before->withoutExposedInactive()->withStateOnTop($this->reference('tasks.work', '42'));
 
         $this->assertSame(['ready', 'plan'], array_slice($after->frameIds(), 0, 2));
         $this->assertCount(3, $after->frames());
@@ -131,7 +131,7 @@ final class TransparentFramesTest extends TestCase
     {
         $before = $this->stack($this->ready(), $this->plan(), $this->task(hasFinished: true), $this->message());
 
-        $after = $before->withoutExposedInactive()->withStateOnTop($this->reference('tasks.working', '42'));
+        $after = $before->withoutExposedInactive()->withStateOnTop($this->reference('tasks.work', '42'));
 
         $this->assertSame(['ready', 'plan', 'task', 'message'], array_slice($after->frameIds(), 0, 4));
     }
@@ -150,8 +150,8 @@ final class TransparentFramesTest extends TestCase
     {
         $stack = $this->stack($this->ready(), $this->task(), $this->plan());
 
-        $lifted = $stack->withLiveFrameLifted($this->reference('tasks.working', '41'));
-        $unchanged = $stack->withLiveFrameLifted($this->reference('tasks.working', '99'));
+        $lifted = $stack->withLiveFrameLifted($this->reference('tasks.work', '41'));
+        $unchanged = $stack->withLiveFrameLifted($this->reference('tasks.work', '99'));
 
         $this->assertSame(['ready', 'plan', 'task'], $lifted->frameIds());
         $this->assertSame($stack->frames()[1], $lifted->top());
@@ -179,7 +179,7 @@ final class TransparentFramesTest extends TestCase
     {
         $pushed = fn (): AgentState => new InMemoryTaskState(42, 1, new InMemoryTasks([42 => TaskState::Started]));
 
-        return new AgentStack(array_values($frames), new InMemoryStateFactory(['tasks.working' => $pushed]), new StackTarget('agent-1', 'session-1'));
+        return new AgentStack(array_values($frames), new InMemoryStateFactory(['tasks.work' => $pushed]), new StackTarget('agent-1', 'session-1'));
     }
 
     private function ready(): Frame
@@ -199,21 +199,21 @@ final class TransparentFramesTest extends TestCase
         $plans->finished = $isCancelled ? ['plan'] : [];
         $state = new FinishableState('plan', $plans);
 
-        return $this->frame('plan', 'plans.working', '12', $state);
+        return $this->frame('plan', 'plans.work', '12', $state);
     }
 
     private function task(bool $hasFinished = false): Frame
     {
         $tasks = new InMemoryTasks([41 => $hasFinished ? TaskState::Finished : TaskState::Started]);
 
-        return $this->frame('task', 'tasks.working', '41', new InMemoryTaskState(41, 3, $tasks));
+        return $this->frame('task', 'tasks.work', '41', new InMemoryTaskState(41, 3, $tasks));
     }
 
     private function message(bool $isAnswered = false): Frame
     {
-        $state = $isAnswered ? AnsweringStates::answered() : AnsweringStates::holding('9');
+        $state = $isAnswered ? AnswerStates::answered() : AnswerStates::holding('9');
 
-        return $this->frame('message', 'core.messages.answering', '9', $state);
+        return $this->frame('message', 'core.messages.answer', '9', $state);
     }
 
     private function frame(string $id, string $typeKey, string $subjectId, AgentState $state): Frame

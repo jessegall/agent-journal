@@ -9,7 +9,7 @@ use App\Contracts\Work\AgentStack;
 use App\Contracts\Work\StackTransactionRunner;
 use App\Models\Asks\Ask;
 use App\Models\Asks\AskHop;
-use App\Support\States\Support\AnsweringAskStateReference;
+use App\Support\States\Support\AnswerAskStateReference;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -44,7 +44,7 @@ final readonly class AskAttention
         $hop = AskHop::nextFor($holder);
 
         if ($hop !== null) {
-            $this->stacks->offerFor($holder, AnsweringAskStateReference::forHop($hop));
+            $this->stacks->offerFor($holder, AnswerAskStateReference::forHop($hop));
         }
     }
 

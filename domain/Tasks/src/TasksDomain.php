@@ -94,7 +94,7 @@ use Domain\Tasks\Support\Assignments\TaskAssigner;
 use Domain\Tasks\Support\Mcp\HeldTasksOverview;
 use Domain\Tasks\Support\Skills\TasksSkill;
 use Domain\Tasks\Support\States\LogDueState;
-use Domain\Tasks\Support\States\WorkingOnTaskState;
+use Domain\Tasks\Support\States\WorkOnTaskState;
 use Domain\Tasks\Support\TaskDraftProducer;
 use Domain\Tasks\Support\TaskLogSearchAccess;
 use Domain\Tasks\Support\TaskLogSearchProvider;
@@ -295,7 +295,7 @@ final class TasksDomain extends Domain implements
     public function states(): array
     {
         return [
-            WorkingOnTaskState::class,
+            WorkOnTaskState::class,
             LogDueState::class,
         ];
     }

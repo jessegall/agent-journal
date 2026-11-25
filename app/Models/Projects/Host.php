@@ -357,23 +357,23 @@ final class Host extends Model implements EventSource, ReadableModel
         return ProtectionReport::fromStored($this->protection[$key]);
     }
 
-    // ----------[ Accessors ]----------
+    // ----------[ Calculations ]----------
 
     /**
      * The folder a start the host was not asked for in a folder runs in: the first of its start roots; reading it on a
      * host with none fails.
      *
-     * @return Attribute<string, never>
+     * @throws HostUnavailable
      */
-    protected function startFolder(): Attribute
+    public function startFolder(): string
     {
-        return Attribute::get(function (): string {
-            $folder = $this->start_roots[0] ?? null;
-            $this->assertStartFolder($folder);
+        $folder = $this->start_roots[0] ?? null;
+        $this->assertStartFolder($folder);
 
-            return $folder;
-        });
+        return $folder;
     }
+
+    // ----------[ Accessors ]----------
 
     /**
      * The sentence a broken link of this host shows: since when its calls fail and why the latest did, or since when

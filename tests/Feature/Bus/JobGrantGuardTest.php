@@ -30,7 +30,7 @@ use Domain\Rules\Commands\ProposeRule\ProposeRuleCommand;
 use Domain\Tasks\Models\Task;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
-use Tests\Fixtures\Hooks\AnsweringStates;
+use Tests\Fixtures\Hooks\AnswerStates;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\SendsSignedCalls;
@@ -76,8 +76,8 @@ final class JobGrantGuardTest extends TestCase
     {
         $frame = new Frame(
             'answering',
-            new StateReference('core.messages.answering', NoSubject::None),
-            AnsweringStates::holding('message-id'),
+            new StateReference('core.messages.answer', NoSubject::None),
+            AnswerStates::holding('message-id'),
             CarbonImmutable::now(),
         );
         $stack = new AgentStack([$frame], $this->createStub(StateFactory::class), new StackTarget('agent-1', 'session-1'));

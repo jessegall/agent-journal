@@ -43,7 +43,6 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -405,21 +404,17 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
         return ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id)->gateway_key;
     }
 
-    // ----------[ Accessors ]----------
-
     /**
      * The id of the gateway configuration the owner's grant is served under; reading it on a proposal, which has no
      * gateway yet, fails.
      *
-     * @return Attribute<string, never>
+     * @throws ShareGatewayUnavailable
      */
-    protected function gatewayConfigurationId(): Attribute
+    public function gatewayConfigurationId(): string
     {
-        return Attribute::get(function (): string {
-            $this->assertHasGateway();
+        $this->assertHasGateway();
 
-            return $this->share_gateway_configuration_id;
-        });
+        return $this->share_gateway_configuration_id;
     }
 
     // ----------[ Asserts ]----------

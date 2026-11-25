@@ -20,7 +20,7 @@ use App\Support\Ticks\TickContext;
 
 final class AwaitingAnswerLoader implements TickableStateLoader { /* statesFor, schemaVersion as for any loader */ }
 
-final class AwaitingAnswerState extends AgentState implements TickableState
+final class AwaitAnswerState extends AgentState implements TickableState
 {
     public function onTick(TickContext $tick): TickCommands
     {
@@ -82,7 +82,7 @@ A ticking loader names its guard, so a ticking type without one cannot be declar
 ```php
 public function occurrenceGuard(): WorkOccurrenceGuard
 {
-    return new AwaitingAnswerGuard(); // locks the question and requires it still waiting
+    return new AwaitAnswerGuard(); // locks the question and requires it still waiting
 }
 ```
 

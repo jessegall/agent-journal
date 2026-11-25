@@ -118,7 +118,7 @@ final class HookRuntimeStartTest extends TestCase
         $this->assertInstanceOf(ShellParser::class, $this->app->make(ShellCommandParser::class));
         $this->assertInstanceOf(StackTransaction::class, $this->app->make(StartTransaction::class));
 
-        foreach (['core.ready', 'tasks.working', 'core.messages.answering', 'sequences.following'] as $typeKey) {
+        foreach (['core.ready', 'tasks.work', 'core.messages.answer', 'sequences.follow'] as $typeKey) {
             $this->assertTrue($registry->has($typeKey), $typeKey);
         }
     }

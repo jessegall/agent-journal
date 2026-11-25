@@ -4394,10 +4394,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "0ab588f6581f174c372caa06e8ec83d0e712fb9b",
-        "old_path": "domain/Tasks/src/States/Support/WorkingOnTaskStateReference.php",
-        "old_class": "Domain\\Tasks\\States\\Support\\WorkingOnTaskStateReference",
-        "final_path": "domain/Tasks/src/Support/States/Support/WorkingOnTaskStateReference.php",
-        "final_class": "Domain\\Tasks\\Support\\States\\Support\\WorkingOnTaskStateReference",
+        "old_path": "domain/Tasks/src/States/Support/WorkOnTaskStateReference.php",
+        "old_class": "Domain\\Tasks\\States\\Support\\WorkOnTaskStateReference",
+        "final_path": "domain/Tasks/src/Support/States/Support/WorkOnTaskStateReference.php",
+        "final_class": "Domain\\Tasks\\Support\\States\\Support\\WorkOnTaskStateReference",
         "status": "move",
         "kind": "class",
         "generator": {
@@ -4416,10 +4416,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "1ef895c8e29be7e7c26215d8a9f482d6ff6bddab",
-        "old_path": "domain/Tasks/src/States/WorkingOnTaskState.php",
-        "old_class": "Domain\\Tasks\\States\\WorkingOnTaskState",
-        "final_path": "domain/Tasks/src/Support/States/WorkingOnTaskState.php",
-        "final_class": "Domain\\Tasks\\Support\\States\\WorkingOnTaskState",
+        "old_path": "domain/Tasks/src/States/WorkOnTaskState.php",
+        "old_class": "Domain\\Tasks\\States\\WorkOnTaskState",
+        "final_path": "domain/Tasks/src/Support/States/WorkOnTaskState.php",
+        "final_class": "Domain\\Tasks\\Support\\States\\WorkOnTaskState",
         "status": "move",
         "kind": "class",
         "generator": {
@@ -4429,7 +4429,7 @@
         "phase": 3,
         "batch": "Tasks",
         "consumers": [
-            "domain/Tasks/tests/Unit/States/WorkingOnTaskTest.php",
+            "domain/Tasks/tests/Unit/States/WorkOnTaskTest.php",
             "tools/refactoring/layout/manifest-Tasks.json"
         ],
         "ownership_checks": [],

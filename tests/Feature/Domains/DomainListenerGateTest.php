@@ -86,6 +86,6 @@ final class DomainListenerGateTest extends TestCase
     {
         $this->switchDomainOff('tasks');
 
-        $this->assertTrue($this->app->make(StateTypes::class)->registry()->has('tasks.working'));
+        $this->assertTrue($this->app->make(StateTypes::class)->registry()->has('tasks.work'));
     }
 }

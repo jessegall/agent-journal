@@ -91,8 +91,8 @@ use Domain\Plans\Support\PlanSearchAccess;
 use Domain\Plans\Support\PlanSearchProvider;
 use Domain\Plans\Support\PlanShareProvider;
 use Domain\Plans\Support\Skills\PlanSkill;
-use Domain\Plans\Support\States\ReviewingPlanState;
-use Domain\Plans\Support\States\WorkingOnPlanState;
+use Domain\Plans\Support\States\ReviewPlanState;
+use Domain\Plans\Support\States\WorkOnPlanState;
 use Domain\Plans\Values\AssignedPlanFilters;
 use Domain\Plans\Values\AssignedPlanList;
 use Domain\Plans\Values\PhaseDetails;
@@ -338,8 +338,8 @@ final class PlansDomain extends Domain implements
     public function states(): array
     {
         return [
-            WorkingOnPlanState::class,
-            ReviewingPlanState::class,
+            WorkOnPlanState::class,
+            ReviewPlanState::class,
         ];
     }
 

@@ -7,8 +7,8 @@ namespace Tests\Feature\Communication;
 use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
 use App\Commands\Messages\ReplyInChat\ReplyInChatCommand;
 use App\Enums\ReceiptDeliveryState;
-use App\Events\Web\PageChanged;
 use App\Events\Hooks\StateCommandAnswered;
+use App\Events\Web\PageChanged;
 use App\Listeners\RunStateCommand;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Messages\Message;
@@ -18,7 +18,7 @@ use App\Models\Messages\ReceiptDelivery;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\MessageBatchService;
-use App\Support\States\Support\AnsweringMessageStateReference;
+use App\Support\States\Support\AnswerMessageStateReference;
 use App\Support\Storage\FrameRecord;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
@@ -26,9 +26,9 @@ use Domain\Chat\Commands\OpenPairChat\OpenPairChatCommand;
 use Domain\Chat\Mcp\Tools\MessageReactionTool;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Agents\TestStart;
-use Tests\Support\TestStartAuthority;
 use Tests\Support\MessagingTestCase;
 use Tests\Support\SendsMcpFrames;
+use Tests\Support\TestStartAuthority;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -213,7 +213,7 @@ final class ChatConversationTest extends MessagingTestCase
         $stack = AgentStackRow::query()->withoutGlobalScopes()->forTarget($target)->sole();
         $answering = array_filter(
             $stack->frames->all(),
-            fn (FrameRecord $frame) => $frame->reference->typeKey === AnsweringMessageStateReference::TYPE_KEY
+            fn (FrameRecord $frame) => $frame->reference->typeKey === AnswerMessageStateReference::TYPE_KEY
                 && $frame->reference->subject->id === $inboxId,
         );
 

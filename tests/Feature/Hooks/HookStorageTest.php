@@ -103,7 +103,7 @@ final class HookStorageTest extends TestCase
             WalkStep::from(
                 [
                     'frameId' => 'frame-2',
-                    'stateType' => 'tasks.working',
+                    'stateType' => 'tasks.work',
                     'hookMethod' => 'onStop',
                     'answer' => AnswerType::Delegate,
                     'contextCount' => 2,
@@ -206,7 +206,7 @@ final class HookStorageTest extends TestCase
             ),
             new FrameRecord(
                 'frame-2',
-                new StateReference('tasks.working', new SubjectReference('42', 3)),
+                new StateReference('tasks.work', new SubjectReference('42', 3)),
                 false,
                 1,
                 CarbonImmutable::now(),

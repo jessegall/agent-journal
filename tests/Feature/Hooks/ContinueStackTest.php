@@ -49,16 +49,16 @@ final class ContinueStackTest extends TestCase
 
     public function test_a_resumed_session_carries_owed_work_and_leaves_session_only_frames(): void
     {
-        $old = $this->closedStackWith(['tasks.working', 'core.skills.awaiting']);
+        $old = $this->closedStackWith(['tasks.work', 'core.skills.await']);
 
         $continued = $this->nextSession($old, ConversationModeType::Resume);
 
-        $this->assertSame(['core.ready', 'tasks.working'], $this->typeKeysOf($continued));
+        $this->assertSame(['core.ready', 'tasks.work'], $this->typeKeysOf($continued));
     }
 
     public function test_a_new_conversation_starts_with_the_bottom_alone(): void
     {
-        $old = $this->closedStackWith(['tasks.working']);
+        $old = $this->closedStackWith(['tasks.work']);
 
         $fresh = $this->nextSession($old, ConversationModeType::New);
 
@@ -85,7 +85,7 @@ final class ContinueStackTest extends TestCase
         $frames = [$row->frames->all()[0]];
 
         foreach ($typeKeys as $position => $typeKey) {
-            $subject = $typeKey === 'core.skills.awaiting'
+            $subject = $typeKey === 'core.skills.await'
                 ? NoSubject::None
                 : new SubjectReference(Task::factory()->create(['title' => 'Owed work'])->id, 1);
             $frames[] = new FrameRecord(

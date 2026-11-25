@@ -10,8 +10,8 @@ use ArrayObject;
 use RuntimeException;
 
 /**
- * A model with one answer that belongs in an accessor, one accessor that writes, one that gives an object, and the
- * answers that stay methods: a question, an answer that names what it throws and an answer that types its own column.
+ * A model with one answer that belongs in an accessor, accessors that write, throw, turn off object caching or give an
+ * object, and the answers that stay methods: a question, an answer that names what it throws and an answer that types its own column.
  *
  * @property string $title
  * @property string $state
@@ -65,5 +65,27 @@ final class AnswersAndAccessors extends Model
     protected function words(): Attribute
     {
         return Attribute::get(fn () => new ArrayObject(explode(' ', $this->title)));
+    }
+
+    /**
+     * @return Attribute<string, never>
+     */
+    protected function checkedTitle(): Attribute
+    {
+        return Attribute::get(function (): string {
+            if ($this->title === '') {
+                throw new RuntimeException('No title.');
+            }
+
+            return $this->title;
+        });
+    }
+
+    /**
+     * @return Attribute<string, never>
+     */
+    protected function shoutedTitle(): Attribute
+    {
+        return Attribute::get(fn (): string => strtoupper($this->title))->withoutObjectCaching();
     }
 }

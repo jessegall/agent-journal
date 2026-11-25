@@ -12,8 +12,8 @@ use App\Models\Messages\Message;
 use App\Support\CommandRegistry;
 use App\Support\LinkTypeRegistry;
 use App\Support\Stack\StateTypes;
-use App\Support\States\AnsweringMessageState;
-use App\Support\States\Support\AnsweringMessageStateReference;
+use App\Support\States\AnswerMessageState;
+use App\Support\States\Support\AnswerMessageStateReference;
 use Domain\Chat\ChatDomain;
 use Tests\TestCase;
 
@@ -43,6 +43,6 @@ final class CoreMessagingWithoutChatTest extends TestCase
         $this->assertSame(Message::class, $this->app->make(LinkTypeRegistry::class)->modelFor(Message::linkType()));
 
         $types = $this->app->make(StateTypes::class)->registry();
-        $this->assertSame(AnsweringMessageState::class, $types->get(AnsweringMessageStateReference::TYPE_KEY)->stateClass);
+        $this->assertSame(AnswerMessageState::class, $types->get(AnswerMessageStateReference::TYPE_KEY)->stateClass);
     }
 }

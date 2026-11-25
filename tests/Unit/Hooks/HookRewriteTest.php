@@ -26,7 +26,7 @@ use Tests\Fixtures\Hooks\AllowedStops;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Fixtures\Hooks\ListedCommandParser;
-use Tests\Fixtures\Hooks\RewritingState;
+use Tests\Fixtures\Hooks\RewriteState;
 use Tests\Fixtures\Hooks\ShellAnswerState;
 use Tests\Support\TestActors;
 use Tests\Support\TestText;
@@ -48,7 +48,7 @@ final class HookRewriteTest extends TestCase
 
     public function test_the_main_agent_admits_a_rewrite_to_a_command_alias(): void
     {
-        $rewriter = new RewritingState([self::ORIGINAL_LINE => self::ALIAS]);
+        $rewriter = new RewriteState([self::ORIGINAL_LINE => self::ALIAS]);
 
         $answer = $this->rewrite()->answer($this->stack($rewriter), $this->command(self::ORIGINAL_LINE));
 
@@ -63,7 +63,7 @@ final class HookRewriteTest extends TestCase
 
     public function test_a_replacement_a_lower_frame_refuses_is_denied(): void
     {
-        $rewriter = new RewritingState(['composer test' => 'journal run tests --write']);
+        $rewriter = new RewriteState(['composer test' => 'journal run tests --write']);
 
         $answer = $this->rewrite()->answer($this->refusingStack($rewriter), $this->command('composer test'));
 
@@ -77,7 +77,7 @@ final class HookRewriteTest extends TestCase
 
     public function test_a_second_rewrite_is_an_error(): void
     {
-        $rewriter = new RewritingState(['composer test' => 'git status', 'git status' => 'journal run tests']);
+        $rewriter = new RewriteState(['composer test' => 'git status', 'git status' => 'journal run tests']);
 
         $this->expectException(RepeatedCommandRewrite::class);
 
@@ -86,7 +86,7 @@ final class HookRewriteTest extends TestCase
 
     public function test_a_command_nobody_rewrites_is_walked_once(): void
     {
-        $rewriter = new RewritingState(['composer test' => 'journal run tests']);
+        $rewriter = new RewriteState(['composer test' => 'journal run tests']);
 
         $answer = $this->rewrite()->answer($this->stack($rewriter), $this->command('git status'));
 
@@ -96,7 +96,7 @@ final class HookRewriteTest extends TestCase
 
     public function test_a_lower_denial_keeps_the_original_input_and_stops_rewrite_parsing(): void
     {
-        $rewriter = new RewritingState(['composer test' => 'git status']);
+        $rewriter = new RewriteState(['composer test' => 'git status']);
         $guard = new ShellAnswerState(fn (ShellCommandRequested $input) => Decision::deny(TestText::of($input->command->source)));
         $parser = $this->createMock(ShellCommandParser::class);
         $parser->expects($this->never())->method('parse');
@@ -144,7 +144,7 @@ final class HookRewriteTest extends TestCase
         ], new InMemoryStateFactory(), new StackTarget('agent-1', 'session-1'));
     }
 
-    private function refusingStack(RewritingState $rewriter): AgentStack
+    private function refusingStack(RewriteState $rewriter): AgentStack
     {
         $guard = new ShellAnswerState(function (ShellCommandRequested $input) {
             if ($input->command->source === 'composer test') {

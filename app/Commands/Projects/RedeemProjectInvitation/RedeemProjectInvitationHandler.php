@@ -50,7 +50,8 @@ final readonly class RedeemProjectInvitationHandler implements CommandHandler
             throw InvitationUnusable::forTicket();
         }
 
-        $attempt = InstallAttempt::lockById($invitation->attemptId);
+        $attemptId = $invitation->attemptId();
+        $attempt = InstallAttempt::lockById($attemptId);
         $folder = $command->folder;
         $environment = $this->environmentOf($invitation, $command->projectLabel);
         $project = Project::forId($environment->project_id);

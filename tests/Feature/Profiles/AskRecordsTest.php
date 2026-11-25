@@ -38,7 +38,7 @@ use App\Support\ProfileProposal;
 use App\Support\References\StateReference;
 use App\Support\RequestKey;
 use App\Support\States\ReadyState;
-use App\Support\States\Support\AnsweringAskStateReference;
+use App\Support\States\Support\AnswerAskStateReference;
 use App\Support\Storage\FrameRecord;
 use App\Support\Storage\FrameRecords;
 use App\Support\Ticks\TickingTypes;
@@ -294,8 +294,8 @@ final class AskRecordsTest extends TestCase
         $firstHop = AskHop::query()->where('ask_id', $first->id)->sole();
         $secondHop = AskHop::query()->where('ask_id', $second->id)->sole();
         $progress = $this->app->make(WorkProgress::class);
-        $firstWork = AnsweringAskStateReference::forHop($firstHop)->workReference();
-        $secondWork = AnsweringAskStateReference::forHop($secondHop)->workReference();
+        $firstWork = AnswerAskStateReference::forHop($firstHop)->workReference();
+        $secondWork = AnswerAskStateReference::forHop($secondHop)->workReference();
         $this->assertNotNull($progress->enteredAt($holder, $firstWork));
         $this->assertNull($progress->enteredAt($holder, $secondWork));
 

@@ -21,8 +21,8 @@ use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Events\PlanProgressChanged;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
-use Domain\Plans\Support\States\Support\WorkingOnPlanStateReference;
-use Domain\Plans\Support\States\WorkingOnPlanState;
+use Domain\Plans\Support\States\Support\WorkOnPlanStateReference;
+use Domain\Plans\Support\States\WorkOnPlanState;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\Event;
@@ -59,13 +59,13 @@ final class PlanWorkingStateTest extends TestCase
         $this->app->make(CommandBus::class)->run(new StartPlanCommand($plan->id));
         $this->app->make(CommandBus::class)->run(new StartPlanCommand($plan->id));
 
-        $this->assertSame([WorkingOnPlanStateReference::TYPE_KEY], $this->frameTypes());
+        $this->assertSame([WorkOnPlanStateReference::TYPE_KEY], $this->frameTypes());
 
         $this->assertSame(
             $plan->id,
             $this->app->make(CurrentState::class)->of(
                 $this->target,
-                WorkingOnPlanStateReference::TYPE_KEY,
+                WorkOnPlanStateReference::TYPE_KEY,
             )->get()->subject->id,
         );
     }
@@ -87,12 +87,12 @@ final class PlanWorkingStateTest extends TestCase
     public function test_a_plan_frame_is_finished_once_the_plan_is_done_or_cancelled(): void
     {
         $plan = $this->plan();
-        $this->pushState(WorkingOnPlanStateReference::forPlan($plan->id));
+        $this->pushState(WorkOnPlanStateReference::forPlan($plan->id));
         $row = AgentStackRow::query()->forTarget($this->target)->sole();
         $restorer = $this->app->make(StackRestorer::class);
 
         $this->assertFalse($this->planFrame($restorer, $row)->isFinished());
-        $this->assertInstanceOf(WorkingOnPlanState::class, $this->planFrame($restorer, $row)->state);
+        $this->assertInstanceOf(WorkOnPlanState::class, $this->planFrame($restorer, $row)->state);
 
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forUser(TestIds::of(7)),
@@ -111,7 +111,7 @@ final class PlanWorkingStateTest extends TestCase
 
     public function test_the_frame_shows_the_newest_counts_it_heard_and_ignores_an_older_count_arriving_late(): void
     {
-        $state = new WorkingOnPlanState('plan-1');
+        $state = new WorkOnPlanState('plan-1');
 
         $state->onPlanProgressChanged(new PlanProgressChanged('plan-1', 12, 3, 8, 2_000));
         $state->onPlanProgressChanged(new PlanProgressChanged('plan-1', 12, 2, 8, 1_000));

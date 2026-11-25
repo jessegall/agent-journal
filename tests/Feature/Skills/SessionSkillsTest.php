@@ -15,7 +15,7 @@ use App\Policies\AssignmentRecipientPolicy;
 use App\Support\ContextReminders;
 use App\Support\SkillPublishingService;
 use App\Support\SkillTargets;
-use App\Support\States\Support\AwaitingSkillsStateReference;
+use App\Support\States\Support\AwaitSkillsStateReference;
 use App\Values\StackTarget;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\File;
@@ -122,7 +122,7 @@ final class SessionSkillsTest extends TestCase
         $this->boundary($session);
 
         $this->assertCount(1, $this->stack->pushed);
-        $this->assertSame(AwaitingSkillsStateReference::TYPE_KEY, $this->stack->pushed[0]->typeKey);
+        $this->assertSame(AwaitSkillsStateReference::TYPE_KEY, $this->stack->pushed[0]->typeKey);
     }
 
     /**

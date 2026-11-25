@@ -9,7 +9,7 @@ use App\Contracts\Events\Listener;
 use App\Contracts\Work\AgentStack;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Resolvers\Support\TaskRecords;
-use Domain\Tasks\Support\States\Support\WorkingOnTaskStateReference;
+use Domain\Tasks\Support\States\Support\WorkOnTaskStateReference;
 
 /**
  * Puts the started run on the agent's stack in the same transaction as the start, so both commit or neither does.
@@ -24,6 +24,6 @@ final readonly class PushTaskState implements Listener
 
     public function handle(TaskStarted $event): void
     {
-        $this->stacks->activateForCaller(WorkingOnTaskStateReference::forTask($this->tasks->get($event->taskId)));
+        $this->stacks->activateForCaller(WorkOnTaskStateReference::forTask($this->tasks->get($event->taskId)));
     }
 }

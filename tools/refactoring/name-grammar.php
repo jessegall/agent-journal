@@ -464,7 +464,7 @@ function eventFault(DeclaredName $declared): string|null
 
 /**
  * A state says with the plain verb what the agent is to do (ReadMessageState), never with the gerund
- * (ReadingMessageState) (user message 22134).
+ * (ReadMessageState) (user message 22134).
  */
 function stateFault(DeclaredName $declared): string|null
 {

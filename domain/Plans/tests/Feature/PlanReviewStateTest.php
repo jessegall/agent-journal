@@ -14,7 +14,7 @@ use App\Support\Storage\FrameRecord;
 use App\Values\OwnerAuthority;
 use Domain\Plans\Commands\RequestPlanReview\RequestPlanReviewCommand;
 use Domain\Plans\Models\Plan;
-use Domain\Plans\Support\States\Support\ReviewingPlanStateReference;
+use Domain\Plans\Support\States\Support\ReviewPlanStateReference;
 use Domain\Plans\Tests\TestCase;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\TestIds;
@@ -44,7 +44,7 @@ final class PlanReviewStateTest extends TestCase
             new ActorIdentity(ActorType::User, TestIds::of(7)),
         ]));
 
-        $this->assertSame([ReviewingPlanStateReference::TYPE_KEY], $this->frameTypes());
+        $this->assertSame([ReviewPlanStateReference::TYPE_KEY], $this->frameTypes());
         $this->assertSame($plan->id, $this->frames()[0]->reference->subject?->id);
     }
 

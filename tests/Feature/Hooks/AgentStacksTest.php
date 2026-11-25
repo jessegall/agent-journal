@@ -41,7 +41,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use Tests\Fixtures\Hooks\Counting\CountingState;
+use Tests\Fixtures\Hooks\Counting\CountState;
 use Tests\Fixtures\Hooks\DomainWrite;
 use Tests\Fixtures\Hooks\InMemoryTasks;
 use Tests\Fixtures\Hooks\InMemoryTaskState;
@@ -90,7 +90,7 @@ final class AgentStacksTest extends TestCase
         Event::listen(
             StateTypesRequested::class,
             fn (StateTypesRequested $event) => $event->registry->register(
-                RegisteredStateType::named('test.counting', CountingState::class),
+                RegisteredStateType::named('test.counting', CountState::class),
             ),
         );
     }
@@ -299,7 +299,7 @@ final class AgentStacksTest extends TestCase
         $this->transaction()->run(
             fn () => $this->stacks()->push(
                 $this->target,
-                new StateReference('plans.working', new SubjectReference(TestIds::of(999), 1)),
+                new StateReference('plans.work', new SubjectReference(TestIds::of(999), 1)),
             ),
         );
 
@@ -414,10 +414,10 @@ final class AgentStacksTest extends TestCase
         return $this->app->make(StackRestorer::class)->restore($row->frames, $row->target());
     }
 
-    private function countingStateOf(AgentStack $stack): CountingState
+    private function countingStateOf(AgentStack $stack): CountState
     {
         $state = $stack->top()->state;
-        $this->assertInstanceOf(CountingState::class, $state);
+        $this->assertInstanceOf(CountState::class, $state);
 
         return $state;
     }

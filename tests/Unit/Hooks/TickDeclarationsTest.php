@@ -17,8 +17,8 @@ use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\Ticks\ScriptedOccurrenceGuard;
-use Tests\Fixtures\Hooks\Ticks\ScriptedTickingState;
-use Tests\Fixtures\Hooks\Ticks\TickingState;
+use Tests\Fixtures\Hooks\Ticks\ScriptedTickState;
+use Tests\Fixtures\Hooks\Ticks\TickState;
 use Tests\Fixtures\Hooks\Ticks\UnreadState;
 use Tests\Support\TestActors;
 
@@ -31,8 +31,8 @@ final class TickDeclarationsTest extends TestCase
     public function test_only_states_marked_as_ticking_tick(): void
     {
         $registry = new StateTypeRegistry();
-        $registry->register(RegisteredStateType::named('test.ticking', TickingState::class));
-        $registry->register(RegisteredStateType::named('test.scripted', ScriptedTickingState::class));
+        $registry->register(RegisteredStateType::named('test.ticking', TickState::class));
+        $registry->register(RegisteredStateType::named('test.scripted', ScriptedTickState::class));
         $registry->register(RegisteredStateType::named('test.plain', UnreadState::class));
 
         $this->assertSame(['test.ticking', 'test.scripted'], $registry->tickingTypeKeys());

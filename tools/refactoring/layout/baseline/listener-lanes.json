@@ -1,7 +1,7 @@
 [
     "@listener-lanes => required-and-public-1",
-    "@state-events => App\\Events\\HelperReportedOnRecord|Domain\\Plans\\Support\\States\\ReviewingPlanState|Domain\\Plans\\Support\\States\\ReviewingPlanState|onHelperReportedOnRecord|Plans",
-    "@state-events => App\\Events\\HelperSentOnRecord|Domain\\Plans\\Support\\States\\ReviewingPlanState|Domain\\Plans\\Support\\States\\ReviewingPlanState|onHelperSentOnRecord|Plans",
+    "@state-events => App\\Events\\HelperReportedOnRecord|Domain\\Plans\\Support\\States\\ReviewPlanState|Domain\\Plans\\Support\\States\\ReviewPlanState|onHelperReportedOnRecord|Plans",
+    "@state-events => App\\Events\\HelperSentOnRecord|Domain\\Plans\\Support\\States\\ReviewPlanState|Domain\\Plans\\Support\\States\\ReviewPlanState|onHelperSentOnRecord|Plans",
     "App\\Events\\AccountCleaned => App\\Listeners\\ProjectAccountsChanged@handle",
     "App\\Events\\AccountCleanupRetried => App\\Listeners\\ProjectAccountsChanged@handle",
     "App\\Events\\AccountHeldForMaintenance => App\\Listeners\\ProjectAccountsChanged@handle",

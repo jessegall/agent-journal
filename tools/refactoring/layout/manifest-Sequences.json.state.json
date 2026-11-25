@@ -1,9 +1,9 @@
 {
     "moved": {
         "domain/Sequences/src/Skills/SequencesSkill.php": "eaf3e9f1aa51b01c9d2cbbbf671eb27ac80f5a06",
-        "domain/Sequences/src/States/FollowingSequenceState.php": "4bad855b6416e95fdbbe722199946549ef89ed19",
+        "domain/Sequences/src/States/FollowSequenceState.php": "4bad855b6416e95fdbbe722199946549ef89ed19",
         "domain/Sequences/src/States/Support/FollowingSequenceStateFactory.php": "3363ded39239a12c8881aef286c9e2edcb725811",
-        "domain/Sequences/src/States/Support/FollowingSequenceStateReference.php": "dae374b37ad8a1dadc0cff901e43fc59a5a94a41"
+        "domain/Sequences/src/States/Support/FollowSequenceStateReference.php": "dae374b37ad8a1dadc0cff901e43fc59a5a94a41"
     },
     "edits": {
         "domain/Sequences/src/Listeners/PushSequenceState.php": {
@@ -16,7 +16,7 @@
             "result": "344669c400b8a55eaee3e0ae7fafd9d4ce1a61a6",
             "move": "batch"
         },
-        "domain/Sequences/tests/Unit/States/FollowingSequenceTest.php": {
+        "domain/Sequences/tests/Unit/States/FollowSequenceTest.php": {
             "prior": "7f1694f6c1d5a09fd5a37d140e28ad53bfdb8dd5",
             "result": "e2d3acf77597fc6142f186c4d029fc3e44785171",
             "move": "batch"
