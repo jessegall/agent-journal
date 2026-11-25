@@ -14,7 +14,6 @@ use Domain\Documents\Exceptions\ReportMissing;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Tests\TestCase;
-use Tests\Support\ActsAsFirstUser;
 use Tests\Support\CommitsHookRows;
 
 /**
@@ -22,7 +21,6 @@ use Tests\Support\CommitsHookRows;
  */
 final class CreateReportTest extends TestCase
 {
-    use ActsAsFirstUser;
     use CommitsHookRows;
 
     private const string FIRST_REPORT = 'report 1';
@@ -38,6 +36,13 @@ final class CreateReportTest extends TestCase
         'documents',
         'number_groups',
     ];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
 
     public function test_a_report_is_filed_and_a_document_number_never_selects_it(): void
     {

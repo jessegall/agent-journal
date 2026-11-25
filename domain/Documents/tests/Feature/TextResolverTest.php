@@ -17,7 +17,6 @@ use App\Values\PageSize;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Documents\Tests\TestCase;
-use Tests\Support\ActsAsFirstUser;
 use Tests\Support\CommitsHookRows;
 
 /**
@@ -26,7 +25,6 @@ use Tests\Support\CommitsHookRows;
  */
 final class TextResolverTest extends TestCase
 {
-    use ActsAsFirstUser;
     use CommitsHookRows;
 
     /**
@@ -41,6 +39,13 @@ final class TextResolverTest extends TestCase
         'documents',
         'number_groups',
     ];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
 
     public function test_the_current_version_names_its_id_label_and_line_count(): void
     {

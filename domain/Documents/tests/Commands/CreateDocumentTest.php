@@ -15,7 +15,6 @@ use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Tests\TestCase;
-use Tests\Support\ActsAsFirstUser;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 
@@ -26,7 +25,6 @@ use Tests\Support\TestIds;
  */
 final class CreateDocumentTest extends TestCase
 {
-    use ActsAsFirstUser;
     use CommitsHookRows;
 
     private const string GOAL_TEXT = <<<'TEXT'
@@ -55,6 +53,13 @@ final class CreateDocumentTest extends TestCase
         'documents',
         'number_groups',
     ];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
 
     public function test_documents_are_numbered_and_each_starts_at_revision_one(): void
     {
