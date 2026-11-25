@@ -20,16 +20,20 @@ final readonly class AgentNotices implements AgentNoticesContract
 
     public function __construct(private JournalCommands $journal) {}
 
-    public function notify(string $agentId, string $text, string $key): void
+    public function notify(string $agentId, string $text, string $key): bool
     {
         $session = AgentSession::findLiveOf($agentId);
 
-        if ($session !== null) {
-            $this->journal->runAsJournal(
-                CommandEntry::Application,
-                self::TRUSTED_ENTRY,
-                DeliverAgentCommand::text($agentId, $session->id, $key, $text),
-            );
+        if ($session === null) {
+            return false;
         }
+
+        $this->journal->runAsJournal(
+            CommandEntry::Application,
+            self::TRUSTED_ENTRY,
+            DeliverAgentCommand::text($agentId, $session->id, $key, $text),
+        );
+
+        return true;
     }
 }

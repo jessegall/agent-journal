@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Support\Seeding;
 
+use App\Contracts\Bus\JournalCommands;
+use App\Enums\Accounts\CommandEntry;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Inboxes\Inbox;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
+use App\Support\Command;
 use Illuminate\Contracts\Foundation\Application;
 use Tests\Fixtures\Agents\TestSelections;
+use Tests\Support\OpensDriverRuntimes;
+use Tests\Support\OpensPairChats;
 use Tests\Support\RunsKeyedCommands;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestProjects;
@@ -24,11 +29,16 @@ use Tests\Support\WritesInboxMessages;
  */
 final class JournalSeed
 {
+    use OpensDriverRuntimes;
+    use OpensPairChats;
     use RunsKeyedCommands;
     use StartsAgentRequests;
-    use WritesInboxMessages {
-        inboxOf as private personalInbox;
-    }
+    use WritesInboxMessages;
+
+    /**
+     * @var array<string, Inbox>
+     */
+    private array $chats = [];
 
     /**
      * @var array<string, User>
@@ -71,7 +81,8 @@ final class JournalSeed
     }
 
     /**
-     * An agent of the local project on the profile, with one session and a personal inbox.
+     * An agent of the local project on the profile, running one session with its driver's runtime, and a personal
+     * inbox.
      */
     public function agent(string $name, string $profile = 'main-agent'): self
     {
@@ -79,9 +90,20 @@ final class JournalSeed
         $session = new AgentSession()->forceFill(TestSelections::sessionColumns());
         $session->agent_id = $agent->id;
         $session->save();
+        $this->openDriverRuntime($session);
         $this->agents[$name] = $agent;
         $this->sessions[$name] = $session;
-        $this->personalInbox(ActorIdentity::of($agent));
+        $this->inboxOf(ActorIdentity::of($agent));
+
+        return $this;
+    }
+
+    /**
+     * The pair chat of the two users or agents of these names, both attached to it.
+     */
+    public function chat(string $first, string $second): self
+    {
+        $this->chats[self::chatKey($first, $second)] = $this->pairChat($this->actorCalled($first), $this->actorCalled($second));
 
         return $this;
     }
@@ -112,6 +134,14 @@ final class JournalSeed
         return $this->runOnBus($command, $requestKey);
     }
 
+    /**
+     * Runs the command as the journal itself does, from the entry and under the trusted entry its listener names.
+     */
+    public function runAsJournal(CommandEntry $entry, string $trustedEntry, Command $command): mixed
+    {
+        return $this->app->make(JournalCommands::class)->runAsJournal($entry, $trustedEntry, $command);
+    }
+
     public function ownerUser(): User
     {
         return $this->owner ?? throw SeedMissing::owner();
@@ -135,16 +165,37 @@ final class JournalSeed
     /**
      * The personal inbox of the user or agent of this name.
      */
-    public function inboxOf(string $name): Inbox
+    public function inboxCalled(string $name): Inbox
     {
-        return $this->personalInbox(ActorIdentity::of($this->agents[$name] ?? $this->userCalled($name)));
+        return $this->inboxOf($this->actorCalled($name));
+    }
+
+    public function chatOf(string $first, string $second): Inbox
+    {
+        return $this->chats[self::chatKey($first, $second)] ?? throw SeedMissing::named('chat', "{$first} and {$second}");
+    }
+
+    /**
+     * The user or agent of this name as the journal names an actor.
+     */
+    public function actorCalled(string $name): ActorIdentity
+    {
+        return ActorIdentity::of($this->agents[$name] ?? $this->userCalled($name));
+    }
+
+    private static function chatKey(string $first, string $second): string
+    {
+        $names = [$first, $second];
+        sort($names);
+
+        return implode('|', $names);
     }
 
     private function makeUser(string $name): User
     {
         $user = User::factory()->create(['name' => $name]);
         $this->users[$name] = $user;
-        $this->personalInbox(ActorIdentity::of($user));
+        $this->inboxOf(ActorIdentity::of($user));
 
         return $user;
     }

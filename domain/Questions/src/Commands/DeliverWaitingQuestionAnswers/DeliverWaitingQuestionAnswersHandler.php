@@ -23,7 +23,7 @@ final readonly class DeliverWaitingQuestionAnswersHandler extends QuestionComman
             ->get();
 
         foreach ($waiting as $notice) {
-            $this->notices->deliver($notice, $command->sessionId);
+            $this->notices->deliver($notice);
         }
 
         return $waiting->count();

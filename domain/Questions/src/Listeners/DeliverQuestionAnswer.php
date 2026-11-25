@@ -4,37 +4,33 @@ declare(strict_types=1);
 
 namespace Domain\Questions\Listeners;
 
-use App\Attributes\Listeners\InCommandTransaction;
+use App\Contracts\Bus\JournalCommands;
 use App\Contracts\Events\Listener;
-use App\Models\Agents\AgentSession;
+use App\Enums\Accounts\CommandEntry;
+use Domain\Questions\Commands\DeliverWaitingQuestionAnswers\DeliverWaitingQuestionAnswersCommand;
 use Domain\Questions\Events\QuestionAnswered;
 use Domain\Questions\Models\Question;
-use Domain\Questions\Models\QuestionAnswerNotice;
-use Domain\Questions\Support\QuestionAnswerNotices;
 
 /**
- * An answer to an agent's question writes the agent's notice in the answer's transaction, and hands it to the agent's
- * running session at once; an agent with none running gets it at its next session start.
+ * Once an answer to an agent's question is committed, its notice goes to the agent's running session at once; an
+ * agent with none running gets it at its next session start.
  */
-#[InCommandTransaction]
 final readonly class DeliverQuestionAnswer implements Listener
 {
-    public function __construct(private QuestionAnswerNotices $notices) {}
+    private const string TRUSTED_ENTRY = 'answered question';
+
+    public function __construct(private JournalCommands $journal) {}
 
     public function handle(QuestionAnswered $event): void
     {
-        $question = Question::query()->findOrFail($event->questionId);
-        $sender = $question->sender;
+        $sender = Question::query()->findOrFail($event->questionId)->sender;
 
-        if (! $sender->isAgent()) {
-            return;
-        }
-
-        $notice = QuestionAnswerNotice::create($question, $sender);
-        $session = AgentSession::findLiveOf($sender->id);
-
-        if ($session !== null) {
-            $this->notices->deliver($notice, $session->id);
+        if ($sender->isAgent()) {
+            $this->journal->runAsJournal(
+                CommandEntry::EngineMaintenance,
+                self::TRUSTED_ENTRY,
+                new DeliverWaitingQuestionAnswersCommand($sender->id),
+            );
         }
     }
 }

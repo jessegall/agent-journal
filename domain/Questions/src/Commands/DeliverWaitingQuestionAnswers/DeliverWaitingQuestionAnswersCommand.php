@@ -9,8 +9,8 @@ use App\Enums\Accounts\CommandEntry;
 use App\Support\Command;
 
 /**
- * Delivers to a session that opened the notices of answers that came while its agent ran none, oldest first, a
- * bounded page at a time; returns how many it delivered.
+ * Delivers to the agent's running session the notices of answers it has not had yet, oldest first, a bounded page at
+ * a time; returns how many it took up.
  *
  * @extends Command<int>
  */
@@ -19,8 +19,5 @@ final readonly class DeliverWaitingQuestionAnswersCommand extends Command
 {
     public const int BATCH = 50;
 
-    public function __construct(
-        public string $agentId,
-        public string $sessionId,
-    ) {}
+    public function __construct(public string $agentId) {}
 }

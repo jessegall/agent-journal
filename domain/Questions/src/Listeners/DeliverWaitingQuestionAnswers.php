@@ -25,7 +25,7 @@ final readonly class DeliverWaitingQuestionAnswers implements Listener
             $delivered = $this->journal->runAsJournal(
                 CommandEntry::EngineMaintenance,
                 self::TRUSTED_ENTRY,
-                new DeliverWaitingQuestionAnswersCommand($event->agentId, $event->sessionId),
+                new DeliverWaitingQuestionAnswersCommand($event->agentId),
             );
         } while ($delivered === DeliverWaitingQuestionAnswersCommand::BATCH);
     }

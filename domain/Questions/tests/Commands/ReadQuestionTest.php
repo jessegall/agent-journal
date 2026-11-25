@@ -1,0 +1,60 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Questions\Tests\Commands;
+
+use Domain\Questions\Commands\ReadQuestion\ReadQuestionCommand;
+use Domain\Questions\Enums\QuestionType;
+use Domain\Questions\Exceptions\QuestionRefused;
+use Domain\Questions\Models\Question;
+use Domain\Questions\Tests\TestCase;
+use Tests\Support\CommitsHookRows;
+use Tests\Support\Seeding\SeedsJournal;
+
+/**
+ * The asker and the target of a question read it; anyone else is refused.
+ */
+final class ReadQuestionTest extends TestCase
+{
+    use CommitsHookRows;
+    use SeedsJournal;
+
+    private const array TABLES = ['questions'];
+
+    private Question $question;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal()->owner()->agent('Planner')->agent('Stranger')->chat('Owner', 'Planner');
+        $this->question = Question::create(
+            $this->journal()->chatOf('Owner', 'Planner')->id,
+            $this->journal()->actorCalled('Planner'),
+            $this->journal()->actorCalled('Owner'),
+            'Which database?',
+            QuestionType::Open,
+            [],
+        );
+    }
+
+    public function test_the_asker_and_the_target_read_the_question(): void
+    {
+        $this->assertSame('Which database?', $this->journal()->run(new ReadQuestionCommand($this->question->id))->text);
+
+        $this->journal()->actAs('Planner');
+        $this->assertSame('Which database?', $this->journal()->run(new ReadQuestionCommand($this->question->id))->text);
+    }
+
+    public function test_anyone_else_is_refused(): void
+    {
+        $this->journal()->actAs('Stranger');
+
+        $this->assertThrows(
+            fn () => $this->journal()->run(new ReadQuestionCommand($this->question->id)),
+            QuestionRefused::class,
+            QuestionRefused::notInvolved($this->question->id)->getMessage(),
+        );
+    }
+}

@@ -4,34 +4,30 @@ declare(strict_types=1);
 
 namespace Domain\Questions\Support;
 
-use App\Commands\Agents\DeliverAgent\DeliverAgentCommand;
 use App\Contracts\Actors\AgentTexts;
-use App\Contracts\Bus\CommandBus;
+use App\Contracts\Agents\AgentNotices;
 use App\Contracts\Time\ServerClock;
 use App\Values\AgentText;
 use Domain\Questions\Models\QuestionAnswerNotice;
 
 /**
- * Hands a notice of an answer to a running session of its agent, in the transaction that has the session, and marks
- * it delivered with the driver request; a retry is sent under the same key.
+ * Hands a notice of an answer to its agent's running session as the journal hands any notice to an agent, and marks it
+ * delivered once a session took it; a retry is sent under the same key.
  */
 final readonly class QuestionAnswerNotices
 {
     public function __construct(
-        private CommandBus $commands,
+        private AgentNotices $agents,
         private AgentTexts $texts,
         private ServerClock $clock,
     ) {}
 
-    public function deliver(QuestionAnswerNotice $notice, string $sessionId): void
+    public function deliver(QuestionAnswerNotice $notice): void
     {
-        $this->commands->run(DeliverAgentCommand::text(
-            $notice->recipient_id,
-            $sessionId,
-            $notice->delivery_key,
-            $this->texts->render(AgentText::of('core.questions.answered', ['question' => $notice->question_id])),
-        ));
+        $text = $this->texts->render(AgentText::of('core.questions.answered', ['question' => $notice->question_id]));
 
-        $notice->markDelivered($this->clock->now());
+        if ($this->agents->notify($notice->recipient_id, $text, $notice->delivery_key)) {
+            $notice->markDelivered($this->clock->now());
+        }
     }
 }

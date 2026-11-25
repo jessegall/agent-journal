@@ -11,7 +11,8 @@ namespace App\Contracts\Agents;
 interface AgentNotices
 {
     /**
-     * Delivers the text to the agent's running session under the key, which tells one delivery from another.
+     * Delivers the text to the agent's running session under the key, which tells one delivery from another; false
+     * when the agent runs no session to take it.
      */
-    public function notify(string $agentId, string $text, string $key): void;
+    public function notify(string $agentId, string $text, string $key): bool;
 }
