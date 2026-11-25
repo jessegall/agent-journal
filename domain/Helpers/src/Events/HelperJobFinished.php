@@ -9,7 +9,7 @@ use Domain\Helpers\Contracts\HelperJobEvent;
 /**
  * A helper job ended with its report.
  */
-final readonly class HelperJobReported extends HelperEvent implements HelperJobEvent
+final readonly class HelperJobFinished extends HelperEvent implements HelperJobEvent
 {
     public function __construct(
         public string $jobId,

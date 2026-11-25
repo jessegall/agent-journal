@@ -22,15 +22,15 @@ use Carbon\CarbonImmutable;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Events\HelperJobAttached;
 use Domain\Helpers\Events\HelperJobCancelled;
+use Domain\Helpers\Events\HelperJobFinished;
 use Domain\Helpers\Events\HelperJobHeld;
 use Domain\Helpers\Events\HelperJobLeftUnfinished;
 use Domain\Helpers\Events\HelperJobReopenedForAttempt;
 use Domain\Helpers\Events\HelperJobReopenedForRepair;
-use Domain\Helpers\Events\HelperJobReported;
 use Domain\Helpers\Events\HelperJobSteered;
-use Domain\Helpers\Exceptions\HelperJobFinished;
+use Domain\Helpers\Exceptions\HelperJobEnded;
 use Domain\Helpers\Values\HelperReceipt;
-use Domain\Helpers\Values\JobLaunch;
+use Domain\Helpers\Values\LaunchDetails;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -61,7 +61,7 @@ use Illuminate\Support\Carbon;
  * @property string $conversation_reason
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
- * @property mixed $launch attribute
+ * @property mixed $launch_details attribute
  */
 #[Table('helper_jobs')]
 final class HelperJob extends Model implements Assignable, EventSource, ReadableModel
@@ -100,20 +100,20 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
         ActorIdentity $parent,
         string $brief,
         array $sourceSubjects,
-        JobLaunch $launch,
+        LaunchDetails $launchDetails,
     ): self {
         $job = new self();
         $job->helper_identity_id = $helper->id;
         $job->helper_purpose_id = $purpose->id;
         $job->brief = $brief;
         $job->source_subjects = $sourceSubjects;
-        $job->request_id = $launch->requestId;
-        $job->payload_digest = $launch->payloadDigest;
-        $job->profile_revision = $launch->profileRevision;
-        $job->identity_new = $launch->isNewIdentity;
-        $job->independent = $launch->isIndependent;
-        $job->conversation_mode = $launch->conversationMode;
-        $job->conversation_reason = $launch->conversationReason;
+        $job->request_id = $launchDetails->requestId;
+        $job->payload_digest = $launchDetails->payloadDigest;
+        $job->profile_revision = $launchDetails->profileRevision;
+        $job->identity_new = $launchDetails->isNewIdentity;
+        $job->independent = $launchDetails->isIndependent;
+        $job->conversation_mode = $launchDetails->conversationMode;
+        $job->conversation_reason = $launchDetails->conversationReason;
         $job->state = JobState::Accepted;
         $job->steering = [];
         $job->belongTo($parent);
@@ -180,7 +180,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
         $this->stop_evidence_reference = $reference;
         $this->finished_at = CarbonImmutable::now();
         $this->assertSaved($this->save());
-        $this->raise(new HelperJobReported($this->id, $reference));
+        $this->raise(new HelperJobFinished($this->id, $reference));
     }
 
     public function cancel(): void
@@ -220,7 +220,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
             $isNewJob,
             $profileType,
             $this->state,
-            $this->launch,
+            $this->launch_details,
             $start,
         );
     }
@@ -261,11 +261,11 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
     // ----------[ Accessors ]----------
 
     /**
-     * @return Attribute<JobLaunch, never>
+     * @return Attribute<LaunchDetails, never>
      */
-    protected function launch(): Attribute
+    protected function launchDetails(): Attribute
     {
-        return Accessor::get(fn () => new JobLaunch(
+        return Accessor::get(fn () => new LaunchDetails(
             $this->request_id,
             $this->payload_digest,
             $this->profile_revision,
@@ -281,12 +281,12 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
     /**
      * Refuses a move of a job that already finished.
      *
-     * @throws HelperJobFinished
+     * @throws HelperJobEnded
      */
     private function assertNotFinished(): void
     {
         if ($this->state->isFinal()) {
-            throw HelperJobFinished::forJob($this->id, $this->state->value);
+            throw HelperJobEnded::forJob($this->id, $this->state->value);
         }
     }
 

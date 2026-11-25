@@ -90,7 +90,7 @@ final class SignInAttemptTest extends TestCase
         $this->complete($started->attemptId, 0, 'work@example.test');
 
         $account = Account::query()->sole();
-        $this->assertSame([AccountState::SignedIn, 'work@example.test'], [$account->state, $account->label]);
+        $this->assertSame([AccountState::Authenticated, 'work@example.test'], [$account->state, $account->label]);
         $this->assertSame($account->id, ActiveAccount::query()->sole()->account_id);
         $this->assertSame(SignInState::Complete, SignInAttempt::query()->sole()->state);
     }

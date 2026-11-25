@@ -13,14 +13,14 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 enum AccountState: string
 {
-    case SignedIn = 'signed_in';
-    case NeedsSignIn = 'needs_sign_in';
+    case Authenticated = 'authenticated';
+    case Unauthenticated = 'unauthenticated';
     case Removing = 'removing';
     case Removed = 'removed';
 
     public function canStart(): bool
     {
-        return $this === self::SignedIn;
+        return $this === self::Authenticated;
     }
 
     /**
@@ -29,8 +29,8 @@ enum AccountState: string
     public function startUnavailableReason(): StartUnavailableReason
     {
         return match ($this) {
-            self::SignedIn, self::Removing => StartUnavailableReason::Maintenance,
-            self::NeedsSignIn => StartUnavailableReason::NeedsSignIn,
+            self::Authenticated, self::Removing => StartUnavailableReason::Maintenance,
+            self::Unauthenticated => StartUnavailableReason::NeedsSignIn,
             self::Removed => StartUnavailableReason::NoAccount,
         };
     }

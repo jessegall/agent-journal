@@ -49,7 +49,7 @@ use Domain\Helpers\Support\Readers\HelperCandidate;
 use Domain\Helpers\Support\Readers\HelperCandidates;
 use Domain\Helpers\Support\Readers\HelperRecords;
 use Domain\Helpers\Values\HelperReceipt;
-use Domain\Helpers\Values\JobLaunch;
+use Domain\Helpers\Values\LaunchDetails;
 
 /**
  * Dispatches a parent's work to a helper inside the command's transaction, in one order: the parent may delegate,
@@ -367,7 +367,7 @@ final readonly class HelperDispatch
             $request->parent,
             $request->work->brief,
             $request->work->sourceSubjects,
-            new JobLaunch(
+            new LaunchDetails(
                 $request->requestId,
                 $request->digest(),
                 $profile->revision,

@@ -11,8 +11,8 @@ export const accountStateLook: Record<
     AccountState,
     { label: string; tone: 'good' | 'warn' | 'danger' | 'busy' | 'quiet' }
 > = {
-    signed_in: { label: 'Signed in', tone: 'good' },
-    needs_sign_in: { label: 'Needs sign-in', tone: 'warn' },
+    authenticated: { label: 'Signed in', tone: 'good' },
+    unauthenticated: { label: 'Needs sign-in', tone: 'warn' },
     removing: { label: 'Removing', tone: 'busy' },
     removed: { label: 'Removed', tone: 'quiet' },
 };

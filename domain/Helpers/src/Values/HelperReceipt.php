@@ -21,7 +21,7 @@ final readonly class HelperReceipt
         public bool $isNewJob,
         public string $profileType,
         public JobState $state,
-        public JobLaunch $launch,
+        public LaunchDetails $launchDetails,
         public OwnerStartReceipt $start,
     ) {}
 }

@@ -79,11 +79,11 @@ final class AccountChecksTest extends TestCase
     public function test_a_certain_sign_out_needs_a_new_sign_in_and_clears_the_choice(): void
     {
         $this->check(1, AccountCheckResult::Unknown);
-        $this->assertSame(AccountState::SignedIn, $this->account->refresh()->state);
+        $this->assertSame(AccountState::Authenticated, $this->account->refresh()->state);
 
         $this->check(1, AccountCheckResult::SignedOut);
 
-        $this->assertSame(AccountState::NeedsSignIn, $this->account->refresh()->state);
+        $this->assertSame(AccountState::Unauthenticated, $this->account->refresh()->state);
         $this->assertNull(ActiveAccount::query()->withoutGlobalScopes()->sole()->account_id);
         $notice = AccountNotice::query()->withoutGlobalScopes()->sole();
         $this->assertSame(AccountNoticeReason::NeedsSignIn, $notice->reason);
@@ -93,7 +93,7 @@ final class AccountChecksTest extends TestCase
     {
         $this->check(0, AccountCheckResult::SignedOut);
 
-        $this->assertSame(AccountState::SignedIn, $this->account->refresh()->state);
+        $this->assertSame(AccountState::Authenticated, $this->account->refresh()->state);
     }
 
     public function test_the_runner_reports_the_programs_own_certain_answer(): void

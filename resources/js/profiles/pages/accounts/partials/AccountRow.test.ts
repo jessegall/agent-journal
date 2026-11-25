@@ -90,7 +90,7 @@ function account(overrides: Partial<AccountRowData> = {}): AccountRowData {
         driver: 'codex',
         label: 'jesse@example.com',
         signIn: subscription,
-        state: 'signed_in',
+        state: 'authenticated',
         identity: null,
         workspace: null,
         isActive: false,
@@ -441,7 +441,7 @@ describe('the settings dialog', () => {
     });
 
     it('offers the way back first for an account that must sign in again', async () => {
-        const shown = row({ account: account({ state: 'needs_sign_in' }) });
+        const shown = row({ account: account({ state: 'unauthenticated' }) });
         await openSettings(shown);
         await button(shown, 'Sign in again')!.trigger('click');
 

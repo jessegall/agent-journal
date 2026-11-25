@@ -87,7 +87,7 @@ final class ReleaseSignInWriterTest extends TestCase
 
     public function test_an_account_needing_a_sign_in_is_let_go_out_of_maintenance(): void
     {
-        $this->account->forceFill(['state' => AccountState::NeedsSignIn])->save();
+        $this->account->forceFill(['state' => AccountState::Unauthenticated])->save();
         $attemptId = $this->again('tab-1');
 
         $this->asOwner(new CancelSignInCommand($attemptId));

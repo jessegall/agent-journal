@@ -44,7 +44,7 @@ use Domain\Helpers\Resolvers\HelperJobAssignments;
 use Domain\Helpers\Support\States\HelperJobState;
 use Domain\Helpers\Values\HelperReceipt;
 use Domain\Helpers\Values\HelperWork;
-use Domain\Helpers\Values\JobLaunch;
+use Domain\Helpers\Values\LaunchDetails;
 use Domain\Helpers\Values\SteerReceipt;
 
 final class HelpersDomain extends Domain implements
@@ -100,8 +100,8 @@ final class HelpersDomain extends Domain implements
             ->values(
                 HelperReceipt::class,
                 HelperWork::class,
-                JobLaunch::class,
                 JobState::class,
+                LaunchDetails::class,
                 SteerReceipt::class,
             )
             ->commands(

@@ -6,11 +6,11 @@ use Domain\Helpers\Events\HelperDesignated;
 use Domain\Helpers\Events\HelperDesignationReleased;
 use Domain\Helpers\Events\HelperJobAttached;
 use Domain\Helpers\Events\HelperJobCancelled;
+use Domain\Helpers\Events\HelperJobFinished;
 use Domain\Helpers\Events\HelperJobHeld;
 use Domain\Helpers\Events\HelperJobLeftUnfinished;
 use Domain\Helpers\Events\HelperJobReopenedForAttempt;
 use Domain\Helpers\Events\HelperJobReopenedForRepair;
-use Domain\Helpers\Events\HelperJobReported;
 use Domain\Helpers\Events\HelperJobSteered;
 use Domain\Helpers\Events\HelperNoticeDelivered;
 use Domain\Helpers\Events\ReportJobLinked;
@@ -71,12 +71,12 @@ return [
         'producers' => [],
         'sample' => fn () => new HelperJobSteered('job', 'steering'),
     ],
-    HelperJobReported::class => [
+    HelperJobFinished::class => [
         'role' => EventRole::RowFact,
         'owner' => 'HelperJob::finish',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new HelperJobReported('job', 'report'),
+        'sample' => fn () => new HelperJobFinished('job', 'report'),
     ],
     HelperJobCancelled::class => [
         'role' => EventRole::RowFact,

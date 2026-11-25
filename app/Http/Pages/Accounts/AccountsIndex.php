@@ -208,14 +208,14 @@ final readonly class AccountsIndex extends AccountsPage
     {
         $rows = [$this->nameRow($row)];
 
-        if ($row->state === AccountState::SignedIn) {
+        if ($row->state === AccountState::Authenticated) {
             $rows[] = $this->defaultRow($row);
         }
 
         $rows[] = SettingsRow::control(
             'sign-in',
             'Sign-in',
-            $row->state === AccountState::NeedsSignIn
+            $row->state === AccountState::Unauthenticated
                 ? $this->form('sign-in-again', 'accounts.sign-in-again', $row->id, 'Sign in again')
                 : LayoutPartData::badge('state', $this->stateWordOf($row), $this->stateToneOf($row)),
             $this->signInHelp($row),
@@ -277,8 +277,8 @@ final readonly class AccountsIndex extends AccountsPage
     private function signInHelp(AccountRowData $row): string
     {
         return match (true) {
-            $row->state === AccountState::SignedIn && $row->expiresAt !== null => "Signed in. It expires on {$this->dayOf($row->expiresAt)}.",
-            $row->state === AccountState::SignedIn => 'Signed in.',
+            $row->state === AccountState::Authenticated && $row->expiresAt !== null => "Signed in. It expires on {$this->dayOf($row->expiresAt)}.",
+            $row->state === AccountState::Authenticated => 'Signed in.',
             $this->hasExpired($row) => 'Expired. Sign in again so agents can use it.',
             default => 'Not signed in yet. Sign in so agents can use it.',
         };
@@ -375,7 +375,7 @@ final readonly class AccountsIndex extends AccountsPage
      */
     private function stateToneOf(AccountRowData $row): string
     {
-        if ($row->state === AccountState::NeedsSignIn) {
+        if ($row->state === AccountState::Unauthenticated) {
             return 'waiting';
         }
 
@@ -385,9 +385,9 @@ final readonly class AccountsIndex extends AccountsPage
     private function stateWordOf(AccountRowData $row): string
     {
         return match (true) {
-            $row->state === AccountState::SignedIn => 'Signed in',
-            $row->state === AccountState::NeedsSignIn && $this->hasExpired($row) => 'Expired',
-            $row->state === AccountState::NeedsSignIn => 'Not signed in',
+            $row->state === AccountState::Authenticated => 'Signed in',
+            $row->state === AccountState::Unauthenticated && $this->hasExpired($row) => 'Expired',
+            $row->state === AccountState::Unauthenticated => 'Not signed in',
             $row->state === AccountState::Removing => 'Removing',
             default => 'Removed',
         };

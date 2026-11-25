@@ -9,7 +9,7 @@ use LogicException;
 /**
  * A finished, cancelled or failed helper job takes no further change.
  */
-final class HelperJobFinished extends LogicException
+final class HelperJobEnded extends LogicException
 {
     public static function forJob(string $jobId, string $state): self
     {

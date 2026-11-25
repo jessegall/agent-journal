@@ -240,7 +240,7 @@ function resumeOrAgain(row: AccountRowData): void {
                                 ><Spinner />Finish signing in</Button
                             >
                         </template>
-                        <template v-else-if="row.state === 'needs_sign_in'">
+                        <template v-else-if="row.state === 'unauthenticated'">
                             <Button
                                 variant="bordered"
                                 size="small"

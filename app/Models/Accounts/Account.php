@@ -131,7 +131,7 @@ final class Account extends Model implements EventSource, ReadableModel
         $account = new self();
         $account->account_protocol = $driver;
         $account->name($label);
-        $account->state = AccountState::SignedIn;
+        $account->state = AccountState::Authenticated;
         $account->directory = $directory;
         $account->sign_in_generation = 1;
         $account->save();
@@ -159,7 +159,7 @@ final class Account extends Model implements EventSource, ReadableModel
             $this->check_requested_generation = null;
         }
 
-        $this->state = AccountState::SignedIn;
+        $this->state = AccountState::Authenticated;
         $this->directory = $directory;
         $this->method = $attempt->method;
         $this->fingerprint = $attempt->fingerprint;
@@ -184,7 +184,7 @@ final class Account extends Model implements EventSource, ReadableModel
             return;
         }
 
-        if ($this->state === AccountState::SignedIn) {
+        if ($this->state === AccountState::Authenticated) {
             $this->check_requested_generation = $this->sign_in_generation;
         } else {
             $this->maintenance = false;
@@ -213,7 +213,7 @@ final class Account extends Model implements EventSource, ReadableModel
      */
     public function requestCheck(int $generation): bool
     {
-        if (! $this->isGeneration($generation) || $this->state !== AccountState::SignedIn) {
+        if (! $this->isGeneration($generation) || $this->state !== AccountState::Authenticated) {
             return false;
         }
 
@@ -251,10 +251,10 @@ final class Account extends Model implements EventSource, ReadableModel
         $this->check_requested_generation = null;
         $this->check_inconclusive_at = null;
         $this->checked_at = $now;
-        $isSignedOut = $check === AccountCheckResult::SignedOut && $this->state === AccountState::SignedIn;
+        $isSignedOut = $check === AccountCheckResult::SignedOut && $this->state === AccountState::Authenticated;
 
         if ($isSignedOut) {
-            $this->state = AccountState::NeedsSignIn;
+            $this->state = AccountState::Unauthenticated;
         }
 
         $this->assertSaved($this->save());
@@ -454,7 +454,7 @@ final class Account extends Model implements EventSource, ReadableModel
     {
         return $this->maintenance
             && $this->live_writer_attempt_id === null
-            && $this->state === AccountState::SignedIn
+            && $this->state === AccountState::Authenticated
             && $this->check_requested_generation !== null;
     }
 

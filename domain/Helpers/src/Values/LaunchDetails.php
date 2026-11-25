@@ -11,7 +11,7 @@ use App\Enums\ConversationModeType;
  * request and the fingerprint of what it asked, the profile revision, whether the identity was new, whether the work
  * had to be independent, and the conversation it asked for with the reason.
  */
-final readonly class JobLaunch
+final readonly class LaunchDetails
 {
     public function __construct(
         public string $requestId,

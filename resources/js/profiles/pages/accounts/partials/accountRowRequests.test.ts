@@ -28,7 +28,7 @@ const account = {
         description: 'Sign in on the Claude site.',
         billingLabel: 'Subscription',
     },
-    state: 'signed_in',
+    state: 'authenticated',
     identity: null,
     workspace: null,
     isActive: false,

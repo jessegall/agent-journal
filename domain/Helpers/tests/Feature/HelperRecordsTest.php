@@ -9,7 +9,7 @@ use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Exceptions\HelperIdentityFixed;
-use Domain\Helpers\Exceptions\HelperJobFinished;
+use Domain\Helpers\Exceptions\HelperJobEnded;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Models\HelperPurpose;
@@ -87,7 +87,7 @@ final class HelperRecordsTest extends TestCase
 
         $this->assertSame(JobState::Finished, $job->fresh()?->state);
         $this->assertSame(['Look at the tests too'], $job->fresh()?->steering);
-        $this->expectException(HelperJobFinished::class);
+        $this->expectException(HelperJobEnded::class);
 
         $job->cancel();
     }

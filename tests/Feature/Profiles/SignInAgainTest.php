@@ -257,7 +257,7 @@ final class SignInAgainTest extends TestCase
 
         $this->account->refresh();
         $this->assertFalse($this->account->maintenance);
-        $this->assertSame(AccountState::SignedIn, $this->account->state);
+        $this->assertSame(AccountState::Authenticated, $this->account->state);
         $this->assertSame($this->account->id, $this->chosen());
     }
 
@@ -290,13 +290,13 @@ final class SignInAgainTest extends TestCase
 
         $this->asHost(new CheckAccountCommand('host', $this->account->id, $generation, AccountCheckResult::SignedOut));
 
-        $this->assertSame(AccountState::NeedsSignIn, $this->account->refresh()->state);
+        $this->assertSame(AccountState::Unauthenticated, $this->account->refresh()->state);
         $this->assertNull($this->chosen());
     }
 
     public function test_a_failed_renewal_of_an_account_that_needed_sign_in_lets_it_go_at_once(): void
     {
-        $this->account->forceFill(['state' => AccountState::NeedsSignIn])->save();
+        $this->account->forceFill(['state' => AccountState::Unauthenticated])->save();
         [$label, $folder] = [$this->account->label, $this->account->directory];
 
         $this->cancel($this->again('tab-1'));
@@ -305,7 +305,7 @@ final class SignInAgainTest extends TestCase
         $this->assertFalse($this->account->maintenance);
         $this->assertFalse($this->account->isHeldForCheck());
         $this->assertNull($this->account->live_writer_attempt_id);
-        $this->assertSame([AccountState::NeedsSignIn, $label, $folder], [
+        $this->assertSame([AccountState::Unauthenticated, $label, $folder], [
             $this->account->state,
             $this->account->label,
             $this->account->directory,
@@ -328,7 +328,7 @@ final class SignInAgainTest extends TestCase
         $this->assertSame(SignInState::Cancelled, SignInAttempt::query()->whereKey($attemptId)->sole()->state);
         $this->account->refresh();
         $this->assertSame($folder, $this->account->directory);
-        $this->assertNotSame(AccountState::SignedIn, $this->account->state);
+        $this->assertNotSame(AccountState::Authenticated, $this->account->state);
         $this->assertNull($this->chosen());
     }
 

@@ -144,7 +144,7 @@ function accountRow(id: string, label: string): AccountRowData {
         driver: 'claude-code',
         label,
         signIn: claudeMethods[1],
-        state: 'signed_in',
+        state: 'authenticated',
         identity: null,
         workspace: null,
         isActive: false,

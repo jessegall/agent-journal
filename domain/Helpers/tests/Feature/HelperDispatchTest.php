@@ -66,15 +66,15 @@ final class HelperDispatchTest extends TestCase
         $receipt = $this->start('request-1', 'Review plan 7', self::SHELL_LIKE_BRIEF);
         $selection = $receipt->start->selection;
 
-        $this->assertTrue($receipt->launch->isNewIdentity);
+        $this->assertTrue($receipt->launchDetails->isNewIdentity);
         $this->assertTrue($receipt->isNewJob);
         $this->assertTrue($receipt->start->isNewSession);
         $this->assertSame('gpt-6.2-sol', $selection->model);
         $this->assertSame(DefaultDrivers::CODEX, $selection->driver);
-        $this->assertSame(1, $receipt->launch->profileRevision);
+        $this->assertSame(1, $receipt->launchDetails->profileRevision);
         $this->assertSame('read-only-helper', $receipt->profileType);
         $this->assertSame(ExecutionModeType::RequiredContainer, $receipt->start->executionMode);
-        $this->assertSame(ConversationModeType::New, $receipt->launch->conversationMode);
+        $this->assertSame(ConversationModeType::New, $receipt->launchDetails->conversationMode);
         $this->assertSame(StartReceipt::ACTUAL_MODEL_NOT_REPORTED, $receipt->start->actualModel);
         $this->assertSame(JobState::Accepted, $receipt->state);
         $this->assertSame(self::SHELL_LIKE_BRIEF, HelperJob::query()->findOrFail($receipt->jobId)->brief);
@@ -89,8 +89,8 @@ final class HelperDispatchTest extends TestCase
         $sent = $this->send('request-2', $first->identityId, 'Review plan 8');
 
         $this->assertSame($first->identityId, $sent->identityId);
-        $this->assertFalse($sent->launch->isNewIdentity);
-        $this->assertSame(ConversationModeType::New, $sent->launch->conversationMode);
+        $this->assertFalse($sent->launchDetails->isNewIdentity);
+        $this->assertSame(ConversationModeType::New, $sent->launchDetails->conversationMode);
     }
 
     public function test_a_helper_starts_in_its_profile_mode_and_a_saved_mode_it_cannot_run_is_refused(): void
@@ -241,7 +241,7 @@ final class HelperDispatchTest extends TestCase
         $read = $this->app->make(HelperRecords::class)->receiptOf($receipt->jobId);
 
         $this->assertSame($receipt->start->launchReference, $read->start->launchReference);
-        $this->assertSame($receipt->launch->conversationReason, $read->launch->conversationReason);
+        $this->assertSame($receipt->launchDetails->conversationReason, $read->launchDetails->conversationReason);
         $this->assertSame('gpt-6.2-sol', $read->start->selection->model);
 
         TestStart::start()->startRequest($this->app);
