@@ -182,7 +182,7 @@ final class TreeClassifierTest extends TestCase
                 new ProgramSpellings('echo'),
                 [],
                 ArgumentGrammar::operands(OperandType::Text)->repeating(),
-                CommandClassSet::empty(),
+                CommandClassSet::none(),
             ),
         ]);
 

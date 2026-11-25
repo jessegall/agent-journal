@@ -86,7 +86,7 @@ final class PermissionRevocation extends Model implements ReadableModel
                 $permissions = $permissions->revoking(
                     CommandClassSet::of(...array_map(CommandClass::from(...), $revocation->revoked_classes)),
                     CommandPatternSet::of(...array_map(
-                        fn (RevokedPatternData $pattern) => CommandPattern::fromArray($pattern->words),
+                        fn (RevokedPatternData $pattern) => CommandPattern::ofWords($pattern->words),
                         $revocation->revoked_patterns->items(),
                     )),
                 );

@@ -31,11 +31,11 @@ final readonly class WrapperRules
                     OptionGrammar::flag('-i', '--ignore-environment'),
                     OptionGrammar::valued(OperandType::Name, '-u', '--unset'),
                 ],
-                CommandClassSet::empty(),
+                CommandClassSet::none(),
                 takesAssignments: true,
             ),
-            new WrapperRule('command', [$pFlag], CommandClassSet::empty()),
-            new WrapperRule('builtin', [], CommandClassSet::empty()),
+            new WrapperRule('command', [$pFlag], CommandClassSet::none()),
+            new WrapperRule('builtin', [], CommandClassSet::none()),
             new WrapperRule(
                 'sudo',
                 [
@@ -64,7 +64,7 @@ final readonly class WrapperRules
                 leadingOperands: 1,
             ),
             new WrapperRule('exec', [], $processControlClasses),
-            new WrapperRule('time', [$pFlag], CommandClassSet::empty()),
+            new WrapperRule('time', [$pFlag], CommandClassSet::none()),
             new WrapperRule('xargs', [
                 OptionGrammar::flag('-0', '--null'),
                 OptionGrammar::flag(
@@ -85,7 +85,7 @@ final readonly class WrapperRules
                 ),
                 OptionGrammar::valued(OperandType::Text, '-d', '--delimiter'),
                 OptionGrammar::valued(OperandType::Text, '-I'),
-            ], CommandClassSet::empty()),
+            ], CommandClassSet::none()),
         ];
 
         return array_combine(array_map(fn (WrapperRule $rule): string => $rule->family, $rules), $rules);

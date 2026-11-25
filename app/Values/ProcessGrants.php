@@ -29,7 +29,7 @@ final readonly class ProcessGrants
 
         return new self(
             $commandClasses,
-            CommandClassSet::empty(),
+            CommandClassSet::none(),
             $commandClasses,
             CommandPatternSet::of(),
             CommandPatternSet::of(),

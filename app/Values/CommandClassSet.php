@@ -28,7 +28,7 @@ final readonly class CommandClassSet
     /**
      * @return list<string>
      */
-    public function toArray(): array
+    public function values(): array
     {
         return array_map(fn (CommandClass $class): string => $class->value, $this->classes);
     }
@@ -36,17 +36,17 @@ final readonly class CommandClassSet
     /**
      * @param  list<string>  $names
      */
-    public static function fromArray(array $names): self
+    public static function ofValues(array $names): self
     {
         return self::of(...array_map(CommandClass::from(...), $names));
     }
 
-    public static function empty(): self
+    public static function none(): self
     {
         return new self([]);
     }
 
-    public function with(CommandClass $class): self
+    public function withClass(CommandClass $class): self
     {
         return self::of($class, ...$this->classes);
     }

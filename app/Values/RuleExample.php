@@ -23,7 +23,7 @@ final readonly class RuleExample implements StoredValue
 
     public static function negative(string $line): self
     {
-        return new self(ExampleType::Negative, $line, CommandClassSet::empty());
+        return new self(ExampleType::Negative, $line, CommandClassSet::none());
     }
 
     /**
@@ -34,7 +34,7 @@ final readonly class RuleExample implements StoredValue
         return [
             'type' => $this->type->value,
             'line' => $this->line,
-            'classes' => $this->classes->toArray(),
+            'classes' => $this->classes->values(),
         ];
     }
 
@@ -61,7 +61,7 @@ final readonly class RuleExample implements StoredValue
 
     private static function fromStored(StoredRuleExample $stored): self
     {
-        return new self($stored->type, $stored->line, CommandClassSet::fromArray($stored->classes));
+        return new self($stored->type, $stored->line, CommandClassSet::ofValues($stored->classes));
     }
 
     /**
@@ -70,7 +70,7 @@ final readonly class RuleExample implements StoredValue
     public function label(): string
     {
         if ($this->isPositive()) {
-            return "matches {$this->line} as ".implode(', ', $this->classes->toArray());
+            return "matches {$this->line} as ".implode(', ', $this->classes->values());
         }
 
         return "does not match {$this->line}";

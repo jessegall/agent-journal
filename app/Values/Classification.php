@@ -112,7 +112,7 @@ final readonly class Classification
     {
         return ClassificationSummaryData::from([
             'isKnown' => $this->isKnown(),
-            'classes' => $this->requiredClasses()->toArray(),
+            'classes' => $this->requiredClasses()->values(),
             'parts' => array_map(fn (PartClassification $part): PartSummaryData => $part->summary(), $this->parts),
         ]);
     }

@@ -37,7 +37,7 @@ final readonly class CommandPattern
     /**
      * @return list<string>
      */
-    public function toArray(): array
+    public function wordList(): array
     {
         return $this->words;
     }
@@ -45,7 +45,7 @@ final readonly class CommandPattern
     /**
      * @param  list<string>  $words
      */
-    public static function fromArray(array $words): self
+    public static function ofWords(array $words): self
     {
         return new self($words);
     }

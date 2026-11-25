@@ -35,22 +35,22 @@ final class StoredProcessGrants extends Data
     public static function fromProcessGrants(ProcessGrants $grants): self
     {
         return self::from([
-            'allowed' => $grants->allowed->toArray(),
-            'denied' => $grants->denied->toArray(),
-            'ceiling' => $grants->ceiling->toArray(),
-            'allowed_patterns' => $grants->allowedPatterns->toArray(),
-            'denied_patterns' => $grants->deniedPatterns->toArray(),
+            'allowed' => $grants->allowed->values(),
+            'denied' => $grants->denied->values(),
+            'ceiling' => $grants->ceiling->values(),
+            'allowed_patterns' => $grants->allowedPatterns->wordLists(),
+            'denied_patterns' => $grants->deniedPatterns->wordLists(),
         ]);
     }
 
     public function toProcessGrants(): ProcessGrants
     {
         return new ProcessGrants(
-            CommandClassSet::fromArray($this->allowed),
-            CommandClassSet::fromArray($this->denied),
-            CommandClassSet::fromArray($this->ceiling),
-            CommandPatternSet::fromArray($this->allowedPatterns),
-            CommandPatternSet::fromArray($this->deniedPatterns),
+            CommandClassSet::ofValues($this->allowed),
+            CommandClassSet::ofValues($this->denied),
+            CommandClassSet::ofValues($this->ceiling),
+            CommandPatternSet::ofWordLists($this->allowedPatterns),
+            CommandPatternSet::ofWordLists($this->deniedPatterns),
         );
     }
 }

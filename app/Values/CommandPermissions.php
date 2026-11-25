@@ -39,7 +39,7 @@ final readonly class CommandPermissions
 
     public function allowing(CommandPattern ...$patterns): self
     {
-        return clone ($this, ['allowedPatterns' => $this->allowedPatterns->with(CommandPatternSet::of(...$patterns))]);
+        return clone ($this, ['allowedPatterns' => $this->allowedPatterns->union(CommandPatternSet::of(...$patterns))]);
     }
 
     /**
@@ -49,7 +49,7 @@ final readonly class CommandPermissions
     {
         return clone ($this, [
             'denied' => $this->denied->union($classes),
-            'deniedPatterns' => $this->deniedPatterns->with($patterns),
+            'deniedPatterns' => $this->deniedPatterns->union($patterns),
             'revision' => $this->revision + 1,
         ]);
     }

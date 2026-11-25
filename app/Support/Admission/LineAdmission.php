@@ -295,7 +295,7 @@ final readonly class LineAdmission implements ShellAdmission
             ? AdmissionRefusalCode::CommandDenied
             : AdmissionRefusalCode::ClassDenied;
 
-        $classes = implode(', ', $classes->toArray());
+        $classes = implode(', ', $classes->values());
 
         $reason = AgentText::of('core.shell.not_permitted', ['classes' => $classes]);
 

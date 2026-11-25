@@ -19,7 +19,7 @@ final readonly class CommandPatternSet
         return new self(array_values($patterns));
     }
 
-    public function with(self $other): self
+    public function union(self $other): self
     {
         return new self([
             ...$this->patterns,
@@ -37,24 +37,24 @@ final readonly class CommandPatternSet
 
     public function isWithin(self $other): bool
     {
-        $others = $other->toArray();
+        $others = $other->wordLists();
 
-        return array_all($this->toArray(), fn (array $pattern) => in_array($pattern, $others, true));
+        return array_all($this->wordLists(), fn (array $pattern) => in_array($pattern, $others, true));
     }
 
     /**
      * @return list<list<string>>
      */
-    public function toArray(): array
+    public function wordLists(): array
     {
-        return array_map(fn (CommandPattern $pattern) => $pattern->toArray(), $this->patterns);
+        return array_map(fn (CommandPattern $pattern) => $pattern->wordList(), $this->patterns);
     }
 
     /**
      * @param  list<list<string>>  $stored
      */
-    public static function fromArray(array $stored): self
+    public static function ofWordLists(array $stored): self
     {
-        return new self(array_map(CommandPattern::fromArray(...), $stored));
+        return new self(array_map(CommandPattern::ofWords(...), $stored));
     }
 }

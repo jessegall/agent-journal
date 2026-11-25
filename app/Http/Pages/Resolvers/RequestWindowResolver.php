@@ -88,7 +88,7 @@ final readonly class RequestWindowResolver implements PageResolver
 
     private function proposalOf(RuleProposal $proposal, ClassificationRule|null $active): ProposalData
     {
-        $classes = $active === null ? CommandClassSet::empty() : $active->activeRevision->payload->classes;
+        $classes = $active === null ? CommandClassSet::none() : $active->activeRevision->payload->classes;
         $revisions = $proposal->revisions()->newestRevisionFirst()->limit(20)->get();
 
         return ProposalData::from([

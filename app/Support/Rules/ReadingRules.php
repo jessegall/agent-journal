@@ -111,12 +111,12 @@ final readonly class ReadingRules
                 $textOperands->repeating()->withOptions(
                     ...$this->flags('-n', '-e', '-E'),
                 ),
-                CommandClassSet::empty(),
+                CommandClassSet::none(),
             ),
             $this->reader(
                 'printf',
                 $textOperands->repeating(),
-                CommandClassSet::empty(),
+                CommandClassSet::none(),
             ),
             $this->reader('grep', $patternPathOperands->repeating()->endingOptionsAtDoubleDash()->withOptions(
                 $regexpOption,
@@ -384,30 +384,30 @@ final readonly class ReadingRules
                 ),
                 $read,
             ),
-            $this->reader('sleep', $textOperands->repeating(), CommandClassSet::empty()),
-            $this->reader('true', $textOperands->repeating(), CommandClassSet::empty()),
-            $this->reader('false', $textOperands->repeating(), CommandClassSet::empty()),
+            $this->reader('sleep', $textOperands->repeating(), CommandClassSet::none()),
+            $this->reader('true', $textOperands->repeating(), CommandClassSet::none()),
+            $this->reader('false', $textOperands->repeating(), CommandClassSet::none()),
             CommandRule::forProgram(
                 'core.colon',
                 new ProgramSpellings(':'),
                 [],
                 $textOperands->repeating(),
-                CommandClassSet::empty(),
+                CommandClassSet::none(),
             ),
             $this->reader(
                 'unset',
                 $nameOperands->repeating()->withOptions(...$this->flags('-v', '-f')),
-                CommandClassSet::empty(),
+                CommandClassSet::none(),
             ),
             $this->reader(
                 'cd',
                 $pathOperands->withOptions(...$this->flags('-P', '-L')),
-                CommandClassSet::empty(),
+                CommandClassSet::none(),
             ),
             $this->reader(
                 'export',
                 $textOperands->repeating()->withOptions(...$this->flags('-n', '-p')),
-                CommandClassSet::empty(),
+                CommandClassSet::none(),
             ),
             $this->reader(
                 'tree',
