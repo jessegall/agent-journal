@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Data\Profiles\ProfileAuthorization;
+
 /**
  * A profile as supervision routing reads it: its key, its supervisor routes and the commands its grants admit.
  */

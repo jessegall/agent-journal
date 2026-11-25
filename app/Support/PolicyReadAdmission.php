@@ -7,12 +7,12 @@ namespace App\Support;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Admission\ReadAdmission;
 use App\Contracts\Authorization\ReadEntitlements;
+use App\Data\Profiles\ProfileAuthorization;
 use App\Enums\AccessRuleType;
 use App\Enums\ReadEntitlementType;
 use App\Values\AccessDecision;
 use App\Values\AgentText;
 use App\Values\AllowedNames;
-use App\Values\ProfileAuthorization;
 use App\Values\ReadRequest;
 use App\Values\StartProfileAuthority;
 
@@ -101,15 +101,15 @@ final readonly class PolicyReadAdmission implements ReadAdmission
     {
         if (self::holds($authorization->readTargets($request->name), $request)) {
             return AccessDecision::allowed(
-                    AccessRuleType::OperationGrant,
-                    AgentText::of('core.access.profile_holds_for_it', ['name' => $request->name]),
-                );
+                AccessRuleType::OperationGrant,
+                AgentText::of('core.access.profile_holds_for_it', ['name' => $request->name]),
+            );
         }
 
         return AccessDecision::refused(
-                AccessRuleType::NotGranted,
-                AgentText::of('core.access.profile_does_not_grant', ['name' => $request->name]),
-            );
+            AccessRuleType::NotGranted,
+            AgentText::of('core.access.profile_does_not_grant', ['name' => $request->name]),
+        );
     }
 
     private static function holds(AllowedNames $targets, ReadRequest $request): bool

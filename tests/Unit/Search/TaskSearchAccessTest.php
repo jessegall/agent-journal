@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Tests\Unit\Search;
 
 use App\Contracts\Authorization\ReadGrant;
+use App\Data\Profiles\ProfileAuthorization;
+use App\Data\Profiles\ScopedRead;
 use App\Enums\AuthorizationType;
 use App\Enums\SearchSurface;
 use App\Exceptions\ReadGrantRefused;
 use App\Support\ActorContext;
 use App\Values\AllowedNames;
-use App\Values\ProfileAuthorization;
 use App\Values\ReadRequest;
-use App\Values\ScopedRead;
 use App\Values\SearchReader;
 use Domain\Tasks\Support\Mcp\TaskReadResult;
 use Domain\Tasks\Support\TaskSearchAccess;

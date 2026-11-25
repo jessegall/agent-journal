@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Contracts\Authorization\Policy;
+use App\Data\Profiles\PolicyGrant;
 use App\Enums\AccessType;
 
 /**

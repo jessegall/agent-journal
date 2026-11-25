@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Data\Profiles\PolicyGrant;
+use App\Data\Profiles\ProfileAuthorization;
+use App\Data\Profiles\ScopedRead;
 use App\Enums\AuthorizationType;
 use App\Values\PolicyDefinition;
-use App\Values\PolicyGrant;
-use App\Values\ProfileAuthorization;
 use App\Values\ProfileBase;
-use App\Values\ScopedRead;
 
 /**
  * The grants of each built-in kind of profile: every pair a registered policy accepts, its definition's owner,

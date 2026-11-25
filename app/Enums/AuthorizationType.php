@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Enums;
 
 use App\Contracts\Authorization\Policy;
-use App\Values\PolicyGrant;
+use App\Data\Profiles\PolicyGrant;
 
 /**
  * How a profile decides what its actors may do: everything, or only the pairs its grants name.

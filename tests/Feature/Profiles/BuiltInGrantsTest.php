@@ -197,7 +197,7 @@ final class BuiltInGrantsTest extends TestCase
         foreach (ProfileBase::all() as $base) {
             $grants = array_map(
                 fn (array $grant) => [$grant['policy'], $grant['access']],
-                BuiltInAuthorizations::for($base, $definitions)->grantsAsArrays(),
+                BuiltInAuthorizations::for($base, $definitions)->toArray()['grants'],
             );
 
             $this->assertSame(self::GRANTS[$base->key], $grants, $base->key);

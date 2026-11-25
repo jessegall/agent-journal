@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
+use App\Data\Profiles\PolicyGrant;
+use App\Data\Profiles\ProfileAuthorization;
 use App\Enums\AccessType;
 use App\Enums\AuthorizationType;
 use App\Enums\ConditionOutcome;
@@ -13,8 +15,6 @@ use App\Support\BuiltInAuthorizations;
 use App\Support\Conditions\Conditions;
 use App\Support\ConditionTree;
 use App\Values\DriverKey;
-use App\Values\PolicyGrant;
-use App\Values\ProfileAuthorization;
 use App\Values\ProfileBase;
 use App\Values\ProfileKey;
 use App\Values\ProfileSnapshot;

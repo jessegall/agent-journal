@@ -7,6 +7,7 @@ namespace App\Values;
 use App\Attributes\Authorize;
 use App\Contracts\Authorization\Policy;
 use App\Contracts\Bus\Command;
+use App\Data\Profiles\ProfileAuthorization;
 use App\Enums\AccessType;
 use App\Enums\InstancePolicy;
 use App\Enums\ModelTier;

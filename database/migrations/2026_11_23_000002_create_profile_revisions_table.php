@@ -25,10 +25,7 @@ return new class extends Migration
             $table->json('execution_policy');
             $table->string('configuration_hash', 64);
             $table->json('provenance');
-            $table->string('authorization_type', 32);
-            $table->json('policy_grants');
-            $table->json('denied_commands');
-            $table->json('read_grants');
+            $table->json('authorization');
             $table->json('supervisor');
             $table->string('instances', 16);
             $table->text('script_source');

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Profiles;
 
-use App\Casts\ProfileAuthorizationCast;
 use App\Casts\ProfileBaseCast;
 use App\Casts\ProfileStartPolicyCast;
 use App\Casts\ScriptSourceCast;
@@ -12,6 +11,7 @@ use App\Casts\SupervisorRoutesCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
+use App\Data\Profiles\ProfileAuthorization;
 use App\Enums\ActorType;
 use App\Enums\InstancePolicy;
 use App\Enums\ModelTier;
@@ -51,10 +51,7 @@ use Illuminate\Support\Carbon;
  * @property array $execution_policy
  * @property string $configuration_hash
  * @property array $provenance
- * @property string $authorization_type
- * @property array $policy_grants
- * @property array $denied_commands
- * @property array $read_grants
+ * @property ProfileAuthorization $authorization
  * @property SupervisorRoutes $supervisor
  * @property InstancePolicy $instances
  * @property ScriptSource $script_source
@@ -87,7 +84,7 @@ final class ProfileRevision extends Model implements ReadableModel
             'skill_allowlist' => 'array',
             'required_skills' => 'array',
             'start_policy' => ProfileStartPolicyCast::class,
-            'authorization' => ProfileAuthorizationCast::class,
+            'authorization' => ProfileAuthorization::class,
             'supervisor' => SupervisorRoutesCast::class,
             'instances' => InstancePolicy::class,
             'script_commands' => 'array',

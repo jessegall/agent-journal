@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Values;
+namespace App\Data\Profiles;
 
 use App\Attributes\Authorize;
 use App\Contracts\Authorization\Policy;
@@ -14,12 +14,18 @@ use App\Enums\AuthorizationType;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\GrantNotRegistered;
 use App\Exceptions\GrantNotWithheld;
+use App\Values\AccessDecision;
+use App\Values\AgentText;
+use App\Values\AllowedNames;
+use App\Values\WithheldGrant;
+use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Data;
 
 /**
  * A profile's authorization: its strategy, the policy accesses it grants and the commands it denies outright. A pair
  * its grants do not name is never granted, an undeclared one included.
  */
-final readonly class ProfileAuthorization
+final class ProfileAuthorization extends Data
 {
     /**
      * @param  list<PolicyGrant>  $grants
@@ -27,10 +33,12 @@ final readonly class ProfileAuthorization
      * @param  list<ScopedRead>  $reads  the named reads the profile holds, each for one target or every target
      */
     public function __construct(
-        public AuthorizationType $type,
-        public array $grants,
-        public array $deniedCommands = [],
-        public array $reads = [],
+        public readonly AuthorizationType $type,
+        #[DataCollectionOf(PolicyGrant::class)]
+        public readonly array $grants,
+        public readonly array $deniedCommands = [],
+        #[DataCollectionOf(ScopedRead::class)]
+        public readonly array $reads = [],
     ) {}
 
     /**
@@ -127,14 +135,6 @@ final readonly class ProfileAuthorization
     }
 
     /**
-     * @return list<array{name: string, target: string|null}>
-     */
-    public function readsAsArrays(): array
-    {
-        return array_map(fn (ScopedRead $read) => $read->toArray(), $this->reads);
-    }
-
-    /**
      * @param  class-string<Policy>  $policy
      *
      * @throws ActorNotAllowed
@@ -190,13 +190,5 @@ final readonly class ProfileAuthorization
                 $this->deniedCommands,
                 fn (string $command) => in_array($command, $other->deniedCommands, true),
             );
-    }
-
-    /**
-     * @return list<array{policy: class-string<Policy>, access: string}>
-     */
-    public function grantsAsArrays(): array
-    {
-        return array_map(fn (PolicyGrant $grant) => $grant->toArray(), $this->grants);
     }
 }

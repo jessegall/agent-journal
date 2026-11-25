@@ -40,7 +40,6 @@ final class JsonIntoDataTest extends TestCase
         'App\\Console\\Concerns\\RunsCallPipelines::jsonOption',
         'App\\Console\\Commands\\ImportProfileDraftCommand::readCommands',
         'App\\Support\\ConditionTree::fromJson',
-        'App\\Casts\\ProfileAuthorizationCast::deniedCommandsOf',
         'App\\Support\\WorkspaceSources::fromJson',
         'App\\Support\\Drivers\\ClaudeFirstRun::settle',
         'App\\Values\\LayoutShape::toArray',
