@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Agents;
+namespace Tests\Feature\Hooks;
 
 use App\Commands\Agents\StartAgent\StartAgentCommand;
 use App\Contracts\Bus\CommandBus;
@@ -82,7 +82,10 @@ final class SessionOutputGrantsTest extends TestCase
 
     public function test_sibling_fork_parent_and_unverified_paths_stay_denied(): void
     {
-        $sibling = $this->start('helpers.helper-job 1', Agent::create('Reviewer', 'read-only-helper', $this->localProject()));
+        $sibling = $this->start(
+            'helpers.helper-job 1',
+            Agent::create('Reviewer', 'read-only-helper', $this->localProject()),
+        );
         $session = $this->start('helpers.helper-job 2');
         $this->enter($sibling, 'native-parent', 'call-1');
 

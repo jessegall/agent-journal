@@ -16,6 +16,7 @@ use App\Enums\Drivers\DriverType;
 use App\Enums\Projects\CapabilityStatusType;
 use App\Enums\Sessions\StartDisposition;
 use App\Enums\Sessions\StartOriginType;
+use App\Enums\Sessions\StartRefusalType;
 use App\Exceptions\CapacityUnavailable;
 use App\Models\Agents\Agent;
 use App\Support\HostCapability;
@@ -80,6 +81,33 @@ final class DismissSessionStartOutcomeTest extends TestCase
         $this->assertNull($this->outcome());
         $this->journal->actAsAgentIds($this->agentId, TestSelections::requestId());
         $this->assertSame($request->requestId, $this->outcome()?->requestId);
+    }
+
+    public function test_a_sessionless_capacity_refusal_is_the_agents_last_start_outcome(): void
+    {
+        $request = $this->refusedStart();
+
+        $outcome = $this->outcome();
+
+        $this->assertSame(
+            [$request->requestId, StartDisposition::Refused, null, StartRefusalType::CapacityUnavailable->value],
+            [$outcome?->requestId, $outcome?->disposition, $outcome?->sessionId, $outcome?->refusalReason],
+        );
+    }
+
+    public function test_a_later_successful_start_replaces_the_refusal(): void
+    {
+        $refused = $this->refusedStart();
+        $this->dismiss($refused);
+        $this->app->instance(HostCapacity::class, new HostCapacity(64, 256 * 1024 ** 3, 1024 ** 4));
+
+        $receipt = $this->start($this->containerRequest());
+
+        $outcome = $this->outcome();
+        $this->assertSame(
+            [StartDisposition::Started, $receipt->sessionId, null],
+            [$outcome?->disposition, $outcome?->sessionId, $outcome?->refusalReason],
+        );
     }
 
     private function refusedStart(): StartRequest

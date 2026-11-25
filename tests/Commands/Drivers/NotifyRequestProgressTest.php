@@ -10,26 +10,43 @@ use App\Commands\Drivers\ClaimDriverRequests\ClaimDriverRequestsCommand;
 use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Commands\Terminals\CancelKeyScript\CancelKeyScriptCommand;
 use App\Commands\Terminals\ResumeKeyScript\ResumeKeyScriptCommand;
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Sessions\AgentDirectory;
+use App\Enums\Agents\ConversationModeType;
+use App\Enums\Drivers\DriverType;
 use App\Enums\Drivers\HoldReason;
 use App\Enums\Drivers\HostWakeRefusal;
 use App\Enums\Drivers\RequestOutcome;
 use App\Enums\Drivers\RequestProgress;
+use App\Enums\Sessions\HostRefusal;
 use App\Enums\Sessions\SessionStatus;
+use App\Enums\Sessions\StartOriginType;
+use App\Enums\Sessions\StartReadiness;
 use App\Exceptions\HostReportRefused;
 use App\Models\Accounts\Account;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Projects\Host;
+use App\Models\Sessions\SessionRequest;
 use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\AgentStatus;
+use App\Support\AgentWakes;
 use App\Support\EnrolledHost;
+use App\Support\InitialWakeSettlement;
 use App\Support\OpenedRuntime;
+use App\Values\AgentText;
 use App\Values\BrowserInputCapabilities;
+use App\Values\ClaimedRequest;
 use App\Values\OwnerAuthority;
 use App\Values\ScriptProgress;
+use App\Values\StackTarget;
+use App\Values\StartPolicy;
+use App\Values\StartRequest;
+use PhpOption\None;
+use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
@@ -58,12 +75,16 @@ final class NotifyRequestProgressTest extends TestCase
         'active_accounts',
         'session_processes',
         'links',
+        'session_requests',
+        'runtime_events',
     ];
 
     /**
      * A host that could not start a turn, such as a prompt its screen did not let in, reports it staged and tries no
      * more: the journal takes the request back and offers it again once its wait has passed.
      */
+    private const string CONVERSATION = 'conversation-1';
+
     public function test_a_staged_report_gives_the_request_back_to_be_offered_again_after_a_wait(): void
     {
         [$host, $opened] = $this->openRuntime(firstMessage: 'Behind a menu');
@@ -199,6 +220,100 @@ final class NotifyRequestProgressTest extends TestCase
         $this->assertSame(RequestProgress::Cancelled, $cancelled->fresh()?->progress);
     }
 
+    public function test_a_message_sent_during_startup_goes_out_once_after_the_bootstrap_proves_its_conversation(): void
+    {
+        [$host, $opened, $wake, $record] = $this->startWithMessage();
+
+        $this->assertSame([$wake->id], $this->claimedIds($host));
+        $this->assertSame(StartReadiness::PreparingIdentity, $record->refresh()->readiness);
+
+        $this->notifyApplied($host, $wake, self::CONVERSATION);
+
+        $this->assertSame([$opened->firstRequestId], $this->claimedIds($host));
+        $this->assertSame([], $this->claimedIds($host));
+        $this->assertSame(
+            [StartReadiness::Ready, self::CONVERSATION],
+            [$record->refresh()->readiness, $record->native_id],
+        );
+    }
+
+    public function test_only_the_initial_wake_of_a_preparing_start_is_claimed_as_its_bootstrap(): void
+    {
+        [$host, $opened, $wake] = $this->startWithMessage();
+
+        $bootstrap = $this->claimed($host);
+        $this->notifyApplied($host, $wake, self::CONVERSATION);
+        $after = $this->claimed($host);
+
+        $pendingWork = $this->app->make(AgentTexts::class)->render(AgentText::of('core.drivers.pending_work'));
+        $this->assertSame(
+            [[$wake->id, true, $pendingWork]],
+            array_map(
+                fn (ClaimedRequest $request) => [$request->requestId, $request->shouldBootstrap, $request->message],
+                $bootstrap,
+            ),
+        );
+        $this->assertSame(
+            [[$opened->firstRequestId, false]],
+            array_map(fn (ClaimedRequest $request) => [$request->requestId, $request->shouldBootstrap], $after),
+        );
+    }
+
+    public function test_a_failed_bootstrap_leaves_the_start_holding_its_message(): void
+    {
+        [$host, $opened, $wake, $record] = $this->startWithMessage();
+        $this->claimedIds($host);
+        $wake->refresh();
+
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
+            $host->hostId,
+            $wake->id,
+            $wake->attempt_version,
+            RequestProgress::Failed,
+            null,
+            null,
+        ));
+
+        $this->assertNotSame(StartReadiness::Ready, $record->refresh()->readiness);
+        $this->assertNotContains($opened->firstRequestId, $this->claimedIds($host));
+        $this->assertSame(
+            RequestProgress::Accepted,
+            DriverRequest::query()->findOrFail($opened->firstRequestId)->progress,
+        );
+    }
+
+    public function test_another_conversation_refuses_the_start_and_the_message_stays_held(): void
+    {
+        [$host, $opened, $wake, $record] = $this->startWithMessage();
+        $record->bindIdentity(self::CONVERSATION);
+        $record->markIdentityUncertain();
+        $this->claimedIds($host);
+
+        $this->notifyApplied($host, $wake, 'conversation-2');
+
+        $this->assertSame(
+            [StartReadiness::Refused, HostRefusal::IdentityMismatch->value],
+            [$record->refresh()->readiness, $record->refusal_reason],
+        );
+        $this->assertSame([], $this->claimedIds($host));
+        $this->assertSame(
+            RequestProgress::Accepted,
+            DriverRequest::query()->findOrFail($opened->firstRequestId)->progress,
+        );
+    }
+
+    public function test_a_bootstrap_report_after_the_start_was_refused_changes_nothing(): void
+    {
+        [$host, , $wake, $record] = $this->startWithMessage();
+        $this->claimedIds($host);
+        $record->refuseFor(HostRefusal::IdentityMismatch);
+
+        $this->notifyApplied($host, $wake, self::CONVERSATION);
+
+        $this->assertSame([StartReadiness::Refused, null], [$record->refresh()->readiness, $record->native_id]);
+        $this->assertSame([], $this->claimedIds($host));
+    }
+
     private function statusOf(string $agentId): AgentStatus
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
@@ -228,6 +343,76 @@ final class NotifyRequestProgressTest extends TestCase
             RequestOutcome::EntryUnavailable,
             refusal: HostWakeRefusal::ContainerUnavailable,
             hasCreatedNoProcess: true,
+        ));
+    }
+
+    private function startWithMessage(): array
+    {
+        [$host, $opened] = $this->openRuntime(firstMessage: 'Start with the plan.');
+        $session = AgentSession::query()->findOrFail($opened->sessionId);
+        $request = new StartRequest(
+            TestSelections::requestId(),
+            $session->agent_id,
+            TestSelections::of(),
+            StartOriginType::MainStart,
+            null,
+            null,
+            ConversationModeType::New,
+            null,
+            StartPolicy::withoutProfile(TestSelections::onHost()),
+            driverType: DriverType::Headless,
+        );
+        $record = SessionRequest::create(
+            $request,
+            TestSelections::pinOf($request),
+            ActorIdentity::system(),
+            None::create(),
+        );
+        $record->startedAs($session);
+        $receipt = $this->app->make(AgentWakes::class)->wake(
+            new StackTarget($session->agent_id, $session->id),
+            InitialWakeSettlement::keyOf($session->id),
+        );
+
+        return [$host, $opened, DriverRequest::query()->findOrFail($receipt->requestId), $record];
+    }
+
+    /**
+     * @return list<ClaimedRequest>
+     */
+    private function claimed(EnrolledHost $host): array
+    {
+        return $this->journal->asSystem(
+            new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()),
+        )->requests;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function claimedIds(EnrolledHost $host): array
+    {
+        return array_map(fn (ClaimedRequest $request) => $request->requestId, $this->claimed($host));
+    }
+
+    private function notifyApplied(EnrolledHost $host, DriverRequest $wake, string $conversation): void
+    {
+        $wake->refresh();
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
+            $host->hostId,
+            $wake->id,
+            $wake->attempt_version,
+            RequestProgress::Applying,
+            null,
+            null,
+        ));
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
+            $host->hostId,
+            $wake->id,
+            $wake->attempt_version,
+            RequestProgress::Applied,
+            $conversation,
+            null,
         ));
     }
 }
