@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Bus;
+namespace Tests\Middleware;
 
+use App\CommandMiddleware\AuthorizeCommand;
 use App\Contracts\Bus\CommandAdmission;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Engine\CommandAdmissionStage;
@@ -16,25 +17,45 @@ use App\Support\MiddlewareDeclaration;
 use App\Support\RequestKey;
 use App\Values\CommandDecision;
 use App\Values\EffectiveCommand;
+use Domain\Rules\RulesDomain;
 use Illuminate\Database\ConnectionInterface;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\UppercasesText;
 use Tests\Fixtures\Modules\Notes\Commands\CopyNote\CopyNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
+use Tests\Support\Bus\RunsModuleCommands;
+use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsMiddleware;
 use Tests\Support\TestIds;
+use Tests\TestCase;
 
-final class CommandPolicyTest extends CommandBusTestCase
+/**
+ * A command is admitted twice: before its middleware on the command as sent, and once more right before its handler on
+ * the command its inside middleware made, so a refusal there rolls back the whole transaction, a nested command's
+ * included, and a keyed retry gets the same refusal.
+ */
+#[TestsMiddleware(AuthorizeCommand::class)]
+final class AuthorizeCommandTest extends TestCase
 {
+    use RunsModuleCommands;
+
+    /**
+     * The tables these tests commit to, emptied around each test.
+     */
+    private const array TABLES = [];
+
     private const string KEY = 'effective-command-policy';
 
-    protected function tearDown(): void
+    /**
+     * The domains these tests use beside core.
+     */
+    protected static function bootedDomains(): array
     {
-        CommandReceipt::query()->where('request_key', self::KEY)->delete();
-
-        parent::tearDown();
+        return DomainBoot::withRequirements(RulesDomain::class);
     }
 
     public function test_inside_middleware_replacement_is_checked_before_handler_and_refusal_replays(): void
     {
+        $this->prepareCommandPolicy();
         $this->installCommandModules(
             MiddlewareDeclaration::inside(UppercasesText::class, CommandScope::command(WriteNoteCommand::class)),
         );
@@ -58,6 +79,7 @@ final class CommandPolicyTest extends CommandBusTestCase
 
     public function test_a_nested_command_gets_final_admission_and_rolls_back_the_outer_transaction(): void
     {
+        $this->prepareCommandPolicy();
         $this->installCommandModules();
         $this->journal->actAsUserId(TestIds::of(1));
         $admission = $this->mock(CommandAdmission::class);
@@ -76,5 +98,16 @@ final class CommandPolicyTest extends CommandBusTestCase
 
         $database = $this->app->make(ConnectionInterface::class);
         $this->assertSame(0, $database->table('module_command_rows')->count());
+    }
+
+    /**
+     * The setup the CommandPolicy cases share.
+     */
+    private function prepareCommandPolicy(): void
+    {
+
+        $this->beforeApplicationDestroyed(function (): void {
+            CommandReceipt::query()->where('request_key', self::KEY)->delete();
+        });
     }
 }

@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Bus;
+namespace Tests\Middleware;
 
+use App\CommandMiddleware\CheckJobGrant;
 use App\Commands\Agents\RecordHeartbeat\RecordHeartbeatCommand;
 use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
 use App\Contracts\Admission\ReadAdmission;
@@ -24,15 +25,21 @@ use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsMiddleware;
 use Tests\Support\TestActors;
 use Tests\TestCase;
 
-final class JobGrantGuardTest extends TestCase
+/**
+ * A command runs inside a job only under the grant the job holds.
+ */
+#[TestsMiddleware(CheckJobGrant::class)]
+final class CheckJobGrantTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const string KEY = 'assignment-job-guard';
-
+    /**
+     * The tables these tests commit to, emptied around each test.
+     */
     private const array TABLES = [
         'agents',
         'agent_sessions',
@@ -43,23 +50,19 @@ final class JobGrantGuardTest extends TestCase
         'command_receipts',
     ];
 
+    private const string KEY = 'assignment-job-guard';
+
     /**
-     * The domains this test uses beside core.
+     * The domains these tests use beside core.
      */
     protected static function bootedDomains(): array
     {
         return DomainBoot::withRequirements(RulesDomain::class, TasksDomain::class);
     }
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->app->instance(AccessSettings::class, TestActors::accessSettings(7));
-    }
-
     public function test_command_effect_is_read_at_registration_and_defaults_to_state_change(): void
     {
+        $this->prepareJobGrantGuard();
         $registry = $this->app->make(CommandRegistry::class);
 
         $this->assertSame(CommandEffectType::Recovery, $registry->effectOf(RecordHeartbeatCommand::class));
@@ -69,6 +72,7 @@ final class JobGrantGuardTest extends TestCase
 
     public function test_a_reviewer_cannot_discover_or_call_hidden_writes_and_cannot_dispatch_work(): void
     {
+        $this->prepareJobGrantGuard();
         $start = $this->journal->signedStart('Reader', 'read-only-helper');
         $tools = $this->journal->mcpRequest($start, 'tools/list')->assertOk()->json('result.tools');
 
@@ -85,6 +89,7 @@ final class JobGrantGuardTest extends TestCase
 
     public function test_a_read_the_admission_refuses_is_refused_even_when_it_is_an_orientation_read(): void
     {
+        $this->prepareJobGrantGuard();
         $admission = $this->createStub(ReadAdmission::class);
         $admission->method('assess')->willReturn(
             AccessDecision::refused(
@@ -117,5 +122,13 @@ final class JobGrantGuardTest extends TestCase
             'recipient_id' => $recipient->agent->id,
             'request_key' => self::KEY,
         ]);
+    }
+
+    /**
+     * The setup the JobGrantGuard cases share.
+     */
+    private function prepareJobGrantGuard(): void
+    {
+        $this->app->instance(AccessSettings::class, TestActors::accessSettings(7));
     }
 }
