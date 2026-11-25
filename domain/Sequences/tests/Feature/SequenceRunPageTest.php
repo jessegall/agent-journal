@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Tests\Feature;
 
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
+use App\Models\Access\User;
+use App\Support\Access\AccessSettings;
 use Domain\Sequences\Models\Sequence;
 use Domain\Sequences\Models\SequenceRun;
 use Domain\Sequences\Tests\TestCase;

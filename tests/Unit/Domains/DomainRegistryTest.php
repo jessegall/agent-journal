@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Domains;
 
-use App\Exceptions\AlwaysOnDomainRequiresSwitchable;
 use App\Exceptions\DomainCycle;
 use App\Exceptions\DomainListedTwice;
 use App\Exceptions\DomainNotFound;
@@ -12,11 +11,8 @@ use App\Exceptions\DomainRequiresItself;
 use App\Exceptions\NotADomain;
 use App\Exceptions\RequiredDomainMissing;
 use App\Exceptions\RequiredDomainTwice;
-use App\Support\DomainEntry;
 use App\Support\DomainRegistry;
 use PHPUnit\Framework\TestCase;
-use Tests\Fixtures\Domains\AlwaysOn\AlwaysOnDomain;
-use Tests\Fixtures\Domains\Books\BooksDomain;
 use Tests\Fixtures\Domains\ClassRequiring\ClassRequiringDomain;
 use Tests\Fixtures\Domains\DoubleRequiring\DoubleRequiringDomain;
 use Tests\Fixtures\Domains\Plans\PlansDomain;
@@ -104,26 +100,6 @@ final class DomainRegistryTest extends TestCase
         $this->expectExceptionObject(DomainRequiresItself::for('SelfRequiring'));
 
         DomainRegistry::from([SelfRequiringDomain::class]);
-    }
-
-    public function test_an_always_on_domain_that_requires_a_switchable_one_is_refused(): void
-    {
-        $this->expectExceptionObject(AlwaysOnDomainRequiresSwitchable::for('AlwaysOn', 'Books'));
-
-        DomainRegistry::from([BooksDomain::class, AlwaysOnDomain::class]);
-    }
-
-    public function test_every_installed_domain_but_access_can_be_switched_off(): void
-    {
-        $registry = DomainRegistry::from(require dirname(__DIR__, 3).'/bootstrap/domains.php');
-        $alwaysOn = array_values(
-            array_map(
-                fn (DomainEntry $entry) => $entry->name,
-                array_filter($registry->all(), fn (DomainEntry $entry) => ! $entry->canDisable()),
-            ),
-        );
-
-        $this->assertSame(['Access'], $alwaysOn);
     }
 
     public function test_a_domain_that_requires_a_domain_twice_is_refused(): void

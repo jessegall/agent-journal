@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
+use App\Models\Access\User;
 use App\Models\Records\Layout;
 use App\Values\LayoutShape;
-use Domain\Access\Models\User;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\RefreshHookDatabase;

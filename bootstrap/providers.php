@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Mcp\Providers\McpServiceProvider;
+use App\Providers\AccessServiceProvider;
 use App\Providers\ActorsServiceProvider;
 use App\Providers\AgentsServiceProvider;
 use App\Providers\AppServiceProvider;
@@ -33,7 +34,6 @@ use App\Providers\SupervisionServiceProvider;
 use App\Providers\TextServiceProvider;
 use App\Providers\TypeScriptServiceProvider;
 use App\Providers\WebServiceProvider;
-use Domain\Access\Providers\AccessServiceProvider;
 use Domain\Chat\Providers\ChatServiceProvider;
 use Domain\Documents\Providers\DocumentsServiceProvider;
 use Domain\Helpers\Providers\HelpersServiceProvider;

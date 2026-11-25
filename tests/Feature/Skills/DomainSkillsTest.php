@@ -45,7 +45,7 @@ final class DomainSkillsTest extends TestCase
 
         yield 'Processes' => ['journal-shell', 'Core', '## Reading output'];
 
-        yield 'Access' => ['journal-access', 'Access', '## Agents'];
+        yield 'Access' => ['journal-access', 'Core', '## Agents'];
     }
 
     #[DataProvider('domainSkills')]

@@ -7,16 +7,16 @@ namespace Tests\Support;
 use App\Commands\Messages\AskMessage\AskMessageCommand;
 use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Enums\Assignments\ActorType;
+use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Messages\Message;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
 use App\Support\Assignment;
 use App\Support\ProvedClaims;
 use App\Support\StartSessions;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\TestCase;
 

@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-use Domain\Access\AccessDomain;
 use Domain\Chat\ChatDomain;
 use Domain\Documents\DocumentsDomain;
 use Domain\Helpers\HelpersDomain;
@@ -21,6 +20,5 @@ return [
     RulesDomain::class,
     SequencesDomain::class,
     RemindersDomain::class,
-    AccessDomain::class,
     HelpersDomain::class,
 ];

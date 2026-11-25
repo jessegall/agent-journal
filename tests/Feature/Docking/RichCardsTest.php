@@ -6,9 +6,9 @@ namespace Tests\Feature\Docking;
 
 use App\Contracts\Bus\CommandBus;
 use App\Events\Web\PageChanged;
+use App\Models\Access\User;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Models\Conversation;
 use Domain\Chat\Support\DockProjection;
 use Domain\Documents\Commands\CloseReport\CloseReportCommand;

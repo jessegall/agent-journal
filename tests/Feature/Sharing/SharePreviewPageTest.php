@@ -6,15 +6,15 @@ namespace Tests\Feature\Sharing;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
+use App\Models\Access\User;
 use App\Models\Records\Link;
 use App\Models\Sharing\ShareGatewayConfiguration;
 use App\Models\Sharing\SharePreview;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Support\GatewaySettings;
 use App\Support\ShareSelectedTarget;
 use App\Values\OwnerAuthority;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Models\Document;
 use Domain\Plans\Enums\PlanType;

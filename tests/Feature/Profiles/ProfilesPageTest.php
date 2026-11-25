@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
+use App\Models\Access\User;
+use App\Support\Access\AccessSettings;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

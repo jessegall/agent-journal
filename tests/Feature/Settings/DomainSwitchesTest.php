@@ -64,7 +64,6 @@ final class DomainSwitchesTest extends TestCase
             $switches[array_search('domain_plans', $keys, true)],
         );
 
-        $this->assertTrue($this->app->make(DomainSwitches::class)->of('Access')->isEmpty());
     }
 
     public function test_the_owner_switches_a_domain_off_with_the_ordinary_group_command(): void

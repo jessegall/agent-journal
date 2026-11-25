@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Tests\Feature\Skills;
 
 use App\Models\Skills\Skill;
+use App\Support\Access\AccessSettings;
 use App\Support\Conditions\Conditions;
 use App\Support\StoredSkillWrites;
 use App\Values\SectionDraft;
 use App\Values\SkillDraft;
 use App\Values\SkillKey;
-use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestActors;

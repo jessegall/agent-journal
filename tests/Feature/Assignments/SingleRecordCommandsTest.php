@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
+use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Records\AssignmentRecord;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
+use App\Support\Access\AccessSettings;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;

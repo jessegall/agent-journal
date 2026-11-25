@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Tests\Feature\Sharing;
 
 use App\Enums\Sharing\ShareState;
+use App\Models\Access\User;
 use App\Models\Sharing\Share;
 use App\Models\Sharing\ShareGatewayConfiguration;
+use App\Support\Access\AccessSettings;
 use App\Support\ShareGatewayRegistry;
 use App\Support\ShareGrant;
 use App\Support\ShareToken;
 use Carbon\CarbonImmutable;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;

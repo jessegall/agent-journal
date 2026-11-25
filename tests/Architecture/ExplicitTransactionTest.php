@@ -27,7 +27,7 @@ final class ExplicitTransactionTest extends TestCase
         'app/Http',
         'app/Listeners',
         'app/Models',
-        'domain/Access/src',
+        'app/Support/Access',
         'domain/Chat/src',
         'domain/Documents/src',
         'domain/Memory/src',

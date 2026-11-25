@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Actors;
 
+use App\Models\Access\User;
 use App\Models\Presence\UserPresence;
 use App\Support\DatabaseClock;
 use App\Support\PresenceWindow;
 use Carbon\CarbonImmutable;
-use Domain\Access\Models\User;
 use Illuminate\Support\Facades\Schema;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;

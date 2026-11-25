@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use App\Enums\Assignments\ActorType;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\RecordIdentity;
 use App\Values\StackTarget;
-use Domain\Access\Support\AccessSettings;
 
 /**
  * Builds a test user's actor and a test record's identity from their plain numbers, so a test names the number and

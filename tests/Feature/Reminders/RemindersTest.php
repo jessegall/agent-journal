@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Reminders;
 
 use App\Contracts\Bus\CommandBus;
+use App\Models\Access\User;
+use App\Support\Access\AccessSettings;
 use Carbon\CarbonImmutable;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Reminders\Commands\CreateReminder\CreateReminderCommand;
 use Domain\Reminders\Commands\FinishReminder\FinishReminderCommand;
 use Domain\Reminders\Enums\ReminderStatus;

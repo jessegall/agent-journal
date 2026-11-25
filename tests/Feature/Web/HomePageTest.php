@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace Tests\Feature\Web;
 
 use App\Enums\LeaveReason;
+use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Chats\InboxInterval;
 use App\Models\Messages\Message;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\StartSessions;
 use Carbon\CarbonImmutable;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Chat\Support\SentMessageAnswer;
 use Domain\Plans\Enums\PlanState;

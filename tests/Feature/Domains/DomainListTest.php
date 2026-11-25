@@ -18,7 +18,7 @@ final class DomainListTest extends TestCase
         $registry = $this->app->make(DomainRegistry::class);
 
         $this->assertSame(
-            ['Tasks', 'Plans', 'Documents', 'Chat', 'Memory', 'Rules', 'Sequences', 'Reminders', 'Access', 'Helpers'],
+            ['Tasks', 'Plans', 'Documents', 'Chat', 'Memory', 'Rules', 'Sequences', 'Reminders', 'Helpers'],
             array_map(fn (DomainEntry $entry) => $entry->name, $registry->all()),
         );
         $this->assertStringEndsWith('/domain/Plans/src', $registry->get('Plans')->folder);

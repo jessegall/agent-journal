@@ -7,12 +7,12 @@ namespace Tests\Unit\Skills;
 use App\Contracts\Skills\Skill;
 use App\Support\CanonicalRenderer;
 use App\Support\MarkdownParts;
+use App\Support\Shipped\AccessSkill;
 use App\Support\Shipped\JournalSkill;
 use App\Support\Shipped\ProfilesSkill;
 use App\Support\Shipped\ShellSkill;
 use App\Support\Shipped\SkillsSkill;
 use App\Values\SkillOwner;
-use Domain\Access\Support\Skills\AccessSkill;
 use Domain\Chat\Support\Skills\ChatSkill;
 use Domain\Memory\Support\Skills\MemorySkill;
 use Domain\Plans\Support\Skills\PlanSkill;
@@ -50,8 +50,8 @@ final class ShippedSkillFilesTest extends TestCase
         yield 'Access' => [
             AccessSkill::class,
             'Access decides who may use the journal and what an agent may do.',
-            'Access',
-            'domain/Access/resources/skills/access.md',
+            '',
+            'resources/skills/core/access.md',
         ];
 
         yield 'Messages' => [

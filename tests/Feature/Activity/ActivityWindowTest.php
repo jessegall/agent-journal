@@ -6,13 +6,13 @@ namespace Tests\Feature\Activity;
 
 use App\Enums\Agents\ActivityType;
 use App\Enums\Assignments\ActorType;
+use App\Models\Access\User;
 use App\Models\Agents\ActivityEntry;
 use App\Models\Agents\Agent;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Closure;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;

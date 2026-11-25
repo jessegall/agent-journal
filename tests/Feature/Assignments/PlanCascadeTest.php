@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Contracts\Bus\CommandBus;
+use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
+use App\Support\Access\AccessSettings;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentReference;
 use App\Support\AssignmentResult;
 use App\Support\RecordIdentity;
 use App\Support\RequestKey;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Commands\AssignPlanWork\AssignPlanWorkCommand;
 use Domain\Plans\Commands\UnassignPlanWork\UnassignPlanWorkCommand;
 use Domain\Plans\Enums\PlanType;

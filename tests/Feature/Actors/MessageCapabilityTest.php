@@ -6,9 +6,9 @@ namespace Tests\Feature\Actors;
 
 use App\Contracts\Chat\MessageRecipient;
 use App\Contracts\Chat\MessageSender;
+use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Support\SystemActor;
-use Domain\Access\Models\User;
 use Tests\TestCase;
 
 /**

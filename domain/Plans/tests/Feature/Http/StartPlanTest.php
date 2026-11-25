@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature\Http;
 
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
+use App\Models\Access\User;
+use App\Support\Access\AccessSettings;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Events\PlanStarted;

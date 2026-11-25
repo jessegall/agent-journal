@@ -6,7 +6,7 @@ namespace Tests\Feature\Profiles;
 
 use App\Console\Commands\ProfileActivateCommand;
 use App\Models\Profiles\Profile;
-use Domain\Access\Support\AccessSettings;
+use App\Support\Access\AccessSettings;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 

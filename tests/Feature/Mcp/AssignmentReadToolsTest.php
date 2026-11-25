@@ -6,12 +6,12 @@ namespace Tests\Feature\Mcp;
 
 use App\Contracts\Assignments\AssigneeResolver;
 use App\Enums\Assignments\ActorType;
+use App\Models\Access\User;
+use App\Support\Access\AccessSettings;
 use App\Support\AssigneeIdentity;
 use App\Support\AssigneeList;
 use App\Support\AssigneeName;
 use App\Support\IdListPage;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Str;
 use Mockery;

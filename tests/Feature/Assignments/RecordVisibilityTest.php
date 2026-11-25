@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Contracts\Records\RecordVisibility;
+use App\Models\Access\User;
 use App\Models\Agents\Agent;
+use App\Support\Access\AccessSettings;
 use App\Support\RecordIdentity;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Support\CommitsHookRows;

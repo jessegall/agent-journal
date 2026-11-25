@@ -49,7 +49,7 @@ final class BindingRulesTest extends TestCase
         'app/Http/Middleware/AuthenticateDeviceGrant.php',
         'app/Support/ConsoleOwner.php',
         'app/Support/EntryDispatchers.php',
-        'domain/Access/Http/Middleware/AuthenticateUser.php',
+        'app/Http/Middleware/AuthenticateUser.php',
         'app/Support/EnginePass.php',
         'app/Listeners/RefreshOnSkillsChanged.php',
         'app/Support/BuiltInProfilePins.php',

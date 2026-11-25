@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
+use App\Models\Access\User;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Models\DockPlacement;
 use Domain\Tasks\Models\Task;
 use Tests\Fixtures\Agents\TestStart;

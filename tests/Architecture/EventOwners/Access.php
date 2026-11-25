@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Domain\Access\Events\EnvironmentUserGrantRevoked;
+use App\Events\Access\EnvironmentUserGrantRevoked;
 use Tests\Architecture\Support\EventRole;
 
 /**

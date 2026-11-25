@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Mcp;
 
 use App\Mcp\Servers\JournalServer;
+use App\Models\Access\User;
+use App\Support\Access\AccessSettings;
 use App\Support\AssigneeIdentity;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;
 use Illuminate\Http\Response;
 use Illuminate\Testing\TestResponse;

@@ -6,9 +6,9 @@ namespace Domain\Rules\Tests\Feature\Http;
 
 use App\Contracts\Bus\CommandBus;
 use App\Events\Web\PageChanged;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Support\UserChannel;
-use Domain\Access\Support\AccessSettings;
 use Domain\Rules\Commands\ApproveRule\ApproveRuleCommand;
 use Domain\Rules\Commands\RemoveRule\RemoveRuleCommand;
 use Domain\Rules\Models\Rule;

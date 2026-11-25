@@ -6,13 +6,13 @@ namespace Tests\Feature\Desks;
 
 use App\Contracts\Assignments\AssignmentResolver;
 use App\Contracts\Assignments\AssignmentTransaction;
+use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\DeskSeatService;
 use App\Support\DeskService;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Models\Plan;
 use Domain\Tasks\Models\Task;
 use Tests\Support\CommitsHookRows;

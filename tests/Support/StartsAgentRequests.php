@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use App\Contracts\Actors\CurrentActorSetter;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Support\AgentContext;
 use App\Support\SignedCall;
 use App\Values\InboxMemberAuthority;
 use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
-use Domain\Access\Support\AccessSettings;
 
 /**
  * Starts a request as one agent and session, or as a user, the way the authenticating middleware binds them.

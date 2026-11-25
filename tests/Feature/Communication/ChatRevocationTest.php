@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
+use App\Commands\Access\DisableUser\DisableUserCommand;
+use App\Commands\Access\RevokeEnvironmentAccess\RevokeEnvironmentAccessCommand;
 use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
 use App\Contracts\Inboxes\InboxParticipationEnding;
 use App\Contracts\Inboxes\InboxResolver;
 use App\Enums\Messages\InboxPermission;
 use App\Events\Engine\EngineTicked;
 use App\Exceptions\InboxUnavailable;
+use App\Models\Access\EnvironmentUserGrant;
+use App\Models\Access\User;
 use App\Support\ActorIdentity;
 use App\Support\ChatInboxes;
 use App\Support\EngineListenerSet;
 use App\Support\EngineTickedDelivery;
 use App\Support\Ticks\ElapsedTime;
 use Carbon\CarbonImmutable;
-use Domain\Access\Commands\DisableUser\DisableUserCommand;
-use Domain\Access\Commands\RevokeEnvironmentAccess\RevokeEnvironmentAccessCommand;
-use Domain\Access\Models\EnvironmentUserGrant;
-use Domain\Access\Models\User;
 use Domain\Chat\Commands\CreateGroupChat\CreateGroupChatCommand;
 use Domain\Chat\Models\Conversation;
 use Domain\Chat\Support\ChatInbox;

@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Domain\Chat\Tests\Feature;
 
 use App\Enums\Assignments\ActorType;
+use App\Models\Access\User;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\Cards\DockIdentity;
 use App\Support\Sources\Contracts\DockRegistration;
 use App\Support\Wire\EncodedCard;
 use Carbon\CarbonImmutable;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Data\DockPageData;
 use Domain\Chat\Models\Conversation;
 use Domain\Chat\Models\DockPlacement;

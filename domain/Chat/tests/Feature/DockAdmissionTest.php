@@ -6,11 +6,11 @@ namespace Domain\Chat\Tests\Feature;
 
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Assignments\ActorType;
+use App\Models\Access\User;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\Command;
 use App\Support\RequestKey;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Commands\DockSource\DockSourceCommand;
 use Domain\Chat\Commands\UndockSource\UndockSourceCommand;
 use Domain\Chat\Enums\DockOutcome;

@@ -6,10 +6,10 @@ namespace Tests\Feature\Web;
 
 use App\Enums\Accounts\SignInMethod;
 use App\Http\Responses\PageReadProps;
+use App\Models\Access\User;
+use App\Support\Access\AccessSettings;
 use App\Support\AccountDraftProducer;
 use App\Support\DraftProducerRegistry;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Documents\Support\DocumentDraftProducer;
 use Domain\Plans\Support\PlanDraftProducer;
 use Domain\Sequences\Support\SequenceDraftProducer;

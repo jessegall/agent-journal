@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 use App\Enums\Assignments\ActorType;
+use App\Models\Access\User;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Agents\MainAgentDesignation;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Models\DirectChat;
 
 // Prints, as JSON, what the protected-session check needs of the main agent: its id and profile, the inbox of its

@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\Messages\AskMessage\AskMessageCommand;
 use App\Commands\Desks\CreateDesk\CreateDeskCommand;
+use App\Commands\Messages\AskMessage\AskMessageCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Bus\CommandBus;
+use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Desks\DeskRecord;
 use App\Models\Messages\MessageAttention;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\DeskSeatService;
 use App\Support\RequestKey;
 use App\Support\StartSessions;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
+use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Pages\WebPages;
+use App\Support\Access\AccessSettings;
 use App\Support\DeclaredRoutes;
 use App\Support\DomainRegistry;
 use App\Support\UiDeclarations;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Illuminate\Routing\Router;
 use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Modules\Cards\CardsDomain;

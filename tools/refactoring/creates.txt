@@ -44,7 +44,7 @@ App\Skills\Models\SkillRevision appendTo create
 App\Supervision\Models\AskHop recordAcceptance create
 App\Supervision\Models\ReviewDecision decide create
 App\Web\Models\Layout saveFor create
-Domain\Access\Models\User register create
+App\Models\Access\User register create
 Domain\Chat\Models\DockedRecord dockFor create
 Domain\Documents\Models\Document publish create
 Domain\Documents\Models\DocumentClose record create

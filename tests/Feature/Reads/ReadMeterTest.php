@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Reads;
 
 use App\Contracts\Reads\ReadMeter;
-use Domain\Access\Models\User;
+use App\Models\Access\User;
 use Illuminate\Database\QueryException;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

@@ -6,7 +6,7 @@ namespace Tests\Feature\Skills;
 
 use App\Models\Skills\Skill;
 use App\Policies\AssignmentRecipientPolicy;
-use Domain\Access\Support\AccessSettings;
+use App\Support\Access\AccessSettings;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestActors;

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Feature;
 
-use App\Commands\Messages\AskMessage\AskMessageCommand;
 use App\Commands\Desks\CreateDesk\CreateDeskCommand;
+use App\Commands\Messages\AskMessage\AskMessageCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
+use App\Models\Access\User;
 use App\Models\Desks\DeskRecord;
 use App\Models\Messages\Message;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\DeskSeatService;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Tests\TestCase;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;

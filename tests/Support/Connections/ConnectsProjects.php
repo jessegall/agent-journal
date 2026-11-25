@@ -7,16 +7,16 @@ namespace Tests\Support\Connections;
 use App\Commands\Settings\SetBooleanSetting\SetBooleanSettingCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
+use App\Models\Access\User;
 use App\Models\Projects\InstallAttempt;
 use App\Models\Projects\ProjectInvitation;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Support\SignedCall;
 use App\Values\InstallTicket;
 use App\Values\OwnerAuthority;
 use App\Values\SettingReference;
 use Carbon\CarbonImmutable;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 

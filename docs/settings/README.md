@@ -189,5 +189,5 @@ A document that is broken as a whole (not JSON, a wrong envelope, a duplicate ke
   the owner can always repair a value the code depends on.
 - A domain reads another domain's settings only through that domain's exported definition class and a declared
   required-domain relation.
-- `Domain\Access\Support\AccessSettings` is configuration-backed owner identity, not a settings definition. A future
+- `App\Support\Access\AccessSettings` is configuration-backed owner identity, not a settings definition. A future
   settings definition for Access would be named `AccessSettingDefinitions`.

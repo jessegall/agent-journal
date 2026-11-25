@@ -8,14 +8,14 @@ use App\Commands\Desks\CreateDesk\CreateDeskCommand;
 use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Enums\Assignments\ActorType;
+use App\Models\Access\User;
 use App\Models\Desks\DeskRecord;
 use App\Models\Desks\DeskSeat;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\DeskSeatService;
 use App\Support\SeatChange;
 use App\Support\Storage\AssignmentStore;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Tests\Support\StartsMainAgents;
 
 /**

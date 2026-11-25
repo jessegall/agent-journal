@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Tests\Feature\Web;
 
 use App\Declarations\DomainUi;
+use App\Models\Access\User;
 use App\Pages\WebPages;
+use App\Support\Access\AccessSettings;
 use App\Support\DeclaredRoutes;
 use App\Support\DomainRegistry;
 use App\Support\UiDeclarations;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Illuminate\Routing\Router;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;

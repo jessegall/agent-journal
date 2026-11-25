@@ -6,6 +6,8 @@ namespace Domain\Tasks\Tests\Feature;
 
 use App\Enums\Search\ScoreTier;
 use App\Enums\Search\SearchSurface;
+use App\Models\Access\User;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Values\SearchBatch;
 use App\Values\SearchQuery;
@@ -15,8 +17,6 @@ use App\Values\SearchScope;
 use App\Values\SearchWords;
 use App\Values\SourcePosition;
 use App\Values\WorkBudget;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Exceptions\TaskPassageUnavailable;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\Mcp\TaskReadResult;

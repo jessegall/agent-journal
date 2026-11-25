@@ -68,11 +68,10 @@ final class DomainAvailabilityTest extends TestCase
         $this->assertTrue($this->availability()->isEnabled('Tasks'));
     }
 
-    public function test_access_and_core_are_always_available(): void
+    public function test_core_is_always_available(): void
     {
         $this->switchOff('domain_tasks');
 
-        $this->assertTrue($this->availability()->isEnabled('Access'));
         $this->assertTrue($this->availability()->isEnabled('Core'));
     }
 

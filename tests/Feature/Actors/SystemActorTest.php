@@ -6,11 +6,11 @@ namespace Tests\Feature\Actors;
 
 use App\Enums\Assignments\ActorType;
 use App\Exceptions\InvalidActorText;
+use App\Models\Access\User;
 use App\Support\ActorIdentity;
 use App\Support\ActorStore;
 use App\Support\SystemActor;
 use App\Values\OwnerAuthority;
-use Domain\Access\Models\User;
 use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\TestCase;
 

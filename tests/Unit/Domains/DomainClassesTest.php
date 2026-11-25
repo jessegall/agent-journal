@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Unit\Domains;
 
 use App\Support\Domain;
-use Domain\Access\AccessDomain;
 use Domain\Chat\ChatDomain;
 use Domain\Documents\DocumentsDomain;
 use Domain\Helpers\HelpersDomain;
@@ -153,8 +152,6 @@ final class DomainClassesTest extends TestCase
         yield 'Sequences' => [SequencesDomain::class, [], []];
 
         yield 'Reminders' => [RemindersDomain::class, [], []];
-
-        yield 'Access' => [AccessDomain::class, [], []];
 
         yield 'Helpers' => [HelpersDomain::class, [DocumentsDomain::class], [
             'CancelHelperJobCommand',

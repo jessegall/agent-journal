@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Connections;
 
 use App\Enums\Projects\ArrangementType;
+use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Projects\Environment;
 use App\Models\Projects\Host;
@@ -12,7 +13,6 @@ use App\Models\Projects\Project;
 use App\Models\Projects\ProjectBinding;
 use App\Values\BindingFolder;
 use Carbon\CarbonImmutable;
-use Domain\Access\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;

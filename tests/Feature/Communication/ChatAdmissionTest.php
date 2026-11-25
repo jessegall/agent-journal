@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Enums\Messages\InboxPermission;
+use App\Models\Access\EnvironmentUserGrant;
+use App\Models\Access\User;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
-use Domain\Access\Models\EnvironmentUserGrant;
-use Domain\Access\Models\User;
 use Domain\Chat\Models\Conversation;
 use Domain\Chat\Support\ChatAdmissionPolicy;
 use Tests\Support\MessagingTestCase;

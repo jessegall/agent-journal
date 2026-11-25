@@ -6,11 +6,11 @@ namespace Domain\Tasks\Tests\Feature\Http;
 
 use App\Contracts\Work\AgentFocuses;
 use App\Enums\Assignments\ActorType;
+use App\Models\Access\User;
 use App\Models\Agents\Agent;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Commands\AddTaskWait\AddTaskWaitCommand;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;

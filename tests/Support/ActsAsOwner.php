@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
+use App\Models\Access\User;
+use App\Support\Access\AccessSettings;
 
 /**
  * Makes the journal's owner, a real user, before each test and binds the access settings to them.

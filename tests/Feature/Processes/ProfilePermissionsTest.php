@@ -6,7 +6,9 @@ namespace Tests\Feature\Processes;
 
 use App\Contracts\Bus\CommandPermissionResolver;
 use App\Enums\CommandRules\CommandClass;
+use App\Models\Access\User;
 use App\Models\Agents\Agent;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\StartSessions;
 use App\Values\CommandClassSet;
@@ -14,8 +16,6 @@ use App\Values\CommandPattern;
 use App\Values\CommandPatternSet;
 use App\Values\CommandPermissions;
 use App\Values\ProcessGrants;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;

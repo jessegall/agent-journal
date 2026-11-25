@@ -6,14 +6,14 @@ namespace Domain\Plans\Tests\Feature;
 
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Bus\CommandBus;
+use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\DeskSeatService;
 use App\Support\DeskService;
 use App\Support\RequestKey;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Commands\AssignPlanWork\AssignPlanWorkCommand;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;

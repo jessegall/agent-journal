@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature\Http;
 
+use App\Models\Access\User;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\TestCase;

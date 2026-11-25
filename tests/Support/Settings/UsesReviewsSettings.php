@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support\Settings;
 
 use App\Contracts\Settings\SettingCommands;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Support\CatalogueReflectorFactory;
 use App\Support\CoreSettings;
@@ -12,7 +13,6 @@ use App\Support\DomainRegistry;
 use App\Support\DomainSwitches;
 use App\Support\RegisteredSettingCommands;
 use App\Support\SettingRegistry;
-use Domain\Access\Support\AccessSettings;
 use Tests\Fixtures\Domains\Reviews\ReviewsDomain;
 use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
 use Tests\Fixtures\Modules\Cards\CardsDomain;

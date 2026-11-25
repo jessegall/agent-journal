@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Skills\Skill;
+use App\Support\Shipped\AccessSkill;
 use App\Support\Shipped\JournalSkill;
 use App\Support\Shipped\ProfilesSkill;
 use App\Support\Shipped\ShellSkill;
@@ -25,6 +26,7 @@ final class CoreSkills
     {
         return [
             JournalSkill::class,
+            AccessSkill::class,
             ProfilesSkill::class,
             SkillsSkill::class,
             ShellSkill::class,

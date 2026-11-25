@@ -7,7 +7,6 @@ namespace App\Support;
 use App\Contracts\Bus\PipelineRunner;
 use App\Declarations\DomainUi;
 use App\Declarations\ToggleGroup;
-use App\Exceptions\AlwaysOnDomainRequiresSwitchable;
 use App\Exceptions\AmbiguousDomainRoot;
 use App\Exceptions\DomainCycle;
 use App\Exceptions\DomainListedTwice;
@@ -67,7 +66,6 @@ final readonly class DomainRegistry
         }
 
         foreach ($domainsByName as $entry) {
-            self::refuseAlwaysOnRequiringSwitchable($domainsByName, $entry);
         }
 
         return new self($domainsByName);
@@ -192,7 +190,7 @@ final readonly class DomainRegistry
      * Every owner's settings, Core's first under its reserved name and then the domains in bootstrap/domains.php
      * order, checked together; start-up stops at the first wrong declaration.
      *
-     * One Core switch per domain that can be switched off, keyed domain_<name>, on by default and holding no
+     * One Core switch per domain, keyed domain_<name>, on by default and holding no
      * settings; a name that makes an invalid key fails like any declaration.
      *
      * @throws SettingDeclarationInvalid
@@ -202,15 +200,13 @@ final readonly class DomainRegistry
         $groups = [];
 
         foreach ($this->all() as $entry) {
-            if ($entry->canDisable()) {
-                $groups[$entry->name] = ToggleGroup::make(
-                    'domain_'.strtolower($entry->name),
-                    $entry->name,
-                    true,
-                    [],
-                    'When off, its pages are hidden. Nothing is deleted.',
-                );
-            }
+            $groups[$entry->name] = ToggleGroup::make(
+                'domain_'.strtolower($entry->name),
+                $entry->name,
+                true,
+                [],
+                'When off, its pages are hidden. Nothing is deleted.',
+            );
         }
 
         return new DomainSwitches($groups);
@@ -265,28 +261,6 @@ final readonly class DomainRegistry
                     $entry->name,
                 ],
             );
-        }
-    }
-
-    /**
-     * A domain that can never be switched off may require only domains that cannot be either.
-     *
-     * @param  array<string, DomainEntry>  $domainsByName
-     *
-     * @throws AlwaysOnDomainRequiresSwitchable
-     */
-    private static function refuseAlwaysOnRequiringSwitchable(array $domainsByName, DomainEntry $entry): void
-    {
-        if ($entry->canDisable()) {
-            return;
-        }
-
-        foreach ($entry->requires as $requiredClass) {
-            $required = $domainsByName[DomainEntry::nameOf($requiredClass)];
-
-            if ($required->canDisable()) {
-                throw AlwaysOnDomainRequiresSwitchable::for($entry->name, $required->name);
-            }
         }
     }
 

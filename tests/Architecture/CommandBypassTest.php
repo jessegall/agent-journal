@@ -21,7 +21,6 @@ final class CommandBypassTest extends TestCase
      */
     public const array CHECKED = [
         'app',
-        'domain/Access/src',
         'domain/Chat/src',
         'domain/Documents/src',
         'domain/Memory/src',

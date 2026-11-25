@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Domain\Chat\Tests\Feature;
 
 use App\Enums\Assignments\ActorType;
+use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Messages\Message;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Chat\Tests\TestCase;
 use Inertia\Testing\AssertableInertia;

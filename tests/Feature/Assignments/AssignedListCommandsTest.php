@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Exceptions\StartSettingMissing;
+use App\Models\Access\User;
+use App\Support\Access\AccessSettings;
 use App\Support\AssigneeIdentity;
 use App\Support\EnvironmentCredentialSource;
 use App\Support\StartEnvironment;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Tasks\Models\Task;

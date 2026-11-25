@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Chat\Tests\Feature;
 
 use App\Enums\Assignments\ActorType;
+use App\Models\Access\User;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Models\DockPlacement;
 use Domain\Chat\Tests\TestCase;
 use Domain\Tasks\Models\Task;

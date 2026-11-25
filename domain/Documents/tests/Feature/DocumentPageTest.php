@@ -6,10 +6,10 @@ namespace Domain\Documents\Tests\Feature;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
+use App\Models\Access\User;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Values\OwnerAuthority;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Tests\TestCase;
 use Inertia\Testing\AssertableInertia;

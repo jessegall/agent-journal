@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
+use App\Models\Access\User;
+use App\Support\Access\AccessSettings;
 use Domain\Tasks\Models\Task;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;

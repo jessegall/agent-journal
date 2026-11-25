@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use Domain\Access\Database\Seeders\OwnerSeeder;
 use Domain\Documents\Database\Seeders\DocumentsSeeder;
 use Domain\Plans\Database\Seeders\PlansSeeder;
 use Domain\Sequences\Database\Seeders\SequencesSeeder;

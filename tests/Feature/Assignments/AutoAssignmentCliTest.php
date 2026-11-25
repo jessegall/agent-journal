@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
+use App\Models\Access\User;
+use App\Support\Access\AccessSettings;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Fixtures\Agents\TestStart;

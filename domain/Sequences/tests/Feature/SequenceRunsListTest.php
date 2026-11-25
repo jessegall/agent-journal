@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Sequences\Tests\Feature;
 
 use App\Enums\Assignments\ActorType;
+use App\Models\Access\User;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Sequences\Models\SequenceRun;
 use Domain\Sequences\Tests\TestCase;
 use Illuminate\Support\Str;

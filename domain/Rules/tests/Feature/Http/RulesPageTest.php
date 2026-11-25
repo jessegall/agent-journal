@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Tests\Feature\Http;
 
+use App\Models\Access\User;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Rules\Enums\RuleState;
 use Domain\Rules\Models\Rule;
 use Domain\Rules\Tests\TestCase;

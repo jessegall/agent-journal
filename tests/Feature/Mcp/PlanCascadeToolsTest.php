@@ -6,11 +6,11 @@ namespace Tests\Feature\Mcp;
 
 use App\Exceptions\AssignmentGroupTooLarge;
 use App\Exceptions\AssignmentRootFinished;
+use App\Models\Access\User;
 use App\Models\Records\AssignmentRecord;
+use App\Support\Access\AccessSettings;
 use App\Support\AssignmentGroup;
 use App\Support\RecordIdentity;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;

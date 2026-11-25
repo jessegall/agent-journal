@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Enums\Engine\NoSubject;
+use App\Models\Access\User;
 use App\Support\References\StateReference;
-use Domain\Access\Models\User;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\TestIds;

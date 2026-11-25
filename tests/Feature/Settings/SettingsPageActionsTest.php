@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Settings;
 
 use App\Http\Responses\PageActionAnswers;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
+use App\Models\Access\User;
+use App\Support\Access\AccessSettings;
 use Inertia\Support\SessionKey;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

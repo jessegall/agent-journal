@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Feature\Web;
 
 use App\Enums\Messages\InboxPermission;
+use App\Models\Access\EnvironmentUserGrant;
+use App\Models\Access\User;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
-use Domain\Access\Models\EnvironmentUserGrant;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Tests\Support\MessagingTestCase;
 
 /**

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Tasks\Tests\Feature\Http;
 
 use App\Contracts\Bus\CommandBus;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
+use App\Models\Access\User;
+use App\Support\Access\AccessSettings;
 use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Enums\TaskState;
