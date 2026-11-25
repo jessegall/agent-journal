@@ -11,7 +11,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('part_runs', function (Blueprint $table) {
-            $table->ulid('id')->primary();
+            $table->ulid('id');
+            $table->primary('id');
             $table->foreignUlid('process_run_id')->constrained('process_runs')->cascadeOnDelete();
             $table->unsignedInteger('syntax_node');
             $table->string('part_id', 64);

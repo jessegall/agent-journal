@@ -198,7 +198,7 @@ final class StartSkillsTest extends TestCase
 
     private function sessionRow(Agent $agent, string $driver, int|null $profileRevision): AgentSession
     {
-        $session = new AgentSession([
+        $session = new AgentSession()->forceFill([
             ...TestSelections::sessionColumns(),
             'driver_key' => $driver,
             'profile_key' => $profileRevision === null ? 'main-agent' : 'journal-reviewer',

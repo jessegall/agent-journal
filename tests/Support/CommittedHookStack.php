@@ -97,12 +97,13 @@ trait CommittedHookStack
      */
     private function startedTarget(): StackTarget
     {
-        $agent = Agent::query()->find(TestIds::of(1)) ?? new Agent(
+        $agent = Agent::query()->find(TestIds::of(1)) ?? new Agent()->forceFill(
             ['name' => 'Hook agent', 'profile_key' => 'main-agent'],
         );
         $agent->id = TestIds::of(1);
         $agent->save();
-        $session = AgentSession::query()->find(TestIds::of(10)) ?? new AgentSession(TestSelections::sessionColumns());
+        $session = AgentSession::query()->find(TestIds::of(10))
+            ?? new AgentSession()->forceFill(TestSelections::sessionColumns());
         $session->id = TestIds::of(10);
         $session->agent_id = $agent->id;
         $session->save();

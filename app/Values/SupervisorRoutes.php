@@ -43,6 +43,16 @@ final class SupervisorRoutes extends Data
         return new self(SupervisorTarget::parse($routes['default']), $overrides);
     }
 
+    /**
+     * The default target and every override's target.
+     *
+     * @return list<SupervisorTarget>
+     */
+    public function targets(): array
+    {
+        return [$this->default, ...array_map(fn (SupervisorOverride $override) => $override->target, $this->overrides)];
+    }
+
     public function targetFor(AskTypeKey $type): SupervisorTarget
     {
         foreach ($this->overrides as $override) {

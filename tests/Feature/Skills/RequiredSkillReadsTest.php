@@ -97,7 +97,7 @@ final class RequiredSkillReadsTest extends TestCase
             ),
         )));
         $agent = Agent::create('Reviewer', 'read-only-helper');
-        $session = new AgentSession([
+        $session = new AgentSession()->forceFill([
             ...TestSelections::sessionColumns(),
             'profile_key' => 'journal-reviewer',
             'profile_revision' => 1,

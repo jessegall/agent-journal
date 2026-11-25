@@ -117,7 +117,7 @@ final class SkillContextResolverTest extends TestCase
     private function start(string $profileKey, int|null $profileRevision): array
     {
         $agent = Agent::create('Agent '.TestSelections::requestId(), $profileKey);
-        $session = new AgentSession(
+        $session = new AgentSession()->forceFill(
             [
                 ...TestSelections::sessionColumns(),
                 'profile_key' => $profileRevision === null ? 'main-agent' : 'journal-reviewer',

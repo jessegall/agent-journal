@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Questions\Commands\DeliverWaitingQuestionAnswers;
 
+use App\Attributes\Commands\Entry;
+use App\Enums\Accounts\CommandEntry;
 use App\Support\Command;
 
 /**
@@ -12,6 +14,7 @@ use App\Support\Command;
  *
  * @extends Command<int>
  */
+#[Entry(CommandEntry::EngineMaintenance)]
 final readonly class DeliverWaitingQuestionAnswersCommand extends Command
 {
     public const int BATCH = 50;

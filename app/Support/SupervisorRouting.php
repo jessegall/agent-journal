@@ -161,11 +161,9 @@ final readonly class SupervisorRouting implements SupervisorDefinitions
             $this->types->get($override->type);
         }
 
-        foreach ($routes->jsonSerialize() as $target) {
-            $parsed = SupervisorTarget::parse($target);
-
-            if ($parsed->isProfile() && ! isset($profiles[$target])) {
-                throw SupervisorRouteInvalid::unknownProfile($target);
+        foreach ($routes->targets() as $target) {
+            if ($target->isProfile() && ! isset($profiles[$target->key])) {
+                throw SupervisorRouteInvalid::unknownProfile($target->key);
             }
         }
     }

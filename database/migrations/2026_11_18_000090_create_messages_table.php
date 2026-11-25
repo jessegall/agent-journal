@@ -11,7 +11,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('messages', function (Blueprint $table) {
-            $table->ulid('id')->primary();
+            $table->ulid('id');
+            $table->primary('id');
             $table->foreignUlid('inbox_id')->constrained('inboxes')->restrictOnDelete();
             $table->string('sender_type', 16);
             $table->string('sender_id', 64);

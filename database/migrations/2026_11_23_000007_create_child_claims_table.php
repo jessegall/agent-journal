@@ -13,7 +13,8 @@ return new class extends Migration
         // One child the journal dispatches for a connected parent: who dispatched it, in which generation, with which
         // role, for which binding, from which verified commit, and the chain of claims above it.
         Schema::create('child_claims', function (Blueprint $table) {
-            $table->ulid('id')->primary();
+            $table->ulid('id');
+            $table->primary('id');
             $table->string('parent_runtime_id');
             $table->unsignedInteger('parent_generation');
             $table->string('child_agent_id');

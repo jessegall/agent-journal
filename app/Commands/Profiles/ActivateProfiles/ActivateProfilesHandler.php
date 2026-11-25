@@ -192,8 +192,11 @@ final readonly class ActivateProfilesHandler implements CommandHandler
         ScriptSource $source = new ScriptSource(''),
         CompiledScript|null $compiled = null,
     ): ProfileRevision {
-        $profile = Profile::query()->withKey($definition->key)->lockForUpdate()->first()
-            ?? new Profile(['key' => $definition->key->key]);
+        $profile = Profile::query()->withKey($definition->key)->lockForUpdate()->first();
+
+        if ($profile === null) {
+            $profile = Profile::createFor($definition->key, $definition->label, $definition->description);
+        }
 
         $profile->name($definition->label, $definition->description);
         $profile->retired_at = null;

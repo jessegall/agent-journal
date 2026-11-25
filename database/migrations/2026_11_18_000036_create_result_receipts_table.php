@@ -11,7 +11,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('result_receipts', function (Blueprint $table) {
-            $table->ulid('id')->primary();
+            $table->ulid('id');
+            $table->primary('id');
             $table->string('project_key', 64);
             $table->foreignUlid('process_run_id')->constrained('process_runs')->cascadeOnDelete();
             $table->foreignUlid('part_run_id')->constrained('part_runs')->cascadeOnDelete();
