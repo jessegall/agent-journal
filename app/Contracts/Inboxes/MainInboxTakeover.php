@@ -11,5 +11,8 @@ use App\Models\Agents\Agent;
  */
 interface MainInboxTakeover
 {
+    /**
+     * Attaches the agent to main, fencing whichever other agent was attached.
+     */
     public function takeOver(Agent $agent): void;
 }

@@ -30,7 +30,7 @@ final class TableCheckerTest extends TestCase
     {
         $this->assertSame([
             '21 uses table messages of Core; only Core reads, joins, keys or changes its tables, so use what Core exports',
-            '22 uses table users, which no domain owns',
+            '22 uses table users of Core; only Core reads, joins, keys or changes its tables, so use what Core exports',
             '23 uses table links of Core; only Core reads, joins, keys or changes its tables, so use what Core exports',
             '24 names a table with $name; write the table name out',
             '25 names a table with self::TABLE; write the table name out',

@@ -130,29 +130,21 @@ final readonly class AuthenticateHost
     }
 
     /**
-     * The calls the host reports failed on its side, as the host's client sends them; a header it cannot read keeps
-     * none.
+     * The calls the host reports failed on its side, as the host's client sends them, at most its limit of them.
      *
      * @return list<FailedHostCallData>
      */
     private function reportedFailures(Request $request): array
     {
-        $decoded = json_decode((string) $request->header(self::FAILED_CALLS_HEADER, '[]'), true);
-        $reported = [];
+        $header = $request->header(self::FAILED_CALLS_HEADER);
 
-        foreach (is_array($decoded) ? array_slice($decoded, 0, self::FAILED_CALL_LIMIT) : [] as $call) {
-            if (is_array($call) && is_string($call['route'] ?? null) && is_int($call['status'] ?? null)
-                && is_string($call['reason'] ?? null) && is_string($call['since'] ?? null)) {
-                $reported[] = new FailedHostCallData(
-                    mb_substr($call['route'], 0, 200),
-                    $call['status'],
-                    mb_substr($call['reason'], 0, 300),
-                    $call['since'],
-                );
-            }
+        if (! is_string($header)) {
+            return [];
         }
 
-        return $reported;
+        $calls = FailedHostCallData::collect(json_decode($header, true, flags: JSON_THROW_ON_ERROR));
+
+        return array_slice($calls, 0, self::FAILED_CALL_LIMIT);
     }
 
     /**

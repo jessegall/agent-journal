@@ -51,7 +51,7 @@ function addSecret(): void {
             <Select v-model="form.gatewayKey" :options="gatewayKeys.map((key) => ({ value: key, label: key }))" />
         </label>
         <label class="flex flex-col"
-            ><span>Program version</span
+            ><span>Driver version</span
             ><Input v-model="form.executableVersion"
         /></label>
         <label class="flex flex-col"

@@ -11,5 +11,8 @@ use App\Models\Inboxes\Inbox;
  */
 interface MessageReceiver extends MessageParticipant
 {
+    /**
+     * The inbox a message to this receiver is stored in.
+     */
     public function inbox(): Inbox;
 }

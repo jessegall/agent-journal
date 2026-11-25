@@ -311,6 +311,7 @@ final class AgentDriverLedgerTest extends TestCase
         foreach ([$model, $effort] as $setting) {
             $this->notifyTurnEnd($host, $setting->requestId, null);
         }
+
         $this->assertSame(RequestProgress::Staged, DriverRequest::query()->findOrFail($model->requestId)->progress);
 
         foreach ([$model, $effort] as $setting) {

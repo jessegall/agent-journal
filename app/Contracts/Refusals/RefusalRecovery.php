@@ -11,5 +11,8 @@ use App\Values\RecoveryCall;
  */
 interface RefusalRecovery
 {
+    /**
+     * The tool call that gets the caller out of the refusal, or null when none does.
+     */
     public function recovery(): RecoveryCall|null;
 }

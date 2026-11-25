@@ -12,6 +12,4 @@ return [
         .'repair',
     'unfinished' => 'Helper {helper} stopped before job {job} was finished: continue it with {command}',
     'notice' => 'About your helper: {notice}',
-    'repair' => 'Repair your work: {findings}',
-    'repair_onto' => 'Repair your work onto {target}: {findings}',
 ];

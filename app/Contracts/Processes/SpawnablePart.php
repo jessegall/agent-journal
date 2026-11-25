@@ -13,9 +13,18 @@ use App\Support\Execution\SpawnedPart;
  */
 interface SpawnablePart
 {
+    /**
+     * The queued part to start next.
+     */
     public function nextSpawnable(): QueuedPart;
 
+    /**
+     * What the run holds once that part started.
+     */
     public function spawned(SpawnedPart $part): object;
 
+    /**
+     * What the run holds once that part was refused, for the reason given.
+     */
     public function refused(string $reason): object;
 }

@@ -7,7 +7,7 @@ namespace App\Data\Profiles;
 use Spatie\LaravelData\Data;
 
 /**
- * One exact command a revocation took away, as the revocation row keeps it: the program and every word after it.
+ * One exact command a revocation took away, as the revocation row keeps it: the executable and every word after it.
  */
 final class RevokedPatternData extends Data
 {

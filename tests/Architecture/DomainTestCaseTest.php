@@ -6,6 +6,7 @@ namespace Tests\Architecture;
 
 use App\Support\Reflector;
 use Tests\Support\TimeLimits\TimeLimit;
+use Tests\TestCase as BaseTestCase;
 
 /**
  * Each domain with feature tests has its own TestCase, Domain\<Name>\Tests\TestCase extending the shared
@@ -23,7 +24,7 @@ final class DomainTestCaseTest extends TestCase
             $domain = basename(dirname($folder, 2));
             $base = "Domain\\{$domain}\\Tests\\TestCase";
 
-            if (! Reflector::factory()->isSubclassOf($base, TestCase::class)) {
+            if (! Reflector::factory()->isSubclassOf($base, BaseTestCase::class)) {
                 $wrong[] = "{$domain} has feature tests but no {$base} extending Tests\\TestCase";
 
                 continue;

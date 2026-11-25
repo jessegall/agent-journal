@@ -44,6 +44,12 @@ const SIDE_EFFECTS = '/->(save|update|delete|forceDelete|increment|decrement|for
 const ROW_READS = '/::query\(|->query\(|\b(self|static)::\w*[wW]here|DB::|->load(Missing|Count)?\(|'
     .'\$this->\w+\(\)->(where|get|first|sole|count|exists|pluck|latest|oldest|orderBy|find)\w*\(/';
 
+/** The static answers of a model that name it and read no row: its stored actor type and its link type. */
+const NAMING_STATICS = [
+    'storedType',
+    'linkType',
+];
+
 /** The return types an answer keeps as a method: a question, nothing, or the model itself. */
 const METHOD_RETURNS = [
     'bool',
@@ -84,8 +90,9 @@ function readsRows(string $source, string $class, Class_ $model, ClassMethod $me
 
     foreach ($finder->findInstanceOf($method, Node\Expr\StaticCall::class) as $call) {
         $called = $call->class instanceof Node\Name ? importedName($source, $call->class->toString()) : '';
+        $isNaming = $call->name instanceof Node\Identifier && in_array($call->name->toString(), NAMING_STATICS, true);
 
-        if ($called !== $class && Reflector::exists($called) && Reflector::of($called)->isSubclassOf(Model::class)) {
+        if (! $isNaming && $called !== $class && Reflector::exists($called) && Reflector::of($called)->isSubclassOf(Model::class)) {
             return true;
         }
     }

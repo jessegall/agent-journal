@@ -82,7 +82,7 @@ final class ReadMessageState extends AgentState
 
     // ----------[ Hooks ]----------
 
-    public function onToolRequested(ToolRequested $input): Decision
+    public function onShellCommand(ShellCommandRequested $input): Decision
     {
         if ($input->isReadOnly()) {
             return Decision::delegate();
@@ -91,7 +91,7 @@ final class ReadMessageState extends AgentState
         return $this->decide();
     }
 
-    public function onShellCommand(ShellCommandRequested $input): Decision
+    public function onToolRequested(ToolRequested $input): Decision
     {
         if ($input->isReadOnly()) {
             return Decision::delegate();
@@ -105,13 +105,6 @@ final class ReadMessageState extends AgentState
         return $this->decide();
     }
 
-    public function onToolFinished(ToolFinished $input): Decision
-    {
-        $this->toolUses++;
-
-        return Decision::delegate();
-    }
-
     public function onStop(StopRequested $input): Decision
     {
         if ($this->isFinished() || $input->stop->isAfterRefusedStop) {
@@ -119,6 +112,13 @@ final class ReadMessageState extends AgentState
         }
 
         return Decision::deny($this->readNowText());
+    }
+
+    public function onToolFinished(ToolFinished $input): Decision
+    {
+        $this->toolUses++;
+
+        return Decision::delegate();
     }
 
     // ----------[ Events ]----------

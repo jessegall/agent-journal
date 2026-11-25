@@ -46,7 +46,7 @@ final readonly class DriverHeartbeatSource
             throw HostReportRefused::notOwned($runtime->id ?? $session->id);
         }
 
-        // A newer generation is the host's restart of the program, which its next activity report records; only a
+        // A newer generation is the host's restart of the driver, which its next activity report records; only a
         // report of a generation already replaced is refused, as turn and activity reports are.
         if ($processGeneration < $runtime->process_generation) {
             throw HostReportRefused::staleGeneration($runtime->id, $processGeneration, $runtime->process_generation);

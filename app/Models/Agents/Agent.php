@@ -14,7 +14,7 @@ use App\Contracts\Assignments\Assignee;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Messages\MessageReceiver;
 use App\Contracts\Messages\MessageSender;
-use App\Contracts\Questions\AnswersQuestions;
+use App\Contracts\Questions\QuestionRecipient;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Drivers\DriverType;
 use App\Events\Sessions\AgentDriverTypePreferred;
@@ -50,11 +50,11 @@ use PhpOption\Some;
  * @property Collection<int, InboxMember>|InboxMember[] $inboxMemberships
  */
 final class Agent extends Model implements
-    AnswersQuestions,
     Assignee,
     EventSource,
     MessageReceiver,
     MessageSender,
+    QuestionRecipient,
     ReadableModel,
     RecipientActor
 {

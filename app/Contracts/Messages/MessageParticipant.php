@@ -9,7 +9,13 @@ namespace App\Contracts\Messages;
  */
 interface MessageParticipant
 {
+    /**
+     * The stored type of the participant, such as user or agent.
+     */
     public function participantType(): string;
 
+    /**
+     * The id of the participant within its type.
+     */
     public function participantId(): string;
 }

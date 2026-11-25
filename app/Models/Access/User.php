@@ -12,7 +12,7 @@ use App\Contracts\Actors\RecipientActor;
 use App\Contracts\Assignments\Assignee;
 use App\Contracts\Messages\MessageReceiver;
 use App\Contracts\Messages\MessageSender;
-use App\Contracts\Questions\AnswersQuestions;
+use App\Contracts\Questions\QuestionRecipient;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Inboxes\InboxMember;
 use App\Support\AssigneeIdentity;
@@ -62,12 +62,12 @@ use Laravel\Passkeys\Passkey;
     'remember_token',
 ])]
 class User extends Authenticatable implements
-    AnswersQuestions,
     Assignee,
     MessageReceiver,
     MessageSender,
     MustVerifyEmail,
     PasskeyUser,
+    QuestionRecipient,
     ReadableModel,
     RecipientActor
 {

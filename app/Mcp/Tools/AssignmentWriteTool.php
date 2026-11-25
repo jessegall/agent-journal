@@ -23,6 +23,9 @@ abstract class AssignmentWriteTool extends JournalWriteTool
 {
     use ReadsAssignmentArguments;
 
+    /**
+     * Takes the registered actor types, which the arguments are read against.
+     */
     public function __construct(protected readonly ActorTypes $actorTypes) {}
 
     /**

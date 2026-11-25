@@ -6,13 +6,13 @@ namespace Domain\Questions\Commands\AskQuestion;
 
 use App\Contracts\Actors\ActorResolver;
 use App\Contracts\Bus\CommandHandler;
-use App\Contracts\Questions\AnswersQuestions;
-use Domain\Questions\Enums\QuestionType;
+use App\Contracts\Questions\QuestionRecipient;
 use App\Exceptions\InboxUnavailable;
-use Domain\Questions\Exceptions\QuestionRefused;
 use App\Models\Inboxes\InboxMember;
-use Domain\Questions\Models\Question;
 use App\Support\ActorIdentity;
+use Domain\Questions\Enums\QuestionType;
+use Domain\Questions\Exceptions\QuestionRefused;
+use Domain\Questions\Models\Question;
 
 /**
  * The sender and the target are both attached to the inbox, the target can answer questions, and the options fit the
@@ -34,7 +34,7 @@ final readonly class AskQuestionHandler implements CommandHandler
             throw InboxUnavailable::forActor($command->inboxId);
         }
 
-        if (! $this->actors->get($command->target) instanceof AnswersQuestions) {
+        if (! $this->actors->get($command->target) instanceof QuestionRecipient) {
             throw QuestionRefused::targetCannotAnswer($command->target);
         }
 
