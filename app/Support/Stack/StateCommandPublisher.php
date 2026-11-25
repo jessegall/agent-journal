@@ -9,6 +9,7 @@ use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Events\Event;
 use App\Events\Hooks\StateCommandAnswered;
+use App\Support\Projects\ProjectSelectionStore;
 use App\Values\StackTarget;
 
 /**
@@ -17,7 +18,11 @@ use App\Values\StackTarget;
  */
 final readonly class StateCommandPublisher
 {
-    public function __construct(private CommandFacts $facts, private CurrentActor $actors) {}
+    public function __construct(
+        private CommandFacts $facts,
+        private CurrentActor $actors,
+        private ProjectSelectionStore $projects,
+    ) {}
 
     /**
      * @param  Command<mixed>  $command
@@ -30,12 +35,14 @@ final readonly class StateCommandPublisher
     }
 
     /**
-     * Runs the lifecycle moments of a change on its states, then publishes the commands and raises the events they
-     * answered with; the caller saves the frames after it, with the values the moments changed.
+     * Runs the lifecycle moments of a change on its states under the target agent's project, then publishes the
+     * commands and raises the events they answered with; the caller saves the frames after, with the changed values.
      */
     public function publishMoments(StackTarget $target, StackSnapshot $before, AgentStack $after): void
     {
-        foreach ($after->lifecycleEffectsSince($before) as $effect) {
+        $effects = $this->projects->forTarget($target, fn (): array => $after->lifecycleEffectsSince($before));
+
+        foreach ($effects as $effect) {
             if ($effect instanceof Event) {
                 $this->facts->publishAfterCommit($effect);
 

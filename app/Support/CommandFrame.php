@@ -10,6 +10,7 @@ use App\CommandMiddleware\BindDispatcher;
 use App\CommandMiddleware\CheckEntry;
 use App\CommandMiddleware\CheckJobGrant;
 use App\CommandMiddleware\GuardCommandOrigin;
+use App\CommandMiddleware\GuardCommandProject;
 use App\CommandMiddleware\LogCommand;
 use App\CommandMiddleware\RecordReceipt;
 use App\CommandMiddleware\RecordRefusalReceipt;
@@ -38,6 +39,7 @@ final class CommandFrame
         AdmitStack::class,
         RecordRefusalReceipt::class,
         RefuseMissingModels::class,
+        GuardCommandProject::class,
     ];
 
     /**

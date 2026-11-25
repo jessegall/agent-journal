@@ -21,8 +21,10 @@ use App\Support\Access\AccessSettings;
 use App\Support\ActorReference;
 use App\Support\Command;
 use App\Support\DomainRegistry;
+use App\Support\Projects\ProjectSelectionStore;
 use App\Support\StartedAgent;
 use App\Support\StartSessions;
+use App\Values\ProjectSelection;
 use App\Values\SelectedDriver;
 use App\Values\StackTarget;
 use Carbon\Carbon;
@@ -266,6 +268,26 @@ final class TestJournal
         }
 
         $this->projects[$name] = Project::create(Str::slug($name), $name);
+
+        return $this;
+    }
+
+    /**
+     * The browser's choice of the named project, as the owner's reads follow it from here on.
+     */
+    public function selectProject(string $name): self
+    {
+        $this->app->make(ProjectSelectionStore::class)->select(ProjectSelection::of($this->projectCalled($name)->id));
+
+        return $this;
+    }
+
+    /**
+     * The browser's choice of All projects, the owner's selection when none is chosen.
+     */
+    public function inAllProjects(): self
+    {
+        $this->app->make(ProjectSelectionStore::class)->select(ProjectSelection::all());
 
         return $this;
     }

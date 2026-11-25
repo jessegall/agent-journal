@@ -7,13 +7,16 @@ namespace Tests\Commands\Projects;
 use App\Commands\Projects\RevokeProjectBinding\RevokeProjectBindingCommand;
 use App\Enums\Connections\BindingReadiness;
 use App\Enums\Connections\ConnectionAuditType;
+use App\Exceptions\CrossProjectEdge;
 use App\Exceptions\HostRoleRefused;
+use App\Models\Agents\Agent;
 use App\Models\Projects\ConnectionAudit;
 use App\Models\Projects\Environment;
 use App\Models\Projects\InstallAttempt;
 use App\Models\Projects\Project;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectInvitation;
+use App\Values\BindingFolder;
 use App\Values\InstallTicket;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
@@ -155,6 +158,27 @@ final class RevokeProjectBindingTest extends TestCase
         $this->assertStringNotContainsString($match[1], $stored);
         $this->assertStringNotContainsString($this->relayCredential('nonce-aaaaaaaaaaaaaaaa'), $stored);
         $this->assertStringNotContainsString('/Users/owner/shop', $stored);
+    }
+
+    public function test_a_binding_refuses_a_main_agent_of_another_project(): void
+    {
+        $this->issueLine('the-ticket');
+        $binding = ProjectBinding::query()->findOrFail(
+            $this->redeemLine('the-ticket', self::NONCE)->assertCreated()->json('bindingId'),
+        );
+        $project = Project::query()->sole();
+        $profile = Agent::query()->findOrFail($binding->main_agent_id)->profile_key;
+        $stranger = Agent::create('stranger', $profile, Project::create('other', 'Other'));
+
+        $this->expectException(CrossProjectEdge::class);
+
+        ProjectBinding::create(
+            $binding->host,
+            $project,
+            $this->mainOf($project),
+            $stranger,
+            new BindingFolder('root-two', '/Users/owner/other', 'Laptop', 'nonce-cccccccccccccccc'),
+        );
     }
 
     private function relayClaim(): TestResponse

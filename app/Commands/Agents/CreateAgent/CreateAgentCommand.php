@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Commands\Agents\CreateAgent;
 
 use App\Attributes\Commands\Authorize;
+use App\Contracts\Projects\ProjectCommand;
 use App\Enums\Agents\AccessType;
 use App\Policies\AgentPolicy;
 use App\Support\ActorReference;
 use App\Support\Command;
+use App\Values\ProjectOwner;
 use Spatie\LaravelData\Attributes\Validation\Required;
 
 /**
@@ -18,7 +20,7 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  * @extends Command<ActorReference>
  */
 #[Authorize(AgentPolicy::class, AccessType::Create)]
-final readonly class CreateAgentCommand extends Command
+final readonly class CreateAgentCommand extends Command implements ProjectCommand
 {
     public function __construct(
         #[Required]
@@ -26,4 +28,9 @@ final readonly class CreateAgentCommand extends Command
         public string $profileKey,
         public string $projectId,
     ) {}
+
+    public function owner(): ProjectOwner
+    {
+        return ProjectOwner::ofProject($this->projectId);
+    }
 }

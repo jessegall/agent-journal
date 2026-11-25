@@ -9,6 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Connections\BindingReadiness;
 use App\Enums\Projects\ArrangementType;
@@ -23,6 +24,7 @@ use App\Exceptions\BindingUnrecoverable;
 use App\Exceptions\PresenceRefused;
 use App\Models\Agents\Agent;
 use App\Models\Support\Accessor;
+use App\Models\Support\BelongsToProject;
 use App\Values\BindingFolder;
 use App\Values\DriverFamily;
 use App\Values\PresenceReceipt;
@@ -72,8 +74,9 @@ use PhpOption\Option;
  *
  * @mixin \Eloquent
  */
-final class ProjectBinding extends Model implements EventSource, ReadableModel
+final class ProjectBinding extends Model implements EventSource, ProjectOwned, ReadableModel
 {
+    use BelongsToProject;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -121,10 +124,10 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         Agent $mainAgent,
         BindingFolder $folder,
     ): self {
-        $mainAgent->assertOfProject($project);
         $binding = new self();
         $binding->host_id = $host->id;
         $binding->project_id = $project->id;
+        $mainAgent->assertSameProjectAs($binding);
         $binding->environment_id = $environment->id;
         $binding->main_agent_id = $mainAgent->id;
         $binding->root_id = $folder->rootId;
@@ -384,14 +387,6 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     }
 
     // ----------[ Relations ]----------
-
-    /**
-     * @return BelongsTo<Project, $this>
-     */
-    public function project(): BelongsTo
-    {
-        return $this->belongsTo(Project::class);
-    }
 
     /**
      * @return BelongsTo<Environment, $this>

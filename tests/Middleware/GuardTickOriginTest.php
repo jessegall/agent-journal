@@ -7,9 +7,11 @@ namespace Tests\Middleware;
 use App\CommandMiddleware\GuardTickOrigin;
 use App\Commands\Agents\SettleFrameTimes\SettleFrameTimesCommand;
 use App\Commands\Sessions\MarkSilentSessions\MarkSilentSessionsCommand;
+use App\Contracts\Projects\CurrentProject;
 use App\Contracts\Time\MonotonicClock;
 use App\Contracts\Time\ServerClock;
 use App\Events\Hooks\StateTypesRequested;
+use App\Models\Agents\Agent;
 use App\Models\Agents\EngineFrameTime;
 use App\Support\EnginePass;
 use App\Support\FrameBaselines;
@@ -18,6 +20,7 @@ use App\Support\TickDelivery;
 use App\Support\Ticks\TickCommands;
 use App\Support\Ticks\TickContext;
 use App\Values\FrameSettlement;
+use App\Values\ProjectSelection;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
@@ -106,6 +109,23 @@ final class GuardTickOriginTest extends TestCase
         $this->assertSame([], EngineFrameTime::resolveSettledAtFor(['effect-of-a']));
         $this->assertSame(['a'], array_map(fn ($subject) => $subject->subjectId, $this->guard->checked));
         $this->assertTrue($this->app->make(FrameBaselines::class)->has('a'));
+    }
+
+    public function test_a_ticks_commands_are_judged_under_its_target_agents_project(): void
+    {
+        $stack = $this->tickingStack('test.ticking', ['a'], $this->entry);
+        $seen = [];
+        $this->script->scripts['a'] = function () use (&$seen): TickCommands {
+            $seen[] = $this->app->make(CurrentProject::class)->selection();
+
+            return TickCommands::of(new MarkSilentSessionsCommand());
+        };
+
+        $this->passAt(0.0);
+
+        $project = Agent::query()->findOrFail($stack->agent_id)->project_id;
+        $this->assertEquals([ProjectSelection::of($project)], $seen);
+        $this->assertEquals(ProjectSelection::all(), $this->app->make(CurrentProject::class)->selection());
     }
 
     /**

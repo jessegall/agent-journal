@@ -10,6 +10,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Events\Connections\ProjectCreated;
+use App\Exceptions\ModelMissing;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -47,9 +48,12 @@ final class Project extends Model implements EventSource, ReadableModel
 
     // ----------[ Queries ]----------
 
+    /**
+     * @throws ModelMissing when there is no project of this id
+     */
     public static function findForId(string $id): self
     {
-        return self::query()->whereKey($id)->firstOrFail();
+        return self::query()->whereKey($id)->firstOr(static fn () => throw ModelMissing::for(self::class, $id));
     }
 
     public static function findForKey(string $key): self
