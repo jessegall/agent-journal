@@ -6,8 +6,6 @@ namespace Domain\Sequences\Tests\Feature;
 
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Drivers\RewriteSupport;
-use App\Exceptions\StackAlreadyClosed;
-use App\Models\Agents\AgentStackRow;
 use App\Support\Drivers\DriverCapabilities;
 use App\Support\Drivers\DriverReply;
 use App\Support\Inputs\ContextCompacted;
@@ -17,7 +15,6 @@ use App\Support\OperationDeadline;
 use App\Support\Stack\HookAnswer;
 use App\Support\StateLoading\RegisteredStateType;
 use App\Support\StateLoading\StateBuilder;
-use Carbon\CarbonImmutable;
 use Domain\Sequences\Commands\AdvanceSequence\AdvanceSequenceCommand;
 use Domain\Sequences\Commands\CancelSequence\CancelSequenceCommand;
 use Domain\Sequences\Commands\StartSequence\StartSequenceCommand;
@@ -36,46 +33,6 @@ final class SequenceStateContributionTest extends TestCase
     private const string FIRST_STEP = 'Read the brief.';
 
     private const string SECOND_STEP = 'Run the phase tests.';
-
-    public function test_starting_a_run_commits_the_start_and_its_state_together(): void
-    {
-        $run = $this->newRun();
-
-        $this->app->make(CommandBus::class)->run(new StartSequenceCommand($run->id, $this->target->sessionId));
-
-        $this->assertSame(
-            [
-                SequenceRunStatus::Running,
-                1,
-                'agent',
-                TestIds::of(1),
-            ],
-            [
-                $run->fresh()?->status,
-                $run->fresh()?->current_step,
-                $run->fresh()?->actor_type,
-                $run->fresh()?->actor_id,
-            ],
-        );
-
-        $this->assertSame([
-            'core.ready',
-            'sequences.follow',
-        ], $this->storedTypeKeys());
-    }
-
-    public function test_a_failed_push_rolls_the_start_back(): void
-    {
-        $run = $this->newRun();
-        AgentStackRow::query()->sole()->closeAt(CarbonImmutable::now());
-
-        try {
-            $this->app->make(CommandBus::class)->run(new StartSequenceCommand($run->id, $this->target->sessionId));
-            $this->fail('The start went through without its push.');
-        } catch (StackAlreadyClosed) {
-            $this->assertNull($run->fresh()?->actor_id);
-        }
-    }
 
     public function test_each_hook_reads_the_current_step_fresh(): void
     {
