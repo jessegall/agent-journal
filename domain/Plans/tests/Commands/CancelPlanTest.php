@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Domain\Plans\Tests\Feature;
+namespace Domain\Plans\Tests\Commands;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
+use App\Exceptions\CommandInputInvalid;
 use App\Models\Access\User;
 use App\Models\Records\AssignmentRecord;
 use App\Support\Access\AccessSettings;
@@ -14,13 +15,11 @@ use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
 use App\Values\OwnerAuthority;
 use Domain\Plans\Commands\CancelPlan\CancelPlanCommand;
-use Domain\Plans\Commands\FinishPlan\FinishPlanCommand;
-use Domain\Plans\Commands\StartPlan\StartPlanCommand;
 use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Events\PlanCancelled;
 use Domain\Plans\Events\PlanFinished;
 use Domain\Plans\Events\PlanStarted;
-use Domain\Plans\Exceptions\PlanHasUnfinishedTasks;
+use Domain\Plans\Exceptions\PlanRevisionChanged;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\TestCase;
@@ -31,10 +30,10 @@ use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 
 /**
- * A plan finishes only once started with every task finished or cancelled, and keeps its note; a cancel keeps every
- * task and assignment; a second start announces nothing.
+ * A plan is cancelled with its reason and keeps every task and assignment as they were; a reason past its limit and
+ * a plan no longer in the state the caller saw are refused.
  */
-final class PlanFinishCancelTest extends TestCase
+final class CancelPlanTest extends TestCase
 {
     use CommitsHookRows;
 
@@ -64,54 +63,6 @@ final class PlanFinishCancelTest extends TestCase
             PlanFinished::class,
             PlanCancelled::class,
         ]);
-    }
-
-    public function test_finishing_a_plan_with_an_open_task_is_refused_with_the_count(): void
-    {
-        $plan = $this->startedPlan([
-            TaskStatus::Finished,
-            TaskStatus::Open,
-            TaskStatus::Blocked,
-        ]);
-
-        $this->assertThrows(
-            fn () => $this->bus()->run(new FinishPlanCommand($plan->id, 1, 'Done.')),
-            PlanHasUnfinishedTasks::class,
-            PlanHasUnfinishedTasks::for($plan->number, 2)->getMessage(),
-        );
-
-        $this->assertSame(PlanStatus::Started, $plan->fresh()?->status);
-        Event::assertNotDispatched(PlanFinished::class);
-    }
-
-    public function test_finishing_a_plan_whose_tasks_are_done_records_the_note_and_the_done_state(): void
-    {
-        $plan = $this->startedPlan([
-            TaskStatus::Finished,
-            TaskStatus::Cancelled,
-        ]);
-
-        $this->bus()->run(new FinishPlanCommand($plan->id, 1, 'Shipped.'));
-
-        $this->assertSame(
-            [
-                PlanStatus::Done,
-                'Shipped.',
-                2,
-            ],
-            [
-                $plan->fresh()?->status,
-                $plan->fresh()?->finish_note,
-                $plan->fresh()?->revision,
-            ],
-        );
-
-        Event::assertDispatchedTimes(PlanFinished::class, 1);
-
-        Event::assertDispatched(
-            PlanFinished::class,
-            fn (PlanFinished $finished) => $finished->finishedBy == ActorContext::forUser($this->owner->id),
-        );
     }
 
     public function test_cancelling_keeps_every_task_and_assignment(): void
@@ -153,14 +104,20 @@ final class PlanFinishCancelTest extends TestCase
         Event::assertDispatchedTimes(PlanCancelled::class, 1);
     }
 
-    public function test_a_second_start_of_a_started_plan_emits_no_second_event(): void
+    public function test_a_long_reason_and_a_state_that_moved_on_are_refused(): void
     {
-        $plan = Plan::factory()->create();
+        $plan = $this->startedPlan([TaskStatus::Open]);
 
-        $this->bus()->run(new StartPlanCommand($plan->id));
-        $this->bus()->run(new StartPlanCommand($plan->id));
-
-        Event::assertDispatchedTimes(PlanStarted::class, 1);
+        $this->assertThrows(
+            fn () => $this->bus()->run(new CancelPlanCommand($plan->id, 1, str_repeat('é', Plan::NOTE_CHARACTER_LIMIT + 1))),
+            CommandInputInvalid::class,
+            'reason:',
+        );
+        $this->assertThrows(
+            fn () => $this->bus()->run(new CancelPlanCommand($plan->id, 1, 'Not needed.', PlanStatus::Planned)),
+            PlanRevisionChanged::class,
+        );
+        $this->assertSame(PlanStatus::Started, $plan->fresh()?->status);
     }
 
     /**

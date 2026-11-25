@@ -11,7 +11,7 @@ use App\Support\Command;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Policies\PlanPolicy;
 use Spatie\LaravelData\Attributes\Validation\Max;
-use Spatie\LaravelData\Attributes\Validation\Min;
+use Spatie\LaravelData\Attributes\Validation\Required;
 
 /**
  * Sends the edition of a plan's review the decider read back with the changes asked for; the plan is Planned again
@@ -27,7 +27,7 @@ final readonly class RequestPlanChangesCommand extends Command
         public string $planId,
         public int $editionNumber,
         public string $requestKey,
-        #[Min(1), Max(Plan::NOTE_CHARACTER_LIMIT)]
+        #[Required, Max(Plan::NOTE_CHARACTER_LIMIT)]
         public string $reason,
     ) {}
 }

@@ -141,7 +141,9 @@ final class PlansDomain extends Domain implements
      */
     public function requires(): array
     {
-        return [TasksDomain::class];
+        return [
+            TasksDomain::class
+        ];
     }
 
     public function exports(): Exports
@@ -156,7 +158,10 @@ final class PlansDomain extends Domain implements
                 PlanReviewWithdrawn::class,
                 PlanReviewDecided::class,
             )
-            ->contracts(PlanResolver::class, PlanDetailsResolver::class)
+            ->contracts(
+                PlanResolver::class,
+                PlanDetailsResolver::class
+            )
             ->values(
                 PlanFilters::class,
                 PlanList::class,

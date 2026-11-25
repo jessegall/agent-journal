@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Plans\Tests\Feature;
+namespace Domain\Plans\Tests\Commands;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
@@ -32,7 +32,7 @@ use Tests\Support\StartsAgentRequests;
  * A plan under review holds still. Requesting a review puts the plan in Reviewing and refuses
  * every change to it, its phases and its tasks until the review is withdrawn or decided; no copy of the plan is made.
  */
-final class PlanReviewTest extends TestCase
+final class RequestPlanReviewTest extends TestCase
 {
     use ActsAsOwner;
     use CommitsHookRows;

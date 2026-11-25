@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Plans\Tests\Feature;
+namespace Domain\Plans\Tests\Commands;
 
 use App\Models\Access\User;
 use App\Support\ActorIdentity;
@@ -25,10 +25,10 @@ use Tests\Support\RunsKeyedCommands;
 use Tests\Support\StartsAgentRequests;
 
 /**
- * A review decision: approving the open review records one receipt and a replay returns it; a closed review reports
- * its outcome; starting stays a separate action. The plan cannot change while it is under review (PlanReviewTest).
+ * A reviewer approves the open review of a plan: one decision is kept that a replay under its key returns, and the
+ * plan may start; a decision on a review that was withdrawn is refused with its outcome.
  */
-final class PlanReviewDecisionTest extends TestCase
+final class ApprovePlanReviewTest extends TestCase
 {
     use ActsAsOwner;
     use CommitsHookRows;

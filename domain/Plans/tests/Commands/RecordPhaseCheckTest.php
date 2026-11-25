@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Plans\Tests\Feature;
+namespace Domain\Plans\Tests\Commands;
 
 use App\Commands\Runs\AssessPartOutput\AssessPartOutputCommand;
 use Domain\Plans\Commands\RecordPhaseCheck\RecordPhaseCheckCommand;
@@ -21,7 +21,7 @@ use Tests\Support\SendsSignedPayloads;
  * A phase relies only on a current validated result receipt published after its tasks last changed; an evidence
  * run, a run without a result, a superseded receipt and a receipt from before the last task change are refused.
  */
-final class PhaseCheckTest extends TestCase
+final class RecordPhaseCheckTest extends TestCase
 {
     use RefreshHookDatabase;
     use RunsAcmeRequests;
