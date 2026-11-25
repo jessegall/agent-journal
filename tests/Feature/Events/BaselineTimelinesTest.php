@@ -43,7 +43,6 @@ use Illuminate\Database\Events\TransactionCommitting;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Bus;
 use Tests\Fixtures\Agents\TestSelections;
-use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\Settings\SwitchesDomainsOff;
@@ -59,7 +58,6 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 20, reason: 'Each flow commits through the bus and empties its tables around each test.')]
 final class BaselineTimelinesTest extends TestCase
 {
-    use ActsAsOwner;
     use CommitsHookRows;
     use SwitchesDomainsOff;
     use WithActiveAccount;
@@ -130,6 +128,8 @@ final class BaselineTimelinesTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->journal->owner();
 
         Bus::fake([SignInDeadline::class]);
         $events = $this->app->make(Dispatcher::class);

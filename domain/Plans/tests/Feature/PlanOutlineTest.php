@@ -38,7 +38,6 @@ final class PlanOutlineTest extends TestCase
         'inbox_members',
     ];
 
-    #[TimeLimit(seconds: 30, reason: 'It builds a phase of 1,500 tasks and a plan of 300 one-task phases.')]
     protected function setUp(): void
     {
         parent::setUp();
@@ -46,6 +45,7 @@ final class PlanOutlineTest extends TestCase
         $this->journal->owner();
     }
 
+    #[TimeLimit(seconds: 30, reason: 'It builds a phase of 1,500 tasks and a plan of 300 one-task phases.')]
     public function test_first_and_second_pages_read_the_same_rows_whatever_the_totals(): void
     {
         $small = $this->plans()->plan('small')->planCalled('small');

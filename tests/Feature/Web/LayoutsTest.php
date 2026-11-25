@@ -8,7 +8,6 @@ use App\Data\Layouts\LayoutShape;
 use App\Models\Access\User;
 use App\Models\Records\Layout;
 use Inertia\Testing\AssertableInertia;
-use Tests\Support\ActsAsOwner;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -18,7 +17,6 @@ use Tests\TestCase;
  */
 final class LayoutsTest extends TestCase
 {
-    use ActsAsOwner;
     use RefreshHookDatabase;
 
     private const string LAYOUT_NAME = 'Deep review';
@@ -37,17 +35,24 @@ final class LayoutsTest extends TestCase
         'detached' => [],
     ];
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
+
     public function test_a_saved_layout_returns_to_home_and_is_listed_by_name(): void
     {
-        $this->actingAs($this->owner)->from('/?q=release')->post(
+        $this->actingAs($this->journal->ownerUser())->from('/?q=release')->post(
             '/layouts',
             ['name' => ' Review ', 'shape' => $this->shape],
         )
             ->assertRedirect('/?q=release')
             ->assertStatus(303);
-        $this->actingAs($this->owner)->post('/layouts', ['name' => 'Focus', 'shape' => $this->shape]);
+        $this->actingAs($this->journal->ownerUser())->post('/layouts', ['name' => 'Focus', 'shape' => $this->shape]);
 
-        $this->actingAs($this->owner)->get('/')->assertInertia(fn (AssertableInertia $page) => $page
+        $this->actingAs($this->journal->ownerUser())->get('/')->assertInertia(fn (AssertableInertia $page) => $page
             ->where('page.data.layouts.0.name', 'Focus')
             ->where('page.data.layouts.1.name', 'Review')
             ->where('page.data.layouts.1.shape.grid.windows', ['chat'])
@@ -56,17 +61,17 @@ final class LayoutsTest extends TestCase
 
     public function test_a_name_is_used_once_per_user_and_may_not_be_blank(): void
     {
-        $this->actingAs($this->owner)->post('/layouts', ['name' => 'Review', 'shape' => $this->shape]);
+        $this->actingAs($this->journal->ownerUser())->post('/layouts', ['name' => 'Review', 'shape' => $this->shape]);
 
-        $this->actingAs($this->owner)->post(
+        $this->actingAs($this->journal->ownerUser())->post(
             '/layouts',
             ['name' => 'Review', 'shape' => $this->shape],
         )->assertSessionHasErrors('name');
-        $this->actingAs($this->owner)->post(
+        $this->actingAs($this->journal->ownerUser())->post(
             '/layouts',
             ['name' => '  ', 'shape' => $this->shape],
         )->assertSessionHasErrors('name');
-        $this->actingAs($this->owner)->post(
+        $this->actingAs($this->journal->ownerUser())->post(
             '/layouts',
             ['name' => 'Other', 'shape' => ['grid' => []]],
         )->assertSessionHasErrors(['shape.grid', 'shape.detached']);
@@ -75,7 +80,7 @@ final class LayoutsTest extends TestCase
 
     public function test_a_layout_is_renamed_and_changed_under_its_own_name(): void
     {
-        $this->actingAs($this->owner)->post('/layouts', ['name' => 'Review', 'shape' => $this->shape]);
+        $this->actingAs($this->journal->ownerUser())->post('/layouts', ['name' => 'Review', 'shape' => $this->shape]);
         $layout = Layout::query()->sole();
         $changed = [
             ...$this->shape,
@@ -84,11 +89,11 @@ final class LayoutsTest extends TestCase
             ],
         ];
 
-        $this->actingAs($this->owner)->put(
+        $this->actingAs($this->journal->ownerUser())->put(
             "/layouts/{$layout->id}",
             ['name' => 'Review', 'shape' => $changed],
         )->assertSessionHasNoErrors();
-        $this->actingAs($this->owner)->put(
+        $this->actingAs($this->journal->ownerUser())->put(
             "/layouts/{$layout->id}",
             ['name' => 'Deep review', 'shape' => $changed],
         )->assertSessionHasNoErrors();
@@ -101,15 +106,15 @@ final class LayoutsTest extends TestCase
     {
         $other = Layout::create(User::factory()->create()->id, 'Theirs', LayoutShape::from($this->shape));
 
-        $this->actingAs($this->owner)->get('/')->assertInertia(
+        $this->actingAs($this->journal->ownerUser())->get('/')->assertInertia(
             fn (AssertableInertia $page) => $page->where('page.data.layouts', []),
         );
-        $this->actingAs($this->owner)->put(
+        $this->actingAs($this->journal->ownerUser())->put(
             "/layouts/{$other->id}",
             ['name' => 'Mine', 'shape' => $this->shape],
         )->assertNotFound();
-        $this->actingAs($this->owner)->delete("/layouts/{$other->id}")->assertNotFound();
-        $this->actingAs($this->owner)->post(
+        $this->actingAs($this->journal->ownerUser())->delete("/layouts/{$other->id}")->assertNotFound();
+        $this->actingAs($this->journal->ownerUser())->post(
             '/layouts',
             ['name' => 'Theirs', 'shape' => $this->shape],
         )->assertSessionHasNoErrors();

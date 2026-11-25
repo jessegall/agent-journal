@@ -16,8 +16,8 @@ use App\Support\DomainSwitches;
 use App\Support\SettingRegistry;
 use App\Values\GroupReference;
 use App\Values\SettingReference;
-use Tests\Support\ActsAsTestOwner;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -26,7 +26,6 @@ use Tests\TestCase;
  */
 final class DomainSwitchesTest extends TestCase
 {
-    use ActsAsTestOwner;
     use CommitsHookRows;
 
     private const string JOURNAL_NAME = 'My journal';
@@ -43,6 +42,13 @@ final class DomainSwitchesTest extends TestCase
      * The bus commits the settings commands for real, so this table is emptied around each test.
      */
     private const array TABLES = ['settings_records'];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->actAsUserId(TestIds::of(7));
+    }
 
     public function test_core_declares_one_empty_switch_on_by_default_for_each_domain_but_access(): void
     {

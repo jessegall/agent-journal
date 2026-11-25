@@ -10,7 +10,6 @@ use App\Support\PresenceWindow;
 use App\Support\ServerClock;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Schema;
-use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
@@ -20,26 +19,33 @@ use Tests\TestCase;
  */
 final class UserHeartbeatTest extends TestCase
 {
-    use ActsAsOwner;
     use CommitsHookRows;
 
     private const array TABLES = ['users', 'user_presences'];
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
+
     public function test_a_signed_in_user_beat_writes_the_one_row_of_that_user(): void
     {
-        $this->actingAs($this->owner)->post('/presence/heartbeat')->assertNoContent();
+        $this->actingAs($this->journal->ownerUser())->post('/presence/heartbeat')->assertNoContent();
         $first = UserPresence::query()->sole()->last_heartbeat_at;
 
-        $this->actingAs($this->owner)->post('/presence/heartbeat')->assertNoContent();
-        $this->actingAs($this->owner)->post('/presence/heartbeat')->assertNoContent();
+        $this->actingAs($this->journal->ownerUser())->post('/presence/heartbeat')->assertNoContent();
+        $this->actingAs($this->journal->ownerUser())->post('/presence/heartbeat')->assertNoContent();
 
         $presence = UserPresence::query()->sole();
-        $this->assertSame($this->owner->id, $presence->user_id);
+        $this->assertSame($this->journal->ownerUser()->id, $presence->user_id);
         $this->assertTrue($presence->last_heartbeat_at->greaterThanOrEqualTo($first));
     }
 
     public function test_a_guest_beat_writes_no_row(): void
     {
+        $this->journal->asGuest();
         $response = $this->post('/presence/heartbeat');
 
         $this->assertContains($response->getStatusCode(), [302, 401]);
@@ -50,7 +56,7 @@ final class UserHeartbeatTest extends TestCase
     {
         $window = $this->app->make(PresenceWindow::class);
         $now = $this->app->make(ServerClock::class)->now()->startOfSecond();
-        $this->beat($this->owner->id, $now);
+        $this->beat($this->journal->ownerUser()->id, $now);
 
         $this->assertSame(
             1,

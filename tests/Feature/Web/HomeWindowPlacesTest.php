@@ -7,7 +7,6 @@ namespace Tests\Feature\Web;
 use App\Enums\Web\WindowPlace;
 use Illuminate\Support\Collection;
 use Inertia\Testing\AssertableInertia;
-use Tests\Support\ActsAsOwner;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -17,12 +16,18 @@ use Tests\TestCase;
  */
 final class HomeWindowPlacesTest extends TestCase
 {
-    use ActsAsOwner;
     use RefreshHookDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
 
     public function test_the_project_file_and_activity_windows_carry_their_places_and_the_others_none(): void
     {
-        $this->actingAs($this->owner)->get('/')->assertOk()->assertInertia(
+        $this->actingAs($this->journal->ownerUser())->get('/')->assertOk()->assertInertia(
             fn (AssertableInertia $page) => $page->where('page.data.windows', function (Collection $windows): bool {
                 $places = $windows->mapWithKeys(fn (array $window) => [$window['key'] => $window['place'] ?? 'none']);
 

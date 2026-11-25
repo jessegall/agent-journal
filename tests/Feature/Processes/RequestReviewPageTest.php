@@ -37,12 +37,12 @@ final class RequestReviewPageTest extends TestCase
 
         $this->listPage()->assertInertia(fn (AssertableInertia $page) => $page
             ->where('page.data.root.children.2.children.1.tag', 'notice'));
-        $this->actingAs($this->owner)->get("/processes/requests/{$this->requestId}")->assertNotFound();
+        $this->actingAs($this->journal->ownerUser())->get("/processes/requests/{$this->requestId}")->assertNotFound();
     }
 
     public function test_the_request_page_shows_the_declaration_and_the_owner_approves_its_sample(): void
     {
-        $this->actingAs($this->owner)->get("/processes/requests/{$this->requestId}")->assertOk()
+        $this->actingAs($this->journal->ownerUser())->get("/processes/requests/{$this->requestId}")->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('layout/DeclaredLayout')
                 ->where('page.data.root.children.1.native.component', 'processes/RequestWindow')
@@ -50,7 +50,7 @@ final class RequestReviewPageTest extends TestCase
                 ->where('page.data.root.children.1.native.props.proposals.0.revisions.0.classes', ['read'])
                 ->where('page.data.root.children.1.native.props.lineDigest', $this->request()->source_digest));
 
-        $this->actingAs($this->owner)->post("/processes/requests/{$this->requestId}/sample-approval", [
+        $this->actingAs($this->journal->ownerUser())->post("/processes/requests/{$this->requestId}/sample-approval", [
             'expected_revision' => 1,
             'command_digest' => $this->request()->source_digest,
         ])->assertStatus(303);
@@ -62,12 +62,12 @@ final class RequestReviewPageTest extends TestCase
     {
         $proposal = RuleProposal::query()->sole();
 
-        $this->actingAs($this->owner)
+        $this->actingAs($this->journal->ownerUser())
             ->post("/processes/proposals/{$proposal->id}/approval", ['expected_revision' => 1, 'reason' => 'ok'])
             ->assertStatus(303)
             ->assertSessionHasErrors('review');
 
-        $this->actingAs($this->owner)
+        $this->actingAs($this->journal->ownerUser())
             ->post("/processes/proposals/{$proposal->id}/rejection", ['reason' => 'effects too wide'])
             ->assertStatus(303);
 
@@ -85,7 +85,7 @@ final class RequestReviewPageTest extends TestCase
         $this->listPage()->assertInertia(fn (AssertableInertia $page) => $page
             ->where('page.data.root.children.4.native.props.bundles.0.digest', $bundle->digest()));
 
-        $this->actingAs($this->owner)->post('/processes/bundles/approval', [
+        $this->actingAs($this->journal->ownerUser())->post('/processes/bundles/approval', [
             'module' => $bundle->module,
             'version' => $bundle->version,
             'digest' => $bundle->digest(),
@@ -96,6 +96,6 @@ final class RequestReviewPageTest extends TestCase
 
     private function listPage(): TestResponse
     {
-        return $this->actingAs($this->owner)->get('/processes')->assertOk();
+        return $this->actingAs($this->journal->ownerUser())->get('/processes')->assertOk();
     }
 }

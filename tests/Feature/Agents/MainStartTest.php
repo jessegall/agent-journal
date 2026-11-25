@@ -7,7 +7,6 @@ namespace Tests\Feature\Agents;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use Illuminate\Support\Str;
-use Tests\Support\ActsAsOwner;
 use Tests\Support\Agents\ServesEveryCombination;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\WithActiveAccount;
@@ -19,7 +18,6 @@ use Tests\TestCase;
  */
 final class MainStartTest extends TestCase
 {
-    use ActsAsOwner;
     use RefreshHookDatabase;
     use ServesEveryCombination;
     use WithActiveAccount;
@@ -27,6 +25,8 @@ final class MainStartTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->journal->owner();
 
         $this->chooseActiveAccounts();
         $this->serveEveryCombination();
@@ -36,7 +36,7 @@ final class MainStartTest extends TestCase
     {
         $agent = Agent::create('Started by hand', 'read-only-helper', $this->localProject());
 
-        $response = $this->actingAs($this->owner)->postJson(route('agents.start', $agent->id), [
+        $response = $this->actingAs($this->journal->ownerUser())->postJson(route('agents.start', $agent->id), [
             'requestId' => (string) Str::ulid(),
             'driver' => 'codex',
             'model' => 'gpt-6-luna',
@@ -54,7 +54,7 @@ final class MainStartTest extends TestCase
         $inputs = [['model' => 'gpt-6-luna'], ['driver' => 'codex'], ['driver' => 'codex', 'model' => 'default']];
 
         foreach ($inputs as $input) {
-            $response = $this->actingAs($this->owner)->postJson(
+            $response = $this->actingAs($this->journal->ownerUser())->postJson(
                 route('agents.start', $agent->id),
                 ['requestId' => (string) Str::ulid(), ...$input],
             );

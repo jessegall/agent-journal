@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use App\Events\Web\PageChanged;
-use App\Support\ActorContext;
 use Illuminate\Support\Facades\Event;
 
 /**
@@ -14,12 +13,10 @@ use Illuminate\Support\Facades\Event;
 trait WatchesPageChanges
 {
     use ActsAsActors;
-    use ActsAsOwner;
 
     protected function setUpWatchesPageChanges(): void
     {
-        $this->setUpActsAsOwner();
-        $this->actAs(ActorContext::forUser($this->owner->id));
+        $this->journal->owner();
         Event::fake([PageChanged::class]);
     }
 }

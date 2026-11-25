@@ -61,7 +61,6 @@ final class TaskDetailsResolverTest extends TestCase
         'number_groups',
     ];
 
-    #[TimeLimit(3, 'It creates twenty tasks, each with its own session and run, before the read.')]
     protected function setUp(): void
     {
         parent::setUp();
@@ -69,6 +68,7 @@ final class TaskDetailsResolverTest extends TestCase
         $this->journal->owner();
     }
 
+    #[TimeLimit(3, 'It creates twenty tasks, each with its own session and run, before the read.')]
     public function test_a_page_of_20_cards_reads_its_runs_in_one_query(): void
     {
         $runner = $this->start('Runner');

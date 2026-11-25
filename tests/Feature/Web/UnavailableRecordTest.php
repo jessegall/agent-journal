@@ -11,7 +11,6 @@ use App\Support\ActorStore;
 use App\Support\DomainRegistry;
 use App\Support\UiDeclarations;
 use App\Support\Web\PageProps;
-use Tests\Support\ActsAsOwner;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -21,7 +20,6 @@ use Tests\TestCase;
  */
 final class UnavailableRecordTest extends TestCase
 {
-    use ActsAsOwner;
     use RefreshHookDatabase;
 
     /**
@@ -32,14 +30,21 @@ final class UnavailableRecordTest extends TestCase
         return DomainRegistry::installedClasses(dirname(__DIR__, 3));
     }
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
+
     public function test_a_missing_report_answers_404_at_its_own_address(): void
     {
-        $this->actingAs($this->owner)->get('/documents/reports/99999')->assertNotFound();
+        $this->actingAs($this->journal->ownerUser())->get('/documents/reports/99999')->assertNotFound();
     }
 
     public function test_a_missing_document_in_the_inspector_reads_as_unavailable(): void
     {
-        $this->actingAs($this->owner);
+        $this->actingAs($this->journal->ownerUser());
         $props = $this->app->make(PageProps::class)->forPage(
             $this->app->make(UiDeclarations::class)->page(RegisteredPage::HOME),
             DeclaredPageRequest::create('/?inspect=documents.document&document=99999'),

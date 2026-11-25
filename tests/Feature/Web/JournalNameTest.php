@@ -9,8 +9,8 @@ use App\Contracts\Bus\CommandBus;
 use App\Http\Middleware\Web\HandleInertiaRequests;
 use App\Values\SettingReference;
 use Illuminate\Http\Request;
-use Tests\Support\ActsAsTestOwner;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -18,10 +18,16 @@ use Tests\TestCase;
  */
 final class JournalNameTest extends TestCase
 {
-    use ActsAsTestOwner;
     use RefreshHookDatabase;
 
     private const string JOURNAL_NAME = 'Team journal';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->actAsUserId(TestIds::of(7));
+    }
 
     public function test_every_page_shares_the_journal_name_setting(): void
     {

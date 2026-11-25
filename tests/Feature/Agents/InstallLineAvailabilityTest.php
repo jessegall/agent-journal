@@ -13,9 +13,9 @@ use App\Support\CoreSettings;
 use App\Support\InstallLineAvailability;
 use App\Support\PublishedReleases;
 use App\Values\SettingReference;
-use Tests\Support\ActsAsTestOwner;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\PublicRelease;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -23,7 +23,6 @@ use Tests\TestCase;
  */
 final class InstallLineAvailabilityTest extends TestCase
 {
-    use ActsAsTestOwner;
     use CommitsHookRows;
 
     /**
@@ -36,6 +35,8 @@ final class InstallLineAvailabilityTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->journal->actAsUserId(TestIds::of(7));
 
         $folder = sys_get_temp_dir().'/releases-'.bin2hex(random_bytes(4));
         mkdir("{$folder}/".self::VERSION, 0755, true);

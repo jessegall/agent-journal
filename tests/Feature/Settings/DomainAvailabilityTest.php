@@ -18,10 +18,10 @@ use App\Support\Storage\EncodedToggle;
 use App\Support\Storage\EncodedValue;
 use App\Values\GroupReference;
 use Tests\Support\ActsAsActors;
-use Tests\Support\ActsAsTestOwner;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\CountsReads;
 use Tests\Support\TestActors;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -31,7 +31,6 @@ use Tests\TestCase;
 final class DomainAvailabilityTest extends TestCase
 {
     use ActsAsActors;
-    use ActsAsTestOwner;
     use CommitsHookRows;
     use CountsReads;
 
@@ -49,6 +48,13 @@ final class DomainAvailabilityTest extends TestCase
     private const array TABLES = ['settings_records'];
 
     private int $revision = 0;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->actAsUserId(TestIds::of(7));
+    }
 
     public function test_switching_tasks_off_makes_plans_unavailable_while_its_own_switch_stays_on_and_back(): void
     {

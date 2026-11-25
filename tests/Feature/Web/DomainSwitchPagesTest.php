@@ -14,7 +14,6 @@ use Domain\Plans\Models\Plan;
 use Domain\Plans\Resolvers\OpenPlansCount;
 use Illuminate\Http\Request;
 use Illuminate\Testing\TestResponse;
-use Tests\Support\ActsAsOwner;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Settings\SwitchesDomainsOff;
 use Tests\TestCase;
@@ -25,7 +24,6 @@ use Tests\TestCase;
  */
 final class DomainSwitchPagesTest extends TestCase
 {
-    use ActsAsOwner;
     use RefreshHookDatabase;
     use SwitchesDomainsOff;
 
@@ -41,13 +39,20 @@ final class DomainSwitchPagesTest extends TestCase
         return DomainRegistry::installedClasses(dirname(__DIR__, 3));
     }
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
+
     public function test_pages_and_actions_of_a_switched_off_domain_answer_not_found_and_others_stay(): void
     {
         $plan = Plan::factory()->create(['title' => 'Kept', 'type' => PlanType::Build]);
         $this->switchDomainOff('plans');
 
         $this->inertia('/plans')->assertNotFound();
-        $this->actingAs($this->owner)->post("/plans/{$plan->number}/start")->assertNotFound();
+        $this->actingAs($this->journal->ownerUser())->post("/plans/{$plan->number}/start")->assertNotFound();
         $this->inertia('/rules')->assertOk();
     }
 
@@ -107,7 +112,7 @@ final class DomainSwitchPagesTest extends TestCase
      */
     private function inertia(string $uri, array $headers = []): TestResponse
     {
-        return $this->actingAs($this->owner)->get($uri, [
+        return $this->actingAs($this->journal->ownerUser())->get($uri, [
             'X-Inertia' => 'true',
             'X-Inertia-Version' => (string) $this->app->make(
                 HandleInertiaRequests::class,

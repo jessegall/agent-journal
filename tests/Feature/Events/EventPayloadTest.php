@@ -25,7 +25,6 @@ use Illuminate\Contracts\Container\Container;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Events\Dispatcher;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -40,7 +39,6 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 20, reason: 'The sent facts commit through the bus and empty their tables around each test.')]
 final class EventPayloadTest extends TestCase
 {
-    use ActsAsOwner;
     use CommitsHookRows;
 
     private const array TABLES = [
@@ -79,6 +77,13 @@ final class EventPayloadTest extends TestCase
 
             yield $name => [$event, $shape['fields']];
         }
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
     }
 
     /**
@@ -126,7 +131,7 @@ final class EventPayloadTest extends TestCase
         $classes = array_map(fn (object $event) => $event::class, $sent());
 
         $this->assertSame([TaskStarted::class, TaskStarted::class], $classes);
-        $this->assertSame($this->owner->id, $sent()[0]->actor->id);
+        $this->assertSame($this->journal->ownerUser()->id, $sent()[0]->actor->id);
         $this->assertEquals($sent()[0], unserialize(serialize($sent()[0])));
     }
 
@@ -161,7 +166,7 @@ final class EventPayloadTest extends TestCase
 
     private function runAsOwner(object $command): void
     {
-        $this->journal->actAsUserId($this->owner->id);
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
         $this->app->make(CommandBus::class)->run($command);
     }
 

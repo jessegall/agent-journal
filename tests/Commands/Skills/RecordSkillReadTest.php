@@ -44,9 +44,6 @@ final class RecordSkillReadTest extends TestCase
         'agent_sessions',
     ];
 
-    /**
-     * Every installed domain, since the skills this test names come from them.
-     */
     protected function setUp(): void
     {
         parent::setUp();
@@ -54,6 +51,9 @@ final class RecordSkillReadTest extends TestCase
         $this->journal->installProfiles();
     }
 
+    /**
+     * Every installed domain, since the skills this test names come from them.
+     */
     protected static function bootedDomains(): array
     {
         return DomainRegistry::installedClasses(dirname(__DIR__, 3));

@@ -24,10 +24,10 @@ use Domain\Rules\RulesDomain;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\ActsAsActors;
-use Tests\Support\ActsAsTestOwner;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\TestActors;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -39,7 +39,6 @@ use Tests\TestCase;
 final class SearchDomainSwitchesTest extends TestCase
 {
     use ActsAsActors;
-    use ActsAsTestOwner;
     use CommitsHookRows;
 
     private const array TABLES = [
@@ -56,6 +55,13 @@ final class SearchDomainSwitchesTest extends TestCase
     }
 
     private int $revision = 0;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->actAsUserId(TestIds::of(7));
+    }
 
     public function test_switching_documents_off_and_on_removes_and_restores_its_sources(): void
     {

@@ -43,17 +43,17 @@ final class RunPageTest extends TestCase
         $run = ProcessRun::query()->withoutGlobalScopes()->findOrFail($part->process_run_id);
         $run->consumeFor('test-key', (string) config('app.key'));
 
-        $this->actingAs($this->owner)->post("/processes/runs/{$run->id}/stop")->assertStatus(303);
+        $this->actingAs($this->journal->ownerUser())->post("/processes/runs/{$run->id}/stop")->assertStatus(303);
 
         $this->assertSame(LifecycleStatus::Stopped, $run->refresh()->lifecycle);
         config(['processes.project_key' => 'another-project']);
-        $this->actingAs($this->owner)->get("/processes/runs/{$run->id}")->assertOk()->assertInertia(fn (
+        $this->actingAs($this->journal->ownerUser())->get("/processes/runs/{$run->id}")->assertOk()->assertInertia(fn (
             AssertableInertia $page,
         ) => $page->where('page.data.root.key', 'removed')->where('page.data.root.children.1.key', 'back'));
     }
 
     private function page(string $path): TestResponse
     {
-        return $this->actingAs($this->owner)->get($path)->assertOk();
+        return $this->actingAs($this->journal->ownerUser())->get($path)->assertOk();
     }
 }

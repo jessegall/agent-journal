@@ -6,7 +6,6 @@ namespace Tests\Feature\Web;
 
 use App\Models\Access\User;
 use App\Support\UserChannel;
-use Tests\Support\ActsAsOwner;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -16,15 +15,21 @@ use Tests\TestCase;
  */
 final class UserChannelTest extends TestCase
 {
-    use ActsAsOwner;
     use RefreshHookDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
 
     public function test_the_owner_joins_their_own_channel_only(): void
     {
         $channel = $this->app->make(UserChannel::class);
 
-        $this->assertTrue($channel->join($this->owner, (string) $this->owner->id));
-        $this->assertFalse($channel->join($this->owner, TestIds::of(99999)));
+        $this->assertTrue($channel->join($this->journal->ownerUser(), (string) $this->journal->ownerUser()->id));
+        $this->assertFalse($channel->join($this->journal->ownerUser(), TestIds::of(99999)));
     }
 
     public function test_another_account_cannot_join_even_its_own_channel(): void
@@ -36,9 +41,10 @@ final class UserChannelTest extends TestCase
 
     public function test_the_channel_sign_in_needs_a_signed_in_user(): void
     {
+        $this->journal->asGuest();
         $this->post(
             '/broadcasting/auth',
-            ['channel_name' => 'private-'.UserChannel::nameFor($this->owner->id), 'socket_id' => '1.1'],
+            ['channel_name' => 'private-'.UserChannel::nameFor($this->journal->ownerUser()->id), 'socket_id' => '1.1'],
         )
             ->assertRedirect('/login');
     }
