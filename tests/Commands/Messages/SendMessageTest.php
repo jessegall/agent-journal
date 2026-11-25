@@ -89,7 +89,6 @@ final class SendMessageTest extends TestCase
         $command = new SendMessageCommand($this->ownInboxId, 'Once.');
 
         $first = $this->journal()->run($command, $key);
-        $this->app->forgetScopedInstances();
         $this->journal()->actAs('Owner');
         $second = $this->journal()->run($command, $key);
 

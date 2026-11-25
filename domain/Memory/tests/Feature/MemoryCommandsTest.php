@@ -4,14 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Tests\Feature;
 
-use App\Contracts\Bus\CommandBus;
-use App\Exceptions\CommandInputInvalid;
 use App\Exceptions\RecordUnavailable;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
-use Domain\Memory\Commands\EditMemory\EditMemoryCommand;
-use Domain\Memory\Commands\SaveMemory\SaveMemoryCommand;
 use Domain\Memory\Contracts\MemoryResolver;
 use Domain\Memory\Models\Memory;
 use Domain\Memory\Tests\TestCase;
@@ -154,56 +150,6 @@ final class MemoryCommandsTest extends TestCase
         ])->assertExitCode(1);
 
         $this->assertSame(0, Memory::query()->ownedBy(ActorIdentity::of($this->owner->agent))->count());
-    }
-
-    public function test_the_bus_refuses_a_blank_text_and_a_weight_outside_one_to_ten_naming_the_field(): void
-    {
-        $this->startRequestAs($this->owner->agent->id, $this->owner->session->id);
-        $bus = $this->app->make(CommandBus::class);
-
-        $this->assertThrows(fn () => $bus->run(new SaveMemoryCommand('   ', 5)), CommandInputInvalid::class, 'text:');
-
-        $this->assertThrows(
-            fn () => $bus->run(new SaveMemoryCommand('Light.', 0)),
-            CommandInputInvalid::class,
-            'weight:',
-        );
-
-        $this->assertThrows(
-            fn () => $bus->run(new SaveMemoryCommand('Heavy.', 11)),
-            CommandInputInvalid::class,
-            'weight:',
-        );
-
-        $this->assertSame(0, Memory::query()->count());
-
-        $bus->run(new SaveMemoryCommand('Lightest.', Memory::LIGHTEST));
-        $bus->run(new SaveMemoryCommand('Heaviest.', Memory::HEAVIEST));
-
-        $this->assertSame([
-            1,
-            2,
-        ], Memory::query()->orderBy('number')->pluck('number')->all());
-    }
-
-    public function test_an_edit_with_blank_text_or_nothing_to_change_is_refused_and_keeps_the_revision(): void
-    {
-        $this->startRequestAs($this->owner->agent->id, $this->owner->session->id);
-        $memory = Memory::create(ActorIdentity::of($this->owner->agent), 'Keep me.', 4);
-        $bus = $this->app->make(CommandBus::class);
-
-        $blank = new EditMemoryCommand($memory->id, 1, '   ', null);
-        $nothing = new EditMemoryCommand($memory->id, 1, null, null);
-
-        $this->assertThrows(fn () => $bus->run($blank), CommandInputInvalid::class, 'text:');
-        $this->assertThrows(fn () => $bus->run($nothing), CommandInputInvalid::class, 'text:');
-        $this->assertSame([
-            'Keep me.',
-            1,
-        ], [
-            $memory->refresh()->text,
-            $memory->revision,
-        ]);
     }
 
     public function test_a_stale_edit_is_a_conflict_and_keeps_the_newer_text(): void

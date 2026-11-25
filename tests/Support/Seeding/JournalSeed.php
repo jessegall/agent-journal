@@ -87,10 +87,12 @@ final class JournalSeed
     }
 
     /**
-     * Makes the user or agent of this name the actor of every command run after.
+     * Starts a fresh request as the user or agent of this name, the actor of every command run after.
      */
     public function actAs(string $name): self
     {
+        $this->app->forgetScopedInstances();
+
         if (array_key_exists($name, $this->agents)) {
             $this->startRequestAs($this->agents[$name]->id, $this->sessions[$name]->id);
 
