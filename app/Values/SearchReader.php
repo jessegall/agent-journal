@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Enums\Search\SearchSurface;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 
 /**
  * Who reads the results of a search and where: the authenticated actor and the surface that asked.
@@ -13,7 +13,7 @@ use App\Support\ActorContext;
 final readonly class SearchReader
 {
     public function __construct(
-        public ActorContext $actor,
+        public ActorIdentity $actor,
         public SearchSurface $surface,
     ) {}
 

@@ -9,7 +9,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Records\RecordResolver;
 use App\Exceptions\AnchorMismatch;
 use App\Models\Agents\Agent;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\IdListPage;
 use App\Support\RecordIdentity;
 use App\Support\RecordReference;
@@ -240,7 +240,7 @@ final class CommentOnDocumentTest extends TestCase
         $this->comment('From an agent.', WholeRecord::Record);
 
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(1)),
+            ActorIdentity::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
 

@@ -16,7 +16,6 @@ use App\Exceptions\ProfilePolicyRefused;
 use App\Models\Profiles\Profile;
 use App\Models\Profiles\ProfileDraft;
 use App\Models\Profiles\ProfileRevision;
-use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\ContainerAdmission;
 use App\Support\PolicyResolver;
@@ -64,7 +63,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
      */
     public function activate(
         ProfileProposal $proposal,
-        ActorContext $actor,
+        ActorIdentity $actor,
         DraftExpectations $expected = new DraftExpectations(),
     ): ProfileActivation {
         $hash = hash('sha256', json_encode($proposal, JSON_THROW_ON_ERROR));

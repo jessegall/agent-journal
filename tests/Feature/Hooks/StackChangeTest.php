@@ -10,7 +10,7 @@ use App\Events\Hooks\StateTypesRequested;
 use App\Exceptions\StackMissing;
 use App\Exceptions\StackTooDeep;
 use App\Models\Agents\AgentStackRow;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\AgentContext;
 use App\Support\AgentStacks;
 use App\Support\EngineAccess;
@@ -65,7 +65,7 @@ final class StackChangeTest extends TestCase
             ),
         );
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forAgent(TestIds::of(1)),
+            ActorIdentity::forAgent(TestIds::of(1)),
             TestStartAuthority::forAgent(TestIds::of(1)),
         );
         $this->tasks = new FinishedSubjects();

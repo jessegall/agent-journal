@@ -6,7 +6,7 @@ namespace App\Events\Hooks;
 
 use App\Contracts\Authorization\AuthoritySource;
 use App\Contracts\Bus\Command;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Values\StackTarget;
 
 /**
@@ -21,7 +21,7 @@ final readonly class StateCommandAnswered implements HookEvent
     public function __construct(
         public StackTarget $target,
         public Command $command,
-        public ActorContext $actor,
+        public ActorIdentity $actor,
         public AuthoritySource $authority,
     ) {}
 }

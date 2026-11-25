@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\Helpers\Tests;
 
 use App\Contracts\Actors\CurrentActorSetter;
-use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Values\OwnerAuthority;
 use Domain\Helpers\HelpersDomain;
@@ -27,7 +26,7 @@ abstract class TestCase extends BaseTestCase
      */
     protected function actAsUser(string $userId): ActorIdentity
     {
-        $actor = ActorContext::forUser($userId);
+        $actor = ActorIdentity::forUser($userId);
         $this->app->make(CurrentActorSetter::class)->set($actor, new OwnerAuthority('test'));
 
         return ActorIdentity::of($actor);

@@ -14,7 +14,7 @@ use App\Exceptions\SkillRevisionConflict;
 use App\Models\Skills\Skill;
 use App\Models\Skills\SkillRevision;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Values\SectionDraft;
 use App\Values\SkillDraft;
 use App\Values\SkillRevisionResult;
@@ -105,7 +105,7 @@ final class ReviseSkillTest extends TestCase
         );
 
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forAgent($this->caller->agent->id),
+            ActorIdentity::forAgent($this->caller->agent->id),
             TestStartAuthority::forAgent($this->caller->agent->id),
         );
 

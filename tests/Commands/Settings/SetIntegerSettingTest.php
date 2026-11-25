@@ -20,7 +20,7 @@ use App\Exceptions\SettingsConflict;
 use App\Exceptions\SettingUnavailable;
 use App\Exceptions\SettingValueInvalid;
 use App\Models\Records\SettingsRecord;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\Storage\SettingsDocument;
 use App\Values\GroupReference;
 use App\Values\ProfileBase;
@@ -195,7 +195,7 @@ final class SetIntegerSettingTest extends TestCase
         $agent = TestIds::of(3);
 
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forAgent($agent),
+            ActorIdentity::forAgent($agent),
             TestStartAuthority::granting(ProfileBase::mainAgent(), []),
         );
 

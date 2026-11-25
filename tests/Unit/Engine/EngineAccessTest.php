@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Engine;
 
 use App\Exceptions\EngineAccessRefused;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\EngineAccess;
 use App\Support\SystemActor;
 use App\Values\StackTarget;
@@ -31,7 +31,7 @@ final class EngineAccessTest extends TestCase
 
         $access->assertTargetGranted(new StackTarget('a', 's'));
         $this->assertSame('frame-1', $access->frameGrantFor(new SystemActor())->get()->frameId);
-        $this->assertTrue($access->frameGrantFor(ActorContext::forAgent(SystemActor::ID))->isEmpty());
+        $this->assertTrue($access->frameGrantFor(ActorIdentity::forAgent(SystemActor::ID))->isEmpty());
         $this->assertRefused(fn () => $access->assertTargetGranted(new StackTarget('a', 'other')));
         $this->assertRefused(fn () => $access->assertMaintenanceGranted('starts.silence'));
     }

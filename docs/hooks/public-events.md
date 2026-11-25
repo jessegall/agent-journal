@@ -22,7 +22,7 @@ that save succeeded, and a command-level fact is staged by the command's own cod
 `App\Contracts\Bus\CommandFacts::publishAfterCommit`. Both join the event unit of the transaction in save order.
 The fact's transaction listeners run inside that transaction, before it commits; its public listeners hear it through
 Laravel's dispatcher only after the real commit, once no command of the request still runs. A rolled-back change
-releases nothing. Each fact carries plain values: ids, and Core values such as `StackTarget` or `ActorContext`.
+releases nothing. Each fact carries plain values: ids, and Core values such as `StackTarget` or `ActorIdentity`.
 
 | Fact | Owner | Raised when | Payload |
 |---|---|---|---|

@@ -344,7 +344,7 @@ final class EventPayloads
                 'fields' => [
                     'documentId' => 'string',
                     'number' => 'int',
-                    'actor' => 'App\Support\ActorContext',
+                    'actor' => 'App\Support\ActorIdentity',
                 ],
             ],
             DocumentDraftSaved::class => [
@@ -370,7 +370,7 @@ final class EventPayloads
                 'fields' => [
                     'draftId' => 'string',
                     'documentId' => 'string',
-                    'parent' => '?App\Support\ActorContext',
+                    'parent' => '?App\Support\ActorIdentity',
                 ],
             ],
             RecordSettled::class => [
@@ -383,19 +383,19 @@ final class EventPayloads
                 'fields' => [
                     'reportId' => 'string',
                     'number' => 'int',
-                    'actor' => 'App\Support\ActorContext',
+                    'actor' => 'App\Support\ActorIdentity',
                 ],
             ],
             PlanCancelled::class => [
                 'fields' => [
                     'planId' => 'string',
-                    'cancelledBy' => 'App\Support\ActorContext',
+                    'cancelledBy' => 'App\Support\ActorIdentity',
                 ],
             ],
             PlanFinished::class => [
                 'fields' => [
                     'planId' => 'string',
-                    'finishedBy' => 'App\Support\ActorContext',
+                    'finishedBy' => 'App\Support\ActorIdentity',
                 ],
             ],
             PlanReviewDecided::class => [
@@ -422,7 +422,7 @@ final class EventPayloads
             PlanStarted::class => [
                 'fields' => [
                     'planId' => 'string',
-                    'startedBy' => 'App\Support\ActorContext',
+                    'startedBy' => 'App\Support\ActorIdentity',
                 ],
             ],
             RuleApproved::class => [

@@ -14,7 +14,7 @@ use App\Models\Agents\Agent;
 /**
  * Who an actor is, by type and id, apart from any request or session: user 3 and agent 3 are different actors.
  */
-final readonly class ActorIdentity
+final readonly class ActorIdentity implements Actor
 {
     use ComparesTypeAndId;
 
@@ -26,6 +26,19 @@ final readonly class ActorIdentity
     public static function of(Actor $actor): self
     {
         return new self($actor->actorType(), $actor->actorId());
+    }
+
+    public static function forAgent(string $agentId): self
+    {
+        return new self(Agent::storedType(), $agentId);
+    }
+
+    /**
+     * Only the domain that owns users and their access names a request's user, after its policy let the user in.
+     */
+    public static function forUser(string $userId): self
+    {
+        return new self(User::storedType(), $userId);
     }
 
     /**
@@ -83,6 +96,16 @@ final readonly class ActorIdentity
     public static function system(): self
     {
         return self::of(new SystemActor());
+    }
+
+    public function actorType(): string
+    {
+        return $this->type;
+    }
+
+    public function actorId(): string
+    {
+        return $this->id;
     }
 
     /**

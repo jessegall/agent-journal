@@ -25,7 +25,7 @@ use App\Contracts\Presence\UserPresences as UserPresencesContract;
 use App\Contracts\Time\ServerClock as ServerClockContract;
 use App\Contracts\Work\ActorStackSessions;
 use App\Support\ActiveActorRegistration;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\ActorProviderRegistry;
 use App\Support\ActorStore;
 use App\Support\AuthorizerProviderRegistration;
@@ -47,7 +47,7 @@ use Illuminate\Support\ServiceProvider;
 
 /**
  * Binds the actor contracts to this request's actor store, which is scoped, so a long-running worker forgets the
- * actor between requests, and lets the readers that take ActorContext directly read it from that store. The presence
+ * actor between requests, and lets the readers that take ActorIdentity directly read it from that store. The presence
  * window is read once from config/actors.php; the owners of actors register their counters of present ones, and the
  * viewer's heartbeat route is loaded here.
  */
@@ -66,7 +66,7 @@ final class ActorsServiceProvider extends ServiceProvider
         $this->app->bind(ActorRunner::class, ActorStore::class);
         $this->app->singleton(PolicyCatalogueContract::class, PolicyCatalogue::class);
         $this->app->singleton(ReadEntitlementsContract::class, ReadEntitlements::class);
-        $this->app->bind(ActorContext::class, fn (Application $app) => $app->make(CurrentActor::class)->actor());
+        $this->app->bind(ActorIdentity::class, fn (Application $app) => $app->make(CurrentActor::class)->actor());
 
         $this->app->singleton(PresenceWindow::class, fn (Application $app) => new PresenceWindow(
             $app->make('config')->integer('actors.presence_seconds'),

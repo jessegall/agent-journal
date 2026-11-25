@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture\Support;
 
 use App\Contracts\Actors\CurrentActor;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\DeclaredType;
 use App\Support\ReflectedMethod;
 use App\Support\ReflectedType;
@@ -38,7 +38,7 @@ final readonly class BindingRules
      * Values of one request that Core builds by a closure on each resolution, and the contract of the request's actor,
      * whose scoped store Core's provider binds, so they are per-request wherever the provider is not judged.
      */
-    private const array PER_REQUEST_VALUES = [ActorContext::class, CurrentActor::class];
+    private const array PER_REQUEST_VALUES = [ActorIdentity::class, CurrentActor::class];
 
     /**
      * @param  list<PublicOwner>  $owners

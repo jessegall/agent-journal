@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Tests\Fixtures;
 
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use Domain\Rules\Enums\RuleStatus;
 use Domain\Rules\Models\Rule;
 use PHPUnit\Framework\Assert;
@@ -29,7 +29,7 @@ final class RuleFixtures
     public function proposedRule(string $name, string $text, string $proposer, string $reason = self::REASON): self
     {
         $this->aliases->claim($name);
-        $proposed = Rule::create($text, $reason, null, ActorContext::of($this->journal->userOrAgentCalled($proposer)));
+        $proposed = Rule::create($text, $reason, null, ActorIdentity::of($this->journal->userOrAgentCalled($proposer)));
         $this->aliases->remember($name, $proposed);
 
         return $this;

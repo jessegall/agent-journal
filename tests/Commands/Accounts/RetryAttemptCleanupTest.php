@@ -15,7 +15,7 @@ use App\Enums\Accounts\SignInMethod;
 use App\Http\Pages\Resolvers\AccountsWindowResolver;
 use App\Jobs\SignInDeadline;
 use App\Models\Accounts\Account;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\Command;
 use App\Support\JournalCommands;
 use App\Values\CleanupProgress;
@@ -85,7 +85,7 @@ final class RetryAttemptCleanupTest extends TestCase
     private function asOwner(Command $command): mixed
     {
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(1)),
+            ActorIdentity::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
 

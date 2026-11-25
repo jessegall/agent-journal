@@ -7,7 +7,6 @@ namespace App\Support\Access;
 use App\Contracts\Actors\Actor;
 use App\Contracts\Admission\JournalAdmission as JournalAdmissionContract;
 use App\Exceptions\ConsoleOwnerMissing;
-use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 
 /**
@@ -27,10 +26,10 @@ final readonly class JournalAdmission implements JournalAdmissionContract
         return ActorIdentity::of($actor)->isSameAs(ActorIdentity::of($this->owner()));
     }
 
-    public function owner(): ActorContext
+    public function owner(): ActorIdentity
     {
         $ownerId = $this->settings->ownerId ?? throw ConsoleOwnerMissing::forConsole();
 
-        return ActorContext::forUser($ownerId);
+        return ActorIdentity::forUser($ownerId);
     }
 }

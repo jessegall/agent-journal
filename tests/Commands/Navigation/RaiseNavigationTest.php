@@ -23,7 +23,6 @@ use App\Models\Drivers\MenuEntry;
 use App\Models\Drivers\NavigationRequest;
 use App\Models\Inboxes\Inbox;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
 use App\Support\EnrolledHost;
@@ -515,7 +514,7 @@ final class RaiseNavigationTest extends TestCase
 
     private function seat(Agent $agent): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorIdentity::forUser('owner'), new OwnerAuthority('test'));
         $this->inTransaction(fn () => $this->app->make(MainInboxTakeover::class)->takeOver($agent));
     }
 

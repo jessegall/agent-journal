@@ -12,7 +12,6 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
-use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\TextSearch;
 use Carbon\CarbonImmutable;
@@ -88,7 +87,7 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
         string $text,
         string $reason,
         string|null $replacesRuleId,
-        ActorContext $proposer,
+        ActorIdentity $proposer,
     ): self {
         $rule = new self();
         $rule->text = $text;

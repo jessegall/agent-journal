@@ -11,7 +11,7 @@ use App\Exceptions\CommandAdmissionRefused;
 use App\Exceptions\StateEventReentry;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Agents\PendingAgentMessage;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\AgentStacks;
 use App\Support\AttentionOrigin;
 use App\Support\Drivers\DriverReplies;
@@ -213,7 +213,7 @@ final class StateEventDeliveryTest extends TestCase
     {
         $this->journal->pushState($this->target, new StateReference('notes.watching', NoSubject::None));
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forAgent($this->target->agentId),
+            ActorIdentity::forAgent($this->target->agentId),
             TestStartAuthority::granting(ProfileBase::mainAgent(), []),
         );
 

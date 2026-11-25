@@ -7,7 +7,7 @@ namespace Tests\Fixtures\Bus\Shop\Commands\BaselessItem;
 use Tests\Fixtures\Bus\Policies\FixturePolicy;
 use App\Enums\Agents\AccessType;
 use App\Attributes\Commands\Authorize;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Contracts\Bus\Command;
 use App\Exceptions\CommandDispatcherMissing;
 
@@ -21,12 +21,12 @@ final readonly class BaselessItemCommand implements Command
 {
     public function __construct() {}
 
-    public function dispatchedBy(): ActorContext
+    public function dispatchedBy(): ActorIdentity
     {
         throw CommandDispatcherMissing::forCommand(self::class);
     }
 
-    public function withDispatcher(ActorContext $dispatcher): static
+    public function withDispatcher(ActorIdentity $dispatcher): static
     {
         return $this;
     }

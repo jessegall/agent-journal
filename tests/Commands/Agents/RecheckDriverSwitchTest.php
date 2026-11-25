@@ -12,7 +12,7 @@ use App\Enums\Drivers\DriverSwitchStage;
 use App\Enums\Drivers\DriverType;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverSwitch;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\DefaultDrivers;
 use App\Support\StartSessions;
 use App\Values\ChosenAccount;
@@ -51,7 +51,7 @@ final class RecheckDriverSwitchTest extends TestCase
         parent::setUp();
 
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(1)),
+            ActorIdentity::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
         $agent = $this->journal->idleAgent('Main agent', 'main-agent')->agentCalled('Main agent');

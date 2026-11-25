@@ -44,7 +44,7 @@ No owner store existed for the subjects the states are about, so plan 2 built th
 
 `appApi.php` lists 127 Core types one by one; the rest of Core is private, whatever folder a class sits in. By area:
 
-- **Actors** (7): `ActorContext`, `ActorContextMissing`, `ActorIdentity`, `ActorTypes`, `AgentActorRequired`, `InvalidActorText`, `UserActorRequired`.
+- **Actors** (7): `ActorIdentity`, `ActorContextMissing`, `ActorIdentity`, `ActorTypes`, `AgentActorRequired`, `InvalidActorText`, `UserActorRequired`.
 - **Agents** (7): `AgentLabel`, `AgentNotAvailable`, `AgentReader`, `AgentRetirementDenied`, `RetireAgent`, `SessionOption`, `SessionReader`.
 - **Assignments** (43): the contracts `AssignmentWriter`, `AssignmentReader`, `AssigneeReader`, `AssignmentTransaction`, `AssignableProvider`, `AssigneeProvider` and `AssignmentRegistration`; the values `RecordIdentity`, `Assignment`, `AssignmentReference`, `AssignmentGroup`, `AssignmentChange`, `AssignmentOutcome`, `AssignmentResult`, `AssignmentSet`, `AssignmentHolder`, `AssignmentHolders`, `AssigneeName`, `AssigneeList`, `AssigneeRegistration`, `Page`, `NumberedPage`, `RecordIds`, `AssignmentData` and `RecordHolderData`; the enums `AssignmentOutcomeType` and `AssignmentReason`; the fact `AssignmentsChanged`; the trait `AssignableListing`; and their exceptions (`AssignmentConflict`, `AssignmentDenied`, `AssignmentRootFinished`, `AssignmentGroupTooLarge`, `RecordUnavailable`, `AssigneeUnavailable`, `AssignmentTypeUnavailable`, `InvalidAssignmentIdentity`, `InvalidAssignmentPage`, `AssignmentRetryExhausted`, `AssignmentTransactionRequired`, `AssignmentProviderInvalid`, `AssignmentTypeRepeated`, `AssigneeTypeRepeated`).
 - **Contracts** (5): `Actor`, `Assignable`, `Assignee`, `CurrentActor`, `CurrentActorSetter`.

@@ -8,7 +8,7 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\CommandInputInvalid;
 use App\Models\Access\User;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\ConnectedProject;
 use App\Support\ServedEnvironment;
 use App\Values\OwnerAuthority;
@@ -147,7 +147,7 @@ final class CreateTaskTest extends TestCase
     private function create(string $title): Task
     {
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(7)),
+            ActorIdentity::forUser(TestIds::of(7)),
             new OwnerAuthority('test'),
         );
 

@@ -7,7 +7,6 @@ namespace Tests\Feature\Profiles;
 use App\Contracts\Domains\DomainAvailability;
 use App\Contracts\Files\WorkspaceReader;
 use App\Exceptions\ScriptDefinitionRefused;
-use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\Bootstrappers\RegisterScriptDefinitions;
 use App\Support\DomainEntry;
@@ -79,7 +78,7 @@ final class ScriptDefinitionsTest extends TestCase
     private function context(string $trigger): ScriptContext
     {
         return new ScriptContext(
-            ActorIdentity::of(ActorContext::forUser('owner')),
+            ActorIdentity::of(ActorIdentity::forUser('owner')),
             WorkReference::free('ask'),
             new ProfileRevisionReference(ProfileKey::from('draft-test'), 1),
             $trigger,

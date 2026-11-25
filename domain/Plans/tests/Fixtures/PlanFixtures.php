@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Fixtures;
 
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
 use Domain\Plans\Commands\AddPhase\AddPhaseCommand;
 use Domain\Plans\Commands\AddPhaseTasks\AddPhaseTasksCommand;
@@ -92,7 +92,7 @@ final class PlanFixtures
      */
     public function startedPlan(string $name, PlanType $type = PlanType::Build): self
     {
-        $this->plan($name, type: $type)->planCalled($name)->startOnce(ActorContext::of($this->journal->ownerUser()));
+        $this->plan($name, type: $type)->planCalled($name)->startOnce(ActorIdentity::of($this->journal->ownerUser()));
 
         return $this;
     }

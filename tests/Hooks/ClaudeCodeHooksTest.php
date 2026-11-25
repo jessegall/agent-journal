@@ -28,7 +28,7 @@ use App\Models\Drivers\FailureReceipt;
 use App\Models\Drivers\HookCall;
 use App\Models\Records\Link;
 use App\Models\Sessions\ReportedBypass;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\AgentContext;
 use App\Support\CredentialLookup;
 use App\Support\DefaultDrivers;
@@ -508,7 +508,7 @@ final class ClaudeCodeHooksTest extends TestCase
             ),
         );
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forAgent($started->session->agent_id),
+            ActorIdentity::forAgent($started->session->agent_id),
             TestStartAuthority::forAgent($started->session->agent_id),
         );
         $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));

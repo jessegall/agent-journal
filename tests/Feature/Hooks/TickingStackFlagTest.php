@@ -7,7 +7,7 @@ namespace Tests\Feature\Hooks;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Events\Hooks\StateTypesRequested;
 use App\Models\Agents\AgentStackRow;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\AgentContext;
 use App\Support\AgentStacks;
 use App\Support\EngineStacks;
@@ -134,7 +134,7 @@ final class TickingStackFlagTest extends TestCase
             ),
         );
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forAgent($started->session->agent_id),
+            ActorIdentity::forAgent($started->session->agent_id),
             TestStartAuthority::forAgent($started->session->agent_id),
         );
         $this->app->make(StackTransaction::class)->run($work);

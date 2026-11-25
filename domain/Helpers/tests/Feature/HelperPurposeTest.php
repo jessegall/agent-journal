@@ -6,7 +6,6 @@ namespace Domain\Helpers\Tests\Feature;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Records\RecordVisibility;
-use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
 use App\Values\OwnerAuthority;
@@ -33,7 +32,7 @@ final class HelperPurposeTest extends TestCase
     {
         parent::setUp();
 
-        $actor = ActorContext::forUser('parent');
+        $actor = ActorIdentity::forUser('parent');
         $this->app->make(CurrentActorSetter::class)->set($actor, new OwnerAuthority('test'));
         $this->parent = ActorIdentity::of($actor);
         $this->visible = new RecordIdentity('plans.plan', (string) Str::ulid());

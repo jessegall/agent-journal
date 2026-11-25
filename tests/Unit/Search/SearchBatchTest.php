@@ -8,7 +8,7 @@ use App\Enums\Search\FailureReason;
 use App\Enums\Search\ScoreTier;
 use App\Enums\Search\SearchSurface;
 use App\Exceptions\SearchBatchInvalid;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
 use App\Values\ExhaustedOutcome;
 use App\Values\FailedOutcome;
@@ -142,7 +142,7 @@ final class SearchBatchTest extends TestCase
     private function query(): SearchQuery
     {
         return new SearchQuery(
-            new SearchReader(ActorContext::forAgent(self::FIRST_ID), SearchSurface::AgentTool),
+            new SearchReader(ActorIdentity::forAgent(self::FIRST_ID), SearchSurface::AgentTool),
             SearchWords::fromInput('driver'),
             SearchScope::everywhere(),
             'tasks.task',

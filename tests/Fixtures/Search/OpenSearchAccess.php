@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Search;
 
 use App\Contracts\Search\SearchAccess;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Values\AdmittedConstraints;
 use App\Values\OpenAction;
 use App\Values\ReadRequest;
@@ -22,7 +22,7 @@ final class OpenSearchAccess implements SearchAccess
         return ReadRequest::forDiscovery('tasks_read');
     }
 
-    public function canUserSearch(ActorContext $user): bool
+    public function canUserSearch(ActorIdentity $user): bool
     {
         return true;
     }

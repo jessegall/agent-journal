@@ -13,7 +13,6 @@ use App\Models\Accounts\Account;
 use App\Models\Accounts\SignInAttempt;
 use App\Models\Agents\Agent;
 use App\Support\AccountMaintenance;
-use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\Compatibility\DriverCompatibility;
 use App\Values\OwnerAuthority;
@@ -102,6 +101,6 @@ final class MaintainAccountTest extends TestCase
 
     private function actAsOwner(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorIdentity::forUser('owner'), new OwnerAuthority('test'));
     }
 }

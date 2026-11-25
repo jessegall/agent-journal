@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use Domain\Documents\Events\DocumentClosed;
 use Domain\Documents\Events\DocumentCreated;
 use Domain\Documents\Events\DocumentDraftSaved;
@@ -35,7 +35,7 @@ return [
         'owner' => 'Document::create',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new DocumentCreated('document', 1, ActorContext::forUser('user')),
+        'sample' => fn () => new DocumentCreated('document', 1, ActorIdentity::forUser('user')),
     ],
     DocumentDraftSaved::class => [
         'role' => EventRole::RowFact,
@@ -77,7 +77,7 @@ return [
         'owner' => 'Report::create',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ReportFiled('report', 1, ActorContext::forUser('user')),
+        'sample' => fn () => new ReportFiled('report', 1, ActorIdentity::forUser('user')),
     ],
     DocumentFirstRevisionSet::class => [
         'role' => EventRole::RowFact,

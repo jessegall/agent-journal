@@ -12,7 +12,6 @@ use App\Enums\Accounts\SignInStatus;
 use App\Exceptions\SignInAnswerRefused;
 use App\Exceptions\SignInCodeInvalid;
 use App\Models\Accounts\SignInAttempt;
-use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\DefaultDrivers;
 use App\Support\SignInChallenges;
@@ -52,7 +51,7 @@ final class SubmitSignInCodeTest extends TestCase
         parent::setUp();
 
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(1)),
+            ActorIdentity::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
     }

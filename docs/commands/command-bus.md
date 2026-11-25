@@ -12,7 +12,7 @@ its name: `Domain\Rules\Commands\ProposeRule\ProposeRuleCommand` is handled by `
 names no handler and the two folders import one way. A handler has one public `handle` method that takes the command,
 and holds no transaction code: the bus opens the transaction.
 
-The handler reads who dispatched the command with `$command->dispatchedBy()`: an `App\Support\ActorContext`,
+The handler reads who dispatched the command with `$command->dispatchedBy()`: an `App\Support\ActorIdentity`,
 the actor's type and id and nothing more, no authority. The bus binds it on every call. A command the caller has just
 built is unbound, and reading `dispatchedBy()` on it raises `App\Exceptions\CommandDispatcherMissing`.
 

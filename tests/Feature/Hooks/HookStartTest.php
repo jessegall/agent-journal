@@ -12,7 +12,7 @@ use App\Enums\Drivers\RewriteSupport;
 use App\Exceptions\ProfileMissing;
 use App\Models\Agents\AgentSession;
 use App\Models\Agents\AgentStackRow;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\AgentContext;
 use App\Support\CredentialLookup;
 use App\Support\Drivers\Adapters\ClaudeCodeAdapter;
@@ -204,7 +204,7 @@ final class HookStartTest extends TestCase
             null,
         ));
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forAgent($started->session->agent_id),
+            ActorIdentity::forAgent($started->session->agent_id),
             TestStartAuthority::forAgent($started->session->agent_id),
         );
 

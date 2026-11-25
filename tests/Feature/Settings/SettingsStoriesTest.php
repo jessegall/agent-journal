@@ -11,7 +11,7 @@ use App\Declarations\SettingGroup;
 use App\Declarations\StringSetting;
 use App\Exceptions\SettingDeclarationInvalid;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\CatalogueReflectorFactory;
 use App\Support\CoreSettings;
 use App\Support\DomainRegistry;
@@ -56,7 +56,7 @@ final class SettingsStoriesTest extends TestCase
         $this->commands = new SettingCommands($registry, new CatalogueReflectorFactory());
         $ownerId = TestIds::of(7);
         $this->app->instance(AccessSettings::class, new AccessSettings($ownerId));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($ownerId), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorIdentity::forUser($ownerId), new OwnerAuthority('test'));
     }
 
     /**

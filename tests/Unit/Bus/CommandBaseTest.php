@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Bus;
 
 use App\Exceptions\CommandDispatcherMissing;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\Command;
 use App\Support\CommandGrammar;
 use App\Support\PlainValue;
@@ -23,7 +23,7 @@ final class CommandBaseTest extends TestCase
     public function test_first_binding_keeps_the_exact_actor_and_leaves_the_original_unbound(): void
     {
         $item = new BoundItem('Seeds', 3);
-        $agent = ActorContext::forAgent('agent-1');
+        $agent = ActorIdentity::forAgent('agent-1');
 
         $bound = $item->withDispatcher($agent);
 
@@ -37,8 +37,8 @@ final class CommandBaseTest extends TestCase
     public function test_rebinding_a_bound_copy_keeps_the_first_copy_and_every_business_value(): void
     {
         $item = new BoundItem('Seeds', 3);
-        $agent = ActorContext::forAgent('agent-1');
-        $user = ActorContext::forUser('user-1');
+        $agent = ActorIdentity::forAgent('agent-1');
+        $user = ActorIdentity::forUser('user-1');
 
         $bound = $item->withDispatcher($agent);
         $rebound = $bound->withDispatcher($user);
@@ -55,7 +55,7 @@ final class CommandBaseTest extends TestCase
     public function test_the_private_slot_is_absent_from_grammar_reflection_public_fields_and_fingerprints(): void
     {
         $item = new BoundItem('Seeds', 3);
-        $bound = $item->withDispatcher(ActorContext::forAgent('agent-1'));
+        $bound = $item->withDispatcher(ActorIdentity::forAgent('agent-1'));
         $properties = array_map(
             fn (ReflectedProperty $property) => $property->name(),
             ReflectedType::of(BoundItem::class)->properties(),

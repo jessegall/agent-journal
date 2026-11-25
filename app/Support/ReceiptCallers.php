@@ -31,7 +31,7 @@ final readonly class ReceiptCallers
      * The receipt identity of the actor: the session of its signed call when its type works on one, as the same
      * provider that names the stack to admit says, otherwise the actor alone.
      */
-    public function of(ActorContext $actor): ReceiptCaller
+    public function of(ActorIdentity $actor): ReceiptCaller
     {
         $sessions = $this->stackSessions->admittableSessions();
 
@@ -49,7 +49,7 @@ final readonly class ReceiptCallers
      * The receipt identity a command keys its receipts under: the actor alone for a command that keeps its key for
      * the actor, otherwise the actor in its session.
      */
-    public function forCommand(string $command, ActorContext $actor): ReceiptCaller
+    public function forCommand(string $command, ActorIdentity $actor): ReceiptCaller
     {
         if ($this->registry->hasActorScopedReceipt($command)) {
             return ReceiptCaller::withoutSession($actor);

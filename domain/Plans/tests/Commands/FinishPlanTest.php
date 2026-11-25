@@ -9,7 +9,6 @@ use App\Contracts\Bus\CommandBus;
 use App\Exceptions\CommandInputInvalid;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use Domain\Plans\Commands\FinishPlan\FinishPlanCommand;
 use Domain\Plans\Enums\PlanStatus;
@@ -124,7 +123,7 @@ final class FinishPlanTest extends TestCase
 
         $this->journal->assertEvent(
             PlanFinished::class,
-            fn (PlanFinished $finished) => $finished->finishedBy == ActorContext::forUser($this->owner->id),
+            fn (PlanFinished $finished) => $finished->finishedBy == ActorIdentity::forUser($this->owner->id),
         );
     }
 

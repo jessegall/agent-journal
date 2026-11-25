@@ -10,7 +10,7 @@ use App\Data\Profiles\ScopedRead;
 use App\Enums\Profiles\AuthorizationType;
 use App\Enums\Search\SearchSurface;
 use App\Exceptions\ReadGrantRefused;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Values\AllowedNames;
 use App\Values\ReadRequest;
 use App\Values\SearchReader;
@@ -76,7 +76,7 @@ final class TaskSearchAccessTest extends TestCase
     public function test_an_a_only_agent_admits_a_and_not_b(): void
     {
         $access = new TaskSearchAccess($this->grantFor([self::TASK_A]));
-        $agent = new SearchReader(ActorContext::forAgent(self::ACTOR_ID), SearchSurface::AgentTool);
+        $agent = new SearchReader(ActorIdentity::forAgent(self::ACTOR_ID), SearchSurface::AgentTool);
 
         $constraints = $access->constraints($agent);
 
@@ -89,7 +89,7 @@ final class TaskSearchAccessTest extends TestCase
     public function test_a_user_reads_both_tasks(): void
     {
         $access = new TaskSearchAccess($this->grantFor([]));
-        $user = new SearchReader(ActorContext::forUser(self::ACTOR_ID), SearchSurface::Palette);
+        $user = new SearchReader(ActorIdentity::forUser(self::ACTOR_ID), SearchSurface::Palette);
 
         $constraints = $access->constraints($user);
 
@@ -123,7 +123,7 @@ final class TaskSearchAccessTest extends TestCase
             }
         };
         $access = new TaskSearchAccess($grant);
-        $agent = new SearchReader(ActorContext::forAgent(self::ACTOR_ID), SearchSurface::AgentTool);
+        $agent = new SearchReader(ActorIdentity::forAgent(self::ACTOR_ID), SearchSurface::AgentTool);
 
         $this->assertTrue($access->admitsOpen($agent, self::TASK_A));
         $grant->held = false;

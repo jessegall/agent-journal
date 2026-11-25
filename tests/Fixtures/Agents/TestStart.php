@@ -9,7 +9,7 @@ use App\Contracts\Sessions\StartTransaction;
 use App\Enums\Drivers\DriverType;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\AgentContext;
 use App\Support\AgentRuntimes;
 use App\Support\AgentSessions;
@@ -64,7 +64,7 @@ final readonly class TestStart
         $app->forgetScopedInstances();
         $app->instance(AgentContext::class, $context);
         $app->make(CurrentActorSetter::class)->set(
-            ActorContext::forAgent($this->agent->id),
+            ActorIdentity::forAgent($this->agent->id),
             TestStartAuthority::forAgent($this->agent->id),
         );
     }

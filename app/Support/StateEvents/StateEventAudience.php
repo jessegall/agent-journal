@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support\StateEvents;
 
 use App\Contracts\Authorization\AuthoritySource;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\AgentContext;
 use App\Support\SystemActor;
 use App\Values\FrameGrant;
@@ -26,7 +26,7 @@ final readonly class StateEventAudience
      * @param  Option<FrameGrant>  $engineFrame
      */
     public function __construct(
-        public ActorContext $actor,
+        public ActorIdentity $actor,
         public AuthoritySource $authority,
         public array $targets,
         public Option $session,
@@ -40,7 +40,7 @@ final readonly class StateEventAudience
     public static function listening(StackTarget $target, string $frameId): self
     {
         return new self(
-            ActorContext::of(new SystemActor()),
+            ActorIdentity::of(new SystemActor()),
             new TrustedEntryAuthority('state listener'),
             [$target],
             None::create(),

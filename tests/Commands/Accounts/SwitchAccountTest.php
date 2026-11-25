@@ -15,7 +15,7 @@ use App\Exceptions\AccountUnavailable;
 use App\Exceptions\ActorNotAllowed;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\DefaultDrivers;
 use App\Values\AccountLabel;
 use App\Values\OwnerAuthority;
@@ -108,7 +108,7 @@ final class SwitchAccountTest extends TestCase
     {
         $work = $this->account('Work');
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forAgent(TestIds::of(9)),
+            ActorIdentity::forAgent(TestIds::of(9)),
             TestStartAuthority::forAgent(TestIds::of(9)),
         );
 
@@ -137,7 +137,7 @@ final class SwitchAccountTest extends TestCase
     private function actAsOwner(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(1)),
+            ActorIdentity::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
     }

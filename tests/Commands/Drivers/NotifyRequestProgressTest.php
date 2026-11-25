@@ -38,7 +38,6 @@ use App\Models\Drivers\RuntimeEvent;
 use App\Models\Projects\Host;
 use App\Models\Sessions\SessionPolicy;
 use App\Models\Sessions\SessionRequest;
-use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\AgentStatus;
 use App\Support\AgentWakes;
@@ -379,7 +378,7 @@ final class NotifyRequestProgressTest extends TestCase
 
     private function statusOf(string $agentId): AgentStatus
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorIdentity::forUser('owner'), new OwnerAuthority('test'));
 
         return $this->app->make(AgentDirectory::class)->visibleAgent($agentId)->status;
     }

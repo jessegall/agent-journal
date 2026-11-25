@@ -20,7 +20,7 @@ use App\Exceptions\AccountUnavailable;
 use App\Http\Pages\Resolvers\AccountNoticesSection;
 use App\Models\Accounts\AccountNotice;
 use App\Models\Agents\Agent;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\JournalCommands;
 use App\Values\OwnerAuthority;
 use App\Values\StartPolicy;
@@ -75,7 +75,7 @@ final class RecordAccountNoticeTest extends TestCase
         parent::setUp();
 
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(1)),
+            ActorIdentity::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
         $this->app->make(Dispatcher::class)->listen(AccountsChanged::class, function (AccountsChanged $changed): void {
@@ -140,7 +140,7 @@ final class RecordAccountNoticeTest extends TestCase
     private function actAsOwner(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(1)),
+            ActorIdentity::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
     }

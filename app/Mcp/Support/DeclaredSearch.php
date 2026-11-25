@@ -11,7 +11,7 @@ use App\Enums\Search\SearchSurface;
 use App\Mcp\Contracts\Continuations as ContinuationsContract;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\ToolResult;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\AgentContext;
 use App\Values\DeclaredSearchable;
 use App\Values\EmittedHit;
@@ -162,7 +162,7 @@ final readonly class DeclaredSearch
     {
         return new SearchOwner(
             $this->agent->sessionId,
-            ActorContext::forAgent($this->agent->agentId),
+            ActorIdentity::forAgent($this->agent->agentId),
             implode(',', $this->environment->environmentIds()),
             self::TOOL,
             SearchSurface::AgentTool,
@@ -171,7 +171,7 @@ final readonly class DeclaredSearch
 
     private function reader(): SearchReader
     {
-        return new SearchReader(ActorContext::forAgent($this->agent->agentId), SearchSurface::AgentTool);
+        return new SearchReader(ActorIdentity::forAgent($this->agent->agentId), SearchSurface::AgentTool);
     }
 
     /**

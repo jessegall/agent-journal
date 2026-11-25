@@ -13,14 +13,14 @@ use Illuminate\Database\Eloquent\Model;
  */
 final readonly class ReceiptCaller
 {
-    private function __construct(public ActorContext $actor, public string|null $sessionId) {}
+    private function __construct(public ActorIdentity $actor, public string|null $sessionId) {}
 
-    public static function inSession(ActorContext $actor, string $sessionId): self
+    public static function inSession(ActorIdentity $actor, string $sessionId): self
     {
         return new self($actor, $sessionId);
     }
 
-    public static function withoutSession(ActorContext $actor): self
+    public static function withoutSession(ActorIdentity $actor): self
     {
         return new self($actor, null);
     }

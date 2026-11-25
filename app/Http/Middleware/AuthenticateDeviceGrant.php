@@ -10,7 +10,6 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Exceptions\ActorUnavailable;
 use App\Exceptions\DeviceGrantRefused;
 use App\Models\Projects\DeviceGrant;
-use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Values\DeviceCaller;
 use App\Values\InstallTicket;
@@ -64,7 +63,7 @@ final readonly class AuthenticateDeviceGrant
     private function approverOf(DeviceCaller $caller): Actor
     {
         try {
-            return $this->resolver->get(ActorIdentity::of(ActorContext::forUser($caller->userId)));
+            return $this->resolver->get(ActorIdentity::of(ActorIdentity::forUser($caller->userId)));
         } catch (ActorUnavailable $unavailable) {
             throw DeviceGrantRefused::approverWithdrawn($unavailable);
         }

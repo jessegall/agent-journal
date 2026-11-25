@@ -14,7 +14,7 @@ use App\Events\Sessions\AccountUseChanged;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Sessions\SessionProcess;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
 use App\Support\RegisterPendingStart;
 use App\Support\StartSessions;
@@ -125,7 +125,7 @@ final class CancelAccountUsesTest extends TestCase
     private function actAsOwner(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(1)),
+            ActorIdentity::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
     }

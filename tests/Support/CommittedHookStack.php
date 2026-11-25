@@ -16,7 +16,6 @@ use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Inboxes\Inbox;
-use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\ActorProvisioning;
 use App\Support\AgentContext;
@@ -177,7 +176,7 @@ trait CommittedHookStack
             ),
         );
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forAgent(TestIds::of(1)),
+            ActorIdentity::forAgent(TestIds::of(1)),
             TestStartAuthority::forAgent(TestIds::of(1)),
         );
     }

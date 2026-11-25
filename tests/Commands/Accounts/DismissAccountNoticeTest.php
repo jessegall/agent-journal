@@ -16,7 +16,7 @@ use App\Http\Pages\Resolvers\AccountNoticesSection;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\AccountNotice;
 use App\Models\Agents\Agent;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\DefaultDrivers;
 use App\Values\AccountLabel;
 use App\Values\OwnerAuthority;
@@ -69,7 +69,7 @@ final class DismissAccountNoticeTest extends TestCase
         $this->assertSame([], $this->section()->notices);
         event(new DriverFailed('agent', 'session', 'codex', DriverFailure::RateLimit));
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forAgent(TestIds::of(9)),
+            ActorIdentity::forAgent(TestIds::of(9)),
             TestStartAuthority::forAgent(TestIds::of(9)),
         );
         $this->assertSame([], $this->section()->notices);
@@ -83,7 +83,7 @@ final class DismissAccountNoticeTest extends TestCase
     private function actAsOwner(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(1)),
+            ActorIdentity::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
     }

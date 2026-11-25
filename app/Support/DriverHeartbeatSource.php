@@ -20,7 +20,7 @@ final readonly class DriverHeartbeatSource
 {
     public function __construct(private RecordHeartbeatHandler $beats, private StartHeartbeats $heartbeats) {}
 
-    public function record(AgentSession $session, HeartbeatEvidence $evidence, ActorContext $actor): void
+    public function record(AgentSession $session, HeartbeatEvidence $evidence, ActorIdentity $actor): void
     {
         $this->requireCurrent($session, $evidence->hostId, $evidence->processGeneration);
 

@@ -18,7 +18,7 @@ use App\Models\Agents\Agent;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\NavigationRequest;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\EnrolledHost;
 use App\Support\MainInboxTakeover;
 use App\Support\NavigationRounds;
@@ -74,7 +74,7 @@ final class AnswerNavigationTest extends TestCase
         $this->journal->installInboxes();
         $this->app->instance(AccessSettings::class, new AccessSettings('owner'));
         $this->main = $this->journal->idleAgent('Main', 'main-agent')->agentCalled('Main');
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorIdentity::forUser('owner'), new OwnerAuthority('test'));
         $this->app->make(AssignmentTransaction::class)->run(
             fn () => $this->app->make(MainInboxTakeover::class)->takeOver($this->main),
         );
@@ -193,7 +193,7 @@ final class AnswerNavigationTest extends TestCase
     private function asAgent(Agent $agent, Command $command): mixed
     {
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forAgent($agent->id),
+            ActorIdentity::forAgent($agent->id),
             TestStartAuthority::forAgent($agent->id),
         );
 

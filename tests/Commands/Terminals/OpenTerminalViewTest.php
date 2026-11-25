@@ -14,7 +14,7 @@ use App\Exceptions\TerminalViewRefused;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\TerminalView;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\DriverRequestEndings;
 use App\Support\WatchedRuntimes;
 use Carbon\CarbonImmutable;
@@ -115,7 +115,7 @@ final class OpenTerminalViewTest extends TestCase
         $runtime = $this->runtimeOn('host-1');
         $agentId = TestActors::agentIdentity(9)->id;
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forAgent($agentId),
+            ActorIdentity::forAgent($agentId),
             TestStartAuthority::forAgent($agentId),
         );
 

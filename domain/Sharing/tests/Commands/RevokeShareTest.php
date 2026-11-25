@@ -7,7 +7,7 @@ namespace Domain\Sharing\Tests\Commands;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
 use App\Support\RequestKey;
 use App\Values\OwnerAuthority;
@@ -131,7 +131,7 @@ final class RevokeShareTest extends TestCase
     {
         $this->app->forgetScopedInstances();
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::of($this->journal->ownerUser()),
+            ActorIdentity::of($this->journal->ownerUser()),
             new OwnerAuthority('test'),
         );
         $this->app->make(RequestKey::class)->set((string) Str::ulid());

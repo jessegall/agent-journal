@@ -24,7 +24,6 @@ use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Messages\Message;
 use App\Models\Records\AssignmentRecord;
-use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
 use App\Support\CommandCall;
@@ -224,7 +223,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
                     'Every phase ends with its tests.',
                     'Phases ended untested.',
                     null,
-                    ActorContext::forAgent(TestIds::of(10)),
+                    ActorIdentity::forAgent(TestIds::of(10)),
                 )->id,
             ),
         );

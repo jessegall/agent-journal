@@ -13,7 +13,7 @@ use App\Enums\Accounts\CommandEntry;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\AccountNotice;
 use App\Models\Accounts\ActiveAccount;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\DefaultDrivers;
 use App\Support\JournalCommands;
 use App\Values\AccountLabel;
@@ -49,7 +49,7 @@ final class CheckAccountTest extends TestCase
         parent::setUp();
 
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(1)),
+            ActorIdentity::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
         $this->account = Account::create(DefaultDrivers::CODEX, AccountLabel::from('Work'), '/journal/accounts/work');

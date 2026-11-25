@@ -15,7 +15,7 @@ use App\Exceptions\AccountNameChanged;
 use App\Models\Access\User;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\DefaultDrivers;
 use App\Values\AccountLabel;
 use App\Values\OwnerAuthority;
@@ -173,7 +173,7 @@ final class RenameAccountTest extends TestCase
     private function actAsOwner(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(1)),
+            ActorIdentity::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
     }

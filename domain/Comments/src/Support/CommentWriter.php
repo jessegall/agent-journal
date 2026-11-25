@@ -9,7 +9,6 @@ use App\Contracts\Records\Commentable;
 use App\Contracts\Records\RecordResolver;
 use App\Exceptions\SubmissionKeyConflict;
 use App\Exceptions\TargetHasNoText;
-use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\MarkdownText;
 use App\Support\RecordIdentity;
@@ -34,7 +33,7 @@ final readonly class CommentWriter
         string $text,
         WholeRecord|TextRange $subject,
         string $submissionKey,
-        ActorContext $actor,
+        ActorIdentity $actor,
     ): string {
         $target = $this->records->requireReadable($targetIdentity);
 

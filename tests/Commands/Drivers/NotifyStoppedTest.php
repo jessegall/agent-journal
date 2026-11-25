@@ -18,7 +18,7 @@ use App\Exceptions\AccountUnavailable;
 use App\Models\Accounts\Account;
 use App\Models\Agents\Agent;
 use App\Support\AccountMaintenance;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\Compatibility\DriverCompatibility;
 use App\Support\EnrolledHost;
 use App\Support\OpenedRuntime;
@@ -149,6 +149,6 @@ final class NotifyStoppedTest extends TestCase
 
     private function actAsOwner(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorIdentity::forUser('owner'), new OwnerAuthority('test'));
     }
 }

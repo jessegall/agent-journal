@@ -22,7 +22,6 @@ use App\Models\Projects\DeviceGrant;
 use App\Models\Projects\Environment;
 use App\Models\Projects\Project;
 use App\Models\Projects\ProjectBinding;
-use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\ActorLabelSet;
 use App\Support\InstallAttemptList;
@@ -125,7 +124,7 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
         )));
 
         $labels = $this->labels->labelsFor(array_map(
-            fn (string $userId) => ActorIdentity::of(ActorContext::forUser($userId)),
+            fn (string $userId) => ActorIdentity::of(ActorIdentity::forUser($userId)),
             array_values(array_unique($approvers)),
         ));
 
@@ -162,7 +161,7 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
             return 'Not approved yet';
         }
 
-        $name = $labels->nameOf(ActorIdentity::of(ActorContext::forUser($grant->approved_by_user_id)));
+        $name = $labels->nameOf(ActorIdentity::of(ActorIdentity::forUser($grant->approved_by_user_id)));
 
         return $name ?? 'An account that is gone';
     }

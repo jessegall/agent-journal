@@ -10,7 +10,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Enums\Sessions\SessionStatus;
 use App\Exceptions\CredentialRejected;
 use App\Models\Agents\AgentSession;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\ServerClock;
 use App\Support\SessionTokens;
 use App\Support\StartedAgent;
@@ -122,7 +122,7 @@ final class RecordHeartbeatTest extends TestCase
             TestSelections::requestId(),
         );
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forAgent($started->session->agent_id),
+            ActorIdentity::forAgent($started->session->agent_id),
             TestStartAuthority::forAgent($started->session->agent_id),
         );
 

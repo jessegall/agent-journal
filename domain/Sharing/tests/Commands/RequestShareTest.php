@@ -9,7 +9,6 @@ use App\Contracts\Bus\CommandBus;
 use App\Exceptions\CommandAdmissionRefused;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
-use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
 use App\Support\RequestKey;
@@ -96,7 +95,7 @@ final class RequestShareTest extends TestCase
         $this->owner = $this->journal->owner()->ownerUser();
 
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser($this->owner->id),
+            ActorIdentity::forUser($this->owner->id),
             new OwnerAuthority('test'),
         );
 

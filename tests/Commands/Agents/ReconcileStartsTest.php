@@ -21,7 +21,7 @@ use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Sessions\SessionProcess;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\Compatibility\DriverCompatibility;
 use App\Support\EnrolledHost;
 use App\Support\OpenedRuntime;
@@ -174,7 +174,7 @@ final class ReconcileStartsTest extends TestCase
 
     private function actAsOwner(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorIdentity::forUser('owner'), new OwnerAuthority('test'));
     }
 
     /**
@@ -194,7 +194,7 @@ final class ReconcileStartsTest extends TestCase
         DriverType $driverType = DriverType::Headless,
     ): array {
         $host = $this->enrollHost();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorIdentity::forUser('owner'), new OwnerAuthority('test'));
         $agent = Agent::create('Started agent '.Str::random(6), 'main-agent', $this->localProject());
         $command = new OpenAgentRuntimeCommand(
             $agent->id,

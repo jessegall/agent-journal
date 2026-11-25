@@ -9,7 +9,6 @@ use App\Contracts\Admission\JournalAdmission;
 use App\Contracts\Messages\AdmittedRecipients;
 use App\Contracts\Sharing\SharePolicy;
 use App\Exceptions\SharingNotAllowed;
-use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\GatewaySettings;
 use App\Support\ShareRecordRegistry;
@@ -53,9 +52,9 @@ final class OwnerSharePolicyTest extends TestCase
                 return ActorIdentity::of($actor)->isSameAs(ActorIdentity::of($this->owner()));
             }
 
-            public function owner(): ActorContext
+            public function owner(): ActorIdentity
             {
-                return ActorContext::forUser($this->test->ownerId());
+                return ActorIdentity::forUser($this->test->ownerId());
             }
 
             public function userIds(): array
@@ -77,13 +76,13 @@ final class OwnerSharePolicyTest extends TestCase
     {
         $policy = $this->app->make(SharePolicy::class);
 
-        $this->assertTrue($policy->mayManage(ActorContext::forUser($this->ownerId)));
+        $this->assertTrue($policy->mayManage(ActorIdentity::forUser($this->ownerId)));
         $this->assertFalse($policy->mayManage(TestActors::user(2)));
-        $this->assertFalse($policy->mayManage(ActorContext::forAgent($this->ownerId)));
+        $this->assertFalse($policy->mayManage(ActorIdentity::forAgent($this->ownerId)));
         $this->assertThrows(fn () => $policy->assertManager(TestActors::user(2)), SharingNotAllowed::class);
 
         $this->assertThrows(
-            fn () => $policy->assertManager(ActorContext::forAgent(TestIds::of(3))),
+            fn () => $policy->assertManager(ActorIdentity::forAgent(TestIds::of(3))),
             SharingNotAllowed::class,
         );
     }

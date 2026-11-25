@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use Domain\Plans\Enums\PlanReviewStatus;
 use Domain\Plans\Events\PhaseProgressRecorded;
@@ -32,14 +31,14 @@ return [
         'owner' => 'Plan::cancel',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new PlanCancelled('plan', ActorContext::forUser('user')),
+        'sample' => fn () => new PlanCancelled('plan', ActorIdentity::forUser('user')),
     ],
     PlanFinished::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Plan::finish',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new PlanFinished('plan', ActorContext::forUser('user')),
+        'sample' => fn () => new PlanFinished('plan', ActorIdentity::forUser('user')),
     ],
     PlanProgressChanged::class => [
         'role' => EventRole::RowFact,
@@ -74,7 +73,7 @@ return [
         'owner' => 'Plan::startOnce',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new PlanStarted('plan', ActorContext::forUser('user')),
+        'sample' => fn () => new PlanStarted('plan', ActorIdentity::forUser('user')),
     ],
     PlanDescribed::class => [
         'role' => EventRole::RowFact,

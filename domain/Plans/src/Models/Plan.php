@@ -19,7 +19,6 @@ use App\Exceptions\AssignmentPoolTooLarge;
 use App\Exceptions\AssignmentPoolUnavailable;
 use App\Models\Support\Accessor;
 use App\Models\Support\AssignableListing;
-use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\AssignmentHolder;
 use App\Support\OrderedRecordIds;
@@ -187,7 +186,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
     /**
      * Ends the plan as done, with the note of what it achieved.
      */
-    public function finish(string $note, ActorContext $actor): void
+    public function finish(string $note, ActorIdentity $actor): void
     {
         $this->status = PlanStatus::Done;
         $this->finish_note = $note;
@@ -199,7 +198,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
     /**
      * Ends the plan as cancelled with its reason; its tasks and their assignments stay as they are.
      */
-    public function cancel(string $reason, ActorContext $actor): void
+    public function cancel(string $reason, ActorIdentity $actor): void
     {
         $this->status = PlanStatus::Cancelled;
         $this->cancel_reason = $reason;
@@ -212,7 +211,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
      * Starts the plan for the actor; true when it changed, false when it was already started, which announces nothing.
      * Any other state refuses.
      */
-    public function startOnce(ActorContext $actor): bool
+    public function startOnce(ActorIdentity $actor): bool
     {
         if ($this->status === PlanStatus::Started) {
             return false;

@@ -18,7 +18,7 @@ use App\Jobs\SignInDeadline;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\AccountUsageCost;
 use App\Models\Accounts\AccountUsageWindow;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\Command;
 use App\Support\JournalCommands;
 use App\Support\UsageReadings;
@@ -118,7 +118,7 @@ final class ClaimCleanupTest extends TestCase
     private function asOwner(Command $command): mixed
     {
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(1)),
+            ActorIdentity::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
 

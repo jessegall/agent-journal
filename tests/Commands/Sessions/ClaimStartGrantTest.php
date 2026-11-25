@@ -25,7 +25,7 @@ use App\Models\Agents\AgentSession;
 use App\Models\Projects\Host;
 use App\Models\Sessions\SessionPolicy;
 use App\Models\Skills\SkillPublication;
-use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\ArrangementSetting;
 use App\Support\DefaultDrivers;
 use App\Support\DomainRegistry;
@@ -270,7 +270,7 @@ final class ClaimStartGrantTest extends TestCase
     {
         $host = $this->journal->asSystem(new EnrollHostCommand('test host', [self::FOLDER]));
         $agent = Agent::create('Codex agent', 'main-agent', $this->localProject());
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorIdentity::forUser('owner'), new OwnerAuthority('test'));
         $opened = $this->app->make(CommandBus::class)->run(new OpenAgentRuntimeCommand(
             $agent->id,
             $host->hostId,
