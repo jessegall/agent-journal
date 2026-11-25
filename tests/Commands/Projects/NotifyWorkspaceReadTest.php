@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Scripts;
+namespace Tests\Commands\Projects;
 
 use App\Commands\Projects\NotifyWorkspaceRead\NotifyWorkspaceReadCommand;
 use App\Commands\Terminals\RecordScriptStepResult\RecordScriptStepResultCommand;
@@ -28,7 +28,7 @@ use Tests\TestCase;
  * outcome is recorded once on the run that waits on it and resumes it.
  */
 #[TimeLimit(seconds: 4, reason: 'It starts a test agent session and records host answers.')]
-final class ProfileRunTest extends TestCase
+final class NotifyWorkspaceReadTest extends TestCase
 {
     use RefreshHookDatabase;
     use RunsTrustedCommands;

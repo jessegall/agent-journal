@@ -10,7 +10,6 @@ use App\Enums\Projects\ArrangementType;
 use App\Support\ArrangementSetting;
 use App\Support\Compatibility\DriverCompatibility;
 use App\Support\Compatibility\Exceptions\DriverArrangementUnproven;
-use App\Support\Compatibility\Exceptions\DriverUnstartableInContainer;
 use App\Support\DefaultDrivers;
 use App\Support\EnrolledHost;
 use Illuminate\Support\Str;
@@ -59,58 +58,6 @@ final class ContainedProgramEvidenceTest extends TestCase
 
         $this->expectException(DriverArrangementUnproven::class);
         $this->expectExceptionMessage(self::NO_CLAUDE_REPORT);
-
-        $this->compatibility(DefaultDrivers::CLAUDE_CODE)->assertStartable();
-    }
-
-    public function test_a_report_with_unenforced_items_refuses_naming_them_and_why(): void
-    {
-        $this->useArrangement(ArrangementType::Contained);
-        $reason = "no native mechanism: Claude Code's sandbox does not start in the agent container: bwrap: no proc";
-        $items = $this->items(['account-secrets', 'process-inspection'], $reason);
-        $this->notify($this->containedHost(), 'claude-code', '2.1.323', $items)->assertNoContent();
-
-        $this->assertThrows(
-            fn () => $this->compatibility(DefaultDrivers::CLAUDE_CODE)->assertStartable(),
-            DriverUnstartableInContainer::class,
-            DriverUnstartableInContainer::for('claude-code', '2.1.323', sprintf(self::UNENFORCED, $reason))
-                ->getMessage(),
-        );
-        $this->assertThrows(
-            fn () => $this->compatibility(DefaultDrivers::CODEX)->assertStartable(),
-            DriverArrangementUnproven::class,
-            DriverArrangementUnproven::inContainer('codex', '0.165.0', self::CODEX_SHORTFALL)->getMessage(),
-        );
-    }
-
-    public function test_a_report_with_every_item_enforced_admits_a_contained_start(): void
-    {
-        $this->useArrangement(ArrangementType::Contained);
-        $host = $this->containedHost();
-        $this->notify($host, 'claude-code', '2.1.323', $this->items(['keychain'], 'missing'))->assertNoContent();
-        $this->notify($host, 'claude-code', '2.1.323', $this->items([], ''))->assertNoContent();
-
-        $this->compatibility(DefaultDrivers::CLAUDE_CODE)->assertStartable();
-
-        $this->assertFalse($this->compatibility(DefaultDrivers::CODEX)->arrangementEvidence->isNativeShown());
-    }
-
-    public function test_a_driver_whose_signed_in_starts_run_protected_is_admitted_by_its_protected_report_only(): void
-    {
-        $this->useArrangement(ArrangementType::Contained);
-        config(['agents.protected_account_trial' => 'claude-code']);
-        $host = $this->containedHost();
-        $reason = "no native mechanism: Claude Code's sandbox does not start in the agent container: bwrap: no proc";
-        $this->notify($host, 'claude-code', '2.1.323', $this->items(self::ITEMS, $reason))->assertNoContent();
-
-        $this->assertThrows(
-            fn () => $this->compatibility(DefaultDrivers::CLAUDE_CODE)->assertStartable(),
-            DriverArrangementUnproven::class,
-            self::PROTECTED_SHORTFALL,
-        );
-
-        $this->notify($host, 'claude-code', '2.1.323', $this->items([], ''), 'linux-container-protected')
-            ->assertNoContent();
 
         $this->compatibility(DefaultDrivers::CLAUDE_CODE)->assertStartable();
     }

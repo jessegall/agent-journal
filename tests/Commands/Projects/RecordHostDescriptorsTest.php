@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Agents;
+namespace Tests\Commands\Projects;
 
 use App\Models\Projects\Host;
 use App\Support\EnrolledHost;
@@ -16,7 +16,7 @@ use Tests\TestCase;
 /**
  * A host reports the drivers it can run, and each is enrolled or marked unavailable with its reason.
  */
-final class HostDescriptorsReportTest extends TestCase
+final class RecordHostDescriptorsTest extends TestCase
 {
     use CommitsHookRows;
     use RunsTrustedCommands;

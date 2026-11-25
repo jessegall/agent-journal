@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Agents;
+namespace Tests\Commands\Projects;
 
 use App\Enums\Projects\HostRouteRole;
 use App\Models\Projects\Host;
@@ -20,7 +20,7 @@ use Tests\TestCase;
  * and the alarm clears by itself on the next call the journal answers; the calls a host reports failed on its own side
  * are kept with it.
  */
-final class HostLinkAlarmTest extends TestCase
+final class RecordHostCallAnsweredTest extends TestCase
 {
     use CommitsHookRows;
     use RunsTrustedCommands;
