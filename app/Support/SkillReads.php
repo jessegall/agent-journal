@@ -40,7 +40,7 @@ final readonly class SkillReads
             $sessionId,
             SkillContextEpoch::currentOf($sessionId),
             $skillKey,
-            $entry['digest'],
+            $entry->digest,
             $evidence,
         );
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Skills\RefreshSkills;
 
 use App\Contracts\Bus\CommandHandler;
+use App\Data\Skills\GeneratedSkillData;
 use App\Enums\GenerationState;
 use App\Exceptions\SkillConflict;
 use App\Exceptions\SkillDeclarationInvalid;
@@ -148,16 +149,16 @@ final readonly class RefreshSkillsHandler implements CommandHandler
 
     /**
      * @param  list<SkillEntry>  $entries
-     * @return list<array{key: string, owner: string, revision: int|null, markdown: string, digest: string}>
+     * @return list<GeneratedSkillData>
      */
     private function generationEntries(array $entries): array
     {
-        return array_map(fn (SkillEntry $entry) => [
+        return array_map(fn (SkillEntry $entry) => GeneratedSkillData::from([
             'key' => $entry->key->key,
             'owner' => $entry->owner,
             'revision' => $entry->revision,
             'markdown' => $entry->rendered->markdown,
             'digest' => $entry->rendered->digest,
-        ], $entries);
+        ]), $entries);
     }
 }

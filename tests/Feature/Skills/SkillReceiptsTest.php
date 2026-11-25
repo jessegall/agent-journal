@@ -94,6 +94,6 @@ final class SkillReceiptsTest extends TestCase
         $entry = SkillGeneration::findForPublication($publication)->entry($key);
         $this->assertNotNull($entry);
 
-        return $entry['digest'];
+        return $entry->digest;
     }
 }

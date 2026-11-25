@@ -6,6 +6,7 @@ namespace Tests\Feature\Skills;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Skills\SkillPublisher;
+use App\Data\Skills\GeneratedSkillData;
 use App\Enums\GenerationState;
 use App\Enums\Place;
 use App\Enums\PublicationState;
@@ -141,13 +142,13 @@ final class SkillStatusTest extends TestCase
         {$text}
 
         TEXT;
-        $generation = SkillGeneration::create(str_repeat('e', 64), GenerationState::Ready, hash('sha256', $text), [[
+        $generation = SkillGeneration::create(str_repeat('e', 64), GenerationState::Ready, hash('sha256', $text), GeneratedSkillData::collect([[
             'key' => 'journal',
             'owner' => 'Core',
             'revision' => null,
             'markdown' => $markdown,
             'digest' => hash('sha256', $markdown),
-        ]], null);
+        ]]), null);
         $publication = $this->app->make(SkillPublications::class)->intend(
             $session->id,
             'claude-code',

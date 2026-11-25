@@ -42,7 +42,7 @@ final readonly class RemindRequiredSkills implements Listener
         foreach ($profile->requiredSkills() as $key) {
             $entry = in_array($key, $publication->skill_keys, true) ? $generation->entry($key) : null;
 
-            if ($entry === null || (! $freshContext && SkillReceipt::hasRead($session->id, $key, $entry['digest']))) {
+            if ($entry === null || (! $freshContext && SkillReceipt::hasRead($session->id, $key, $entry->digest))) {
                 continue;
             }
 

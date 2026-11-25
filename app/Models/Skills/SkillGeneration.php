@@ -10,6 +10,7 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Data\Skills\GeneratedSkillData;
 use App\Enums\GenerationState;
 use App\Events\Skills\SkillGenerationRetired;
 use App\Exceptions\SkillGenerationImmutable;
@@ -20,6 +21,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Spatie\LaravelData\DataCollection;
 
 /**
  * One checked rendering of the whole catalogue: the digests it was made from and every entry's rendered bytes. The
@@ -28,7 +30,7 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property string $catalogue_digest
  * @property string $registration_digest
- * @property list<array{key: string, owner: string, revision: int|null, markdown: string, digest: string}> $entries
+ * @property DataCollection<int, GeneratedSkillData> $entries
  * @property GenerationState $state
  * @property string|null $error_reason
  * @property Carbon|null $created_at
@@ -55,7 +57,7 @@ final class SkillGeneration extends Model implements EventSource, ReadableModel
     protected function casts(): array
     {
         return [
-            'entries' => 'array',
+            'entries' => DataCollection::class.':'.GeneratedSkillData::class,
             'state' => GenerationState::class,
         ];
     }
@@ -71,7 +73,7 @@ final class SkillGeneration extends Model implements EventSource, ReadableModel
      * The generation one refresh made: Ready with the catalogue's digest and its definitions, or Failed with the
      * reason, an empty digest and no definitions; a Ready one has no error.
      *
-     * @param  list<array{key: string, owner: string, revision: int|null, markdown: string, digest: string}>  $definitions
+     * @param  list<GeneratedSkillData>  $definitions
      */
     public static function create(
         string $registrationDigest,
@@ -102,13 +104,11 @@ final class SkillGeneration extends Model implements EventSource, ReadableModel
 
     /**
      * The entry of this key, or null when the generation holds none.
-     *
-     * @return array{key: string, owner: string, revision: int|null, markdown: string, digest: string}|null
      */
-    public function entry(string $key): array|null
+    public function entry(string $key): GeneratedSkillData|null
     {
         foreach ($this->entries as $entry) {
-            if ($entry['key'] === $key) {
+            if ($entry->key === $key) {
                 return $entry;
             }
         }

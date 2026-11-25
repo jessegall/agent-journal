@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
+use App\Data\Skills\GeneratedSkillData;
 use App\Enums\GenerationState;
 use App\Enums\PublicationState;
 use App\Exceptions\SkillGenerationImmutable;
@@ -132,7 +133,7 @@ final class SkillPublicationModelsTest extends TestCase
 
     private function generation(): SkillGeneration
     {
-        return SkillGeneration::create(str_repeat('e', 64), GenerationState::Ready, str_repeat('d', 64), [
+        return SkillGeneration::create(str_repeat('e', 64), GenerationState::Ready, str_repeat('d', 64), GeneratedSkillData::collect([
             [
                 'key' => 'journal',
                 'owner' => 'Core',
@@ -140,6 +141,6 @@ final class SkillPublicationModelsTest extends TestCase
                 'markdown' => "# Journal\n",
                 'digest' => hash('sha256', "# Journal\n"),
             ],
-        ], null);
+        ]), null);
     }
 }

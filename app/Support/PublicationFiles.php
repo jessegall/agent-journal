@@ -43,7 +43,7 @@ final readonly class PublicationFiles
             $entry = $generation->entry($key);
 
             if ($entry !== null) {
-                $skills[$driver->skillFile(SkillKey::from($key))] = $entry['markdown'];
+                $skills[$driver->skillFile(SkillKey::from($key))] = $entry->markdown;
             }
         }
 

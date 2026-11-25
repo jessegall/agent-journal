@@ -78,18 +78,18 @@ final readonly class SkillStatusResolver
                 : null;
 
             $startedEntry = in_array($key, $started->skill_keys, true) ? SkillGeneration::findForPublication($started)->entry($key) : null;
-            $startedDigest = $startedEntry === null ? null : $startedEntry['digest'];
-            $currentDigest = $deliveredEntry === null ? null : $deliveredEntry['digest'];
+            $startedDigest = $startedEntry === null ? null : $startedEntry->digest;
+            $currentDigest = $deliveredEntry === null ? null : $deliveredEntry->digest;
 
             return new SessionSkillStatus(
                 $key,
                 $entry->revision,
-                $generation?->entry($key)['digest'] ?? null,
+                $generation?->entry($key)?->digest,
                 $selected,
                 $selected ? 'selected' : $selection['reasons'][$key] ?? 'not-selected',
                 $deliveredEntry === null ? null : $delivered->generation_id,
                 $deliveredEntry === null ? 'not-delivered' : PublicationState::Delivered->value,
-                $deliveredEntry !== null && SkillReceipt::hasRead($sessionId, $key, $deliveredEntry['digest']),
+                $deliveredEntry !== null && SkillReceipt::hasRead($sessionId, $key, $deliveredEntry->digest),
                 $reloadsAtNewSession && $selected && ($startedDigest === null || $startedDigest !== $currentDigest),
             );
         }, $skillEntries);
