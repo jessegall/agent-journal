@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\BindingReadiness;
 use App\Enums\DeviceGrantState;
 use App\Events\Connections\DeviceGrantApproved;
 use App\Events\Connections\DeviceGrantIssued;
@@ -284,7 +285,7 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
      */
     public static function ofUserCode(string $code): self
     {
-        return self::query()->with(['binding', 'environment'])->where('user_code', $code)->firstOrFail();
+        return self::query()->with(['binding', 'environment'])->withUserCode($code)->firstOrFail();
     }
 
     /**
@@ -295,7 +296,7 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
      */
     public static function lockOfStart(ProjectBinding $binding, string $startKey): array
     {
-        return array_values(self::query()->where('binding_id', $binding->id)->where('start_key', $startKey)
+        return array_values(self::query()->ofBindings([$binding->id])->underStartKey($startKey)
             ->lockForUpdate()->limit(1)->get()->all());
     }
 
@@ -307,7 +308,7 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
      */
     public static function listedOfBindings(array $ids): array
     {
-        return array_values(self::query()->whereIn('binding_id', $ids)->orderByDesc('created_at')->newestFirst()
+        return array_values(self::query()->ofBindings($ids)->newestFirst()
             ->readAll('a binding has a device grant per shell that asked')->get()->all());
     }
 
@@ -316,7 +317,7 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
      */
     public static function nextGenerationOf(ProjectBinding $binding): int
     {
-        return (int) self::query()->where('binding_id', $binding->id)->max('generation') + 1;
+        return (int) self::query()->ofBindings([$binding->id])->max('generation') + 1;
     }
 
     /**
@@ -334,8 +335,7 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
      */
     public static function lockPendingByUserCode(string $code): self
     {
-        $row = self::query()->with('binding')->where('user_code', $code)->where('state', DeviceGrantState::Pending)
-            ->where('code_expires_at', '>', CarbonImmutable::now())->lockForUpdate()->first();
+        $row = self::query()->with('binding')->withUserCode($code)->pendingWithLiveCode()->lockForUpdate()->first();
         self::assertCodeKnown($row);
 
         return $row;
@@ -348,7 +348,7 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
      */
     public static function lockByDeviceCode(string $digest): self
     {
-        $row = self::query()->with('binding')->where('device_code_digest', $digest)->lockForUpdate()->first();
+        $row = self::query()->with('binding')->withDeviceCode($digest)->lockForUpdate()->first();
         self::assertCodeKnown($row);
 
         return $row;
@@ -361,11 +361,7 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
      */
     public static function usableByDigest(string $digest): self
     {
-        $usable = self::query()->with('binding')->where('grant_digest', $digest)
-            ->where('state', DeviceGrantState::Issued)->where('grant_expires_at', '>', CarbonImmutable::now())
-            ->whereNotNull('approved_by_user_id')
-            ->whereHas('binding', fn ($binding) => $binding->where('readiness', '!=', BindingReadiness::Revoked));
-        $row = $usable->first();
+        $row = self::query()->with('binding')->withGrantDigest($digest)->usableNow()->first();
         self::assertUsable($row);
 
         return $row;
@@ -378,8 +374,102 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
      */
     public static function lockLiveOf(ProjectBinding $binding): array
     {
-        return array_values(self::query()->where('binding_id', $binding->id)
-            ->where('state', '!=', DeviceGrantState::Revoked)->lockForUpdate()
+        return array_values(self::query()->ofBindings([$binding->id])
+            ->unrevoked()->lockForUpdate()
             ->readAll('a binding has a device grant per shell that asked')->get()->all());
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The grant of that user code.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withUserCode(Builder $query, string $code): void
+    {
+        $query->where('user_code', $code);
+    }
+
+    /**
+     * The grants of the bindings.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $bindingIds
+     */
+    #[Scope]
+    protected function ofBindings(Builder $query, array $bindingIds): void
+    {
+        $query->whereIn('binding_id', $bindingIds);
+    }
+
+    /**
+     * The grant asked for under that start key.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function underStartKey(Builder $query, string $startKey): void
+    {
+        $query->where('start_key', $startKey);
+    }
+
+    /**
+     * The pending grants whose user code has not expired.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function pendingWithLiveCode(Builder $query): void
+    {
+        $query->where('state', DeviceGrantState::Pending)->where('code_expires_at', '>', CarbonImmutable::now());
+    }
+
+    /**
+     * The grant of the device code digest.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withDeviceCode(Builder $query, string $digest): void
+    {
+        $query->where('device_code_digest', $digest);
+    }
+
+    /**
+     * The grant of the grant digest.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withGrantDigest(Builder $query, string $digest): void
+    {
+        $query->where('grant_digest', $digest);
+    }
+
+    /**
+     * The issued and approved grants not expired whose binding is not revoked.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function usableNow(Builder $query): void
+    {
+        $query->where('state', DeviceGrantState::Issued)
+            ->where('grant_expires_at', '>', CarbonImmutable::now())
+            ->whereNotNull('approved_by_user_id')
+            ->whereHas('binding', fn (Builder $binding) => $binding->unrevoked());
+    }
+
+    /**
+     * The grants not revoked.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unrevoked(Builder $query): void
+    {
+        $query->where('state', '!=', DeviceGrantState::Revoked);
     }
 }

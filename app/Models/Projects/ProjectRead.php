@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -61,6 +64,7 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
     use BoundedReads;
     use HasActorColumns;
     use HasUlids;
+    use OrdersById;
     use Linkable;
     use RaisesEvents;
 
@@ -198,7 +202,7 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
      */
     public function isOfHost(string $hostId): bool
     {
-        return ProjectBinding::query()->whereKey($this->binding_id)->where('host_id', $hostId)->exists();
+        return ProjectBinding::query()->whereKey($this->binding_id)->onHost($hostId)->exists();
     }
 
     private function settle(ProjectReadState $state): void
@@ -247,11 +251,9 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
     public static function claimableFor(string $hostId, int $limit, CarbonImmutable $now): array
     {
         $pending = self::query()
-            ->where('state', ProjectReadState::Pending->value)
-            ->whereNull('claimed_at')
-            ->where('expires_at', '>', $now)
-            ->whereIn('binding_id', ProjectBinding::query()->where('host_id', $hostId)->select('id'))
-            ->orderBy('created_at')
+            ->claimableAt($now)
+            ->ofBindingsOnHost($hostId)
+            ->oldestFirst()
             ->lock('for update skip locked')
             ->readExactly($limit)
             ->get();
@@ -274,18 +276,10 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
         CarbonImmutable $now,
     ): Option {
         return self::query()
-            ->where('binding_id', $binding->id)
-            ->where('type', $type->value)
-            ->where('path', $path)
+            ->ofPath($binding, $type, $path)
             ->byActor($requester)
-            ->where(fn ($kept) => $kept
-                ->where(fn ($usable) => $usable
-                    ->whereIn('state', [ProjectReadState::Pending->value, ProjectReadState::Answered->value])
-                    ->where('created_at', '>=', $now->subMinutes(self::KEEP_MINUTES_LIMIT)))
-                ->orWhere(fn ($failed) => $failed
-                    ->where('state', ProjectReadState::Failed->value)
-                    ->where('created_at', '>=', $now->subSeconds(self::PENDING_SECONDS_LIMIT))))
-            ->latest()
+            ->stillKeptAt($now)
+            ->newestFirst()
             ->firstOption();
     }
 
@@ -300,5 +294,61 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
         self::assertFound($row, $readId);
 
         return $row;
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The pending reads no host claimed that have not expired then.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function claimableAt(Builder $query, CarbonImmutable $now): void
+    {
+        $query->where('state', ProjectReadState::Pending->value)
+            ->whereNull('claimed_at')
+            ->where('expires_at', '>', $now);
+    }
+
+    /**
+     * The reads of the bindings on the host.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofBindingsOnHost(Builder $query, string $hostId): void
+    {
+        $query->whereIn('binding_id', ProjectBinding::query()->onHost($hostId)->select('id'));
+    }
+
+    /**
+     * The reads of that type of the binding's path.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofPath(Builder $query, ProjectBinding $binding, ProjectReadType $type, string $path): void
+    {
+        $query->where('binding_id', $binding->id)->where('type', $type->value)->where('path', $path);
+    }
+
+    /**
+     * The reads still kept then: a pending or answered one for its minutes, a failed one for its seconds.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function stillKeptAt(Builder $query, CarbonImmutable $now): void
+    {
+        $usableSince = $now->subMinutes(self::KEEP_MINUTES_LIMIT);
+        $failedSince = $now->subSeconds(self::PENDING_SECONDS_LIMIT);
+        $usable = [ProjectReadState::Pending->value, ProjectReadState::Answered->value];
+
+        $query->where(fn (Builder $kept) => $kept
+            ->where(fn (Builder $live) => $live->whereIn('state', $usable)->where('created_at', '>=', $usableSince))
+            ->orWhere(fn (Builder $failed) => $failed
+                ->where('state', ProjectReadState::Failed->value)
+                ->where('created_at', '>=', $failedSince)));
     }
 }
