@@ -14,6 +14,7 @@ use App\Exceptions\InvalidRecordIdentity;
 use App\Exceptions\RecordUnavailable;
 use App\Exceptions\UnknownLinkType;
 use App\Models\Access\User;
+use App\Models\Agents\Agent;
 use App\Models\Messages\Message;
 use App\Models\Records\Link;
 use App\Support\Access\AccessSettings;
@@ -186,9 +187,9 @@ final class RecordLinksTest extends TestCase
 
     private function messageFor(int $agent): Message
     {
-        $recipient = TestActors::stack($agent, $agent * 10)->actorIdentity();
+        $inbox = $this->inboxOf(TestActors::agentIdentity($agent));
 
-        return $this->askInboxOf($recipient, "Private plan\nDetails.");
+        return $this->postTo($inbox, Agent::create('Sender', 'main-agent'), "Private plan\nDetails.");
     }
 
     /**

@@ -20,6 +20,7 @@ use App\Values\SearchReader;
 use App\Values\SearchRequest;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\DocumentsDomain;
+use Domain\Rules\RulesDomain;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\ActsAsActors;
@@ -51,7 +52,7 @@ final class SearchDomainSwitchesTest extends TestCase
      */
     protected static function bootedDomains(): array
     {
-        return DomainBoot::withRequirements(DocumentsDomain::class, TasksDomain::class);
+        return DomainBoot::withRequirements(DocumentsDomain::class, TasksDomain::class, RulesDomain::class);
     }
 
     private int $revision = 0;

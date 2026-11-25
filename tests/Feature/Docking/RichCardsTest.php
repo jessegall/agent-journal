@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Docking;
 
-use Domain\Rules\RulesDomain;
 use App\Contracts\Bus\CommandBus;
 use App\Events\Web\PageChanged;
 use App\Models\Access\User;
@@ -18,6 +17,7 @@ use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Documents\DocumentsDomain;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\PlansDomain;
+use Domain\Rules\RulesDomain;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Events\TaskCancelled;
 use Domain\Tasks\Models\Task;
@@ -55,7 +55,7 @@ final class RichCardsTest extends TestCase
     private const string PROGRESS_PATTERN = '/"completed":1,"total":8.*"label":"Waiting for estimate"'
         .'.*"type":"duration".*"type":"duration"/';
 
-    private const string TRUNCATED_LINES = '"lines":["error: <script>","second line"],"truncated":true';
+    private const string TRUNCATED_LINES = '"lines":["error: <script>","second line"],"isTruncated":true';
 
     private const string OVERSIZED_CARD = '"accessibleName":"Release review, oversized",'
         .'"safeSummary":"Release review, oversized","open":null,"root":null';

@@ -13,8 +13,8 @@ use App\Support\DomainRegistry;
 use App\Support\ReflectedProperty;
 use App\Support\Reflector;
 use App\Support\Stack\StateTypes;
-use Domain\Sharing\Events\ShareActivated;
-use Domain\Sharing\SharingDomain;
+use Domain\Comments\CommentsDomain;
+use Domain\Comments\Events\CommentPosted;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Events\Dispatcher;
@@ -23,25 +23,16 @@ use Tests\Fixtures\Domains\Books\BooksDomain;
 use Tests\Fixtures\Domains\Plans\PlansDomain;
 use Tests\Fixtures\Domains\Shelves\Events\BookShelved;
 use Tests\Fixtures\Domains\Shelves\Listeners\CountBookShelved;
-use Tests\Fixtures\Domains\Shelves\Listeners\CountShareActivated;
+use Tests\Fixtures\Domains\Shelves\Listeners\CountCommentPosted;
 use Tests\Fixtures\Domains\Shelves\ShelvesDomain;
 use Tests\Fixtures\Domains\Tasks\TaskList;
 use Tests\Fixtures\Domains\Tasks\TasksDomain;
-use Tests\Support\DomainBoot;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 final class DomainServiceProviderTest extends TestCase
 {
     use RefreshHookDatabase;
-
-    /**
-     * The domains this test uses beside core.
-     */
-    protected static function bootedDomains(): array
-    {
-        return DomainBoot::withRequirements(SharingDomain::class);
-    }
 
     private mixed $discoveryPathsBefore;
 
@@ -61,7 +52,7 @@ final class DomainServiceProviderTest extends TestCase
 
     public function test_the_migrations_of_every_domain_are_found(): void
     {
-        $this->registerDomains([ShelvesDomain::class, BooksDomain::class, TasksDomain::class]);
+        $this->registerDomains([ShelvesDomain::class, CommentsDomain::class, BooksDomain::class, TasksDomain::class]);
 
         $migrator = $this->app->make(Migrator::class);
         $files = array_keys($migrator->getMigrationFiles($migrator->paths()));
@@ -72,28 +63,28 @@ final class DomainServiceProviderTest extends TestCase
 
     public function test_a_domain_event_maps_to_its_listener(): void
     {
-        $this->registerDomains([ShelvesDomain::class]);
+        $this->registerDomains([ShelvesDomain::class, CommentsDomain::class]);
 
         $events = new DomainEventServiceProvider($this->app)->discoverEvents();
 
         $this->assertSame([CountBookShelved::class.'@handle'], $events[BookShelved::class]);
     }
 
-    public function test_a_domain_listens_to_an_exported_sharing_event(): void
+    public function test_a_domain_listens_to_another_domains_exported_event(): void
     {
-        $this->registerDomains([ShelvesDomain::class]);
+        $this->registerDomains([ShelvesDomain::class, CommentsDomain::class]);
 
         $events = new DomainEventServiceProvider($this->app)->discoverEvents();
 
         $this->assertEqualsCanonicalizing(
-            [CountShareActivated::class.'@handle', BroadcastPageChange::class.'@handle'],
-            $events[ShareActivated::class],
+            [CountCommentPosted::class.'@handle', BroadcastPageChange::class.'@handle'],
+            $events[CommentPosted::class],
         );
     }
 
     public function test_the_discovery_paths_are_the_domain_listener_folders(): void
     {
-        $this->registerDomains([ShelvesDomain::class, BooksDomain::class]);
+        $this->registerDomains([ShelvesDomain::class, CommentsDomain::class, BooksDomain::class]);
 
         $paths = new DomainEventServiceProvider($this->app)->discoverEventsWithin();
         $folders = $this->app->make(DomainRegistry::class)->listenerFolders();

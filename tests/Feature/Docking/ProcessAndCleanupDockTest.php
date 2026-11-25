@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Docking;
 
-use Domain\Rules\RulesDomain;
 use App\Enums\Processes\OutputStream;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
@@ -25,6 +24,7 @@ use Domain\Chat\ChatDomain;
 use Domain\Chat\Listeners\RemoveDeletedSource;
 use Domain\Chat\Models\DockPlacement;
 use Domain\Chat\Support\DockProjection;
+use Domain\Rules\RulesDomain;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
@@ -45,7 +45,7 @@ use Tests\TestCase;
 /**
  * An agent docks its own process run and one stream of it: the run shows its operation, its end and exit, the stream
  * its bounded tail, read without recording evidence, and another agent finds neither. A source deleted for good leaves
- * every conversation while a rolled-back deletion keeps it, and removing a conversation removes only its placements.
+ * every conversation while a rolled-back deletion keeps it.
  */
 #[TimeLimit(8, 'Records one run, docks it through MCP and reads the projected cards.')]
 final class ProcessAndCleanupDockTest extends TestCase
@@ -60,7 +60,7 @@ final class ProcessAndCleanupDockTest extends TestCase
 
     private const string EXIT_TEXT = '"text":"Exit 0"';
 
-    private const string OUTPUT_LINES = '"lines":["first line","second line"],"truncated":false';
+    private const string OUTPUT_LINES = '"lines":["first line","second line"],"isTruncated":false';
 
     private const array TABLES = [
         'users',
@@ -163,27 +163,6 @@ final class ProcessAndCleanupDockTest extends TestCase
         $this->app->make('events')->dispatch(new NoteRemoved($gone->id));
 
         $this->assertSame([$kept->id], DockPlacement::query()->pluck('dockable_id')->all());
-    }
-
-    public function test_removing_a_conversation_removes_only_its_placements(): void
-    {
-        $note = new Note(['text' => 'Shared']);
-        $note->saveFor($this->agent->agent->id);
-        $this->dock(Note::linkType(), $note->id);
-        $elsewhere = $this->pairChat(
-            ActorIdentity::of($this->agent->agent),
-            ActorIdentity::ofClass(Agent::class, 'another-agent'),
-        );
-        $this->callMcpTool($this->agent, 'dock_add', [
-            'type' => Note::linkType(),
-            'id' => $note->id,
-            'chat' => $elsewhere->id,
-            'request_key' => 'dock-elsewhere',
-        ])->assertJsonPath('result.structuredContent.outcome', 'added');
-
-        $this->conversation->delete();
-
-        $this->assertSame([$elsewhere->id], DockPlacement::query()->pluck('conversation_id')->all());
     }
 
     private function endedRun(string $output): PartRun

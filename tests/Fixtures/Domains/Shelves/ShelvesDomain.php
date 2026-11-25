@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Shelves;
 
+use Domain\Comments\CommentsDomain;
 use App\Support\Domain;
 use App\Support\Exports;
 
@@ -16,7 +17,7 @@ final class ShelvesDomain extends Domain
 
     public function requires(): array
     {
-        return [];
+        return [CommentsDomain::class];
     }
 
     public function exports(): Exports

@@ -107,7 +107,7 @@ final class PartMap
             PartType::ConsoleOutput,
             EnumField::named('stream', ConsoleStream::class),
             LinesField::named('lines'),
-            FlagField::named('truncated'),
+            FlagField::named('isTruncated'),
             $openField,
         );
 

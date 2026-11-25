@@ -7,19 +7,19 @@ namespace Tests\Feature\Domains;
 use App\Providers\DomainEventServiceProvider;
 use App\Support\DomainEntry;
 use App\Support\DomainRegistry;
+use Domain\Comments\CommentsDomain;
 use Domain\Documents\DocumentsDomain;
 use Domain\Tasks\TasksDomain;
-use Tests\Support\DomainBoot;
 use Tests\TestCase;
 
 final class DomainListTest extends TestCase
 {
     /**
-     * The domains this test uses beside core.
+     * Every installed domain, since the test reads the whole registry.
      */
     protected static function bootedDomains(): array
     {
-        return DomainBoot::withRequirements(DocumentsDomain::class, TasksDomain::class);
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
     }
 
     public function test_the_registry_holds_exactly_the_approved_domains(): void
@@ -27,12 +27,25 @@ final class DomainListTest extends TestCase
         $registry = $this->app->make(DomainRegistry::class);
 
         $this->assertSame(
-            ['Tasks', 'Plans', 'Documents', 'Chat', 'Memory', 'Rules', 'Sequences', 'Reminders', 'Helpers'],
+            [
+                'Comments',
+                'Tasks',
+                'Plans',
+                'Documents',
+                'Chat',
+                'Memory',
+                'Rules',
+                'Sequences',
+                'Sharing',
+                'Questions',
+                'Reminders',
+                'Helpers',
+            ],
             array_map(fn (DomainEntry $entry) => $entry->name, $registry->all()),
         );
         $this->assertStringEndsWith('/domain/Plans/src', $registry->get('Plans')->folder);
         $this->assertSame([TasksDomain::class], $registry->get('Plans')->requires);
-        $this->assertSame([], $registry->get('Tasks')->requires);
+        $this->assertSame([CommentsDomain::class], $registry->get('Tasks')->requires);
         $this->assertSame([DocumentsDomain::class], $registry->get('Helpers')->requires);
         $this->assertStringEndsWith('/domain/Helpers/src', $registry->get('Helpers')->folder);
     }

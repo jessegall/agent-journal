@@ -13,7 +13,7 @@ defineProps<{ node: ConsoleOutputNode }>();
     <pre
       class="max-h-40 overflow-auto rounded-control bg-code-bg p-2 text-caption whitespace-pre-wrap text-text-2"
       >{{ node.lines.join("\n") }}</pre>
-    <template v-if="node.truncated">
+    <template v-if="node.isTruncated">
       <span class="text-caption text-text-4">Earlier lines are left out.</span>
     </template>
     <template v-if="node.open">

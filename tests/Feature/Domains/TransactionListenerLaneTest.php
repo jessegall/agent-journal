@@ -7,15 +7,13 @@ namespace Tests\Feature\Domains;
 use App\Contracts\Bus\PipelineRunner;
 use App\Enums\Engine\ListenerLane;
 use App\Events\Accounts\SignInAttemptFinished;
-use App\Events\Asks\AskClosed;
-use App\Events\Asks\AskHopAssigned;
 use App\Events\Links\LinksRemoved;
 use App\Events\Messages\MessageSent;
 use App\Events\Processes\OutputChunkCommitted;
-use App\Events\Processes\ProcessRunOutlasted;
 use App\Events\Processes\RunOutcomeRecorded;
 use App\Events\Sessions\SessionClosed;
 use App\Events\Sessions\SessionOpened;
+use App\Events\Sessions\StartSessionOpened;
 use App\Exceptions\InvalidListener;
 use App\Listeners\BroadcastPageChange;
 use App\Listeners\ReleaseSignInWriter;
@@ -33,10 +31,9 @@ use Domain\Plans\Events\PlanProgressChanged;
 use Domain\Plans\Events\PlanReviewRequested;
 use Domain\Plans\Events\PlanStarted;
 use Domain\Plans\Listeners\CountPhaseTaskStates;
-use Domain\Sequences\Events\SequenceEnded;
+use Domain\Questions\Events\QuestionAnswered;
+use Domain\Questions\Events\QuestionAsked;
 use Domain\Sequences\Events\SequenceStarted;
-use Domain\Sequences\Events\SequenceStepEnded;
-use Domain\Sequences\Events\SequenceStepReached;
 use Domain\Tasks\Events\TaskBlocked;
 use Domain\Tasks\Events\TaskCancelled;
 use Domain\Tasks\Events\TaskDescribed;
@@ -104,6 +101,9 @@ final class TransactionListenerLaneTest extends TestCase
                 PlanStarted::class,
                 SignInAttemptFinished::class,
                 SequenceStarted::class,
+                StartSessionOpened::class,
+                QuestionAnswered::class,
+                QuestionAsked::class,
                 LinksRemoved::class,
                 SessionOpened::class,
                 SessionClosed::class,
@@ -112,14 +112,8 @@ final class TransactionListenerLaneTest extends TestCase
                 PlanReviewRequested::class,
                 TaskDescribed::class,
                 RunOutcomeRecorded::class,
-                AskClosed::class,
-                AskHopAssigned::class,
                 ReportFiled::class,
                 ReportJobLinked::class,
-                ProcessRunOutlasted::class,
-                SequenceEnded::class,
-                SequenceStepEnded::class,
-                SequenceStepReached::class,
             ],
             array_keys($registry->byEvent(ListenerLane::InCommandTransaction)),
         );

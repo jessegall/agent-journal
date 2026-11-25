@@ -14,7 +14,9 @@ use App\Support\ActorContext;
 use App\Support\AgentContext;
 use App\Support\SignedCall;
 use Carbon\CarbonImmutable;
+use Domain\Plans\PlansDomain;
 use Tests\Support\ActsAsActors;
+use Tests\Support\DomainBoot;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
@@ -25,6 +27,14 @@ final class ActorContextTest extends TestCase
 {
     use ActsAsActors;
     use RefreshHookDatabase;
+
+    /**
+     * Plans, whose page the signed-in request opens.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(PlansDomain::class);
+    }
 
     public function test_a_request_without_an_authenticated_actor_has_none(): void
     {

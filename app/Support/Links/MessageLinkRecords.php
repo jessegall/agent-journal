@@ -5,16 +5,19 @@ declare(strict_types=1);
 namespace App\Support\Links;
 
 use App\Concerns\ProvidesModelRecords;
+use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Records\RecordProvider;
 use App\Data\Pages\RecordCard;
 use App\Models\Messages\Message;
+use App\Support\ActorIdentity;
 use App\Support\ReadBuilder;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Messages as linkable records, kept as private as their inboxes keep them: an agent reads only the messages addressed to it,
- * a user reads every one, and anyone else is answered as if the message did not exist. A card shows the first line.
+ * Messages as linkable records, kept as private as their inboxes keep them: an agent reads only the messages of its
+ * inboxes and is answered about any other as if it did not exist, and a user reads every one. A card shows the first
+ * line.
  */
 #[Scoped]
 final readonly class MessageLinkRecords implements RecordProvider
@@ -23,6 +26,8 @@ final readonly class MessageLinkRecords implements RecordProvider
      * @use ProvidesModelRecords<Message>
      */
     use ProvidesModelRecords;
+
+    public function __construct(private CurrentActor $actors) {}
 
     public function referenceWord(): string
     {
@@ -36,7 +41,15 @@ final readonly class MessageLinkRecords implements RecordProvider
 
     protected function readableRecords(): ReadBuilder
     {
-        return Message::query();
+        $reader = $this->actors->actor();
+
+        if (! $reader->isAgent()) {
+            return Message::query();
+        }
+
+        $actor = ActorIdentity::fromStored($reader->actorType(), $reader->actorId());
+
+        return Message::query()->inInboxesOf($actor);
     }
 
     protected function cardOf(Model $record): RecordCard

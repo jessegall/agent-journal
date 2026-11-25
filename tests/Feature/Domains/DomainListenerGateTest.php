@@ -12,6 +12,7 @@ use App\Support\ListenerRegistry;
 use App\Support\Stack\StateTypes;
 use Domain\Memory\Listeners\SupplyMemories;
 use Domain\Memory\MemoryDomain;
+use Domain\Tasks\TasksDomain;
 use stdClass;
 use Tests\Fixtures\Listeners\CountingListener;
 use Tests\Support\DomainBoot;
@@ -33,7 +34,7 @@ final class DomainListenerGateTest extends TestCase
      */
     protected static function bootedDomains(): array
     {
-        return DomainBoot::withRequirements(MemoryDomain::class);
+        return DomainBoot::withRequirements(MemoryDomain::class, TasksDomain::class);
     }
 
     public function test_a_gated_listener_runs_only_while_its_domain_is_available_asked_at_delivery(): void

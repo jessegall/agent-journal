@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domains;
 
-use App\Support\CoreListenerFolders;
 use App\Contracts\Bus\PipelineRunner;
 use App\Contracts\Navigation\UserInterfaceUpdater;
 use App\Exceptions\InvalidListener;
 use App\Listeners\BroadcastPageChange;
 use App\Providers\DomainEventServiceProvider;
 use App\Support\CatalogueReflectorFactory;
+use App\Support\CoreListenerFolders;
 use App\Support\DomainRegistry;
 use App\Support\ListenerOwnership;
 use App\Support\Registration\ListenerPolicy;
 use Domain\Plans\Events\PlanProgressChanged;
+use Domain\Plans\PlansDomain as InstalledPlansDomain;
 use Tests\Fixtures\Boundary\EventCalls\Plans\Listeners\QuietListener;
 use Tests\Fixtures\Boundary\EventCalls\Plans\PlansDomain as EventCallsPlansDomain;
 use Tests\Fixtures\Boundary\EventCalls\Tasks\Events\TaskClosed;
@@ -24,6 +25,7 @@ use Tests\Fixtures\Boundary\Events\Chat\Events\MessageSent;
 use Tests\Fixtures\Boundary\Events\Plans\Listeners\HearsMessage;
 use Tests\Fixtures\Boundary\Events\Plans\PlansDomain;
 use Tests\Fixtures\Boundary\Events\Tasks\TasksDomain;
+use Tests\Support\DomainBoot;
 use Tests\TestCase;
 
 /**
@@ -32,6 +34,14 @@ use Tests\TestCase;
  */
 final class ListenerPolicyTest extends TestCase
 {
+    /**
+     * Plans, whose exported user interface events the test expands.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(InstalledPlansDomain::class);
+    }
+
     public function test_the_applications_own_listener_map_passes(): void
     {
         $provider = new DomainEventServiceProvider($this->app);
