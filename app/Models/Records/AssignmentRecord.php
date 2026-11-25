@@ -83,7 +83,7 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
         $row->insertIfAbsent();
     }
 
-    public static function createForRecord(RecordIdentity $record, AssigneeIdentity $holder): self
+    public static function create(RecordIdentity $record, AssigneeIdentity $holder): self
     {
         $assignmentRecord = new self();
         $assignmentRecord->record_type = $record->type;

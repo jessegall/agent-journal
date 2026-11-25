@@ -53,7 +53,7 @@ final class DeskModelsTest extends TestCase
         $seated = Agent::create('Seated', 'read-only-helper');
         $stranger = Agent::create('Stranger', 'read-only-helper');
         $seat = DeskSeat::query()->ofDesk($desk)->where('number', 2)->sole();
-        $held = AssignmentRecord::createForRecord($seat->assignmentIdentity(), AssigneeIdentity::of($seated));
+        $held = AssignmentRecord::create($seat->assignmentIdentity(), AssigneeIdentity::of($seated));
         $access = $this->app->make(DeskInboxAccess::class);
 
         $membership = $access->membership($desk, $seated);

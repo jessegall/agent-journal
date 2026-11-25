@@ -58,8 +58,8 @@ final class DeskWorkTest extends TestCase
 
         $task = Task::factory()->create();
         $plan = Plan::factory()->create();
-        AssignmentRecord::createForRecord($task->assignmentIdentity(), $desk->assigneeIdentity());
-        AssignmentRecord::createForRecord($plan->assignmentIdentity(), $desk->assigneeIdentity());
+        AssignmentRecord::create($task->assignmentIdentity(), $desk->assigneeIdentity());
+        AssignmentRecord::create($plan->assignmentIdentity(), $desk->assigneeIdentity());
         $assignments = $this->app->make(AssignmentResolver::class);
 
         foreach ([$first, $second] as $agent) {

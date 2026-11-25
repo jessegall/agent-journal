@@ -106,7 +106,7 @@ final class TaskRunTest extends TestCase
         $leaving = $this->started('First');
         $arriving = $this->started('Second');
         $task = Task::factory()->create();
-        AssignmentRecord::createForRecord($task->assignmentIdentity(), $desk->assigneeIdentity());
+        AssignmentRecord::create($task->assignmentIdentity(), $desk->assigneeIdentity());
         $this->startUserRequestAs($this->owner->id);
 
         $seat = $this->app->make(AssignmentTransaction::class)->run(

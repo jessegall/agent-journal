@@ -167,7 +167,7 @@ final class AutoAssignmentStatusTest extends TestCase
     private function hold(TaskState $state): void
     {
         $task = Task::factory()->create(['state' => $state]);
-        AssignmentRecord::createForRecord($task->assignmentIdentity(), AssigneeIdentity::ofActorIdentity($this->key->actor));
+        AssignmentRecord::create($task->assignmentIdentity(), AssigneeIdentity::ofActorIdentity($this->key->actor));
     }
 
     private function currentStatus(): AutoAssignmentStatus

@@ -51,7 +51,7 @@ final class Profile extends Model implements EventSource, ReadableModel
     /**
      * A new profile under the key, named and described, before its first revision.
      */
-    public static function createFor(ProfileKey $key, string $label, string $description): self
+    public static function create(ProfileKey $key, string $label, string $description): self
     {
         $profile = new self();
         $profile->key = $key->key;

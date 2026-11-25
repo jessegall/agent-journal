@@ -75,7 +75,7 @@ final class Link extends MorphPivot implements EventSource, ReadableModel
     /**
      * A link stored as given, between two records named by their link type and id.
      */
-    public static function createForColumns(string $sourceType, string $sourceId, string $targetType, string $targetId): self
+    public static function create(string $sourceType, string $sourceId, string $targetType, string $targetId): self
     {
         $link = new self();
         $link->source_type = $sourceType;
@@ -159,7 +159,7 @@ final class Link extends MorphPivot implements EventSource, ReadableModel
     public static function createForKey(Model $source, string $targetType, string $targetId): self
     {
         return self::query()->touching($source)->touchingKey($targetType, $targetId)->first()
-            ?? self::createForColumns($source->getMorphClass(), (string) $source->getKey(), $targetType, $targetId);
+            ?? self::create($source->getMorphClass(), (string) $source->getKey(), $targetType, $targetId);
     }
 
     // ----------[ Scopes ]----------

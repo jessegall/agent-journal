@@ -86,7 +86,7 @@ final readonly class AssignmentStore implements AssignmentStorage
         AssignmentRecord::query()->forRecord($current->record)->whereKey($current->reference->id)->delete();
         $this->facts->publishAfterCommit(new AssignmentsEnded([$current->reference->id]));
 
-        return AssignmentRecord::createForRecord($current->record, $holder)->toAssignment;
+        return AssignmentRecord::create($current->record, $holder)->toAssignment;
     }
 
     public function remove(Assignment $current): void

@@ -61,7 +61,7 @@ final class SeatLossTest extends TestCase
         }
 
         $this->assertTrue(array_key_exists($keptClaim->id, AssignmentRecord::holdersOf([$keptClaim->id])));
-        $taken = AssignmentRecord::createForRecord(
+        $taken = AssignmentRecord::create(
             TestActors::record('core.messages.message', 1),
             AssigneeIdentity::ofActorIdentity($arriving),
         );
@@ -77,7 +77,7 @@ final class SeatLossTest extends TestCase
 
     private function claim(int $number, ActorIdentity $actor, SeatChangeResult $seat): AssignmentReference
     {
-        $claim = AssignmentRecord::createForRecord(
+        $claim = AssignmentRecord::create(
             TestActors::record('core.messages.message', $number),
             AssigneeIdentity::ofActorIdentity($actor),
         )->toAssignment->reference;

@@ -12,6 +12,7 @@ use App\Events\Messages\NotificationsWithdrawn;
 use App\Models\Notifications\NotificationReceipt;
 use App\Models\Notifications\NotificationScope;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * The notifications other areas send: delivery through NotificationDelivery, and a target's receipts withdrawn or
@@ -52,6 +53,28 @@ final readonly class RecipientNotifications implements Notifications
         if ($hidden) {
             $this->facts->publishAfterCommit(new NotificationsWithdrawn($recipient));
         }
+    }
+
+    public function withdrawTargets(string $targetType, Builder $targetIds, ActorIdentity $recipient, int $limit): int
+    {
+        $scope = NotificationScope::findFor($this->scopes->keyFor($recipient), $recipient);
+
+        if ($scope->isEmpty()) {
+            return 0;
+        }
+
+        $receipts = NotificationReceipt::visibleWithTargetIn($scope->get()->id, $targetType, $targetIds, $limit);
+        $at = CarbonImmutable::now();
+
+        foreach ($receipts as $receipt) {
+            $this->receipts->hide($receipt, $at);
+        }
+
+        if ($receipts !== []) {
+            $this->facts->publishAfterCommit(new NotificationsWithdrawn($recipient));
+        }
+
+        return count($receipts);
     }
 
     public function settle(NotificationTarget $target, ActorIdentity $recipient): void

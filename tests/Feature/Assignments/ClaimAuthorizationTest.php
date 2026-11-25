@@ -85,7 +85,7 @@ final class ClaimAuthorizationTest extends TestCase
 
     private function hold(string $type, int $number, AssigneeIdentity $holder): AssignmentReference
     {
-        return AssignmentRecord::createForRecord(
+        return AssignmentRecord::create(
             new RecordIdentity($type, TestIds::of($number)),
             $holder,
         )->toAssignment->reference;

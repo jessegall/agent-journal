@@ -23,7 +23,7 @@ final readonly class OpenInboxHandler implements CommandHandler
 
         foreach ($command->members as $member) {
             if (! InboxMember::isAttached($inbox->id, $member)) {
-                InboxMember::join($inbox->id, $member, $this->clock->now());
+                InboxMember::create($inbox->id, $member, $this->clock->now());
             }
         }
 

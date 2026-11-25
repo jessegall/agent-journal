@@ -66,7 +66,7 @@ final class SaveSharePreviewTest extends TestCase
             102,
             103,
         ] as $number) {
-            Link::createForColumns($this->root->type, $this->root->id, 'binders.sheet', TestIds::of($number));
+            Link::create($this->root->type, $this->root->id, 'binders.sheet', TestIds::of($number));
         }
     }
 

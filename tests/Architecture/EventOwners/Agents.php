@@ -37,6 +37,8 @@ use App\Events\Sessions\AgentSessionSelectionUsed;
 use App\Events\Sessions\AgentSessionSkillsGenerated;
 use App\Events\Sessions\ChildCheckoutRequested;
 use App\Events\Sessions\CleanupPassRecorded;
+use App\Events\Sessions\ClosingWordsKeptPrivate;
+use App\Events\Sessions\ClosingWordsOffered;
 use App\Events\Sessions\DriverBuildsApproved;
 use App\Events\Sessions\DriverFailed;
 use App\Events\Sessions\DriverRequestAccepted;
@@ -799,5 +801,19 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new DriverTurnFinished('turn', 'outcome'),
+    ],
+    ClosingWordsOffered::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DriverTurn::offerClosingWords',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ClosingWordsOffered('turn'),
+    ],
+    ClosingWordsKeptPrivate::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DriverTurn::keepClosingWordsPrivate',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ClosingWordsKeptPrivate('turn'),
     ],
 ];

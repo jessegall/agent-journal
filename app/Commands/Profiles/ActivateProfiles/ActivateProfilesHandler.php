@@ -195,7 +195,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
         $profile = Profile::query()->withKey($definition->key)->lockForUpdate()->first();
 
         if ($profile === null) {
-            $profile = Profile::createFor($definition->key, $definition->label, $definition->description);
+            $profile = Profile::create($definition->key, $definition->label, $definition->description);
         }
 
         $profile->name($definition->label, $definition->description);

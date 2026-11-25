@@ -3,7 +3,11 @@
 declare(strict_types=1);
 
 use App\Enums\Messages\DismissalType;
+use App\Events\Inboxes\InboxJoined;
+use App\Events\Inboxes\InboxLeft;
 use App\Events\Inboxes\InboxMessageNumberTaken;
+use App\Events\Inboxes\InboxOpened;
+use App\Events\Messages\ClosingWordsDelivered;
 use App\Events\Messages\MessageAnswered;
 use App\Events\Messages\MessageAnswerRequired;
 use App\Events\Messages\MessageDismissed;
@@ -51,14 +55,14 @@ return [
     ],
     MessageRead::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'Message::acknowledge',
+        'owner' => 'MessageReadEntry::create',
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new MessageRead('message', 'inbox', ActorIdentity::ofClass(Agent::class, 'agent')),
     ],
     MessageSent::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'Message::createDesk',
+        'owner' => 'Message::create',
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new MessageSent('message', 'inbox', 1, null, ActorIdentity::ofClass(Agent::class, 'agent')),
@@ -79,7 +83,6 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Commands/Notifications/HideUnseatedNotifications/HideUnseatedNotificationsHandler.php',
             'app/Support/RecipientNotifications.php',
         ],
     ],
@@ -138,5 +141,33 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new UserPresenceConfirmed('presence'),
+    ],
+    InboxOpened::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Inbox::create',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new InboxOpened('inbox'),
+    ],
+    InboxJoined::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'InboxMember::create',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new InboxJoined('inbox', ActorIdentity::ofClass(Agent::class, 'agent')),
+    ],
+    InboxLeft::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'InboxMember::leave',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new InboxLeft('inbox', ActorIdentity::ofClass(Agent::class, 'agent')),
+    ],
+    ClosingWordsDelivered::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DriverTurn::markClosingWordsDelivered',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ClosingWordsDelivered('message', 'agent'),
     ],
 ];

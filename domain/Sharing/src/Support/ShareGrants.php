@@ -7,6 +7,8 @@ namespace Domain\Sharing\Support;
 use App\Contracts\Actors\Actor;
 use App\Contracts\Reads\ReadMeter;
 use App\Contracts\Sharing\SharePolicy;
+use App\Support\ActorIdentity;
+use Carbon\CarbonImmutable;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\ShareAuditType;
 use Domain\Sharing\Exceptions\ShareProposalUnavailable;
@@ -19,8 +21,6 @@ use Domain\Sharing\Models\ShareGatewayOperation;
 use Domain\Sharing\Models\ShareInstallation;
 use Domain\Sharing\Models\ShareMember;
 use Domain\Sharing\Models\SharePreview;
-use Carbon\CarbonImmutable;
-use App\Support\ActorIdentity;
 
 /**
  * The owner's grants: a new share, an agent's proposal approved, or a live share's members replaced, each from a
@@ -52,7 +52,7 @@ final readonly class ShareGrants
             ),
         );
 
-        ShareGatewayOperation::createForConfiguration($consumed->configuration, GatewayOperationType::Open);
+        ShareGatewayOperation::create($consumed->configuration, GatewayOperationType::Open);
 
         $this->publish($owner, $share, $consumed, ShareAuditType::Created);
 
@@ -84,7 +84,7 @@ final readonly class ShareGrants
             $duration->deadlineFrom(CarbonImmutable::now()),
         );
 
-        ShareGatewayOperation::createForConfiguration($consumed->configuration, GatewayOperationType::Open);
+        ShareGatewayOperation::create($consumed->configuration, GatewayOperationType::Open);
 
         $this->publish($owner, $proposal, $consumed, ShareAuditType::Approved);
 

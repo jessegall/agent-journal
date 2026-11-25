@@ -17,6 +17,23 @@ final readonly class DirectFileAccess
     public const string WAITING_LIST = 'docs/naming/direct-file-access-sites.txt';
 
     /**
+     * The Files area's code that touches the disk, behind the Files contract.
+     */
+    public const array FILES_AREA = [
+        'app/Enums/Files/EntryType.php',
+        'app/Providers/FilesServiceProvider.php',
+        'app/Support/ClosedFolders.php',
+        'app/Support/CodeFiles.php',
+        'app/Support/FileContents.php',
+        'app/Support/FileWriter.php',
+        'app/Support/FolderWalker.php',
+        'app/Support/LocalFiles.php',
+        'app/Support/PathConfinement.php',
+        'app/Support/PlaceRoots.php',
+        'app/Values/Fingerprint.php',
+    ];
+
+    /**
      * @param  array<string, list<array{line: int, form: string, instead: string, exemption: string|null}>>  $findings  by path from the root
      */
     private function __construct(private string $projectRoot, private array $findings) {}
@@ -41,6 +58,20 @@ final readonly class DirectFileAccess
     /**
      * The same findings without those of one folder, given from the project root.
      */
+    /**
+     * The sites outside every file of the Files area.
+     */
+    public function outsideTheFilesArea(): self
+    {
+        $found = $this;
+
+        foreach (self::FILES_AREA as $path) {
+            $found = $found->outside($path);
+        }
+
+        return $found;
+    }
+
     public function outside(string $folder): self
     {
         return new self($this->projectRoot, array_filter(
@@ -118,7 +149,7 @@ final readonly class DirectFileAccess
         $waiting = count($sites) - $exempt;
 
         return <<<TEXT
-        # The direct file access sites outside app/Files: {$waiting} still waiting to move to App\\Contracts\\Files\\Files,
+        # The direct file access sites outside the Files area: {$waiting} still waiting to move to App\\Contracts\\Files\\Files,
         # and {$exempt} exempt. One line per file and form, without line numbers. A task that moves a site removes its own
         # lines here, in the same task; the waiting part only shrinks. An 'exempt' line names a method marked
         # #[OutsideThePlaces(PlaceExemption::...)], for a reason the user settled.

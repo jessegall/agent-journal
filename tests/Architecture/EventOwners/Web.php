@@ -28,7 +28,7 @@ return [
         'role' => EventRole::Projection,
         'migrated' => false,
         'producers' => [
-            'app/Listeners/BroadcastPageChange.php',
+            'app/Listeners/NotifyInboxAccessEnded.php',
         ],
     ],
     NotificationsInvalidated::class => [

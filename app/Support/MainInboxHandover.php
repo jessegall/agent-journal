@@ -32,6 +32,6 @@ final readonly class MainInboxHandover implements MainInboxTakeover
             }
         }
 
-        InboxMember::join($main->id, $starter, $now);
+        InboxMember::create($main->id, $starter, $now);
     }
 }

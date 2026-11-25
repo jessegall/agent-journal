@@ -11,14 +11,14 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Support\GatewayConfiguration;
+use App\Support\GatewayOperation;
+use Carbon\CarbonImmutable;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\GatewayOutcome;
 use Domain\Sharing\Events\ShareGatewayOperationClaimed;
 use Domain\Sharing\Events\ShareGatewayOperationFinished;
 use Domain\Sharing\Exceptions\GatewayLeaseRefused;
-use App\Support\GatewayConfiguration;
-use App\Support\GatewayOperation;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -72,7 +72,7 @@ final class ShareGatewayOperation extends Model implements EventSource, Readable
     /**
      * An unclaimed request to open or close the endpoint of the configuration at its current version.
      */
-    public static function createForConfiguration(
+    public static function create(
         ShareGatewayConfiguration $configuration,
         GatewayOperationType $type,
     ): self {

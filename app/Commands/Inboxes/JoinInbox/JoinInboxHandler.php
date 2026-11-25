@@ -17,6 +17,6 @@ final readonly class JoinInboxHandler implements CommandHandler
 
     public function handle(JoinInboxCommand $command): void
     {
-        InboxMember::join($command->inboxId, $command->actor, $this->clock->now());
+        InboxMember::create($command->inboxId, $command->actor, $this->clock->now());
     }
 }

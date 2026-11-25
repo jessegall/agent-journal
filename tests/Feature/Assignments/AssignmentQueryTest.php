@@ -60,7 +60,7 @@ final class AssignmentQueryTest extends TestCase
         $this->hold($first, $this->builder);
         $this->hold($second, $this->builder);
         $this->hold($third, $this->reviewer);
-        AssignmentRecord::createForRecord(TestActors::record('plans.plan', 40), $this->builder);
+        AssignmentRecord::create(TestActors::record('plans.plan', 40), $this->builder);
 
         $query = $this->app->make(AssignmentQuery::class);
 
@@ -145,7 +145,7 @@ final class AssignmentQueryTest extends TestCase
 
     private function hold(string $taskId, AssigneeIdentity $holder): AssignmentRecord
     {
-        return AssignmentRecord::createForRecord(new RecordIdentity(Task::linkType(), $taskId), $holder);
+        return AssignmentRecord::create(new RecordIdentity(Task::linkType(), $taskId), $holder);
     }
 
     /**

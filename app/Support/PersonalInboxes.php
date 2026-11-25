@@ -21,6 +21,6 @@ final readonly class PersonalInboxes implements ActorProvisioning
     {
         $inbox = Inbox::create(Inbox::PERSONAL_PROVIDER, $actor->text(), $label);
 
-        InboxMember::join($inbox->id, $actor, $this->clock->now());
+        InboxMember::create($inbox->id, $actor, $this->clock->now());
     }
 }

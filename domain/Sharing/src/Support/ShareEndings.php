@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Support;
 
+use App\Support\ActorIdentity;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\ShareAuditType;
 use Domain\Sharing\Enums\ShareState;
@@ -11,7 +12,6 @@ use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareAudit;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\ShareGatewayOperation;
-use App\Support\ActorIdentity;
 
 /**
  * Ends a locked share once, revoked by the owner or expired by the system: its token can no longer be read back, a
@@ -59,7 +59,7 @@ final readonly class ShareEndings
 
         if ($wasLive && $share->isLastLiveOfItsConfiguration()) {
             $configuration = ShareGatewayConfiguration::query()->findOrFail($share->share_gateway_configuration_id);
-            ShareGatewayOperation::createForConfiguration($configuration, GatewayOperationType::Close);
+            ShareGatewayOperation::create($configuration, GatewayOperationType::Close);
         }
 
         return true;

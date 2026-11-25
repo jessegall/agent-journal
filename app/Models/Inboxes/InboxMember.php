@@ -70,7 +70,7 @@ final class InboxMember extends Model implements EventSource
     /**
      * Attaches the actor to the inbox; an actor already attached stays as it is.
      */
-    public static function join(string $inboxId, ActorIdentity $actor, CarbonImmutable $at): void
+    public static function create(string $inboxId, ActorIdentity $actor, CarbonImmutable $at): void
     {
         if (self::query()->active()->ofActor($actor)->where('inbox_id', $inboxId)->exists()) {
             return;
