@@ -101,6 +101,51 @@ final class JournalSinksTest extends TestCase
         );
     }
 
+    public function test_the_exact_commands_pass_through_every_middleware_and_another_list_fails(): void
+    {
+        $this->journal->owner()->sinkCommands();
+        $this->journal->assertDispatchedExactly([]);
+
+        $this->journal->route(
+            'POST',
+            'layouts.store',
+            payload: ['name' => 'Writing', 'shape' => SaveLayoutTest::shape('chat')],
+        );
+
+        $this->journal->assertDispatchedExactly([ExpectedCommand::of(SaveLayoutCommand::class, ['name' => 'Writing'])]);
+        $this->assertThrows(fn () => $this->journal->assertDispatchedExactly([]), AssertionFailedError::class);
+    }
+
+    public function test_a_command_its_sender_does_not_declare_fails_the_declared_assert(): void
+    {
+        $this->journal->owner()->sinkCommands();
+        $this->journal->runUnkeyed(new SaveLayoutCommand('Writing', LayoutShape::from(SaveLayoutTest::shape('chat'))));
+
+        $this->journal->assertDispatchedOnlyDeclared([SaveLayoutCommand::class], 'the test');
+        $this->assertThrows(
+            fn () => $this->journal->assertDispatchedOnlyDeclared([SendMessageCommand::class], 'the test'),
+            AssertionFailedError::class,
+        );
+    }
+
+    public function test_replies_arranged_together_each_come_back_for_their_class(): void
+    {
+        $this->journal->owner()->agent('Ada')->sharedInbox('Owner', 'Ada')->sinkCommands();
+        $inbox = $this->journal->sharedInboxOf('Owner', 'Ada');
+        $this->journal->sinkReplies([SendMessageCommand::class => 'message-1']);
+
+        $this->assertSame('message-1', $this->journal->run(new SendMessageCommand($inbox->id, 'Hi')));
+    }
+
+    public function test_a_start_that_beat_just_now_records_its_beat_on_its_session(): void
+    {
+        $start = $this->journal->owner()->signedStart('Ada');
+
+        $this->journal->heartbeatOf($start);
+
+        $this->assertNotNull($start->session->refresh()->last_heartbeat_at);
+    }
+
     public function test_an_argument_of_another_type_fails_the_assert(): void
     {
         $this->journal->owner()->agent('Ada')->sharedInbox('Owner', 'Ada')->sinkCommands();

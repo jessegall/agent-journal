@@ -8,7 +8,7 @@ use LogicException;
 
 /**
  * Thrown by a generated arrangement the generator could not complete: it names the entry and what is still to fill in,
- * so the suite fails until a person arranges the call.
+ * so the suite fails until the call is arranged by hand.
  */
 final class EntryTestNeedsArrangement extends LogicException
 {
