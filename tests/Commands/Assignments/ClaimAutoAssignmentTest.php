@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Assignments;
+namespace Tests\Commands\Assignments;
 
 use App\Commands\Assignments\AssignRecordForMaintenance\AssignRecordForMaintenanceCommand;
 use App\Commands\Assignments\ClaimAutoAssignment\ClaimAutoAssignmentCommand;

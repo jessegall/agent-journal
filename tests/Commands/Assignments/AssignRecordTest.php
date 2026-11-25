@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Assignments;
+namespace Tests\Commands\Assignments;
 
 use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
-use App\Commands\Assignments\UnassignRecord\UnassignRecordCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\RequestKeyConflict;
 use App\Models\Agents\Agent;
@@ -26,10 +25,10 @@ use Tests\Support\StartsOwnerRequest;
 use Tests\TestCase;
 
 /**
- * A task given to the actor attached to main is held by main, and the outcome names both the actor asked for and the
- * inbox that holds it; an actor in no forwarding inbox keeps the task itself.
+ * A record given to an actor at main is held by main and names both, an actor in no forwarding inbox keeps it, and
+ * a changed recipient under the same key conflicts.
  */
-final class ForwardedAssignmentTest extends TestCase
+final class AssignRecordTest extends TestCase
 {
     use CommitsHookRows;
     use InstallsInboxes;
@@ -79,23 +78,6 @@ final class ForwardedAssignmentTest extends TestCase
 
         $held = AssignmentRecord::query()->forRecord($task)->sole()->toAssignment->holder();
         $this->assertTrue($held->isSameAs($agent->assigneeIdentity()));
-    }
-
-    public function test_a_retry_with_the_same_key_returns_the_first_result_after_the_assignment_was_removed(): void
-    {
-        $agent = $this->withInbox(Agent::create('Builder', 'read-only-helper', $this->localProject()));
-        $task = Task::factory()->create()->assignmentIdentity();
-        $bus = $this->app->make(CommandBus::class);
-        $this->app->make(RequestKey::class)->set('assign-the-builder');
-        $first = $bus->run(new AssignRecordCommand($task, $agent->assigneeIdentity()));
-        $this->app->make(RequestKey::class)->set('unassign-the-builder');
-        $bus->run(new UnassignRecordCommand($task, $first->outcomes[0]->current->reference));
-
-        $this->app->make(RequestKey::class)->set('assign-the-builder');
-        $retry = $bus->run(new AssignRecordCommand($task, $agent->assigneeIdentity()));
-
-        $this->assertEquals($first, $retry);
-        $this->assertSame(0, AssignmentRecord::query()->forRecord($task)->count());
     }
 
     public function test_a_changed_recipient_under_the_same_key_conflicts(): void

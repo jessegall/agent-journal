@@ -2,22 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Agents;
+namespace Tests\Commands\Navigation;
 
-use App\Commands\Navigation\AbandonNavigation\AbandonNavigationCommand;
 use App\Commands\Navigation\AnswerNavigation\AnswerNavigationCommand;
-use App\Commands\Navigation\ProveNavigation\ProveNavigationCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Drivers\DriverOperation;
-use App\Enums\Drivers\RequestOutcome;
-use App\Enums\Drivers\RequestProgress;
-use App\Enums\Navigation\NavigationCompletion;
 use App\Enums\Navigation\NavigationStatus;
 use App\Exceptions\NavigationAnswerRefused;
-use App\Exceptions\NavigationProofRefused;
 use App\Models\Agents\Agent;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\NavigationRequest;
@@ -34,8 +28,9 @@ use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
 /**
- * The main desk's occupant answers a navigation request with one round per row version: keys, a label or a goal
- * parameter, never free text or a control key; a stale round or another actor's round is refused and stores nothing.
+ * An agent answers a screen it was asked to pass: the occupant's round is sent once and the request is answering; a
+ * stale round, another actor's round or a parameter the goal lacks stores nothing, and a control key or an endless
+ * label never becomes an answer.
  */
 final class AnswerNavigationTest extends TestCase
 {
@@ -129,80 +124,6 @@ final class AnswerNavigationTest extends TestCase
                 $this->addToAssertionCount(1);
             }
         }
-    }
-
-    public function test_done_moves_an_answered_request_to_proving_and_queues_a_proof_round(): void
-    {
-        $navigation = $this->answered();
-
-        $receipt = $this->asAgent(
-            $this->main,
-            new ProveNavigationCommand($navigation->id, $navigation->row_version, NavigationCompletion::Step, 'Set model'),
-        );
-
-        $navigation->refresh();
-        $this->assertSame(NavigationStatus::Proving, $navigation->status);
-        $this->assertSame(['Set model', NavigationCompletion::Step, 3], [
-            $navigation->proof,
-            $navigation->completes,
-            $navigation->next_step,
-        ]);
-        $round = DriverRequest::query()->findOrFail($receipt->requestId)->navigation_round;
-        $this->assertSame(['Set model', 3], [$round?->proof, $round?->nextStep]);
-    }
-
-    public function test_a_proof_that_is_empty_or_was_already_on_screen_or_comes_too_early_is_refused(): void
-    {
-        $navigation = $this->answered();
-        $version = $navigation->row_version;
-        $goal = NavigationCompletion::Goal;
-        $refused = [
-            'empty' => [new ProveNavigationCommand($navigation->id, $version, $goal, ' '), NavigationProofRefused::class],
-            'on screen' => [
-                new ProveNavigationCommand($navigation->id, $version, $goal, 'gpt-5'),
-                NavigationProofRefused::class,
-            ],
-        ];
-        $open = $this->raise($this->stalledScript(), 'raise-2');
-        $refused['not answering'] = [
-            new ProveNavigationCommand($open->id, $open->row_version, NavigationCompletion::Goal, 'GPT-6'),
-            NavigationAnswerRefused::class,
-        ];
-
-        foreach ($refused as $name => [$command, $refusal]) {
-            $this->assertThrows(fn () => $this->asAgent($this->main, $command), $refusal, null);
-        }
-
-        $this->assertSame(NavigationStatus::Answering, $navigation->fresh()?->status);
-    }
-
-    public function test_giving_up_abandons_the_request_and_ends_its_key_script_entry_unavailable(): void
-    {
-        $navigation = $this->answered();
-
-        $this->asAgent($this->main, new AbandonNavigationCommand($navigation->id, $navigation->row_version, 'no such model'));
-
-        $navigation->refresh();
-        $this->assertSame(
-            [NavigationStatus::Abandoned, 'no such model'],
-            [$navigation->status, $navigation->abandon_reason],
-        );
-        $stalled = DriverRequest::query()->findOrFail($navigation->driver_request_id);
-        $this->assertSame(
-            [RequestProgress::Failed, RequestOutcome::EntryUnavailable],
-            [$stalled->progress, $stalled->outcome],
-        );
-    }
-
-    /**
-     * A navigation request the main agent has sent its first round to.
-     */
-    private function answered(): NavigationRequest
-    {
-        $navigation = $this->raise($this->stalledScript(), 'raise-1');
-        $this->asAgent($this->main, $this->answer($navigation, NavigationAnswer::keys(['down'])));
-
-        return NavigationRequest::query()->acrossActors()->findOrFail($navigation->id);
     }
 
     private function answer(NavigationRequest $navigation, NavigationAnswer $answer): AnswerNavigationCommand

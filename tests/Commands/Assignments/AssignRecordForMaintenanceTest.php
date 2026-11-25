@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Assignments;
+namespace Tests\Commands\Assignments;
 
 use App\Commands\Assignments\AssignRecordForMaintenance\AssignRecordForMaintenanceCommand;
 use App\Commands\Assignments\ReassignRecord\ReassignRecordCommand;
@@ -26,7 +26,7 @@ use Tests\Support\DomainBoot;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
-final class EngineAssignmentTest extends TestCase
+final class AssignRecordForMaintenanceTest extends TestCase
 {
     use CommitsHookRows;
     use StartsAgentRequests;
