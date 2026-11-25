@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Domain\Sharing\Support;
 
 use App\Exceptions\ReadPermitMissing;
+use App\Support\ReadPermit;
+use App\Support\Registry;
 use Domain\Sharing\Exceptions\ShareLinkRefused;
 use Domain\Sharing\Models\Share;
 use Illuminate\Container\Attributes\Scoped;
-use App\Support\ReadPermit;
-use App\Support\Registry;
 
 /**
  * The read permits of one request: the public bridge issues one from a token, the read command takes it once by its

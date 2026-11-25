@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Access;
 
-use App\Models\Presence\UserPresence;
-use Carbon\CarbonImmutable;
 use App\Models\Access\User;
+use App\Models\Presence\UserPresence;
 use App\Support\Access\AccessSettings;
 use App\Support\Access\PresentUserCounter;
-use Tests\TestCase;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\RefreshHookDatabase;
+use Tests\TestCase;
 
 /**
  * A user is present while their one row is fresh and they may still use the journal; their tabs and devices share the

@@ -6,8 +6,8 @@ namespace App\Support\Access;
 
 use App\Contracts\Admission\JournalAdmission;
 use App\Contracts\Assignments\AutoAssignmentActivity;
-use App\Support\ActorIdentity;
 use App\Models\Access\User;
+use App\Support\ActorIdentity;
 
 /**
  * A user may take work whenever the journal admits them; a user needs no running session.

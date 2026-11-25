@@ -21,7 +21,6 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
@@ -32,11 +31,13 @@ use PhpOption\Option;
  * @property int $next_sequence
  * @property int $mutation_version
  * @property int $unread_count
- * @property ?CarbonImmutable $fenced_at
- * @property ?int $mark_all_through
+ * @property CarbonImmutable|null $fenced_at
+ * @property int|null $mark_all_through
  * @property int $mark_all_after
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 #[Table('notification_scopes')]
 final class NotificationScope extends Model implements EventSource, ReadableModel

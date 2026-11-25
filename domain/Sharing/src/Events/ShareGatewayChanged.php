@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Sharing\Events;
 
 use App\Contracts\Navigation\UserInterfaceUpdater;
-use Domain\Sharing\Contracts\ShareGatewayEvent;
 use DateTimeImmutable;
+use Domain\Sharing\Contracts\ShareGatewayEvent;
 
 /**
  * The owner configured a gateway revision or disabled one. Raised after the transaction committed; it carries the

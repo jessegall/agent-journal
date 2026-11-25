@@ -20,22 +20,23 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
  * @property string $ticket_digest
  * @property string $issuer_user_id
  * @property InvitationMode $mode
- * @property ?string $project_id
+ * @property string|null $project_id
  * @property CarbonImmutable $expires_at
- * @property ?CarbonImmutable $revoked_at
- * @property ?CarbonImmutable $spent_at
- * @property ?string $binding_id
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property ?string $install_attempt_id
- * @property ?string $environment_id
+ * @property CarbonImmutable|null $revoked_at
+ * @property CarbonImmutable|null $spent_at
+ * @property string|null $binding_id
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property string|null $install_attempt_id
+ * @property string|null $environment_id
+ *
+ * @mixin \Eloquent
  */
 final class ProjectInvitation extends Model implements EventSource, ReadableModel
 {

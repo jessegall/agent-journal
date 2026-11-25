@@ -25,7 +25,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use PhpOption\None;
 use PhpOption\Some;
 
@@ -35,19 +34,21 @@ use PhpOption\Some;
  * @property string $actor_type
  * @property string $actor_id
  * @property string $work
- * @property ?bool $available
- * @property ?bool $dirty
- * @property ?bool $clean
- * @property ?int $generation
- * @property ?CarbonImmutable $sampled_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property bool|null $available
+ * @property bool|null $dirty
+ * @property bool|null $clean
+ * @property int|null $generation
+ * @property CarbonImmutable|null $sampled_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  * @property string $binding_id
  * @property string $checkout_id
  * @property string $head_oid
  * @property string $unavailable_reason
- * @property mixed $facts attribute
- * @property mixed $reference attribute
+ * @property-read mixed $facts
+ * @property-read mixed $reference
+ *
+ * @mixin \Eloquent
  */
 #[Table('workspace_reads')]
 final class WorkspaceRead extends Model implements EventSource, ReadableModel

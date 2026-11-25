@@ -32,28 +32,29 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
  * @property string $author_type
  * @property string $author_id
- * @property ?string $session_id
+ * @property string|null $session_id
  * @property int $contract_major
  * @property string $request_key
  * @property string $command
  * @property string $fingerprint
  * @property ReceiptState $state
- * @property ?ReceiptResultData $result
- * @property ?string $refusal_code
- * @property ?string $refusal_message
- * @property ?RecoveryCall $refusal_recovery
+ * @property ReceiptResultData|null $result
+ * @property string|null $refusal_code
+ * @property string|null $refusal_message
+ * @property RecoveryCall|null $refusal_recovery
  * @property CarbonImmutable $answers_until
- * @property ?CarbonImmutable $refuses_until
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property ?string $target
- * @property mixed $to_operation attribute
+ * @property CarbonImmutable|null $refuses_until
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property string|null $target
+ * @property-read mixed $to_operation
+ *
+ * @mixin \Eloquent
  */
 final class CommandReceipt extends Model implements EventSource, ReadableModel
 {

@@ -24,14 +24,14 @@ final readonly class ClaimCleanupController
         }
 
         return new JsonResponse([
-                'target' => $claimed->target->value,
-                'id' => $claimed->id,
-                'driver' => $claimed->driver,
-                'method' => $claimed->method->value,
-                'directory' => $claimed->directory,
-                'generation' => $claimed->generation,
-                'store_removed' => $claimed->isStoreRemoved,
-                'account_id' => $claimed->accountId,
-            ]);
+            'target' => $claimed->target->value,
+            'id' => $claimed->id,
+            'driver' => $claimed->driver,
+            'method' => $claimed->method->value,
+            'directory' => $claimed->directory,
+            'generation' => $claimed->generation,
+            'store_removed' => $claimed->isStoreRemoved,
+            'account_id' => $claimed->accountId,
+        ]);
     }
 }

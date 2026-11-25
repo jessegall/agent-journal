@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Support\DomainRegistry;
 use App\Contracts\Skills\SkillResolver;
+use App\Support\DomainRegistry;
 use App\Values\SkillKey;
 use Illuminate\Support\Facades\Artisan;
 use PHPUnit\Framework\Attributes\DataProvider;

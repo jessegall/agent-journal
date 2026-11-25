@@ -14,18 +14,20 @@ use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use App\Values\AskTypeKey;
 use App\Values\SupervisorRoutes;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
  * @property string $actor_type
  * @property string $actor_id
  * @property SupervisorRoutes $routes
- * @property array<string, int> $versions
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property array<string,int> $versions
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 final class SupervisorLink extends Model implements EventSource, ReadableModel
 {

@@ -10,11 +10,11 @@ use Domain\Sharing\Events\ShareRevoked;
 use Domain\Sharing\Exceptions\ShareEndInvalid;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
+use Domain\Sharing\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\TestShares;
 use Tests\Support\TestActors;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * A share ends once, as revoked or expired: the end clears its token, keeps its digest, and raises one fact whose time

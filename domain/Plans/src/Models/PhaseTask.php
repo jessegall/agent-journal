@@ -22,6 +22,8 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  * @property string $phase_id
  * @property string $task_id
  * @property int $position
+ *
+ * @mixin \Eloquent
  */
 #[Table('phase_tasks')]
 final class PhaseTask extends Pivot implements ReadableModel

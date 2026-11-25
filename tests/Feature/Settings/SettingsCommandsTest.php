@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Settings;
 
-use Domain\Rules\RulesDomain;
-use Tests\Support\DomainBoot;
 use App\Commands\Settings\EnableSettingGroup\EnableSettingGroupCommand;
 use App\Commands\Settings\SetIntegerSetting\SetIntegerSettingCommand;
 use App\Contracts\Actors\CurrentActorSetter;
@@ -32,10 +30,12 @@ use App\Values\GroupReference;
 use App\Values\ProfileBase;
 use App\Values\SettingReference;
 use App\Values\SettingsChange;
+use Domain\Rules\RulesDomain;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Modules\Notes\Commands\SetIntegerSettingThenFail\SetIntegerSettingThenFailCommand;
 use Tests\Fixtures\Modules\Notes\Exceptions\NoteWorkFailed;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\InstallsCommandModules;
 use Tests\Support\Settings\ChangesReviewsSettings;
 use Tests\Support\Settings\UsesReviewsSettings;

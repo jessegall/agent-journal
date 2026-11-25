@@ -46,7 +46,6 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder as QueryBuilder;
-use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
@@ -58,35 +57,37 @@ use PhpOption\Option;
  * @property string $driver_key
  * @property string $driver_label
  * @property string $family
- * @property ?string $driver_build
- * @property ?string $host_id
- * @property ?int $proposed_generation
- * @property ?int $catalogue_revision
+ * @property string|null $driver_build
+ * @property string|null $host_id
+ * @property int|null $proposed_generation
+ * @property int|null $catalogue_revision
  * @property string $model
  * @property ModelSelectionType $requested_model_type
- * @property ?string $requested_model
+ * @property string|null $requested_model
  * @property DriverSourceType $driver_source
- * @property ?string $profile_key
- * @property ?int $profile_revision
+ * @property string|null $profile_key
+ * @property int|null $profile_revision
  * @property StartOriginType $origin_type
- * @property ?string $owner_reference
- * @property ?string $context_reference
+ * @property string|null $owner_reference
+ * @property string|null $context_reference
  * @property ConversationModeType $conversation_mode
  * @property DriverType $driver_type
  * @property bool $account_chosen
  * @property bool $remember
- * @property ?string $conversation_target
- * @property ?bool $conversation_resumed
+ * @property string|null $conversation_target
+ * @property bool|null $conversation_resumed
  * @property string $payload_digest
  * @property StartDisposition $disposition
  * @property StartReadiness $readiness
- * @property ?string $native_id
- * @property ?string $refusal_reason
- * @property ?Carbon $refused_at
- * @property ?string $session_id
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $owner_work attribute
+ * @property string|null $native_id
+ * @property string|null $refusal_reason
+ * @property CarbonImmutable|null $refused_at
+ * @property string|null $session_id
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $owner_work
+ *
+ * @mixin \Eloquent
  */
 final class SessionRequest extends Model implements EventSource, ReadableModel
 {

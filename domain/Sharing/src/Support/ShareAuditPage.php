@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Support;
 
-use Domain\Sharing\Models\Share;
 use Carbon\CarbonImmutable;
+use Domain\Sharing\Models\Share;
 
 /**
  * One page of a share's audit, newest first, the id the next page starts after, and the totals pruning kept of the

@@ -17,7 +17,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -26,15 +25,17 @@ use Illuminate\Support\Carbon;
  * @property string $definition_hash
  * @property StopConditionResultType $status
  * @property CarbonImmutable $started_at
- * @property ?CarbonImmutable $ended_at
- * @property ?int $exit_code
- * @property ?string $signal
+ * @property CarbonImmutable|null $ended_at
+ * @property int|null $exit_code
+ * @property string|null $signal
  * @property string $summary
- * @property ?string $output
+ * @property string|null $output
  * @property bool $truncated
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property StopCheck $attempt
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read StopCheck $attempt
+ *
+ * @mixin \Eloquent
  */
 final class StopConditionResult extends Model implements ReadableModel
 {

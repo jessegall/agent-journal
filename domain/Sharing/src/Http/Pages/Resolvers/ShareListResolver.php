@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Domain\Sharing\Http\Pages\Resolvers;
 
 use App\Contracts\Navigation\PageResolver;
+use App\Support\Layout\DeclaredLayoutData;
 use Domain\Sharing\Data\ShareRowData;
 use Domain\Sharing\Http\Pages\SharesIndex;
 use Domain\Sharing\Http\Requests\ShareListRequest;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
-use App\Support\Layout\DeclaredLayoutData;
 
 /**
  * The owner's shares and proposals, newest first, a page of them at a time, with their gateways, for the Shares page.

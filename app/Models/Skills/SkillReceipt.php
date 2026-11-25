@@ -23,6 +23,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $content_digest
  * @property ReadEvidence $evidence
  * @property CarbonImmutable $read_at
+ *
+ * @mixin \Eloquent
  */
 final class SkillReceipt extends Model implements ReadableModel
 {

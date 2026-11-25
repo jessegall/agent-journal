@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Execution;
 
+use App\Contracts\Processes\SpawnablePart;
 use App\Enums\CommandRules\RedirectType;
 use App\Exceptions\SupervisorRefused;
 use App\Values\ExecutionContext;
@@ -11,7 +12,6 @@ use App\Values\PartKey;
 use App\Values\PlanRedirect;
 use App\Values\PlanStep;
 use App\Values\PlanWord;
-use App\Contracts\Processes\SpawnablePart;
 
 /**
  * A part of a run that is queued and not yet run: its step, its key, the context it runs in, the outputs of its

@@ -7,8 +7,8 @@ namespace Domain\Sharing\Commands\RequestShare;
 use App\Attributes\Commands\Authorize;
 use App\Attributes\Commands\RequiresRequestKey;
 use App\Enums\Agents\AccessType;
-use Domain\Sharing\Policies\ShareRequestPolicy;
 use App\Support\Command;
+use Domain\Sharing\Policies\ShareRequestPolicy;
 use Domain\Sharing\Support\ShareProposalStatus;
 
 /**

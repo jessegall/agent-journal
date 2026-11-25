@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Http\Controllers;
 
-use Domain\Sharing\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand;
 use App\Contracts\Bus\CommandBus;
+use Domain\Sharing\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand;
 use Domain\Sharing\Http\Requests\GatewayActionRequest;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Illuminate\Http\RedirectResponse;

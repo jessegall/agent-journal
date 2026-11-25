@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Support\DomainRegistry;
 use App\Enums\Hooks\ContextStartType;
 use App\Enums\Skills\ReadEvidence;
 use App\Events\Hooks\ContextStarted;
@@ -14,6 +13,7 @@ use App\Models\Skills\SkillGeneration;
 use App\Models\Skills\SkillPublication;
 use App\Models\Skills\SkillReceipt;
 use App\Support\ContextReminders;
+use App\Support\DomainRegistry;
 use App\Values\StackTarget;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsBuiltInProfiles;

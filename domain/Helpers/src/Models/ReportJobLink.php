@@ -17,7 +17,6 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
@@ -27,7 +26,9 @@ use PhpOption\Option;
  * @property string $helper_job_id
  * @property string $dispatch_request_id
  * @property CarbonImmutable $verified_at
- * @property ?Carbon $created_at
+ * @property CarbonImmutable|null $created_at
+ *
+ * @mixin \Eloquent
  */
 #[Table('report_job_links')]
 final class ReportJobLink extends Model implements EventSource, ReadableModel

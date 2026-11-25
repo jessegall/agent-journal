@@ -22,7 +22,6 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use Spatie\LaravelData\DataCollection;
 
 /**
@@ -38,13 +37,15 @@ use Spatie\LaravelData\DataCollection;
  * @property int $byte_cap
  * @property int $seconds_cap
  * @property CarbonImmutable $expires_at
- * @property ?string $request_id
- * @property ?CarbonImmutable $consumed_at
- * @property ?string $process_run_id
- * @property ?string $command_request_id
+ * @property string|null $request_id
+ * @property CarbonImmutable|null $consumed_at
+ * @property string|null $process_run_id
+ * @property string|null $command_request_id
  * @property DataCollection<int, CommandRule> $candidate_rules
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 final class EvidencePermit extends Model implements EventSource, ReadableModel
 {

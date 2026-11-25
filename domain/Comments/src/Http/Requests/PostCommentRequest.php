@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Http\Requests;
 
-use Domain\Comments\Commands\PostComment\PostCommentCommand;
-use Domain\Comments\Commands\PostTextComment\PostTextCommentCommand;
 use App\Contracts\Records\RecordResolver;
 use App\Enums\Records\TextAnchorType;
 use App\Http\Requests\RecordTargetRequest;
 use App\Values\TextRange;
+use Domain\Comments\Commands\PostComment\PostCommentCommand;
+use Domain\Comments\Commands\PostTextComment\PostTextCommentCommand;
 use Illuminate\Validation\Validator;
 
 /**

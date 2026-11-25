@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Console\Commands;
 
-use Domain\Sharing\Calls\RequestShareCall;
 use App\Console\Concerns\RunsCallPipelines;
+use Domain\Sharing\Calls\RequestShareCall;
 use Illuminate\Console\Command;
 
 /**

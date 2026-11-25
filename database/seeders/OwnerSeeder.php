@@ -7,8 +7,8 @@ namespace Database\Seeders;
 use App\Commands\Inboxes\ProvisionActorInbox\ProvisionActorInboxCommand;
 use App\Contracts\Bus\JournalCommands;
 use App\Enums\Accounts\CommandEntry;
-use App\Support\ActorIdentity;
 use App\Models\Access\User;
+use App\Support\ActorIdentity;
 use Illuminate\Database\Seeder;
 
 /**

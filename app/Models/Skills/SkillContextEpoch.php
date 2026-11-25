@@ -10,11 +10,11 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Events\Skills\SkillContextEpochAdvanced;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * Which context of a session is current: it moves on at every clear and compaction, so a skill read in an earlier
@@ -23,8 +23,10 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property string $session_id
  * @property int $epoch
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 final class SkillContextEpoch extends Model implements EventSource, ReadableModel
 {

@@ -21,7 +21,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -32,9 +31,11 @@ use Illuminate\Support\Carbon;
  * @property string $assigned_by_type
  * @property string $assigned_by_id
  * @property CarbonImmutable $assigned_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $source attribute
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $source
+ *
+ * @mixin \Eloquent
  */
 final class DockPlacement extends Model implements EventSource, ReadableModel
 {

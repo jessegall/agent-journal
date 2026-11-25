@@ -11,15 +11,14 @@ use App\Concerns\OrdersById;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Records\Link;
 use App\Models\Support\Accessor;
-use Domain\Sharing\Support\ConsumedPreview;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
+use Domain\Sharing\Support\ConsumedPreview;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -30,10 +29,12 @@ use Illuminate\Support\Carbon;
  * @property string $source_id
  * @property string $target_type
  * @property string $target_id
- * @property ?CarbonImmutable $invalidated_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $target attribute
+ * @property CarbonImmutable|null $invalidated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $target
+ *
+ * @mixin \Eloquent
  */
 final class ShareMember extends Model implements ReadableModel
 {

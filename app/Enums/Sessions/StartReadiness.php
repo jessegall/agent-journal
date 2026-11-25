@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Enums\Sessions;
 
-
 /**
  * How far a start's driver has come to a verified conversation: only a ready one is given its held messages.
  */

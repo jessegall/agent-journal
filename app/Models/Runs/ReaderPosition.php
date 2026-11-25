@@ -15,11 +15,11 @@ use App\Events\Processes\ReaderPositionAdvanced;
 use App\Events\Processes\ReaderPositionFailed;
 use App\Events\Processes\ReaderPositionRewound;
 use App\Values\ReaderCheckpoint;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -28,8 +28,10 @@ use Illuminate\Support\Carbon;
  * @property PositionPurpose $purpose
  * @property ReaderCheckpoint $checkpoint
  * @property InterpretationState $interpretation
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 final class ReaderPosition extends Model implements EventSource, ReadableModel
 {

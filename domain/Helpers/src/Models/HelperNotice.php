@@ -20,7 +20,6 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -30,9 +29,11 @@ use Illuminate\Support\Carbon;
  * @property string $helper_job_id
  * @property JobState $job_state
  * @property string $text
- * @property ?CarbonImmutable $delivered_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property CarbonImmutable|null $delivered_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 #[Table('helper_notices')]
 final class HelperNotice extends Model implements EventSource, ReadableModel

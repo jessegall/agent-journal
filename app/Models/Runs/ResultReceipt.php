@@ -13,11 +13,11 @@ use App\Enums\Runs\AssessmentOutcome;
 use App\Events\Processes\ResultReceiptSuperseded;
 use App\Values\PublishedResult;
 use App\Values\VerifiedOutput;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -32,8 +32,10 @@ use Illuminate\Support\Carbon;
  * @property string $manifest_digest
  * @property string $output_assessment_id
  * @property AssessmentOutcome $outcome
- * @property ?string $superseded_by_id
- * @property Carbon $published_at
+ * @property string|null $superseded_by_id
+ * @property CarbonImmutable $published_at
+ *
+ * @mixin \Eloquent
  */
 final class ResultReceipt extends Model implements EventSource, ReadableModel
 {

@@ -31,7 +31,6 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -39,17 +38,20 @@ use Illuminate\Support\Carbon;
  * @property string $owner_user_id
  * @property string $idempotency_key
  * @property InvitationMode $mode
- * @property ?string $project_id
- * @property ?string $environment_id
+ * @property string|null $project_id
+ * @property string|null $environment_id
  * @property InstallAttemptState $state
- * @property ?string $binding_id
+ * @property string|null $binding_id
  * @property int $version
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $target_label attribute
- * @property ?Environment $environment
- * @property Collection<int, ProjectInvitation>|ProjectInvitation[] $invitations
- * @property ?Project $project
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read Environment|null $environment
+ * @property-read Collection<int, ProjectInvitation> $invitations
+ * @property-read int|null $invitations_count
+ * @property-read Project|null $project
+ * @property-read mixed $target_label
+ *
+ * @mixin \Eloquent
  */
 final class InstallAttempt extends Model implements EventSource, ReadableModel
 {

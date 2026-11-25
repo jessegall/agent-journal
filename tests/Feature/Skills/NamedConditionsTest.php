@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use Domain\Rules\RulesDomain;
-use Tests\Support\DomainBoot;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Enums\Skills\ConditionOutcome;
 use App\Exceptions\ConditionWriteRefused;
@@ -20,6 +18,7 @@ use App\Values\ProviderKey;
 use App\Values\SkillConditionDefinition;
 use App\Values\SkillContext;
 use App\Values\StartProfile;
+use Domain\Rules\RulesDomain;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Mockery;
 use Tests\Fixtures\Modules\Cards\CardsDomain;
@@ -28,6 +27,7 @@ use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Fixtures\Skills\Writing\NoParameters;
 use Tests\Fixtures\Skills\Writing\WritesDuringEvaluation;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\InstallsNotesModule;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;

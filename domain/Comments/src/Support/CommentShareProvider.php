@@ -9,12 +9,12 @@ use App\Contracts\Sharing\ShareRecordProvider;
 use App\Exceptions\RecordUnavailable;
 use App\Support\RecordIdentity;
 use App\Support\ShareContentRead;
+use App\Support\SharedContent;
 use App\Support\ShareRecordCard;
 use App\Support\ShareRecords;
 use App\Support\ShareRelationRead;
 use App\Support\ShareSelection;
 use App\Support\ShareTargetRead;
-use App\Support\SharedContent;
 
 /**
  * Comments as share records: they advertise only the parent-bound capability, so a share reaches a comment through

@@ -6,10 +6,10 @@ namespace Tests\Feature\Access;
 
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
-use Tests\TestCase;
 use Illuminate\Support\Facades\Route;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\RefreshHookDatabase;
+use Tests\TestCase;
 
 final class LoginTest extends TestCase
 {

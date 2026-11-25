@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Support;
 
+use Carbon\CarbonImmutable;
 use Domain\Sharing\Enums\ShareAuditActor;
 use Domain\Sharing\Enums\ShareAuditType;
-use Carbon\CarbonImmutable;
 
 /**
  * One audit row as the owner reads it: what happened, when, why, and who it shows as having acted.

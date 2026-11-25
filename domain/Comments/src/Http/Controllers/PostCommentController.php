@@ -6,8 +6,8 @@ namespace Domain\Comments\Http\Controllers;
 
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Records\RecordResolver;
-use Domain\Comments\Http\Requests\PostCommentRequest;
 use App\Http\Responses\PageActionAnswers;
+use Domain\Comments\Http\Requests\PostCommentRequest;
 use Illuminate\Http\RedirectResponse;
 
 /**

@@ -10,12 +10,12 @@ use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
 use App\Values\SessionOutputPaths;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -24,10 +24,12 @@ use Illuminate\Support\Carbon;
  * @property int $mapping_generation
  * @property string $conversation_id
  * @property string $transcript_path
- * @property ?string $output_directory
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $paths attribute
+ * @property string|null $output_directory
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $paths
+ *
+ * @mixin \Eloquent
  */
 final class SessionOutputGrant extends Model implements ReadableModel
 {

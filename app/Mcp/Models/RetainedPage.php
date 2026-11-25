@@ -17,7 +17,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -25,8 +24,10 @@ use Illuminate\Support\Carbon;
  * @property string $session_id
  * @property list<string> $references
  * @property CarbonImmutable $expires_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 final class RetainedPage extends Model implements ReadableModel
 {

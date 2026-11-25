@@ -11,21 +11,23 @@ use App\Enums\Records\ClaimBasis;
 use App\Models\Inboxes\InboxMember;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentReference;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
  * @property string $claim_assignment_id
  * @property ClaimBasis $basis_type
- * @property ?string $inbox_member_id
+ * @property string|null $inbox_member_id
  * @property string $work_assignment_id
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 #[Table('claim_authorizations')]
 final class ClaimAuthorization extends Model implements ReadableModel

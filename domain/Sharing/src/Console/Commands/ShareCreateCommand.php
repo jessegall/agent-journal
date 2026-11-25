@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Console\Commands;
 
-use Domain\Sharing\Commands\CreateShare\CreateShareCommand;
 use App\Contracts\Bus\CommandBus;
-use Domain\Sharing\Models\SharePreview;
 use App\Support\ConsoleOwner;
+use Domain\Sharing\Commands\CreateShare\CreateShareCommand;
+use Domain\Sharing\Models\SharePreview;
 use Domain\Sharing\Support\ShareDuration;
 use Illuminate\Console\Command;
 

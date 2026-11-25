@@ -20,6 +20,7 @@ use App\Support\ActorIdentity;
 use App\Values\ProposedRule;
 use App\Values\RuleReference;
 use App\Values\RuleScope;
+use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -28,7 +29,6 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Carbon;
 use Spatie\LaravelData\DataCollection;
 
 /**
@@ -36,9 +36,8 @@ use Spatie\LaravelData\DataCollection;
  * @property string $project_key
  * @property string $scope_type
  * @property string $scope_owner
- * @property RuleScope $scope
  * @property string $scope_version
- * @property ?string $command_request_id
+ * @property string|null $command_request_id
  * @property string $program
  * @property string $operation
  * @property ProposalState $state
@@ -48,10 +47,14 @@ use Spatie\LaravelData\DataCollection;
  * @property string $payload_digest
  * @property DataCollection<int, RuleReference> $replaces
  * @property int $current_revision
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property ?CommandRequest $commandRequest
- * @property Collection<int, RuleProposalRevision>|RuleProposalRevision[] $revisions
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property RuleScope $scope
+ * @property-read CommandRequest|null $commandRequest
+ * @property-read Collection<int, RuleProposalRevision> $revisions
+ * @property-read int|null $revisions_count
+ *
+ * @mixin \Eloquent
  */
 final class RuleProposal extends Model implements EventSource, ReadableModel
 {

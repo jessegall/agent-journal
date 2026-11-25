@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Support\Gateways;
 
-
 /**
  * One secret field of the owner's gateway form: the secret's name and what the owner typed, empty when the field was
  * left blank to keep the stored secret.

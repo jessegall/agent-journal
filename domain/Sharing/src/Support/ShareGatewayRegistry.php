@@ -6,14 +6,14 @@ namespace Domain\Sharing\Support;
 
 use App\Contracts\Reflection\ReflectorFactory;
 use App\Contracts\Sharing\ShareGateway;
+use App\Support\GatewayHealth;
+use App\Support\GatewayOperation;
+use App\Support\GatewaySetupCheck;
 use Domain\Sharing\Exceptions\ShareGatewayInvalid;
 use Domain\Sharing\Exceptions\UnknownShareGateway;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\ShareGatewayEndpoint;
 use Illuminate\Contracts\Container\Container;
-use App\Support\GatewayHealth;
-use App\Support\GatewayOperation;
-use App\Support\GatewaySetupCheck;
 
 /**
  * Every share gateway by its key, such as tunler, from Core and the domains. It keeps class names only and builds a

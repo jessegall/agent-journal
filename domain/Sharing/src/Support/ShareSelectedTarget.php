@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Support;
 
-use Spatie\LaravelData\Data;
 use App\Support\RecordIdentity;
+use Spatie\LaravelData\Data;
 
 /**
  * One linked record the owner selected in a preview: the record, the link it was reached by and the version of it

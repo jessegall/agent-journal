@@ -23,7 +23,6 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -32,11 +31,13 @@ use Illuminate\Support\Carbon;
  * @property string $digest
  * @property int $received_bytes
  * @property int $next_index
- * @property Carbon $expires_at
- * @property ?CarbonImmutable $sealed_at
- * @property ?CarbonImmutable $consumed_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property CarbonImmutable $expires_at
+ * @property CarbonImmutable|null $sealed_at
+ * @property CarbonImmutable|null $consumed_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 final class TextUpload extends Model implements EventSource, ReadableModel
 {
@@ -62,6 +63,7 @@ final class TextUpload extends Model implements EventSource, ReadableModel
             'type' => UploadType::class,
             'sealed_at' => 'immutable_datetime',
             'consumed_at' => 'immutable_datetime',
+            'expires_at' => 'immutable_datetime',
         ];
     }
 

@@ -15,6 +15,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\TextSearch;
+use Carbon\CarbonImmutable;
 use Domain\Rules\Enums\RuleState;
 use Domain\Rules\Events\RuleApproved;
 use Domain\Rules\Events\RuleDenied;
@@ -27,7 +28,6 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -35,12 +35,14 @@ use Illuminate\Support\Carbon;
  * @property int $number
  * @property string $text
  * @property RuleState $state
- * @property ?string $reason
- * @property ?string $replaces_rule_id
- * @property ?string $proposer_type
- * @property ?string $proposer_id
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property string|null $reason
+ * @property string|null $replaces_rule_id
+ * @property string|null $proposer_type
+ * @property string|null $proposer_id
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 final class Rule extends Model implements EventSource, Numbered, ReadableModel
 {

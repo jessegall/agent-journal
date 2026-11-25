@@ -24,7 +24,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -33,19 +32,21 @@ use Illuminate\Support\Carbon;
  * @property string $user_code
  * @property list<string> $scopes
  * @property DeviceGrantState $state
- * @property ?string $approved_by_user_id
+ * @property string|null $approved_by_user_id
  * @property CarbonImmutable $code_expires_at
- * @property ?string $grant_digest
- * @property ?CarbonImmutable $grant_expires_at
- * @property ?CarbonImmutable $last_polled_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property ?string $reference
+ * @property string|null $grant_digest
+ * @property CarbonImmutable|null $grant_expires_at
+ * @property CarbonImmutable|null $last_polled_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property string|null $reference
  * @property int $generation
- * @property ?string $start_key
- * @property ?string $environment_id
- * @property ProjectBinding $binding
- * @property ?Environment $environment
+ * @property string|null $start_key
+ * @property string|null $environment_id
+ * @property-read ProjectBinding $binding
+ * @property-read Environment|null $environment
+ *
+ * @mixin \Eloquent
  */
 final class DeviceGrant extends Model implements EventSource, ReadableModel
 {

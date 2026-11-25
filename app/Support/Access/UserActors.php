@@ -8,8 +8,8 @@ use App\Contracts\Actors\Actor;
 use App\Contracts\Actors\ActorProvider;
 use App\Contracts\Admission\JournalAdmission;
 use App\Exceptions\ActorUnavailable;
-use App\Support\ActorIdentity;
 use App\Models\Access\User;
+use App\Support\ActorIdentity;
 
 /**
  * Users as actors: a user that exists and that the journal's admission lets in.

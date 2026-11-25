@@ -32,5 +32,4 @@ final readonly class ReadRequest
     {
         return new self($name, isDiscovery: true);
     }
-
 }

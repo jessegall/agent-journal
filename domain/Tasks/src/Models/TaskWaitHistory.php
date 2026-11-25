@@ -8,11 +8,11 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Support\ActorIdentity;
+use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskWaitChange;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -22,9 +22,11 @@ use Illuminate\Support\Carbon;
  * @property TaskWaitChange $change
  * @property string $actor_type
  * @property string $actor_id
- * @property ?string $reason
- * @property ?string $batch_id
- * @property Carbon $created_at
+ * @property string|null $reason
+ * @property string|null $batch_id
+ * @property CarbonImmutable $created_at
+ *
+ * @mixin \Eloquent
  */
 #[Table('task_wait_history')]
 final class TaskWaitHistory extends Model implements ReadableModel

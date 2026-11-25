@@ -11,6 +11,7 @@ use App\Exceptions\RevisionImmutable;
 use App\Models\CommandRules\CommandRequest;
 use App\Support\ActorIdentity;
 use App\Values\ReaderDefinition;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -18,7 +19,6 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -30,9 +30,12 @@ use Illuminate\Support\Carbon;
  * @property ReaderDefinition $definition
  * @property string $actor_type
  * @property string $actor_id
- * @property Carbon $created_at
- * @property CommandRequest $commandRequest
- * @property Collection<int, ReaderProof>|ReaderProof[] $proofs
+ * @property CarbonImmutable $created_at
+ * @property-read CommandRequest $commandRequest
+ * @property-read Collection<int, ReaderProof> $proofs
+ * @property-read int|null $proofs_count
+ *
+ * @mixin \Eloquent
  */
 final class ReaderRevision extends Model implements ReadableModel
 {

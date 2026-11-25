@@ -24,7 +24,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -36,13 +35,16 @@ use Illuminate\Support\Carbon;
  * @property string $text
  * @property QuestionType $type
  * @property list<string> $options
- * @property ?string $answer
- * @property ?CarbonImmutable $answered_at
- * @property ?Carbon $created_at
- * @property-read ShownQuestion $shown
- * @property ?Carbon $updated_at
- * @property mixed $sender attribute
- * @property mixed $target attribute
+ * @property string|null $answer
+ * @property CarbonImmutable|null $answered_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $sender
+ * @property-read mixed $shown
+ * @property-read mixed $summary
+ * @property-read mixed $target
+ *
+ * @mixin \Eloquent
  */
 final class Question extends Model implements AuthoredModel, EventSource, ReadableModel
 {

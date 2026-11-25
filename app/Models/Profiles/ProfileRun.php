@@ -20,6 +20,7 @@ use App\Models\Support\HasActorColumns;
 use App\Support\ActorIdentity;
 use App\Values\StepOutcome;
 use App\Values\WorkReference;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -27,7 +28,6 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Carbon;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
@@ -43,14 +43,17 @@ use PhpOption\Some;
  * @property string $trigger_reference
  * @property ProfileRunState $state
  * @property int $cursor
- * @property ?string $awaited_step
- * @property ?int $generation
+ * @property string|null $awaited_step
+ * @property int|null $generation
  * @property int $unchanged_returns
- * @property ?string $message
+ * @property string|null $message
  * @property int $sequence
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property Collection<int, ProfileStepResult>|ProfileStepResult[] $results
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read Collection<int, ProfileStepResult> $results
+ * @property-read int|null $results_count
+ *
+ * @mixin \Eloquent
  */
 #[Table('profile_runs')]
 final class ProfileRun extends Model implements EventSource, ReadableModel

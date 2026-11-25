@@ -16,21 +16,23 @@ use App\Events\Accounts\ActiveAccountSelected;
 use App\Exceptions\AccountSelectionChanged;
 use App\Exceptions\AccountUnavailable;
 use App\Models\Support\AccountOwnerScope;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
  * @property string $id
  * @property string $account_protocol
- * @property ?string $account_id
+ * @property string|null $account_id
  * @property bool $has_selected
  * @property int $change_number
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 final class ActiveAccount extends Model implements EventSource, ReadableModel
 {

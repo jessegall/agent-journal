@@ -10,11 +10,11 @@ use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Support\ActorIdentity;
 use App\Values\RuleBundle;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -24,7 +24,9 @@ use Illuminate\Support\Carbon;
  * @property string $digest
  * @property string $approver_type
  * @property string $approver_id
- * @property Carbon $approved_at
+ * @property CarbonImmutable $approved_at
+ *
+ * @mixin \Eloquent
  */
 final class ModuleRuleBundle extends Model implements ReadableModel
 {

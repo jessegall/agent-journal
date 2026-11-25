@@ -8,7 +8,6 @@ use App\Contracts\Bus\CommandHandler;
 use App\Models\CommandRules\EvidenceRead;
 use App\Models\Runs\ProcessRun;
 use App\Support\ActorIdentity;
-use App\Values\EvidenceRange;
 
 final readonly class RecordEvidenceReadsHandler implements CommandHandler
 {

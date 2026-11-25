@@ -13,6 +13,7 @@ use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Exceptions\TextVersionUnavailable;
 use App\Values\TextVersion;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,7 +21,6 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
@@ -29,9 +29,12 @@ use PhpOption\Option;
  * @property int $number
  * @property string $binding_id
  * @property string $path
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property Collection<int, ProjectFileVersion>|ProjectFileVersion[] $versions
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read Collection<int, ProjectFileVersion> $versions
+ * @property-read int|null $versions_count
+ *
+ * @mixin \Eloquent
  */
 #[Table('project_files')]
 final class ProjectFile extends Model implements Commentable, Numbered, ReadableModel, TextContent

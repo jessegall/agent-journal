@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use Domain\Rules\RulesDomain;
-use Tests\Support\DomainBoot;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Events\Event;
 use App\Enums\Engine\NoSubject;
@@ -29,6 +27,7 @@ use App\Support\StartStacks;
 use App\Support\StateEvents\Exceptions\StateEventAfterCommitFailed;
 use App\Support\StateEvents\StateEventScope;
 use App\Values\ProfileBase;
+use Domain\Rules\RulesDomain;
 use Illuminate\Contracts\Events\Dispatcher;
 use Psr\Log\LoggerInterface;
 use Tests\Fixtures\Modules\Notes\Commands\RecordNoteEffect\RecordNoteEffectCommand;
@@ -38,6 +37,7 @@ use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
 use Tests\Fixtures\Modules\Notes\Exceptions\NoteWorkFailed;
 use Tests\Fixtures\Modules\Notes\Support\NoteEffects;
 use Tests\Support\CommittedHookStack;
+use Tests\Support\DomainBoot;
 use Tests\Support\InstallsCommandModules;
 use Tests\Support\RegistersNoteStates;
 use Tests\Support\TestStartAuthority;
@@ -272,7 +272,6 @@ final class StateEventDeliveryTest extends TestCase
                     $this->target->actorIdentity(),
                     AttentionOrigin::agentMessages('producer-hook'),
                     ['Saved by the producer.'],
-                    requestsAttention: true,
                 );
                 $this->dispatch($event);
             });

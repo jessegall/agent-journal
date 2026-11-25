@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Inboxes\LabeledInbox;
 use App\Contracts\Inboxes\InboxDestinationResolver;
+use App\Contracts\Inboxes\LabeledInbox;
 
 /**
  * The inbox side of a recipient's destinations.

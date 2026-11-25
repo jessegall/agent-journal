@@ -23,7 +23,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -31,11 +30,13 @@ use Illuminate\Support\Carbon;
  * @property int $configuration_version
  * @property GatewaySettings $settings
  * @property bool $is_default
- * @property ?CarbonImmutable $disabled_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $source_address_rule attribute
- * @property mixed $to_configuration attribute
+ * @property CarbonImmutable|null $disabled_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $source_address_rule
+ * @property-read mixed $to_configuration
+ *
+ * @mixin \Eloquent
  */
 final class ShareGatewayConfiguration extends Model implements EventSource, ReadableModel
 {

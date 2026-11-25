@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Sharing\Support;
 
 use App\Contracts\Sharing\ShareStatusResolver;
+use App\Support\RecordIdentity;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareMember;
-use App\Support\RecordIdentity;
 
 /**
  * Reads whether a record is public from the live shares: as their root, or as an approved member of their current

@@ -19,7 +19,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
@@ -27,10 +26,12 @@ use PhpOption\Option;
  * @property string $occurrence_id
  * @property string $scope_id
  * @property int $sequence
- * @property ?CarbonImmutable $read_at
- * @property ?CarbonImmutable $hidden_at
- * @property ?Carbon $created_at
- * @property NotificationOccurrence $occurrence
+ * @property CarbonImmutable|null $read_at
+ * @property CarbonImmutable|null $hidden_at
+ * @property CarbonImmutable|null $created_at
+ * @property-read NotificationOccurrence $occurrence
+ *
+ * @mixin \Eloquent
  */
 #[Table('notification_receipts')]
 final class NotificationReceipt extends Model implements EventSource, ReadableModel

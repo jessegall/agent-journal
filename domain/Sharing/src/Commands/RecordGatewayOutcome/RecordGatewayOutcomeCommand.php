@@ -6,9 +6,9 @@ namespace Domain\Sharing\Commands\RecordGatewayOutcome;
 
 use App\Attributes\Commands\Entry;
 use App\Enums\Accounts\CommandEntry;
-use Domain\Sharing\Enums\GatewayOutcome;
 use App\Support\Command;
 use App\Support\GatewayOperation;
+use Domain\Sharing\Enums\GatewayOutcome;
 
 /**
  * The sharing supervisor's run reports what became of an operation it claimed, under the same endpoint version and

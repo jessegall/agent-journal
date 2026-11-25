@@ -8,10 +8,10 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Runs\RunLogicalResult;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -19,7 +19,9 @@ use Illuminate\Support\Carbon;
  * @property string $attempt_id
  * @property RunLogicalResult $kept_result
  * @property RunLogicalResult $offered_result
- * @property ?Carbon $created_at
+ * @property CarbonImmutable|null $created_at
+ *
+ * @mixin \Eloquent
  */
 #[Table('run_result_conflicts')]
 final class RunResultConflict extends Model implements ReadableModel

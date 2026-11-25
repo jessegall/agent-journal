@@ -12,12 +12,12 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Events\Settings\SettingsRevised;
 use App\Support\Storage\SettingsDocument;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
@@ -25,8 +25,10 @@ use PhpOption\Option;
  * @property string $owner
  * @property int $revision
  * @property SettingsDocument $document
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 #[Table('settings_records')]
 final class SettingsRecord extends Model implements EventSource, ReadableModel

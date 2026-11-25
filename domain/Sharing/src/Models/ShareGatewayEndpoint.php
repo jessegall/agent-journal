@@ -10,19 +10,18 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Models\Support\Accessor;
+use App\Support\GatewayEndpoint;
+use Carbon\CarbonImmutable;
 use Domain\Sharing\Enums\GatewayEndpointState;
 use Domain\Sharing\Events\ShareGatewayEndpointFoundHealthy;
 use Domain\Sharing\Events\ShareGatewayEndpointMoved;
 use Domain\Sharing\Exceptions\GatewayLeaseRefused;
-use App\Models\Support\Accessor;
-use App\Support\GatewayEndpoint;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
@@ -32,10 +31,12 @@ use PhpOption\Option;
  * @property string $run_id
  * @property string $public_origin
  * @property GatewayEndpointState $state
- * @property ?CarbonImmutable $last_health_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $to_gateway_endpoint attribute
+ * @property CarbonImmutable|null $last_health_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $to_gateway_endpoint
+ *
+ * @mixin \Eloquent
  */
 final class ShareGatewayEndpoint extends Model implements EventSource, ReadableModel
 {

@@ -46,7 +46,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
@@ -56,30 +55,32 @@ use Illuminate\Support\Str;
  * @property string $label
  * @property string $label_key
  * @property AccountState $state
- * @property ?string $directory
- * @property ?string $identity
- * @property ?string $subject
- * @property ?string $workspace
- * @property ?string $fingerprint
- * @property ?CarbonImmutable $expires_at
+ * @property string|null $directory
+ * @property string|null $identity
+ * @property string|null $subject
+ * @property string|null $workspace
+ * @property string|null $fingerprint
+ * @property CarbonImmutable|null $expires_at
  * @property bool $maintenance
  * @property int $sign_in_generation
- * @property ?string $live_writer_attempt_id
- * @property ?string $operation_id
+ * @property string|null $live_writer_attempt_id
+ * @property string|null $operation_id
  * @property bool $cleanup_pending
  * @property bool $cleanup_released
  * @property bool $store_removed
  * @property int $cleanup_tries
- * @property ?CleanupProblem $cleanup_problem
- * @property ?int $check_requested_generation
- * @property ?CarbonImmutable $checked_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property ?CarbonImmutable $check_inconclusive_at
+ * @property CleanupProblem|null $cleanup_problem
+ * @property int|null $check_requested_generation
+ * @property CarbonImmutable|null $checked_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property CarbonImmutable|null $check_inconclusive_at
  * @property int $name_revision
- * @property mixed $record_identity attribute
- * @property mixed $selected_for_start attribute
- * @property mixed $start_unavailable_reason attribute
+ * @property-read mixed $record_identity
+ * @property-read mixed $selected_for_start
+ * @property-read mixed $start_unavailable_reason
+ *
+ * @mixin \Eloquent
  */
 final class Account extends Model implements EventSource, ReadableModel
 {

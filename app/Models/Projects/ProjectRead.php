@@ -28,7 +28,6 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use PhpOption\Option;
 use Spatie\LaravelData\DataCollection;
 
@@ -40,17 +39,19 @@ use Spatie\LaravelData\DataCollection;
  * @property string $actor_type
  * @property string $actor_id
  * @property ProjectReadState $state
- * @property ?ProjectReadFailure $failure
- * @property ProjectEntryData[]|DataCollection<array-key, ProjectEntryData>|null $entries
- * @property ?string $text
- * @property ?string $digest
- * @property ?int $size
+ * @property ProjectReadFailure|null $failure
+ * @property DataCollection<int, ProjectEntryData>|null $entries
+ * @property string|null $text
+ * @property string|null $digest
+ * @property int|null $size
  * @property bool $is_truncated
- * @property ?CarbonImmutable $claimed_at
- * @property ?CarbonImmutable $answered_at
+ * @property CarbonImmutable|null $claimed_at
+ * @property CarbonImmutable|null $answered_at
  * @property CarbonImmutable $expires_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 #[Table('project_reads')]
 final class ProjectRead extends Model implements EventSource, ReadableModel
@@ -206,7 +207,7 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
      */
     public function listedEntries(): array
     {
-        return array_values($this->entries?->items() ?? []);
+        return $this->entries?->items() ?? [];
     }
 
     // ----------[ Internals ]----------

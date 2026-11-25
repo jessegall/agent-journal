@@ -11,11 +11,11 @@ use App\Exceptions\RevisionImmutable;
 use App\Models\CommandRules\RuleProposalRevision;
 use App\Support\ActorIdentity;
 use App\Values\ProvenBranch;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use Spatie\LaravelData\DataCollection;
 
 /**
@@ -27,7 +27,9 @@ use Spatie\LaravelData\DataCollection;
  * @property DataCollection<int, ProvenBranch> $proven_branches
  * @property string $actor_type
  * @property string $actor_id
- * @property Carbon $created_at
+ * @property CarbonImmutable $created_at
+ *
+ * @mixin \Eloquent
  */
 final class ReaderProof extends Model implements ReadableModel
 {

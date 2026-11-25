@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Access;
 
 use App\Contracts\Actors\CurrentUserResolver;
-use App\Support\CurrentUser;
 use App\Models\Access\User;
-use Tests\TestCase;
+use App\Support\CurrentUser;
 use Tests\Support\RefreshHookDatabase;
+use Tests\TestCase;
 
 /**
  * Access hands other domains the signed-in user as the current user: id and display name, nothing for a guest.

@@ -12,19 +12,21 @@ use App\Contracts\Records\ReadableModel;
 use App\Data\Layouts\LayoutShape;
 use App\Events\Web\LayoutRemoved;
 use App\Events\Web\LayoutSaved;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
  * @property string $user_id
  * @property string $name
  * @property LayoutShape $shape
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 final class Layout extends Model implements EventSource, ReadableModel
 {
@@ -46,7 +48,7 @@ final class Layout extends Model implements EventSource, ReadableModel
     /**
      * A layout a user saves under a name.
      */
-    public static function create(int|string $userId, string $name, LayoutShape $shape): self
+    public static function create(string $userId, string $name, LayoutShape $shape): self
     {
         $layout = new self();
         $layout->user_id = $userId;

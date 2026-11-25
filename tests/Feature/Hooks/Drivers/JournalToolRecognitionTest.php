@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks\Drivers;
 
-use App\Support\DomainRegistry;
 use App\Contracts\Domains\JournalToolNames;
 use App\Exceptions\UnsupportedHook;
 use App\Mcp\Support\McpCatalogue;
+use App\Support\DomainRegistry;
 use App\Support\Drivers\Adapters\ClaudeCodeAdapter;
 use App\Support\Drivers\Adapters\CodexAdapter;
 use App\Support\Drivers\Adapters\JournalToolCall;

@@ -12,11 +12,11 @@ use App\Enums\CommandRules\EvidenceSource;
 use App\Models\Runs\ProcessRun;
 use App\Support\ActorIdentity;
 use App\Values\EvidenceRange;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -28,7 +28,9 @@ use Illuminate\Support\Carbon;
  * @property EvidenceSource $source
  * @property int $first_byte
  * @property int $end_byte
- * @property Carbon $read_at
+ * @property CarbonImmutable $read_at
+ *
+ * @mixin \Eloquent
  */
 final class EvidenceRead extends Model implements ReadableModel
 {

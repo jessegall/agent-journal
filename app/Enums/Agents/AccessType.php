@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Enums\Agents;
 
-use App\Exceptions\UnknownAccessType;
 use App\Enums\Profiles\ProfileAudience;
+use App\Exceptions\UnknownAccessType;
 
 /**
  * A kind of access an operation needs and a policy grants, always on a resource area; an operation the journal

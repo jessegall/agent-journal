@@ -13,13 +13,13 @@ use App\Support\ActorIdentity;
 use App\Values\CommandRule;
 use App\Values\ProposedRule;
 use App\Values\RuleExample;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
 use Spatie\LaravelData\DataCollection;
 
 /**
@@ -31,9 +31,11 @@ use Spatie\LaravelData\DataCollection;
  * @property DataCollection<int, RuleExample> $examples
  * @property string $author_type
  * @property string $author_id
- * @property Carbon $created_at
- * @property mixed $proposed_rule attribute
- * @property RuleProposal $proposal
+ * @property CarbonImmutable $created_at
+ * @property-read RuleProposal $proposal
+ * @property-read mixed $proposed_rule
+ *
+ * @mixin \Eloquent
  */
 final class RuleProposalRevision extends Model implements ReadableModel
 {

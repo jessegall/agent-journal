@@ -7,8 +7,8 @@ namespace Domain\Sharing\Commands\RevokeShare;
 use App\Attributes\Commands\Authorize;
 use App\Attributes\Commands\RequiresRequestKey;
 use App\Enums\Agents\AccessType;
-use Domain\Sharing\Policies\SharingPolicy;
 use App\Support\Command;
+use Domain\Sharing\Policies\SharingPolicy;
 use Domain\Sharing\Support\ShareSummary;
 
 /**

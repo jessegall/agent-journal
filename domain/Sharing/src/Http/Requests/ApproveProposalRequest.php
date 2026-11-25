@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Http\Requests;
 
-use Domain\Sharing\Commands\ApproveShareRequest\ApproveShareRequestCommand;
 use App\Http\Requests\Concerns\ReadsIdempotencyKey;
+use Domain\Sharing\Commands\ApproveShareRequest\ApproveShareRequestCommand;
 use Domain\Sharing\Http\Requests\Concerns\ReadsConfirmedPreview;
 use Domain\Sharing\Http\Requests\Concerns\ReadsShareId;
 use Domain\Sharing\Support\ShareDuration;

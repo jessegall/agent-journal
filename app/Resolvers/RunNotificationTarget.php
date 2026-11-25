@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Resolvers;
 
 use App\Concerns\LinksTargetsOneByOne;
-use App\Contracts\Notifications\NotificationTargetResolver;
 use App\Contracts\Navigation\DeclaredPages;
+use App\Contracts\Notifications\NotificationTargetResolver;
 use App\Data\Notifications\NotificationLink;
 use App\Data\Processes\RunOutcomeSummaryData;
 use App\Resolvers\Support\RunOutcomeSummaries;

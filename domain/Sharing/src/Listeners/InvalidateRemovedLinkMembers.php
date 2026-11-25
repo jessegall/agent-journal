@@ -8,8 +8,8 @@ use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
 use App\Events\Links\LinksRemoved;
 use App\Models\Records\Link;
-use Domain\Sharing\Models\ShareMember;
 use Carbon\CarbonImmutable;
+use Domain\Sharing\Models\ShareMember;
 
 /**
  * Ends the share approvals that rested on removed links, in the transaction that removed them, so a rolled-back

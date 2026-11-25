@@ -14,12 +14,12 @@ use App\Enums\Sessions\CleanupStep;
 use App\Events\Sessions\CleanupPassRecorded;
 use App\Models\Agents\AgentSession;
 use App\Values\CleanupReport;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -27,12 +27,14 @@ use Illuminate\Support\Carbon;
  * @property string $agent_session_id
  * @property string $host_id
  * @property list<string> $removed_steps
- * @property ?string $recovery_location
- * @property ?string $last_error
+ * @property string|null $recovery_location
+ * @property string|null $last_error
  * @property CleanupState $state
  * @property int $attempts
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 #[Table('session_cleanups')]
 final class SessionCleanup extends Model implements EventSource, ReadableModel

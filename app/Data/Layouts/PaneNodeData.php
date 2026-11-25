@@ -14,6 +14,9 @@ use Spatie\LaravelData\Data;
  */
 abstract class PaneNodeData extends Data implements PropertyMorphableData
 {
+    /**
+     * A node of this type; the type picks the class the node is read back as.
+     */
     public function __construct(
         #[PropertyForMorph]
         public readonly PaneNodeType $type,

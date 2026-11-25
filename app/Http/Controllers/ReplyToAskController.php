@@ -6,8 +6,8 @@ namespace App\Http\Controllers;
 
 use App\Calls\Supervision\ReplyToAskCall;
 use App\Commands\Asks\ReplyToAsk\ReplyToAskCommand;
-use App\Contracts\Bus\CommandBus;
 use App\Contracts\Asks\AskReader;
+use App\Contracts\Bus\CommandBus;
 use App\Data\Asks\AskCard;
 use App\Values\AskReference;
 

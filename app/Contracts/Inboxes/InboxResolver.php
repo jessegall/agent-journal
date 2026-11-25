@@ -22,6 +22,4 @@ interface InboxResolver
      * @throws InboxUnavailable
      */
     public function named(string $name): LabeledInbox;
-
-
 }

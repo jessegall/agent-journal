@@ -21,21 +21,22 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
  * @property string $session_id
- * @property ?string $profile_key
- * @property ?int $profile_revision
- * @property ?string $configuration_hash
+ * @property string|null $profile_key
+ * @property int|null $profile_revision
+ * @property string|null $configuration_hash
  * @property AccessPolicy $access_policy
  * @property StopConditions $stop_conditions
  * @property ExecutionPolicy $execution_policy
  * @property string $policy_digest
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $policy attribute
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $policy
+ *
+ * @mixin \Eloquent
  */
 #[Table('session_policies')]
 final class SessionPolicy extends Model implements ReadableModel

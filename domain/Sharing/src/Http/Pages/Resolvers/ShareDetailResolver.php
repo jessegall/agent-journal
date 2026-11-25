@@ -6,6 +6,7 @@ namespace Domain\Sharing\Http\Pages\Resolvers;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Navigation\PageResolver;
+use App\Support\Layout\DeclaredLayoutData;
 use Domain\Sharing\Data\ShareAuditData;
 use Domain\Sharing\Data\ShareControlsPartData;
 use Domain\Sharing\Data\ShareMemberData;
@@ -14,7 +15,6 @@ use Domain\Sharing\Http\Pages\SharesShow;
 use Domain\Sharing\Http\Requests\ShareRequest;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareMember;
-use App\Support\Layout\DeclaredLayoutData;
 use Domain\Sharing\Support\ShareAuditResolver;
 use Domain\Sharing\Support\ShareLinkResolver;
 

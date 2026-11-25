@@ -24,7 +24,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
@@ -36,12 +35,14 @@ use PhpOption\Option;
  * @property int $version
  * @property int $route_version
  * @property CarbonImmutable $accepted_at
- * @property ?string $result
- * @property ?string $wake
- * @property ?string $attention
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $holder_key attribute
+ * @property string|null $result
+ * @property string|null $wake
+ * @property string|null $attention
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $holder_key
+ *
+ * @mixin \Eloquent
  */
 final class AskHop extends Model implements EventSource, ReadableModel
 {

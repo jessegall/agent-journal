@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Http\Controllers;
 
-use Domain\Sharing\Commands\RetryShare\RetryShareCommand;
 use App\Contracts\Bus\CommandBus;
+use Domain\Sharing\Commands\RetryShare\RetryShareCommand;
 use Domain\Sharing\Http\Requests\ShareActionRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;

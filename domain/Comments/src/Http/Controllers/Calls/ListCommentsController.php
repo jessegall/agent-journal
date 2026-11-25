@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Http\Controllers\Calls;
 
-use Domain\Comments\Calls\ListCommentsCall;
-use Domain\Comments\Contracts\CommentResolver;
 use App\Contracts\Records\RecordResolver;
-use Domain\Comments\Data\CommentList;
 use App\Support\IdListPage;
 use App\Support\RecordReference;
 use App\Values\PageSize;
+use Domain\Comments\Calls\ListCommentsCall;
+use Domain\Comments\Contracts\CommentResolver;
+use Domain\Comments\Data\CommentList;
 
 /**
  * Lists one page of the comments on a record.

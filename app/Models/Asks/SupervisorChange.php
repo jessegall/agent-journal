@@ -11,9 +11,9 @@ use App\Exceptions\SupervisorRouteRefused;
 use App\Support\ActorIdentity;
 use App\Values\AskTypeKey;
 use App\Values\SupervisorTarget;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -24,7 +24,9 @@ use Illuminate\Support\Carbon;
  * @property string $previous_target
  * @property string $target
  * @property int $version
- * @property Carbon $created_at
+ * @property CarbonImmutable $created_at
+ *
+ * @mixin \Eloquent
  */
 final class SupervisorChange extends Model implements ReadableModel
 {

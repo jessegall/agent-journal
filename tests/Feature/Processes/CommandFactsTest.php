@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Support\DomainRegistry;
 use App\Contracts\Admission\ShellAdmission;
 use App\Contracts\Processes\ShellCommandParser;
 use App\Enums\CommandRules\CommandEffect;
@@ -14,6 +13,7 @@ use App\Enums\Hooks\AnswerType;
 use App\Enums\Processes\ShellDialect;
 use App\Enums\Runs\PartJoin;
 use App\Models\CommandRules\CommandAlias;
+use App\Support\DomainRegistry;
 use App\Support\ShellParser;
 use App\Values\CommandPart;
 use App\Values\ExecutionContext;

@@ -12,12 +12,12 @@ use App\Contracts\Records\ReadableModel;
 use App\Events\Processes\CommandAliasLineRecorded;
 use App\Models\Support\Accessor;
 use App\Values\AliasLookup;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -27,9 +27,11 @@ use Illuminate\Support\Carbon;
  * @property int $revision
  * @property string $body_digest
  * @property list<string> $argument_grammar
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $lookup attribute
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $lookup
+ *
+ * @mixin \Eloquent
  */
 final class CommandAlias extends Model implements EventSource, ReadableModel
 {

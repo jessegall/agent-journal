@@ -9,6 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use Carbon\CarbonImmutable;
 use Domain\Sequences\Data\SequenceStepData;
 use Domain\Sequences\Events\SequenceChanged;
 use Domain\Sequences\Events\SequenceDefined;
@@ -20,18 +21,20 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Carbon;
 use Spatie\LaravelData\DataCollection;
 
 /**
  * @property string $id
  * @property string $name
  * @property string $summary
- * @property SequenceStepData[]|DataCollection<array-key, SequenceStepData> $steps
+ * @property DataCollection<int, SequenceStepData> $steps
  * @property int $version
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property Collection<int, SequenceRun>|SequenceRun[] $runs
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read Collection<int, SequenceRun> $runs
+ * @property-read int|null $runs_count
+ *
+ * @mixin \Eloquent
  */
 final class Sequence extends Model implements EventSource, ReadableModel
 {
@@ -118,7 +121,7 @@ final class Sequence extends Model implements EventSource, ReadableModel
      */
     public function stepList(): array
     {
-        return array_values($this->steps->items());
+        return $this->steps->items();
     }
 
     // ----------[ Queries ]----------

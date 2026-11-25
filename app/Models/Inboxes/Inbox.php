@@ -17,6 +17,7 @@ use App\Events\Inboxes\InboxOpened;
 use App\Exceptions\InboxUnavailable;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
+use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -25,20 +26,22 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
  * @property string $id
  * @property string $provider_key
  * @property string $provider_id
- * @property ?string $name
+ * @property string|null $name
  * @property string $label
  * @property bool $forwards_members
  * @property int $last_message_number
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property Collection<int, InboxMember>|InboxMember[] $members
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read Collection<int, InboxMember> $members
+ * @property-read int|null $members_count
+ *
+ * @mixin \Eloquent
  */
 #[Table('inboxes')]
 final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, ReadableModel

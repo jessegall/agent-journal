@@ -23,7 +23,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder as QueryBuilder;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -33,8 +32,10 @@ use Illuminate\Support\Carbon;
  * @property string $input_digest
  * @property RecordedAnswer $answer
  * @property RecordedSteps $steps
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 final class HookCall extends Model implements EventSource, ReadableModel
 {

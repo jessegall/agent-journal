@@ -20,7 +20,6 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Spatie\LaravelData\DataCollection;
 
@@ -28,12 +27,14 @@ use Spatie\LaravelData\DataCollection;
  * @property string $id
  * @property string $permission_source
  * @property list<string> $revoked_classes
- * @property RevokedPatternData[]|DataCollection<array-key, RevokedPatternData> $revoked_patterns
+ * @property DataCollection<int, RevokedPatternData> $revoked_patterns
  * @property string $revoked_by_type
  * @property string $revoked_by_id
  * @property CarbonImmutable $revoked_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 final class PermissionRevocation extends Model implements ReadableModel
 {
@@ -70,9 +71,9 @@ final class PermissionRevocation extends Model implements ReadableModel
             fn (CommandClass $class) => $class->value,
             $classes->classes,
         );
-        $permissionRevocation->revoked_patterns = array_map(
-            fn (CommandPattern $pattern) => new RevokedPatternData($pattern->words),
-            $patterns->patterns,
+        $permissionRevocation->revoked_patterns = RevokedPatternData::collect(
+            array_map(fn (CommandPattern $pattern) => new RevokedPatternData($pattern->words), $patterns->patterns),
+            DataCollection::class,
         );
         $permissionRevocation->revoked_by_type = $by->type;
         $permissionRevocation->revoked_by_id = $by->id;

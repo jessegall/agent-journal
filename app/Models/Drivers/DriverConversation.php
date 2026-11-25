@@ -11,25 +11,27 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\Sessions\ResumeRefusal;
 use App\Exceptions\ResumeRefused;
 use App\Models\Agents\AgentSession;
+use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
  * @property string $resume_protocol
- * @property ?string $originating_driver_key
- * @property ?int $account_generation
- * @property ?string $workspace_identity
+ * @property string|null $originating_driver_key
+ * @property int|null $account_generation
+ * @property string|null $workspace_identity
  * @property string $settings_identity
  * @property string $native_id
  * @property string $agent_id
- * @property ?string $context_reference
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property string|null $context_reference
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 final class DriverConversation extends Model implements ReadableModel
 {

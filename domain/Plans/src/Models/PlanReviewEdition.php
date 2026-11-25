@@ -10,6 +10,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Support\ActorIdentity;
+use Carbon\CarbonImmutable;
 use Domain\Plans\Enums\PlanReviewState;
 use Domain\Plans\Events\PlanReviewEditionApproved;
 use Domain\Plans\Events\PlanReviewEditionChangesRequested;
@@ -19,7 +20,6 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -29,14 +29,16 @@ use Illuminate\Support\Carbon;
  * @property string $requested_by_id
  * @property int $plan_revision
  * @property PlanReviewState $state
- * @property ?string $decided_by_type
- * @property ?string $decided_by_id
- * @property ?Carbon $decided_at
- * @property ?string $decision_reason
- * @property ?string $decision_request_key
+ * @property string|null $decided_by_type
+ * @property string|null $decided_by_id
+ * @property CarbonImmutable|null $decided_at
+ * @property string|null $decision_reason
+ * @property string|null $decision_request_key
  * @property bool $is_historical
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 final class PlanReviewEdition extends Model implements EventSource, ReadableModel
 {
@@ -88,7 +90,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
         $this->state = PlanReviewState::Withdrawn;
         $this->decided_by_type = $actor->type;
         $this->decided_by_id = $actor->id;
-        $this->decided_at = Carbon::now();
+        $this->decided_at = CarbonImmutable::now();
         $this->assertSaved($this->save());
         $this->raise(new PlanReviewEditionWithdrawn($this->id));
     }
@@ -128,7 +130,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
         $this->state = $state;
         $this->decided_by_type = $actor->type;
         $this->decided_by_id = $actor->id;
-        $this->decided_at = Carbon::now();
+        $this->decided_at = CarbonImmutable::now();
         $this->decision_request_key = $requestKey;
         $this->decision_reason = $reason;
         $this->save();

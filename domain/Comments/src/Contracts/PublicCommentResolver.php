@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Contracts;
 
-use Domain\Comments\Support\PublicCommentPage;
 use App\Support\RecordIdentity;
+use Domain\Comments\Support\PublicCommentPage;
 
 /**
  * Reads the comments of a parent whose public disclosure the caller has already established, such as a shared

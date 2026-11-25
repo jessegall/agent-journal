@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Support\Gateways;
 
-use Domain\Sharing\Enums\GatewayAddressCheck;
-use Domain\Sharing\Exceptions\GatewayOpenFailed;
 use App\Support\GatewayEndpoint;
 use App\Support\GatewayOperation;
 use Closure;
+use Domain\Sharing\Enums\GatewayAddressCheck;
+use Domain\Sharing\Exceptions\GatewayOpenFailed;
 use Illuminate\Contracts\Process\InvokedProcess;
 
 /**

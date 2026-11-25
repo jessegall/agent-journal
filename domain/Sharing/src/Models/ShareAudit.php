@@ -19,17 +19,18 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
- * @property ?string $share_id
+ * @property string|null $share_id
  * @property ShareAuditType $type
  * @property string $actor_type
  * @property string $actor_id
- * @property ?string $reason_code
- * @property Carbon $created_at
- * @property mixed $entry attribute
+ * @property string|null $reason_code
+ * @property CarbonImmutable $created_at
+ * @property-read mixed $entry
+ *
+ * @mixin \Eloquent
  */
 final class ShareAudit extends Model implements ReadableModel
 {

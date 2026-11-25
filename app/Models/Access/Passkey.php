@@ -7,8 +7,8 @@ namespace App\Models\Access;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Support\Carbon;
 use Laravel\Passkeys\Passkey as PackagePasskey;
 
 /**
@@ -16,11 +16,14 @@ use Laravel\Passkeys\Passkey as PackagePasskey;
  * @property string $user_id
  * @property string $name
  * @property string $credential_id
- * @property array<string, mixed> $credential
- * @property ?Carbon $last_used_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property-read null|string $authenticator attribute
+ * @property array<array-key, mixed> $credential
+ * @property CarbonImmutable|null $last_used_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read string|null $authenticator
+ * @property-read User $user
+ *
+ * @mixin \Eloquent
  */
 final class Passkey extends PackagePasskey implements ReadableModel
 {

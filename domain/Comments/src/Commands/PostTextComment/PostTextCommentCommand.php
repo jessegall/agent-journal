@@ -6,10 +6,10 @@ namespace Domain\Comments\Commands\PostTextComment;
 
 use App\Attributes\Commands\Authorize;
 use App\Enums\Agents\AccessType;
-use Domain\Comments\Policies\CommentPolicy;
 use App\Support\Command;
 use App\Support\RecordIdentity;
 use App\Values\TextRange;
+use Domain\Comments\Policies\CommentPolicy;
 
 /**
  * Leaves a comment about an exact place in one version of a record's text. The submission key makes a retry return

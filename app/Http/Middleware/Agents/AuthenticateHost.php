@@ -26,6 +26,7 @@ use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as IlluminateResponse;
+use Spatie\LaravelData\DataCollection;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -153,15 +154,12 @@ final readonly class AuthenticateHost
             return [];
         }
 
-        $decoded = json_decode($header, true, flags: JSON_THROW_ON_ERROR);
+        $calls = FailedHostCallData::collect(
+            json_decode($header, true, flags: JSON_THROW_ON_ERROR),
+            DataCollection::class,
+        );
 
-        if (! is_array($decoded)) {
-            return [];
-        }
-
-        $calls = FailedHostCallData::collect($decoded);
-
-        return array_values(array_slice($calls, 0, self::FAILED_CALL_LIMIT));
+        return array_values(array_slice($calls->items(), 0, self::FAILED_CALL_LIMIT));
     }
 
     /**

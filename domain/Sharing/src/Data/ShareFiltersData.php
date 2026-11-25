@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Data;
 
+use Carbon\CarbonImmutable;
 use Domain\Sharing\Enums\ShareState;
 use Domain\Sharing\Support\ShareListFilters;
-use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;

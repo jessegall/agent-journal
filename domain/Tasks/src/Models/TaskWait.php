@@ -11,6 +11,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Support\ActorIdentity;
+use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskWaitChange;
 use Domain\Tasks\Events\TaskWaitChanged;
@@ -19,7 +20,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -27,12 +27,14 @@ use Illuminate\Support\Carbon;
  * @property string $prerequisite_task_id
  * @property string $created_by_type
  * @property string $created_by_id
- * @property ?Carbon $waived_at
- * @property ?string $waived_by_type
- * @property ?string $waived_by_id
- * @property ?string $waive_reason
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property CarbonImmutable|null $waived_at
+ * @property string|null $waived_by_type
+ * @property string|null $waived_by_id
+ * @property string|null $waive_reason
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 final class TaskWait extends Model implements EventSource, ReadableModel
 {
@@ -84,7 +86,7 @@ final class TaskWait extends Model implements EventSource, ReadableModel
      */
     public function waive(ActorIdentity $actor, string $reason): void
     {
-        $this->waived_at = Carbon::now();
+        $this->waived_at = CarbonImmutable::now();
         $this->waived_by_type = $actor->type;
         $this->waived_by_id = $actor->id;
         $this->waive_reason = $reason;

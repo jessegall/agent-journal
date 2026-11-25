@@ -33,14 +33,13 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder as QueryBuilder;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
  * @property string $id
  * @property string $agent_id
  * @property string $session_id
- * @property ?string $host_id
+ * @property string|null $host_id
  * @property string $start_key
  * @property string $account_type
  * @property string $account_id
@@ -49,15 +48,17 @@ use Illuminate\Support\Str;
  * @property SessionProcessState $state
  * @property TransportProfileType $transport_profile
  * @property AccountProcessRole $role
- * @property ?string $owner_start_id
- * @property ?string $execution_id
+ * @property string|null $owner_start_id
+ * @property string|null $execution_id
  * @property int $output_generation
- * @property ?CarbonImmutable $ended_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property ?string $refusal
- * @property mixed $account_identity attribute
- * @property mixed $settings_identity attribute
+ * @property CarbonImmutable|null $ended_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property string|null $refusal
+ * @property-read mixed $account_identity
+ * @property-read mixed $settings_identity
+ *
+ * @mixin \Eloquent
  */
 final class SessionProcess extends Model implements EventSource, ReadableModel
 {

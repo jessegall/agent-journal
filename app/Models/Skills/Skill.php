@@ -24,7 +24,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -33,12 +32,14 @@ use Illuminate\Support\Carbon;
  * @property string $key
  * @property string $owner_type
  * @property string $owner_id
- * @property ?string $environment
- * @property ?string $current_revision_id
- * @property ?CarbonImmutable $retired_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $skill_key attribute
+ * @property string|null $environment
+ * @property string|null $current_revision_id
+ * @property CarbonImmutable|null $retired_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $skill_key
+ *
+ * @mixin \Eloquent
  */
 final class Skill extends Model implements EventSource, Numbered, ReadableModel
 {

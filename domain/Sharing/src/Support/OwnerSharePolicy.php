@@ -10,9 +10,9 @@ use App\Contracts\Messages\AdmittedRecipients;
 use App\Contracts\Sharing\SharePolicy;
 use App\Exceptions\SharingNotAllowed;
 use App\Exceptions\UnknownShareRecordType;
-use Domain\Sharing\Models\Share;
 use App\Support\RecordIdentity;
 use App\Support\ShareRecordRegistry;
+use Domain\Sharing\Models\Share;
 
 /**
  * Sharing's authority: the current configured owner, as Core's journal admission names them, manages every

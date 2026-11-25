@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Support\CoreListenerFolders;
 use App\Contracts\Bus\PipelineRunner;
 use App\Declarations\StateMethods;
 use App\Exceptions\InvalidListener;
 use App\Support\CatalogueReflectorFactory;
+use App\Support\CoreListenerFolders;
 use App\Support\DomainRegistry;
 use App\Support\ListenerOwnership;
 use App\Support\Registration\ListenerPolicy;

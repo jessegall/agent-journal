@@ -12,6 +12,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Events\Links\LinkRemoved;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -19,18 +20,19 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
- * @property string $source_id
  * @property string $source_type
- * @property string $target_id
+ * @property string $source_id
  * @property string $target_type
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property Model $source
- * @property Model $target
+ * @property string $target_id
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read Model $source
+ * @property-read Model $target
+ *
+ * @mixin \Eloquent
  */
 #[Table('links')]
 final class Link extends MorphPivot implements EventSource, ReadableModel

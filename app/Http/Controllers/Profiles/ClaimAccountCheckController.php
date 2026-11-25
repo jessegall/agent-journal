@@ -24,11 +24,11 @@ final readonly class ClaimAccountCheckController
         }
 
         return new JsonResponse([
-                'account_id' => $claimed->accountId,
-                'driver' => $claimed->driver,
-                'method' => $claimed->method->value,
-                'directory' => $claimed->directory,
-                'generation' => $claimed->generation,
-            ]);
+            'account_id' => $claimed->accountId,
+            'driver' => $claimed->driver,
+            'method' => $claimed->method->value,
+            'directory' => $claimed->directory,
+            'generation' => $claimed->generation,
+        ]);
     }
 }

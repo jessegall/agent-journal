@@ -21,7 +21,6 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -29,14 +28,16 @@ use Illuminate\Support\Carbon;
  * @property int $sign_in_generation
  * @property string $limit_id
  * @property UsageWindowSlot $slot
- * @property ?float $used_percent
- * @property ?int $duration_minutes
- * @property ?CarbonImmutable $resets_at
+ * @property float|null $used_percent
+ * @property int|null $duration_minutes
+ * @property CarbonImmutable|null $resets_at
  * @property CarbonImmutable $observed_at
  * @property string $source_id
  * @property int $source_order
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 final class AccountUsageWindow extends Model implements EventSource, ReadableModel
 {

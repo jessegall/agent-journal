@@ -22,12 +22,12 @@ use App\Support\ActorIdentity;
 use App\Values\ExitBranch;
 use App\Values\ExitPolicy;
 use App\Values\NextStep;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -42,9 +42,11 @@ use Illuminate\Support\Carbon;
  * @property string $working_folder
  * @property RequestHoldReason $hold_reason
  * @property RequestState $state
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $next_step attribute
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $next_step
+ *
+ * @mixin \Eloquent
  */
 final class CommandRequest extends Model implements ReadableModel
 {

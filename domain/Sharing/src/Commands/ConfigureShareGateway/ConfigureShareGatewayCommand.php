@@ -7,9 +7,9 @@ namespace Domain\Sharing\Commands\ConfigureShareGateway;
 use App\Attributes\Commands\Authorize;
 use App\Attributes\Commands\RequiresRequestKey;
 use App\Enums\Agents\AccessType;
-use Domain\Sharing\Policies\SharingPolicy;
 use App\Support\Command;
 use App\Support\GatewayConfiguration;
+use Domain\Sharing\Policies\SharingPolicy;
 
 /**
  * The owner writes a gateway's next settings revision: its pinned program version, provider host, fixed public

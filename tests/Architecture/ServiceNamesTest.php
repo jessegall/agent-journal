@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-
 /**
  * A class that carries out the operations of one subject is named <Subject>Service, never with a suffix of its own:
  * a Support class whose name ends in a gerund fails, unless it is on the list of those that are no service.

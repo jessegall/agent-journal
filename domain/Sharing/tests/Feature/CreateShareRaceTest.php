@@ -4,22 +4,23 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Feature;
 
-use Domain\Sharing\Commands\CreateShare\CreateShareCommand;
-use Domain\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
 use App\Contracts\Bus\CommandBus;
-use Domain\Sharing\Enums\ShareState;
-use Domain\Sharing\Exceptions\ShareQuotaReached;
 use App\Exceptions\StackLockTimedOut;
-use Domain\Sharing\Models\Share;
-use Domain\Sharing\Models\ShareGatewayConfiguration;
-use Domain\Sharing\Models\ShareInstallation;
 use App\Support\Access\AccessSettings;
 use App\Support\OperationDeadline;
 use App\Support\RequestKey;
-use Domain\Sharing\Support\SavedSharePreview;
-use Domain\Sharing\Support\ShareDuration;
 use App\Support\ShareRecordRegistry;
 use Carbon\CarbonImmutable;
+use Domain\Sharing\Commands\CreateShare\CreateShareCommand;
+use Domain\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
+use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Exceptions\ShareQuotaReached;
+use Domain\Sharing\Models\Share;
+use Domain\Sharing\Models\ShareGatewayConfiguration;
+use Domain\Sharing\Models\ShareInstallation;
+use Domain\Sharing\Support\SavedSharePreview;
+use Domain\Sharing\Support\ShareDuration;
+use Domain\Sharing\Tests\TestCase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Domains\Binders\BinderPublications;
@@ -32,7 +33,6 @@ use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * Two creations for the last live slot, on two gateway configurations and two independent connections: the second

@@ -91,7 +91,7 @@ final readonly class RecordViews
             'baseRevision' => (string) $close->base_revision_number,
             'resultRevision' => (string) $close->result_revision_number,
             'isPublished' => $close->published,
-            'closedAt' => (string) $close->closed_at?->toIso8601String(),
+            'closedAt' => $close->closed_at->toIso8601String(),
         ]);
     }
 

@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Http\Pages;
 
-use Domain\Sharing\Data\ShareFiltersData;
-use Domain\Sharing\Data\ShareRowData;
-use Domain\Sharing\Enums\ShareState;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutBackData;
 use App\Support\Layout\LayoutFieldData;
@@ -16,6 +13,9 @@ use App\Support\Layout\ListEmpty;
 use App\Support\Layout\ListPage;
 use App\Support\Layout\ListPaging;
 use Carbon\CarbonImmutable;
+use Domain\Sharing\Data\ShareFiltersData;
+use Domain\Sharing\Data\ShareRowData;
+use Domain\Sharing\Enums\ShareState;
 use Spatie\LaravelData\Optional;
 
 /**

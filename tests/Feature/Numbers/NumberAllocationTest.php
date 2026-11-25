@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Numbers;
 
-use Domain\Rules\RulesDomain;
-use Tests\Support\DomainBoot;
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\CommandRefused;
 use App\Exceptions\CommandTransactionMissing;
@@ -19,6 +17,7 @@ use App\Support\NumberedTypeRegistry;
 use App\Support\OperationDeadline;
 use App\Support\OutsideCommandAllowance;
 use App\Support\Reflector;
+use Domain\Rules\RulesDomain;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -28,6 +27,7 @@ use Tests\Fixtures\Modules\Ledger\LedgerDomain;
 use Tests\Fixtures\Modules\Ledger\Models\Ledger;
 use Tests\Fixtures\Modules\Ledger\Models\LedgerEntry;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\InstallsCommandModules;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TimeLimits\TimeLimit;

@@ -41,22 +41,23 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
  * @property string $number_group_id
  * @property int $number
- * @property ?string $sequence_id
+ * @property string|null $sequence_id
  * @property string $name
  * @property list<string> $steps
  * @property int $current_step
  * @property SequenceRunState $state
- * @property ?string $actor_type
- * @property ?string $actor_id
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property ?Sequence $sequence
+ * @property string|null $actor_type
+ * @property string|null $actor_id
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read Sequence|null $sequence
+ *
+ * @mixin \Eloquent
  */
 final class SequenceRun extends Model implements AuthoredModel, Dockable, EventSource, Numbered, ReadableModel
 {

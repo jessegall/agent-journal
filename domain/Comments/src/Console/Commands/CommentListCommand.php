@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Comments\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use Domain\Comments\Calls\ListCommentsCall;
 use App\Console\Concerns\RunsCallPipelines;
 use App\Enums\CommandRules\JournalRouteType;
+use Domain\Comments\Calls\ListCommentsCall;
 use Illuminate\Console\Command;
 
 #[JournalRoute(JournalRouteType::Read)]

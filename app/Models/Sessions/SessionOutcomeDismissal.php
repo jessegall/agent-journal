@@ -11,11 +11,11 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\Sessions\StartDisposition;
 use App\Support\ActorIdentity;
 use App\Support\SessionStartOutcome;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -24,8 +24,10 @@ use Illuminate\Support\Carbon;
  * @property string $agent_id
  * @property string $request_id
  * @property string $outcome_version
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 final class SessionOutcomeDismissal extends Model implements ReadableModel
 {

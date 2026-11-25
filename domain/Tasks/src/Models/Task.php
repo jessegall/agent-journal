@@ -55,15 +55,12 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
 
 /**
- * @property string $owner
- * @property string $plan_name
  * @property string $id
  * @property string $number_group_id
  * @property int $number
@@ -74,14 +71,18 @@ use PhpOption\Some;
  * @property int $revision
  * @property TaskState $state
  * @property int $run_number
- * @property ?string $result_note
- * @property ?string $block_reason
- * @property ?string $cancel_reason
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property ?string $environment_id
- * @property mixed $state_text attribute
- * @property mixed $summary attribute
+ * @property string|null $result_note
+ * @property string|null $block_reason
+ * @property string|null $cancel_reason
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property string|null $environment_id
+ * @property-read mixed $state_text
+ * @property-read mixed $summary
+ *
+ * @method static \Domain\Tasks\Database\Factories\TaskFactory factory($count = null, $state = [])
+ *
+ * @mixin \Eloquent
  */
 #[UseFactory(TaskFactory::class)]
 #[UsePolicy(TaskRunPolicy::class)]

@@ -6,8 +6,8 @@ namespace Domain\Sharing\Commands\ClaimGatewayOperation;
 
 use App\Attributes\Commands\Entry;
 use App\Enums\Accounts\CommandEntry;
-use Domain\Sharing\Support\ClaimedGatewayOperation;
 use App\Support\Command;
+use Domain\Sharing\Support\ClaimedGatewayOperation;
 
 /**
  * The sharing supervisor's run claims a gateway operation, the one named or the oldest waiting, under a 90-second

@@ -45,7 +45,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use PhpOption\None;
 use PhpOption\Option;
 
@@ -56,26 +55,28 @@ use PhpOption\Option;
  * @property ShareState $state
  * @property string $root_type
  * @property string $root_id
- * @property ?string $owner_user_id
- * @property ?string $requester_type
- * @property ?string $requester_id
- * @property ?string $share_gateway_configuration_id
- * @property ?int $configuration_version
+ * @property string|null $owner_user_id
+ * @property string|null $requester_type
+ * @property string|null $requester_id
+ * @property string|null $share_gateway_configuration_id
+ * @property int|null $configuration_version
  * @property int $scope_version
- * @property ?string $token_digest
- * @property ?mixed $token_ciphertext
+ * @property string|null $token_digest
+ * @property string|null $token_ciphertext
  * @property CarbonImmutable $expires_at
- * @property ?CarbonImmutable $terminal_at
+ * @property CarbonImmutable|null $terminal_at
  * @property int $pruned_allowed_reads
  * @property int $pruned_denied_reads
  * @property int $pruned_lifecycle_rows
- * @property ?CarbonImmutable $last_pruned_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $fact attribute
- * @property mixed $proposal_status attribute
- * @property mixed $root attribute
- * @property mixed $summary attribute
+ * @property CarbonImmutable|null $last_pruned_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $fact
+ * @property-read mixed $proposal_status
+ * @property-read mixed $root
+ * @property-read mixed $summary
+ *
+ * @mixin \Eloquent
  */
 #[Hidden([
     'token_digest',

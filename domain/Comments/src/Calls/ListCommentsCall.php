@@ -6,9 +6,9 @@ namespace Domain\Comments\Calls;
 
 use App\Attributes\Api\Endpoint;
 use App\Contracts\Domains\JournalCall;
-use Domain\Comments\Data\CommentList;
 use App\Enums\Processes\CallEffect;
 use App\Support\IdListPage;
+use Domain\Comments\Data\CommentList;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Min;

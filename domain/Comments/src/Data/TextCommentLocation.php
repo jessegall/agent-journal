@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Comments\Data;
 
 use App\Data\Pages\RecordCard;
-use Domain\Comments\Enums\CommentType;
 use App\Support\TextPart;
 use App\Values\TextAnchor;
+use Domain\Comments\Enums\CommentType;
 use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;

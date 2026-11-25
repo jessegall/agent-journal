@@ -28,31 +28,35 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Carbon;
 use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
-use Laravel\Passkeys\Passkey;
 
 /**
- * @property int $id
+ * @property string $id
  * @property string $name
  * @property string $email
- * @property ?Carbon $email_verified_at
- * @property mixed $password
- * @property ?string $two_factor_secret
- * @property ?string $two_factor_recovery_codes
- * @property ?Carbon $two_factor_confirmed_at
- * @property ?CarbonImmutable $disabled_at
- * @property ?string $remember_token
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property Collection<int, InboxMember>|InboxMember[] $inboxMemberships
- * @property Collection<int, DatabaseNotification>|DatabaseNotification[] $notifications
- * @property Collection<int, Passkey>|Passkey[] $passkeys
- * @property Collection<int, DatabaseNotification>|DatabaseNotification[] $readNotifications
- * @property Collection<int, DatabaseNotification>|DatabaseNotification[] $unreadNotifications
+ * @property CarbonImmutable|null $email_verified_at
+ * @property string $password
+ * @property string|null $two_factor_secret
+ * @property string|null $two_factor_recovery_codes
+ * @property CarbonImmutable|null $two_factor_confirmed_at
+ * @property CarbonImmutable|null $disabled_at
+ * @property string|null $remember_token
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read Collection<int, InboxMember> $inboxMemberships
+ * @property-read int|null $inbox_memberships_count
+ * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $notifications
+ * @property-read int|null $notifications_count
+ * @property-read Collection<int, Passkey> $passkeys
+ * @property-read int|null $passkeys_count
+ *
+ * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
+ *
+ * @mixin \Eloquent
  */
 #[UseFactory(UserFactory::class)]
 #[Hidden([

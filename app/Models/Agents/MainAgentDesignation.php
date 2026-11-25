@@ -8,18 +8,20 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Exceptions\MainAgentMissing;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
  * @property string $id
  * @property string $agent_id
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property Agent $agent
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read Agent $agent
+ *
+ * @mixin \Eloquent
  */
 final class MainAgentDesignation extends Model implements ReadableModel
 {

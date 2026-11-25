@@ -27,13 +27,13 @@ use App\Models\Support\Accessor;
 use App\Values\ChosenAccount;
 use App\Values\DriverSwitchTarget;
 use App\Values\PinnedDriver;
+use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -43,20 +43,22 @@ use Illuminate\Support\Carbon;
  * @property int $expected_generation
  * @property string $target_driver_key
  * @property string $target_family
- * @property ?string $target_build
+ * @property string|null $target_build
  * @property DriverType $driver_type
  * @property string $account_id
  * @property int $account_revision
- * @property ?string $conversation_id
+ * @property string|null $conversation_id
  * @property bool $remember
  * @property string $requested_by
- * @property ?string $replacement_session_id
+ * @property string|null $replacement_session_id
  * @property DriverSwitchStage $stage
- * @property ?int $stop_boundary_sequence
- * @property ?string $failure_reason
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $target attribute
+ * @property int|null $stop_boundary_sequence
+ * @property string|null $failure_reason
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $target
+ *
+ * @mixin \Eloquent
  */
 final class DriverSwitch extends Model implements EventSource, ReadableModel
 {

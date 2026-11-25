@@ -16,24 +16,26 @@ use App\Events\Skills\SkillGenerationRetired;
 use App\Exceptions\SkillGenerationImmutable;
 use App\Models\Support\Accessor;
 use App\Values\GenerationStatus;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use Spatie\LaravelData\DataCollection;
 
 /**
  * @property string $id
  * @property string $catalogue_digest
  * @property string $registration_digest
- * @property GeneratedSkillData[]|DataCollection<array-key, GeneratedSkillData> $entries
+ * @property DataCollection<int, GeneratedSkillData> $entries
  * @property GenerationState $state
- * @property ?string $error_reason
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $status attribute
+ * @property string|null $error_reason
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $status
+ *
+ * @mixin \Eloquent
  */
 final class SkillGeneration extends Model implements EventSource, ReadableModel
 {
@@ -77,7 +79,7 @@ final class SkillGeneration extends Model implements EventSource, ReadableModel
         $skillGeneration = new self();
         $skillGeneration->catalogue_digest = $catalogueDigest;
         $skillGeneration->registration_digest = $registrationDigest;
-        $skillGeneration->entries = $definitions;
+        $skillGeneration->entries = GeneratedSkillData::collect($definitions, DataCollection::class);
         $skillGeneration->state = $state;
         $skillGeneration->error_reason = $errorReason;
         $skillGeneration->assertSaved($skillGeneration->save());

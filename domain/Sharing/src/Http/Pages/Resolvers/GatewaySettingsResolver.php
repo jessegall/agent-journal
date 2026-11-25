@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace Domain\Sharing\Http\Pages\Resolvers;
 
 use App\Contracts\Navigation\PageResolver;
-use Domain\Sharing\Data\GatewayConfigurePartData;
-use Domain\Sharing\Data\GatewayRevisionData;
-use Domain\Sharing\Data\RootShareData;
 use App\Enums\Settings\ActionMethod;
-use Domain\Sharing\Models\ShareGatewayConfiguration;
-use Domain\Sharing\Models\ShareInstallation;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutNativeData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
+use Domain\Sharing\Data\GatewayConfigurePartData;
+use Domain\Sharing\Data\GatewayRevisionData;
+use Domain\Sharing\Data\RootShareData;
+use Domain\Sharing\Models\ShareGatewayConfiguration;
+use Domain\Sharing\Models\ShareInstallation;
 use Domain\Sharing\Support\ShareGatewayRegistry;
 
 /**

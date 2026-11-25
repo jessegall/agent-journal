@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Enums\Runs;
 
-use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 use App\Enums\Drivers\ExpectedTiming;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * What an agent's runtime is doing, as its host last reported it.

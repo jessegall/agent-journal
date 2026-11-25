@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Support\DomainRegistry;
 use App\Contracts\Bus\CommandClassifier;
 use App\Enums\Agents\AccessType;
 use App\Enums\Processes\ShellDialect;
+use App\Support\DomainRegistry;
 use App\Support\ShellOperations;
 use App\Support\Syntax\TreeParser;
 use App\Values\ExecutionContext;

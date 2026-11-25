@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Contracts;
 
-use Domain\Comments\Data\CommentList;
-use Domain\Comments\Data\RecordCommentLocation;
-use Domain\Comments\Data\TextCommentLocation;
 use App\Support\IdListPage;
 use App\Support\RecordIdentity;
 use App\Support\TextSelection;
+use Domain\Comments\Data\CommentList;
+use Domain\Comments\Data\RecordCommentLocation;
+use Domain\Comments\Data\TextCommentLocation;
 
 /**
  * Reads the comments of a record the caller may read: a page of them, or where one of them points.

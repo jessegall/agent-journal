@@ -21,6 +21,7 @@ use App\Support\ActorIdentity;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Values\RelationRead;
 use App\Values\StopCheckReference;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -28,7 +29,6 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -37,14 +37,17 @@ use Illuminate\Support\Carbon;
  * @property string $stop_id
  * @property string $policy_digest
  * @property int $workspace_generation
- * @property array<string, string> $condition_hashes
+ * @property array<string,string> $condition_hashes
  * @property StopCheckState $state
- * @property ?string $submission_digest
- * @property ?Carbon $certified_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $reference attribute
- * @property Collection<int, StopConditionResult>|StopConditionResult[] $results
+ * @property string|null $submission_digest
+ * @property CarbonImmutable|null $certified_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $reference
+ * @property-read Collection<int, StopConditionResult> $results
+ * @property-read int|null $results_count
+ *
+ * @mixin \Eloquent
  */
 final class StopCheck extends Model implements EventSource, ReadableModel
 {
@@ -92,7 +95,7 @@ final class StopCheck extends Model implements EventSource, ReadableModel
      */
     public function certify(): void
     {
-        $this->certified_at = Carbon::now();
+        $this->certified_at = CarbonImmutable::now();
         $this->assertSaved($this->save());
         $this->raise(new StopCheckCertified($this->id));
     }

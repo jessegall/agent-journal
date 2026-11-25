@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Actions\Access;
 
+use App\Concerns\PasswordValidationRules;
 use App\Contracts\Actors\ActorProvisioning;
 use App\Contracts\Assignments\AssignmentTransaction;
-use App\Support\ActorIdentity;
-use App\Concerns\PasswordValidationRules;
 use App\Models\Access\User;
+use App\Support\ActorIdentity;
 use Illuminate\Contracts\Validation\Factory as ValidationFactory;
 use Illuminate\Validation\Rule;
 use Laravel\Fortify\Contracts\CreatesNewUsers;

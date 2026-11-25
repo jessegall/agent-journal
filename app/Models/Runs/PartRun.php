@@ -36,7 +36,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -44,13 +43,13 @@ use Illuminate\Support\Carbon;
  * @property int $syntax_node
  * @property string $part_id
  * @property int $attempt
- * @property ?string $parent_part_run_id
+ * @property string|null $parent_part_run_id
  * @property string $operation
  * @property LifecycleState $lifecycle
- * @property ?CarbonImmutable $started_at
- * @property ?CarbonImmutable $ended_at
- * @property ?int $pid
- * @property ?string $host
+ * @property CarbonImmutable|null $started_at
+ * @property CarbonImmutable|null $ended_at
+ * @property int|null $pid
+ * @property string|null $host
  * @property PartEndType $end_type
  * @property int $end_code
  * @property string $end_reason
@@ -58,13 +57,17 @@ use Illuminate\Support\Carbon;
  * @property string $skip_reason
  * @property string $stop_reason
  * @property CaptureState $capture_state
- * @property array<string, int> $stream_offsets
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $end attribute
- * @property Collection<int, OutputAssessment>|OutputAssessment[] $assessments
- * @property Collection<int, OutputChunk>|OutputChunk[] $chunks
- * @property ProcessRun $run
+ * @property array<string,int> $stream_offsets
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read Collection<int, OutputAssessment> $assessments
+ * @property-read int|null $assessments_count
+ * @property-read Collection<int, OutputChunk> $chunks
+ * @property-read int|null $chunks_count
+ * @property-read mixed $end
+ * @property-read ProcessRun $run
+ *
+ * @mixin \Eloquent
  */
 final class PartRun extends Model implements EventSource, ReadableModel
 {

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Http\Requests;
 
-use Domain\Sharing\Commands\CreateShare\CreateShareCommand;
 use App\Http\Requests\Concerns\ReadsIdempotencyKey;
+use Domain\Sharing\Commands\CreateShare\CreateShareCommand;
 use Domain\Sharing\Http\Requests\Concerns\ReadsConfirmedPreview;
 use Domain\Sharing\Support\ShareDuration;
 use Illuminate\Foundation\Http\FormRequest;

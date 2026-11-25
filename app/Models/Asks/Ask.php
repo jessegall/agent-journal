@@ -36,7 +36,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
@@ -50,17 +49,19 @@ use PhpOption\Option;
  * @property string $body
  * @property string $subject_type
  * @property string $work
- * @property ?string $head
- * @property ?string $pending_target
- * @property ?string $route_profile
+ * @property string|null $head
+ * @property string|null $pending_target
+ * @property string|null $route_profile
  * @property int $version
  * @property bool $open
- * @property ?UnansweredReason $outcome
- * @property ?string $late_answer
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $reference attribute
- * @property mixed $work_reference attribute
+ * @property UnansweredReason|null $outcome
+ * @property string|null $late_answer
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $reference
+ * @property-read mixed $work_reference
+ *
+ * @mixin \Eloquent
  */
 final class Ask extends Model implements Assignable, EventSource, ReadableModel
 {

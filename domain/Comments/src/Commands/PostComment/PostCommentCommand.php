@@ -6,9 +6,9 @@ namespace Domain\Comments\Commands\PostComment;
 
 use App\Attributes\Commands\Authorize;
 use App\Enums\Agents\AccessType;
-use Domain\Comments\Policies\CommentPolicy;
 use App\Support\Command;
 use App\Support\RecordIdentity;
+use Domain\Comments\Policies\CommentPolicy;
 
 /**
  * Leaves a comment about a whole record the actor may read. The submission key makes a retry return the first comment

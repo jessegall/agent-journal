@@ -29,7 +29,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -38,21 +37,23 @@ use Illuminate\Support\Carbon;
  * @property string $author_type
  * @property string $author_id
  * @property string $body
- * @property ?string $version_id
- * @property ?string $version_label
- * @property ?string $anchor_type
- * @property ?int $section_number
- * @property ?int $first_line
- * @property ?int $last_line
- * @property ?string $quote
- * @property ?int $start_offset
- * @property ?int $end_offset
+ * @property string|null $version_id
+ * @property string|null $version_label
+ * @property string|null $anchor_type
+ * @property int|null $section_number
+ * @property int|null $first_line
+ * @property int|null $last_line
+ * @property string|null $quote
+ * @property int|null $start_offset
+ * @property int|null $end_offset
  * @property string $submission_key
  * @property string $submission_hash
- * @property Carbon $created_at
- * @property mixed $details attribute
- * @property mixed $place_label attribute
- * @property mixed $target attribute
+ * @property CarbonImmutable $created_at
+ * @property-read mixed $details
+ * @property-read mixed $place_label
+ * @property-read mixed $target
+ *
+ * @mixin \Eloquent
  */
 final class Comment extends Model implements EventSource, ReadableModel, Shareable
 {

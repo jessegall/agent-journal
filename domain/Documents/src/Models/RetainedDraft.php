@@ -12,6 +12,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
 use App\Support\ActorContext;
 use App\Support\MarkdownText;
+use Carbon\CarbonImmutable;
 use Domain\Documents\Events\DraftKept;
 use Domain\Documents\Exceptions\RecordImmutable;
 use Domain\Documents\Support\DraftText;
@@ -20,7 +21,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -32,10 +32,12 @@ use Illuminate\Support\Carbon;
  * @property string $reason
  * @property string $author_type
  * @property string $author_id
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $view attribute
- * @property mixed $working_text attribute
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $view
+ * @property-read mixed $working_text
+ *
+ * @mixin \Eloquent
  */
 final class RetainedDraft extends Model implements EventSource, ReadableModel
 {

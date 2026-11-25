@@ -4,28 +4,28 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Support;
 
+use App\Contracts\Bus\Command;
+use App\Contracts\Sharing\ShareGateway;
+use App\Enums\Accounts\CommandEntry;
+use App\Exceptions\SupervisorInsideTransaction;
+use App\Support\EntryDispatchers;
+use App\Support\GatewayEndpoint;
+use App\Support\GatewayOperation;
 use Domain\Sharing\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
 use Domain\Sharing\Commands\ExpireShares\ExpireSharesCommand;
 use Domain\Sharing\Commands\PruneShareAudit\PruneShareAuditCommand;
 use Domain\Sharing\Commands\RecordGatewayHealth\RecordGatewayHealthCommand;
 use Domain\Sharing\Commands\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
 use Domain\Sharing\Commands\ReopenSharedGateways\ReopenSharedGatewaysCommand;
-use App\Contracts\Bus\Command;
-use App\Contracts\Sharing\ShareGateway;
-use App\Enums\Accounts\CommandEntry;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\GatewayOutcome;
 use Domain\Sharing\Exceptions\GatewayLeaseRefused;
 use Domain\Sharing\Exceptions\GatewayOpenFailed;
 use Domain\Sharing\Exceptions\GatewayRunStale;
-use App\Exceptions\SupervisorInsideTransaction;
 use Domain\Sharing\Models\ShareGatewayEndpoint;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Str;
 use Psr\Log\LoggerInterface;
-use App\Support\EntryDispatchers;
-use App\Support\GatewayEndpoint;
-use App\Support\GatewayOperation;
 
 /**
  * One run of the sharing supervisor, in three committed steps per gateway operation: it claims the operation through

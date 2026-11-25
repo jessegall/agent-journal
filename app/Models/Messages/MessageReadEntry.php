@@ -29,7 +29,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $reader_id
  * @property CarbonImmutable $read_at
  * @property CarbonImmutable $last_read_at
- * @property Message $message
+ * @property-read Message $message
+ *
+ * @mixin \Eloquent
  */
 final class MessageReadEntry extends Model implements EventSource, ReadableModel
 {

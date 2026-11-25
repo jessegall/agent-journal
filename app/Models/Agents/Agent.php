@@ -28,13 +28,13 @@ use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
 use App\Values\RunningRuntime;
 use App\Values\StackTarget;
+use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
@@ -42,15 +42,17 @@ use PhpOption\Some;
 /**
  * @property string $id
  * @property string $name
- * @property string $project_id
  * @property string $profile_key
- * @property ?Carbon $retired_at
- * @property ?string $current_session_id
+ * @property CarbonImmutable|null $retired_at
+ * @property string|null $current_session_id
  * @property int $runtime_generation
- * @property ?DriverType $driver_type_preference
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property Collection<int, InboxMember>|InboxMember[] $inboxMemberships
+ * @property DriverType|null $driver_type_preference
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read Collection<int, InboxMember> $inboxMemberships
+ * @property-read int|null $inbox_memberships_count
+ *
+ * @mixin \Eloquent
  */
 final class Agent extends Model implements
     Assignee,
@@ -133,7 +135,7 @@ final class Agent extends Model implements
 
     public function retireAt(CarbonInterface $retiredAt): void
     {
-        $this->retired_at = Carbon::instance($retiredAt);
+        $this->retired_at = CarbonImmutable::instance($retiredAt);
         $this->assertSaved($this->save());
         $this->raise(new AgentRetired($this->id));
     }

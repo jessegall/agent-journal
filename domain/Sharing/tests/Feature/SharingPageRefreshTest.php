@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Feature;
 
+use App\Events\Web\PageChanged;
+use App\Listeners\BroadcastPageChange;
+use App\Providers\DomainEventServiceProvider;
+use App\Support\Access\AccessSettings;
 use Domain\Sharing\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
 use Domain\Sharing\Commands\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
 use Domain\Sharing\Enums\GatewayOperationType;
@@ -16,14 +20,11 @@ use Domain\Sharing\Events\ShareGatewayChanged;
 use Domain\Sharing\Events\ShareRequested;
 use Domain\Sharing\Events\ShareRevoked;
 use Domain\Sharing\Events\ShareScopeChanged;
-use App\Events\Web\PageChanged;
-use App\Listeners\BroadcastPageChange;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\ShareGatewayOperation;
-use App\Providers\DomainEventServiceProvider;
-use App\Support\Access\AccessSettings;
 use Domain\Sharing\Support\ClaimedGatewayOperation;
+use Domain\Sharing\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
@@ -32,7 +33,6 @@ use Tests\Support\Sharing\TestShares;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * The owner-facing sharing events tell the owner's open pages to reread: each is mapped to the page-change broadcast,

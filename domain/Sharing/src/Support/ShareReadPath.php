@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Domain\Sharing\Support;
 
 use App\Exceptions\InvalidRecordIdentity;
-use Domain\Sharing\Exceptions\ShareReadRefused;
 use App\Exceptions\UnknownShareRecordType;
 use App\Exceptions\UnknownShareRelation;
 use App\Support\RecordIdentity;
 use App\Support\ShareRecordRegistry;
+use Domain\Sharing\Exceptions\ShareReadRefused;
 
 /**
  * The way a public read goes from the shared root: at most four steps, each a relation the record of that step

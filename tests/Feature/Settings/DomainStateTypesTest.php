@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Settings;
 
-use Domain\Rules\RulesDomain;
 use App\Commands\Settings\DisableSettingGroup\DisableSettingGroupCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
@@ -13,6 +12,7 @@ use App\Support\ActorContext;
 use App\Support\Stack\StateTypes;
 use App\Values\GroupReference;
 use App\Values\OwnerAuthority;
+use Domain\Rules\RulesDomain;
 use Domain\Tasks\Support\States\WorkOnTaskState;
 use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Domains\QuestionReminders\QuestionRemindersDomain;

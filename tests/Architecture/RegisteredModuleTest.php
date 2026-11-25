@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Support\Exports;
+use App\Support\Bootstrappers\RegisterMorphAliases;
 use App\Support\DomainRegistry;
+use App\Support\Exports;
 use Tests\Architecture\Support\BindingRules;
 use Tests\Architecture\Support\BoundaryChecker;
 use Tests\Architecture\Support\BoundaryReport;
@@ -27,7 +28,6 @@ use Tests\Fixtures\Modules\Notes\Api\NoteValue;
 use Tests\Fixtures\Modules\Notes\Contracts\NoteResolver;
 use Tests\Fixtures\Modules\Notes\NoteRecords;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
-use App\Support\Bootstrappers\RegisterMorphAliases;
 use Tests\Fixtures\Modules\Notes\Providers\NotesServiceProvider;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;

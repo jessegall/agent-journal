@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Support\Exports;
 use App\Support\DomainRegistry;
+use App\Support\Exports;
 use Tests\Architecture\Support\BoundaryReport;
 use Tests\Architecture\Support\ProjectRoots;
 use Tests\Architecture\Support\PublicContracts;

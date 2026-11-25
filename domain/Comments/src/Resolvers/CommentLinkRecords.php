@@ -8,8 +8,8 @@ use App\Contracts\Records\RecordProvider;
 use App\Contracts\Records\RecordResolver;
 use App\Data\Pages\RecordCard;
 use App\Exceptions\RecordUnavailable;
-use Domain\Comments\Models\Comment;
 use App\Support\RecordIdentity;
+use Domain\Comments\Models\Comment;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Str;
 

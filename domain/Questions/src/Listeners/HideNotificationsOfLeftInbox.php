@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Questions\Listeners;
 
-use Domain\Questions\Commands\HideLeftInboxNotifications\HideLeftInboxNotificationsCommand;
 use App\Contracts\Bus\JournalCommands;
 use App\Contracts\Events\Listener;
 use App\Enums\Accounts\CommandEntry;
 use App\Events\Inboxes\InboxLeft;
+use Domain\Questions\Commands\HideLeftInboxNotifications\HideLeftInboxNotificationsCommand;
 
 /**
  * An actor that left an inbox no longer sees the notifications of questions asked of it there.

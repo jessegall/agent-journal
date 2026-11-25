@@ -20,18 +20,19 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
  * @property string $question_id
  * @property string $recipient_type
  * @property string $recipient_id
- * @property ?CarbonImmutable $delivered_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $delivery_key attribute
- * @property Question $question
+ * @property CarbonImmutable|null $delivered_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $delivery_key
+ * @property-read Question $question
+ *
+ * @mixin \Eloquent
  */
 final class QuestionAnswerNotice extends Model implements EventSource, ReadableModel
 {

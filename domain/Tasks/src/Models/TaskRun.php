@@ -14,6 +14,7 @@ use App\Models\Concerns\FindsForUpdate;
 use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
+use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskRunState;
 use Domain\Tasks\Events\TaskRunEnded;
 use Domain\Tasks\Exceptions\TaskRunFinished;
@@ -24,7 +25,6 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -33,10 +33,12 @@ use Illuminate\Support\Carbon;
  * @property string $started_by_type
  * @property string $started_by_id
  * @property TaskRunState $state
- * @property ?string $outcome
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $starter attribute
+ * @property string|null $outcome
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $starter
+ *
+ * @mixin \Eloquent
  */
 #[Table('task_runs')]
 final class TaskRun extends Model implements Assignable, EventSource, ReadableModel

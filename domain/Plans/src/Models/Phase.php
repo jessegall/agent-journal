@@ -16,6 +16,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Exceptions\RecordUnavailable;
 use App\Models\Support\Accessor;
 use App\Support\RecordIdentity;
+use Carbon\CarbonImmutable;
 use Domain\Plans\Events\PhaseProgressRecorded;
 use Domain\Plans\Events\PhaseRevisionAdvanced;
 use Domain\Plans\Exceptions\PhaseMissing;
@@ -30,7 +31,6 @@ use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -44,10 +44,12 @@ use Illuminate\Support\Carbon;
  * @property int $cancelled_tasks
  * @property int $blocked_tasks
  * @property int $started_tasks
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $progress attribute
- * @property Plan $plan
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read Plan $plan
+ * @property-read mixed $progress
+ *
+ * @mixin \Eloquent
  */
 final class Phase extends Model implements Assignable, EventSource, Numbered, ReadableModel
 {

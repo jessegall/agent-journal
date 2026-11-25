@@ -11,12 +11,12 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\Runs\RuntimeEventType;
 use App\Models\Agents\AgentRuntime;
 use App\Values\RecordedEvent;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -24,9 +24,11 @@ use Illuminate\Support\Carbon;
  * @property int $generation
  * @property int $sequence
  * @property RuntimeEventType $event_type
- * @property ?string $driver_request_id
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property string|null $driver_request_id
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 #[Table('runtime_events')]
 final class RuntimeEvent extends Model implements ReadableModel

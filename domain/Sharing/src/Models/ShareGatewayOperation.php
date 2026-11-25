@@ -23,22 +23,23 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
  * @property string $id
  * @property string $share_gateway_configuration_id
  * @property int $configuration_version
- * @property ?string $share_gateway_endpoint_id
- * @property ?int $endpoint_version
+ * @property string|null $share_gateway_endpoint_id
+ * @property int|null $endpoint_version
  * @property GatewayOperationType $type
- * @property ?string $run_id
- * @property ?string $lease_token
- * @property ?CarbonImmutable $lease_ends_at
- * @property ?GatewayOutcome $outcome_code
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property string|null $run_id
+ * @property string|null $lease_token
+ * @property CarbonImmutable|null $lease_ends_at
+ * @property GatewayOutcome|null $outcome_code
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 final class ShareGatewayOperation extends Model implements EventSource, ReadableModel
 {

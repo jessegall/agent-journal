@@ -17,16 +17,17 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
  * @property string $agent_session_id
  * @property string $token_hash
- * @property ?CarbonImmutable $revoked_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property AgentSession $session
+ * @property CarbonImmutable|null $revoked_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read AgentSession|null $session
+ *
+ * @mixin \Eloquent
  */
 final class SessionToken extends Model implements EventSource, ReadableModel
 {

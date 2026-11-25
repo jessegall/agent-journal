@@ -17,6 +17,7 @@ use App\Events\Messages\MessageSent;
 use App\Models\Inboxes\Inbox;
 use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -25,7 +26,6 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -34,14 +34,18 @@ use Illuminate\Support\Carbon;
  * @property string $sender_id
  * @property string $body
  * @property int $number
- * @property ?string $target_message_id
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $sender attribute
- * @property Inbox $inbox
- * @property Collection<int, MessageReadEntry>|MessageReadEntry[] $reads
- * @property Collection<int, Message>|Message[] $replies
- * @property ?Message $target
+ * @property string|null $target_message_id
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read Inbox $inbox
+ * @property-read Collection<int, MessageReadEntry> $reads
+ * @property-read int|null $reads_count
+ * @property-read Collection<int, Message> $replies
+ * @property-read int|null $replies_count
+ * @property-read mixed $sender
+ * @property-read Message|null $target
+ *
+ * @mixin \Eloquent
  */
 final class Message extends Model implements AuthoredModel, EventSource, ReadableModel
 {

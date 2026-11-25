@@ -9,23 +9,23 @@ use App\Contracts\Admission\JournalAdmission;
 use App\Contracts\Messages\AdmittedRecipients;
 use App\Contracts\Sharing\SharePolicy;
 use App\Exceptions\SharingNotAllowed;
-use Domain\Sharing\Models\Share;
-use Domain\Sharing\Models\ShareGatewayConfiguration;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\GatewaySettings;
+use App\Support\ShareRecordRegistry;
+use Carbon\CarbonImmutable;
+use Domain\Sharing\Models\Share;
+use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Support\OwnerSharePolicy;
 use Domain\Sharing\Support\ShareGrant;
 use Domain\Sharing\Support\ShareProposal;
-use App\Support\ShareRecordRegistry;
 use Domain\Sharing\Support\ShareToken;
-use Carbon\CarbonImmutable;
+use Domain\Sharing\Tests\TestCase;
 use Tests\Fixtures\Domains\Pamphlets\PamphletsDomain;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\RegistersShareDomains;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * The owner's share policy: only the current configured owner manages shares, an owner change ends every earlier

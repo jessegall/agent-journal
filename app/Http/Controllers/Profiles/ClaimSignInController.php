@@ -25,13 +25,13 @@ final readonly class ClaimSignInController
         }
 
         return new JsonResponse([
-                'attempt_id' => $claimed->attemptId,
-                'driver' => $claimed->driver,
-                'method' => $claimed->method->value,
-                'directory' => $claimed->directory,
-                'generation' => $claimed->generation,
-                'expires_at' => $claimed->expiresAt,
-                'account_id' => $claimed->accountId,
-            ]);
+            'attempt_id' => $claimed->attemptId,
+            'driver' => $claimed->driver,
+            'method' => $claimed->method->value,
+            'directory' => $claimed->directory,
+            'generation' => $claimed->generation,
+            'expires_at' => $claimed->expiresAt,
+            'account_id' => $claimed->accountId,
+        ]);
     }
 }

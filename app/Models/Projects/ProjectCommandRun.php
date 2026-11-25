@@ -17,11 +17,11 @@ use App\Events\Connections\ProjectCommandFinished;
 use App\Events\Connections\ProjectCommandProcessRecorded;
 use App\Events\Connections\ProjectCommandReconciled;
 use App\Support\CommandRunEvidence;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use Spatie\LaravelData\DataCollection;
 
 /**
@@ -31,13 +31,15 @@ use Spatie\LaravelData\DataCollection;
  * @property string $binding_id
  * @property list<string> $argv
  * @property CommandRunState $state
- * @property ?int $pid
- * @property ?int $exit_code
- * @property ProjectCommandFrame[]|DataCollection<array-key, ProjectCommandFrame> $frames
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property int|null $pid
+ * @property int|null $exit_code
+ * @property DataCollection<int, ProjectCommandFrame> $frames
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  * @property string $fingerprint
  * @property string $worker
+ *
+ * @mixin \Eloquent
  */
 final class ProjectCommandRun extends Model implements EventSource, ReadableModel
 {
@@ -196,7 +198,7 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
      */
     public function recordedFrames(): array
     {
-        return array_values($this->frames->items());
+        return $this->frames->items();
     }
 
     // ----------[ Queries ]----------

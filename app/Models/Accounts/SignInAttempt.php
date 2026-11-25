@@ -43,7 +43,6 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Query\Builder as QueryBuilder;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
@@ -52,27 +51,29 @@ use Illuminate\Support\Str;
  * @property SignInMethod $method
  * @property string $actor_type
  * @property string $actor_id
- * @property ?string $fingerprint
- * @property ?string $account_id
+ * @property string|null $fingerprint
+ * @property string|null $account_id
  * @property SignInState $state
  * @property int $generation
- * @property ?string $directory
- * @property ?string $process_reference
- * @property ?string $login_reference
+ * @property string|null $directory
+ * @property string|null $process_reference
+ * @property string|null $login_reference
  * @property bool $cleanup_pending
  * @property bool $waits_for_uses
  * @property bool $store_removed
  * @property int $cleanup_tries
- * @property ?CleanupProblem $cleanup_problem
+ * @property CleanupProblem|null $cleanup_problem
  * @property CarbonImmutable $expires_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property ?string $refusal
- * @property ?string $result_account_id
- * @property ?string $submission_key
- * @property mixed $type attribute
- * @property ?Account $account
- * @property ?Account $resultAccount
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property string|null $refusal
+ * @property string|null $result_account_id
+ * @property string|null $submission_key
+ * @property-read Account|null $account
+ * @property-read Account|null $resultAccount
+ * @property-read mixed $type
+ *
+ * @mixin \Eloquent
  */
 final class SignInAttempt extends Model implements EventSource, ReadableModel
 {

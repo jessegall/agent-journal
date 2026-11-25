@@ -8,11 +8,11 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Support\ActorIdentity;
+use Carbon\CarbonImmutable;
 use Domain\Helpers\Enums\ReportJobDiscrepancyReason;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -21,7 +21,9 @@ use Illuminate\Support\Carbon;
  * @property string $filer_type
  * @property string $filer_id
  * @property ReportJobDiscrepancyReason $reason
- * @property ?Carbon $created_at
+ * @property CarbonImmutable|null $created_at
+ *
+ * @mixin \Eloquent
  */
 #[Table('report_job_discrepancies')]
 final class ReportJobDiscrepancy extends Model implements ReadableModel

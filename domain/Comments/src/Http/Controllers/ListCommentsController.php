@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Http\Controllers;
 
-use Domain\Comments\Contracts\CommentResolver;
 use App\Contracts\Records\RecordResolver;
+use Domain\Comments\Contracts\CommentResolver;
 use Domain\Comments\Http\Requests\ListCommentsRequest;
 use Illuminate\Http\JsonResponse;
 

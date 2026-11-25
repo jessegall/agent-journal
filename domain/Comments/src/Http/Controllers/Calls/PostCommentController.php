@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Http\Controllers\Calls;
 
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Records\RecordResolver;
+use App\Support\RecordReference;
 use Domain\Comments\Calls\CommentPosted;
 use Domain\Comments\Calls\PostCommentCall;
 use Domain\Comments\Commands\PostComment\PostCommentCommand;
 use Domain\Comments\Commands\PostTextComment\PostTextCommentCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Records\RecordResolver;
 use Domain\Comments\Exceptions\CommentPlaceUnclear;
-use App\Support\RecordReference;
 
 /**
  * Posts an agent's comment on the whole record or on the place it names.

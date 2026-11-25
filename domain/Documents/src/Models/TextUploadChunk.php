@@ -8,23 +8,25 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
  * @property string $upload_id
  * @property int $position
  * @property string $encoded_text
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $text attribute
- * @property TextUpload $upload
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $text
+ * @property-read TextUpload $upload
+ *
+ * @mixin \Eloquent
  */
 final class TextUploadChunk extends Model implements ReadableModel
 {

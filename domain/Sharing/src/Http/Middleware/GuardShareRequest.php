@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Http\Middleware;
 
-use Domain\Sharing\Http\Responses\SharedPageResponses;
 use Closure;
+use Domain\Sharing\Http\Responses\SharedPageResponses;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 

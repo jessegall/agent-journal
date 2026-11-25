@@ -21,21 +21,22 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
  * @property string $task_id
- * @property ?string $task_run_id
- * @property ?int $run_number
+ * @property string|null $task_run_id
+ * @property int|null $run_number
  * @property string $actor_type
  * @property string $actor_id
  * @property TaskState $from_state
  * @property TaskState $to_state
- * @property ?string $text
+ * @property string|null $text
  * @property int $sequence
- * @property Carbon $created_at
- * @property mixed $transition attribute
+ * @property CarbonImmutable $created_at
+ * @property-read mixed $transition
+ *
+ * @mixin \Eloquent
  */
 #[Table('task_history')]
 final class TaskHistoryEntry extends Model implements ReadableModel

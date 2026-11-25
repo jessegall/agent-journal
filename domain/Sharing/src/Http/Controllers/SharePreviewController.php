@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Http\Controllers;
 
-use Domain\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Records\RecordResolver;
+use Domain\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
 use Domain\Sharing\Http\Requests\SaveSharePreviewRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;

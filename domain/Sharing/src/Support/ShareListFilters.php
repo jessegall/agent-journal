@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Support;
 
-use Domain\Sharing\Enums\ShareState;
 use Carbon\CarbonImmutable;
+use Domain\Sharing\Enums\ShareState;
 
 /**
  * What the owner's list of shares is narrowed to: a state, a root record type, a gateway configuration, a deadline

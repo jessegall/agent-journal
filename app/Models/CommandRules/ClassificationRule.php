@@ -18,28 +18,30 @@ use App\Exceptions\ClassificationRuleRefused;
 use App\Models\Support\NamedByRuleScope;
 use App\Values\CommandRule;
 use App\Values\RuleScope;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
  * @property string $project_key
  * @property string $scope_type
  * @property string $scope_owner
- * @property RuleScope $scope
  * @property string $scope_version
  * @property string $rule_id
  * @property string $active_revision_id
  * @property int $active_revision
  * @property ClassificationState $state
  * @property string $state_reason
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property RuleRevision $activeRevision
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property RuleScope $scope
+ * @property-read RuleRevision $activeRevision
+ *
+ * @mixin \Eloquent
  */
 final class ClassificationRule extends Model implements EventSource, ReadableModel
 {

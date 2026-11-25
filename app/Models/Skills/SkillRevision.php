@@ -16,12 +16,12 @@ use App\Support\ConditionTree;
 use App\Values\SectionDraft;
 use App\Values\SkillDraft;
 use App\Values\SkillSection;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use Spatie\LaravelData\DataCollection;
 
 /**
@@ -35,11 +35,13 @@ use Spatie\LaravelData\DataCollection;
  * @property int $condition_version
  * @property string $author_type
  * @property string $author_id
- * @property ?string $source_key
- * @property ?string $source_digest
+ * @property string|null $source_key
+ * @property string|null $source_digest
  * @property string $input_digest
- * @property Carbon $created_at
- * @property mixed $draft attribute
+ * @property CarbonImmutable $created_at
+ * @property-read mixed $draft
+ *
+ * @mixin \Eloquent
  */
 final class SkillRevision extends Model implements ReadableModel
 {

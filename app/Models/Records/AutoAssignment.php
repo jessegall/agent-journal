@@ -26,7 +26,6 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use PhpOption\Option;
 use Spatie\LaravelData\Exceptions\CannotCreateData;
 
@@ -39,9 +38,11 @@ use Spatie\LaravelData\Exceptions\CannotCreateData;
  * @property PoolReference $pool
  * @property int $size
  * @property int $configuration_revision
- * @property ?CarbonImmutable $last_served_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property CarbonImmutable|null $last_served_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 #[Table('auto_assignments')]
 final class AutoAssignment extends Model implements EventSource, ReadableModel

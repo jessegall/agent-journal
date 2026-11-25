@@ -26,12 +26,12 @@ use App\Values\ProfileStartPolicy;
 use App\Values\ScriptSource;
 use App\Values\SupervisorProfile;
 use App\Values\SupervisorRoutes;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -40,18 +40,20 @@ use Illuminate\Support\Carbon;
  * @property ProfileBase $base
  * @property string $instructions
  * @property ModelTier $preferred_tier
- * @property ?list<string> $skill_allowlist
+ * @property list<string>|null $skill_allowlist
  * @property list<string> $required_skills
  * @property ProfileStartPolicy $start_policy
  * @property ProfileAuthorization $authorization
  * @property SupervisorRoutes $supervisor
  * @property InstancePolicy $instances
  * @property ScriptSource $script_source
- * @property ?CompiledScript $compiled_script
+ * @property CompiledScript|null $compiled_script
  * @property string $author_type
  * @property string $author_id
- * @property Carbon $created_at
- * @property mixed $script attribute
+ * @property CarbonImmutable $created_at
+ * @property-read mixed $script
+ *
+ * @mixin \Eloquent
  */
 final class ProfileRevision extends Model implements ReadableModel
 {

@@ -12,21 +12,23 @@ use App\Contracts\Records\ReadableModel;
 use App\Events\Engine\NumberGroupRetired;
 use App\Events\Engine\NumberTaken;
 use App\Exceptions\NumberLimitReached;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
- * @property string $holder_id
  * @property string $holder_type
+ * @property string $holder_id
  * @property string $record_type
  * @property int $last_number
- * @property ?Carbon $retired_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property CarbonImmutable|null $retired_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 final class NumberGroup extends Model implements EventSource, ReadableModel
 {
@@ -91,7 +93,7 @@ final class NumberGroup extends Model implements EventSource, ReadableModel
      */
     public function retire(): void
     {
-        $this->retired_at = Carbon::now();
+        $this->retired_at = CarbonImmutable::now();
         $this->assertSaved($this->save());
         $this->raise(new NumberGroupRetired($this->id));
     }

@@ -36,7 +36,6 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder as QueryBuilder;
-use Illuminate\Support\Carbon;
 use Spatie\LaravelData\DataCollection;
 
 /**
@@ -44,23 +43,25 @@ use Spatie\LaravelData\DataCollection;
  * @property string $installation_name
  * @property string $credential_hash
  * @property list<string> $start_roots
- * @property ProtectionReportData[]|DataCollection<array-key, ProtectionReportData> $protection
+ * @property DataCollection<int, ProtectionReportData> $protection
  * @property ArrangementType $arrangement
- * @property EnrolledDescriptorData[]|DataCollection<array-key, EnrolledDescriptorData> $descriptors
+ * @property DataCollection<int, EnrolledDescriptorData> $descriptors
  * @property bool $browser_input
  * @property bool $browser_keys
  * @property bool $browser_paste
  * @property bool $browser_resize
  * @property bool $browser_private
- * @property ?CarbonImmutable $revoked_at
- * @property ?CarbonImmutable $last_answered_at
- * @property ?CarbonImmutable $failing_since
- * @property ?string $last_failure
- * @property FailedHostCallData[]|DataCollection<array-key, FailedHostCallData>|null $reported_failures
- * @property ?string $failing_route
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $link_alarm attribute
+ * @property CarbonImmutable|null $revoked_at
+ * @property CarbonImmutable|null $last_answered_at
+ * @property CarbonImmutable|null $failing_since
+ * @property string|null $last_failure
+ * @property DataCollection<int, FailedHostCallData>|null $reported_failures
+ * @property string|null $failing_route
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read string $link_alarm
+ *
+ * @mixin \Eloquent
  */
 final class Host extends Model implements EventSource, ReadableModel
 {

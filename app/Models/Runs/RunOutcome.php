@@ -12,12 +12,12 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\Runs\RunLogicalResult;
 use App\Enums\Runs\RunResultSource;
 use App\Events\Processes\RunOutcomeRecorded;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
@@ -27,8 +27,10 @@ use PhpOption\Option;
  * @property RunLogicalResult $result
  * @property RunResultSource $source
  * @property int $version
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 #[Table('run_outcomes')]
 final class RunOutcome extends Model implements EventSource, ReadableModel

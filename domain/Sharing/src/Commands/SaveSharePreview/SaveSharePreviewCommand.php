@@ -6,8 +6,8 @@ namespace Domain\Sharing\Commands\SaveSharePreview;
 
 use App\Attributes\Commands\Authorize;
 use App\Enums\Agents\AccessType;
-use Domain\Sharing\Policies\SharingPolicy;
 use App\Support\Command;
+use Domain\Sharing\Policies\SharingPolicy;
 use Domain\Sharing\Support\SavedSharePreview;
 
 /**

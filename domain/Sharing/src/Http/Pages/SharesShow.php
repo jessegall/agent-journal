@@ -4,12 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Http\Pages;
 
-use Domain\Sharing\Data\ShareAuditData;
-use Domain\Sharing\Data\ShareControlsPartData;
-use Domain\Sharing\Data\ShareMemberData;
-use Domain\Sharing\Data\ShareRuntimeData;
-use Domain\Sharing\Enums\ShareState;
-use Domain\Sharing\Models\Share;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutBodyData;
 use App\Support\Layout\LayoutNativeData;
@@ -18,6 +12,12 @@ use App\Support\Layout\LayoutRowData;
 use App\Support\Layout\PublicationPage;
 use App\Support\Layout\PublicationTab;
 use Closure;
+use Domain\Sharing\Data\ShareAuditData;
+use Domain\Sharing\Data\ShareControlsPartData;
+use Domain\Sharing\Data\ShareMemberData;
+use Domain\Sharing\Data\ShareRuntimeData;
+use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Models\Share;
 
 /**
  * One share for its owner as a detail layout: its number and state in the header; under it, on every tab, its direct

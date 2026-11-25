@@ -12,6 +12,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
+use Carbon\CarbonImmutable;
 use Domain\Helpers\Events\HelperDesignated;
 use Domain\Helpers\Events\HelperDesignationReleased;
 use Domain\Helpers\Exceptions\HelperIdentityFixed;
@@ -21,7 +22,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
@@ -32,10 +32,12 @@ use PhpOption\Option;
  * @property string $profile_base
  * @property string $helper_actor_type
  * @property string $helper_actor_id
- * @property ?string $designated_profile
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $helper_actor attribute
+ * @property string|null $designated_profile
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $helper_actor
+ *
+ * @mixin \Eloquent
  */
 #[Table('helper_identities')]
 final class HelperIdentity extends Model implements EventSource, ReadableModel

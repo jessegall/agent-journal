@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Support;
 
-use Domain\Sharing\Models\ShareGatewayConfiguration;
 use App\Support\RecordIdentity;
+use Domain\Sharing\Models\ShareGatewayConfiguration;
 
 /**
  * A preview the owner confirmed and used, under its locked gateway configuration: the root, the selected targets and

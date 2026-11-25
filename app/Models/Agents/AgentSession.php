@@ -46,38 +46,40 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
  * @property string $agent_id
- * @property ?string $parent_session_id
- * @property ?string $driver_key
- * @property ?string $driver_label
- * @property ?string $driver_build
+ * @property string|null $parent_session_id
+ * @property string|null $driver_key
+ * @property string|null $driver_label
+ * @property string|null $driver_build
  * @property string $model
  * @property ModelSelectionType $requested_model_type
- * @property ?string $requested_model
+ * @property string|null $requested_model
  * @property DriverSourceType $driver_source
  * @property string $profile_key
  * @property int $profile_revision
  * @property string $start_request_id
- * @property ?string $skill_generation_id
- * @property ?string $current_conversation_id
+ * @property string|null $skill_generation_id
+ * @property string|null $current_conversation_id
  * @property SessionStatus $status
- * @property ?CarbonImmutable $ended_at
- * @property ?CarbonImmutable $last_heartbeat_at
- * @property ?CarbonImmutable $silent_since
- * @property ?string $end_evidence
- * @property ?CarbonImmutable $discovered_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $selection attribute
- * @property mixed $target attribute
- * @property Agent $agent
- * @property ?DriverConversation $currentConversation
- * @property SessionToken $sessionToken
- * @property Collection<int, ConversationVisit>|ConversationVisit[] $visits
+ * @property CarbonImmutable|null $ended_at
+ * @property CarbonImmutable|null $last_heartbeat_at
+ * @property CarbonImmutable|null $silent_since
+ * @property string|null $end_evidence
+ * @property CarbonImmutable|null $discovered_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read Agent|null $agent
+ * @property-read DriverConversation|null $currentConversation
+ * @property-read mixed $selection
+ * @property-read SessionToken|null $sessionToken
+ * @property-read mixed $target
+ * @property-read Collection<int, ConversationVisit> $visits
+ * @property-read int|null $visits_count
+ *
+ * @mixin \Eloquent
  */
 final class AgentSession extends Model implements EventSource, ReadableModel
 {

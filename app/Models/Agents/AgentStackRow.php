@@ -32,7 +32,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
@@ -45,11 +44,13 @@ use PhpOption\Some;
  * @property FrameRecords $frames
  * @property StackStatus $status
  * @property bool $has_ticking_frames
- * @property ?CarbonImmutable $closed_at
- * @property ?CarbonImmutable $held_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $target attribute
+ * @property CarbonImmutable|null $closed_at
+ * @property CarbonImmutable|null $held_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $target
+ *
+ * @mixin \Eloquent
  */
 final class AgentStackRow extends Model implements EventSource, ReadableModel
 {

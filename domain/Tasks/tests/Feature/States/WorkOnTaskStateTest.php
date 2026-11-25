@@ -42,7 +42,9 @@ final class WorkOnTaskStateTest extends TestCase
     public static function endings(): iterable
     {
         yield 'finished' => [TaskFinished::class];
+
         yield 'blocked' => [TaskBlocked::class];
+
         yield 'cancelled' => [TaskCancelled::class];
     }
 

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Resolvers;
 
+use App\Support\RecordIdentity;
+use Carbon\CarbonImmutable;
 use Domain\Comments\Contracts\PublicCommentResolver;
 use Domain\Comments\Models\Comment;
 use Domain\Comments\Support\PublicComment;
 use Domain\Comments\Support\PublicCommentPage;
-use App\Support\RecordIdentity;
-use Carbon\CarbonImmutable;
 
 /**
  * A parent's comments for a public share, oldest first with the id breaking ties, each read as an excerpt the
@@ -36,7 +36,7 @@ final readonly class PublicComments implements PublicCommentResolver
                 $shown->map(
                     fn (Comment $comment) => new PublicComment(
                         $comment->shareIdentity(),
-                        (string) $comment->created_at?->toIso8601String(),
+                        $comment->created_at->toIso8601String(),
                         (string) $comment->getAttribute('excerpt'),
                         $comment->quote,
                     ),
@@ -44,7 +44,7 @@ final readonly class PublicComments implements PublicCommentResolver
             ),
             $rows->count() > $size
                 && $last !== null
-                ? $last->created_at?->format('Y-m-d\\TH:i:s.uP').'|'.$last->id
+                ? $last->created_at->format('Y-m-d\\TH:i:s.uP').'|'.$last->id
                 : null,
         );
     }

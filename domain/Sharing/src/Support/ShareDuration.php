@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Support;
 
-use Domain\Sharing\Exceptions\ShareDurationInvalid;
 use Carbon\CarbonImmutable;
+use Domain\Sharing\Exceptions\ShareDurationInvalid;
 
 /**
  * How many minutes a share lasts: one minute to thirty days, seven days when the owner names none. A request fills in

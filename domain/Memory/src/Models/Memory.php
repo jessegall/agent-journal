@@ -14,13 +14,13 @@ use App\Contracts\Records\ReadableModel;
 use App\Models\Concerns\FindsForUpdate;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
+use Carbon\CarbonImmutable;
 use Domain\Memory\Events\MemoryRevised;
 use Domain\Memory\Events\MemorySaved;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -31,8 +31,10 @@ use Illuminate\Support\Carbon;
  * @property string $text
  * @property int $weight
  * @property int $revision
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 final class Memory extends Model implements EventSource, Numbered, ReadableModel
 {

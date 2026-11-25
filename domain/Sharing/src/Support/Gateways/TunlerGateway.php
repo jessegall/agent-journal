@@ -9,22 +9,17 @@ use App\Contracts\Files\Files;
 use App\Contracts\Sharing\ShareGateway;
 use App\Enums\Files\Place;
 use App\Enums\Files\PlaceExemption;
-use Domain\Sharing\Enums\GatewayAddressCheck;
-use Domain\Sharing\Exceptions\GatewayOpenFailed;
 use App\Exceptions\TunlerStatusUnreadable;
 use App\Support\GatewayConfiguration;
 use App\Support\GatewayEndpoint;
 use App\Support\GatewayHealth;
 use App\Support\GatewayOperation;
-use Domain\Sharing\Support\Gateways\ChallengeProbe;
-use Domain\Sharing\Support\Gateways\GatewayChildren;
-use Domain\Sharing\Support\Gateways\GatewayStarts;
-use Domain\Sharing\Support\Gateways\PublicOriginCheck;
 use App\Support\GatewaySetupCheck;
+use Domain\Sharing\Enums\GatewayAddressCheck;
+use Domain\Sharing\Exceptions\GatewayOpenFailed;
 use Illuminate\Container\Attributes\Config;
 use Illuminate\Contracts\Process\InvokedProcess;
 use Illuminate\Process\Factory as Processes;
-use Domain\Sharing\Support\Gateways\TunlerStatus;
 
 /**
  * The Tunler gateway: the pinned tunler program run with the journal's own configuration folder, opened as

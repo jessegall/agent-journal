@@ -27,6 +27,7 @@
         "symfony/yaml": "^8.1"
     },
     "require-dev": {
+        "barryvdh/laravel-ide-helper": "*",
         "brianium/paratest": "^7.30",
         "fakerphp/faker": "^1.24",
         "friendsofphp/php-cs-fixer": "^3.95",
@@ -87,7 +88,8 @@
             "Tests\\Fixtures\\Modules\\Notes\\": "tests/Fixtures/Modules/Notes/src/",
             "Tests\\": "tests/",
             "Tools\\InstallationChecks\\": "tools/installation-checks/src/",
-            "Tools\\CodeStyle\\": "tools/code-style/"
+            "Tools\\CodeStyle\\": "tools/code-style/",
+            "Tools\\ModelDocs\\": "tools/model-docs/"
         }
     },
     "scripts": {
@@ -126,6 +128,9 @@
         "calls:check": "@php artisan journal:calls --check",
         "types:generate": [
             "@php -d memory_limit=512M artisan typescript:transform"
+        ],
+        "models:docs": [
+            "@php -d memory_limit=1G artisan ide-helper:models --write --reset --no-interaction"
         ],
         "types:check": [
             "phpstan analyse --memory-limit=1G"

@@ -17,17 +17,18 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
  * @property string $key
  * @property string $label
  * @property string $description
- * @property ?string $current_revision_id
- * @property ?CarbonImmutable $retired_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property string|null $current_revision_id
+ * @property CarbonImmutable|null $retired_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 final class Profile extends Model implements EventSource, ReadableModel
 {

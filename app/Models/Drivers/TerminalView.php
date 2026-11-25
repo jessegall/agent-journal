@@ -21,7 +21,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
@@ -34,10 +33,12 @@ use Illuminate\Support\Str;
  * @property int $process_generation
  * @property int $interval_ms
  * @property CarbonImmutable $expires_at
- * @property ?CarbonImmutable $closed_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property AgentRuntime $runtime
+ * @property CarbonImmutable|null $closed_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read AgentRuntime|null $runtime
+ *
+ * @mixin \Eloquent
  */
 final class TerminalView extends Model implements EventSource, ReadableModel
 {

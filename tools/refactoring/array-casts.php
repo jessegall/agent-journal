@@ -52,8 +52,8 @@ foreach (array_slice($argv, 1) as $path) {
 exit($faultCount === 0 ? 0 : 1);
 
 /**
- * The type the casts() doc comment states for a column, as "@column <name> <type>"; the IDE regenerates @property
- * lines as a bare array, so the casts() comment is where an array column's items are named.
+ * The type the casts() doc comment states for a column, as "@column <name> <type>": the one place an array column's
+ * items are named, which composer models:docs writes into the model's @property line.
  */
 function columnType(string $source, string $column): string
 {

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Support;
 
+use Carbon\CarbonImmutable;
 use Domain\Sharing\Enums\GatewayEndpointState;
 use Domain\Sharing\Exceptions\GatewayRunStale;
 use Domain\Sharing\Models\ShareGatewayEndpoint;
 use Domain\Sharing\Models\ShareGatewayOperation;
 use Domain\Sharing\Models\ShareInstallation;
-use Carbon\CarbonImmutable;
 
 /**
  * The supervisor run that holds the installation's gateways: a run newer than the holder takes them over, after which

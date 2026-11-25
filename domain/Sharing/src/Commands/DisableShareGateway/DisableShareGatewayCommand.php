@@ -7,9 +7,9 @@ namespace Domain\Sharing\Commands\DisableShareGateway;
 use App\Attributes\Commands\Authorize;
 use App\Attributes\Commands\RequiresRequestKey;
 use App\Enums\Agents\AccessType;
-use Domain\Sharing\Policies\SharingPolicy;
 use App\Support\Command;
 use App\Support\GatewayConfiguration;
+use Domain\Sharing\Policies\SharingPolicy;
 
 /**
  * The owner takes a gateway configuration out of use: every share it serves is revoked first, then its endpoint is

@@ -36,7 +36,6 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
@@ -51,25 +50,27 @@ use PhpOption\Option;
  * @property string $installation_nonce
  * @property int $authority_generation
  * @property BindingReadiness $readiness
- * @property ?CarbonImmutable $last_contact_at
- * @property ?CarbonImmutable $presence_expires_at
- * @property ?string $boot_id
+ * @property CarbonImmutable|null $last_contact_at
+ * @property CarbonImmutable|null $presence_expires_at
+ * @property string|null $boot_id
  * @property int $report_sequence
  * @property int $boot_generation
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property ?string $environment_id
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property string|null $environment_id
  * @property int $setup_generation
- * @property ?string $reconciled_boot_id
- * @property ?string $leased_runtime_id
- * @property ?CarbonImmutable $lease_expires_at
- * @property ?CarbonImmutable $revoked_at
- * @property mixed $presence_receipt attribute
- * @property mixed $revoked_at_text attribute
- * @property ?Environment $environment
- * @property Host $host
- * @property Agent $mainAgent
- * @property Project $project
+ * @property string|null $reconciled_boot_id
+ * @property string|null $leased_runtime_id
+ * @property CarbonImmutable|null $lease_expires_at
+ * @property CarbonImmutable|null $revoked_at
+ * @property-read Environment|null $environment
+ * @property-read Host $host
+ * @property-read Agent $mainAgent
+ * @property-read mixed $presence_receipt
+ * @property-read Project $project
+ * @property-read mixed $revoked_at_text
+ *
+ * @mixin \Eloquent
  */
 final class ProjectBinding extends Model implements EventSource, ReadableModel
 {

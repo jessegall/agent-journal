@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Feature;
 
-use Domain\Sharing\Exceptions\ShareReadRefused;
 use App\Exceptions\UnknownShareRelation;
 use App\Support\RecordIdentity;
+use App\Support\ShareRecordRegistry;
+use Domain\Sharing\Exceptions\ShareReadRefused;
 use Domain\Sharing\Support\ShareCursor;
 use Domain\Sharing\Support\ShareCursors;
 use Domain\Sharing\Support\ShareReadPath;
-use App\Support\ShareRecordRegistry;
+use Domain\Sharing\Tests\TestCase;
 use Tests\Fixtures\Domains\Pamphlets\PamphletsDomain;
 use Tests\Support\Sharing\RegistersShareDomains;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * Public read paths follow only declared relations, at most four steps and never in a circle, by record ULID; page

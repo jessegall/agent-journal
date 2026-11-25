@@ -10,24 +10,26 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\Terminals\StepStatus;
 use App\Models\Support\Accessor;
 use App\Values\StepOutcome;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
  * @property string $profile_run_id
  * @property string $step_reference
  * @property StepStatus $status
- * @property ?string $port
- * @property ?string $evidence
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $outcome attribute
+ * @property string|null $port
+ * @property string|null $evidence
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $outcome
+ *
+ * @mixin \Eloquent
  */
 #[Table('profile_step_results')]
 final class ProfileStepResult extends Model implements ReadableModel

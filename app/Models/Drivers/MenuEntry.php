@@ -31,7 +31,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use Spatie\LaravelData\DataCollection;
 
 /**
@@ -42,23 +41,25 @@ use Spatie\LaravelData\DataCollection;
  * @property string $entry_fingerprint
  * @property string $goal_script
  * @property int $goal_version
- * @property array<string, string> $goal_parameters
+ * @property array<string,string> $goal_parameters
  * @property string $goal_key
  * @property DataCollection<int, MenuStep> $steps
  * @property NavigationCompletion $completes
- * @property ?int $next_step
+ * @property int|null $next_step
  * @property string $proof
  * @property MenuEntryState $state
  * @property DataCollection<int, MenuEntryBuild> $builds
  * @property int $uses
- * @property ?CarbonImmutable $last_used_at
- * @property ?string $last_replay_key
+ * @property CarbonImmutable|null $last_used_at
+ * @property string|null $last_replay_key
  * @property string $source_request_id
- * @property ?string $superseded_by_id
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $goal attribute
- * @property mixed $library_answer attribute
+ * @property string|null $superseded_by_id
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $goal
+ * @property-read mixed $library_answer
+ *
+ * @mixin \Eloquent
  */
 final class MenuEntry extends Model implements EventSource, ReadableModel
 {

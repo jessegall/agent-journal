@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Support;
 
-use Domain\Sharing\Enums\ShareState;
 use DateTimeImmutable;
+use Domain\Sharing\Enums\ShareState;
 
 /**
  * What a sharing lifecycle event tells about one share: its id, the gateway configuration it is served under (none

@@ -16,11 +16,11 @@ use App\Values\CommandRule;
 use App\Values\ReaderApproval;
 use App\Values\RuleScope;
 use App\Values\ScriptBinding;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use Spatie\LaravelData\DataCollection;
 
 /**
@@ -28,7 +28,6 @@ use Spatie\LaravelData\DataCollection;
  * @property string $project_key
  * @property string $scope_type
  * @property string $scope_owner
- * @property RuleScope $scope
  * @property string $scope_version
  * @property string $rule_id
  * @property int $revision
@@ -41,7 +40,10 @@ use Spatie\LaravelData\DataCollection;
  * @property string $author_id
  * @property string $approver_type
  * @property string $approver_id
- * @property Carbon $approved_at
+ * @property CarbonImmutable $approved_at
+ * @property RuleScope $scope
+ *
+ * @mixin \Eloquent
  */
 final class RuleRevision extends Model implements ReadableModel
 {

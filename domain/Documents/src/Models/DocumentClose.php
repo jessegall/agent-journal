@@ -23,7 +23,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -34,15 +33,17 @@ use Illuminate\Support\Carbon;
  * @property string $author_type
  * @property string $author_id
  * @property CloseCause $cause
- * @property ?string $closer_type
- * @property ?string $closer_id
- * @property ?string $reason
+ * @property string|null $closer_type
+ * @property string|null $closer_id
+ * @property string|null $reason
  * @property bool $published
  * @property CarbonImmutable $closed_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $card attribute
- * @property mixed $result attribute
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $card
+ * @property-read mixed $result
+ *
+ * @mixin \Eloquent
  */
 final class DocumentClose extends Model implements EventSource, ReadableModel
 {

@@ -36,7 +36,6 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -49,17 +48,19 @@ use Illuminate\Support\Carbon;
  * @property string $request_id
  * @property JobState $state
  * @property list<string> $steering
- * @property ?string $stop_evidence_reference
+ * @property string|null $stop_evidence_reference
  * @property int $profile_revision
- * @property ?CarbonImmutable $finished_at
+ * @property CarbonImmutable|null $finished_at
  * @property string $payload_digest
  * @property bool $identity_new
  * @property bool $independent
  * @property ConversationModeType $conversation_mode
  * @property string $conversation_reason
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $start_details attribute
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $start_details
+ *
+ * @mixin \Eloquent
  */
 #[Table('helper_jobs')]
 final class HelperJob extends Model implements Assignable, EventSource, ReadableModel

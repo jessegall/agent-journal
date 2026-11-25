@@ -12,11 +12,11 @@ use App\Enums\Sessions\ReservationState;
 use App\Exceptions\CapacityUnavailable;
 use App\Values\ExecutionBudgets;
 use App\Values\HostCapacity;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -25,8 +25,10 @@ use Illuminate\Support\Carbon;
  * @property int $memory_bytes
  * @property int $disk_bytes
  * @property ReservationState $state
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 final class CapacityReservation extends Model implements ReadableModel
 {

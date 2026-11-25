@@ -12,6 +12,7 @@ use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
+use Carbon\CarbonImmutable;
 use Domain\Helpers\Enums\PurposeType;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -19,7 +20,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use PhpOption\None;
 use PhpOption\Option;
@@ -31,12 +31,14 @@ use PhpOption\Some;
  * @property string $actor_id
  * @property string $profile_key
  * @property PurposeType $purpose_type
- * @property ?string $subject_type
- * @property ?string $subject_id
+ * @property string|null $subject_type
+ * @property string|null $subject_id
  * @property string $label
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $subject_record attribute
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $subject_record
+ *
+ * @mixin \Eloquent
  */
 #[Table('helper_purposes')]
 final class HelperPurpose extends Model implements ReadableModel

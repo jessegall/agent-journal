@@ -7,8 +7,8 @@ namespace Domain\Sharing\Support\Gateways;
 use App\Contracts\Files\Files;
 use App\Enums\Files\Permissions;
 use App\Enums\Files\Place;
-use Domain\Sharing\Exceptions\GatewaySecretRefused;
 use App\Values\FilePath;
+use Domain\Sharing\Exceptions\GatewaySecretRefused;
 
 /**
  * The gateways' secrets, each kept as a file named by its reference in the journal's private secrets folder, so a

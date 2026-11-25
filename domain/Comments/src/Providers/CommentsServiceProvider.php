@@ -7,12 +7,12 @@ namespace Domain\Comments\Providers;
 use App\Contracts\Projects\FileComments;
 use App\Contracts\Projects\HeldFileVersions;
 use App\Support\FolderClasses;
-use Domain\Comments\Support\CommentedFileVersions;
-use Domain\Comments\Support\FileCommentThreads;
 use Domain\Comments\Contracts\CommentResolver;
 use Domain\Comments\Contracts\PublicCommentResolver;
 use Domain\Comments\Resolvers\CommentRecords;
 use Domain\Comments\Resolvers\PublicComments;
+use Domain\Comments\Support\CommentedFileVersions;
+use Domain\Comments\Support\FileCommentThreads;
 use Illuminate\Console\Command;
 use Illuminate\Support\ServiceProvider;
 

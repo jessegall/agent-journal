@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use Domain\Rules\RulesDomain;
 use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Events\Event;
 use App\Enums\Hooks\AnswerType;
@@ -14,6 +13,7 @@ use App\Support\OperationDeadline;
 use App\Support\References\StateReference;
 use App\Support\References\SubjectReference;
 use App\Support\StackTransaction;
+use Domain\Rules\RulesDomain;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Events\TaskCancelled;
 use Domain\Tasks\Events\TaskFinished;

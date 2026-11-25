@@ -8,8 +8,8 @@ use App\Concerns\RendersRefusal;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\Engine\RefusalCode;
-use RuntimeException;
 use App\Exceptions\ShareBudgetExceeded;
+use RuntimeException;
 
 /**
  * Finding what a share of this root could include would pass the preview's budget.

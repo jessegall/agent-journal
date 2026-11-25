@@ -10,9 +10,9 @@ use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Drivers\DriverFailure;
 use App\Support\Inputs\Values\HookIdentity;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -20,8 +20,10 @@ use Illuminate\Support\Carbon;
  * @property string $session_id
  * @property string $event_id
  * @property DriverFailure $failure
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 final class FailureReceipt extends Model implements ReadableModel
 {

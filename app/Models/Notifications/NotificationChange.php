@@ -15,7 +15,6 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
@@ -25,7 +24,9 @@ use PhpOption\Option;
  * @property string $receipt_id
  * @property NotificationMutationType $mutation_type
  * @property int $sequence
- * @property ?Carbon $created_at
+ * @property CarbonImmutable|null $created_at
+ *
+ * @mixin \Eloquent
  */
 #[Table('notification_changes')]
 final class NotificationChange extends Model implements ReadableModel

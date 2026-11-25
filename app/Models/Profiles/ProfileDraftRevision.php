@@ -10,9 +10,9 @@ use App\Contracts\Records\ReadableModel;
 use App\Models\Concerns\PreventsRevisionUpdates;
 use App\Support\ActorIdentity;
 use App\Values\ScriptSource;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -21,7 +21,9 @@ use Illuminate\Support\Carbon;
  * @property ScriptSource $script_source
  * @property string $author_type
  * @property string $author_id
- * @property Carbon $created_at
+ * @property CarbonImmutable $created_at
+ *
+ * @mixin \Eloquent
  */
 final class ProfileDraftRevision extends Model implements ReadableModel
 {

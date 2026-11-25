@@ -19,6 +19,7 @@ use App\Support\Assignment;
 use App\Support\AssignmentReference;
 use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;
+use Carbon\CarbonImmutable;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -26,7 +27,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -34,9 +34,11 @@ use Illuminate\Support\Carbon;
  * @property string $record_id
  * @property string $holder_type
  * @property string $holder_id
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $to_assignment attribute
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $to_assignment
+ *
+ * @mixin \Eloquent
  */
 #[Table('assignments')]
 final class AssignmentRecord extends MorphPivot implements ReadableModel

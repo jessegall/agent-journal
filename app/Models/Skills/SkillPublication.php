@@ -28,7 +28,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -38,20 +37,22 @@ use Illuminate\Support\Carbon;
  * @property string $generation_id
  * @property string $selection_digest
  * @property list<string> $skill_keys
- * @property ?string $expected_previous_generation_id
+ * @property string|null $expected_previous_generation_id
  * @property int $fencing_version
- * @property ?string $lease_holder
- * @property ?CarbonImmutable $lease_until
+ * @property string|null $lease_holder
+ * @property CarbonImmutable|null $lease_until
  * @property int $progress
  * @property PublicationState $state
- * @property ?string $open_key
- * @property ?PublicationManifest $manifest
- * @property ?string $error
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $status attribute
- * @property mixed $target_key attribute
- * @property mixed $target_name attribute
+ * @property string|null $open_key
+ * @property PublicationManifest|null $manifest
+ * @property string|null $error
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $status
+ * @property-read mixed $target_key
+ * @property-read mixed $target_name
+ *
+ * @mixin \Eloquent
  */
 final class SkillPublication extends Model implements EventSource, ReadableModel
 {

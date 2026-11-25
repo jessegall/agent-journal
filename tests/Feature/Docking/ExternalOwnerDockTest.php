@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Docking;
 
-use Domain\Rules\RulesDomain;
 use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
@@ -14,6 +13,7 @@ use Domain\Chat\ChatDomain;
 use Domain\Chat\Models\DockPlacement;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Documents\DocumentsDomain;
+use Domain\Rules\RulesDomain;
 use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Modules\Notes\Models\Note;

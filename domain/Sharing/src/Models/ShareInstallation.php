@@ -9,22 +9,23 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use Carbon\CarbonImmutable;
 use Domain\Sharing\Events\ShareInstallationHeld;
 use Domain\Sharing\Exceptions\GatewayRunStale;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
  * @property string $name
- * @property ?string $run_id
- * @property ?CarbonImmutable $run_lease_ends_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property string|null $run_id
+ * @property CarbonImmutable|null $run_lease_ends_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 final class ShareInstallation extends Model implements EventSource, ReadableModel
 {

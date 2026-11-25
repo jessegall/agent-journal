@@ -6,25 +6,25 @@ namespace Domain\Comments\Resolvers;
 
 use App\Contracts\Reads\TextContent;
 use App\Contracts\Records\Commentable;
-use Domain\Comments\Contracts\CommentResolver;
 use App\Contracts\Records\RecordResolver;
-use Domain\Comments\Data\CommentList;
-use Domain\Comments\Data\RecordCommentLocation;
-use Domain\Comments\Data\RecordCommentView;
-use Domain\Comments\Data\TextCommentLocation;
-use Domain\Comments\Data\TextCommentView;
 use App\Data\Pages\RecordCard;
-use Domain\Comments\Enums\WholeRecord;
-use Domain\Comments\Exceptions\CommentUnavailable;
 use App\Exceptions\TargetHasNoText;
-use Domain\Comments\Exceptions\TargetNotCommentable;
-use Domain\Comments\Models\Comment;
 use App\Support\IdListPage;
 use App\Support\MarkdownText;
 use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;
 use App\Support\TextSelection;
 use App\Values\TextAnchor;
+use Domain\Comments\Contracts\CommentResolver;
+use Domain\Comments\Data\CommentList;
+use Domain\Comments\Data\RecordCommentLocation;
+use Domain\Comments\Data\RecordCommentView;
+use Domain\Comments\Data\TextCommentLocation;
+use Domain\Comments\Data\TextCommentView;
+use Domain\Comments\Enums\WholeRecord;
+use Domain\Comments\Exceptions\CommentUnavailable;
+use Domain\Comments\Exceptions\TargetNotCommentable;
+use Domain\Comments\Models\Comment;
 use Illuminate\Database\Eloquent\Model;
 
 /**

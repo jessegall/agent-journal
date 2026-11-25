@@ -6,9 +6,9 @@ namespace Database\Factories;
 
 use App\Commands\Inboxes\ProvisionActorInbox\ProvisionActorInboxCommand;
 use App\Enums\Accounts\CommandEntry;
+use App\Models\Access\User;
 use App\Support\ActorIdentity;
 use App\Support\EntryDispatchers;
-use App\Models\Access\User;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;

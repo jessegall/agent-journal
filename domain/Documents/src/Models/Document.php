@@ -25,6 +25,7 @@ use App\Support\Sources\Contracts\CardContext;
 use App\Support\Sources\Contracts\Dockable;
 use App\Support\Sources\DockDefinition;
 use App\Values\TextVersion;
+use Carbon\CarbonImmutable;
 use Domain\Documents\Data\CloseCard;
 use Domain\Documents\Data\DockSuggestion;
 use Domain\Documents\Data\DocumentView;
@@ -49,7 +50,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Query\JoinClause;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -58,15 +58,18 @@ use Illuminate\Support\Carbon;
  * @property string $creator_type
  * @property string $creator_id
  * @property AttentionState $attention
- * @property ?string $current_revision_id
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $card attribute
- * @property mixed $dock_card attribute
- * @property mixed $view attribute
- * @property ?DocumentRevision $currentRevision
- * @property DocumentDraft $draft
- * @property Collection<int, DocumentRevision>|DocumentRevision[] $revisions
+ * @property string|null $current_revision_id
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $card
+ * @property-read DocumentRevision|null $currentRevision
+ * @property-read mixed $dock_card
+ * @property-read DocumentDraft|null $draft
+ * @property-read Collection<int, DocumentRevision> $revisions
+ * @property-read int|null $revisions_count
+ * @property-read mixed $view
+ *
+ * @mixin \Eloquent
  */
 final class Document extends Model implements Commentable, Dockable, EventSource, Numbered, ReadableModel, Shareable, TextContent
 {

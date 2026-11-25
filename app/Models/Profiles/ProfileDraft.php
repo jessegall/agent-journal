@@ -11,22 +11,24 @@ use App\Contracts\Records\ReadableModel;
 use App\Exceptions\ProfileDraftRefused;
 use App\Values\ProfileKey;
 use App\Values\ScriptSource;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
  * @property string $id
  * @property string $profile_key
  * @property int $revision
- * @property ?string $current_revision_id
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property ?ProfileDraftRevision $currentRevision
+ * @property string|null $current_revision_id
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read ProfileDraftRevision|null $currentRevision
+ *
+ * @mixin \Eloquent
  */
 final class ProfileDraft extends Model implements ReadableModel
 {

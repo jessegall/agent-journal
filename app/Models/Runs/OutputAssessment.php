@@ -15,11 +15,11 @@ use App\Models\CommandRules\RuleRevision;
 use App\Values\OutputProblem;
 use App\Values\OutputValidation;
 use App\Values\ReplayedOutput;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use Spatie\LaravelData\DataCollection;
 
 /**
@@ -31,10 +31,12 @@ use Spatie\LaravelData\DataCollection;
  * @property InterpretationState $interpretation
  * @property AssessmentOutcome $outcome
  * @property DataCollection<int, OutputProblem> $problems
- * @property array<string, int> $counts
- * @property array<string, int> $final_offsets
- * @property ?string $replaces_assessment_id
- * @property Carbon $created_at
+ * @property array<string,int> $counts
+ * @property array<string,int> $final_offsets
+ * @property string|null $replaces_assessment_id
+ * @property CarbonImmutable $created_at
+ *
+ * @mixin \Eloquent
  */
 final class OutputAssessment extends Model implements ReadableModel
 {

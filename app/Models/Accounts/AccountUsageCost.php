@@ -22,18 +22,19 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
  * @property string $account_id
  * @property int $sign_in_generation
  * @property string $source_id
- * @property string|float $usd
- * @property-read int $observations
+ * @property string $usd
  * @property CarbonImmutable $observed_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read int $observations
+ *
+ * @mixin \Eloquent
  */
 final class AccountUsageCost extends Model implements EventSource, ReadableModel
 {

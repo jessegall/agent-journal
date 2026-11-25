@@ -41,7 +41,6 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -55,27 +54,29 @@ use Illuminate\Support\Carbon;
  * @property string $fingerprint
  * @property string $goal_script
  * @property int $goal_version
- * @property array<string, string> $goal_parameters
+ * @property array<string,string> $goal_parameters
  * @property string $goal_key
  * @property int $stalled_step
  * @property NavigationReason $reason
  * @property NavigationScreen $screen
  * @property list<string> $raise_rows
  * @property NavigationState $state
- * @property ?NavigationCompletion $completes
- * @property ?int $next_step
- * @property ?string $proof
- * @property ?string $abandon_reason
- * @property ?string $stale_entry_id
+ * @property NavigationCompletion|null $completes
+ * @property int|null $next_step
+ * @property string|null $proof
+ * @property string|null $abandon_reason
+ * @property string|null $stale_entry_id
  * @property list<string> $sent_steps
- * @property ?string $library_entry_id
+ * @property string|null $library_entry_id
  * @property CarbonImmutable $expires_at
  * @property int $row_version
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $goal attribute
- * @property DriverRequest $driverRequest
- * @property AgentRuntime $runtime
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read DriverRequest|null $driverRequest
+ * @property-read mixed $goal
+ * @property-read AgentRuntime|null $runtime
+ *
+ * @mixin \Eloquent
  */
 final class NavigationRequest extends Model implements Assignable, EventSource, ReadableModel
 {

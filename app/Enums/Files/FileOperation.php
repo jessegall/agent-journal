@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Enums\Files;
 
-use App\Exceptions\UnknownPatchAction;
 use App\Enums\Agents\AccessType;
+use App\Exceptions\UnknownPatchAction;
 
 /**
  * What a native file tool does to one path; a write to a path that may or may not exist both creates and edits.

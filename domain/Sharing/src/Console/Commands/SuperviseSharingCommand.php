@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Console\Commands;
 
-use Domain\Sharing\Exceptions\GatewayRunStale;
 use App\Support\Execution\SpawnedProcess;
-use Domain\Sharing\Support\SharingSupervisor;
 use App\Support\SupervisorTimer;
+use Domain\Sharing\Exceptions\GatewayRunStale;
+use Domain\Sharing\Support\SharingSupervisor;
 use Illuminate\Console\Command;
 use Illuminate\Container\Attributes\Config;
 

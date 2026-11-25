@@ -4,21 +4,22 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Feature;
 
+use App\Exceptions\SupervisorInsideTransaction;
+use App\Support\Access\AccessSettings;
+use App\Support\RecordIdentity;
+use Carbon\CarbonImmutable;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\ShareState;
 use Domain\Sharing\Exceptions\GatewayRunStale;
-use App\Exceptions\SupervisorInsideTransaction;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\ShareGatewayEndpoint;
 use Domain\Sharing\Models\ShareGatewayOperation;
-use App\Support\Access\AccessSettings;
-use App\Support\RecordIdentity;
 use Domain\Sharing\Support\ShareGatewayRegistry;
 use Domain\Sharing\Support\ShareLinkResolver;
 use Domain\Sharing\Support\ShareProposal;
 use Domain\Sharing\Support\SharingSupervisor;
-use Carbon\CarbonImmutable;
+use Domain\Sharing\Tests\TestCase;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Sharing\FakeShareGateway;
@@ -26,7 +27,6 @@ use Tests\Support\Sharing\TestShares;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * The sharing supervisor with the test double gateway: a run activates a pending share by claiming, opening outside

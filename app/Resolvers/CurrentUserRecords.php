@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Resolvers;
 
 use App\Contracts\Actors\CurrentUserResolver;
-use App\Support\CurrentUser;
 use App\Models\Access\User;
+use App\Support\CurrentUser;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Contracts\Auth\Guard;
 use PhpOption\None;

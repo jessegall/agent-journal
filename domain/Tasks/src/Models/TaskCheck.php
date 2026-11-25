@@ -23,7 +23,6 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -34,11 +33,13 @@ use Illuminate\Support\Carbon;
  * @property string $caller_type
  * @property string $caller_id
  * @property string $process_run_id
- * @property ?string $result_receipt_id
- * @property ?string $outcome
- * @property Carbon $created_at
- * @property ?Carbon $bound_at
- * @property mixed $proof attribute
+ * @property string|null $result_receipt_id
+ * @property string|null $outcome
+ * @property CarbonImmutable $created_at
+ * @property CarbonImmutable|null $bound_at
+ * @property-read mixed $proof
+ *
+ * @mixin \Eloquent
  */
 final class TaskCheck extends Model implements EventSource, ReadableModel
 {
@@ -99,7 +100,7 @@ final class TaskCheck extends Model implements EventSource, ReadableModel
 
         $this->result_receipt_id = $result->receiptId;
         $this->outcome = $result->outcome->value;
-        $this->bound_at = Carbon::now();
+        $this->bound_at = CarbonImmutable::now();
         $this->assertSaved($this->save());
         $this->raise(new TaskCheckRecorded($this->task_id, $this->id));
     }

@@ -27,21 +27,21 @@ final readonly class ClaimStartController
         }
 
         return new JsonResponse([
-                'start_key' => $claimed->startKey,
-                'session_id' => $claimed->sessionId,
-                'directory' => $claimed->directory,
-                'generation' => $claimed->generation,
-                'sign_in_method' => $claimed->signInMethod,
-                'recipe' => $claimed->recipe,
-                'conversation_target' => $claimed->conversationTarget,
-                'conversation_required' => $claimed->isConversationRequired,
-                // A connected project's child works in its own worktree, prepared for this claim; none otherwise.
-                'child_checkout' => array_map(fn (ChildCheckout $checkout) => [
-                    'claim' => $checkout->claimId,
-                    'generation' => $checkout->generation,
-                    'writes' => $checkout->writes,
-                    'base' => $checkout->baseOid,
-                ], $claimed->childCheckouts)[0] ?? null,
-            ]);
+            'start_key' => $claimed->startKey,
+            'session_id' => $claimed->sessionId,
+            'directory' => $claimed->directory,
+            'generation' => $claimed->generation,
+            'sign_in_method' => $claimed->signInMethod,
+            'recipe' => $claimed->recipe,
+            'conversation_target' => $claimed->conversationTarget,
+            'conversation_required' => $claimed->isConversationRequired,
+            // A connected project's child works in its own worktree, prepared for this claim; none otherwise.
+            'child_checkout' => array_map(fn (ChildCheckout $checkout) => [
+                'claim' => $checkout->claimId,
+                'generation' => $checkout->generation,
+                'writes' => $checkout->writes,
+                'base' => $checkout->baseOid,
+            ], $claimed->childCheckouts)[0] ?? null,
+        ]);
     }
 }

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Support;
 
+use App\Contracts\Bus\Command;
+use App\Contracts\Bus\CommandBus;
 use Domain\Sharing\Commands\ApproveShareRequest\ApproveShareRequestCommand;
 use Domain\Sharing\Commands\CreateShare\CreateShareCommand;
 use Domain\Sharing\Commands\RefreshShareScope\RefreshShareScopeCommand;
-use App\Contracts\Bus\Command;
-use App\Contracts\Bus\CommandBus;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 

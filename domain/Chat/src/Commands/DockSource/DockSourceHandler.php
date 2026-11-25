@@ -8,7 +8,6 @@ use App\Support\ActorIdentity;
 use App\Support\Cards\DockIdentity;
 use Domain\Chat\Commands\Support\ChatCommandHandler;
 use Domain\Chat\Enums\DockOutcome;
-use App\Models\Inboxes\Inbox;
 use Domain\Chat\Models\DockPlacement;
 use Domain\Chat\Support\DockRequests;
 use Domain\Chat\Values\DockResult;

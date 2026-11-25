@@ -79,7 +79,7 @@ if ($selection->runFiles() === []) {
 }
 
 fwrite(STDOUT, sprintf(
-    "Running the %d test methods nearest the change, in %d files, reached %d steps out; %d reached methods left out."
+    'Running the %d test methods nearest the change, in %d files, reached %d steps out; %d reached methods left out.'
     ." Every architecture test runs beside them: %d files.\n",
     $selection->methodCount(),
     count($selection->testsByFile),

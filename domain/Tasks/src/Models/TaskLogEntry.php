@@ -22,7 +22,6 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -33,8 +32,10 @@ use Illuminate\Support\Carbon;
  * @property string $actor_id
  * @property string $text
  * @property int $sequence
- * @property Carbon $created_at
- * @property mixed $line attribute
+ * @property CarbonImmutable $created_at
+ * @property-read mixed $line
+ *
+ * @mixin \Eloquent
  */
 final class TaskLogEntry extends Model implements EventSource, ReadableModel
 {

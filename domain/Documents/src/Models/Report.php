@@ -47,7 +47,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -60,12 +59,14 @@ use Illuminate\Support\Carbon;
  * @property string $creator_id
  * @property CarbonImmutable $filed_at
  * @property AttentionState $attention
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $card attribute
- * @property mixed $dock_card attribute
- * @property mixed $share_card attribute
- * @property mixed $view attribute
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $card
+ * @property-read mixed $dock_card
+ * @property-read mixed $share_card
+ * @property-read mixed $view
+ *
+ * @mixin \Eloquent
  */
 final class Report extends Model implements Commentable, Dockable, EventSource, Numbered, ReadableModel, Shareable, TextContent
 {

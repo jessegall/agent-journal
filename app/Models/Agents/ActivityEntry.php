@@ -18,20 +18,21 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
  * @property string $actor_type
  * @property string $actor_id
- * @property ?string $environment_id
+ * @property string|null $environment_id
  * @property ActivityLevel $level
  * @property ActivityType $type
  * @property string $subject
- * @property ?list<string> $found
+ * @property list<string>|null $found
  * @property CarbonImmutable $occurred_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 #[Table('activity_entries')]
 final class ActivityEntry extends Model implements ReadableModel

@@ -10,20 +10,19 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use Domain\Sharing\Events\SharePreviewConsumed;
-use Domain\Sharing\Exceptions\SharePreviewRefused;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneRoot;
 use App\Support\RecordIdentity;
+use Carbon\CarbonImmutable;
+use Domain\Sharing\Events\SharePreviewConsumed;
+use Domain\Sharing\Exceptions\SharePreviewRefused;
 use Domain\Sharing\Support\ShareCandidates;
 use Domain\Sharing\Support\ShareSelectedTarget;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use PhpOption\Option;
 use Spatie\LaravelData\DataCollection;
 
@@ -37,10 +36,12 @@ use Spatie\LaravelData\DataCollection;
  * @property int $configuration_version
  * @property string $checksum
  * @property CarbonImmutable $expires_at
- * @property ?CarbonImmutable $consumed_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
- * @property mixed $root attribute
+ * @property CarbonImmutable|null $consumed_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $root
+ *
+ * @mixin \Eloquent
  */
 final class SharePreview extends Model implements EventSource, ReadableModel
 {

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Console\Commands;
 
-use Domain\Sharing\Commands\RevokeShare\RevokeShareCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Support\ConsoleOwner;
+use Domain\Sharing\Commands\RevokeShare\RevokeShareCommand;
 use Illuminate\Console\Command;
 
 /**

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Support;
 
-use Domain\Sharing\Exceptions\SharePreviewRefused;
 use App\Support\RecordIdentity;
 use App\Support\ShareRecordCard;
+use Domain\Sharing\Exceptions\SharePreviewRefused;
 
 /**
  * What the owner may choose from before sharing: the root's card and the linked records that may be published with

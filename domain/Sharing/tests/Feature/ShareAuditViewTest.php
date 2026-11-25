@@ -4,26 +4,26 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Feature;
 
+use App\Models\Access\User;
+use App\Support\Access\AccessSettings;
+use App\Support\ActorIdentity;
+use Carbon\CarbonImmutable;
 use Domain\Sharing\Enums\GatewayEndpointState;
 use Domain\Sharing\Enums\ShareAuditActor;
 use Domain\Sharing\Enums\ShareAuditType;
-use App\Models\Access\User;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareAudit;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\ShareGatewayEndpoint;
 use Domain\Sharing\Models\ShareInstallation;
-use App\Support\Access\AccessSettings;
-use App\Support\ActorIdentity;
 use Domain\Sharing\Support\ShareAuditResolver;
 use Domain\Sharing\Support\ShareGrant;
 use Domain\Sharing\Support\ShareToken;
-use Carbon\CarbonImmutable;
+use Domain\Sharing\Tests\TestCase;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\TestActors;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * The owner reads a share's audit apart from its life: public reads show an unknown visitor and are told apart from

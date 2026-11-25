@@ -27,7 +27,9 @@ use PhpOption\Option;
  * @property string $actor_type
  * @property string $actor_id
  * @property CarbonImmutable $joined_at
- * @property ?CarbonImmutable $left_at
+ * @property CarbonImmutable|null $left_at
+ *
+ * @mixin \Eloquent
  */
 final class InboxMember extends Model implements EventSource, ReadableModel
 {

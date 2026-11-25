@@ -10,7 +10,6 @@ use App\Contracts\Records\ReadableModel;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -18,8 +17,10 @@ use Illuminate\Support\Carbon;
  * @property string $native_event
  * @property string $failure
  * @property CarbonImmutable $occurred_at
- * @property ?Carbon $created_at
- * @property ?Carbon $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
  */
 final class ReportedBypass extends Model implements ReadableModel
 {
