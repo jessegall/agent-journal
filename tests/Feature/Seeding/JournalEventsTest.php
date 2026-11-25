@@ -13,6 +13,7 @@ use App\Support\RecordIdentity;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Database\DatabaseManager;
+use PHPUnit\Framework\AssertionFailedError;
 use RuntimeException;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
@@ -42,6 +43,25 @@ final class JournalEventsTest extends TestCase
 
         $this->journal->assertEventCount(LinkRemoved::class, 1)->assertEventCount(LinkEvent::class, 1);
         $this->assertSame(0, Link::query()->count());
+    }
+
+    public function test_an_event_is_counted_by_type_and_by_what_the_predicate_accepts(): void
+    {
+        [$first, $second] = $this->linkedTasks();
+        $this->journal->observeEvents(LinkRemoved::class);
+
+        $this->journal->run(new UnlinkRecordsCommand($second, $first));
+
+        $this->journal->assertEvent(LinkRemoved::class)
+            ->assertEvent(
+LinkRemoved::class,
+ fn (LinkRemoved $removed) => $removed->linkId === 'another link',
+ count: 0,
+);
+        $this->assertThrows(
+            fn () => $this->journal->assertEvent(LinkRemoved::class, count: 2),
+            AssertionFailedError::class,
+        );
     }
 
     public function test_an_unlink_rolled_back_is_not_seen_and_a_later_one_is(): void

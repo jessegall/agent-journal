@@ -47,4 +47,22 @@ final class ShareFixturesTest extends TestCase
 
         $this->assertNotSame($shares->shareCalled('First')->token_digest, $shares->shareCalled('Second')->token_digest);
     }
+
+    public function test_a_grant_until_a_time_ends_at_that_time(): void
+    {
+        $this->journal->owner();
+        $configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
+        $root = TestActors::record('binders.binder', 1);
+        $end = CarbonImmutable::parse('2026-12-01 09:30:00');
+
+        $this->journal->fixtures(ShareFixtures::class)
+            ->grantUntil('Binder', $root, $configuration, $end)
+            ->assertGrant(
+                'Binder',
+                root: $root,
+                owner: 'Owner',
+                expiresAt: $end,
+                configurationVersion: $configuration->configuration_version,
+            );
+    }
 }

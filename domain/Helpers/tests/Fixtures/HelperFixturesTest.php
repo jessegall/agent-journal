@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Fixtures;
 
+use Domain\Helpers\Commands\CancelStartedHelperJob\CancelStartedHelperJobCommand;
 use Domain\Helpers\Commands\SteerHelper\SteerHelperCommand;
+use Domain\Helpers\Enums\JobStatus;
+use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
 
@@ -60,5 +63,15 @@ final class HelperFixturesTest extends TestCase
             sender: 'Owner',
             text: 'Start over.',
         )->assertSteering('Trace', []);
+    }
+
+    public function test_a_lifecycle_command_runs_as_the_journal_through_the_helper_lifecycle_entry(): void
+    {
+        $job = $this->helpers->jobCalled('Trace');
+
+        $this->helpers->runLifecycle(new CancelStartedHelperJobCommand($job->id));
+
+        $this->assertSame(JobStatus::Cancelled, HelperJob::query()->acrossActors()->findOrFail($job->id)->status);
+        $this->helpers->assertJob('Review', parent: 'Owner', brief: 'Review the change');
     }
 }

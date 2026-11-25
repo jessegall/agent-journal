@@ -6,12 +6,10 @@ namespace Tests\Support\Seeding;
 
 use App\Contracts\Admission\ShellAdmission;
 use App\Enums\Processes\ShellDialect;
-use App\Enums\Runs\LifecycleStatus;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Values\ExecutionContext;
 use App\Values\PartKey;
-use PHPUnit\Framework\Assert;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
 
 /**
@@ -66,12 +64,5 @@ trait ArrangesProcessRuns
     public function partOf(string $name, int $node): PartRun
     {
         return PartRun::findLatestAttemptAt($this->processRunCalled($name), $node);
-    }
-
-    public function assertProcessRun(string $name, LifecycleStatus $lifecycle): self
-    {
-        Assert::assertSame($lifecycle, $this->processRunCalled($name)->lifecycle, "The run {$name} stands otherwise.");
-
-        return $this;
     }
 }

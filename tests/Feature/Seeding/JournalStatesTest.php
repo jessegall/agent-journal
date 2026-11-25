@@ -187,6 +187,33 @@ final class JournalStatesTest extends TestCase
         });
     }
 
+    public function test_a_state_already_on_the_stack_is_followed_and_one_never_pushed_has_no_frame(): void
+    {
+        $counting = $this->counting('a', 3);
+        $this->journal->pushState($this->writerSession(), $counting);
+
+        $this->journal->stateOn($this->writerSession(), $counting)->given(
+            new SubjectSeen('a'),
+            fn (StateObservation $state) => $state->assertValue('heard', 1),
+        );
+
+        $this->journal->assertNoFrame($this->writerSession(), $this->counting('b', 3));
+        $this->assertThrows(
+            fn () => $this->journal->assertNoFrame($this->writerSession(), $counting),
+            AssertionFailedError::class,
+        );
+    }
+
+    public function test_a_hook_answered_through_the_journal_is_the_answer_of_the_stack(): void
+    {
+        $this->journal->pushState($this->writerSession(), $this->counting('a', 1));
+        $driver = new DriverCapabilities('Test driver', 'stop replies', ['onStop'], RewriteSupport::WithoutApproval);
+
+        $answer = $this->journal->answerHook($this->writerSession(), $this->stop(), $driver);
+
+        $this->assertSame(AnswerType::Deny, $answer->decision->answerType());
+    }
+
     private function counting(string $subject, int $limit): StateReference
     {
         return new StateReference(

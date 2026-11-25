@@ -51,7 +51,7 @@ trait ArrangesSettings
     /**
      * The setting's value as the application reads it now.
      */
-    public function settingOf(Setting $setting): string|bool|int|Decimal
+    private function settingOf(Setting $setting): string|bool|int|Decimal
     {
         $this->app->forgetScopedInstances();
         $settings = $this->app->make(SettingsResolver::class);

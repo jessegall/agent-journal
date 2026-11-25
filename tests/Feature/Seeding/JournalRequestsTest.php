@@ -11,7 +11,8 @@ use Tests\Support\Seeding\Exceptions\FixtureRefused;
 use Tests\TestCase;
 
 /**
- * The journal acts as one actor at a time, and a switch to an actor it cannot find leaves the actor before in place.
+ * The journal acts as one actor at a time, a switch to an actor it cannot find leaves the actor before in place, and
+ * an agent's console commands reach the journal signed by its start.
  */
 final class JournalRequestsTest extends TestCase
 {
@@ -38,5 +39,16 @@ final class JournalRequestsTest extends TestCase
             $this->journal->actorCalled('Owner'),
             ActorIdentity::of($this->app->make(CurrentActor::class)->actor()),
         );
+    }
+
+    public function test_an_agent_console_command_reaches_the_journal_signed_by_its_start(): void
+    {
+        $this->journal->owner()->agent('Ada');
+
+        $this->journal->relayAgentCommands('Ada');
+        $this->artisan('ask:list')->assertSuccessful();
+
+        $this->journal->relayAgentCommands('Ada', 'a-token-nobody-was-issued');
+        $this->artisan('ask:list')->assertFailed();
     }
 }

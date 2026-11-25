@@ -6,15 +6,13 @@ namespace Tests\Support\Seeding;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Enums\CommandRules\ReceiptStatus;
-use App\Enums\Engine\RefusalCode;
 use App\Models\CommandRules\CommandReceipt;
-use App\Support\ReceiptCaller;
 use App\Support\ReceiptCallers;
 use PHPUnit\Framework\Assert;
 
 /**
  * What the journal fixture reads of the receipt a keyed command left: the receipt the actor in place sees for the
- * command and key, as the bus reads it, and its status, refusal and replayed reply.
+ * command and key, as the bus reads it, and its status and replayed reply.
  */
 trait AssertsReceipts
 {
@@ -30,30 +28,9 @@ trait AssertsReceipts
         return $receipt;
     }
 
-    /**
-     * The receipt of the command under the key as the named caller holds it, whoever acts now.
-     */
-    public function persistedReceipt(ReceiptCaller $caller, object $command, string $requestKey): CommandReceipt
-    {
-        $receipt = CommandReceipt::findReadFor($caller, $command::class, $requestKey);
-        Assert::assertNotNull($receipt, 'That caller has no receipt of '.$command::class.' under that key.');
-
-        return $receipt;
-    }
-
     public function assertReceiptStatus(CommandReceipt $receipt, ReceiptStatus $status): self
     {
         Assert::assertSame($status, $receipt->status);
-
-        return $this;
-    }
-
-    public function assertReceiptRefusal(CommandReceipt $receipt, RefusalCode $code): self
-    {
-        Assert::assertSame(
-            [ReceiptStatus::Refused, $code->value],
-            [$receipt->status, $receipt->refusal_code],
-        );
 
         return $this;
     }

@@ -53,7 +53,7 @@ trait ArrangesSkills
     /**
      * The newest publication of the skills to the session's target.
      */
-    public function publicationOf(AgentSession $session): SkillPublication
+    private function publicationOf(AgentSession $session): SkillPublication
     {
         return SkillPublication::query()
             ->withoutGlobalScopes()

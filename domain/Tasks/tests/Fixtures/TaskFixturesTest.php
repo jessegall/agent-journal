@@ -9,6 +9,7 @@ use Domain\Tasks\Commands\LogTaskRun\LogTaskRunCommand;
 use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Exceptions\TaskRunTaken;
 use Domain\Tasks\Tests\TestCase;
+use PHPUnit\Framework\AssertionFailedError;
 use Tests\Support\RefreshHookDatabase;
 
 /**
@@ -75,5 +76,35 @@ final class TaskFixturesTest extends TestCase
 
         $this->tasks->assertWait('Build', 'Design', isSatisfied: true)
             ->assertWait('Ship', 'Design', isSatisfied: true, isWaived: true);
+    }
+
+    public function test_a_task_in_a_state_stands_in_it_with_no_run_and_the_owner_as_creator(): void
+    {
+        $task = $this->tasks->taskIn('Blocked work', TaskStatus::Blocked)->taskCalled('Blocked work');
+
+        $this->assertSame([TaskStatus::Blocked, $this->journal->ownerUser()->id], [$task->status, $task->creator_id]);
+        $this->tasks->assertRunCount('Blocked work', 0);
+    }
+
+    public function test_a_finished_and_a_cancelled_task_keep_their_outcome_and_reason(): void
+    {
+        $finished = $this->tasks->finishedTask('Shipped', 'Merged.')->taskCalled('Shipped');
+        $cancelled = $this->tasks->cancelledTask('Dropped', 'Out of scope.')->taskCalled('Dropped');
+
+        $this->assertSame(
+            [TaskStatus::Finished, 'Merged.', TaskStatus::Cancelled, 'Out of scope.'],
+            [$finished->status, $finished->result_note, $cancelled->status, $cancelled->cancel_reason],
+        );
+    }
+
+    public function test_the_run_of_a_number_and_the_current_run_are_the_started_run(): void
+    {
+        $this->tasks->task('Write it')->startRun('Write it', 'Ada');
+
+        $run = $this->tasks->runOf('Write it', 1);
+
+        $this->assertSame([1, $run->id], [$run->run_number, $this->tasks->currentRunOf('Write it')->id]);
+        $this->assertThrows(fn () => $this->tasks->runOf('Write it', 2), AssertionFailedError::class);
+        $this->assertThrows(fn () => $this->tasks->task('Idle')->currentRunOf('Idle'), AssertionFailedError::class);
     }
 }

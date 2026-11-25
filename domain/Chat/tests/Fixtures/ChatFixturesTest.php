@@ -21,12 +21,14 @@ final class ChatFixturesTest extends TestCase
     public function test_a_pair_chat_is_the_chat_page_pair_chat_with_both_members_attached(): void
     {
         $this->journal->owner()->agent('Planner');
+        $chats = $this->journal->fixtures(ChatFixtures::class);
 
-        $chat = $this->journal->fixtures(
-            ChatFixtures::class,
-        )->pairChatBetween('Owner', 'Planner')->pairChatOf('Owner', 'Planner');
+        $chat = $chats->pairChat($this->journal->actorCalled('Owner'), $this->journal->actorCalled('Planner'));
 
-        $this->assertSame(PairChats::PAIR_PROVIDER, $chat->provider_key);
+        $this->assertSame(
+            [PairChats::PAIR_PROVIDER, $chat->id],
+            [$chat->provider_key, $chats->pairChatOf('Owner', 'Planner')->id],
+        );
         $this->assertTrue(InboxMember::isAttached($chat->id, $this->journal->actorCalled('Owner')));
         $this->assertTrue(InboxMember::isAttached($chat->id, $this->journal->actorCalled('Planner')));
     }
@@ -46,6 +48,8 @@ final class ChatFixturesTest extends TestCase
         $this->journal->runAs('Owner', new UnpinMessageCommand($chat->id, $message->id));
 
         $pins->assertUnpinned($chat, $message, 'Owner')->assertPinned($chat, $message, 'Planner');
+        $this->assertNull($pins->pinOf($chat, $message, 'Owner'));
+        $this->assertSame($message->id, $pins->pinOf($chat, $message, 'Planner')?->message_id);
         $this->journal->assertMessageSent($chat, 'Planner', 'Keep this.');
     }
 }

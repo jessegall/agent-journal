@@ -67,5 +67,8 @@ final class CommentFixturesTest extends TestCase
             ->assertComment('Whole', author: 'Writer', body: 'All of it.')
             ->assertCount($target, 2)
             ->assertCount($other, 0);
+
+        $whole = $comments->commentCalled('Whole');
+        $this->assertSame([$page->id, 'All of it.'], [$whole->target_id, $whole->body]);
     }
 }

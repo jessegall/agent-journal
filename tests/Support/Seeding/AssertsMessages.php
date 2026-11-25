@@ -25,11 +25,6 @@ use Tests\Support\Seeding\Exceptions\FixtureRefused;
 trait AssertsMessages
 {
     /**
-     * @var array<string, Message>
-     */
-    private array $messages = [];
-
-    /**
      * @var array<string, NotificationReceipt>
      */
     private array $notifications = [];
@@ -50,29 +45,11 @@ trait AssertsMessages
         return $this;
     }
 
-    public function rememberMessage(string $name, Message $message): self
-    {
-        if (array_key_exists($name, $this->messages)) {
-            throw FixtureRefused::occupiedAlias($name, 'message');
-        }
-
-        $this->messages[$name] = $message;
-
-        return $this;
-    }
-
-    public function messageCalled(string $name): Message
-    {
-        $message = $this->messages[$name] ?? throw FixtureRefused::missingAlias('message', $name, self::OWNER);
-
-        return $message->fresh();
-    }
-
     /**
      * A notification of the occurrence delivered to the user or agent of this name through the real delivery, kept
      * under a name as the one receipt that recipient got.
      */
-    public function notification(
+    private function notification(
         string $name,
         string $recipient,
         string $occurrenceKey,
@@ -104,7 +81,7 @@ trait AssertsMessages
         return $this;
     }
 
-    public function rememberNotification(string $name, NotificationReceipt $receipt): self
+    private function rememberNotification(string $name, NotificationReceipt $receipt): self
     {
         if (array_key_exists($name, $this->notifications)) {
             throw FixtureRefused::occupiedAlias($name, 'notification');
@@ -136,13 +113,6 @@ trait AssertsMessages
     public function assertNotificationUnread(string $name): self
     {
         Assert::assertNull($this->notificationCalled($name)->read_at, "The notification {$name} is read.");
-
-        return $this;
-    }
-
-    public function assertNotificationHidden(string $name): self
-    {
-        Assert::assertTrue($this->notificationCalled($name)->isHidden(), "The notification {$name} is not hidden.");
 
         return $this;
     }

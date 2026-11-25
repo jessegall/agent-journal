@@ -65,6 +65,16 @@ final class JournalCommandsTest extends TestCase
         $this->assertSame($this->journal->ownerUser()->id, $this->app->make(CurrentActor::class)->actor()->id);
     }
 
+    public function test_a_trusted_command_runs_through_its_own_entry_as_the_system(): void
+    {
+        $this->journal->owner();
+
+        $this->journal->throughEntry(new InstallInboxesCommand());
+
+        $this->assertTrue(Inbox::findMain()->exists);
+        $this->assertSame($this->journal->ownerUser()->id, $this->app->make(CurrentActor::class)->actor()->id);
+    }
+
     public function test_a_journal_command_from_the_wrong_entry_is_refused(): void
     {
         $this->journal->owner();

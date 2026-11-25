@@ -429,13 +429,6 @@ final class TestJournal
         return $this;
     }
 
-    public function actAsInboxMemberId(string $userId): self
-    {
-        $this->requests->asInboxMemberId($userId);
-
-        return $this;
-    }
-
     /**
      * Puts the journal's server clock, the time every command reads, at the moment given; Carbon keeps its own time.
      */
@@ -573,7 +566,8 @@ final class TestJournal
     }
 
     /**
-     * The inboxes of actors the journal does not name: an actor's own inbox, a pair chat and a numbered post.
+     * The inboxes of actors the journal does not name: an actor's own inbox, an inbox two actors share and a numbered
+     * post.
      */
     public function inboxes(): FixtureInboxes
     {

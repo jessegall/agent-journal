@@ -84,4 +84,28 @@ final class PlanFixturesTest extends TestCase
         $this->assertSame(1, Plan::query()->count());
         $this->assertSame(0, Phase::query()->count());
     }
+
+    public function test_a_plan_in_a_state_and_a_started_plan_stand_in_their_state(): void
+    {
+        $plans = $this->journal->owner()->fixtures(PlanFixtures::class)
+            ->planIn('Done', PlanStatus::Done)
+            ->startedPlan('Running');
+
+        $plans->assertStatus('Done', PlanStatus::Done)->assertStatus('Running', PlanStatus::Started);
+        $this->assertSame($this->journal->ownerUser()->id, $plans->planCalled('Done')->creator_id);
+    }
+
+    public function test_tasks_placed_in_a_phase_stand_in_the_order_given(): void
+    {
+        $this->journal->owner();
+        $first = Task::create('Design', 'The first step.', $this->journal->ownerUser())->assignmentIdentity();
+        $second = Task::create('Build', 'The second step.', $this->journal->ownerUser())->assignmentIdentity();
+
+        $this->journal->fixtures(PlanFixtures::class)
+            ->plan('Release')
+            ->phase('Release', 'Work')
+            ->placeTasks('Work', $first, $second)
+            ->assertPhaseTask('Work', $first, 1)
+            ->assertPhaseTask('Work', $second, 2);
+    }
 }

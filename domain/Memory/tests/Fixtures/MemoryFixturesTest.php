@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Domain\Memory\Tests\Fixtures;
 
 use Domain\Memory\Commands\EditMemory\EditMemoryCommand;
+use Domain\Memory\Commands\RemoveMemory\RemoveMemoryCommand;
 use Domain\Memory\Exceptions\MemoryRevisionChanged;
 use Domain\Memory\Tests\TestCase;
+use PHPUnit\Framework\AssertionFailedError;
 use Tests\Support\RefreshHookDatabase;
 
 /**
@@ -33,5 +35,17 @@ final class MemoryFixturesTest extends TestCase
         );
 
         $memories->assertRevision('Plan', revision: 2, weight: 9, text: 'Newer words.');
+    }
+
+    public function test_a_removed_memory_is_forgotten_and_a_kept_one_is_not(): void
+    {
+        $memories = $this->journal->owner()->agent('Keeper', 'read-only-helper')->fixtures(MemoryFixtures::class)
+            ->memory('Plan', 'Keeper', 'First words.')
+            ->memory('Notes', 'Keeper', 'Other words.');
+
+        $this->journal->runAs('Keeper', new RemoveMemoryCommand($memories->memoryCalled('Plan')->id));
+
+        $memories->assertForgotten('Plan');
+        $this->assertThrows(fn () => $memories->assertForgotten('Notes'), AssertionFailedError::class);
     }
 }

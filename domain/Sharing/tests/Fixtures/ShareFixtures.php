@@ -9,7 +9,6 @@ use Carbon\CarbonImmutable;
 use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
-use Domain\Sharing\Models\ShareMember;
 use Domain\Sharing\Support\ShareGrant;
 use Domain\Sharing\Support\ShareToken;
 use PHPUnit\Framework\Assert;
@@ -91,33 +90,6 @@ final class ShareFixtures
         );
 
         Assert::assertTrue($expiresAt->equalTo($share->expires_at), "The share {$name} ends at another time.");
-
-        return $this;
-    }
-
-    /**
-     * The record is a current member of the share.
-     */
-    public function assertMember(string $name, RecordIdentity $member): self
-    {
-        $members = ShareMember::query()
-            ->where('share_id', $this->shareCalled($name)->id)
-            ->whereNull('invalidated_at')
-            ->where('target_type', $member->type)
-            ->where('target_id', $member->id)
-            ->count();
-
-        Assert::assertSame(1, $members, "{$member->reference()} is no current member of the share {$name}.");
-
-        return $this;
-    }
-
-    public function assertRevoked(string $name): self
-    {
-        $share = $this->shareCalled($name);
-
-        Assert::assertSame(ShareStatus::Revoked, $share->status, "The share {$name} was not revoked.");
-        Assert::assertFalse($share->isReadableNow(), "The share {$name} can still be read.");
 
         return $this;
     }

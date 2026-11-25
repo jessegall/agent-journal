@@ -10,7 +10,6 @@ use App\Enums\Agents\ConversationModeType;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Models\HelperMessage;
-use Domain\Helpers\Models\HelperNotice;
 use Domain\Helpers\Models\HelperPurpose;
 use Domain\Helpers\Support\HelperLifecycleEntry;
 use Domain\Helpers\Values\SessionStartDetails;
@@ -60,22 +59,6 @@ final class HelperFixtures
         $this->journal->runAsJournal(CommandEntry::Application, HelperLifecycleEntry::NAME, $command);
 
         return $this;
-    }
-
-    /**
-     * A job started for the request on revision 1 of its profile, on a reused identity in a new conversation.
-     */
-    public static function startDetails(string $requestId): SessionStartDetails
-    {
-        return new SessionStartDetails(
-            $requestId,
-            hash('sha256', $requestId),
-            1,
-            false,
-            false,
-            ConversationModeType::New,
-            '',
-        );
     }
 
     public function jobCalled(string $name): HelperJob
@@ -139,18 +122,18 @@ final class HelperFixtures
     }
 
     /**
-     * The job's parent was told of it with exactly this text.
+     * A job started for the request on revision 1 of its profile, on a reused identity in a new conversation.
      */
-    public function assertNotice(string $job, string $text): self
+    private static function startDetails(string $requestId): SessionStartDetails
     {
-        $notices = HelperNotice::query()
-            ->acrossActors()
-            ->where('helper_job_id', $this->jobCalled($job)->id)
-            ->pluck('text')
-            ->all();
-
-        Assert::assertContains($text, $notices, "The parent of {$job} was not told so.");
-
-        return $this;
+        return new SessionStartDetails(
+            $requestId,
+            hash('sha256', $requestId),
+            1,
+            false,
+            false,
+            ConversationModeType::New,
+            '',
+        );
     }
 }

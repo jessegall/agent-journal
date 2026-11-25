@@ -35,4 +35,30 @@ final class DocumentFixturesTest extends TestCase
         $documents->assertDraft('Design', editor: 'Owner', body: 'Unsaved words.')
             ->assertRevision('Design', 1, author: 'Owner', body: 'First words.');
     }
+
+    public function test_an_empty_document_has_no_revision_and_is_its_authors(): void
+    {
+        $document = $this->journal->owner()->agent('Ada')->fixtures(DocumentFixtures::class)
+            ->emptyDocument('Notes', author: 'Ada')
+            ->documentCalled('Notes');
+
+        $this->assertSame(
+            [$this->journal->agentCalled('Ada')->id, null],
+            [$document->creator_id, $document->current_revision_id],
+        );
+    }
+
+    public function test_the_revision_of_a_number_is_that_revision_of_the_document(): void
+    {
+        $documents = $this->journal->owner()->fixtures(DocumentFixtures::class)
+            ->publishedDocument('Design', author: 'Owner', body: 'First words.')
+            ->revision('Design', author: 'Owner', body: 'Second words.');
+
+        $revision = $documents->revisionOf('Design', 2);
+
+        $this->assertSame(
+            [$documents->documentCalled('Design')->id, 'Second words.'],
+            [$revision->document_id, $revision->body],
+        );
+    }
 }

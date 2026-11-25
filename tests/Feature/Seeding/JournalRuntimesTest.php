@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Seeding;
 
+use App\Enums\Drivers\DriverType;
 use App\Models\Agents\AgentRuntime;
+use App\Models\Projects\Host;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -55,5 +57,29 @@ final class JournalRuntimesTest extends TestCase
 
         $session = $this->journal->sessionOf('Ada')->id;
         $this->assertSame(1, AgentRuntime::query()->where('agent_session_id', $session)->count());
+    }
+
+    public function test_a_synthetic_runtime_is_one_open_headless_runtime_of_the_session(): void
+    {
+        $this->journal->owner()->idleAgent('Ada')->startSession('Ada', 'Ada');
+        $session = $this->journal->sessionOf('Ada')->id;
+        $before = AgentRuntime::query()->where('agent_session_id', $session)->count();
+
+        $this->journal->syntheticRuntime('Ada');
+
+        $runtime = AgentRuntime::query()->where('agent_session_id', $session)->latest('id')->firstOrFail();
+        $this->assertSame(
+            [$before + 1, DriverType::Headless],
+            [AgentRuntime::query()->where('agent_session_id', $session)->count(), $runtime->driver_type],
+        );
+    }
+
+    public function test_an_enrolled_host_is_a_host_of_its_own(): void
+    {
+        $first = $this->journal->enrolledHost();
+        $second = $this->journal->enrolledHost();
+
+        $this->assertNotSame($first->hostId, $second->hostId);
+        $this->assertSame(2, Host::query()->whereKey([$first->hostId, $second->hostId])->count());
     }
 }

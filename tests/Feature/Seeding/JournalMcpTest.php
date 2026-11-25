@@ -40,4 +40,11 @@ final class JournalMcpTest extends TestCase
 
         $this->journal->mcpFrame('First', '{"jsonrpc":"2.0","id":1,"method":"ping","params":{}}')->assertUnauthorized();
     }
+
+    public function test_a_request_of_a_method_goes_out_as_one_frame_under_id_one(): void
+    {
+        $this->journal->owner()->agent('Ada');
+
+        $this->journal->mcpRequest('Ada', 'ping')->assertOk()->assertJsonPath('id', 1);
+    }
 }
