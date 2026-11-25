@@ -32,8 +32,17 @@ final class EditPlanToolTest extends McpToolEntryTestCase
         $plan = $journal->fixtures(PlanFixtures::class)->createPlan('Release');
 
         return ToolCall::by($start)
-            ->arguments(['plan_id' => $plan->id, 'expected_revision' => 1, 'title' => 'Release six', 'request_key' => 'plans-1'])
+            ->arguments([
+                'plan_id' => $plan->id,
+                'expected_revision' => 1,
+                'title' => 'Release six',
+                'request_key' => 'plans-1',
+            ])
             ->reply(EditPlanCommand::class, 2)
-            ->expects(ExpectedCommand::of(EditPlanCommand::class, ['planId' => $plan->id, 'expectedRevision' => 1, 'title' => 'Release six']));
+            ->expects(ExpectedCommand::of(EditPlanCommand::class, [
+                'planId' => $plan->id,
+                'expectedRevision' => 1,
+                'title' => 'Release six',
+            ]));
     }
 }

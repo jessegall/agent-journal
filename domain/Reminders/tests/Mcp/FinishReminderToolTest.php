@@ -35,7 +35,10 @@ final class FinishReminderToolTest extends McpToolEntryTestCase
             ->reminderCalled('Check');
 
         return ToolCall::by($start)
-            ->arguments(['reminder_id' => $reminder->id, 'request_key' => 'write-1'])
+            ->arguments([
+                'reminder_id' => $reminder->id,
+                'request_key' => 'write-1',
+            ])
             ->expects(ExpectedCommand::of(FinishReminderCommand::class, ['reminderId' => $reminder->id]));
     }
 }

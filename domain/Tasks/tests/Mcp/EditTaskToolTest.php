@@ -32,8 +32,16 @@ final class EditTaskToolTest extends McpToolEntryTestCase
         $task = $journal->fixtures(TaskFixtures::class)->createTask('Ship the dock');
 
         return ToolCall::by($start)
-            ->arguments(['task_id' => $task->id, 'expected_revision' => 1, 'title' => 'Ship the dock today', 'request_key' => 'tasks-1'])
+            ->arguments([
+                'task_id' => $task->id,
+                'expected_revision' => 1,
+                'title' => 'Ship the dock today',
+                'request_key' => 'tasks-1',
+            ])
             ->reply(EditTaskCommand::class, 2)
-            ->expects(ExpectedCommand::of(EditTaskCommand::class, ['taskId' => $task->id, 'expectedRevision' => 1]));
+            ->expects(ExpectedCommand::of(EditTaskCommand::class, [
+                'taskId' => $task->id,
+                'expectedRevision' => 1,
+            ]));
     }
 }

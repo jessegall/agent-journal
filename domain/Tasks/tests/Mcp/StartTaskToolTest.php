@@ -32,7 +32,10 @@ final class StartTaskToolTest extends McpToolEntryTestCase
         $task = $journal->fixtures(TaskFixtures::class)->createTask('Ship the dock');
 
         return ToolCall::by($start)
-            ->arguments(['task_id' => $task->id, 'request_key' => 'tasks-1'])
+            ->arguments([
+                'task_id' => $task->id,
+                'request_key' => 'tasks-1',
+            ])
             ->reply(StartTaskCommand::class, 1)
             ->expects(ExpectedCommand::of(StartTaskCommand::class, ['taskId' => $task->id]));
     }

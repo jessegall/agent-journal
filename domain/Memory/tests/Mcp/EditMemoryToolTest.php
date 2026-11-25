@@ -32,8 +32,17 @@ final class EditMemoryToolTest extends McpToolEntryTestCase
         $memory = $journal->fixtures(MemoryFixtures::class)->memory('Rule', 'Builder', 'Run the phase tests once.')->memoryCalled('Rule');
 
         return ToolCall::by($start)
-            ->arguments(['memory_id' => $memory->id, 'expected_revision' => 1, 'weight' => 9, 'request_key' => 'write-1'])
+            ->arguments([
+                'memory_id' => $memory->id,
+                'expected_revision' => 1,
+                'weight' => 9,
+                'request_key' => 'write-1',
+            ])
             ->reply(EditMemoryCommand::class, 2)
-            ->expects(ExpectedCommand::of(EditMemoryCommand::class, ['memoryId' => $memory->id, 'expectedRevision' => 1, 'weight' => 9]));
+            ->expects(ExpectedCommand::of(EditMemoryCommand::class, [
+                'memoryId' => $memory->id,
+                'expectedRevision' => 1,
+                'weight' => 9,
+            ]));
     }
 }

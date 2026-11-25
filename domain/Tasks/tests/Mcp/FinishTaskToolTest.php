@@ -33,7 +33,16 @@ final class FinishTaskToolTest extends McpToolEntryTestCase
         $task = $tasks->taskCalled('Ship the dock');
 
         return ToolCall::by($start)
-            ->arguments(['task_id' => $task->id, 'run_number' => 1, 'note' => 'Docked.', 'request_key' => 'tasks-1'])
-            ->expects(ExpectedCommand::of(FinishTaskCommand::class, ['taskId' => $task->id, 'runNumber' => 1, 'note' => 'Docked.']));
+            ->arguments([
+                'task_id' => $task->id,
+                'run_number' => 1,
+                'note' => 'Docked.',
+                'request_key' => 'tasks-1',
+            ])
+            ->expects(ExpectedCommand::of(FinishTaskCommand::class, [
+                'taskId' => $task->id,
+                'runNumber' => 1,
+                'note' => 'Docked.',
+            ]));
     }
 }

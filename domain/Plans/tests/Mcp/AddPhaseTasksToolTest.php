@@ -34,7 +34,15 @@ final class AddPhaseTasksToolTest extends McpToolEntryTestCase
         $task = $journal->fixtures(TaskFixtures::class)->createTask('Ship the dock');
 
         return ToolCall::by($start)
-            ->arguments(['phase_id' => $phase->id, 'task_ids' => [$task->id], 'expected_revision' => 1, 'request_key' => 'plans-1'])
-            ->expects(ExpectedCommand::of(AddPhaseTasksCommand::class, ['phaseId' => $phase->id, 'taskIds' => [$task->id]]));
+            ->arguments([
+                'phase_id' => $phase->id,
+                'task_ids' => [$task->id],
+                'expected_revision' => 1,
+                'request_key' => 'plans-1',
+            ])
+            ->expects(ExpectedCommand::of(AddPhaseTasksCommand::class, [
+                'phaseId' => $phase->id,
+                'taskIds' => [$task->id],
+            ]));
     }
 }

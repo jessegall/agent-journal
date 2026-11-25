@@ -32,6 +32,9 @@ final class TaskLogReadToolTest extends McpToolEntryTestCase
         $task = $tasks->taskCalled('Ship the dock');
         $entry = $journal->actAs('Builder')->run(new LogTaskRunCommand($task->id, 1, 'Wired the route.'));
 
-        return ToolCall::by($start)->arguments(['task_id' => $task->id, 'entry_id' => $entry]);
+        return ToolCall::by($start)->arguments([
+            'task_id' => $task->id,
+            'entry_id' => $entry,
+        ]);
     }
 }

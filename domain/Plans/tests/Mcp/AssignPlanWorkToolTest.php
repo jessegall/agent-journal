@@ -41,8 +41,14 @@ final class AssignPlanWorkToolTest extends McpToolEntryTestCase
 
         return ToolCall::by($start)
             ->arguments([
-                'root' => ['type' => 'plans.plan', 'id' => $plan->id],
-                'recipient' => ['type' => 'agent', 'id' => $builder->agent->id],
+                'root' => [
+                    'type' => 'plans.plan',
+                    'id' => $plan->id,
+                ],
+                'recipient' => [
+                    'type' => 'agent',
+                    'id' => $builder->agent->id,
+                ],
                 'request_key' => 'plans-1',
             ])
             ->reply(AssignPlanWorkCommand::class, new AssignmentResult(

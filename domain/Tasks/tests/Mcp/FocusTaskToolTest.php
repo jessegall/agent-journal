@@ -33,7 +33,10 @@ final class FocusTaskToolTest extends McpToolEntryTestCase
         $task = $tasks->taskCalled('Ship the dock');
 
         return ToolCall::by($start)
-            ->arguments(['task_id' => $task->id, 'request_key' => 'tasks-1'])
+            ->arguments([
+                'task_id' => $task->id,
+                'request_key' => 'tasks-1',
+            ])
             ->expects(ExpectedCommand::of(FocusTaskCommand::class, ['taskId' => $task->id]));
     }
 }

@@ -31,8 +31,15 @@ final class SaveMemoryToolTest extends McpToolEntryTestCase
         $start = $journal->owner()->signedStart('Builder');
 
         return ToolCall::by($start)
-            ->arguments(['text' => 'Run the phase tests once.', 'weight' => 7, 'request_key' => 'write-1'])
+            ->arguments([
+                'text' => 'Run the phase tests once.',
+                'weight' => 7,
+                'request_key' => 'write-1',
+            ])
             ->reply(SaveMemoryCommand::class, (string) Str::ulid())
-            ->expects(ExpectedCommand::of(SaveMemoryCommand::class, ['text' => 'Run the phase tests once.', 'weight' => 7]));
+            ->expects(ExpectedCommand::of(SaveMemoryCommand::class, [
+                'text' => 'Run the phase tests once.',
+                'weight' => 7,
+            ]));
     }
 }

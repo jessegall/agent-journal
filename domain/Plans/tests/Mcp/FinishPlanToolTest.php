@@ -32,7 +32,16 @@ final class FinishPlanToolTest extends McpToolEntryTestCase
         $plan = $journal->fixtures(PlanFixtures::class)->createPlan('Release');
 
         return ToolCall::by($start)
-            ->arguments(['plan_id' => $plan->id, 'expected_revision' => 1, 'note' => 'Shipped.', 'request_key' => 'plans-1'])
-            ->expects(ExpectedCommand::of(FinishPlanCommand::class, ['planId' => $plan->id, 'expectedRevision' => 1, 'note' => 'Shipped.']));
+            ->arguments([
+                'plan_id' => $plan->id,
+                'expected_revision' => 1,
+                'note' => 'Shipped.',
+                'request_key' => 'plans-1',
+            ])
+            ->expects(ExpectedCommand::of(FinishPlanCommand::class, [
+                'planId' => $plan->id,
+                'expectedRevision' => 1,
+                'note' => 'Shipped.',
+            ]));
     }
 }

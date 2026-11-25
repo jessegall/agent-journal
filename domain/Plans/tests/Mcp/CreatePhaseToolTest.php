@@ -33,8 +33,15 @@ final class CreatePhaseToolTest extends McpToolEntryTestCase
         $plan = $journal->fixtures(PlanFixtures::class)->createPlan('Release');
 
         return ToolCall::by($start)
-            ->arguments(['plan_id' => $plan->id, 'title' => 'Design', 'request_key' => 'plans-1'])
+            ->arguments([
+                'plan_id' => $plan->id,
+                'title' => 'Design',
+                'request_key' => 'plans-1',
+            ])
             ->reply(AddPhaseCommand::class, (string) Str::ulid())
-            ->expects(ExpectedCommand::of(AddPhaseCommand::class, ['planId' => $plan->id, 'title' => 'Design']));
+            ->expects(ExpectedCommand::of(AddPhaseCommand::class, [
+                'planId' => $plan->id,
+                'title' => 'Design',
+            ]));
     }
 }

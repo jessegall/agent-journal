@@ -35,7 +35,10 @@ final class QuestionReadToolTest extends McpToolEntryTestCase
             ->questionCalled('Database');
 
         return ToolCall::by($start)
-            ->arguments(['question_id' => $question->id, 'request_key' => 'write-1'])
+            ->arguments([
+                'question_id' => $question->id,
+                'request_key' => 'write-1',
+            ])
             ->expects(ExpectedCommand::of(ReadQuestionCommand::class, ['questionId' => $question->id]));
     }
 }

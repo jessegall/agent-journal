@@ -34,8 +34,15 @@ final class MessageReactionToolTest extends McpToolEntryTestCase
         $message = $journal->post('Owner', $chats->pairChatOf('Owner', 'Builder'), 'The build is green.');
 
         return ToolCall::by($start)
-            ->arguments(['message_id' => $message->id, 'emoji' => '👍', 'request_key' => 'react-1'])
+            ->arguments([
+                'message_id' => $message->id,
+                'emoji' => '👍',
+                'request_key' => 'react-1',
+            ])
             ->reply(ReactCommand::class, (string) Str::ulid())
-            ->expects(ExpectedCommand::of(ReactCommand::class, ['messageId' => $message->id, 'emoji' => '👍']));
+            ->expects(ExpectedCommand::of(ReactCommand::class, [
+                'messageId' => $message->id,
+                'emoji' => '👍',
+            ]));
     }
 }

@@ -34,8 +34,17 @@ final class LogTaskToolTest extends McpToolEntryTestCase
         $task = $tasks->taskCalled('Ship the dock');
 
         return ToolCall::by($start)
-            ->arguments(['task_id' => $task->id, 'run_number' => 1, 'text' => 'Wired the route.', 'request_key' => 'tasks-1'])
+            ->arguments([
+                'task_id' => $task->id,
+                'run_number' => 1,
+                'text' => 'Wired the route.',
+                'request_key' => 'tasks-1',
+            ])
             ->reply(LogTaskRunCommand::class, (string) Str::ulid())
-            ->expects(ExpectedCommand::of(LogTaskRunCommand::class, ['taskId' => $task->id, 'runNumber' => 1, 'text' => 'Wired the route.']));
+            ->expects(ExpectedCommand::of(LogTaskRunCommand::class, [
+                'taskId' => $task->id,
+                'runNumber' => 1,
+                'text' => 'Wired the route.',
+            ]));
     }
 }

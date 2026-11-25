@@ -32,8 +32,17 @@ final class CreatePlanToolTest extends McpToolEntryTestCase
         $start = $journal->owner()->signedStart('Planner');
 
         return ToolCall::by($start)
-            ->arguments(['title' => 'Release', 'brief' => 'Ship version 6.', 'type' => 'build', 'request_key' => 'plans-1'])
+            ->arguments([
+                'title' => 'Release',
+                'brief' => 'Ship version 6.',
+                'type' => 'build',
+                'request_key' => 'plans-1',
+            ])
             ->reply(CreatePlanCommand::class, (string) Str::ulid())
-            ->expects(ExpectedCommand::of(CreatePlanCommand::class, ['title' => 'Release', 'brief' => 'Ship version 6.', 'type' => PlanType::Build]));
+            ->expects(ExpectedCommand::of(CreatePlanCommand::class, [
+                'title' => 'Release',
+                'brief' => 'Ship version 6.',
+                'type' => PlanType::Build,
+            ]));
     }
 }

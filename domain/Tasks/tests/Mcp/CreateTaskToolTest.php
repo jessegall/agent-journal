@@ -31,8 +31,15 @@ final class CreateTaskToolTest extends McpToolEntryTestCase
         $start = $journal->owner()->signedStart('Builder');
 
         return ToolCall::by($start)
-            ->arguments(['title' => 'Ship the dock', 'brief' => 'Dock the source beside the chat.', 'request_key' => 'tasks-1'])
+            ->arguments([
+                'title' => 'Ship the dock',
+                'brief' => 'Dock the source beside the chat.',
+                'request_key' => 'tasks-1',
+            ])
             ->reply(CreateTaskCommand::class, (string) Str::ulid())
-            ->expects(ExpectedCommand::of(CreateTaskCommand::class, ['title' => 'Ship the dock', 'brief' => 'Dock the source beside the chat.']));
+            ->expects(ExpectedCommand::of(CreateTaskCommand::class, [
+                'title' => 'Ship the dock',
+                'brief' => 'Dock the source beside the chat.',
+            ]));
     }
 }

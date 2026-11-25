@@ -33,7 +33,14 @@ final class CancelTaskToolTest extends McpToolEntryTestCase
         $task = $tasks->taskCalled('Ship the dock');
 
         return ToolCall::by($start)
-            ->arguments(['task_id' => $task->id, 'reason' => 'Not needed.', 'request_key' => 'tasks-1'])
-            ->expects(ExpectedCommand::of(CancelTaskCommand::class, ['taskId' => $task->id, 'reason' => 'Not needed.']));
+            ->arguments([
+                'task_id' => $task->id,
+                'reason' => 'Not needed.',
+                'request_key' => 'tasks-1',
+            ])
+            ->expects(ExpectedCommand::of(CancelTaskCommand::class, [
+                'taskId' => $task->id,
+                'reason' => 'Not needed.',
+            ]));
     }
 }

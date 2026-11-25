@@ -33,7 +33,15 @@ final class BlockTaskToolTest extends McpToolEntryTestCase
         $task = $tasks->taskCalled('Ship the dock');
 
         return ToolCall::by($start)
-            ->arguments(['task_id' => $task->id, 'run_number' => 1, 'reason' => 'Waits on the dock route.', 'request_key' => 'tasks-1'])
-            ->expects(ExpectedCommand::of(BlockTaskCommand::class, ['taskId' => $task->id, 'runNumber' => 1]));
+            ->arguments([
+                'task_id' => $task->id,
+                'run_number' => 1,
+                'reason' => 'Waits on the dock route.',
+                'request_key' => 'tasks-1',
+            ])
+            ->expects(ExpectedCommand::of(BlockTaskCommand::class, [
+                'taskId' => $task->id,
+                'runNumber' => 1,
+            ]));
     }
 }
