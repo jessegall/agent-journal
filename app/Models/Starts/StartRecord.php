@@ -161,7 +161,7 @@ final class StartRecord extends Model implements EventSource, ReadableModel
         PinnedDriver $pin,
         ActorIdentity $requester,
     ): self {
-        $existing = self::query()->where('request_id', $request->requestId)->lockForUpdate()->first();
+        $existing = self::query()->underRequest($request->requestId)->lockForUpdate()->first();
 
         if ($existing !== null) {
             $existing->assertDigest($request);
@@ -375,14 +375,8 @@ final class StartRecord extends Model implements EventSource, ReadableModel
     public static function latestOf(array $agentIds): Collection
     {
         return self::query()
-            ->whereIn('agent_id', $agentIds)
-            ->whereNotExists(fn (QueryBuilder $newer) => $newer->from('start_records', 'newer')
-                ->whereColumn('newer.agent_id', 'start_records.agent_id')
-                ->where(fn (QueryBuilder $later) => $later
-                    ->whereColumn('newer.created_at', '>', 'start_records.created_at')
-                    ->orWhere(fn (QueryBuilder $sameTime) => $sameTime
-                        ->whereColumn('newer.created_at', 'start_records.created_at')
-                        ->whereColumn('newer.id', '>', 'start_records.id'))))
+            ->ofAgents($agentIds)
+            ->newestOfItsAgent()
             ->readExactly(count($agentIds))
             ->get()
             ->keyBy('agent_id');
@@ -393,7 +387,7 @@ final class StartRecord extends Model implements EventSource, ReadableModel
      */
     public static function savedDriverTypeOf(string $sessionId): DriverType|null
     {
-        $record = self::query()->where('session_id', $sessionId)->where('remember', true)->first();
+        $record = self::query()->ofSessions([$sessionId])->remembered()->first();
 
         return $record?->driver_type;
     }
@@ -421,8 +415,7 @@ final class StartRecord extends Model implements EventSource, ReadableModel
     public static function latestReadinessOf(array $ids): array
     {
         return self::query()
-            ->whereIn('session_id', $ids)
-            ->orderBy('created_at')
+            ->ofSessions($ids)
             ->oldestFirst()
             ->readAll('the start records of the sessions whose readiness is read together')
             ->get()
@@ -440,8 +433,8 @@ final class StartRecord extends Model implements EventSource, ReadableModel
     public static function lockedAcceptedOf(array $ids): Collection
     {
         return self::query()
-            ->whereIn('session_id', $ids)
-            ->where('readiness', StartReadiness::Accepted)
+            ->ofSessions($ids)
+            ->inReadiness(StartReadiness::Accepted)
             ->lockForUpdate()
             ->readAll('the accepted starts of the sessions whose bootstrap one claim took')
             ->get();
@@ -454,12 +447,9 @@ final class StartRecord extends Model implements EventSource, ReadableModel
      */
     public static function lockedLatestOf(string $sessionId): Option
     {
-        return Option::fromValue(self::query()
-            ->where('session_id', $sessionId)
-            ->orderByDesc('created_at')
-            ->newestFirst()
-            ->lockForUpdate()
-            ->first());
+        $record = self::query()->ofSessions([$sessionId])->newestFirst()->lockForUpdate()->first();
+
+        return Option::fromValue($record);
     }
 
     /**
@@ -469,11 +459,10 @@ final class StartRecord extends Model implements EventSource, ReadableModel
      */
     public static function ownerStartOf(string $sessionId): Option
     {
-        return Option::fromValue(self::query()
-            ->where('session_id', $sessionId)
-            ->where('origin_type', StartOriginType::OwnerRequest->value)
-            ->whereNotNull('owner_reference')
-            ->first());
+        $record = self::query()->ofSessions([$sessionId])->ofOrigin(StartOriginType::OwnerRequest)->withOwner()
+            ->first();
+
+        return Option::fromValue($record);
     }
 
     /**
@@ -481,7 +470,7 @@ final class StartRecord extends Model implements EventSource, ReadableModel
      */
     public static function conversationTargetOf(string $sessionId): string|null
     {
-        return self::query()->where('session_id', $sessionId)->value('conversation_target');
+        return self::query()->ofSessions([$sessionId])->value('conversation_target');
     }
 
     /**
@@ -490,9 +479,9 @@ final class StartRecord extends Model implements EventSource, ReadableModel
     public static function requiresConversation(string $sessionId): bool
     {
         return self::query()
-            ->where('session_id', $sessionId)
-            ->where('origin_type', StartOriginType::MainStart->value)
-            ->whereNotNull('conversation_target')
+            ->ofSessions([$sessionId])
+            ->ofOrigin(StartOriginType::MainStart)
+            ->withConversationTarget()
             ->exists();
     }
 
@@ -502,8 +491,8 @@ final class StartRecord extends Model implements EventSource, ReadableModel
     public static function resumesConversation(string $sessionId): bool
     {
         return self::query()
-            ->where('session_id', $sessionId)
-            ->where('conversation_mode', ConversationModeType::Resume->value)
+            ->ofSessions([$sessionId])
+            ->inConversationMode(ConversationModeType::Resume)
             ->exists();
     }
 
@@ -545,5 +534,112 @@ final class StartRecord extends Model implements EventSource, ReadableModel
     protected function withOwner(Builder $query): void
     {
         $query->whereNotNull('owner_reference');
+    }
+
+    /**
+     * The record of the start request.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function underRequest(Builder $query, string $requestId): void
+    {
+        $query->where('request_id', $requestId);
+    }
+
+    /**
+     * The records of the agents.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $agentIds
+     */
+    #[Scope]
+    protected function ofAgents(Builder $query, array $agentIds): void
+    {
+        $query->whereIn('agent_id', $agentIds);
+    }
+
+    /**
+     * The records of the sessions.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $sessionIds
+     */
+    #[Scope]
+    protected function ofSessions(Builder $query, array $sessionIds): void
+    {
+        $query->whereIn('session_id', $sessionIds);
+    }
+
+    /**
+     * The records no newer record of the same agent follows.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function newestOfItsAgent(Builder $query): void
+    {
+        $query->whereNotExists(fn (QueryBuilder $newer) => $newer->from('start_records', 'newer')
+            ->whereColumn('newer.agent_id', 'start_records.agent_id')
+            ->where(fn (QueryBuilder $later) => $later
+                ->whereColumn('newer.created_at', '>', 'start_records.created_at')
+                ->orWhere(fn (QueryBuilder $sameTime) => $sameTime
+                    ->whereColumn('newer.created_at', 'start_records.created_at')
+                    ->whereColumn('newer.id', '>', 'start_records.id'))));
+    }
+
+    /**
+     * The records whose driver type is saved for later starts.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function remembered(Builder $query): void
+    {
+        $query->where('remember', true);
+    }
+
+    /**
+     * The records in that readiness.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inReadiness(Builder $query, StartReadiness $readiness): void
+    {
+        $query->where('readiness', $readiness);
+    }
+
+    /**
+     * The records of that origin.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofOrigin(Builder $query, StartOriginType $origin): void
+    {
+        $query->where('origin_type', $origin->value);
+    }
+
+    /**
+     * The records that name a conversation to join.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withConversationTarget(Builder $query): void
+    {
+        $query->whereNotNull('conversation_target');
+    }
+
+    /**
+     * The records of that conversation mode.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inConversationMode(Builder $query, ConversationModeType $mode): void
+    {
+        $query->where('conversation_mode', $mode->value);
     }
 }
