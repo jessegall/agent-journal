@@ -17,6 +17,8 @@ use App\Support\ActorIdentity;
 use Domain\Memory\Events\MemoryRevised;
 use Domain\Memory\Events\MemorySaved;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -107,5 +109,17 @@ final class Memory extends Model implements EventSource, Numbered, ReadableModel
         $this->belongTo($actor);
         $this->assertSaved($this->save());
         $this->raise(new MemorySaved($this->id));
+    }
+
+    /**
+     * The rows by weight descending, then id.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function byWeightDescendingThenId(Builder $query): void
+    {
+        $query->orderByDesc('weight');
+        $query->orderBy('id');
     }
 }

@@ -40,7 +40,7 @@ const ALLOWED_READS = [
     'exists', 'doesntExist', 'count', 'max', 'min', 'sum', 'avg', 'pluck', 'value', 'cursor', 'paginate',
     'simplePaginate', 'cursorPaginate', 'chunk', 'chunkById', 'each', 'lazy', 'lazyById', 'readLimit', 'readUpTo',
     'readExactly', 'readAll', 'readInChunks', 'readRelationCompletely', 'lockForUpdate', 'sharedLock', 'getModels',
-    'whereKey', 'whereKeyNot',
+    'whereKey', 'whereKeyNot', 'limit', 'lock', 'when',
 ];
 
 /** The reads that hand back rows or a value: the chain past one of them works on what it read, not on the query. */

@@ -8,6 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\HasComments;
 use App\Concerns\HasNumber;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Actors\Actor;
 use App\Contracts\Events\EventSource;
@@ -88,6 +89,7 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
     use HasUlids;
     use Linkable;
     use MeasuresBody;
+    use OrdersById;
     use RaisesEvents;
     use SearchesText;
     use Settles;

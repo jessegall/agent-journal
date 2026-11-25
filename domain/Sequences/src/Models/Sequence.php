@@ -165,4 +165,15 @@ final class Sequence extends Model implements EventSource, ReadableModel
     {
         $query->where('name', $name);
     }
+
+    /**
+     * The rows by created at descending.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function newestCreatedFirst(Builder $query): void
+    {
+        $query->orderByDesc('created_at');
+    }
 }

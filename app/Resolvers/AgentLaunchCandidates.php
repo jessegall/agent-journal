@@ -133,7 +133,7 @@ final readonly class AgentLaunchCandidates implements LaunchCandidates
 
         $lastVisits = ConversationVisit::query()
             ->ofConversations(array_keys($owners))
-            ->orderByDesc('observed_at')
+            ->newestObservedFirst()
             ->readAll('the visits of the offered helpers\' conversations under one purpose, to find each last one')
             ->get()
             ->unique('conversation_id');

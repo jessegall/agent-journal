@@ -135,6 +135,6 @@ final readonly class ChatInboxes implements PairChats
                 self::GROUP_PROVIDER,
             ])
             ->attachedTo(ActorIdentity::of($this->actors->actor()))
-            ->orderBy('id');
+            ->oldestFirst();
     }
 }

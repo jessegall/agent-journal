@@ -401,4 +401,15 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
     {
         $query->whereIn('agent_id', $agentIds);
     }
+
+    /**
+     * The rows by created at descending.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function newestCreatedFirst(Builder $query): void
+    {
+        $query->orderByDesc('created_at');
+    }
 }

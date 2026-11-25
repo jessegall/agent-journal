@@ -106,4 +106,16 @@ final class PendingAgentMessage extends Model implements ReadableModel
     {
         $query->where('requests_attention', true);
     }
+
+    /**
+     * The rows by created at, then id.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function byCreatedAt(Builder $query): void
+    {
+        $query->orderBy('created_at');
+        $query->orderBy('id');
+    }
 }

@@ -59,7 +59,7 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
             ->ofAgentRuntimes($runtimeIds)
             ->withProgress(RequestProgress::Accepted)
             ->withAnyOperation(DriverOperation::control())
-            ->orderBy('sequence')
+            ->bySequence()
             ->lockForUpdate()
             ->readAll('every waiting stop, interrupt and recording of one host is taken before other work')
             ->get();
@@ -69,7 +69,7 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
             ->withProgress(RequestProgress::Accepted)
             ->offerable(CarbonImmutable::now())
             ->whereNotIn('operation', DriverOperation::control())
-            ->orderBy('sequence')
+            ->bySequence()
             ->lockForUpdate()
             ->readUpTo($command->limit * max(1, $runtimes->count()))
             ->get()

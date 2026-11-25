@@ -199,4 +199,15 @@ final class DriverConversation extends Model implements ReadableModel
     {
         $query->where('resume_protocol', $resumeProtocol);
     }
+
+    /**
+     * The rows by created at descending.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function newestCreatedFirst(Builder $query): void
+    {
+        $query->orderByDesc('created_at');
+    }
 }

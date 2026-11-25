@@ -27,7 +27,7 @@ final class RunKeyScriptCommand extends Command
         $requestKey = $this->option('request-key');
         $key = $owner->useRequestKey($requestKey === null ? null : (string) $requestKey);
         $agentId = (string) $this->argument('agent');
-        $session = AgentSession::query()->runningFor($agentId)->latest()->firstOrFail();
+        $session = AgentSession::query()->runningFor($agentId)->newestCreatedFirst()->firstOrFail();
         $script = (string) $this->argument('script');
         $receipt = $commands->run(new RunKeyScript($agentId, $session->id, $key, $script, $this->parameters()));
 

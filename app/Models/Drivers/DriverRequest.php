@@ -877,4 +877,48 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
     {
         $query->where('progress', $progress);
     }
+
+    /**
+     * The rows by sequence descending.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function bySequenceDescending(Builder $query): void
+    {
+        $query->orderByDesc('sequence');
+    }
+
+    /**
+     * The rows by created at.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function byCreatedAt(Builder $query): void
+    {
+        $query->orderBy('created_at');
+    }
+
+    /**
+     * The rows by sequence.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function bySequence(Builder $query): void
+    {
+        $query->orderBy('sequence');
+    }
+
+    /**
+     * The rows by updated at.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function byUpdatedAt(Builder $query): void
+    {
+        $query->orderBy('updated_at');
+    }
 }

@@ -44,7 +44,7 @@ final readonly class RunUpdates
     private function send(PartRun $part): void
     {
         $run = ProcessRun::ofAnyActor($part->process_run_id);
-        $position = ReaderPosition::query()->ofPartRun($part->id)->latest('updated_at')->first();
+        $position = ReaderPosition::query()->ofPartRun($part->id)->newestUpdatedFirst()->first();
         $assessment = OutputAssessment::latestOf($part);
 
         $projection = new PartProjection(

@@ -206,4 +206,16 @@ final class EvidencePermit extends Model implements EventSource, ReadableModel
     {
         $query->where('command_request_id', $commandRequestId);
     }
+
+    /**
+     * The rows by consumed at descending, then id descending.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function newestConsumedFirst(Builder $query): void
+    {
+        $query->orderByDesc('consumed_at');
+        $query->orderByDesc('id');
+    }
 }

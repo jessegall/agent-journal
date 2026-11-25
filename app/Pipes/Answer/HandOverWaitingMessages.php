@@ -19,8 +19,7 @@ final readonly class HandOverWaitingMessages implements Pipe
         $agent = $walked->call->target->actorIdentity();
         $waiting = PendingAgentMessage::query()
             ->ownedBy($agent)
-            ->orderBy('created_at')
-            ->orderBy('id')
+            ->byCreatedAt()
             ->lockForUpdate()
             ->limit(PendingAgentMessage::DELIVERY_LIMIT)
             ->get();

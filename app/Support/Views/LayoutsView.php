@@ -18,7 +18,7 @@ final readonly class LayoutsView
     public function layouts(): array
     {
         return array_values(Layout::query()
-            ->orderBy('name')
+            ->byName()
             ->readAll('the layout picker lists every layout of the user')
             ->get()
             ->map(

@@ -27,7 +27,7 @@ final readonly class ReadinessCheckSweep
         $this->transaction->run(fn () => DriverRequest::query()
             ->with('runtime')
             ->unansweredReadinessChecksSince($at->subSeconds(self::ANSWER_SECONDS_LIMIT))
-            ->orderBy('created_at')
+            ->byCreatedAt()
             ->limit(self::PASS_LIMIT)
             ->lockForUpdate()
             ->get()

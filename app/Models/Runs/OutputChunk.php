@@ -121,4 +121,38 @@ final class OutputChunk extends Model implements ReadableModel
     {
         $query->whereIn('part_run_id', $partRunIds);
     }
+
+    /**
+     * The rows by offset descending.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function byOffsetDescending(Builder $query): void
+    {
+        $query->orderByDesc('offset');
+    }
+
+    /**
+     * The rows by stream, then offset.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function byStreamThenOffset(Builder $query): void
+    {
+        $query->orderBy('stream');
+        $query->orderBy('offset');
+    }
+
+    /**
+     * The rows by offset.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function byOffset(Builder $query): void
+    {
+        $query->orderBy('offset');
+    }
 }

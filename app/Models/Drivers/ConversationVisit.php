@@ -116,4 +116,15 @@ final class ConversationVisit extends Model implements ReadableModel
     {
         $query->whereIn('conversation_id', $conversationIds);
     }
+
+    /**
+     * The rows by observed at descending.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function newestObservedFirst(Builder $query): void
+    {
+        $query->orderByDesc('observed_at');
+    }
 }

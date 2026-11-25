@@ -7,6 +7,7 @@ namespace Domain\Plans\Models;
 use App\Concerns\BoundedReads;
 use App\Concerns\HasNumber;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Actors\Actor;
 use App\Contracts\Assignments\Assignable;
@@ -101,15 +102,16 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
 {
     use AssignableListing;
     use BoundedReads;
-
     /**
      * @use HasFactory<PlanFactory>
      */
     use HasFactory;
 
     use HasNumber;
+
     use HasUlids;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     /**

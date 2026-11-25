@@ -32,7 +32,7 @@ final readonly class AgentStackSessions implements ActorStackSessionProvider
 
     public function sessionsOf(ActorIdentity $actor): array
     {
-        $sessions = AgentSession::query()->runningFor($actor->id)->orderBy('id')
+        $sessions = AgentSession::query()->runningFor($actor->id)->oldestFirst()
             ->limit(self::RUNNING_SESSIONS_READ)
             ->pluck('id')->all();
 

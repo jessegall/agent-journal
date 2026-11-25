@@ -8,7 +8,6 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\NotificationMutationType;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -158,5 +157,16 @@ final class NotificationChange extends Model implements ReadableModel
     protected function withAnyId(Builder $query, array $ids): void
     {
         $query->whereIn('id', $ids);
+    }
+
+    /**
+     * The rows by created at.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function byCreatedAt(Builder $query): void
+    {
+        $query->orderBy('created_at');
     }
 }

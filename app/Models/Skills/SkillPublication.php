@@ -566,4 +566,15 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     {
         $query->whereIn('open_key', $openKeys);
     }
+
+    /**
+     * The rows by created at descending.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function newestCreatedFirst(Builder $query): void
+    {
+        $query->orderByDesc('created_at');
+    }
 }

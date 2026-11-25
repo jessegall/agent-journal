@@ -24,7 +24,7 @@ final readonly class SteerHelperHandler extends HelperCommandHandler
             HelperUnavailable::throwing()->toYou(),
         );
 
-        $latest = HelperJob::query()->ofIdentities([$identity->id])->latest('id')->lockForUpdate()->first();
+        $latest = HelperJob::query()->ofIdentities([$identity->id])->newestFirst()->lockForUpdate()->first();
 
         if ($latest !== null && $latest->state->isLive()) {
             $latest->addSteering($command->text);

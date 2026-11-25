@@ -59,7 +59,7 @@ final readonly class SkillPublications
         $delivered = SkillPublication::query()
             ->ofSessions(array_map(fn (PublicationIntent $intent) => $intent->sessionId, $intents))
             ->inState(PublicationState::Delivered)
-            ->orderByDesc('created_at')
+            ->newestCreatedFirst()
             ->readExactly($limit)
             ->get()
             ->unique(fn (SkillPublication $publication) => $publication->targetKey)

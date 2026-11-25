@@ -24,13 +24,13 @@ final readonly class DocumentDockResolver implements SectionResolver
         $documents = Document::query()
             ->with('currentRevision')
             ->inAttention(AttentionState::Active)
-            ->latest('id')
+            ->newestFirst()
             ->limit(self::SUGGESTIONS_SHOWN)
             ->get();
 
         $reports = Report::query()
             ->inAttention(AttentionState::Active)
-            ->latest('id')
+            ->newestFirst()
             ->limit(self::SUGGESTIONS_SHOWN)
             ->get();
 

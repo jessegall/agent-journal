@@ -6,6 +6,7 @@ namespace App\Models\Inboxes;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Assignments\Assignee;
 use App\Contracts\Events\EventSource;
@@ -52,6 +53,7 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     public const string ASSIGNEE_TYPE = 'inbox';

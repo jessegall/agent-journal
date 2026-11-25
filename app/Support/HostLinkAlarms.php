@@ -36,7 +36,7 @@ final readonly class HostLinkAlarms
                 ->orWhere(fn ($quiet) => $quiet
                     ->where('arrangement', ArrangementType::Contained)
                     ->where('last_answered_at', '<', $quietSince)))
-            ->orderBy('failing_since')
+            ->byFailingSince()
             ->limit(self::HOST_LIMIT)
             ->get()
             ->map(fn (Host $host): string => $host->linkAlarm)

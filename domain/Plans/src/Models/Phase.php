@@ -368,4 +368,15 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
     {
         $query->groupBy('plan_id');
     }
+
+    /**
+     * The rows by number.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function byNumber(Builder $query): void
+    {
+        $query->orderBy('number');
+    }
 }

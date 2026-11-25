@@ -8,6 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\HasComments;
 use App\Concerns\HasNumber;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Actors\Actor;
 use App\Contracts\Events\EventSource;
@@ -84,6 +85,7 @@ final class Document extends Model implements Commentable, Dockable, EventSource
     use HasNumber;
     use HasUlids;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
     use Settles;
     use SharedWithComments;

@@ -63,7 +63,7 @@ final readonly class AgentRecords implements AgentDirectory
 
     public function visible(): array
     {
-        $query = Agent::query()->orderBy('created_at')->orderBy('id');
+        $query = Agent::query()->byCreatedAt();
 
         $agents = ($this->inspection->seesEveryAgent() ? $query : $query->whereKey($this->actors->actor()->id))
             ->limit(self::AGENTS_SHOWN)
@@ -82,7 +82,7 @@ final readonly class AgentRecords implements AgentDirectory
             ->keyBy('session_id');
 
         $requests = DriverRequest::query()->ofAgentRuntimes($runtimes->pluck('id')->all())
-            ->orderByDesc('sequence')->limit(self::AGENTS_SHOWN * 2)->get()->unique('agent_runtime_id')
+            ->bySequenceDescending()->limit(self::AGENTS_SHOWN * 2)->get()->unique('agent_runtime_id')
             ->keyBy('agent_runtime_id');
 
         $waitingOnHelpers = AgentRuntime::sessionsWaitingOnHelpers(array_values(array_map(
@@ -97,14 +97,14 @@ final readonly class AgentRecords implements AgentDirectory
 
         $canStop = $this->authorizer->filterActions(AgentPolicy::class, Agent::class, [AccessType::Edit]) !== [];
 
-        $switches = DriverSwitch::query()->ofAgents($ids)->orderByDesc('created_at')
+        $switches = DriverSwitch::query()->ofAgents($ids)->newestCreatedFirst()
             ->limit(self::AGENTS_SHOWN * 2)->get()->unique('agent_id')->keyBy('agent_id');
 
         $refusals = ProcessStart::refusalsOf(array_values(array_map(strval(...), $ids)));
 
         $launches = $this->launchOutcomesOf(array_values(array_map(strval(...), $ids)));
 
-        $conversations = DriverConversation::query()->ofAgents($ids)->orderByDesc('created_at')
+        $conversations = DriverConversation::query()->ofAgents($ids)->newestCreatedFirst()
             ->readLimit(self::AGENTS_SHOWN * self::CONVERSATIONS_SHOWN)->get()->groupBy('agent_id');
 
         $now = $this->clock->now();

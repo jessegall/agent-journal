@@ -22,7 +22,7 @@ final readonly class HelperNotices
      */
     public function newest(): array
     {
-        $notices = HelperNotice::query()->latest('id')->limit(self::NOTICE_LIMIT)->get()->all();
+        $notices = HelperNotice::query()->newestFirst()->limit(self::NOTICE_LIMIT)->get()->all();
 
         return array_values(HelperNoticeData::collect($notices));
     }

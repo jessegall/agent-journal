@@ -6,6 +6,7 @@ namespace App\Models\Agents;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
@@ -63,6 +64,7 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     protected $table = 'agent_stacks';

@@ -217,4 +217,27 @@ final class PhaseTask extends Pivot implements ReadableModel
     {
         $query->whereIn('task_id', $taskIds);
     }
+
+    /**
+     * The rows by phase id, then position.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function byPhaseIdThenPosition(Builder $query): void
+    {
+        $query->orderBy('phase_id');
+        $query->orderBy('position');
+    }
+
+    /**
+     * The rows by position.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function byPosition(Builder $query): void
+    {
+        $query->orderBy('position');
+    }
 }

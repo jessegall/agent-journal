@@ -176,4 +176,15 @@ final class ReaderPosition extends Model implements EventSource, ReadableModel
     {
         $query->where('part_run_id', $partRunId);
     }
+
+    /**
+     * The rows by updated at descending.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function newestUpdatedFirst(Builder $query): void
+    {
+        $query->orderByDesc('updated_at');
+    }
 }

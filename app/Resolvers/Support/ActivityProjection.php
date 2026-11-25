@@ -34,7 +34,7 @@ final readonly class ActivityProjection
 
     public function ofPart(PartRun $part): PartActivity
     {
-        $newest = OutputChunk::query()->ofPartRun($part->id)->orderByDesc('offset')->first();
+        $newest = OutputChunk::query()->ofPartRun($part->id)->byOffsetDescending()->first();
         $started = $part->started_at ?? $part->created_at;
         $until = $part->ended_at ?? CarbonImmutable::now();
 

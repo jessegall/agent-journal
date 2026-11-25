@@ -373,4 +373,15 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
     {
         $query->where('contract_major', $contractMajor);
     }
+
+    /**
+     * The rows by created at descending.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function newestCreatedFirst(Builder $query): void
+    {
+        $query->orderByDesc('created_at');
+    }
 }

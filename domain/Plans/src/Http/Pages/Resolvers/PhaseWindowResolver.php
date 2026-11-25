@@ -54,7 +54,7 @@ final readonly class PhaseWindowResolver implements PageResolver
      */
     private static function checkReceiptOf(Phase $phase): PhaseCheckData|Optional
     {
-        $check = PhaseCheck::query()->ofPhase($phase)->latest('recorded_at')->first();
+        $check = PhaseCheck::query()->ofPhase($phase)->newestRecordedFirst()->first();
 
         if ($check === null) {
             return Optional::create();

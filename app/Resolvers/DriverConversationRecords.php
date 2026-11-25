@@ -20,7 +20,7 @@ final readonly class DriverConversationRecords implements DriverConversationReso
         $conversations = DriverConversation::query()->ownedBy($agentId)->withResumeProtocol($driver)->withContextReference($contextReference)
             ->limit(self::MOST_CONVERSATIONS)->get()->keyBy('id');
 
-        $lastVisits = ConversationVisit::query()->ofConversations($conversations->keys()->all())->orderByDesc('observed_at')
+        $lastVisits = ConversationVisit::query()->ofConversations($conversations->keys()->all())->newestObservedFirst()
             ->readAll('the visits of at most 20 conversations, to find each one\'s last')
             ->get()
             ->unique('conversation_id');

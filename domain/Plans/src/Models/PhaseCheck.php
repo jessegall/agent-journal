@@ -97,4 +97,15 @@ final class PhaseCheck extends Model implements ReadableModel
     {
         $query->where('receipt_id', $receiptId);
     }
+
+    /**
+     * The rows by recorded at descending.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function newestRecordedFirst(Builder $query): void
+    {
+        $query->orderByDesc('recorded_at');
+    }
 }

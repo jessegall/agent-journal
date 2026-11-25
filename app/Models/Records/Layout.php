@@ -14,6 +14,8 @@ use App\Events\Web\LayoutRemoved;
 use App\Events\Web\LayoutSaved;
 use App\Values\LayoutShape;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -88,5 +90,16 @@ final class Layout extends Model implements EventSource, ReadableModel
     public static function lockedForChange(string $layoutId): self
     {
         return self::query()->whereKey($layoutId)->lockForUpdate()->firstOrFail();
+    }
+
+    /**
+     * The rows by name.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function byName(Builder $query): void
+    {
+        $query->orderBy('name');
     }
 }

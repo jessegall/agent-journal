@@ -39,7 +39,7 @@ final readonly class ReportRecords implements ReportResolver
                 fn (Builder $query) => $query->where('id', '<', $filters->after),
                 fn (Builder $query) => $query->offset(($filters->page - 1) * $size),
             )
-            ->orderByDesc('id')
+            ->newestFirst()
             ->limit($size + 1)
             ->get();
 

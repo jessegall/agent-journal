@@ -180,4 +180,28 @@ final class DockPlacement extends Model implements EventSource, ReadableModel
     {
         $query->where('dockable_type', $source->type)->where('dockable_id', $source->id);
     }
+
+    /**
+     * The rows by assigned at, then id.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function byAssignedAt(Builder $query): void
+    {
+        $query->orderBy('assigned_at');
+        $query->orderBy('id');
+    }
+
+    /**
+     * The rows by assigned at descending, then id descending.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function newestAssignedFirst(Builder $query): void
+    {
+        $query->orderByDesc('assigned_at');
+        $query->orderByDesc('id');
+    }
 }

@@ -62,7 +62,7 @@ final readonly class TaskAssignmentRecords implements TaskAssignmentResolver
 
         $states = Task::query()->whereKey($requestedTaskIds)->readExactly(
             count($requestedTaskIds),
-        )->orderBy('id')->pluck('state', 'id')->all();
+        )->oldestFirst()->pluck('state', 'id')->all();
 
         foreach ($requestedTaskIds as $taskId) {
             if (! array_key_exists($taskId, $states)) {

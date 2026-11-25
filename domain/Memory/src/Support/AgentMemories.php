@@ -20,8 +20,7 @@ final readonly class AgentMemories
     {
         $texts = Memory::query()
             ->ownedBy($actor)
-            ->orderByDesc('weight')
-            ->orderBy('id')
+            ->byWeightDescendingThenId()
             ->readAll('every memory of the agent is a reminder')
             ->pluck('text')
             ->all();

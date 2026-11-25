@@ -656,4 +656,15 @@ final class StartRecord extends Model implements EventSource, ReadableModel
     {
         $query->where('session_id', $sessionId);
     }
+
+    /**
+     * The rows by created at descending.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function newestCreatedFirst(Builder $query): void
+    {
+        $query->orderByDesc('created_at');
+    }
 }

@@ -7,6 +7,7 @@ namespace Domain\Rules\Models;
 use App\Concerns\BoundedReads;
 use App\Concerns\HasNumber;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\Numbered;
@@ -56,6 +57,7 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
     use HasNumber;
     use HasUlids;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     /**

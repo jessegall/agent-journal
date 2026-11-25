@@ -6,6 +6,7 @@ namespace App\Models\Agents;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Concerns\TakesPartInMessages;
 use App\Contracts\Assignments\Assignee;
@@ -64,6 +65,7 @@ final class Agent extends Model implements
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
     use TakesPartInMessages;
 
@@ -253,5 +255,28 @@ final class Agent extends Model implements
     protected function unretired(Builder $query): void
     {
         $query->whereNull('retired_at');
+    }
+
+    /**
+     * The rows by created at, then id.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function byCreatedAt(Builder $query): void
+    {
+        $query->orderBy('created_at');
+        $query->orderBy('id');
+    }
+
+    /**
+     * The rows by name.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function byName(Builder $query): void
+    {
+        $query->orderBy('name');
     }
 }

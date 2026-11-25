@@ -26,7 +26,7 @@ final readonly class ManifestCheck
         $next = [];
         $state = CaptureState::Complete;
 
-        OutputChunk::query()->ofPartRun($part->id)->orderBy('stream')->orderBy('offset')->readInChunks(500, function (
+        OutputChunk::query()->ofPartRun($part->id)->byStreamThenOffset()->readInChunks(500, function (
             Collection $chunks,
         ) use (&$next, &$state): void {
             foreach ($chunks as $chunk) {

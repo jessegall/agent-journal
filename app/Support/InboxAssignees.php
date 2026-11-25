@@ -50,7 +50,7 @@ final readonly class InboxAssignees implements AssigneeProvider
         $this->actors->actor();
         $ids = array_values(array_unique(array_map(fn (AssigneeIdentity $assignee) => $assignee->id, $assignees)));
 
-        return array_values(Inbox::query()->ownedByCore()->whereKey($ids)->readExactly(count($ids))->orderBy('id')->get()
+        return array_values(Inbox::query()->ownedByCore()->whereKey($ids)->readExactly(count($ids))->oldestFirst()->get()
             ->map(fn (Inbox $inbox) => self::nameOf($inbox))
             ->all());
     }
@@ -61,7 +61,7 @@ final readonly class InboxAssignees implements AssigneeProvider
 
         $inboxes = Inbox::query()->ownedByCore()
             ->when($page->afterId !== null, fn ($query) => $query->where('id', '>', $page->afterId))
-            ->orderBy('id')
+            ->oldestFirst()
             ->limit($page->limit + 1)
             ->get();
 

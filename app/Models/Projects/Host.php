@@ -588,4 +588,15 @@ final class Host extends Model implements EventSource, ReadableModel
     {
         $query->latest('updated_at');
     }
+
+    /**
+     * The rows by failing since.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function byFailingSince(Builder $query): void
+    {
+        $query->orderBy('failing_since');
+    }
 }

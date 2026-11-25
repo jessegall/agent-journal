@@ -60,7 +60,7 @@ final readonly class AgentAssignees implements AssigneeProvider
         $this->actors->actor();
         $ids = array_values(array_unique(array_map(fn (AssigneeIdentity $actor) => $actor->id, $actors)));
 
-        return array_values(Agent::query()->whereKey($ids)->readExactly(count($ids))->orderBy('id')->get()
+        return array_values(Agent::query()->whereKey($ids)->readExactly(count($ids))->oldestFirst()->get()
             ->map(fn (Agent $agent) => new AssigneeName(AssigneeIdentity::of($agent), $agent->name))
             ->all());
     }
@@ -71,7 +71,7 @@ final readonly class AgentAssignees implements AssigneeProvider
 
         $agents = Agent::query()->unretired()
             ->when($page->afterId !== null, fn ($query) => $query->where('id', '>', $page->afterId))
-            ->orderBy('id')
+            ->oldestFirst()
             ->limit($page->limit + 1)
             ->get();
 

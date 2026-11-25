@@ -34,7 +34,7 @@ final readonly class SkillPreview
     public function audience(SkillEntry $skill): array
     {
         $agents = $this->contexts->visible(array_values(
-            Agent::query()->orderBy('name')->readLimit(self::MOST_AGENTS)->get()->all(),
+            Agent::query()->byName()->readLimit(self::MOST_AGENTS)->get()->all(),
         ));
 
         $rows = array_map(fn (Agent $agent) => $this->rowFor($skill, $agent), $agents);

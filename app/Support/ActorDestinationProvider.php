@@ -28,7 +28,7 @@ final readonly class ActorDestinationProvider implements DestinationProvider
     {
         $assignee = $this->providers->assigneeProvider($requested->type)->requireEligible($requested);
         $identity = new ActorIdentity(ActorType::from($requested->type), $requested->id);
-        $forwarding = Inbox::query()->forwarding()->attachedTo($identity)->orderBy('id')->first();
+        $forwarding = Inbox::query()->forwarding()->attachedTo($identity)->oldestFirst()->first();
 
         if ($forwarding !== null) {
             return new ResolvedDestinations($forwarding, $forwarding);

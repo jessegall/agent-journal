@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Resolvers\Support;
 
+use App\Models\Inboxes\Inbox;
 use App\Support\Wire\EncodedCard;
 use Domain\Chat\Data\DockedSourceData;
 use Domain\Chat\Data\DockListData;
 use Domain\Chat\Enums\DockedState;
-use App\Models\Inboxes\Inbox;
 use Domain\Chat\Models\DockPlacement;
 use Domain\Chat\Support\DockProjection;
 
@@ -31,8 +31,7 @@ final readonly class DockListing
 
         $placements = DockPlacement::query()
             ->inInbox($inbox)
-            ->orderBy('assigned_at')
-            ->orderBy('id')
+            ->byAssignedAt()
             ->readExactly($limit + 1)
             ->get();
 

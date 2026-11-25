@@ -30,8 +30,7 @@ final readonly class SettleSampleHandler implements CommandHandler
 
         $permit = EvidencePermit::query()
             ->sampling($request)
-            ->orderByDesc('consumed_at')
-            ->orderByDesc('id')
+            ->newestConsumedFirst()
             ->firstOrFail();
 
         $run = ProcessRun::query()->ownedBy($request->actor())->findOrFail($permit->process_run_id);

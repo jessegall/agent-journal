@@ -36,7 +36,7 @@ final readonly class InterruptStuckTurnsHandler implements CommandHandler
         $stuck = DriverRequest::query()
             ->with('runtime.session')
             ->turnsApplyingSince(CarbonImmutable::now()->subMinutes(self::TURN_MINUTES_LIMIT))
-            ->orderBy('updated_at')
+            ->byUpdatedAt()
             ->limit(self::PASS_LIMIT)
             ->get();
 

@@ -94,4 +94,16 @@ final class MessagePin extends Model implements ReadableModel
     {
         $query->where('inbox_id', $inboxId)->where('message_id', $messageId);
     }
+
+    /**
+     * The rows by pinned at descending, then id descending.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function newestPinnedFirst(Builder $query): void
+    {
+        $query->orderByDesc('pinned_at');
+        $query->orderByDesc('id');
+    }
 }

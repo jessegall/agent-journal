@@ -30,7 +30,7 @@ final readonly class StoredOutput
         OutputChunk::query()
             ->ofPartRun($part->id)
             ->withStream($stream->value)
-            ->orderBy('offset')
+            ->byOffset()
             ->readInChunks(200, function (Collection $chunks) use ($disk, &$bytes): void {
                 foreach ($chunks as $chunk) {
                     $bytes .= (string) $disk->get($chunk->storage_path);
@@ -55,7 +55,7 @@ final readonly class StoredOutput
             ->ofPartRun($part->id)
             ->withStream($stream->value)
             ->where('offset', '>=', $fromOffset)
-            ->orderBy('offset')
+            ->byOffset()
             ->readInChunks(200, function (Collection $chunks) use ($disk, $stream, &$frames): void {
                 foreach ($chunks as $chunk) {
                     $frames[] = new OutputFrame($stream, $chunk->offset, (string) $disk->get($chunk->storage_path));
