@@ -6,6 +6,7 @@ namespace Tests\Architecture\Support;
 
 use App\Support\Reflector;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Tests\Support\ScanCache\ScanCache;
 
 /**
@@ -362,6 +363,11 @@ final readonly class ModelWrites
                 $receiver === $class => "writes another row of its class through {$method}",
                 default => "calls {$short}::{$method}, which writes",
             };
+        }
+
+        // A call on an unknown object that a query builder answers without writing, such as select, is a read.
+        if (! ModelWriteScan::isWrite($method) && Reflector::of(QueryBuilder::class)->hasMethod($method)) {
+            return null;
         }
 
         $owners = array_keys(array_filter($writers, fn (array $names) => in_array($method, $names, true)));

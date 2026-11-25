@@ -37,6 +37,8 @@ final readonly class SendMessageHandler implements CommandHandler
             ? null
             : Message::query()->inInbox($inbox->id)->withNumber($command->targetMessageNumber)->firstOrFail();
 
-        return Message::create(new InboxReceiver($inbox), $sender, $command->body, $target)->id;
+        $number = $inbox->takeMessageNumber();
+
+        return Message::create(new InboxReceiver($inbox), $number, $sender, $command->body, $target)->id;
     }
 }

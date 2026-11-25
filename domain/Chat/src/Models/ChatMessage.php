@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Models;
 
+use App\Concerns\BoundedReads;
+use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\AuthoredModel;
+use App\Contracts\Records\ReadableModel;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Messages\Message;
 use App\Models\Support\Accessor;
@@ -37,9 +40,11 @@ use Illuminate\Support\Carbon;
  * @property mixed $author attribute
  * @property Model $source
  */
-final class ChatMessage extends Model implements EventSource
+final class ChatMessage extends Model implements EventSource, ReadableModel
 {
+    use BoundedReads;
     use HasUlids;
+    use Linkable;
     use RaisesEvents;
 
     public const int PAGE_SIZE = 50;

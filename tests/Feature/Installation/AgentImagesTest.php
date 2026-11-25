@@ -16,6 +16,10 @@ use Tests\TestCase;
  */
 final class AgentImagesTest extends TestCase
 {
+    private const string NO_RUNNER_IMAGE = 'The agent daemon holds no image ';
+
+    private const string UNSET_PINS = 'Name AGENT_IMAGE and RUNNER_IMAGE';
+
     private const string AGENT = 'sha256:aaaa';
 
     private const string RUNNER = 'sha256:bbbb';
@@ -73,7 +77,7 @@ final class AgentImagesTest extends TestCase
         $run = $this->load(self::AGENT, self::RUNNER);
 
         $this->assertSame(1, $run->getExitCode());
-        $this->assertStringContainsString('The agent daemon holds no image '.self::RUNNER, $run->getErrorOutput());
+        $this->assertStringContainsString(self::NO_RUNNER_IMAGE.self::RUNNER, $run->getErrorOutput());
     }
 
     public function test_unset_pins_fail_before_any_docker_call(): void
@@ -81,7 +85,7 @@ final class AgentImagesTest extends TestCase
         $run = $this->load('', self::RUNNER);
 
         $this->assertSame(1, $run->getExitCode());
-        $this->assertStringContainsString('Name AGENT_IMAGE and RUNNER_IMAGE', $run->getErrorOutput());
+        $this->assertStringContainsString(self::UNSET_PINS, $run->getErrorOutput());
         $this->assertSame([], $this->docker->callsHolding(''));
     }
 

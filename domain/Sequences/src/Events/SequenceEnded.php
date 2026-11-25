@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sequences\Events;
 
 use App\Support\ActorIdentity;
+use App\Support\RecordIdentity;
 use Domain\Sequences\Contracts\ChatLineSource;
 use Domain\Sequences\Enums\SequenceRunState;
 use Domain\Sequences\Models\SequenceRun;
@@ -20,18 +21,13 @@ final readonly class SequenceEnded extends SequenceEvent implements ChatLineSour
         public SequenceRunState $state,
     ) {}
 
-    public function runId(): string
+    public function run(): RecordIdentity
     {
-        return $this->runId;
+        return new RecordIdentity(SequenceRun::linkType(), $this->runId);
     }
 
     public function follower(): ActorIdentity
     {
         return $this->follower;
-    }
-
-    public function wordsFor(SequenceRun $run): string
-    {
-        return $this->state->value;
     }
 }

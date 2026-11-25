@@ -23,6 +23,7 @@ use App\Contracts\Reads\ReaderRequests as ReaderRequestsContract;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Contracts\Refusals\StartRefusal;
 use App\Contracts\Settings\SettingsAccessPolicy;
+use App\Contracts\Web\ProtectedViews as ProtectedViewsContract;
 use App\CorePages;
 use App\Enums\Agents\AccessType;
 use App\Enums\Files\Place;
@@ -39,6 +40,7 @@ use App\Support\InstalledVersion;
 use App\Support\OwnerAutoAssignmentAccess;
 use App\Support\OwnerSettingsAccess;
 use App\Support\PageChangeBroadcastLog;
+use App\Support\ProtectedViews;
 use App\Support\ReaderRequests;
 use App\Support\RecordMenus;
 use App\Support\RefusalReason;
@@ -84,6 +86,7 @@ final class WebServiceProvider extends ServiceProvider
         $this->app->singleton(DraftProducerRegistry::class);
         $this->app->alias(DraftProducerRegistry::class, DraftProducers::class);
         $this->app->bind(InstalledVersionContract::class, InstalledVersion::class);
+        $this->app->bind(ProtectedViewsContract::class, ProtectedViews::class);
         $this->app->bind(
             InstallationFaults::class,
             fn () => new InstallationFaults(

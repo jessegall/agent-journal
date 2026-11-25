@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sequences\Events;
 
 use App\Support\ActorIdentity;
+use App\Support\RecordIdentity;
 use App\Values\StackTarget;
 use Domain\Sequences\Contracts\ChatLineSource;
 use Domain\Sequences\Models\SequenceRun;
@@ -19,18 +20,13 @@ final readonly class SequenceStarted extends SequenceEvent implements ChatLineSo
         public StackTarget $target,
     ) {}
 
-    public function runId(): string
+    public function run(): RecordIdentity
     {
-        return $this->runId;
+        return new RecordIdentity(SequenceRun::linkType(), $this->runId);
     }
 
     public function follower(): ActorIdentity
     {
         return $this->target->actorIdentity();
-    }
-
-    public function wordsFor(SequenceRun $run): string
-    {
-        return 'started';
     }
 }

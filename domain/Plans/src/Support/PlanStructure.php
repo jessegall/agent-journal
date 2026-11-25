@@ -10,7 +10,6 @@ use Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseTask;
 use Domain\Plans\Models\Plan;
-use Domain\Plans\Models\PlanReviewEdition;
 use Domain\Tasks\Contracts\TaskProgressCounter;
 
 /**
@@ -19,12 +18,15 @@ use Domain\Tasks\Contracts\TaskProgressCounter;
  */
 final readonly class PlanStructure
 {
-    public function __construct(private TaskProgressCounter $taskCounts) {}
+    public function __construct(
+        private TaskProgressCounter $taskCounts,
+        private PlanApprovals $approvals,
+    ) {}
 
     public function addPhase(Plan $plan, string $title): Phase
     {
         Plan::lockForChange($plan->id);
-        PlanReviewEdition::retireCurrentApprovalOf($plan->id);
+        $this->approvals->retireCurrentOf($plan);
 
         return Phase::create($plan, $title);
     }
@@ -60,7 +62,7 @@ final readonly class PlanStructure
         $phase->recordProgress($phase->progress->plus($placed));
         $phase->advanceRevision();
         $plan->recordProgress($plan->progress->plus($placed));
-        PlanReviewEdition::retireCurrentApprovalOf($plan->id);
+        $this->approvals->retireCurrentOf($plan);
     }
 
     /**

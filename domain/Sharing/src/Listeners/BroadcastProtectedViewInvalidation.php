@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Listeners;
 
-use App\Contracts\Messages\AdmittedRecipients;
 use App\Contracts\Events\Listener;
-use App\Events\Web\ProtectedViewInvalidated;
+use App\Contracts\Messages\AdmittedRecipients;
+use App\Contracts\Web\ProtectedViews;
 use Domain\Sharing\Events\ShareRevoked;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Turns a revoked share, which may take something from users' open pages, into one content-free signal to every user
@@ -18,7 +17,7 @@ final readonly class BroadcastProtectedViewInvalidation implements Listener
 {
     public function __construct(
         private AdmittedRecipients $recipients,
-        private Dispatcher $events,
+        private ProtectedViews $views,
     ) {}
 
     public function handle(ShareRevoked $fact): void
@@ -29,6 +28,6 @@ final readonly class BroadcastProtectedViewInvalidation implements Listener
             return;
         }
 
-        $this->events->dispatch(new ProtectedViewInvalidated($userIds));
+        $this->views->invalidateFor($userIds);
     }
 }

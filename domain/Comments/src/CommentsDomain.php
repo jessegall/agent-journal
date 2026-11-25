@@ -16,6 +16,7 @@ use App\Support\Exports;
 use App\Support\FolderClasses;
 use App\Support\ShareRecordDefinition;
 use App\Values\PolicyDefinition;
+use Domain\Comments\Calls\ListCommentsCall;
 use Domain\Comments\Commands\PostComment\PostCommentCommand;
 use Domain\Comments\Commands\PostTextComment\PostTextCommentCommand;
 use Domain\Comments\Contracts\CommentResolver;
@@ -26,6 +27,7 @@ use Domain\Comments\Data\RecordCommentLocation;
 use Domain\Comments\Data\RecordCommentView;
 use Domain\Comments\Data\TextCommentLocation;
 use Domain\Comments\Data\TextCommentView;
+use Domain\Comments\Enums\CommentType;
 use Domain\Comments\Enums\WholeRecord;
 use Domain\Comments\Events\CommentPosted;
 use Domain\Comments\Models\Comment;
@@ -33,6 +35,7 @@ use Domain\Comments\Policies\CommentPolicy;
 use Domain\Comments\Resolvers\CommentLinkRecords;
 use Domain\Comments\Support\CommentShareProvider;
 use Domain\Comments\Support\PublicComment;
+use Domain\Comments\Support\PublicCommentPage;
 
 final class CommentsDomain extends Domain implements
     CommandProvider,
@@ -70,6 +73,10 @@ final class CommentsDomain extends Domain implements
                 TextCommentView::class,
                 WholeRecord::class,
                 PublicComment::class,
+                PublicCommentPage::class,
+                CommentType::class,
+                CommentPolicy::class,
+                ListCommentsCall::class,
             )
             ->build();
     }

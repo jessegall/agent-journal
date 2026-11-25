@@ -17,6 +17,8 @@ use Tests\Support\TimeLimits\TimeLimit;
 #[TimeLimit(seconds: 60, reason: 'It parses every PHP file of app and domain.')]
 final class ModelSectionsTest extends TestCase
 {
+    private const string CLOSE_CALLS_ASSERT = 'method close calls an assert';
+
     private const string HOW_TO_FIX = 'Sort them with php tools/refactoring/model-sections.php --fix app domain: ';
 
     private const string MISPLACED_ACCESSOR = 'accessor progress sits in Transformers, not in Accessors';
@@ -34,8 +36,6 @@ final class ModelSectionsTest extends TestCase
     private const string MISPLACED_ASSERT = 'assert method assertOpen sits in Internals, not in Asserts';
 
     private const string PLAIN_METHOD_IN_ASSERTS = 'method isOpen is no assert method, so it does not belong in Asserts';
-
-    private const string PLAIN_CREATE_BESIDE_ANOTHER = 'constructor create is one of 2, so it is named createFor';
 
     private const string CONSTRUCTOR_NAMED_OTHERWISE = 'constructor open is one of 2, so it is named createFor';
 
@@ -85,11 +85,10 @@ final class ModelSectionsTest extends TestCase
         $this->assertStringContainsString(self::PLAIN_METHOD_IN_ASSERTS, $output);
     }
 
-    public function test_constructors_named_otherwise_and_a_builder_one_constructor_uses_are_flagged(): void
+    public function test_a_constructor_named_otherwise_beside_create_and_a_builder_one_constructor_uses_are_flagged(): void
     {
         $output = $this->checkOutput('tests/Fixtures/ModelSections/ConstructorsNamedOtherwise.php');
 
-        $this->assertStringContainsString(self::PLAIN_CREATE_BESIDE_ANOTHER, $output);
         $this->assertStringContainsString(self::CONSTRUCTOR_NAMED_OTHERWISE, $output);
         $this->assertStringContainsString(self::BUILDER_OF_ONE_CONSTRUCTOR, $output);
     }
@@ -108,7 +107,7 @@ final class ModelSectionsTest extends TestCase
         $this->assertStringContainsString(self::NULLABLE_ASSERT, $output);
         $this->assertStringContainsString(self::JUDGED_READ, $output);
         $this->assertStringContainsString(self::LATE_ASSERT, $output);
-        $this->assertStringNotContainsString('method close calls an assert', $output);
+        $this->assertStringNotContainsString(self::CLOSE_CALLS_ASSERT, $output);
     }
 
     public function test_an_accessor_in_accessors_is_clean(): void

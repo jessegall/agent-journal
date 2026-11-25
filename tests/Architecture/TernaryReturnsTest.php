@@ -14,6 +14,8 @@ use Tests\Support\TimeLimits\TimeLimit;
 #[TimeLimit(seconds: 60, reason: 'It parses every PHP file of app, the domains and tools.')]
 final class TernaryReturnsTest extends TestCase
 {
+    private const string TERNARY_RETURN = 'returns a ternary';
+
     private const string HOW_TO_FIX = 'Rewrite these with --fix: ';
 
     private const string FIXTURE = 'tests/Fixtures/TernaryReturns/ReturnsATernary.php';
@@ -27,7 +29,7 @@ final class TernaryReturnsTest extends TestCase
 
     public function test_a_ternary_return_is_listed(): void
     {
-        $this->assertStringContainsString('returns a ternary', $this->checkOutput(self::FIXTURE));
+        $this->assertStringContainsString(self::TERNARY_RETURN, $this->checkOutput(self::FIXTURE));
     }
 
     private function checkOutput(string ...$paths): string

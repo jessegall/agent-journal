@@ -7,8 +7,8 @@ namespace Tests\Fixtures\ModelSections;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * A model with two constructors, one named plain create and one named for what it does, and a builder only its
- * second constructor calls.
+ * A model with two constructors, the plain create that makes the row and one named for what it does, and a builder
+ * only its second constructor calls.
  */
 final class ConstructorsNamedOtherwise extends Model
 {

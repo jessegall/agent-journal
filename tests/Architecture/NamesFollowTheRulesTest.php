@@ -16,6 +16,8 @@ use Tests\Support\TimeLimits\TimeLimit;
  */
 final class NamesFollowTheRulesTest extends TestCase
 {
+    private const string STAGED_NAME = 'class StepToRun';
+
     private const string FIXTURE = 'tests/Fixtures/Architecture/Names';
 
     #[TimeLimit(seconds: 60, reason: 'It reads every name of the project, PHP, frontend, Go and shell, fresh.')]
@@ -68,7 +70,7 @@ final class NamesFollowTheRulesTest extends TestCase
         $scan = $this->scan(['--staged'], environment: ['GIT_INDEX_FILE' => $this->indexStaging($staged)]);
 
         $this->assertSame(1, $scan->getExitCode(), $scan->getOutput().$scan->getErrorOutput());
-        $this->assertStringContainsString('class StepToRun', $scan->getOutput());
+        $this->assertStringContainsString(self::STAGED_NAME, $scan->getOutput());
         $this->assertStringNotContainsString('PartToSpawn', $scan->getOutput());
     }
 

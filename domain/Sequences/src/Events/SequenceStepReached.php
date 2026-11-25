@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sequences\Events;
 
 use App\Support\ActorIdentity;
+use App\Support\RecordIdentity;
 use Domain\Sequences\Contracts\ChatLineSource;
 use Domain\Sequences\Contracts\SequenceStepEvent;
 use Domain\Sequences\Models\SequenceRun;
@@ -20,18 +21,13 @@ final readonly class SequenceStepReached extends SequenceEvent implements ChatLi
         public int $step,
     ) {}
 
-    public function runId(): string
+    public function run(): RecordIdentity
     {
-        return $this->runId;
+        return new RecordIdentity(SequenceRun::linkType(), $this->runId);
     }
 
     public function follower(): ActorIdentity
     {
         return $this->follower;
-    }
-
-    public function wordsFor(SequenceRun $run): string
-    {
-        return $run->stepLine($this->step);
     }
 }

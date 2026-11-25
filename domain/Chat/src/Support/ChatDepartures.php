@@ -44,7 +44,11 @@ final readonly class ChatDepartures implements InboxParticipationEnding
             ->pluck('id');
 
         foreach ($chats as $inboxId) {
-            InboxMember::leave((string) $inboxId, $actor, $this->clock->now());
+            $member = InboxMember::findActive((string) $inboxId, $actor);
+
+            if ($member !== null) {
+                $member->leave($this->clock->now());
+            }
         }
     }
 }

@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Questions\Models;
 
+use App\Concerns\BoundedReads;
+use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
+use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
@@ -30,9 +33,11 @@ use Illuminate\Support\Carbon;
  * @property mixed $delivery_key attribute
  * @property Question $question
  */
-final class QuestionAnswerNotice extends Model implements EventSource
+final class QuestionAnswerNotice extends Model implements EventSource, ReadableModel
 {
+    use BoundedReads;
     use HasUlids;
+    use Linkable;
     use RaisesEvents;
 
     /**

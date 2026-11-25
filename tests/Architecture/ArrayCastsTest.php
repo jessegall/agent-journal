@@ -12,6 +12,12 @@ use Symfony\Component\Process\Process;
  */
 final class ArrayCastsTest extends TestCase
 {
+    private const string UNTYPED_NOTES = 'column notes is cast to an array of no stated type';
+
+    private const string TAGS = 'column tags';
+
+    private const string COUNTS = 'column counts';
+
     private const string HOW_TO_FIX = 'Cast each to a Data class or DataCollection::class.\':\'.ItemData::class: ';
 
     private const string FIXTURE = 'tests/Fixtures/ArrayCasts/ShapedArrayCasts.php';
@@ -30,9 +36,9 @@ final class ArrayCastsTest extends TestCase
         $entries = 'column entries is cast to an array of list<array{name:string,size:int}>';
 
         $this->assertStringContainsString($entries, $output);
-        $this->assertStringContainsString('column notes is cast to an array of no stated type', $output);
-        $this->assertStringNotContainsString('column tags', $output);
-        $this->assertStringNotContainsString('column counts', $output);
+        $this->assertStringContainsString(self::UNTYPED_NOTES, $output);
+        $this->assertStringNotContainsString(self::TAGS, $output);
+        $this->assertStringNotContainsString(self::COUNTS, $output);
     }
 
     private function checkOutput(string ...$paths): string

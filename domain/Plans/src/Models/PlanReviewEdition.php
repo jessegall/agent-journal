@@ -178,18 +178,6 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
             ->first();
     }
 
-    /**
-     * Marks the plan's current approval historical, once the plan changed under it; a plan with none is left alone.
-     */
-    public static function retireCurrentApprovalOf(string $planId): void
-    {
-        if (! $approval = self::currentApprovalOf($planId)) {
-            return;
-        }
-
-        $approval->markHistorical();
-    }
-
     // ----------[ Scopes ]----------
 
     /**

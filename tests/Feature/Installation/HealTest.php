@@ -14,6 +14,9 @@ use Tests\TestCase;
  */
 final class HealTest extends TestCase
 {
+    private const string GAVE_UP = 'The installation could not bring back agent-images: it ended with exit code 1. It '
+        ."stopped trying after 5 tries; the updater's log has each try.";
+
     private const string WEB = 'web';
 
     private const string STEP = 'agent-images';
@@ -90,8 +93,7 @@ final class HealTest extends TestCase
 
         $this->assertCount(5, $this->installation->docker->callsHolding(self::RUN_STEP));
         $this->assertSame(
-            'The installation could not bring back agent-images: it ended with exit code 1. It stopped trying after 5 '
-            ."tries; the updater's log has each try.",
+            self::GAVE_UP,
             $this->installation->faults(),
         );
     }

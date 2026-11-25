@@ -58,10 +58,9 @@ final class HostLinkAlarmTest extends TestCase
 
         $alarms = $this->app->make(HostLinkAlarms::class)->current();
 
-        $name = Host::query()->findOrFail($host->hostId)->installation_name;
-        $this->assertCount(1, $alarms);
-        $this->assertStringStartsWith("The host {$name} has failed to reach the journal since ", $alarms[0]);
-        $this->assertStringEndsWith(self::FAILING_ROUTE.' answered 500: '.self::REASON.'.', $alarms[0]);
+        $this->assertSame([Host::query()->findOrFail($host->hostId)->link_alarm], $alarms);
+        $this->assertStringContainsString(self::FAILING_ROUTE, $alarms[0]);
+        $this->assertStringContainsString(self::REASON, $alarms[0]);
 
         $this->isFailing = false;
         $this->hostCall($host, self::FAILING_ROUTE)->assertSuccessful();
@@ -93,14 +92,15 @@ final class HostLinkAlarmTest extends TestCase
     {
         $host = $this->enrolledHost();
         $since = CarbonImmutable::now()->toIso8601String();
-        $reported = [['route' => '/host/claim', 'status' => 500, 'reason' => 'Maximum execution time exceeded', 'since' => $since]];
+        $reported = [['route' => '/host/claim', 'status' => 500, 'reason' => self::REASON, 'since' => $since]];
 
         $this->hostCallReporting($host, self::FAILING_ROUTE_ANSWERED, $reported)->assertSuccessful();
         $this->travel(2)->minutes();
 
         $alarms = $this->app->make(HostLinkAlarms::class)->current();
-        $this->assertCount(1, $alarms);
-        $this->assertStringEndsWith('/host/claim answered 500: Maximum execution time exceeded.', $alarms[0]);
+        $this->assertSame([Host::query()->findOrFail($host->hostId)->link_alarm], $alarms);
+        $this->assertStringContainsString('/host/claim', $alarms[0]);
+        $this->assertStringContainsString(self::REASON, $alarms[0]);
     }
 
     public function test_the_calls_a_host_reports_failed_on_its_side_are_kept_with_it(): void

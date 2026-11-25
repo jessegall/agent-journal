@@ -5,25 +5,20 @@ declare(strict_types=1);
 namespace Domain\Sequences\Contracts;
 
 use App\Support\ActorIdentity;
-use Domain\Sequences\Models\SequenceRun;
+use App\Support\RecordIdentity;
 
 /**
- * A fact of a sequence run that its agent's chats show as a plain line: which run, whose, and the words for it.
+ * A fact of a sequence run that its follower's chat shows: which run, and whose.
  */
 interface ChatLineSource
 {
     /**
-     * The id of the sequence run the chat line is about.
+     * The sequence run the chat line is about.
      */
-    public function runId(): string;
+    public function run(): RecordIdentity;
 
     /**
      * The actor who follows the sequence run.
      */
     public function follower(): ActorIdentity;
-
-    /**
-     * The line the chat shows for the run.
-     */
-    public function wordsFor(SequenceRun $run): string;
 }

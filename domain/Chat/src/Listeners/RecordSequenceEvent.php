@@ -10,7 +10,6 @@ use App\Models\Inboxes\Inbox;
 use Domain\Chat\Commands\CreateChatMessage\CreateChatMessageCommand;
 use Domain\Chat\Enums\ChatMessageType;
 use Domain\Sequences\Events\SequenceStarted;
-use Domain\Sequences\Models\SequenceRun;
 
 /**
  * Once a sequence run's start is committed, it shows once in the follower's own chat, as an event whose card reads
@@ -22,10 +21,12 @@ final readonly class RecordSequenceEvent implements Listener
 
     public function handle(SequenceStarted $event): void
     {
+        $run = $event->run();
+
         $this->commands->run(new CreateChatMessageCommand(
             Inbox::personalOf($event->follower())->id,
-            SequenceRun::linkType(),
-            $event->runId(),
+            $run->type,
+            $run->id,
             ChatMessageType::Event,
         ));
     }

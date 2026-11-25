@@ -26,10 +26,17 @@ final readonly class MainInboxHandover implements MainInboxTakeover
         $now = $this->clock->now();
 
         foreach (InboxMember::attachedTo([$main->id], Agent::class) as $previous) {
-            if (! $previous->isSameAs($starter)) {
-                InboxMember::leave($main->id, $previous, $now);
-                Agent::withId($previous->id)->forAll(fn (Agent $fenced) => $fenced->fenceRuntimes());
+            if ($previous->isSameAs($starter)) {
+                continue;
             }
+
+            $member = InboxMember::findActive($main->id, $previous);
+
+            if ($member !== null) {
+                $member->leave($now);
+            }
+
+            Agent::withId($previous->id)->forAll(fn (Agent $fenced) => $fenced->fenceRuntimes());
         }
 
         InboxMember::create($main->id, $starter, $now);

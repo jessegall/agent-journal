@@ -42,8 +42,7 @@ return [
         'role' => EventRole::Projection,
         'migrated' => false,
         'producers' => [
-            'domain/Sharing/src/Listeners/BroadcastProtectedViewInvalidation.php',
-            'app/Listeners/NotifyReceiptsWithdrawn.php',
+            'app/Support/ProtectedViews.php',
         ],
     ],
     LayoutSaved::class => [

@@ -53,20 +53,21 @@ final class Message extends Model implements AuthoredModel, EventSource, Readabl
     // ----------[ Constructors ]----------
 
     /**
-     * Sends a message to the receiver, stored in its inbox under the inbox's next number, as a reply to the target
-     * when one is given; the inbox's row is locked, so two sends never take the same number.
+     * Sends a message to the receiver, stored in its inbox under the number the sender took from the locked inbox, as
+     * a reply to the target when one is given.
      */
     public static function create(
         MessageReceiver $to,
+        int $number,
         MessageSender $from,
         string $body,
         self|null $target = null,
     ): self {
-        $inbox = Inbox::lockedById($to->inbox()->id);
+        $inbox = $to->inbox();
 
         $message = new self();
         $message->inbox_id = $inbox->id;
-        $message->number = $inbox->takeMessageNumber();
+        $message->number = $number;
         $message->sender_type = $from->participantType();
         $message->sender_id = $from->participantId();
         $message->body = $body;

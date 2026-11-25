@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
+use App\Contracts\Web\ProtectedViews;
 use App\Events\Messages\NotificationsWithdrawn;
-use App\Events\Web\ProtectedViewInvalidated;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Tells a user's open tabs that receipts were taken from them, so they drop what they show before reading again; an
@@ -15,7 +14,7 @@ use Illuminate\Contracts\Events\Dispatcher;
  */
 final readonly class NotifyReceiptsWithdrawn implements Listener
 {
-    public function __construct(private Dispatcher $events) {}
+    public function __construct(private ProtectedViews $views) {}
 
     /**
      * Signals the recipient's own view channel; only a signed-in browser joins one, so a recipient without a view
@@ -23,6 +22,6 @@ final readonly class NotifyReceiptsWithdrawn implements Listener
      */
     public function handle(NotificationsWithdrawn $fact): void
     {
-        $this->events->dispatch(new ProtectedViewInvalidated([$fact->recipient->id]));
+        $this->views->invalidateFor([$fact->recipient->id]);
     }
 }

@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models\Inboxes;
 
+use App\Concerns\BoundedReads;
+use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Actors\StoredActor;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Messages\MessageParticipant;
+use App\Contracts\Records\ReadableModel;
 use App\Events\Inboxes\InboxJoined;
 use App\Events\Inboxes\InboxLeft;
 use App\Support\ActorIdentity;
@@ -26,14 +29,16 @@ use PhpOption\Option;
  * @property CarbonImmutable $joined_at
  * @property ?CarbonImmutable $left_at
  */
-final class InboxMember extends Model implements EventSource
+final class InboxMember extends Model implements EventSource, ReadableModel
 {
     /**
      * The most inboxes one read lists for an actor.
      */
     public const int ATTACHED_LIMIT = 200;
 
+    use BoundedReads;
     use HasUlids;
+    use Linkable;
     use RaisesEvents;
 
     public $timestamps = false;
@@ -49,22 +54,26 @@ final class InboxMember extends Model implements EventSource
         ];
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * Detaches the member from its inbox.
+     */
+    public function leave(CarbonImmutable $at): void
+    {
+        $this->left_at = $at;
+        $this->save();
+        $this->raise(new InboxLeft($this->inbox_id, ActorIdentity::fromStored($this->actor_type, $this->actor_id)));
+    }
+
     // ----------[ Queries ]----------
 
     /**
-     * Detaches the actor from the inbox; an actor not attached leaves nothing.
+     * The actor's active membership of the inbox; none when it is not attached.
      */
-    public static function leave(string $inboxId, ActorIdentity $actor, CarbonImmutable $at): void
+    public static function findActive(string $inboxId, ActorIdentity $actor): self|null
     {
-        $member = self::query()->active()->ofActor($actor)->ofInbox($inboxId)->first();
-
-        if ($member === null) {
-            return;
-        }
-
-        $member->left_at = $at;
-        $member->save();
-        $member->raise(new InboxLeft($inboxId, $actor));
+        return self::query()->active()->ofActor($actor)->ofInbox($inboxId)->first();
     }
 
     /**
@@ -129,7 +138,7 @@ final class InboxMember extends Model implements EventSource
      */
     public static function attachedTo(array $inboxIds, string $actorClass): array
     {
-        $type = $actorClass::storedType();
+        $type = ActorIdentity::storedTypeOf($actorClass);
 
         $actorIds = self::query()
             ->active()

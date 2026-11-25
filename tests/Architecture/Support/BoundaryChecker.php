@@ -15,9 +15,13 @@ use App\Support\Reflector;
 final readonly class BoundaryChecker
 {
     /**
-     * The domain foundation and the core: every domain uses them without declaring it, and they name no domain.
+     * The domain foundation and the core, with the factories of core's models: every domain uses them without declaring
+     * it, and they name no domain.
      */
-    private const array SHARED_NAMESPACES = ['App\\'];
+    private const array SHARED_NAMESPACES = [
+        'App\\',
+        'Database\\Factories\\',
+    ];
 
     private const string SHARED_PLACE = 'the core or the domain foundation';
 

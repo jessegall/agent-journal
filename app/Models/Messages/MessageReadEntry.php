@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models\Messages;
 
+use App\Concerns\BoundedReads;
+use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Messages\MessageParticipant;
 use App\Contracts\Messages\MessageReceiver;
 use App\Contracts\Messages\MessageSender;
+use App\Contracts\Records\ReadableModel;
 use App\Events\Messages\MessageRead;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
@@ -28,9 +31,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CarbonImmutable $last_read_at
  * @property Message $message
  */
-final class MessageReadEntry extends Model implements EventSource
+final class MessageReadEntry extends Model implements EventSource, ReadableModel
 {
+    use BoundedReads;
     use HasUlids;
+    use Linkable;
     use RaisesEvents;
 
     public $timestamps = false;

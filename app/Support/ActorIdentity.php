@@ -35,7 +35,17 @@ final readonly class ActorIdentity
      */
     public static function ofClass(string $class, string $id): self
     {
-        return new self($class::storedType(), $id);
+        return new self(self::storedTypeOf($class), $id);
+    }
+
+    /**
+     * The type an actor class is stored under.
+     *
+     * @param  class-string<StoredActor>  $class
+     */
+    public static function storedTypeOf(string $class): string
+    {
+        return $class::storedType();
     }
 
     /**

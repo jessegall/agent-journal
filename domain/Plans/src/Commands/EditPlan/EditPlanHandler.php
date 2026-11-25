@@ -6,10 +6,12 @@ namespace Domain\Plans\Commands\EditPlan;
 
 use Domain\Plans\Commands\Support\PlanCommandHandler;
 use Domain\Plans\Exceptions\PlanRevisionChanged;
-use Domain\Plans\Models\PlanReviewEdition;
+use Domain\Plans\Support\PlanApprovals;
 
 final readonly class EditPlanHandler extends PlanCommandHandler
 {
+    public function __construct(private PlanApprovals $approvals) {}
+
     /**
      * Gives the plan its new text as a new revision; an approval of the earlier content stays recorded but becomes
      * historical.
@@ -26,7 +28,7 @@ final readonly class EditPlanHandler extends PlanCommandHandler
             $command->type ?? $plan->type,
         );
 
-        PlanReviewEdition::retireCurrentApprovalOf($plan->id);
+        $this->approvals->retireCurrentOf($plan);
 
         return $plan->revision;
     }

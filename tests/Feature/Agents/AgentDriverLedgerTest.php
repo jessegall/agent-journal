@@ -30,6 +30,7 @@ use App\Commands\Sessions\ClaimStartGrant\ClaimStartGrantCommand;
 use App\Commands\Sessions\ReleaseAgentHold\ReleaseAgentHoldCommand;
 use App\Commands\Terminals\CancelKeyScript\CancelKeyScriptCommand;
 use App\Commands\Terminals\ResumeKeyScript\ResumeKeyScriptCommand;
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\AttachmentReferences;
@@ -102,6 +103,7 @@ use App\Support\StartGrant;
 use App\Support\StartProfiles;
 use App\Support\Ticks\ElapsedTime;
 use App\Values\AccountLabel;
+use App\Values\AgentText;
 use App\Values\BrowserInputCapabilities;
 use App\Values\DriverReceipt;
 use App\Values\ExecutionBudgets;
@@ -428,7 +430,8 @@ final class AgentDriverLedgerTest extends TestCase
             DriverRequest::query()->where('operation', DriverOperation::Wake)->sole()->progress,
         );
         // The journal sends the wake's whole prompt; the host makes none up.
-        $this->assertSame('Check your pending journal work.', $claimed->requests[0]->message);
+        $prompt = $this->app->make(AgentTexts::class)->render(AgentText::of('core.drivers.pending_work'));
+        $this->assertSame($prompt, $claimed->requests[0]->message);
     }
 
     /**
@@ -749,7 +752,7 @@ final class AgentDriverLedgerTest extends TestCase
         $request = DriverRequest::query()->findOrFail($refused['request_id']);
         $session = AgentSession::query()->findOrFail(array_search('01contractsession000000000', $fixedValues, true));
         $this->assertTrue($request->progress->isRefused());
-        $this->assertStringContainsString('the host never started it', (string) $session->end_evidence);
+        $this->assertStringContainsString($request->refusal_reason->value, (string) $session->end_evidence);
     }
 
     /**
