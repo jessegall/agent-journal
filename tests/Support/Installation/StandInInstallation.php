@@ -66,6 +66,26 @@ final readonly class StandInInstallation
     }
 
     /**
+     * Commits the removal of the files, each a path in the repository, as the branch's newest commit.
+     *
+     * @param  list<string>  $paths
+     */
+    public function pushRemoval(array $paths): string
+    {
+        File::delete(array_map(fn (string $path) => "{$this->repository()}/{$path}", $paths));
+
+        return $this->commit();
+    }
+
+    /**
+     * Whether the installation folder holds the file, a path relative to it.
+     */
+    public function holdsFile(string $path): bool
+    {
+        return File::exists("{$this->root()}/{$path}");
+    }
+
+    /**
      * Runs the project's update script once, as the updater's loop does every minute.
      */
     public function update(): Process

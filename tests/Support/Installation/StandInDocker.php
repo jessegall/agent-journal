@@ -33,6 +33,14 @@ final readonly class StandInDocker
     }
 
     /**
+     * Lets every Docker call succeed again after failCallsHolding.
+     */
+    public function stopFailingCalls(): void
+    {
+        File::delete("{$this->folder}/failing");
+    }
+
+    /**
      * Makes the next Docker call that holds the part fail once as Docker itself fails, with exit code 125.
      */
     public function failOnceAsDocker(string $part): void

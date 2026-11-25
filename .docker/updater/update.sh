@@ -55,6 +55,7 @@ extract_files() {
     git -C "$mirror" archive "$newest" | tar -x -C "$root"
     python3 .docker/updater/keep-built-images.py "$state/images-built-here.json" "$images"
     remove_deleted_files
+    remove_stray_code
     write_version_file
 }
 
@@ -64,6 +65,18 @@ remove_deleted_files() {
     changed_files --no-renames --diff-filter=D | while read -r gone; do
         rm -f "$root/$gone"
     done
+}
+
+# A failed install leaves the files it extracted, and one deleted again before the next commit is in neither diff:
+# every file of the code folders that the commit lacks goes, so the app never loads a class that is gone.
+remove_stray_code() {
+    local kept stray
+    kept=$(mktemp)
+    git -C "$mirror" ls-tree -r --name-only "$newest" -- app domain config routes database lang | sort > "$kept"
+    find app domain config routes database lang -type f 2>/dev/null | sort | comm -13 "$kept" - | while read -r stray; do
+        rm -f -- "./$stray"
+    done
+    rm -f -- "$kept"
 }
 
 # The version the journal shows: the commit, its branch and its release tag, if it has one. It lives in a folder the

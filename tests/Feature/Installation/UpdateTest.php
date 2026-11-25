@@ -29,6 +29,8 @@ final class UpdateTest extends TestCase
 
     private const string MIGRATE = 'migrate';
 
+    private const string STRAY_CLASS = 'app/Models/ProgramConversation.php';
+
     private const string SANDBOX_TOOL_CHECK = '--entrypoint socat';
 
     private const string MCP_RELAY_CHECK = '--entrypoint /opt/journal/bin/journal-mcp';
@@ -323,6 +325,25 @@ final class UpdateTest extends TestCase
         $this->assertNotSame(0, $update->getExitCode());
         $this->assertSame($pushed, $this->installation->failedCommit());
         $this->assertSame($installed, $this->installation->installedCommit());
+    }
+
+    public function test_a_file_a_failed_install_left_goes_once_a_later_commit_no_longer_holds_it(): void
+    {
+        $this->installation->update();
+        $this->installation->push([
+            self::STRAY_CLASS => '<?php',
+            'database/migrations/2026_01_01_000000_create_notes_table.php' => '<?php',
+        ]);
+        $this->installation->docker->failCallsHolding(self::MIGRATE);
+        $this->installation->update();
+        $this->installation->docker->stopFailingCalls();
+        $this->installation->pushRemoval([self::STRAY_CLASS]);
+
+        $update = $this->installation->update();
+
+        $this->assertSame(0, $update->getExitCode(), $update->getErrorOutput());
+        $this->assertFalse($this->installation->holdsFile(self::STRAY_CLASS));
+        $this->assertTrue($this->installation->holdsFile('database/migrations/2026_01_01_000000_create_notes_table.php'));
     }
 
     public function test_a_push_without_a_migration_runs_none(): void
