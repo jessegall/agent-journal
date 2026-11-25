@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support\Seeding;
 
 use App\Commands\Access\GrantEnvironmentAccess\GrantEnvironmentAccessCommand;
+use App\Commands\Agents\RecordHeartbeat\RecordHeartbeatCommand;
 use App\Commands\Inboxes\InstallInboxes\InstallInboxesCommand;
 use App\Contracts\Time\ServerClock;
 use App\Enums\Accounts\CommandEntry;
@@ -522,6 +523,20 @@ final class TestJournal
     public function signedStart(string $name, string $profile = 'main-agent'): TestStart
     {
         return $this->idleAgent($name, $profile)->startSession($name, $name)->testStartCalled($name);
+    }
+
+    /**
+     * The start's session beats now, as a running agent's does, so a signed call of it sends no heartbeat of its own.
+     */
+    public function heartbeatOf(TestStart|string $start): self
+    {
+        $session = $start instanceof TestStart ? $start->session : $this->sessionCalled($start);
+        $this->requests->during(
+            fn () => $this->requests->asAgent($session->agent_id, $session->id),
+            fn () => $this->run(new RecordHeartbeatCommand($session->id)),
+        );
+
+        return $this;
     }
 
     /**

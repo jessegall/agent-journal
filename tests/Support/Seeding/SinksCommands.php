@@ -51,6 +51,20 @@ trait SinksCommands
     }
 
     /**
+     * The reply the sink gives each command of these classes.
+     *
+     * @param  array<class-string<Command<mixed>>, mixed>  $replies
+     */
+    public function sinkReplies(array $replies): self
+    {
+        foreach ($replies as $command => $reply) {
+            $this->sinkReply($command, $reply);
+        }
+
+        return $this;
+    }
+
+    /**
      * @return list<SunkCommand>
      */
     public function dispatched(): array
@@ -120,6 +134,41 @@ trait SinksCommands
             if ($sunk->name() === $command) {
                 Assert::assertSame($expected, $sunk->trail, "{$command} skipped middleware of its frame.");
             }
+        }
+
+        return $this;
+    }
+
+    /**
+     * The sunk commands are exactly the expected ones, in order, each through every middleware of its frame; with none
+     * expected, nothing was sent.
+     *
+     * @param  list<ExpectedCommand>  $expected
+     */
+    public function assertDispatchedExactly(array $expected): self
+    {
+        $this->assertDispatchedInOrder($expected);
+
+        foreach (array_unique(array_map(fn (SunkCommand $sunk) => $sunk->name(), $this->dispatched())) as $name) {
+            $this->assertPassedEveryMiddleware($name);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Every sunk command is one the sender declares with #[Dispatches].
+     *
+     * @param  list<class-string<Command<mixed>>>  $declared
+     */
+    public function assertDispatchedOnlyDeclared(array $declared, string $sender): self
+    {
+        foreach ($this->dispatched() as $sunk) {
+            Assert::assertContains(
+$sunk->name(),
+ $declared,
+ "{$sender} sent {$sunk->name()}: declare it with #[Dispatches].",
+);
         }
 
         return $this;

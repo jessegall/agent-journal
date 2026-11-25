@@ -1,0 +1,215 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Support\Entries;
+
+use App\Attributes\Bus\Dispatches;
+use App\Contracts\Bus\Command;
+use App\Http\Controllers\Web\PageController;
+use App\Support\EnrolledHost;
+use App\Support\ReflectedType;
+use App\Support\UiDeclarations;
+use App\Support\Web\DeclaredRouteKey;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Route;
+use Illuminate\Routing\Router;
+use Illuminate\Testing\TestResponse;
+use Inertia\Testing\AssertableInertia;
+use Symfony\Component\HttpFoundation\Response;
+use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsRoute;
+use Tests\Support\Seeding\TestJournal;
+use Tests\TestCase;
+
+/**
+ * The entry test of one route method, named by the class's #[TestsRoute]: the arranged call reaches the route as its
+ * caller, answers with a success or a redirect, and sends on exactly the commands expected, each one the action
+ * declares with #[Dispatches] and each through every middleware; a page also renders its declared component.
+ */
+abstract class RouteEntryTestCase extends TestCase
+{
+    use CommitsHookRows;
+
+    /**
+     * None by name: the commands of the test commit, as a repeatable read one must, and what the test wrote is emptied
+     * when it ends.
+     */
+    protected const array TABLES = [];
+
+    abstract protected function arrange(TestJournal $journal): RouteCall;
+
+    public function test_the_request_is_reached_and_dispatches_what_it_declares(): void
+    {
+        $call = $this->arrangedCall();
+        $this->journal->sinkCommands()->sinkReplies($call->replies);
+
+        $response = $this->send($call, $call->caller);
+
+        $this->assertLessThan(400, $response->status(), (string) $response->getContent());
+        $this->journal->assertDispatchedOnlyDeclared(
+            $this->declaredCommands(),
+            (string) $this->route()->getControllerClass(),
+        )
+            ->assertDispatchedExactly($call->expected);
+        $this->assertRendersItsPage($response);
+    }
+
+    /**
+     * The arranged call, checked against the caller the route's middleware lets in.
+     */
+    protected function arrangedCall(): RouteCall
+    {
+        $call = $this->arrange($this->journal);
+        $answers = Caller::of($this->route()->gatherMiddleware());
+
+        $this->assertSame(
+            $answers,
+            $call->caller,
+            "{$this->entry()->entryName()} answers a {$answers->value} caller: arrange the call as one.",
+        );
+
+        if ($call->caller === Caller::Agent) {
+            $this->journal->heartbeatOf($this->startOf($call));
+        }
+
+        return $call;
+    }
+
+    /**
+     * Sends the call's method, address and payload as the caller, with the request verb of the test journal that
+     * signs as that caller.
+     *
+     * @return TestResponse<Response>
+     */
+    protected function send(RouteCall $call, Caller $caller): TestResponse
+    {
+        $method = $this->entry()->method;
+        [$parameters, $query] = $this->addressOf($call);
+        $name = $this->entry()->name;
+        $target = $this->targetOf($call);
+
+        return match ($caller) {
+            Caller::Agent => $this->journal->agentCall(
+                $this->startOf($call),
+                $method,
+                $target,
+                $call->payload,
+                headers: $call->headers,
+            ),
+            Caller::SharedHost, Caller::RelayHost => $this->journal->hostCall(
+                $this->hostOf($call),
+                $method,
+                $target,
+                $call->payload,
+                headers: $call->headers,
+            ),
+            Caller::DeviceGrant => $this->json(
+                $method,
+                $target,
+                $call->payload,
+                [...$call->headers, 'Authorization' => "Bearer {$call->signer}"],
+            ),
+            Caller::Guest, Caller::Public, Caller::User => $this->journal->jsonRoute(
+                $method,
+                $name,
+                $parameters,
+                $query,
+                $call->payload,
+                $call->headers,
+            ),
+        };
+    }
+
+    /**
+     * The address the call goes to: the route with its parameters and query.
+     */
+    protected function targetOf(RouteCall $call): string
+    {
+        [$parameters, $query] = $this->addressOf($call);
+
+        return route($this->entry()->name, [...$parameters, ...$query], false);
+    }
+
+    protected function route(): Route
+    {
+        $route = $this->app->make(Router::class)->getRoutes()->getByName($this->entry()->name);
+        $this->assertNotNull($route, "No route is named {$this->entry()->name}.");
+
+        return $route;
+    }
+
+    protected function entry(): TestsRoute
+    {
+        return ReflectedType::of($this)->attribute(TestsRoute::class);
+    }
+
+    /**
+     * The route's parameters and query: those the call names, or those a recorded page request's address holds, which
+     * must be an address of this route.
+     *
+     * @return array{array<string, mixed>, array<string, mixed>}
+     */
+    private function addressOf(RouteCall $call): array
+    {
+        if ($call->recordedAddress === null) {
+            return [$call->parameters, $call->query];
+        }
+
+        $request = Request::create($call->recordedAddress, $this->entry()->method);
+        $matched = $this->app->make(Router::class)->getRoutes()->match($request);
+        $this->assertSame($this->entry()->name, $matched->getName(), "{$call->recordedAddress} is not this route.");
+
+        return [$matched->parameters(), $request->query->all()];
+    }
+
+    private function startOf(RouteCall $call): TestStart|string
+    {
+        $this->assertNotInstanceOf(EnrolledHost::class, $call->signer, 'An agent call is signed by a start.');
+        $this->assertNotNull($call->signer, 'An agent call is signed by a start: name it in RouteCall::as.');
+
+        return $call->signer;
+    }
+
+    private function hostOf(RouteCall $call): EnrolledHost
+    {
+        $this->assertInstanceOf(EnrolledHost::class, $call->signer, 'A host call is signed by the host it names.');
+
+        return $call->signer;
+    }
+
+    /**
+     * The commands the route's action declares with #[Dispatches].
+     *
+     * @return list<class-string<Command<mixed>>>
+     */
+    private function declaredCommands(): array
+    {
+        $route = $this->route();
+        $controller = (string) $route->getControllerClass();
+        // Laravel names an invokable controller's action by the controller itself.
+        $action = $route->getActionMethod() === $controller ? '__invoke' : $route->getActionMethod();
+        $method = ReflectedType::of($controller)->method($action);
+
+        return array_map(
+            fn (Dispatches $dispatches) => $dispatches->command,
+            iterator_to_array($method->attributes(Dispatches::class), false),
+        );
+    }
+
+    /**
+     * @param  TestResponse<Response>  $response
+     */
+    private function assertRendersItsPage(TestResponse $response): void
+    {
+        $route = $this->route();
+
+        if ($this->entry()->method !== 'GET' || $route->getControllerClass() !== PageController::class) {
+            return;
+        }
+
+        $component = $this->app->make(UiDeclarations::class)->page(DeclaredRouteKey::of($route))->componentName();
+        $response->assertInertia(fn (AssertableInertia $page) => $page->component($component, false));
+    }
+}
