@@ -35,8 +35,8 @@ final class HostDescriptorsReportTest extends TestCase
         $this->notify($host, array_map(fn (string $key) => $this->descriptor($key), $keys))->assertNoContent();
 
         $stored = Host::query()->findOrFail($host->hostId);
-        $this->assertSame($keys, array_column($stored->descriptors, 'key'));
-        $this->assertSame([null, null, null, null], array_column($stored->descriptors, 'unavailable_reason'));
+        $this->assertSame($keys, array_column($stored->descriptors->toArray(), 'key'));
+        $this->assertSame([null, null, null, null], array_column($stored->descriptors->toArray(), 'unavailableReason'));
     }
 
     public function test_an_unknown_key_is_unavailable_while_the_others_stay_selectable(): void
@@ -51,7 +51,7 @@ final class HostDescriptorsReportTest extends TestCase
 
         $this->assertSame(
             [null, HostDescriptorEnrollment::UNKNOWN_DRIVER],
-            array_column(Host::query()->findOrFail($host->hostId)->descriptors, 'unavailable_reason'),
+            array_column(Host::query()->findOrFail($host->hostId)->descriptors->toArray(), 'unavailableReason'),
         );
     }
 
@@ -63,7 +63,7 @@ final class HostDescriptorsReportTest extends TestCase
         $this->notify($host, [$this->descriptor('claude-code'), $this->descriptor('claude-code')])
             ->assertStatus(409);
 
-        $this->assertSame([], Host::query()->findOrFail($host->hostId)->descriptors);
+        $this->assertSame([], Host::query()->findOrFail($host->hostId)->descriptors->toArray());
     }
 
     /**

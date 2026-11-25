@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Models;
 
+use Spatie\LaravelData\DataCollection;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -27,7 +28,7 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property string $name
  * @property string $summary
- * @property list<array{id: string, title: string, runsWhen: string, doneWhen: string}> $steps
+ * @property DataCollection<int, SequenceStepData> $steps
  * @property int $version
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -58,7 +59,7 @@ final class Sequence extends Model implements EventSource, ReadableModel
     protected function casts(): array
     {
         return [
-            'steps' => 'array',
+            'steps' => DataCollection::class.':'.SequenceStepData::class,
             'version' => 'integer',
         ];
     }
@@ -101,11 +102,16 @@ final class Sequence extends Model implements EventSource, ReadableModel
 
     /**
      * @param  list<SequenceStep>  $steps
-     * @return list<array{id: string, title: string, runsWhen: string, doneWhen: string}>
+     * @return list<SequenceStepData>
      */
     private static function stored(array $steps): array
     {
-        return array_map(fn (SequenceStep $step) => $step->toArray(), $steps);
+        return array_map(fn (SequenceStep $step) => SequenceStepData::from([
+            'id' => $step->id,
+            'title' => $step->title,
+            'runsWhen' => $step->runsWhen,
+            'doneWhen' => $step->doneWhen,
+        ]), $steps);
     }
 
     // ----------[ Transformers ]----------
@@ -115,7 +121,7 @@ final class Sequence extends Model implements EventSource, ReadableModel
      */
     public function stepList(): array
     {
-        return array_values(SequenceStepData::collect($this->steps));
+        return array_values($this->steps->all());
     }
 
     // ----------[ Asserts ]----------

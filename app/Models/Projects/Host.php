@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
+use Spatie\LaravelData\DataCollection;
+use App\Data\Hosts\EnrolledDescriptorData;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -46,7 +48,7 @@ use Illuminate\Database\Query\Builder as QueryBuilder;
  * @property list<string> $start_roots
  * @property ArrangementType $arrangement
  * @property array<string, StoredReport> $protection
- * @property list<array{key: string, build: string, arrangement: string, placement: string, family: string|null, driver_type: string|null, unavailable_reason: string|null}> $descriptors
+ * @property DataCollection<int, EnrolledDescriptorData> $descriptors
  * @property CarbonImmutable|null $revoked_at
  * @property CarbonImmutable|null $last_answered_at
  * @property CarbonImmutable|null $failing_since
@@ -81,7 +83,7 @@ final class Host extends Model implements EventSource, ReadableModel
             'arrangement' => ArrangementType::class,
             'start_roots' => 'array',
             'protection' => 'array',
-            'descriptors' => 'array',
+            'descriptors' => DataCollection::class.':'.EnrolledDescriptorData::class,
             'browser_input' => 'boolean',
             'browser_keys' => 'boolean',
             'browser_paste' => 'boolean',
@@ -131,7 +133,7 @@ final class Host extends Model implements EventSource, ReadableModel
     /**
      * Keeps the drivers the host enrolled, in place of the ones it enrolled before.
      *
-     * @param  list<array{key: string, build: string, arrangement: string, placement: string, family: string|null, driver_type: string|null, unavailable_reason: string|null}>  $descriptors
+     * @param  list<EnrolledDescriptorData>  $descriptors
      */
     public function recordDescriptors(array $descriptors): void
     {
@@ -279,12 +281,8 @@ final class Host extends Model implements EventSource, ReadableModel
         ExecutionModeType $placement,
         DriverType $driverType,
     ): bool {
-        foreach ($this->availableDescriptors() as $descriptor) {
-            if ($descriptor['family'] === $driver
-                && $descriptor['driver_type'] === $driverType->value
-                && $descriptor['build'] === $build
-                && $descriptor['arrangement'] === $this->arrangement->value
-                && $descriptor['placement'] === $placement->value) {
+        foreach ($this->descriptors as $descriptor) {
+            if ($descriptor->runs($driver, $build, $this->arrangement, $placement, $driverType)) {
                 return true;
             }
         }
@@ -297,8 +295,8 @@ final class Host extends Model implements EventSource, ReadableModel
      */
     public function declaresDriver(string $family): bool
     {
-        foreach ($this->availableDescriptors() as $descriptor) {
-            if ($descriptor['family'] === $family) {
+        foreach ($this->descriptors as $descriptor) {
+            if ($descriptor->isOfAvailableFamily($family)) {
                 return true;
             }
         }
@@ -446,17 +444,6 @@ final class Host extends Model implements EventSource, ReadableModel
     }
 
     // ----------[ Internals ]----------
-
-    /**
-     * @return list<array{key: string, build: string, arrangement: string, placement: string, family: string|null, driver_type: string|null, unavailable_reason: string|null}>
-     */
-    private function availableDescriptors(): array
-    {
-        return array_values(array_filter(
-            $this->descriptors,
-            fn (array $descriptor) => $descriptor['unavailable_reason'] === null,
-        ));
-    }
 
     // ----------[ Queries ]----------
 

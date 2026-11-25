@@ -29,7 +29,7 @@ final class StoredSequenceTest extends TestCase
         $sequence = Sequence::create('Release', 'Ship a version', [self::step('tests')]);
 
         $this->assertSame(1, $sequence->fresh()?->version);
-        $this->assertEquals([self::step('tests')->toArray()], $sequence->fresh()?->steps);
+        $this->assertEquals([self::step('tests')->toArray()], $sequence->fresh()?->steps->toArray());
         $this->assertEquals([new SequenceDefined($sequence->id)], $sequence->takeRaisedEvents());
     }
 

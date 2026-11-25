@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Data\Hosts\EnrolledDescriptorData;
 use App\Enums\DriverType;
 
 /**
@@ -32,19 +33,18 @@ final readonly class EnrolledDescriptor
     }
 
     /**
-     * @return array{key: string, build: string, arrangement: string, placement: string,
-     *     family: string|null, driver_type: string|null, unavailable_reason: string|null}
+     * The descriptor as the host row keeps it.
      */
-    public function stored(): array
+    public function stored(): EnrolledDescriptorData
     {
-        return [
-            'key' => (string) $this->descriptor->key,
-            'build' => $this->descriptor->build,
-            'arrangement' => $this->descriptor->arrangement->value,
-            'placement' => $this->descriptor->placement->value,
-            'family' => $this->family,
-            'driver_type' => $this->driverType?->value,
-            'unavailable_reason' => $this->unavailableReason,
-        ];
+        return new EnrolledDescriptorData(
+            (string) $this->descriptor->key,
+            $this->descriptor->build,
+            $this->descriptor->arrangement,
+            $this->descriptor->placement,
+            $this->family,
+            $this->driverType,
+            $this->unavailableReason,
+        );
     }
 }

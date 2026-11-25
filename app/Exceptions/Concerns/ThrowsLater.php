@@ -8,9 +8,7 @@ use App\Exceptions\Support\ThrowingCall;
 use Throwable;
 
 /**
- * Lets an exception be thrown later: TaskMissing::throwing()->forId($id) is a closure that makes the exception with
- * forId($id) and throws it, for a read that fails with it, such as ->firstOr(TaskMissing::throwing()->forId($id)).
- * The exception names itself: @use ThrowsLater<TaskMissing>.
+ * Lets an exception be thrown later
  *
  * @template TException of Throwable
  */
