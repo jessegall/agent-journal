@@ -16,7 +16,7 @@ require_once dirname(__DIR__, 2).'/vendor/autoload.php';
 require_once __DIR__.'/models.php';
 
 /** The array casts Laravel writes as a plain string. */
-const ARRAY_CASTS = '/^\s*\'(\w+)\' => \'(array|json|object|collection|encrypted:array|encrypted:collection)\',/m';
+const ARRAY_CASTS = '/\'(\w+)\' => \'(array|json|object|collection|encrypted:array|encrypted:collection)\'/';
 
 /** A documented type that holds only scalars: a list or a map of strings, ints, floats or bools, maybe null. */
 const SCALAR_ARRAY = '/^(?:list|array|non-empty-list|non-empty-array)<(?:(?:string|int|array-key), ?)?'
