@@ -14,18 +14,8 @@ use App\Events\Hooks\HelperStopHeld;
 use App\Events\Hooks\StateTypesRequested;
 use App\Events\Hooks\ToolCallFinished;
 use App\Events\Links\LinksRemoved;
-use App\Events\Messages\ChatMemberJoined;
-use App\Events\Messages\ChatMemberLeft;
-use App\Events\Messages\ChatMessageAccepted;
-use App\Events\Messages\ChatReceiptPresented;
-use App\Events\Messages\ChatRoleChanged;
-use App\Events\Messages\MessageClaimed;
-use App\Events\Messages\MessageClaimReleased;
 use App\Events\Messages\MessageRead;
 use App\Events\Messages\MessageSent;
-use App\Events\Messages\ReceiptDeliveriesScheduled;
-use App\Events\Messages\ReceiptDeliveryChanged;
-use App\Events\Messages\SpeechOpportunitySettled;
 use App\Events\Processes\BundleActivated;
 use App\Events\Processes\EvidenceFoundInvalid;
 use App\Events\Processes\OutputChunkCommitted;
@@ -186,12 +176,6 @@ final class EventPayloads
                     'target' => 'App\Support\RecordIdentity',
                 ],
             ],
-            MessageClaimReleased::class => [
-                'fields' => [
-                    'messageId' => 'string',
-                    'claim' => 'App\Support\AssignmentReference',
-                ],
-            ],
             MessageRead::class => [
                 'fields' => [
                     'messageId' => 'string',
@@ -205,70 +189,6 @@ final class EventPayloads
                     'author' => 'App\Support\ActorIdentity',
                     'sourceInboxId' => 'string',
                     'destinationInboxId' => 'string',
-                ],
-            ],
-            MessageClaimed::class => [
-                'fields' => [
-                    'messageId' => 'string',
-                    'inboxId' => 'string',
-                    'claimant' => 'App\Support\ActorIdentity',
-                ],
-            ],
-            ChatMessageAccepted::class => [
-                'fields' => [
-                    'messageId' => 'string',
-                    'author' => 'App\Support\ActorIdentity',
-                    'inboxId' => 'string',
-                ],
-            ],
-            ChatMemberJoined::class => [
-                'fields' => [
-                    'intervalId' => 'string',
-                    'inboxId' => 'string',
-                    'member' => 'App\Support\ActorIdentity',
-                ],
-            ],
-            ChatMemberLeft::class => [
-                'fields' => [
-                    'intervalId' => 'string',
-                    'inboxId' => 'string',
-                    'member' => 'App\Support\ActorIdentity',
-                    'reason' => 'App\Enums\LeaveReason',
-                ],
-            ],
-            ChatRoleChanged::class => [
-                'fields' => [
-                    'intervalId' => 'string',
-                    'inboxId' => 'string',
-                    'member' => 'App\Support\ActorIdentity',
-                    'role' => 'App\Enums\IntervalRole',
-                ],
-            ],
-            ChatReceiptPresented::class => [
-                'fields' => [
-                    'receiptId' => 'string',
-                    'messageId' => 'string',
-                    'intervalId' => 'string',
-                ],
-            ],
-            ReceiptDeliveriesScheduled::class => [
-                'fields' => [
-                    'deliveryIds' => 'array',
-                ],
-            ],
-            ReceiptDeliveryChanged::class => [
-                'fields' => [
-                    'deliveryId' => 'string',
-                    'receiptId' => 'string',
-                    'state' => 'App\Enums\Messages\WakeState',
-                ],
-            ],
-            SpeechOpportunitySettled::class => [
-                'fields' => [
-                    'opportunityId' => 'string',
-                    'userRootId' => 'string',
-                    'speaker' => 'App\Support\ActorIdentity',
-                    'state' => 'App\Enums\SpeechOpportunityState',
                 ],
             ],
             EngineTicked::class => [

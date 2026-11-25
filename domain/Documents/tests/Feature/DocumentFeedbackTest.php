@@ -67,6 +67,6 @@ final class DocumentFeedbackTest extends TestCase
 
     private function wasSent(string $body): bool
     {
-        return Message::query()->acrossInboxes()->where('body', $body)->exists();
+        return Message::query()->withoutGlobalScopes()->where('body', $body)->exists();
     }
 }

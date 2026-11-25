@@ -25,7 +25,6 @@ use App\Commands\Drivers\RecordRuntime\RecordRuntimeCommand;
 use App\Commands\Drivers\ResolveDriverDelivery\ResolveDriverDeliveryCommand;
 use App\Commands\Drivers\RetryDriverRequest\RetryDriverRequestCommand;
 use App\Commands\Drivers\SendDriverRequestAgain\SendDriverRequestAgainCommand;
-use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
 use App\Commands\Sessions\ClaimStartGrant\ClaimStartGrantCommand;
 use App\Commands\Sessions\ReleaseAgentHold\ReleaseAgentHoldCommand;
 use App\Commands\Terminals\CancelKeyScript\CancelKeyScriptCommand;
@@ -48,8 +47,6 @@ use App\Enums\Drivers\HostWakeRefusal;
 use App\Enums\Drivers\RecoveryAction;
 use App\Enums\Drivers\RequestOutcome;
 use App\Enums\Drivers\RequestProgress;
-use App\Enums\IntervalRole;
-use App\Enums\MessageBatchState;
 use App\Enums\Projects\ArrangementType;
 use App\Enums\Runs\RuntimeActivity;
 use App\Enums\Sessions\HostRefusal;
@@ -64,25 +61,18 @@ use App\Exceptions\HostReportRefused;
 use App\Exceptions\KeyScriptRefused;
 use App\Exceptions\StaleProcessGeneration;
 use App\Exceptions\StopOutdated;
-use App\Models\Access\User;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
-use App\Models\Chats\InboxInterval;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\DriverTurn;
 use App\Models\Drivers\RuntimeEvent;
-use App\Models\Inboxes\Inbox;
-use App\Models\Messages\MessageBatch;
 use App\Models\Projects\Host;
-use App\Models\Records\GlobalGroup;
 use App\Models\Sessions\SessionPolicy;
 use App\Models\Sessions\SessionProcess;
-use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
-use App\Support\ActorIdentity;
 use App\Support\AgentStatus;
 use App\Support\ArrangementSetting;
 use App\Support\ClaimedRequests;
@@ -93,12 +83,10 @@ use App\Support\EngineTickedDelivery;
 use App\Support\EnrolledHost;
 use App\Support\HeartbeatService;
 use App\Support\InitialWakeSettlement;
-use App\Support\MessageBatchService;
 use App\Support\NativeTurns;
 use App\Support\OpenedRuntime;
 use App\Support\OutsideCommandAllowance;
 use App\Support\PendingWorkSources;
-use App\Support\RequestKey;
 use App\Support\StartGrant;
 use App\Support\StartProfiles;
 use App\Support\Ticks\ElapsedTime;
@@ -126,7 +114,6 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensPairChats;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsHostCalls;
-use Tests\Support\TestActors;
 use Tests\Support\TestStartAuthority;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
@@ -170,29 +157,6 @@ final class AgentDriverLedgerTest extends TestCase
     ];
 
     private const string FOLDER = '/work/project';
-
-    public function test_a_batch_is_taken_by_the_turn_its_prompt_starts_and_settles_when_that_turn_ends(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-        GlobalGroup::installJournal();
-        $inbox = Inbox::create('test-chat', (string) str()->ulid());
-        $interval = InboxInterval::create($inbox->id, TestActors::agentIdentity(7), IntervalRole::Member, 1);
-        $at = CarbonImmutable::now();
-        $batch = MessageBatch::create($interval->id, $opened->sessionId, 1, 'thread-1', 1, $at, $at->addHour());
-
-        $this->asSystem(
-            new NotifyDriverTurnCommand($host->hostId, $opened->runtimeId, 1, 'prompt-1', false, 'opus', 'high', null),
-        );
-        $turn = DriverTurn::query()->where('agent_runtime_id', $opened->runtimeId)->sole();
-        $this->assertSame($turn->id, $batch->refresh()->driver_turn_id);
-
-        $this->asSystem(
-            new NotifyDriverTurnCommand($host->hostId, $opened->runtimeId, 1, 'prompt-1', true, 'opus', 'high', 'finished'),
-        );
-        $this->app->make(MessageBatchService::class)->sweep($at->addMinute());
-
-        $this->assertNotSame(MessageBatchState::Dispatched, $batch->refresh()->state);
-    }
 
     public function test_opening_a_runtime_records_its_first_delivery(): void
     {
@@ -892,26 +856,6 @@ final class AgentDriverLedgerTest extends TestCase
         $this->expectException(HostReportRefused::class);
 
         $this->asSystem(new ClaimStartGrantCommand($other->hostId, $opened->runtimeId));
-    }
-
-    public function test_a_new_process_that_comes_up_idle_with_unshown_chat_text_asks_for_one_wake(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-        $agent = ActorIdentity::of(AgentSession::query()->with('agent')->findOrFail($opened->sessionId)->agent);
-        $user = User::factory()->create();
-        $chat = $this->pairChat(ActorIdentity::of($user), $agent);
-        $this->app->instance(AccessSettings::class, new AccessSettings($user->id));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($user->id), new OwnerAuthority('test'));
-        $this->app->make(RequestKey::class)->set((string) Str::ulid());
-        $this->app->make(CommandBus::class)->run(new PostChatMessageCommand($chat->id, 'Plan?', 'plan-1'));
-        $this->app->make(RequestKey::class)->forget();
-        $asked = $this->wakesAskedOf($opened);
-        $restart = new NotifyRuntimeActivityCommand($host->hostId, $opened->runtimeId, RuntimeActivity::Idle, HoldReason::None, 2);
-
-        $this->asSystem($restart);
-        $this->asSystem($restart);
-
-        $this->assertSame($asked + 1, $this->wakesAskedOf($opened));
     }
 
     public function test_a_new_process_with_nothing_unshown_asks_for_no_wake(): void

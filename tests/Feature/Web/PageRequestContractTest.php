@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
+use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Enums\Accounts\SignInMethod;
 use App\Enums\Messages\InboxPermission;
 use App\Models\Access\EnvironmentUserGrant;
@@ -16,7 +16,7 @@ use App\Support\ActorIdentity;
 use App\Support\DefaultDrivers;
 use App\Values\AccountLabel;
 use Carbon\CarbonImmutable;
-use Domain\Chat\Commands\CreateGroupChat\CreateGroupChatCommand;
+use Domain\Chat\Support\ChatInboxes;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Finder\Finder;
 use Tests\Support\Agents\HostContract;
@@ -111,8 +111,8 @@ final class PageRequestContractTest extends TestCase
         $this->member = $member;
         $this->inboxOf(ActorIdentity::of($member));
         $this->startUserRequestAs($owner->id);
-        $inboxId = $this->runOnBus(new CreateGroupChatCommand('Design', [$member->id]));
-        $messageId = $this->runOnBus(new PostChatMessageCommand($inboxId, 'Hello', 'recorded-message'));
+        $inboxId = $this->app->make(ChatInboxes::class)->openGroup('Design', [ActorIdentity::of($member)]);
+        $messageId = $this->runOnBus(new SendMessageCommand($inboxId, 'Hello'));
         $account = Account::create(DefaultDrivers::CLAUDE_CODE, AccountLabel::from('Work'), '/journal/accounts/recorded');
         $question = $this->askInboxOf(ActorIdentity::of($owner), 'Which plan first?');
         $attempt = SignInAttempt::create(

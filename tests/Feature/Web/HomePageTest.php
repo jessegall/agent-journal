@@ -4,26 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Enums\LeaveReason;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
-use App\Models\Chats\InboxInterval;
 use App\Models\Messages\Message;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\StartSessions;
-use Carbon\CarbonImmutable;
 use Domain\Chat\Http\Requests\ConversationRequest;
-use Domain\Chat\Support\SentMessageAnswer;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
-use Inertia\Support\SessionKey;
 use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
@@ -283,111 +277,6 @@ final class HomePageTest extends TestCase
             ->assertJson(['code' => 'signed-out']);
     }
 
-    public function test_a_repeated_request_key_answers_the_first_message_and_writes_no_second_row(): void
-    {
-        $send = [...$this->pair(), 'body' => 'Hello once', ...$this->seenSession()];
-
-        $first = $this->sentMessageOf($this->keyedSend('key-1', $send), 'key-1');
-        $again = $this->sentMessageOf($this->keyedSend('key-1', $send), 'key-1');
-
-        $this->assertSame($first, $again);
-        $this->assertSame(1, Message::query()->withoutGlobalScopes()->count());
-    }
-
-    public function test_two_keys_with_the_same_text_make_two_messages(): void
-    {
-        $send = [...$this->pair(), 'body' => 'Hello twice', ...$this->seenSession()];
-
-        $this->sentMessageOf($this->keyedSend('key-1', $send), 'key-1');
-        $this->sentMessageOf($this->keyedSend('key-2', $send), 'key-2');
-
-        $this->assertSame(2, Message::query()->withoutGlobalScopes()->count());
-    }
-
-    public function test_a_used_key_with_other_text_is_refused_as_a_key_conflict(): void
-    {
-        $this->sentMessageOf($this->keyedSend('key-1', [...$this->pair(), 'body' => 'First text', ...$this->seenSession()]), 'key-1');
-
-        $this->keyedSend('key-1', [...$this->pair(), 'body' => 'Other text', ...$this->seenSession()])
-            ->assertRedirect('/')
-            ->assertSessionHas('refusal_code', 'request-key-conflict');
-        $this->assertSame(1, Message::query()->withoutGlobalScopes()->count());
-    }
-
-    public function test_a_send_to_a_session_that_changed_before_it_ran_is_refused_with_no_row_and_its_key_free(): void
-    {
-        $stale = [...$this->pair(), 'body' => 'Still there?', ...$this->seenSession(), 'expectedGeneration' => 99];
-
-        $this->keyedSend('key-1', $stale)->assertRedirect('/')->assertSessionHas('refusal_code', 'stale-generation');
-        $this->assertSame(0, Message::query()->withoutGlobalScopes()->count());
-
-        $this->sentMessageOf($this->keyedSend('key-2', [...$stale, ...$this->seenSession()]), 'key-2');
-        $this->assertSame(1, Message::query()->withoutGlobalScopes()->count());
-    }
-
-    public function test_a_caller_who_no_longer_sees_the_message_gets_neither_text_nor_id_on_a_repeat(): void
-    {
-        $send = [...$this->pair(), 'body' => 'Private words', ...$this->seenSession()];
-        $messageId = $this->sentMessageOf($this->keyedSend('key-1', $send), 'key-1');
-        $this->leaveTheChatOf($messageId);
-
-        $answer = $this->keyedSend('key-1', $send);
-
-        $answer->assertRedirect('/')->assertSessionHasErrors();
-        $this->assertStringNotContainsString($messageId, (string) $answer->getContent());
-        $this->assertStringNotContainsString(self::PRIVATE_BODY, (string) $answer->getContent());
-    }
-
-    public function test_a_confirmed_send_is_looked_up_by_its_key_with_its_id_and_never_cached(): void
-    {
-        $send = [...$this->pair(), 'body' => 'Hi', ...$this->seenSession()];
-        $messageId = $this->sentMessageOf($this->keyedSend('key-1', $send), 'key-1');
-
-        $this->outcomeOf('key-1')
-            ->assertOk()
-            ->assertHeader('Cache-Control', self::NO_STORE_HEADER)
-            ->assertExactJson(['outcome' => 'confirmed', 'messageId' => $messageId]);
-    }
-
-    public function test_an_unknown_key_or_another_target_is_not_yet_observable_and_reveals_nothing(): void
-    {
-        $this->sentMessageOf($this->keyedSend('key-1', [...$this->pair(), 'body' => 'Hi', ...$this->seenSession()]), 'key-1');
-
-        $this->outcomeOf('key-2')->assertExactJson(['outcome' => 'not-yet-observable']);
-        $this->outcomeOf('key-1', ['inboxId' => TestIds::of(99999)])
-            ->assertExactJson(['outcome' => 'not-yet-observable']);
-        $this->outcomeOf('key-1', ['operation' => 'reply', 'messageId' => TestIds::of(99999)])
-            ->assertExactJson(['outcome' => 'not-yet-observable']);
-    }
-
-    public function test_an_expired_receipt_is_expired_and_a_recorded_refusal_is_refused_with_its_code(): void
-    {
-        $this->sentMessageOf($this->keyedSend('key-1', [...$this->pair(), 'body' => 'Hi', ...$this->seenSession()]), 'key-1');
-        $this->sentMessageOf($this->keyedSend('key-2', [...$this->pair(), 'body' => 'Hello', ...$this->seenSession()]), 'key-2');
-        DB::table('command_receipts')->where('request_key', 'key-1')->update(['answers_until' => now()->subMinute()]);
-        DB::table('command_receipts')->where('request_key', 'key-2')->update([
-            'state' => 'refused',
-            'refusal_code' => 'conflict',
-            'refusal_message' => 'The conversation changed.',
-        ]);
-
-        $this->outcomeOf('key-1')->assertExactJson(['outcome' => 'expired']);
-        $this->outcomeOf('key-2')->assertExactJson([
-            'outcome' => 'refused',
-            'code' => 'conflict',
-            'message' => 'The conversation changed.',
-        ]);
-    }
-
-    public function test_a_caller_who_lost_sight_of_the_message_is_told_it_is_no_longer_visible_without_its_id(): void
-    {
-        $send = [...$this->pair(), 'body' => 'Hi', ...$this->seenSession()];
-        $messageId = $this->sentMessageOf($this->keyedSend('key-1', $send), 'key-1');
-        $this->leaveTheChatOf($messageId);
-
-        $this->outcomeOf('key-1')->assertExactJson(['outcome' => 'no-longer-visible']);
-    }
-
     /**
      * @param  array<string, string>  $changes
      */
@@ -415,16 +304,6 @@ final class HomePageTest extends TestCase
     }
 
     /**
-     * The id of the message a send went back to the page with, after checking it went under its own request key.
-     */
-    private function sentMessageOf(TestResponse $send, string $key): string
-    {
-        $send->assertRedirect('/')->assertSessionHas(SessionKey::FLASH_DATA.'.'.SentMessageAnswer::REQUEST_KEY, $key);
-
-        return $send->getSession()->get(SessionKey::FLASH_DATA)[SentMessageAnswer::SENT_MESSAGE];
-    }
-
-    /**
      * The pair's chat inbox and a request key of the send's own.
      *
      * @return array{inboxId: string, requestKey: string}
@@ -446,19 +325,5 @@ final class HomePageTest extends TestCase
             'expectedSessionId' => $this->session->id,
             'expectedGeneration' => AgentRuntime::ofSession($this->session->id)?->process_generation ?? 0,
         ];
-    }
-
-    /**
-     * The owner leaves the chat the message was posted in, so it no longer sees the message.
-     */
-    private function leaveTheChatOf(string $messageId): void
-    {
-        $message = Message::query()->acrossInboxes()->findOrFail($messageId);
-
-        InboxInterval::query()
-            ->activeFor($message->destination_inbox_id)
-            ->heldBy(ActorIdentity::of($this->owner))
-            ->sole()
-            ->end(LeaveReason::Left, CarbonImmutable::now());
     }
 }

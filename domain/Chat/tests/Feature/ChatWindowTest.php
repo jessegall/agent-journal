@@ -4,20 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Feature;
 
-use App\Commands\Messages\AskMessage\AskMessageCommand;
 use App\Contracts\Actors\Actor;
 use App\Contracts\Actors\ActorInboxResolver;
-use App\Contracts\Bus\CommandBus;
 use App\Contracts\Inboxes\LabeledInbox;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Agents\MainAgentDesignation;
-use App\Models\Messages\Message;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
-use App\Support\RequestKey;
 use App\Support\StartSessions;
 use Domain\Chat\Tests\TestCase;
 use Illuminate\Support\Str;
@@ -28,8 +24,8 @@ use Tests\Support\StartsAgentRequests;
 use Tests\Support\WritesInboxMessages;
 
 /**
- * Chat reads only the incoming messages a user was shown, for everyone at the inbox, and a reply to a message that
- * changed since it was shown is refused without writing anything.
+ * The chat window picks the agent a user talks to: the idle main agent by default, no history for an agent the user
+ * cannot see, and a pair chat even when the user's own inbox is missing.
  */
 final class ChatWindowTest extends TestCase
 {
@@ -58,10 +54,6 @@ final class ChatWindowTest extends TestCase
 
     private AgentSession $session;
 
-    private string $ownInboxId;
-
-    private string $agentInboxId;
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -74,8 +66,8 @@ final class ChatWindowTest extends TestCase
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;
 
-        $this->ownInboxId = $this->inboxOf(ActorIdentity::of($this->owner))->inboxId();
-        $this->agentInboxId = $this->inboxOf(ActorIdentity::ofClass(Agent::class, $agent->id))->inboxId();
+        $this->inboxOf(ActorIdentity::of($this->owner));
+        $this->inboxOf(ActorIdentity::ofClass(Agent::class, $agent->id));
     }
 
     public function test_home_selects_the_idle_main_agent_and_offers_a_headless_helper_no_terminal(): void
@@ -103,7 +95,7 @@ final class ChatWindowTest extends TestCase
                 ->missing('page.data'));
     }
 
-    public function test_a_missing_own_desk_inbox_no_longer_blocks_the_pair_chat(): void
+    public function test_a_missing_own_inbox_does_not_block_the_pair_chat(): void
     {
         $this->app->instance(ActorInboxResolver::class, new class implements ActorInboxResolver
         {
@@ -119,72 +111,5 @@ final class ChatWindowTest extends TestCase
                 ->where('page.state', 'ready')
                 ->where('page.data.conversation.agentId', $this->session->agent_id)
                 ->missing('page.data.setupNotice'));
-    }
-
-    public function test_reading_marks_only_the_shown_incoming_messages(): void
-    {
-        $shown = $this->agentAsks('Shown?');
-        $notShown = $this->agentAsks('Not shown yet?');
-
-        $this->actingAs($this->owner)
-            ->post('/chat/messages/read', [
-                'inboxId' => $this->ownInboxId,
-                'messageIds' => [$shown],
-                'agent' => $this->session->agent_id,
-            ])
-            ->assertRedirect();
-
-        $this->assertNotNull($this->stored($shown)->read_at);
-        $this->assertNull($this->stored($notShown)->read_at);
-    }
-
-    public function test_reading_on_chats_own_page_returns_to_that_page(): void
-    {
-        $shown = $this->agentAsks('Shown?');
-        $chat = '/chat?agent='.$this->session->agent_id;
-
-        $this->actingAs($this->owner)
-            ->from($chat)
-            ->post('/chat/messages/read', [
-                'inboxId' => $this->ownInboxId,
-                'messageIds' => [$shown],
-                'agent' => $this->session->agent_id,
-            ])
-            ->assertRedirect($chat);
-    }
-
-    public function test_a_reply_from_the_chat_window_to_desk_mail_is_refused_and_writes_nothing(): void
-    {
-        $questionId = $this->agentAsks('Which port?');
-
-        $this->actingAs($this->owner)->from('/')
-            ->post('/chat/messages/reply', [
-                'messageId' => $questionId,
-                'stateVersion' => $this->stored($questionId)->state_version,
-                'body' => 'Port 80.',
-                'agent' => $this->session->agent_id,
-                'inboxId' => $this->ownInboxId,
-                'requestKey' => 'window-reply-1',
-            ])
-            ->assertRedirect('/')
-            ->assertSessionHasErrors('command');
-
-        $this->assertSame(1, Message::query()->withoutGlobalScopes()->count());
-    }
-
-    private function agentAsks(string $body): string
-    {
-        $this->app->forgetScopedInstances();
-        $this->startRequestAs($this->session->agent_id, $this->session->id);
-        $this->app->make(RequestKey::class)->set((string) Str::ulid());
-
-        return $this->app->make(CommandBus::class)->run(
-            new AskMessageCommand($this->agentInboxId, $this->ownInboxId, $body),
-        );
-    }
-
-    private function stored(string $messageId): Message
-    {
-        return Message::query()->withoutGlobalScopes()->findOrFail($messageId);
     }
 }

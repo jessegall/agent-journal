@@ -6,7 +6,6 @@ namespace Tests\Feature\Agents;
 
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Data\Messages\MessageBatchItemData;
 use App\Enums\Hooks\ContextStartType;
 use App\Enums\Sessions\SessionStatus;
 use App\Events\Hooks\ContextStarted;
@@ -43,7 +42,6 @@ final class AgentInstructionsTest extends TestCase
         $reviewer = $this->remindersOf($this->sessionOn('journal-reviewer'));
         $researcher = $this->remindersOf($this->sessionOn('journal-researcher'));
 
-        $this->assertStringContainsString('"'.MessageBatchItemData::USER_FENCE.'"', $reviewer[0]);
         $this->assertSame($reviewer[0], $researcher[0]);
         $this->assertStringContainsString('Review_carefully.', $reviewer[1]);
         $this->assertStringContainsString('Cite_sources.', $researcher[1]);

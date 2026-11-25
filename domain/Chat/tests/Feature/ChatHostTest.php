@@ -69,7 +69,7 @@ final class ChatHostTest extends TestCase
 
         $message = Message::query()->withoutGlobalScopes()->sole();
         $this->assertSame($chatInboxId, $message->source_inbox_id);
-        $this->assertSame($chatInboxId, $message->destination_inbox_id);
+        $this->assertSame($chatInboxId, $message->inbox_id);
 
         $this->actingAs($owner)->get(route('home', $window, false))->assertInertia(fn (AssertableInertia $page) => $page
             ->reloadOnly('window_chat_conversation', fn (AssertableInertia $reload) => $reload

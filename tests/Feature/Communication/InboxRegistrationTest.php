@@ -10,7 +10,6 @@ use App\Exceptions\InboxProviderInvalid;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Inboxes\Inbox;
 use Illuminate\Database\UniqueConstraintViolationException;
-use Tests\Fixtures\Communication\TeamInboxAccess;
 use Tests\Fixtures\Communication\TeamInboxProvider;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
@@ -22,17 +21,17 @@ final class InboxRegistrationTest extends TestCase
 
     public function test_a_provider_pair_opens_one_inbox(): void
     {
-        Inbox::create('team', TestIds::of(1));
+        Inbox::create('team', TestIds::of(1), 'Team');
 
         $this->expectException(UniqueConstraintViolationException::class);
 
-        Inbox::create('team', TestIds::of(1));
+        Inbox::create('team', TestIds::of(1), 'Team');
     }
 
     public function test_a_registered_provider_resolves_its_inbox_by_id(): void
     {
-        $this->app->make(InboxRegistration::class)->register('team', TeamInboxProvider::class, TeamInboxAccess::class);
-        $record = Inbox::create('team', TestIds::of(2));
+        $this->app->make(InboxRegistration::class)->register('team', TeamInboxProvider::class);
+        $record = Inbox::create('team', TestIds::of(2), 'Team');
 
         $inbox = $this->app->make(InboxResolver::class)->resolve($record->id);
 
@@ -42,11 +41,11 @@ final class InboxRegistrationTest extends TestCase
     public function test_a_provider_key_registered_twice_is_refused(): void
     {
         $registration = $this->app->make(InboxRegistration::class);
-        $registration->register('team', TeamInboxProvider::class, TeamInboxAccess::class);
+        $registration->register('team', TeamInboxProvider::class);
 
         $this->expectException(InboxProviderInvalid::class);
 
-        $registration->register('team', TeamInboxProvider::class, TeamInboxAccess::class);
+        $registration->register('team', TeamInboxProvider::class);
     }
 
     public function test_an_unknown_inbox_is_unavailable_and_nothing_is_created(): void

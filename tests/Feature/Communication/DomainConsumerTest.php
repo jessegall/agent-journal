@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Events\Messages\MessageSent;
+use App\Models\Messages\Message;
 use App\Support\RequestKey;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
@@ -19,17 +20,17 @@ final class DomainConsumerTest extends MessagingTestCase
 {
     private const string REVIEW_QUESTION = 'Review this?';
 
-    public function test_a_domain_asks_through_core_alone_and_hears_the_message_sent(): void
+    public function test_a_domain_posts_through_core_alone_and_hears_the_message_sent(): void
     {
         Event::fake([MessageSent::class]);
-        $this->ownerInboxId();
+        $inboxId = $this->ownerInboxId();
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
 
-        $view = $this->app->make(ReviewRequests::class)->ask($this->assigneeOf($this->builder), self::REVIEW_QUESTION);
+        $messageId = $this->app->make(ReviewRequests::class)->post($inboxId, self::REVIEW_QUESTION);
 
-        $this->assertSame(self::REVIEW_QUESTION, $view->body);
-        $this->assertSame($this->inboxIdOf($this->builder), $view->destinationInboxId);
-        Event::assertDispatched(MessageSent::class, fn (MessageSent $sent) => $sent->messageId === $view->id);
+        $message = Message::query()->findOrFail($messageId);
+        $this->assertSame(self::REVIEW_QUESTION, $message->body);
+        $this->assertSame($inboxId, $message->inbox_id);
+        Event::assertDispatched(MessageSent::class, fn (MessageSent $sent) => $sent->messageId === $messageId);
     }
-
 }

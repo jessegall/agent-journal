@@ -250,8 +250,8 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
 
         $messageId = $this->app->make(CommandBus::class)->run(new SendMessageCommand(
-            $this->inboxOf(TestActors::userIdentity(1))->inboxId(),
-            $this->inboxOf(ActorIdentity::ofClass(Agent::class, $session->agent_id))->inboxId(),
+            $this->inboxOf(TestActors::userIdentity(1))->id,
+            $this->inboxOf(ActorIdentity::ofClass(Agent::class, $session->agent_id))->id,
             "  Trim me  \n",
         ));
 
@@ -268,8 +268,8 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         $this->startTestUserRequest(1);
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
         $command = new SendMessageCommand(
-            $this->inboxOf(TestActors::userIdentity(1))->inboxId(),
-            $this->inboxOf(ActorIdentity::ofClass(Agent::class, $session->agent_id))->inboxId(),
+            $this->inboxOf(TestActors::userIdentity(1))->id,
+            $this->inboxOf(ActorIdentity::ofClass(Agent::class, $session->agent_id))->id,
             'Hello',
         );
 

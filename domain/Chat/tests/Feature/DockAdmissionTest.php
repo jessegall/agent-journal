@@ -14,8 +14,7 @@ use App\Support\RequestKey;
 use Domain\Chat\Commands\DockSource\DockSourceCommand;
 use Domain\Chat\Commands\UndockSource\UndockSourceCommand;
 use Domain\Chat\Enums\DockOutcome;
-use Domain\Chat\Exceptions\ConversationUnavailable;
-use Domain\Chat\Models\Conversation;
+use Domain\Chat\Exceptions\ChatUnavailable;
 use Domain\Chat\Models\DockPlacement;
 use Domain\Chat\Support\DockRequests;
 use Domain\Chat\Tests\TestCase;
@@ -75,7 +74,7 @@ final class DockAdmissionTest extends TestCase
         $this->pairChat(ActorIdentity::of($this->owner), ActorIdentity::ofClass(Agent::class, $this->agentId));
         $this->task = Task::factory()->create(['title' => 'Ship the dock']);
         $this->startUserRequestAs($this->owner->id);
-        $this->conversationId = $this->app->make(DockRequests::class)->conversationWith($this->agentId)->inbox_id;
+        $this->conversationId = $this->app->make(DockRequests::class)->inboxWith($this->agentId)->inbox_id;
     }
 
     public function test_a_second_dock_of_one_source_answers_its_one_placement(): void
@@ -146,10 +145,10 @@ final class DockAdmissionTest extends TestCase
 
     public function test_an_agent_out_of_sight_is_refused_before_anything_is_docked(): void
     {
-        $this->expectException(ConversationUnavailable::class);
+        $this->expectException(ChatUnavailable::class);
 
         try {
-            $this->app->make(DockRequests::class)->conversationWith(strtolower((string) Str::ulid()));
+            $this->app->make(DockRequests::class)->inboxWith(strtolower((string) Str::ulid()));
         } finally {
             $this->assertSame(0, DockPlacement::query()->count());
         }
@@ -162,7 +161,7 @@ final class DockAdmissionTest extends TestCase
             ActorIdentity::ofClass(Agent::class, 'agent-two'),
         );
 
-        $this->expectException(ConversationUnavailable::class);
+        $this->expectException(ChatUnavailable::class);
 
         $this->runKeyed(
             new DockSourceCommand($strangers->id, 'tasks.task', $this->task->id),
