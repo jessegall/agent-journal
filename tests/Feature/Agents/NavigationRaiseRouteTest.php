@@ -66,7 +66,7 @@ final class NavigationRaiseRouteTest extends TestCase
         'driver_requests',
         'navigation_requests',
         'menu_entries',
-        'inboxes',
+        'inboxes', 'inbox_members',
         'assignments',
         'accounts',
         'active_accounts',

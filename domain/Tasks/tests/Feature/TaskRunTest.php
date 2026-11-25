@@ -45,7 +45,7 @@ final class TaskRunTest extends TestCase
         'agent_stacks',
         'hook_calls',
         'links',
-        'inboxes',
+        'inboxes', 'inbox_members',
         'assignments',
         'claim_authorizations',
         'command_receipts',

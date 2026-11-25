@@ -32,7 +32,7 @@ final class SearchToolTest extends TestCase
     private const array TABLES = [
         'agents', 'agent_sessions', 'session_tokens', 'agent_stacks', 'command_receipts', 'number_groups', 'links',
         'tasks', 'plans', 'phases', 'phase_tasks', 'rules', 'documents', 'document_revisions', 'reports',
-        'inboxes', 'assignments', 'messages',
+        'inboxes', 'inbox_members', 'assignments', 'messages',
     ];
 
     public function test_the_six_scoped_searches_return_their_records(): void

@@ -34,11 +34,13 @@ use Domain\Documents\Values\DraftTarget;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\OpensDriverRuntimes;
 use Tests\Support\StartsAgentRequests;
 
 final class DocumentDraftTest extends TestCase
 {
     use CommitsHookRows;
+    use OpensDriverRuntimes;
     use StartsAgentRequests;
 
     private const array TABLES = [
@@ -55,6 +57,7 @@ final class DocumentDraftTest extends TestCase
         'document_closes',
         'retained_drafts',
         'number_groups',
+        'agent_runtimes',
         'driver_requests',
         'assignments',
     ];
@@ -62,6 +65,7 @@ final class DocumentDraftTest extends TestCase
     public function test_a_broken_draft_is_kept_and_only_its_granted_parent_can_recover_it(): void
     {
         $parent = TestStart::start();
+        $this->openDriverRuntime($parent->session);
         $other = TestStart::start();
         $child = Agent::create('Document editor', 'writing-helper');
 

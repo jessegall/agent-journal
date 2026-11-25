@@ -33,7 +33,7 @@ final class MessagePinTest extends TestCase
         'agent_sessions',
         'session_tokens',
         'agent_stacks',
-        'inboxes',
+        'inboxes', 'inbox_members',
         'assignments',
         'command_receipts',
         'messages',

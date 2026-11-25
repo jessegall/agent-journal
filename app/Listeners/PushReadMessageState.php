@@ -10,7 +10,6 @@ use App\Contracts\Work\AgentStack;
 use App\Events\Messages\MessageSent;
 use App\Models\Agents\Agent;
 use App\Models\Inboxes\InboxMember;
-use App\Support\ActorIdentity;
 use App\Support\States\Support\ReadMessageStateReference;
 
 /**
@@ -26,7 +25,7 @@ final readonly class PushReadMessageState implements Listener
     public function handle(MessageSent $event): void
     {
         foreach (InboxMember::attachedTo([$event->inboxId], Agent::class) as $agent) {
-            if (! $event->sender->isSameAs(ActorIdentity::of($agent))) {
+            if (! $event->sender->isSameAs($agent)) {
                 $this->stacks->pushFor(
                     $agent,
                     ReadMessageStateReference::forInbox($event->inboxId, $agent->id),

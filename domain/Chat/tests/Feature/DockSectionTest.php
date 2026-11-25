@@ -11,14 +11,17 @@ use App\Models\Messages\Message;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\RequestKey;
+use Domain\Chat\ChatDomain;
 use Domain\Chat\Commands\DockSource\DockSourceCommand;
 use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Chat\Support\DockRequests;
 use Domain\Chat\Tests\TestCase;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\OpensPairChats;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\StartsMainAgents;
@@ -43,15 +46,25 @@ final class DockSectionTest extends TestCase
         'session_tokens',
         'agent_stacks',
         'hook_calls',
-        'inboxes',
+        'inboxes', 'inbox_members',
         'assignments',
         'command_receipts',
         'messages',
         'links',
         'tasks',
-        'conversations',
         'dock_placements',
     ];
+
+    /**
+     * Chat with Tasks beside it, since a task is what these tests dock.
+     */
+    protected static function bootedDomains(): array
+    {
+        return array_values(array_unique([
+            ...DomainBoot::withRequirements(ChatDomain::class),
+            ...DomainBoot::withRequirements(TasksDomain::class),
+        ]));
+    }
 
     public function test_a_docked_task_shows_as_its_card_in_that_conversation(): void
     {
@@ -66,11 +79,11 @@ final class DockSectionTest extends TestCase
         $this->assertSame([], $this->dockedTitles($owner, $window));
 
         $this->startUserRequestAs($owner->id);
-        $conversation = $this->app->make(DockRequests::class)->conversationWith($session->agent_id);
+        $inbox = $this->app->make(DockRequests::class)->inboxWith($session->agent_id);
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
 
         $this->app->make(CommandBus::class)->run(
-            new DockSourceCommand($conversation->inbox_id, 'tasks.task', $task->id),
+            new DockSourceCommand($inbox->id, 'tasks.task', $task->id),
         );
 
         $this->assertSame(['Ship the dock'], $this->dockedTitles($owner, $window));
@@ -82,11 +95,7 @@ final class DockSectionTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $session = $this->startedMainAgentSession();
 
-        $message = $this->askBetween(
-            $this->inboxOf(ActorIdentity::of($owner)),
-            $this->inboxOf(ActorIdentity::ofClass(Agent::class, $session->agent_id)),
-            "Build ready\nAll checks passed.",
-        );
+        $message = $this->postTo($this->inboxOf(ActorIdentity::of($owner)), $owner, "Build ready\nAll checks passed.");
 
         $inboxId = $this->pairChat(
             ActorIdentity::of($owner),
@@ -100,7 +109,7 @@ final class DockSectionTest extends TestCase
         $again->assertSuccessful()->assertJson(['outcome' => 'present']);
 
         $query = ConversationRequest::queryFor($session->agent_id);
-        $this->assertSame(['Build ready…'], $this->dockedTitles($owner, $query));
+        $this->assertSame(['Build ready'], $this->dockedTitles($owner, $query));
     }
 
     /**

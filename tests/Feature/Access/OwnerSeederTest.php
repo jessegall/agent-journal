@@ -20,7 +20,7 @@ final class OwnerSeederTest extends TestCase
 
     private const array TABLES = [
         'users',
-        'inboxes',
+        'inboxes', 'inbox_members',
         'assignments',
         'command_receipts',
     ];

@@ -11,6 +11,7 @@ use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\Command;
 use App\Support\RequestKey;
+use Domain\Chat\ChatDomain;
 use Domain\Chat\Commands\DockSource\DockSourceCommand;
 use Domain\Chat\Commands\UndockSource\UndockSourceCommand;
 use Domain\Chat\Enums\DockOutcome;
@@ -20,8 +21,10 @@ use Domain\Chat\Support\DockRequests;
 use Domain\Chat\Tests\TestCase;
 use Domain\Chat\Values\DockResult;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\OpensPairChats;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\StartsMainAgents;
@@ -47,12 +50,11 @@ final class DockAdmissionTest extends TestCase
         'session_tokens',
         'agent_stacks',
         'hook_calls',
-        'inboxes',
+        'inboxes', 'inbox_members',
         'assignments',
         'command_receipts',
         'links',
         'tasks',
-        'conversations',
         'dock_placements',
     ];
 
@@ -64,6 +66,17 @@ final class DockAdmissionTest extends TestCase
 
     private Task $task;
 
+    /**
+     * Chat with Tasks beside it, since a task is what these tests dock.
+     */
+    protected static function bootedDomains(): array
+    {
+        return array_values(array_unique([
+            ...DomainBoot::withRequirements(ChatDomain::class),
+            ...DomainBoot::withRequirements(TasksDomain::class),
+        ]));
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -74,7 +87,7 @@ final class DockAdmissionTest extends TestCase
         $this->pairChat(ActorIdentity::of($this->owner), ActorIdentity::ofClass(Agent::class, $this->agentId));
         $this->task = Task::factory()->create(['title' => 'Ship the dock']);
         $this->startUserRequestAs($this->owner->id);
-        $this->conversationId = $this->app->make(DockRequests::class)->inboxWith($this->agentId)->inbox_id;
+        $this->conversationId = $this->app->make(DockRequests::class)->inboxWith($this->agentId)->id;
     }
 
     public function test_a_second_dock_of_one_source_answers_its_one_placement(): void

@@ -25,7 +25,7 @@ final class DeclaredMessageSearchTest extends TestCase
 
     private const array TABLES = [
         'agents', 'agent_sessions', 'session_tokens', 'agent_stacks', 'command_receipts', 'number_groups', 'links',
-        'inboxes', 'assignments', 'messages',
+        'inboxes', 'inbox_members', 'assignments', 'messages',
     ];
 
     public function test_only_visible_messages_match_and_opening_rechecks_visibility(): void

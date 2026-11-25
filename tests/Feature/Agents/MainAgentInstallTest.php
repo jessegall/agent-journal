@@ -24,7 +24,7 @@ final class MainAgentInstallTest extends TestCase
     private const array TABLES = [
         'main_agent_designations',
         'agents',
-        'inboxes',
+        'inboxes', 'inbox_members',
         'command_receipts',
         'links',
     ];

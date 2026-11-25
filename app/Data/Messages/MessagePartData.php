@@ -19,10 +19,10 @@ abstract class MessagePartData extends Data implements MessagePart, PropertyMorp
     public MessagePartType $type;
 
     /**
-     * @param  array<string, mixed>  $properties
+     * @param  array{type: MessagePartType}  $properties
      */
     public static function morph(array $properties): string
     {
-        return MessagePartType::from($properties['type'])->dataClass();
+        return $properties['type']->dataClass();
     }
 }

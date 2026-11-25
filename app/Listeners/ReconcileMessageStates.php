@@ -22,7 +22,7 @@ use App\Support\States\Support\ReadMessageStateReference;
 #[InCommandTransaction]
 final readonly class ReconcileMessageStates implements Listener
 {
-    private const int MESSAGE_LIMIT = 200;
+    private const int MESSAGE_LIMIT = 100;
 
     public function __construct(private AgentStack $stacks) {}
 

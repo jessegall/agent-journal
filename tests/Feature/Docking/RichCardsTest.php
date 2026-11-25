@@ -61,7 +61,7 @@ final class RichCardsTest extends TestCase
         'session_tokens',
         'agent_stacks',
         'hook_calls',
-        'inboxes',
+        'inboxes', 'inbox_members',
         'assignments',
         'command_receipts',
         'links',
@@ -75,7 +75,6 @@ final class RichCardsTest extends TestCase
         'document_drafts',
         'document_closes',
         'reports',
-        'conversations',
         'dock_placements',
     ];
 

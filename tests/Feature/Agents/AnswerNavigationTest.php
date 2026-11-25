@@ -55,7 +55,7 @@ final class AnswerNavigationTest extends TestCase
         'agent_runtimes',
         'driver_requests',
         'navigation_requests',
-        'inboxes',
+        'inboxes', 'inbox_members',
         'assignments',
         'command_receipts',
         'accounts',

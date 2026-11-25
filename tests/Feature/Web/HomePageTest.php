@@ -51,7 +51,7 @@ final class HomePageTest extends TestCase
         'links',
         'plans',
         'rules',
-        'inboxes',
+        'inboxes', 'inbox_members',
         'assignments',
         'command_receipts',
     ];

@@ -34,7 +34,7 @@ final class InboxMember extends Model implements EventSource, ReadableModel
     /**
      * The most inboxes one read lists for an actor.
      */
-    public const int ATTACHED_LIMIT = 200;
+    public const int ATTACHED_LIMIT = 100;
 
     use BoundedReads;
     use HasUlids;
@@ -146,11 +146,12 @@ final class InboxMember extends Model implements EventSource, ReadableModel
             ->active()
             ->ofInboxes($inboxIds)
             ->ofActorType($type)
-            ->distinct()
             ->pluck('actor_id')
+            ->unique()
+            ->values()
             ->all();
 
-        return array_map(fn (string $actorId) => ActorIdentity::fromStored($type, $actorId), array_values($actorIds));
+        return array_map(fn (string $actorId) => ActorIdentity::fromStored($type, $actorId), $actorIds);
     }
 
     // ----------[ Scopes ]----------

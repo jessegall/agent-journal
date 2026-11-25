@@ -61,7 +61,7 @@ final class RecordLinksTest extends TestCase
         'document_revisions',
         'documents',
         'number_groups',
-        'inboxes',
+        'inboxes', 'inbox_members',
         'assignments',
         'command_receipts',
         'users',

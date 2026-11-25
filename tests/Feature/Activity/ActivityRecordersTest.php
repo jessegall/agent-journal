@@ -26,7 +26,7 @@ use Tests\Support\MessagingTestCase;
  */
 final class ActivityRecordersTest extends MessagingTestCase
 {
-    protected const array TABLES = [...parent::TABLES, 'activity_entries', 'conversations', 'direct_chats'];
+    protected const array TABLES = [...parent::TABLES, 'activity_entries'];
 
     public function test_a_finished_read_command_and_edit_are_each_one_entry_and_tell_open_pages(): void
     {

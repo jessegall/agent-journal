@@ -40,13 +40,12 @@ final class DockToolsTest extends TestCase
         'session_tokens',
         'agent_stacks',
         'hook_calls',
-        'inboxes',
+        'inboxes', 'inbox_members',
         'assignments',
         'command_receipts',
         'links',
         'tasks',
         'number_groups',
-        'conversations',
         'dock_placements',
     ];
 

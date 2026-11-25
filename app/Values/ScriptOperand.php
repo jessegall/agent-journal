@@ -18,11 +18,11 @@ abstract class ScriptOperand extends Data implements PropertyMorphableData
     public ScriptOperandType $type;
 
     /**
-     * @param  array<string, mixed>  $properties
+     * @param  array{type: ScriptOperandType}  $properties
      */
     public static function morph(array $properties): string
     {
-        return ScriptOperandType::from($properties['type'])->dataClass();
+        return $properties['type']->dataClass();
     }
 
     /**

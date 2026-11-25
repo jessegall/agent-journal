@@ -3,17 +3,10 @@ ${gathered.length} new outcomes
 ${hit.title}, ${hit.locationLabel}
 ${node.line}: ${node.label}
 ${option.description} ${option.billingNote}
-(on an older version): open where it was
 01JPAGEREQUESTMESSAGE00000
-1 day
-1 hour
-30 days
-7 days
 : {{ step.action }} by {{ step.actor }}, project {{ step.projectId ?? 'not recorded' }}
 = range.from && line
 A sample run: it shows what the command does and gives no result.
-About the whole record
-About {{ describeRange(text.range) }}
 Access
 Account
 Account of a start
@@ -22,7 +15,6 @@ Activate this bundle
 Activity
 Activity levels
 Add
-Add a secret
 Add a window
 Add a window…
 Add account
@@ -43,18 +35,14 @@ Answered
 Anywhere
 Approve
 Approve a terminal
-Approve merge
 Approve only when the terminal shows this same code.
-Approve proposal {{ proposal.number }}
 Approve revision {{ proposal.currentRevision }}
 Ask
 Asks
 Attempt
-Audit
 Back
 Back to Accounts
 Back to agent chat
-Before you share
 Breadcrumb
 Build
 Cancel
@@ -66,7 +54,6 @@ Cancelling the sign-in…
 Change the last answer
 Check and switch
 Check capacity
-Check comment
 Check screen
 Check status
 Checked reader revision
@@ -81,10 +68,8 @@ Choose a source:
 Choose a way to sign in to continue.
 Choose all on {{ machine }}
 Choose another way
-Choose exact text in the source
 Choose one
 Chosen: {{ describeRange(chosen) }}.
-Cleared old entries on {{ audit.lastPrunedAt }}: {{ audit.prunedAllowedReads }} allowed and {{ audit.prunedDeniedReads }} refused reads, and {{ audit.prunedLifecycleRows }} others.
 Close
 Close all
 Close others
@@ -100,17 +85,12 @@ Command palette
 Commands and sessions of {{ binding.projectLabel }} on {{ binding.machineLabel }} stop being accepted at once. The files on that computer stay as they are. A device that is offline now stops when its lease ends.
 Commands, pages and records
 Comment
-Comment on a section
 Comment on the selected lines
-Comment on the selected paragraphs
 Comment on this
 Comment on {{ range }} · “{{ quote }}”
-Comments
 Compare code
 Complex coding that needs invention.
 Complex work
-Configure a gateway
-Confirm
 Confirm {{ mayConfirm ? highlightedLabel : '' }}
 Connect a project
 Connected projects
@@ -168,7 +148,6 @@ Expires
 Expires {{ dateOnly(account.expiresAt) }}
 Failed
 Finish signing in
-Fixed public address
 Float this window
 Floating
 Floating windows
@@ -177,8 +156,6 @@ Follow the system color scheme
 From line
 Full
 Full screen
-Gateway
-Gateway runtime
 General work
 Generate install line
 Give back
@@ -191,7 +168,6 @@ Idle
 If nothing installs, check the journal's address and this install line. The folder is connected only once the installer says so.
 Import
 Important
-In the chat
 In the panel
 Install attempts
 Install line
@@ -221,28 +197,21 @@ Last contact
 Layout file to import
 Layout name
 Layouts
-Leave blank to keep the stored one
 Leave terminal
 Left to spend
 Light
 Link copied.
 Link to Claude's sign-in page
-Linked
-Linked records
-Listener port
 Load older
 Loading notifications…
 Make default
-Make it the default once it is ready
 Mark all read
 Mark read
 Menus and lists
-Merged
 Mermaid
 Module bundles waiting
 More could not be read. The rows above are kept.
 More pages
-NOT
 Name
 Name of the layout
 Name of the new layout
@@ -256,10 +225,8 @@ Next option
 No
 No capacity
 No connected host runs agents in this place.
-No endpoint is serving this share.
 No file is open
 No install line was issued in the last 30 days.
-No linked record can be shared with it.
 No matches
 No matches in {{ search.within.value.label }}
 No memories yet
@@ -279,7 +246,7 @@ Normal and up
 Not filled in yet: {{ revision.missingFields.join(', ') }}
 Not in contact yet
 Not run yet.
-Not shared yet
+Notable
 Nothing at this level
 Nothing is open in this pane.
 Nothing is open. Add a window from the bar above.
@@ -288,10 +255,6 @@ Nothing needs you
 Notifications
 Off
 Offline
-Offline: start the sharing service.
-Older entries
-On the whole record: open record
-On {{ text.anchor.versionLabel }}, lines {{ text.anchor.firstLine }}–{{ text.anchor.lastLine }}
 One piece of text, without spaces.
 Only one new {{ driverName(shownDriver) }} account signs in at a time. Resume this one, or cancel it and choose again.
 Only when you ask for it.
@@ -308,13 +271,10 @@ Open keyboard help
 Open terminal
 Open the draft
 Open windows
-Open {{ record.target.label }}
 Open ↗
-Opening the comment's place…
 Ordinary
 Other ways to write it: {{ revision.spellings.join(', ') || 'none' }}
 Outcome
-Outcome unknown: your comment may or may not have been posted.
 Outcome unknown: {{ unknown }}
 Outcomes
 Output removed
@@ -331,7 +291,6 @@ Period
 Pool empty
 Pool too large
 Presets
-Preview saved; it can be confirmed until {{ data.savedPreview.expiresAt }}.
 Previous option
 Private input
 Private input is unavailable: this driver and host have not proved they can keep a secret off every screen and recording.
@@ -339,14 +298,12 @@ Private input; it is sent once and kept nowhere
 Privilege change
 Problems
 Process control
-Program version
 Project
 Project files
 Proposal by {{ proposal.author }}: {{ proposal.state }}, revision {{ proposal.currentRevision }}
-Provider host
-Public address
 Question {{ step + 1 }} of {{ questions.length }}
 Read
+Read before acting on who may use the journal.
 Read before running shell commands or reading their output.
 Read before working with agent profiles.
 Read before working with skills.
@@ -392,7 +349,6 @@ Retry cleanup
 Retry revoke
 Retry stop
 Return to Settings
-Reveal address
 Review this proposal
 Revision {{ revision.revision }}: {{ revision.operation }} ({{ revision.owner }})
 Revoke
@@ -410,9 +366,7 @@ Run {{ sample.runId }}: {{ sample.parts.join('; ') }}
 Samples
 Save
 Save and clear
-Save gateway
 Save layout
-Save preview
 Save revision {{ revision + 1 }}
 Save the current layout to it
 Saved
@@ -426,7 +380,6 @@ Search results
 Search windows
 Search {{ key }}
 Searching
-Secrets
 Send
 Send Shift+Tab to the agent
 Send again
@@ -440,13 +393,11 @@ Set it up with an agent
 Setting up
 Settled
 Share
-Share for
 Shell actions
 Shielding the screen before private input…
 Show everything
 Show in notifications
 Show its connection
-Show more comments
 Show more folders
 Show older attempts
 Show or hide the sidebar
@@ -511,16 +462,13 @@ That conversation is not one this agent can continue.
 That conversation ran on another driver; start a new conversation instead.
 That conversation was for other work; start a new conversation instead.
 That item is no longer available.
-The address is not available.
 The chosen option cannot be read from the screen; refresh or go back.
 The comment was not sent. Your text is kept.
 The desk
 The draft is ready. Drafted by {{ draft.agent }}.
-The gateway provider can see the public address and everything this share shows.
 The host has not said it can run this driver this way.
 The journal cannot be reached to check this line is still valid, so it cannot be copied now.
 The new session failed to start
-The place this comment points at is not available: {{ unavailable.message }}
 The project's files could not be read.
 The project's machine is not connected, so {{ data.name }} cannot be read.
 The search could not be completed.
@@ -530,7 +478,6 @@ The unfinished line
 This account must sign in again.
 This browser did not let the journal copy the line. Select the line above and copy it with your keyboard.
 This item is unavailable
-This machine and the share service must keep running for the link to work.
 This paste has {{ preview.lines }} lines; each line break may run a command in the terminal.
 This project is empty
 This release cannot do {{ release.missingCapabilities.join(', ') }} yet.
@@ -540,7 +487,6 @@ This usually takes a few seconds. You can close this window: the account appears
 To
 To renew it, choose Sign in again on the account.
 Try again
-Turning off traffic inspection does not hide the content from the provider.
 Type a command, a page, a task, a document or a file
 Type a source's name
 Type at least two characters
@@ -551,7 +497,6 @@ Undo
 Unfinished input
 Unfinished sign-ins
 Unknown
-Update share {{ liveShare.number }}
 Usage
 Usage unavailable
 Use
@@ -563,7 +508,6 @@ Verification pending
 Verifying session
 Version
 Version control
-Version {{ location.anchor.versionLabel }}, lines {{ location.anchor.firstLine }}–{{ location.anchor.lastLine }}
 Version {{ version }}, lines {{ firstLine }}–{{ lastLine }}
 Waiting
 Waiting for activity
@@ -572,19 +516,14 @@ Waiting for sign-in
 Waiting for the host to confirm the start
 Waiting for the host to confirm the stop
 Waiting for you to finish on OpenAI's page…
-What
 What the journal is and how to read and write its records.
 What the line connects
-When
 Where the request stands
 Where to get it.
-Who
-Why
 Window menu
 Windows to add
 Working
 Write
-Write a comment
 You can approve once the request is ready for review; a check first needs a checked reader.
 You can change it later from the list.
 You can close this window: the sign-in keeps waiting on the host. Resume it from the Accounts header.
@@ -648,7 +587,6 @@ until {{ dateTime(signIn.expiresAt) }}
 {{ provider.label }}: start it with
 {{ request.script }} step {{ request.scriptStep ?? 0 }}: {{ request.scriptEvidence ?? '' }}
 {{ row.entry.name }} could not be read
-{{ runtime.isHealthy ? 'Running' : 'Not answering: no sign of life in the last 45 seconds' }}. Version {{ runtime.endpointVersion }}, last seen {{ runtime.lastHealthAt ?? 'never' }}.
 {{ summary.length }} more outcomes
 {{ target.name }} is not offered yet, because it does not run {{ target.missingProviders.join(' or ') }}.
 {{ target.name }} is not offered yet: its size was not measured.

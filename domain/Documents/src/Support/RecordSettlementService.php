@@ -23,7 +23,7 @@ final readonly class RecordSettlementService
             return false;
         }
 
-        RecordSettlement::create($record::LINK_TYPE, $record->id, $actor, $trimmed, $revisionNumber);
+        RecordSettlement::create($record::linkType(), $record->id, $actor, $trimmed, $revisionNumber);
 
         return true;
     }

@@ -107,6 +107,7 @@ use App\Support\HeartbeatService;
 use App\Support\HostStartExecutor;
 use App\Support\HostStartPreflight;
 use App\Support\InstallLineAvailability;
+use App\Support\JournalAgentNotices;
 use App\Support\NavigationExpiry;
 use App\Support\NavigationRequestProvider;
 use App\Support\PendingNavigationWork;
@@ -346,6 +347,7 @@ final class AgentsServiceProvider extends ServiceProvider
         $systemEntries->allow('account reconciliation', AgentMaintenancePolicy::class);
         $systemEntries->allow('main agent install', AgentPolicy::class);
         $systemEntries->allow('driver switch', AgentPolicy::class);
+        $systemEntries->allow(JournalAgentNotices::TRUSTED_ENTRY, AgentPolicy::class);
         $actors->register(Agent::class, AgentActors::class);
         $actors->registerLabels(Agent::class, AgentLabels::class);
         $actors->registerVisibility(Agent::class, AgentVisibility::class);

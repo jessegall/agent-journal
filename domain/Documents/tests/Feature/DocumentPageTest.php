@@ -66,12 +66,10 @@ final class DocumentPageTest extends TestCase
                 ->component('layout/DeclaredLayout')
                 ->where('page.data.root.children.1.children.1.children.0.text', 'Design')
                 ->where('page.data.root.children.1.children.1.children.1.children.0.text', 'Doc 1 · revision 1')
-                ->where('page.data.root.children.1.children.1.children.4.key', 'editing')
-                ->where('page.data.root.children.1.children.1.children.4.tag', 'form')
-                ->where('page.data.root.children.1.children.1.children.5.tabs.0.key', 'text')
-                ->where('page.data.root.children.1.children.1.children.5.tabs.0.isChosen', true)
-                ->where('page.data.root.children.1.children.1.children.5.tabs.1.key', 'history')
-                ->where('page.data.root.children.1.children.1.children.5.children.0.key', 'text'));
+                ->where('page.data.root.children.1.children.1.children.4.tabs.0.key', 'text')
+                ->where('page.data.root.children.1.children.1.children.4.tabs.0.isChosen', true)
+                ->where('page.data.root.children.1.children.1.children.4.tabs.1.key', 'history')
+                ->where('page.data.root.children.1.children.1.children.4.children.0.key', 'text'));
     }
 
     public function test_the_document_opens_in_the_reader_beside_the_library_list(): void
@@ -91,16 +89,16 @@ final class DocumentPageTest extends TestCase
             ->get('/documents/docs/1?tab=history')
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('page.data.root.children.1.children.1.children.5.tabs.1.isChosen', true)
-                ->where('page.data.root.children.1.children.1.children.5.children.0.key', 'history')
-                ->where('page.data.root.children.1.children.1.children.5.children.0.rows.0.href', '/documents/docs/1/revisions/1'));
+                ->where('page.data.root.children.1.children.1.children.4.tabs.1.isChosen', true)
+                ->where('page.data.root.children.1.children.1.children.4.children.0.key', 'history')
+                ->where('page.data.root.children.1.children.1.children.4.children.0.rows.0.href', '/documents/docs/1/revisions/1'));
 
         $this->actingAs($this->owner)
             ->get('/documents/docs/1?tab=missing')
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('page.data.root.children.1.children.1.children.5.tabs.0.isChosen', true)
-                ->where('page.data.root.children.1.children.1.children.5.children.0.key', 'text'));
+                ->where('page.data.root.children.1.children.1.children.4.tabs.0.isChosen', true)
+                ->where('page.data.root.children.1.children.1.children.4.children.0.key', 'text'));
     }
 
     public function test_the_held_draft_stays_under_the_header_on_every_tab(): void

@@ -16,7 +16,7 @@ use App\Models\Agents\AgentSession;
  */
 final readonly class JournalAgentNotices implements AgentNotices
 {
-    private const string TRUSTED_ENTRY = 'agent notice';
+    public const string TRUSTED_ENTRY = 'agent notice';
 
     public function __construct(private JournalCommands $journal) {}
 

@@ -66,7 +66,7 @@ final class ProcessAndCleanupDockTest extends TestCase
         'session_tokens',
         'agent_stacks',
         'hook_calls',
-        'inboxes',
+        'inboxes', 'inbox_members',
         'assignments',
         'command_receipts',
         'links',
@@ -77,7 +77,6 @@ final class ProcessAndCleanupDockTest extends TestCase
         'process_events',
         'output_chunks',
         'evidence_reads',
-        'conversations',
         'dock_placements',
     ];
 

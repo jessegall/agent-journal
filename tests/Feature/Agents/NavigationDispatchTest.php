@@ -50,7 +50,7 @@ final class NavigationDispatchTest extends TestCase
         'agent_runtimes',
         'driver_requests',
         'navigation_requests',
-        'inboxes',
+        'inboxes', 'inbox_members',
         'assignments',
         'accounts',
         'active_accounts',

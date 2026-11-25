@@ -8,11 +8,15 @@ use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
+use Domain\Chat\ChatDomain;
+use Domain\Chat\Exceptions\ChatUnavailable;
 use Domain\Chat\Models\DockPlacement;
 use Domain\Chat\Tests\TestCase;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\OpensPairChats;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\StartsAgentRequests;
@@ -38,13 +42,12 @@ final class DockCommandsTest extends TestCase
         'session_tokens',
         'agent_stacks',
         'hook_calls',
-        'inboxes',
+        'inboxes', 'inbox_members',
         'assignments',
         'command_receipts',
         'links',
         'tasks',
         'number_groups',
-        'conversations',
         'dock_placements',
     ];
 
@@ -53,6 +56,17 @@ final class DockCommandsTest extends TestCase
     private TestStart $start;
 
     private Task $task;
+
+    /**
+     * Chat with Tasks beside it, since a task is what these tests dock.
+     */
+    protected static function bootedDomains(): array
+    {
+        return array_values(array_unique([
+            ...DomainBoot::withRequirements(ChatDomain::class),
+            ...DomainBoot::withRequirements(TasksDomain::class),
+        ]));
+    }
 
     protected function setUp(): void
     {
@@ -107,7 +121,7 @@ final class DockCommandsTest extends TestCase
             'type' => 'tasks.task',
             'id' => $this->task->id,
         ])
-            ->expectsOutputToContain('name the one to use with --chat')
+            ->expectsOutputToContain(ChatUnavailable::unnamed()->getMessage())
             ->assertFailed();
 
         $this->assertSame(0, DockPlacement::query()->count());
