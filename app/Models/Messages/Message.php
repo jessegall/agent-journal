@@ -151,7 +151,11 @@ final class Message extends Model implements AuthoredModel, EventSource, Readabl
     #[Scope]
     protected function unreadBy(Builder $query, MessageParticipant $reader): void
     {
-        $query->sinceJoinedBy($reader)->whereNotSender($reader)->whereNotReadBy($reader)->orderBy('inbox_id')->orderBy('number');
+        $query->sinceJoinedBy($reader)
+            ->whereNotSender($reader)
+            ->whereNotReadBy($reader)
+            ->orderBy('inbox_id')
+            ->orderBy('number');
     }
 
     /**
@@ -162,8 +166,7 @@ final class Message extends Model implements AuthoredModel, EventSource, Readabl
     #[Scope]
     protected function unansweredBy(Builder $query, MessageParticipant $reader): void
     {
-        $query
-            ->sinceJoinedBy($reader)
+        $query->sinceJoinedBy($reader)
             ->whereNotSender($reader)
             ->whereReadBy($reader)
             ->whereNotRepliedBy($reader)

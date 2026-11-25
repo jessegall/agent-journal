@@ -29,6 +29,8 @@ require_once __DIR__.'/php-parse.php';
 
 /** The sections a method is placed in by what it is, never kept in because it sits there. */
 const BY_LOOKS = [
+    'Predicates',
+    'Transformers',
     'Accessors',
     'Asserts',
 ];
@@ -36,7 +38,8 @@ const BY_LOOKS = [
 const SECTIONS = [
     'Constructors',
     'Mutations',
-    'Getters',
+    'Predicates',
+    'Transformers',
     'Accessors',
     'Relations',
     'Asserts',
@@ -72,6 +75,14 @@ function isAccessor(ClassMethod $method): bool
 }
 
 /**
+ * Whether a method answers yes or no: its declared return type is bool.
+ */
+function returnsBool(ClassMethod $method): bool
+{
+    return $method->returnType instanceof Identifier && $method->returnType->toLowerString() === 'bool';
+}
+
+/**
  * Whether a method sits above the sections, before the Constructors divider: the casts and the boot hooks, so the
  * divider stands right above the first constructor (user message 22026).
  */
@@ -102,7 +113,8 @@ function sectionOf(ClassMethod $method, string $body): string
         $method->isStatic() && preg_match(ROW_MAKES, $body) === 1 => 'Constructors',
         $method->isStatic() => 'Queries',
         $returns === 'void' || preg_match(ROW_WRITES, $body) === 1 => 'Mutations',
-        default => 'Getters',
+        returnsBool($method) => 'Predicates',
+        default => 'Transformers',
     };
 }
 
@@ -266,6 +278,29 @@ function constructorNameFault(ClassMethod $method, string|null $section, int $co
 }
 
 /**
+ * Why a method does not belong in the Predicates or Transformers section it sits in: a predicate answers yes or no, a
+ * transformer gives anything else, and both are public methods of the row (user messages 22041, 22044 and 22095).
+ */
+function lookFaultOf(ClassMethod $method, string $section): string|null
+{
+    $name = $method->name->toString();
+    $isRowAnswer = $method->isPublic() && ! $method->isStatic() && ! isAccessor($method);
+
+    if ($section === 'Predicates' && (! $isRowAnswer || ! returnsBool($method))) {
+        return "method {$name} answers no yes or no, so it does not belong in Predicates";
+    }
+
+    $returnsNothing = $method->returnType instanceof Identifier
+        && in_array($method->returnType->toLowerString(), ['void', 'never'], true);
+
+    if ($section === 'Transformers' && (! $isRowAnswer || returnsBool($method) || $returnsNothing)) {
+        return "method {$name} is no transformer, so it does not belong in Transformers";
+    }
+
+    return null;
+}
+
+/**
  * The faults of a model's sections as "line<TAB>fault".
  *
  * @return list<string>
@@ -303,6 +338,12 @@ function faultsOf(string $source, Class_ $class): array
 
         if (! $isAssert && $section === 'Asserts') {
             return "method {$name} is no assert method, so it does not belong in Asserts";
+        }
+
+        $lookFault = lookFaultOf($method, $section);
+
+        if ($lookFault !== null) {
+            return $lookFault;
         }
 
         if (isAccessor($method) === ($section === 'Accessors')) {
