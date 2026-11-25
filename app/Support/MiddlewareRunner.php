@@ -7,6 +7,7 @@ namespace App\Support;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandAdmission;
+use App\Contracts\Bus\CommandEnd as CommandEndContract;
 use App\Contracts\Bus\CommandMiddleware;
 use App\Contracts\Domains\DomainAvailability;
 use App\Enums\Accounts\CommandEntry;
@@ -18,8 +19,9 @@ use Illuminate\Contracts\Container\Container;
 
 /**
  * The one pipe on the bus's dispatcher: it builds the command's call, walks the frame (Core's steps and the module
- * middleware in their stages), and hands the latest command to the handler. The steps inside the transaction are
- * built afresh for each attempt, so a retried command starts them clean.
+ * middleware in their stages), marking each middleware on the call's trail, and hands the latest command to the
+ * command's end. The steps inside the transaction are built afresh for each attempt, so a retried command starts them
+ * clean.
  */
 final readonly class MiddlewareRunner
 {
@@ -29,9 +31,9 @@ final readonly class MiddlewareRunner
         private CommandRegistry $registry,
         private CurrentActor $actors,
         private CommandNesting $nesting,
-        private CommandSubjects $subjects,
         private CommandAdmission $admission,
         private Publication $publication,
+        private CommandEndContract $end,
     ) {}
 
     /**
@@ -100,7 +102,7 @@ final readonly class MiddlewareRunner
             )->assertAllowed();
         }
 
-        return $this->subjects->handOver($call, $next);
+        return $this->end->finish($call, $next);
     }
 
     /**
@@ -113,7 +115,8 @@ final readonly class MiddlewareRunner
     }
 
     /**
-     * Runs the call through the steps in order and then the last continuation.
+     * Runs the call through the steps in order and then the last continuation; a middleware is marked on the call's
+     * trail before it runs, a closure of the frame is not.
      *
      * @param  list<CommandMiddleware|MiddlewareStep|Closure(CommandCall, Closure): mixed>  $steps
      * @param  Closure(CommandCall): mixed  $last
@@ -125,13 +128,23 @@ final readonly class MiddlewareRunner
             fn (
                 Closure $next,
                 CommandMiddleware|MiddlewareStep|Closure $step,
-            ) => fn (
-                CommandCall $current,
-            ) => $step instanceof Closure ? $step($current, $next) : $step->handle($current, $next),
+            ) => fn (CommandCall $current) => $this->runStep($step, $current, $next),
             $last,
         );
 
         return $chain($call);
+    }
+
+    /**
+     * @param  Closure(CommandCall): mixed  $next
+     */
+    private function runStep(CommandMiddleware|MiddlewareStep|Closure $step, CommandCall $call, Closure $next): mixed
+    {
+        return match (true) {
+            $step instanceof Closure => $step($call, $next),
+            $step instanceof MiddlewareStep => $step->handle($call->passedThrough($step->middlewareClass()), $next),
+            default => $step->handle($call->passedThrough($step::class), $next),
+        };
     }
 
     /**

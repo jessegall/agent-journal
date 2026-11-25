@@ -28,6 +28,16 @@ final readonly class MiddlewareStep
     ) {}
 
     /**
+     * The module middleware the step runs.
+     *
+     * @return class-string<CommandMiddleware>
+     */
+    public function middlewareClass(): string
+    {
+        return $this->entry->middlewareClass();
+    }
+
+    /**
      * @param  Closure(CommandCall): mixed  $next
      */
     public function handle(CommandCall $call, Closure $next): mixed

@@ -8,6 +8,7 @@ use App\Console\Commands\PruneReceiptsCommand;
 use App\Contracts\Authorization\OperationResolver as OperationResolverContract;
 use App\Contracts\Bus\CallerReceipts as CallerReceiptsContract;
 use App\Contracts\Bus\CommandBus;
+use App\Contracts\Bus\CommandEnd as CommandEndContract;
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandStops as CommandStopsContract;
 use App\Contracts\Bus\CommandTransaction as CommandTransactionContract;
@@ -23,6 +24,7 @@ use App\Resolvers\OperationResolver;
 use App\Support\AcceptedReceipt;
 use App\Support\ActiveEventUnits;
 use App\Support\CallerReceipts;
+use App\Support\CommandEnd;
 use App\Support\CommandOriginChecks;
 use App\Support\CommandRegistry;
 use App\Support\CommandStops;
@@ -64,6 +66,7 @@ final class CommandBusServiceProvider extends ServiceProvider
     {
         $this->app->alias(RequestKey::class, RequestKeyContract::class);
         $this->app->bind(CallerReceiptsContract::class, CallerReceipts::class);
+        $this->app->bind(CommandEndContract::class, CommandEnd::class);
         $this->app->bind(OperationResolverContract::class, OperationResolver::class);
         $this->app->bind(RefusalMapperContract::class, RefusalMapper::class);
         $this->app->bind(OwnerCommandsContract::class, OwnerCommands::class);

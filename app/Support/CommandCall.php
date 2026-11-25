@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Bus\Command;
+use App\Contracts\Bus\CommandMiddleware;
 use App\Exceptions\ActorContextMissing;
 use App\Exceptions\CommandReplacedWithOtherClass;
 
@@ -18,6 +19,7 @@ final readonly class CommandCall
      * @param  Command<mixed>  $command
      * @param  Command<mixed>  $original
      * @param  list<array{Command<mixed>, object|string}>  $authorized  the command and the subject it was authorized on
+     * @param  list<class-string<CommandMiddleware>>  $trail  the middleware the call passed, in order
      */
     private function __construct(
         public Command $command,
@@ -27,6 +29,7 @@ final readonly class CommandCall
         public bool $isRepeatableRead,
         public ActorContext|null $actor,
         public array $authorized = [],
+        public array $trail = [],
     ) {}
 
     /**
@@ -104,6 +107,26 @@ final readonly class CommandCall
     }
 
     /**
+     * The middleware the call passed so far, in the order it passed them.
+     *
+     * @return list<class-string<CommandMiddleware>>
+     */
+    public function trail(): array
+    {
+        return $this->trail;
+    }
+
+    /**
+     * The same call, having passed the middleware too.
+     *
+     * @param  class-string<CommandMiddleware>  $middleware
+     */
+    public function passedThrough(string $middleware): self
+    {
+        return clone ($this, ['trail' => [...$this->trail, $middleware]]);
+    }
+
+    /**
      * The same call bound to the given dispatcher, its command a copy carrying it; the original stays unbound.
      */
     public function withDispatcher(ActorContext $dispatcher): self
@@ -132,6 +155,7 @@ final readonly class CommandCall
             $this->isExported,
             $this->isRepeatableRead,
             $this->actor,
+            trail: $this->trail,
         );
     }
 
@@ -152,6 +176,7 @@ final readonly class CommandCall
             $repeatableRead,
             $this->actor,
             [$authorized],
+            $this->trail,
         );
     }
 

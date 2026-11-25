@@ -8,6 +8,8 @@ use App\Commands\Agents\RetireAgent\RetireAgentCommand;
 use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
 use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Contracts\Bus\CommandBus;
+use App\Contracts\Bus\CommandEnd as CommandEndContract;
+use App\Enums\Engine\MiddlewareStage;
 use App\Exceptions\CommandRefused;
 use App\Exceptions\CommandReplacementRefused;
 use App\Exceptions\CommandResultChanged;
@@ -25,9 +27,15 @@ use App\Models\Records\AssignmentRecord;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
+use App\Support\CommandCall;
+use App\Support\CommandEnd;
+use App\Support\CommandFrame;
+use App\Support\CommandRegistry;
 use App\Support\CommandScope;
 use App\Support\MiddlewareDeclaration;
+use App\Support\RegisteredMiddleware;
 use App\Support\RequestKey;
+use Closure;
 use Domain\Plans\Commands\StartPlan\StartPlanCommand;
 use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Enums\PlanType;
@@ -107,6 +115,40 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
             ['cards around all', 'notes around all', 'notes around write', 'notes inside'],
             $trail->steps,
         );
+    }
+
+    public function test_a_command_reaches_its_end_having_passed_every_middleware_in_frame_order(): void
+    {
+        $this->installCommandModules();
+        $ends = new class($this->app->make(CommandEnd::class)) implements CommandEndContract
+        {
+            /**
+             * @var list<CommandCall>
+             */
+            public array $calls = [];
+
+            public function __construct(private readonly CommandEnd $end) {}
+
+            public function finish(CommandCall $call, Closure $handler): mixed
+            {
+                $this->calls[] = $call;
+
+                return $this->end->finish($call, $handler);
+            }
+        };
+        $this->app->instance(CommandEndContract::class, $ends);
+        $this->app->forgetScopedInstances();
+        $this->journal->actAsUserId(TestIds::of(1));
+
+        $this->app->make(CommandBus::class)->run(new WriteNoteCommand('traced'));
+
+        $this->assertSame([
+            ...CommandFrame::FIRST,
+            ...$this->moduleMiddleware(MiddlewareStage::BeforeTransaction),
+            CommandFrame::TRANSACTION,
+            ...CommandFrame::INSIDE,
+            ...$this->moduleMiddleware(MiddlewareStage::InsideTransaction),
+        ], $ends->calls[0]->trail());
     }
 
     public function test_a_replacement_reaches_the_handler_and_a_refusal_writes_nothing(): void
@@ -325,5 +367,20 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         $this->expectException(CommandReplacementRefused::class);
 
         $this->app->make(CommandBus::class)->run(new ShuffleDeckCommand('red'));
+    }
+
+    /**
+     * The module middleware the registry runs on a written note in the stage, in its order.
+     *
+     * @return list<string>
+     */
+    private function moduleMiddleware(MiddlewareStage $stage): array
+    {
+        $entries = array_filter(
+            $this->app->make(CommandRegistry::class)->middlewareFor(WriteNoteCommand::class),
+            fn (RegisteredMiddleware $entry) => $entry->runsIn($stage),
+        );
+
+        return array_values(array_map(fn (RegisteredMiddleware $entry) => $entry->middlewareClass(), $entries));
     }
 }
