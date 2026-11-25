@@ -1,6 +1,6 @@
 import type { VisitOptions } from '@inertiajs/core';
 import type { NotificationChangePage, NotificationPage } from '@/generated/types/core';
-import { read, readAll, readQuestion, readTarget } from '@/routes/communication/notifications';
+import { read, readAll, readTarget } from '@/routes/communication/notifications';
 import { router } from '@inertiajs/vue3';
 import { PropReadFailed, reloadProp } from '@kit/pageReads';
 import { NotificationRequestFailed } from './notificationStore';
@@ -39,7 +39,6 @@ export const notificationVisits: NotificationClient = {
             router.reload({ ...options, data: { notificationsSince: cursor } }),
         ),
     markRead: (receiptId) => markedThen(read.url(), { receiptId }),
-    markQuestionRead: (messageId) => markedThen(readQuestion.url(), { messageId }),
     markTargetRead: (targetKey, targetId) => markedThen(readTarget.url(), { targetKey, targetId }),
     markAll: (through) => markedThen(readAll.url(), { through: Number(through) }),
 };

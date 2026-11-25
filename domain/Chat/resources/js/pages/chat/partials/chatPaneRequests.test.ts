@@ -12,7 +12,7 @@ const revealedProps = ref(new Set<string>());
 vi.mock('@inertiajs/vue3', async () => (await import('@kit/testing/pageRequests')).recordingInertia(sent));
 vi.mock('@kit/notifications', () => ({
     LEASE_MILLISECONDS: 30_000,
-    useNotifications: () => ({ markQuestionRead: async () => undefined }),
+    useNotifications: () => ({}),
 }));
 vi.mock('@kit/protectedView', () => ({
     isRevealed: (prop: string) => revealedProps.value.has(prop),

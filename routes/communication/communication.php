@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Calls\ReadMessageController;
+use App\Http\Controllers\Calls\ReadUnreadMessagesController;
 use App\Http\Controllers\Communication\MarkAllNotificationsReadController;
 use App\Http\Controllers\Communication\MarkNotificationReadController;
-use App\Http\Controllers\Communication\MarkQuestionNotificationReadController;
 use App\Http\Controllers\Communication\MarkTargetNotificationReadController;
 use App\Http\Controllers\Communication\SendMessageController;
 use App\Support\CallRoutes;
@@ -18,8 +19,8 @@ Route::middleware(['journal.agent', SubstituteBindings::class])
     ->group(function (): void {
         $calls = Container::getInstance()->make(CallRoutes::class);
         $calls->register(App\Http\Controllers\Calls\SendMessageController::class)->name('send');
-        $calls->register(App\Http\Controllers\Calls\ReadMessageController::class)->name('read');
-        $calls->register(App\Http\Controllers\Calls\ReadUnreadMessagesController::class)->name('read-unread');
+        $calls->register(ReadMessageController::class)->name('read');
+        $calls->register(ReadUnreadMessagesController::class)->name('read-unread');
     });
 
 Route::middleware(['web', 'auth', 'journal.user'])
@@ -31,9 +32,6 @@ Route::middleware(['web', 'auth', 'journal.user'])
 
         Route::post('notifications/read-all', MarkAllNotificationsReadController::class)
             ->name('notifications.read-all');
-
-        Route::post('notifications/read-question', MarkQuestionNotificationReadController::class)
-            ->name('notifications.read-question');
 
         Route::post('notifications/read-target', MarkTargetNotificationReadController::class)
             ->name('notifications.read-target');

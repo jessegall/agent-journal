@@ -11,7 +11,6 @@ export const LEASE_MILLISECONDS = 30_000;
 /**
  * The target key of a question notification, as app/Communication/Resolvers/QuestionNotificationTarget.php names it.
  */
-export const QUESTION_TARGET = 'chat.question';
 
 /**
  * The pending key of a Mark all under way.
@@ -36,7 +35,6 @@ export class NotificationRequestFailed extends Error {
 export type NotificationClient = {
     page(cursor: string | null): Promise<NotificationPage>;
     markRead(receiptId: string): Promise<NotificationPage>;
-    markQuestionRead(messageId: string): Promise<NotificationPage>;
     markTargetRead(targetKey: string, targetId: string): Promise<NotificationPage>;
     changes(cursor: string): Promise<NotificationChangePage>;
     markAll(through: string): Promise<NotificationPage>;
@@ -64,7 +62,6 @@ export type NotificationStore = {
     canChange: ComputedRef<boolean>;
     refresh(): Promise<void>;
     markRead(receiptId: string): Promise<void>;
-    markQuestionRead(messageId: string): Promise<void>;
     markTargetRead(targetKey: string, targetId: string): Promise<void>;
     // Marks every unread receipt up to the shown list's watermark read; later arrivals stay unread.
     markAll(): Promise<void>;
@@ -354,8 +351,6 @@ export function notificationStore(
             await mark(receiptId, () => client.markRead(receiptId), () => isStillUnread(receiptId));
             showReadOlderRow(receiptId);
         },
-        markQuestionRead: (messageId) =>
-            mark(messageId, () => client.markQuestionRead(messageId), () => !isTargetRead(QUESTION_TARGET, messageId)),
         markAll: async () => {
             const through = snapshot.value?.through;
 

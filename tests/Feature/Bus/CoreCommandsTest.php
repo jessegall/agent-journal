@@ -66,7 +66,6 @@ use App\Commands\Drivers\RetryDriverSwitch\RetryDriverSwitchCommand;
 use App\Commands\Notifications\HideUnseatedNotifications\HideUnseatedNotificationsCommand;
 use App\Commands\Notifications\MarkAllNotificationsRead\MarkAllNotificationsReadCommand;
 use App\Commands\Notifications\MarkNotificationRead\MarkNotificationReadCommand;
-use App\Commands\Notifications\MarkQuestionNotificationRead\MarkQuestionNotificationReadCommand;
 use App\Commands\Notifications\MarkTargetNotificationRead\MarkTargetNotificationReadCommand;
 use App\Commands\Profiles\InstallBuiltInProfiles\InstallBuiltInProfilesCommand;
 use App\Commands\Profiles\SaveProfileDraft\SaveProfileDraftCommand;
@@ -252,7 +251,6 @@ final class CoreCommandsTest extends CommandBusTestCase
             HideUnseatedNotificationsCommand::class,
             MarkAllNotificationsReadCommand::class,
             MarkNotificationReadCommand::class,
-            MarkQuestionNotificationReadCommand::class,
             MarkTargetNotificationReadCommand::class,
             RevokeRunOutcomeAccessCommand::class,
         ], CoreCommands::privateCommands());

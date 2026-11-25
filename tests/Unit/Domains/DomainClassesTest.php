@@ -10,6 +10,7 @@ use Domain\Documents\DocumentsDomain;
 use Domain\Helpers\HelpersDomain;
 use Domain\Memory\MemoryDomain;
 use Domain\Plans\PlansDomain;
+use Domain\Questions\QuestionsDomain;
 use Domain\Reminders\RemindersDomain;
 use Domain\Rules\RulesDomain;
 use Domain\Sequences\SequencesDomain;
@@ -123,7 +124,7 @@ final class DomainClassesTest extends TestCase
             'PhaseMissing',
         ]];
 
-        yield 'Chat' => [ChatDomain::class, [], ['ChatReconcileMarked', 'ChatReconciled', 'DockChanged']];
+        yield 'Chat' => [ChatDomain::class, [SequencesDomain::class, QuestionsDomain::class], ['ChatMessageChanged', 'DockChanged', 'PairChats']];
 
         yield 'Memory' => [MemoryDomain::class, [], [
             'MemoryResolver',
@@ -150,6 +151,15 @@ final class DomainClassesTest extends TestCase
         ]];
 
         yield 'Sequences' => [SequencesDomain::class, [], []];
+
+        yield 'Questions' => [QuestionsDomain::class, [], [
+            'AnswerQuestionCommand',
+            'QuestionAsked',
+            'QuestionAnswered',
+            'QuestionNotificationKeys',
+            'QuestionSummaryReader',
+            'QuestionSummary',
+        ]];
 
         yield 'Reminders' => [RemindersDomain::class, [], []];
 

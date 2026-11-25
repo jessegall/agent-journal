@@ -7,10 +7,10 @@ namespace Domain\Chat\Listeners;
 use App\Attributes\InCommandTransaction;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Events\Listener;
-use App\Events\Questions\QuestionAsked;
-use App\Models\Questions\Question;
 use Domain\Chat\Commands\CreateChatMessage\CreateChatMessageCommand;
 use Domain\Chat\Enums\ChatMessageType;
+use Domain\Questions\Events\QuestionAsked;
+use Domain\Questions\Values\QuestionNotificationKeys;
 
 /**
  * Every question asked in an inbox shows in its chat as a question card.
@@ -24,7 +24,7 @@ final readonly class RecordChatQuestion implements Listener
     {
         $this->commands->run(new CreateChatMessageCommand(
             $event->inboxId,
-            Question::linkType(),
+            QuestionNotificationKeys::target(),
             $event->questionId,
             ChatMessageType::Question,
         ));

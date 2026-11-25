@@ -6,8 +6,8 @@ namespace Tests\Architecture;
 
 use App\Contracts\Records\AuthoredModel;
 use App\Models\Messages\Message;
-use App\Models\Questions\Question;
 use App\Support\Reflector;
+use Domain\Questions\Models\Question;
 use Illuminate\Database\Eloquent\Model;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\TestCase;

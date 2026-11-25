@@ -6,6 +6,7 @@ use Domain\Documents\DocumentsDomain;
 use Domain\Helpers\HelpersDomain;
 use Domain\Memory\MemoryDomain;
 use Domain\Plans\PlansDomain;
+use Domain\Questions\QuestionsDomain;
 use Domain\Reminders\RemindersDomain;
 use Domain\Rules\RulesDomain;
 use Domain\Sequences\SequencesDomain;
@@ -19,6 +20,7 @@ return [
     MemoryDomain::class,
     RulesDomain::class,
     SequencesDomain::class,
+    QuestionsDomain::class,
     RemindersDomain::class,
     HelpersDomain::class,
 ];

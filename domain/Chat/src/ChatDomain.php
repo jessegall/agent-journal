@@ -47,6 +47,7 @@ use Domain\Chat\Http\Pages\Resolvers\ChatWindowResolver;
 use Domain\Chat\Http\Pages\Resolvers\ChosenAgentSection;
 use Domain\Chat\Policies\MessagePinPolicy;
 use Domain\Chat\Support\Skills\ChatSkill;
+use Domain\Questions\QuestionsDomain;
 use Domain\Sequences\SequencesDomain;
 
 final class ChatDomain extends Domain implements
@@ -68,7 +69,7 @@ final class ChatDomain extends Domain implements
      */
     public function requires(): array
     {
-        return [SequencesDomain::class];
+        return [SequencesDomain::class, QuestionsDomain::class];
     }
 
     public function exports(): Exports

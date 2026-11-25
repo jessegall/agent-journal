@@ -56,6 +56,7 @@
             "Domain\\Helpers\\": "domain/Helpers/src/",
             "Domain\\Memory\\": "domain/Memory/src/",
             "Domain\\Plans\\": "domain/Plans/src/",
+            "Domain\\Questions\\": "domain/Questions/src/",
             "Domain\\Reminders\\": "domain/Reminders/src/",
             "Domain\\Rules\\": "domain/Rules/src/",
             "Domain\\Sequences\\": "domain/Sequences/src/",
@@ -68,6 +69,7 @@
     "autoload-dev": {
         "psr-4": {
             "Domain\\Chat\\Tests\\": "domain/Chat/tests/",
+            "Domain\\Questions\\Tests\\": "domain/Questions/tests/",
             "Domain\\Documents\\Tests\\": "domain/Documents/tests/",
             "Domain\\Plans\\Tests\\": "domain/Plans/tests/",
             "Domain\\Rules\\Tests\\": "domain/Rules/tests/",

@@ -9,13 +9,13 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\AuthoredModel;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Messages\Message;
-use App\Models\Questions\Question;
 use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Enums\ChatMessageType;
 use Domain\Chat\Events\ChatMessageChanged;
 use Domain\Chat\Support\ChatGrouping;
+use Domain\Questions\Values\QuestionNotificationKeys;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -200,7 +200,7 @@ final class ChatMessage extends Model implements EventSource
      */
     public static function findForQuestion(string $questionId): self|null
     {
-        return self::query()->forSourceKey(Question::linkType(), $questionId)->first();
+        return self::query()->forSourceKey(QuestionNotificationKeys::target(), $questionId)->first();
     }
 
     /**

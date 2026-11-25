@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Resolvers;
 
-use App\Contracts\Notifications\NotificationTargetResolver;
 use App\Contracts\Navigation\DeclaredPages;
+use App\Contracts\Notifications\NotificationTargetResolver;
 use App\Data\Notifications\NotificationLink;
-use App\Models\Questions\Question;
+use Domain\Questions\Contracts\QuestionSummaryReader;
 
 /**
  * A question's notification opens the chat of the inbox it was asked in, where its card waits for the answer.
@@ -16,16 +16,16 @@ final readonly class QuestionNotificationTarget implements NotificationTargetRes
 {
     private const string CHAT_PAGE = 'chat.conversation';
 
-    public function __construct(private DeclaredPages $pages) {}
+    public function __construct(private DeclaredPages $pages, private QuestionSummaryReader $questions) {}
 
     public function linksFor(array $ids): array
     {
         $links = [];
 
-        foreach (Question::query()->whereKey($ids)->limit(count($ids))->get() as $question) {
+        foreach ($this->questions->byIds($ids) as $question) {
             $links[$question->id] = new NotificationLink(
-                strtok($question->text, "\n") ?: $question->text,
-                $this->pages->addressOf(self::CHAT_PAGE, ['inbox' => $question->inbox_id]),
+                $question->firstLine,
+                $this->pages->addressOf(self::CHAT_PAGE, ['inbox' => $question->inboxId]),
             );
         }
 

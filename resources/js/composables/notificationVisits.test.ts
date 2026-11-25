@@ -19,7 +19,6 @@ vi.mock('@inertiajs/vue3', () => ({
 vi.mock('@/routes/communication/notifications', () => ({
     read: { url: () => '/communication/notifications/read' },
     readAll: { url: () => '/communication/notifications/read-all' },
-    readQuestion: { url: () => '/communication/notifications/read-question' },
     readTarget: { url: () => '/communication/notifications/read-target' },
 }));
 
@@ -50,7 +49,7 @@ describe('notificationVisits', () => {
         posts[0].options.onSuccess({ props: { notifications: { unreadCount: 0 } } });
         const refused = notificationVisits.markRead('receipt-1');
         posts[1].options.onError();
-        const lost = notificationVisits.markQuestionRead('message-1');
+        const lost = notificationVisits.markTargetRead('ask', 'ask-1');
         const showsErrorPage = posts[2].options.onHttpException({ status: 503 });
 
         await expect(marked).resolves.toEqual({ unreadCount: 0 });
