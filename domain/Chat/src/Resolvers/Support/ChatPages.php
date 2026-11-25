@@ -87,7 +87,7 @@ final readonly class ChatPages
         $cursor = $beforeId === null ? null : ChatMessage::query()->ofInbox($inboxId)->findOrFail($beforeId);
         $rows = ChatMessage::query()
             ->pageBefore($inboxId, $cursor)
-            ->with('source')
+            ->withSource()
             ->limit(ChatMessage::PAGE_SIZE + 1)
             ->get();
         $shown = $rows->take(ChatMessage::PAGE_SIZE)->reverse()->values();

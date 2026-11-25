@@ -22,7 +22,7 @@ final readonly class DocumentDockResolver implements SectionResolver
     public function read(SlotContext $context): DockData
     {
         $documents = Document::query()
-            ->with('currentRevision')
+            ->withCurrentRevision()
             ->inAttention(AttentionState::Active)
             ->newestFirst()
             ->limit(self::SUGGESTIONS_SHOWN)

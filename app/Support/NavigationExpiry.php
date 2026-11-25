@@ -33,10 +33,7 @@ final readonly class NavigationExpiry implements NavigationExpiryContract
                 NavigationState::Answering,
             ])
             ->expiredBefore(CarbonImmutable::now())
-            ->with([
-                'driverRequest',
-                'runtime',
-            ])
+            ->withDriverRequestAndRuntime()
             ->lockForUpdate()
             ->limit(self::SWEEP_LIMIT)
             ->get();

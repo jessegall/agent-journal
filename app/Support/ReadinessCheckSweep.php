@@ -25,7 +25,7 @@ final readonly class ReadinessCheckSweep
     public function sweep(CarbonImmutable $at): void
     {
         $this->transaction->run(fn () => DriverRequest::query()
-            ->with('runtime')
+            ->withRuntime()
             ->unansweredReadinessChecksSince($at->subSeconds(self::ANSWER_SECONDS_LIMIT))
             ->byCreatedAt()
             ->limit(self::PASS_LIMIT)

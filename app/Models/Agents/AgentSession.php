@@ -716,4 +716,48 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     {
         $query->orderByDesc('created_at');
     }
+
+    /**
+     * The rows with their agent and currentConversation loaded.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withAgentAndCurrentConversation(Builder $query): void
+    {
+        $query->with(['agent', 'currentConversation']);
+    }
+
+    /**
+     * The rows with their startToken and agent loaded.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withStartTokenAndAgent(Builder $query): void
+    {
+        $query->with(['startToken', 'agent']);
+    }
+
+    /**
+     * The rows with their startToken loaded.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withStartToken(Builder $query): void
+    {
+        $query->with('startToken');
+    }
+
+    /**
+     * The rows with their agent loaded.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withAgent(Builder $query): void
+    {
+        $query->with('agent');
+    }
 }

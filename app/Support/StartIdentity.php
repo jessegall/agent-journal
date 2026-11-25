@@ -40,12 +40,7 @@ final readonly class StartIdentity
             return;
         }
 
-        $session = AgentSession::query()->with(
-            [
-                'agent',
-                'currentConversation',
-            ],
-        )->findOrFail($runtime->agent_session_id);
+        $session = AgentSession::query()->withAgentAndCurrentConversation()->findOrFail($runtime->agent_session_id);
 
         $resumedConversation = $session->currentConversation?->native_id;
 

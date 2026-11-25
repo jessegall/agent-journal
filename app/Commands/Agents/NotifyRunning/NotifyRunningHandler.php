@@ -33,7 +33,7 @@ final readonly class NotifyRunningHandler implements CommandHandler
         $saved = $this->keptDriverType($start->session_id);
 
         if ($saved !== null) {
-            AgentSession::query()->with('agent')->findOrFail($start->session_id)->agent->preferDriverType($saved);
+            AgentSession::query()->withAgent()->findOrFail($start->session_id)->agent->preferDriverType($saved);
         }
     }
 

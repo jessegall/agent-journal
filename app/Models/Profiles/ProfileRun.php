@@ -352,4 +352,15 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
     {
         $query->orderByDesc('sequence');
     }
+
+    /**
+     * The rows with their results loaded.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withResults(Builder $query): void
+    {
+        $query->with('results');
+    }
 }

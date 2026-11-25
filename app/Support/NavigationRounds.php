@@ -30,7 +30,7 @@ final readonly class NavigationRounds
 
     public function append(NavigationRequest $navigation, NavigationRound $round): DriverRequest
     {
-        $runtime = AgentRuntime::query()->with('session')->findOrFail($navigation->agent_runtime_id);
+        $runtime = AgentRuntime::query()->withSession()->findOrFail($navigation->agent_runtime_id);
         $target = new StackTarget($runtime->session->agent_id, $runtime->agent_session_id);
 
         return $this->requests->append(

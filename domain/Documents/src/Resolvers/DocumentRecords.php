@@ -170,7 +170,7 @@ final readonly class DocumentRecords implements DocumentResolver
      */
     public static function published(int|string $reference): Document
     {
-        $documents = Document::query()->sharedPublished()->with('currentRevision');
+        $documents = Document::query()->sharedPublished()->withCurrentRevision();
 
         if (is_int($reference)) {
             return $documents->where('number', $reference)->firstOr(

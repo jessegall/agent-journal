@@ -30,7 +30,7 @@ final readonly class ProjectRules
             return array_values(ClassificationRule::query()
                 ->ofProject($this->projects->current())
                 ->active()
-                ->with('activeRevision')
+                ->withActiveRevision()
                 ->readLimit(1_000)
                 ->get()
                 ->map(fn (ClassificationRule $rule): RuleRevision => $rule->activeRevision)

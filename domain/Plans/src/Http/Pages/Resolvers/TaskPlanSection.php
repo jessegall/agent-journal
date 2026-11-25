@@ -28,7 +28,7 @@ final readonly class TaskPlanSection implements SectionResolver
         $this->actors->actor();
         $taskId = (string) $context->id;
         $this->tasks->requireVisible($taskId);
-        $phase = Phase::query()->holdingTask($taskId)->with('plan')->first();
+        $phase = Phase::query()->holdingTask($taskId)->withPlan()->first();
 
         if ($phase === null) {
             return TaskPlanData::from([]);

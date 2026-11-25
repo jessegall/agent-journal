@@ -23,7 +23,7 @@ final readonly class DraftRecords implements DraftResolver
 
     public function current(int $documentNumber): DraftView
     {
-        $document = Document::query()->sharedPublished()->with('draft')->withNumber($documentNumber)->firstOr(DraftMissing::throwing()->forDocument($documentNumber));
+        $document = Document::query()->sharedPublished()->withDraft()->withNumber($documentNumber)->firstOr(DraftMissing::throwing()->forDocument($documentNumber));
 
         $draft = $document->draft ?? throw DraftMissing::forDocument($documentNumber);
 
@@ -36,7 +36,7 @@ final readonly class DraftRecords implements DraftResolver
 
     public function stateOf(int $documentNumber): DraftState
     {
-        $document = Document::query()->sharedPublished()->with('draft')->withNumber($documentNumber)->firstOr(DraftMissing::throwing()->forDocument($documentNumber));
+        $document = Document::query()->sharedPublished()->withDraft()->withNumber($documentNumber)->firstOr(DraftMissing::throwing()->forDocument($documentNumber));
 
         $draft = $document->draft;
 

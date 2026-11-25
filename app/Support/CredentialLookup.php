@@ -18,10 +18,7 @@ final readonly class CredentialLookup
 
     public function sessionFor(string $token): AgentSession
     {
-        $session = AgentSession::query()->with([
-            'startToken',
-            'agent',
-        ])
+        $session = AgentSession::query()->withStartTokenAndAgent()
             ->whereHas(
                 'startToken',
                 fn (Builder $startToken) => $startToken->where('token_hash', StartTokens::hashOf($token)),

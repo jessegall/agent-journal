@@ -46,7 +46,7 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
          */
         // Only the runtimes with a request waiting: a host keeps the runtime of every session it ever ran.
         $runtimes = AgentRuntime::query()
-            ->with('session.agent')
+            ->withSessionAgent()
             ->onHost($command->hostId)
             ->whereHas('requests', fn (Builder $requests) => $requests->where('progress', RequestProgress::Accepted))
             ->readAll('every runtime of one host with a request waiting is offered its work')

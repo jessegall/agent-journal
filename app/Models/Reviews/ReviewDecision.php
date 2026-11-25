@@ -138,4 +138,15 @@ final class ReviewDecision extends Model implements EventSource, ReadableModel
     {
         $query->where('merge_ask_id', $askId);
     }
+
+    /**
+     * The rows with their review loaded.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withReview(Builder $query): void
+    {
+        $query->with('review');
+    }
 }

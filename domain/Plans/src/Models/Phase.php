@@ -379,4 +379,15 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
     {
         $query->orderBy('number');
     }
+
+    /**
+     * The rows with their plan loaded.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withPlan(Builder $query): void
+    {
+        $query->with('plan');
+    }
 }

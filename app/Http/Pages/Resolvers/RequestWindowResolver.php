@@ -82,7 +82,7 @@ final readonly class RequestWindowResolver implements PageResolver
         return ClassificationRule::query()
             ->ofProject($request->project_key)
             ->ofRule($declared->scope, $declared->id)
-            ->with('activeRevision')
+            ->withActiveRevision()
             ->first();
     }
 

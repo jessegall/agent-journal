@@ -235,4 +235,15 @@ final class DocumentDraft extends Model implements EventSource, ReadableModel
     {
         $query->where('author_type', $authorType);
     }
+
+    /**
+     * The rows with their document loaded.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withDocument(Builder $query): void
+    {
+        $query->with('document');
+    }
 }

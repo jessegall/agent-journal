@@ -37,7 +37,7 @@ final readonly class DeliverClosingWordsHandler implements CommandHandler
         }
 
         $words = $turn->closing_words ?? throw ClosingWordsRefused::noOffer();
-        $lastRead = MessageReadEntry::query()->latestOf($agent)->with('message')->first()
+        $lastRead = MessageReadEntry::query()->latestOf($agent)->withMessage()->first()
             ?? throw ClosingWordsRefused::nothingRead();
         $messageId = $this->commands->run(new SendMessageCommand($lastRead->message->inbox_id, $words));
 

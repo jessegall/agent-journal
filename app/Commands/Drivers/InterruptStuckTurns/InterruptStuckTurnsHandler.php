@@ -34,7 +34,7 @@ final readonly class InterruptStuckTurnsHandler implements CommandHandler
         $this->access->assertMaintenanceGranted(InterruptStuckTurnsCommand::MAINTENANCE_SCOPE);
 
         $stuck = DriverRequest::query()
-            ->with('runtime.session')
+            ->withRuntimeSession()
             ->turnsApplyingSince(CarbonImmutable::now()->subMinutes(self::TURN_MINUTES_LIMIT))
             ->byUpdatedAt()
             ->limit(self::PASS_LIMIT)

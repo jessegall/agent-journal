@@ -128,4 +128,15 @@ final class MessageReadEntry extends Model implements EventSource
     {
         $query->whereIn('message_id', $messageIds);
     }
+
+    /**
+     * The rows with their message loaded.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withMessage(Builder $query): void
+    {
+        $query->with('message');
+    }
 }

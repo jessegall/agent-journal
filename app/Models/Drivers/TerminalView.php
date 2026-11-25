@@ -284,4 +284,15 @@ final class TerminalView extends Model implements EventSource, ReadableModel
     {
         $query->where('agent_runtime_id', $agentRuntimeId);
     }
+
+    /**
+     * The rows with their runtime loaded.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withRuntime(Builder $query): void
+    {
+        $query->with('runtime');
+    }
 }

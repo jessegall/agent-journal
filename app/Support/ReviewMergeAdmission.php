@@ -28,7 +28,7 @@ final readonly class ReviewMergeAdmission implements MergeAdmission
         ReviewDecisionReference $decision,
         int $expectedVersion,
     ): ApprovedHead {
-        $approval = ReviewDecision::query()->with('review')->whereKey($decision->id)->first();
+        $approval = ReviewDecision::query()->withReview()->whereKey($decision->id)->first();
 
         if ($approval === null || $approval->decision !== ReviewDecisionType::Approved
             || $approval->merge_ask_id === null) {

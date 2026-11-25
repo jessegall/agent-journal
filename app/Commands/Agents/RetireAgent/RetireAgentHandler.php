@@ -98,7 +98,7 @@ final readonly class RetireAgentHandler implements CommandHandler
     {
         $sessions = AgentSession::query()
             ->ofAgent($target->id)
-            ->with('startToken')
+            ->withStartToken()
             ->readAll('every session of the retiring agent ends')
             ->get();
 

@@ -921,4 +921,26 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
     {
         $query->orderBy('updated_at');
     }
+
+    /**
+     * The rows with their runtime loaded.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withRuntime(Builder $query): void
+    {
+        $query->with('runtime');
+    }
+
+    /**
+     * The rows with their runtime's session loaded.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withRuntimeSession(Builder $query): void
+    {
+        $query->with('runtime.session');
+    }
 }

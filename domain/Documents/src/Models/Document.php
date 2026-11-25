@@ -378,4 +378,26 @@ final class Document extends Model implements Commentable, Dockable, EventSource
     {
         $query->where('number', $number);
     }
+
+    /**
+     * The rows with their currentRevision loaded.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withCurrentRevision(Builder $query): void
+    {
+        $query->with('currentRevision');
+    }
+
+    /**
+     * The rows with their draft loaded.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withDraft(Builder $query): void
+    {
+        $query->with('draft');
+    }
 }

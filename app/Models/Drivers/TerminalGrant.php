@@ -284,4 +284,15 @@ final class TerminalGrant extends Model implements EventSource, ReadableModel
     {
         $query->where('agent_id', $agentId);
     }
+
+    /**
+     * The rows with their runtime's session loaded.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withRuntimeSession(Builder $query): void
+    {
+        $query->with('runtime.session');
+    }
 }

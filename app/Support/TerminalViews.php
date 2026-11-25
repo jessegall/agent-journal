@@ -274,7 +274,7 @@ final readonly class TerminalViews implements TerminalViewCloser
      */
     private function interestOf(string $agentId, ActorIdentity $viewer, string $readInterestId): TerminalView
     {
-        $view = TerminalView::query()->with('runtime')->ownedBy($viewer)->ofAgent($agentId)
+        $view = TerminalView::query()->withRuntime()->ownedBy($viewer)->ofAgent($agentId)
             ->withReadInterest($readInterestId)->first();
 
         if ($view === null) {

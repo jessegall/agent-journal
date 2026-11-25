@@ -95,7 +95,7 @@ final readonly class AgentNavigationRecords implements NavigationReader
         );
 
         $this->transaction->run(fn () => $this->answering->checkAnswerer($navigation));
-        $runtime = AgentRuntime::query()->with('session.agent')->findOrFail($navigation->agent_runtime_id);
+        $runtime = AgentRuntime::query()->withSessionAgent()->findOrFail($navigation->agent_runtime_id);
         $roundQuery = DriverRequest::query()->ofNavigationRequest($navigation->id);
         $roundCount = $roundQuery->clone()->count();
 

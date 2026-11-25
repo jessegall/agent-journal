@@ -30,7 +30,7 @@ final readonly class InterruptNavigationHandler implements CommandHandler
         $navigation = NavigationRequest::query()
             ->acrossActors()
             ->whereKey($command->navigationId)
-            ->with('driverRequest')
+            ->withDriverRequest()
             ->lockForUpdate()
             ->firstOr(NavigationRaiseRefused::throwing()->unknownRequest($command->navigationId));
 

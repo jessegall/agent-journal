@@ -304,4 +304,15 @@ final class ChatMessage extends Model implements EventSource
     {
         $query->where('inbox_id', $inboxId);
     }
+
+    /**
+     * The rows with their source loaded.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withSource(Builder $query): void
+    {
+        $query->with('source');
+    }
 }

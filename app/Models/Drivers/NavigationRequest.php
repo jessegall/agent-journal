@@ -464,4 +464,26 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     {
         $query->whereIn('id', $ids);
     }
+
+    /**
+     * The rows with their driverRequest and runtime loaded.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withDriverRequestAndRuntime(Builder $query): void
+    {
+        $query->with(['driverRequest', 'runtime']);
+    }
+
+    /**
+     * The rows with their driverRequest loaded.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withDriverRequest(Builder $query): void
+    {
+        $query->with('driverRequest');
+    }
 }

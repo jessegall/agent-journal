@@ -48,7 +48,7 @@ final readonly class PhaseRecords implements RecordProvider
     {
         $this->actors->actor();
 
-        return Phase::query()->with('plan');
+        return Phase::query()->withPlan();
     }
 
     protected function cardOf(Model $record): RecordCard

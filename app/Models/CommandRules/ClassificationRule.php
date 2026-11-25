@@ -215,4 +215,15 @@ final class ClassificationRule extends Model implements EventSource, ReadableMod
     {
         $query->where('state', ClassificationState::Active->value);
     }
+
+    /**
+     * The rows with their activeRevision loaded.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withActiveRevision(Builder $query): void
+    {
+        $query->with('activeRevision');
+    }
 }

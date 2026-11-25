@@ -29,7 +29,7 @@ final readonly class DocumentDocking implements DockableProvider
     {
         $documents = Document::query()
             ->sharedPublished()
-            ->with('currentRevision')
+            ->withCurrentRevision()
             ->whereKey($ids)
             ->readExactly(count($ids))
             ->get();

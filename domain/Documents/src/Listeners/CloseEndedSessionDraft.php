@@ -23,7 +23,7 @@ final readonly class CloseEndedSessionDraft implements Listener
 
     public function handle(SessionClosed $event): void
     {
-        $drafts = DocumentDraft::query()->with('document')->heldByAgent($event->agentId);
+        $drafts = DocumentDraft::query()->withDocument()->heldByAgent($event->agentId);
         $draft = $this->provenance->fromSession($drafts, $event->sessionId)->first();
 
         if ($draft === null) {
