@@ -41,7 +41,6 @@ final class JsonIntoDataTest extends TestCase
         'App\\Support\\ConditionTree::fromJson',
         'App\\Support\\WorkspaceSources::fromJson',
         'App\\Support\\Drivers\\ClaudeFirstRun::settle',
-        'App\\Values\\LayoutShape::toArray',
     ];
 
     public function test_every_decoded_json_goes_straight_into_a_data_class(): void

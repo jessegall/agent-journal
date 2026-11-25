@@ -6,6 +6,8 @@ namespace App\Support;
 
 use BackedEnum;
 use PhpOption\Option;
+use Spatie\LaravelData\Attributes\PropertyForMorph;
+use Spatie\LaravelData\Contracts\PropertyMorphableData;
 
 /**
  * What a command may carry and a handler may return: whole numbers, text, yes or no and
@@ -38,6 +40,10 @@ final readonly class CommandGrammar
     public function problemWithProperties(string $class, array $seen = []): string|null
     {
         foreach (Reflector::of($class)->ownProperties() as $property) {
+            if ($property->isMarkedWith(PropertyForMorph::class)) {
+                continue;
+            }
+
             if (! $property->isPublic() || ! $property->isPromoted()) {
                 return "{$property->name()} is not a public constructor property";
             }
@@ -229,6 +235,19 @@ final readonly class CommandGrammar
     }
 
     /**
+     * Whether the class is final, or the abstract base of a Data family that picks its final class from a property,
+     * such as a node of a pane grid.
+     */
+    private function isClosedValue(Reflector $declaration): bool
+    {
+        if ($declaration->isFinal()) {
+            return true;
+        }
+
+        return $declaration->isAbstract() && $declaration->implements(PropertyMorphableData::class);
+    }
+
+    /**
      * @param  list<string>  $seen
      */
     private function problemWithValue(string $name, array $seen): string|null
@@ -241,7 +260,7 @@ final readonly class CommandGrammar
 
         $declaration = $found->get();
 
-        if (! $declaration->isFinal() || ! $declaration->isImmutable()) {
+        if (! $this->isClosedValue($declaration) || ! $declaration->isImmutable()) {
             return "holds {$name}, which is not a final readonly value";
         }
 

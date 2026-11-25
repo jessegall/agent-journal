@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Pages;
 
+use App\Data\Layouts\LayoutShape;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -15,13 +16,10 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class LayoutData extends Data
 {
-    /**
-     * @param  array<string, mixed>  $shape
-     */
     public function __construct(
         public readonly string $id,
         public readonly string $name,
         #[LiteralTypeScriptType('Record<string, unknown>')]
-        public readonly array $shape,
+        public readonly LayoutShape $shape,
     ) {}
 }

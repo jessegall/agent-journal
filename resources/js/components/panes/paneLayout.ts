@@ -10,7 +10,7 @@ export type Pane = {
     id: string;
     windows: string[];
     active: string | null;
-    limitWidth: boolean;
+    isWidthLimited: boolean;
 };
 
 export type Split = {
@@ -173,7 +173,7 @@ export function pane(windows: string[], id: string = newId('pane')): Pane {
         id,
         windows,
         active: windows[0] ?? null,
-        limitWidth: false,
+        isWidthLimited: false,
     };
 }
 
@@ -252,7 +252,7 @@ export function activate(
  */
 export function toggleLimitWidth(node: LayoutNode, paneId: string): LayoutNode {
     return mapNodes(node, (each) =>
-        isPane(each, paneId) ? { ...each, limitWidth: !each.limitWidth } : each,
+        isPane(each, paneId) ? { ...each, isWidthLimited: !each.isWidthLimited } : each,
     );
 }
 

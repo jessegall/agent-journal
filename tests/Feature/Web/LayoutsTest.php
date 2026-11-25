@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
+use App\Data\Layouts\LayoutShape;
 use App\Models\Access\User;
 use App\Models\Records\Layout;
-use App\Values\LayoutShape;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\RefreshHookDatabase;
@@ -32,7 +32,7 @@ final class LayoutsTest extends TestCase
             'id' => 'pane-chat',
             'windows' => ['chat'],
             'active' => 'chat',
-            'limitWidth' => false,
+            'isWidthLimited' => false,
         ],
         'detached' => [],
     ];
@@ -94,12 +94,12 @@ final class LayoutsTest extends TestCase
         )->assertSessionHasNoErrors();
 
         $this->assertSame(self::LAYOUT_NAME, $layout->refresh()->name);
-        $this->assertSame('plans', $layout->shape['detached'][0]['key']);
+        $this->assertSame('plans', $layout->shape->detached[0]->key);
     }
 
     public function test_another_users_layout_is_neither_listed_nor_reached(): void
     {
-        $other = Layout::create(User::factory()->create()->id, 'Theirs', LayoutShape::of($this->shape));
+        $other = Layout::create(User::factory()->create()->id, 'Theirs', LayoutShape::from($this->shape));
 
         $this->actingAs($this->owner)->get('/')->assertInertia(
             fn (AssertableInertia $page) => $page->where('page.data.layouts', []),

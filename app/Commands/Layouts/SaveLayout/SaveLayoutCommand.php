@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Commands\Layouts\SaveLayout;
 
 use App\Attributes\Commands\Authorize;
+use App\Data\Layouts\LayoutShape;
 use App\Enums\Agents\AccessType;
 use App\Policies\LayoutPolicy;
 use App\Support\Command;
-use App\Values\LayoutShape;
 
 /**
  * The calling user saves a new layout under a name.

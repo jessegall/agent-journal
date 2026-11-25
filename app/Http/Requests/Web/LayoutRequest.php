@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Requests\Web;
 
 use App\Contracts\Actors\CurrentUserResolver;
+use App\Data\Layouts\LayoutShape;
 use App\Models\Records\Layout;
-use App\Values\LayoutShape;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Unique;
@@ -44,6 +44,6 @@ final class LayoutRequest extends FormRequest
 
     public function shape(): LayoutShape
     {
-        return LayoutShape::of($this->array('shape'));
+        return LayoutShape::from($this->array('shape'));
     }
 }

@@ -133,6 +133,16 @@ final class ReflectedProperty
     }
 
     /**
+     * Whether the property carries the attribute.
+     *
+     * @param  class-string  $attribute
+     */
+    public function isMarkedWith(string $attribute): bool
+    {
+        return $this->property->getAttributes($attribute) !== [];
+    }
+
+    /**
      * The declared type; none for an untyped property.
      *
      * @return Option<DeclaredType>

@@ -216,7 +216,7 @@ const paneEntries = computed<MenuEntry[]>(() => {
 
     return [
         {
-            label: props.pane.limitWidth ? 'Use full width' : 'Limit width',
+            label: props.pane.isWidthLimited ? 'Use full width' : 'Limit width',
             run: () =>
                 store.change(
                     toggleLimitWidth(store.layout.value, props.pane.id),
@@ -288,7 +288,7 @@ const paneEntries = computed<MenuEntry[]>(() => {
             <template v-if="pane.active">
                 <div
                     class="h-full"
-                    :class="{ 'mx-auto max-w-[808px]': pane.limitWidth }"
+                    :class="{ 'mx-auto max-w-[808px]': pane.isWidthLimited }"
                 >
                     <slot :window-key="pane.active" />
                 </div>

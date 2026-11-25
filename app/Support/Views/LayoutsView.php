@@ -26,7 +26,7 @@ final readonly class LayoutsView
                     [
                         'id' => (string) $layout->id,
                         'name' => $layout->name,
-                        'shape' => $layout->shape->toArray(),
+                        'shape' => $layout->shape,
                     ],
                 ),
             )

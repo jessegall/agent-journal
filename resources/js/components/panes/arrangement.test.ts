@@ -261,7 +261,7 @@ describe('day one and a first window', () => {
         const second = floatNewWindow(first, 'plans', screen, desk);
 
         expect(panesIn(dayOne.grid)).toMatchObject([
-            { windows: ['chat'], limitWidth: true },
+            { windows: ['chat'], isWidthLimited: true },
         ]);
         expect(first.detached).toMatchObject([
             { key: 'tasks', top: desk.top + 24, isMinimised: false },

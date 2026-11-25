@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models\Records;
 
-use App\Casts\LayoutShapeCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Data\Layouts\LayoutShape;
 use App\Events\Web\LayoutRemoved;
 use App\Events\Web\LayoutSaved;
-use App\Values\LayoutShape;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -39,7 +38,7 @@ final class Layout extends Model implements EventSource, ReadableModel
      */
     protected function casts(): array
     {
-        return ['shape' => LayoutShapeCast::class];
+        return ['shape' => LayoutShape::class];
     }
 
     // ----------[ Constructors ]----------

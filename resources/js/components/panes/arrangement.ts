@@ -61,7 +61,7 @@ export function defaultArrangement(
  */
 export function firstWindowOnly(firstWindow: string): Arrangement {
     return {
-        grid: { ...pane([firstWindow], 'pane-chat'), limitWidth: true },
+        grid: { ...pane([firstWindow], 'pane-chat'), isWidthLimited: true },
         detached: [],
     };
 }
@@ -455,7 +455,7 @@ function isNode(value: unknown): value is LayoutNode {
             Array.isArray(value.windows) &&
             value.windows.every((key) => typeof key === 'string') &&
             (value.active === null || typeof value.active === 'string') &&
-            typeof value.limitWidth === 'boolean'
+            typeof value.isWidthLimited === 'boolean'
         );
     }
 
