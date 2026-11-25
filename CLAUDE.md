@@ -86,6 +86,20 @@ yours to resolve at its source.
   Lifecycle, Hooks, Events, Internals; `tools/refactoring/state-sections.php` lists every fault.
 - An architecture test fails on a state handed a worked-out flag, count or list.
 
+## Core or domain (user messages 22324, 22326)
+
+- **Core** is what the journal cannot run without: the machinery every part stands on (the bus, actors and access,
+  agents, sessions and starts, records and links, the engine, settings, pages), and anything that every other part
+  needs. Core never imports a domain.
+- **A domain** is a capability the journal can run without. Each of these holds, or it belongs in core:
+  1. Removable: switched off or deleted, core and every other domain still boot and work; whoever uses it does so
+     only through its exported surface, behind a contract with an answer for when it is off.
+  2. One way in: it depends only on core and on other domains' exported commands, events, contracts and values.
+  3. Whole: it owns its subject end to end in its own folder (models, migrations, commands, events, pages, tools,
+     texts, frontend and tests), and nothing of that subject lives outside it.
+- An expansion pack is always a domain. A thing that every request, actor or domain needs (users and their access are
+  the example) is core, however self-contained it looks.
+
 ## Domains share what they export (rule 90; user messages 19890, 19894)
 
 - A domain uses another domain's exported commands, events, contracts and values freely, and a state may listen to any
