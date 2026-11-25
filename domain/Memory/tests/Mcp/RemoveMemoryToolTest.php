@@ -35,6 +35,7 @@ final class RemoveMemoryToolTest extends McpToolEntryTestCase
                 'memory_id' => $memory->id,
                 'request_key' => 'write-1',
             ])
+            ->reply(RemoveMemoryCommand::class, $memory->id)
             ->expects(RemoveMemoryCommand::class, ['memoryId' => $memory->id]);
     }
 }

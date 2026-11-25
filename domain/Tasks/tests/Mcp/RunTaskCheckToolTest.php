@@ -41,7 +41,7 @@ final class RunTaskCheckToolTest extends McpToolEntryTestCase
                 'operation' => 'Run the tests.',
                 'request_key' => 'tasks-1',
             ])
-            ->reply(RunTaskCheckCommand::class, (string) Str::ulid())
+            ->reply(RunTaskCheckCommand::class, Str::ulid())
             ->expects(RunTaskCheckCommand::class, [
                 'taskId' => $task->id,
                 'runNumber' => 1,

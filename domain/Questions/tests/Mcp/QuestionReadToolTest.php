@@ -38,6 +38,7 @@ final class QuestionReadToolTest extends McpToolEntryTestCase
                 'question_id' => $question->id,
                 'request_key' => 'write-1',
             ])
+            ->reply(ReadQuestionCommand::class, $question->shown)
             ->expects(ReadQuestionCommand::class, ['questionId' => $question->id]);
     }
 }

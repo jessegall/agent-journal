@@ -28,7 +28,7 @@ final class CommandRequestSampleToolTest extends McpToolEntryTestCase
 
         return ToolCall::by($start)
             ->arguments(['request' => $request, 'permit' => 'permit-1', 'request_key' => 'sample-1'])
-            ->reply(StartSampleCommand::class, (string) Str::ulid())
+            ->reply(StartSampleCommand::class, Str::ulid())
             ->expects(StartSampleCommand::class, [
                 'commandRequestId' => $request,
                 'permitId' => 'permit-1',

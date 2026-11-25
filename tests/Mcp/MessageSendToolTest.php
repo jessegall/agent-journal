@@ -26,7 +26,7 @@ final class MessageSendToolTest extends McpToolEntryTestCase
 
         return ToolCall::by($start)
             ->arguments(['inbox_id' => $inbox->id, 'body' => 'Half way.', 'request_key' => 'send-1'])
-            ->reply(SendMessageCommand::class, (string) Str::ulid())
+            ->reply(SendMessageCommand::class, Str::ulid())
             ->expects(SendMessageCommand::class, ['inboxId' => $inbox->id, 'body' => 'Half way.']);
     }
 }

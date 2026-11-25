@@ -44,7 +44,7 @@ final class QuestionAskToolTest extends McpToolEntryTestCase
                 ],
                 'request_key' => 'write-1',
             ])
-            ->reply(AskQuestionCommand::class, (string) Str::ulid())
+            ->reply(AskQuestionCommand::class, Str::ulid())
             ->expects(AskQuestionCommand::class, [
                 'inboxId' => $inbox->id,
                 'text' => 'Which database?',

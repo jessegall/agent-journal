@@ -38,7 +38,7 @@ final class MessageReactionToolTest extends McpToolEntryTestCase
                 'emoji' => '👍',
                 'request_key' => 'react-1',
             ])
-            ->reply(ReactCommand::class, (string) Str::ulid())
+            ->reply(ReactCommand::class, Str::ulid())
             ->expects(ReactCommand::class, [
                 'messageId' => $message->id,
                 'emoji' => '👍',

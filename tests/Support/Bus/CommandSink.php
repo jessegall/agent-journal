@@ -7,8 +7,14 @@ namespace Tests\Support\Bus;
 use App\Contracts\Bus\CommandEnd;
 use App\Contracts\Bus\RequestKey;
 use App\Support\CommandCall;
+use App\Support\CommandRegistry;
 use App\Support\CommandSubjects;
+use App\Support\DeclaredType;
+use App\Support\ReflectedType;
 use Closure;
+use PhpOption\Option;
+use Stringable;
+use Tests\Support\Bus\Exceptions\SunkReplyRefused;
 
 /**
  * The end of the bus in a test that sinks commands: it authorizes the subject as the handler's hand-over does, so a
@@ -27,22 +33,41 @@ final class CommandSink implements CommandEnd
      */
     private array $replies = [];
 
-    public function __construct(private readonly CommandSubjects $subjects, private readonly RequestKey $requestKey) {}
+    public function __construct(
+        private readonly CommandSubjects $subjects,
+        private readonly RequestKey $requestKey,
+        private readonly CommandRegistry $registry,
+    ) {}
 
     public function finish(CommandCall $call, Closure $handler): mixed
     {
         $this->subjects->authorized($call);
         $this->sunk[] = new SunkCommand($call->command(), $call->trail(), $call->actorText(), $this->requestKey->key());
 
-        return $this->replies[$call->name()] ?? null;
+        if (array_key_exists($call->name(), $this->replies)) {
+            return $this->replies[$call->name()];
+        }
+
+        foreach ($this->returnTypeOf($call->name()) as $type) {
+            if (! $type->isVoid() && ! $type->accepts(null)) {
+                throw SunkReplyRefused::missing($call->name(), $type->text);
+            }
+        }
+
+        return null;
     }
 
     /**
+     * The reply each command of the class is given, which its handler could have returned; a Stringable reply to a
+     * handler that returns a string is given as that string.
+     *
      * @param  class-string  $command
      */
     public function reply(string $command, mixed $reply): void
     {
-        $this->replies[$command] = $reply;
+        $this->replies[$command] = $this->returnTypeOf($command)->map(
+            fn (DeclaredType $type) => $this->replyOfType($command, $type, $reply),
+        )->getOrElse($reply);
     }
 
     /**
@@ -51,5 +76,30 @@ final class CommandSink implements CommandEnd
     public function sunk(): array
     {
         return $this->sunk;
+    }
+
+    /**
+     * @return Option<DeclaredType>
+     */
+    private function returnTypeOf(string $command): Option
+    {
+        return ReflectedType::of($this->registry->handlerOf($command))->method('handle')->returnType();
+    }
+
+    private function replyOfType(string $command, DeclaredType $type, mixed $reply): mixed
+    {
+        if ($type->isVoid()) {
+            throw SunkReplyRefused::forVoid($command);
+        }
+
+        if ($reply instanceof Stringable && ! $type->accepts($reply) && $type->accepts((string) $reply)) {
+            return (string) $reply;
+        }
+
+        if (! $type->accepts($reply)) {
+            throw SunkReplyRefused::ofAnotherType($command, $type->text, get_debug_type($reply));
+        }
+
+        return $reply;
     }
 }

@@ -35,7 +35,7 @@ final class SaveMemoryToolTest extends McpToolEntryTestCase
                 'weight' => 7,
                 'request_key' => 'write-1',
             ])
-            ->reply(SaveMemoryCommand::class, (string) Str::ulid())
+            ->reply(SaveMemoryCommand::class, Str::ulid())
             ->expects(SaveMemoryCommand::class, [
                 'text' => 'Run the phase tests once.',
                 'weight' => 7,
