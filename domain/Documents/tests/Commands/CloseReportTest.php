@@ -4,14 +4,23 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Commands;
 
+use App\Contracts\Actors\IdentityLinks;
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\ActorNotAllowed;
+use Domain\Comments\Models\Comment;
+use Domain\Documents\Commands\AppendUpload\AppendUploadCommand;
+use Domain\Documents\Commands\BeginUpload\BeginUploadCommand;
 use Domain\Documents\Commands\CloseReport\CloseReportCommand;
+use Domain\Documents\Commands\CommitUpload\CommitUploadCommand;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;
+use Domain\Documents\Contracts\Reports\ReportResolver;
 use Domain\Documents\Enums\AttentionStatus;
+use Domain\Documents\Enums\UploadType;
 use Domain\Documents\Models\Report;
+use Domain\Documents\Models\TextUpload;
 use Domain\Documents\Tests\TestCase;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 
@@ -34,7 +43,18 @@ final class CloseReportTest extends TestCase
         'document_revisions',
         'documents',
         'number_groups',
+        'agents',
+        'agent_sessions',
+        'session_tokens',
+        'agent_stacks',
+        'command_receipts',
+        'links',
+        'text_uploads',
+        'text_upload_chunks',
+        'plans',
     ];
+
+    private const string SETTLEMENT_REASON = 'The findings were addressed.';
 
     protected function setUp(): void
     {
@@ -62,6 +82,72 @@ final class CloseReportTest extends TestCase
         $this->expectException(ActorNotAllowed::class);
 
         $this->bus()->run(new CloseReportCommand('2', 'Not mine.'));
+    }
+
+    public function test_a_reviewer_files_links_comments_and_closes_without_changing_the_findings(): void
+    {
+        $writer = TestStart::start('writing-helper');
+        $writer->startRequest($this->app);
+        $bus = $this->app->make(CommandBus::class);
+        $source = $bus->run(new CreateDocumentCommand('Source', 'Design under review.', 'Published design.'));
+
+        $reviewer = TestStart::start('read-only-helper');
+        $reviewer->startRequest($this->app);
+        $findings = str_pad('', 300 * 1024, 'Finding and evidence. ');
+
+        $upload = $bus->run(
+            new BeginUploadCommand(UploadType::ReportBody, strlen($findings), hash('sha256', $findings)),
+        );
+
+        foreach (str_split($findings, TextUpload::CHUNK_BYTES) as $index => $part) {
+            $bus->run(new AppendUploadCommand($upload, $index, $part, hash('sha256', $part)));
+        }
+
+        $bus->run(new CommitUploadCommand($upload));
+
+        $id = $this->journal->agentCall($reviewer, 'POST', '/agent/reports/make', [
+            'title' => 'Review',
+            'abstract' => 'Evidence and observations.',
+            'upload_id' => $upload,
+            'about' => ['doc '.$source->number],
+            'request_key' => 'file-review',
+        ])->assertOk()->json('id');
+
+        $comment = [
+            'report_id' => $id,
+            'body' => 'Clarification on the first finding.',
+            'request_key' => 'clarify-first-finding',
+        ];
+
+        $first = $this->journal->agentCall($reviewer, 'POST', '/agent/reports/comment', $comment)->assertOk()->json();
+        $this->assertSame(
+            $first,
+            $this->journal->agentCall($reviewer, 'POST', '/agent/reports/comment', $comment)->assertOk()->json(),
+        );
+        $this->assertSame($comment['body'], Comment::query()->sole()->body);
+
+        $this->journal->agentCall($reviewer, 'POST', '/agent/reports/close', [
+            'number' => $id,
+            'reason' => self::SETTLEMENT_REASON,
+            'request_key' => 'close-review',
+        ])->assertOk();
+
+        $report = Report::query()->findOrFail($id);
+        $this->assertSame($findings, $report->body);
+        $this->assertSame(AttentionStatus::Settled, $report->attention);
+        $this->assertSame($reviewer->agent->id, $report->creator_id);
+        $links = $this->app->make(IdentityLinks::class);
+        $this->assertSame([$source->id], array_column($links->linkedOfType($report, 'documents.document'), 'id'));
+
+        $this->assertSame(
+            [$reviewer->session->id],
+            array_column($links->linkedOfType($report, 'core.agents.agent-session'), 'id'),
+        );
+
+        $reviewer->startRequest($this->app);
+        $inspection = $this->app->make(ReportResolver::class)->inspect($report->number);
+        $this->assertSame(self::SETTLEMENT_REASON, $inspection->settlements[0]->reason);
+        $this->assertDatabaseCount('plans', 0);
     }
 
     private function bus(): CommandBus

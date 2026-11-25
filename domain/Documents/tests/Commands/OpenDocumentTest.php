@@ -7,6 +7,8 @@ namespace Domain\Documents\Tests\Commands;
 use App\Contracts\Bus\CommandBus;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
+use Domain\Documents\Contracts\Drafts\DraftResolver;
+use Domain\Documents\Enums\EditingStatus;
 use Domain\Documents\Exceptions\DraftHeld;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Tests\TestCase;
@@ -89,6 +91,19 @@ final class OpenDocumentTest extends TestCase
         $this->expectException(DraftHeld::class);
         $this->expectExceptionMessage(TestIds::of(1));
         $this->bus()->run(new OpenDocumentCommand('1'));
+    }
+
+    public function test_a_second_request_in_the_same_worker_sees_no_draft_text_of_the_first(): void
+    {
+        $this->bus()->run(new OpenDocumentCommand('1'));
+        $this->assertSame(EditingStatus::HeldByViewer, $this->app->make(DraftResolver::class)->stateOf(1)->state);
+
+        $this->app->forgetScopedInstances();
+        $this->journal->actAsUserId(TestIds::of(2));
+
+        $state = $this->app->make(DraftResolver::class)->stateOf(1);
+        $this->assertSame(EditingStatus::Held, $state->state);
+        $this->assertNotSame(TestIds::of(2), Document::query()->sole()->creator_id);
     }
 
     private function bus(): CommandBus

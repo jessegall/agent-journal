@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Tests\Commands;
 
 use App\Contracts\Bus\CommandBus;
+use App\Events\Sessions\SessionClosed;
 use Domain\Documents\Commands\ChangeDocumentDetails\ChangeDocumentDetailsCommand;
 use Domain\Documents\Commands\CloseDocument\CloseDocumentCommand;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
@@ -12,10 +13,22 @@ use Domain\Documents\Commands\EditDocument\EditDocumentCommand;
 use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
 use Domain\Documents\Commands\ReplaceDocumentText\ReplaceDocumentTextCommand;
 use Domain\Documents\Contracts\Documents\DocumentResolver;
+use Domain\Documents\Enums\CloseCause;
+use Domain\Documents\Events\DocumentClosed;
+use Domain\Documents\Events\DocumentCreated;
+use Domain\Documents\Events\DocumentDraftSaved;
+use Domain\Documents\Events\DocumentOpened;
+use Domain\Documents\Events\DocumentPublished;
+use Domain\Documents\Events\RecordSettled;
+use Domain\Documents\Events\ReportFiled;
+use Domain\Documents\Listeners\CloseEndedSessionDraft;
 use Domain\Documents\Models\DocumentClose;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Tests\TestCase;
+use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Support\Facades\DB;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\TestIds;
 
 /**
@@ -48,6 +61,8 @@ final class CloseDocumentTest extends TestCase
         'document_revisions',
         'documents',
         'number_groups',
+        'record_settlements',
+        'comments',
     ];
 
     private const string BODY = <<<'TEXT'
@@ -61,6 +76,11 @@ final class CloseDocumentTest extends TestCase
     None.
 
     TEXT;
+
+    /**
+     * @var list<string>
+     */
+    private array $facts = [];
 
     protected function setUp(): void
     {
@@ -118,6 +138,124 @@ final class CloseDocumentTest extends TestCase
         $this->assertSame('1', $this->documents()->show(1)->revision);
     }
 
+    public function test_creating_editing_and_closing_a_document_raise_each_fact_once_in_order(): void
+    {
+        $events = $this->app->make(Dispatcher::class);
+        $plain = [DocumentCreated::class, DocumentOpened::class, ReportFiled::class, RecordSettled::class];
+        $events->listen($plain, fn (object $fact) => $this->facts[] = class_basename($fact));
+        $events->listen(
+            DocumentDraftSaved::class,
+            fn (DocumentDraftSaved $saved) => $this->facts[] = "DocumentDraftSaved v{$saved->version}",
+        );
+        $events->listen(
+            DocumentClosed::class,
+            fn (DocumentClosed $closed) => $this->facts[] = "DocumentClosed {$closed->revisionNumber}",
+        );
+        $events->listen(
+            DocumentPublished::class,
+            fn (DocumentPublished $published) => $this->facts[] = "DocumentPublished {$published->revisionNumber}",
+        );
+
+        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "# Goal\nShip it.\n"));
+        $draft = $this->bus()->run(new OpenDocumentCommand('1'));
+        $draft = $this->bus()->run(new ReplaceDocumentTextCommand($draft->target(), 'Ship it.', 'Ship it soon.'));
+        $this->bus()->run(new CloseDocumentCommand($draft->target()));
+
+        $this->assertSame([
+            'DocumentCreated',
+            'DocumentOpened',
+            'DocumentDraftSaved v2',
+            'DocumentClosed 2',
+            'DocumentPublished 2',
+        ], $this->facts);
+    }
+
+    public function test_an_unchanged_close_raises_no_publication(): void
+    {
+        $events = $this->app->make(Dispatcher::class);
+        $plain = [DocumentCreated::class, DocumentOpened::class, ReportFiled::class, RecordSettled::class];
+        $events->listen($plain, fn (object $fact) => $this->facts[] = class_basename($fact));
+        $events->listen(
+            DocumentDraftSaved::class,
+            fn (DocumentDraftSaved $saved) => $this->facts[] = "DocumentDraftSaved v{$saved->version}",
+        );
+        $events->listen(
+            DocumentClosed::class,
+            fn (DocumentClosed $closed) => $this->facts[] = "DocumentClosed {$closed->revisionNumber}",
+        );
+        $events->listen(
+            DocumentPublished::class,
+            fn (DocumentPublished $published) => $this->facts[] = "DocumentPublished {$published->revisionNumber}",
+        );
+
+        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "# Goal\nShip it.\n"));
+        $draft = $this->bus()->run(new OpenDocumentCommand('1'));
+        $this->facts = [];
+
+        $this->bus()->run(new CloseDocumentCommand($draft->target()));
+
+        $this->assertSame(['DocumentClosed 1'], $this->facts);
+    }
+
+    public function test_an_ended_session_closes_a_changed_draft_into_a_revision_and_an_unchanged_one_into_none(): void
+    {
+        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
+        # Goal
+        Ship it.
+        TEXT));
+
+        $this->bus()->run(new CreateDocumentCommand('Notes', 'What we saw', "Text\n"));
+        $this->journal->actAsAgentIds(TestIds::of(9), TestIds::of(90));
+        $draft = $this->bus()->run(new OpenDocumentCommand('1'));
+        $this->bus()->run(new ReplaceDocumentTextCommand($draft->target(), 'Ship it.', 'Shipped.'));
+        $this->journal->actAsAgentIds(TestIds::of(8), TestIds::of(80));
+        $this->bus()->run(new OpenDocumentCommand('2'));
+
+        DB::transaction(fn () => $this->endSession(9, 90));
+        DB::transaction(fn () => $this->endSession(8, 80));
+
+        $this->assertSame(0, DocumentDraft::query()->count());
+        $this->assertSame([
+            '2',
+            '1',
+        ], [
+            $this->documents()->show(1)->revision,
+            $this->documents()->show(2)->revision,
+        ]);
+
+        $this->assertSame(
+            [
+                CloseCause::Lifecycle,
+                CloseCause::Lifecycle,
+            ],
+            DocumentClose::query()->orderBy('closed_at')->get()->pluck('cause')->all(),
+        );
+    }
+
+    public function test_a_failing_close_rolls_the_session_ending_back_and_keeps_the_draft(): void
+    {
+        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
+        # Goal
+        Ship it.
+        TEXT));
+
+        $this->journal->actAsAgentIds(TestIds::of(9), TestIds::of(90));
+        $draft = $this->bus()->run(new OpenDocumentCommand('1'));
+        $this->bus()->run(new ReplaceDocumentTextCommand($draft->target(), 'Ship it.', 'Shipped.'));
+
+        $this->assertThrows(
+            fn () => DB::transaction(function (): void {
+                $this->endSession(9, 90);
+
+                throw SimulatedFailure::of('The ending failed.');
+            }),
+            SimulatedFailure::class,
+        );
+
+        $this->assertSame(1, DocumentDraft::query()->count());
+        $this->assertSame(0, DocumentClose::query()->count());
+    }
+
     private function documents(): DocumentResolver
     {
         return $this->app->make(DocumentResolver::class);
@@ -126,5 +264,11 @@ final class CloseDocumentTest extends TestCase
     private function bus(): CommandBus
     {
         return $this->app->make(CommandBus::class);
+    }
+
+    private function endSession(int $agent, int $session): void
+    {
+        $this->app->make(CloseEndedSessionDraft::class)
+            ->handle(new SessionClosed(TestIds::of($agent), TestIds::of($session)));
     }
 }

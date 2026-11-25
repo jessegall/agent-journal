@@ -15,10 +15,18 @@ use Domain\Documents\Commands\ReplaceDocumentText\ReplaceDocumentTextCommand;
 use Domain\Documents\Commands\SettleDocument\SettleDocumentCommand;
 use Domain\Documents\Contracts\Documents\DocumentResolver;
 use Domain\Documents\Enums\AttentionStatus;
+use Domain\Documents\Events\DocumentClosed;
+use Domain\Documents\Events\DocumentCreated;
+use Domain\Documents\Events\DocumentDraftSaved;
+use Domain\Documents\Events\DocumentOpened;
+use Domain\Documents\Events\DocumentPublished;
+use Domain\Documents\Events\RecordSettled;
+use Domain\Documents\Events\ReportFiled;
 use Domain\Documents\Exceptions\SettlementDenied;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Tests\TestCase;
+use Illuminate\Contracts\Events\Dispatcher;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 
@@ -45,6 +53,11 @@ final class SettleDocumentTest extends TestCase
         'documents',
         'number_groups',
     ];
+
+    /**
+     * @var list<string>
+     */
+    private array $facts = [];
 
     protected function setUp(): void
     {
@@ -128,6 +141,41 @@ final class SettleDocumentTest extends TestCase
         $settlements = $this->documents()->inspect(1)->settlements;
 
         $this->assertSame(['Shipped.'], array_map(fn ($settlement) => $settlement->reason, $settlements));
+    }
+
+    public function test_settling_twice_with_one_reason_and_filing_a_report_raise_one_fact_each(): void
+    {
+        $events = $this->app->make(Dispatcher::class);
+        $plain = [DocumentCreated::class, DocumentOpened::class, ReportFiled::class, RecordSettled::class];
+        $events->listen($plain, fn (object $fact) => $this->facts[] = class_basename($fact));
+        $events->listen(
+            DocumentDraftSaved::class,
+            fn (DocumentDraftSaved $saved) => $this->facts[] = "DocumentDraftSaved v{$saved->version}",
+        );
+        $events->listen(
+            DocumentClosed::class,
+            fn (DocumentClosed $closed) => $this->facts[] = "DocumentClosed {$closed->revisionNumber}",
+        );
+        $events->listen(
+            DocumentPublished::class,
+            fn (DocumentPublished $published) => $this->facts[] = "DocumentPublished {$published->revisionNumber}",
+        );
+
+        $this->bus()->run(new SettleDocumentCommand(1, 1, 'Shipped.'));
+        $this->bus()->run(new SettleDocumentCommand(1, 1, 'Shipped.'));
+        $this->bus()->run(new CreateReportCommand('Check', 'What we found', "All good\n"));
+        $this->bus()->run(new CloseReportCommand('1', 'Read.'));
+
+        $this->assertSame(
+            [
+                'RecordSettled',
+                'ReportFiled',
+                'RecordSettled',
+            ],
+            $this->facts,
+        );
+
+        $this->assertCount(1, Document::query()->sole()->settlements());
     }
 
     private function documents(): DocumentResolver

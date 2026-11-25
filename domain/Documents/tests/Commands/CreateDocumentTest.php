@@ -6,15 +6,21 @@ namespace Domain\Documents\Tests\Commands;
 
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\CommandInputInvalid;
+use App\Exceptions\ContentMissing;
 use App\Support\RecordIdentity;
+use App\Support\ReflectedMethod;
+use App\Support\ReflectedParameter;
+use App\Support\ReflectedType;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Documents\Contracts\Documents\DocumentResolver;
+use Domain\Documents\Events\DocumentCreated;
 use Domain\Documents\Exceptions\RecordImmutable;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Tests\TestCase;
+use Illuminate\Contracts\Events\Dispatcher;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 
@@ -52,6 +58,8 @@ final class CreateDocumentTest extends TestCase
         'document_revisions',
         'documents',
         'number_groups',
+        'document_closes',
+        'document_drafts',
     ];
 
     protected function setUp(): void
@@ -139,6 +147,56 @@ final class CreateDocumentTest extends TestCase
         $this->expectException(RecordImmutable::class);
 
         $revision->forceFill(['body' => 'changed'])->save();
+    }
+
+    public function test_no_create_command_takes_an_author(): void
+    {
+        foreach ([CreateDocumentCommand::class] as $command) {
+            $parameters = array_map(
+                fn (ReflectedParameter $parameter) => $parameter->name(),
+                ReflectedType::of($command)->constructor()
+                    ->map(fn (ReflectedMethod $constructor) => $constructor->parameters())
+                    ->getOrElse([]),
+            );
+
+            $this->assertSame(
+                [],
+                array_values(
+                    array_filter($parameters, fn (string $name) => preg_match('/author|creator|actor/i', $name) === 1),
+                ),
+            );
+        }
+
+        $this->journal->actAsUserId(TestIds::of(3));
+        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "Text\n"));
+        $this->assertSame(TestIds::of(3), DocumentRevision::query()->sole()->author_id);
+    }
+
+    public function test_a_failed_create_leaves_no_record_and_raises_no_event(): void
+    {
+        $this->journal->actAsUserId(TestIds::of(1));
+        $announced = [];
+
+        $this->app->make(Dispatcher::class)->listen(DocumentCreated::class, function (
+            DocumentCreated $event,
+        ) use (&$announced): void {
+            $announced[] = $event->number;
+        });
+
+        try {
+            $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "   \n"));
+            $this->fail('An empty body was accepted.');
+        } catch (ContentMissing) {
+            $this->assertSame([
+                0,
+                0,
+                [],
+            ], [
+                Document::query()->count(),
+                DocumentRevision::query()->count(),
+                $announced,
+            ]);
+        }
     }
 
     private function bus(): CommandBus
