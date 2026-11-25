@@ -13,7 +13,7 @@ final class SpreadsOneKey
     {
         return [
             ...$this->title(),
-            ...$this->width($wide),
+            ...$this->width($isWide),
             ...$this->size(),
         ];
     }
@@ -27,7 +27,7 @@ final class SpreadsOneKey
     {
         $width = [];
 
-        if ($wide) {
+        if ($isWide) {
             $width['width'] = 'wide';
         }
 
