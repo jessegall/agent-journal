@@ -17,8 +17,6 @@ use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\OpensPairChats;
-use Tests\Support\WritesInboxMessages;
 
 /**
  * An agent in its one conversation docks a record with journal dock add, sees it in dock list with only its safe
@@ -28,8 +26,6 @@ use Tests\Support\WritesInboxMessages;
 final class DockCommandsTest extends TestCase
 {
     use CommitsHookRows;
-    use OpensPairChats;
-    use WritesInboxMessages;
 
     private const array TABLES = [
         'users',
@@ -70,7 +66,7 @@ final class DockCommandsTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->start = TestStart::start();
 
-        $this->pairChat(ActorIdentity::of($owner), ActorIdentity::of($this->start->agent));
+        $this->journal->inboxes()->pairChat(ActorIdentity::of($owner), ActorIdentity::of($this->start->agent));
 
         $this->task = Task::factory()->create(['title' => 'Ship the dock']);
     }
@@ -107,7 +103,10 @@ final class DockCommandsTest extends TestCase
 
     public function test_an_agent_in_several_conversations_names_one_before_anything_is_docked(): void
     {
-        $this->pairChat(ActorIdentity::of($this->start->agent), ActorIdentity::ofClass(Agent::class, 'another-agent'));
+        $this->journal->inboxes()->pairChat(
+            ActorIdentity::of($this->start->agent),
+            ActorIdentity::ofClass(Agent::class, 'another-agent'),
+        );
 
         $this->journal->relayAgentCommands($this->start);
 

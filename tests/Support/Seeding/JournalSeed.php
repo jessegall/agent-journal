@@ -561,6 +561,14 @@ final class JournalSeed
         return $this;
     }
 
+    /**
+     * The inboxes of actors the journal does not name: an actor's own inbox, a pair chat and a numbered post.
+     */
+    public function inboxes(): FixtureInboxes
+    {
+        return $this->inboxes;
+    }
+
     public function chatOf(string $first, string $second): Inbox
     {
         $key = FixtureInboxes::pairKey($this->actorCalled($first), $this->actorCalled($second));

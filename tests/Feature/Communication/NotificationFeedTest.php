@@ -77,7 +77,7 @@ final class NotificationFeedTest extends MessagingTestCase
 
     public function test_another_actors_receipt_is_refused_and_changes_nothing(): void
     {
-        $question = $this->askInboxOf($this->actorOf($this->builder), 'Which port?');
+        $question = $this->journal->inboxes()->openQuestionTo($this->actorOf($this->builder), 'Which port?');
         $this->deliver($question, $this->actorOf($this->builder));
         $receipt = NotificationReceipt::query()->sole();
 
@@ -92,7 +92,7 @@ final class NotificationFeedTest extends MessagingTestCase
     public function test_a_question_the_reader_can_no_longer_see_drops_out_of_the_page(): void
     {
         $this->notifyOwner(1);
-        $this->deliver($this->askNobody('Out of sight.'), ActorIdentity::of($this->owner));
+        $this->deliver($this->journal->inboxes()->unseenQuestion('Out of sight.'), ActorIdentity::of($this->owner));
 
         $page = $this->actingAs($this->owner)->notifications()->assertOk();
 
@@ -133,7 +133,7 @@ final class NotificationFeedTest extends MessagingTestCase
         $owner = ActorIdentity::of($this->owner);
 
         for ($number = 1; $number <= $count; $number++) {
-            $this->deliver($this->askInboxOf($owner, "Question {$number}?"), $owner);
+            $this->deliver($this->journal->inboxes()->openQuestionTo($owner, "Question {$number}?"), $owner);
         }
     }
 

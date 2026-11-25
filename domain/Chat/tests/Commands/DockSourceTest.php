@@ -24,8 +24,6 @@ use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\OpensPairChats;
-use Tests\Support\WritesInboxMessages;
 
 /**
  * A user docks a source in a conversation once: a second dock of it answers the placement it has, and an agent the
@@ -34,8 +32,6 @@ use Tests\Support\WritesInboxMessages;
 final class DockSourceTest extends TestCase
 {
     use CommitsHookRows;
-    use OpensPairChats;
-    use WritesInboxMessages;
 
     private const array TABLES = [
         'users',
@@ -78,7 +74,10 @@ final class DockSourceTest extends TestCase
         $this->agentId = $this->journal->idleAgent('Builder')
             ->startSession('Builder', 'Builder')
             ->sessionCalled('Builder')->agent_id;
-        $this->pairChat(ActorIdentity::of($this->owner), ActorIdentity::ofClass(Agent::class, $this->agentId));
+        $this->journal->inboxes()->pairChat(
+            ActorIdentity::of($this->owner),
+            ActorIdentity::ofClass(Agent::class, $this->agentId),
+        );
         $this->task = Task::factory()->create(['title' => 'Ship the dock']);
         $this->journal->actAsUserId($this->owner->id);
         $this->conversationId = $this->app->make(DockRequests::class)->inboxWith($this->agentId)->id;
@@ -113,7 +112,7 @@ final class DockSourceTest extends TestCase
 
     public function test_a_conversation_the_user_takes_no_part_in_is_refused(): void
     {
-        $strangers = $this->pairChat(
+        $strangers = $this->journal->inboxes()->pairChat(
             ActorIdentity::ofClass(Agent::class, 'agent-one'),
             ActorIdentity::ofClass(Agent::class, 'agent-two'),
         );

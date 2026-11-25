@@ -20,7 +20,6 @@ use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\WritesInboxMessages;
 
 /**
  * The chat window picks the agent a user talks to: the idle main agent by default, no history for an agent the user
@@ -29,7 +28,6 @@ use Tests\Support\WritesInboxMessages;
 final class ChatWindowTest extends TestCase
 {
     use CommitsHookRows;
-    use WritesInboxMessages;
 
     private const array TABLES = [
         'users',
@@ -65,8 +63,8 @@ final class ChatWindowTest extends TestCase
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;
 
-        $this->inboxOf(ActorIdentity::of($this->owner));
-        $this->inboxOf(ActorIdentity::ofClass(Agent::class, $agent->id));
+        $this->journal->inboxes()->personal(ActorIdentity::of($this->owner));
+        $this->journal->inboxes()->personal(ActorIdentity::ofClass(Agent::class, $agent->id));
     }
 
     public function test_home_selects_the_idle_main_agent_and_offers_a_headless_helper_no_terminal(): void

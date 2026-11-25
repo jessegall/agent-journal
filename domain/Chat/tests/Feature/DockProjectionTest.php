@@ -20,8 +20,6 @@ use Domain\Chat\Tests\TestCase;
 use Tests\Fixtures\Docking\ProjectionDockable;
 use Tests\Fixtures\Docking\ProjectionDockableProvider;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\OpensPairChats;
-use Tests\Support\WritesInboxMessages;
 
 /**
  * A dock page reads placements newest first in bounded batches and shows only what the viewer may read: placements it
@@ -31,8 +29,6 @@ use Tests\Support\WritesInboxMessages;
 final class DockProjectionTest extends TestCase
 {
     use CommitsHookRows;
-    use OpensPairChats;
-    use WritesInboxMessages;
 
     private const array TABLES = [
         'users',
@@ -65,7 +61,7 @@ final class DockProjectionTest extends TestCase
             ->startSession('Builder', 'Builder')
             ->sessionCalled('Builder')->agent_id;
 
-        $this->conversation = $this->pairChat(
+        $this->conversation = $this->journal->inboxes()->pairChat(
             ActorIdentity::of($this->owner),
             ActorIdentity::ofClass(Agent::class, $agentId),
         );

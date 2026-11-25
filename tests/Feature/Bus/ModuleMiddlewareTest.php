@@ -64,7 +64,6 @@ use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\HoldingRules;
 use Tests\Support\TestIds;
-use Tests\Support\WritesInboxMessages;
 
 /**
  * Module middleware on the Cards and Notes test modules: the order by stage, owner and declaration,
@@ -73,8 +72,6 @@ use Tests\Support\WritesInboxMessages;
  */
 final class ModuleMiddlewareTest extends CommandBusTestCase
 {
-    use WritesInboxMessages;
-
     private const string TRIMMED_TEXT = 'Trim me';
 
     /**
@@ -122,7 +119,10 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         );
         $this->journal->actAsUserId(TestIds::of(1));
 
-        $this->assertSame('LOUD', $this->rowText($this->app->make(CommandBus::class)->run(new WriteNoteCommand('loud'))));
+        $this->assertSame(
+            'LOUD',
+            $this->rowText($this->app->make(CommandBus::class)->run(new WriteNoteCommand('loud'))),
+        );
 
         $this->installCommandModules(MiddlewareDeclaration::around(RefusesAll::class, CommandScope::all()));
         $this->journal->actAsUserId(TestIds::of(1));
@@ -262,7 +262,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
 
         $messageId = $this->app->make(CommandBus::class)->run(new SendMessageCommand(
-            $this->inboxOf(ActorIdentity::of($user))->id,
+            $this->journal->inboxes()->personal(ActorIdentity::of($user))->id,
             "  Trim me  \n",
         ));
 
@@ -278,7 +278,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         $user = User::factory()->create();
         $this->journal->actAsUserId($user->id);
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
-        $command = new SendMessageCommand($this->inboxOf(ActorIdentity::of($user))->id, 'Hello');
+        $command = new SendMessageCommand($this->journal->inboxes()->personal(ActorIdentity::of($user))->id, 'Hello');
 
         try {
             $this->app->make(CommandBus::class)->run($command);
@@ -303,7 +303,10 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     public function test_a_refusal_after_retirement_leaves_the_agent_unretired_with_its_assignments(): void
     {
         $this->installCommandModules(
-            MiddlewareDeclaration::inside(RefusesAfterRetirement::class, CommandScope::command(RetireAgentCommand::class)),
+            MiddlewareDeclaration::inside(
+                RefusesAfterRetirement::class,
+                CommandScope::command(RetireAgentCommand::class),
+            ),
         );
         $helper = Agent::create('Helper', 'read-only-helper', $this->localProject());
         $task = Task::factory()->create(['title' => 'Held']);

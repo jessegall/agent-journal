@@ -22,9 +22,7 @@ use Tests\Fixtures\Modules\Notes\Support\NotesTally;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\InstallsNotesModule;
-use Tests\Support\OpensPairChats;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
 /**
@@ -37,8 +35,6 @@ final class ExternalOwnerDockTest extends TestCase
 {
     use CommitsHookRows;
     use InstallsNotesModule;
-    use OpensPairChats;
-    use WritesInboxMessages;
 
     private const string TASK_TITLE = 'Feed the cat';
 
@@ -87,7 +83,7 @@ final class ExternalOwnerDockTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->agent = TestStart::start();
-        $this->chatInboxId = $this->pairChat(
+        $this->chatInboxId = $this->journal->inboxes()->pairChat(
             ActorIdentity::of($this->owner),
             ActorIdentity::of($this->agent->agent),
         )->id;

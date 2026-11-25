@@ -38,7 +38,6 @@ use Tests\Support\DomainBoot;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TestStartAuthority;
-use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
 /**
@@ -48,7 +47,6 @@ use Tests\TestCase;
 final class RecordLinksTest extends TestCase
 {
     use CommitsHookRows;
-    use WritesInboxMessages;
 
     /**
      * The domains this test uses beside core.
@@ -163,9 +161,13 @@ final class RecordLinksTest extends TestCase
 
     private function messageFor(int $agent): Message
     {
-        $inbox = $this->inboxOf(TestActors::agentIdentity($agent));
+        $inbox = $this->journal->inboxes()->personal(TestActors::agentIdentity($agent));
 
-        return $this->postTo($inbox, Agent::create('Sender', 'main-agent', $this->localProject()), "Private plan\nDetails.");
+        return $this->journal->inboxes()->post(
+            $inbox,
+            Agent::create('Sender', 'main-agent', $this->localProject()),
+            "Private plan\nDetails.",
+        );
     }
 
     /**

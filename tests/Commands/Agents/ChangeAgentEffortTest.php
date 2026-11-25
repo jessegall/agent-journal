@@ -11,8 +11,6 @@ use App\Exceptions\DriverRequestRefused;
 use App\Models\Drivers\DriverRequest;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\OpensPairChats;
-use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
 /**
@@ -23,8 +21,6 @@ final class ChangeAgentEffortTest extends TestCase
 {
     use CommitsHookRows;
     use OpensLedgerRuntimes;
-    use OpensPairChats;
-    use WritesInboxMessages;
 
     private const array TABLES = [
         'agents',

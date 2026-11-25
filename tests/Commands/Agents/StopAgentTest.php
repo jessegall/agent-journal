@@ -29,8 +29,6 @@ use App\Values\DriverReceipt;
 use App\Values\OwnerAuthority;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\OpensPairChats;
-use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
 /**
@@ -41,8 +39,6 @@ final class StopAgentTest extends TestCase
 {
     use CommitsHookRows;
     use OpensLedgerRuntimes;
-    use OpensPairChats;
-    use WritesInboxMessages;
 
     private const string STOPPING_LABEL = 'Stopping · Waiting for helpers';
 

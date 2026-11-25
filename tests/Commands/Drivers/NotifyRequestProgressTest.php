@@ -32,8 +32,6 @@ use App\Values\OwnerAuthority;
 use App\Values\ScriptProgress;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\OpensPairChats;
-use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
 /**
@@ -45,8 +43,6 @@ final class NotifyRequestProgressTest extends TestCase
 {
     use CommitsHookRows;
     use OpensLedgerRuntimes;
-    use OpensPairChats;
-    use WritesInboxMessages;
 
     private const array TABLES = [
         'agents',

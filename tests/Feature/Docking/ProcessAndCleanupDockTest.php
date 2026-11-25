@@ -34,11 +34,9 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\InstallsNotesModule;
-use Tests\Support\OpensPairChats;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\TestRunAdmissions;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
 /**
@@ -51,8 +49,6 @@ final class ProcessAndCleanupDockTest extends TestCase
 {
     use CommitsHookRows;
     use InstallsNotesModule;
-    use OpensPairChats;
-    use WritesInboxMessages;
 
     private const string RUN_TITLE = '"text":"Run of acme verify"';
 
@@ -103,7 +99,10 @@ final class ProcessAndCleanupDockTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->agent = TestStart::start();
-        $this->conversation = $this->pairChat(ActorIdentity::of($owner), ActorIdentity::of($this->agent->agent));
+        $this->conversation = $this->journal->inboxes()->pairChat(
+            ActorIdentity::of($owner),
+            ActorIdentity::of($this->agent->agent),
+        );
     }
 
     protected function tearDown(): void
@@ -131,7 +130,7 @@ final class ProcessAndCleanupDockTest extends TestCase
         $this->assertSame($evidence, EvidenceRead::query()->count());
 
         $other = TestStart::start();
-        $this->inboxOf(ActorIdentity::of($other->agent));
+        $this->journal->inboxes()->personal(ActorIdentity::of($other->agent));
         $this->journal->mcpTool(
             $other,
             'dock_add',

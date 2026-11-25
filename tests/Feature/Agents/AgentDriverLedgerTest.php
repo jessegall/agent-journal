@@ -68,9 +68,7 @@ use Spatie\LaravelData\Optional;
 use Tests\Support\Agents\HostContract;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\OpensPairChats;
 use Tests\Support\TestStartAuthority;
-use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
 /**
@@ -84,8 +82,6 @@ final class AgentDriverLedgerTest extends TestCase
 
     use CommitsHookRows;
     use OpensLedgerRuntimes;
-    use OpensPairChats;
-    use WritesInboxMessages;
 
     private const string NO_CONTAINER = 'The host cannot provide a container.';
 

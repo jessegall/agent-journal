@@ -11,7 +11,6 @@ use Domain\Chat\Resolvers\Support\MessagePinRecords;
 use Domain\Chat\Tests\Support\OpensTeamInboxMessage;
 use Domain\Chat\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\WritesInboxMessages;
 
 /**
  * A pin is its owner's alone, one per message and inbox, made only on a message the owner can read, and
@@ -21,7 +20,6 @@ final class PinMessageTest extends TestCase
 {
     use CommitsHookRows;
     use OpensTeamInboxMessage;
-    use WritesInboxMessages;
 
     private const array TABLES = [
         'users',

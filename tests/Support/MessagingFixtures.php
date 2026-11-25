@@ -21,8 +21,6 @@ use Tests\Fixtures\Agents\TestSelections;
 trait MessagingFixtures
 {
     use CommitsHookRows;
-    use OpensPairChats;
-    use WritesInboxMessages;
 
     public const array MESSAGING_TABLES = [
         'settings_records',
@@ -79,12 +77,12 @@ trait MessagingFixtures
 
     protected function ownerInboxId(): string
     {
-        return $this->inboxOf(ActorIdentity::of($this->owner))->id;
+        return $this->journal->inboxes()->personal(ActorIdentity::of($this->owner))->id;
     }
 
     protected function inboxIdOf(AgentSession $session): string
     {
-        return $this->inboxOf($this->actorOf($session))->id;
+        return $this->journal->inboxes()->personal($this->actorOf($session))->id;
     }
 
     /**
@@ -92,7 +90,7 @@ trait MessagingFixtures
      */
     protected function pairInboxIdOf(AgentSession $session): string
     {
-        return $this->pairChat(ActorIdentity::of($this->owner), $this->actorOf($session))->id;
+        return $this->journal->inboxes()->pairChat(ActorIdentity::of($this->owner), $this->actorOf($session))->id;
     }
 
     protected function actorOf(AgentSession $session): ActorIdentity
@@ -120,7 +118,7 @@ trait MessagingFixtures
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;
         $this->journal->syntheticRuntime($session);
-        $this->inboxOf(ActorIdentity::of($agent));
+        $this->journal->inboxes()->personal(ActorIdentity::of($agent));
 
         return $session;
     }

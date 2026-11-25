@@ -30,9 +30,7 @@ use Tests\Fixtures\Modules\Notes\Support\ReleaseReview;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\InstallsNotesModule;
-use Tests\Support\OpensPairChats;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
 /**
@@ -45,8 +43,6 @@ final class RichCardsTest extends TestCase
 {
     use CommitsHookRows;
     use InstallsNotesModule;
-    use OpensPairChats;
-    use WritesInboxMessages;
 
     private const string NO_PHASES_TEXT = '"text":"No phases yet"';
 
@@ -109,7 +105,10 @@ final class RichCardsTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->agent = TestStart::start();
-        $this->conversation = $this->pairChat(ActorIdentity::of($owner), ActorIdentity::of($this->agent->agent));
+        $this->conversation = $this->journal->inboxes()->pairChat(
+            ActorIdentity::of($owner),
+            ActorIdentity::of($this->agent->agent),
+        );
     }
 
     protected function tearDown(): void

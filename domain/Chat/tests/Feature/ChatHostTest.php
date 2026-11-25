@@ -14,8 +14,6 @@ use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Chat\Tests\TestCase;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\OpensPairChats;
-use Tests\Support\WritesInboxMessages;
 
 /**
  * Chat asks from the user's own inbox to the chosen agent's inbox and shows the exchange between those two
@@ -24,8 +22,6 @@ use Tests\Support\WritesInboxMessages;
 final class ChatHostTest extends TestCase
 {
     use CommitsHookRows;
-    use OpensPairChats;
-    use WritesInboxMessages;
 
     private const array TABLES = [
         'users',
@@ -50,7 +46,7 @@ final class ChatHostTest extends TestCase
             ->startSession('Builder', 'Builder')
             ->sessionCalled('Builder');
 
-        $chatInboxId = $this->pairChat(
+        $chatInboxId = $this->journal->inboxes()->pairChat(
             ActorIdentity::of($owner),
             ActorIdentity::ofClass(Agent::class, $session->agent_id),
         )->id;

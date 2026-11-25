@@ -21,8 +21,6 @@ use App\Support\InitialWakeSettlement;
 use App\Support\OpenedRuntime;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\OpensPairChats;
-use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
 /**
@@ -34,8 +32,6 @@ final class WakeAgentTest extends TestCase
 {
     use CommitsHookRows;
     use OpensLedgerRuntimes;
-    use OpensPairChats;
-    use WritesInboxMessages;
 
     private const string NO_CONTAINER = 'The host cannot provide a container.';
 

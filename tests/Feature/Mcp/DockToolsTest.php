@@ -14,9 +14,7 @@ use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\OpensPairChats;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
 /**
@@ -27,8 +25,6 @@ use Tests\TestCase;
 final class DockToolsTest extends TestCase
 {
     use CommitsHookRows;
-    use OpensPairChats;
-    use WritesInboxMessages;
 
     private const string PLACEMENT_TITLE = 'Ship the dock';
 
@@ -117,7 +113,7 @@ final class DockToolsTest extends TestCase
     private function startInConversation(string $profile): TestStart
     {
         $start = TestStart::start($profile);
-        $this->pairChat(ActorIdentity::of($this->owner), ActorIdentity::of($start->agent));
+        $this->journal->inboxes()->pairChat(ActorIdentity::of($this->owner), ActorIdentity::of($start->agent));
 
         return $start;
     }

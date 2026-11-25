@@ -94,7 +94,10 @@ final class NotificationChangesTest extends MessagingTestCase
         $this->notifyOwner(3);
         NotificationChange::query()->update(['created_at' => CarbonImmutable::now()->subHours(25)]);
 
-        $this->assertSame(3, $this->app->make(NotificationChangeRetentionService::class)->prune(CarbonImmutable::now()));
+        $this->assertSame(
+            3,
+            $this->app->make(NotificationChangeRetentionService::class)->prune(CarbonImmutable::now()),
+        );
         $this->assertSame(0, NotificationChange::query()->count());
     }
 
@@ -117,7 +120,7 @@ final class NotificationChangesTest extends MessagingTestCase
         }
 
         for ($number = 1; $number <= $count; $number++) {
-            $question = $this->askInboxOf($owner, "Question {$number}?");
+            $question = $this->journal->inboxes()->openQuestionTo($owner, "Question {$number}?");
             $this->deliver($question, $owner);
         }
     }

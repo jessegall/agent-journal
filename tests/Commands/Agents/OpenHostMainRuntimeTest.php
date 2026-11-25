@@ -13,8 +13,6 @@ use App\Support\EnrolledHost;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\OpensPairChats;
-use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
 /**
@@ -25,8 +23,6 @@ final class OpenHostMainRuntimeTest extends TestCase
 {
     use CommitsHookRows;
     use OpensLedgerRuntimes;
-    use OpensPairChats;
-    use WritesInboxMessages;
 
     private const array TABLES = [
         'agents',

@@ -13,6 +13,8 @@ use App\Support\ActorProvisioning;
 use App\Support\InboxReceiver;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Support\PairChats;
+use Domain\Questions\Enums\QuestionType;
+use Domain\Questions\Models\Question;
 use Illuminate\Contracts\Foundation\Application;
 
 /**
@@ -74,5 +76,32 @@ final readonly class FixtureInboxes
         sort($members);
 
         return implode('|', $members);
+    }
+
+    /**
+     * An open question to the actor in its own inbox, which the actor sees and nobody else does.
+     */
+    public function openQuestionTo(ActorIdentity $recipient, string $body): Question
+    {
+        $inbox = $this->personal($recipient);
+
+        return Question::create($inbox->id, ActorIdentity::system(), $recipient, $body, QuestionType::Open, []);
+    }
+
+    /**
+     * An open question in an inbox no actor is attached to, which nobody sees.
+     */
+    public function unseenQuestion(string $body): Question
+    {
+        $inbox = Inbox::create(Inbox::NAMED_PROVIDER, (string) str()->ulid(), 'Nobody');
+
+        return Question::create(
+            $inbox->id,
+            ActorIdentity::system(),
+            ActorIdentity::system(),
+            $body,
+            QuestionType::Open,
+            [],
+        );
     }
 }

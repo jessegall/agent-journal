@@ -94,7 +94,7 @@ final class ActivityRecordersTest extends MessagingTestCase
     public function test_messages_between_agents_alone_are_not_recorded(): void
     {
         $reviewer = ActorIdentity::ofClass(Agent::class, $this->reviewer->agent_id);
-        $inboxId = $this->inboxOf($reviewer)->id;
+        $inboxId = $this->journal->inboxes()->personal($reviewer)->id;
         InboxMember::create(
             $inboxId,
             ActorIdentity::ofClass(Agent::class, $this->builder->agent_id),

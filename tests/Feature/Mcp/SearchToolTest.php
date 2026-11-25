@@ -18,7 +18,6 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
 /**
@@ -30,7 +29,6 @@ use Tests\TestCase;
 final class SearchToolTest extends TestCase
 {
     use CommitsHookRows;
-    use WritesInboxMessages;
 
     private const array TABLES = [
         'agents', 'agent_sessions', 'session_tokens', 'agent_stacks', 'command_receipts', 'number_groups', 'links',
@@ -59,8 +57,8 @@ final class SearchToolTest extends TestCase
             'tasks.task' => Task::factory()->create(['title' => 'Check the violet harbor'])->id,
             'plans.plan' => Plan::factory()->create(['title' => 'Violet harbor rollout'])->id,
             'rules.rule' => Rule::create('Mind the violet harbor.', 'It matters.', null, $proposer)->id,
-            'chat.message' => $this->postTo(
-                $this->inboxOf(ActorIdentity::of($caller->agent)),
+            'chat.message' => $this->journal->inboxes()->post(
+                $this->journal->inboxes()->personal(ActorIdentity::of($caller->agent)),
                 $caller->agent,
                 'Use the violet harbor.',
             )->id,

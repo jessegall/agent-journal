@@ -10,7 +10,6 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
 /**
@@ -21,7 +20,6 @@ use Tests\TestCase;
 final class DeclaredMessageSearchTest extends TestCase
 {
     use CommitsHookRows;
-    use WritesInboxMessages;
 
     private const array TABLES = [
         'agents', 'agent_sessions', 'session_tokens', 'agent_stacks', 'command_receipts', 'number_groups', 'links',
@@ -40,13 +38,13 @@ final class DeclaredMessageSearchTest extends TestCase
     {
         $caller = TestStart::start();
         $other = TestStart::start();
-        $visible = $this->postTo(
-            $this->inboxOf(ActorIdentity::of($caller->agent)),
+        $visible = $this->journal->inboxes()->post(
+            $this->journal->inboxes()->personal(ActorIdentity::of($caller->agent)),
             $caller->agent,
             "A note.\nUse the violet harbor.",
         );
-        $hidden = $this->postTo(
-            $this->inboxOf(ActorIdentity::of($other->agent)),
+        $hidden = $this->journal->inboxes()->post(
+            $this->journal->inboxes()->personal(ActorIdentity::of($other->agent)),
             $other->agent,
             'Private violet harbor coordinates.',
         );

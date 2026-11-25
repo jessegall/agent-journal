@@ -10,8 +10,6 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\OpensPairChats;
-use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
 /**
@@ -22,8 +20,6 @@ final class NotifyRuntimeHeartbeatTest extends TestCase
 {
     use CommitsHookRows;
     use OpensLedgerRuntimes;
-    use OpensPairChats;
-    use WritesInboxMessages;
 
     private const array TABLES = [
         'agents',

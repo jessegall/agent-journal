@@ -23,9 +23,7 @@ use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\HoldingRules;
-use Tests\Support\OpensPairChats;
 use Tests\Support\TestIds;
-use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
 /**
@@ -34,8 +32,6 @@ use Tests\TestCase;
 final class HomePageTest extends TestCase
 {
     use CommitsHookRows;
-    use OpensPairChats;
-    use WritesInboxMessages;
 
     private const string PRIVATE_BODY = 'Private words';
 
@@ -85,7 +81,10 @@ final class HomePageTest extends TestCase
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
         )->session;
-        $this->chatInboxId = $this->pairChat(ActorIdentity::of($this->owner), ActorIdentity::of($agent))->id;
+        $this->chatInboxId = $this->journal->inboxes()->pairChat(
+            ActorIdentity::of($this->owner),
+            ActorIdentity::of($agent),
+        )->id;
         Plan::factory()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
     }
 
@@ -187,7 +186,10 @@ final class HomePageTest extends TestCase
         )->assertInertia(fn (AssertableInertia $page) => $page
             ->loadDeferredProps('section_chat_dock_plans_waiting', fn (AssertableInertia $section) => $section
                 ->where('section_chat_dock_plans_waiting.state', 'ready')
-                ->where('section_chat_dock_plans_waiting.data.root.children.0.rows.0.label', "plan {$waiting->number} · Review the dock")));
+                ->where(
+                    'section_chat_dock_plans_waiting.data.root.children.0.rows.0.label',
+                    "plan {$waiting->number} · Review the dock",
+                )));
         $this->actingAs($this->owner)->get('/chat')->assertInertia(fn (AssertableInertia $page) => $page
             ->loadDeferredProps('section_chat_dock_plans_waiting', fn (AssertableInertia $section) => $section
                 ->where('section_chat_dock_plans_waiting', null)));
@@ -211,7 +213,9 @@ final class HomePageTest extends TestCase
         $this->actingAs($this->owner)->from('/')
             ->post('/chat/messages', [...$this->pair(), 'body' => 'Still there?', ...$outdated])
             ->assertRedirect('/')
-            ->assertSessionHasErrors(['session' => 'The agent now runs another session. Send the message again to reach it.']);
+            ->assertSessionHasErrors(
+                ['session' => 'The agent now runs another session. Send the message again to reach it.'],
+            );
         $this->assertSame(0, Message::query()->withoutGlobalScopes()->count());
     }
 

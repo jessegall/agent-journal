@@ -27,8 +27,6 @@ use App\Values\StartPolicy;
 use App\Values\StopConditions;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\OpensPairChats;
-use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
 /**
@@ -40,8 +38,6 @@ final class ClaimStartGrantTest extends TestCase
 {
     use CommitsHookRows;
     use OpensLedgerRuntimes;
-    use OpensPairChats;
-    use WritesInboxMessages;
 
     private const array TABLES = [
         'agents',

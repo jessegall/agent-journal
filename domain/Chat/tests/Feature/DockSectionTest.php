@@ -22,8 +22,6 @@ use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\OpensPairChats;
-use Tests\Support\WritesInboxMessages;
 
 /**
  * A source the user docked in a conversation shows above the composer as its card, and nothing is docked until the
@@ -32,8 +30,6 @@ use Tests\Support\WritesInboxMessages;
 final class DockSectionTest extends TestCase
 {
     use CommitsHookRows;
-    use OpensPairChats;
-    use WritesInboxMessages;
 
     private const array TABLES = [
         'users',
@@ -67,8 +63,8 @@ final class DockSectionTest extends TestCase
         $session = $this->journal->idleAgent('Builder')
             ->startSession('Builder', 'Builder')
             ->sessionCalled('Builder');
-        $this->inboxOf(ActorIdentity::of($owner));
-        $this->inboxOf(ActorIdentity::ofClass(Agent::class, $session->agent_id));
+        $this->journal->inboxes()->personal(ActorIdentity::of($owner));
+        $this->journal->inboxes()->personal(ActorIdentity::ofClass(Agent::class, $session->agent_id));
         $task = Task::factory()->create(['title' => 'Ship the dock']);
         $window = ConversationRequest::queryFor($session->agent_id);
 
@@ -93,9 +89,13 @@ final class DockSectionTest extends TestCase
             ->startSession('Builder', 'Builder')
             ->sessionCalled('Builder');
 
-        $message = $this->postTo($this->inboxOf(ActorIdentity::of($owner)), $owner, "Build ready\nAll checks passed.");
+        $message = $this->journal->inboxes()->post(
+            $this->journal->inboxes()->personal(ActorIdentity::of($owner)),
+            $owner,
+            "Build ready\nAll checks passed.",
+        );
 
-        $inboxId = $this->pairChat(
+        $inboxId = $this->journal->inboxes()->pairChat(
             ActorIdentity::of($owner),
             ActorIdentity::ofClass(Agent::class, $session->agent_id),
         )->id;

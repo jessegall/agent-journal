@@ -23,8 +23,6 @@ use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\OpensPairChats;
-use Tests\Support\WritesInboxMessages;
 
 /**
  * A user undocks a placement: undocking on chat's own page returns there, a retried dock under the first key answers
@@ -33,8 +31,6 @@ use Tests\Support\WritesInboxMessages;
 final class UndockSourceTest extends TestCase
 {
     use CommitsHookRows;
-    use OpensPairChats;
-    use WritesInboxMessages;
 
     private const array TABLES = [
         'users',
@@ -77,7 +73,10 @@ final class UndockSourceTest extends TestCase
         $this->agentId = $this->journal->idleAgent('Builder')
             ->startSession('Builder', 'Builder')
             ->sessionCalled('Builder')->agent_id;
-        $this->pairChat(ActorIdentity::of($this->owner), ActorIdentity::ofClass(Agent::class, $this->agentId));
+        $this->journal->inboxes()->pairChat(
+            ActorIdentity::of($this->owner),
+            ActorIdentity::ofClass(Agent::class, $this->agentId),
+        );
         $this->task = Task::factory()->create(['title' => 'Ship the dock']);
         $this->journal->actAsUserId($this->owner->id);
         $this->conversationId = $this->app->make(DockRequests::class)->inboxWith($this->agentId)->id;
