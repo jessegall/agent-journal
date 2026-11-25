@@ -97,4 +97,9 @@ final class FixtureRefused extends LogicException
     {
         return new self("The last step given was {$lastStep}, not a hook: an answer is read only after a hook input.");
     }
+
+    public static function freshNameTwice(string $name): self
+    {
+        return new self("The scenario makes {$name} twice: give each thing it makes a name of its own.");
+    }
 }

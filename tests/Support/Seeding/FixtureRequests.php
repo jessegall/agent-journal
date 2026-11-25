@@ -145,6 +145,27 @@ final class FixtureRequests
         }
     }
 
+    /**
+     * Runs the work and keeps the selection it left; work that fails puts the selection before it back.
+     *
+     * @template TResult
+     *
+     * @param  Closure(): TResult  $work
+     * @return TResult
+     */
+    public function keepingOnSuccess(Closure $work): mixed
+    {
+        $prior = $this->selected;
+
+        try {
+            return $work();
+        } catch (Throwable $failure) {
+            $this->restore($prior);
+
+            throw $failure;
+        }
+    }
+
     private function select(Closure $selection): void
     {
         $prior = $this->selected;

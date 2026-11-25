@@ -51,6 +51,7 @@ final class JournalSeed
     use PushesStates;
     use RunsCommands;
     use SendsRequests;
+    use StartsScenarios;
 
     /**
      * @var array<string, Inbox>
