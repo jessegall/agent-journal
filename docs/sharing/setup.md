@@ -8,10 +8,10 @@ See also [providers.md](providers.md) for making records shareable and [gateways
 
 ## The share listener
 
-Public links are served by a separate, share-only application, `bootstrap/sharing.php`. It loads the same Core and
-domains but answers only the routes of `routes/sharing.php`:
+Public links are served by a separate, share-only application, `domain/Sharing/bootstrap/app.php`. It loads the same Core and
+domains but answers only the routes of `domain/Sharing/routes/public.php`:
 
-- `GET` and `HEAD` `/s/{token}/{path}`: one shared page, read by `App\Http\Controllers\Sharing\ReadShareController`.
+- `GET` and `HEAD` `/s/{token}/{path}`: one shared page, read by `Domain\Sharing\Http\Controllers\ReadShareController`.
 - `/build-sharing/{file}`: a file of the reader's own build, only when its manifest lists it.
 - `/_probe/{challenge}`: the single-use answer a gateway's health probe expects.
 

@@ -27,7 +27,6 @@ use App\Providers\RecordsServiceProvider;
 use App\Providers\ReflectionServiceProvider;
 use App\Providers\ScriptsServiceProvider;
 use App\Providers\SettingsServiceProvider;
-use App\Providers\SharingServiceProvider;
 use App\Providers\SkillsServiceProvider;
 use App\Providers\SupervisionServiceProvider;
 use App\Providers\TextServiceProvider;
@@ -43,6 +42,7 @@ use Domain\Questions\Providers\QuestionsServiceProvider;
 use Domain\Reminders\Providers\RemindersServiceProvider;
 use Domain\Rules\Providers\RulesServiceProvider;
 use Domain\Sequences\Providers\SequencesServiceProvider;
+use Domain\Sharing\Providers\SharingServiceProvider;
 use Domain\Tasks\Providers\TasksServiceProvider;
 
 return [

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use App\Events\Web\InboxAccessEnded;
 use App\Events\Web\DeskPreferenceSwitched;
 use App\Events\Web\DeskRenamed;
 use App\Events\Web\DeskSeatingAdvanced;
+use App\Events\Web\InboxAccessEnded;
 use App\Events\Web\LayoutRemoved;
 use App\Events\Web\LayoutSaved;
 use App\Events\Web\NotificationsInvalidated;
@@ -45,7 +45,7 @@ return [
         'role' => EventRole::Projection,
         'migrated' => false,
         'producers' => [
-            'app/Listeners/BroadcastProtectedViewInvalidation.php',
+            'domain/Sharing/src/Listeners/BroadcastProtectedViewInvalidation.php',
             'app/Listeners/NotifyReceiptsWithdrawn.php',
         ],
     ],

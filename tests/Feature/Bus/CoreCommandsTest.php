@@ -93,13 +93,6 @@ use App\Commands\Sessions\HoldProfileRevision\HoldProfileRevisionCommand;
 use App\Commands\Sessions\NotifyCleanup\NotifyCleanupCommand;
 use App\Commands\Sessions\RecordStopConditionResults\RecordStopConditionResultsCommand;
 use App\Commands\Sessions\RecordUserHeartbeat\RecordUserHeartbeatCommand;
-use App\Commands\Sharing\ClaimGatewayOperation\ClaimGatewayOperationCommand;
-use App\Commands\Sharing\ExpireShares\ExpireSharesCommand;
-use App\Commands\Sharing\PruneShareAudit\PruneShareAuditCommand;
-use App\Commands\Sharing\ReadShare\ReadShareCommand;
-use App\Commands\Sharing\RecordGatewayHealth\RecordGatewayHealthCommand;
-use App\Commands\Sharing\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
-use App\Commands\Sharing\ReopenSharedGateways\ReopenSharedGatewaysCommand;
 use App\Commands\Skills\ActivateSkillPublication\ActivateSkillPublicationCommand;
 use App\Commands\Skills\FailSkillPublication\FailSkillPublicationCommand;
 use App\Commands\Skills\PrepareSkillPublication\PrepareSkillPublicationCommand;
@@ -113,6 +106,13 @@ use App\CoreCommands;
 use App\Support\CommandRegistry;
 use App\Support\CommandScope;
 use App\Support\MiddlewareDeclaration;
+use Domain\Sharing\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
+use Domain\Sharing\Commands\ExpireShares\ExpireSharesCommand;
+use Domain\Sharing\Commands\PruneShareAudit\PruneShareAuditCommand;
+use Domain\Sharing\Commands\ReadShare\ReadShareCommand;
+use Domain\Sharing\Commands\RecordGatewayHealth\RecordGatewayHealthCommand;
+use Domain\Sharing\Commands\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
+use Domain\Sharing\Commands\ReopenSharedGateways\ReopenSharedGatewaysCommand;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordAll;
 
 /**

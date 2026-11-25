@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domains;
 
-use App\Events\Sharing\ShareActivated;
 use App\Exceptions\NotADomain;
 use App\Exceptions\RequiredDomainMissing;
 use App\Listeners\BroadcastPageChange;
@@ -14,6 +13,7 @@ use App\Support\DomainRegistry;
 use App\Support\ReflectedProperty;
 use App\Support\Reflector;
 use App\Support\Stack\StateTypes;
+use Domain\Sharing\Events\ShareActivated;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Events\Dispatcher;

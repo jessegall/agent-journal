@@ -4,22 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Commands\Sharing\ApproveShareRequest\ApproveShareRequestCommand;
-use App\Commands\Sharing\ClaimGatewayOperation\ClaimGatewayOperationCommand;
-use App\Commands\Sharing\ConfigureShareGateway\ConfigureShareGatewayCommand;
-use App\Commands\Sharing\CreateShare\CreateShareCommand;
-use App\Commands\Sharing\DisableShareGateway\DisableShareGatewayCommand;
-use App\Commands\Sharing\ExpireShares\ExpireSharesCommand;
-use App\Commands\Sharing\PruneShareAudit\PruneShareAuditCommand;
-use App\Commands\Sharing\ReadShare\ReadShareCommand;
-use App\Commands\Sharing\RecordGatewayHealth\RecordGatewayHealthCommand;
-use App\Commands\Sharing\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
-use App\Commands\Sharing\RefreshShareScope\RefreshShareScopeCommand;
-use App\Commands\Sharing\ReopenSharedGateways\ReopenSharedGatewaysCommand;
-use App\Commands\Sharing\RequestShare\RequestShareCommand;
-use App\Commands\Sharing\RetryShare\RetryShareCommand;
-use App\Commands\Sharing\RevokeShare\RevokeShareCommand;
-use App\Commands\Sharing\SaveSharePreview\SaveSharePreviewCommand;
 use App\Contracts\Sharing\Shareable;
 use App\Contracts\Sharing\ShareGateway;
 use App\Contracts\Sharing\ShareGatewayProvider;
@@ -27,21 +11,36 @@ use App\Contracts\Sharing\SharePolicy;
 use App\Contracts\Sharing\ShareRecordContributor;
 use App\Contracts\Sharing\ShareRecordProvider;
 use App\CoreCommands;
-use App\Events\Sharing\ShareActivated;
-use App\Models\Sharing\Share;
-use App\Models\Sharing\ShareAudit;
-use App\Models\Sharing\ShareGatewayConfiguration;
-use App\Models\Sharing\ShareGatewayEndpoint;
-use App\Models\Sharing\ShareGatewayOperation;
-use App\Models\Sharing\ShareInstallation;
-use App\Models\Sharing\ShareMember;
-use App\Models\Sharing\SharePreview;
 use App\Support\CommandRegistry;
-use App\Support\GatewayRuns;
-use App\Support\ReadPermit;
 use App\Support\Reflector;
-use App\Support\ShareEndings;
-use App\Support\ShareGrants;
+use Domain\Sharing\Commands\ApproveShareRequest\ApproveShareRequestCommand;
+use Domain\Sharing\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
+use Domain\Sharing\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand;
+use Domain\Sharing\Commands\CreateShare\CreateShareCommand;
+use Domain\Sharing\Commands\DisableShareGateway\DisableShareGatewayCommand;
+use Domain\Sharing\Commands\ExpireShares\ExpireSharesCommand;
+use Domain\Sharing\Commands\PruneShareAudit\PruneShareAuditCommand;
+use Domain\Sharing\Commands\ReadShare\ReadShareCommand;
+use Domain\Sharing\Commands\RecordGatewayHealth\RecordGatewayHealthCommand;
+use Domain\Sharing\Commands\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
+use Domain\Sharing\Commands\RefreshShareScope\RefreshShareScopeCommand;
+use Domain\Sharing\Commands\ReopenSharedGateways\ReopenSharedGatewaysCommand;
+use Domain\Sharing\Commands\RequestShare\RequestShareCommand;
+use Domain\Sharing\Commands\RetryShare\RetryShareCommand;
+use Domain\Sharing\Commands\RevokeShare\RevokeShareCommand;
+use Domain\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
+use Domain\Sharing\Events\ShareActivated;
+use Domain\Sharing\Models\Share;
+use Domain\Sharing\Models\ShareAudit;
+use Domain\Sharing\Models\ShareGatewayConfiguration;
+use Domain\Sharing\Models\ShareGatewayEndpoint;
+use Domain\Sharing\Models\ShareGatewayOperation;
+use Domain\Sharing\Models\ShareInstallation;
+use Domain\Sharing\Models\ShareMember;
+use Domain\Sharing\Models\SharePreview;
+use Domain\Sharing\Support\GatewayRuns;
+use Domain\Sharing\Support\ShareEndings;
+use Domain\Sharing\Support\ShareGrants;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Tests\TestCase;
 
@@ -135,5 +134,4 @@ final class SharingBoundaryTest extends TestCase
             $this->assertFalse(Reflector::of($command)->implements(ShouldQueue::class), $command);
         }
     }
-
 }

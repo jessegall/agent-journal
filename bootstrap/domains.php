@@ -11,6 +11,7 @@ use Domain\Questions\QuestionsDomain;
 use Domain\Reminders\RemindersDomain;
 use Domain\Rules\RulesDomain;
 use Domain\Sequences\SequencesDomain;
+use Domain\Sharing\SharingDomain;
 use Domain\Tasks\TasksDomain;
 
 return [
@@ -22,6 +23,7 @@ return [
     MemoryDomain::class,
     RulesDomain::class,
     SequencesDomain::class,
+    SharingDomain::class,
     QuestionsDomain::class,
     RemindersDomain::class,
     HelpersDomain::class,

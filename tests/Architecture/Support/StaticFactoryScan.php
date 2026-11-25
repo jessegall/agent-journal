@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Models\Sharing\Share;
 use App\Support\Reflector;
 use App\Support\Registry;
+use Domain\Sharing\Models\Share;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\FunctionLike;

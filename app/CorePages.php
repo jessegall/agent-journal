@@ -10,7 +10,6 @@ use App\Pages\ProcessPages;
 use App\Pages\ProfilesPages;
 use App\Pages\ScriptsPages;
 use App\Pages\SettingsPages;
-use App\Pages\SharingPages;
 use App\Pages\WebPages;
 
 /**
@@ -25,7 +24,6 @@ final class CorePages
     {
         return [
             new WebPages()->declarations(),
-            new SharingPages()->declarations(),
             new ConnectionsPages()->declarations(),
             new ProcessPages()->declarations(),
             new ProfilesPages()->declarations(),

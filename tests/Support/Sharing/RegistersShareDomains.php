@@ -6,8 +6,8 @@ namespace Tests\Support\Sharing;
 
 use App\Support\Domain;
 use App\Support\DomainEntry;
-use App\Support\ShareGatewayRegistry;
 use App\Support\ShareRecordRegistry;
+use Domain\Sharing\Support\ShareGatewayRegistry;
 
 /**
  * Registers a fixture domain's share records and gateways as the sharing provider does at boot.

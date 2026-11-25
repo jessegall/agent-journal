@@ -51,14 +51,6 @@ use App\Events\Sessions\StartGrantRequested;
 use App\Events\Sessions\StartRefusedWithoutAccount;
 use App\Events\Sessions\StartSettingsRequested;
 use App\Events\Settings\SettingsChanged;
-use App\Events\Sharing\ShareActivated;
-use App\Events\Sharing\ShareCreated;
-use App\Events\Sharing\ShareExpired;
-use App\Events\Sharing\ShareFailed;
-use App\Events\Sharing\ShareGatewayChanged;
-use App\Events\Sharing\ShareRequested;
-use App\Events\Sharing\ShareRevoked;
-use App\Events\Sharing\ShareScopeChanged;
 use App\Events\Skills\SessionSkillsIntended;
 use App\Events\Skills\SkillsChanged;
 use App\Events\Web\PageChanged;
@@ -82,6 +74,14 @@ use Domain\Rules\Events\RuleApproved;
 use Domain\Rules\Events\RuleDenied;
 use Domain\Rules\Events\RuleRemoved;
 use Domain\Sequences\Events\SequenceStarted;
+use Domain\Sharing\Events\ShareActivated;
+use Domain\Sharing\Events\ShareCreated;
+use Domain\Sharing\Events\ShareExpired;
+use Domain\Sharing\Events\ShareFailed;
+use Domain\Sharing\Events\ShareGatewayChanged;
+use Domain\Sharing\Events\ShareRequested;
+use Domain\Sharing\Events\ShareRevoked;
+use Domain\Sharing\Events\ShareScopeChanged;
 use Domain\Tasks\Events\TaskBlocked;
 use Domain\Tasks\Events\TaskCancelled;
 use Domain\Tasks\Events\TaskCheckRecorded;
@@ -385,22 +385,22 @@ final class EventPayloads
             ],
             ShareActivated::class => [
                 'fields' => [
-                    'share' => 'App\Support\ShareFact',
+                    'share' => 'Domain\Sharing\Support\ShareFact',
                 ],
             ],
             ShareCreated::class => [
                 'fields' => [
-                    'share' => 'App\Support\ShareFact',
+                    'share' => 'Domain\Sharing\Support\ShareFact',
                 ],
             ],
             ShareExpired::class => [
                 'fields' => [
-                    'share' => 'App\Support\ShareFact',
+                    'share' => 'Domain\Sharing\Support\ShareFact',
                 ],
             ],
             ShareFailed::class => [
                 'fields' => [
-                    'share' => 'App\Support\ShareFact',
+                    'share' => 'Domain\Sharing\Support\ShareFact',
                 ],
             ],
             ShareGatewayChanged::class => [
@@ -413,17 +413,17 @@ final class EventPayloads
             ],
             ShareRequested::class => [
                 'fields' => [
-                    'share' => 'App\Support\ShareFact',
+                    'share' => 'Domain\Sharing\Support\ShareFact',
                 ],
             ],
             ShareRevoked::class => [
                 'fields' => [
-                    'share' => 'App\Support\ShareFact',
+                    'share' => 'Domain\Sharing\Support\ShareFact',
                 ],
             ],
             ShareScopeChanged::class => [
                 'fields' => [
-                    'share' => 'App\Support\ShareFact',
+                    'share' => 'Domain\Sharing\Support\ShareFact',
                 ],
             ],
             SessionSkillsIntended::class => [

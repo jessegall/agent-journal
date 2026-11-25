@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Tests\Support\Sharing;
 
 use App\Contracts\Sharing\ShareGateway;
-use App\Exceptions\GatewayOpenFailed;
 use App\Support\GatewayConfiguration;
 use App\Support\GatewayEndpoint;
 use App\Support\GatewayHealth;
 use App\Support\GatewayOperation;
 use App\Support\GatewaySettings;
 use App\Support\GatewaySetupCheck;
+use Domain\Sharing\Exceptions\GatewayOpenFailed;
 
 /**
  * A gateway for sharing lifecycle tests: it opens on its configuration's public origin with no process, remembers

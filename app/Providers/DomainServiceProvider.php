@@ -8,6 +8,8 @@ use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Bus\PipelineRunner;
 use App\Contracts\Domains\DomainAvailability;
 use App\Contracts\Reflection\ReflectorFactory;
+use App\Contracts\Sharing\SharePolicy;
+use App\Contracts\Sharing\ShareStatusResolver;
 use App\CoreCommands;
 use App\CoreMcpTools;
 use App\Mcp\Support\McpCatalogue;
@@ -19,6 +21,8 @@ use App\Support\CoreSkills;
 use App\Support\DomainRegistry;
 use App\Support\DomainSwitches;
 use App\Support\EmptySettingsDefinition;
+use App\Support\NoSharePolicy;
+use App\Support\NothingShared;
 use App\Support\Psr4ClassNames;
 use App\Support\RecordPolicyMappings;
 use App\Support\Rules\CoreRules;
@@ -26,7 +30,6 @@ use App\Support\SearchablesRegistry;
 use App\Support\SearchDiagnostics;
 use App\Support\SettingRegistry;
 use App\Support\SettingsDomainAvailability;
-use App\Support\ShareGatewayRegistry;
 use App\Support\ShareRecordRegistry;
 use App\Support\SkillRegistry;
 use Illuminate\Contracts\Foundation\Application;
@@ -47,6 +50,9 @@ class DomainServiceProvider extends ServiceProvider
         $registry = DomainRegistry::from($this->domainClasses());
 
         $this->app->instance(DomainRegistry::class, $registry);
+        $this->app->singleton(ShareRecordRegistry::class);
+        $this->app->bindIf(ShareStatusResolver::class, NothingShared::class);
+        $this->app->bindIf(SharePolicy::class, NoSharePolicy::class);
 
         $this->app->singleton(
             CommandRegistry::class,
@@ -111,7 +117,6 @@ class DomainServiceProvider extends ServiceProvider
         DomainRegistry $registry,
         PolicyCatalogue $policies,
         ShareRecordRegistry $shareRecords,
-        ShareGatewayRegistry $shareGateways,
     ): void {
         foreach ($registry->all() as $entry) {
             foreach ($entry->policies() as $policy) {
@@ -140,11 +145,9 @@ class DomainServiceProvider extends ServiceProvider
             foreach ($entry->shareRecords() as $registration) {
                 $shareRecords->register($registration);
             }
-
-            foreach ($entry->shareGateways() as $key => $gatewayClass) {
-                $shareGateways->register($key, $gatewayClass);
-            }
         }
+
+        $this->app->booted(fn () => $shareRecords->checkRelations());
     }
 
     /**

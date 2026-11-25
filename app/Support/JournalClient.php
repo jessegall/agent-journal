@@ -11,7 +11,6 @@ use App\Calls\Connections\ConnectionCalls;
 use App\Calls\Processes\ProcessCalls;
 use App\Calls\Records\RecordCalls;
 use App\Calls\Scripts\ScriptCalls;
-use App\Calls\Sharing\SharingCalls;
 use App\Calls\Supervision\SupervisionCalls;
 use App\Calls\Text\TextCalls;
 
@@ -28,7 +27,6 @@ final readonly class JournalClient
         public ProcessCalls $processes,
         public RecordCalls $records,
         public ScriptCalls $scripts,
-        public SharingCalls $sharing,
         public SupervisionCalls $supervision,
         public TextCalls $text,
     ) {}
