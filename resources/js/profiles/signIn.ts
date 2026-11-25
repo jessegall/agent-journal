@@ -3,15 +3,11 @@ import type {
     SignInMethod,
     SignInReceiptData,
 } from '@generated/types/accounts';
+import type { SignInCodeDirection } from '@/types/generated';
 import { challenge } from '@generated/routes/accounts';
-import { readPage } from '@kit/pageReads';
+import type { DriverLook } from '@kit/appContext';
+import { accountsSignInReceipt, load } from '@kit/loaders';
 import { xsrfToken } from '@kit/xsrfToken';
-
-/**
- * Which way a sign-in's code travels: Claude Code shows an address and asks for the code the provider's page gives
- * back; Codex shows the user a code to enter on the provider's page and takes nothing back.
- */
-export type CodeDirection = 'paste-back' | 'outgoing';
 
 export type SignInChallenge = { address: string | null; code: string | null };
 
@@ -49,8 +45,12 @@ export function signInMethodOf(word: string): SignInMethod {
     return method;
 }
 
-export function codeDirection(driver: string): CodeDirection {
-    return driver === 'codex' ? 'outgoing' : 'paste-back';
+/**
+ * Which way a sign-in's code travels, as the driver's family declares it: an address and the code its page gives
+ * back, or a code the user enters on the provider's page; a driver no family declares has neither.
+ */
+export function codeDirection(shown: DriverLook): SignInCodeDirection | undefined {
+    return shown.type === 'declared' ? shown.look.signInCode : undefined;
 }
 
 const liveStates = ['starting', 'waiting', 'checking'];
@@ -175,8 +175,10 @@ export type ReceiptTarget = { driver: string } | { account: string };
  * What became of a sign-in start under its request key; nothing when the read itself failed, so the caller asks
  * again.
  */
-export function readReceipt(key: string, target: ReceiptTarget): Promise<SignInReceiptData | null> {
-    return readPage<SignInReceiptData>('accounts.sign-in-receipt', { key, ...target }).catch(() => null);
+export async function readReceipt(key: string, target: ReceiptTarget): Promise<SignInReceiptData | null> {
+    const answer = await load(accountsSignInReceipt, { key, ...target }).catch(() => null);
+
+    return answer?.status === 'ok' ? answer.value : null;
 }
 
 /**

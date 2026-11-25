@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import { useAppContext } from '@kit/appContext';
 import type { StartAccountData } from '@generated/types/accounts';
 import PageHeader from '@kit/PageHeader';
 import StateBadge from '@kit/StateBadge';
-import { accountStateLook, driverName } from '../../accountLooks';
+import { accountStateLook } from '../../accountLooks';
+
+const { driverLabel } = useAppContext();
 
 /**
  * The account one start ran with, for the owner: its name as it is now, also after the account was removed, its
@@ -27,7 +30,7 @@ defineProps<{ data: StartAccountData }>();
             </div>
             <div class="flex gap-2">
                 <dt class="text-text-3">Driver</dt>
-                <dd class="text-text">{{ driverName(data.driver) }}</dd>
+                <dd class="text-text">{{ driverLabel(data.driver) }}</dd>
             </div>
             <div class="flex gap-2">
                 <dt class="text-text-3">Started</dt>

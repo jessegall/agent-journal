@@ -15,8 +15,10 @@ use SimpleXMLElement;
 use Tests\Architecture\Support\EntryPoints\CommandEntries;
 use Tests\Architecture\Support\EntryPoints\EntryAttributes;
 use Tests\Architecture\Support\EntryPoints\EntryPoint;
+use Tests\Architecture\Support\EntryPoints\EntryTestFindings;
 use Tests\Architecture\Support\EntryPoints\EntryType;
 use Tests\Architecture\Support\EntryPoints\HookEntries;
+use Tests\Architecture\Support\EntryPoints\LoaderEntries;
 use Tests\Architecture\Support\EntryPoints\McpToolEntries;
 use Tests\Architecture\Support\EntryPoints\MiddlewareEntries;
 use Tests\Architecture\Support\EntryPoints\NamedEntry;
@@ -28,8 +30,8 @@ use Tests\Support\TimeLimits\TimeLimit;
 /**
  * Every way into the journal is read from the booted code, every entry a test names from the Tests attributes of the
  * test classes, and the two are compared: a test names only entries that exist, one of its kind where a kind has one
- * test each, from the place its kind's tests belong, in a folder the test suites run; every journal route has a name,
- * every native hook event a HookEvent case, and the routes of other controllers are the ones listed here.
+ * test each, from the place its kind's tests belong, in a folder the test suites run; every read has its test, every
+ * journal route has a name, every native hook event a HookEvent case, and the routes of other controllers are the ones listed here.
  */
 #[TimeLimit(seconds: 60, reason: 'It reads the attributes of every test class of core and the domains.')]
 final class EntryPointTestsTest extends TestCase
@@ -89,18 +91,12 @@ final class EntryPointTestsTest extends TestCase
 
     public function test_each_test_sits_where_its_kinds_tests_belong(): void
     {
-        $misplaced = [];
+        $this->assertSame([], $this->findings()->misplaced());
+    }
 
-        foreach ($this->named() as $named) {
-            foreach (array_filter($this->entries(), $named->isFor(...)) as $entry) {
-                if (! $entry->isTestPlace($named->file)) {
-                    $misplaced[] = "{$named->file} tests the {$named->type->value} {$named->name}: move it to "
-                        ."{$entry->testPlace}.";
-                }
-            }
-        }
-
-        $this->assertSame([], $misplaced);
+    public function test_every_read_has_its_test(): void
+    {
+        $this->assertSame([], $this->findings()->untestedReads());
     }
 
     public function test_every_folder_of_entry_tests_is_in_a_test_suite(): void
@@ -158,7 +154,13 @@ final class EntryPointTestsTest extends TestCase
             ...new McpToolEntries($this->app->make(McpCatalogue::class))->entries(),
             ...$this->hooks()->entries(),
             ...new MiddlewareEntries($this->app->make(CommandRegistry::class))->entries(),
+            ...new LoaderEntries($this->app->make(ClientDeclarations::class))->entries(),
         ];
+    }
+
+    private function findings(): EntryTestFindings
+    {
+        return new EntryTestFindings($this->entries(), $this->named());
     }
 
     /**

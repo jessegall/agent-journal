@@ -10,8 +10,12 @@ const sent: SentRequest[] = vi.hoisted(() => []);
 vi.mock('@inertiajs/vue3', async () => (await import('@kit/testing/pageRequests')).recordingInertia(sent));
 vi.mock('@kit/requestId', () => ({ newRequestId: () => 'request-1' }));
 // The roster's search for users to add answers with one candidate who is not in the chat yet.
-vi.mock('@kit/pageReads', () => ({
-    readPage: async () => ({ candidates: [{ actor: `user:${RECORDED.candidate}`, label: 'Cy', driver: null }] }),
+vi.mock('@kit/loaders', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('@kit/loaders')>()),
+    load: async () => ({
+        status: 'ok',
+        value: { candidates: [{ actor: `user:${RECORDED.candidate}`, label: 'Cy', driver: null }] },
+    }),
 }));
 
 const { default: ChatRoster } = await import('./pages/chat/partials/ChatRoster.vue');

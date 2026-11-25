@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import TextLink from "@kit/TextLink";
-import { router, usePage } from "@inertiajs/vue3";
+import { useAppContext } from "@kit/appContext";
+import { router } from "@inertiajs/vue3";
 import { computed, onMounted, ref, watch } from "vue";
 import { newRequestId } from "@kit/requestId";
 import type { AgentOptionData, StatusActionData } from "@generated/types/chat";
@@ -16,7 +17,8 @@ import {
 } from "@kit/sessionStarts";
 import { keyedPost } from "@kit/keyedPost";
 import { sendPageAction } from "@kit/pageActions";
-import { readPage } from "@kit/pageReads";
+import { load, LoaderCancelled, webCapacity } from "@kit/loaders";
+import type { CapacityData } from "@kit/CoreTypes";
 import { useOpenSessionDialog } from "../../../composables/useChosenAgent";
 import { useStatusCheck } from "../../../composables/useStatusCheck";
 import { useSwitchOperation } from "../../../composables/useSwitchOperation";
@@ -38,19 +40,12 @@ const emit = defineEmits<{ dialog: [isOpen: boolean] }>();
 
 type FormMode = "start" | "resume" | "switch";
 
-type CapacityAnswer = {
-  fits: boolean;
-  resource?: string;
-  explanation?: string;
-  remedy?: string;
-};
-
 const formModes: FormMode[] = ["start", "resume", "switch"];
-const viewer = usePage().props.currentUser as { id: string } | undefined;
+const viewerId = useAppContext().viewer.value.id;
 const openDialog =
-  viewer === undefined
+  viewerId === undefined
     ? undefined
-    : useOpenSessionDialog(viewer.id, props.agent.id);
+    : useOpenSessionDialog(viewerId, props.agent.id);
 const kept = openDialog?.read() ?? null;
 // The dialog this agent had open in this tab comes back, with the start or switch it follows.
 const formMode = ref<FormMode | null>(
@@ -113,16 +108,20 @@ function readAgain(): void {
 
 function checkCapacity(): void {
   pendingType.value = "check-capacity";
-  readPage<CapacityAnswer>("web.capacity", {
-    agent: props.agent.id,
-    mode: "required_container",
-  })
+  load(webCapacity, { agent: props.agent.id, mode: "required_container" })
     .then((answer) => {
-      notice.value = answer.fits
-        ? "The host has room for this start now."
-        : (answer.explanation ?? null);
+      notice.value = answer.status === "ok" ? capacityNotice(answer.value) : null;
+    })
+    .catch((failure: Error) => {
+      if (!(failure instanceof LoaderCancelled)) {
+        notice.value = "The capacity check did not arrive; check again.";
+      }
     })
     .finally(() => (pendingType.value = null));
+}
+
+function capacityNotice(capacity: CapacityData): string | null {
+  return capacity.fits ? "The host has room for this start now." : (capacity.explanation ?? null);
 }
 
 function dismiss(): void {

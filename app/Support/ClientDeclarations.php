@@ -9,10 +9,13 @@ use App\Contracts\Navigation\DeclaredPages;
 use App\Contracts\Navigation\SlotSections;
 use App\Data\Pages\SlotSectionData;
 use App\Declarations\DomainClient;
+use App\Declarations\Loader;
 use App\Declarations\Menu;
 use App\Declarations\MenuItem;
 use App\Declarations\NavigationItem;
+use App\Declarations\Page;
 use App\Declarations\RegisteredAction;
+use App\Declarations\RegisteredLoader;
 use App\Declarations\RegisteredMenu;
 use App\Declarations\RegisteredMenuItem;
 use App\Declarations\RegisteredNavigation;
@@ -29,8 +32,9 @@ use App\Exceptions\InvalidNavigationDeclaration;
 use PhpOption\Option;
 
 /**
- * The pages, sections, actions and navigation of every installed domain, checked together once at start-up and never
- * changed after. It holds class names and paths only; readers and checks are built per request by whoever uses them.
+ * The pages, sections, actions, loaders and navigation of every installed domain, checked together once at start-up
+ * and never changed after. It holds class names and paths only; readers and checks are built per request by whoever
+ * uses them.
  */
 final readonly class ClientDeclarations implements DeclaredPages, SlotSections
 {
@@ -43,6 +47,7 @@ final readonly class ClientDeclarations implements DeclaredPages, SlotSections
      * @param  array<string, RegisteredSidebarGroup>  $sidebarGroups  by full key
      * @param  array<string, RegisteredMenu>  $menus  by full key
      * @param  array<string, list<RegisteredMenuItem>>  $menuItems  the items of each menu, by the menu's full key
+     * @param  array<string, RegisteredLoader>  $loaders  by full key
      */
     private function __construct(
         private array $pages,
@@ -53,6 +58,7 @@ final readonly class ClientDeclarations implements DeclaredPages, SlotSections
         private array $sidebarGroups,
         private array $menus,
         private array $menuItems,
+        private array $loaders,
     ) {}
 
     /**
@@ -152,12 +158,33 @@ final readonly class ClientDeclarations implements DeclaredPages, SlotSections
             $sidebarGroups,
             $menus,
             self::menuItemsOf($domains, $menus, $pages, $actions),
+            self::loadersOf($domains, $pages),
         );
 
         $declarations->refuseRepeatedRoutes();
         $declarations->refuseRepeatedPropNames();
 
         return $declarations;
+    }
+
+    /**
+     * Every page and shell loader of the installed owners; whether an owner is switched on is asked per call.
+     *
+     * @return list<RegisteredLoader>
+     */
+    public function loaders(): array
+    {
+        return array_values($this->loaders);
+    }
+
+    /**
+     * The loader with the given full key, when one is declared; for a key that comes from a request.
+     *
+     * @return Option<RegisteredLoader>
+     */
+    public function loader(string $key): Option
+    {
+        return Option::fromArraysValue($this->loaders, $key);
     }
 
     /**
@@ -413,6 +440,41 @@ final readonly class ClientDeclarations implements DeclaredPages, SlotSections
     }
 
     /**
+     * Every owner's loaders: each page's, guarded by that page, and the owner's own, which no page guards.
+     *
+     * @param  list<DomainClient>  $domains
+     * @param  array<string, RegisteredPage>  $pages
+     * @return array<string, RegisteredLoader>
+     */
+    private static function loadersOf(array $domains, array $pages): array
+    {
+        $loaders = [];
+
+        foreach ($domains as $owner) {
+            $pageLoaders = array_merge([], ...array_map(fn (Page $page) => $page->loaders, $owner->pages));
+            self::assertUniqueKeys(
+                $owner,
+                'loader',
+                array_map(fn (Loader $loader) => $loader->name, [...$owner->loaders, ...$pageLoaders]),
+            );
+
+            foreach ($owner->loaders as $loader) {
+                $registered = RegisteredLoader::of($owner, $loader, null);
+                $loaders[$registered->key] = $registered;
+            }
+
+            foreach ($owner->pages as $page) {
+                foreach ($page->loaders as $loader) {
+                    $registered = RegisteredLoader::of($owner, $loader, $pages[$owner->fullKey('page', $page->key)]);
+                    $loaders[$registered->key] = $registered;
+                }
+            }
+        }
+
+        return $loaders;
+    }
+
+    /**
      * @param  list<string>  $keys
      */
     private static function assertUniqueKeys(DomainClient $owner, string $type, array $keys): void
@@ -466,26 +528,26 @@ final readonly class ClientDeclarations implements DeclaredPages, SlotSections
     }
 
     /**
-     * Refuses two windows or sections whose flat browser prop names come out the same once dots and dashes become
-     * underscores.
+     * Refuses two windows, sections or loaders whose flat browser prop names come out the same once dots and dashes
+     * become underscores.
      */
     private function refuseRepeatedPropNames(): void
     {
         $seen = [];
+        $props = [
+            ...array_map(
+                fn (RegisteredPage|RegisteredSection $declaration) => [$declaration->propName, $declaration->key],
+                [...array_values($this->pages), ...array_values($this->sections)],
+            ),
+            ...array_map(fn (RegisteredLoader $loader) => [$loader->prop, $loader->key], array_values($this->loaders)),
+        ];
 
-        foreach ([
-            ...array_values($this->pages),
-            ...array_values($this->sections),
-        ] as $declaration) {
-            if (array_key_exists($declaration->propName, $seen)) {
-                throw ClientKeyRepeated::propName(
-$declaration->propName,
- $seen[$declaration->propName],
- $declaration->key,
-);
+        foreach ($props as [$prop, $key]) {
+            if (array_key_exists($prop, $seen)) {
+                throw ClientKeyRepeated::propName($prop, $seen[$prop], $key);
             }
 
-            $seen[$declaration->propName] = $declaration->key;
+            $seen[$prop] = $key;
         }
     }
 }

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useAppContext } from '@kit/appContext';
 import type {
     AccountNoticeReason,
     AccountNoticesData,
@@ -7,7 +8,8 @@ import { dismiss as dismissRoute } from '@generated/routes/accounts';
 import { Link, useForm } from '@inertiajs/vue3';
 import Button from '@kit/Button';
 import { formSendingHooks } from '@kit/usePageChanges';
-import { driverName } from '../../accountLooks';
+
+const { driverLabel } = useAppContext();
 
 /**
  * The bar's account notices on every page: what happened to a driver's accounts in safe words, a link to the
@@ -39,7 +41,7 @@ function dismiss(noticeId: string): void {
             <template v-for="notice in data.notices" :key="notice.id">
                 <li class="flex items-center gap-2 text-small text-tone-warn">
                     <span
-                        >{{ driverName(notice.driver) }}
+                        >{{ driverLabel(notice.driver) }}
                         {{ sentences[notice.reason] }}</span
                     >
                     <Link href="/accounts" class="text-brand-text underline"

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useAppContext } from '@kit/appContext';
 import { dateOnly } from '@kit/format';
 import type { AccountRowData } from '@generated/types/accounts';
 import { recheck, retryCleanup } from '@generated/routes/accounts';
@@ -11,12 +12,9 @@ import { computed, ref } from 'vue';
 import { useIsStale } from '@kit/windowFreshness';
 import AccountSettingsDialog from './AccountSettingsDialog.vue';
 import { usageLine } from '../../../accountUsage';
-import {
-    rowStateLook,
-    cleanupProblemText,
-    driverIcon,
-    driverName,
-} from '../../../accountLooks';
+import { rowStateLook, cleanupProblemText } from '../../../accountLooks';
+
+const { driverLabel } = useAppContext();
 
 /**
  * One saved account in the list: its driver's icon, its name, and one grey line with its driver, what it bills,
@@ -55,7 +53,7 @@ const drainingText = computed(() => {
 });
 const billing = computed(
     () =>
-        `${driverName(props.account.driver)} ${props.account.signIn.billingLabel.toLowerCase()}`,
+        `${driverLabel(props.account.driver)} ${props.account.signIn.billingLabel.toLowerCase()}`,
 );
 const state = computed(() => rowStateLook(props.account));
 // The state reads in neutral text: weight marks the one that wants the user, muted red only an error.
@@ -113,7 +111,7 @@ function recheckAccount(): void {
         :class="{ 'cursor-pointer': !isStale }"
         @click="openFromRow"
     >
-        <DriverIcon :driver="driverIcon(account.driver)" :size="16" />
+        <DriverIcon :driver="account.driver" :size="16" />
         <div class="flex min-w-0 flex-1 flex-col gap-0.5">
             <span
                 class="truncate leading-5 text-card text-text"

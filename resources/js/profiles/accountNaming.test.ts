@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { reactive } from 'vue';
+import { declaredLooks } from '@/kit/testing/driverLooks';
 
 type Projection = (props: { page: unknown }) => unknown;
 
@@ -10,6 +11,7 @@ const submitted: Array<{
 }> = [];
 
 vi.mock('@inertiajs/vue3', () => ({
+    usePage: () => ({ props: { drivers: declaredLooks } }),
     useForm: (fields: Record<string, unknown>) => {
         let sent: () => unknown = () => fields;
         const form = reactive({

@@ -7,6 +7,8 @@ namespace App\Support;
 use App\Contracts\Drivers\DriverCapabilities;
 use App\Enums\Drivers\DriverCapability;
 use App\Enums\Drivers\DriverType;
+use App\Enums\Drivers\MarkTone;
+use App\Enums\Drivers\SignInCodeDirection;
 use App\Support\Capabilities\CodexHeadlessCapabilities;
 use App\Support\Capabilities\CodexTerminalCapabilities;
 use App\Support\Capabilities\HeadlessCapabilities;
@@ -56,6 +58,10 @@ final readonly class DefaultDrivers
                     'opus',
                     'fable',
                 ],
+                ['claude', 'claude-code-headless'],
+                'images/drivers/claude-code.svg',
+                MarkTone::Own,
+                SignInCodeDirection::PasteBack,
             ),
 
             // Codex scopes its hooks per installation, not per thread, so a connected folder cannot run it isolated
@@ -72,6 +78,10 @@ final readonly class DefaultDrivers
                     'gpt-6.2-sol',
                     'gpt-6.2-astra',
                 ],
+                ['codex-headless'],
+                'images/drivers/codex.svg',
+                MarkTone::CurrentColor,
+                SignInCodeDirection::Outgoing,
             ),
         ];
     }

@@ -26,6 +26,11 @@ type InFlightRead = {
 export class SharedPropReads {
     private readonly inFlight = new Map<string, InFlightRead>();
 
+    /**
+     * The mounts showing each prop now, one per host.
+     */
+    private readonly shown = new Map<string, Set<number>>();
+
     private generation = 0;
 
     constructor(private readonly send: PropReadSender) {}
@@ -95,6 +100,29 @@ export class SharedPropReads {
         }
 
         this.inFlight.clear();
+    }
+
+    /**
+     * A host shows the prop.
+     */
+    show(propName: string, mount: number): void {
+        this.shown.set(propName, (this.shown.get(propName) ?? new Set()).add(mount));
+    }
+
+    /**
+     * A host stops showing the prop; answers whether it was the last one showing it.
+     */
+    hide(propName: string, mount: number): boolean {
+        const mounts = this.shown.get(propName);
+        mounts?.delete(mount);
+
+        if (mounts !== undefined && mounts.size > 0) {
+            return false;
+        }
+
+        this.shown.delete(propName);
+
+        return true;
     }
 
     isInFlight(key: string): boolean {

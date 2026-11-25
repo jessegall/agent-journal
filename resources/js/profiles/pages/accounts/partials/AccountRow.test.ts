@@ -12,6 +12,7 @@ type SentForm = {
 const forms: SentForm[] = [];
 
 vi.mock('@inertiajs/vue3', () => ({
+    usePage: () => ({ props: { drivers: declaredLooks } }),
     useForm: (fields: Record<string, unknown>) => {
         const form = reactive({
             ...fields,
@@ -72,6 +73,7 @@ import type {
     SignInMethodData,
 } from '@generated/types/accounts';
 import AccountRow from './AccountRow.vue';
+import { declaredLooks } from '@/kit/testing/driverLooks';
 
 const subscription: SignInMethodData = {
     method: 'oauth',

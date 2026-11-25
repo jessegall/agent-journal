@@ -20,12 +20,14 @@
             <directory>tests/Mcp</directory>
             <directory>tests/Hooks</directory>
             <directory>tests/Middleware</directory>
+            <directory>tests/Reads</directory>
             <directory>tests/StandIn</directory>
             <directory>domain/*/tests/Commands</directory>
             <directory>domain/*/tests/States</directory>
             <directory>domain/*/tests/Routes</directory>
             <directory>domain/*/tests/Mcp</directory>
             <directory>domain/*/tests/Middleware</directory>
+            <directory>domain/*/tests/Reads</directory>
         </testsuite>
         <testsuite name="Feature">
             <directory>tests/Feature</directory>

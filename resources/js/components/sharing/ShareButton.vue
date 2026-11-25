@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import Button from '@/components/kit/Button.vue';
+import { useAppContext } from '@/framework/appContext';
 
 /**
  * Opens the owner's share preview of a record, named as users name it, such as doc 12; shown to the owner only.
  */
 const props = defineProps<{ reference: string }>();
 
-const page = usePage();
-const canShare = computed(() => page.props.canShare === true);
+const { viewer } = useAppContext();
+const canShare = computed(() => viewer.value.canShare);
 </script>
 
 <template>

@@ -19,7 +19,7 @@ use Spatie\LaravelData\Optional;
 
 /**
  * A page a domain owns, keyed within its domain: where it lives under the domain's prefix, the resolver and component
- * that draw it, how it shows on Home, and the slots and actions it offers. Each change returns a new page.
+ * that draw it, how it shows on Home, and the slots, actions and loaders it offers. Each change returns a new page.
  */
 final class Page
 {
@@ -30,6 +30,7 @@ final class Page
      * @param  list<PageOption>  $options
      * @param  list<Slot>  $slots
      * @param  list<ActionRoute>  $actions
+     * @param  list<Loader>  $loaders
      * @param  class-string<VisibilityCheck>|null  $visibility  null when everyone signed in sees the page
      * @param  WindowPlace|Optional  $place  absent when a work layout has no place for the window
      */
@@ -48,6 +49,7 @@ final class Page
         public readonly array $options = [],
         public readonly array $slots = [],
         public readonly array $actions = [],
+        public readonly array $loaders = [],
         public readonly string|null $visibility = null,
         public readonly bool $isDeclared = false,
         public readonly WindowPlace|Optional $place = new Optional(),
@@ -143,6 +145,14 @@ final class Page
     public function actions(ActionRoute ...$actions): self
     {
         return clone ($this, ['actions' => array_values($actions)]);
+    }
+
+    /**
+     * The reads the page offers beside its own result, each guarded by the page's visibility as its actions are.
+     */
+    public function loaders(Loader ...$loaders): self
+    {
+        return clone ($this, ['loaders' => array_values($loaders)]);
     }
 
     /**

@@ -4,33 +4,17 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Web;
 
-use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Actors\CurrentUserResolver;
-use App\Contracts\Bus\CommandRefusal;
-use App\Contracts\Drivers\InstalledVersion;
-use App\Contracts\Navigation\NavigationRecords;
-use App\Contracts\Projects\CurrentProject;
-use App\Contracts\Projects\ProjectDirectory;
-use App\Contracts\Settings\SettingsResolver;
-use App\Contracts\Sharing\SharePolicy;
-use App\Data\Pages\CurrentUserData;
-use App\Data\Projects\ProjectData;
-use App\Data\Sharing\SharedData;
-use App\Enums\Projects\ProjectSelectionType;
-use App\Http\Responses\NotificationProps;
-use App\Http\Responses\PageReadProps;
-use App\Http\Responses\SearchProps;
-use App\Support\ActorReference;
-use App\Support\CoreSettings;
-use App\Support\HostLinkAlarms;
-use App\Support\InstallationFaults;
-use App\Values\InboxMemberAuthority;
+use App\Http\Responses\LoaderProps;
+use App\Support\Web\AppContext;
+use Closure;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Inertia\ResponseFactory;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
- * The one Inertia middleware: the root view, the asset version and the shared Data every page receives.
+ * The one Inertia middleware: the root view, the asset version and the app context every page receives.
  */
 class HandleInertiaRequests extends Middleware
 {
@@ -44,22 +28,28 @@ class HandleInertiaRequests extends Middleware
     protected $rootView = 'app';
 
     public function __construct(
-        private readonly SettingsResolver $settings,
-        private readonly CoreSettings $core,
+        private readonly AppContext $context,
+        private readonly LoaderProps $loaders,
         private readonly CurrentUserResolver $users,
-        private readonly NavigationRecords $navigation,
         private readonly ResponseFactory $inertia,
-        private readonly SharePolicy $sharing,
-        private readonly InstalledVersion $version,
-        private readonly InstallationFaults $installationFaults,
-        private readonly HostLinkAlarms $hostLinkAlarms,
-        private readonly CurrentActor $actors,
-        private readonly NotificationProps $notifications,
-        private readonly PageReadProps $pageReads,
-        private readonly SearchProps $search,
-        private readonly ProjectDirectory $projects,
-        private readonly CurrentProject $selection,
     ) {}
+
+    /**
+     * Every page a signed-in viewer sees is kept encrypted in the browser's history, so going back after signing out
+     * shows nothing private; a guest's pages are not, set on every request since the factory outlives one. The answer
+     * to a loader call is never cached.
+     */
+    public function handle(Request $request, Closure $next): Response
+    {
+        $this->inertia->encryptHistory($this->users->currentUser()->isDefined());
+        $response = parent::handle($request, $next);
+
+        if (LoaderProps::isCall($request)) {
+            $response->headers->set('Cache-Control', 'no-store, private');
+        }
+
+        return $response;
+    }
 
     /**
      * Determines the current asset version.
@@ -80,90 +70,11 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        $user = $this->users->currentUser();
-
-        if ($user->isEmpty()) {
-            return [
-                ...parent::share($request),
-                ...SharedData::from(
-                    [
-                        'name' => $this->settings->string($this->core->displayName),
-                        'version' => $this->version->label(),
-                    ],
-                )->toArray(),
-            ];
-        }
-
         return [
             ...parent::share($request),
-            ...SharedData::from(
-                [
-                    'name' => $this->settings->string($this->core->displayName),
-                    'version' => $this->version->label(),
-                    'currentUser' => CurrentUserData::from($user->get()),
-                    'canShare' => $this->sharing->mayManage(ActorReference::forUser($user->get()->id)),
-                    // An inbox member is a guest: what the installation could not heal is the operator's to see.
-                    'installationFaults' => $this->isInboxMember() ? [] : [
-                        ...$this->installationFaults->current(),
-                        ...$this->hostLinkAlarms->current(),
-                    ],
-                    ...$this->refusalCodeOf($request),
-                    ...$this->projectChoice(),
-                ],
-            )->toArray(),
-            // The navigation the signed-in user may see, and its counts after the page, so a slow count never holds it
-            // up.
-            'navigation' => fn () => $this->navigation->tree($request),
-            // An inbox member is shown no journal counts: it sees only the inboxes it is in.
-            'navigationCounts' => $this->isInboxMember()
-                ? []
-                : $this->inertia->defer(fn () => $this->navigation->counts(), 'navigation-counts'),
-            // The bell's notifications, read only by a partial reload that names them.
-            ...($this->isInboxMember() ? [] : $this->notifications->of($request)),
-            // The keyboard palette's search and its scope picker, read only by a partial reload that names them.
-            ...($this->isInboxMember() ? [] : $this->search->of($request)),
-            // The reads pages declare beside their own result, each read only by a partial reload that names it.
-            ...$this->pageReads->of($request),
+            ...$this->context->data($request)->toArray(),
+            // The one loader call the request names, answered now so it can come back under either key.
+            ...$this->loaders->of($request),
         ];
-    }
-
-    /**
-     * The projects the owner may choose and the one chosen, null for All projects; an inbox member chooses none.
-     *
-     * @return array{projects?: list<ProjectData>, selectedProject?: string|null}
-     */
-    private function projectChoice(): array
-    {
-        if ($this->isInboxMember()) {
-            return [];
-        }
-
-        $selection = $this->selection->selection();
-
-        return [
-            'projects' => $this->projects->listed(),
-            'selectedProject' => $selection->type === ProjectSelectionType::Project ? $selection->projectId() : null,
-        ];
-    }
-
-    private function isInboxMember(): bool
-    {
-        return $this->actors->hasActor() && $this->actors->authority() instanceof InboxMemberAuthority;
-    }
-
-    /**
-     * The stable code of the refusal the last form was answered with, when it was refused.
-     *
-     * @return array{refusalCode?: string}
-     */
-    private function refusalCodeOf(Request $request): array
-    {
-        $code = $request->session()->get(CommandRefusal::CODE_FLASH_KEY);
-
-        if (is_string($code)) {
-            return ['refusalCode' => $code];
-        }
-
-        return [];
     }
 }

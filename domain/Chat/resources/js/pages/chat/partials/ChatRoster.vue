@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import TextLink from "@kit/TextLink";
 import { router } from "@inertiajs/vue3";
-import { readPage } from "@kit/pageReads";
-import { computed, ref } from "vue";
+import { chatCandidates, load } from "@kit/loaders";
+import { onPurge } from "@kit/protectedView";
+import { computed, onBeforeUnmount, ref } from "vue";
 import Button from "@kit/Button";
 import type { ConversationData, ParticipantData } from "@generated/types/chat";
 import {
@@ -65,11 +66,19 @@ function remove(participant: string): void {
   );
 }
 
+/**
+ * The users who may join, read only when the picker opens; an unavailable answer shows none, and a read that did not
+ * arrive keeps what the picker showed.
+ */
 function findCandidates(): void {
-  void readPage<{ candidates: ParticipantData[] }>("chat.candidates", {
-    inboxId: props.conversation.inboxId,
-  }).then((answer) => (found.value = answer.candidates));
+  load(chatCandidates, { inboxId: props.conversation.inboxId }).then(
+    (answer) => (found.value = answer.status === "ok" ? answer.value.candidates : []),
+    () => undefined,
+  );
 }
+
+// A purge of what this viewer was shown takes the candidates with it.
+onBeforeUnmount(onPurge(() => (found.value = [])));
 </script>
 
 <template>

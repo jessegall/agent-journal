@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Form, usePage } from '@inertiajs/vue3';
+import { Form } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import Button from '@/components/kit/Button.vue';
 import Icon from '@/components/kit/Icon.vue';
@@ -10,6 +10,7 @@ import type { Appearance } from '@/composables/useAppearance';
 import { useAppearance } from '@/composables/useAppearance';
 import { useShellOverlays } from '@/composables/useShellOverlays';
 import { useSidebar } from '@/composables/useSidebar';
+import { useAppContext } from '@/framework/appContext';
 import { logout } from '@/routes';
 import NotificationBell from './NotificationBell.vue';
 import ProjectMenu from './ProjectMenu.vue';
@@ -21,9 +22,9 @@ import ProjectMenu from './ProjectMenu.vue';
  */
 defineProps<{ title: string }>();
 
-const page = usePage();
-const appName = computed(() => page.props.name);
-const userName = computed(() => page.props.currentUser?.name);
+const { installation, viewer } = useAppContext();
+const appName = computed(() => installation.value.name);
+const userName = computed(() => viewer.value.name);
 const { appearance, update } = useAppearance();
 const { toggle: toggleSidebar, isMini } = useSidebar();
 const { isPaletteOpen, isHelpOpen, isSearchOpen } = useShellOverlays();

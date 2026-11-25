@@ -14,6 +14,7 @@ type SentForm = {
 const forms: SentForm[] = [];
 
 vi.mock('@inertiajs/vue3', () => ({
+    usePage: () => ({ props: { drivers: declaredLooks } }),
     useForm: (fields: Record<string, unknown>) => {
         let shape: () => Record<string, unknown> = () => ({ ...fields });
         const form = reactive({
@@ -81,6 +82,7 @@ vi.mock('@kit/usePageChanges', () => ({
 }));
 
 import type {
+import { declaredLooks } from '@/kit/testing/driverLooks';
     AccountRowData,
     DriverMethodsData,
     SignInAttemptData,

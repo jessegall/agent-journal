@@ -3,7 +3,7 @@ import { mount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
 import type { AgentOptionData, ChatData } from "@generated/types/chat";
 
-vi.mock("@inertiajs/vue3", () => ({ usePage: () => ({ url: "/" }) }));
+vi.mock("@inertiajs/vue3", () => ({ usePage: () => ({ url: "/", props: { drivers: [] } }) }));
 vi.mock("./partials/AgentSessionActions.vue", () => ({ default: { template: "<div />" } }));
 
 const { default: ChosenAgent } = await import("./ChosenAgent.vue");

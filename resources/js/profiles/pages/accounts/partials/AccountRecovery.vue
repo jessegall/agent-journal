@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import { useAppContext } from '@kit/appContext';
 import type { PendingAttemptCleanupData } from '@generated/types/accounts';
 import { retrySignInCleanup } from '@generated/routes/accounts';
 import { useForm } from '@inertiajs/vue3';
 import Button from '@kit/Button';
 import { formSendingHooks } from '@kit/usePageChanges';
-import { cleanupProblemText, driverName } from '../../../accountLooks';
+import { cleanupProblemText } from '../../../accountLooks';
+
+const { driverLabel } = useAppContext();
 
 /**
  * The unfinished sign-ins, of new accounts and reconnects, whose staging folder still waits for its cleanup. Each is
@@ -35,7 +38,7 @@ function retry(attemptId: string): void {
                         class="flex items-center gap-3 border-b border-border px-4 py-3"
                     >
                         <span class="text-card text-text">{{
-                            driverName(cleanup.driver)
+                            driverLabel(cleanup.driver)
                         }}</span>
                         <span class="text-small text-text-3">{{
                             cleanup.problem === null

@@ -1,4 +1,5 @@
 import { router, usePage } from '@inertiajs/vue3';
+import { useAppContext } from '@/framework/appContext';
 import type { ActiveVisit, PendingVisit } from '@inertiajs/core';
 import { ref } from 'vue';
 
@@ -40,7 +41,7 @@ function currentScope(props: string[]): VisitScope {
 
     return {
         props,
-        userId: page.props.currentUser?.id,
+        userId: useAppContext().viewer.value.id,
         url: pageAddressOf(page.url),
         generation: protectedViewGeneration.value,
     };

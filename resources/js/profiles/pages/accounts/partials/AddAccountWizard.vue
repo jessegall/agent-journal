@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useAppContext } from '@kit/appContext';
 import type {
     AccountRowData,
     DriverMethodsData,
@@ -17,10 +18,11 @@ import ChosenSignIn from './ChosenSignIn.vue';
 import NameAccountStep from './NameAccountStep.vue';
 import SignInOutcome from './SignInOutcome.vue';
 import SignInTask from './SignInTask.vue';
-import { driverName } from '../../../accountLooks';
-import { rejoinableAttempt, isLive, secretSubmitLabel } from '../../../signIn';
+import { codeDirection, rejoinableAttempt, isLive, secretSubmitLabel } from '../../../signIn';
 import type { WizardRequest } from '../../../signIn';
 import { signInActions } from '../../../signInActions';
+
+const { driverLabel, driverLook } = useAppContext();
 
 /**
  * Adds an account in a modal of three steps: choose how to sign in, do that method's one task, and wait for the
@@ -44,7 +46,8 @@ const emit = defineEmits<{
     ];
 }>();
 
-const driver = ref('claude-code');
+// The first driver the host offers is chosen; with none, no method can be chosen and nothing is sent.
+const driver = ref(props.methods.at(0)?.driver ?? '');
 const method = ref<SignInMethod | null>(null);
 const followedId = ref<string | null>(null);
 const awaited = ref<{ driver: string; accountId: string | null } | null>(null);
@@ -418,7 +421,7 @@ function cancelAndClose(): void {
                         This sign-in is already running
                     </h4>
                     <p class="max-w-[340px] text-field leading-relaxed text-text-2">
-                        Only one new {{ driverName(shownDriver) }} account signs in
+                        Only one new {{ driverLabel(shownDriver) }} account signs in
                         at a time. Resume this one, or cancel it and choose again.
                     </p>
                 </div>
@@ -522,7 +525,7 @@ function cancelAndClose(): void {
                         >{{ secretSubmitLabel(followed) }}</Button
                     >
                 </template>
-                <template v-else-if="shownDriver === 'codex'">
+                <template v-else-if="codeDirection(driverLook(shownDriver)) === 'outgoing'">
                     <span class="pr-2 text-small whitespace-nowrap text-text-3"
                         >Continues on its own</span
                     >

@@ -7,6 +7,7 @@ export type LiveTraceStep =
     | 'transport lost'
     | 'subscription authorized'
     | 'subscription refused'
+    | 'foreign channel refused'
     | 'signal received'
     | 'chat access ended'
     | 'read started'

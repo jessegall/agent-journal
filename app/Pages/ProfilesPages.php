@@ -28,8 +28,10 @@ use App\Data\Accounts\SignInMethodData;
 use App\Data\Accounts\SignInReceiptData;
 use App\Data\Accounts\StartAccountData;
 use App\Data\Profiles\ScriptDiagnostic;
+use App\Data\Profiles\SignInReceiptInput;
 use App\Declarations\ActionRoute;
 use App\Declarations\DomainClient;
+use App\Declarations\Loader;
 use App\Declarations\NavigationItem;
 use App\Declarations\Page;
 use App\Declarations\Section;
@@ -63,9 +65,9 @@ use App\Http\Controllers\RetryAccountCleanupController;
 use App\Http\Controllers\RetryAttemptCleanupController;
 use App\Http\Controllers\SignInAgainController;
 use App\Http\Controllers\SignInChallengeController;
-use App\Http\Controllers\SignInReceiptController;
 use App\Http\Controllers\StartSignInController;
 use App\Http\Controllers\SubmitSignInCodeController;
+use App\Http\Loaders\Profiles\SignInReceiptLoader;
 use App\Http\Pages\Resolvers\AccountNoticesSection;
 use App\Http\Pages\Resolvers\AccountsWindowResolver;
 use App\Http\Pages\Resolvers\ProfilesWindowResolver;
@@ -99,11 +101,11 @@ final class ProfilesPages implements NativePartProvider, NavigationProvider, Pag
             Page::layout('accounts', 'Accounts', Icon::Accounts, AccountsWindowResolver::class)
                 ->at('')
                 ->visibleWhen(AccountOwnerCheck::class)
+                ->loaders(Loader::make('sign-in-receipt', SignInReceiptLoader::class))
                 ->actions(
                     ActionRoute::post('{account}/activate', ActivateAccountController::class, 'activate'),
                     ActionRoute::patch('{account}', RenameAccountController::class, 'rename'),
                     ActionRoute::post('sign-ins', StartSignInController::class, 'start-sign-in'),
-                    ActionRoute::get('sign-ins/receipt', SignInReceiptController::class, 'sign-in-receipt'),
                     ActionRoute::post('{account}/sign-in-again', SignInAgainController::class, 'sign-in-again'),
                     ActionRoute::delete('{account}', RemoveAccountController::class, 'remove'),
                     ActionRoute::post('{account}/cleanup/retry', RetryAccountCleanupController::class, 'retry-cleanup'),
@@ -181,6 +183,7 @@ final class ProfilesPages implements NativePartProvider, NavigationProvider, Pag
             SignInAttemptData::class,
             SignInMethodData::class,
             SignInReceiptData::class,
+            SignInReceiptInput::class,
             StartAccountData::class,
             ScriptDiagnostic::class,
             AccountCheckResult::class,

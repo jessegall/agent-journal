@@ -1,4 +1,5 @@
-import type { NotificationChangePage, NotificationItem, NotificationPage } from '@/generated/types/core';
+import type { NotificationItem } from '@/generated/types/core';
+import type { NotificationChangePage, NotificationPage } from '@/types/generated';
 import { computed, ref, shallowRef } from 'vue';
 import type { ComputedRef, Ref } from 'vue';
 
@@ -257,7 +258,14 @@ export function notificationStore(
                 changesCursor = page.cursor;
                 cursor = page.nextCursor;
             }
-        } catch {
+        } catch (error) {
+            // A cursor the server no longer reads starts again from the first page, as a reset does.
+            if (error instanceof NotificationRequestFailed && error.failure === 'refused') {
+                await refresh();
+
+                return [];
+            }
+
             failed(startedIn);
 
             return [];

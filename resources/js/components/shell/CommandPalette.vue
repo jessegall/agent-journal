@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { router, usePage } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import { computed, nextTick, ref, useId, useTemplateRef, watch } from 'vue';
 import Dialog from '@/components/kit/Dialog.vue';
 import Icon from '@/components/kit/Icon.vue';
@@ -11,7 +11,8 @@ import SearchField from '@/components/kit/SearchField.vue';
 import { useAppearance } from '@/composables/useAppearance';
 import { useShellOverlays } from '@/composables/useShellOverlays';
 import { useSidebar } from '@/composables/useSidebar';
-import type { NavigationData, NavigationItemData, PaletteHitData } from '@/types/generated';
+import { useAppContext } from '@/framework/appContext';
+import type { NavigationItemData, PaletteHitData } from '@/types/generated';
 import { MINIMUM_CHARACTERS, useSearchPalette } from './useSearchPalette';
 
 /**
@@ -24,7 +25,7 @@ import { MINIMUM_CHARACTERS, useSearchPalette } from './useSearchPalette';
 type Entry = { id: string; group: 'Commands' | 'Pages' | 'Records'; label: string; icon: IconName; run: () => void };
 
 const { isPaletteOpen, isHelpOpen } = useShellOverlays();
-const page = usePage<{ navigation: NavigationData }>();
+const { navigation } = useAppContext();
 const { toggle: toggleSidebar } = useSidebar();
 const { update } = useAppearance();
 
@@ -48,7 +49,7 @@ function flatten(items: NavigationItemData[]): NavigationItemData[] {
 }
 
 const pages = computed<Entry[]>(() =>
-    flatten(page.props.navigation?.items ?? []).flatMap((item) => {
+    flatten(navigation.value?.items ?? []).flatMap((item) => {
         const url = item.url;
 
         if (url === undefined) {

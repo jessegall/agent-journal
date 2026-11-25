@@ -7,7 +7,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 const page = reactive({
     url: '/',
     props: {
-        name: 'Journal',
+        installation: { name: 'Journal', version: '6', faults: [] as string[] },
         navigation: {
             items: [
                 { key: 'home', label: 'Home', url: '/', children: [], isAtBottom: false, isCounted: false, isInSidebar: true },
