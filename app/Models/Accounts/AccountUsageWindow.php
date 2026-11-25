@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\Accounts;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use App\Models\Concerns\OfSignIn;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -46,6 +49,7 @@ final class AccountUsageWindow extends Model implements EventSource, ReadableMod
     use HasUlids;
     use KeepsNewestReading;
     use Linkable;
+    use OfSignIn;
     use RaisesEvents;
     use RemovedWithAccount;
 
@@ -116,10 +120,8 @@ final class AccountUsageWindow extends Model implements EventSource, ReadableMod
     {
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
-            ->where('account_id', $account->id)
-            ->where('sign_in_generation', $generation)
-            ->where('limit_id', $reading->limitId)
-            ->where('slot', $reading->slot->value)
+            ->ofSignIn($account, $generation)
+            ->forReading($reading)
             ->lockForUpdate()
             ->first();
     }
@@ -138,9 +140,7 @@ final class AccountUsageWindow extends Model implements EventSource, ReadableMod
 
         $windows = self::query()
             ->inCurrentGenerationOf($accounts)
-            ->orderBy('account_id')
-            ->orderBy('limit_id')
-            ->orderBy('slot')
+            ->inWindowOrder()
             ->readAll('an account holds a few windows of its current sign-in')
             ->get();
 
@@ -151,5 +151,29 @@ final class AccountUsageWindow extends Model implements EventSource, ReadableMod
         }
 
         return $grouped;
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The window of the reading's limit and slot.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function forReading(Builder $query, UsageWindowReading $reading): void
+    {
+        $query->where('limit_id', $reading->limitId)->where('slot', $reading->slot->value);
+    }
+
+    /**
+     * The windows by account, then limit, then slot.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inWindowOrder(Builder $query): void
+    {
+        $query->orderBy('account_id')->orderBy('limit_id')->orderBy('slot');
     }
 }

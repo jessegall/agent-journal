@@ -230,14 +230,14 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
      */
     public static function submission(ActorIdentity $actor, string $key): Option
     {
-        return Option::fromValue(self::query()->ownedBy($actor)->where('submission_key', $key)->first());
+        return Option::fromValue(self::query()->ownedBy($actor)->underSubmissionKey($key)->first());
     }
 
     public static function openSubmissions(ActorIdentity $actor): int
     {
         return self::query()->ownedBy($actor)
-            ->where('origin', AskOriginType::Supervisor->value)
-            ->where('open', true)
+            ->fromOrigin(AskOriginType::Supervisor)
+            ->open()
             ->count();
     }
 
@@ -275,7 +275,7 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
         ]);
 
         $ask->insertIfAbsent();
-        $ask = self::query()->ownedBy($requester)->where('submission_key', $submissionKey)->firstOrFail();
+        $ask = self::query()->ownedBy($requester)->underSubmissionKey($submissionKey)->firstOrFail();
         $ask->assertSubmittedAs($digest);
 
         return $ask;
@@ -298,7 +298,7 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
             return [];
         }
 
-        $asks = self::query()->acrossActors()->whereKey($ids)->where('open', true)->readExactly(count($ids))->get();
+        $asks = self::query()->acrossActors()->whereKey($ids)->open()->readExactly(count($ids))->get();
 
         return $asks->keyBy('id')->all();
     }
@@ -312,8 +312,8 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
     {
         return array_values(self::query()
             ->acrossActors()
-            ->where('work', WorkReference::forRecord($work)->key)
-            ->where('open', true)
+            ->aboutWork($work)
+            ->open()
             ->lockForUpdate()
             ->readAll('the open asks about one work, a review and a merge at most')
             ->get()
@@ -342,5 +342,49 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
         $query->where(fn (Builder $participants) => $participants->where(
             fn (Builder $requester) => $requester->byActor($actor),
         )->orWhereIn('id', AskHop::query()->byActor($actor)->select('ask_id')));
+    }
+
+    /**
+     * The ask submitted under that key.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function underSubmissionKey(Builder $query, string $key): void
+    {
+        $query->where('submission_key', $key);
+    }
+
+    /**
+     * The asks of that origin.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function fromOrigin(Builder $query, AskOriginType $origin): void
+    {
+        $query->where('origin', $origin->value);
+    }
+
+    /**
+     * The open asks.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function open(Builder $query): void
+    {
+        $query->where('open', true);
+    }
+
+    /**
+     * The asks about the work.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function aboutWork(Builder $query, RecordIdentity $work): void
+    {
+        $query->where('work', WorkReference::forRecord($work)->key);
     }
 }

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\Accounts;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use App\Models\Concerns\OfSignIn;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -47,6 +50,7 @@ final class AccountUsageTokens extends Model implements EventSource, ReadableMod
     use HasUlids;
     use KeepsNewestReading;
     use Linkable;
+    use OfSignIn;
     use RaisesEvents;
     use RemovedWithAccount;
 
@@ -121,9 +125,8 @@ final class AccountUsageTokens extends Model implements EventSource, ReadableMod
     {
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
-            ->where('account_id', $account->id)
-            ->where('sign_in_generation', $generation)
-            ->where('thread_id', $tokens->threadId)
+            ->ofSignIn($account, $generation)
+            ->ofThread($tokens->threadId)
             ->lockForUpdate()
             ->first();
     }
@@ -143,11 +146,7 @@ final class AccountUsageTokens extends Model implements EventSource, ReadableMod
 
         $snapshots = self::query()
             ->inCurrentGenerationOf($accounts)
-            ->distinct('account_id')
-            ->orderBy('account_id')
-            ->orderByDesc('observed_at')
-            ->orderByDesc('source_order')
-            ->orderByDesc('source_id')
+            ->newestPerAccount()
             ->readExactly(count($accounts))
             ->get();
 
@@ -158,5 +157,33 @@ final class AccountUsageTokens extends Model implements EventSource, ReadableMod
         }
 
         return $newest;
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The thread's tokens.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofThread(Builder $query, string $threadId): void
+    {
+        $query->where('thread_id', $threadId);
+    }
+
+    /**
+     * Each account's newest reading only.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function newestPerAccount(Builder $query): void
+    {
+        $query->distinct('account_id')
+            ->orderBy('account_id')
+            ->orderByDesc('observed_at')
+            ->orderByDesc('source_order')
+            ->orderByDesc('source_id');
     }
 }

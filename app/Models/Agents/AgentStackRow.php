@@ -242,10 +242,9 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
     {
         return Option::fromValue(self::query()
             ->withoutGlobalScope(AgentSessionScope::class)
-            ->where('agent_id', $target->agentId)
-            ->where('session_id', '!=', $target->sessionId)
-            ->where('status', StackStatus::Closed->value)
-            ->orderByDesc('closed_at')
+            ->ofAgentOutsideSession($target)
+            ->inStatus(StackStatus::Closed)
+            ->lastClosedFirst()
             ->first());
     }
 
@@ -298,9 +297,9 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
             return [];
         }
 
-        return array_values(self::query()->historyOf($actor)->whereIn('session_id', $sessions)
-            ->where('status', StackStatus::Active->value)
-            ->orderBy('session_id')->lockForUpdate()->readExactly(count($sessions))->get()->all());
+        return array_values(self::query()->historyOf($actor)->ofSessions($sessions)
+            ->inStatus(StackStatus::Active)
+            ->inSessionOrder()->lockForUpdate()->readExactly(count($sessions))->get()->all());
     }
 
     // ----------[ Scopes ]----------
@@ -410,5 +409,61 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
     protected function authorizedFor(Builder $query, StackTarget $target): void
     {
         $query->withoutGlobalScope(AgentSessionScope::class)->forTarget($target);
+    }
+
+    /**
+     * The target agent's stacks of other sessions than the target's.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofAgentOutsideSession(Builder $query, StackTarget $target): void
+    {
+        $query->where('agent_id', $target->agentId)->where('session_id', '!=', $target->sessionId);
+    }
+
+    /**
+     * The stacks in that status.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inStatus(Builder $query, StackStatus $status): void
+    {
+        $query->where('status', $status->value);
+    }
+
+    /**
+     * The stacks closed last first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function lastClosedFirst(Builder $query): void
+    {
+        $query->orderByDesc('closed_at');
+    }
+
+    /**
+     * The stacks of the sessions.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $sessions
+     */
+    #[Scope]
+    protected function ofSessions(Builder $query, array $sessions): void
+    {
+        $query->whereIn('session_id', $sessions);
+    }
+
+    /**
+     * The stacks in the order of their session.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inSessionOrder(Builder $query): void
+    {
+        $query->orderBy('session_id');
     }
 }

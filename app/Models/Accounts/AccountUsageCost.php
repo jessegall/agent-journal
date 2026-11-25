@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\Accounts;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use App\Models\Concerns\OfSignIn;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -42,6 +45,7 @@ final class AccountUsageCost extends Model implements EventSource, ReadableModel
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use OfSignIn;
     use RaisesEvents;
     use RemovedWithAccount;
 
@@ -70,9 +74,8 @@ final class AccountUsageCost extends Model implements EventSource, ReadableModel
     {
         $kept = self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
-            ->where('account_id', $account->id)
-            ->where('sign_in_generation', $generation)
-            ->where('source_id', $cost->sourceId)
+            ->ofSignIn($account, $generation)
+            ->fromSource($cost->sourceId)
             ->lockForUpdate()
             ->first();
 
@@ -129,11 +132,9 @@ final class AccountUsageCost extends Model implements EventSource, ReadableModel
         $monthStart = $instant->utc()->startOfMonth();
 
         $totals = self::query()
-            ->whereIn('account_id', $ids)
-            ->where('observed_at', '>=', $monthStart)
-            ->where('observed_at', '<', $monthStart->addMonth())
-            ->selectRaw('account_id, sum(usd) as usd, count(*) as observations, max(observed_at) as observed_at')
-            ->groupBy('account_id')
+            ->ofAccounts($ids)
+            ->observedInMonthOf($monthStart)
+            ->totalPerAccount()
             ->readExactly(count($ids))
             ->get();
 
@@ -144,5 +145,53 @@ final class AccountUsageCost extends Model implements EventSource, ReadableModel
         }
 
         return $costs;
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The cost the source reported.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function fromSource(Builder $query, string $sourceId): void
+    {
+        $query->where('source_id', $sourceId);
+    }
+
+    /**
+     * The costs of the accounts.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $ids
+     */
+    #[Scope]
+    protected function ofAccounts(Builder $query, array $ids): void
+    {
+        $query->whereIn('account_id', $ids);
+    }
+
+    /**
+     * The costs observed in the month that starts then.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function observedInMonthOf(Builder $query, CarbonImmutable $monthStart): void
+    {
+        $query->where('observed_at', '>=', $monthStart)->where('observed_at', '<', $monthStart->addMonth());
+    }
+
+    /**
+     * One row of each account's total: its cost, how many readings and the newest of them.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function totalPerAccount(Builder $query): void
+    {
+        $query->selectRaw('account_id, sum(usd) as usd, count(*) as observations, max(observed_at) as observed_at')
+            ->groupBy('account_id');
     }
 }
