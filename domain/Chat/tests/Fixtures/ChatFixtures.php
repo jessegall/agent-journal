@@ -9,7 +9,7 @@ use App\Models\Messages\Message;
 use Domain\Chat\Commands\PinMessage\PinMessageCommand;
 use Domain\Chat\Models\MessagePin;
 use PHPUnit\Framework\Assert;
-use Tests\Support\Seeding\JournalSeed;
+use Tests\Support\Seeding\TestJournal;
 
 /**
  * The pins members put on chat messages, arranged through the Chat command so its membership and same-inbox checks
@@ -17,7 +17,7 @@ use Tests\Support\Seeding\JournalSeed;
  */
 final readonly class ChatFixtures
 {
-    public function __construct(private JournalSeed $journal) {}
+    public function __construct(private TestJournal $journal) {}
 
     /**
      * The named member pins the message in the inbox.

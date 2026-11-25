@@ -16,7 +16,7 @@ final readonly class FixtureRegistration
 
     /**
      * @param  class-string  $fixtures
-     * @param  Closure(JournalSeed): object  $maker
+     * @param  Closure(TestJournal): object  $maker
      */
     public function register(string $fixtures, Closure $maker): void
     {

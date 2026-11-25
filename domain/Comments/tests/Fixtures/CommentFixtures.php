@@ -13,7 +13,7 @@ use Domain\Comments\Models\Comment;
 use Illuminate\Support\Str;
 use PHPUnit\Framework\Assert;
 use Tests\Support\Seeding\FixtureAliases;
-use Tests\Support\Seeding\JournalSeed;
+use Tests\Support\Seeding\TestJournal;
 
 /**
  * Comments named users and agents post on records through the Comments commands, kept by the id each command answered
@@ -23,7 +23,7 @@ final class CommentFixtures
 {
     private readonly FixtureAliases $aliases;
 
-    public function __construct(private readonly JournalSeed $journal)
+    public function __construct(private readonly TestJournal $journal)
     {
         $this->aliases = new FixtureAliases('CommentFixtures');
     }

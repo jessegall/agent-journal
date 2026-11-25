@@ -20,7 +20,7 @@ final class FixtureRegistry
     private const string REGISTRAR = 'Tests\\Fixtures\\Fixtures';
 
     /**
-     * @var array<class-string, Closure(JournalSeed): object>
+     * @var array<class-string, Closure(TestJournal): object>
      */
     private array $makers = [];
 
@@ -35,7 +35,7 @@ final class FixtureRegistry
 
     /**
      * @param  class-string  $fixtures
-     * @param  Closure(JournalSeed): object  $maker
+     * @param  Closure(TestJournal): object  $maker
      */
     public function register(DomainEntry $owner, string $fixtures, Closure $maker): void
     {
@@ -58,7 +58,7 @@ final class FixtureRegistry
      * @param  class-string<TFixtures>  $fixtures
      * @return TFixtures
      */
-    public function fixtures(string $fixtures, JournalSeed $journal): object
+    public function fixtures(string $fixtures, TestJournal $journal): object
     {
         $this->registerBooted();
 

@@ -14,7 +14,7 @@ use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Values\DraftTarget;
 use PHPUnit\Framework\Assert;
 use Tests\Support\Seeding\FixtureAliases;
-use Tests\Support\Seeding\JournalSeed;
+use Tests\Support\Seeding\TestJournal;
 
 /**
  * Documents kept under the names a test gives them, written by named users and agents through the Documents
@@ -26,7 +26,7 @@ final class DocumentFixtures
 
     private readonly FixtureAliases $aliases;
 
-    public function __construct(private readonly JournalSeed $journal)
+    public function __construct(private readonly TestJournal $journal)
     {
         $this->aliases = new FixtureAliases('DocumentFixtures');
     }

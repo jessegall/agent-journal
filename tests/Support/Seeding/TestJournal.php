@@ -39,7 +39,7 @@ use Tests\Support\TestProjects;
  * personal inbox the journal gives it, and who acts; each call makes its rows at once, and run() sends a command as
  * the actor in place, under a request key of its own.
  */
-final class JournalSeed
+final class TestJournal
 {
     private const string OWNER = 'The journal';
 

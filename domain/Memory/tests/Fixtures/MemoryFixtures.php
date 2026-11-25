@@ -7,7 +7,7 @@ namespace Domain\Memory\Tests\Fixtures;
 use Domain\Memory\Models\Memory;
 use PHPUnit\Framework\Assert;
 use Tests\Support\Seeding\FixtureAliases;
-use Tests\Support\Seeding\JournalSeed;
+use Tests\Support\Seeding\TestJournal;
 
 /**
  * The memories of named agents, kept under the names a test gives them: each starts at revision 1, and its text,
@@ -17,7 +17,7 @@ final class MemoryFixtures
 {
     private readonly FixtureAliases $aliases;
 
-    public function __construct(private readonly JournalSeed $journal)
+    public function __construct(private readonly TestJournal $journal)
     {
         $this->aliases = new FixtureAliases('MemoryFixtures');
     }

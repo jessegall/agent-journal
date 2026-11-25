@@ -6,7 +6,7 @@ namespace Domain\Sharing\Tests\Fixtures;
 
 use Tests\Support\Seeding\Contracts\DomainFixtures;
 use Tests\Support\Seeding\FixtureRegistration;
-use Tests\Support\Seeding\JournalSeed;
+use Tests\Support\Seeding\TestJournal;
 
 /**
  * The fixture builders the Sharing domain offers the journal fixture.
@@ -15,6 +15,6 @@ final class Fixtures implements DomainFixtures
 {
     public static function register(FixtureRegistration $registration): void
     {
-        $registration->register(ShareFixtures::class, fn (JournalSeed $journal) => new ShareFixtures($journal));
+        $registration->register(ShareFixtures::class, fn (TestJournal $journal) => new ShareFixtures($journal));
     }
 }

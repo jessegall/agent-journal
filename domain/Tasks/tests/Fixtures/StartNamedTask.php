@@ -6,9 +6,9 @@ namespace Domain\Tasks\Tests\Fixtures;
 
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\TasksDomain;
-use Tests\Support\Seeding\JournalSeed;
 use Tests\Support\Seeding\ScenarioRequirements;
 use Tests\Support\Seeding\StartScenario;
+use Tests\Support\Seeding\TestJournal;
 
 /**
  * The owner's new task of this name, started by an agent the journal already holds, who goes on acting.
@@ -33,19 +33,19 @@ final readonly class StartNamedTask implements StartScenario
         return [$this->task];
     }
 
-    public function start(JournalSeed $journal): RunningTask
+    public function start(TestJournal $journal): RunningTask
     {
         $tasks = $journal->fixtures(TaskFixtures::class)->task(
-$this->task,
- creator: $journal->userCalled($this->owner),
-);
+            $this->task,
+            creator: $journal->userCalled($this->owner),
+        );
         $task = $tasks->taskCalled($this->task);
         $number = $journal->actAs($this->worker)->run(new StartTaskCommand($task->id));
 
         return new RunningTask(
-$task->refresh(),
- $journal->sessionOf($this->worker),
- $tasks->runOf($this->task, $number),
-);
+            $task->refresh(),
+            $journal->sessionOf($this->worker),
+            $tasks->runOf($this->task, $number),
+        );
     }
 }

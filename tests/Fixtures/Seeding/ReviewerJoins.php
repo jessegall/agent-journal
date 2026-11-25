@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Seeding;
 
 use App\Models\Agents\Agent;
-use Tests\Support\Seeding\JournalSeed;
 use Tests\Support\Seeding\ScenarioRequirements;
 use Tests\Support\Seeding\StartScenario;
+use Tests\Support\Seeding\TestJournal;
 
 /**
  * A test scenario: an agent of the given name joins the journal's owner and acts.
@@ -28,7 +28,7 @@ final readonly class ReviewerJoins implements StartScenario
         return [$this->name];
     }
 
-    public function start(JournalSeed $journal): Agent
+    public function start(TestJournal $journal): Agent
     {
         return $journal->agent($this->name)->actAs($this->name)->agentCalled($this->name);
     }

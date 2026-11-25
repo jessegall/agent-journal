@@ -9,7 +9,7 @@ use Domain\Sequences\Enums\SequenceRunStatus;
 use Domain\Sequences\Models\SequenceRun;
 use PHPUnit\Framework\Assert;
 use Tests\Support\Seeding\FixtureAliases;
-use Tests\Support\Seeding\JournalSeed;
+use Tests\Support\Seeding\TestJournal;
 
 /**
  * Sequence runs kept under the names a test gives them: a run of steps no one follows yet, started for a named
@@ -19,7 +19,7 @@ final class SequenceFixtures
 {
     private readonly FixtureAliases $aliases;
 
-    public function __construct(private readonly JournalSeed $journal)
+    public function __construct(private readonly TestJournal $journal)
     {
         $this->aliases = new FixtureAliases('SequenceFixtures');
     }

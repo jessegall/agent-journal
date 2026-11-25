@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Tasks\Tests\Fixtures;
 
 use Domain\Tasks\TasksDomain;
-use Tests\Support\Seeding\JournalSeed;
 use Tests\Support\Seeding\ScenarioRequirements;
 use Tests\Support\Seeding\StartScenario;
+use Tests\Support\Seeding\TestJournal;
 
 /**
  * A new journal whose owner made a task and whose one agent started it and works on it now.
@@ -32,7 +32,7 @@ final readonly class AgentMidTask implements StartScenario
         return [$this->owner, $this->worker, $this->task];
     }
 
-    public function start(JournalSeed $journal): RunningTask
+    public function start(TestJournal $journal): RunningTask
     {
         $journal->owner($this->owner)->agent($this->worker);
 

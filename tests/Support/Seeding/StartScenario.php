@@ -24,5 +24,5 @@ interface StartScenario
     /**
      * @return TResult
      */
-    public function start(JournalSeed $journal): mixed;
+    public function start(TestJournal $journal): mixed;
 }

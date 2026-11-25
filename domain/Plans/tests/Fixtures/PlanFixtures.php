@@ -18,7 +18,7 @@ use Domain\Tasks\Models\Task;
 use PHPUnit\Framework\Assert;
 use Tests\Support\Seeding\FixtureAliases;
 use Tests\Support\Seeding\FixtureRefused;
-use Tests\Support\Seeding\JournalSeed;
+use Tests\Support\Seeding\TestJournal;
 
 /**
  * Plans, their phases and the tasks placed in them, arranged by the owner through the Plans commands and kept under
@@ -30,7 +30,7 @@ final class PlanFixtures
 
     private readonly FixtureAliases $aliases;
 
-    public function __construct(private readonly JournalSeed $journal)
+    public function __construct(private readonly TestJournal $journal)
     {
         $this->aliases = new FixtureAliases('PlanFixtures');
     }

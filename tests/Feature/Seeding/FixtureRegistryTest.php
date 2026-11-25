@@ -12,7 +12,7 @@ use Tests\Fixtures\Modules\Notes\NoteFixtures;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Support\Seeding\FixtureRefused;
 use Tests\Support\Seeding\FixtureRegistry;
-use Tests\Support\Seeding\JournalSeed;
+use Tests\Support\Seeding\TestJournal;
 use Tests\TestCase;
 
 /**
@@ -28,7 +28,7 @@ final class FixtureRegistryTest extends TestCase
         $registry->register(
             $this->notes(),
             NoteFixtures::class,
-            fn (JournalSeed $journal) => new NoteFixtures($journal),
+            fn (TestJournal $journal) => new NoteFixtures($journal),
         );
 
         $first = $registry->fixtures(NoteFixtures::class, $this->journal);
@@ -41,7 +41,7 @@ final class FixtureRegistryTest extends TestCase
     {
         $registry = $this->registry();
         $plans = DomainEntry::fromClass(PlansDomain::class);
-        $maker = fn (JournalSeed $journal) => new NoteFixtures($journal);
+        $maker = fn (TestJournal $journal) => new NoteFixtures($journal);
 
         $this->assertThrows(
             fn () => $registry->register($plans, NoteFixtures::class, $maker),

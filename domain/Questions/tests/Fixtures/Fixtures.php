@@ -6,7 +6,7 @@ namespace Domain\Questions\Tests\Fixtures;
 
 use Tests\Support\Seeding\Contracts\DomainFixtures;
 use Tests\Support\Seeding\FixtureRegistration;
-use Tests\Support\Seeding\JournalSeed;
+use Tests\Support\Seeding\TestJournal;
 
 /**
  * The fixture builders the Questions domain offers the journal fixture.
@@ -15,6 +15,6 @@ final class Fixtures implements DomainFixtures
 {
     public static function register(FixtureRegistration $registration): void
     {
-        $registration->register(QuestionFixtures::class, fn (JournalSeed $journal) => new QuestionFixtures($journal));
+        $registration->register(QuestionFixtures::class, fn (TestJournal $journal) => new QuestionFixtures($journal));
     }
 }

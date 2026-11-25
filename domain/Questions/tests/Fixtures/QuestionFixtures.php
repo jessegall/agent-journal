@@ -10,7 +10,7 @@ use Domain\Questions\Models\Question;
 use Domain\Questions\Models\QuestionAnswerNotice;
 use PHPUnit\Framework\Assert;
 use Tests\Support\Seeding\FixtureAliases;
-use Tests\Support\Seeding\JournalSeed;
+use Tests\Support\Seeding\TestJournal;
 
 /**
  * Questions one named user or agent asks another in an inbox, kept under the names a test gives them, and what became
@@ -20,7 +20,7 @@ final class QuestionFixtures
 {
     private readonly FixtureAliases $aliases;
 
-    public function __construct(private readonly JournalSeed $journal)
+    public function __construct(private readonly TestJournal $journal)
     {
         $this->aliases = new FixtureAliases('QuestionFixtures');
     }

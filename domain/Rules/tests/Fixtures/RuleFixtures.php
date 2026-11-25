@@ -9,7 +9,7 @@ use Domain\Rules\Enums\RuleStatus;
 use Domain\Rules\Models\Rule;
 use PHPUnit\Framework\Assert;
 use Tests\Support\Seeding\FixtureAliases;
-use Tests\Support\Seeding\JournalSeed;
+use Tests\Support\Seeding\TestJournal;
 
 /**
  * Project rules kept under the names a test gives them: proposed by a named user or agent, and made to hold by the
@@ -21,7 +21,7 @@ final class RuleFixtures
 
     private readonly FixtureAliases $aliases;
 
-    public function __construct(private readonly JournalSeed $journal)
+    public function __construct(private readonly TestJournal $journal)
     {
         $this->aliases = new FixtureAliases('RuleFixtures');
     }

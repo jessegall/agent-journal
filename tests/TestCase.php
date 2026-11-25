@@ -29,7 +29,7 @@ use Laravel\Fortify\Features;
 use PDO;
 use Tests\Support\Exceptions\DatabaseUsedWithoutHookDatabase;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Seeding\JournalSeed;
+use Tests\Support\Seeding\TestJournal;
 use Tests\Support\TestProjects;
 use Tests\Support\TimeLimits\Exceptions\TestTimedOut;
 use Tests\Support\TimeLimits\TestAlarm;
@@ -51,7 +51,7 @@ abstract class TestCase extends BaseTestCase
     /**
      * The journal this test arranges, acts on and asserts against, made anew with each application.
      */
-    protected JournalSeed $journal;
+    protected TestJournal $journal;
 
     protected function setUp(): void
     {
@@ -182,7 +182,7 @@ abstract class TestCase extends BaseTestCase
             $this->refuseQueries($this->app->make(DatabaseManager::class));
         }
 
-        $this->journal = new JournalSeed($this->app, $this);
+        $this->journal = new TestJournal($this->app, $this);
     }
 
     /**

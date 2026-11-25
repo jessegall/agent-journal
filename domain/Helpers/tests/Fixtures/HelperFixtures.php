@@ -17,7 +17,7 @@ use Domain\Helpers\Values\SessionStartDetails;
 use Illuminate\Support\Str;
 use PHPUnit\Framework\Assert;
 use Tests\Support\Seeding\FixtureAliases;
-use Tests\Support\Seeding\JournalSeed;
+use Tests\Support\Seeding\TestJournal;
 
 /**
  * Helper jobs kept under the names a test gives them: each job has a writing helper of its own, an agent the journal
@@ -29,7 +29,7 @@ final class HelperFixtures
 
     private readonly FixtureAliases $aliases;
 
-    public function __construct(private readonly JournalSeed $journal)
+    public function __construct(private readonly TestJournal $journal)
     {
         $this->aliases = new FixtureAliases('HelperFixtures');
     }

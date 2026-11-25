@@ -12,9 +12,9 @@ use Tests\Fixtures\Hooks\TestFailure;
 use Tests\Fixtures\Seeding\ReviewerJoins;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Seeding\FixtureRefused;
-use Tests\Support\Seeding\JournalSeed;
 use Tests\Support\Seeding\ScenarioRequirements;
 use Tests\Support\Seeding\StartScenario;
+use Tests\Support\Seeding\TestJournal;
 use Tests\TestCase;
 
 /**
@@ -90,7 +90,7 @@ final class JournalScenariosTest extends TestCase
                 return ['Helper'];
             }
 
-            public function start(JournalSeed $journal): never
+            public function start(TestJournal $journal): never
             {
                 $journal->agent('Helper')->actAs('Helper');
 
@@ -128,7 +128,7 @@ final class JournalScenariosTest extends TestCase
                 return $this->freshNames;
             }
 
-            public function start(JournalSeed $journal): null
+            public function start(TestJournal $journal): null
             {
                 foreach ($this->freshNames as $name) {
                     $journal->agent($name);

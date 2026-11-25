@@ -14,7 +14,7 @@ use Domain\Sharing\Support\ShareGrant;
 use Domain\Sharing\Support\ShareToken;
 use PHPUnit\Framework\Assert;
 use Tests\Support\Seeding\FixtureAliases;
-use Tests\Support\Seeding\JournalSeed;
+use Tests\Support\Seeding\TestJournal;
 
 /**
  * Shares the journal's owner granted, kept under the names a test gives them: each grant has a token of its own and
@@ -24,7 +24,7 @@ final class ShareFixtures
 {
     private readonly FixtureAliases $aliases;
 
-    public function __construct(private readonly JournalSeed $journal)
+    public function __construct(private readonly TestJournal $journal)
     {
         $this->aliases = new FixtureAliases('ShareFixtures');
     }

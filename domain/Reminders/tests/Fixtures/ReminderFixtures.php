@@ -9,7 +9,7 @@ use Domain\Reminders\Enums\ReminderStatus;
 use Domain\Reminders\Models\Reminder;
 use PHPUnit\Framework\Assert;
 use Tests\Support\Seeding\FixtureAliases;
-use Tests\Support\Seeding\JournalSeed;
+use Tests\Support\Seeding\TestJournal;
 
 /**
  * The reminders of named users and agents, kept under the names a test gives them and read back as saved, whoever
@@ -19,7 +19,7 @@ final class ReminderFixtures
 {
     private readonly FixtureAliases $aliases;
 
-    public function __construct(private readonly JournalSeed $journal)
+    public function __construct(private readonly TestJournal $journal)
     {
         $this->aliases = new FixtureAliases('ReminderFixtures');
     }

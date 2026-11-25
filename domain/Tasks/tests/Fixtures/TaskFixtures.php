@@ -16,7 +16,7 @@ use Domain\Tasks\Models\TaskRun;
 use Domain\Tasks\Models\TaskWait;
 use PHPUnit\Framework\Assert;
 use Tests\Support\Seeding\FixtureAliases;
-use Tests\Support\Seeding\JournalSeed;
+use Tests\Support\Seeding\TestJournal;
 
 /**
  * Tasks, their runs and their waits, kept under the names a test gives them: a task is made open, a run is started by
@@ -28,7 +28,7 @@ final class TaskFixtures
 
     private readonly FixtureAliases $aliases;
 
-    public function __construct(private readonly JournalSeed $journal)
+    public function __construct(private readonly TestJournal $journal)
     {
         $this->aliases = new FixtureAliases('TaskFixtures');
     }
