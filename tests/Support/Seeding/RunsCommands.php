@@ -120,7 +120,8 @@ trait RunsCommands
     }
 
     /**
-     * Runs the command unkeyed as the owner of the journal, as a fixture arranges, and puts the selection back after.
+     * Runs the command as the owner of the journal under a new request key, as a fixture arranges, and puts the
+     * selection back after.
      *
      * @template TResult
      *
@@ -131,6 +132,6 @@ trait RunsCommands
     {
         $owner = $this->ownerUser();
 
-        return $this->requests->during(fn () => $this->requests->asUser($owner), fn () => $this->runUnkeyed($command));
+        return $this->requests->during(fn () => $this->requests->asUser($owner), fn () => $this->run($command));
     }
 }

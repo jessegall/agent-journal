@@ -134,6 +134,19 @@ final class JournalSeed
     }
 
     /**
+     * The application's own service of the type, for a fixture that reads through one.
+     *
+     * @template TService of object
+     *
+     * @param  class-string<TService>  $type
+     * @return TService
+     */
+    public function service(string $type): object
+    {
+        return $this->app->make($type);
+    }
+
+    /**
      * The fixture builder a booted domain registered for the class, made once per test.
      *
      * @template TFixtures of object
