@@ -11,7 +11,7 @@ use Domain\Plans\Contracts\PlanReviewEvent;
 /**
  * A plan was put up for review by the reviewers it names. Raised only once the request has committed.
  */
-final readonly class PlanReviewRequested extends PlanEvent implements ClientUpdate, PlanReviewEvent
+final readonly class PlanReviewRequested implements ClientUpdate, PlanEvent, PlanReviewEvent
 {
     /**
      * @param  list<ActorIdentity>  $reviewers

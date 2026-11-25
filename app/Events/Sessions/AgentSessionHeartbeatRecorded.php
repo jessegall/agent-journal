@@ -9,7 +9,7 @@ use App\Contracts\Sessions\AgentSessionEvent;
 /**
  * A session's heartbeat was recorded.
  */
-final readonly class AgentSessionHeartbeatRecorded extends SessionEvent implements AgentSessionEvent
+final readonly class AgentSessionHeartbeatRecorded implements AgentSessionEvent, SessionEvent
 {
     public function __construct(
         public string $sessionId,

@@ -9,7 +9,7 @@ use App\Contracts\Sessions\StartIdentityEvent;
 /**
  * A start was bound to its driver session's native id.
  */
-final readonly class StartIdentityBound extends SessionEvent implements StartIdentityEvent
+final readonly class StartIdentityBound implements SessionEvent, StartIdentityEvent
 {
     public function __construct(
         public string $startId,

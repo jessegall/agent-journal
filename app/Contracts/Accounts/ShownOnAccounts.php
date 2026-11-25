@@ -12,6 +12,8 @@ use App\Contracts\Events\Event;
  */
 interface ShownOnAccounts extends Event
 {
+    public string $driver { get; }
+
     /**
      * The driver whose accounts page shows the fact.
      */

@@ -27,6 +27,11 @@ use PhpOption\Some;
 final class StateMethods
 {
     /**
+     * The method every state asks before its listeners, which takes an Event but is no listener itself.
+     */
+    private const string HEARS = 'hears';
+
+    /**
      * The types a hook method returns, and so the only ones an event method may return besides void.
      */
     private const array HOOK_ANSWER_TYPES = [
@@ -100,7 +105,7 @@ final class StateMethods
 
         if (ReflectedType::of(AgentState::class)->hasMethod($name)
             || ReflectedType::of(TickableState::class)->hasMethod($name)) {
-            if ($takesEvent) {
+            if ($takesEvent && $name !== self::HEARS) {
                 throw InvalidStateMethod::for($method, 'uses a reserved state method name for an event listener.');
             }
 

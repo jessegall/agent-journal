@@ -9,6 +9,8 @@ namespace App\Contracts\Events;
  */
 interface ActiveRuleChange extends Event
 {
+    public string $projectKey { get; }
+
     /**
      * The key of the project whose active rules changed.
      */

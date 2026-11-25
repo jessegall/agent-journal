@@ -10,7 +10,7 @@ use Domain\Plans\Contracts\PlanReviewEvent;
 /**
  * A plan's review was withdrawn before a decision and the plan is Planned again. Raised only once that has committed.
  */
-final readonly class PlanReviewWithdrawn extends PlanEvent implements ClientUpdate, PlanReviewEvent
+final readonly class PlanReviewWithdrawn implements ClientUpdate, PlanEvent, PlanReviewEvent
 {
     public function __construct(
         public string $planId,

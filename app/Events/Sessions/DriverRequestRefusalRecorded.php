@@ -9,7 +9,7 @@ use App\Contracts\Drivers\DriverRequestEvent;
 /**
  * The host refused to wake a driver request.
  */
-final readonly class DriverRequestRefusalRecorded extends SessionEvent implements DriverRequestEvent
+final readonly class DriverRequestRefusalRecorded implements DriverRequestEvent, SessionEvent
 {
     public function __construct(public string $requestId) {}
 }

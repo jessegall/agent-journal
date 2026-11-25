@@ -10,7 +10,7 @@ use Domain\Sharing\Enums\GatewayOutcome;
 /**
  * A share gateway operation finished with the outcome given.
  */
-final readonly class ShareGatewayOperationFinished extends ShareEvent implements ShareGatewayEvent
+final readonly class ShareGatewayOperationFinished implements ShareEvent, ShareGatewayEvent
 {
     public function __construct(
         public string $operationId,

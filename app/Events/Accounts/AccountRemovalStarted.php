@@ -9,7 +9,7 @@ use App\Contracts\Accounts\ShownOnAccounts;
 /**
  * The owner began removing a saved account.
  */
-final readonly class AccountRemovalStarted extends AccountEvent implements ShownOnAccounts
+final readonly class AccountRemovalStarted implements AccountEvent, ShownOnAccounts
 {
     public function __construct(public string $driver, public string $accountId) {}
 

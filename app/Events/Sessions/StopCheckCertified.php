@@ -9,7 +9,7 @@ use App\Contracts\Sessions\StopCheckEvent;
 /**
  * A stop attempt was certified.
  */
-final readonly class StopCheckCertified extends SessionEvent implements StopCheckEvent
+final readonly class StopCheckCertified implements SessionEvent, StopCheckEvent
 {
     public function __construct(
         public string $attemptId,

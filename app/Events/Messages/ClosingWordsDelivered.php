@@ -7,7 +7,7 @@ namespace App\Events\Messages;
 /**
  * An agent delivered its closing words as a message.
  */
-final readonly class ClosingWordsDelivered extends MessageEvent
+final readonly class ClosingWordsDelivered implements MessageEvent
 {
     public function __construct(public string $messageId, public string $agentId) {}
 }

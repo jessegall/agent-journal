@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Domain\Plans\Support\States;
 
 use App\Attributes\States\StateType;
+use App\Contracts\Events\Event;
 use App\Enums\Engine\FrameReuse;
 use App\Enums\Sessions\SessionTransferType;
 use App\Support\States\AgentState;
 use App\Values\AgentText;
 use Domain\Plans\Events\PlanCancelled;
+use Domain\Plans\Events\PlanEvent;
 use Domain\Plans\Events\PlanFinished;
 use Domain\Plans\Events\PlanProgressChanged;
 use Domain\Plans\Models\Plan;
@@ -68,23 +70,24 @@ final class WorkOnPlanState extends AgentState
 
     // ----------[ Events ]----------
 
+    public function hears(Event $event): bool
+    {
+        return ! $event instanceof PlanEvent || $event->planId === $this->planId;
+    }
+
     public function onPlanFinished(PlanFinished $event): void
     {
-        if ($event->planId === $this->planId) {
-            $this->isOpen = false;
-        }
+        $this->isOpen = false;
     }
 
     public function onPlanCancelled(PlanCancelled $event): void
     {
-        if ($event->planId === $this->planId) {
-            $this->isOpen = false;
-        }
+        $this->isOpen = false;
     }
 
     public function onPlanProgressChanged(PlanProgressChanged $event): void
     {
-        if ($event->planId === $this->planId && $event->countedAtMicroseconds >= $this->countedAtMicroseconds) {
+        if ($event->countedAtMicroseconds >= $this->countedAtMicroseconds) {
             $this->number = $event->planNumber;
             $this->hasFinished = $event->hasFinished;
             $this->total = $event->total;

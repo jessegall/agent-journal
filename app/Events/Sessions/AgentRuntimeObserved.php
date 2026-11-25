@@ -10,7 +10,7 @@ use App\Enums\Runs\RuntimeActivity;
 /**
  * A runtime's host reported what the runtime is doing, at the process generation it reports.
  */
-final readonly class AgentRuntimeObserved extends SessionEvent implements AgentRuntimeEvent
+final readonly class AgentRuntimeObserved implements AgentRuntimeEvent, SessionEvent
 {
     public function __construct(
         public string $runtimeId,

@@ -9,7 +9,7 @@ use Domain\Documents\Contracts\TextUploadEvent;
 /**
  * A text upload received one more chunk.
  */
-final readonly class TextUploadChunkCounted extends DocumentEvent implements TextUploadEvent
+final readonly class TextUploadChunkCounted implements DocumentEvent, TextUploadEvent
 {
     public function __construct(
         public string $uploadId,

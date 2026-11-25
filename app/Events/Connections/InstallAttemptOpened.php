@@ -10,7 +10,7 @@ use DateTimeImmutable;
 /**
  * An owner opened an attempt to install a line for one target, under its public reference.
  */
-final readonly class InstallAttemptOpened extends ConnectionEvent implements InstallAttemptEvent
+final readonly class InstallAttemptOpened implements ConnectionEvent, InstallAttemptEvent
 {
     public function __construct(
         public string $attemptId,

@@ -6,7 +6,7 @@ namespace Domain\Documents\Events;
 
 use App\Support\ActorContext;
 
-final readonly class DraftKept extends DocumentEvent
+final readonly class DraftKept implements DocumentEvent
 {
     public function __construct(
         public string $draftId,

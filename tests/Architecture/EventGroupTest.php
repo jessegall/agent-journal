@@ -18,6 +18,7 @@ use Tests\Fixtures\EventGroups\Billing\Events\InvoiceSent;
 use Tests\Fixtures\EventGroups\Contracts\LonelyGroup;
 use Tests\Fixtures\EventGroups\Empty\Events\ItemHappened;
 use Tests\Fixtures\EventGroups\Orders\Events\OrderBilled;
+use Tests\Fixtures\EventGroups\Orders\Events\OrderEvent;
 use Tests\Fixtures\EventGroups\Orders\Events\OrderLinePosted;
 use Tests\Fixtures\EventGroups\Orders\Events\OrderShipped;
 use Tests\Fixtures\EventGroups\Orders\Listeners\RecordShipment;
@@ -48,6 +49,7 @@ final class EventGroupTest extends TestCase
         $this->assertSame([], $groups->domainBaseFaults());
         $this->assertSame([], $groups->emptyGroupFaults());
         $this->assertSame([], $groups->stemFaults());
+        $this->assertSame([], $groups->sharedPropertyFaults());
         $this->assertSame([], EventGroups::wiringFaults(self::wiring()));
     }
 
@@ -65,6 +67,10 @@ final class EventGroupTest extends TestCase
         $this->assertCount(2, $groups->domainBaseFaults());
         $this->assertSame([LonelyGroup::class], self::named($groups->emptyGroupFaults(), [LonelyGroup::class]));
         $this->assertSame([OrderLinePosted::class], self::named($groups->stemFaults(), [OrderLinePosted::class]));
+        $this->assertSame(
+            [OrderEvent::class.': every event of it has $orderId (string), so the group declares it'],
+            $groups->sharedPropertyFaults(),
+        );
         $this->assertSame(
             [InvoiceSent::class],
             self::named(EventGroups::wiringFaults([InvoiceSent::class => [RecordShipment::class.'@handle']]), [InvoiceSent::class]),

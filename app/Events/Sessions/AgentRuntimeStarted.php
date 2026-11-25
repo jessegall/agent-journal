@@ -9,7 +9,7 @@ use App\Contracts\Sessions\AgentRuntimeEvent;
 /**
  * A runtime began its first process generation.
  */
-final readonly class AgentRuntimeStarted extends SessionEvent implements AgentRuntimeEvent
+final readonly class AgentRuntimeStarted implements AgentRuntimeEvent, SessionEvent
 {
     public function __construct(
         public string $runtimeId,

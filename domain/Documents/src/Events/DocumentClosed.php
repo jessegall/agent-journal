@@ -9,7 +9,7 @@ use App\Contracts\Navigation\ClientUpdate;
 /**
  * A draft of a document was closed. It carries ids and numbers, never the text.
  */
-final readonly class DocumentClosed extends DocumentEvent implements ClientUpdate
+final readonly class DocumentClosed implements ClientUpdate, DocumentEvent
 {
     public function __construct(public string $documentId, public int $number, public int $revisionNumber) {}
 }

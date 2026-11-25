@@ -8,7 +8,7 @@ namespace App\Events\Sessions;
  * A start the journal accepted and committed: what the host's delivery receives, so no driver starts inside the
  * transaction.
  */
-final readonly class StartAccepted extends SessionEvent
+final readonly class StartAccepted implements SessionEvent
 {
     public function __construct(
         public string $requestId,

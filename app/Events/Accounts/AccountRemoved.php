@@ -7,7 +7,7 @@ namespace App\Events\Accounts;
 /**
  * An account's removal finished: its folder is gone and it signs in no more.
  */
-final readonly class AccountRemoved extends AccountEvent
+final readonly class AccountRemoved implements AccountEvent
 {
     public function __construct(public string $driver, public string $accountId) {}
 }

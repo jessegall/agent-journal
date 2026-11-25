@@ -14,7 +14,7 @@ use App\Values\StackTarget;
  * idempotent reaction and add their current reminders, at once, inside the hook call; nothing in a summary counts as
  * finished work.
  */
-final readonly class ContextStarted extends HookEvent implements AnsweredAtOnce
+final readonly class ContextStarted implements AnsweredAtOnce, HookEvent
 {
     public function __construct(
         public StackTarget $target,

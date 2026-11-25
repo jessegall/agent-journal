@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Support\States;
 
 use App\Attributes\States\StateType;
+use App\Contracts\Events\Event;
+use App\Contracts\Skills\SkillPublicationEvent;
 use App\Enums\Engine\FrameReuse;
 use App\Enums\Sessions\SessionTransferType;
 use App\Enums\Skills\PublicationStatus;
@@ -64,11 +66,14 @@ final class AwaitSkillsState extends AgentState
 
     // ----------[ Events ]----------
 
+    public function hears(Event $event): bool
+    {
+        return ! $event instanceof SkillPublicationEvent || $event->publicationId === $this->publicationId;
+    }
+
     public function onSkillPublicationMoved(SkillPublicationMoved $event): void
     {
-        if ($event->publicationId === $this->publicationId) {
-            $this->publication = $event->state;
-        }
+        $this->publication = $event->state;
     }
 
     // ----------[ Internals ]----------

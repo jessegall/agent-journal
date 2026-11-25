@@ -9,7 +9,7 @@ use App\Contracts\Processes\ClassificationRuleEvent;
 /**
  * A command classification rule took a revision as its active one.
  */
-final readonly class ClassificationRuleActivated extends ProcessEvent implements ClassificationRuleEvent
+final readonly class ClassificationRuleActivated implements ClassificationRuleEvent, ProcessEvent
 {
     public function __construct(public string $ruleId) {}
 }

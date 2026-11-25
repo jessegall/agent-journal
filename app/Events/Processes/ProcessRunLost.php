@@ -9,7 +9,7 @@ use App\Contracts\Processes\ProcessRunEvent;
 /**
  * A process run's process was lost, so how it ended is unknown.
  */
-final readonly class ProcessRunLost extends ProcessEvent implements ProcessRunEvent
+final readonly class ProcessRunLost implements ProcessEvent, ProcessRunEvent
 {
     public function __construct(public string $runId) {}
 }

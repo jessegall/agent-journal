@@ -9,7 +9,7 @@ use App\Contracts\Drivers\DriverRequestEvent;
 /**
  * A driver request was settled as never applied.
  */
-final readonly class DriverRequestResolvedAsNotApplied extends SessionEvent implements DriverRequestEvent
+final readonly class DriverRequestResolvedAsNotApplied implements DriverRequestEvent, SessionEvent
 {
     public function __construct(public string $requestId) {}
 }

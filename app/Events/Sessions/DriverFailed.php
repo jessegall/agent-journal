@@ -15,7 +15,7 @@ use App\Support\RecordIdentity;
  * A start's driver reported that a request failed, and why in its checked vocabulary, with the account by identity
  * and the sign-in generation its start ran in when it ran on one; the driver's own error text stays private.
  */
-final readonly class DriverFailed extends SessionEvent implements AccountNoticeCause, ClientUpdate, ListenerFailureLog
+final readonly class DriverFailed implements AccountNoticeCause, ClientUpdate, ListenerFailureLog, SessionEvent
 {
     public function __construct(
         public string $agentId,

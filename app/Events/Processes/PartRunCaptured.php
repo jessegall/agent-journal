@@ -9,7 +9,7 @@ use App\Contracts\Processes\PartRunEvent;
 /**
  * A part of a run captured its output up to a chunk.
  */
-final readonly class PartRunCaptured extends ProcessEvent implements PartRunEvent
+final readonly class PartRunCaptured implements PartRunEvent, ProcessEvent
 {
     public function __construct(
         public string $partId,

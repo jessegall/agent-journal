@@ -9,7 +9,7 @@ use App\Contracts\Processes\RuleProposalEvent;
 /**
  * A rule proposal was rejected.
  */
-final readonly class RuleProposalRejected extends ProcessEvent implements RuleProposalEvent
+final readonly class RuleProposalRejected implements ProcessEvent, RuleProposalEvent
 {
     public function __construct(public string $proposalId) {}
 }

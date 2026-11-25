@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Support\States;
 
 use App\Attributes\States\StateType;
+use App\Contracts\Events\Event;
 use App\Enums\Engine\FrameReuse;
 use App\Enums\Sessions\SessionTransferType;
 use App\Support\Decisions\Decision;
@@ -14,6 +15,7 @@ use App\Support\Inputs\ToolFinished;
 use App\Support\Inputs\ToolRequested;
 use App\Support\States\AgentState;
 use App\Values\AgentText;
+use Domain\Tasks\Events\TaskEvent;
 use Domain\Tasks\Events\TaskLogged;
 use Domain\Tasks\Support\States\Support\LogDueStateReference;
 use PhpOption\Option;
@@ -85,11 +87,14 @@ final class LogDueState extends AgentState
 
     // ----------[ Events ]----------
 
+    public function hears(Event $event): bool
+    {
+        return ! $event instanceof TaskEvent || $event->taskId === $this->taskId;
+    }
+
     public function onTaskLogged(TaskLogged $event): void
     {
-        if ($event->taskId === $this->taskId) {
-            $this->isLogged = true;
-        }
+        $this->isLogged = true;
     }
 
     // ----------[ Internals ]----------

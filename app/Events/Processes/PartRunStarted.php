@@ -9,7 +9,7 @@ use App\Contracts\Processes\PartRunEvent;
 /**
  * A part of a run started on its host.
  */
-final readonly class PartRunStarted extends ProcessEvent implements PartRunEvent
+final readonly class PartRunStarted implements PartRunEvent, ProcessEvent
 {
     public function __construct(
         public string $partId,

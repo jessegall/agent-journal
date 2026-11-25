@@ -9,7 +9,7 @@ use App\Contracts\Work\AgentStackEvent;
 /**
  * An agent's stack saved its frames.
  */
-final readonly class AgentStackFramesSaved extends EngineEvent implements AgentStackEvent
+final readonly class AgentStackFramesSaved implements AgentStackEvent, EngineEvent
 {
     public function __construct(
         public string $stackId,

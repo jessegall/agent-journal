@@ -11,7 +11,7 @@ use App\Enums\Settings\SettingTarget;
  * which setting or group, and the revision they are at now; never the value. A command that changed nothing raises
  * none. Delivery is not guaranteed and nothing is kept to replay it.
  */
-final readonly class SettingsChanged extends SettingEvent
+final readonly class SettingsChanged implements SettingEvent
 {
     public function __construct(
         public string $owner,

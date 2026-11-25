@@ -485,7 +485,7 @@ final class EventPayloads
             TaskWaitChanged::class => [
                 'fields' => [
                     'waitId' => 'string',
-                    'dependentTaskId' => 'string',
+                    'taskId' => 'string',
                     'prerequisiteTaskId' => 'string',
                     'change' => 'Domain\Tasks\Enums\TaskWaitChange',
                 ],

@@ -9,7 +9,7 @@ use Domain\Sharing\Contracts\ShareGatewayEvent;
 /**
  * A share gateway operation was claimed by a run on an endpoint.
  */
-final readonly class ShareGatewayOperationClaimed extends ShareEvent implements ShareGatewayEvent
+final readonly class ShareGatewayOperationClaimed implements ShareEvent, ShareGatewayEvent
 {
     public function __construct(
         public string $operationId,

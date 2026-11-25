@@ -9,7 +9,7 @@ use App\Contracts\Accounts\ShownOnAccounts;
 /**
  * The owner chose another saved account as the driver's active one.
  */
-final readonly class AccountSwitched extends AccountEvent implements ShownOnAccounts
+final readonly class AccountSwitched implements AccountEvent, ShownOnAccounts
 {
     public function __construct(public string $driver, public string $accountId) {}
 

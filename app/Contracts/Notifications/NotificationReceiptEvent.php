@@ -9,4 +9,7 @@ use App\Contracts\Events\Event;
 /**
  * A change to a notification receipt: every event of it implements this, so a listener typed on it hears them all.
  */
-interface NotificationReceiptEvent extends Event {}
+interface NotificationReceiptEvent extends Event
+{
+    public string $receiptId { get; }
+}

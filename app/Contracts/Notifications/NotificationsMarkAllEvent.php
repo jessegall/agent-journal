@@ -9,4 +9,7 @@ use App\Contracts\Events\Event;
 /**
  * A step of marking every notification read: begun, advanced or finished.
  */
-interface NotificationsMarkAllEvent extends Event {}
+interface NotificationsMarkAllEvent extends Event
+{
+    public string $scopeId { get; }
+}

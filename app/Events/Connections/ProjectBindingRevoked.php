@@ -10,7 +10,7 @@ use DateTimeImmutable;
 /**
  * A binding was revoked: its authority generation rose, so every credential of the one before it is refused.
  */
-final readonly class ProjectBindingRevoked extends ConnectionEvent implements ProjectBindingEvent
+final readonly class ProjectBindingRevoked implements ConnectionEvent, ProjectBindingEvent
 {
     public function __construct(
         public string $bindingId,

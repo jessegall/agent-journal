@@ -9,7 +9,7 @@ use App\Contracts\Navigation\ClientUpdate;
 /**
  * The owner approved a proposed rule; it holds from now on. Raised once the change has committed.
  */
-final readonly class RuleApproved extends RuleEvent implements ClientUpdate
+final readonly class RuleApproved implements ClientUpdate, RuleEvent
 {
     public function __construct(public string $ruleId) {}
 }

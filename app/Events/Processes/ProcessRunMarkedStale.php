@@ -9,7 +9,7 @@ use App\Contracts\Processes\ProcessRunEvent;
 /**
  * A process run no longer matches what it was started for, for the reason given.
  */
-final readonly class ProcessRunMarkedStale extends ProcessEvent implements ProcessRunEvent
+final readonly class ProcessRunMarkedStale implements ProcessEvent, ProcessRunEvent
 {
     public function __construct(public string $runId, public string $reason) {}
 }

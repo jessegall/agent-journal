@@ -10,7 +10,7 @@ use App\Enums\Engine\RefusalCode;
 /**
  * A command's receipt kept its refusal, so a repeat of its request key is refused the same way.
  */
-final readonly class CommandReceiptRefused extends EngineEvent implements CommandReceiptEvent
+final readonly class CommandReceiptRefused implements CommandReceiptEvent, EngineEvent
 {
     public function __construct(
         public string $receiptId,

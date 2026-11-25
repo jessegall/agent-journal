@@ -13,7 +13,7 @@ use Domain\Sharing\Contracts\ShareGatewayEvent;
  * configuration, its version and whether it is now disabled, never a setting or secret. The owner's open sharing pages
  * reread on it.
  */
-final readonly class ShareGatewayChanged extends ShareEvent implements ClientUpdate, ShareGatewayEvent
+final readonly class ShareGatewayChanged implements ClientUpdate, ShareEvent, ShareGatewayEvent
 {
     public function __construct(
         public string $configurationId,

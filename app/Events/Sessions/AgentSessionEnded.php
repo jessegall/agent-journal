@@ -9,7 +9,7 @@ use App\Contracts\Sessions\AgentSessionEvent;
 /**
  * A session ended.
  */
-final readonly class AgentSessionEnded extends SessionEvent implements AgentSessionEvent
+final readonly class AgentSessionEnded implements AgentSessionEvent, SessionEvent
 {
     public function __construct(
         public string $sessionId,

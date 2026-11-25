@@ -9,7 +9,7 @@ use DateTimeImmutable;
 /**
  * A binding's start was recorded under the id its device chose, with the runtime it opened.
  */
-final readonly class BindingRuntimeRecorded extends ConnectionEvent
+final readonly class BindingRuntimeRecorded implements ConnectionEvent
 {
     public function __construct(
         public string $bindingId,

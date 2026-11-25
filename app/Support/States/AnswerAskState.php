@@ -6,11 +6,12 @@ namespace App\Support\States;
 
 use App\Attributes\States\StateType;
 use App\Commands\Asks\OfferNextAsk\OfferNextAskCommand;
+use App\Contracts\Events\Event;
 use App\Enums\Engine\FrameReuse;
 use App\Enums\Sessions\SessionTransferType;
 use App\Events\Asks\AskClosed;
+use App\Events\Asks\AskEvent;
 use App\Events\Asks\AskHopAssigned;
-use App\Support\Decisions\Decision;
 use App\Support\States\Support\AnswerAskStateReference;
 use App\Values\AgentText;
 use PhpOption\Option;
@@ -50,15 +51,16 @@ final class AnswerAskState extends AgentState
 
     // ----------[ Events ]----------
 
+    public function hears(Event $event): bool
+    {
+        return ! $event instanceof AskEvent || $event->askId === $this->askId;
+    }
+
     /**
      * Its ask closed: the frame settles and the holder is offered the next ask that waits for it.
      */
-    public function onAskClosed(AskClosed $event): OfferNextAskCommand|Decision
+    public function onAskClosed(AskClosed $event): OfferNextAskCommand
     {
-        if ($event->askId !== $this->askId) {
-            return Decision::delegate();
-        }
-
         $this->isOpen = false;
 
         return new OfferNextAskCommand($this->hopId);
@@ -69,7 +71,7 @@ final class AnswerAskState extends AgentState
      */
     public function onAskHopAssigned(AskHopAssigned $event): void
     {
-        if ($event->askId === $this->askId && $event->hopId !== $this->hopId) {
+        if ($event->hopId !== $this->hopId) {
             $this->isOpen = false;
         }
     }

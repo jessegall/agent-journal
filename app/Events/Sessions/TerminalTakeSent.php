@@ -7,7 +7,7 @@ namespace App\Events\Sessions;
 /**
  * A terminal grant's take was sent to the host as a driver request.
  */
-final readonly class TerminalTakeSent extends SessionEvent
+final readonly class TerminalTakeSent implements SessionEvent
 {
     public function __construct(
         public string $grantId,

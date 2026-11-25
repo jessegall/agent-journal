@@ -7,7 +7,7 @@ namespace App\Events\Connections;
 /**
  * A host was revoked.
  */
-final readonly class HostRevoked extends ConnectionEvent
+final readonly class HostRevoked implements ConnectionEvent
 {
     public function __construct(
         public string $hostId,

@@ -9,4 +9,7 @@ use App\Contracts\Events\Event;
 /**
  * A change to the binding of a project to an environment.
  */
-interface ProjectBindingEvent extends Event {}
+interface ProjectBindingEvent extends Event
+{
+    public string $bindingId { get; }
+}

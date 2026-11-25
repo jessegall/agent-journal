@@ -9,7 +9,7 @@ use Domain\Helpers\Contracts\HelperJobEvent;
 /**
  * A helper job was opened again for another attempt.
  */
-final readonly class HelperJobReopenedForAttempt extends HelperEvent implements HelperJobEvent
+final readonly class HelperJobReopenedForAttempt implements HelperEvent, HelperJobEvent
 {
     public function __construct(
         public string $jobId,

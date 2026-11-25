@@ -10,7 +10,7 @@ use App\Contracts\Navigation\ClientUpdate;
  * A source was docked in a chat or undocked from it. Raised after the commit; both sides' pages read their
  * dock again, and nothing about the source travels with it.
  */
-final readonly class DockChanged extends ChatEvent implements ClientUpdate
+final readonly class DockChanged implements ChatEvent, ClientUpdate
 {
     public function __construct(public string $inboxId) {}
 }

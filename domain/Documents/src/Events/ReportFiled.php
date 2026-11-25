@@ -13,7 +13,7 @@ use App\Support\ActorContext;
  * the filing's transaction; its listener is named as text so Documents does not depend on Helpers.
  */
 #[TransactionListenerConsent]
-final readonly class ReportFiled extends DocumentEvent implements ClientUpdate
+final readonly class ReportFiled implements ClientUpdate, DocumentEvent
 {
     public function __construct(
         public string $reportId,

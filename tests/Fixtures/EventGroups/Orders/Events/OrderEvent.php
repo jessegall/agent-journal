@@ -9,4 +9,4 @@ use App\Contracts\Events\Event;
 /**
  * The base of the orders fixture domain's events.
  */
-abstract readonly class OrderEvent implements Event {}
+interface OrderEvent extends Event {}

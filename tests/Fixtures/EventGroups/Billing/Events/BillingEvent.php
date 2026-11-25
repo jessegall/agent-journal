@@ -9,4 +9,4 @@ use App\Contracts\Events\Event;
 /**
  * The base of the billing fixture domain's events.
  */
-abstract readonly class BillingEvent implements Event {}
+interface BillingEvent extends Event {}

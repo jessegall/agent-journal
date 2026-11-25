@@ -10,7 +10,7 @@ use App\Contracts\Accounts\ShownOnAccounts;
 /**
  * A sign-in completed on a saved account, new or reconnected.
  */
-final readonly class AccountSignedIn extends AccountEvent implements AccountSignInEvent, ShownOnAccounts
+final readonly class AccountSignedIn implements AccountEvent, AccountSignInEvent, ShownOnAccounts
 {
     public function __construct(public string $driver, public string $accountId) {}
 

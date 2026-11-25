@@ -11,7 +11,7 @@ use DateTimeImmutable;
  * A project folder on a machine was joined to a project through that machine's host. It carries ids only, never
  * the folder's path.
  */
-final readonly class ProjectBindingCreated extends ConnectionEvent implements ProjectBindingEvent
+final readonly class ProjectBindingCreated implements ConnectionEvent, ProjectBindingEvent
 {
     public function __construct(
         public string $bindingId,

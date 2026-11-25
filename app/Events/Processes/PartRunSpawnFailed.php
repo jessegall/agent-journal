@@ -9,7 +9,7 @@ use App\Contracts\Processes\PartRunEvent;
 /**
  * A part of a run could not start its process.
  */
-final readonly class PartRunSpawnFailed extends ProcessEvent implements PartRunEvent
+final readonly class PartRunSpawnFailed implements PartRunEvent, ProcessEvent
 {
     public function __construct(
         public string $partId,

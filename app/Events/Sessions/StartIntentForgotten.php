@@ -7,7 +7,7 @@ namespace App\Events\Sessions;
 /**
  * A start that started nothing was forgotten, leaving its key free.
  */
-final readonly class StartIntentForgotten extends SessionEvent
+final readonly class StartIntentForgotten implements SessionEvent
 {
     public function __construct(
         public string $startId,

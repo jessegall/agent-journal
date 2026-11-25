@@ -9,7 +9,7 @@ use App\Contracts\Sessions\AgentRuntimeEvent;
 /**
  * A runtime's host confirmed it is still alive.
  */
-final readonly class AgentRuntimeConfirmedAlive extends SessionEvent implements AgentRuntimeEvent
+final readonly class AgentRuntimeConfirmedAlive implements AgentRuntimeEvent, SessionEvent
 {
     public function __construct(
         public string $runtimeId,

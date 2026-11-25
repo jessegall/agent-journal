@@ -9,7 +9,7 @@ use DateTimeImmutable;
 /**
  * A connected project gained an environment its bindings can work in.
  */
-final readonly class EnvironmentOpened extends ConnectionEvent
+final readonly class EnvironmentOpened implements ConnectionEvent
 {
     public function __construct(
         public string $environmentId,

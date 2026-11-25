@@ -8,7 +8,7 @@ namespace App\Events\Assignments;
  * These assignments ended: released, replaced by a new one, or removed with the claim they proved. Raised once the
  * change has committed, so a reader holding any of them knows it no longer stands.
  */
-final readonly class AssignmentsEnded extends AssignmentEvent
+final readonly class AssignmentsEnded implements AssignmentEvent
 {
     /**
      * @param  list<string>  $assignmentIds

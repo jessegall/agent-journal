@@ -9,7 +9,7 @@ use App\Contracts\Processes\PartRunEvent;
 /**
  * A part of a run's process ended.
  */
-final readonly class PartRunProcessFinished extends ProcessEvent implements PartRunEvent
+final readonly class PartRunProcessFinished implements PartRunEvent, ProcessEvent
 {
     public function __construct(
         public string $partId,

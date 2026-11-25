@@ -9,7 +9,7 @@ use App\Contracts\Drivers\DriverRequestEvent;
 /**
  * A driver request was cancelled.
  */
-final readonly class DriverRequestCancelled extends SessionEvent implements DriverRequestEvent
+final readonly class DriverRequestCancelled implements DriverRequestEvent, SessionEvent
 {
     public function __construct(public string $requestId) {}
 }

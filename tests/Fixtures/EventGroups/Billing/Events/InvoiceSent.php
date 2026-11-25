@@ -7,4 +7,4 @@ namespace Tests\Fixtures\EventGroups\Billing\Events;
 /**
  * A billing event on its own base.
  */
-final readonly class InvoiceSent extends BillingEvent {}
+final readonly class InvoiceSent implements BillingEvent {}

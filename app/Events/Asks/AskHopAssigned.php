@@ -10,7 +10,7 @@ use App\Support\ActorIdentity;
 /**
  * An ask was assigned to a holder as a new hop, at the ask's version. It names the ask, the hop and the holder.
  */
-final readonly class AskHopAssigned extends AskEvent implements AskHopEvent
+final readonly class AskHopAssigned implements AskEvent, AskHopEvent
 {
     public function __construct(
         public string $askId,

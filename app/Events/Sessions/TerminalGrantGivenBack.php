@@ -9,7 +9,7 @@ use App\Contracts\Drivers\TerminalGrantEvent;
 /**
  * A terminal grant is being released through a driver request.
  */
-final readonly class TerminalGrantGivenBack extends SessionEvent implements TerminalGrantEvent
+final readonly class TerminalGrantGivenBack implements SessionEvent, TerminalGrantEvent
 {
     public function __construct(
         public string $grantId,

@@ -9,7 +9,7 @@ use App\Contracts\Drivers\MenuEntryEvent;
 /**
  * A menu entry was used once more.
  */
-final readonly class MenuEntryUsed extends SessionEvent implements MenuEntryEvent
+final readonly class MenuEntryUsed implements MenuEntryEvent, SessionEvent
 {
     public function __construct(
         public string $entryId,

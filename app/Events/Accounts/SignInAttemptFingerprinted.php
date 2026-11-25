@@ -9,7 +9,7 @@ use App\Contracts\Accounts\SignInAttemptEvent;
 /**
  * A sign-in attempt kept the fingerprint of the identity it signed in as.
  */
-final readonly class SignInAttemptFingerprinted extends AccountEvent implements SignInAttemptEvent
+final readonly class SignInAttemptFingerprinted implements AccountEvent, SignInAttemptEvent
 {
     public function __construct(public string $driver, public string $attemptId) {}
 }

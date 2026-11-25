@@ -7,7 +7,7 @@ namespace App\Events\Sessions;
 /**
  * Every runtime of an agent ended: no session stays current, so each of its credentials is refused.
  */
-final readonly class AgentRuntimesFenced extends SessionEvent
+final readonly class AgentRuntimesFenced implements SessionEvent
 {
     public function __construct(
         public string $agentId,

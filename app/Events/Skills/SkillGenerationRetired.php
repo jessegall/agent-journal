@@ -7,7 +7,7 @@ namespace App\Events\Skills;
 /**
  * A generation of skills was retired.
  */
-final readonly class SkillGenerationRetired extends SkillEvent
+final readonly class SkillGenerationRetired implements SkillEvent
 {
     public function __construct(
         public string $generationId,

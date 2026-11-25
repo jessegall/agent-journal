@@ -7,7 +7,7 @@ namespace App\Events\Sessions;
 /**
  * A start was refused for the reason given.
  */
-final readonly class SessionRequestRefused extends SessionEvent
+final readonly class SessionRequestRefused implements SessionEvent
 {
     public function __construct(
         public string $startId,

@@ -11,7 +11,7 @@ use App\Support\ActorIdentity;
  * An operator moved a runtime to a new process generation: the audit record of the hosts, the proof that the old
  * process stopped, who did it and why.
  */
-final readonly class AgentRuntimeReassigned extends SessionEvent implements AgentRuntimeEvent
+final readonly class AgentRuntimeReassigned implements AgentRuntimeEvent, SessionEvent
 {
     public function __construct(
         public string $runtimeId,

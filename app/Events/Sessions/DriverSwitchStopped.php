@@ -9,7 +9,7 @@ use App\Contracts\Drivers\DriverSwitchEvent;
 /**
  * The session a switch replaces is proven stopped, so its replacement may start. Raised after the commit.
  */
-final readonly class DriverSwitchStopped extends SessionEvent implements DriverSwitchEvent
+final readonly class DriverSwitchStopped implements DriverSwitchEvent, SessionEvent
 {
     public function __construct(public string $switchId) {}
 }

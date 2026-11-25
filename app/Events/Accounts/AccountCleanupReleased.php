@@ -9,7 +9,7 @@ use App\Contracts\Accounts\AccountCleanupEvent;
 /**
  * A removed account's folder may now be cleaned by a host, since its processes are gone.
  */
-final readonly class AccountCleanupReleased extends AccountEvent implements AccountCleanupEvent
+final readonly class AccountCleanupReleased implements AccountCleanupEvent, AccountEvent
 {
     public function __construct(public string $driver, public string $accountId) {}
 }

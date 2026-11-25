@@ -9,7 +9,7 @@ use App\Contracts\Drivers\TerminalGrantEvent;
 /**
  * A terminal grant was refused.
  */
-final readonly class TerminalGrantRefused extends SessionEvent implements TerminalGrantEvent
+final readonly class TerminalGrantRefused implements SessionEvent, TerminalGrantEvent
 {
     public function __construct(
         public string $grantId,

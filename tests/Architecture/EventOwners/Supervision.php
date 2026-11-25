@@ -10,7 +10,7 @@ use App\Events\Asks\AskHopAnswered;
 use App\Events\Asks\AskHopAssigned;
 use App\Events\Asks\AskHopAttentionRecorded;
 use App\Events\Asks\AskHopWakeRecorded;
-use App\Events\Asks\SupervisorLinkChanged;
+use App\Events\SupervisorLinks\SupervisorLinkChanged;
 use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 use Tests\Architecture\Support\EventRole;

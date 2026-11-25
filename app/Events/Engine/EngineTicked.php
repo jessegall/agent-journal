@@ -11,7 +11,7 @@ use Carbon\CarbonImmutable;
  * One engine pass ran: the time it started and how long since the previous dispatched pass started, or since the
  * engine took its lock for the first pass. It names no frame and no stack.
  */
-final readonly class EngineTicked extends EngineEvent
+final readonly class EngineTicked implements EngineEvent
 {
     public function __construct(
         public CarbonImmutable $now,

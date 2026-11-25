@@ -10,7 +10,7 @@ use App\Models\CommandRules\RuleRevision;
 /**
  * A project owner made an approved revision of a command rule the active one; raised after the change is committed.
  */
-final readonly class RuleActivated extends ProcessEvent implements ActiveRuleChange
+final readonly class RuleActivated implements ActiveRuleChange, ProcessEvent
 {
     public function __construct(
         public string $projectKey,

@@ -9,7 +9,7 @@ use App\Contracts\Accounts\ShownOnAccounts;
 /**
  * A saved account was held for maintenance, out of use until it is let go.
  */
-final readonly class AccountHeldForMaintenance extends AccountEvent implements ShownOnAccounts
+final readonly class AccountHeldForMaintenance implements AccountEvent, ShownOnAccounts
 {
     public function __construct(public string $driver, public string $accountId) {}
 

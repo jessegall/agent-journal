@@ -9,7 +9,7 @@ use App\Contracts\Accounts\SignInAttemptEvent;
 /**
  * A sign-in attempt writes in the sign-in generation given.
  */
-final readonly class SignInAttemptGenerationSet extends AccountEvent implements SignInAttemptEvent
+final readonly class SignInAttemptGenerationSet implements AccountEvent, SignInAttemptEvent
 {
     public function __construct(public string $driver, public string $attemptId, public int $generation) {}
 }

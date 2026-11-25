@@ -11,7 +11,7 @@ use App\Support\ActorIdentity;
  * An actor asked another actor a question in an inbox.
  */
 #[TransactionListenerConsent]
-final readonly class QuestionAsked extends QuestionEvent
+final readonly class QuestionAsked implements QuestionEvent
 {
     public function __construct(
         public string $questionId,

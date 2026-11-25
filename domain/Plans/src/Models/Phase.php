@@ -112,7 +112,7 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
     {
         $this->revision++;
         $this->assertSaved($this->save());
-        $this->raise(new PhaseRevisionAdvanced($this->id));
+        $this->raise(new PhaseRevisionAdvanced($this->plan_id, $this->id));
     }
 
     /**
@@ -126,7 +126,7 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
         $this->blocked_tasks = $progress->blocked;
         $this->started_tasks = $progress->started;
         $this->assertSaved($this->save());
-        $this->raise(new PhaseProgressRecorded($this->id));
+        $this->raise(new PhaseProgressRecorded($this->plan_id, $this->id));
     }
 
     // ----------[ Transformers ]----------

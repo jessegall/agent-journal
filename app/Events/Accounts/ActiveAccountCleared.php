@@ -9,7 +9,7 @@ use App\Contracts\Accounts\ActiveAccountEvent;
 /**
  * A driver family has no account chosen to start with any more.
  */
-final readonly class ActiveAccountCleared extends AccountEvent implements ActiveAccountEvent
+final readonly class ActiveAccountCleared implements AccountEvent, ActiveAccountEvent
 {
     public function __construct(public string $driver) {}
 }

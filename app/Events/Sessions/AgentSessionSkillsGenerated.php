@@ -9,7 +9,7 @@ use App\Contracts\Sessions\AgentSessionEvent;
 /**
  * A session was handed a generation of skills.
  */
-final readonly class AgentSessionSkillsGenerated extends SessionEvent implements AgentSessionEvent
+final readonly class AgentSessionSkillsGenerated implements AgentSessionEvent, SessionEvent
 {
     public function __construct(
         public string $sessionId,

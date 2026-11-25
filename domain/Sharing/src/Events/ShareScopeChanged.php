@@ -12,7 +12,7 @@ use Domain\Sharing\Support\ShareFact;
  * or a no-op raises
  * none. The owner's open sharing pages reread on it.
  */
-final readonly class ShareScopeChanged extends ShareEvent implements ClientUpdate
+final readonly class ShareScopeChanged implements ClientUpdate, ShareEvent
 {
     public function __construct(public ShareFact $share) {}
 }

@@ -9,7 +9,7 @@ use App\Contracts\Sessions\ProfileRunEvent;
 /**
  * A profile's script run went on after the step it waited for.
  */
-final readonly class ProfileRunResumed extends AccountEvent implements ProfileRunEvent
+final readonly class ProfileRunResumed implements AccountEvent, ProfileRunEvent
 {
     public function __construct(
         public string $runId,

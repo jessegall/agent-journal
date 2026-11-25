@@ -10,7 +10,7 @@ use DateTimeImmutable;
 /**
  * An install attempt's line was redeemed, and the attempt now names the binding it made.
  */
-final readonly class InstallAttemptSpent extends ConnectionEvent implements InstallAttemptEvent
+final readonly class InstallAttemptSpent implements ConnectionEvent, InstallAttemptEvent
 {
     public function __construct(
         public string $attemptId,

@@ -7,7 +7,7 @@ namespace App\Events\Engine;
 /**
  * A number group was retired.
  */
-final readonly class NumberGroupRetired extends EngineEvent
+final readonly class NumberGroupRetired implements EngineEvent
 {
     public function __construct(
         public string $groupId,

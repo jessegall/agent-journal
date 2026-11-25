@@ -10,7 +10,7 @@ use App\Contracts\Accounts\ShownOnAccounts;
 /**
  * A notice on the driver's accounts was resolved.
  */
-final readonly class AccountNoticeResolved extends AccountEvent implements AccountNoticeEvent, ShownOnAccounts
+final readonly class AccountNoticeResolved implements AccountEvent, AccountNoticeEvent, ShownOnAccounts
 {
     public function __construct(public string $driver, public string $noticeId) {}
 

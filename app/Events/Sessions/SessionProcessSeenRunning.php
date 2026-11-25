@@ -9,7 +9,7 @@ use App\Contracts\Sessions\SessionProcessEvent;
 /**
  * A process start runs, under the execution given.
  */
-final readonly class SessionProcessSeenRunning extends SessionEvent implements SessionProcessEvent
+final readonly class SessionProcessSeenRunning implements SessionEvent, SessionProcessEvent
 {
     public function __construct(public string $startId, public string $executionId) {}
 }

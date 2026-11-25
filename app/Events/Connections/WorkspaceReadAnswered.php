@@ -7,7 +7,7 @@ namespace App\Events\Connections;
 /**
  * A host answered a workspace read with its sample.
  */
-final readonly class WorkspaceReadAnswered extends ConnectionEvent
+final readonly class WorkspaceReadAnswered implements ConnectionEvent
 {
     public function __construct(
         public string $readId,

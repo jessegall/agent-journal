@@ -9,7 +9,7 @@ use App\Contracts\Accounts\SignInAttemptEvent;
 /**
  * A sign-in attempt took the user's answer and checks it.
  */
-final readonly class SignInAttemptAnswerAccepted extends AccountEvent implements SignInAttemptEvent
+final readonly class SignInAttemptAnswerAccepted implements AccountEvent, SignInAttemptEvent
 {
     public function __construct(public string $driver, public string $attemptId) {}
 }

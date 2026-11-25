@@ -7,6 +7,9 @@ namespace Domain\Tasks\Events;
 use App\Contracts\Events\Event;
 
 /**
- * A fact about tasks and their runs: every event of that subject extends it, so a listener typed on it hears them all.
+ * A fact about tasks and their runs: every event of that subject implements it, so a listener typed on it hears them all.
  */
-abstract readonly class TaskEvent implements Event {}
+interface TaskEvent extends Event
+{
+    public string $taskId { get; }
+}

@@ -10,7 +10,7 @@ use App\Enums\Connections\CommandRunStatus;
 /**
  * A project command run's state was settled from what its host reported.
  */
-final readonly class ProjectCommandReconciled extends ConnectionEvent implements ProjectCommandEvent
+final readonly class ProjectCommandReconciled implements ConnectionEvent, ProjectCommandEvent
 {
     public function __construct(
         public string $runId,

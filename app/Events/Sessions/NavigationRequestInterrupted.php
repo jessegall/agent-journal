@@ -9,7 +9,7 @@ use App\Contracts\Drivers\NavigationRequestEvent;
 /**
  * A navigation request was interrupted.
  */
-final readonly class NavigationRequestInterrupted extends SessionEvent implements NavigationRequestEvent
+final readonly class NavigationRequestInterrupted implements NavigationRequestEvent, SessionEvent
 {
     public function __construct(public string $requestId) {}
 }

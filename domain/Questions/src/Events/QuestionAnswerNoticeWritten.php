@@ -10,7 +10,7 @@ use Domain\Questions\Contracts\QuestionAnswerNoticeEvent;
 /**
  * The asker of an answered question has a notice of the answer waiting.
  */
-final readonly class QuestionAnswerNoticeWritten extends QuestionEvent implements QuestionAnswerNoticeEvent
+final readonly class QuestionAnswerNoticeWritten implements QuestionAnswerNoticeEvent, QuestionEvent
 {
     public function __construct(
         public string $noticeId,

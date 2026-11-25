@@ -9,7 +9,7 @@ use App\Contracts\Notifications\NotificationsMarkAllEvent;
 /**
  * Marking every notification read began, up to the sequence given.
  */
-final readonly class NotificationsMarkAllStarted extends MessageEvent implements NotificationsMarkAllEvent
+final readonly class NotificationsMarkAllStarted implements MessageEvent, NotificationsMarkAllEvent
 {
     public function __construct(public string $scopeId, public int $through) {}
 }

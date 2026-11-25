@@ -9,4 +9,7 @@ use App\Contracts\Events\Event;
 /**
  * A change to a start identity: every event of it implements this, so a listener typed on it hears them all.
  */
-interface StartIdentityEvent extends Event {}
+interface StartIdentityEvent extends Event
+{
+    public string $startId { get; }
+}

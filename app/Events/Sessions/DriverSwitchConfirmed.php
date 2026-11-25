@@ -9,7 +9,7 @@ use App\Contracts\Drivers\DriverSwitchEvent;
 /**
  * A driver switch's replacing session runs, so the switch is done.
  */
-final readonly class DriverSwitchConfirmed extends SessionEvent implements DriverSwitchEvent
+final readonly class DriverSwitchConfirmed implements DriverSwitchEvent, SessionEvent
 {
     public function __construct(public string $switchId) {}
 }

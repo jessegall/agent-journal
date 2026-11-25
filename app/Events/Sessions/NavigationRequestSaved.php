@@ -9,7 +9,7 @@ use App\Contracts\Drivers\NavigationRequestEvent;
 /**
  * A navigation request was saved as a menu entry.
  */
-final readonly class NavigationRequestSaved extends SessionEvent implements NavigationRequestEvent
+final readonly class NavigationRequestSaved implements NavigationRequestEvent, SessionEvent
 {
     public function __construct(public string $requestId) {}
 }

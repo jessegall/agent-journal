@@ -9,7 +9,7 @@ use App\Contracts\Drivers\MenuEntryEvent;
 /**
  * A menu entry was proven on a driver build.
  */
-final readonly class MenuEntryProven extends SessionEvent implements MenuEntryEvent
+final readonly class MenuEntryProven implements MenuEntryEvent, SessionEvent
 {
     public function __construct(
         public string $entryId,

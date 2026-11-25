@@ -7,7 +7,7 @@ namespace App\Events\Connections;
 /**
  * A host reported one of its protections.
  */
-final readonly class HostProtectionRecorded extends ConnectionEvent
+final readonly class HostProtectionRecorded implements ConnectionEvent
 {
     public function __construct(
         public string $hostId,

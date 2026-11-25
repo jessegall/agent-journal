@@ -10,7 +10,7 @@ use App\Contracts\Accounts\SignInAttemptEvent;
 /**
  * A sign-in attempt started, for a new account or to sign a saved one in again.
  */
-final readonly class SignInAttemptStarted extends AccountEvent implements ShownOnAccounts, SignInAttemptEvent
+final readonly class SignInAttemptStarted implements AccountEvent, ShownOnAccounts, SignInAttemptEvent
 {
     public function __construct(public string $driver, public string $attemptId, public string|null $accountId) {}
 

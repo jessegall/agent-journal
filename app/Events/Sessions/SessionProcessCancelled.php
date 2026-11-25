@@ -9,7 +9,7 @@ use App\Contracts\Sessions\SessionProcessEvent;
 /**
  * A process start was called off before it started.
  */
-final readonly class SessionProcessCancelled extends SessionEvent implements SessionProcessEvent
+final readonly class SessionProcessCancelled implements SessionEvent, SessionProcessEvent
 {
     public function __construct(public string $startId) {}
 }

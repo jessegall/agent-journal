@@ -10,7 +10,7 @@ use App\Support\ActorIdentity;
 /**
  * A user released a runtime's hold: the audit record of which hold, who released it and why.
  */
-final readonly class AgentHoldReleased extends SessionEvent
+final readonly class AgentHoldReleased implements SessionEvent
 {
     public function __construct(
         public string $runtimeId,

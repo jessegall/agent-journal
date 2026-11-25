@@ -9,7 +9,7 @@ use App\Contracts\Drivers\DriverRequestEvent;
 /**
  * A driver request may duplicate an earlier one.
  */
-final readonly class DriverRequestSuspectedDuplicate extends SessionEvent implements DriverRequestEvent
+final readonly class DriverRequestSuspectedDuplicate implements DriverRequestEvent, SessionEvent
 {
     public function __construct(
         public string $requestId,

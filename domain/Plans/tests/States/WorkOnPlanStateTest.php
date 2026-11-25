@@ -87,7 +87,8 @@ final class WorkOnPlanStateTest extends TestCase
 
         $state->onPlanProgressChanged(new PlanProgressChanged('plan-1', 12, 3, 8, 2_000));
         $state->onPlanProgressChanged(new PlanProgressChanged('plan-1', 12, 2, 8, 1_000));
-        $state->onPlanProgressChanged(new PlanProgressChanged('plan-2', 40, 9, 9, 3_000));
+
+        $this->assertFalse($state->hears(new PlanProgressChanged('plan-2', 40, 9, 9, 3_000)));
 
         $this->assertEquals(
             AgentText::of('plans.working_on', [

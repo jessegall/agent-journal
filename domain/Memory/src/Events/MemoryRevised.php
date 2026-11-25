@@ -7,7 +7,7 @@ namespace Domain\Memory\Events;
 /**
  * A memory's text or weight was revised.
  */
-final readonly class MemoryRevised extends MemoryEvent
+final readonly class MemoryRevised implements MemoryEvent
 {
     public function __construct(
         public string $memoryId,

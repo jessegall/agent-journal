@@ -10,7 +10,7 @@ use App\Contracts\Accounts\SignInAttemptEvent;
 /**
  * A sign-in attempt was released to its host, once no use of its account still runs.
  */
-final readonly class SignInAttemptReleased extends AccountEvent implements ShownOnAccounts, SignInAttemptEvent
+final readonly class SignInAttemptReleased implements AccountEvent, ShownOnAccounts, SignInAttemptEvent
 {
     public function __construct(public string $driver, public string $attemptId, public string|null $accountId) {}
 

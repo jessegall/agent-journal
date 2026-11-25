@@ -9,7 +9,7 @@ use App\Contracts\Drivers\NavigationRequestEvent;
 /**
  * A navigation request answered its screen.
  */
-final readonly class NavigationRequestAnswered extends SessionEvent implements NavigationRequestEvent
+final readonly class NavigationRequestAnswered implements NavigationRequestEvent, SessionEvent
 {
     public function __construct(public string $requestId) {}
 }

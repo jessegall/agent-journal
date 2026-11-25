@@ -9,7 +9,7 @@ use App\Contracts\Sessions\ClosingWordsEvent;
 /**
  * An agent stopped again with the same closing words, so they stay private.
  */
-final readonly class ClosingWordsKeptPrivate extends SessionEvent implements ClosingWordsEvent
+final readonly class ClosingWordsKeptPrivate implements ClosingWordsEvent, SessionEvent
 {
     public function __construct(public string $turnId) {}
 }

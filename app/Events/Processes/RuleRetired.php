@@ -10,7 +10,7 @@ use App\Models\CommandRules\ClassificationRule;
 /**
  * A project owner retired a command rule: new admissions stop relying on it, processes already started run on.
  */
-final readonly class RuleRetired extends ProcessEvent implements ActiveRuleChange
+final readonly class RuleRetired implements ActiveRuleChange, ProcessEvent
 {
     public function __construct(
         public string $projectKey,

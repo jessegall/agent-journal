@@ -7,7 +7,7 @@ namespace App\Events\Sessions;
 /**
  * A revision fence was reconciled.
  */
-final readonly class ProfileRevisionHoldReconciled extends SessionEvent
+final readonly class ProfileRevisionHoldReconciled implements SessionEvent
 {
     public function __construct(
         public string $fenceId,

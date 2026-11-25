@@ -9,7 +9,7 @@ use App\Contracts\Drivers\NavigationRequestEvent;
 /**
  * A navigation request was proven complete.
  */
-final readonly class NavigationRequestProven extends SessionEvent implements NavigationRequestEvent
+final readonly class NavigationRequestProven implements NavigationRequestEvent, SessionEvent
 {
     public function __construct(public string $requestId) {}
 }

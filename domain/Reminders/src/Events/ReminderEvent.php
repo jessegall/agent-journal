@@ -7,6 +7,9 @@ namespace Domain\Reminders\Events;
 use App\Contracts\Events\Event;
 
 /**
- * A fact about reminders: every event of that subject extends it, so a listener typed on it hears them all.
+ * A fact about reminders: every event of that subject implements it, so a listener typed on it hears them all.
  */
-abstract readonly class ReminderEvent implements Event {}
+interface ReminderEvent extends Event
+{
+    public string $reminderId { get; }
+}

@@ -9,4 +9,7 @@ use App\Contracts\Events\Event;
 /**
  * A change to what a task waits on.
  */
-interface TaskWaitEvent extends Event {}
+interface TaskWaitEvent extends Event
+{
+    public string $taskId { get; }
+}

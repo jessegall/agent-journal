@@ -10,7 +10,7 @@ use App\Support\ActorContext;
 /**
  * A plan was cancelled, and who cancelled it. Raised only once the change has committed.
  */
-final readonly class PlanCancelled extends PlanEvent implements ClientUpdate
+final readonly class PlanCancelled implements ClientUpdate, PlanEvent
 {
     public function __construct(
         public string $planId,

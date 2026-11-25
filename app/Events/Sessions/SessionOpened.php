@@ -7,7 +7,7 @@ namespace App\Events\Sessions;
 /**
  * A start began a journal session for an agent, raised inside the start transaction.
  */
-final readonly class SessionOpened extends SessionEvent
+final readonly class SessionOpened implements SessionEvent
 {
     public function __construct(
         public string $agentId,

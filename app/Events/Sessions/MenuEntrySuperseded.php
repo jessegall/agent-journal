@@ -9,7 +9,7 @@ use App\Contracts\Drivers\MenuEntryEvent;
 /**
  * A menu entry was replaced by a newer entry.
  */
-final readonly class MenuEntrySuperseded extends SessionEvent implements MenuEntryEvent
+final readonly class MenuEntrySuperseded implements MenuEntryEvent, SessionEvent
 {
     public function __construct(
         public string $entryId,

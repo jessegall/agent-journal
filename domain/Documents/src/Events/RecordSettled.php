@@ -10,7 +10,7 @@ use App\Support\Sources\Contracts\DockSourceChanged;
 /**
  * A document or report was settled as needing no more attention. It carries ids only.
  */
-final readonly class RecordSettled extends DocumentEvent implements ClientUpdate, DockSourceChanged
+final readonly class RecordSettled implements ClientUpdate, DockSourceChanged, DocumentEvent
 {
     public function __construct(public string $recordType, public string $recordId) {}
 

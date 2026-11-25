@@ -12,6 +12,8 @@ use App\Enums\Accounts\AccountNoticeReason;
  */
 interface AccountNoticeCause extends Event
 {
+    public string $agentId { get; }
+
     public string $driver { get; }
 
     /**

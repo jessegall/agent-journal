@@ -9,7 +9,7 @@ use App\Contracts\Connections\ProjectBindingEvent;
 /**
  * A runtime holds a project binding until the time given.
  */
-final readonly class ProjectBindingLeased extends ConnectionEvent implements ProjectBindingEvent
+final readonly class ProjectBindingLeased implements ConnectionEvent, ProjectBindingEvent
 {
     public function __construct(public string $bindingId, public string $runtimeId) {}
 }

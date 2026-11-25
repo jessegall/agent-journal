@@ -7,6 +7,9 @@ namespace Domain\Memory\Events;
 use App\Contracts\Events\Event;
 
 /**
- * A fact about memories: every event of that subject extends it, so a listener typed on it hears them all.
+ * A fact about memories: every event of that subject implements it, so a listener typed on it hears them all.
  */
-abstract readonly class MemoryEvent implements Event {}
+interface MemoryEvent extends Event
+{
+    public string $memoryId { get; }
+}

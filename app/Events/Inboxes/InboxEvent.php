@@ -7,7 +7,10 @@ namespace App\Events\Inboxes;
 use App\Contracts\Events\Event;
 
 /**
- * A fact about who is attached to an inbox: every event of that subject extends it, so a listener typed on it hears
+ * A fact about who is attached to an inbox: every event of that subject implements it, so a listener typed on it hears
  * them all.
  */
-abstract readonly class InboxEvent implements Event {}
+interface InboxEvent extends Event
+{
+    public string $inboxId { get; }
+}

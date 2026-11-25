@@ -10,7 +10,7 @@ use App\Enums\Runs\CaptureStatus;
 /**
  * A part of a run's capture took the state given.
  */
-final readonly class PartRunCaptureMarked extends ProcessEvent implements PartRunEvent
+final readonly class PartRunCaptureMarked implements PartRunEvent, ProcessEvent
 {
     public function __construct(
         public string $partId,

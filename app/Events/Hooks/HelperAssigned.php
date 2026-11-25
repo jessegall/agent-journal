@@ -10,7 +10,7 @@ use App\Support\RecordIdentity;
  * The agent of this call assigned a helper a job about a record, a new helper started or one it sent more work, such
  * as a plan to review; the states of its own stack hear it.
  */
-final readonly class HelperAssigned extends HookEvent
+final readonly class HelperAssigned implements HookEvent
 {
     public function __construct(
         public RecordIdentity $subject,

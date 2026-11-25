@@ -9,9 +9,10 @@ use Domain\Plans\Contracts\PlanReviewEvent;
 /**
  * A plan review edition's approval no longer matches the plan, which changed after it.
  */
-final readonly class PlanReviewEditionOutdated extends PlanEvent implements PlanReviewEvent
+final readonly class PlanReviewEditionOutdated implements PlanEvent, PlanReviewEvent
 {
     public function __construct(
+        public string $planId,
         public string $editionId,
     ) {}
 }

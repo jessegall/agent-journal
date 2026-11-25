@@ -9,7 +9,7 @@ use App\Contracts\Connections\DeviceGrantEvent;
 /**
  * A user approved a device grant.
  */
-final readonly class DeviceGrantApproved extends ConnectionEvent implements DeviceGrantEvent
+final readonly class DeviceGrantApproved implements ConnectionEvent, DeviceGrantEvent
 {
     public function __construct(
         public string $grantId,

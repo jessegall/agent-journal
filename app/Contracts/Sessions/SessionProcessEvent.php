@@ -9,4 +9,7 @@ use App\Contracts\Events\Event;
 /**
  * A step of a process start, from its claim by a host to its stop.
  */
-interface SessionProcessEvent extends Event {}
+interface SessionProcessEvent extends Event
+{
+    public string $startId { get; }
+}

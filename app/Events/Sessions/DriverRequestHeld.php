@@ -10,7 +10,7 @@ use App\Enums\Drivers\HoldReason;
 /**
  * A driver request was held for the reason given.
  */
-final readonly class DriverRequestHeld extends SessionEvent implements DriverRequestEvent
+final readonly class DriverRequestHeld implements DriverRequestEvent, SessionEvent
 {
     public function __construct(
         public string $requestId,

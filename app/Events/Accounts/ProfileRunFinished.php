@@ -10,7 +10,7 @@ use App\Enums\Profiles\ProfileRunStatus;
 /**
  * A profile's script run finished in the state given.
  */
-final readonly class ProfileRunFinished extends AccountEvent implements ProfileRunEvent
+final readonly class ProfileRunFinished implements AccountEvent, ProfileRunEvent
 {
     public function __construct(
         public string $runId,

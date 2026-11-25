@@ -9,7 +9,7 @@ use App\Contracts\Notifications\NotificationReceiptEvent;
 /**
  * A notification was hidden.
  */
-final readonly class NotificationReceiptHidden extends MessageEvent implements NotificationReceiptEvent
+final readonly class NotificationReceiptHidden implements MessageEvent, NotificationReceiptEvent
 {
     public function __construct(
         public string $receiptId,

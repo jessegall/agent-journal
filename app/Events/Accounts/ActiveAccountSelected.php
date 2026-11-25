@@ -9,7 +9,7 @@ use App\Contracts\Accounts\ActiveAccountEvent;
 /**
  * An account became the one agents of a driver family start with.
  */
-final readonly class ActiveAccountSelected extends AccountEvent implements ActiveAccountEvent
+final readonly class ActiveAccountSelected implements AccountEvent, ActiveAccountEvent
 {
     public function __construct(public string $driver, public string $accountId) {}
 }

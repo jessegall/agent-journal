@@ -13,7 +13,7 @@ use App\Values\StackTarget;
  * A state answered a hook or a moment of its frame's life with a command, which runs under the actor and authority
  * of the change once it commits, so a rolled-back change leaves nothing to run.
  */
-final readonly class StateCommandAnswered extends HookEvent
+final readonly class StateCommandAnswered implements HookEvent
 {
     /**
      * @param  Command<mixed>  $command

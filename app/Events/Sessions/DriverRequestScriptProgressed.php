@@ -9,7 +9,7 @@ use App\Contracts\Drivers\DriverRequestEvent;
 /**
  * A driver request's script made progress.
  */
-final readonly class DriverRequestScriptProgressed extends SessionEvent implements DriverRequestEvent
+final readonly class DriverRequestScriptProgressed implements DriverRequestEvent, SessionEvent
 {
     public function __construct(
         public string $requestId,

@@ -9,7 +9,7 @@ use App\Contracts\Processes\ProcessRunEvent;
 /**
  * A process run no longer tells a user how it ended.
  */
-final readonly class ProcessRunOutcomeUserRevoked extends ProcessEvent implements ProcessRunEvent
+final readonly class ProcessRunOutcomeUserRevoked implements ProcessEvent, ProcessRunEvent
 {
     public function __construct(public string $runId) {}
 }

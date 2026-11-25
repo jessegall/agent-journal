@@ -7,7 +7,7 @@ namespace App\Events\Inboxes;
 /**
  * An inbox was opened.
  */
-final readonly class InboxOpened extends InboxEvent
+final readonly class InboxOpened implements InboxEvent
 {
     public function __construct(public string $inboxId) {}
 }

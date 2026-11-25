@@ -7,7 +7,7 @@ namespace App\Events\Settings;
 /**
  * An owner's settings document was revised.
  */
-final readonly class SettingsRevised extends SettingEvent
+final readonly class SettingsRevised implements SettingEvent
 {
     public function __construct(
         public string $settingsId,

@@ -9,7 +9,7 @@ use Domain\Helpers\Contracts\HelperJobEvent;
 /**
  * An accepted helper job attached to the session its start opened, and runs.
  */
-final readonly class HelperJobAttached extends HelperEvent implements HelperJobEvent
+final readonly class HelperJobAttached implements HelperEvent, HelperJobEvent
 {
     public function __construct(
         public string $jobId,

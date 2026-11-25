@@ -9,7 +9,7 @@ use App\Contracts\Drivers\DriverRequestEvent;
 /**
  * A driver request was tried again.
  */
-final readonly class DriverRequestRetried extends SessionEvent implements DriverRequestEvent
+final readonly class DriverRequestRetried implements DriverRequestEvent, SessionEvent
 {
     public function __construct(
         public string $requestId,

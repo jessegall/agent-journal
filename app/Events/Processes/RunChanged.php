@@ -13,7 +13,7 @@ use App\Values\PartProjection;
  * A run changed after its change was stored: its next update number, and the parts that changed with the reading each
  * now shows. A client that sees a gap in the numbers reloads the run's snapshot.
  */
-final readonly class RunChanged extends ProcessEvent implements ClientUpdate, DockSourceChanged
+final readonly class RunChanged implements ClientUpdate, DockSourceChanged, ProcessEvent
 {
     /**
      * @param  list<PartProjection>  $parts

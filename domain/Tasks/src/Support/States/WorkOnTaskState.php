@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Support\States;
 
 use App\Attributes\States\StateType;
+use App\Contracts\Events\Event;
 use App\Enums\Engine\FrameReuse;
 use App\Enums\Sessions\SessionTransferType;
 use App\Events\Assignments\AssignmentsEnded;
@@ -18,6 +19,7 @@ use Domain\Tasks\Commands\FocusTask\FocusTaskCommand;
 use Domain\Tasks\Commands\UnfocusTask\UnfocusTaskCommand;
 use Domain\Tasks\Events\TaskBlocked;
 use Domain\Tasks\Events\TaskCancelled;
+use Domain\Tasks\Events\TaskEvent;
 use Domain\Tasks\Events\TaskFinished;
 use Domain\Tasks\Events\TaskLogged;
 use Domain\Tasks\Events\TaskRunClaimed;
@@ -141,40 +143,33 @@ final class WorkOnTaskState extends AgentState
 
     // ----------[ Events ]----------
 
+    public function hears(Event $event): bool
+    {
+        return ! $event instanceof TaskEvent || $event->taskId === $this->taskId;
+    }
+
     public function onTaskFinished(TaskFinished $event): void
     {
-        if ($event->taskId === $this->taskId) {
-            $this->isWorking = false;
-        }
+        $this->isWorking = false;
     }
 
     public function onTaskBlocked(TaskBlocked $event): void
     {
-        if ($event->taskId === $this->taskId) {
-            $this->isWorking = false;
-        }
+        $this->isWorking = false;
     }
 
     public function onTaskCancelled(TaskCancelled $event): void
     {
-        if ($event->taskId === $this->taskId) {
-            $this->isWorking = false;
-        }
+        $this->isWorking = false;
     }
 
     public function onTaskLogged(TaskLogged $event): void
     {
-        if ($event->taskId === $this->taskId) {
-            $this->toolUsesSinceLog = 0;
-        }
+        $this->toolUsesSinceLog = 0;
     }
 
     public function onTaskRunClaimed(TaskRunClaimed $event): void
     {
-        if ($event->taskId !== $this->taskId) {
-            return;
-        }
-
         if ($event->runNumber !== $this->runNumber) {
             $this->isWorking = false;
 

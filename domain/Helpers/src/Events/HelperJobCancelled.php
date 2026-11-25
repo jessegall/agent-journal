@@ -9,7 +9,7 @@ use Domain\Helpers\Contracts\HelperJobEvent;
 /**
  * A helper job was cancelled.
  */
-final readonly class HelperJobCancelled extends HelperEvent implements HelperJobEvent
+final readonly class HelperJobCancelled implements HelperEvent, HelperJobEvent
 {
     public function __construct(
         public string $jobId,

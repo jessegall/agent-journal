@@ -10,7 +10,7 @@ use Domain\Sharing\Enums\GatewayEndpointStatus;
 /**
  * A share gateway endpoint moved to the state given.
  */
-final readonly class ShareGatewayEndpointMoved extends ShareEvent implements ShareGatewayEvent
+final readonly class ShareGatewayEndpointMoved implements ShareEvent, ShareGatewayEvent
 {
     public function __construct(
         public string $endpointId,

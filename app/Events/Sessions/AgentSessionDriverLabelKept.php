@@ -9,7 +9,7 @@ use App\Contracts\Sessions\AgentSessionEvent;
 /**
  * A session kept the label its driver shows.
  */
-final readonly class AgentSessionDriverLabelKept extends SessionEvent implements AgentSessionEvent
+final readonly class AgentSessionDriverLabelKept implements AgentSessionEvent, SessionEvent
 {
     public function __construct(
         public string $sessionId,

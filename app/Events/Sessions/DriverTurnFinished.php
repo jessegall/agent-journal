@@ -7,7 +7,7 @@ namespace App\Events\Sessions;
 /**
  * A driver turn finished with its outcome.
  */
-final readonly class DriverTurnFinished extends SessionEvent
+final readonly class DriverTurnFinished implements SessionEvent
 {
     public function __construct(
         public string $turnId,

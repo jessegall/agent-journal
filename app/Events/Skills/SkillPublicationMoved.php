@@ -10,7 +10,7 @@ use App\Enums\Skills\PublicationStatus;
 /**
  * A session's skill publication moved to another state: delivered, failed, waiting again, superseded or retired.
  */
-final readonly class SkillPublicationMoved extends SkillEvent implements SkillPublicationEvent
+final readonly class SkillPublicationMoved implements SkillEvent, SkillPublicationEvent
 {
     public function __construct(
         public string $publicationId,

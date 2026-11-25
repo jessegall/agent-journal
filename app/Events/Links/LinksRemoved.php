@@ -11,7 +11,7 @@ use App\Attributes\Listeners\TransactionListenerConsent;
  * with them. A link made again between the same records has a new id.
  */
 #[TransactionListenerConsent]
-final readonly class LinksRemoved extends LinkEvent
+final readonly class LinksRemoved implements LinkEvent
 {
     /**
      * @param  list<string>  $linkIds

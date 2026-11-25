@@ -9,7 +9,7 @@ use App\Contracts\Processes\ProcessRunEvent;
 /**
  * A host took a process run's start, so the run is running.
  */
-final readonly class ProcessRunConsumed extends ProcessEvent implements ProcessRunEvent
+final readonly class ProcessRunConsumed implements ProcessEvent, ProcessRunEvent
 {
     public function __construct(public string $runId) {}
 }

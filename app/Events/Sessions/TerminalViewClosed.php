@@ -9,7 +9,7 @@ use App\Contracts\Drivers\TerminalViewEvent;
 /**
  * A terminal view was closed.
  */
-final readonly class TerminalViewClosed extends SessionEvent implements TerminalViewEvent
+final readonly class TerminalViewClosed implements SessionEvent, TerminalViewEvent
 {
     public function __construct(
         public string $viewId,

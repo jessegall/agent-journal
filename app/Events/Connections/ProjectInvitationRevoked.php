@@ -10,7 +10,7 @@ use DateTimeImmutable;
 /**
  * An install line was revoked before anyone redeemed it.
  */
-final readonly class ProjectInvitationRevoked extends ConnectionEvent implements ProjectInvitationEvent
+final readonly class ProjectInvitationRevoked implements ConnectionEvent, ProjectInvitationEvent
 {
     public function __construct(
         public string $invitationId,

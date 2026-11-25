@@ -7,7 +7,7 @@ namespace App\Events\Accounts;
 /**
  * An account was marked for a check of the sign-in generation it holds.
  */
-final readonly class AccountCheckRequested extends AccountEvent
+final readonly class AccountCheckRequested implements AccountEvent
 {
     public function __construct(public string $driver, public string $accountId, public int $generation) {}
 }

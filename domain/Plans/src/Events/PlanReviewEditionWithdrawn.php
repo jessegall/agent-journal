@@ -9,9 +9,10 @@ use Domain\Plans\Contracts\PlanReviewEvent;
 /**
  * A plan review edition was withdrawn.
  */
-final readonly class PlanReviewEditionWithdrawn extends PlanEvent implements PlanReviewEvent
+final readonly class PlanReviewEditionWithdrawn implements PlanEvent, PlanReviewEvent
 {
     public function __construct(
+        public string $planId,
         public string $editionId,
     ) {}
 }

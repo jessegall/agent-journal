@@ -12,7 +12,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
  * Tells each user's browser that its notifications changed, so it reads them again; it names nothing, no title, no
  * receipt and no count.
  */
-final readonly class NotificationsInvalidated extends WebEvent implements ShouldBroadcast
+final readonly class NotificationsInvalidated implements ShouldBroadcast, WebEvent
 {
     public const string NAME = 'notifications.changed';
 

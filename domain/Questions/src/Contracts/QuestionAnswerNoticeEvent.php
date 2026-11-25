@@ -9,4 +9,9 @@ use App\Contracts\Events\Event;
 /**
  * A change to a question's answer notice: every event of it implements this, so a listener typed on it hears them all.
  */
-interface QuestionAnswerNoticeEvent extends Event {}
+interface QuestionAnswerNoticeEvent extends Event
+{
+    public string $noticeId { get; }
+
+    public string $questionId { get; }
+}

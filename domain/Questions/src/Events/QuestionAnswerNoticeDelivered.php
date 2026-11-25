@@ -9,7 +9,7 @@ use Domain\Questions\Contracts\QuestionAnswerNoticeEvent;
 /**
  * A notice of a question's answer reached its agent's session.
  */
-final readonly class QuestionAnswerNoticeDelivered extends QuestionEvent implements QuestionAnswerNoticeEvent
+final readonly class QuestionAnswerNoticeDelivered implements QuestionAnswerNoticeEvent, QuestionEvent
 {
     public function __construct(public string $noticeId, public string $questionId) {}
 }

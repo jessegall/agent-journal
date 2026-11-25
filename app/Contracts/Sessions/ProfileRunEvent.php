@@ -9,4 +9,7 @@ use App\Contracts\Events\Event;
 /**
  * A change to a profile run: every event of it implements this, so a listener typed on it hears them all.
  */
-interface ProfileRunEvent extends Event {}
+interface ProfileRunEvent extends Event
+{
+    public string $runId { get; }
+}

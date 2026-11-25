@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Domain\Sequences\Support\States;
 
 use App\Attributes\States\StateType;
+use App\Contracts\Events\Event;
 use App\Enums\Sessions\SessionTransferType;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
 use App\Support\States\AgentState;
 use App\Values\AgentText;
+use Domain\Sequences\Contracts\SequenceRunEvent;
 use Domain\Sequences\Events\SequenceEnded;
 use Domain\Sequences\Events\SequenceStepReached;
 use Domain\Sequences\Support\States\Support\FollowSequenceStateReference;
@@ -58,18 +60,19 @@ final class FollowSequenceState extends AgentState
 
     // ----------[ Events ]----------
 
+    public function hears(Event $event): bool
+    {
+        return ! $event instanceof SequenceRunEvent || $event->runId === $this->runId;
+    }
+
     public function onSequenceStepReached(SequenceStepReached $event): void
     {
-        if ($event->runId === $this->runId) {
-            $this->currentStep = $event->step;
-        }
+        $this->currentStep = $event->step;
     }
 
     public function onSequenceEnded(SequenceEnded $event): void
     {
-        if ($event->runId === $this->runId) {
-            $this->isFollowing = false;
-        }
+        $this->isFollowing = false;
     }
 
     // ----------[ Internals ]----------

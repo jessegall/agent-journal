@@ -9,7 +9,7 @@ use App\Contracts\Hosts\HostCallEvent;
 /**
  * The journal answered a host's call with a server error.
  */
-final readonly class HostCallFailed extends ConnectionEvent implements HostCallEvent
+final readonly class HostCallFailed implements ConnectionEvent, HostCallEvent
 {
     public function __construct(
         public string $hostId,

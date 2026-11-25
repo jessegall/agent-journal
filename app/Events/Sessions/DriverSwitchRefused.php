@@ -9,7 +9,7 @@ use App\Contracts\Drivers\DriverSwitchEvent;
 /**
  * A driver switch was refused, for the reason given.
  */
-final readonly class DriverSwitchRefused extends SessionEvent implements DriverSwitchEvent
+final readonly class DriverSwitchRefused implements DriverSwitchEvent, SessionEvent
 {
     public function __construct(public string $switchId, public string $reason) {}
 }

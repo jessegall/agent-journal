@@ -7,7 +7,7 @@ namespace Domain\Plans\Events;
 /**
  * A plan's title, brief or type changed.
  */
-final readonly class PlanDescribed extends PlanEvent
+final readonly class PlanDescribed implements PlanEvent
 {
     public function __construct(public string $planId, public int $revision) {}
 }

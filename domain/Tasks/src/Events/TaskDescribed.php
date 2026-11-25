@@ -11,7 +11,7 @@ use App\Attributes\Listeners\TransactionListenerConsent;
  * the change while the task's plan is under review; its listener is named as text so Tasks does not depend on Plans.
  */
 #[TransactionListenerConsent]
-final readonly class TaskDescribed extends TaskEvent
+final readonly class TaskDescribed implements TaskEvent
 {
     public function __construct(public string $taskId) {}
 }

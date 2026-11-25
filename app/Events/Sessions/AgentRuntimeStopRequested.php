@@ -9,7 +9,7 @@ use App\Contracts\Sessions\AgentRuntimeEvent;
 /**
  * A runtime was asked to stop.
  */
-final readonly class AgentRuntimeStopRequested extends SessionEvent implements AgentRuntimeEvent
+final readonly class AgentRuntimeStopRequested implements AgentRuntimeEvent, SessionEvent
 {
     public function __construct(
         public string $runtimeId,

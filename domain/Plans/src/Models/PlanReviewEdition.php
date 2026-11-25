@@ -92,7 +92,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
         $this->decided_by_id = $actor->id;
         $this->decided_at = CarbonImmutable::now();
         $this->assertSaved($this->save());
-        $this->raise(new PlanReviewEditionWithdrawn($this->id));
+        $this->raise(new PlanReviewEditionWithdrawn($this->plan_id, $this->id));
     }
 
     /**
@@ -101,7 +101,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
     public function approve(ActorIdentity $actor, string $requestKey): void
     {
         $this->decide(PlanReviewStatus::Approved, $actor, $requestKey, null);
-        $this->raise(new PlanReviewEditionApproved($this->id));
+        $this->raise(new PlanReviewEditionApproved($this->plan_id, $this->id));
     }
 
     /**
@@ -110,7 +110,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
     public function requestChanges(ActorIdentity $actor, string $requestKey, string $reason): void
     {
         $this->decide(PlanReviewStatus::ChangesRequested, $actor, $requestKey, $reason);
-        $this->raise(new PlanReviewEditionChangesRequested($this->id));
+        $this->raise(new PlanReviewEditionChangesRequested($this->plan_id, $this->id));
     }
 
     /**
@@ -120,7 +120,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
     {
         $this->is_historical = true;
         $this->assertSaved($this->save());
-        $this->raise(new PlanReviewEditionOutdated($this->id));
+        $this->raise(new PlanReviewEditionOutdated($this->plan_id, $this->id));
     }
 
     // ----------[ Internals ]----------

@@ -9,7 +9,7 @@ use App\Contracts\Processes\PartRunEvent;
 /**
  * A part of a run was lost.
  */
-final readonly class PartRunLost extends ProcessEvent implements PartRunEvent
+final readonly class PartRunLost implements PartRunEvent, ProcessEvent
 {
     public function __construct(
         public string $partId,

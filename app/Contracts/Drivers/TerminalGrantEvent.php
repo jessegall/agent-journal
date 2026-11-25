@@ -9,4 +9,7 @@ use App\Contracts\Events\Event;
 /**
  * A change to a terminal grant: every event of it implements this, so a listener typed on it hears them all.
  */
-interface TerminalGrantEvent extends Event {}
+interface TerminalGrantEvent extends Event
+{
+    public string $grantId { get; }
+}

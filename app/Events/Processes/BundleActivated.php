@@ -10,7 +10,7 @@ use App\Models\CommandRules\ModuleRuleBundle;
 /**
  * A project owner activated a module's rule bundle at one digest; raised after the change is committed.
  */
-final readonly class BundleActivated extends ProcessEvent implements ActiveRuleChange
+final readonly class BundleActivated implements ActiveRuleChange, ProcessEvent
 {
     public function __construct(public string $projectKey, public string $module, public string $digest) {}
 

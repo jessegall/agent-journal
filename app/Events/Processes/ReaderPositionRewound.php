@@ -9,7 +9,7 @@ use App\Contracts\Processes\ReaderPositionEvent;
 /**
  * A reader's position went back to a checkpoint it consumed, provisional again.
  */
-final readonly class ReaderPositionRewound extends ProcessEvent implements ReaderPositionEvent
+final readonly class ReaderPositionRewound implements ProcessEvent, ReaderPositionEvent
 {
     public function __construct(
         public string $positionId,

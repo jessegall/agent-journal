@@ -9,7 +9,7 @@ use App\Support\ActorIdentity;
 /**
  * An actor read a message for the first time.
  */
-final readonly class MessageRead extends MessageEvent
+final readonly class MessageRead implements MessageEvent
 {
     public function __construct(
         public string $messageId,

@@ -9,7 +9,7 @@ use App\Models\CommandRules\RuleProposal;
 /**
  * A project owner rejected a proposal; its author is told the reason, and the proposal and its request stay readable.
  */
-final readonly class RuleRejected extends ProcessEvent
+final readonly class RuleRejected implements ProcessEvent
 {
     public function __construct(
         public string $proposalId,

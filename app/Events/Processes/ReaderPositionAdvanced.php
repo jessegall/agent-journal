@@ -9,7 +9,7 @@ use App\Contracts\Processes\ReaderPositionEvent;
 /**
  * A reader's position moved on to a later checkpoint.
  */
-final readonly class ReaderPositionAdvanced extends ProcessEvent implements ReaderPositionEvent
+final readonly class ReaderPositionAdvanced implements ProcessEvent, ReaderPositionEvent
 {
     public function __construct(
         public string $positionId,

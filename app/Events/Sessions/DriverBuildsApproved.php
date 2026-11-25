@@ -7,7 +7,7 @@ namespace App\Events\Sessions;
 /**
  * The driver builds an approval allows were set.
  */
-final readonly class DriverBuildsApproved extends SessionEvent
+final readonly class DriverBuildsApproved implements SessionEvent
 {
     public function __construct(
         public string $approvalId,

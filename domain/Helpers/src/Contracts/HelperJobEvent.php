@@ -9,4 +9,7 @@ use App\Contracts\Events\Event;
 /**
  * A change to a helper job: every event of it implements this, so a listener typed on it hears them all.
  */
-interface HelperJobEvent extends Event {}
+interface HelperJobEvent extends Event
+{
+    public string $jobId { get; }
+}

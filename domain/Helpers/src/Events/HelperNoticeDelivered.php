@@ -7,7 +7,7 @@ namespace Domain\Helpers\Events;
 /**
  * A helper notice was delivered to its agent.
  */
-final readonly class HelperNoticeDelivered extends HelperEvent
+final readonly class HelperNoticeDelivered implements HelperEvent
 {
     public function __construct(
         public string $noticeId,

@@ -9,7 +9,7 @@ use App\Contracts\Processes\ProcessRunEvent;
 /**
  * A process run was stopped before it ended, for the reason given.
  */
-final readonly class ProcessRunStopped extends ProcessEvent implements ProcessRunEvent
+final readonly class ProcessRunStopped implements ProcessEvent, ProcessRunEvent
 {
     public function __construct(public string $runId, public string $reason) {}
 }

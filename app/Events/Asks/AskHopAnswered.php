@@ -9,7 +9,7 @@ use App\Contracts\Asks\AskHopEvent;
 /**
  * The holder of one step of an ask answered it.
  */
-final readonly class AskHopAnswered extends AskEvent implements AskHopEvent
+final readonly class AskHopAnswered implements AskEvent, AskHopEvent
 {
     public function __construct(public string $askId, public string $hopId) {}
 }

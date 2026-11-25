@@ -7,7 +7,7 @@ namespace App\Events\Sessions;
 /**
  * A start's verification was cancelled.
  */
-final readonly class StartVerificationCancelled extends SessionEvent
+final readonly class StartVerificationCancelled implements SessionEvent
 {
     public function __construct(
         public string $startId,

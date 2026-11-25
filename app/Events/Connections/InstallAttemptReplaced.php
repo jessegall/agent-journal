@@ -10,7 +10,7 @@ use DateTimeImmutable;
 /**
  * An install attempt moved to its next version: its line was issued anew, the one before revoked.
  */
-final readonly class InstallAttemptReplaced extends ConnectionEvent implements InstallAttemptEvent
+final readonly class InstallAttemptReplaced implements ConnectionEvent, InstallAttemptEvent
 {
     public function __construct(
         public string $attemptId,

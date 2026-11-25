@@ -13,7 +13,7 @@ use Domain\Sequences\Models\SequenceRun;
 /**
  * A sequence run came to a step, numbered from one, which its agent now follows.
  */
-final readonly class SequenceStepReached extends SequenceEvent implements ChatLineSource, SequenceStepEvent
+final readonly class SequenceStepReached implements ChatLineSource, SequenceEvent, SequenceStepEvent
 {
     public function __construct(
         public string $runId,

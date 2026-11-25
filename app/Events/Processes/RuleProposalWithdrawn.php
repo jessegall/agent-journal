@@ -9,7 +9,7 @@ use App\Contracts\Processes\RuleProposalEvent;
 /**
  * A command rule proposal was withdrawn by its author.
  */
-final readonly class RuleProposalWithdrawn extends ProcessEvent implements RuleProposalEvent
+final readonly class RuleProposalWithdrawn implements ProcessEvent, RuleProposalEvent
 {
     public function __construct(
         public string $proposalId,

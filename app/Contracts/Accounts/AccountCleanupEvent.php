@@ -9,4 +9,9 @@ use App\Contracts\Events\Event;
 /**
  * A step of a removed account's folder cleanup: released to a host or tried again.
  */
-interface AccountCleanupEvent extends Event {}
+interface AccountCleanupEvent extends Event
+{
+    public string $driver { get; }
+
+    public string $accountId { get; }
+}

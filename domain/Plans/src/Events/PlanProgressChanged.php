@@ -12,7 +12,7 @@ use Domain\Plans\Models\Plan;
  * The plan's task counts moved: a task in one of its phases changed state, or tasks were placed in it. It carries the
  * finished and total counts and when they were counted, so a reader keeps the newest when two arrive out of order.
  */
-final readonly class PlanProgressChanged extends PlanEvent implements ClientUpdate, DockSourceChanged
+final readonly class PlanProgressChanged implements ClientUpdate, DockSourceChanged, PlanEvent
 {
     public function __construct(
         public string $planId,

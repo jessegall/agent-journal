@@ -10,7 +10,7 @@ use App\Enums\Drivers\HoldReason;
 /**
  * A runtime's hold changed: it is held for the reason given, or released when the reason is none.
  */
-final readonly class AgentRuntimeHeld extends SessionEvent implements AgentRuntimeEvent
+final readonly class AgentRuntimeHeld implements AgentRuntimeEvent, SessionEvent
 {
     public function __construct(
         public string $runtimeId,

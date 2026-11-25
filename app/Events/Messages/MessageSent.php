@@ -11,7 +11,7 @@ use App\Support\ActorIdentity;
  * A message was sent into an inbox, as a reply to its target message when it has one.
  */
 #[TransactionListenerConsent]
-final readonly class MessageSent extends MessageEvent
+final readonly class MessageSent implements MessageEvent
 {
     public function __construct(
         public string $messageId,

@@ -7,7 +7,7 @@ namespace Domain\Helpers\Events;
 /**
  * A helper identity was designated for its profile.
  */
-final readonly class HelperDesignated extends HelperEvent
+final readonly class HelperDesignated implements HelperEvent
 {
     public function __construct(
         public string $identityId,

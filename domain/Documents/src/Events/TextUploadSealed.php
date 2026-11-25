@@ -9,7 +9,7 @@ use Domain\Documents\Contracts\TextUploadEvent;
 /**
  * A text upload was sealed: it takes no more chunks.
  */
-final readonly class TextUploadSealed extends DocumentEvent implements TextUploadEvent
+final readonly class TextUploadSealed implements DocumentEvent, TextUploadEvent
 {
     public function __construct(
         public string $uploadId,

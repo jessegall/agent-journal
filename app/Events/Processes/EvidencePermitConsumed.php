@@ -9,7 +9,7 @@ use App\Contracts\Processes\EvidencePermitEvent;
 /**
  * An evidence permit was used by a run.
  */
-final readonly class EvidencePermitConsumed extends ProcessEvent implements EvidencePermitEvent
+final readonly class EvidencePermitConsumed implements EvidencePermitEvent, ProcessEvent
 {
     public function __construct(
         public string $permitId,

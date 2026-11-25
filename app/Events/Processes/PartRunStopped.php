@@ -9,7 +9,7 @@ use App\Contracts\Processes\PartRunEvent;
 /**
  * A part of a run was stopped for the reason given.
  */
-final readonly class PartRunStopped extends ProcessEvent implements PartRunEvent
+final readonly class PartRunStopped implements PartRunEvent, ProcessEvent
 {
     public function __construct(
         public string $partId,

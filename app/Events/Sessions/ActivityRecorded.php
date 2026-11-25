@@ -9,7 +9,7 @@ use App\Contracts\Navigation\ClientUpdate;
 /**
  * An agent's activity was recorded, so open Activity windows read their feed again.
  */
-final readonly class ActivityRecorded extends SessionEvent implements ClientUpdate
+final readonly class ActivityRecorded implements ClientUpdate, SessionEvent
 {
     public function __construct(public string $entryId) {}
 }

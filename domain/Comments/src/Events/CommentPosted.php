@@ -10,7 +10,7 @@ use App\Support\RecordIdentity;
 /**
  * A comment was left on a record. It carries no body or quote: a listener reads the comment if it may.
  */
-final readonly class CommentPosted extends CommentEvent implements ClientUpdate
+final readonly class CommentPosted implements ClientUpdate, CommentEvent
 {
     public function __construct(public string $commentId, public RecordIdentity $target) {}
 }

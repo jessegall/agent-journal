@@ -11,7 +11,7 @@ use App\Support\ActorContext;
  * A plan started, and who started it. Raised only once the start has committed, so a listener never receives a start
  * that rolled back.
  */
-final readonly class PlanStarted extends PlanEvent implements ClientUpdate
+final readonly class PlanStarted implements ClientUpdate, PlanEvent
 {
     public function __construct(
         public string $planId,

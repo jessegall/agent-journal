@@ -9,7 +9,7 @@ use App\Contracts\Drivers\NavigationRequestEvent;
 /**
  * A navigation request ran out of time.
  */
-final readonly class NavigationRequestExpired extends SessionEvent implements NavigationRequestEvent
+final readonly class NavigationRequestExpired implements NavigationRequestEvent, SessionEvent
 {
     public function __construct(public string $requestId) {}
 }

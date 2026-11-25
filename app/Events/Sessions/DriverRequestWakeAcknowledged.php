@@ -9,7 +9,7 @@ use App\Contracts\Drivers\DriverRequestEvent;
 /**
  * A wake was acknowledged up to the watermark given.
  */
-final readonly class DriverRequestWakeAcknowledged extends SessionEvent implements DriverRequestEvent
+final readonly class DriverRequestWakeAcknowledged implements DriverRequestEvent, SessionEvent
 {
     public function __construct(
         public string $requestId,

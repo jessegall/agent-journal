@@ -12,7 +12,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
  * One user's access to one inbox ended: it left or was removed. Its window reads the page again and hears nothing
  * more about that inbox.
  */
-final readonly class InboxAccessEnded extends WebEvent implements ShouldBroadcast
+final readonly class InboxAccessEnded implements ShouldBroadcast, WebEvent
 {
     public const string NAME = 'inbox.access-ended';
 

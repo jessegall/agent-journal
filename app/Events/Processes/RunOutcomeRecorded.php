@@ -10,7 +10,7 @@ use App\Enums\Runs\RunLogicalResult;
  * A run attempt's logical result was recorded, or a provisional one was corrected in place. It names the run, the
  * attempt and the result only.
  */
-final readonly class RunOutcomeRecorded extends ProcessEvent
+final readonly class RunOutcomeRecorded implements ProcessEvent
 {
     public function __construct(
         public string $runId,

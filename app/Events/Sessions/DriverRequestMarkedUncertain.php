@@ -9,7 +9,7 @@ use App\Contracts\Drivers\DriverRequestEvent;
 /**
  * Whether a driver request was carried out is no longer known.
  */
-final readonly class DriverRequestMarkedUncertain extends SessionEvent implements DriverRequestEvent
+final readonly class DriverRequestMarkedUncertain implements DriverRequestEvent, SessionEvent
 {
     public function __construct(public string $requestId) {}
 }

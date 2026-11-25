@@ -9,4 +9,7 @@ use App\Contracts\Events\Event;
 /**
  * A change to a project read: every event of it implements this, so a listener typed on it hears them all.
  */
-interface ProjectReadEvent extends Event {}
+interface ProjectReadEvent extends Event
+{
+    public string $readId { get; }
+}

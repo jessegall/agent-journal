@@ -10,7 +10,7 @@ use App\Contracts\Navigation\ClientUpdate;
 /**
  * An entry of an inbox's chat appeared or changed; the open windows of that inbox read it again.
  */
-final readonly class ChatMessageChanged extends ChatEvent implements ClientUpdate, InboxScopedFact
+final readonly class ChatMessageChanged implements ChatEvent, ClientUpdate, InboxScopedFact
 {
     public function __construct(public string $inboxId, public string $chatMessageId) {}
 

@@ -12,7 +12,7 @@ use Domain\Sharing\Support\ShareFact;
  * committed; a replay or a no-op raises
  * none. The owner's open sharing pages reread on it.
  */
-final readonly class ShareCreated extends ShareEvent implements ClientUpdate
+final readonly class ShareCreated implements ClientUpdate, ShareEvent
 {
     public function __construct(public ShareFact $share) {}
 }

@@ -10,7 +10,7 @@ use App\Support\ActorContext;
 /**
  * A plan was finished, and who finished it. Raised only once the change has committed.
  */
-final readonly class PlanFinished extends PlanEvent implements ClientUpdate
+final readonly class PlanFinished implements ClientUpdate, PlanEvent
 {
     public function __construct(
         public string $planId,

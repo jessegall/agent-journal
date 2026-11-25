@@ -9,7 +9,7 @@ use App\Contracts\Connections\DeviceGrantEvent;
 /**
  * A device grant began again with a new device code.
  */
-final readonly class DeviceGrantRestarted extends ConnectionEvent implements DeviceGrantEvent
+final readonly class DeviceGrantRestarted implements ConnectionEvent, DeviceGrantEvent
 {
     public function __construct(
         public string $grantId,

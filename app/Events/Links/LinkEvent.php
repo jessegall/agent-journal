@@ -7,6 +7,6 @@ namespace App\Events\Links;
 use App\Contracts\Events\Event;
 
 /**
- * A fact about links between records: every event of that subject extends it, so a listener typed on it hears them all.
+ * A fact about links between records: every event of that subject implements it, so a listener typed on it hears them all.
  */
-abstract readonly class LinkEvent implements Event {}
+interface LinkEvent extends Event {}

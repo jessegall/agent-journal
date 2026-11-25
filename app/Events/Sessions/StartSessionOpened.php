@@ -11,7 +11,7 @@ use App\Support\RecordIdentity;
  * A start opened its session; the work its owner named, when it named one, can then attach to the session.
  */
 #[TransactionListenerConsent]
-final readonly class StartSessionOpened extends SessionEvent
+final readonly class StartSessionOpened implements SessionEvent
 {
     public function __construct(
         public string $startId,

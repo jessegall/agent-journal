@@ -9,7 +9,7 @@ use App\Contracts\Accounts\ShownOnAccounts;
 /**
  * A saved account's cleanup moved on in its generation.
  */
-final readonly class AccountCleaned extends AccountEvent implements ShownOnAccounts
+final readonly class AccountCleaned implements AccountEvent, ShownOnAccounts
 {
     public function __construct(public string $driver, public string $accountId) {}
 

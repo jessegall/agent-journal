@@ -10,7 +10,7 @@ use App\Contracts\Navigation\ClientUpdate;
  * A task's start committed, so the pages that show the task read it again. It carries the task's id alone; the start
  * itself is TaskStarted, heard inside its transaction.
  */
-final readonly class TaskStartCommitted extends TaskEvent implements ClientUpdate
+final readonly class TaskStartCommitted implements ClientUpdate, TaskEvent
 {
     public function __construct(public string $taskId) {}
 }

@@ -9,7 +9,7 @@ use App\Contracts\Work\AgentFocusEvent;
 /**
  * An agent's focus moved to the record named.
  */
-final readonly class AgentFocusMoved extends SessionEvent implements AgentFocusEvent
+final readonly class AgentFocusMoved implements AgentFocusEvent, SessionEvent
 {
     public function __construct(
         public string $agentId,

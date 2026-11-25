@@ -9,7 +9,7 @@ use App\Contracts\Sessions\AgentRuntimeEvent;
 /**
  * An agent made a session its current runtime under a new generation, fencing every earlier one.
  */
-final readonly class AgentRuntimeAdopted extends SessionEvent implements AgentRuntimeEvent
+final readonly class AgentRuntimeAdopted implements AgentRuntimeEvent, SessionEvent
 {
     public function __construct(
         public string $agentId,

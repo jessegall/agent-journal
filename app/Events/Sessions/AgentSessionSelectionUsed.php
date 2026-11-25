@@ -9,7 +9,7 @@ use App\Contracts\Sessions\AgentSessionEvent;
 /**
  * A session took the driver selection of a request.
  */
-final readonly class AgentSessionSelectionUsed extends SessionEvent implements AgentSessionEvent
+final readonly class AgentSessionSelectionUsed implements AgentSessionEvent, SessionEvent
 {
     public function __construct(
         public string $sessionId,

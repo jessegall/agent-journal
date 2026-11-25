@@ -9,7 +9,7 @@ use App\Contracts\Connections\ProjectReadEvent;
 /**
  * A project read was answered with a folder's entries.
  */
-final readonly class ProjectReadAnsweredWithEntries extends ConnectionEvent implements ProjectReadEvent
+final readonly class ProjectReadAnsweredWithEntries implements ConnectionEvent, ProjectReadEvent
 {
     public function __construct(
         public string $readId,

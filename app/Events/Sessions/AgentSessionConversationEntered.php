@@ -9,7 +9,7 @@ use App\Contracts\Sessions\AgentSessionEvent;
 /**
  * A session entered its driver's conversation.
  */
-final readonly class AgentSessionConversationEntered extends SessionEvent implements AgentSessionEvent
+final readonly class AgentSessionConversationEntered implements AgentSessionEvent, SessionEvent
 {
     public function __construct(
         public string $sessionId,

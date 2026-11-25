@@ -8,12 +8,13 @@ use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
 use App\Values\StackTarget;
 use Domain\Sequences\Contracts\ChatLineSource;
+use Domain\Sequences\Contracts\SequenceRunEvent;
 use Domain\Sequences\Models\SequenceRun;
 
 /**
  * A sequence run started for an agent and session, raised inside the transaction that started it.
  */
-final readonly class SequenceStarted extends SequenceEvent implements ChatLineSource
+final readonly class SequenceStarted implements ChatLineSource, SequenceEvent, SequenceRunEvent
 {
     public function __construct(
         public string $runId,

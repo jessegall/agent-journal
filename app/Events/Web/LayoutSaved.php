@@ -7,7 +7,7 @@ namespace App\Events\Web;
 /**
  * A layout's name and shape were saved.
  */
-final readonly class LayoutSaved extends WebEvent
+final readonly class LayoutSaved implements WebEvent
 {
     public function __construct(
         public string $layoutId,

@@ -9,4 +9,7 @@ use App\Contracts\Events\Event;
 /**
  * A change to a part run: every event of it implements this, so a listener typed on it hears them all.
  */
-interface PartRunEvent extends Event {}
+interface PartRunEvent extends Event
+{
+    public string $partId { get; }
+}

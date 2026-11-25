@@ -9,4 +9,7 @@ use App\Contracts\Events\Event;
 /**
  * A change of the account a driver family starts with: selected or cleared.
  */
-interface ActiveAccountEvent extends Event {}
+interface ActiveAccountEvent extends Event
+{
+    public string $driver { get; }
+}

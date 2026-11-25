@@ -6,12 +6,13 @@ namespace Tests\Architecture\Support;
 
 use App\Contracts\Events\Event;
 use App\Support\DeclaredType;
+use App\Support\ReflectedProperty;
 use App\Support\ReflectedType;
 
 /**
- * Judges how events form groups: each extends the one base event of its domain, or of its subject in Core; every
- * group interface has events; events whose names share a stem share a group; a listener hears only what its type
- * names.
+ * Judges how events form groups: each implements the one base event of its domain, or of its subject in Core; every
+ * group interface has events and declares what they all carry; events whose names share a stem share a group; a
+ * listener hears only what its type names.
  */
 final readonly class EventGroups
 {
@@ -30,18 +31,22 @@ final readonly class EventGroups
         $faults = [];
 
         foreach ($this->events as $event) {
-            $base = $this->baseOf($event);
+            $bases = $this->basesOf($event);
 
-            if ($base === null) {
-                $faults[] = "{$event} extends no base event";
+            if (count($bases) !== 1) {
+                $faults[] = $bases === []
+                    ? "{$event} implements no base event"
+                    : "{$event} implements several base events: ".implode(', ', $bases);
 
                 continue;
             }
 
+            $base = $bases[0];
+
             $own = ReflectedType::of($event)->namespaceName();
 
             if (ReflectedType::of($base)->namespaceName() !== $own) {
-                $faults[] = "{$event} extends {$base}, the base of another domain or subject";
+                $faults[] = "{$event} implements {$base}, the base of another domain or subject";
             }
         }
 
@@ -113,6 +118,37 @@ final readonly class EventGroups
     }
 
     /**
+     * A property every event of a group declares with the same type that the group's interface leaves out, so a
+     * listener typed on the group cannot read what all its events carry.
+     *
+     * @return list<string>
+     */
+    public function sharedPropertyFaults(): array
+    {
+        $faults = [];
+        $groups = array_values(array_unique([...array_filter(array_map($this->baseOf(...), $this->events)), ...$this->groups]));
+
+        foreach ($groups as $group) {
+            $members = array_values(array_filter(
+                $this->events,
+                fn (string $event) => in_array($group, ReflectedType::of($event)->typeNames(), true),
+            ));
+
+            if (count($members) < 2) {
+                continue;
+            }
+
+            $shared = array_intersect(...array_map(self::propertiesOf(...), $members));
+
+            foreach (array_diff($shared, self::propertiesOf($group)) as $property) {
+                $faults[] = "{$group}: every event of it has {$property}, so the group declares it";
+            }
+        }
+
+        return $faults;
+    }
+
+    /**
      * A listener wired to an event its type does not name hears it through a list kept by hand.
      *
      * @param  array<string, list<string>>  $wiring  each event with its listeners written as Class@method
@@ -170,20 +206,59 @@ final readonly class EventGroups
     }
 
     /**
-     * The abstract event class the event extends directly.
+     * The base event the event implements, when it implements one.
      *
      * @param  class-string<Event>  $event
-     * @return class-string<Event>|null
+     * @return class-string|null
      */
     private function baseOf(string $event): string|null
     {
-        $parent = ReflectedType::of($event)->parent();
+        return $this->basesOf($event)[0] ?? null;
+    }
 
-        if ($parent->isEmpty() || ! $parent->get()->isAbstract() || ! $parent->get()->isSubclassOf(Event::class)) {
-            return null;
-        }
+    /**
+     * The base events the event implements: the event interfaces declared in an Events folder, a domain's own or a
+     * subject's of Core.
+     *
+     * @param  class-string<Event>  $event
+     * @return list<class-string>
+     */
+    private function basesOf(string $event): array
+    {
+        return array_values(array_filter(
+            ReflectedType::of($event)->typeNames(),
+            fn (string $type) => $type !== Event::class
+                && ReflectedType::of($type)->isInterface()
+                && ReflectedType::of($type)->isSubclassOf(Event::class)
+                && self::isEventsNamespace(ReflectedType::of($type)->namespaceName()),
+        ));
+    }
 
-        return $parent->get()->name();
+    /**
+     * Each public instance property of the type, written as its name and declared type.
+     *
+     * @param  class-string  $type
+     * @return list<string>
+     */
+    private static function propertiesOf(string $type): array
+    {
+        $public = array_filter(
+            ReflectedType::of($type)->properties(),
+            fn (ReflectedProperty $property) => $property->isPublic() && ! $property->isStatic(),
+        );
+
+        return array_values(array_map(
+            fn (ReflectedProperty $property) => '$'.$property->name().' ('
+                .$property->type()->map(fn (DeclaredType $declared) => $declared->text)->getOrElse('untyped').')',
+            $public,
+        ));
+    }
+
+    private static function isEventsNamespace(string $namespace): bool
+    {
+        $segments = explode('\\', $namespace);
+
+        return in_array('Events', $segments, true) && ! in_array('Contracts', $segments, true);
     }
 
     /**

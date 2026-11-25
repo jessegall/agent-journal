@@ -9,7 +9,7 @@ use App\Contracts\Sessions\StartIdentityEvent;
 /**
  * A start's identity became uncertain.
  */
-final readonly class StartIdentityBecameUncertain extends SessionEvent implements StartIdentityEvent
+final readonly class StartIdentityBecameUncertain implements SessionEvent, StartIdentityEvent
 {
     public function __construct(
         public string $startId,

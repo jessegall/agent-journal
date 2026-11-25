@@ -12,7 +12,7 @@ use Domain\Sharing\Support\ShareFact;
  * raises
  * none. The owner's open sharing pages reread on it.
  */
-final readonly class ShareActivated extends ShareEvent implements ClientUpdate
+final readonly class ShareActivated implements ClientUpdate, ShareEvent
 {
     public function __construct(public ShareFact $share) {}
 }

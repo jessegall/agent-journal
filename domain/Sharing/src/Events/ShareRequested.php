@@ -11,7 +11,7 @@ use Domain\Sharing\Support\ShareFact;
  * no-op raises
  * none.
  */
-final readonly class ShareRequested extends ShareEvent
+final readonly class ShareRequested implements ShareEvent
 {
     public function __construct(public ShareFact $share) {}
 }

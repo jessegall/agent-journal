@@ -10,7 +10,7 @@ use App\Enums\Projects\ProjectReadFailure;
 /**
  * A project read failed.
  */
-final readonly class ProjectReadFailed extends ConnectionEvent implements ProjectReadEvent
+final readonly class ProjectReadFailed implements ConnectionEvent, ProjectReadEvent
 {
     public function __construct(
         public string $readId,

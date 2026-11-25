@@ -9,7 +9,7 @@ use App\Contracts\Asks\AskHopEvent;
 /**
  * One step of an ask kept how its holder was woken.
  */
-final readonly class AskHopWakeRecorded extends AskEvent implements AskHopEvent
+final readonly class AskHopWakeRecorded implements AskEvent, AskHopEvent
 {
     public function __construct(public string $askId, public string $hopId, public string $wake) {}
 }

@@ -9,7 +9,7 @@ use App\Contracts\Sessions\StartIdentityEvent;
 /**
  * A start prepared the identity its driver session will carry.
  */
-final readonly class StartIdentityPrepared extends SessionEvent implements StartIdentityEvent
+final readonly class StartIdentityPrepared implements SessionEvent, StartIdentityEvent
 {
     public function __construct(
         public string $startId,

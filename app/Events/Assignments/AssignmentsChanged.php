@@ -15,7 +15,7 @@ use DateTimeImmutable;
  * record whose holder changed. A command that changed nothing raises none. Delivery is not guaranteed and nothing is
  * kept to replay it.
  */
-final readonly class AssignmentsChanged extends AssignmentEvent implements ClientUpdate
+final readonly class AssignmentsChanged implements AssignmentEvent, ClientUpdate
 {
     /**
      * @param  list<AssignmentChange>  $changes

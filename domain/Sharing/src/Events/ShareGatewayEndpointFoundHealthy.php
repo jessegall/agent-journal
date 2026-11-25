@@ -9,7 +9,7 @@ use Domain\Sharing\Contracts\ShareGatewayEvent;
 /**
  * A share gateway endpoint was found healthy.
  */
-final readonly class ShareGatewayEndpointFoundHealthy extends ShareEvent implements ShareGatewayEvent
+final readonly class ShareGatewayEndpointFoundHealthy implements ShareEvent, ShareGatewayEvent
 {
     public function __construct(
         public string $endpointId,

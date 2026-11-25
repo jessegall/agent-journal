@@ -9,7 +9,7 @@ use App\Contracts\Sessions\SessionTokenEvent;
 /**
  * A start token was revoked.
  */
-final readonly class SessionTokenRevoked extends SessionEvent implements SessionTokenEvent
+final readonly class SessionTokenRevoked implements SessionEvent, SessionTokenEvent
 {
     public function __construct(
         public string $tokenId,

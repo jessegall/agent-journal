@@ -7,6 +7,9 @@ namespace Domain\Rules\Events;
 use App\Contracts\Events\Event;
 
 /**
- * A fact about project rules: every event of that subject extends it, so a listener typed on it hears them all.
+ * A fact about project rules: every event of that subject implements it, so a listener typed on it hears them all.
  */
-abstract readonly class RuleEvent implements Event {}
+interface RuleEvent extends Event
+{
+    public string $ruleId { get; }
+}

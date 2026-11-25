@@ -9,7 +9,7 @@ use App\Contracts\Drivers\DriverRequestEvent;
 /**
  * A driver request let go of its payload.
  */
-final readonly class DriverRequestPayloadForgotten extends SessionEvent implements DriverRequestEvent
+final readonly class DriverRequestPayloadForgotten implements DriverRequestEvent, SessionEvent
 {
     public function __construct(public string $requestId) {}
 }

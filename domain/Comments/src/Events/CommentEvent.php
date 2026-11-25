@@ -7,6 +7,9 @@ namespace Domain\Comments\Events;
 use App\Contracts\Events\Event;
 
 /**
- * A fact about comments: every event of that subject extends it, so a listener typed on it hears them all.
+ * A fact about comments: every event of that subject implements it, so a listener typed on it hears them all.
  */
-abstract readonly class CommentEvent implements Event {}
+interface CommentEvent extends Event
+{
+    public string $commentId { get; }
+}

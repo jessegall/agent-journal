@@ -9,7 +9,7 @@ use App\Contracts\Work\AgentStackEvent;
 /**
  * An agent's stack was closed.
  */
-final readonly class AgentStackClosed extends EngineEvent implements AgentStackEvent
+final readonly class AgentStackClosed implements AgentStackEvent, EngineEvent
 {
     public function __construct(
         public string $stackId,

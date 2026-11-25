@@ -9,7 +9,7 @@ use App\Contracts\Drivers\NavigationRequestEvent;
 /**
  * A navigation request was abandoned for the reason given.
  */
-final readonly class NavigationRequestAbandoned extends SessionEvent implements NavigationRequestEvent
+final readonly class NavigationRequestAbandoned implements NavigationRequestEvent, SessionEvent
 {
     public function __construct(public string $requestId) {}
 }

@@ -12,7 +12,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
  * Tells each allowed user's browser that what the pages show changed, so it reloads what it shows. It carries no
  * data: the browser reads the change through its own authorized request.
  */
-final readonly class PageChanged extends WebEvent implements ShouldBroadcast
+final readonly class PageChanged implements ShouldBroadcast, WebEvent
 {
     public const string NAME = 'page.changed';
 

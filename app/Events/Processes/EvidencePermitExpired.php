@@ -9,7 +9,7 @@ use App\Contracts\Processes\EvidencePermitEvent;
 /**
  * An evidence permit expired unused.
  */
-final readonly class EvidencePermitExpired extends ProcessEvent implements EvidencePermitEvent
+final readonly class EvidencePermitExpired implements EvidencePermitEvent, ProcessEvent
 {
     public function __construct(
         public string $permitId,

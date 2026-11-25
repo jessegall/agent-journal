@@ -15,7 +15,7 @@ use Domain\Tasks\Enums\TaskStatus;
  * listeners are named as text so Tasks does not depend on Plans. It names the id of its entry in the task's history.
  */
 #[TransactionListenerConsent]
-final readonly class TaskStarted extends TaskEvent implements TaskStateEvent
+final readonly class TaskStarted implements TaskEvent, TaskStateEvent
 {
     public function __construct(
         public string $taskId,

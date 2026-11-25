@@ -9,7 +9,7 @@ use App\Contracts\Sessions\AgentRuntimeEvent;
 /**
  * A runtime's held start grant was claimed and cleared.
  */
-final readonly class AgentRuntimeStartGrantClaimed extends SessionEvent implements AgentRuntimeEvent
+final readonly class AgentRuntimeStartGrantClaimed implements AgentRuntimeEvent, SessionEvent
 {
     public function __construct(
         public string $runtimeId,

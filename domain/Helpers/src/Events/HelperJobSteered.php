@@ -9,7 +9,7 @@ use Domain\Helpers\Contracts\HelperJobEvent;
 /**
  * A helper job was given steering.
  */
-final readonly class HelperJobSteered extends HelperEvent implements HelperJobEvent
+final readonly class HelperJobSteered implements HelperEvent, HelperJobEvent
 {
     public function __construct(
         public string $jobId,

@@ -9,7 +9,7 @@ use App\Contracts\Connections\DeviceGrantEvent;
 /**
  * A device grant was revoked.
  */
-final readonly class DeviceGrantRevoked extends ConnectionEvent implements DeviceGrantEvent
+final readonly class DeviceGrantRevoked implements ConnectionEvent, DeviceGrantEvent
 {
     public function __construct(
         public string $grantId,

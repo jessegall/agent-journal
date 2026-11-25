@@ -7,7 +7,7 @@ namespace App\Events\Web;
 /**
  * A layout was deleted by its user.
  */
-final readonly class LayoutRemoved extends WebEvent
+final readonly class LayoutRemoved implements WebEvent
 {
     public function __construct(
         public string $layoutId,

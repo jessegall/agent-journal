@@ -9,7 +9,7 @@ use App\Contracts\Processes\RuleProposalEvent;
 /**
  * A command rule proposal was adopted.
  */
-final readonly class RuleProposalAdopted extends ProcessEvent implements RuleProposalEvent
+final readonly class RuleProposalAdopted implements ProcessEvent, RuleProposalEvent
 {
     public function __construct(
         public string $proposalId,

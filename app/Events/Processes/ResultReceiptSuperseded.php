@@ -7,7 +7,7 @@ namespace App\Events\Processes;
 /**
  * A run's result receipt was replaced by a newer one.
  */
-final readonly class ResultReceiptSuperseded extends ProcessEvent
+final readonly class ResultReceiptSuperseded implements ProcessEvent
 {
     public function __construct(
         public string $receiptId,

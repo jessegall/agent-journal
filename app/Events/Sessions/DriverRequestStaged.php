@@ -9,7 +9,7 @@ use App\Contracts\Drivers\DriverRequestEvent;
 /**
  * A driver request was staged for its host.
  */
-final readonly class DriverRequestStaged extends SessionEvent implements DriverRequestEvent
+final readonly class DriverRequestStaged implements DriverRequestEvent, SessionEvent
 {
     public function __construct(
         public string $requestId,

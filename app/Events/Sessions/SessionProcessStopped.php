@@ -9,7 +9,7 @@ use App\Contracts\Sessions\SessionProcessEvent;
 /**
  * A process start was seen to stop.
  */
-final readonly class SessionProcessStopped extends SessionEvent implements SessionProcessEvent
+final readonly class SessionProcessStopped implements SessionEvent, SessionProcessEvent
 {
     public function __construct(public string $startId) {}
 }

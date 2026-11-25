@@ -10,7 +10,7 @@ use DateTimeImmutable;
 /**
  * The owner assigned a binding with no environment to an environment of its project.
  */
-final readonly class ProjectBindingEnvironmentAssigned extends ConnectionEvent implements ProjectBindingEvent
+final readonly class ProjectBindingEnvironmentAssigned implements ConnectionEvent, ProjectBindingEvent
 {
     public function __construct(
         public string $bindingId,

@@ -9,7 +9,7 @@ use App\Contracts\Sessions\ClosingWordsEvent;
 /**
  * An agent stopped with closing words and was asked whether the user should see them.
  */
-final readonly class ClosingWordsOffered extends SessionEvent implements ClosingWordsEvent
+final readonly class ClosingWordsOffered implements ClosingWordsEvent, SessionEvent
 {
     public function __construct(public string $turnId) {}
 }

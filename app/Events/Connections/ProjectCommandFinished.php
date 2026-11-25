@@ -9,7 +9,7 @@ use App\Contracts\Connections\ProjectCommandEvent;
 /**
  * A project command run finished with its exit code.
  */
-final readonly class ProjectCommandFinished extends ConnectionEvent implements ProjectCommandEvent
+final readonly class ProjectCommandFinished implements ConnectionEvent, ProjectCommandEvent
 {
     public function __construct(
         public string $runId,

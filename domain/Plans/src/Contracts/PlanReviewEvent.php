@@ -9,4 +9,9 @@ use App\Contracts\Events\Event;
 /**
  * A step of a plan review: requested, decided or withdrawn.
  */
-interface PlanReviewEvent extends Event {}
+interface PlanReviewEvent extends Event
+{
+    public string $planId { get; }
+
+    public string $editionId { get; }
+}

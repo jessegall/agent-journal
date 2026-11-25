@@ -9,7 +9,7 @@ use App\Support\ActorIdentity;
 /**
  * An actor was detached from an inbox.
  */
-final readonly class InboxLeft extends InboxEvent
+final readonly class InboxLeft implements InboxEvent
 {
     public function __construct(public string $inboxId, public ActorIdentity $actor) {}
 }

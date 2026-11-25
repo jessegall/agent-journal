@@ -9,7 +9,7 @@ use App\Contracts\Processes\PartRunEvent;
 /**
  * A part of a run finished draining its output.
  */
-final readonly class PartRunDrained extends ProcessEvent implements PartRunEvent
+final readonly class PartRunDrained implements PartRunEvent, ProcessEvent
 {
     public function __construct(
         public string $partId,

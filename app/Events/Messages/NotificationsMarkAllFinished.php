@@ -9,7 +9,7 @@ use App\Contracts\Notifications\NotificationsMarkAllEvent;
 /**
  * Marking every notification read finished.
  */
-final readonly class NotificationsMarkAllFinished extends MessageEvent implements NotificationsMarkAllEvent
+final readonly class NotificationsMarkAllFinished implements MessageEvent, NotificationsMarkAllEvent
 {
     public function __construct(public string $scopeId) {}
 }

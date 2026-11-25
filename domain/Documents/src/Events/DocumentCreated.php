@@ -10,7 +10,7 @@ use App\Support\ActorContext;
 /**
  * A document was published with its first revision. It carries ids and the number, never the text.
  */
-final readonly class DocumentCreated extends DocumentEvent implements ClientUpdate
+final readonly class DocumentCreated implements ClientUpdate, DocumentEvent
 {
     public function __construct(
         public string $documentId,

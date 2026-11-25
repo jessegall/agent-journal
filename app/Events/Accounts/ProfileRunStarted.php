@@ -9,7 +9,7 @@ use App\Contracts\Sessions\ProfileRunEvent;
 /**
  * A profile's script run started on the process generation given.
  */
-final readonly class ProfileRunStarted extends AccountEvent implements ProfileRunEvent
+final readonly class ProfileRunStarted implements AccountEvent, ProfileRunEvent
 {
     public function __construct(
         public string $runId,
