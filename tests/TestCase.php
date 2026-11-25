@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Bus\GuardedCommandBus;
 use App\Contracts\Files\Files;
 use App\Enums\Files\Place;
 use App\Models\Projects\Project;
 use App\Support\Domain;
 use App\Support\DomainRegistry;
+use App\Support\LaravelCommandBus;
 use App\Support\OuterTransactionOwner;
 use App\Support\OutputRecorder;
 use App\Support\OutsideCommandAllowance;
@@ -24,10 +27,15 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Testing\TestResponse;
 use Illuminate\Translation\Translator;
 use Laravel\Fortify\Features;
 use PDO;
+use Symfony\Component\HttpFoundation\Response;
+use Tests\Support\Bus\RefusingCommandBus;
+use Tests\Support\Exceptions\BusUsedInUnitTest;
 use Tests\Support\Exceptions\DatabaseUsedWithoutHookDatabase;
+use Tests\Support\Exceptions\HttpUsedInUnitTest;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Seeding\TestJournal;
 use Tests\Support\TestProjects;
@@ -184,7 +192,32 @@ abstract class TestCase extends BaseTestCase
             $this->refuseQueries($this->app->make(DatabaseManager::class));
         }
 
+        if (self::isUnitTest()) {
+            $this->refuseBus();
+        }
+
         $this->journal = new TestJournal($this->app, $this);
+    }
+
+    /**
+     * Sends the request into the application; a unit test is refused, since a route test is where a request belongs.
+     *
+     * @param  string  $method
+     * @param  string  $uri
+     * @param  array<string, mixed>  $parameters
+     * @param  array<string, string>  $cookies
+     * @param  array<string, mixed>  $files
+     * @param  array<string, mixed>  $server
+     * @param  string|null  $content
+     * @return TestResponse<Response>
+     */
+    public function call($method, $uri, $parameters = [], $cookies = [], $files = [], $server = [], $content = null)
+    {
+        if (self::isUnitTest()) {
+            throw HttpUsedInUnitTest::by(static::class);
+        }
+
+        return parent::call($method, $uri, $parameters, $cookies, $files, $server, $content);
     }
 
     /**
@@ -200,6 +233,25 @@ abstract class TestCase extends BaseTestCase
         if (! Features::enabled($feature)) {
             $this->markTestSkipped($message ?? "Fortify feature [{$feature}] is not enabled.");
         }
+    }
+
+    /**
+     * Whether the class is a unit test, of tests/Unit or a domain's tests/Unit.
+     */
+    private static function isUnitTest(): bool
+    {
+        return preg_match('/^(Tests|Domain\\\\\w+\\\\Tests)\\\\Unit\\\\/', static::class) === 1;
+    }
+
+    /**
+     * Ends every command a unit test would run on the bus with a refusal, under each name the bus is reached by.
+     */
+    private function refuseBus(): void
+    {
+        $refusing = new RefusingCommandBus(static::class);
+        $this->app->instance(CommandBus::class, $refusing);
+        $this->app->instance(GuardedCommandBus::class, $refusing);
+        $this->app->bind(LaravelCommandBus::class, fn () => throw BusUsedInUnitTest::by(static::class));
     }
 
     /**

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Support;
+namespace Tests\Architecture;
 
 use Illuminate\Database\DatabaseManager;
 use PDO;

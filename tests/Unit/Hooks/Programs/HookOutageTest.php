@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Hooks\Drivers;
+namespace Tests\Unit\Hooks\Programs;
 
 use App\Enums\Hooks\CallFailure;
 use App\Values\AgentText;

@@ -24,7 +24,6 @@ use App\Values\SkillContext;
 use App\Values\StartProfile;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Profiles\TestStartPolicies;
-use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -35,8 +34,6 @@ use Tests\TestCase;
  */
 final class ConditionTreeTest extends TestCase
 {
-    use RefreshHookDatabase;
-
     private const string SECTION_6_JSON = '{"type":"all","version":1,"children":[{"type":"profiles","version":1,"keys":["journal-reviewer"]},{"type":"drivers","version":1,"keys":["codex"]}]}';
 
     public function test_the_php_condition_and_the_section_6_json_agree_for_the_same_context(): void
