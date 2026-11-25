@@ -174,6 +174,17 @@ final class Message extends Model implements AuthoredModel, EventSource, Readabl
     }
 
     /**
+     * Messages stored in one inbox.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inInbox(Builder $query, string $inboxId): void
+    {
+        $query->where('inbox_id', $inboxId);
+    }
+
+    /**
      * Messages stored in an inbox the participant is attached to now, sent at or after it joined.
      *
      * @param  Builder<self>  $query

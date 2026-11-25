@@ -10,6 +10,7 @@ use App\Enums\SessionTransferType;
 use App\Events\Inboxes\InboxLeft;
 use App\Events\Messages\MessageRead;
 use App\Events\Messages\MessageSent;
+use App\Models\Agents\Agent;
 use App\Models\Messages\Message;
 use App\Support\ActorIdentity;
 use App\Support\Decisions\Decision;
@@ -65,6 +66,18 @@ final class ReadingMessageState extends AgentState
     public function instruction(): Option
     {
         return new Some($this->mustReadNow() ? $this->readNowText() : $this->unreadText());
+    }
+
+    // ----------[ Lifecycle ]----------
+
+    /**
+     * The state starts with every message of the inbox the agent has not read yet, oldest first.
+     */
+    public function onEnter(): void
+    {
+        $agent = Agent::query()->findOrFail($this->agentId);
+
+        $this->unreadIds = Message::query()->inInbox($this->inboxId)->unreadBy($agent)->pluck('id')->all();
     }
 
     // ----------[ Hooks ]----------

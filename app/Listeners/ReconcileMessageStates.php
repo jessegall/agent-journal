@@ -31,17 +31,12 @@ final readonly class ReconcileMessageStates implements Listener
         $model = Agent::query()->findOrFail($event->agentId);
         $agent = ActorIdentity::of($model);
 
-        $unread = Message::query()->unreadBy($model)->limit(self::MESSAGE_LIMIT)->get([
-            'id',
-            'inbox_id',
-        ]);
+        $inboxIds = Message::query()->unreadBy($model)->limit(self::MESSAGE_LIMIT)->pluck('inbox_id')->unique();
 
-        foreach ($unread->groupBy('inbox_id') as $inboxId => $messages) {
-            $this->stacks->pushFor($agent, ReadingMessageStateReference::forInbox(
-                (string) $inboxId,
-                $agent->id,
-                array_values($messages->modelKeys()),
-            ));
+        foreach ($inboxIds as $inboxId) {
+            $reading = ReadingMessageStateReference::forInbox((string) $inboxId, $agent->id);
+
+            $this->stacks->pushFor($agent, $reading);
         }
 
         $unanswered = Message::query()->unansweredBy($model)->limit(self::MESSAGE_LIMIT)->get();
