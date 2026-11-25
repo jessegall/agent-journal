@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Commands;
 
-use App\Contracts\Processes\RunClaims;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
-use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Exceptions\TaskRestartRefused;
 use Domain\Tasks\Exceptions\TaskRunTaken;
-use Domain\Tasks\Models\Task;
-use Domain\Tasks\Models\TaskRun;
+use Domain\Tasks\Tests\Fixtures\StartNamedTask;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
 
@@ -23,49 +21,61 @@ final class StartTaskTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['tasks', 'task_runs', 'claim_authorizations'];
+    /**
+     * The bus commits these commands for real, so these tables are emptied around each test.
+     */
+    private const array TABLES = [
+        'tasks',
+        'task_runs',
+        'claim_authorizations',
+        'assignments',
+        'agent_stacks',
+        'command_receipts',
+    ];
 
-    private Task $task;
+    private const string START_KEY = '01JD8X0G9M3QZ6V4K2STARTKEY1';
+
+    private TaskFixtures $tasks;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->journal->owner()->agent('First')->agent('Second', 'read-only-helper');
-        $this->task = Task::create('Owned work', 'Build it.', $this->journal->ownerUser());
+        $this->tasks = $this->journal->fixtures(TaskFixtures::class)->task('Owned work', 'Build it.');
     }
 
     public function test_a_start_opens_one_run_claimed_by_the_agent_and_a_keyed_retry_gets_it(): void
     {
-        $this->journal->actAs('First');
+        $start = new StartTaskCommand($this->tasks->taskCalled('Owned work')->id);
 
-        $run = $this->journal->run(new StartTaskCommand($this->task->id), '01JD8X0G9M3QZ6V4K2STARTKEY1');
-        $retry = $this->journal->run(new StartTaskCommand($this->task->id), '01JD8X0G9M3QZ6V4K2STARTKEY1');
+        $run = $this->journal->actAs('First')->run($start, self::START_KEY);
+        $retry = $this->journal->run($start, self::START_KEY);
 
-        $this->assertSame([1, 1, TaskStatus::Started], [$run, $retry, $this->task->refresh()->status]);
-        $taskRun = TaskRun::query()->where('task_id', $this->task->id)->sole();
-        $holder = $this->app->make(RunClaims::class)->holderOf($taskRun->assignmentIdentity())->get();
-        $this->assertSame($this->journal->agentCalled('First')->id, $holder->id);
+        $this->assertSame([1, 1], [$run, $retry]);
+        $this->tasks->assertStarted('Owned work', by: 'First')->assertRunCount('Owned work', 1);
     }
 
     public function test_another_agent_is_refused_while_the_task_runs(): void
     {
-        $this->journal->actAs('First')->run(new StartTaskCommand($this->task->id));
+        $work = $this->journal->startScenario(new StartNamedTask(owner: 'Owner', worker: 'First', task: 'Draft'));
 
-        $this->assertThrows(
-            fn () => $this->journal->actAs('Second')->run(new StartTaskCommand($this->task->id)),
+        $this->journal->actAs('Second')->assertRefused(
             TaskRunTaken::class,
+            fn () => $this->journal->run(new StartTaskCommand($work->task->id)),
         );
+
+        $this->tasks->assertStarted('Draft', by: 'First')->assertRunCount('Draft', 1);
     }
 
     public function test_a_task_that_ended_is_not_started_again(): void
     {
-        $run = $this->journal->actAs('First')->run(new StartTaskCommand($this->task->id));
-        $this->journal->run(new FinishTaskCommand($this->task->id, $run, 'Done.'));
+        $work = $this->journal->startScenario(new StartNamedTask(owner: 'Owner', worker: 'First', task: 'Draft'));
+        $this->journal->run(new FinishTaskCommand($work->task->id, $work->run->run_number, 'Done.'));
 
-        $this->assertThrows(
-            fn () => $this->journal->run(new StartTaskCommand($this->task->id)),
+        $this->journal->assertRefused(
             TaskRestartRefused::class,
+            fn () => $this->journal->run(new StartTaskCommand($work->task->id)),
         );
     }
 }
