@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Starts;
 
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -66,6 +67,7 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use OrdersById;
     use Linkable;
     use RaisesEvents;
 
@@ -271,8 +273,8 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
     {
         return self::supervised()
             ->unresolved()
-            ->where('session_id', $sessionId)
-            ->orderByDesc('created_at')
+            ->ofSessions([$sessionId])
+            ->newestFirst()
             ->lockForUpdate()
             ->first();
     }
@@ -282,7 +284,7 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
      */
     public static function currentOf(string $sessionId): self|null
     {
-        return self::supervised()->unresolved()->where('session_id', $sessionId)->orderByDesc('created_at')->first();
+        return self::supervised()->unresolved()->ofSessions([$sessionId])->newestFirst()->first();
     }
 
     /**
@@ -290,7 +292,7 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
      */
     public static function latestOfSession(string $sessionId): self|null
     {
-        return self::supervised()->where('session_id', $sessionId)->orderByDesc('created_at')->first();
+        return self::supervised()->ofSessions([$sessionId])->newestFirst()->first();
     }
 
     /**
@@ -303,14 +305,8 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
     public static function latestIdsOfSessions(array $ids): array
     {
         return self::supervised()
-            ->whereIn('session_id', $ids)
-            ->whereNotExists(fn (QueryBuilder $newer) => $newer->from('process_starts', 'newer')
-                ->whereColumn('newer.session_id', 'process_starts.session_id')
-                ->where(fn (QueryBuilder $later) => $later
-                    ->whereColumn('newer.created_at', '>', 'process_starts.created_at')
-                    ->orWhere(fn (QueryBuilder $sameTime) => $sameTime
-                        ->whereColumn('newer.created_at', 'process_starts.created_at')
-                        ->whereColumn('newer.id', '>', 'process_starts.id'))))
+            ->ofSessions($ids)
+            ->newestOfItsSession()
             ->readExactly(count($ids))
             ->pluck('id', 'session_id')
             ->all();
@@ -326,19 +322,8 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
     public static function refusalsOf(array $agentIds): array
     {
         $latest = self::supervised()
-            ->whereIn('agent_id', $agentIds)
-            ->whereNotExists(fn (QueryBuilder $newer) => $newer->from('process_starts', 'newer')
-                ->whereColumn('newer.agent_id', 'process_starts.agent_id')
-                ->where(fn (QueryBuilder $later) => $later->whereColumn(
-                    'newer.created_at',
-                    '>',
-                    'process_starts.created_at',
-                )
-                    ->orWhere(fn (QueryBuilder $sameTime) => $sameTime->whereColumn(
-                        'newer.created_at',
-                        'process_starts.created_at',
-                    )
-                        ->whereColumn('newer.id', '>', 'process_starts.id'))))
+            ->ofAgents($agentIds)
+            ->newestOfItsAgent()
             ->readExactly(count($agentIds))
             ->get();
 
@@ -355,8 +340,8 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
     public static function claimedBy(string $hostId, string $startKey): self
     {
         $start = self::supervised()
-            ->where('host_id', $hostId)
-            ->where('start_key', $startKey)
+            ->onHost($hostId)
+            ->underStartKey($startKey)
             ->lockForUpdate()
             ->first();
         self::assertClaimed($start, $startKey);
@@ -372,9 +357,9 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
     public static function unresolvedKeysOf(string $hostId): array
     {
         $keys = self::supervised()
-            ->where('host_id', $hostId)
+            ->onHost($hostId)
             ->unresolved()
-            ->orderBy('created_at')
+            ->oldestFirst()
             ->readAll('a host reconciles every start it may still run')
             ->pluck('start_key');
 
@@ -399,7 +384,7 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
         $sessionIds = self::supervised()
             ->onAccount($account)
             ->unresolved()
-            ->orderBy('created_at')
+            ->oldestFirst()
             ->readAll('every start that may still use a held account must end before its sign-in changes')
             ->pluck('session_id');
 
@@ -414,9 +399,9 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
     public static function unresolvedSessionIdsOn(string $hostId): array
     {
         $sessionIds = self::supervised()
-            ->where('host_id', $hostId)
+            ->onHost($hostId)
             ->unresolved()
-            ->orderBy('created_at')
+            ->oldestFirst()
             ->readAll('a host runs the stop conditions of every session it may still run')
             ->pluck('session_id');
 
@@ -442,5 +427,85 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
     {
         $states = array_map(fn (ProcessStartState $state) => $state->value, ProcessStartState::unresolved());
         $query->whereIn('state', $states);
+    }
+
+    /**
+     * The starts of the sessions.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $sessionIds
+     */
+    #[Scope]
+    protected function ofSessions(Builder $query, array $sessionIds): void
+    {
+        $query->whereIn('session_id', $sessionIds);
+    }
+
+    /**
+     * The starts of the agents.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $agentIds
+     */
+    #[Scope]
+    protected function ofAgents(Builder $query, array $agentIds): void
+    {
+        $query->whereIn('agent_id', $agentIds);
+    }
+
+    /**
+     * The starts no newer start of the same session follows.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function newestOfItsSession(Builder $query): void
+    {
+        $query->whereNotExists(fn (QueryBuilder $newer) => $newer->from('process_starts', 'newer')
+            ->whereColumn('newer.session_id', 'process_starts.session_id')
+            ->where(fn (QueryBuilder $later) => $later
+                ->whereColumn('newer.created_at', '>', 'process_starts.created_at')
+                ->orWhere(fn (QueryBuilder $sameTime) => $sameTime
+                    ->whereColumn('newer.created_at', 'process_starts.created_at')
+                    ->whereColumn('newer.id', '>', 'process_starts.id'))));
+    }
+
+    /**
+     * The starts no newer start of the same agent follows.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function newestOfItsAgent(Builder $query): void
+    {
+        $query->whereNotExists(fn (QueryBuilder $newer) => $newer->from('process_starts', 'newer')
+            ->whereColumn('newer.agent_id', 'process_starts.agent_id')
+            ->where(fn (QueryBuilder $later) => $later
+                ->whereColumn('newer.created_at', '>', 'process_starts.created_at')
+                ->orWhere(fn (QueryBuilder $sameTime) => $sameTime
+                    ->whereColumn('newer.created_at', 'process_starts.created_at')
+                    ->whereColumn('newer.id', '>', 'process_starts.id'))));
+    }
+
+    /**
+     * The starts on the host.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function onHost(Builder $query, string $hostId): void
+    {
+        $query->where('host_id', $hostId);
+    }
+
+    /**
+     * The start of that start key.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function underStartKey(Builder $query, string $startKey): void
+    {
+        $query->where('start_key', $startKey);
     }
 }
