@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import type { NavigationCountsData, NavigationData } from '@/types/generated';
+import { useAppContext } from '@/framework/appContext';
 import SidebarRow from './SidebarRow.vue';
 
 /**
@@ -11,17 +10,14 @@ import SidebarRow from './SidebarRow.vue';
  */
 defineProps<{ isMini: boolean }>();
 
-// The navigation comes with every signed-in page, the only pages with a sidebar; its counts follow after the page.
-const page = usePage<{
-    navigation: NavigationData;
-    navigationCounts?: NavigationCountsData;
-}>();
+// The navigation comes with every signed-in page, the only pages with a sidebar; its counts follow after the page, and a
+// count not there yet is still loading.
+const { navigation, navigationCounts } = useAppContext();
 
-const navigation = computed(() => page.props.navigation);
-const counts = computed(() => page.props.navigationCounts?.counts ?? {});
-const currentKey = computed(() => navigation.value.current.at(-1) ?? null);
+const counts = computed(() => navigationCounts.value?.counts ?? {});
+const currentKey = computed(() => navigation.value?.current.at(-1) ?? null);
 // The items above the foot in the server's order, one plain list as the design draws it.
-const sidebarItems = computed(() => navigation.value.items.filter((root) => root.isInSidebar));
+const sidebarItems = computed(() => (navigation.value?.items ?? []).filter((root) => root.isInSidebar));
 const mainItems = computed(() => sidebarItems.value.filter((root) => !root.isAtBottom));
 
 const bottomItems = computed(() =>

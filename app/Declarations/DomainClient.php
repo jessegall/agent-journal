@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Declarations;
 
 use App\Contracts\Drivers\NativePartProvider;
+use App\Contracts\Navigation\LoaderProvider;
 use App\Contracts\Navigation\MenuProvider;
 use App\Contracts\Navigation\NavigationProvider;
 use App\Contracts\Navigation\PageProvider;
@@ -22,9 +23,11 @@ use App\Exceptions\FolderClosed;
 use App\Exceptions\LinkLeavesPlace;
 use App\Exceptions\LinkLoop;
 use App\Support\CodeFiles;
+use App\Support\DeclaredType;
 use App\Support\Reflector;
 use App\Values\FilePath;
 use Illuminate\Support\Str;
+use Spatie\LaravelData\Data;
 
 /**
  * One installed domain as the client sees it: the key its declarations are prefixed with, its namespace, its Vue root
@@ -38,6 +41,11 @@ final readonly class DomainClient
     public const string DECLARED_LAYOUT = 'DeclaredLayout.vue';
 
     /**
+     * The namespace of Core's page owners, which share it and so name their types in a list.
+     */
+    private const string CORE_NAMESPACE = 'App';
+
+    /**
      * @param  list<Page>  $pages
      * @param  list<NavigationItem>  $navigation
      * @param  list<Section>  $sections
@@ -46,6 +54,7 @@ final readonly class DomainClient
      * @param  list<Menu>  $menus
      * @param  list<MenuItem>  $menuItems
      * @param  list<class-string>  $types
+     * @param  list<Loader>  $loaders  the loaders no page guards
      */
     private function __construct(
         public string $name,
@@ -60,6 +69,7 @@ final readonly class DomainClient
         public array $menus,
         public array $menuItems,
         public array $types,
+        public array $loaders,
     ) {}
 
     /**
@@ -67,12 +77,13 @@ final readonly class DomainClient
      */
     public static function ofCore(object $module, string $name, string $scriptFolder): self
     {
-        return self::of($module, $name, 'App', dirname(__DIR__, 2).'/resources/js/'.$scriptFolder);
+        return self::of($module, $name, self::CORE_NAMESPACE, dirname(__DIR__, 2).'/resources/js/'.$scriptFolder);
     }
 
     /**
      * Reads what a domain or module declares through PageProvider, NavigationProvider, SectionProvider,
-     * NativePartProvider, SidebarGroupProvider, MenuProvider and TypeProvider, given its name, namespace and folder.
+     * NativePartProvider, SidebarGroupProvider, MenuProvider, TypeProvider and LoaderProvider, given its name,
+     * namespace and folder.
      */
     public static function of(object $domain, string $name, string $namespace, string $scriptFolder): self
     {
@@ -88,6 +99,7 @@ final readonly class DomainClient
             menus: $domain instanceof MenuProvider ? $domain->menus() : [],
             menuItems: $domain instanceof MenuProvider ? $domain->menuItems() : [],
             types: $domain instanceof TypeProvider ? $domain->types() : [],
+            loaders: $domain instanceof LoaderProvider ? $domain->loaders() : [],
         );
     }
 
@@ -100,6 +112,7 @@ final readonly class DomainClient
      * @param  list<Menu>  $menus
      * @param  list<MenuItem>  $menuItems
      * @param  list<class-string>  $types
+     * @param  list<Loader>  $loaders
      */
     public static function declaring(
         string $name,
@@ -113,6 +126,7 @@ final readonly class DomainClient
         array $menus = [],
         array $menuItems = [],
         array $types = [],
+        array $loaders = [],
     ): self {
         return new self(
             name: $name,
@@ -127,6 +141,7 @@ final readonly class DomainClient
             menus: $menus,
             menuItems: $menuItems,
             types: $types,
+            loaders: $loaders,
         );
     }
 
@@ -235,5 +250,46 @@ final readonly class DomainClient
             || ! Reflector::of($controller)->hasMethod('__invoke')) {
             throw ClientResolverInvalid::controllerNotOwned($declaration, $controller);
         }
+    }
+
+    /**
+     * Refuses a loader reader that is not an invokable class of the declaring owner taking exactly one Data and
+     * returning a Data, both types this owner generates, so the generated imports resolve.
+     *
+     * @param  class-string  $reader
+     */
+    public function assertLoader(string $declaration, string $reader): void
+    {
+        if (! $this->owns($reader) || ! Reflector::exists($reader)
+            || ! Reflector::of($reader)->hasMethod('__invoke')) {
+            throw ClientResolverInvalid::loaderNotOwned($declaration, $reader);
+        }
+
+        $invoke = Reflector::of($reader)->method('__invoke');
+        $input = count($invoke->parameters()) === 1 ? $invoke->firstParameterClass()->getOrElse('') : '';
+        $answer = $invoke->returnType()
+            ->filter(fn (DeclaredType $type) => $type->isNamed() && ! $type->isBuiltin() && ! $type->allowsNull)
+            ->map(fn (DeclaredType $type) => $type->name())
+            ->getOrElse('');
+
+        foreach ([$input, $answer] as $dataClass) {
+            if ($dataClass === '' || ! Reflector::factory()->isSubclassOf($dataClass, Data::class)) {
+                throw ClientResolverInvalid::loaderShape($declaration, $reader);
+            }
+
+            if (! $this->ownsType($dataClass)) {
+                throw ClientResolverInvalid::loaderTypeNotOwned($declaration, $dataClass, $this->name);
+            }
+        }
+    }
+
+    /**
+     * Whether a class's generated type is this owner's, as the type owners read it: one its types list names, or, for
+     * a domain, one in its namespace.
+     */
+    private function ownsType(string $className): bool
+    {
+        return in_array($className, $this->types, true)
+            || ($this->namespace !== self::CORE_NAMESPACE && $this->owns($className));
     }
 }

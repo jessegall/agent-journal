@@ -76,4 +76,14 @@ describe('shared prop reads', () => {
 
         expect(sent).toHaveLength(2);
     });
+
+    it('counts the hosts showing a prop and says when the last one leaves', () => {
+        const { reads } = readsWithSender();
+
+        reads.show('window_plans', 1);
+        reads.show('window_plans', 2);
+
+        expect(reads.hide('window_plans', 1)).toBe(false);
+        expect(reads.hide('window_plans', 2)).toBe(true);
+    });
 });

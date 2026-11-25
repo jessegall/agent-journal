@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import TextLink from "@kit/TextLink";
+import { useAppContext } from "@kit/appContext";
 import { router, usePage } from "@inertiajs/vue3";
 import { computed, nextTick, onMounted, ref, useTemplateRef, watch } from "vue";
 import { arrivalAnnouncement } from "../../../composables/arrivalAnnouncement";
@@ -47,6 +48,7 @@ const props = defineProps<{
 }>();
 
 const page = usePage();
+const { viewer } = useAppContext();
 const conversation = computed(() => props.chat.conversation);
 // The members as their avatars: agents by their driver's mark, users by their initial.
 const members = computed(() =>
@@ -69,11 +71,11 @@ const agentIdsInChat = computed(() =>
     .map((member) => member.actor.slice("agent:".length)),
 );
 const chosenStore = computed(() => {
-  const user = page.props.currentUser;
+  const userId = viewer.value.id;
 
-  return conversation.value === undefined || !user
+  return conversation.value === undefined || userId === undefined
     ? undefined
-    : useChosenAgent(user.id, conversation.value.inboxId);
+    : useChosenAgent(userId, conversation.value.inboxId);
 });
 
 // Each chat shows the agent last chosen there in this tab; one removed from the chat is forgotten and drops its controls.
@@ -105,11 +107,11 @@ const selected = computed(() => {
   return props.chat.agents.find((agent) => agent.id === wanted);
 });
 const key = computed(() => {
-  const user = page.props.currentUser;
+  const userId = viewer.value.id;
 
-  return conversation.value === undefined || !user
+  return conversation.value === undefined || userId === undefined
     ? undefined
-    : draftKey(user.id, conversation.value.inboxId);
+    : draftKey(userId, conversation.value.inboxId);
 });
 const replyingTo = ref<ReplyTarget | null>(null);
 

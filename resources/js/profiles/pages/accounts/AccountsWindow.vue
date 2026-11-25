@@ -17,6 +17,7 @@ import { computed, nextTick, ref, watch } from 'vue';
 import { useScrollAnchor } from '@kit/useScrollAnchor';
 import { useIsStale } from '@kit/windowFreshness';
 import { useGuidedCreation } from '@kit/guidedCreation';
+import { useAppContext } from '@kit/appContext';
 import AccountRecovery from './partials/AccountRecovery.vue';
 import AccountRow from './partials/AccountRow.vue';
 import AddAccountWizard from './partials/AddAccountWizard.vue';
@@ -31,8 +32,8 @@ import type { WizardRequest } from '../../signIn';
 import { useUsageClock } from '../../usageClock';
 
 /**
- * The owner's saved Claude Code and Codex accounts in one list, a native part of the Accounts layout: which one new starts of each driver use, choosing
- * or renaming one, and adding one through the add-account wizard. A sign-in still waiting on the host is resumed from
+ * The owner's saved driver accounts in one list, a native part of the Accounts layout: which one new starts of each
+ * driver use, choosing or renaming one, and adding one through the add-account wizard. A sign-in still waiting on the host is resumed from
  * the header. The page reloads on every change; a reload that answers an older choice never takes back a newer one,
  * by each driver's change number. Each row's usage line is chosen again when a window resets, a UTC month begins
  * or the window gets focus. A live update keeps the list where it was scrolled, and while the list is the last read
@@ -44,6 +45,9 @@ const selections = ref(data.selections);
 const now = useUsageClock(() => data.rows);
 const request = ref<WizardRequest | null>(null);
 const isStale = useIsStale();
+const { drivers } = useAppContext();
+// The labels of the drivers an account may be added for, as the empty list names them.
+const driverLabels = computed(() => drivers.value.map((look) => look.label).join(' or '));
 const list = ref<HTMLElement | null>(null);
 
 useScrollAnchor(list, () => data.rows);
@@ -198,7 +202,7 @@ function resumeOrAgain(row: AccountRowData): void {
                 <EmptyState
                     icon="accounts"
                     title="No saved accounts yet"
-                    text="Add a Claude Code or Codex account to let agents start with it."
+                    :text="`Add a ${driverLabels} account to let agents start with it.`"
                 >
                     <Button
                         variant="primary"

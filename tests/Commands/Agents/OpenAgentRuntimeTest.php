@@ -15,7 +15,9 @@ use App\Contracts\Hosts\DockerImageVerifier;
 use App\Enums\Drivers\DriverCapability;
 use App\Enums\Drivers\DriverOperation;
 use App\Enums\Drivers\DriverType;
+use App\Enums\Drivers\MarkTone;
 use App\Enums\Drivers\RequestProgress;
+use App\Enums\Drivers\SignInCodeDirection;
 use App\Enums\Projects\ArrangementType;
 use App\Enums\Sessions\SessionStatus;
 use App\Events\Sessions\SessionOpened;
@@ -434,6 +436,10 @@ final class OpenAgentRuntimeTest extends TestCase
                 'echo',
                 $claude->isolatesHooksPerSession,
                 [],
+                [],
+                'images/drivers/example.svg',
+                MarkTone::CurrentColor,
+                SignInCodeDirection::Outgoing,
             ),
         );
 
@@ -498,6 +504,10 @@ final class OpenAgentRuntimeTest extends TestCase
                 'echo',
                 $claude->isolatesHooksPerSession,
                 [],
+                [],
+                'images/drivers/example.svg',
+                MarkTone::CurrentColor,
+                SignInCodeDirection::Outgoing,
             ),
         );
         $registry->register(new DriverRegistration(

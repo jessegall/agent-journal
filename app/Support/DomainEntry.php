@@ -28,6 +28,7 @@ use App\Contracts\Skills\SkillProvider;
 use App\Contracts\Work\IncomingWork;
 use App\Contracts\Work\IncomingWorkProvider;
 use App\Declarations\DomainClient;
+use App\Declarations\Loader;
 use App\Declarations\Menu;
 use App\Declarations\MenuItem;
 use App\Declarations\NavigationItem;
@@ -389,7 +390,7 @@ final readonly class DomainEntry
     }
 
     /**
-     * The given pages, navigation and sections as this domain's, whatever the domain itself declares.
+     * The given pages, navigation, sections, loaders and types as this domain's, whatever the domain itself declares.
      *
      * @param  list<Page>  $pages
      * @param  list<NavigationItem>  $navigation
@@ -397,6 +398,8 @@ final readonly class DomainEntry
      * @param  list<SidebarGroup>  $sidebarGroups
      * @param  list<Menu>  $menus
      * @param  list<MenuItem>  $menuItems
+     * @param  list<class-string>  $types
+     * @param  list<Loader>  $loaders
      */
     public function declaring(
         array $pages = [],
@@ -405,6 +408,8 @@ final readonly class DomainEntry
         array $sidebarGroups = [],
         array $menus = [],
         array $menuItems = [],
+        array $types = [],
+        array $loaders = [],
     ): DomainClient {
         return DomainClient::declaring(
             $this->name,
@@ -416,6 +421,8 @@ final readonly class DomainEntry
             sidebarGroups: $sidebarGroups,
             menus: $menus,
             menuItems: $menuItems,
+            types: $types,
+            loaders: $loaders,
         );
     }
 

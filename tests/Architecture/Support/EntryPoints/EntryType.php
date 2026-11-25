@@ -8,6 +8,7 @@ use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Entries\Attributes\TestsHook;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\Attributes\TestsMiddleware;
+use Tests\Support\Entries\Attributes\TestsRead;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Attributes\TestsState;
 use Tests\Support\Entries\Contracts\NamesEntry;
@@ -23,6 +24,7 @@ enum EntryType: string
     case McpTool = 'MCP tool';
     case Hook = 'hook moment';
     case Middleware = 'middleware';
+    case Read = 'read';
 
     /**
      * The folder under tests, or under a domain's tests, that holds this type's tests.
@@ -36,6 +38,7 @@ enum EntryType: string
             self::McpTool => 'Mcp',
             self::Hook => 'Hooks',
             self::Middleware => 'Middleware',
+            self::Read => 'Reads',
         };
     }
 
@@ -51,11 +54,13 @@ enum EntryType: string
             self::McpTool => TestsMcpTool::class,
             self::Hook => TestsHook::class,
             self::Middleware => TestsMiddleware::class,
+            self::Read => TestsRead::class,
         };
     }
 
     /**
-     * Whether a test of this type names one entry only: a command, state, tool or middleware test names one alone.
+     * Whether a test of this type names one entry only: a command, state, tool, middleware or read test names one
+     * alone.
      */
     public function isOnePerTest(): bool
     {
@@ -64,7 +69,7 @@ enum EntryType: string
 
     /**
      * Whether each entry of this type has one test file at a set path: a command, state or middleware does, while a
-     * route, tool or hook moment's test may sit anywhere in its folder.
+     * route, tool, hook moment or read's test may sit anywhere in its folder.
      */
     public function hasTestFile(): bool
     {

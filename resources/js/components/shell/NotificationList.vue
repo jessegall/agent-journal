@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { NotificationItem, NotificationPage } from '@/generated/types/core';
+import type { NotificationItem } from '@/generated/types/core';
+import type { NotificationPage } from '@/types/generated';
 import { nextTick, onMounted, ref } from 'vue';
 import Button from '@/components/kit/Button.vue';
 import EmptyState from '@/components/kit/EmptyState.vue';

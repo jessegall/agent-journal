@@ -13,6 +13,7 @@ use App\Contracts\Navigation\SectionProvider;
 use App\Contracts\Search\MessageSearch;
 use App\Contracts\Skills\SkillProvider;
 use App\Declarations\ActionRoute;
+use App\Declarations\Loader;
 use App\Declarations\Page;
 use App\Declarations\Section;
 use App\Declarations\Slot;
@@ -30,10 +31,8 @@ use Domain\Chat\Contracts\PairChats;
 use Domain\Chat\Events\ChatMessageChanged;
 use Domain\Chat\Events\DockChanged;
 use Domain\Chat\Http\Controllers\AnswerQuestionController;
-use Domain\Chat\Http\Controllers\ChatRowsController;
 use Domain\Chat\Http\Controllers\DockController;
 use Domain\Chat\Http\Controllers\Membership\AddParticipantController;
-use Domain\Chat\Http\Controllers\Membership\ChatCandidatesController;
 use Domain\Chat\Http\Controllers\Membership\CloseChatController;
 use Domain\Chat\Http\Controllers\Membership\CreateGroupChatController;
 use Domain\Chat\Http\Controllers\Membership\LeaveChatController;
@@ -43,6 +42,8 @@ use Domain\Chat\Http\Controllers\ReactController;
 use Domain\Chat\Http\Controllers\ReadShownController;
 use Domain\Chat\Http\Controllers\SendMessageController;
 use Domain\Chat\Http\Controllers\UndockController;
+use Domain\Chat\Http\Loaders\ChatCandidatesLoader;
+use Domain\Chat\Http\Loaders\ChatRowsLoader;
 use Domain\Chat\Http\Pages\Resolvers\ChatWindowResolver;
 use Domain\Chat\Http\Pages\Resolvers\ChosenAgentSection;
 use Domain\Chat\Policies\DockPlacementPolicy;
@@ -120,16 +121,18 @@ final class ChatDomain extends Domain implements
                     ActionRoute::post('messages/read', ReadShownController::class, 'read'),
                     ActionRoute::post('messages/react', ReactController::class, 'react'),
                     ActionRoute::post('questions/answer', AnswerQuestionController::class, 'answer'),
-                    ActionRoute::get('messages/rows', ChatRowsController::class, 'rows'),
                     ActionRoute::post('dock', DockController::class, 'dock'),
                     ActionRoute::post('dock/remove', UndockController::class, 'undock'),
                     ActionRoute::post('chats', CreateGroupChatController::class, 'create-group'),
-                    ActionRoute::get('chats/candidates', ChatCandidatesController::class, 'candidates'),
                     ActionRoute::post('chats/members', AddParticipantController::class, 'add-member'),
                     ActionRoute::post('chats/members/remove', RemoveParticipantController::class, 'remove-member'),
                     ActionRoute::post('chats/transfer', TransferChatController::class, 'transfer'),
                     ActionRoute::post('chats/leave', LeaveChatController::class, 'leave'),
                     ActionRoute::post('chats/close', CloseChatController::class, 'close'),
+                )
+                ->loaders(
+                    Loader::make('rows', ChatRowsLoader::class),
+                    Loader::make('candidates', ChatCandidatesLoader::class),
                 ),
         ];
     }

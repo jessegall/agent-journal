@@ -9,12 +9,14 @@ import Spinner from '@kit/Spinner';
 import Field from '@kit/Field';
 import { computed, ref, useId, watch } from 'vue';
 import ChosenSignIn from './ChosenSignIn.vue';
+import { useAppContext } from '@kit/appContext';
 import { codeDirection } from '../../../signIn';
 import type { SignInActions } from '../../../signInActions';
 
 /**
- * The wizard's second step, the chosen method's own task: Claude Code's sign-in page and the code it gives back,
- * Codex's code to enter on OpenAI's page, or the token or key a secret method takes, with where to get it. Until the
+ * The wizard's second step, the chosen method's own task: the provider's sign-in page and the code it gives back, a
+ * code to enter on the provider's page, or the token or key a secret method takes, with where to get it, as the
+ * driver's family declares the way its code travels. Until the
  * host has the sign-in page ready, it shows that the sign-in is starting. The form is sent by the footer's button.
  */
 const props = defineProps<{
@@ -25,7 +27,9 @@ const props = defineProps<{
     formId: string;
 }>();
 
-const direction = computed(() => codeDirection(props.driver));
+const { driverLook, driverLabel } = useAppContext();
+const direction = computed(() => codeDirection(driverLook(props.driver)));
+const label = computed(() => driverLabel(props.driver));
 
 /**
  * The task waits until the host has the sign-in ready: a renewal first waits for the agents running on the account,
@@ -190,7 +194,7 @@ const openLink =
     </template>
     <template v-else-if="direction === 'outgoing'">
         <ol class="m-0 pl-[18px] text-field leading-[1.75] text-text-2">
-            <li>Open OpenAI's page and sign in with ChatGPT.</li>
+            <li>Open the {{ label }} sign-in page and sign in.</li>
             <li>Enter this code there when it asks.</li>
         </ol>
         <div
@@ -219,17 +223,17 @@ const openLink =
         </div>
         <div class="flex-1" />
         <p class="flex items-center gap-2 text-small text-text-2" role="status">
-            <Spinner />Waiting for you to finish on OpenAI's page…
+            <Spinner />Waiting for you to finish on the {{ label }} sign-in page…
         </p>
     </template>
-    <template v-else>
+    <template v-else-if="direction === 'paste-back'">
         <form
             :id="formId"
             class="flex flex-1 flex-col gap-4"
             @submit.prevent="send"
         >
             <ol class="m-0 pl-[18px] text-field leading-[1.75] text-text-2">
-                <li>Open Claude's sign-in page and sign in.</li>
+                <li>Open the {{ label }} sign-in page and sign in.</li>
                 <li>Copy the code the page shows when you are done.</li>
                 <li>Paste it below and send it.</li>
             </ol>
@@ -261,7 +265,7 @@ const openLink =
                     <Field
                         :id="`sign-in-link-${fieldId}`"
                         :model-value="actions.challenge.value.address ?? ''"
-                        label="Link to Claude's sign-in page"
+                        :label="`Link to the ${label} sign-in page`"
                         readonly
                     />
                 </template>

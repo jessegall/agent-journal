@@ -4,6 +4,7 @@ import { watch } from 'vue';
 import Logo from '@/components/kit/Logo.vue';
 import Sheet from '@/components/kit/Sheet.vue';
 import { useSidebar } from '@/composables/useSidebar';
+import { useAppContext } from '@/framework/appContext';
 import NavigationList from './NavigationList.vue';
 
 /**
@@ -12,6 +13,7 @@ import NavigationList from './NavigationList.vue';
  * closes when a page is chosen.
  */
 const page = usePage();
+const { installation } = useAppContext();
 const { isMini, isOpenOnPhone, closeOnPhone } = useSidebar();
 
 watch(() => page.url, closeOnPhone);
@@ -25,11 +27,11 @@ watch(() => page.url, closeOnPhone);
         <div
             class="flex items-center gap-2 overflow-hidden px-4 pt-0.5 pb-3.5 font-semibold whitespace-nowrap text-text"
             :class="{ 'justify-center px-0': isMini }"
-            :title="`Agent journal ${page.props.version}`"
+            :title="`Agent journal ${installation.version}`"
         >
             <Logo />
             <template v-if="!isMini">
-                <span>{{ page.props.name }}</span>
+                <span>{{ installation.name }}</span>
             </template>
         </div>
         <NavigationList :is-mini="isMini" />

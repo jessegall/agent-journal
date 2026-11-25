@@ -9,7 +9,7 @@ const purgers: Array<() => void> = [];
 const reads: Array<Record<string, unknown>> = [];
 
 vi.mock("@inertiajs/vue3", () => ({
-  usePage: () => ({ props: { currentUser: { id: "user-1" } } }),
+  usePage: () => ({ props: { viewer: { type: "owner", id: "user-1", canShare: true }, drivers: [] } }),
   router: {
     on: vi.fn(),
     post: (_url: string, body: Record<string, unknown>) => reads.push(body),

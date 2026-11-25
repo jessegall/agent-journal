@@ -122,33 +122,36 @@ vi.mock("@inertiajs/vue3", () => ({
   },
 }));
 // The server's preview of a start: the drafted driver type, else headless, and only the Codex terminal cannot run.
-vi.mock("@kit/pageReads", async (importOriginal) => {
-  const original = await importOriginal<typeof import("@kit/pageReads")>();
+vi.mock("@kit/loaders", async (importOriginal) => {
+  const original = await importOriginal<typeof import("@kit/loaders")>();
 
   return {
     ...original,
-    readPage: (routeName: string, query: Record<string, string>) => {
-      if (routeName !== "web.start-preview") {
-        return original.readPage(routeName, query);
+    load: (loader: { key: string }, input: Record<string, string | null>) => {
+      if (loader.key !== "web.start-preview") {
+        return original.load(loader as never, input as never);
       }
 
-      const driverType = query.driverType === "" ? "headless" : query.driverType;
-      const runs = !(query.family === "codex" && driverType === "terminal");
+      const driverType = input.driverType ?? "headless";
+      const runs = !(input.family === "codex" && driverType === "terminal");
 
       return Promise.resolve({
-        family: query.family,
-        familySource: "explicit",
-        driverType,
-        driverTypeSource: query.driverType === "" ? "profile" : "explicit",
-        driverKey:
-          driverType === "headless" ? `${query.family}-headless` : query.family,
-        label: `${query.family} ${driverType}`,
-        canRun: runs,
-        unavailableReason: runs
-          ? null
-          : "The Codex terminal is not proven on any host yet.",
-        isModeLocked: false,
-        catalogueRevision: 4,
+        status: "ok",
+        value: {
+          family: input.family,
+          familySource: "explicit",
+          driverType,
+          driverTypeSource: input.driverType === null ? "profile" : "explicit",
+          driverKey:
+            driverType === "headless" ? `${input.family}-headless` : input.family,
+          label: `${input.family} ${driverType}`,
+          canRun: runs,
+          unavailableReason: runs
+            ? null
+            : "The Codex terminal is not proven on any host yet.",
+          isModeLocked: false,
+          catalogueRevision: 4,
+        },
       });
     },
   };
@@ -231,7 +234,10 @@ function chosenIn(form: VueWrapper, field: string): string {
 }
 
 describe("SessionForm", () => {
-  beforeEach(() => window.sessionStorage.clear());
+  beforeEach(() => {
+    window.sessionStorage.clear();
+    shownPage.props = { viewer: { type: "guest", canShare: false } };
+  });
 
   it("chooses the ready account over an expired default, says why the other is unavailable, and sends one request id twice", async () => {
     const form = mount(SessionForm, {

@@ -10,10 +10,12 @@ use App\Pages\ProcessPages;
 use App\Pages\ProfilesPages;
 use App\Pages\ScriptsPages;
 use App\Pages\SettingsPages;
+use App\Pages\ShellLoaders;
 use App\Pages\WebPages;
 
 /**
- * Core's own page declarations, served beside the domains': Web's, Sharing's, Connections', Processes', Profiles', Scripts' and Settings'.
+ * Core's own page declarations, served beside the domains': Web's, Connections', Processes', Profiles', Scripts',
+ * Settings' and the shell's loaders.
  */
 final class CorePages
 {
@@ -29,6 +31,7 @@ final class CorePages
             new ProfilesPages()->declarations(),
             new ScriptsPages()->declarations(),
             new SettingsPages()->declarations(),
+            new ShellLoaders()->declarations(),
         ];
     }
 }

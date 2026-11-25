@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import type { DraftedRecordData } from '@/generated/types/core';
+import type { DraftedRecordData } from '@/types/generated';
 
 /**
  * What a guided creation was opened for: the noun it drafts, and what to do with the fields it drafted, such as filling

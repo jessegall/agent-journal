@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { declaredLooks } from '@/kit/testing/driverLooks';
 
 vi.mock('@generated/routes/accounts', () => ({
     challenge: ({ attempt }: { attempt: string }) => ({
@@ -23,9 +24,10 @@ function attempt(fields: Record<string, unknown>) {
 }
 
 describe('codeDirection', () => {
-    it('asks a Claude Code sign-in for a code back and gives a Codex one a code to enter', () => {
-        expect(codeDirection('claude-code')).toBe('paste-back');
-        expect(codeDirection('codex')).toBe('outgoing');
+    it('travels the way the family declares, and a driver no family declares has none', () => {
+        expect(codeDirection({ type: 'declared', look: declaredLooks[0] })).toBe('paste-back');
+        expect(codeDirection({ type: 'declared', look: declaredLooks[1] })).toBe('outgoing');
+        expect(codeDirection({ type: 'unknown', label: 'removed-driver' })).toBeUndefined();
     });
 });
 

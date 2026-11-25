@@ -5,7 +5,8 @@ import ChipButton from '@/components/kit/ChipButton.vue';
 import Dialog from '@/components/kit/Dialog.vue';
 import Spinner from '@/components/kit/Spinner.vue';
 import Textarea from '@/components/kit/Textarea.vue';
-import type { DraftedRecordData, DraftQuestionData } from '@/generated/types/core';
+import type { DraftQuestionData } from '@/generated/types/core';
+import type { DraftedRecordData } from '@/types/generated';
 import { draftFrom, readQuestions } from './draftRequests';
 import { useGuidedCreation } from './guidedCreation';
 

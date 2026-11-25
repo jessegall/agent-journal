@@ -1,6 +1,7 @@
 import { createInertiaApp } from '@inertiajs/vue3';
 import type { DefineComponent } from 'vue';
 import { hostedPage } from '@/framework/hostedPage';
+import { liveTransport } from '@/framework/liveTransport';
 import { pressedButtons } from '@/framework/pressedButtons';
 import { components, declaredPages } from '@/generated/ui-manifest';
 import AppSidebarLayout from '@/components/layout/AppSidebarLayout.vue';
@@ -30,4 +31,6 @@ void createInertiaApp({
         color: '#5e64c9',
         delay: 0,
     },
+    // Live props listen on the tab's one connection; a hidden tab pauses them and reads them again when shown.
+    live: { transport: liveTransport, pauseWhenHidden: true },
 });

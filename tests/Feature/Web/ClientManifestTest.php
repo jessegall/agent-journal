@@ -7,17 +7,22 @@ namespace Tests\Feature\Web;
 use App\Contracts\Files\Files;
 use App\Contracts\Reflection\ReflectorFactory;
 use App\Declarations\DomainClient;
+use App\Declarations\Loader;
 use App\Declarations\Page;
 use App\Enums\Navigation\Icon;
 use App\Support\ClientDeclarations;
 use App\Support\ClientManifest;
 use App\Support\DomainEntry;
 use App\Support\DomainRegistry;
+use App\Support\Types\LoaderTypes;
 use App\Support\Types\PagePropTypes;
 use App\Support\Types\TypeOwners;
 use Illuminate\Support\Facades\File;
 use Tests\Fixtures\ClientDeclarations\Library\BooksResolver;
 use Tests\Fixtures\ClientDeclarations\Library\LibraryDomain;
+use Tests\Fixtures\ClientDeclarations\Library\ShelfRowsData;
+use Tests\Fixtures\ClientDeclarations\Library\ShelfRowsInput;
+use Tests\Fixtures\ClientDeclarations\Library\ShelfRowsLoader;
 use Tests\Fixtures\ClientDeclarations\Shelf\ShelfDomain;
 use Tests\Fixtures\ClientDeclarations\Shelf\ShelfResolver;
 use Tests\Fixtures\ClientDeclarations\ShelfLayoutResolver;
@@ -67,6 +72,14 @@ final class ClientManifestTest extends TestCase
     private const string LENT_WINDOW = 'window_shelf_lent?: WindowResult<DeclaredLayoutData>;';
 
     private const string CORE_IMPORT = "import type { DeclaredLayoutData } from './core';";
+
+    private const string LOADER_IMPORT = "import type { ShelfRowsInput, ShelfRowsData } from './types/library';";
+
+    private const string LOADER_DESCRIPTOR = 'export const libraryShelfRows: Loader<ShelfRowsInput, ShelfRowsData> = '
+        ."{\n"
+        ."    key: 'library.shelf-rows',\n"
+        ."    prop: 'load_library_shelf_rows',\n"
+        .'};';
 
     protected function setUp(): void
     {
@@ -197,6 +210,20 @@ final class ClientManifestTest extends TestCase
         );
     }
 
+    public function test_each_loader_gets_a_descriptor_typed_with_its_input_and_answer(): void
+    {
+        $library = DomainEntry::fromClass(LibraryDomain::class)->declaring(
+            pages: [Page::make('index', 'Library', Icon::Docs, BooksResolver::class, 'Index.vue')->at('')],
+            types: [ShelfRowsInput::class, ShelfRowsData::class],
+            loaders: [Loader::make('shelf-rows', ShelfRowsLoader::class)],
+        );
+        $this->manifest([$library, $this->shelf()])->write($this->root);
+        $loaders = File::get("{$this->root}/resources/js/generated/loaders.ts");
+
+        $this->assertStringContainsString(self::LOADER_IMPORT, $loaders);
+        $this->assertStringContainsString(self::LOADER_DESCRIPTOR, $loaders);
+    }
+
     public function test_a_types_owner_is_core_its_domain_or_shared(): void
     {
         $owners = TypeOwners::of($this->app->make(DomainRegistry::class), $this->app->make(ClientDeclarations::class));
@@ -222,6 +249,7 @@ final class ClientManifestTest extends TestCase
                 TypeOwners::of($this->app->make(DomainRegistry::class), $declarations),
                 $this->app->make(ReflectorFactory::class),
             ),
+            new LoaderTypes($declarations, TypeOwners::of($this->app->make(DomainRegistry::class), $declarations)),
             $this->app->make(Files::class),
         );
     }

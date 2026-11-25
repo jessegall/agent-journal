@@ -8,7 +8,6 @@ import {
   isPropStale,
   pageReadStatus,
   retryPageRead,
-  useLiveReload,
 } from "@/composables/usePageChanges";
 import DockOfferPicker from "./DockOfferPicker.vue";
 import ResultView from "./ResultView.vue";
@@ -27,8 +26,6 @@ withDefaults(
     subject: "item",
   },
 );
-
-useLiveReload();
 </script>
 
 <template>

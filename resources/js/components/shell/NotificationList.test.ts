@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import type { NotificationPage } from '@/generated/types/core';
+import type { NotificationPage } from '@/types/generated';
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 import type { NotificationLoadState } from '@/composables/notificationStore';

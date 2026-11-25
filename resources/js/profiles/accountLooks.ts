@@ -34,20 +34,6 @@ export function rowStateLook(
 }
 
 /**
- * The name a driver goes by on the page.
- */
-export function driverName(driver: string): string {
-    return { 'claude-code': 'Claude Code', codex: 'Codex' }[driver] ?? driver;
-}
-
-/**
- * The product icon a driver is marked with: the Claude spark for Claude Code, the OpenAI knot for Codex.
- */
-export function driverIcon(driver: string): 'claude' | 'codex' {
-    return driver === 'codex' ? 'codex' : 'claude';
-}
-
-/**
  * Why a cleanup has not finished, in words safe to show; the driver's own output is never shown.
  */
 export const cleanupProblemText: Record<CleanupProblem, string> = {

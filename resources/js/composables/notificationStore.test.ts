@@ -1,4 +1,4 @@
-import type { NotificationPage } from '@/generated/types/core';
+import type { NotificationPage } from '@/types/generated';
 import { describe, expect, it, vi } from 'vitest';
 import { LEASE_MILLISECONDS, NotificationRequestFailed, notificationStore } from './notificationStore';
 import type { NotificationClient } from './notificationStore';
@@ -184,6 +184,19 @@ describe('notificationStore', () => {
         await store.refresh();
 
         expect(await store.catchUp()).toEqual([]);
+    });
+
+    it('starts again from the first page when the server refuses the changes cursor', async () => {
+        const changes = vi.fn().mockRejectedValueOnce(new NotificationRequestFailed('refused'));
+        const page = vi.fn().mockResolvedValueOnce(pageOf(1, 1)).mockResolvedValueOnce(pageOf(2, 0));
+        const store = notificationStore(clientOf({ page, changes }));
+
+        await store.refresh();
+
+        expect(await store.catchUp()).toEqual([]);
+        expect(page).toHaveBeenLastCalledWith(null);
+        expect(store.state.value).toBe('loaded');
+        expect(store.shown.value?.unread).toBe(0);
     });
 
     it('appends an older page once and holds new rows above it until revealed', async () => {

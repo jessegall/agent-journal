@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useAppContext } from '@kit/appContext';
 import type {
     AccountListData,
     AccountRowData,
@@ -15,7 +16,9 @@ import AccountFactList from './AccountFactList.vue';
 import AccountUsageDetails from './AccountUsageDetails.vue';
 import { chosenIn } from '../../../accountSelections';
 import { useAccountNaming } from '../../../accountNaming';
-import { driverName, rowStateLook, signInAgainLabel } from '../../../accountLooks';
+import { rowStateLook, signInAgainLabel } from '../../../accountLooks';
+
+const { driverLabel } = useAppContext();
 
 /**
  * Everything about one account in one dialog: its way back when it must sign in again, its name, whether it is the
@@ -102,7 +105,7 @@ const useFacts = computed(() => {
 
 const signInFacts = computed(() => [
     { term: 'State', value: rowStateLook(props.account).label },
-    { term: 'Driver', value: driverName(props.account.driver) },
+    { term: 'Driver', value: driverLabel(props.account.driver) },
     { term: 'Method', value: props.account.signIn.title },
     { term: 'Billing', value: props.account.signIn.billingLabel },
     { term: 'Signed in as', value: props.account.identity ?? 'Not known' },
@@ -249,7 +252,7 @@ function signInAgain(): void {
                         account.label
                     }}</span>
                     <span class="text-small text-text-3">{{
-                        driverName(account.driver)
+                        driverLabel(account.driver)
                     }}</span>
                 </div>
                 <p class="text-text-2">{{ consequence }}</p>
