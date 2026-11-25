@@ -45,7 +45,7 @@ final class FollowSequenceStateTest extends TestCase
     {
         $this->following()
             ->given(new SequenceEnded('run-2', $this->follower(), SequenceRunStatus::Finished))
-            ->assertStillActive()
+            ->assertActive()
             ->given(new SequenceEnded(self::RUN, $this->follower(), SequenceRunStatus::Finished))
             ->assertPopped();
     }

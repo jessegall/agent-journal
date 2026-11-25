@@ -78,7 +78,7 @@ final class ReviewPlanStateTest extends TestCase
     {
         $this->reviewing()
             ->given(new PlanReviewWithdrawn(TestIds::of(6), 'edition-1'))
-            ->assertStillActive()
+            ->assertActive()
             ->given(new PlanReviewWithdrawn(TestIds::of(5), 'edition-1'))
             ->assertPopped();
     }

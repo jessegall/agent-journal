@@ -58,7 +58,7 @@ final class WorkOnTaskStateTest extends TestCase
 
         $this->working()
             ->given(new $ending($other->id, TaskStatus::Started, 'entry-1'))
-            ->assertStillActive()
+            ->assertActive()
             ->given(new $ending($this->task->id, TaskStatus::Started, 'entry-2'))
             ->assertPopped();
     }
@@ -94,7 +94,7 @@ final class WorkOnTaskStateTest extends TestCase
         $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
         $this->task = $task->refresh();
 
-        return $this->scenarioOn(WorkOnTaskStateReference::forTask($this->task))->assertStillActive();
+        return $this->scenarioOn(WorkOnTaskStateReference::forTask($this->task))->assertActive();
     }
 
     private function toolFinished(): ToolFinished

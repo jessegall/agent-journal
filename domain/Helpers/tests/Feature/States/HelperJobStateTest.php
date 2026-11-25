@@ -61,7 +61,7 @@ final class HelperJobStateTest extends TestCase
     #[DataProvider('endings')]
     public function test_its_job_ending_ends_it_and_another_jobs_does_not(Event $other, Event $own): void
     {
-        $this->working()->given($other)->assertStillActive()->given($own)->assertPopped();
+        $this->working()->given($other)->assertActive()->given($own)->assertPopped();
     }
 
     private function working(): StateScenario

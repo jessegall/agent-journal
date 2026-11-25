@@ -46,7 +46,7 @@ final class LogDueStateTest extends TestCase
     {
         $this->logDue()
             ->given(new TaskLogged(TestIds::of(43), 'entry-1'))
-            ->assertStillActive()
+            ->assertActive()
             ->given(new TaskLogged(TestIds::of(42), 'entry-2'))
             ->assertPopped();
     }
