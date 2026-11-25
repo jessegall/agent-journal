@@ -6,7 +6,6 @@ namespace Domain\Documents\Concerns;
 
 use App\Contracts\Sharing\ShareBudget;
 use App\Exceptions\RecordUnavailable;
-use App\Support\PublicComment;
 use App\Support\RecordIdentity;
 use App\Support\ShareContentRead;
 use App\Support\ShareRecordCard;
@@ -14,6 +13,7 @@ use App\Support\ShareRecords;
 use App\Support\ShareRelationRead;
 use App\Support\ShareSelection;
 use App\Support\ShareTargetRead;
+use Domain\Comments\Support\PublicComment;
 use Domain\Documents\Models\Document;
 
 /**

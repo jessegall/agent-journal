@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\Documents\Models;
 
 use App\Concerns\BoundedReads;
-use App\Concerns\HasComments;
 use App\Concerns\HasNumber;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
@@ -17,7 +16,6 @@ use App\Contracts\Records\Commentable;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Sharing\Shareable;
-use App\Models\Records\Comment;
 use App\Models\Support\Accessor;
 use App\Support\ActorContext;
 use App\Support\Cards\DockCard;
@@ -47,7 +45,6 @@ use Domain\Documents\Support\RecordViews;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -69,13 +66,11 @@ use Illuminate\Support\Carbon;
  * @property mixed $dock_card attribute
  * @property mixed $share_card attribute
  * @property mixed $view attribute
- * @property Collection<int, Comment>|Comment[] $comments
  */
 final class Report extends Model implements Commentable, Dockable, EventSource, Numbered, ReadableModel, Shareable, TextContent
 {
     use BoundedReads;
     use CreatedWithAttention;
-    use HasComments;
     use HasNumber;
     use HasUlids;
     use Linkable;

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Concerns\HasComments;
-use App\Models\Records\Comment;
 use App\Support\Exports;
 use App\Support\LinkAccess;
 use App\Support\ReadBuilder;
@@ -29,16 +27,9 @@ final readonly class PublicContracts
 {
     /**
      * Core's Eloquent adapters: LinkAccess holds the model whose links it reads and hands back the caller's own query,
-     * ReadBuilder bounds a domain's reads, and HasComments gives a Commentable model its comments relation, while
-     * domains read comment content only through CommentResolver.
+     * and ReadBuilder bounds a domain's reads.
      */
-    private const array CORE_ELOQUENT_ADAPTERS = [LinkAccess::class, ReadBuilder::class, HasComments::class];
-
-    /**
-     * The one member allowed to name a private Core model in its signature: the comments relation that HasComments
-     * supplies returns the private Comment model.
-     */
-    private const array PRIVATE_RELATION_RESULTS = [HasComments::class => ['HasComments::comments()', Comment::class]];
+    private const array CORE_ELOQUENT_ADAPTERS = [LinkAccess::class, ReadBuilder::class];
 
     /**
      * @param  list<PublicOwner>  $owners
@@ -125,7 +116,7 @@ final readonly class PublicContracts
         foreach ($this->signatureNamesOf($class) as $path) {
             $privateTypeOwner = $this->privateOwnerOf($path->name, $owner, $export);
 
-            if ($privateTypeOwner !== null && ! self::isAllowedRelationResult($export, $path->member, $path->name)) {
+            if ($privateTypeOwner !== null) {
                 $violations[] = new Violation(
                     $path->file,
                     $path->line,
@@ -413,13 +404,5 @@ final readonly class PublicContracts
     private static function exists(string $name): bool
     {
         return Reflector::exists($name);
-    }
-
-    /**
-     * Whether a private type in a signature is the one relation result the comments trait may name.
-     */
-    private static function isAllowedRelationResult(string $export, string $member, string $name): bool
-    {
-        return (self::PRIVATE_RELATION_RESULTS[$export] ?? null) === [$member, $name];
     }
 }

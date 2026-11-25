@@ -38,7 +38,7 @@ record without text are refused, and so is `--lines` when locating a whole-recor
 
 ## The public contract exception
 
-`HasComments::comments()` is the one public member allowed to name the private `App\Models\Records\Comment` model,
+`HasComments::comments()` is the one public member allowed to name the private `Domain\Comments\Models\Comment` model,
 as the relation it returns (`tests/Architecture/Support/PublicContracts.php`). Domains read comments only through
 `CommentReader` and post them only through `PostComment` and `PostTextComment`.
 

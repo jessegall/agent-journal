@@ -11,6 +11,7 @@ import MenuTrigger from '@kit/MenuTrigger';
 import Button from '@kit/Button';
 import type { DocumentCommentsPartData } from '@generated/types/documents';
 import { draftFor, sendLineComment } from '@kit/lineComments';
+import { post } from '@generated/routes/comments';
 
 /**
  * A document's text drawn as its Markdown blocks (headings, paragraphs, list items and code) that a reader comments on:
@@ -63,7 +64,7 @@ function rangeWords(first: number, last: number): string {
 function send(from: number, to: number, close: () => void): void {
     const { first, last } = linesOf(from, to);
     state.value = 'sending';
-    sendLineComment(props.target, props.revision, first, last, {
+    sendLineComment(post.url(), props.target, props.revision, first, last, {
         only: [hostProp],
         onSent: () => {
             state.value = 'idle';

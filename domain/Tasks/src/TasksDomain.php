@@ -34,6 +34,7 @@ use App\Support\FolderClasses;
 use App\Support\PoolDefinition;
 use App\Support\Searchable;
 use App\Values\PolicyDefinition;
+use Domain\Comments\CommentsDomain;
 use Domain\Tasks\Commands\ApplyTaskWaits\ApplyTaskWaitsCommand;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Contracts\TaskAssignmentResolver;
@@ -161,7 +162,7 @@ final class TasksDomain extends Domain implements
      */
     public function requires(): array
     {
-        return [];
+        return [CommentsDomain::class];
     }
 
     /**

@@ -9,7 +9,6 @@ use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use App\Contracts\Assignments\Assignable;
 use App\Contracts\Records\Commentable;
-use App\Concerns\HasComments;
 use App\Support\Cards\DockCard;
 use App\Support\Cards\DockIdentity;
 use App\Support\Cards\Stack;
@@ -46,7 +45,6 @@ use Illuminate\Support\Carbon;
 final class Note extends Model implements Assignable, Commentable, Dockable, Numbered, ReadableModel
 {
     use BelongsToOneActor;
-    use HasComments;
     use HasNumber;
     use HasUlids;
     use BoundedReads;

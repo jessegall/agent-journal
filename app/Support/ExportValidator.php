@@ -31,7 +31,6 @@ final class ExportValidator
         'App\Concerns\HasStates',
         'App\Concerns\GrantedInEnvironment',
         'App\Models\Support\BelongsToOneActor',
-        'App\Concerns\HasComments',
         'App\Support\States\AgentState',
         'App\Concerns\Linkable',
         'App\Support\Decisions\StateReferenceFactory',

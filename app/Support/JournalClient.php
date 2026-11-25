@@ -6,7 +6,6 @@ namespace App\Support;
 
 use App\Calls\Agents\AgentCalls;
 use App\Calls\Assignments\AssignmentCalls;
-use App\Calls\Comments\CommentCalls;
 use App\Calls\Communication\CommunicationCalls;
 use App\Calls\Connections\ConnectionCalls;
 use App\Calls\Processes\ProcessCalls;
@@ -24,7 +23,6 @@ final readonly class JournalClient
     public function __construct(
         public AgentCalls $agents,
         public AssignmentCalls $assignments,
-        public CommentCalls $comments,
         public CommunicationCalls $communication,
         public ConnectionCalls $connections,
         public ProcessCalls $processes,

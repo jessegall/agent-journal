@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Console\Concerns;
 
-use App\Calls\Comments\ListCommentsCall;
-use App\Data\Comments\CommentDetails;
-use App\Data\Comments\RecordCommentView;
-use App\Data\Comments\TextCommentView;
 use App\Values\CommandReport;
+use Domain\Comments\Calls\ListCommentsCall;
+use Domain\Comments\Data\CommentDetails;
+use Domain\Comments\Data\RecordCommentView;
+use Domain\Comments\Data\TextCommentView;
 
 /**
  * How doc:comments and report:comments print a page of a record's comments: author and time, the place a text comment

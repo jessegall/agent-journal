@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Contracts\Records\PublicCommentResolver;
 use App\Contracts\Sharing\ShareBudget;
 use App\Contracts\Sharing\ShareRecordProvider;
 use App\Exceptions\ContentTooLarge;
@@ -14,6 +13,7 @@ use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;
 use App\Support\ShareContentRead;
 use App\Support\SharedContent;
+use Domain\Comments\Contracts\PublicCommentResolver;
 use Domain\Documents\Concerns\SharesPublishedRecords;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;

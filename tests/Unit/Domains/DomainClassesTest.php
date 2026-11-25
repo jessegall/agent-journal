@@ -6,6 +6,7 @@ namespace Tests\Unit\Domains;
 
 use App\Support\Domain;
 use Domain\Chat\ChatDomain;
+use Domain\Comments\CommentsDomain;
 use Domain\Documents\DocumentsDomain;
 use Domain\Helpers\HelpersDomain;
 use Domain\Memory\MemoryDomain;
@@ -20,12 +21,12 @@ use PHPUnit\Framework\TestCase;
 
 final class DomainClassesTest extends TestCase
 {
-    public function test_documents_are_registered_without_a_required_domain(): void
+    public function test_documents_are_registered_and_require_chat_and_comments(): void
     {
         $domains = require dirname(__DIR__, 3).'/bootstrap/domains.php';
 
         $this->assertContains(DocumentsDomain::class, $domains);
-        $this->assertSame([], new DocumentsDomain()->requires());
+        $this->assertSame([ChatDomain::class, CommentsDomain::class], new DocumentsDomain()->requires());
     }
 
     /**
@@ -36,7 +37,7 @@ final class DomainClassesTest extends TestCase
      */
     public static function domains(): iterable
     {
-        yield 'Tasks' => [TasksDomain::class, [], [
+        yield 'Tasks' => [TasksDomain::class, [CommentsDomain::class], [
             'TaskStarted',
             'TaskDescribed',
             'TaskFinished',
@@ -159,6 +160,22 @@ final class DomainClassesTest extends TestCase
             'QuestionNotificationKeys',
             'QuestionSummaryReader',
             'QuestionSummary',
+        ]];
+
+        yield 'Comments' => [CommentsDomain::class, [], [
+            'PostCommentCommand',
+            'PostTextCommentCommand',
+            'CommentPosted',
+            'CommentResolver',
+            'PublicCommentResolver',
+            'CommentDetails',
+            'CommentList',
+            'RecordCommentLocation',
+            'RecordCommentView',
+            'TextCommentLocation',
+            'TextCommentView',
+            'WholeRecord',
+            'PublicComment',
         ]];
 
         yield 'Reminders' => [RemindersDomain::class, [], []];

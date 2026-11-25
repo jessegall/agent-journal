@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Data;
 
-use App\Data\Comments\CommentList;
 use App\Data\Pages\SlotSectionData;
 use App\Support\AssignmentData;
+use Domain\Comments\Data\CommentList;
 use Domain\Tasks\Enums\TaskState;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;

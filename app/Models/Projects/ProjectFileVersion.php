@@ -83,20 +83,6 @@ final class ProjectFileVersion extends Model implements ReadableModel
     }
 
     /**
-     * The versions no comment names.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function uncommented(Builder $query): void
-    {
-        $query->whereNotExists(fn ($comments) => $comments->from('comments')
-            ->where('comments.target_type', ProjectFile::linkType())
-            ->whereColumn('comments.target_id', 'project_file_versions.project_file_id')
-            ->whereColumn('comments.version_id', 'project_file_versions.digest'));
-    }
-
-    /**
      * The versions of each file older than the newest ones it keeps.
      *
      * @param  Builder<self>  $query

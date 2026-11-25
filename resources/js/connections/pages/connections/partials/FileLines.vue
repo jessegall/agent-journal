@@ -25,6 +25,7 @@ const props = defineProps<{
     threads: FileThreadData[];
     recipientId: string | null;
     recipientName: string | null;
+    commentAddress: string;
     tellAddress: string;
 }>();
 const hostProp = useHostProp();
@@ -59,7 +60,7 @@ function send(from: number, to: number, close: () => void): void {
     const comment = draftFor(props.target, props.version, from, to).text;
 
     state.value = 'sending';
-    sendLineComment(props.target, props.version, from, to, {
+    sendLineComment(props.commentAddress, props.target, props.version, from, to, {
         only: [hostProp],
         onSent: () => {
             state.value = 'idle';

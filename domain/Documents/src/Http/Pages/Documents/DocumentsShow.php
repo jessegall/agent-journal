@@ -6,7 +6,6 @@ namespace Domain\Documents\Http\Pages\Documents;
 
 use App\Contracts\Navigation\RecordMenus;
 use App\Contracts\Sessions\AgentDirectory;
-use App\Data\Comments\CommentList;
 use App\Data\Pages\RecordCard;
 use App\Enums\Settings\ActionMethod;
 use App\Support\AgentOption;
@@ -19,6 +18,7 @@ use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
 use App\Support\Layout\PublicationTab;
 use Closure;
+use Domain\Comments\Data\CommentList;
 use Domain\Documents\Data\DocumentCommentsPartData;
 use Domain\Documents\Data\DocumentFeedbackPartData;
 use Domain\Documents\Data\DocumentRecipientData;

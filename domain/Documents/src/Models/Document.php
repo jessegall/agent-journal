@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\Documents\Models;
 
 use App\Concerns\BoundedReads;
-use App\Concerns\HasComments;
 use App\Concerns\HasNumber;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
@@ -17,7 +16,6 @@ use App\Contracts\Records\Commentable;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Sharing\Shareable;
-use App\Models\Records\Comment;
 use App\Models\Support\Accessor;
 use App\Support\ActorContext;
 use App\Support\Cards\DockCard;
@@ -66,7 +64,6 @@ use Illuminate\Support\Carbon;
  * @property mixed $card attribute
  * @property mixed $dock_card attribute
  * @property mixed $view attribute
- * @property Collection<int, Comment>|Comment[] $comments
  * @property ?DocumentRevision $currentRevision
  * @property DocumentDraft $draft
  * @property Collection<int, DocumentRevision>|DocumentRevision[] $revisions
@@ -75,7 +72,6 @@ final class Document extends Model implements Commentable, Dockable, EventSource
 {
     use BoundedReads;
     use CreatedWithAttention;
-    use HasComments;
     use HasNumber;
     use HasUlids;
     use Linkable;

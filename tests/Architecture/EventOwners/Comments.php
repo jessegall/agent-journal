@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Events\Comments\CommentPosted;
 use App\Support\RecordIdentity;
+use Domain\Comments\Events\CommentPosted;
 use Tests\Architecture\Support\EventRole;
 
 /**

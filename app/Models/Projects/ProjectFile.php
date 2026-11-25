@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Models\Projects;
 
 use App\Concerns\BoundedReads;
-use App\Concerns\HasComments;
 use App\Concerns\HasNumber;
 use App\Concerns\Linkable;
 use App\Contracts\Reads\TextContent;
@@ -13,7 +12,6 @@ use App\Contracts\Records\Commentable;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Exceptions\TextVersionUnavailable;
-use App\Models\Records\Comment;
 use App\Values\TextVersion;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -33,14 +31,12 @@ use PhpOption\Option;
  * @property string $path
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
- * @property Collection<int, Comment>|Comment[] $comments
  * @property Collection<int, ProjectFileVersion>|ProjectFileVersion[] $versions
  */
 #[Table('project_files')]
 final class ProjectFile extends Model implements Commentable, Numbered, ReadableModel, TextContent
 {
     use BoundedReads;
-    use HasComments;
     use HasNumber;
     use HasUlids;
     use Linkable;

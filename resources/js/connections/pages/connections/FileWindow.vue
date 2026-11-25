@@ -89,7 +89,15 @@ const shown = computed(() => {
                     :state="data.state === 'failed' || gaveUp ? 'failed' : 'ready'"
                     @retry="retry"
                 >
-                    <template v-if="data.commentTarget !== null && data.digest !== null" #lines>
+                    <template
+                        v-if="
+                            data.commentTarget !== null &&
+                            data.digest !== null &&
+                            data.commentAddress !== null &&
+                            data.tellAddress !== null
+                        "
+                        #lines
+                    >
                         <FileLines
                             :target="data.commentTarget"
                             :version="data.digest"
@@ -98,6 +106,7 @@ const shown = computed(() => {
                             :threads="data.threads"
                             :recipient-id="data.recipientId"
                             :recipient-name="data.recipientName"
+                            :comment-address="data.commentAddress"
                             :tell-address="data.tellAddress"
                         />
                     </template>

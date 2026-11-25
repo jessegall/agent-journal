@@ -6,7 +6,7 @@ namespace Domain\Documents\Tests\Feature;
 
 use App\Contracts\Actors\IdentityLinks;
 use App\Contracts\Bus\CommandBus;
-use App\Models\Records\Comment;
+use Domain\Comments\Models\Comment;
 use Domain\Documents\Commands\AppendUpload\AppendUploadCommand;
 use Domain\Documents\Commands\BeginUpload\BeginUploadCommand;
 use Domain\Documents\Commands\CommitUpload\CommitUploadCommand;

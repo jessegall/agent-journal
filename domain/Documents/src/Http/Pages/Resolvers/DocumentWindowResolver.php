@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Domain\Documents\Http\Pages\Resolvers;
 
 use App\Contracts\Navigation\PageResolver;
-use App\Contracts\Records\CommentResolver;
 use App\Contracts\Records\RecordResolver;
 use App\Contracts\Sharing\ShareStatusResolver;
 use App\Data\Docks\DockablePublicationData;
 use App\Support\Cards\DockIdentity;
 use App\Support\RecordReference;
+use Domain\Comments\Contracts\CommentResolver;
 use Domain\Documents\Contracts\Documents\DocumentResolver;
 use Domain\Documents\Contracts\Drafts\DraftResolver;
 use Domain\Documents\Http\Pages\Documents\DocumentsShow;

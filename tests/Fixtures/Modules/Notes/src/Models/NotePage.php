@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Modules\Notes\Models;
 
 use App\Contracts\Records\Commentable;
-use App\Concerns\HasComments;
 use App\Concerns\Linkable;
 use App\Contracts\Records\Numbered;
 use App\Concerns\HasNumber;
@@ -31,7 +30,6 @@ use Illuminate\Database\Eloquent\Model;
 final class NotePage extends Model implements Commentable, Numbered, ReadableModel, TextContent
 {
     use BoundedReads;
-    use HasComments;
     use HasNumber;
     use HasUlids;
     use Linkable;

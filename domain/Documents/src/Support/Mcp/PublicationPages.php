@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support\Mcp;
 
-use App\Contracts\Records\CommentResolver;
 use App\Mcp\Contracts\Continuations;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\Continuation;
@@ -12,6 +11,7 @@ use App\Support\IdListPage;
 use App\Support\MarkdownText;
 use App\Support\RecordIdentity;
 use App\Support\TextPreview;
+use Domain\Comments\Contracts\CommentResolver;
 use Domain\Documents\Values\DocumentReadCard;
 use Domain\Documents\Values\ReportReadCard;
 

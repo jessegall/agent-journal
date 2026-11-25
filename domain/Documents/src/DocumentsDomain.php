@@ -36,6 +36,7 @@ use App\Support\Searchable;
 use App\Support\ShareRecordDefinition;
 use App\Values\PolicyDefinition;
 use Domain\Chat\ChatDomain;
+use Domain\Comments\CommentsDomain;
 use Domain\Documents\Commands\ChangeDocumentDetails\ChangeDocumentDetailsCommand;
 use Domain\Documents\Commands\CloseDocument\CloseDocumentCommand;
 use Domain\Documents\Commands\CloseReport\CloseReportCommand;
@@ -161,7 +162,7 @@ final class DocumentsDomain extends Domain implements
 
     public function requires(): array
     {
-        return [ChatDomain::class];
+        return [ChatDomain::class, CommentsDomain::class];
     }
 
     public function exports(): Exports

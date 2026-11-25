@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Pages\Resolvers;
 
-use App\Contracts\Actors\ActorLabels;
 use App\Contracts\Hosts\ProjectFiles;
 use App\Contracts\Hosts\ServedEnvironment;
 use App\Contracts\Navigation\PageResolver;
-use App\Contracts\Records\CommentResolver;
-use App\Data\Comments\TextCommentView;
-use App\Data\Connections\FileCommentData;
+use App\Contracts\Projects\FileComments;
 use App\Data\Connections\FileThreadData;
 use App\Data\Connections\FileWindowData;
 use App\Enums\Connections\BindingReadiness;
@@ -21,11 +18,7 @@ use App\Http\Requests\Connections\FileWindowRequest;
 use App\Models\Agents\Agent;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectFile;
-use App\Support\ActorIdentity;
-use App\Support\ActorLabelSet;
-use App\Support\IdListPage;
 use App\Support\Layout\LayoutBodyData;
-use App\Support\RecordIdentity;
 use App\Values\ProjectFileAnswer;
 use Carbon\CarbonImmutable;
 
@@ -49,8 +42,7 @@ final readonly class FileWindowResolver implements PageResolver
         private ProjectFiles $files,
         private ServedEnvironment $served,
         private FileWindowRequest $request,
-        private CommentResolver $comments,
-        private ActorLabels $labels,
+        private FileComments $comments,
     ) {}
 
     public function read(): FileWindowData
@@ -141,12 +133,13 @@ final readonly class FileWindowResolver implements PageResolver
             'threads' => [],
             'recipientId' => null,
             'recipientName' => null,
-            'tellAddress' => route('connections.file-comments.tell', absolute: false),
+            'commentAddress' => $this->comments->commentAddress(),
+            'tellAddress' => $this->comments->tellAddress(),
         ]);
     }
 
     /**
-     * The file's record, once a version of it is kept, and the threads on the version shown, grouped by their lines.
+     * The file's record, once a version of it is kept and files take comments, and the threads on the version shown.
      *
      * @param  list<string>  $lines
      * @return array{commentTarget: string|null, threads: list<FileThreadData>}
@@ -155,7 +148,7 @@ final readonly class FileWindowResolver implements PageResolver
     {
         $found = ProjectFile::atPath($binding->id, $answer->path);
 
-        if (! $found->isDefined()) {
+        if (! $found->isDefined() || $this->comments->tellAddress() === null) {
             return [
                 'commentTarget' => null,
                 'threads' => [],
@@ -163,65 +156,17 @@ final readonly class FileWindowResolver implements PageResolver
         }
 
         $file = $found->get();
-        $target = new RecordIdentity(ProjectFile::linkType(), $file->id);
-        $listed = $this->comments->list($target, new IdListPage(limit: IdListPage::LARGEST_LIMIT));
-
-        $onVersion = array_values(array_filter(
-            $listed->comments,
-            fn ($comment) => $comment instanceof TextCommentView && $comment->anchor->versionId === $answer->digest,
-        ));
-
-        $labels = $this->labels->labelsFor(array_map(self::authorOf(...), $onVersion));
-        $byRange = [];
-
-        foreach ($onVersion as $comment) {
-            $byRange["{$comment->anchor->firstLine}-{$comment->anchor->lastLine}"][] = $comment;
-        }
-
-        $threads = array_map(fn (array $comments) => $this->thread($comments, $lines, $labels), array_values($byRange));
-
-        usort($threads, fn (FileThreadData $first, FileThreadData $second) => $first->firstLine <=> $second->firstLine);
 
         return [
             'commentTarget' => "file {$file->number}",
-            'threads' => $threads,
+            'threads' => $this->comments->threadsOn($file, $answer->digest, $lines),
         ];
-    }
-
-    /**
-     * One range's comments as a thread: its lines, the text of those lines in the version shown, and each comment.
-     *
-     * @param  non-empty-list<TextCommentView>  $comments
-     * @param  list<string>  $lines
-     */
-    private function thread(array $comments, array $lines, ActorLabelSet $labels): FileThreadData
-    {
-        $anchor = $comments[0]->anchor;
-        $quoted = array_slice($lines, $anchor->firstLine - 1, $anchor->lastLine - $anchor->firstLine + 1);
-
-        return FileThreadData::from([
-            'firstLine' => $anchor->firstLine,
-            'lastLine' => $anchor->lastLine,
-            'quote' => implode(' ', $quoted),
-            'versionLabel' => $anchor->versionLabel,
-            'comments' => array_map(fn (TextCommentView $comment) => FileCommentData::from([
-                'id' => $comment->comment->id,
-                'author' => $labels->nameOf(self::authorOf($comment)) ?? '',
-                'createdAt' => $comment->comment->createdAt,
-                'body' => $comment->comment->body,
-            ]), $comments),
-        ]);
-    }
-
-    private static function authorOf(TextCommentView $comment): ActorIdentity
-    {
-        return ActorIdentity::fromStored($comment->comment->authorType, $comment->comment->authorId);
     }
 
     /**
      * The project's main agent, whom a comment on its files is sent to, and the address that tells it.
      *
-     * @return array{recipientId: string, recipientName: string, tellAddress: string}
+     * @return array{recipientId: string, recipientName: string, commentAddress: string|null, tellAddress: string|null}
      */
     private function recipientOf(ProjectBinding $binding): array
     {
@@ -230,7 +175,8 @@ final readonly class FileWindowResolver implements PageResolver
         return [
             'recipientId' => $agent->id,
             'recipientName' => $agent->name,
-            'tellAddress' => route('connections.file-comments.tell', absolute: false),
+            'commentAddress' => $this->comments->commentAddress(),
+            'tellAddress' => $this->comments->tellAddress(),
         ];
     }
 

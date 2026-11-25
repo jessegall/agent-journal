@@ -9,6 +9,8 @@ use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Hosts\HostOperatorAccess;
 use App\Contracts\Hosts\LocalProjectHosts;
 use App\Contracts\Hosts\ProjectFiles;
+use App\Contracts\Projects\FileComments;
+use App\Contracts\Projects\HeldFileVersions;
 use App\Contracts\Records\RecordProviderRegistration;
 use App\Enums\Agents\AccessType;
 use App\Models\Projects\ProjectFile;
@@ -21,6 +23,8 @@ use App\Support\EntryDispatchers;
 use App\Support\HostProjectFiles;
 use App\Support\JournalRoutes;
 use App\Support\Links\ProjectFileLinkRecords;
+use App\Support\NoFileComments;
+use App\Support\NoHeldFileVersions;
 use App\Support\ProjectCommands;
 use App\Support\ProjectReadRetentionService;
 use App\Values\PolicyDefinition;
@@ -41,6 +45,8 @@ final class ConnectionsServiceProvider extends ServiceProvider
         $this->app->bind(LocalProjectHosts::class, BindingHosts::class);
         $this->app->bind(HostOperatorAccess::class, ConnectionsHostOperatorAccess::class);
         $this->app->bind(ProjectFiles::class, HostProjectFiles::class);
+        $this->app->bindIf(FileComments::class, NoFileComments::class);
+        $this->app->bindIf(HeldFileVersions::class, NoHeldFileVersions::class);
 
         $this->app->bind(ProjectCommands::class, fn () => new ProjectCommands(
             $this->app->make(JournalRoutes::class),

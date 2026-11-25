@@ -6,8 +6,8 @@ namespace Domain\Documents\Commands\CommentOnDocument;
 
 use App\Attributes\Commands\Authorize;
 use App\Enums\Agents\AccessType;
-use App\Policies\CommentPolicy;
 use App\Support\Command;
+use Domain\Comments\Policies\CommentPolicy;
 
 /**
  * @extends Command<string>

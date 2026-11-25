@@ -1,6 +1,5 @@
 import { router } from '@inertiajs/vue3';
 import { reactive } from 'vue';
-import { post } from '@/routes/comments';
 
 /**
  * A comment being written on some lines of a revision, with the key its send carries so a retry is the same send.
@@ -35,10 +34,11 @@ export function forgetDraft(target: string, revision: string, from: number, to: 
 }
 
 /**
- * Sends the draft as a comment on these lines of one version of a record, through Core's comment route, under the
- * draft's key, so a retry is the same send. The draft is forgotten once the comment is accepted; a failed send keeps it.
+ * Sends the draft as a comment on these lines of one version of a record to the address that saves comments, under
+ * the draft's key, so a retry is the same send. The draft is forgotten once the comment is accepted; a failed send keeps it.
  */
 export function sendLineComment(
+    address: string,
     target: string,
     version: string,
     from: number,
@@ -59,7 +59,7 @@ export function sendLineComment(
     };
 
     router.post(
-        post.url(),
+        address,
         {
             target,
             body: draft.text,

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Commands\Comments\PostTextComment\PostTextCommentCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Records\RecordResolver;
@@ -20,7 +19,6 @@ use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectFile;
 use App\Models\Projects\ProjectFileVersion;
 use App\Models\Projects\ProjectRead;
-use App\Models\Records\Comment;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
@@ -31,6 +29,8 @@ use App\Values\BindingFolder;
 use App\Values\InboxMemberAuthority;
 use App\Values\TextRange;
 use Carbon\CarbonImmutable;
+use Domain\Comments\Commands\PostTextComment\PostTextCommentCommand;
+use Domain\Comments\Models\Comment;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;

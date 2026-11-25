@@ -6,7 +6,7 @@ import type { DocumentCommentsPartData } from '@generated/types/documents';
 import DocumentComments from './DocumentComments.vue';
 import { draftFor } from '@kit/lineComments';
 
-vi.mock('@/routes/comments', () => ({ post: { url: () => '/comments' } }));
+vi.mock('@generated/routes/comments', () => ({ post: { url: () => '/comments' } }));
 
 function part(overrides: Partial<DocumentCommentsPartData> = {}): DocumentCommentsPartData {
     return {

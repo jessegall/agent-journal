@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\Tasks\Models;
 
 use App\Concerns\BoundedReads;
-use App\Concerns\HasComments;
 use App\Concerns\HasNumber;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
@@ -18,7 +17,6 @@ use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Work\Focusable;
 use App\Enums\Assignments\PoolMembersType;
-use App\Models\Records\Comment;
 use App\Models\Support\Accessor;
 use App\Models\Support\AssignableListing;
 use App\Support\ActorIdentity;
@@ -54,7 +52,6 @@ use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -85,7 +82,6 @@ use PhpOption\Some;
  * @property ?string $environment_id
  * @property mixed $state_text attribute
  * @property mixed $summary attribute
- * @property Collection<int, Comment>|Comment[] $comments
  */
 #[UseFactory(TaskFactory::class)]
 #[UsePolicy(TaskRunPolicy::class)]
@@ -93,7 +89,6 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
 {
     use AssignableListing;
     use BoundedReads;
-    use HasComments;
 
     /**
      * @use HasFactory<TaskFactory>

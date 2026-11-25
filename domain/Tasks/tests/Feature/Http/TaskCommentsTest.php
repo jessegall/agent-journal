@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature\Http;
 
-use App\Commands\Comments\PostComment\PostCommentCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
 use App\Support\RecordIdentity;
+use Domain\Comments\Commands\PostComment\PostCommentCommand;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Str;
@@ -82,6 +82,6 @@ final class TaskCommentsTest extends TestCase
         );
 
         $this->get("/tasks/{$task->number}?tab=comments")->assertRedirect('/login');
-        $this->assertSame(0, $task->comments()->count());
+        $this->assertDatabaseCount('comments', 0);
     }
 }
