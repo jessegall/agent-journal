@@ -32,7 +32,7 @@ return [
             'description' => 'Reviews a worker\'s changes before they are merged.',
             'base' => 'read-only-helper',
             'tier' => 2,
-            'supervisor' => ['default' => 'profile:journal-main', 'merge.ready' => 'profile:journal-merger'],
+            'supervisor' => ['default' => 'profile:journal-main'],
             'instances' => 'single',
         ],
         'journal-merger' => [

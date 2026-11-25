@@ -33,7 +33,6 @@ use Illuminate\Support\Carbon;
  * @property StopConditions $stop_conditions
  * @property ExecutionPolicy $execution_policy
  * @property string $policy_digest
- * @property bool $requires_review
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  * @property mixed $policy attribute
@@ -54,7 +53,6 @@ final class SessionPolicy extends Model implements ReadableModel
             'access_policy' => AccessPolicy::class,
             'stop_conditions' => StopConditions::class,
             'execution_policy' => ExecutionPolicy::class,
-            'requires_review' => 'boolean',
         ];
     }
 
@@ -75,7 +73,6 @@ final class SessionPolicy extends Model implements ReadableModel
         $frozen->profile_key = $policy->profileKey;
         $frozen->profile_revision = $policy->profileRevision;
         $frozen->configuration_hash = $policy->configurationHash;
-        $frozen->requires_review = $policy->requiresReview;
         $frozen->access_policy = $policy->access;
         $frozen->stop_conditions = $policy->stopConditions;
         $frozen->execution_policy = $policy->execution;
@@ -115,7 +112,6 @@ final class SessionPolicy extends Model implements ReadableModel
             $this->profile_key,
             $this->profile_revision,
             $this->configuration_hash,
-            $this->requires_review,
         ));
     }
 

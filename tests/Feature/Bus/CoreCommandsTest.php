@@ -76,12 +76,6 @@ use App\Commands\Projects\NotifyWorkspaceRead\NotifyWorkspaceReadCommand;
 use App\Commands\Projects\RecordHostDescriptors\RecordHostDescriptorsCommand;
 use App\Commands\Projects\RecordHostProtection\RecordHostProtectionCommand;
 use App\Commands\Projects\RequestProjectRead\RequestProjectReadCommand;
-use App\Commands\Reviews\ApproveCodeReview\ApproveCodeReviewCommand;
-use App\Commands\Reviews\CloseWorkChain\CloseWorkChainCommand;
-use App\Commands\Reviews\MergeReviewedWork\MergeReviewedWorkCommand;
-use App\Commands\Reviews\ResolveMergeAttempt\ResolveMergeAttemptCommand;
-use App\Commands\Reviews\ReturnCodeReview\ReturnCodeReviewCommand;
-use App\Commands\Reviews\WithdrawWorkChain\WithdrawWorkChainCommand;
 use App\Commands\Runs\AssessPartOutput\AssessPartOutputCommand;
 use App\Commands\Runs\CleanProcessOutput\CleanProcessOutputCommand;
 use App\Commands\Runs\MarkRunsStale\MarkRunsStaleCommand;
@@ -159,7 +153,6 @@ final class CoreCommandsTest extends CommandBusTestCase
         $this->assertEqualsCanonicalizing([
             ClaimStartCommand::class,
             HoldAgentStackCommand::class,
-            MergeReviewedWorkCommand::class,
             OfferNextAskCommand::class,
             NotifyRunningCommand::class,
             NotifyStoppedCommand::class,
@@ -254,11 +247,6 @@ final class CoreCommandsTest extends CommandBusTestCase
             AskSupervisorCommand::class,
             ChangeSupervisorCommand::class,
             ReplyToAskCommand::class,
-            ApproveCodeReviewCommand::class,
-            CloseWorkChainCommand::class,
-            WithdrawWorkChainCommand::class,
-            ResolveMergeAttemptCommand::class,
-            ReturnCodeReviewCommand::class,
             RouteAskCommand::class,
             WithdrawAskCommand::class,
             HideUnseatedNotificationsCommand::class,

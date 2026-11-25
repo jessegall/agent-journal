@@ -6,7 +6,6 @@ namespace App\Contracts\Sessions;
 
 use App\Exceptions\AgentBusy;
 use App\Exceptions\AgentNotAvailable;
-use App\Exceptions\AgentReservedForReview;
 use App\Exceptions\StartRefused;
 use App\Support\ActorIdentity;
 
@@ -20,7 +19,6 @@ interface StartReservations
      * @throws AgentNotAvailable
      * @throws StartRefused
      * @throws AgentBusy
-     * @throws AgentReservedForReview
      */
     public function reserve(ActorIdentity $agent): void;
 

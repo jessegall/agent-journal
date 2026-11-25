@@ -24,7 +24,6 @@ use App\Http\Controllers\RevokeProjectBindingController;
 use App\Http\Controllers\RevokeProjectBindingsController;
 use App\Http\Controllers\RevokeProjectInvitationController;
 use App\Http\Controllers\RuntimeLeaseController;
-use App\Http\Controllers\WorktreeDeliveryController;
 use App\Http\Middleware\AuthenticateDeviceGrant;
 use App\Support\CallRoutes;
 use Illuminate\Container\Container;
@@ -56,10 +55,6 @@ Route::post('/host/bindings/{binding}/runtimes/{runtime}/stopped', BindingRuntim
     ->middleware('journal.host:'.HostRouteRole::Relay->value)
     ->whereUlid(['binding', 'runtime'])
     ->name('connections.runtimes.stopped');
-
-Route::post('/host/deliveries', WorktreeDeliveryController::class)
-    ->middleware('journal.host:'.HostRouteRole::Relay->value)
-    ->name('connections.deliveries.submit');
 
 Route::get('/install/{ticket}', InstallScriptController::class)->name('connections.install');
 

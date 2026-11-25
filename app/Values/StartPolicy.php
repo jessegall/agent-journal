@@ -20,7 +20,6 @@ final readonly class StartPolicy
         public string|null $profileKey,
         public int|null $profileRevision,
         public string|null $configurationHash,
-        public bool $requiresReview = false,
     ) {}
 
     /**
@@ -69,7 +68,6 @@ final readonly class StartPolicy
             $this->profileKey,
             $this->profileRevision,
             $this->configurationHash,
-            $this->requiresReview,
         ], JSON_THROW_ON_ERROR));
     }
 }

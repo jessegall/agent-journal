@@ -38,7 +38,6 @@ use App\Enums\Web\WindowPlace;
 use App\Enums\Web\WindowState;
 use App\Http\Controllers\Agents\CheckCapacityController;
 use App\Http\Controllers\Agents\StartPreviewController;
-use App\Http\Controllers\Asks\ApproveMergeAskPageController;
 use App\Http\Controllers\Drafts\DraftQuestionsController;
 use App\Http\Controllers\Drafts\DraftRecordController;
 use App\Http\Controllers\Profiles\StartReceiptController;
@@ -141,15 +140,7 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
                     ActionRoute::get('agents/{agent}/start-preview', StartPreviewController::class, 'start-preview'),
                 ),
             Page::make('asks', 'Asks', Icon::Speech, AskInboxResolver::class, 'Asks.vue')->at('asks')->onHome(26),
-            Page::make('ask', 'Ask', Icon::Speech, AskDetailResolver::class, 'AskDetail.vue')
-                ->at('asks/{ask}')
-                ->actions(
-                    ActionRoute::post(
-                        'asks/{ask}/approve-merge',
-                        ApproveMergeAskPageController::class,
-                        'approve-merge',
-                    ),
-                ),
+            Page::make('ask', 'Ask', Icon::Speech, AskDetailResolver::class, 'AskDetail.vue')->at('asks/{ask}'),
             Page::layout('runtimes', 'Runtimes', Icon::Activity, RuntimeStatusResolver::class)
                 ->at('runtimes')
                 ->actions(

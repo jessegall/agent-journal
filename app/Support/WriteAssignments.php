@@ -12,12 +12,10 @@ use App\Contracts\Assignments\JournalAssignmentWriter;
 use App\Contracts\Assignments\MaintenanceAssignmentWriter;
 use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Enums\Agents\AccessType;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Assignments\AssignmentOutcomeType;
 use App\Enums\Assignments\AssignmentReason;
 use App\Exceptions\AssignmentConflict;
 use App\Exceptions\AssignmentRootFinished;
-use App\Models\Reviews\WorkerReservation;
 use App\Policies\AssignmentRecipientPolicy;
 use App\Support\Storage\AssignmentStore;
 use App\Support\Support\AssignmentBatch;
@@ -151,19 +149,12 @@ final readonly class WriteAssignments implements
     public function assignUnfinished(AssigneeIdentity $recipient, Closure $records): AssignmentResult
     {
         $this->transaction->assertOpen();
-        $reservations = WorkerReservation::lockedFor(self::workersAmong([$recipient]));
         [$group, $finished] = $this->checkedGroup($records);
         $admitted = $this->admission->admitPublic($group->root, $recipient);
         $root = $this->store->lockCurrent($group->root);
 
         if ($root->isDefined() && ! $root->get()->holder()->isSameAs($admitted->resolved)) {
             throw AssignmentConflict::heldByAnother($group->root);
-        }
-
-        if ($root->isEmpty()) {
-            foreach ($reservations as $reservation) {
-                $reservation->occupy($group->root);
-            }
         }
 
         return $this->published(AssignmentReason::Assigned, $this->each(
@@ -179,19 +170,9 @@ final readonly class WriteAssignments implements
         Closure $records,
     ): AssignmentResult {
         $this->transaction->assertOpen();
-        $reservations = WorkerReservation::lockedFor(self::workersAmong([
-            $recipient,
-            $expectedRoot->holder,
-        ]));
         [$group, $finished] = $this->checkedGroup($records);
         $admitted = $this->admission->admitPublic($group->root, $recipient);
         $this->store->lockExpected($group->root, $expectedRoot);
-
-        foreach ($reservations as $reservation) {
-            $reservation->release($group->root);
-        }
-
-        ($reservations["{$recipient->type}:{$recipient->id}"] ?? null)?->occupy($group->root);
 
         return $this->published(AssignmentReason::Reassigned, $this->each(
             $group,
@@ -204,13 +185,8 @@ final readonly class WriteAssignments implements
     {
         $this->transaction->assertOpen();
         $this->assertMayUnassign();
-        $reservations = WorkerReservation::lockedFor(self::workersAmong([$expectedRoot->holder]));
         [$group, $finished] = $this->checkedGroup($records);
         $this->store->lockExpected($group->root, $expectedRoot);
-
-        foreach ($reservations as $reservation) {
-            $reservation->release($group->root);
-        }
 
         return $this->published(
             AssignmentReason::Unassigned,
@@ -304,19 +280,5 @@ final readonly class WriteAssignments implements
         $this->facts->publish(ActorIdentity::of($this->actors->actor()), $reason, $assignmentChange);
 
         return $assignmentChange;
-    }
-
-    /**
-     * The agents among the holders, whose units are reserved; a user holds work without a reservation.
-     *
-     * @param  list<AssigneeIdentity>  $holders
-     * @return list<AssigneeIdentity>
-     */
-    private static function workersAmong(array $holders): array
-    {
-        return array_values(array_filter(
-            $holders,
-            fn (AssigneeIdentity $holder) => $holder->type === ActorType::Agent->value,
-        ));
     }
 }

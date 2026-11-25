@@ -23,7 +23,6 @@ use App\Support\EngineSettings;
 use App\Support\EngineTickedDelivery;
 use App\Support\ExpireNavigationRequestsOnTick;
 use App\Support\FrameBaselines;
-use App\Support\InspectMergeAttemptsOnTick;
 use App\Support\InterruptStuckTurnsOnTick;
 use App\Support\MarkSilentSessionsOnTick;
 use App\Support\MonotonicStopTimes;
@@ -78,7 +77,6 @@ final class EngineServiceProvider extends ServiceProvider
     ): void {
         $listeners->add(MarkSilentSessionsOnTick::class);
         $listeners->add(CertifyPassedStopsOnTick::class);
-        $listeners->add(InspectMergeAttemptsOnTick::class);
         $listeners->add(EndTerminalViewsOnTick::class);
         $listeners->add(ExpireNavigationRequestsOnTick::class);
         $listeners->add(InterruptStuckTurnsOnTick::class);

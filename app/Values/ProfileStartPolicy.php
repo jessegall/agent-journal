@@ -38,7 +38,6 @@ final class ProfileStartPolicy extends Data
         public readonly StopConditions $stopConditions,
         public readonly ExecutionPolicy $execution,
         public readonly ProfileProvenance $provenance,
-        public readonly bool $requiresReview = false,
     ) {}
 
     /**
@@ -97,7 +96,6 @@ final class ProfileStartPolicy extends Data
             $profileKey,
             $revision,
             $this->configurationHash(),
-            $this->requiresReview,
         );
     }
 }

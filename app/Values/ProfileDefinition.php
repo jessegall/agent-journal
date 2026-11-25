@@ -23,7 +23,6 @@ final readonly class ProfileDefinition
         'label',
         'description',
         'start.provenance',
-        'start.requiresReview',
     ];
 
     /**

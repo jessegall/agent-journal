@@ -6,14 +6,11 @@ namespace App\Support;
 
 use App\Contracts\Sessions\StartReservations;
 use App\Exceptions\AgentNotAvailable;
-use App\Exceptions\AgentReservedForReview;
 use App\Models\Agents\Agent;
-use App\Models\Reviews\WorkReservation;
 
 /**
  * Takes the same lifecycle lock and start reservation every start takes, so an owner can recheck its work facts
- * under it before it runs the start. An agent whose certified work is held for review is refused under that lock, so
- * a candidate picked before the reservation cannot take it.
+ * under it before it runs the start.
  */
 final readonly class ReserveStarts implements StartReservations
 {
@@ -23,10 +20,6 @@ final readonly class ReserveStarts implements StartReservations
     {
         $found = Agent::withId($agent->id)->getOrThrow(AgentNotAvailable::forAgent($agent->id));
         $this->sessions->reserveStart($found);
-
-        if (WorkReservation::holds($agent)) {
-            throw AgentReservedForReview::forAgent($agent->id);
-        }
     }
 
     public function hasRetired(ActorIdentity $agent): bool

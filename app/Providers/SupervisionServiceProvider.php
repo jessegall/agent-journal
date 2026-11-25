@@ -6,32 +6,22 @@ namespace App\Providers;
 
 use App\Concerns\LoadsCoreRoutes;
 use App\Contracts\Admission\AskAdmission;
-use App\Contracts\Admission\MergeAdmission;
 use App\Contracts\Asks\AskReader;
 use App\Contracts\Authorization\PolicyCatalogue;
-use App\Contracts\Notifications\NotificationTargets;
 use App\Contracts\Processes\SupervisorDefinitions;
 use App\Contracts\Processes\SupervisorDispatch;
-use App\Contracts\Work\WorkRepair;
 use App\Enums\Agents\AccessType;
 use App\Policies\AskPolicy;
 use App\Policies\SupervisorPolicy;
-use App\Resolvers\MergeAskNotificationTarget;
 use App\Support\AdvanceDueAsksOnTick;
 use App\Support\AskTypeRegistry;
 use App\Support\CurrentAskAdmission;
 use App\Support\EngineListenerSet;
-use App\Support\HandOffCodeReviewsOnTick;
 use App\Support\Readers\AskRecords;
-use App\Support\ReviewMergeAdmission;
-use App\Support\SettleMergeOutcomesOnTick;
 use App\Support\SupervisorRouting;
-use App\Support\Types\CodeReviewType;
-use App\Support\Types\MergeReadyType;
 use App\Support\Types\QuestionAskType;
 use App\Support\Types\StuckType;
 use App\Support\UnavailableSupervisorDispatch;
-use App\Support\UnavailableWorkRepair;
 use App\Values\AskTypeKey;
 use App\Values\PolicyDefinition;
 use Illuminate\Console\Scheduling\Schedule;
@@ -50,9 +40,6 @@ final class SupervisionServiceProvider extends ServiceProvider
         $this->app->bind(AskReader::class, AskRecords::class);
         $this->app->singleton(AskTypeRegistry::class);
         $this->app->bindIf(SupervisorDispatch::class, UnavailableSupervisorDispatch::class);
-        $this->app->bindIf(WorkRepair::class, UnavailableWorkRepair::class);
-        // The contract belongs to Agents, which never names Supervision; supervision admits merges.
-        $this->app->bind(MergeAdmission::class, ReviewMergeAdmission::class);
     }
 
     public function boot(
@@ -60,12 +47,8 @@ final class SupervisionServiceProvider extends ServiceProvider
         AskTypeRegistry $types,
         Repository $config,
         EngineListenerSet $engineListeners,
-        NotificationTargets $notificationTargets,
     ): void {
-        $notificationTargets->register(MergeAskNotificationTarget::KEY, MergeAskNotificationTarget::class);
         $engineListeners->add(AdvanceDueAsksOnTick::class);
-        $engineListeners->add(HandOffCodeReviewsOnTick::class);
-        $engineListeners->add(SettleMergeOutcomesOnTick::class);
         $this->loadCoreRoutes('supervision/asks.php');
 
         $this->callAfterResolving(
@@ -84,8 +67,6 @@ final class SupervisionServiceProvider extends ServiceProvider
         ));
 
         $types->register($this->app->make(QuestionAskType::class));
-        $types->register($this->app->make(CodeReviewType::class));
-        $types->register($this->app->make(MergeReadyType::class));
         $types->register($this->app->make(StuckType::class));
         $this->requireKnownAskTypes($types, $config->array('profiles.profiles'));
 

@@ -40,7 +40,6 @@ use App\Enums\Projects\DeviceGrantState;
 use App\Enums\Projects\InstallAttemptState;
 use App\Enums\Projects\InvitationMode;
 use App\Enums\Projects\ProjectWindowState;
-use App\Enums\Reviews\DeliveryOutcome;
 use App\Enums\Web\WindowPlace;
 use App\Http\Pages\Resolvers\ConnectProjectWindowResolver;
 use App\Http\Pages\Resolvers\DeviceApprovalWindowResolver;
@@ -134,7 +133,6 @@ final class ConnectionsPages implements NativePartProvider, NavigationProvider, 
             CommandRunState::class,
             ConnectionAuditActor::class,
             ConnectionAuditType::class,
-            DeliveryOutcome::class,
             DeviceGrantState::class,
             FileWindowState::class,
             InstallAttemptState::class,

@@ -5,18 +5,9 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Commands\Asks\AdvanceAsk\AdvanceAskCommand;
-use App\Commands\Reviews\ApproveCodeReview\ApproveCodeReviewCommand;
-use App\Commands\Reviews\CloseWorkChain\CloseWorkChainCommand;
-use App\Commands\Reviews\HandOffCodeReview\HandOffCodeReviewCommand;
-use App\Commands\Reviews\InspectMergeAttempts\InspectMergeAttemptsCommand;
-use App\Commands\Reviews\MergeReviewedWork\MergeReviewedWorkCommand;
 use App\Commands\Asks\ReplyToAsk\ReplyToAskCommand;
-use App\Commands\Reviews\ResolveMergeAttempt\ResolveMergeAttemptCommand;
-use App\Commands\Reviews\ReturnCodeReview\ReturnCodeReviewCommand;
 use App\Commands\Asks\RouteAsk\RouteAskCommand;
-use App\Commands\Reviews\SettleMergeOutcomes\SettleMergeOutcomesCommand;
 use App\Commands\Asks\WithdrawAsk\WithdrawAskCommand;
-use App\Commands\Reviews\WithdrawWorkChain\WithdrawWorkChainCommand;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Assignments\Assignable;
 use App\Contracts\Assignments\JournalAssignableProvider;
@@ -27,43 +18,18 @@ use App\Values\AskReference;
 final readonly class AskAssignments implements JournalAssignableProvider
 {
     /**
-     * The commands that route an ask to its first holder: routing it, and the review chain opening its own asks; a
-     * merge's settlement may open a repair's stuck ask.
+     * The commands that route an ask to its first holder.
      */
     private const array ROUTING_COMMANDS = [
         RouteAskCommand::class,
-        HandOffCodeReviewCommand::class,
-        ApproveCodeReviewCommand::class,
-        ReturnCodeReviewCommand::class,
-        MergeReviewedWorkCommand::class,
-        InspectMergeAttemptsCommand::class,
-        SettleMergeOutcomesCommand::class,
-        ResolveMergeAttemptCommand::class,
     ];
 
     /**
-     * The engine's commands that route an ask on its requester's behalf, as the review chain's maintenance.
-     */
-    private const array MAINTENANCE_ROUTING_COMMANDS = [
-        HandOffCodeReviewCommand::class,
-        InspectMergeAttemptsCommand::class,
-        SettleMergeOutcomesCommand::class,
-    ];
-
-    /**
-     * The commands that end an ask for its holder: an answer, a withdrawal, a review decision or a merge's outcome.
+     * The commands that end an ask for its holder: an answer or a withdrawal.
      */
     private const array ANSWERING_COMMANDS = [
         ReplyToAskCommand::class,
         WithdrawAskCommand::class,
-        ApproveCodeReviewCommand::class,
-        ReturnCodeReviewCommand::class,
-        MergeReviewedWorkCommand::class,
-        InspectMergeAttemptsCommand::class,
-        SettleMergeOutcomesCommand::class,
-        ResolveMergeAttemptCommand::class,
-        CloseWorkChainCommand::class,
-        WithdrawWorkChainCommand::class,
     ];
 
     public function __construct(
@@ -89,15 +55,8 @@ final readonly class AskAssignments implements JournalAssignableProvider
         }
 
         $this->graph->acquire();
-        $handsOff = $this->runsAny(self::MAINTENANCE_ROUTING_COMMANDS);
-
-        $ask = $handsOff
-            ? Ask::lockedForMaintenance($assignment->record->id)
-            : $this->asks->lock(new AskReference($assignment->record->id));
-
-        if (! $handsOff) {
-            $this->requireRouteEditor($ask);
-        }
+        $ask = $this->asks->lock(new AskReference($assignment->record->id));
+        $this->requireRouteEditor($ask);
 
         $pending = $ask->requirePending($assignment->expectedVersion);
         $route = $this->routes->routeOf($ask);

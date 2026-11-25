@@ -43,11 +43,10 @@ use App\Events\Sessions\AgentHoldReleased;
 use App\Events\Sessions\AgentRuntimeReassigned;
 use App\Events\Sessions\DriverFailed;
 use App\Events\Sessions\DriverRequestRecovered;
-use App\Events\Sessions\SessionStartCancelled;
-use App\Events\Sessions\SessionStartEnded;
-use App\Events\Sessions\MergeOutcomeRecorded;
 use App\Events\Sessions\SessionClosed;
 use App\Events\Sessions\SessionOpened;
+use App\Events\Sessions\SessionStartCancelled;
+use App\Events\Sessions\SessionStartEnded;
 use App\Events\Sessions\StartAccepted;
 use App\Events\Sessions\StartGrantRequested;
 use App\Events\Sessions\StartRefusedWithoutAccount;
@@ -136,11 +135,6 @@ final class EventPayloads
             SessionStartCancelled::class => [
                 'fields' => [
                     'work' => 'App\Support\RecordIdentity',
-                ],
-            ],
-            MergeOutcomeRecorded::class => [
-                'fields' => [
-                    'attemptId' => 'string',
                 ],
             ],
             DriverFailed::class => [

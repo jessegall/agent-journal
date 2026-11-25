@@ -10,16 +10,15 @@ use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\ConversationVisit;
 use App\Models\Drivers\DriverConversation;
-use App\Models\Reviews\WorkReservation;
 use App\Models\Sessions\SessionProcess;
+use App\Support\RankedStartCandidate;
 use App\Support\StartCandidateFacts;
 use App\Support\StartCandidateQuery;
-use App\Support\RankedStartCandidate;
 
 /**
  * Ranks an owner's helpers from Agents' own records: the agent row, its running sessions and unresolved starts, and
  * the conversations it kept under the purpose with the model of each one's last visit. An actor with no agent row is
- * never offered, nor is one whose certified work is held for review.
+ * never offered.
  */
 final readonly class AgentStartCandidates implements SessionStartCandidates
 {
@@ -32,7 +31,7 @@ final readonly class AgentStartCandidates implements SessionStartCandidates
 
         $agentIds = array_map(fn (StartCandidateFacts $helper) => $helper->actor->id, $helpers);
         $agents = Agent::byIds($agentIds);
-        $busy = [...$this->busyAgents($agentIds), ...WorkReservation::reservedAgentIds($agentIds)];
+        $busy = $this->busyAgents($agentIds);
 
         $purposeConversations = DriverConversation::query()
             ->ofAgents($agentIds)

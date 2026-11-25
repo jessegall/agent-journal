@@ -11,7 +11,6 @@ use App\Contracts\Activity\ActivityLog;
 use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Actors\ActorProviderRegistration;
 use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Admission\MergeAdmission;
 use App\Contracts\Assignments\AssignmentRegistration;
 use App\Contracts\Authorization\AgentAuthority;
 use App\Contracts\Authorization\AuthorizerProviderRegistration;
@@ -39,12 +38,12 @@ use App\Contracts\Sessions\AgentDirectory;
 use App\Contracts\Sessions\AgentRequestClient as AgentRequestClientContract;
 use App\Contracts\Sessions\AgentResolver;
 use App\Contracts\Sessions\CurrentSession;
-use App\Contracts\Sessions\SessionStartCandidates;
 use App\Contracts\Sessions\RuntimeResolver;
 use App\Contracts\Sessions\SessionPolicyReader;
 use App\Contracts\Sessions\SessionProvenance as SessionProvenanceContract;
 use App\Contracts\Sessions\SessionRequestResolver;
 use App\Contracts\Sessions\SessionResolver;
+use App\Contracts\Sessions\SessionStartCandidates;
 use App\Contracts\Sessions\SessionTokenSource;
 use App\Contracts\Sessions\StartExecutor;
 use App\Contracts\Sessions\StartHeartbeats as StartHeartbeatsContract;
@@ -53,7 +52,6 @@ use App\Contracts\Sessions\StartReceipts;
 use App\Contracts\Sessions\StartReservations;
 use App\Contracts\Sessions\StartTransaction;
 use App\Contracts\Settings\SettingsResolver;
-use App\Contracts\Work\HelperCommitImport as HelperCommitImportContract;
 use App\Enums\Agents\AccessType;
 use App\Enums\Assignments\ActorType;
 use App\Enums\Assignments\AssignmentPurpose;
@@ -69,8 +67,8 @@ use App\Policies\AgentPolicy;
 use App\Policies\AgentTerminalControlPolicy;
 use App\Resolvers\AgentAuthorityRecords;
 use App\Resolvers\AgentLabels;
-use App\Resolvers\AgentStartCandidates;
 use App\Resolvers\AgentRecords;
+use App\Resolvers\AgentStartCandidates;
 use App\Resolvers\CallingSessionDriver;
 use App\Resolvers\DriverConversationRecords;
 use App\Resolvers\LinkedAccountUses;
@@ -107,16 +105,13 @@ use App\Support\EnvironmentCredentialSource;
 use App\Support\FrozenSessionPolicies;
 use App\Support\GrantedSessionOutputs;
 use App\Support\HeartbeatService;
-use App\Support\HelperCommitImport;
 use App\Support\HostStartExecutor;
 use App\Support\HostStartPreflight;
 use App\Support\InstallLineAvailability;
-use App\Support\StartProfiles;
 use App\Support\NavigationExpiry;
 use App\Support\NavigationRequestProvider;
 use App\Support\PendingNavigationWork;
 use App\Support\PendingWorkSources;
-use App\Support\ProtectedMerge;
 use App\Support\PublishedReleases;
 use App\Support\ReadGrant;
 use App\Support\ReadinessCheckSweep;
@@ -130,10 +125,10 @@ use App\Support\SessionToolDiscovery;
 use App\Support\SignedCallSender;
 use App\Support\SignedHostCalls;
 use App\Support\StartEnvironment;
+use App\Support\StartProfiles;
 use App\Support\SystemEntryPolicies;
 use App\Support\TerminalViews;
 use App\Support\UnavailableAttachments;
-use App\Support\UnavailableMergeAdmission;
 use App\Values\FilePath;
 use App\Values\HostCapacity;
 use App\Values\PolicyDefinition;
@@ -142,7 +137,6 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Events\Dispatcher;
-use Illuminate\Process\Factory;
 use Illuminate\Support\ServiceProvider;
 use PhpOption\None;
 use PhpOption\Option;
@@ -185,7 +179,6 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->alias(RequestSession::class, AgentCallContext::class);
         $this->app->bind(ToolDiscovery::class, SessionToolDiscovery::class);
         $this->app->bind(WorkspaceReader::class, RetainedWorkspaceReads::class);
-        $this->app->bindIf(MergeAdmission::class, UnavailableMergeAdmission::class);
         $this->app->bindIf(AttachmentReferences::class, UnavailableAttachments::class);
         $this->app->bind(RuntimeStops::class, DriverRuntimeStops::class);
         $this->app->bind(NavigationReader::class, AgentNavigationRecords::class);
@@ -272,18 +265,6 @@ final class AgentsServiceProvider extends ServiceProvider
         ));
 
         $this->app->scoped(PendingStartSecrets::class);
-
-        $this->app->bind(
-            HelperCommitImport::class,
-            fn () => new HelperCommitImport($this->app->make(Factory::class), base_path()),
-        );
-
-        $this->app->alias(HelperCommitImport::class, HelperCommitImportContract::class);
-
-        $this->app->bind(
-            ProtectedMerge::class,
-            fn () => new ProtectedMerge($this->app->make(Factory::class), base_path()),
-        );
 
         $this->app->bind(
             HostCapabilities::class,

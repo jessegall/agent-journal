@@ -89,21 +89,4 @@ final class AskRefused extends RuntimeException implements CodedRefusal, Command
     {
         return RefusalCode::Forbidden;
     }
-
-    public static function onlyOwnerResolvesMerges(): self
-    {
-        return new self('Only the owner states how an uncertain merge ended.');
-    }
-
-    public static function mergeNotUncertain(string $attemptId): self
-    {
-        return new self(
-            "Merge attempt {$attemptId} is not uncertain, or the stated outcome is no ending; nothing changed.",
-        );
-    }
-
-    public static function onlyOwnerClosesChains(): self
-    {
-        return new self('Only the owner closes the chain of reviewed work.');
-    }
 }

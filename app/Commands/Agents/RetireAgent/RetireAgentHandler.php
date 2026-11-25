@@ -18,7 +18,6 @@ use App\Exceptions\AgentRetirementDenied;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
-use App\Models\Reviews\WorkerReservation;
 use App\Models\Sessions\SessionProcess;
 use App\Policies\AgentPolicy;
 use App\Support\ActorIdentity;
@@ -71,10 +70,6 @@ final readonly class RetireAgentHandler implements CommandHandler
         }
 
         $assignee = AssigneeIdentity::of($target);
-
-        foreach (WorkerReservation::lockedFor([$assignee]) as $reservation) {
-            $reservation->releaseAll();
-        }
 
         $released = $this->store->releaseAll($assignee);
         $this->facts->publish($caller, AssignmentReason::Retired, $released);

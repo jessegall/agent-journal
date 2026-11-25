@@ -10,22 +10,18 @@ use App\Commands\Sessions\RecordStopConditionResults\RecordStopConditionResultsC
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Contracts\Sessions\StartReservations;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Agents\ConversationModeType;
 use App\Enums\Drivers\DriverOperation;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Hooks\AnswerType;
-use App\Enums\Sessions\CleanupStep;
 use App\Enums\Sessions\StartOriginType;
 use App\Enums\Sessions\StopConditionResultType;
 use App\Events\Hooks\HelperCompletionCertified;
 use App\Events\Hooks\HelperStopHeld;
 use App\Events\Sessions\SessionStartCancelled;
-use App\Exceptions\AgentReservedForReview;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;
-use App\Models\Reviews\WorkReservation;
 use App\Models\Sessions\SessionPolicy;
 use App\Models\Sessions\SessionRequest;
 use App\Models\Sessions\StopCheck;
@@ -44,7 +40,6 @@ use App\Values\StopCondition;
 use App\Values\StopConditionResultReport;
 use App\Values\StopConditions;
 use App\Values\TrustedEntryAuthority;
-use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use PhpOption\None;
@@ -108,33 +103,6 @@ final class HelperCompletionTest extends TestCase
 
         $this->assertNotNull(StopCheck::query()->withoutGlobalScopes()->sole()->certified_at);
         Event::assertDispatchedTimes(HelperCompletionCertified::class, 1);
-    }
-
-    public function test_reviewed_work_holds_its_actor_and_checkout_even_when_the_handoff_is_lost(): void
-    {
-        Event::fake([HelperCompletionCertified::class]);
-        $start = $this->helperWithConditions(requiresReview: true);
-        $this->startedFor($start);
-        $this->stop($start, 'stop-1');
-        $this->settle('stop-1', StopConditionResultType::Passed, 'clean');
-
-        $this->certifyPassedStops('pass-1');
-        $start->session->endAt(CarbonImmutable::now());
-
-        $reservation = WorkReservation::query()->with('certifiedWork')->sole();
-        $this->assertSame(
-            [$start->agent->id, '/workspace'],
-            [$reservation->actor_id, $reservation->certifiedWork->worktree],
-        );
-        Event::assertDispatchedTimes(HelperCompletionCertified::class, 1);
-        $this->assertThrows(
-            fn () => $this->app->make(StartReservations::class)->reserve(ActorIdentity::of($start->agent)),
-            AgentReservedForReview::class,
-        );
-        $this->assertNotContains(
-            'checkout',
-            array_map(fn (CleanupStep $step) => $step->value, CleanupStep::cases()),
-        );
     }
 
     public function test_a_dirty_writer_cannot_finish_while_its_checks_run_or_fail(): void
@@ -212,7 +180,7 @@ final class HelperCompletionTest extends TestCase
         Event::assertDispatched(SessionStartCancelled::class, fn (SessionStartCancelled $event) => $event->work->id === $work->id);
     }
 
-    private function helperWithConditions(bool $requiresReview = false): TestStart
+    private function helperWithConditions(): TestStart
     {
         $start = TestStart::start('writing-helper');
         $policy = StartPolicy::mainOnHost('/workspace');
@@ -223,7 +191,6 @@ final class HelperCompletionTest extends TestCase
             'writing-helper',
             1,
             null,
-            $requiresReview,
         ));
 
         return $start;

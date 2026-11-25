@@ -65,7 +65,6 @@ use App\Events\Sessions\MenuEntryProven;
 use App\Events\Sessions\MenuEntryRetired;
 use App\Events\Sessions\MenuEntrySuperseded;
 use App\Events\Sessions\MenuEntryUsed;
-use App\Events\Sessions\MergeOutcomeRecorded;
 use App\Events\Sessions\ProfileRevisionHoldReconciled;
 use App\Events\Sessions\SessionClosed;
 use App\Events\Sessions\SessionOpened;
@@ -202,14 +201,6 @@ return [
         'migrated' => false,
         'producers' => [
             'app/Listeners/AnnounceSessionStartEnded.php',
-        ],
-    ],
-    MergeOutcomeRecorded::class => [
-        'role' => EventRole::CommandFact,
-        'migrated' => false,
-        'producers' => [
-            'app/Commands/Reviews/InspectMergeAttempts/InspectMergeAttemptsHandler.php',
-            'app/Commands/Reviews/MergeReviewedWork/MergeReviewedWorkHandler.php',
         ],
     ],
     DriverFailed::class => [

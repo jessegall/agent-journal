@@ -97,8 +97,10 @@ final readonly class AskClock
      */
     private static function place(AskHop $hop): array
     {
+        $urgentKeys = CoreAskType::urgentKeys();
+
         return [
-            CoreAskType::tryFrom($hop->type_key)?->isUrgent() ? 0 : 1,
+            in_array($hop->type_key, $urgentKeys, true) ? 0 : 1,
             $hop->accepted_at,
             $hop->id,
         ];

@@ -17,7 +17,6 @@ use App\Events\Messages\MessageSent;
 use App\Events\Processes\OutputChunkCommitted;
 use App\Events\Processes\ProcessRunOutlasted;
 use App\Events\Processes\RunOutcomeRecorded;
-use App\Events\Sessions\MergeOutcomeRecorded;
 use App\Events\Sessions\SessionClosed;
 use App\Events\Sessions\SessionOpened;
 use App\Exceptions\InvalidListener;
@@ -103,7 +102,6 @@ final class TransactionListenerLaneTest extends TestCase
                 LinksRemoved::class,
                 SessionOpened::class,
                 SessionClosed::class,
-                MergeOutcomeRecorded::class,
                 OutputChunkCommitted::class,
                 MessageAnswerRequired::class,
                 MessageSent::class,

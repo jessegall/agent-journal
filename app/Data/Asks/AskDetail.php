@@ -20,7 +20,5 @@ final class AskDetail extends Data
         public readonly int $version,
         public readonly AskResult $result,
         public readonly string $resultLabel,
-        public readonly string|null $mergeDecisionId,
-        public readonly bool $canApproveMerge,
     ) {}
 }
