@@ -25,15 +25,16 @@ final class FixtureVerbsProvenTest extends TestCase
 
     public function test_every_fixture_verb_is_called_by_a_test_of_its_fixture(): void
     {
-        $unproven = $this->unprovenOf(TestJournal::class, glob(base_path('tests/Feature/Seeding/*Test.php')) ?: []);
+        $journalTests = glob(base_path('tests/Feature/Seeding/*Test.php')) ?: [];
+        $unproven = $this->unprovenOf(ReflectedType::of(TestJournal::class), $journalTests);
 
         foreach (glob(base_path('domain/*/tests/Fixtures/*Fixtures.php')) ?: [] as $file) {
             if (basename($file) === self::REGISTRAR) {
                 continue;
             }
 
-            $tests = glob(dirname($file).'/*Test.php') ?: [];
-            $unproven = [...$unproven, ...$this->unprovenOf(self::classIn($file), $tests)];
+            $fixture = ReflectedType::find(self::classIn($file))->get();
+            $unproven = [...$unproven, ...$this->unprovenOf($fixture, glob(dirname($file).'/*Test.php') ?: [])];
         }
 
         $this->assertSame([], $unproven, self::HOW_TO_FIX);
@@ -42,11 +43,11 @@ final class FixtureVerbsProvenTest extends TestCase
     /**
      * Each public method of the class, its traits' included, that none of the tests calls, as Class::method.
      *
-     * @param  class-string  $class
+     * @param  ReflectedType<object>  $type
      * @param  list<string>  $tests
      * @return list<string>
      */
-    private function unprovenOf(string $class, array $tests): array
+    private function unprovenOf(ReflectedType $type, array $tests): array
     {
         $called = [];
 
@@ -55,26 +56,25 @@ final class FixtureVerbsProvenTest extends TestCase
         }
 
         $unproven = array_filter(
-            ReflectedType::of($class)->methods(),
+            $type->methods(),
             fn (ReflectedMethod $method) => $method->isPublic()
                 && $method->name() !== '__construct'
                 && ! in_array($method->name(), $called, true),
         );
 
         return array_values(array_map(
-            fn (ReflectedMethod $method) => class_basename($class).'::'.$method->name(),
+            fn (ReflectedMethod $method) => $type->shortName().'::'.$method->name(),
             $unproven,
         ));
     }
 
     /**
-     * @return class-string
+     * The fixture class a file under domain/<Domain>/tests/Fixtures declares, named from its folder and file.
      */
     private static function classIn(string $file): string
     {
-        preg_match('#domain/(\w+)/tests/Fixtures/(\w+)\.php$#', $file, $parts);
+        $domain = basename(dirname($file, 3));
 
-        /** @var class-string */
-        return "Domain\\{$parts[1]}\\Tests\\Fixtures\\{$parts[2]}";
+        return 'Domain\\'.$domain.'\\Tests\\Fixtures\\'.basename($file, '.php');
     }
 }

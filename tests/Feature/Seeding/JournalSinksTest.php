@@ -36,10 +36,10 @@ final class JournalSinksTest extends TestCase
         $this->journal->owner()->sinkCommands();
 
         $this->journal->route(
-'POST',
- 'layouts.store',
- payload: ['name' => 'Writing', 'shape' => SaveLayoutTest::shape('chat')],
-)
+            'POST',
+            'layouts.store',
+            payload: ['name' => 'Writing', 'shape' => SaveLayoutTest::shape('chat')],
+        )
             ->assertRedirect();
 
         $this->journal->assertDispatched(SaveLayoutCommand::class, ['name' => 'Writing'])
@@ -52,10 +52,10 @@ final class JournalSinksTest extends TestCase
         $this->journal->owner()->sinkCommands();
 
         $this->journal->route(
-'POST',
- 'layouts.store',
- payload: ['name' => '', 'shape' => SaveLayoutTest::shape('chat')],
-)
+            'POST',
+            'layouts.store',
+            payload: ['name' => '', 'shape' => SaveLayoutTest::shape('chat')],
+        )
             ->assertSessionHasErrors('name');
 
         $this->journal->assertNothingDispatched();

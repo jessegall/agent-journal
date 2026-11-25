@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Support\Bus;
 
 use App\Contracts\Bus\Command;
-use App\Contracts\Bus\CommandMiddleware;
 
 /**
  * A command the test sink took in place of its handler: the command as it reached the end, the middleware it passed,
@@ -15,7 +14,7 @@ final readonly class SunkCommand
 {
     /**
      * @param  Command<mixed>  $command
-     * @param  list<class-string<CommandMiddleware>>  $trail
+     * @param  list<class-string>  $trail
      */
     public function __construct(
         public Command $command,

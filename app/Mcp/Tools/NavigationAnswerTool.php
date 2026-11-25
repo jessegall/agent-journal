@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Navigation\AnswerNavigation\AnswerNavigationCommand;
 use App\Exceptions\NavigationAnswerRefused;
-use App\Attributes\Bus\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;

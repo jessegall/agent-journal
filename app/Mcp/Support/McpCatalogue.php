@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
+use App\Attributes\Bus\Dispatches;
 use App\Contracts\Domains\JournalToolNames;
 use App\Contracts\Reflection\ReflectorFactory;
-use App\Attributes\Bus\Dispatches;
 use App\Mcp\Contracts\McpRegistration;
 use App\Mcp\Contracts\OverviewContribution;
 use App\Mcp\Enums\DiscoveryProfile;

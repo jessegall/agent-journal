@@ -30,7 +30,7 @@ final readonly class MiddlewareStep
     /**
      * The module middleware the step runs.
      *
-     * @return class-string<CommandMiddleware>
+     * @return class-string
      */
     public function middlewareClass(): string
     {

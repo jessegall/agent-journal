@@ -54,10 +54,10 @@ final class JournalEventsTest extends TestCase
 
         $this->journal->assertEvent(LinkRemoved::class)
             ->assertEvent(
-LinkRemoved::class,
- fn (LinkRemoved $removed) => $removed->linkId === 'another link',
- count: 0,
-);
+                LinkRemoved::class,
+                fn (LinkRemoved $removed) => $removed->linkId === 'another link',
+                count: 0,
+            );
         $this->assertThrows(
             fn () => $this->journal->assertEvent(LinkRemoved::class, count: 2),
             AssertionFailedError::class,

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Commands\CommandRules\ProposeRuleDeclaration\ProposeRuleDeclarationCommand;
 use App\Attributes\Bus\Dispatches;
+use App\Commands\CommandRules\ProposeRuleDeclaration\ProposeRuleDeclarationCommand;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;

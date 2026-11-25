@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Bus\Command;
-use App\Contracts\Bus\CommandMiddleware;
 use App\Exceptions\ActorContextMissing;
 use App\Exceptions\CommandReplacedWithOtherClass;
 
@@ -19,7 +18,7 @@ final readonly class CommandCall
      * @param  Command<mixed>  $command
      * @param  Command<mixed>  $original
      * @param  list<array{Command<mixed>, object|string}>  $authorized  the command and the subject it was authorized on
-     * @param  list<class-string<CommandMiddleware>>  $trail  the middleware the call passed, in order
+     * @param  list<class-string>  $trail  the middleware the call passed, in order
      */
     private function __construct(
         public Command $command,
@@ -109,7 +108,7 @@ final readonly class CommandCall
     /**
      * The middleware the call passed so far, in the order it passed them.
      *
-     * @return list<class-string<CommandMiddleware>>
+     * @return list<class-string>
      */
     public function trail(): array
     {
@@ -119,7 +118,7 @@ final readonly class CommandCall
     /**
      * The same call, having passed the middleware too.
      *
-     * @param  class-string<CommandMiddleware>  $middleware
+     * @param  class-string  $middleware
      */
     public function passedThrough(string $middleware): self
     {
