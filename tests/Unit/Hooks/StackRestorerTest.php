@@ -180,7 +180,7 @@ final class StackRestorerTest extends TestCase
             false,
             1,
             CarbonImmutable::now(),
-            ['enabled' => true],
+            ['isEnabled' => true],
         );
 
         $stack = $this->restore($this->bottom(), $switched);

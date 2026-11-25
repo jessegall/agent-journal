@@ -96,7 +96,7 @@ final class SettingsCatalogueDataTest extends TestCase
         ])->toArray();
 
         $review = $catalogue['groups'][0];
-        $this->assertSame(['state' => 'disabled', 'defaultEnabled' => true], $review['availability']);
+        $this->assertSame(['state' => 'disabled', 'isDefaultEnabled' => true], $review['availability']);
         $this->assertSame(['value' => false, 'type' => 'boolean'], $review['settings'][0]['configured']);
         $this->assertSame(['value' => '0.50', 'type' => 'decimal'], $review['settings'][1]['default']);
         $this->assertSame(['type' => 'invalid'], $review['settings'][1]['configured']);

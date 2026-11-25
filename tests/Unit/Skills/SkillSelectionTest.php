@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Skills;
 
 use App\Contracts\Skills\SkillCondition;
+use App\Enums\Profiles\ModelTier;
 use App\Enums\Skills\SkillOrigin;
 use App\Exceptions\SkillSelectionConflict;
 use App\Support\BuiltInAuthorizations;
@@ -126,7 +127,7 @@ final class SkillSelectionTest extends TestCase
             'revision' => 1,
             'base' => ProfileBase::readOnlyHelper(),
             'instructions' => 'Review.',
-            'model' => 'opus',
+            'preferredTier' => ModelTier::Inventive,
             'skillAllowlist' => $allowlist,
             'requiredSkills' => $required,
             'start' => TestStartPolicies::for(ProfileBase::readOnlyHelper()),

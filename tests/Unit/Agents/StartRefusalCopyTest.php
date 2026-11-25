@@ -33,13 +33,6 @@ final class StartRefusalCopyTest extends TestCase
                 'Choose model',
                 'Choose model',
             ],
-            'model-unavailable' => [
-                StartRefusalType::ModelUnavailable,
-                'The selected model is unavailable.',
-                StartRemedyType::ChooseModel,
-                'Choose another model',
-                'Choose another model',
-            ],
             'default-unavailable' => [
                 StartRefusalType::DefaultUnavailable,
                 'The default model is unavailable.',
@@ -53,13 +46,6 @@ final class StartRefusalCopyTest extends TestCase
                 StartRemedyType::ChooseDriver,
                 'Choose driver',
                 'Choose driver',
-            ],
-            'driver-conflict' => [
-                StartRefusalType::DriverConflict,
-                'The selected driver conflicts with this configuration.',
-                StartRemedyType::ChooseDriver,
-                'Review driver',
-                'Review driver',
             ],
             'driver-unsupported' => [
                 StartRefusalType::DriverUnsupported,
@@ -110,20 +96,6 @@ final class StartRefusalCopyTest extends TestCase
                 'Check capacity',
                 'Ask your host operator to check capacity.',
             ],
-            'driver-pinned' => [
-                StartPreflightRefusal::DriverPinned,
-                'This profile requires its assigned driver.',
-                StartRemedyType::ChooseDriver,
-                'Use the assigned driver',
-                'Use the assigned driver',
-            ],
-            'model-not-allowed' => [
-                StartPreflightRefusal::ModelNotAllowed,
-                'This profile does not allow that model.',
-                StartRemedyType::ChooseModel,
-                'Choose an allowed model',
-                'Choose an allowed model',
-            ],
             'driver-not-containable' => [
                 StartPreflightRefusal::DriverNotContainable,
                 'This driver cannot run with the required protection here.',
@@ -165,6 +137,20 @@ final class StartRefusalCopyTest extends TestCase
                 StartRemedyType::OperatorInstruction,
                 'Restore the pinned build on the host, or end the session and start a new one',
                 'Ask your host operator to restore the pinned build on the host, or end the session and start a new one.',
+            ],
+            'not-signed-in' => [
+                HostRefusal::NotSignedIn,
+                HostRefusal::NotSignedIn->explanation(),
+                StartRemedyType::OperatorInstruction,
+                'Sign the account in again',
+                'Ask your host operator to sign the account in again.',
+            ],
+            'conversation-unknown' => [
+                HostRefusal::ConversationUnknown,
+                HostRefusal::ConversationUnknown->explanation(),
+                StartRemedyType::RetryStart,
+                'Start the agent again',
+                'Start the agent again',
             ],
             'conversation-missing' => [
                 ResumeRefusal::ConversationMissing,

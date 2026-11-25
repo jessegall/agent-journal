@@ -65,7 +65,7 @@ final class TransparentFramesTest extends TestCase
         $this->assertSame(['ready', 'plan', 'task'], $answer->stack->frameIds());
     }
 
-    public function test_a_message_above_a_finished_task_with_its_tool_uses_spent_denies_an_edit_and_a_read(): void
+    public function test_a_message_above_a_finished_task_with_its_tool_uses_spent_denies_an_edit_and_lets_a_read_pass(): void
     {
         $stack = $this->stack($this->ready(), $this->plan(), $this->task(hasFinished: true), $this->message());
 
@@ -73,7 +73,7 @@ final class TransparentFramesTest extends TestCase
         $read = $stack->answer($this->readOnlyShellLine(), TestText::renderer());
 
         $this->assertSame(['message'], $this->visited($edit->steps));
-        $this->assertSame(['message'], $this->visited($read->steps));
+        $this->assertSame(['message', 'ready'], $this->visited($read->steps));
         $this->assertSame('message', $stack->top()->id);
         $this->assertSame(['ready', 'plan', 'task', 'message'], $read->stack->frameIds());
     }

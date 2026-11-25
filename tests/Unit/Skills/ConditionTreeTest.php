@@ -8,6 +8,7 @@ use App\Data\Profiles\PolicyGrant;
 use App\Data\Profiles\ProfileAuthorization;
 use App\Enums\Agents\AccessType;
 use App\Enums\Profiles\AuthorizationType;
+use App\Enums\Profiles\ModelTier;
 use App\Enums\Skills\ConditionOutcome;
 use App\Exceptions\SkillConditionInvalid;
 use App\Policies\AssignmentRecipientPolicy;
@@ -259,7 +260,7 @@ final class ConditionTreeTest extends TestCase
             'revision' => 1,
             'base' => ProfileBase::readOnlyHelper(),
             'instructions' => 'Review.',
-            'model' => 'opus',
+            'preferredTier' => ModelTier::Inventive,
             'skillAllowlist' => null,
             'requiredSkills' => [],
             'start' => TestStartPolicies::for(ProfileBase::readOnlyHelper()),
@@ -283,7 +284,7 @@ final class ConditionTreeTest extends TestCase
             'revision' => 1,
             'base' => ProfileBase::mainAgent(),
             'instructions' => 'Lead.',
-            'model' => 'opus',
+            'preferredTier' => ModelTier::Inventive,
             'skillAllowlist' => null,
             'requiredSkills' => [],
             'start' => TestStartPolicies::for(ProfileBase::mainAgent()),

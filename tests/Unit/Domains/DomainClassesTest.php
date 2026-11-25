@@ -160,7 +160,7 @@ final class DomainClassesTest extends TestCase
             'RuleDetails',
         ]];
 
-        yield 'Sequences' => [SequencesDomain::class, [], []];
+        yield 'Sequences' => [SequencesDomain::class, [], ['SequenceStarted']];
 
         yield 'Questions' => [QuestionsDomain::class, [], [
             'AnswerQuestionCommand',
@@ -169,6 +169,7 @@ final class DomainClassesTest extends TestCase
             'QuestionNotificationKeys',
             'QuestionSummaryReader',
             'QuestionSummary',
+            'ShownQuestion',
         ]];
 
         yield 'Comments' => [CommentsDomain::class, [], [
@@ -185,6 +186,10 @@ final class DomainClassesTest extends TestCase
             'TextCommentView',
             'WholeRecord',
             'PublicComment',
+            'CommentPolicy',
+            'CommentType',
+            'ListCommentsCall',
+            'PublicCommentPage',
         ]];
 
         yield 'Reminders' => [RemindersDomain::class, [], []];
@@ -205,7 +210,7 @@ final class DomainClassesTest extends TestCase
             'HelperUnavailable',
             'HelperWork',
             'JobState',
-            'StartDetails',
+            'SessionStartDetails',
             'SendHelperCommand',
             'StartHelperCommand',
             'SteerHelperCommand',

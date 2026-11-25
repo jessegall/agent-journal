@@ -26,7 +26,7 @@ final class RecordCardTest extends TestCase
         $this->assertSame('card', $card->style);
         $this->assertSame(['head', 'time', 'actions'], $this->keysOf($card->children));
         $this->assertSame(['icon', 'title', 'badge'], $this->keysOf($card->children[0]->children));
-        $this->assertSame('chat', $card->children[0]->children[0]->text);
+        $this->assertSame('speech', $card->children[0]->children[0]->text);
         $this->assertSame(['answer'], $this->keysOf($card->children[2]->children));
     }
 
