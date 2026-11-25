@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Questions\Commands\ReadQuestion;
 
-use App\Contracts\Bus\CommandHandler;
+use App\Support\ActorIdentity;
+use Domain\Questions\Commands\Support\QuestionCommandHandler;
 use Domain\Questions\Exceptions\QuestionRefused;
 use Domain\Questions\Models\Question;
-use App\Support\ActorIdentity;
 use Domain\Questions\Support\ShownQuestion;
 
 /**
  * Only the question's sender and its target read it.
  */
-final readonly class ReadQuestionHandler implements CommandHandler
+final readonly class ReadQuestionHandler extends QuestionCommandHandler
 {
     /**
      * @throws QuestionRefused

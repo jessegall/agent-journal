@@ -116,7 +116,7 @@ final class FolderLayoutTest extends TestCase
         ) as $file => $types) {
             $declaresEnum = array_any($types, fn (array $type) => $type['enum']);
 
-            if ($declaresEnum && basename(dirname($file)) !== 'Enums') {
+            if ($declaresEnum && ! str_contains(dirname($file).'/', '/Enums/')) {
                 $misplaced[] = substr($file, strlen(base_path()) + 1);
             }
         }

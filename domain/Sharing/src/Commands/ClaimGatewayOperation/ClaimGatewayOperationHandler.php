@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Commands\ClaimGatewayOperation;
 
-use App\Contracts\Bus\CommandHandler;
+use Domain\Sharing\Commands\Support\SharingCommandHandler;
 use Domain\Sharing\Enums\GatewayEndpointState;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\GatewayOutcome;
@@ -21,7 +21,7 @@ use Domain\Sharing\Support\GatewayRuns;
  * reuses the run's running endpoint or starts the next version, never a closing one; a close moves the run's endpoint
  * to closing, and with none running it is done at once. No I/O happens here.
  */
-final readonly class ClaimGatewayOperationHandler implements CommandHandler
+final readonly class ClaimGatewayOperationHandler extends SharingCommandHandler
 {
     public function __construct(private GatewayRuns $runs) {}
 

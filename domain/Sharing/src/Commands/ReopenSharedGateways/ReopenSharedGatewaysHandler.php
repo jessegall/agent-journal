@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Commands\ReopenSharedGateways;
 
-use App\Contracts\Bus\CommandHandler;
+use Domain\Sharing\Commands\Support\SharingCommandHandler;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
@@ -15,7 +15,7 @@ use Domain\Sharing\Support\GatewayRuns;
  * Holds the gateways for the new run, then, under each configuration's lock, requests an open of every configuration
  * that serves a live, unexpired share and has no open waiting already.
  */
-final readonly class ReopenSharedGatewaysHandler implements CommandHandler
+final readonly class ReopenSharedGatewaysHandler extends SharingCommandHandler
 {
     public function __construct(private GatewayRuns $runs) {}
 

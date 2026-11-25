@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Commands\RefreshShareScope;
 
-use App\Contracts\Bus\CommandHandler;
+use Domain\Sharing\Commands\Support\SharingCommandHandler;
 use Domain\Sharing\Support\ShareGrants;
 use Domain\Sharing\Support\ShareSummary;
 
-final readonly class RefreshShareScopeHandler implements CommandHandler
+final readonly class RefreshShareScopeHandler extends SharingCommandHandler
 {
     public function __construct(
         private ShareGrants $grants,

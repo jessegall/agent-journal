@@ -8,7 +8,7 @@ use App\Support\GatewayConfiguration;
 use App\Support\GatewayOperation;
 use App\Support\GatewaySettings;
 use Domain\Sharing\Exceptions\GatewayOpenFailed;
-use Domain\Sharing\Gateways\Ngrok\NgrokGateway;
+use Domain\Sharing\Support\Gateways\NgrokGateway;
 use Domain\Sharing\Tests\TestCase;
 use Illuminate\Http\Client\Factory as HttpClient;
 use Illuminate\Process\Factory as Processes;

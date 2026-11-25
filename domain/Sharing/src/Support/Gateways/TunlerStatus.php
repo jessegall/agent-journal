@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Sharing\Gateways\Tunler;
+namespace Domain\Sharing\Support\Gateways;
 
 use Domain\Sharing\Data\TunlerStatusData;
 use App\Exceptions\TunlerStatusUnreadable;

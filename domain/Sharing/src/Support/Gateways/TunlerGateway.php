@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Sharing\Gateways\Tunler;
+namespace Domain\Sharing\Support\Gateways;
 
 use App\Attributes\Rules\OutsideThePlaces;
 use App\Contracts\Files\Files;
@@ -16,14 +16,15 @@ use App\Support\GatewayConfiguration;
 use App\Support\GatewayEndpoint;
 use App\Support\GatewayHealth;
 use App\Support\GatewayOperation;
-use Domain\Sharing\Gateways\Support\ChallengeProbe;
-use Domain\Sharing\Gateways\Support\GatewayChildren;
-use Domain\Sharing\Gateways\Support\GatewayStarts;
-use Domain\Sharing\Gateways\Support\PublicOriginCheck;
+use Domain\Sharing\Support\Gateways\ChallengeProbe;
+use Domain\Sharing\Support\Gateways\GatewayChildren;
+use Domain\Sharing\Support\Gateways\GatewayStarts;
+use Domain\Sharing\Support\Gateways\PublicOriginCheck;
 use App\Support\GatewaySetupCheck;
 use Illuminate\Container\Attributes\Config;
 use Illuminate\Contracts\Process\InvokedProcess;
 use Illuminate\Process\Factory as Processes;
+use Domain\Sharing\Support\Gateways\TunlerStatus;
 
 /**
  * The Tunler gateway: the pinned tunler program run with the journal's own configuration folder, opened as

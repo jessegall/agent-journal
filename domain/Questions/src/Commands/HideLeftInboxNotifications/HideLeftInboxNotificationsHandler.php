@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace Domain\Questions\Commands\HideLeftInboxNotifications;
 
 use App\Contracts\Bus\CommandFacts;
-use App\Contracts\Bus\CommandHandler;
 use App\Events\Messages\NotificationsWithdrawn;
 use App\Models\Notifications\NotificationReceipt;
 use App\Models\Notifications\NotificationScope;
-use Domain\Questions\Models\Question;
 use App\Support\ActorIdentity;
 use App\Support\NotificationReceipts;
 use App\Support\NotificationScopes;
-use Domain\Questions\Values\QuestionNotificationKeys;
 use Carbon\CarbonImmutable;
+use Domain\Questions\Commands\Support\QuestionCommandHandler;
+use Domain\Questions\Models\Question;
+use Domain\Questions\Values\QuestionNotificationKeys;
 
-final readonly class HideLeftInboxNotificationsHandler implements CommandHandler
+final readonly class HideLeftInboxNotificationsHandler extends QuestionCommandHandler
 {
     public function __construct(
         private NotificationScopes $scopes,

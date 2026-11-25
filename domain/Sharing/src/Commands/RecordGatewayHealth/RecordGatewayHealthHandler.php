@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Commands\RecordGatewayHealth;
 
+use Domain\Sharing\Commands\Support\SharingCommandHandler;
 use Domain\Sharing\Concerns\RefusesStaleGatewayRuns;
-use App\Contracts\Bus\CommandHandler;
 use Domain\Sharing\Models\ShareGatewayEndpoint;
 use Domain\Sharing\Models\ShareInstallation;
 
@@ -13,7 +13,7 @@ use Domain\Sharing\Models\ShareInstallation;
  * Renews the run's hold on the gateways and notes a healthy endpoint version it holds; an unhealthy report leaves the
  * last healthy time to age. Shares and their deadlines are left alone.
  */
-final readonly class RecordGatewayHealthHandler implements CommandHandler
+final readonly class RecordGatewayHealthHandler extends SharingCommandHandler
 {
     use RefusesStaleGatewayRuns;
 

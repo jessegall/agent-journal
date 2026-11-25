@@ -14,7 +14,7 @@ use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\Decisions\Decision;
 use App\Support\Decisions\MessageLine;
 use App\Support\References\StateReference;
-use App\Support\States\StateReturnedParts;
+use App\Support\States\Support\StateReturnedParts;
 
 /**
  * What one state answered a hook: its decision, delegate unless it made one as its last part, the lines it added,

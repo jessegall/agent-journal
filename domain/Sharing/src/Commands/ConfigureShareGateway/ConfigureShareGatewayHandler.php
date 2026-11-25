@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Commands\ConfigureShareGateway;
 
-use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Sharing\SharePolicy;
+use App\Support\ActorIdentity;
+use App\Support\GatewayConfiguration;
+use App\Support\GatewaySettings;
+use Domain\Sharing\Commands\Support\SharingCommandHandler;
 use Domain\Sharing\Enums\ShareAuditType;
 use Domain\Sharing\Exceptions\GatewayNotSetUp;
 use Domain\Sharing\Exceptions\GatewaySecretRefused;
@@ -13,10 +16,7 @@ use Domain\Sharing\Exceptions\UnknownShareGateway;
 use Domain\Sharing\Models\ShareAudit;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\ShareInstallation;
-use App\Support\ActorIdentity;
-use App\Support\GatewayConfiguration;
-use Domain\Sharing\Gateways\Support\GatewaySecrets;
-use App\Support\GatewaySettings;
+use Domain\Sharing\Support\Gateways\GatewaySecrets;
 use Domain\Sharing\Support\ShareGatewayRegistry;
 
 /**
@@ -24,7 +24,7 @@ use Domain\Sharing\Support\ShareGatewayRegistry;
  * writes the gateway's next settings revision and audits the change. Making it the default asks the gateway whether
  * it is ready, a read only, and refuses when it is not.
  */
-final readonly class ConfigureShareGatewayHandler implements CommandHandler
+final readonly class ConfigureShareGatewayHandler extends SharingCommandHandler
 {
     public function __construct(
         private SharePolicy $policy,

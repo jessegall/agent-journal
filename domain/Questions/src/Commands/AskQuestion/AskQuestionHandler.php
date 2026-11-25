@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Domain\Questions\Commands\AskQuestion;
 
 use App\Contracts\Actors\ActorResolver;
-use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Questions\QuestionRecipient;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Inboxes\InboxMember;
 use App\Support\ActorIdentity;
+use Domain\Questions\Commands\Support\QuestionCommandHandler;
 use Domain\Questions\Enums\QuestionType;
 use Domain\Questions\Exceptions\QuestionRefused;
 use Domain\Questions\Models\Question;
@@ -18,7 +18,7 @@ use Domain\Questions\Models\Question;
  * The sender and the target are both attached to the inbox, the target can answer questions, and the options fit the
  * question's type.
  */
-final readonly class AskQuestionHandler implements CommandHandler
+final readonly class AskQuestionHandler extends QuestionCommandHandler
 {
     public function __construct(private ActorResolver $actors) {}
 

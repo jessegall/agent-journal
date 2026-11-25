@@ -4,41 +4,41 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Commands\ReadShare;
 
-use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Reads\ReadMeter;
 use App\Contracts\Sharing\ShareBudget;
-use Domain\Sharing\Enums\ShareAuditType;
 use App\Enums\Sharing\ShareRelationType;
 use App\Exceptions\ShareBudgetExceeded;
-use Domain\Sharing\Exceptions\ShareReadNested;
-use Domain\Sharing\Exceptions\ShareReadRefused;
 use App\Exceptions\UnknownShareRecordType;
 use App\Exceptions\UnknownShareRelation;
-use Domain\Sharing\Models\Share;
-use Domain\Sharing\Models\ShareAudit;
-use Domain\Sharing\Models\ShareMember;
 use App\Support\ActorIdentity;
-use Domain\Sharing\Support\MeteredShareBudget;
-use Domain\Sharing\Support\OwnerSharePolicy;
-use Domain\Sharing\Support\ReadPermits;
 use App\Support\RecordIdentity;
 use App\Support\RunningCommand;
 use App\Support\ShareContentRead;
+use App\Support\ShareRecordRegistry;
+use App\Support\ShareRelationRead;
+use App\Support\ShareTargetRead;
+use Domain\Sharing\Commands\Support\SharingCommandHandler;
+use Domain\Sharing\Enums\ShareAuditType;
+use Domain\Sharing\Exceptions\ShareReadNested;
+use Domain\Sharing\Exceptions\ShareReadRefused;
+use Domain\Sharing\Models\Share;
+use Domain\Sharing\Models\ShareAudit;
+use Domain\Sharing\Models\ShareMember;
+use Domain\Sharing\Support\MeteredShareBudget;
+use Domain\Sharing\Support\OwnerSharePolicy;
+use Domain\Sharing\Support\ReadPermits;
 use Domain\Sharing\Support\ShareCursor;
 use Domain\Sharing\Support\ShareCursors;
 use Domain\Sharing\Support\SharedPage;
 use Domain\Sharing\Support\SharedPageItem;
 use Domain\Sharing\Support\ShareReadPath;
-use App\Support\ShareRecordRegistry;
-use App\Support\ShareRelationRead;
-use App\Support\ShareTargetRead;
 
 /**
  * Reads one shared page inside the bus transaction: the share row locked for reading, its authority and every step
  * of the path checked in that snapshot, the record and its lists read within the read budget, and the audit row
  * appended before the page is returned. A known link that may not be read is denied and audited, not thrown.
  */
-final readonly class ReadShareHandler implements CommandHandler
+final readonly class ReadShareHandler extends SharingCommandHandler
 {
     private const int CHILDREN_PAGE = 50;
 

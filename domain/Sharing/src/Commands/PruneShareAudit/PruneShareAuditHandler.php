@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Commands\PruneShareAudit;
 
-use App\Contracts\Bus\CommandHandler;
-use Domain\Sharing\Enums\ShareAuditType;
-use Domain\Sharing\Models\Share;
-use Domain\Sharing\Models\ShareAudit;
 use App\Support\ActorIdentity;
 use App\Support\AuditPruning;
 use Carbon\CarbonImmutable;
+use Domain\Sharing\Commands\Support\SharingCommandHandler;
+use Domain\Sharing\Enums\ShareAuditType;
+use Domain\Sharing\Models\Share;
+use Domain\Sharing\Models\ShareAudit;
 
 /**
  * Locks the shares of the rows past retention by id, adds each share's removed reads, denials and life steps to its
  * totals with the time of pruning, removes the rows and records one AuditPruned fact for the run. A run with nothing to
  * prune writes nothing.
  */
-final readonly class PruneShareAuditHandler implements CommandHandler
+final readonly class PruneShareAuditHandler extends SharingCommandHandler
 {
     private const int MOST_PER_RUN = 100;
 

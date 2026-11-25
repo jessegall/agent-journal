@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Console\Commands;
 
-use Domain\Sharing\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand as ConfigureShareGateway;
 use App\Contracts\Bus\CommandBus;
 use App\Support\ConsoleOwner;
-use Domain\Sharing\Gateways\Support\GatewaySecrets;
+use Domain\Sharing\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand as ConfigureShareGateway;
+use Domain\Sharing\Support\Gateways\GatewaySecrets;
 use Illuminate\Console\Command;
 
 /**

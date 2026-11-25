@@ -10,7 +10,7 @@ use App\Support\GatewayOperation;
 use App\Support\GatewaySettings;
 use App\Support\PublicAddresses;
 use Domain\Sharing\Exceptions\GatewayOpenFailed;
-use Domain\Sharing\Gateways\Tunler\TunlerGateway;
+use Domain\Sharing\Support\Gateways\TunlerGateway;
 use Domain\Sharing\Tests\TestCase;
 use Illuminate\Http\Client\Factory as HttpClient;
 use Illuminate\Http\Client\Request;

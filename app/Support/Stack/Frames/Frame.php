@@ -16,7 +16,7 @@ use App\Support\References\StateReference;
 use App\Support\Reflector;
 use App\Support\StateLoading\StateValues;
 use App\Support\States\AgentState;
-use App\Support\States\StateReturnedParts;
+use App\Support\States\Support\StateReturnedParts;
 use App\Support\Storage\FrameRecord;
 use Carbon\CarbonImmutable;
 

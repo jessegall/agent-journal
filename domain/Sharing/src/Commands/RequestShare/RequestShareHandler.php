@@ -4,25 +4,25 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Commands\RequestShare;
 
-use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Records\RecordResolver;
+use App\Support\ActorIdentity;
+use App\Support\RecordIdentity;
+use App\Support\ShareRecordRegistry;
+use Carbon\CarbonImmutable;
+use Domain\Sharing\Commands\Support\SharingCommandHandler;
 use Domain\Sharing\Enums\ShareAuditType;
 use Domain\Sharing\Exceptions\ShareQuotaReached;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareAudit;
 use Domain\Sharing\Models\ShareInstallation;
-use App\Support\ActorIdentity;
-use App\Support\RecordIdentity;
 use Domain\Sharing\Support\ShareProposal;
 use Domain\Sharing\Support\ShareProposalStatus;
-use App\Support\ShareRecordRegistry;
-use Carbon\CarbonImmutable;
 
 /**
  * Checks the root is a shareable type the agent may read now, then, under the installation lock, counts the open
  * proposals and writes the proposal with its audit.
  */
-final readonly class RequestShareHandler implements CommandHandler
+final readonly class RequestShareHandler extends SharingCommandHandler
 {
     public function __construct(
         private RecordResolver $records,

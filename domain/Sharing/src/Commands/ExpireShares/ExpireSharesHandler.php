@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Commands\ExpireShares;
 
-use App\Contracts\Bus\CommandHandler;
+use Domain\Sharing\Commands\Support\SharingCommandHandler;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Support\ShareEndings;
 use Domain\Sharing\Support\ShareExpiry;
 
-final readonly class ExpireSharesHandler implements CommandHandler
+final readonly class ExpireSharesHandler extends SharingCommandHandler
 {
     private const int MOST_PER_RUN = 100;
 

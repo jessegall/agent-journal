@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Sharing\Gateways\Support;
+namespace Domain\Sharing\Support\Gateways;
 
 /**
  * Whether an address a gateway reports is exactly its configured public origin: HTTPS, the same host, and no port,

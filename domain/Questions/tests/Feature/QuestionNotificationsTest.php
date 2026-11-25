@@ -17,16 +17,19 @@ use App\Models\Notifications\NotificationScope;
 use App\Support\ActorIdentity;
 use App\Support\DeskSeatService;
 use App\Support\SeatChangeResult;
+use Domain\Questions\Tests\TestCase;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\QueryException;
-use Tests\Support\MessagingTestCase;
+use Tests\Support\MessagingFixtures;
 
 /**
  * A question gives each actor seated at its destination one receipt, the sender none; an ordinary send gives none
  * until it is promoted, a second promotion adds nothing, and a rolled-back ask leaves nothing.
  */
-final class QuestionNotificationsTest extends MessagingTestCase
+final class QuestionNotificationsTest extends TestCase
 {
+    use MessagingFixtures;
+
     private const string TRIGGER_REFUSAL = 'refused for the test';
 
     /**
@@ -42,7 +45,7 @@ final class QuestionNotificationsTest extends MessagingTestCase
         SQL;
 
     protected const array TABLES = [
-        ...parent::TABLES,
+        ...self::MESSAGING_TABLES,
         'notification_changes',
         'notification_receipts',
         'notification_scopes',
@@ -59,6 +62,8 @@ final class QuestionNotificationsTest extends MessagingTestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->setUpMessaging();
 
         $this->team = DeskRecord::query()->findOrFail($this->runOnBus(new CreateDeskCommand('Team', 3, false)));
 

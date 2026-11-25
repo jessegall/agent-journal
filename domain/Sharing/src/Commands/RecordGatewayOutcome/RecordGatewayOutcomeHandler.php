@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Commands\RecordGatewayOutcome;
 
+use App\Support\ActorIdentity;
+use Domain\Sharing\Commands\Support\SharingCommandHandler;
 use Domain\Sharing\Concerns\RefusesStaleGatewayRuns;
-use App\Contracts\Bus\CommandHandler;
 use Domain\Sharing\Enums\GatewayEndpointState;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\GatewayOutcome;
@@ -18,7 +19,6 @@ use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\ShareGatewayEndpoint;
 use Domain\Sharing\Models\ShareGatewayOperation;
 use Domain\Sharing\Models\ShareInstallation;
-use App\Support\ActorIdentity;
 
 /**
  * Locks the installation, configuration, endpoint, the affected shares by id and the operation, in that order, and
@@ -26,7 +26,7 @@ use App\Support\ActorIdentity;
  * serves the configuration's waiting shares, which become active once each; a failed open fails the pending ones; a
  * close ends the endpoint. A replay of a recorded outcome under the same lease writes nothing. No I/O happens here.
  */
-final readonly class RecordGatewayOutcomeHandler implements CommandHandler
+final readonly class RecordGatewayOutcomeHandler extends SharingCommandHandler
 {
     use RefusesStaleGatewayRuns;
 

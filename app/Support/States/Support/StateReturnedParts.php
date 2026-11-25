@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Support\States;
+namespace App\Support\States\Support;
 
 use App\Exceptions\StateAnswerRefused;
 use Traversable;

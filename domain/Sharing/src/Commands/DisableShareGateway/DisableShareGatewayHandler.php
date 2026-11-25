@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Commands\DisableShareGateway;
 
-use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Sharing\SharePolicy;
+use App\Support\ActorIdentity;
+use App\Support\GatewayConfiguration;
+use Domain\Sharing\Commands\Support\SharingCommandHandler;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\GatewayOutcome;
 use Domain\Sharing\Enums\ShareAuditType;
@@ -15,8 +17,6 @@ use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\ShareGatewayEndpoint;
 use Domain\Sharing\Models\ShareGatewayOperation;
 use Domain\Sharing\Models\ShareInstallation;
-use App\Support\ActorIdentity;
-use App\Support\GatewayConfiguration;
 use Domain\Sharing\Support\ShareEndings;
 
 /**
@@ -24,7 +24,7 @@ use Domain\Sharing\Support\ShareEndings;
  * configuration's waiting opens, requests a close when an endpoint still runs, disables the configuration and audits
  * the change, all in one transaction.
  */
-final readonly class DisableShareGatewayHandler implements CommandHandler
+final readonly class DisableShareGatewayHandler extends SharingCommandHandler
 {
     public function __construct(
         private SharePolicy $policy,

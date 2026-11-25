@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Sharing\Gateways\Support;
+namespace Domain\Sharing\Support\Gateways;
 
 use Domain\Sharing\Enums\GatewayAddressCheck;
 use Domain\Sharing\Exceptions\GatewayOpenFailed;

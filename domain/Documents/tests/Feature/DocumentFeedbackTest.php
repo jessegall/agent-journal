@@ -6,17 +6,24 @@ namespace Domain\Documents\Tests\Feature;
 
 use App\Models\Messages\Message;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
-use Tests\Support\MessagingTestCase;
+use Domain\Documents\Tests\TestCase;
+use Tests\Support\MessagingFixtures;
 
 /**
  * Ask for feedback on a document sends the chosen agent a message in their chat asking for feedback on the document,
  * or on the lines the reader chose; an agent out of the reader's sight is refused and nothing is sent.
  */
-final class DocumentFeedbackTest extends MessagingTestCase
+final class DocumentFeedbackTest extends TestCase
 {
+    use MessagingFixtures;
+
+    protected const array TABLES = self::MESSAGING_TABLES;
+
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->setUpMessaging();
 
         $this->runOnBus(new CreateDocumentCommand('Design', 'What we build', "# Goal\nShip it.\nThen rest.\n"));
     }

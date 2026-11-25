@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Commands\PostTextComment;
 
-use App\Contracts\Bus\CommandHandler;
+use Domain\Comments\Commands\Support\CommentCommandHandler;
 use Domain\Comments\Support\CommentWriter;
 
-final readonly class PostTextCommentHandler implements CommandHandler
+final readonly class PostTextCommentHandler extends CommentCommandHandler
 {
     public function __construct(private CommentWriter $comments) {}
 

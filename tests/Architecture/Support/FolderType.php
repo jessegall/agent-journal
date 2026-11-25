@@ -45,6 +45,11 @@ enum FolderType: string
         $folder = dirname($file);
         $name = basename($file, '.php');
 
+        // An attribute sits under Attributes in the folder of the subject it marks, which is no folder of that type.
+        if (str_contains($folder.'/', '/Attributes/')) {
+            return null;
+        }
+
         if (basename($folder) === 'Commands' && basename(dirname($folder)) === 'Console') {
             return self::ArtisanCommands;
         }

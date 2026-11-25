@@ -6,7 +6,7 @@ namespace Domain\Sharing\Http\Controllers;
 
 use App\Contracts\Bus\CommandBus;
 use Domain\Sharing\Http\Requests\ConfigureShareGatewayRequest;
-use Domain\Sharing\Gateways\Support\GatewaySecrets;
+use Domain\Sharing\Support\Gateways\GatewaySecrets;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 

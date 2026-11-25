@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Commands\SaveSharePreview;
 
-use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Reads\ReadMeter;
 use App\Contracts\Sharing\SharePolicy;
+use App\Support\RecordIdentity;
+use Domain\Sharing\Commands\Support\SharingCommandHandler;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\SharePreview;
 use Domain\Sharing\Support\MeteredShareBudget;
-use App\Support\RecordIdentity;
 use Domain\Sharing\Support\SavedSharePreview;
 use Domain\Sharing\Support\ShareScope;
 
-final readonly class SaveSharePreviewHandler implements CommandHandler
+final readonly class SaveSharePreviewHandler extends SharingCommandHandler
 {
     public function __construct(
         private SharePolicy $policy,

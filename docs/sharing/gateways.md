@@ -11,15 +11,15 @@ A gateway implements `App\Contracts\Sharing\ShareGateway`:
 - `open(GatewayOperation): GatewayEndpoint`: start the program for the listener and return the endpoint once the
   program reports exactly the configured origin. Refuse any other origin with `GatewayOpenFailed`; never fall back to
   a random address.
-- `health(GatewayEndpoint): GatewayHealth`: probe the origin. `Domain\Sharing\Gateways\Support\ChallengeProbe` fetches a
+- `health(GatewayEndpoint): GatewayHealth`: probe the origin. `Domain\Sharing\Support\Gateways\ChallengeProbe` fetches a
   single-use challenge through the origin over HTTPS, without redirects, from a host that resolves only to public
   addresses.
 - `close(GatewayEndpoint)`: stop only the program this run started, through
-  `Domain\Sharing\Gateways\Support\GatewayChildren`.
+  `Domain\Sharing\Support\Gateways\GatewayChildren`.
 
-Check a reported origin with `Domain\Sharing\Gateways\Support\PublicOriginCheck`. Never repeat a line the program
+Check a reported origin with `Domain\Sharing\Support\Gateways\PublicOriginCheck`. Never repeat a line the program
 printed: request paths carry tokens. Keep secrets out of command arguments and read them from
-`Domain\Sharing\Gateways\Support\GatewaySecrets`.
+`Domain\Sharing\Support\Gateways\GatewaySecrets`.
 
 `GatewayConfiguration` pins one settings revision; its `GatewaySettings` hold the gateway key, the program version,
 the provider host, the public origin, the listener port and the names of the secrets. `GatewayOperation` carries the

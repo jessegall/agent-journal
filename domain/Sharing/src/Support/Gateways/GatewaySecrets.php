@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Sharing\Gateways\Support;
+namespace Domain\Sharing\Support\Gateways;
 
 use App\Contracts\Files\Files;
 use App\Enums\Files\Permissions;
