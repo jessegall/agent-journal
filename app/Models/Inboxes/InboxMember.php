@@ -43,6 +43,8 @@ final class InboxMember extends Model implements EventSource, ReadableModel
 
     public $timestamps = false;
 
+    public const string CREATED_AT = 'joined_at';
+
     /**
      * @return array<string, string>
      */

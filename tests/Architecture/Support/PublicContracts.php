@@ -383,12 +383,8 @@ final readonly class PublicContracts
             return null;
         }
 
-        $coreExports = array_any(
-            $this->owners,
-            fn (PublicOwner $candidate) => $candidate->isCore() && $candidate->exportsName($name),
-        );
-
-        if ($owner->exportsName($name) || $coreExports) {
+        // A public signature may show what any owner exports, since domains share their exports freely.
+        if (array_any($this->owners, fn (PublicOwner $candidate) => $candidate->exportsName($name))) {
             return null;
         }
 

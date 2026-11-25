@@ -40,6 +40,8 @@ final class MessageReadEntry extends Model implements EventSource, ReadableModel
 
     public $timestamps = false;
 
+    public const string CREATED_AT = 'read_at';
+
     protected $table = 'message_reads';
 
     /**
