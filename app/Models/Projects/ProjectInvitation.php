@@ -192,7 +192,7 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
      */
     public static function redeemableFor(string $ticket): self
     {
-        $row = self::query()->pending()->where('ticket_digest', InstallTicket::digestOf($ticket))->first();
+        $row = self::query()->pending()->withTicket($ticket)->first();
         self::assertTicketUsable($row);
 
         return $row;
@@ -205,7 +205,7 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
      */
     public static function lockRedeemableFor(string $ticket): self
     {
-        $row = self::query()->pending()->where('ticket_digest', InstallTicket::digestOf($ticket))->lockForUpdate()->first();
+        $row = self::query()->pending()->withTicket($ticket)->lockForUpdate()->first();
         self::assertTicketUsable($row);
 
         return $row;
@@ -218,7 +218,7 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
      */
     public static function lockPendingOf(InstallAttempt $attempt): array
     {
-        return array_values(self::query()->pending()->where('install_attempt_id', $attempt->id)->lockForUpdate()
+        return array_values(self::query()->pending()->ofAttempt($attempt)->lockForUpdate()
             ->limit(1)->get()->all());
     }
 
@@ -246,5 +246,27 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
     protected function pending(Builder $query): void
     {
         $query->whereNull('revoked_at')->whereNull('spent_at')->where('expires_at', '>', CarbonImmutable::now());
+    }
+
+    /**
+     * The invitation the ticket redeems.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withTicket(Builder $query, string $ticket): void
+    {
+        $query->where('ticket_digest', InstallTicket::digestOf($ticket));
+    }
+
+    /**
+     * The attempt's invitation.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofAttempt(Builder $query, InstallAttempt $attempt): void
+    {
+        $query->where('install_attempt_id', $attempt->id);
     }
 }

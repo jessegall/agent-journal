@@ -210,8 +210,8 @@ final class CommandRequest extends Model implements ReadableModel
         $runs = EvidencePermit::query()->sampling($this)->limit(100)->pluck('process_run_id')->all();
 
         $statuses = PartRun::query()
-            ->whereIn('process_run_id', $runs)
-            ->where('operation', $this->operation)
+            ->ofRuns($runs)
+            ->ofOperation($this->operation)
             ->readLimit(500)
             ->get()
             ->filter(fn (PartRun $part): bool => $part->end->hasStatus())

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
@@ -90,11 +92,24 @@ final class HelperNotice extends Model implements EventSource, ReadableModel
     {
         return array_values(self::query()
             ->ownedBy($parent)
-            ->whereNull('delivered_at')
+            ->undelivered()
             ->oldestFirst()
             ->lockForUpdate()
             ->limit(self::DELIVERED_LIMIT)
             ->get()
             ->all());
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The notices not delivered yet.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function undelivered(Builder $query): void
+    {
+        $query->whereNull('delivered_at');
     }
 }

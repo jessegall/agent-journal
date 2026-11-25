@@ -229,7 +229,7 @@ final class PartRun extends Model implements EventSource, ReadableModel
     {
         $checksums = [];
 
-        foreach ($this->chunks()->orderBy('stream')->orderBy('offset')->readLimit(100_000)->get() as $chunk) {
+        foreach ($this->chunks()->inStreamOrder()->readLimit(100_000)->get() as $chunk) {
             $checksums[$chunk->stream->value][] = $chunk->checksum;
         }
 
@@ -346,5 +346,50 @@ final class PartRun extends Model implements EventSource, ReadableModel
         $query->where('process_run_id', $run->id)
             ->where('lifecycle', LifecycleState::Ended->value)
             ->whereDoesntHave('assessments');
+    }
+
+    /**
+     * The parts of the runs.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $runIds
+     */
+    #[Scope]
+    protected function ofRuns(Builder $query, array $runIds): void
+    {
+        $query->whereIn('process_run_id', $runIds);
+    }
+
+    /**
+     * The parts that ran the operation.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofOperation(Builder $query, string $operation): void
+    {
+        $query->where('operation', $operation);
+    }
+
+    /**
+     * The parts that ran the syntax node.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function atNode(Builder $query, int $node): void
+    {
+        $query->where('syntax_node', $node);
+    }
+
+    /**
+     * The parts newest attempt first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function newestAttemptFirst(Builder $query): void
+    {
+        $query->orderByDesc('attempt');
     }
 }

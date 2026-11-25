@@ -142,7 +142,7 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
      */
     public static function named(string $name): Option
     {
-        return Option::fromValue(self::query()->where('name', $name)->first());
+        return Option::fromValue(self::query()->withName($name)->first());
     }
 
     /**
@@ -160,9 +160,7 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
      */
     public static function personalOf(ActorIdentity $actor): self
     {
-        $row = self::query()
-            ->where('provider_key', self::PERSONAL_PROVIDER)
-            ->where('provider_id', $actor->text())->first();
+        $row = self::query()->personalTo($actor)->first();
         self::assertPersonalFound($row, $actor);
 
         return $row;
@@ -235,5 +233,27 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
     protected function attachedTo(Builder $query, ActorIdentity $actor): void
     {
         $query->whereIn('id', InboxMember::query()->active()->ofActor($actor)->select('inbox_id'));
+    }
+
+    /**
+     * The inbox of that name.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withName(Builder $query, string $name): void
+    {
+        $query->where('name', $name);
+    }
+
+    /**
+     * The actor's personal inbox.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function personalTo(Builder $query, ActorIdentity $actor): void
+    {
+        $query->where('provider_key', self::PERSONAL_PROVIDER)->where('provider_id', $actor->text());
     }
 }

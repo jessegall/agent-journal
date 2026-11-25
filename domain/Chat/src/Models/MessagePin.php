@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -56,8 +58,7 @@ final class MessagePin extends Model implements ReadableModel
     ): self {
         $existing = self::query()
             ->ownedBy($owner)
-            ->where('inbox_id', $inboxId)
-            ->where('message_id', $messageId)
+            ->ofMessage($inboxId, $messageId)
             ->first();
 
         if ($existing !== null) {
@@ -74,5 +75,18 @@ final class MessagePin extends Model implements ReadableModel
         $pin->save();
 
         return $pin;
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The pins of the inbox's message.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofMessage(Builder $query, string $inboxId, string $messageId): void
+    {
+        $query->where('inbox_id', $inboxId)->where('message_id', $messageId);
     }
 }

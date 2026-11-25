@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Profiles;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
@@ -78,10 +80,7 @@ final class PermissionRevocation extends Model implements ReadableModel
      */
     public static function narrow(CommandPermissions $permissions): CommandPermissions
     {
-        self::query()->where(
-            'permission_source',
-            $permissions->source,
-        )->oldestFirst()->readInChunks(200, function (Collection $revocations) use (&$permissions): void {
+        self::query()->ofSource($permissions->source)->oldestFirst()->readInChunks(200, function (Collection $revocations) use (&$permissions): void {
             foreach ($revocations as $revocation) {
                 $permissions = $permissions->revoking(
                     CommandClassSet::of(...array_map(CommandClass::from(...), $revocation->revoked_classes)),
@@ -91,5 +90,18 @@ final class PermissionRevocation extends Model implements ReadableModel
         });
 
         return $permissions;
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The revocations of the permission source.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofSource(Builder $query, string $source): void
+    {
+        $query->where('permission_source', $source);
     }
 }

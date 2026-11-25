@@ -120,7 +120,7 @@ final class Environment extends Model implements EventSource, ReadableModel
      */
     public static function listedOf(string $projectId): array
     {
-        return array_values(self::query()->ofProject($projectId)->orderBy('label')->limit(self::LISTED_LIMIT)
+        return array_values(self::query()->ofProject($projectId)->inLabelOrder()->limit(self::LISTED_LIMIT)
             ->get()->all());
     }
 
@@ -132,7 +132,7 @@ final class Environment extends Model implements EventSource, ReadableModel
      */
     public static function listedOfProjects(array $ids): array
     {
-        return array_values(self::query()->whereIn('project_id', $ids)->orderBy('label')
+        return array_values(self::query()->ofProjects($ids)->inLabelOrder()
             ->readUpTo(self::LISTED_LIMIT * max(count($ids), 1))->get()->all());
     }
 
@@ -145,5 +145,28 @@ final class Environment extends Model implements EventSource, ReadableModel
     protected function ofProject(Builder $query, string $projectId): void
     {
         $query->where('project_id', $projectId);
+    }
+
+    /**
+     * The environments of the projects.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $ids
+     */
+    #[Scope]
+    protected function ofProjects(Builder $query, array $ids): void
+    {
+        $query->whereIn('project_id', $ids);
+    }
+
+    /**
+     * The environments in the order of their label.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inLabelOrder(Builder $query): void
+    {
+        $query->orderBy('label');
     }
 }

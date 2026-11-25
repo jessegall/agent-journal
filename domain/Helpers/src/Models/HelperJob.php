@@ -303,8 +303,8 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
     public static function existsFor(HelperIdentity $identity, HelperPurpose $purpose): bool
     {
         return self::query()->acrossActors()
-            ->where('helper_identity_id', $identity->id)
-            ->whereIn('helper_purpose_id', HelperPurpose::sameAs($purpose)->select('id'))
+            ->ofIdentity($identity)
+            ->forPurposeLike($purpose)
             ->exists();
     }
 
@@ -315,7 +315,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
      */
     public static function newest(int $limit): Collection
     {
-        return self::query()->acrossActors()->latest()->newestFirst()->limit($limit)->get();
+        return self::query()->acrossActors()->newestFirst()->limit($limit)->get();
     }
 
     /**
@@ -368,5 +368,27 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
                 ->where('subject_id', $subject->id)
                 ->select('id'))
             ->orWhereJsonContains('source_snapshot->subjects', sprintf('%s:%s', $subject->type, $subject->id)));
+    }
+
+    /**
+     * The identity's jobs.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofIdentity(Builder $query, HelperIdentity $identity): void
+    {
+        $query->where('helper_identity_id', $identity->id);
+    }
+
+    /**
+     * The jobs for a purpose the same as this one.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function forPurposeLike(Builder $query, HelperPurpose $purpose): void
+    {
+        $query->whereIn('helper_purpose_id', HelperPurpose::sameAs($purpose)->select('id'));
     }
 }

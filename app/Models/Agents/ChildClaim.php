@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\Agents;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -46,6 +49,7 @@ final class ChildClaim extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use OrdersById;
     use Linkable;
 
     /**
@@ -162,6 +166,19 @@ final class ChildClaim extends Model implements ReadableModel
      */
     public static function ofChildAgent(string $agentId): array
     {
-        return array_values(self::query()->where('child_agent_id', $agentId)->latest()->limit(1)->get()->all());
+        return array_values(self::query()->forChildAgent($agentId)->newestFirst()->limit(1)->get()->all());
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The claims made for the child agent.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function forChildAgent(Builder $query, string $agentId): void
+    {
+        $query->where('child_agent_id', $agentId);
     }
 }

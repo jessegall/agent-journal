@@ -57,7 +57,7 @@ final class GlobalGroup extends Model implements ReadableModel
      */
     public static function journal(): self
     {
-        $row = self::query()->where('name', self::JOURNAL)->first();
+        $row = self::query()->named(self::JOURNAL)->first();
         self::assertJournalGroup($row);
 
         return $row;
@@ -72,7 +72,7 @@ final class GlobalGroup extends Model implements ReadableModel
         $group->setAttribute($group->getKeyName(), $group->newUniqueId());
         $group->insertIfAbsent();
 
-        return self::query()->where('name', self::JOURNAL)->sole();
+        return self::query()->named(self::JOURNAL)->sole();
     }
 
     // ----------[ Scopes ]----------

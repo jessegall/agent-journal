@@ -101,8 +101,8 @@ final class AccountNotice extends Model implements EventSource, ReadableModel
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
             ->open()
-            ->where('driver', $driver)
-            ->where('reason', $reason->value)
+            ->ofDriver($driver)
+            ->forReason($reason)
             ->lockForUpdate()
             ->first();
     }
@@ -117,7 +117,7 @@ final class AccountNotice extends Model implements EventSource, ReadableModel
         $notices = self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
             ->open()
-            ->where('driver', $driver)
+            ->ofDriver($driver)
             ->oldestFirst()
             ->lockForUpdate()
             ->readAll('a driver keeps one open notice per reason')
@@ -133,7 +133,7 @@ final class AccountNotice extends Model implements EventSource, ReadableModel
      */
     public static function openNotices(): array
     {
-        return array_values(self::query()->open()->latest()->limit(20)->get()->all());
+        return array_values(self::query()->open()->newestFirst()->limit(20)->get()->all());
     }
 
     // ----------[ Scopes ]----------
@@ -145,5 +145,27 @@ final class AccountNotice extends Model implements EventSource, ReadableModel
     protected function open(Builder $query): void
     {
         $query->whereNull('resolved_at');
+    }
+
+    /**
+     * The driver's notices.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofDriver(Builder $query, string $driver): void
+    {
+        $query->where('driver', $driver);
+    }
+
+    /**
+     * The notices given for the reason.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function forReason(Builder $query, AccountNoticeReason $reason): void
+    {
+        $query->where('reason', $reason->value);
     }
 }

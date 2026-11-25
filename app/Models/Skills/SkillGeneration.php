@@ -146,7 +146,7 @@ final class SkillGeneration extends Model implements EventSource, ReadableModel
      */
     public static function latestReady(): self|null
     {
-        return self::query()->inState(GenerationState::Ready)->orderByDesc('created_at')->newestFirst()->first();
+        return self::query()->inState(GenerationState::Ready)->newestFirst()->first();
     }
 
     /**
@@ -154,7 +154,7 @@ final class SkillGeneration extends Model implements EventSource, ReadableModel
      */
     public static function latest(): self|null
     {
-        return self::query()->orderByDesc('created_at')->newestFirst()->first();
+        return self::query()->newestFirst()->first();
     }
 
     // ----------[ Scopes ]----------

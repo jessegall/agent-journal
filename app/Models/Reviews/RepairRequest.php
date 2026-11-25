@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Reviews;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -83,8 +85,7 @@ final class RepairRequest extends Model implements EventSource, ReadableModel
     public function earlierRounds(): int
     {
         return self::query()
-            ->where('work_type', $this->work_type)
-            ->where('work_id', $this->work_id)
+            ->ofWork($this->work_type, $this->work_id)
             ->whereKeyNot($this->id)
             ->count();
     }
@@ -127,6 +128,30 @@ final class RepairRequest extends Model implements EventSource, ReadableModel
         $repair->setAttribute($repair->getKeyName(), $repair->newUniqueId());
         $repair->insertIfAbsent();
 
-        return self::query()->where('source', $source)->sole();
+        return self::query()->fromSource($source)->sole();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The repairs asked of that work.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofWork(Builder $query, string $workType, string $workId): void
+    {
+        $query->where('work_type', $workType)->where('work_id', $workId);
+    }
+
+    /**
+     * The repair asked from that source.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function fromSource(Builder $query, string $source): void
+    {
+        $query->where('source', $source);
     }
 }

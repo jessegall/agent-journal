@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Agents;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\TakesPartInMessages;
 use App\Contracts\Messages\MessageReceiver;
 use App\Contracts\Messages\MessageSender;
@@ -191,8 +193,8 @@ final class Agent extends Model implements
     public static function soleActorForProfile(string $profile): Option
     {
         $matches = self::query()
-            ->where('profile_key', $profile)
-            ->whereNull('retired_at')
+            ->ofProfile($profile)
+            ->unretired()
             ->limit(2)
             ->get();
 
@@ -214,5 +216,29 @@ final class Agent extends Model implements
         $agents = self::query()->whereKey($ids)->readExactly(max(1, count($ids)))->get();
 
         return $agents->keyBy('id')->all();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The agents that run under the profile.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofProfile(Builder $query, string $profile): void
+    {
+        $query->where('profile_key', $profile);
+    }
+
+    /**
+     * The agents not retired.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unretired(Builder $query): void
+    {
+        $query->whereNull('retired_at');
     }
 }

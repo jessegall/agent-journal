@@ -225,7 +225,7 @@ final class ShareGatewayOperation extends Model implements EventSource, Readable
     {
         return array_values(array_unique(self::query()
             ->unfinished()
-            ->whereIn('share_gateway_configuration_id', $ids)
+            ->ofConfigurations($ids)
             ->ofType(GatewayOperationType::Open)
             ->readAll('one unfinished open at most per configuration a run reopens')
             ->pluck('share_gateway_configuration_id')
@@ -304,5 +304,17 @@ final class ShareGatewayOperation extends Model implements EventSource, Readable
     protected function claimedByOtherThan(Builder $query, string $runId): void
     {
         $query->whereNotNull('run_id')->where('run_id', '!=', $runId);
+    }
+
+    /**
+     * The operations of the configurations.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $ids
+     */
+    #[Scope]
+    protected function ofConfigurations(Builder $query, array $ids): void
+    {
+        $query->whereIn('share_gateway_configuration_id', $ids);
     }
 }

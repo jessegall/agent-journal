@@ -154,8 +154,7 @@ final class AutoAssignment extends Model implements EventSource, ReadableModel
     private static function pageOf(ReadBuilder $query, IdListPage $page): AutoAssignmentPage
     {
         $rows = $query
-            ->when($page->afterId !== null, fn (Builder $after) => $after->where('id', '>', $page->afterId))
-            ->orderBy('id')
+            ->pageAfter($page->afterId)
             ->readExactly($page->limit + 1)
             ->get();
 
@@ -183,7 +182,7 @@ final class AutoAssignment extends Model implements EventSource, ReadableModel
      */
     public static function enabledPage(IdListPage $page): AutoAssignmentPage
     {
-        return self::pageOf(self::query()->where('enabled', true), $page);
+        return self::pageOf(self::query()->enabled(), $page);
     }
 
     /**
@@ -212,5 +211,27 @@ final class AutoAssignment extends Model implements EventSource, ReadableModel
     protected function ofActor(Builder $query, ActorIdentity $actor): void
     {
         $query->where('actor_type', $actor->type)->where('actor_id', $actor->id);
+    }
+
+    /**
+     * The rows after the id, in id order; all of them, in id order, with none.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function pageAfter(Builder $query, string|null $afterId): void
+    {
+        $query->when($afterId !== null, fn (Builder $after) => $after->where('id', '>', $afterId))->orderBy('id');
+    }
+
+    /**
+     * The enabled auto-assignments.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function enabled(Builder $query): void
+    {
+        $query->where('enabled', true);
     }
 }

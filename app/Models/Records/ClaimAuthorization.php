@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Records;
 
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -128,7 +129,7 @@ final class ClaimAuthorization extends Model implements ReadableModel
      */
     public static function ofClaim(string $assignmentId): self|null
     {
-        return self::query()->where('claim_assignment_id', $assignmentId)->first();
+        return self::query()->forClaim($assignmentId)->first();
     }
 
     /**
@@ -140,7 +141,7 @@ final class ClaimAuthorization extends Model implements ReadableModel
     {
         return self::query()
             ->select('claim_assignment_id')
-            ->where('work_assignment_id', $source->id);
+            ->forWork($source);
     }
 
     /**
@@ -152,10 +153,46 @@ final class ClaimAuthorization extends Model implements ReadableModel
     public static function ofClaims(array $assignmentIds): array
     {
         return self::query()
-            ->whereIn('claim_assignment_id', $assignmentIds)
+            ->forClaims($assignmentIds)
             ->readExactly(count($assignmentIds))
             ->get()
             ->keyBy('claim_assignment_id')
             ->all();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The claim's authorization.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function forClaim(Builder $query, string $assignmentId): void
+    {
+        $query->where('claim_assignment_id', $assignmentId);
+    }
+
+    /**
+     * The authorizations of the claims.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $assignmentIds
+     */
+    #[Scope]
+    protected function forClaims(Builder $query, array $assignmentIds): void
+    {
+        $query->whereIn('claim_assignment_id', $assignmentIds);
+    }
+
+    /**
+     * The authorizations the work assignment grants.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function forWork(Builder $query, AssignmentReference $source): void
+    {
+        $query->where('work_assignment_id', $source->id);
     }
 }

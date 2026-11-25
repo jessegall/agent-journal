@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
@@ -119,7 +121,7 @@ final class ConnectionAudit extends Model implements ReadableModel
      */
     public static function newest(int $most): array
     {
-        return array_values(self::query()->orderByDesc('created_at')->newestFirst()->limit($most)->get()->all());
+        return array_values(self::query()->newestFirst()->limit($most)->get()->all());
     }
 
     /**
@@ -132,11 +134,36 @@ final class ConnectionAudit extends Model implements ReadableModel
     {
         $ranked = self::query()->select('*')
             ->selectRaw('row_number() over (partition by binding_id order by created_at desc, id desc) as step_rank')
-            ->whereIn('binding_id', $ids);
+            ->ofBindings($ids);
 
         return array_values(self::query()->fromSub($ranked, 'connection_audits')
-            ->where('step_rank', '<=', self::SUPPORT_RECORD_LIMIT)
-            ->orderByDesc('created_at')->newestFirst()
+            ->rankedWithinSupportLimit()
+            ->newestFirst()
             ->readExactly(count($ids) * self::SUPPORT_RECORD_LIMIT)->get()->all());
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The audits of the bindings.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $ids
+     */
+    #[Scope]
+    protected function ofBindings(Builder $query, array $ids): void
+    {
+        $query->whereIn('binding_id', $ids);
+    }
+
+    /**
+     * The ranked audits among each binding's newest the support record keeps.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function rankedWithinSupportLimit(Builder $query): void
+    {
+        $query->where('step_rank', '<=', self::SUPPORT_RECORD_LIMIT);
     }
 }

@@ -414,7 +414,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
      */
     public function latestAttemptAt(int $node): PartRun
     {
-        return $this->parts()->where('syntax_node', $node)->orderByDesc('attempt')->firstOrFail();
+        return $this->parts()->atNode($node)->newestAttemptFirst()->firstOrFail();
     }
 
     public function identifyFor(DockDefinition $definition): DockIdentity

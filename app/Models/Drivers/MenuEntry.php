@@ -287,7 +287,7 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
     {
         return self::query()->ownedBy($navigation->actor())->current()->forDriver($navigation->family)
             ->matching($steps[0]->fingerprint, $navigation->goal)
-            ->whereRaw('steps::jsonb = ?::jsonb', [json_encode(self::storedSteps($steps), JSON_THROW_ON_ERROR)])
+            ->withSteps($steps)
             ->lockForUpdate()
             ->recentFirst()
             ->first();
@@ -304,12 +304,12 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
         array $declinedEntries,
     ): self|null {
         $menuQuery = self::query()->ownedBy($owner)->current()->forDriver($runtime->family)
-            ->matching($fingerprint, $goal)->whereNotIn('id', $declinedEntries)->recentFirst();
+            ->matching($fingerprint, $goal)->whereKeyNot($declinedEntries)->recentFirst();
 
         $build = $runtime->driver_build;
-        $current = (clone $menuQuery)->whereJsonContains('builds', [['build' => $build, 'stale' => false]])->first();
+        $current = (clone $menuQuery)->currentOnBuild($build)->first();
 
-        return $current ?? $menuQuery->whereJsonDoesntContain('builds', [['build' => $build]])->first();
+        return $current ?? $menuQuery->unseenOnBuild($build)->first();
     }
 
     // ----------[ Scopes ]----------
@@ -348,5 +348,39 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
     protected function recentFirst(Builder $query): void
     {
         $query->orderByDesc('updated_at')->orderByDesc('id');
+    }
+
+    /**
+     * The entries whose stored steps are exactly these.
+     *
+     * @param  Builder<self>  $query
+     * @param  non-empty-list<MenuStep>  $steps
+     */
+    #[Scope]
+    protected function withSteps(Builder $query, array $steps): void
+    {
+        $query->whereRaw('steps::jsonb = ?::jsonb', [json_encode(self::storedSteps($steps), JSON_THROW_ON_ERROR)]);
+    }
+
+    /**
+     * The entries that still work on the build.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function currentOnBuild(Builder $query, string $build): void
+    {
+        $query->whereJsonContains('builds', [['build' => $build, 'stale' => false]]);
+    }
+
+    /**
+     * The entries never tried on the build.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unseenOnBuild(Builder $query, string $build): void
+    {
+        $query->whereJsonDoesntContain('builds', [['build' => $build]]);
     }
 }

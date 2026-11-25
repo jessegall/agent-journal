@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Models;
 
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\HasComments;
 use App\Concerns\HasNumber;
@@ -112,6 +113,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
 
     use HasNumber;
     use HasUlids;
+    use OrdersById;
     use Linkable;
     use RaisesEvents;
 
@@ -517,12 +519,12 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
             return new OrderedRecordIds([]);
         }
 
-        $query = self::query()->where('state', TaskState::Open)->outsideSelectedIds($assignedIds)
+        $query = self::query()->open()->outsideSelectedIds($assignedIds)
             ->outsideSelectedIds(TaskWait::unmetDependentIds());
 
         $ordered = match ($members->type) {
-            PoolMembersType::All => $query->orderBy('id'),
-            PoolMembersType::Ordered => $query->whereIn('id', $members->ids->ids)->inListedOrder($members->ids),
+            PoolMembersType::All => $query->oldestFirst(),
+            PoolMembersType::Ordered => $query->whereKey($members->ids->ids)->inListedOrder($members->ids),
         };
 
         return new OrderedRecordIds(array_values($ordered->readExactly($limit)->pluck('id')->all()));
@@ -611,5 +613,16 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
         }
 
         $query->orderByRaw("case id {$cases} end", $bindings);
+    }
+
+    /**
+     * The open tasks.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function open(Builder $query): void
+    {
+        $query->where('state', TaskState::Open);
     }
 }

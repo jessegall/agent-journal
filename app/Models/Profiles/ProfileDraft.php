@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Profiles;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
@@ -78,7 +80,7 @@ final class ProfileDraft extends Model implements ReadableModel
      */
     public static function of(ProfileKey $profile): self
     {
-        return self::query()->with('currentRevision')->where('profile_key', $profile->key)->first()
+        return self::query()->with('currentRevision')->ofProfile($profile)->first()
             ?? new self(['profile_key' => $profile->key, 'revision' => 0]);
     }
 
@@ -101,13 +103,49 @@ final class ProfileDraft extends Model implements ReadableModel
         }
 
         return self::query()
-            ->whereIn('profile_key', $profiles)
-            ->orderBy('profile_key')
+            ->ofProfiles($profiles)
+            ->inProfileOrder()
             ->lockForUpdate()
             ->with('currentRevision')
             ->readExactly(count($profiles))
             ->get()
             ->keyBy('profile_key')
             ->all();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The profile's draft.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofProfile(Builder $query, ProfileKey $profile): void
+    {
+        $query->where('profile_key', $profile->key);
+    }
+
+    /**
+     * The drafts of the profiles.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $profiles
+     */
+    #[Scope]
+    protected function ofProfiles(Builder $query, array $profiles): void
+    {
+        $query->whereIn('profile_key', $profiles);
+    }
+
+    /**
+     * The drafts in the order of their profile key.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inProfileOrder(Builder $query): void
+    {
+        $query->orderBy('profile_key');
     }
 }

@@ -69,7 +69,7 @@ final class PhaseCheck extends Model implements ReadableModel
         $check->setAttribute($check->getKeyName(), $check->newUniqueId());
         $check->insertIfAbsent();
 
-        return self::query()->where('phase_id', $phase->id)->where('receipt_id', $receipt->receiptId)->sole();
+        return self::query()->ofPhase($phase)->ofReceipt($receipt->receiptId)->sole();
     }
 
     // ----------[ Scopes ]----------
@@ -81,5 +81,16 @@ final class PhaseCheck extends Model implements ReadableModel
     protected function ofPhase(Builder $query, Phase $phase): void
     {
         $query->where('phase_id', $phase->id);
+    }
+
+    /**
+     * The check recorded from the receipt.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofReceipt(Builder $query, string $receiptId): void
+    {
+        $query->where('receipt_id', $receiptId);
     }
 }

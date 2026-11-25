@@ -266,9 +266,7 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
     {
         $runs = self::query()
             ->acrossOwners()
-            ->whereNotNull('actor_id')
-            ->select(['actor_type', 'actor_id'])
-            ->groupBy('actor_type', 'actor_id')
+            ->onePerFollower()
             ->readUpTo(self::FOLLOWER_LIMIT)
             ->get();
 
@@ -293,5 +291,18 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
         self::assertFound($row, $id);
 
         return $row;
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * One row for each actor that follows a run, holding only who the actor is.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function onePerFollower(Builder $query): void
+    {
+        $query->whereNotNull('actor_id')->select(['actor_type', 'actor_id'])->groupBy('actor_type', 'actor_id');
     }
 }

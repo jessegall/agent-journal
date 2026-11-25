@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Drivers;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
@@ -62,9 +64,8 @@ final class RuntimeEvent extends Model implements ReadableModel
         string|null $requestId,
     ): RecordedEvent {
         $previous = self::query()
-            ->where('agent_runtime_id', $runtime->id)
-            ->where('generation', $generation)
-            ->where('sequence', '<', $sequence)
+            ->ofGeneration($runtime, $generation)
+            ->before($sequence)
             ->max('sequence');
 
         $event = new self();
@@ -76,5 +77,29 @@ final class RuntimeEvent extends Model implements ReadableModel
         $event->driver_request_id = $requestId;
 
         return new RecordedEvent(! $event->insertIfAbsent(), $previous !== null && $sequence > ((int) $previous) + 1);
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The events of one generation of the runtime.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofGeneration(Builder $query, AgentRuntime $runtime, int $generation): void
+    {
+        $query->where('agent_runtime_id', $runtime->id)->where('generation', $generation);
+    }
+
+    /**
+     * The events before that sequence number.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function before(Builder $query, int $sequence): void
+    {
+        $query->where('sequence', '<', $sequence);
     }
 }

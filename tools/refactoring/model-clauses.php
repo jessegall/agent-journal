@@ -23,7 +23,7 @@ require_once __DIR__.'/models.php';
 require_once __DIR__.'/php-parse.php';
 
 /** A query builder call that narrows or orders the rows: it belongs in a scope. */
-const CLAUSE = '/^(where(?!Key\b)\w*|orWhere\w*|having\w*|orderBy\w*|latest|oldest|when|unless|join|leftJoin|rightJoin|groupBy)$/';
+const CLAUSE = '/^(where(?!Key(Not)?\b)\w*|orWhere\w*|having\w*|orderBy\w*|latest|oldest|when|unless|join|leftJoin|rightJoin|groupBy)$/';
 
 /** The relation types a relation method returns; its constraints are part of the relation. */
 const RELATION_TYPES = [

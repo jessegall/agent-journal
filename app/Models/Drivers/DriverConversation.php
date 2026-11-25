@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Drivers;
 
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -35,6 +36,7 @@ final class DriverConversation extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use OrdersById;
     use Linkable;
 
     // ----------[ Constructors ]----------
@@ -109,10 +111,8 @@ final class DriverConversation extends Model implements ReadableModel
     public static function lastUnder(string $agentId, string $contextReference, string $driver): string|null
     {
         $conversation = self::query()
-            ->where('agent_id', $agentId)
-            ->where('context_reference', $contextReference)
-            ->where('resume_protocol', $driver)
-            ->latest()
+            ->heldUnder($agentId, $contextReference, $driver)
+            ->newestFirst()
             ->first();
 
         return $conversation?->native_id;
@@ -158,5 +158,18 @@ final class DriverConversation extends Model implements ReadableModel
             'settings_identity',
             $settingsIdentity,
         )->where('native_id', $nativeId);
+    }
+
+    /**
+     * The agent's conversations under the context, resumed by the driver.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function heldUnder(Builder $query, string $agentId, string $contextReference, string $driver): void
+    {
+        $query->where('agent_id', $agentId)
+            ->where('context_reference', $contextReference)
+            ->where('resume_protocol', $driver);
     }
 }

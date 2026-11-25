@@ -119,7 +119,7 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
     {
         return self::query()
             ->withoutGlobalScope(SignedInScope::class)
-            ->whereIn('id', ClaimAuthorization::claimIdsFor($source));
+            ->provedBy($source);
     }
 
     /**
@@ -176,8 +176,7 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
     {
         return array_values(self::query()
             ->withoutGlobalScope(SignedInScope::class)
-            ->where('record_type', $type)
-            ->whereIn('record_id', $ids)
+            ->ofRecordIds($type, $ids)
             ->get()
             ->all());
     }
@@ -303,5 +302,28 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
         $query->withoutGlobalScope(SignedInScope::class)
             ->where('holder_type', $holder->type)
             ->where('holder_id', $holder->id);
+    }
+
+    /**
+     * The claims the work assignment proves.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function provedBy(Builder $query, AssignmentReference $source): void
+    {
+        $query->whereIn('id', ClaimAuthorization::claimIdsFor($source));
+    }
+
+    /**
+     * The rows of the records of one type.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $ids
+     */
+    #[Scope]
+    protected function ofRecordIds(Builder $query, string $type, array $ids): void
+    {
+        $query->where('record_type', $type)->whereIn('record_id', $ids);
     }
 }

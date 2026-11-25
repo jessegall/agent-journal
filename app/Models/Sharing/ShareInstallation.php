@@ -122,11 +122,7 @@ final class ShareInstallation extends Model implements EventSource, ReadableMode
      */
     public static function hasLiveRun(): bool
     {
-        return self::query()->named(self::NAME)->whereNotNull('run_id')->where(
-            'run_lease_ends_at',
-            '>',
-            CarbonImmutable::now(),
-        )->exists();
+        return self::query()->named(self::NAME)->leasedNow()->exists();
     }
 
     // ----------[ Scopes ]----------
@@ -138,5 +134,16 @@ final class ShareInstallation extends Model implements EventSource, ReadableMode
     protected function named(Builder $query, string $name): void
     {
         $query->where('name', $name);
+    }
+
+    /**
+     * The installation while a run holds an unexpired lease on it.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function leasedNow(Builder $query): void
+    {
+        $query->whereNotNull('run_id')->where('run_lease_ends_at', '>', CarbonImmutable::now());
     }
 }

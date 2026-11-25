@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Starts;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -63,7 +65,20 @@ final class BindingStart extends Model implements EventSource, ReadableModel
      */
     public static function ofBinding(string $bindingId, string $startId): array
     {
-        return array_values(self::query()->where('binding_id', $bindingId)->where('start_id', $startId)->limit(1)
+        return array_values(self::query()->ofBindingAndStart($bindingId, $startId)->limit(1)
             ->get()->all());
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The binding's row for the start.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofBindingAndStart(Builder $query, string $bindingId, string $startId): void
+    {
+        $query->where('binding_id', $bindingId)->where('start_id', $startId);
     }
 }

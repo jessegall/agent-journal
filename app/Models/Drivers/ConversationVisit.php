@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Drivers;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -53,13 +55,13 @@ final class ConversationVisit extends Model implements ReadableModel
         string $eventId,
         CarbonImmutable $observedAt,
     ): self {
-        $existing = self::query()->where('session_id', $session->id)->where('event_id', $eventId)->first();
+        $existing = self::query()->ofSession($session)->ofEvent($eventId)->first();
 
         if ($existing !== null) {
             return $existing;
         }
 
-        $next = (int) self::query()->where('session_id', $session->id)->max('sequence_number') + 1;
+        $next = (int) self::query()->ofSession($session)->max('sequence_number') + 1;
 
         return self::query()->create(
             [
@@ -70,5 +72,29 @@ final class ConversationVisit extends Model implements ReadableModel
                 'observed_at' => $observedAt,
             ],
         );
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The session's visits.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofSession(Builder $query, AgentSession $session): void
+    {
+        $query->where('session_id', $session->id);
+    }
+
+    /**
+     * The visit recorded from the event.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofEvent(Builder $query, string $eventId): void
+    {
+        $query->where('event_id', $eventId);
     }
 }

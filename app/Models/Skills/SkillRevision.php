@@ -197,7 +197,7 @@ final class SkillRevision extends Model implements ReadableModel
 
     public static function numbered(Skill $skill, int $revision): self
     {
-        return self::query()->ofSkill($skill)->where('revision', $revision)->firstOrFail();
+        return self::query()->ofSkill($skill)->atRevision($revision)->firstOrFail();
     }
 
     /**
@@ -207,7 +207,7 @@ final class SkillRevision extends Model implements ReadableModel
      */
     public static function historyOf(Skill $skill, int $limit): array
     {
-        return array_values(self::query()->ofSkill($skill)->orderByDesc('revision')->readExactly($limit)->get()->all());
+        return array_values(self::query()->ofSkill($skill)->newestRevisionFirst()->readExactly($limit)->get()->all());
     }
 
     // ----------[ Scopes ]----------
@@ -219,5 +219,27 @@ final class SkillRevision extends Model implements ReadableModel
     protected function ofSkill(Builder $query, Skill $skill): void
     {
         $query->where('skill_id', $skill->id);
+    }
+
+    /**
+     * The revision of that number.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function atRevision(Builder $query, int $revision): void
+    {
+        $query->where('revision', $revision);
+    }
+
+    /**
+     * The revisions newest first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function newestRevisionFirst(Builder $query): void
+    {
+        $query->orderByDesc('revision');
     }
 }

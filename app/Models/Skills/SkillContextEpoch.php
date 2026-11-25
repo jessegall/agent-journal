@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Skills;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -66,7 +68,7 @@ final class SkillContextEpoch extends Model implements EventSource, ReadableMode
         $epoch->setAttribute($epoch->getKeyName(), $epoch->newUniqueId());
         $epoch->insertIfAbsent();
 
-        return self::query()->where('session_id', $sessionId)->lockForUpdate()->firstOrFail();
+        return self::query()->ofSession($sessionId)->lockForUpdate()->firstOrFail();
     }
 
     /**
@@ -74,6 +76,19 @@ final class SkillContextEpoch extends Model implements EventSource, ReadableMode
      */
     public static function currentOf(string $sessionId): int
     {
-        return self::query()->where('session_id', $sessionId)->first()->epoch ?? 0;
+        return self::query()->ofSession($sessionId)->first()->epoch ?? 0;
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The session's epoch.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofSession(Builder $query, string $sessionId): void
+    {
+        $query->where('session_id', $sessionId);
     }
 }

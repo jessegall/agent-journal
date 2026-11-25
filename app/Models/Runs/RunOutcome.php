@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Runs;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -116,7 +118,7 @@ final class RunOutcome extends Model implements EventSource, ReadableModel
      */
     public static function ofRun(ProcessRun $run): Option
     {
-        return Option::fromValue(self::query()->where('attempt_id', $run->attempt_id)->first());
+        return Option::fromValue(self::query()->ofAttempt($run->attempt_id)->first());
     }
 
     /**
@@ -126,6 +128,19 @@ final class RunOutcome extends Model implements EventSource, ReadableModel
      */
     public static function lockedForAttempt(string $attemptId): Option
     {
-        return Option::fromValue(self::query()->where('attempt_id', $attemptId)->lockForUpdate()->first());
+        return Option::fromValue(self::query()->ofAttempt($attemptId)->lockForUpdate()->first());
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The attempt's outcome.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofAttempt(Builder $query, string $attemptId): void
+    {
+        $query->where('attempt_id', $attemptId);
     }
 }

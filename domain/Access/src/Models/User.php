@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Access\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\TakesPartInMessages;
 use App\Contracts\Messages\MessageReceiver;
 use App\Contracts\Messages\MessageSender;
@@ -161,7 +163,7 @@ class User extends Authenticatable implements
             return $owner;
         }
 
-        return self::query()->where('email', $email)->sole();
+        return self::query()->withEmail($email)->sole();
     }
 
     /**
@@ -169,12 +171,25 @@ class User extends Authenticatable implements
      */
     public static function ownerIdFor(string $email): string|null
     {
-        $id = self::query()->where('email', $email)->value('id');
+        $id = self::query()->withEmail($email)->value('id');
 
         if (is_string($id)) {
             return $id;
         }
 
         return null;
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The user of that email address.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withEmail(Builder $query, string $email): void
+    {
+        $query->where('email', $email);
     }
 }

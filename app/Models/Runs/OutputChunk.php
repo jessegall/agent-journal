@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Runs;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -66,5 +68,18 @@ final class OutputChunk extends Model implements ReadableModel
             'captured_at' => $chunk->capturedAt,
             'storage_path' => $storagePath,
         ]);
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The chunks stream by stream, each in the order of its offset.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inStreamOrder(Builder $query): void
+    {
+        $query->orderBy('stream')->orderBy('offset');
     }
 }
