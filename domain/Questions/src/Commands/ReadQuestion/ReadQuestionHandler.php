@@ -27,6 +27,6 @@ final readonly class ReadQuestionHandler extends QuestionCommandHandler
             throw QuestionRefused::notInvolved($question->id);
         }
 
-        return ShownQuestion::of($question);
+        return $question->shown;
     }
 }

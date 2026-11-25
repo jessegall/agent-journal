@@ -17,6 +17,7 @@ use Domain\Questions\Enums\QuestionType;
 use Domain\Questions\Events\QuestionAnswered;
 use Domain\Questions\Events\QuestionAsked;
 use Domain\Questions\Exceptions\QuestionRefused;
+use Domain\Questions\Support\ShownQuestion;
 use Domain\Questions\Values\QuestionSummary;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -38,6 +39,7 @@ use Illuminate\Support\Carbon;
  * @property ?string $answer
  * @property ?CarbonImmutable $answered_at
  * @property ?Carbon $created_at
+ * @property-read ShownQuestion $shown
  * @property ?Carbon $updated_at
  * @property mixed $sender attribute
  * @property mixed $target attribute
@@ -142,6 +144,29 @@ final class Question extends Model implements AuthoredModel, EventSource, Readab
 
             return new QuestionSummary($this->id, $firstLine, $this->inbox_id);
         });
+    }
+
+    /**
+     * The question as an agent or a page reads it, with its answer once it has one.
+     *
+     * @return Attribute<ShownQuestion, never>
+     */
+    protected function shown(): Attribute
+    {
+        return Accessor::get(fn () => new ShownQuestion(
+            $this->id,
+            $this->inbox_id,
+            $this->sender_type,
+            $this->sender_id,
+            $this->target_type,
+            $this->target_id,
+            $this->text,
+            $this->type->value,
+            $this->options,
+            $this->answer,
+            $this->answered_at?->toIso8601String(),
+            $this->created_at->toIso8601String(),
+        ));
     }
 
     /**

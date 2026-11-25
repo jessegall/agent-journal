@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Questions\Support;
 
-use Domain\Questions\Models\Question;
-
 /**
  * A question as its sender and its target are shown it, with the answer once there is one.
  */
@@ -28,22 +26,4 @@ final readonly class ShownQuestion
         public string|null $answeredAt,
         public string $askedAt,
     ) {}
-
-    public static function of(Question $question): self
-    {
-        return new self(
-            $question->id,
-            $question->inbox_id,
-            $question->sender_type,
-            $question->sender_id,
-            $question->target_type,
-            $question->target_id,
-            $question->text,
-            $question->type->value,
-            $question->options,
-            $question->answer,
-            $question->answered_at?->toIso8601String(),
-            $question->created_at->toIso8601String(),
-        );
-    }
 }

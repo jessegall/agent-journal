@@ -57,7 +57,8 @@ final class TaskDetailsResolverTest extends TestCase
         'command_receipts',
         'task_runs',
         'claim_authorizations',
-        'inboxes', 'inbox_members',
+        'inboxes',
+        'inbox_members',
     ];
 
     #[TimeLimit(3, 'It creates twenty tasks, each with its own session and run, before the read.')]

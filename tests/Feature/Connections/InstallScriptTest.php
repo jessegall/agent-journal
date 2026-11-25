@@ -21,6 +21,10 @@ final class InstallScriptTest extends TestCase
 {
     use CommitsHookRows;
 
+    private const string MAIN_START = 'main() {';
+
+    private const string MAIN_CALL = 'main "$@"';
+
     private const string CUT_RAN = 'a copy cut at byte %d ran a command';
 
     private const string NO_COMMAND_RAN = 'the whole script ran no command, so the cuts prove nothing';
@@ -81,9 +85,9 @@ final class InstallScriptTest extends TestCase
     {
         $lines = explode("\n", rtrim($this->rendered(), "\n"));
 
-        $this->assertSame('main "$@"', end($lines));
+        $this->assertSame(self::MAIN_CALL, end($lines));
         $calls = array_filter($lines, fn (string $line) => str_starts_with($line, 'main'));
-        $this->assertSame(['main() {', 'main "$@"'], array_values($calls));
+        $this->assertSame([self::MAIN_START, self::MAIN_CALL], array_values($calls));
     }
 
     public function test_a_copy_cut_anywhere_before_the_last_line_runs_nothing(): void
