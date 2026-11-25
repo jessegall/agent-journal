@@ -32,8 +32,6 @@ final class NoteSnapshot extends Model implements Numbered, ReadableModel, TextC
     use HasUlids;
     use Linkable;
 
-    public const string LINK_TYPE = 'notes.snapshot';
-
     public function textVersion(string|null $version = null): TextVersion
     {
         return TextVersion::ofOnlyMarkdown($version, 'snapshot', $this->text);

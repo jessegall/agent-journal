@@ -28,7 +28,7 @@ final readonly class UsageReportAccounts
     {
         $start = ProcessStart::claimedBy($reported->hostId, $reported->key);
 
-        if ($start->account_type !== Account::LINK_TYPE || $start->account_generation !== $reported->generation) {
+        if ($start->account_type !== Account::linkType() || $start->account_generation !== $reported->generation) {
             throw UsageReportRefused::otherGeneration($reported->key);
         }
 

@@ -26,8 +26,6 @@ final class AskRequester extends Model implements ReadableModel
     use InsertsAbsentRows;
     use Linkable;
 
-    public const string LINK_TYPE = 'core.ask-requester';
-
     // ----------[ Queries ]----------
 
     /**

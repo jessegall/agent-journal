@@ -45,8 +45,6 @@ final class RecordSettlement extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
-    public const string LINK_TYPE = 'documents.settlement';
-
     protected function casts(): array
     {
         return [

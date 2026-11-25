@@ -34,7 +34,7 @@ final readonly class NoteLinkRecords implements RecordProvider
 
     protected function linkType(): string
     {
-        return Note::LINK_TYPE;
+        return Note::linkType();
     }
 
     protected function readableRecords(): ReadBuilder
@@ -45,7 +45,7 @@ final readonly class NoteLinkRecords implements RecordProvider
     protected function cardOf(Model $record): RecordCard
     {
         return RecordCard::from([
-            'type' => Note::LINK_TYPE,
+            'type' => Note::linkType(),
             'id' => $record->id,
             'number' => (string) $record->number,
             'label' => "note {$record->number}",

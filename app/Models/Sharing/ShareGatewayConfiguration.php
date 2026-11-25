@@ -53,8 +53,6 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
     use OrdersById;
     use RaisesEvents;
 
-    public const string LINK_TYPE = 'core.share-gateway-configuration';
-
     /**
      * @return array<string, string>
      */

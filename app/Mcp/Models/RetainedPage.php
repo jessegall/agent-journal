@@ -45,8 +45,6 @@ final class RetainedPage extends Model implements ReadableModel
     use Linkable;
     use MassPrunable;
 
-    public const string LINK_TYPE = 'core.mcp-retained-page';
-
     protected $table = 'core_mcp_retained_pages';
 
     /**

@@ -47,7 +47,7 @@ final class PlanTaskPoolTest extends TestCase
 
         $this->assertContains(
             'plans.tasks',
-            array_map(fn (PoolDefinition $pool) => $pool->key, $providers->pools(TaskType::VALUE)),
+            array_map(fn (PoolDefinition $pool) => $pool->key, $providers->pools(TaskType::linkType())),
         );
 
         $this->assertSame('Plans', $providers->poolOwner('plans.tasks'));
@@ -148,7 +148,7 @@ final class PlanTaskPoolTest extends TestCase
 
         $this->assertThrows(
             fn () => $factory->validate(
-                new PoolReference('plans.tasks', new RecordIdentity(TaskType::VALUE, $task), []),
+                new PoolReference('plans.tasks', new RecordIdentity(TaskType::linkType(), $task), []),
                 $this->builder,
             ),
             PlanPoolRefused::class,
@@ -164,7 +164,7 @@ final class PlanTaskPoolTest extends TestCase
 
         $this->assertThrows(
             fn () => $factory->validate(
-                new PoolReference('plans.tasks', new RecordIdentity(Plan::LINK_TYPE, TestIds::of(99)), []),
+                new PoolReference('plans.tasks', new RecordIdentity(Plan::linkType(), TestIds::of(99)), []),
                 $this->builder,
             ),
             PlanMissing::class,

@@ -30,7 +30,7 @@ final readonly class TaskAssignmentRecords implements TaskAssignmentResolver
     {
         $states = $this->statesOf($ids);
 
-        return array_map(fn (string $taskId) => new RecordIdentity(Task::LINK_TYPE, $taskId), array_keys($states));
+        return array_map(fn (string $taskId) => new RecordIdentity(Task::linkType(), $taskId), array_keys($states));
     }
 
     /**

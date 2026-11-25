@@ -67,15 +67,15 @@ final class AssignmentQueryTest extends TestCase
         $this->assertInstanceOf(DatabaseAssignmentQuery::class, $query);
         $this->assertSame(
             self::sorted([$first, $second]),
-            $this->taskIds(fn ($tasks) => $tasks->whereIn('id', $query->heldIds(Task::LINK_TYPE, $this->builder))),
+            $this->taskIds(fn ($tasks) => $tasks->whereIn('id', $query->heldIds(Task::linkType(), $this->builder))),
         );
         $this->assertSame(
             self::sorted([$first, $second, $third]),
-            $this->taskIds(fn ($tasks) => $tasks->whereIn('id', $query->assignedIds(Task::LINK_TYPE))),
+            $this->taskIds(fn ($tasks) => $tasks->whereIn('id', $query->assignedIds(Task::linkType()))),
         );
         $this->assertSame(
             [$free],
-            $this->taskIds(fn ($tasks) => $tasks->whereNotIn('id', $query->assignedIds(Task::LINK_TYPE))),
+            $this->taskIds(fn ($tasks) => $tasks->whereNotIn('id', $query->assignedIds(Task::linkType()))),
         );
     }
 
@@ -89,11 +89,11 @@ final class AssignmentQueryTest extends TestCase
 
         $this->assertSame(
             [$first],
-            $this->taskIds(fn ($tasks) => $tasks->whereIn('id', $query->heldIds(Task::LINK_TYPE, $this->builder))),
+            $this->taskIds(fn ($tasks) => $tasks->whereIn('id', $query->heldIds(Task::linkType(), $this->builder))),
         );
         $this->assertSame(
             [$first],
-            $this->taskIds(fn ($tasks) => $tasks->whereIn('id', $query->assignedIds(Task::LINK_TYPE))),
+            $this->taskIds(fn ($tasks) => $tasks->whereIn('id', $query->assignedIds(Task::linkType()))),
         );
     }
 
@@ -105,8 +105,8 @@ final class AssignmentQueryTest extends TestCase
 
         $query = $this->app->make(DatabaseAssignmentQuery::class);
 
-        $this->assertSame([$first], $query->heldIds(Task::LINK_TYPE, $this->builder)->pluck('record_id')->all());
-        $this->assertSame([$first], $query->assignedIds(Task::LINK_TYPE)->pluck('record_id')->all());
+        $this->assertSame([$first], $query->heldIds(Task::linkType(), $this->builder)->pluck('record_id')->all());
+        $this->assertSame([$first], $query->assignedIds(Task::linkType())->pluck('record_id')->all());
     }
 
     public function test_the_work_reader_asks_the_registered_provider_and_lets_its_failure_through(): void
@@ -145,7 +145,7 @@ final class AssignmentQueryTest extends TestCase
 
     private function hold(string $taskId, AssigneeIdentity $holder): AssignmentRecord
     {
-        return AssignmentRecord::createForRecord(new RecordIdentity(Task::LINK_TYPE, $taskId), $holder);
+        return AssignmentRecord::createForRecord(new RecordIdentity(Task::linkType(), $taskId), $holder);
     }
 
     /**

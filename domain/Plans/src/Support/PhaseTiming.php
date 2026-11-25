@@ -46,7 +46,7 @@ final readonly class PhaseTiming implements VerificationTiming
 
         do {
             $page = $this->assignments->recordIdsFor(
-                Plan::LINK_TYPE,
+                Plan::linkType(),
                 $holder,
                 new IdListPage($afterId, IdListPage::LARGEST_LIMIT),
             );

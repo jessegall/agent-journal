@@ -83,8 +83,6 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
     use Settles;
     use SharedWithComments;
 
-    public const string LINK_TYPE = 'documents.report';
-
     protected $attributes = ['attention' => 'active'];
 
     protected function casts(): array

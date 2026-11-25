@@ -10,7 +10,7 @@ use App\Exceptions\NotificationTargetUnregistered;
 use Illuminate\Container\Container;
 
 /**
- * The resolver class of each notification target key, such as core.question, registered once at boot and made
+ * The resolver class of each notification target key, such as core.questions.question, registered once at boot and made
  * for each read, so it answers for the actor of that request.
  */
 final class NotificationTargetRegistry implements NotificationTargets

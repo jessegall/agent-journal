@@ -305,7 +305,7 @@ final class ReadShareTest extends TestCase
         for ($position = 0; $position < $count; $position++) {
             $rows[] = [
                 'id' => strtolower((string) Str::ulid()),
-                'target_type' => Document::LINK_TYPE,
+                'target_type' => Document::linkType(),
                 'target_id' => $this->document->id,
                 'author_type' => 'user',
                 'author_id' => TestIds::of(9),

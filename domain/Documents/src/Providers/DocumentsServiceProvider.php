@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace Domain\Documents\Providers;
 
 use App\Contracts\Authorization\ReadEntitlements;
-use App\Contracts\Notifications\NotificationTargets;
 use App\Contracts\Drivers\AttachmentReferences;
+use App\Contracts\Notifications\NotificationTargets;
 use App\Contracts\Sessions\CurrentSession;
 use App\Contracts\Sessions\SessionProvenance;
 use App\Enums\AccessType;
 use App\Support\FolderClasses;
-use App\Support\LinkTypeRegistry;
 use App\Support\Sources\Contracts\DockRegistration;
 use App\Values\ReadEntitlement;
 use Domain\Documents\Contracts\Attachments\AttachmentReader;
@@ -22,10 +21,6 @@ use Domain\Documents\Contracts\Drafts\DraftResolver;
 use Domain\Documents\Contracts\Reports\ReportReader;
 use Domain\Documents\Contracts\Reports\ReportResolver;
 use Domain\Documents\Models\Document;
-use Domain\Documents\Models\DocumentClose;
-use Domain\Documents\Models\DocumentDraft;
-use Domain\Documents\Models\DocumentRevision;
-use Domain\Documents\Models\RecordSettlement;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Models\RetainedDraft;
 use Domain\Documents\Models\TextUpload;
@@ -66,26 +61,14 @@ final class DocumentsServiceProvider extends ServiceProvider
     }
 
     public function boot(
-        LinkTypeRegistry $links,
         ReadEntitlements $reads,
         DockRegistration $docks,
         NotificationTargets $notificationTargets,
     ): void {
         $notificationTargets->register(ReportNotificationTarget::KEY, ReportNotificationTarget::class);
-        $docks->offerDockFor($docks->register(Document::LINK_TYPE, Document::class, DocumentDocking::class));
-        $docks->offerDockFor($docks->register(Report::LINK_TYPE, Report::class, ReportDocking::class));
+        $docks->offerDockFor($docks->register(Document::linkType(), Document::class, DocumentDocking::class));
+        $docks->offerDockFor($docks->register(Report::linkType(), Report::class, ReportDocking::class));
         $reads->declare('docs_drafts_read', ReadEntitlement::grant(DocumentPolicy::class, AccessType::Edit));
-
-        $links->register([
-            Document::LINK_TYPE => Document::class,
-            DocumentRevision::LINK_TYPE => DocumentRevision::class,
-            Report::LINK_TYPE => Report::class,
-            RetainedDraft::LINK_TYPE => RetainedDraft::class,
-            DocumentDraft::LINK_TYPE => DocumentDraft::class,
-            DocumentClose::LINK_TYPE => DocumentClose::class,
-            RecordSettlement::LINK_TYPE => RecordSettlement::class,
-            TextUpload::LINK_TYPE => TextUpload::class,
-        ]);
 
         TextUpload::addGlobalScope(
             TextUpload::SESSION_SCOPE,

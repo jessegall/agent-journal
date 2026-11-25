@@ -90,7 +90,7 @@ final class ProtectedMergeTest extends TestCase
     {
         $launch = TestStart::start('writing-helper');
         $this->certifyHelperWork($launch, 'attempt-1');
-        $work = new RecordIdentity('helpers.job', self::WORK_ID);
+        $work = new RecordIdentity('helpers.helper-job', self::WORK_ID);
         $import = $this->app->make(HelperCommitImport::class)->importCertified($work, 'attempt-1');
 
         return MergeAttempt::retain(new ApprovedHead(

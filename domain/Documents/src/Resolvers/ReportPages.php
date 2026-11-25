@@ -64,7 +64,7 @@ final readonly class ReportPages implements ReportReader
                 $card->toArray(),
             ),
             PublicationView::Comments => $this->pages->comments(
-                new RecordIdentity(Report::LINK_TYPE, $report->id),
+                new RecordIdentity(Report::linkType(), $report->id),
                 $position,
                 self::KEY,
                 $card,

@@ -22,7 +22,7 @@ trait Settles
      */
     public function settle(string $reason): bool
     {
-        $last = RecordSettlement::query()->onRecord(static::LINK_TYPE, $this->id)->first();
+        $last = RecordSettlement::query()->onRecord(static::linkType(), $this->id)->first();
 
         if ($this->attention === AttentionState::Settled && $last?->reason === $reason) {
             return false;
@@ -34,7 +34,7 @@ trait Settles
 
         $this->attention = AttentionState::Settled;
         $this->assertSaved($this->save());
-        $this->raise(new RecordSettled(static::LINK_TYPE, $this->id));
+        $this->raise(new RecordSettled(static::linkType(), $this->id));
 
         return true;
     }
@@ -53,7 +53,7 @@ trait Settles
     public function settlements(): array
     {
         return array_values(RecordSettlement::query()
-            ->onRecord(static::LINK_TYPE, $this->id)
+            ->onRecord(static::linkType(), $this->id)
             ->get()
             ->map(fn (RecordSettlement $settlement) => $settlement->card())
             ->all());

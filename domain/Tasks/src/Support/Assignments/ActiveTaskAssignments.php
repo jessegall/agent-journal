@@ -23,7 +23,7 @@ final readonly class ActiveTaskAssignments implements AssignedWorkProvider
     {
         return Task::query()
             ->unfinished()
-            ->whereIn('id', $this->assignments->heldIds(TaskType::VALUE, $holder))
+            ->whereIn('id', $this->assignments->heldIds(TaskType::linkType(), $holder))
             ->count();
     }
 }

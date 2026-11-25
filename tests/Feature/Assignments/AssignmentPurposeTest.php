@@ -74,7 +74,7 @@ final class AssignmentPurposeTest extends TestCase
         $holder = $this->worker->agent->assigneeIdentity();
         $seat = $this->seat->assignmentIdentity();
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
-        $key = new AutoAssignmentKey(ActorIdentity::of($this->worker->agent), DeskSeat::LINK_TYPE);
+        $key = new AutoAssignmentKey(ActorIdentity::of($this->worker->agent), DeskSeat::linkType());
 
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
         $this->assertThrows(fn () => $bus->run(new AssignRecordCommand($seat, $holder)), AssignmentTypeInternal::class);

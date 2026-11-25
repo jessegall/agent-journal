@@ -65,8 +65,6 @@ final class SharePreview extends Model implements EventSource, ReadableModel
     use OrdersById;
     use RaisesEvents;
 
-    public const string LINK_TYPE = 'core.share-preview';
-
     public const int MINUTES_VALID = 10;
 
     /**

@@ -58,7 +58,7 @@ final readonly class DocumentWindowResolver implements PageResolver
 
         return DockablePublicationData::of(
             $this->library->layout($reader),
-            new DockIdentity(Document::LINK_TYPE, $document->id),
+            new DockIdentity(Document::linkType(), $document->id),
         );
     }
 }

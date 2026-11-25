@@ -120,11 +120,11 @@ final class SharingTest extends TestCase
         $this->assertSame(
             [
                 [
-                    Document::LINK_TYPE,
+                    Document::linkType(),
                     ['share-linked-record'],
                 ],
                 [
-                    Report::LINK_TYPE,
+                    Report::linkType(),
                     ['share-linked-record'],
                 ],
             ],
@@ -194,7 +194,7 @@ final class SharingTest extends TestCase
     public function test_missing_and_foreign_targets_are_ineligible_and_a_missing_root_is_unavailable(): void
     {
         $documents = $this->app->make(DocumentShareProvider::class);
-        $missing = new RecordIdentity(Document::LINK_TYPE, TestIds::of(77));
+        $missing = new RecordIdentity(Document::linkType(), TestIds::of(77));
 
         $page = $documents->readTargets(
             new ShareTargetRead([], [
@@ -295,7 +295,7 @@ final class SharingTest extends TestCase
         foreach ($comments as $position => [$body, $quote]) {
             $rows[] = [
                 'id' => strtolower((string) Str::ulid()),
-                'target_type' => Document::LINK_TYPE,
+                'target_type' => Document::linkType(),
                 'target_id' => $this->document->id,
                 'author_type' => 'user',
                 'author_id' => TestIds::of(1),

@@ -7,18 +7,13 @@ namespace App\Providers;
 use App\Concerns\LoadsCoreRoutes;
 use App\Contracts\Admission\AskAdmission;
 use App\Contracts\Admission\MergeAdmission;
-use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Asks\AskReader;
+use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Notifications\NotificationTargets;
 use App\Contracts\Processes\SupervisorDefinitions;
 use App\Contracts\Processes\SupervisorDispatch;
 use App\Contracts\Work\WorkRepair;
 use App\Enums\AccessType;
-use App\Models\Asks\Ask;
-use App\Models\Asks\AskHop;
-use App\Models\Asks\AskRequester;
-use App\Models\Asks\SupervisorChange;
-use App\Models\Asks\SupervisorLink;
 use App\Policies\AskPolicy;
 use App\Policies\SupervisorPolicy;
 use App\Resolvers\MergeAskNotificationTarget;
@@ -27,7 +22,6 @@ use App\Support\AskTypeRegistry;
 use App\Support\CurrentAskAdmission;
 use App\Support\EngineListenerSet;
 use App\Support\HandOffCodeReviewsOnTick;
-use App\Support\LinkTypeRegistry;
 use App\Support\Readers\AskRecords;
 use App\Support\ReviewMergeAdmission;
 use App\Support\SettleMergeOutcomesOnTick;
@@ -63,7 +57,6 @@ final class SupervisionServiceProvider extends ServiceProvider
 
     public function boot(
         PolicyCatalogue $policies,
-        LinkTypeRegistry $links,
         AskTypeRegistry $types,
         Repository $config,
         EngineListenerSet $engineListeners,
@@ -96,13 +89,6 @@ final class SupervisionServiceProvider extends ServiceProvider
         $types->register($this->app->make(StuckType::class));
         $this->requireKnownAskTypes($types, $config->array('profiles.profiles'));
 
-        $links->register([
-            Ask::LINK_TYPE => Ask::class,
-            AskHop::LINK_TYPE => AskHop::class,
-            AskRequester::LINK_TYPE => AskRequester::class,
-            SupervisorChange::LINK_TYPE => SupervisorChange::class,
-            SupervisorLink::LINK_TYPE => SupervisorLink::class,
-        ]);
     }
 
     /**

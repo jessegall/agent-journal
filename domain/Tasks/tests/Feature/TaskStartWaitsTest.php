@@ -111,7 +111,7 @@ final class TaskStartWaitsTest extends TestCase
     {
         return Task::candidates(
             PoolMembers::all(),
-            $this->app->make(AssignmentQuery::class)->assignedIds(TaskType::VALUE),
+            $this->app->make(AssignmentQuery::class)->assignedIds(TaskType::linkType()),
             50,
         )->ids;
     }

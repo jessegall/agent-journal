@@ -59,7 +59,6 @@ use App\Enums\ActorType;
 use App\Enums\AssignmentPurpose;
 use App\Enums\Place;
 use App\Exceptions\AgentContextMissing;
-use App\Models\Agents\ActivityEntry;
 use App\Models\Agents\Agent;
 use App\Models\Drivers\NavigationRequest;
 use App\Models\Starts\ProcessStart;
@@ -113,7 +112,6 @@ use App\Support\HostStartExecutor;
 use App\Support\HostStartPreflight;
 use App\Support\InstallLineAvailability;
 use App\Support\LaunchProfiles;
-use App\Support\LinkTypeRegistry;
 use App\Support\NavigationExpiry;
 use App\Support\NavigationRequestProvider;
 use App\Support\PendingNavigationWork;
@@ -319,7 +317,6 @@ final class AgentsServiceProvider extends ServiceProvider
         AuthorizerProviderRegistration $authorizers,
         PolicyCatalogue $policies,
         PendingWorkSources $pendingWork,
-        LinkTypeRegistry $links,
         Dispatcher $events,
         // read at boot so an unknown AGENTS_ARRANGEMENT stops the journal at once, naming the value
         ArrangementSetting $arrangement,
@@ -378,15 +375,10 @@ final class AgentsServiceProvider extends ServiceProvider
 
         $assignments->registerAssignees(new AssigneeDefinition(ActorType::Agent->value, AgentAssignees::class));
 
-        $links->register([
-            NavigationRequest::LINK_TYPE => NavigationRequest::class,
-            ActivityEntry::LINK_TYPE => ActivityEntry::class,
-        ]);
-
         $assignments->registerOwner(self::OWNER, []);
 
         $assignments->registerRecord(
-            NavigationRequest::LINK_TYPE,
+            NavigationRequest::linkType(),
             NavigationRequestProvider::class,
             self::OWNER,
             AssignmentPurpose::InternalResponsibility,

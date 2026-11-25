@@ -33,7 +33,7 @@ final readonly class TaskRecords implements RecordProvider
 
     protected function linkType(): string
     {
-        return Task::LINK_TYPE;
+        return Task::linkType();
     }
 
     protected function readableRecords(): ReadBuilder
@@ -46,7 +46,7 @@ final readonly class TaskRecords implements RecordProvider
     protected function cardOf(Model $record): RecordCard
     {
         return RecordCard::from([
-            'type' => Task::LINK_TYPE,
+            'type' => Task::linkType(),
             'id' => $record->id,
             'number' => (string) $record->number,
             'label' => "task {$record->number}",

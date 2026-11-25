@@ -77,11 +77,6 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
     use RaisesEvents;
 
     /**
-     * The run's stable name in links and in the chat lines that show it.
-     */
-    public const string LINK_TYPE = 'sequences.sequence-run';
-
-    /**
      * The most actors the runs list offers to choose from.
      */
     public const int FOLLOWER_LIMIT = 200;

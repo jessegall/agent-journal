@@ -31,7 +31,7 @@ final readonly class PlanShareProvider implements ShareRecordProvider
 
     public function mayDisclose(RecordIdentity $record): bool
     {
-        return $record->type === Plan::LINK_TYPE && Plan::query()->whereKey($record->id)->exists();
+        return $record->type === Plan::linkType() && Plan::query()->whereKey($record->id)->exists();
     }
 
     /**
@@ -47,7 +47,7 @@ final readonly class PlanShareProvider implements ShareRecordProvider
         $ids = array_values(
             array_map(
                 fn (RecordIdentity $target) => $target->id,
-                array_filter($read->targets, fn (RecordIdentity $target) => $target->type === Plan::LINK_TYPE),
+                array_filter($read->targets, fn (RecordIdentity $target) => $target->type === Plan::linkType()),
             ),
         );
 
@@ -97,7 +97,7 @@ final readonly class PlanShareProvider implements ShareRecordProvider
      */
     private function summaryOf(RecordIdentity $record, ShareBudget $budget): Plan
     {
-        if ($record->type !== Plan::LINK_TYPE) {
+        if ($record->type !== Plan::linkType()) {
             throw RecordUnavailable::forActor($record);
         }
 

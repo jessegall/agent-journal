@@ -142,7 +142,7 @@ final class HelpersDomain extends Domain implements
 
     public function internalAssignables(): array
     {
-        return [HelperJob::LINK_TYPE => HelperJobAssignments::class];
+        return [HelperJob::linkType() => HelperJobAssignments::class];
     }
 
     public function states(): array

@@ -24,7 +24,7 @@ final readonly class PlanProgressChanged extends PlanEvent implements DockSource
 
     public function dockType(): string
     {
-        return Plan::LINK_TYPE;
+        return Plan::linkType();
     }
 
     public function dockId(): string

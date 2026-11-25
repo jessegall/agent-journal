@@ -128,7 +128,7 @@ abstract class MessagingTestCase extends TestCase
      */
     protected function claimsOn(string $messageId): array
     {
-        return $this->app->make(ProvedClaims::class)->validClaimsOn(Message::LINK_TYPE, [$messageId]);
+        return $this->app->make(ProvedClaims::class)->validClaimsOn(Message::linkType(), [$messageId]);
     }
 
     private function start(string $name): AgentSession

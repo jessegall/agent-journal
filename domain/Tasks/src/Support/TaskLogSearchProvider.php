@@ -214,7 +214,7 @@ final readonly class TaskLogSearchProvider implements SearchProvider
         return SearchResult::shortened(
             "Task {$number} · {$location->label()}",
             $entry->text,
-            new RecordIdentity(Task::LINK_TYPE, $entry->task_id),
+            new RecordIdentity(Task::linkType(), $entry->task_id),
             $tier,
             $location->location(),
         );

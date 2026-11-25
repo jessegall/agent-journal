@@ -44,8 +44,6 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
     use Linkable;
     use RaisesEvents;
 
-    public const string LINK_TYPE = 'core.active-account';
-
     /**
      * @return array<string, string>
      */

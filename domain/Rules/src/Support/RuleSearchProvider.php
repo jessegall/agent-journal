@@ -23,8 +23,6 @@ use Domain\Rules\Models\Rule;
  */
 final readonly class RuleSearchProvider implements SearchProvider
 {
-    public const string RECORD_TYPE = Rule::LINK_TYPE;
-
     public function __construct(
         private RuleSearchAccess $access,
         private RuleReferenceRecognizer $recognizer,
@@ -75,7 +73,7 @@ final readonly class RuleSearchProvider implements SearchProvider
         return SearchResult::shortened(
             "Rule {$rule->number}",
             $rule->text,
-            new RecordIdentity(self::RECORD_TYPE, $rule->id),
+            new RecordIdentity(Rule::linkType(), $rule->id),
             $tier,
         );
     }

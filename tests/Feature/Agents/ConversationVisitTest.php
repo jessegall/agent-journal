@@ -53,7 +53,7 @@ final class ConversationVisitTest extends TestCase
 
     public function test_a_b_a_in_one_process_gives_three_ordered_visits_on_one_session(): void
     {
-        $session = $this->start('helpers.job 1');
+        $session = $this->start('helpers.helper-job 1');
         $visits = $this->app->make(RecordConversationVisit::class);
 
         $visits->entered($session->id, 'native-a', null, 'call-1', CarbonImmutable::now());
@@ -69,7 +69,7 @@ final class ConversationVisitTest extends TestCase
 
     public function test_a_retry_with_the_same_event_id_adds_no_visit(): void
     {
-        $session = $this->start('helpers.job 1');
+        $session = $this->start('helpers.helper-job 1');
         $visits = $this->app->make(RecordConversationVisit::class);
 
         $visits->entered($session->id, 'native-a', null, 'call-1', CarbonImmutable::now());
@@ -80,11 +80,11 @@ final class ConversationVisitTest extends TestCase
 
     public function test_a_resume_into_a_conversation_of_another_context_is_refused_and_adds_no_visit(): void
     {
-        $first = $this->start('helpers.job 1');
+        $first = $this->start('helpers.helper-job 1');
         $visits = $this->app->make(RecordConversationVisit::class);
         $visits->entered($first->id, 'native-a', null, 'call-1', CarbonImmutable::now());
         $this->app->make(StartSessions::class)->end($first);
-        $second = $this->start('helpers.job 2');
+        $second = $this->start('helpers.helper-job 2');
 
         $this->assertThrows(
             fn () => $visits->entered($second->id, 'native-a', null, 'call-2', CarbonImmutable::now()),
@@ -97,7 +97,7 @@ final class ConversationVisitTest extends TestCase
 
     public function test_the_reader_gives_an_agents_conversations_with_their_last_model(): void
     {
-        $session = $this->start('helpers.job 1');
+        $session = $this->start('helpers.helper-job 1');
         $this->app->make(RecordConversationVisit::class)->entered(
             $session->id,
             'native-a',
@@ -109,7 +109,7 @@ final class ConversationVisitTest extends TestCase
         $conversations = $this->app->make(DriverConversationResolver::class)->conversations(
             $this->agent->id,
             DefaultDrivers::CLAUDE_CODE,
-            'helpers.job 1',
+            'helpers.helper-job 1',
         );
 
         $this->assertSame(
@@ -121,7 +121,7 @@ final class ConversationVisitTest extends TestCase
             $this->app->make(DriverConversationResolver::class)->conversations(
                 $this->agent->id,
                 DefaultDrivers::CLAUDE_CODE,
-                'helpers.job 2',
+                'helpers.helper-job 2',
             ),
         );
     }

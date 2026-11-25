@@ -695,7 +695,7 @@ return [
         'owner' => 'StartRecord::startedAs',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new StartSessionOpened('start', 'agent', 'session', new RecordIdentity('helpers.job', (string) Str::ulid())),
+        'sample' => fn () => new StartSessionOpened('start', 'agent', 'session', new RecordIdentity('helpers.helper-job', (string) Str::ulid())),
     ],
     StartRecordRefused::class => [
         'role' => EventRole::RowFact,

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Commands\Agents\StartProfileMain\StartProfileMainCommand;
 use App\Commands\Agents\SwitchAgentDriver\SwitchAgentDriverCommand;
+use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Accounts\AccountUses;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCatalogue;
@@ -409,7 +409,7 @@ final class ProfileStartTest extends TestCase
     private function recorded(string $requestId, string $sessionId): array
     {
         $record = StartRecord::query()->where('request_id', $requestId)->sole();
-        $account = $this->app->make(AccountUses::class)->accountOf($sessionId, Account::LINK_TYPE);
+        $account = $this->app->make(AccountUses::class)->accountOf($sessionId, Account::linkType());
 
         return [$record->family, $record->driver_type, $record->account_chosen, $account->id];
     }

@@ -29,8 +29,6 @@ final class LedgerEntry extends Model implements Numbered, ReadableModel
     use HasUlids;
     use Linkable;
 
-    public const string LINK_TYPE = 'ledger.entry';
-
     /**
      * @return BelongsTo<Ledger, $this>
      */

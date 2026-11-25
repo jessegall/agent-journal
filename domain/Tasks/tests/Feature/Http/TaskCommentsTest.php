@@ -50,7 +50,7 @@ final class TaskCommentsTest extends TestCase
         $this->startUserRequestAs($this->owner->id);
 
         $this->app->make(CommandBus::class)->run(new PostCommentCommand(
-            new RecordIdentity(Task::LINK_TYPE, $task->id),
+            new RecordIdentity(Task::linkType(), $task->id),
             'Is the schema settled?',
             (string) Str::uuid(),
         ));
@@ -75,7 +75,7 @@ final class TaskCommentsTest extends TestCase
 
         $this->assertThrows(
             fn () => $this->app->make(CommandBus::class)->run(new PostCommentCommand(
-                new RecordIdentity(Task::LINK_TYPE, $task->id),
+                new RecordIdentity(Task::linkType(), $task->id),
                 'Sneaking in.',
                 (string) Str::uuid(),
             )),

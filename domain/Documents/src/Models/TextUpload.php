@@ -48,8 +48,6 @@ final class TextUpload extends Model implements EventSource, ReadableModel
     use Linkable;
     use RaisesEvents;
 
-    public const string LINK_TYPE = 'documents.upload';
-
     public const int BYTE_LIMIT = 2 * 1024 * 1024;
 
     public const int CHUNK_BYTES = 48 * 1024;

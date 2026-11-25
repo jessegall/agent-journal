@@ -164,7 +164,7 @@ final class RulesDomain extends Domain implements
 
     public function linkRecords(): array
     {
-        return [Rule::LINK_TYPE => RuleLinkRecords::class];
+        return [Rule::linkType() => RuleLinkRecords::class];
     }
 
     public function searchables(): array

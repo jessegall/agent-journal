@@ -19,7 +19,7 @@ final readonly class SupplyAccountSecret implements Listener
 {
     public function handle(AccountSettingsRequested $requested): void
     {
-        if ($requested->account->type !== Account::LINK_TYPE) {
+        if ($requested->account->type !== Account::linkType()) {
             return;
         }
 

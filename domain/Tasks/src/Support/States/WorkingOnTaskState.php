@@ -80,7 +80,7 @@ final class WorkingOnTaskState extends AgentState
      */
     public function workRecordType(): Option
     {
-        return new Some(Task::LINK_TYPE);
+        return new Some(Task::linkType());
     }
 
     /**

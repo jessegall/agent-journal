@@ -47,8 +47,6 @@ final class Profile extends Model implements EventSource, ReadableModel
     use Linkable;
     use RaisesEvents;
 
-    public const string LINK_TYPE = 'core.profile';
-
     /**
      * @return array<string, string>
      */

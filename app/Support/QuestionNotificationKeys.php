@@ -10,7 +10,13 @@ namespace App\Support;
  */
 final readonly class QuestionNotificationKeys
 {
-    public const string TARGET = 'core.question';
+    /**
+     * The target key a question's notification links are read under: the question's link type.
+     */
+    public static function target(): string
+    {
+        return Question::linkType();
+    }
 
     public static function occurrenceKey(string $questionId): string
     {

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\HasComments;
 use App\Concerns\HasNumber;
@@ -18,7 +16,9 @@ use App\Exceptions\TextVersionUnavailable;
 use App\Values\TextVersion;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -45,8 +45,6 @@ final class ProjectFile extends Model implements Commentable, Numbered, Readable
     use HasNumber;
     use HasUlids;
     use Linkable;
-
-    public const string LINK_TYPE = 'projects.file';
 
     protected function casts(): array
     {

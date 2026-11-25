@@ -8,9 +8,9 @@ use App\Contracts\Assignments\AssignmentStorage;
 use App\Contracts\Assignments\ResponsibilityWriter;
 use App\Contracts\Inboxes\MainInbox;
 use App\Enums\ActorType;
+use App\Models\Drivers\NavigationRequest;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
-use App\Models\Drivers\NavigationRequest;
 use App\Models\Records\AssignmentRecord;
 use PhpOption\Option;
 
@@ -52,7 +52,7 @@ final readonly class MainInboxNavigation implements MainInbox
         }
 
         $held = AssignmentRecord::query()->heldRecordIds(
-            NavigationRequest::LINK_TYPE,
+            NavigationRequest::linkType(),
             $this->main()->assigneeIdentity(),
         );
 

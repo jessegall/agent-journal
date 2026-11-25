@@ -66,7 +66,7 @@ final readonly class DocumentPages implements DocumentReader
             PublicationView::Body => $this->body($revision, $position, $arguments, $card),
             PublicationView::Revisions => $this->revisions($document, $position, $card),
             PublicationView::Comments => $this->pages->comments(
-                new RecordIdentity(Document::LINK_TYPE, $document->id),
+                new RecordIdentity(Document::linkType(), $document->id),
                 $position,
                 self::KEY,
                 $card,

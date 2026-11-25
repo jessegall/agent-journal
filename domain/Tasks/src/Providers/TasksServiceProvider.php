@@ -7,7 +7,6 @@ namespace Domain\Tasks\Providers;
 use App\Contracts\Authorization\ReadEntitlements;
 use App\Contracts\Authorization\SystemEntryPolicies;
 use App\Contracts\Work\EnvironmentTasks;
-use App\Support\LinkTypeRegistry;
 use App\Support\Sources\Contracts\DockRegistration;
 use App\Values\ReadEntitlement;
 use Domain\Tasks\Console\Commands\AssignedTasksCommand;
@@ -24,7 +23,6 @@ use Domain\Tasks\Contracts\TaskResolver;
 use Domain\Tasks\Contracts\TaskWaitResolver;
 use Domain\Tasks\Listeners\BindTaskCheckResults;
 use Domain\Tasks\Models\Task;
-use Domain\Tasks\Models\TaskRun;
 use Domain\Tasks\Policies\TaskPolicy;
 use Domain\Tasks\Resolvers\AssignedTasks;
 use Domain\Tasks\Resolvers\ListedTasks;
@@ -65,14 +63,13 @@ final class TasksServiceProvider extends ServiceProvider
     }
 
     public function boot(
-        LinkTypeRegistry $links,
         ReadEntitlements $reads,
         DockRegistration $docks,
         SystemEntryPolicies $systemEntries,
     ): void {
         $readGrant = ReadEntitlement::grant(TaskPolicy::class);
 
-        $docks->offerDockFor($docks->register(Task::LINK_TYPE, DockedTask::class, TaskDocking::class));
+        $docks->offerDockFor($docks->register(Task::linkType(), DockedTask::class, TaskDocking::class));
         $reads->declare('tasks_read', $readGrant);
         $reads->declare('tasks_list', $readGrant);
         $reads->declare('tasks_assigned', $readGrant);
@@ -80,9 +77,5 @@ final class TasksServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/agent.php');
         $this->commands([AssignedTasksCommand::class]);
 
-        $links->register([
-            Task::LINK_TYPE => Task::class,
-            TaskRun::LINK_TYPE => TaskRun::class,
-        ]);
     }
 }

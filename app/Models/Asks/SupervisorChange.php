@@ -30,8 +30,6 @@ final class SupervisorChange extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
-    public const string LINK_TYPE = 'core.supervisor-change';
-
     public const null UPDATED_AT = null;
 
     protected static function booted(): void

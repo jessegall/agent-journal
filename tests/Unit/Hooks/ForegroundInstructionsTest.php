@@ -19,7 +19,7 @@ final class ForegroundInstructionsTest extends TestCase
     {
         $state = new WorkingOnTaskState('task-12', 12, 3);
 
-        $this->assertSame(Task::LINK_TYPE, $state->workRecordType()->get());
+        $this->assertSame(Task::linkType(), $state->workRecordType()->get());
         $this->assertStringContainsString('12', TestText::words($state->instruction()->get()));
         $this->assertStringContainsString('3', TestText::words($state->instruction()->get()));
     }

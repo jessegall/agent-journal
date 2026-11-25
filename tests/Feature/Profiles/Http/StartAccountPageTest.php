@@ -79,7 +79,7 @@ final class StartAccountPageTest extends TestCase
             TestSelections::of(),
             StartOriginType::OwnerRequest,
             new RecordIdentity('tests.owner', '01m7wgahp0n7766x1e1ta8ehew'),
-            'helpers.job 1',
+            'helpers.helper-job 1',
             ConversationModeType::New,
             null,
             StartPolicy::withoutProfile(TestSelections::onHost()),

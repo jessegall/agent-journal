@@ -64,8 +64,6 @@ final class SkillRevision extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
-    public const string LINK_TYPE = 'core.skill-revision';
-
     public const null UPDATED_AT = null;
 
     /**

@@ -27,7 +27,7 @@ final readonly class CheckFailedAccount implements Listener
             return;
         }
 
-        if ($account->type !== Account::LINK_TYPE) {
+        if ($account->type !== Account::linkType()) {
             return;
         }
 

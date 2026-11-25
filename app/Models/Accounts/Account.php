@@ -95,8 +95,6 @@ final class Account extends Model implements EventSource, ReadableModel
     use Linkable;
     use RaisesEvents;
 
-    public const string LINK_TYPE = 'core.account';
-
     /**
      * @var list<string>
      */
@@ -503,7 +501,7 @@ final class Account extends Model implements EventSource, ReadableModel
 
     public function recordIdentity(): RecordIdentity
     {
-        return new RecordIdentity(self::LINK_TYPE, $this->id);
+        return new RecordIdentity(self::linkType(), $this->id);
     }
 
     // ----------[ Accessors ]----------

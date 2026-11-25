@@ -54,8 +54,6 @@ final class TaskRun extends Model implements Assignable, EventSource, ReadableMo
     use Linkable;
     use RaisesEvents;
 
-    public const string LINK_TYPE = 'tasks.run';
-
     /**
      * @return array<string, mixed>
      */
@@ -113,7 +111,7 @@ final class TaskRun extends Model implements Assignable, EventSource, ReadableMo
 
     public function assignmentIdentity(): RecordIdentity
     {
-        return new RecordIdentity(self::LINK_TYPE, $this->id);
+        return new RecordIdentity(self::linkType(), $this->id);
     }
 
     /**

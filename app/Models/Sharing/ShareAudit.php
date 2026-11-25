@@ -45,8 +45,6 @@ final class ShareAudit extends Model implements ReadableModel
     use Linkable;
     use OrdersById;
 
-    public const string LINK_TYPE = 'core.share-audit';
-
     public const null UPDATED_AT = null;
 
     /**

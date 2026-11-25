@@ -4,27 +4,27 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Providers;
 
-use App\Contracts\Notifications\NotificationTargets;
-use App\Support\QuestionNotificationKeys;
-use Domain\Chat\Resolvers\QuestionNotificationTarget;
-use App\Support\CoreInboxes;
-use Domain\Chat\Support\ChatDepartures;
-use Domain\Chat\Contracts\PairChats;
-use Domain\Chat\Support\ChatInboxes;
 use App\Contracts\Authorization\ReadEntitlements;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Inboxes\InboxMemberPolicies;
 use App\Contracts\Inboxes\InboxParticipationEnding;
 use App\Contracts\Inboxes\InboxRegistration;
+use App\Contracts\Notifications\NotificationTargets;
 use App\Exceptions\SessionOutdated;
 use App\Exceptions\StackTargetRefused;
+use App\Support\CoreInboxes;
 use App\Support\FolderClasses;
+use App\Support\QuestionNotificationKeys;
 use App\Support\RefusalReason;
 use App\Support\Sources\Contracts\DockedSources;
 use App\Support\Sources\Contracts\DockOffers;
 use App\Values\ReadEntitlement;
+use Domain\Chat\Contracts\PairChats;
 use Domain\Chat\Policies\MessagePinPolicy;
+use Domain\Chat\Resolvers\QuestionNotificationTarget;
 use Domain\Chat\Support\AgentDockOffers;
+use Domain\Chat\Support\ChatDepartures;
+use Domain\Chat\Support\ChatInboxes;
 use Domain\Chat\Support\PlacedSources;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Debug\ExceptionHandler;
@@ -56,7 +56,7 @@ final class ChatServiceProvider extends ServiceProvider
         NotificationTargets $notificationTargets,
     ): void {
         $members->allow(MessagePinPolicy::class);
-        $notificationTargets->register(QuestionNotificationKeys::TARGET, QuestionNotificationTarget::class);
+        $notificationTargets->register(QuestionNotificationKeys::target(), QuestionNotificationTarget::class);
         $inboxes->register(ChatInboxes::PAIR_PROVIDER, CoreInboxes::class);
         $inboxes->register(ChatInboxes::GROUP_PROVIDER, CoreInboxes::class);
 

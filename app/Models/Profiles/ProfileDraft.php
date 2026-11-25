@@ -37,8 +37,6 @@ final class ProfileDraft extends Model implements ReadableModel
     use InsertsAbsentRows;
     use Linkable;
 
-    public const string LINK_TYPE = 'core.profile-draft';
-
     protected function casts(): array
     {
         return ['revision' => 'integer'];

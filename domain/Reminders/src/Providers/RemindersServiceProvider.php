@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Reminders\Providers;
 
-use App\Support\LinkTypeRegistry;
 use Domain\Reminders\Models\Reminder;
 use Domain\Reminders\Resolvers\Support\OwnReminders;
 use Illuminate\Support\ServiceProvider;
@@ -19,10 +18,5 @@ final class RemindersServiceProvider extends ServiceProvider
         $this->app->scoped(OwnReminders::class);
     }
 
-    public function boot(LinkTypeRegistry $links): void
-    {
-        $links->register([
-            Reminder::LINK_TYPE => Reminder::class,
-        ]);
-    }
+    public function boot(): void {}
 }

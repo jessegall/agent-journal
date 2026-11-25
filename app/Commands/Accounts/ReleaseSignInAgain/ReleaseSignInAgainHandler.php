@@ -28,7 +28,7 @@ final readonly class ReleaseSignInAgainHandler implements CommandHandler
             return false;
         }
 
-        $account = new RecordIdentity(Account::LINK_TYPE, $attempt->account_id);
+        $account = new RecordIdentity(Account::linkType(), $attempt->account_id);
         $this->commands->run(new HoldAccountUsesCommand($account));
         $this->commands->run(new CancelAccountUsesCommand($account));
 

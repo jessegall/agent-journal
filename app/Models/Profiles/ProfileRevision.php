@@ -90,8 +90,6 @@ final class ProfileRevision extends Model implements ReadableModel
     use Linkable;
     use PreventsRevisionUpdates;
 
-    public const string LINK_TYPE = 'core.profile-revision';
-
     public const null UPDATED_AT = null;
 
     /**

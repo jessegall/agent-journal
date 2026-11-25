@@ -6,7 +6,6 @@ namespace Domain\Rules\Providers;
 
 use App\Contracts\Authorization\ReadEntitlements;
 use App\Contracts\Sessions\ProfileRules;
-use App\Support\LinkTypeRegistry;
 use App\Values\ReadEntitlement;
 use Domain\Rules\Contracts\RuleDetailsResolver;
 use Domain\Rules\Contracts\RuleResolver;
@@ -35,7 +34,7 @@ final class RulesServiceProvider extends ServiceProvider
         $this->app->bind(ProfileRules::class, ProfileRuleRecords::class);
     }
 
-    public function boot(LinkTypeRegistry $links, ExceptionHandler $exceptions, ReadEntitlements $reads): void
+    public function boot(ExceptionHandler $exceptions, ReadEntitlements $reads): void
     {
         $readGrant = ReadEntitlement::grant(RulePolicy::class);
 
@@ -56,8 +55,5 @@ final class RulesServiceProvider extends ServiceProvider
             );
         }
 
-        $links->register([
-            Rule::LINK_TYPE => Rule::class,
-        ]);
     }
 }

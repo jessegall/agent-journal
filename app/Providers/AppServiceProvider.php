@@ -6,9 +6,11 @@ namespace App\Providers;
 
 use App\Exceptions\ModelMissing;
 use App\Exceptions\RecordUnavailable;
+use App\Support\MorphAliases;
 use App\Support\TraitRequirements;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -43,6 +45,18 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
         $this->refuseDestructiveCommandsOutsideTestDatabases();
+        $this->enforceMorphAliases();
+    }
+
+    /**
+     * Every core model is stored in links under the alias its namespace gives (MorphAliases), each domain adds its
+     * own as it boots (RegisterMorphAliases), and no other class may be stored.
+     */
+    private function enforceMorphAliases(): void
+    {
+        $aliases = MorphAliases::core();
+
+        Relation::enforceMorphMap($aliases);
     }
 
     /**

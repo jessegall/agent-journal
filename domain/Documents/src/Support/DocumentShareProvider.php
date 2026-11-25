@@ -31,7 +31,7 @@ final readonly class DocumentShareProvider implements ShareRecordProvider
 
     public function mayDisclose(RecordIdentity $record): bool
     {
-        return $record->type === Document::LINK_TYPE && Document::query()->sharedPublished()->whereKey(
+        return $record->type === Document::linkType() && Document::query()->sharedPublished()->whereKey(
             $record->id,
         )->exists();
     }
@@ -63,7 +63,7 @@ final readonly class DocumentShareProvider implements ShareRecordProvider
 
     private function linkType(): string
     {
-        return Document::LINK_TYPE;
+        return Document::linkType();
     }
 
     private function cardsOf(array $ids): array

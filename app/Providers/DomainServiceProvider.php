@@ -19,7 +19,6 @@ use App\Support\CoreSkills;
 use App\Support\DomainRegistry;
 use App\Support\DomainSwitches;
 use App\Support\EmptySettingsDefinition;
-use App\Support\ExportValidator as ExportsCheck;
 use App\Support\Psr4ClassNames;
 use App\Support\RecordPolicyMappings;
 use App\Support\Rules\CoreRules;
@@ -132,6 +131,11 @@ class DomainServiceProvider extends ServiceProvider
             $this->app->forgetScopedInstances();
         });
 
+        // A domain's boot puts its models in the morph map, which its share records name by link type.
+        foreach ($registry->all() as $entry) {
+            $entry->boot($this->app);
+        }
+
         foreach ($registry->all() as $entry) {
             foreach ($entry->shareRecords() as $registration) {
                 $shareRecords->register($registration);
@@ -140,10 +144,6 @@ class DomainServiceProvider extends ServiceProvider
             foreach ($entry->shareGateways() as $key => $gatewayClass) {
                 $shareGateways->register($key, $gatewayClass);
             }
-        }
-
-        foreach ($registry->all() as $entry) {
-            $entry->boot($this->app);
         }
     }
 

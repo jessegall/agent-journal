@@ -22,7 +22,7 @@ final readonly class EnvironmentAssignedTasks implements EnvironmentTasks
 
     public function assignedToActor(string $environmentId, int $most): EnvironmentTaskList
     {
-        $held = $this->assignments->allRecordIdsFor(Task::LINK_TYPE, AssigneeIdentity::of($this->actors->actor()));
+        $held = $this->assignments->allRecordIdsFor(Task::linkType(), AssigneeIdentity::of($this->actors->actor()));
         $matching = Task::query()->amongIds($held)->inEnvironments([$environmentId]);
         $tasks = $matching->clone()->orderBy('number')->limit($most)->get();
 

@@ -37,7 +37,7 @@ final readonly class DocumentLinkRecords implements RecordProvider
 
     protected function linkType(): string
     {
-        return Document::LINK_TYPE;
+        return Document::linkType();
     }
 
     protected function readableRecords(): ReadBuilder
@@ -52,7 +52,7 @@ final readonly class DocumentLinkRecords implements RecordProvider
     protected function cardOf(Model $record): RecordCard
     {
         return RecordCard::from([
-            'type' => Document::LINK_TYPE,
+            'type' => Document::linkType(),
             'id' => $record->id,
             'number' => (string) $record->number,
             'label' => "doc {$record->number}",

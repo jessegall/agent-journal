@@ -33,7 +33,7 @@ final readonly class ProjectFileLinkRecords implements RecordProvider
 
     protected function linkType(): string
     {
-        return ProjectFile::LINK_TYPE;
+        return ProjectFile::linkType();
     }
 
     protected function readableRecords(): ReadBuilder
@@ -46,7 +46,7 @@ final readonly class ProjectFileLinkRecords implements RecordProvider
     protected function cardOf(Model $record): RecordCard
     {
         return RecordCard::from([
-            'type' => ProjectFile::LINK_TYPE,
+            'type' => ProjectFile::linkType(),
             'id' => $record->id,
             'number' => (string) $record->number,
             'label' => "file {$record->number}",

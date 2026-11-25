@@ -55,8 +55,6 @@ final class Message extends Model implements AuthoredModel, EventSource, Readabl
     use Linkable;
     use RaisesEvents;
 
-    public const string LINK_TYPE = 'communication.message';
-
     // ----------[ Constructors ]----------
 
     /**

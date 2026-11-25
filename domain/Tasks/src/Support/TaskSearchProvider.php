@@ -91,7 +91,7 @@ final readonly class TaskSearchProvider implements SearchProvider
         return SearchResult::shortened(
             "Task {$task->number} · {$task->title}",
             $tier === ScoreTier::Reference ? "Task {$task->number}" : $task->title,
-            new RecordIdentity(Task::LINK_TYPE, $task->id),
+            new RecordIdentity(Task::linkType(), $task->id),
             $tier,
         );
     }
@@ -104,7 +104,7 @@ final readonly class TaskSearchProvider implements SearchProvider
         return SearchResult::shortened(
             "Task {$task->number} · {$task->title}",
             $match->snippet(self::SNIPPET_CONTEXT_CHARACTERS),
-            new RecordIdentity(Task::LINK_TYPE, $task->id),
+            new RecordIdentity(Task::linkType(), $task->id),
             ScoreTier::BodyContains,
             new TaskBriefPassage($task->revision, $match->characterOffset)->location(),
         );

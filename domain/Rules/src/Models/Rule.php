@@ -62,11 +62,6 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
     use RaisesEvents;
 
     /**
-     * The type a rule is linked, docked and found in search by.
-     */
-    public const string LINK_TYPE = 'rules.rule';
-
-    /**
      * The most characters a rule's text holds.
      */
     public const int TEXT_CHARACTER_LIMIT = 2000;

@@ -118,8 +118,8 @@ final class TaskSearchProviderTest extends TestCase
         $agent = new SearchReader(ActorContext::forAgent(self::AGENT_ID), SearchSurface::AgentTool);
 
         $refresh = self::searchQuery('deploy notes', $agent)->refreshing([
-            new HitIdentity(self::SOURCE_KEY, Task::LINK_TYPE, $kept->id),
-            new HitIdentity(self::SOURCE_KEY, Task::LINK_TYPE, $revoked->id),
+            new HitIdentity(self::SOURCE_KEY, Task::linkType(), $kept->id),
+            new HitIdentity(self::SOURCE_KEY, Task::linkType(), $revoked->id),
         ]);
 
         $batch = $this->app->make(TaskSearchProvider::class)->search($refresh);

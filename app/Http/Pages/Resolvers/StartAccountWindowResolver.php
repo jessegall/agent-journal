@@ -30,7 +30,7 @@ final readonly class StartAccountWindowResolver implements PageResolver
     public function read(): StartAccountData
     {
         $sessionId = $this->page->sessionId();
-        $identity = $this->uses->accountOf($sessionId, Account::LINK_TYPE);
+        $identity = $this->uses->accountOf($sessionId, Account::linkType());
         $account = Account::query()->whereKey($identity->id)->firstOrFail();
 
         foreach ($this->uses->history($identity, self::MOST_USES) as $use) {
@@ -39,6 +39,6 @@ final readonly class StartAccountWindowResolver implements PageResolver
             }
         }
 
-        throw AccountUseMissing::forSession($sessionId, Account::LINK_TYPE, 0);
+        throw AccountUseMissing::forSession($sessionId, Account::linkType(), 0);
     }
 }

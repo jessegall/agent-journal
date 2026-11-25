@@ -234,8 +234,8 @@ final class DocumentsDomain extends Domain implements
     public function linkRecords(): array
     {
         return [
-            Document::LINK_TYPE => DocumentLinkRecords::class,
-            Report::LINK_TYPE => ReportLinkRecords::class,
+            Document::linkType() => DocumentLinkRecords::class,
+            Report::linkType() => ReportLinkRecords::class,
         ];
     }
 
@@ -246,13 +246,13 @@ final class DocumentsDomain extends Domain implements
     {
         return [
             new ShareRecordDefinition(
-                Document::LINK_TYPE,
+                Document::linkType(),
                 Document::class,
                 DocumentShareProvider::class,
                 [self::SHARE_LINKED_RECORD],
             ),
             new ShareRecordDefinition(
-                Report::LINK_TYPE,
+                Report::linkType(),
                 Report::class,
                 ReportShareProvider::class,
                 [self::SHARE_LINKED_RECORD],

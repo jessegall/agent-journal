@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Support\States;
 
 use App\Attributes\StateType;
-use App\Events\Inboxes\InboxLeft;
-use App\Events\Messages\MessageSent;
 use App\Enums\FrameReuse;
 use App\Enums\SessionTransferType;
+use App\Events\Inboxes\InboxLeft;
+use App\Events\Messages\MessageSent;
 use App\Support\ActorIdentity;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\FileEditRequested;
@@ -27,13 +27,12 @@ use PhpOption\Some;
  * the replies it saw already say it all; once the budget is spent it refuses every tool but the journal's and reads
  * until the agent answers. Its agent's reply or reaction targeting the message finishes it.
  */
-#[StateType(AnsweringMessageStateReference::TYPE_KEY, schemaVersion: 2, transfer: SessionTransferType::Durable)]
+#[StateType(AnsweringMessageStateReference::TYPE_KEY, schemaVersion: 1, transfer: SessionTransferType::Durable)]
 final class AnsweringMessageState extends AgentState
 {
     private bool $isAnswered = false;
 
     private int $toolUses = 0;
-
 
     public function __construct(
         private readonly string $messageId,

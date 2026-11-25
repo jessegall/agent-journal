@@ -85,7 +85,7 @@ final readonly class DocumentSearchProvider implements SearchProvider
         return SearchResult::shortened(
             "Doc {$document->number} · {$title}",
             $tier === ScoreTier::Reference ? "Doc {$document->number}" : $title,
-            new RecordIdentity(Document::LINK_TYPE, $document->id),
+            new RecordIdentity(Document::linkType(), $document->id),
             $tier,
         );
     }
@@ -98,7 +98,7 @@ final readonly class DocumentSearchProvider implements SearchProvider
         return SearchResult::shortened(
             "Doc {$document->number} · {$title}",
             $match->snippet(self::SNIPPET_CONTEXT_CHARACTERS),
-            new RecordIdentity(Document::LINK_TYPE, $document->id),
+            new RecordIdentity(Document::linkType(), $document->id),
             ScoreTier::BodyContains,
             $passage->location(),
         );

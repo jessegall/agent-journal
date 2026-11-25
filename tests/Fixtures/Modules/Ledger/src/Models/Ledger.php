@@ -27,8 +27,6 @@ final class Ledger extends Model implements Numbered, ReadableModel
     use HasUlids;
     use Linkable;
 
-    public const string LINK_TYPE = 'ledger.ledger';
-
     public static function open(string $title): self
     {
         return self::query()->create(['title' => $title]);

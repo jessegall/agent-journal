@@ -150,7 +150,7 @@ final class ProjectFileTest extends TestCase
 
     private function target(): RecordIdentity
     {
-        return new RecordIdentity(ProjectFile::LINK_TYPE, ProjectFile::query()->where('path', self::PATH)->firstOrFail()->id);
+        return new RecordIdentity(ProjectFile::linkType(), ProjectFile::query()->where('path', self::PATH)->firstOrFail()->id);
     }
 
     private function bus(): CommandBus

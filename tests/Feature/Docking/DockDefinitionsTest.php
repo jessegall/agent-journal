@@ -33,20 +33,20 @@ final class DockDefinitionsTest extends TestCase
             $this->assertTrue($this->definitions()->offersDock($type));
         }
 
-        $this->assertContains(Message::LINK_TYPE, $types);
-        $this->assertSame(LinkCardDockable::class, $this->definitions()->definition(Message::LINK_TYPE)->class);
+        $this->assertContains(Message::linkType(), $types);
+        $this->assertSame(LinkCardDockable::class, $this->definitions()->definition(Message::linkType())->class);
     }
 
     public function test_an_owner_registration_wins_over_the_fallback_before_and_after_it_was_read(): void
     {
         $definitions = $this->definitions();
-        $before = $definitions->definition(Message::LINK_TYPE);
+        $before = $definitions->definition(Message::linkType());
 
-        $definitions->register(Message::LINK_TYPE, FixtureDockable::class, FixtureDockableProvider::class);
+        $definitions->register(Message::linkType(), FixtureDockable::class, FixtureDockableProvider::class);
 
         $this->assertSame(LinkCardDockableProvider::class, $before->provider);
-        $this->assertSame(FixtureDockable::class, $definitions->definition(Message::LINK_TYPE)->class);
-        $this->assertFalse($definitions->offersDock(Message::LINK_TYPE));
+        $this->assertSame(FixtureDockable::class, $definitions->definition(Message::linkType())->class);
+        $this->assertFalse($definitions->offersDock(Message::linkType()));
     }
 
     public function test_two_owners_of_one_type_are_refused_naming_both(): void
@@ -64,7 +64,7 @@ final class DockDefinitionsTest extends TestCase
     public function test_a_message_fallback_card_is_its_title_alone(): void
     {
         $record = RecordCard::from([
-            'type' => Message::LINK_TYPE,
+            'type' => Message::linkType(),
             'id' => 'm4',
             'number' => '4',
             'label' => 'message 4',

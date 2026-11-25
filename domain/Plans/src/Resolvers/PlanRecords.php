@@ -87,7 +87,7 @@ final readonly class PlanRecords implements PlanResolver
         $focused = $this->focusedPlanId();
 
         return $this->transaction->run(function () use ($filters, $holder, $focused): AssignedPlanList {
-            $heldIds = $this->assignments->allRecordIdsFor(Plan::LINK_TYPE, $holder);
+            $heldIds = $this->assignments->allRecordIdsFor(Plan::linkType(), $holder);
             $matching = Plan::query()->amongIds($heldIds)->matching($filters->search)->inStates($filters->states);
             $total = $matching->clone()->count();
             $plans = $matching->listOrder($focused)->forPage($filters->page->number, $filters->page->size)->get();

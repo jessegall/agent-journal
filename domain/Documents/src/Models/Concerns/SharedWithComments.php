@@ -16,7 +16,7 @@ trait SharedWithComments
 
     public function shareIdentity(): RecordIdentity
     {
-        return new RecordIdentity(self::LINK_TYPE, $this->id);
+        return new RecordIdentity(self::linkType(), $this->id);
     }
 
     public static function shareRelations(): ShareRelationSet

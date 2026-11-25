@@ -49,8 +49,6 @@ final class RetainedDraft extends Model implements EventSource, ReadableModel
     use Linkable;
     use RaisesEvents;
 
-    public const string LINK_TYPE = 'documents.retained-draft';
-
     public const string DRAFT_SCOPE = 'private_draft';
 
     protected function casts(): array

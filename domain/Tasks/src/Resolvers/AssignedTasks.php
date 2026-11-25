@@ -45,7 +45,7 @@ final readonly class AssignedTasks implements AssignedTaskResolver
         $holder = AssigneeIdentity::of($this->actors->actor());
 
         return $this->transaction->run(function () use ($filters, $holder): TaskList {
-            $heldIds = $this->assignments->allRecordIdsFor(Task::LINK_TYPE, $holder);
+            $heldIds = $this->assignments->allRecordIdsFor(Task::linkType(), $holder);
 
             $matching = Task::query()->amongIds($heldIds)->matching($filters->search)->inStates($filters->states)
                 ->inEnvironments($filters->environmentIds);

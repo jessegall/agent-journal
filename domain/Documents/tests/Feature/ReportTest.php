@@ -100,7 +100,7 @@ final class ReportTest extends TestCase
 
         $this->assertSame(
             [$reviewer->session->id],
-            array_column($links->linkedOfType($report, 'core.agent-session'), 'id'),
+            array_column($links->linkedOfType($report, 'core.agents.agent-session'), 'id'),
         );
 
         $reviewer->startRequest($this->app);

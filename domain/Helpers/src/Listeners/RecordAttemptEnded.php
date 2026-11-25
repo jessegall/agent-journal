@@ -22,7 +22,7 @@ final readonly class RecordAttemptEnded implements Listener
 
     public function handle(LaunchEnded $event): void
     {
-        if ($event->work->type !== HelperJob::LINK_TYPE) {
+        if ($event->work->type !== HelperJob::linkType()) {
             return;
         }
 

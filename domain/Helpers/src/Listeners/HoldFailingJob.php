@@ -23,7 +23,7 @@ final readonly class HoldFailingJob implements Listener
 
     public function handle(HelperStopHeld $event): void
     {
-        if ($event->work->type !== HelperJob::LINK_TYPE) {
+        if ($event->work->type !== HelperJob::linkType()) {
             return;
         }
 

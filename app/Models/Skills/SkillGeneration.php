@@ -49,8 +49,6 @@ final class SkillGeneration extends Model implements EventSource, ReadableModel
     use OrdersById;
     use RaisesEvents;
 
-    public const string LINK_TYPE = 'core.skill-generation';
-
     /**
      * @return array<string, string>
      */

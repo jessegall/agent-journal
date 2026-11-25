@@ -19,6 +19,7 @@ use App\Support\LinkTypeRegistry;
 use App\Support\Registry\AssignmentRegistry;
 use Domain\Access\Models\User;
 use Domain\Plans\Models\Plan;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Tests\TestCase;
 
 /**
@@ -115,7 +116,7 @@ final class AssignmentRegistryTest extends TestCase
             UnknownLinkType::class,
         );
 
-        $this->app->make(LinkTypeRegistry::class)->register(['tests.late-record' => User::class]);
+        Relation::morphMap(['tests.late-record' => User::class]);
 
         $this->expectException(AssignmentProviderInvalid::class);
         $this->expectExceptionMessage(

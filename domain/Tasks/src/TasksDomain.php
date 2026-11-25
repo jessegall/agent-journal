@@ -302,30 +302,30 @@ final class TasksDomain extends Domain implements
 
     public function assignables(): array
     {
-        return [Task::LINK_TYPE => TaskAssignments::class];
+        return [Task::linkType() => TaskAssignments::class];
     }
 
     public function internalAssignables(): array
     {
-        return [TaskRun::LINK_TYPE => TaskRunAssignments::class];
+        return [TaskRun::linkType() => TaskRunAssignments::class];
     }
 
     public function autoAssigners(): array
     {
-        return [new AutoAssignerDefinition(TaskType::VALUE, TaskAssigner::class, ActiveTaskAssignments::class)];
+        return [new AutoAssignerDefinition(TaskType::linkType(), TaskAssigner::class, ActiveTaskAssignments::class)];
     }
 
     public function assignmentPools(): array
     {
         return [
-            new PoolDefinition(OpenTaskPoolFactory::KEY, TaskType::VALUE, OpenTaskPoolFactory::class, 'Open tasks'),
-            new PoolDefinition(NamedTaskPoolFactory::KEY, TaskType::VALUE, NamedTaskPoolFactory::class, 'Named tasks'),
+            new PoolDefinition(OpenTaskPoolFactory::KEY, TaskType::linkType(), OpenTaskPoolFactory::class, 'Open tasks'),
+            new PoolDefinition(NamedTaskPoolFactory::KEY, TaskType::linkType(), NamedTaskPoolFactory::class, 'Named tasks'),
         ];
     }
 
     public function linkRecords(): array
     {
-        return [Task::LINK_TYPE => TaskRecords::class];
+        return [Task::linkType() => TaskRecords::class];
     }
 
     public function mcpResources(): array

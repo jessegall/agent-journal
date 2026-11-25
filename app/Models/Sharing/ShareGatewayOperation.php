@@ -61,8 +61,6 @@ final class ShareGatewayOperation extends Model implements EventSource, Readable
     use OrdersById;
     use RaisesEvents;
 
-    public const string LINK_TYPE = 'core.share-gateway-operation';
-
     private const int LEASE_SECONDS = 90;
 
     private const int LEASE_TOKEN_BYTES = 32;

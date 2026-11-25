@@ -3424,13 +3424,13 @@
             "HEAD"
         ],
         "uri": "processes/requests/{request}",
-        "name": "processes.command-request",
+        "name": "core.command-rules.command-request",
         "action": "App\\Http\\Controllers\\Web\\PageController",
         "middleware": [
             "web",
             "auth",
             "journal.user",
-            "journal.visible:processes.command-request"
+            "journal.visible:core.command-rules.command-request"
         ]
     },
     {
@@ -3694,13 +3694,13 @@
             "HEAD"
         ],
         "uri": "documents/docs/{document}/revisions/{revision}",
-        "name": "documents.revision",
+        "name": "documents.document-revision",
         "action": "App\\Http\\Controllers\\Web\\PageController",
         "middleware": [
             "web",
             "auth",
             "journal.user",
-            "journal.visible:documents.revision"
+            "journal.visible:documents.document-revision"
         ]
     },
     {
@@ -4356,7 +4356,7 @@
             "web",
             "auth",
             "journal.user",
-            "journal.visible:processes.command-request"
+            "journal.visible:core.command-rules.command-request"
         ]
     },
     {
@@ -4370,7 +4370,7 @@
             "web",
             "auth",
             "journal.user",
-            "journal.visible:processes.command-request"
+            "journal.visible:core.command-rules.command-request"
         ]
     },
     {
@@ -4384,7 +4384,7 @@
             "web",
             "auth",
             "journal.user",
-            "journal.visible:processes.command-request"
+            "journal.visible:core.command-rules.command-request"
         ]
     },
     {

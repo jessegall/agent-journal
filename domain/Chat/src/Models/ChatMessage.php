@@ -200,7 +200,7 @@ final class ChatMessage extends Model implements EventSource
      */
     public static function findForMessage(string $messageId): self|null
     {
-        return self::query()->forSourceKey(Message::LINK_TYPE, $messageId)->first();
+        return self::query()->forSourceKey(Message::linkType(), $messageId)->first();
     }
 
     /**
@@ -208,7 +208,7 @@ final class ChatMessage extends Model implements EventSource
      */
     public static function findForQuestion(string $questionId): self|null
     {
-        return self::query()->forSourceKey(Question::LINK_TYPE, $questionId)->first();
+        return self::query()->forSourceKey(Question::linkType(), $questionId)->first();
     }
 
     /**

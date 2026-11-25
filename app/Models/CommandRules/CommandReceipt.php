@@ -83,8 +83,6 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
     use Linkable;
     use RaisesEvents;
 
-    public const string LINK_TYPE = 'core.command-receipt';
-
     /**
      * The major version of the agent contract the keys belong to; a new major starts a new key space.
      */

@@ -36,7 +36,6 @@ use App\Support\DomainRegistry;
 use App\Support\DraftProducerRegistry;
 use App\Support\InstallationFaults;
 use App\Support\InstalledVersion;
-use App\Support\LinkTypeRegistry;
 use App\Support\OwnerAutoAssignmentAccess;
 use App\Support\OwnerSettingsAccess;
 use App\Support\PageChangeBroadcastLog;
@@ -123,7 +122,6 @@ final class WebServiceProvider extends ServiceProvider
      */
     public function boot(
         BroadcastManager $broadcast,
-        LinkTypeRegistry $links,
         Dispatcher $events,
         Router $router,
         DeclaredRoutes $declaredRoutes,
@@ -144,7 +142,6 @@ final class WebServiceProvider extends ServiceProvider
             ]),
         );
 
-        $links->register(['web.layout' => Layout::class]);
         $this->renderRefusals($exceptions);
         $scope = new CurrentUserScope(static fn () => Container::getInstance()->make(CurrentUserResolver::class));
         $events->listen('eloquent.booted: '.Layout::class, fn () => Layout::addGlobalScope($scope));

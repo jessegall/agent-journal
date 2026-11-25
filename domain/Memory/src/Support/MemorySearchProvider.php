@@ -22,8 +22,6 @@ use Domain\Memory\Models\Memory;
  */
 final readonly class MemorySearchProvider implements SearchProvider
 {
-    public const string RECORD_TYPE = Memory::LINK_TYPE;
-
     public function __construct(private MemorySearchAccess $access, private TieredSearch $texts) {}
 
     public function search(SearchQuery|RefreshCandidates $query): SearchBatch
@@ -68,7 +66,7 @@ final readonly class MemorySearchProvider implements SearchProvider
         return SearchResult::shortened(
             "Memory {$memory->number}",
             $memory->text,
-            new RecordIdentity(self::RECORD_TYPE, $memory->id),
+            new RecordIdentity(Memory::linkType(), $memory->id),
             $tier,
         );
     }

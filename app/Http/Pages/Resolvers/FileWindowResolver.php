@@ -163,7 +163,7 @@ final readonly class FileWindowResolver implements PageResolver
         }
 
         $file = $found->get();
-        $target = new RecordIdentity(ProjectFile::LINK_TYPE, $file->id);
+        $target = new RecordIdentity(ProjectFile::linkType(), $file->id);
         $listed = $this->comments->list($target, new IdListPage(limit: IdListPage::LARGEST_LIMIT));
 
         $onVersion = array_values(array_filter(

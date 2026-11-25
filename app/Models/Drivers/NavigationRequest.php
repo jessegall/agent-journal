@@ -95,8 +95,6 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     use HasUlids;
     use Linkable;
 
-    public const string LINK_TYPE = 'core.navigation-request';
-
     /**
      * @var array<string, mixed>
      */
@@ -280,7 +278,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
 
     public function assignmentIdentity(): RecordIdentity
     {
-        return new RecordIdentity(self::LINK_TYPE, $this->id);
+        return new RecordIdentity(self::linkType(), $this->id);
     }
 
     /**

@@ -64,9 +64,9 @@ final class SearchCorpusSeeder extends Seeder
     private function corpusGroup(): string
     {
         $holderId = strtolower((string) Str::ulid());
-        NumberGroup::create(self::HOLDER_TYPE, $holderId, Task::LINK_TYPE);
+        NumberGroup::create(self::HOLDER_TYPE, $holderId, Task::linkType());
 
-        return (string) NumberGroup::query()->forRecords(self::HOLDER_TYPE, $holderId, Task::LINK_TYPE)->value('id');
+        return (string) NumberGroup::query()->forRecords(self::HOLDER_TYPE, $holderId, Task::linkType())->value('id');
     }
 
     private function titleFor(int $number, int $count): string

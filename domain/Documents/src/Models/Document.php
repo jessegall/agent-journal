@@ -38,7 +38,6 @@ use Domain\Documents\Models\Concerns\CreatedWithAttention;
 use Domain\Documents\Models\Concerns\Settles;
 use Domain\Documents\Models\Concerns\SharedWithComments;
 use Domain\Documents\Support\Cards\DocumentDockCard;
-use Domain\Documents\Support\DocumentType;
 use Domain\Documents\Support\RecordViews;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -78,8 +77,6 @@ final class Document extends Model implements Commentable, Dockable, EventSource
     use RaisesEvents;
     use Settles;
     use SharedWithComments;
-
-    public const string LINK_TYPE = DocumentType::VALUE;
 
     /**
      * The most characters a document's or a report's title holds.

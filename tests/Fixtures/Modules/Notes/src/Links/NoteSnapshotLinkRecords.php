@@ -30,7 +30,7 @@ final readonly class NoteSnapshotLinkRecords implements RecordProvider
 
     protected function linkType(): string
     {
-        return NoteSnapshot::LINK_TYPE;
+        return NoteSnapshot::linkType();
     }
 
     protected function readableRecords(): ReadBuilder
@@ -41,7 +41,7 @@ final readonly class NoteSnapshotLinkRecords implements RecordProvider
     protected function cardOf(Model $record): RecordCard
     {
         return RecordCard::from([
-            'type' => NoteSnapshot::LINK_TYPE,
+            'type' => NoteSnapshot::linkType(),
             'id' => $record->id,
             'number' => (string) $record->number,
             'label' => "note-snapshot {$record->number}",

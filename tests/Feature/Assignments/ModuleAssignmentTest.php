@@ -122,7 +122,7 @@ final class ModuleAssignmentTest extends TestCase
         AssignmentRecord::query()->insert(
             [
                 'id' => strtolower((string) Str::ulid()),
-                'record_type' => Note::LINK_TYPE,
+                'record_type' => Note::linkType(),
                 'record_id' => $noteId,
                 'holder_type' => 'agent',
                 'holder_id' => $this->writer->id,
@@ -134,7 +134,7 @@ final class ModuleAssignmentTest extends TestCase
 
         $this->assertThrows(
             fn () => $this->app->make(AssignmentResolver::class)->assignmentsFor(
-                [new RecordIdentity(Note::LINK_TYPE, $noteId)],
+                [new RecordIdentity(Note::linkType(), $noteId)],
             ),
             AssignmentTypeUnavailable::class,
         );

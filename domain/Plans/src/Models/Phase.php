@@ -63,11 +63,6 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
     use RaisesEvents;
 
     /**
-     * The stable name links and assignments use for a phase.
-     */
-    public const string LINK_TYPE = 'plans.phase';
-
-    /**
      * @var array<string, mixed>
      */
     protected $attributes = [
@@ -153,7 +148,7 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
 
     public function assignmentIdentity(): RecordIdentity
     {
-        return new RecordIdentity(self::LINK_TYPE, $this->id);
+        return new RecordIdentity(self::linkType(), $this->id);
     }
 
     /**

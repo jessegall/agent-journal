@@ -40,7 +40,7 @@ final class CoreMessagingWithoutChatTest extends TestCase
     {
         $this->assertContains(SendMessageCommand::class, CoreCommands::commands());
         $this->assertTrue($this->app->make(CommandRegistry::class)->has(SendMessageCommand::class));
-        $this->assertSame(Message::class, $this->app->make(LinkTypeRegistry::class)->modelFor(Message::LINK_TYPE));
+        $this->assertSame(Message::class, $this->app->make(LinkTypeRegistry::class)->modelFor(Message::linkType()));
 
         $types = $this->app->make(StateTypes::class)->registry();
         $this->assertSame(AnsweringMessageState::class, $types->get(AnsweringMessageStateReference::TYPE_KEY)->stateClass);

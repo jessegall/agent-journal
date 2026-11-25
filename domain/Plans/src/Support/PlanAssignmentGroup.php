@@ -27,8 +27,8 @@ final readonly class PlanAssignmentGroup
     public function for(RecordIdentity $root): AssignmentGroup
     {
         return match ($root->type) {
-            Plan::LINK_TYPE => $this->forPlan($root),
-            Phase::LINK_TYPE => $this->forPhase($root),
+            Plan::linkType() => $this->forPlan($root),
+            Phase::linkType() => $this->forPhase($root),
             default => throw RecordUnavailable::for($root),
         };
     }

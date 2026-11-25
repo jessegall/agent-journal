@@ -51,7 +51,7 @@ final class WorkingOnPlanState extends AgentState
      */
     public function workRecordType(): Option
     {
-        return new Some(Plan::LINK_TYPE);
+        return new Some(Plan::linkType());
     }
 
     /**

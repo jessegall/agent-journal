@@ -16,6 +16,16 @@ use Illuminate\Database\Eloquent\Model;
  */
 trait Linkable
 {
+    /**
+     * The model's link type: its alias in the morph map, worked out from its place (MorphAliases).
+     */
+    public static function linkType(): string
+    {
+        $model = new static();
+
+        return $model->getMorphClass();
+    }
+
     public function isLinkedTo(Model $other): bool
     {
         return Link::query()->between($this, $other)->exists();

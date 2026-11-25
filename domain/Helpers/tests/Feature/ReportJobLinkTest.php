@@ -112,7 +112,7 @@ final class ReportJobLinkTest extends TestCase
 
     private function startFor(HelperJob $job, ActorIdentity $agent): StartRecordDetails
     {
-        return $this->start(HelperJob::LINK_TYPE.':'.$job->id, $agent);
+        return $this->start(HelperJob::linkType().':'.$job->id, $agent);
     }
 
     private function start(string $ownerReference, ActorIdentity $agent): StartRecordDetails

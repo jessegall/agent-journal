@@ -102,10 +102,10 @@ final class ExternalOwnerDockTest extends TestCase
         $agentsNote->saveFor($this->agent->agent->id);
 
         $this->actingAs($this->owner)
-            ->postJson('/chat/dock', ['inboxId' => $this->chatInboxId, 'type' => Note::LINK_TYPE, 'id' => $ownersNote->id])
+            ->postJson('/chat/dock', ['inboxId' => $this->chatInboxId, 'type' => Note::linkType(), 'id' => $ownersNote->id])
             ->assertJson(['outcome' => 'added']);
         $this->runCommandsAs($this->agent);
-        $this->artisan('dock:add', ['type' => Note::LINK_TYPE, 'id' => $agentsNote->id, '--json' => true])
+        $this->artisan('dock:add', ['type' => Note::linkType(), 'id' => $agentsNote->id, '--json' => true])
             ->expectsOutputToContain('"outcome":"added"')
             ->assertExitCode(0);
         $this->callMcpTool($this->agent, 'dock_list')
@@ -117,7 +117,7 @@ final class ExternalOwnerDockTest extends TestCase
         $placement = DockPlacement::query()->where('dockable_id', $agentsNote->id)->sole();
         $this->callMcpTool($this->agent, 'dock_remove', [
             'placement_id' => $placement->id,
-            'type' => Note::LINK_TYPE,
+            'type' => Note::linkType(),
             'source_id' => $agentsNote->id,
             'request_key' => 'undock-note',
         ])->assertJsonPath('result.structuredContent.outcome', 'removed');

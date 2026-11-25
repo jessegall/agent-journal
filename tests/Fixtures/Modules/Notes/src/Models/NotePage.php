@@ -36,8 +36,6 @@ final class NotePage extends Model implements Commentable, Numbered, ReadableMod
     use HasUlids;
     use Linkable;
 
-    public const string LINK_TYPE = 'notes.page';
-
     public function textVersion(string|null $version = null): TextVersion
     {
         return TextVersion::ofOnlyMarkdown($version, 'page', $this->text);

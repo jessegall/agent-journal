@@ -73,10 +73,10 @@ final readonly class ListedTasks implements TaskListResolver
         return match ($holder) {
             TaskHolderFilter::Any => $tasks,
             TaskHolderFilter::Unassigned => $tasks->outsideSelectedIds(
-                $this->assignments->assignedIds(TaskType::VALUE),
+                $this->assignments->assignedIds(TaskType::linkType()),
             ),
             TaskHolderFilter::Caller => $tasks->amongSelectedIds(
-                $this->assignments->heldIds(TaskType::VALUE, $caller),
+                $this->assignments->heldIds(TaskType::linkType(), $caller),
             ),
         };
     }

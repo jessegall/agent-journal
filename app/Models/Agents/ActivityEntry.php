@@ -44,8 +44,6 @@ final class ActivityEntry extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
-    public const string LINK_TYPE = 'activity.entry';
-
     /**
      * The most entries one read returns.
      */

@@ -64,7 +64,7 @@ final class PlanWorkCommandsTest extends TestCase
 
     public function test_a_main_agent_gives_moves_and_releases_a_plans_work_with_matching_counts(): void
     {
-        $root = ['root_type' => Plan::LINK_TYPE, 'root_id' => $this->plan->id];
+        $root = ['root_type' => Plan::linkType(), 'root_id' => $this->plan->id];
 
         $given = $this->signed(
             $this->main,
@@ -147,13 +147,13 @@ final class PlanWorkCommandsTest extends TestCase
             'request_key' => (string) Str::ulid(),
         ]);
 
-        $assign(['root_type' => Plan::LINK_TYPE, 'root_id' => (string) $this->plan->number])->assertOk();
+        $assign(['root_type' => Plan::linkType(), 'root_id' => (string) $this->plan->number])->assertOk();
         $assign(['root_type' => 'plans.phase', 'root_id' => '1', 'root_plan' => (string) $this->plan->number])
             ->assertOk();
         $assign(['root_type' => 'plans.phase', 'root_id' => '1'])->assertStatus(422);
 
         foreach (['0', '-1', '1e3', '9223372036854775808'] as $number) {
-            $assign(['root_type' => Plan::LINK_TYPE, 'root_id' => $number])
+            $assign(['root_type' => Plan::linkType(), 'root_id' => $number])
                 ->assertStatus(422)
                 ->assertSee($number);
         }
@@ -165,7 +165,7 @@ final class PlanWorkCommandsTest extends TestCase
 
         $this->artisan(
             'plan:assign-work',
-            ['type' => Plan::LINK_TYPE, 'id' => $this->plan->id, '--to' => "agent:{$this->helper->agent->id}"],
+            ['type' => Plan::linkType(), 'id' => $this->plan->id, '--to' => "agent:{$this->helper->agent->id}"],
         )
             ->expectsOutputToContain(
                 sprintf(
@@ -177,14 +177,14 @@ final class PlanWorkCommandsTest extends TestCase
         $this->artisan(
             'plan:unassign-work',
             [
-                'type' => Plan::LINK_TYPE,
+                'type' => Plan::linkType(),
                 'id' => $this->plan->id,
                 '--assignment' => TestIds::of(999999),
                 '--holder' => "agent:{$this->helper->agent->id}",
             ],
         )
             ->expectsOutputToContain('The journal refused the call (')->assertExitCode(1);
-        $this->artisan('plan:assign-work', ['type' => Plan::LINK_TYPE, 'id' => $this->plan->id, '--to' => 'nobody'])
+        $this->artisan('plan:assign-work', ['type' => Plan::linkType(), 'id' => $this->plan->id, '--to' => 'nobody'])
             ->expectsOutputToContain('type:id')->assertExitCode(1);
     }
 

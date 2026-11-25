@@ -46,11 +46,11 @@ final class AssignableRecordsTest extends TestCase
     {
         $task = Task::factory()->create(['title' => 'Write the reader']);
 
-        $resolved = $this->registry->recordProvider(Task::LINK_TYPE)->requireAssignable($task->assignmentIdentity());
+        $resolved = $this->registry->recordProvider(Task::linkType())->requireAssignable($task->assignmentIdentity());
 
         $this->assertTrue($resolved->assignmentIdentity()->isSameAs(new RecordIdentity('tasks.task', $task->id)));
         $this->assertThrows(
-            fn () => $this->registry->recordProvider(Task::LINK_TYPE)->requireAssignable(
+            fn () => $this->registry->recordProvider(Task::linkType())->requireAssignable(
                 TestActors::record('tasks.task', 999999),
             ),
             RecordUnavailable::class,
@@ -62,7 +62,7 @@ final class AssignableRecordsTest extends TestCase
         $first = Task::factory()->create(['title' => 'One']);
         $second = Task::factory()->create(['title' => 'Two']);
 
-        $visible = $this->registry->recordProvider(Task::LINK_TYPE)->visibleRecords([
+        $visible = $this->registry->recordProvider(Task::linkType())->visibleRecords([
             $second->assignmentIdentity(),
             TestActors::record('tasks.task', 999999),
             $first->assignmentIdentity(),
@@ -80,8 +80,8 @@ final class AssignableRecordsTest extends TestCase
         $cancelled->cancel('Not needed.');
         $plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
 
-        $overTasks = $this->registry->recordProvider(Task::LINK_TYPE)->finishedRecords([$open, $finished, $cancelled]);
-        $overPlans = $this->registry->recordProvider(Plan::LINK_TYPE)->finishedRecords([$plan]);
+        $overTasks = $this->registry->recordProvider(Task::linkType())->finishedRecords([$open, $finished, $cancelled]);
+        $overPlans = $this->registry->recordProvider(Plan::linkType())->finishedRecords([$plan]);
 
         $this->assertSame(
             [$finished->id, $cancelled->id],
@@ -104,7 +104,7 @@ final class AssignableRecordsTest extends TestCase
         $this->planStructure()->addTasks($allEnded, [$done->id, $dropped->id]);
         $this->planStructure()->addTasks($mixed, [$running->id]);
 
-        $over = $this->registry->recordProvider(Phase::LINK_TYPE)->finishedRecords([$empty, $allEnded, $mixed]);
+        $over = $this->registry->recordProvider(Phase::linkType())->finishedRecords([$empty, $allEnded, $mixed]);
 
         $this->assertSame([$allEnded->id], array_map(fn (RecordIdentity $record) => $record->id, $over));
     }
@@ -124,7 +124,7 @@ final class AssignableRecordsTest extends TestCase
 
         $this->expectException(ActorContextMissing::class);
 
-        $this->app->make(AssignmentRegistry::class)->recordProvider(Task::LINK_TYPE)->visibleRecords(
+        $this->app->make(AssignmentRegistry::class)->recordProvider(Task::linkType())->visibleRecords(
             [TestActors::record('tasks.task', 1)],
         );
     }

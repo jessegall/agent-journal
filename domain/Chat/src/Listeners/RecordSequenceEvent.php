@@ -24,7 +24,7 @@ final readonly class RecordSequenceEvent implements Listener
     {
         $this->commands->run(new CreateChatMessageCommand(
             Inbox::personalOf($event->follower())->id,
-            SequenceRun::LINK_TYPE,
+            SequenceRun::linkType(),
             $event->runId(),
             ChatMessageType::Event,
         ));

@@ -14,6 +14,7 @@ use App\Mcp\Tools\JournalTool;
 use App\Support\Bootstrappers\LoadMigrations;
 use App\Support\Bootstrappers\RegisterDraftProducers;
 use App\Support\Bootstrappers\RegisterEngineListeners;
+use App\Support\Bootstrappers\RegisterMorphAliases;
 use App\Support\Bootstrappers\RegisterScriptDefinitions;
 
 /**
@@ -114,6 +115,7 @@ abstract class Domain
 
         return array_values(array_unique([
             LoadMigrations::class,
+            RegisterMorphAliases::class,
             ...$fromTraits,
             ...$scripts,
             ...$drafts,

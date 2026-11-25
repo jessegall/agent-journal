@@ -78,7 +78,7 @@ final readonly class PlanTaskPoolFactory implements AssignmentPoolFactory
             throw PlanPoolRefused::idsGiven(self::KEY);
         }
 
-        if (! $pool->target instanceof RecordIdentity || $pool->target->type !== Plan::LINK_TYPE) {
+        if (! $pool->target instanceof RecordIdentity || $pool->target->type !== Plan::linkType()) {
             throw PlanPoolRefused::noPlanTarget(self::KEY);
         }
 

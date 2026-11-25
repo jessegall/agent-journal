@@ -36,7 +36,7 @@ final class TaskPoolsTest extends TestCase
     {
         $providers = $this->app->make(AssignmentProviders::class);
 
-        $keys = array_map(fn (PoolDefinition $pool) => $pool->key, $providers->pools(TaskType::VALUE));
+        $keys = array_map(fn (PoolDefinition $pool) => $pool->key, $providers->pools(TaskType::linkType()));
 
         $tasksPools = array_values(array_intersect($keys, [
             'tasks.open',
@@ -51,8 +51,8 @@ final class TaskPoolsTest extends TestCase
         $this->assertSame('Tasks', $providers->poolOwner('tasks.named'));
         $this->assertInstanceOf(OpenTaskPoolFactory::class, $providers->poolFactory('tasks.open'));
         $this->assertInstanceOf(NamedTaskPoolFactory::class, $providers->poolFactory('tasks.named'));
-        $this->assertInstanceOf(TaskAssigner::class, $providers->autoAssigner(TaskType::VALUE));
-        $this->assertInstanceOf(ActiveTaskAssignments::class, $providers->assignedWork(TaskType::VALUE));
+        $this->assertInstanceOf(TaskAssigner::class, $providers->autoAssigner(TaskType::linkType()));
+        $this->assertInstanceOf(ActiveTaskAssignments::class, $providers->assignedWork(TaskType::linkType()));
     }
 
     public function test_the_open_pool_takes_neither_a_target_nor_a_list(): void

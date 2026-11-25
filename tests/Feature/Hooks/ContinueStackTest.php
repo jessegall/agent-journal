@@ -112,7 +112,7 @@ final class ContinueStackTest extends TestCase
             $old->agent->id,
             SelectedDriver::resolve('claude-code', ModelSelection::named('claude-opus-5-5'), null, null, $this->app->make(DriverCatalogue::class)),
             StartOriginType::OwnerRequest,
-            new RecordIdentity('helpers.job', '01m7wgahp0n7766x1e1ta8ehew'),
+            new RecordIdentity('helpers.helper-job', '01m7wgahp0n7766x1e1ta8ehew'),
             null,
             $mode,
             null,

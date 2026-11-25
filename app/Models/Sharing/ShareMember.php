@@ -53,8 +53,6 @@ final class ShareMember extends Model implements ReadableModel
     use Linkable;
     use OrdersById;
 
-    public const string LINK_TYPE = 'core.share-member';
-
     /**
      * @return array<string, string>
      */

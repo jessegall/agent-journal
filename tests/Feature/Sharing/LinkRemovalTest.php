@@ -114,7 +114,7 @@ final class LinkRemovalTest extends TestCase
             $this->member->link_id,
         );
         $other = new ShareLinkedCandidate(
-            new ShareRecordCard(TestActors::record('core.agent', 3), 'Other', '1'),
+            new ShareRecordCard(TestActors::record('core.agents.agent', 3), 'Other', '1'),
             $this->identityOf($this->source),
             TestIds::of(4),
         );

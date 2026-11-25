@@ -52,11 +52,6 @@ final class Memory extends Model implements EventSource, Numbered, ReadableModel
     use Linkable;
     use RaisesEvents;
 
-    /**
-     * The record type a memory is linked and found under.
-     */
-    public const string LINK_TYPE = 'memory.memory';
-
     public const int LIGHTEST = 1;
 
     public const int HEAVIEST = 10;

@@ -12,7 +12,6 @@ use App\Contracts\Hosts\ProjectFiles;
 use App\Contracts\Records\RecordProviderRegistration;
 use App\Enums\AccessType;
 use App\Models\Projects\ProjectFile;
-use App\Models\Projects\ProjectFileVersion;
 use App\Policies\ConnectionsPolicy;
 use App\Policies\ProjectFilesPolicy;
 use App\Support\BindingHosts;
@@ -22,7 +21,6 @@ use App\Support\EntryDispatchers;
 use App\Support\HostProjectFiles;
 use App\Support\JournalRoutes;
 use App\Support\Links\ProjectFileLinkRecords;
-use App\Support\LinkTypeRegistry;
 use App\Support\ProjectCommands;
 use App\Support\ProjectReadRetentionService;
 use App\Values\PolicyDefinition;
@@ -55,7 +53,6 @@ final class ConnectionsServiceProvider extends ServiceProvider
 
     public function boot(
         PolicyCatalogue $policies,
-        LinkTypeRegistry $links,
         RecordProviderRegistration $records,
     ): void {
         $policies->register('Core', new PolicyDefinition(
@@ -69,12 +66,7 @@ final class ConnectionsServiceProvider extends ServiceProvider
 
         $policies->register('Core', new PolicyDefinition(ProjectFilesPolicy::class, [AccessType::Read]));
 
-        $links->register([
-            ProjectFile::LINK_TYPE => ProjectFile::class,
-            ProjectFileVersion::LINK_TYPE => ProjectFileVersion::class,
-        ]);
-
-        $records->register(ProjectFile::LINK_TYPE, ProjectFileLinkRecords::class);
+        $records->register(ProjectFile::linkType(), ProjectFileLinkRecords::class);
 
         $this->loadCoreRoutes('connections/connections.php');
 

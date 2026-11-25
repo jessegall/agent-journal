@@ -33,7 +33,7 @@ final readonly class ProjectReadRetentionService
 
         ProjectFileVersion::query()
             ->whereNotExists(fn ($comments) => $comments->from('comments')
-                ->where('comments.target_type', ProjectFile::LINK_TYPE)
+                ->where('comments.target_type', ProjectFile::linkType())
                 ->whereColumn('comments.target_id', 'project_file_versions.project_file_id')
                 ->whereColumn('comments.version_id', 'project_file_versions.digest'))
             ->whereNotIn('id', fn ($kept) => $kept->fromSub($newest, 'ranked')

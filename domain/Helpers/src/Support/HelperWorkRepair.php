@@ -22,7 +22,7 @@ final readonly class HelperWorkRepair implements WorkRepair
 
     public function reopen(WorkRepairRequest $request): WorkRepairOutcome
     {
-        $job = $request->work->type === HelperJob::LINK_TYPE
+        $job = $request->work->type === HelperJob::linkType()
             ? HelperJob::query()->acrossActors()->whereKey($request->work->id)->lockForUpdate()->first()
             : null;
 

@@ -72,7 +72,7 @@ trait CertifiesHelperWork
         TestStart $launch,
         string $certificate,
         bool $requiresReview = false,
-        RecordIdentity $work = new RecordIdentity('helpers.job', self::WORK_ID),
+        RecordIdentity $work = new RecordIdentity('helpers.helper-job', self::WORK_ID),
     ): CertifiedWork {
         $execution = ExecutionPolicy::make(
             ExecutionModeType::ProtectedHost,

@@ -21,7 +21,7 @@ final readonly class CommentOnDocumentHandler extends DocumentCommandHandler
         $id = is_int($reference) ? DocumentRecords::published($reference)->id : $reference;
 
         return $this->comments->post(
-            new RecordIdentity(Document::LINK_TYPE, $id),
+            new RecordIdentity(Document::linkType(), $id),
             $command->body,
             CommentOnDocumentCommand::class,
         );

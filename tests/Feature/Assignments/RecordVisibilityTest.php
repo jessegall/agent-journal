@@ -66,7 +66,7 @@ final class RecordVisibilityTest extends TestCase
             $visibility = $this->app->make(RecordVisibility::class);
 
             $this->assertTrue($visibility->isVisible($task->assignmentIdentity()));
-            $this->assertFalse($visibility->isVisible(new RecordIdentity(Task::LINK_TYPE, TestIds::of(999999))));
+            $this->assertFalse($visibility->isVisible(new RecordIdentity(Task::linkType(), TestIds::of(999999))));
         }
     }
 
@@ -83,6 +83,6 @@ final class RecordVisibilityTest extends TestCase
     {
         $this->startRequestAs($this->writer->id, TestIds::of(50));
 
-        $this->assertFalse($this->app->make(RecordVisibility::class)->isVisible(TestActors::record('ledger.entry', 1)));
+        $this->assertFalse($this->app->make(RecordVisibility::class)->isVisible(TestActors::record('ledger.ledger-entry', 1)));
     }
 }

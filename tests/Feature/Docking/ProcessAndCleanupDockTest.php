@@ -137,8 +137,8 @@ final class ProcessAndCleanupDockTest extends TestCase
         $kept->saveFor($this->agent->agent->id);
         $gone = new Note(['text' => 'Gone']);
         $gone->saveFor($this->agent->agent->id);
-        $this->dock(Note::LINK_TYPE, $kept->id);
-        $this->dock(Note::LINK_TYPE, $gone->id);
+        $this->dock(Note::linkType(), $kept->id);
+        $this->dock(Note::linkType(), $gone->id);
         // The fixture module installs after the domains' interface listeners were spread over the exported events.
         $this->app->make('events')->listen(NoteRemoved::class, [RemoveDeletedSource::class, 'handle']);
 
@@ -162,13 +162,13 @@ final class ProcessAndCleanupDockTest extends TestCase
     {
         $note = new Note(['text' => 'Shared']);
         $note->saveFor($this->agent->agent->id);
-        $this->dock(Note::LINK_TYPE, $note->id);
+        $this->dock(Note::linkType(), $note->id);
         $elsewhere = $this->pairChat(
             ActorIdentity::of($this->agent->agent),
             new ActorIdentity(ActorType::Agent, 'another-agent'),
         );
         $this->callMcpTool($this->agent, 'dock_add', [
-            'type' => Note::LINK_TYPE,
+            'type' => Note::linkType(),
             'id' => $note->id,
             'chat' => $elsewhere->inbox_id,
             'request_key' => 'dock-elsewhere',

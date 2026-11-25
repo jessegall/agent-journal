@@ -72,7 +72,7 @@ final readonly class PlanSearchProvider implements SearchProvider
         return SearchResult::shortened(
             "Plan {$plan->number} · {$plan->title}",
             $tier === ScoreTier::Reference ? "Plan {$plan->number}" : $plan->title,
-            new RecordIdentity(Plan::LINK_TYPE, $plan->id),
+            new RecordIdentity(Plan::linkType(), $plan->id),
             $tier,
         );
     }

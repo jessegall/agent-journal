@@ -25,7 +25,7 @@ final readonly class TaskBlocked extends TaskEvent implements DockSourceChanged,
 
     public function dockType(): string
     {
-        return Task::LINK_TYPE;
+        return Task::linkType();
     }
 
     public function dockId(): string

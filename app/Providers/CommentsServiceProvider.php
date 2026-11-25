@@ -49,11 +49,11 @@ final class CommentsServiceProvider extends ServiceProvider
             new PolicyDefinition(CommentPolicy::class, [AccessType::Create]),
         );
 
-        $records->register(Comment::LINK_TYPE, CommentLinkRecords::class);
+        $records->register(Comment::linkType(), CommentLinkRecords::class);
 
         $shares->register(
             new ShareRecordDefinition(
-                Comment::LINK_TYPE,
+                Comment::linkType(),
                 Comment::class,
                 CommentShareProvider::class,
                 [CommentShareProvider::CAPABILITY],

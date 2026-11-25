@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Modules\Notes\Providers;
 
 use App\Support\Sources\Contracts\DockRegistration;
-use App\Support\LinkTypeRegistry;
 use Tests\Fixtures\Modules\Notes\Support\NoteDocking;
 use Tests\Fixtures\Modules\Notes\Support\NotesTally;
 use Tests\Fixtures\Modules\Notes\Support\NotesTallyDocking;
@@ -39,17 +38,10 @@ final class NotesServiceProvider extends ServiceProvider
         $this->app->bind(NoteResolver::class, NoteRecords::class);
     }
 
-    public function boot(LinkTypeRegistry $links, DockRegistration $docks): void
+    public function boot(DockRegistration $docks): void
     {
-        $docks->offerDockFor($docks->register(Note::LINK_TYPE, Note::class, NoteDocking::class));
+        $docks->offerDockFor($docks->register(Note::linkType(), Note::class, NoteDocking::class));
         $docks->offerDockFor($docks->register(self::TALLY_TYPE, NotesTally::class, NotesTallyDocking::class));
         $docks->offerDockFor($docks->register(self::REVIEW_TYPE, ReleaseReview::class, ReleaseReviewDocking::class));
-        $links->register(
-[
-Note::LINK_TYPE => Note::class,
- NotePage::LINK_TYPE => NotePage::class,
- NoteSnapshot::LINK_TYPE => NoteSnapshot::class,
-],
-);
     }
 }

@@ -58,8 +58,6 @@ final class Skill extends Model implements EventSource, Numbered, ReadableModel
     use Linkable;
     use RaisesEvents;
 
-    public const string LINK_TYPE = 'core.skill';
-
     /**
      * @return array<string, string>
      */

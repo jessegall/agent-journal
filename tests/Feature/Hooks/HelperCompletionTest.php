@@ -239,7 +239,7 @@ final class HelperCompletionTest extends TestCase
      */
     private function ownerStart(AgentSession $session): RecordIdentity
     {
-        $work = new RecordIdentity('helpers.job', (string) Str::ulid());
+        $work = new RecordIdentity('helpers.helper-job', (string) Str::ulid());
         $request = new StartRequest(
             TestSelections::requestId(),
             $session->agent_id,

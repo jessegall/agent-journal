@@ -67,7 +67,7 @@ final class ReviewingPlanStateTest extends TestCase
         $state = $this->reviewing();
 
         $state->onHelperSentOnRecord(
-            new HelperSentOnRecord(new RecordIdentity(Plan::LINK_TYPE, TestIds::of(6)), TestIds::of(7)),
+            new HelperSentOnRecord(new RecordIdentity(Plan::linkType(), TestIds::of(6)), TestIds::of(7)),
         );
 
         $this->assertSame([], $this->reviewersOf($state));
@@ -97,7 +97,7 @@ final class ReviewingPlanStateTest extends TestCase
 
     private function plan(): RecordIdentity
     {
-        return new RecordIdentity(Plan::LINK_TYPE, TestIds::of(5));
+        return new RecordIdentity(Plan::linkType(), TestIds::of(5));
     }
 
     private function reviewing(): ReviewingPlanState

@@ -28,7 +28,6 @@ use App\Enums\AccessType;
 use App\Enums\ActorType;
 use App\Models\Inboxes\Inbox;
 use App\Models\Messages\Message;
-use App\Models\Questions\Question;
 use App\Policies\MessageAdministrationPolicy;
 use App\Policies\MessagePolicy;
 use App\Support\ActorDestinationProvider;
@@ -42,7 +41,6 @@ use App\Support\InboxDestinationProvider;
 use App\Support\InboxRunClaims;
 use App\Support\JournalAgentNotices;
 use App\Support\Links\MessageLinkRecords;
-use App\Support\LinkTypeRegistry;
 use App\Support\MainInboxHandover;
 use App\Support\MainInboxNavigation;
 use App\Support\NotificationChangeRetentionService;
@@ -93,7 +91,6 @@ final class CommunicationServiceProvider extends ServiceProvider
     }
 
     public function boot(
-        LinkTypeRegistry $links,
         RecordProviderRegistration $records,
         PolicyCatalogue $policies,
         ReadEntitlements $reads,
@@ -133,10 +130,6 @@ final class CommunicationServiceProvider extends ServiceProvider
             ],
         ));
 
-        $links->register([
-            Message::LINK_TYPE => Message::class,
-            Question::LINK_TYPE => Question::class,
-        ]);
         $inboxes->register(Inbox::NAMED_PROVIDER, CoreInboxes::class);
         $inboxes->register(Inbox::PERSONAL_PROVIDER, CoreInboxes::class);
         $this->commands([InstallInboxesCommand::class]);
@@ -156,6 +149,6 @@ final class CommunicationServiceProvider extends ServiceProvider
         );
 
         $this->loadCoreRoutes('communication/communication.php');
-        $records->register(Message::LINK_TYPE, MessageLinkRecords::class);
+        $records->register(Message::linkType(), MessageLinkRecords::class);
     }
 }

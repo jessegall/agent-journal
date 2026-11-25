@@ -441,7 +441,7 @@ final class AccountRemovalTest extends TestCase
             'agent_id' => strtolower((string) Str::ulid()),
             'session_id' => strtolower((string) Str::ulid()),
             'start_key' => (string) Str::ulid(),
-            'account_type' => Account::LINK_TYPE,
+            'account_type' => Account::linkType(),
             'account_id' => $this->account->id,
             'account_generation' => $this->account->sign_in_generation,
             'directory' => (string) $this->account->directory,

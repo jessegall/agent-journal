@@ -107,7 +107,7 @@ final class ReviewingPlanState extends AgentState
 
     private function isAbout(RecordIdentity $subject): bool
     {
-        return $subject->type === Plan::LINK_TYPE && $subject->id === $this->planId;
+        return $subject->type === Plan::linkType() && $subject->id === $this->planId;
     }
 
     private function reviewText(): AgentText

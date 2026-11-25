@@ -36,8 +36,6 @@ final class ProfileDraftRevision extends Model implements ReadableModel
     use Linkable;
     use PreventsRevisionUpdates;
 
-    public const string LINK_TYPE = 'core.profile-draft-revision';
-
     public const null UPDATED_AT = null;
 
     protected function casts(): array

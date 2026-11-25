@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Providers;
 
-use App\Support\LinkTypeRegistry;
 use App\Support\Sources\Contracts\DockRegistration;
 use Domain\Sequences\Models\SequenceRun;
 use Domain\Sequences\Support\SequenceRunDocking;
@@ -15,12 +14,9 @@ use Illuminate\Support\ServiceProvider;
  */
 final class SequencesServiceProvider extends ServiceProvider
 {
-    public function boot(LinkTypeRegistry $links, DockRegistration $docks): void
+    public function boot(DockRegistration $docks): void
     {
-        $links->register([
-            SequenceRun::LINK_TYPE => SequenceRun::class,
-        ]);
 
-        $docks->register(SequenceRun::LINK_TYPE, SequenceRun::class, SequenceRunDocking::class);
+        $docks->register(SequenceRun::linkType(), SequenceRun::class, SequenceRunDocking::class);
     }
 }

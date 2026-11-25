@@ -17,7 +17,7 @@ final readonly class NoteRemoved implements DockSourceDeleted, Event
 
     public function dockType(): string
     {
-        return Note::LINK_TYPE;
+        return Note::linkType();
     }
 
     public function dockId(): string

@@ -59,8 +59,6 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
     use MeasuresBody;
     use SearchesText;
 
-    public const string LINK_TYPE = 'documents.revision';
-
     protected function casts(): array
     {
         return [

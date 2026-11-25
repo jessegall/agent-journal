@@ -44,7 +44,6 @@ use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Exceptions\TaskRestartRefused;
 use Domain\Tasks\Policies\TaskRunPolicy;
 use Domain\Tasks\Support\TaskDetailsFactory;
-use Domain\Tasks\Support\TaskType;
 use Domain\Tasks\Values\TaskCard;
 use Domain\Tasks\Values\TaskExecution;
 use Domain\Tasks\Values\TaskSummary;
@@ -116,11 +115,6 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
     use Linkable;
     use OrdersById;
     use RaisesEvents;
-
-    /**
-     * The stable name links and assignments use for a task.
-     */
-    public const string LINK_TYPE = TaskType::VALUE;
 
     /**
      * The most characters a task's title holds.
@@ -273,7 +267,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
 
     public function assignmentIdentity(): RecordIdentity
     {
-        return new RecordIdentity(self::LINK_TYPE, $this->id);
+        return new RecordIdentity(self::linkType(), $this->id);
     }
 
     public function focusIdentity(): RecordIdentity

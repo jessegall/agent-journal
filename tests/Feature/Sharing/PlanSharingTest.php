@@ -69,7 +69,7 @@ final class PlanSharingTest extends TestCase
         Link::createForModels($plan, $document);
 
         $candidates = $this->app->make(ShareScope::class)->discover($plan->shareIdentity(), $this->budget());
-        $content = $this->app->make(ShareRecordRegistry::class)->provider(Plan::LINK_TYPE)->content(
+        $content = $this->app->make(ShareRecordRegistry::class)->provider(Plan::linkType())->content(
             new ShareContentRead($plan->shareIdentity()),
             $this->budget(),
         );

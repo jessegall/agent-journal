@@ -63,10 +63,10 @@ final class DeskWorkTest extends TestCase
         $assignments = $this->app->make(AssignmentResolver::class);
 
         foreach ([$first, $second] as $agent) {
-            $this->assertSame([$task->id], $assignments->allRecordIdsFor(Task::LINK_TYPE, $agent->assigneeIdentity()));
-            $this->assertSame([$plan->id], $assignments->allRecordIdsFor(Plan::LINK_TYPE, $agent->assigneeIdentity()));
+            $this->assertSame([$task->id], $assignments->allRecordIdsFor(Task::linkType(), $agent->assigneeIdentity()));
+            $this->assertSame([$plan->id], $assignments->allRecordIdsFor(Plan::linkType(), $agent->assigneeIdentity()));
         }
 
-        $this->assertSame([], $assignments->allRecordIdsFor(Task::LINK_TYPE, $outsider->assigneeIdentity()));
+        $this->assertSame([], $assignments->allRecordIdsFor(Task::linkType(), $outsider->assigneeIdentity()));
     }
 }

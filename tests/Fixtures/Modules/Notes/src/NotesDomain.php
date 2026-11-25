@@ -125,9 +125,9 @@ final class NotesDomain extends Domain implements
     public function linkRecords(): array
     {
         return [
-            Note::LINK_TYPE => NoteLinkRecords::class,
-            NotePage::LINK_TYPE => NotePageLinkRecords::class,
-            NoteSnapshot::LINK_TYPE => NoteSnapshotLinkRecords::class,
+            Note::linkType() => NoteLinkRecords::class,
+            NotePage::linkType() => NotePageLinkRecords::class,
+            NoteSnapshot::linkType() => NoteSnapshotLinkRecords::class,
         ];
     }
 
@@ -149,7 +149,7 @@ final class NotesDomain extends Domain implements
 
     public function assignables(): array
     {
-        return [Note::LINK_TYPE => NoteAssignments::class];
+        return [Note::linkType() => NoteAssignments::class];
     }
 
     public function pages(): array

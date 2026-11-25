@@ -81,7 +81,7 @@ final readonly class ReportSearchProvider implements SearchProvider
         return SearchResult::shortened(
             "Report {$report->number} · {$report->title}",
             $tier === ScoreTier::Reference ? "Report {$report->number}" : $report->title,
-            new RecordIdentity(Report::LINK_TYPE, $report->id),
+            new RecordIdentity(Report::linkType(), $report->id),
             $tier,
         );
     }
@@ -91,7 +91,7 @@ final readonly class ReportSearchProvider implements SearchProvider
         return SearchResult::shortened(
             "Report {$report->number} · {$report->title}",
             $match->snippet(self::SNIPPET_CONTEXT_CHARACTERS),
-            new RecordIdentity(Report::LINK_TYPE, $report->id),
+            new RecordIdentity(Report::linkType(), $report->id),
             ScoreTier::BodyContains,
             new PublicationPassage(null, $match->line)->location(),
         );

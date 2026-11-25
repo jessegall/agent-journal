@@ -27,7 +27,7 @@ final readonly class FinishCertifiedJob implements Listener
 
     public function handle(HelperCompletionCertified $event): void
     {
-        if ($event->work->type !== HelperJob::LINK_TYPE) {
+        if ($event->work->type !== HelperJob::linkType()) {
             return;
         }
 

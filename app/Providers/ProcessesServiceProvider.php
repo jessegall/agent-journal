@@ -39,22 +39,7 @@ use App\Contracts\Processes\ShellCommandParser;
 use App\Contracts\Reads\OutputRecorder;
 use App\Contracts\Time\VerificationTiming;
 use App\Enums\AccessType;
-use App\Models\CommandRules\ClassificationRule;
-use App\Models\CommandRules\CommandAlias;
-use App\Models\CommandRules\CommandRequest;
-use App\Models\CommandRules\EvidencePermit;
-use App\Models\CommandRules\RuleProposal;
-use App\Models\CommandRules\RuleRevision;
-use App\Models\Profiles\PermissionRevocation;
-use App\Models\Runs\OutputAssessment;
-use App\Models\Runs\OutputChunk;
-use App\Models\Runs\PartRun;
-use App\Models\Runs\ProcessEvent;
 use App\Models\Runs\ProcessRun;
-use App\Models\Runs\ReaderPosition;
-use App\Models\Runs\ReaderProof;
-use App\Models\Runs\ReaderRevision;
-use App\Models\Runs\ResultReceipt;
 use App\Policies\ProcessAdministrationPolicy;
 use App\Policies\ProcessPolicy;
 use App\Resolvers\RunNotificationTarget;
@@ -64,7 +49,6 @@ use App\Support\Classification\TreeClassifier;
 use App\Support\CommandAliases;
 use App\Support\CommandRuleRegistry;
 use App\Support\JournalRoutes;
-use App\Support\LinkTypeRegistry;
 use App\Support\OpenTiming;
 use App\Support\OutputDocking;
 use App\Support\ProgramClassifiers;
@@ -128,7 +112,6 @@ final class ProcessesServiceProvider extends ServiceProvider
     }
 
     public function boot(
-        LinkTypeRegistry $links,
         PolicyCatalogue $policies,
         DockRegistration $docks,
         NotificationTargets $notificationTargets,
@@ -163,25 +146,6 @@ final class ProcessesServiceProvider extends ServiceProvider
             Schedule::class,
             fn (Schedule $schedule) => $schedule->command('process:reconcile')->everyMinute(),
         );
-
-        $links->register([
-            'processes.command-alias' => CommandAlias::class,
-            'processes.process-run' => ProcessRun::class,
-            'processes.part-run' => PartRun::class,
-            'processes.process-event' => ProcessEvent::class,
-            'processes.output-chunk' => OutputChunk::class,
-            'processes.permission-revocation' => PermissionRevocation::class,
-            'processes.evidence-permit' => EvidencePermit::class,
-            'processes.command-request' => CommandRequest::class,
-            'processes.reader-revision' => ReaderRevision::class,
-            'processes.reader-position' => ReaderPosition::class,
-            'processes.rule-proposal' => RuleProposal::class,
-            'processes.rule-revision' => RuleRevision::class,
-            'processes.classification-rule' => ClassificationRule::class,
-            'processes.reader-proof' => ReaderProof::class,
-            'processes.output-assessment' => OutputAssessment::class,
-            'processes.result-receipt' => ResultReceipt::class,
-        ]);
 
         $this->loadCoreRoutes('processes/processes.php');
 

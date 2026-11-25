@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Links;
 
-use App\Exceptions\LinkTypeRepeated;
 use App\Models\Records\Link;
 use App\Support\LinkRemoval;
-use App\Support\LinkTypeRegistry;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -25,7 +24,7 @@ final class LinkableTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->make(LinkTypeRegistry::class)->register(
+        Relation::morphMap(
             ['fixtures.note' => Note::class, 'fixtures.label' => Label::class],
         );
         Schema::create('notes', function (Blueprint $table) {
@@ -140,12 +139,5 @@ final class LinkableTest extends TestCase
             $target->getMorphClass(),
             (string) $target->getKey(),
         );
-    }
-
-    public function test_a_link_name_registered_for_another_model_is_refused(): void
-    {
-        $this->expectExceptionObject(LinkTypeRepeated::for('fixtures.note', Label::class));
-
-        $this->app->make(LinkTypeRegistry::class)->register(['fixtures.note' => Label::class]);
     }
 }

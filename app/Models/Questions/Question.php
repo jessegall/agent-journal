@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models\Questions;
 
 use App\Concerns\BoundedReads;
+use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\AuthoredModel;
@@ -52,9 +53,8 @@ final class Question extends Model implements AuthoredModel, EventSource, Readab
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
     use RaisesEvents;
-
-    public const string LINK_TYPE = 'core.question';
 
     /**
      * @return array<string, string>

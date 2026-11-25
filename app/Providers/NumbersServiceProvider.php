@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Console\Commands\InstallNumbersCommand;
-use App\Models\Records\GlobalGroup;
-use App\Models\Records\NumberGroup;
-use App\Support\LinkTypeRegistry;
 use App\Support\LockingNumberAllocator;
 use App\Support\NumberedTypeRegistry;
 use Illuminate\Support\ServiceProvider;
@@ -23,12 +20,8 @@ final class NumbersServiceProvider extends ServiceProvider
         $this->app->scoped(LockingNumberAllocator::class);
     }
 
-    public function boot(LinkTypeRegistry $links): void
+    public function boot(): void
     {
-        $links->register([
-            'core.global-group' => GlobalGroup::class,
-            'core.number-group' => NumberGroup::class,
-        ]);
         $this->commands([InstallNumbersCommand::class]);
         $this->app->booted(fn () => $this->app->make(NumberedTypeRegistry::class)->checkDeclarations());
     }

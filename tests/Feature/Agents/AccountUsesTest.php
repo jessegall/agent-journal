@@ -29,7 +29,6 @@ use App\Resolvers\ActiveAccountRecords;
 use App\Resolvers\UnconfiguredAccounts;
 use App\Support\ActorContext;
 use App\Support\DefaultDrivers;
-use App\Support\LinkTypeRegistry;
 use App\Support\RecordIdentity;
 use App\Support\RegisterPendingStart;
 use App\Support\StartSessions;
@@ -38,6 +37,7 @@ use App\Values\OwnerAuthority;
 use App\Values\SelectedAccount;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Connection;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
@@ -82,7 +82,7 @@ final class AccountUsesTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->make(LinkTypeRegistry::class)->register([self::ACCOUNT_TYPE => Note::class]);
+        Relation::morphMap([self::ACCOUNT_TYPE => Note::class]);
         $this->agent = Agent::create('Test agent', 'main-agent');
         $this->actAsOwner();
     }

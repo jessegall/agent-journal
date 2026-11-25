@@ -14,7 +14,6 @@ use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Messages\Message;
 use App\Models\Messages\MessageReadEntry;
-use App\Models\Questions\Question;
 use App\Support\ActorIdentity;
 use App\Support\AgentDrivers;
 use App\Support\AgentOption;
@@ -25,9 +24,7 @@ use Domain\Chat\Data\ChatEntryData;
 use Domain\Chat\Data\ChatRowsPageData;
 use Domain\Chat\Data\ChatSummaryData;
 use Domain\Chat\Data\ConversationData;
-use Domain\Chat\Data\MessageEntryData;
 use Domain\Chat\Data\ParticipantData;
-use Domain\Chat\Data\QuestionEntryData;
 use Domain\Chat\Enums\ChatMessageType;
 use Domain\Chat\Models\ChatMessage;
 use Domain\Chat\Support\ChatInboxes;
@@ -157,7 +154,7 @@ final readonly class ChatPages
      */
     private function readIdsAmong(Collection $rows): array
     {
-        $messageIds = $rows->where('source_type', Message::LINK_TYPE)->pluck('source_id')->all();
+        $messageIds = $rows->where('source_type', Message::linkType())->pluck('source_id')->all();
 
         return array_values(array_map(strval(...), MessageReadEntry::query()
             ->whereReader($this->viewerModel())

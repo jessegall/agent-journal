@@ -41,7 +41,7 @@ final readonly class PhaseRecords implements RecordProvider
 
     protected function linkType(): string
     {
-        return Phase::LINK_TYPE;
+        return Phase::linkType();
     }
 
     protected function readableRecords(): ReadBuilder
@@ -54,7 +54,7 @@ final readonly class PhaseRecords implements RecordProvider
     protected function cardOf(Model $record): RecordCard
     {
         return RecordCard::from([
-            'type' => Phase::LINK_TYPE,
+            'type' => Phase::linkType(),
             'id' => $record->id,
             'number' => (string) $record->number,
             'label' => "plan {$record->plan->number}, phase {$record->number}",

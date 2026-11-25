@@ -33,7 +33,7 @@ final readonly class PlanRecords implements RecordProvider
 
     protected function linkType(): string
     {
-        return Plan::LINK_TYPE;
+        return Plan::linkType();
     }
 
     protected function readableRecords(): ReadBuilder
@@ -46,7 +46,7 @@ final readonly class PlanRecords implements RecordProvider
     protected function cardOf(Model $record): RecordCard
     {
         return RecordCard::from([
-            'type' => Plan::LINK_TYPE,
+            'type' => Plan::linkType(),
             'id' => $record->id,
             'number' => (string) $record->number,
             'label' => "plan {$record->number}",

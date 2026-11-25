@@ -55,6 +55,6 @@ final readonly class ReportWindowResolver implements PageResolver
             fn () => $this->reports->inspect($number),
         );
 
-        return DockablePublicationData::of($layout, new DockIdentity(Report::LINK_TYPE, $report->id));
+        return DockablePublicationData::of($layout, new DockIdentity(Report::linkType(), $report->id));
     }
 }

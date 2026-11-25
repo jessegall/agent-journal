@@ -77,7 +77,7 @@ final readonly class TaskWindowResolver implements PageResolver
             $reader = TaskReaderData::fromDetails(
                 $this->details->details($taskId, ReadView::Context),
                 $this->actionsOf($taskId),
-                $this->comments->list(new RecordIdentity(Task::LINK_TYPE, $taskId), $this->request->commentsPage()),
+                $this->comments->list(new RecordIdentity(Task::linkType(), $taskId), $this->request->commentsPage()),
                 $this->slots->sectionsIn('tasks.task', 'inspector'),
                 $this->logsOf($taskId),
                 $this->proofsOf($taskId),

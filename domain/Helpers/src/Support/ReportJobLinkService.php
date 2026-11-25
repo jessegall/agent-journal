@@ -26,7 +26,7 @@ final readonly class ReportJobLinkService
         $reference = (string) $start->ownerReference;
         [$type, $jobId] = explode(':', $reference, 2) + [1 => ''];
 
-        if ($type !== HelperJob::LINK_TYPE) {
+        if ($type !== HelperJob::linkType()) {
             return;
         }
 

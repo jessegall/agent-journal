@@ -24,7 +24,7 @@ final readonly class AttachHelperJob implements Listener
 
     public function handle(StartSessionOpened $event): void
     {
-        if ($event->ownerWork === null || $event->ownerWork->type !== HelperJob::LINK_TYPE) {
+        if ($event->ownerWork === null || $event->ownerWork->type !== HelperJob::linkType()) {
             return;
         }
 

@@ -79,8 +79,6 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
     use OrdersById;
     use RaisesEvents;
 
-    public const string LINK_TYPE = 'helpers.job';
-
     /**
      * @return array<string, string>
      */
@@ -240,7 +238,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
 
     public function assignmentIdentity(): RecordIdentity
     {
-        return new RecordIdentity(self::LINK_TYPE, $this->id);
+        return new RecordIdentity(self::linkType(), $this->id);
     }
 
     public function isFinished(): bool

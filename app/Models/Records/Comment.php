@@ -67,8 +67,6 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
     use Linkable;
     use RaisesEvents;
 
-    public const string LINK_TYPE = 'core.comment';
-
     public const null UPDATED_AT = null;
 
     /**
@@ -138,7 +136,7 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
 
     public function shareIdentity(): RecordIdentity
     {
-        return new RecordIdentity(self::LINK_TYPE, $this->id);
+        return new RecordIdentity(self::linkType(), $this->id);
     }
 
     /**

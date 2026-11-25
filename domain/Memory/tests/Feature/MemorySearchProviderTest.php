@@ -49,7 +49,7 @@ final class MemorySearchProviderTest extends TestCase
         $strangerFinds = $this->search('01ARZ3NDEKTSV4RRFFQ69G5FA3');
 
         $this->assertSame([[
-            MemorySearchProvider::RECORD_TYPE,
+            Memory::linkType(),
             $own->id,
         ]], self::references($ownerFinds));
         $this->assertSame([], self::references($strangerFinds));
@@ -67,8 +67,8 @@ final class MemorySearchProviderTest extends TestCase
         $query = new SearchQuery(
             new SearchReader(ActorContext::forUser($userId), SearchSurface::Palette),
             SearchWords::fromInput(self::WORDS),
-            SearchScope::within(MemorySearchProvider::RECORD_TYPE),
-            MemorySearchProvider::RECORD_TYPE,
+            SearchScope::within(Memory::linkType()),
+            Memory::linkType(),
             10,
             WorkBudget::forBatch(150),
             null,

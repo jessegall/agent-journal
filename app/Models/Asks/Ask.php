@@ -71,8 +71,6 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
     use Linkable;
     use RaisesEvents;
 
-    public const string LINK_TYPE = 'core.ask';
-
     /**
      * How long an ask may stay open, however it progresses, before it closes unanswered.
      */
@@ -157,7 +155,7 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
 
     public function assignmentIdentity(): RecordIdentity
     {
-        return new RecordIdentity(self::LINK_TYPE, $this->id);
+        return new RecordIdentity(self::linkType(), $this->id);
     }
 
     public function requirePending(int $version): SupervisorTarget

@@ -190,7 +190,7 @@ final class UsageReportTest extends TestCase
             'session_id' => strtolower((string) Str::ulid()),
             'host_id' => $this->host->hostId,
             'start_key' => $key,
-            'account_type' => Account::LINK_TYPE,
+            'account_type' => Account::linkType(),
             'account_id' => $account->id,
             'account_generation' => 1,
             'directory' => (string) $account->directory,

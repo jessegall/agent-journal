@@ -22,7 +22,7 @@ final readonly class CancelLaunchedJob implements Listener
 
     public function handle(LaunchCancelled $event): void
     {
-        if ($event->work->type !== HelperJob::LINK_TYPE) {
+        if ($event->work->type !== HelperJob::linkType()) {
             return;
         }
 

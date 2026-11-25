@@ -10,7 +10,6 @@ use App\Values\PolicyDefinition;
 use App\Contracts\Bus\CommandProvider;
 use App\Support\Domain;
 use App\Support\Exports;
-use Tests\Fixtures\Modules\Ledger\Bootstrappers\RegisterLedgerLinkTypes;
 use Tests\Fixtures\Modules\Ledger\Commands\OpenLedger\OpenLedgerCommand;
 use Tests\Fixtures\Modules\Ledger\Commands\WriteEntry\WriteEntryCommand;
 use Tests\Fixtures\Modules\Ledger\Models\Ledger;
@@ -24,11 +23,6 @@ final class LedgerDomain extends Domain implements CommandProvider, PolicyProvid
     public function description(): string
     {
         return 'Ledgers and their entries: numbered records for the number allocation tests.';
-    }
-
-    public function bootstrappers(): array
-    {
-        return [RegisterLedgerLinkTypes::class];
     }
 
     public function requires(): array

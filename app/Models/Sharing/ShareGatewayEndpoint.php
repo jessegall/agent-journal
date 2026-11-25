@@ -53,8 +53,6 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
     use OrdersById;
     use RaisesEvents;
 
-    public const string LINK_TYPE = 'core.share-gateway-endpoint';
-
     /**
      * How long after its last healthy report an endpoint still counts as healthy.
      */

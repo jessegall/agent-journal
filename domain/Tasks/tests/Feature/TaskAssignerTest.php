@@ -46,8 +46,8 @@ final class TaskAssignerTest extends TestCase
 
     public function test_task_type_is_the_alias_tasks_are_assigned_under(): void
     {
-        $this->assertSame(Task::LINK_TYPE, TaskType::VALUE);
-        $this->assertSame(TaskType::VALUE, Task::factory()->create()->assignmentIdentity()->type);
+        $this->assertSame(Task::linkType(), TaskType::linkType());
+        $this->assertSame(TaskType::linkType(), Task::factory()->create()->assignmentIdentity()->type);
         $this->assertSame([
             TaskState::Open,
             TaskState::Started,

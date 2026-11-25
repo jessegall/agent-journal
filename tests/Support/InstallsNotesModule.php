@@ -31,8 +31,8 @@ trait InstallsNotesModule
 
     protected function installNotesModule(): void
     {
-        $this->app->register(NotesServiceProvider::class);
         DomainEntry::fromClass(NotesDomain::class)->boot($this->app);
+        $this->app->register(NotesServiceProvider::class);
         $this->app->make(NumberedTypeRegistry::class)->checkDeclarations();
     }
 

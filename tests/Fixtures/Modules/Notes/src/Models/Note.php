@@ -52,11 +52,6 @@ final class Note extends Model implements Assignable, Commentable, Dockable, Num
     use BoundedReads;
     use Linkable;
 
-    /**
-     * The stable name links and assignments use for a note.
-     */
-    public const string LINK_TYPE = 'notes.note';
-
     public function saveFor(string $agentId): void
     {
         $this->belongTo(new ActorIdentity(ActorType::Agent, $agentId));
@@ -73,7 +68,7 @@ final class Note extends Model implements Assignable, Commentable, Dockable, Num
 
     public function assignmentIdentity(): RecordIdentity
     {
-        return new RecordIdentity(self::LINK_TYPE, $this->id);
+        return new RecordIdentity(self::linkType(), $this->id);
     }
 
     public function identifyFor(DockDefinition $definition): DockIdentity

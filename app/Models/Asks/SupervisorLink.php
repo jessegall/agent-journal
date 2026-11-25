@@ -38,8 +38,6 @@ final class SupervisorLink extends Model implements EventSource, ReadableModel
     use Linkable;
     use RaisesEvents;
 
-    public const string LINK_TYPE = 'core.supervisor-link';
-
     protected function casts(): array
     {
         return [

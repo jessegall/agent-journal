@@ -30,7 +30,7 @@ final readonly class NotePageLinkRecords implements RecordProvider
 
     protected function linkType(): string
     {
-        return NotePage::LINK_TYPE;
+        return NotePage::linkType();
     }
 
     protected function readableRecords(): ReadBuilder
@@ -41,7 +41,7 @@ final readonly class NotePageLinkRecords implements RecordProvider
     protected function cardOf(Model $record): RecordCard
     {
         return RecordCard::from([
-            'type' => NotePage::LINK_TYPE,
+            'type' => NotePage::linkType(),
             'id' => $record->id,
             'number' => (string) $record->number,
             'label' => "note-page {$record->number}",

@@ -33,7 +33,7 @@ final readonly class RuleLinkRecords implements RecordProvider
 
     protected function linkType(): string
     {
-        return Rule::LINK_TYPE;
+        return Rule::linkType();
     }
 
     protected function readableRecords(): ReadBuilder
@@ -46,7 +46,7 @@ final readonly class RuleLinkRecords implements RecordProvider
     protected function cardOf(Model $record): RecordCard
     {
         return RecordCard::from([
-            'type' => Rule::LINK_TYPE,
+            'type' => Rule::linkType(),
             'id' => $record->id,
             'number' => (string) $record->number,
             'label' => "rule {$record->number}",

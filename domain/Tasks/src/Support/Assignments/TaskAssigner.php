@@ -27,7 +27,7 @@ final readonly class TaskAssigner implements AutoAssigner
 
     public function pick(ActorIdentity $assignee, AssignmentPool $pool, int $room): OrderedRecordIds
     {
-        return Task::candidates($pool->members(), $this->assignments->assignedIds(TaskType::VALUE), $room);
+        return Task::candidates($pool->members(), $this->assignments->assignedIds(TaskType::linkType()), $room);
     }
 
     /**

@@ -111,12 +111,12 @@ final class RecordLinksTest extends TestCase
 
         $id = (string) Str::ulid();
         $hidden = $this->refusalOf(
-            fn () => $this->records()->card(new RecordIdentity(Message::LINK_TYPE, $message->id)),
+            fn () => $this->records()->card(new RecordIdentity(Message::linkType(), $message->id)),
         );
-        $missing = $this->refusalOf(fn () => $this->records()->card(new RecordIdentity(Message::LINK_TYPE, $id)));
+        $missing = $this->refusalOf(fn () => $this->records()->card(new RecordIdentity(Message::linkType(), $id)));
 
         $this->assertSame(str_replace($message->id, 'ID', $hidden), str_replace($id, 'ID', $missing));
-        $this->assertSame([], $this->records()->visibleCards([new RecordIdentity(Message::LINK_TYPE, $message->id)]));
+        $this->assertSame([], $this->records()->visibleCards([new RecordIdentity(Message::linkType(), $message->id)]));
     }
 
     public function test_a_report_links_to_a_plan_and_a_document_once_and_unlinking_keeps_both_records(): void
@@ -152,7 +152,7 @@ final class RecordLinksTest extends TestCase
         $this->actAsAgent(9);
 
         try {
-            $about = [new RecordIdentity(Message::LINK_TYPE, $message->id)];
+            $about = [new RecordIdentity(Message::linkType(), $message->id)];
             $this->bus()->run(new CreateDocumentCommand('Leak', 'Should not exist', "Text\n", $about));
             $this->fail('A document about a private message was created.');
         } catch (RecordUnavailable) {

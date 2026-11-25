@@ -31,7 +31,7 @@ final readonly class MessageLinkRecords implements RecordProvider
 
     protected function linkType(): string
     {
-        return Message::LINK_TYPE;
+        return Message::linkType();
     }
 
     protected function readableRecords(): ReadBuilder
@@ -42,7 +42,7 @@ final readonly class MessageLinkRecords implements RecordProvider
     protected function cardOf(Model $record): RecordCard
     {
         return RecordCard::from([
-            'type' => Message::LINK_TYPE,
+            'type' => Message::linkType(),
             'id' => $record->id,
             'number' => (string) $record->number,
             'label' => "message {$record->number}",

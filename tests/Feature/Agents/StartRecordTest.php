@@ -153,7 +153,7 @@ final class StartRecordTest extends TestCase
             $own,
             TestSelections::requestId(),
             ModelSelection::named('claude-opus-5-5'),
-            'helpers.job 7',
+            'helpers.helper-job 7',
         );
         $otherRequest = $this->request($other, TestSelections::requestId(), ModelSelection::named('claude-opus-5-5'));
         StartRecord::create($ownRequest, TestSelections::pinOf($ownRequest), ActorIdentity::system(), None::create());
@@ -167,7 +167,7 @@ final class StartRecordTest extends TestCase
         $this->assertSame($own->id, $resolver->own($ownRequest->requestId)->agentId);
         $this->assertSame(
             [$ownRequest->requestId],
-            array_map(fn ($record) => $record->requestId, $resolver->forOwnerReference('helpers.job 7')),
+            array_map(fn ($record) => $record->requestId, $resolver->forOwnerReference('helpers.helper-job 7')),
         );
 
         $this->expectException(StartRecordMissing::class);

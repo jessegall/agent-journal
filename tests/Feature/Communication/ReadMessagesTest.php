@@ -30,7 +30,7 @@ final class ReadMessagesTest extends MessagingTestCase
         $this->assertSame([[$questionId, true, true], [$noteId, true, false]], $this->rows($first));
         $this->assertSame([[$questionId, false, false]], $this->rows($again));
         $this->assertNotNull(Message::query()->findOrFail($noteId)->read_at);
-        $claims = $this->app->make(ProvedClaims::class)->validClaimsOn(Message::LINK_TYPE, [$questionId]);
+        $claims = $this->app->make(ProvedClaims::class)->validClaimsOn(Message::linkType(), [$questionId]);
         $this->assertTrue($claims[$questionId]->holder()->isSameAs($this->assigneeOf($this->builder)));
     }
 

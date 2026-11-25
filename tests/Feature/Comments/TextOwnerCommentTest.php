@@ -112,7 +112,7 @@ final class TextOwnerCommentTest extends TestCase
 
     private function target(NotePage|NoteSnapshot $record): RecordIdentity
     {
-        return new RecordIdentity($record::LINK_TYPE, $record->id);
+        return new RecordIdentity($record::linkType(), $record->id);
     }
 
     private function text(): TextResolver

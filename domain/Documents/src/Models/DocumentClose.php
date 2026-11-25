@@ -58,8 +58,6 @@ final class DocumentClose extends Model implements EventSource, ReadableModel
     use Linkable;
     use RaisesEvents;
 
-    public const string LINK_TYPE = 'documents.close';
-
     protected function casts(): array
     {
         return [

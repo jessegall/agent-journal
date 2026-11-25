@@ -56,8 +56,6 @@ final class AskHop extends Model implements EventSource, ReadableModel
     use OrdersById;
     use RaisesEvents;
 
-    public const string LINK_TYPE = 'core.ask-hop';
-
     public const string PENDING_DELIVERY = 'pending';
 
     /**
@@ -277,7 +275,7 @@ final class AskHop extends Model implements EventSource, ReadableModel
         $query->join('asks', 'asks.id', '=', 'ask_hops.ask_id')
             ->join('assignments', function ($assignment): void {
                 $assignment->on('assignments.record_id', '=', 'ask_hops.ask_id')
-                    ->where('assignments.record_type', Ask::LINK_TYPE)
+                    ->where('assignments.record_type', Ask::linkType())
                     ->whereColumn('assignments.holder_type', 'ask_hops.actor_type')
                     ->whereColumn('assignments.holder_id', 'ask_hops.actor_id');
             })

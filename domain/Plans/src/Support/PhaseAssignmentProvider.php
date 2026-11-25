@@ -82,7 +82,7 @@ final readonly class PhaseAssignmentProvider implements AssignableProvider
         $completion = $this->tasks->completionOf($taskGroups);
 
         return array_values(array_map(
-            fn (string $phaseId) => new RecordIdentity(Phase::LINK_TYPE, $phaseId),
+            fn (string $phaseId) => new RecordIdentity(Phase::linkType(), $phaseId),
             array_filter($phaseIds, fn (string $phaseId) => $completion[$phaseId]->isFinished()),
         ));
     }

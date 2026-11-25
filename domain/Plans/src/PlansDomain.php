@@ -185,8 +185,8 @@ final class PlansDomain extends Domain implements
     public function assignables(): array
     {
         return [
-            Plan::LINK_TYPE => PlanAssignmentProvider::class,
-            Phase::LINK_TYPE => PhaseAssignmentProvider::class,
+            Plan::linkType() => PlanAssignmentProvider::class,
+            Phase::linkType() => PhaseAssignmentProvider::class,
         ];
     }
 
@@ -200,7 +200,7 @@ final class PlansDomain extends Domain implements
         return [
             new PoolDefinition(
                 PlanTaskPoolFactory::KEY,
-                TaskType::VALUE,
+                TaskType::linkType(),
                 PlanTaskPoolFactory::class,
                 'Tasks in a started plan',
             ),
@@ -212,14 +212,14 @@ final class PlansDomain extends Domain implements
      */
     public function shareRecords(): array
     {
-        return [new ShareRecordDefinition(Plan::LINK_TYPE, Plan::class, PlanShareProvider::class, [])];
+        return [new ShareRecordDefinition(Plan::linkType(), Plan::class, PlanShareProvider::class, [])];
     }
 
     public function linkRecords(): array
     {
         return [
-            Plan::LINK_TYPE => PlanRecords::class,
-            Phase::LINK_TYPE => PhaseRecords::class,
+            Plan::linkType() => PlanRecords::class,
+            Phase::linkType() => PhaseRecords::class,
         ];
     }
 

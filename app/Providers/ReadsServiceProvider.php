@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Concerns\Linkable;
 use App\Contracts\Reads\ReadLog as ReadLogContract;
 use App\Contracts\Reads\ReadMeter;
 use App\Contracts\Records\ReadableModel;
@@ -66,7 +67,9 @@ final class ReadsServiceProvider extends ServiceProvider
 
         $this->app->booted(static function (): void {
             foreach (Relation::morphMap() as $linkType => $model) {
-                if (! Reflector::factory()->isSubclassOf($model, ReadableModel::class)) {
+                $isLinkable = in_array(Linkable::class, class_uses_recursive($model), true);
+
+                if ($isLinkable && ! Reflector::factory()->isSubclassOf($model, ReadableModel::class)) {
                     throw ReadPolicyMissing::for($model, $linkType);
                 }
             }

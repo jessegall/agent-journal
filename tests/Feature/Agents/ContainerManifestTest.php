@@ -139,7 +139,7 @@ final class ContainerManifestTest extends TestCase
     public function test_a_contained_read_only_helper_mounts_the_mains_workspace_read_only_its_history_and_account(): void
     {
         $setting = ArrangementSetting::fromConfig('contained', 'acme', self::GIT_SOURCE);
-        $account = new SelectedAccount(new RecordIdentity(Account::LINK_TYPE, '01m7y41pesrb3jvbxmhd5ssfer'), 'claude-code', '/accounts/01b2', 1);
+        $account = new SelectedAccount(new RecordIdentity(Account::linkType(), '01m7y41pesrb3jvbxmhd5ssfer'), 'claude-code', '/accounts/01b2', 1);
 
         $manifest = ContainerManifest::compile(
             'helper-1',
@@ -461,8 +461,8 @@ final class ContainerManifestTest extends TestCase
     public function test_a_contained_start_on_an_account_binds_that_accounts_folder_and_nothing_else(): void
     {
         $setting = ArrangementSetting::fromConfig('contained', 'acme', '{"main":{"folder":"main"}}');
-        $accountA = new SelectedAccount(new RecordIdentity(Account::LINK_TYPE, '01m7y41pesrb3jvbxmhd5ssfer'), 'claude-code', '/accounts/01a1', 1);
-        $accountB = new SelectedAccount(new RecordIdentity(Account::LINK_TYPE, '01m7y41pesrb3jvbxmhd5ssfer'), 'claude-code', '/accounts/01b2', 1);
+        $accountA = new SelectedAccount(new RecordIdentity(Account::linkType(), '01m7y41pesrb3jvbxmhd5ssfer'), 'claude-code', '/accounts/01a1', 1);
+        $accountB = new SelectedAccount(new RecordIdentity(Account::linkType(), '01m7y41pesrb3jvbxmhd5ssfer'), 'claude-code', '/accounts/01b2', 1);
 
         $manifestOf = fn (SelectedAccount $account) => ContainerManifest::compile(
             $this->prepared()->sessionId,
@@ -509,12 +509,12 @@ final class ContainerManifestTest extends TestCase
         $setting = ArrangementSetting::fromConfig('contained', 'acme', '{"main":{"folder":"main"}}');
 
         foreach (['/accounts/..', '/accounts/a1/../b2', '/accounts/A1', '/accounts/a-1'] as $directory) {
-            $account = new SelectedAccount(new RecordIdentity(Account::LINK_TYPE, '01m7y41pesrb3jvbxmhd5ssfer'), 'claude-code', $directory, 1);
+            $account = new SelectedAccount(new RecordIdentity(Account::linkType(), '01m7y41pesrb3jvbxmhd5ssfer'), 'claude-code', $directory, 1);
             $this->assertThrows(fn () => $setting->mountRules($account, 'main'), AccountFolderInvalid::class);
         }
 
         $this->assertEquals(MountRules::local(), ArrangementSetting::fromConfig('local', '', '{}')->mountRules(
-            new SelectedAccount(new RecordIdentity(Account::LINK_TYPE, '01m7y41pesrb3jvbxmhd5ssfer'), 'claude-code', '/Users/me/.journal/accounts/A1', 1),
+            new SelectedAccount(new RecordIdentity(Account::linkType(), '01m7y41pesrb3jvbxmhd5ssfer'), 'claude-code', '/Users/me/.journal/accounts/A1', 1),
             'main',
         ));
     }

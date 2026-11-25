@@ -69,7 +69,7 @@ final readonly class MessageSearchProvider implements MessageSearch
         return SearchResult::shortened(
             "Message {$message->number}",
             $message->body,
-            new RecordIdentity(Message::LINK_TYPE, $message->id),
+            new RecordIdentity(Message::linkType(), $message->id),
             $tier,
         );
     }

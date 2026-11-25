@@ -206,8 +206,8 @@ final class WholeRecordCommentTest extends TestCase
             range(1, 3),
         );
         $wanted = [
-            ...array_map(fn (string $id) => new RecordIdentity(Comment::LINK_TYPE, $id), $ids),
-            new RecordIdentity(Comment::LINK_TYPE, strtolower((string) Str::ulid())),
+            ...array_map(fn (string $id) => new RecordIdentity(Comment::linkType(), $id), $ids),
+            new RecordIdentity(Comment::linkType(), strtolower((string) Str::ulid())),
         ];
 
         DB::enableQueryLog();
@@ -224,6 +224,6 @@ final class WholeRecordCommentTest extends TestCase
 
     private function target(): RecordIdentity
     {
-        return new RecordIdentity(Note::LINK_TYPE, $this->note->id);
+        return new RecordIdentity(Note::linkType(), $this->note->id);
     }
 }

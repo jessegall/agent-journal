@@ -8,13 +8,13 @@ use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\ActorType;
 use App\Events\Messages\NotificationsWithdrawn;
-use App\Models\Questions\Question;
 use App\Models\Notifications\NotificationReceipt;
 use App\Models\Notifications\NotificationScope;
-use App\Support\QuestionNotificationKeys;
+use App\Models\Questions\Question;
 use App\Support\ActorIdentity;
 use App\Support\NotificationReceipts;
 use App\Support\NotificationScopes;
+use App\Support\QuestionNotificationKeys;
 use Carbon\CarbonImmutable;
 
 final readonly class HideLeftInboxNotificationsHandler implements CommandHandler
@@ -44,7 +44,7 @@ final readonly class HideLeftInboxNotificationsHandler implements CommandHandler
     {
         $receipts = NotificationReceipt::visibleWithTargetIn(
             $scope->id,
-            QuestionNotificationKeys::TARGET,
+            QuestionNotificationKeys::target(),
             Question::query()->where('inbox_id', $inboxId)->where('target_type', $recipient->type->value)
                 ->where('target_id', $recipient->id)->select('id'),
             HideLeftInboxNotificationsCommand::BATCH,

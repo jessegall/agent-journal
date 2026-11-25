@@ -67,7 +67,7 @@ final class SessionOutputGrantsTest extends TestCase
 
     public function test_own_outputs_stay_readable_across_clear_and_resume(): void
     {
-        $session = $this->start('helpers.job 1');
+        $session = $this->start('helpers.helper-job 1');
 
         $this->enter($session, 'native-a', 'call-1');
         $this->enter($session, 'native-b', 'call-2');
@@ -84,8 +84,8 @@ final class SessionOutputGrantsTest extends TestCase
 
     public function test_sibling_fork_parent_and_unverified_paths_stay_denied(): void
     {
-        $sibling = $this->start('helpers.job 1', Agent::create('Reviewer', 'read-only-helper'));
-        $session = $this->start('helpers.job 2');
+        $sibling = $this->start('helpers.helper-job 1', Agent::create('Reviewer', 'read-only-helper'));
+        $session = $this->start('helpers.helper-job 2');
         $this->enter($sibling, 'native-parent', 'call-1');
 
         $this->enter($session, 'native-fork', 'call-2');
@@ -108,7 +108,7 @@ final class SessionOutputGrantsTest extends TestCase
 
     public function test_an_ended_start_grants_nothing(): void
     {
-        $session = $this->start('helpers.job 1');
+        $session = $this->start('helpers.helper-job 1');
         $this->enter($session, 'native-a', 'call-1');
 
         ProcessStart::currentOf($session->id)?->stopWithProof();
@@ -118,7 +118,7 @@ final class SessionOutputGrantsTest extends TestCase
 
     public function test_a_continuation_of_the_same_agent_carries_the_old_sessions_grants(): void
     {
-        $predecessor = $this->start('helpers.job 1');
+        $predecessor = $this->start('helpers.helper-job 1');
         $this->enter($predecessor, 'native-a', 'call-1');
         $other = Agent::create('Reviewer', 'read-only-helper');
         $this->app->make(StartSessions::class)->end($predecessor);

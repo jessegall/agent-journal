@@ -24,7 +24,7 @@ final readonly class TaskCancelled extends TaskEvent implements DockSourceChange
 
     public function dockType(): string
     {
-        return Task::LINK_TYPE;
+        return Task::linkType();
     }
 
     public function dockId(): string

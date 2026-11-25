@@ -38,7 +38,7 @@ final class PlanWorkRequest extends FormRequest
     {
         $planId = Plan::idOfNumber($this->routeNumber('plan')) ?? throw new NotFoundHttpException();
 
-        return new RecordIdentity(Plan::LINK_TYPE, $planId);
+        return new RecordIdentity(Plan::linkType(), $planId);
     }
 
     public function recipient(): AssigneeIdentity

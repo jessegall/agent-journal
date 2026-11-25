@@ -24,7 +24,7 @@ final readonly class RecordChatQuestion implements Listener
     {
         $this->commands->run(new CreateChatMessageCommand(
             $event->inboxId,
-            Question::LINK_TYPE,
+            Question::linkType(),
             $event->questionId,
             ChatMessageType::Question,
         ));

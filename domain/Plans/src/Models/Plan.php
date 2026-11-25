@@ -108,11 +108,6 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
     use RaisesEvents;
 
     /**
-     * The stable name links and assignments use for a plan.
-     */
-    public const string LINK_TYPE = 'plans.plan';
-
-    /**
      * The most characters a plan's title or a phase's title holds.
      */
     public const int TITLE_CHARACTER_LIMIT = PlanTextLimit::Title->value;
@@ -382,7 +377,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
 
     public function shareIdentity(): RecordIdentity
     {
-        return new RecordIdentity(self::LINK_TYPE, $this->id);
+        return new RecordIdentity(self::linkType(), $this->id);
     }
 
     /**

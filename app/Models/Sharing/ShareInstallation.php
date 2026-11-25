@@ -42,8 +42,6 @@ final class ShareInstallation extends Model implements EventSource, ReadableMode
     use Linkable;
     use RaisesEvents;
 
-    public const string LINK_TYPE = 'core.share-installation';
-
     private const string NAME = 'installation';
 
     /**

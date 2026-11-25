@@ -17,8 +17,6 @@ use Illuminate\Database\Eloquent\Model;
 
 final readonly class SessionProvenance implements SessionProvenanceContract
 {
-    private const string SESSION = 'core.agent-session';
-
     public function __construct(
         private CurrentSession $session,
         private IdentityLinks $links,
@@ -29,13 +27,13 @@ final readonly class SessionProvenance implements SessionProvenanceContract
     public function record(Model $record): void
     {
         if ($this->session->hasSession()) {
-            $this->links->link($record, new RecordIdentity(self::SESSION, $this->session->sessionId()));
+            $this->links->link($record, new RecordIdentity(AgentSession::linkType(), $this->session->sessionId()));
         }
     }
 
     public function inherit(Model $record, Model $source): void
     {
-        foreach ($this->links->linkedOfType($source, self::SESSION) as $origin) {
+        foreach ($this->links->linkedOfType($source, AgentSession::linkType()) as $origin) {
             Link::createForKey($record, $origin->type, $origin->id);
         }
     }
@@ -74,7 +72,7 @@ final readonly class SessionProvenance implements SessionProvenanceContract
      */
     public function fromSession(Builder $records, string $sessionId): Builder
     {
-        return $this->links->among($records, new RecordIdentity(self::SESSION, $sessionId));
+        return $this->links->among($records, new RecordIdentity(AgentSession::linkType(), $sessionId));
     }
 
     public function parentOf(Model $record): ActorContext|null
@@ -111,7 +109,7 @@ final readonly class SessionProvenance implements SessionProvenanceContract
 
     private function parentSessionOf(Model $record): AgentSession|null
     {
-        $origin = $this->links->linkedOfType($record, self::SESSION)[0] ?? null;
+        $origin = $this->links->linkedOfType($record, AgentSession::linkType())[0] ?? null;
 
         if ($origin === null) {
             return null;

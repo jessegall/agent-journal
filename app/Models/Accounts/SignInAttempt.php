@@ -99,8 +99,6 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     use OrdersById;
     use RaisesEvents;
 
-    public const string LINK_TYPE = 'core.sign-in-attempt';
-
     /**
      * @var list<string>
      */

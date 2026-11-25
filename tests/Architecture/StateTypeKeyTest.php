@@ -35,6 +35,25 @@ final class StateTypeKeyTest extends TestCase
     }
 
     /**
+     * Nothing is released yet, so no stored state of an older shape exists to read: every state type is at schema
+     * version 1 until version 6 ships (user messages 22130 and 22132).
+     */
+    public function test_every_state_type_is_at_schema_version_one(): void
+    {
+        $later = [];
+
+        foreach ($this->stateClasses() as $class) {
+            $version = Reflector::of($class)->attribute(StateType::class)->schemaVersion;
+
+            if ($version !== 1) {
+                $later[] = "{$class} declares schema version {$version}";
+            }
+        }
+
+        $this->assertSame([], $later);
+    }
+
+    /**
      * The key a class's owner gives its state types: core for App, the domain's name in snake case otherwise.
      */
     private static function ownerKeyOf(string $class): string

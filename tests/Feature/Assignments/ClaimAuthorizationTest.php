@@ -39,9 +39,9 @@ final class ClaimAuthorizationTest extends TestCase
         $seat = $this->hold('core.desk-seat', 1, $this->actor);
         $task = $this->hold('tasks.task', 2, new AssigneeIdentity('desk', TestIds::of(9)));
 
-        $inbox = ClaimAuthorization::forInbox($this->hold('communication.message', 3, $this->actor), $seat);
-        $deskRun = ClaimAuthorization::forDeskRun($this->hold('tasks.run', 4, $this->actor), $seat, $task);
-        $directRun = ClaimAuthorization::forDirectRun($this->hold('tasks.run', 5, $this->actor), $task);
+        $inbox = ClaimAuthorization::forInbox($this->hold('core.messages.message', 3, $this->actor), $seat);
+        $deskRun = ClaimAuthorization::forDeskRun($this->hold('tasks.task-run', 4, $this->actor), $seat, $task);
+        $directRun = ClaimAuthorization::forDirectRun($this->hold('tasks.task-run', 5, $this->actor), $task);
 
         $this->assertSame(
             [ClaimBasis::Inbox, ClaimBasis::DeskRun, ClaimBasis::DirectRun],
@@ -60,8 +60,8 @@ final class ClaimAuthorizationTest extends TestCase
     {
         $lost = $this->hold('core.desk-seat', 1, $this->actor);
         $kept = $this->hold('core.desk-seat', 2, $this->actor);
-        $gone = $this->hold('communication.message', 3, $this->actor);
-        $stays = $this->hold('communication.message', 4, $this->actor);
+        $gone = $this->hold('core.messages.message', 3, $this->actor);
+        $stays = $this->hold('core.messages.message', 4, $this->actor);
         ClaimAuthorization::forInbox($gone, $lost);
         ClaimAuthorization::forInbox($stays, $kept);
 
@@ -74,7 +74,7 @@ final class ClaimAuthorizationTest extends TestCase
     public function test_a_rejoined_actor_does_not_revive_an_old_proof(): void
     {
         $seat = $this->hold('core.desk-seat', 1, $this->actor);
-        $proof = ClaimAuthorization::forInbox($this->hold('communication.message', 2, $this->actor), $seat);
+        $proof = ClaimAuthorization::forInbox($this->hold('core.messages.message', 2, $this->actor), $seat);
         $this->assertTrue($proof->isValidFor($this->actor));
 
         AssignmentRecord::query()->withoutGlobalScopes()->whereKey($seat->id)->delete();

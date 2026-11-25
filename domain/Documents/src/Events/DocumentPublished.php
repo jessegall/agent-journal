@@ -17,7 +17,7 @@ final readonly class DocumentPublished extends DocumentEvent implements DockSour
 
     public function dockType(): string
     {
-        return DocumentType::VALUE;
+        return DocumentType::linkType();
     }
 
     public function dockId(): string

@@ -16,7 +16,7 @@ final readonly class RecordIdentity
 {
     use ComparesTypeAndId;
 
-    private const string ALIAS_PATTERN = '/^[a-z][a-z0-9_-]*\.[a-z][a-z0-9_-]*$/';
+    private const string ALIAS_PATTERN = '/^[a-z][a-z0-9_-]*(?:\.[a-z][a-z0-9_-]*)+$/';
 
     /**
      * @throws InvalidRecordIdentity

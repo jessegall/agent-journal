@@ -50,11 +50,6 @@ final class Reminder extends Model implements EventSource, ReadableModel
     use RaisesEvents;
 
     /**
-     * The record type a reminder is linked and found under.
-     */
-    public const string LINK_TYPE = 'reminders.reminder';
-
-    /**
      * The most characters a reminder's title holds.
      */
     public const int TITLE_CHARACTER_LIMIT = 255;

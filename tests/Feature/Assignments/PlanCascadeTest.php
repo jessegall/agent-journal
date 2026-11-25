@@ -82,7 +82,7 @@ final class PlanCascadeTest extends TestCase
             $this->builder,
         );
 
-        $this->assertSame([Plan::LINK_TYPE], $this->heldTypes());
+        $this->assertSame([Plan::linkType()], $this->heldTypes());
     }
 
     public function test_a_plan_cascade_gives_its_unfinished_phases_and_tasks_and_skips_a_finished_phase(): void
@@ -91,9 +91,9 @@ final class PlanCascadeTest extends TestCase
 
         $this->assertCount(4, $result->changes);
         $this->assertEqualsCanonicalizing([
-            [Plan::LINK_TYPE, $this->plan->id],
-            [Phase::LINK_TYPE, $this->working->id],
-            [Phase::LINK_TYPE, $this->empty->id],
+            [Plan::linkType(), $this->plan->id],
+            [Phase::linkType(), $this->working->id],
+            [Phase::linkType(), $this->empty->id],
             ['tasks.task', $this->open->id],
         ], AssignmentRecord::query()->get()->map(
             fn (AssignmentRecord $row) => [$row->record_type, $row->record_id],
@@ -104,7 +104,7 @@ final class PlanCascadeTest extends TestCase
     {
         $root = $this->assignWork($this->working->assignmentIdentity(), $this->builder)->outcomes[0]->current;
 
-        $this->assertEqualsCanonicalizing([Phase::LINK_TYPE, 'tasks.task'], $this->heldTypes());
+        $this->assertEqualsCanonicalizing([Phase::linkType(), 'tasks.task'], $this->heldTypes());
 
         $this->unassignWork($this->working->assignmentIdentity(), $root->reference);
 

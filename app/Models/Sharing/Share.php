@@ -105,8 +105,6 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     use OrdersById;
     use RaisesEvents;
 
-    public const string LINK_TYPE = 'core.share';
-
     /**
      * The most live, unexpired shares an installation holds at once.
      */

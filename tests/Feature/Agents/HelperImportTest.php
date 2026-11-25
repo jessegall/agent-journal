@@ -46,7 +46,7 @@ final class HelperImportTest extends TestCase
 
         $receipt = $this->import('attempt-1');
 
-        $this->assertSame('refs/helpers/helpers.job/'.self::WORK_ID.'/attempt-1', $receipt->ref);
+        $this->assertSame('refs/helpers/helpers.helper-job/'.self::WORK_ID.'/attempt-1', $receipt->ref);
         $this->assertCount(2, $receipt->commits);
         $this->assertSame($this->git("{$this->folder}/helper", 'rev-parse', 'HEAD'), $receipt->commits[1]);
         $this->assertSame($branchBefore, $this->git("{$this->folder}/parent", 'rev-parse', 'version-6'));
@@ -80,7 +80,7 @@ final class HelperImportTest extends TestCase
 
     private function import(string $certificate): HelperImportReceipt
     {
-        $command = new ImportHelperCommitsCommand(new RecordIdentity('helpers.job', self::WORK_ID), $certificate);
+        $command = new ImportHelperCommitsCommand(new RecordIdentity('helpers.helper-job', self::WORK_ID), $certificate);
 
         return $this->app->make(ImportHelperCommitsHandler::class)->handle($command);
     }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\Memory\Providers;
 
 use App\Contracts\Authorization\ReadEntitlements;
-use App\Support\LinkTypeRegistry;
 use App\Values\ReadEntitlement;
 use Domain\Memory\Console\Commands\MemoryEditCommand;
 use Domain\Memory\Console\Commands\MemoryListCommand;
@@ -28,7 +27,7 @@ final class MemoryServiceProvider extends ServiceProvider
         $this->app->scoped(MemoryResolver::class, OwnMemories::class);
     }
 
-    public function boot(LinkTypeRegistry $links, ReadEntitlements $reads): void
+    public function boot(ReadEntitlements $reads): void
     {
         $readGrant = ReadEntitlement::grant(MemoryPolicy::class);
 
@@ -45,8 +44,5 @@ final class MemoryServiceProvider extends ServiceProvider
             ],
         );
 
-        $links->register([
-            Memory::LINK_TYPE => Memory::class,
-        ]);
     }
 }

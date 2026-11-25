@@ -21,7 +21,7 @@ final readonly class CommentOnReportHandler extends DocumentCommandHandler
         $id = is_int($reference) ? ReportRecords::published($reference)->id : $reference;
 
         return $this->comments->post(
-            new RecordIdentity(Report::LINK_TYPE, $id),
+            new RecordIdentity(Report::linkType(), $id),
             $command->body,
             CommentOnReportCommand::class,
         );

@@ -25,7 +25,7 @@ trait HasAutoAssignmentWorker
     {
         $this->setUpActsAsOwner();
         $this->worker = TestStart::start('writing-helper');
-        $this->key = new AutoAssignmentKey(ActorIdentity::of($this->worker->agent), TaskType::VALUE);
+        $this->key = new AutoAssignmentKey(ActorIdentity::of($this->worker->agent), TaskType::linkType());
         $this->startUserRequestAs($this->owner->id);
     }
 }

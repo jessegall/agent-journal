@@ -101,7 +101,7 @@ final readonly class CommentLinkRecords implements RecordProvider
     private static function cardOf(Comment $comment, RecordCard $target): RecordCard
     {
         return RecordCard::from([
-            'type' => Comment::LINK_TYPE,
+            'type' => Comment::linkType(),
             'id' => $comment->id,
             'number' => '',
             'label' => "comment on {$target->label}",

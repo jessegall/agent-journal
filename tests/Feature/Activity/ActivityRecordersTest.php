@@ -9,11 +9,11 @@ use App\Commands\Messages\ReplyToMessage\ReplyToMessageCommand;
 use App\Enums\ActivityLevel;
 use App\Enums\ActivityType;
 use App\Enums\ToolOutcome;
-use App\Events\Sessions\ActivityRecorded;
-use App\Events\Messages\ChatMessageAccepted;
 use App\Events\Hooks\HelperReportedOnRecord;
-use App\Events\Sessions\StartAccepted;
 use App\Events\Hooks\ToolCallFinished;
+use App\Events\Messages\ChatMessageAccepted;
+use App\Events\Sessions\ActivityRecorded;
+use App\Events\Sessions\StartAccepted;
 use App\Models\Agents\ActivityEntry;
 use App\Support\ActorIdentity;
 use App\Support\Inputs\Values\DriverToolInput;
@@ -66,7 +66,7 @@ final class ActivityRecordersTest extends MessagingTestCase
         $events = $this->app->make(Dispatcher::class);
         $events->dispatch(new StartAccepted('request', $this->reviewer->agent_id, $this->reviewer->id, null, $this->builder->agent_id));
         $events->dispatch(new StartAccepted('request', $this->builder->agent_id, $this->builder->id));
-        $events->dispatch(new HelperReportedOnRecord(new RecordIdentity('tasks.run', (string) Str::ulid()), $this->reviewer->agent_id));
+        $events->dispatch(new HelperReportedOnRecord(new RecordIdentity('tasks.task-run', (string) Str::ulid()), $this->reviewer->agent_id));
 
         $this->assertSame([['helper_started', 'Reviewer', 2], ['helper_finished', 'Reviewer', 2]], $this->entries());
         $this->assertSame(
