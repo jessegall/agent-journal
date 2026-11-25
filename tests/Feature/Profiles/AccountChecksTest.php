@@ -8,14 +8,11 @@ use App\Commands\Accounts\CheckAccount\CheckAccountCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Files\Files;
 use App\Enums\Accounts\AccountCheckResult;
-use App\Enums\Accounts\AccountNoticeReason;
-use App\Enums\Accounts\AccountStatus;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Accounts\SignInMethod;
 use App\Enums\Drivers\DriverFailure;
 use App\Events\Sessions\DriverFailed;
 use App\Models\Accounts\Account;
-use App\Models\Accounts\AccountNotice;
 use App\Models\Accounts\ActiveAccount;
 use App\Support\ActorContext;
 use App\Support\DefaultDrivers;
@@ -34,9 +31,8 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * Only a rejected sign-in seen in an account's current generation asks for a check, and only the host's certain
- * sign-out in that generation makes the account need a new sign-in; a check from before a newer sign-in changes
- * nothing.
+ * Only a rejected sign-in seen in an account's current generation asks for a check, and the host's runner reports the
+ * program's own certain answer.
  */
 #[TimeLimit(seconds: 4, reason: 'It commits account changes through the bus and empties five tables per test.')]
 final class AccountChecksTest extends TestCase
@@ -74,26 +70,6 @@ final class AccountChecksTest extends TestCase
         $this->failWith(DriverFailure::AuthenticationFailed, 1);
 
         $this->assertSame(1, $this->account->refresh()->check_requested_generation);
-    }
-
-    public function test_a_certain_sign_out_needs_a_new_sign_in_and_clears_the_choice(): void
-    {
-        $this->check(1, AccountCheckResult::Unknown);
-        $this->assertSame(AccountStatus::Authenticated, $this->account->refresh()->status);
-
-        $this->check(1, AccountCheckResult::SignedOut);
-
-        $this->assertSame(AccountStatus::Unauthenticated, $this->account->refresh()->status);
-        $this->assertNull(ActiveAccount::query()->withoutGlobalScopes()->sole()->account_id);
-        $notice = AccountNotice::query()->withoutGlobalScopes()->sole();
-        $this->assertSame(AccountNoticeReason::NeedsSignIn, $notice->reason);
-    }
-
-    public function test_a_check_from_before_a_newer_sign_in_changes_nothing(): void
-    {
-        $this->check(0, AccountCheckResult::SignedOut);
-
-        $this->assertSame(AccountStatus::Authenticated, $this->account->refresh()->status);
     }
 
     public function test_the_runner_reports_the_programs_own_certain_answer(): void

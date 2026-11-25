@@ -2,13 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Profiles;
+namespace Tests\Commands\Accounts;
 
 use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
 use App\Commands\Accounts\BeginSignInAgain\BeginSignInAgainCommand;
 use App\Commands\Accounts\CancelSignIn\CancelSignInCommand;
 use App\Commands\Accounts\CompleteSignIn\CompleteSignInCommand;
-use App\Commands\Accounts\ReconcileAccounts\ReconcileAccountsCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Accounts\SignInAttemptData;
@@ -39,12 +38,13 @@ use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
- * A sign-in attempt from start to its end: a second start rejoins the one running, its deadline job holds only its
- * id, the host's verified result is saved once and only while it still speaks for the attempt, and the minute sweep
- * ends what the deadline job missed.
+ * A host completes a sign-in with its verified report: the first account is made and chosen once, the same report
+ * twice publishes once while an older generation is refused, a new account is named from its identity, an attempt names
+ * the account it made, renewed or matched, a login named only by email is a new row, a starter that lost its grant adds
+ * no account, and a cancelled attempt ignores a late result.
  */
 #[TimeLimit(seconds: 3, reason: 'It commits attempts and accounts through the bus and empties five tables per test.')]
-final class SignInAttemptTest extends TestCase
+final class CompleteSignInTest extends TestCase
 {
     use CommitsHookRows;
     use RunsKeyedCommands;
@@ -68,18 +68,6 @@ final class SignInAttemptTest extends TestCase
 
         Bus::fake([SignInDeadline::class]);
         $this->actAsOwner();
-    }
-
-    public function test_a_second_start_and_a_repeated_request_rejoin_the_running_attempt(): void
-    {
-        $first = $this->begin('request-1');
-        $second = $this->begin('request-2');
-        $repeated = $this->begin('request-1');
-
-        $this->assertFalse($first->hasRejoined);
-        $this->assertSame([$first->attemptId, $first->attemptId], [$second->attemptId, $repeated->attemptId]);
-        $this->assertSame(1, SignInAttempt::query()->count());
-        Bus::assertDispatched(SignInDeadline::class, fn (SignInDeadline $job) => $job->attemptId === $first->attemptId);
     }
 
     public function test_a_verified_sign_in_makes_the_first_account_and_chooses_it_once(): void
@@ -158,18 +146,6 @@ final class SignInAttemptTest extends TestCase
         $this->assertSame(SignInStatus::Complete, SignInAttempt::query()->whereKey($second)->sole()->status);
     }
 
-    public function test_an_attempt_no_sign_in_service_took_up_says_so_after_a_while(): void
-    {
-        $started = $this->begin('request-1');
-        $read = fn () => SignInAttemptData::fromAttempt(SignInAttempt::query()->whereKey($started->attemptId)->with('resultAccount')->sole());
-
-        $this->assertFalse($read()->isUnclaimed);
-
-        $this->travel(SignInAttempt::UNCLAIMED_SECONDS)->seconds();
-
-        $this->assertTrue($read()->isUnclaimed);
-    }
-
     public function test_a_starter_that_lost_its_grant_before_the_report_adds_no_account(): void
     {
         $started = $this->begin('request-1');
@@ -194,25 +170,6 @@ final class SignInAttemptTest extends TestCase
         $this->expectException(SignInAttemptStale::class);
 
         $this->complete($started->attemptId, 0, null);
-    }
-
-    public function test_the_sweep_ends_an_overdue_attempt_and_signing_in_again_holds_the_folder_once(): void
-    {
-        $account = $this->chooseActiveAccounts()['codex'];
-        $this->actAsOwner();
-        $again = $this->runOnBus(new BeginSignInAgainCommand($account->id), 'request-again');
-        $rejoined = $this->runOnBus(new BeginSignInAgainCommand($account->id), 'request-other');
-
-        $this->assertSame($again->attemptId, $rejoined->attemptId);
-        $this->assertSame($again->attemptId, $account->refresh()->live_writer_attempt_id);
-        $this->travel(16)->minutes();
-
-        $ended = $this->app->make(JournalCommands::class)
-            ->runAsJournal(CommandEntry::AccountMaintenance, 'test sweep', new ReconcileAccountsCommand());
-
-        $this->assertSame(1, $ended);
-        $this->assertSame(SignInStatus::Expired, SignInAttempt::query()->whereKey($again->attemptId)->sole()->status);
-        $this->assertNull($account->refresh()->live_writer_attempt_id);
     }
 
     private function begin(string $requestKey): SignInStarted

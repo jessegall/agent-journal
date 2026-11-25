@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Commands\Accounts\RecordAccountNotice\RecordAccountNoticeCommand;
 use App\Commands\Accounts\RenameAccount\RenameAccountCommand;
 use App\Commands\Accounts\SwitchAccount\SwitchAccountCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\JournalCommands as JournalCommandsContract;
 use App\Enums\Accounts\AccountNoticeReason;
-use App\Enums\Accounts\CommandEntry;
 use App\Enums\Drivers\DriverFailure;
 use App\Events\Accounts\AccountsChanged;
 use App\Events\Sessions\DriverFailed;
@@ -20,7 +18,6 @@ use App\Models\Accounts\Account;
 use App\Models\Accounts\AccountNotice;
 use App\Support\ActorContext;
 use App\Support\DefaultDrivers;
-use App\Support\JournalCommands;
 use App\Values\AccountLabel;
 use App\Values\OwnerAuthority;
 use Illuminate\Events\Dispatcher;
@@ -101,19 +98,6 @@ final class AccountsProjectionTest extends TestCase
             CommittedFactListenerFailed::class,
         );
         $this->assertSame(0, AccountNotice::query()->count());
-    }
-
-    public function test_recording_the_notice_again_counts_it_and_refreshes_for_the_same_notice(): void
-    {
-        $record = new RecordAccountNoticeCommand('claude-code', AccountNoticeReason::NeedsSignIn);
-        $journal = $this->app->make(JournalCommands::class);
-
-        $journal->runAsJournal(CommandEntry::AccountMaintenance, 'test', $record);
-        $journal->runAsJournal(CommandEntry::AccountMaintenance, 'test', $record);
-
-        $notice = AccountNotice::query()->sole();
-        $this->assertSame(2, $notice->times);
-        $this->assertSame([['claude-code', $notice->id], ['claude-code', $notice->id]], $this->changes);
     }
 
     private function account(string $label): Account

@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
 use App\Commands\Accounts\BeginSignInAgain\BeginSignInAgainCommand;
 use App\Commands\Accounts\CancelSignIn\CancelSignInCommand;
-use App\Commands\Accounts\ExpireSignInAttempt\ExpireSignInAttemptCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Accounts\AccountStatus;
 use App\Enums\Accounts\CommandEntry;
-use App\Enums\Accounts\SignInMethod;
 use App\Enums\Accounts\SignInStatus;
 use App\Events\Accounts\SignInAttemptFinished;
 use App\Jobs\SignInDeadline;
@@ -25,8 +22,6 @@ use App\Support\ActorContext;
 use App\Support\JournalCommands;
 use App\Support\ListenerRegistry;
 use App\Values\OwnerAuthority;
-use Illuminate\Database\Events\QueryExecuted;
-use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Bus;
 use RuntimeException;
 use Tests\Fixtures\Profiles\FailsAfterRelease;
@@ -37,10 +32,9 @@ use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
- * A sign-in attempt that ends without completing raises SignInAttemptFinished on itself, and the transaction listener
- * releases the account it wrote in the same transaction: a signed-in account is held for a generation check, one
- * needing a sign-in is let go, an attempt with no account looks no account up, and a failure after the release rolls
- * both rows back.
+ * A sign-in attempt that ends without completing releases the account it wrote in the same transaction: a signed-in
+ * account is held for a generation check, one needing a sign-in is let go, and a failure after the release rolls both
+ * rows back.
  */
 final class ReleaseSignInWriterTest extends TestCase
 {
@@ -94,29 +88,6 @@ final class ReleaseSignInWriterTest extends TestCase
 
         $this->assertFalse($this->account->refresh()->maintenance);
         $this->assertNull($this->account->live_writer_attempt_id);
-    }
-
-    public function test_an_attempt_with_no_account_looks_no_account_up_when_it_expires(): void
-    {
-        $this->actAsOwner();
-        $begin = new BeginSignInCommand('codex', SignInMethod::OAuth);
-        $attemptId = $this->runOnBus($begin, 'new')->attemptId;
-        $attempts = SignInAttempt::query()->withoutGlobalScopes();
-        $attempts->whereKey($attemptId)->update(['expires_at' => now()->subMinute()]);
-        $accountReads = [];
-        $recordAccountReads = function (QueryExecuted $query) use (&$accountReads): void {
-            if (str_contains($query->sql, '"accounts"')) {
-                $accountReads[] = $query->sql;
-            }
-        };
-        $this->app->make(Dispatcher::class)->listen(QueryExecuted::class, $recordAccountReads);
-
-        $this->asJournal(new ExpireSignInAttemptCommand($attemptId));
-
-        $expired = SignInAttempt::query()->withoutGlobalScopes()->findOrFail($attemptId);
-
-        $this->assertSame(SignInStatus::Expired, $expired->status);
-        $this->assertSame([], $accountReads);
     }
 
     public function test_a_failure_after_the_release_rolls_back_the_attempt_and_the_account(): void

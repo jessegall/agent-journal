@@ -2,17 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Profiles;
+namespace Tests\Commands\Accounts;
 
 use App\Commands\Accounts\RenameAccount\RenameAccountCommand;
 use App\Commands\Accounts\SwitchAccount\SwitchAccountCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Events\Accounts\AccountsChanged;
-use App\Exceptions\AccountLabelInvalid;
-use App\Exceptions\AccountLabelTaken;
 use App\Exceptions\AccountMissing;
-use App\Exceptions\AccountNameChanged;
 use App\Exceptions\AccountSelectionChanged;
 use App\Exceptions\AccountUnavailable;
 use App\Exceptions\ActorNotAllowed;
@@ -29,10 +26,11 @@ use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
 /**
- * The owner switches the account a driver starts with and renames accounts through the bus: each change commits
- * in order and tells the pages once, a repeated click changes nothing, and an agent can do neither.
+ * The owner chooses a program's account: switching commits in order and a repeated click changes nothing, a choice
+ * against an older selection is refused, a refused choice leaves the other program's default alone, an account that
+ * must sign in again or is removed cannot be chosen, and an agent can neither switch nor rename.
  */
-final class AccountSwitchingTest extends TestCase
+final class SwitchAccountTest extends TestCase
 {
     use CommitsHookRows;
 
@@ -102,34 +100,6 @@ final class AccountSwitchingTest extends TestCase
         $held->finishRemoval();
         $this->assertRefused(AccountMissing::class, new SwitchAccountCommand($held->id));
         $this->assertRefused(AccountMissing::class, new RenameAccountCommand($held->id, 'Other'));
-    }
-
-    public function test_a_rename_trims_the_name_and_refuses_one_another_account_holds(): void
-    {
-        [$work, $home] = [$this->account('Work'), $this->account('Home')];
-
-        $this->bus()->run(new RenameAccountCommand($work->id, '  Office '));
-
-        $this->assertSame('Office', $work->refresh()->label);
-        $this->assertRefused(AccountLabelTaken::class, new RenameAccountCommand($home->id, 'OFFICE'));
-        $this->assertRefused(AccountLabelInvalid::class, new RenameAccountCommand($home->id, '../etc'));
-    }
-
-    public function test_two_tabs_renaming_one_account_refuse_the_second_until_it_saves_again(): void
-    {
-        $work = $this->account('Work');
-
-        $this->bus()->run(new RenameAccountCommand($work->id, 'Office', 0));
-        $this->assertRefused(AccountNameChanged::class, new RenameAccountCommand($work->id, 'Desk', 0));
-
-        $work->refresh();
-        $this->assertSame(['Office', 1], [$work->label, $work->name_revision]);
-        $this->bus()->run(new RenameAccountCommand($work->id, 'Desk', 1));
-        $this->assertSame(['Desk', 2], [$work->refresh()->label, $work->name_revision]);
-
-        $work->forceFill(['checked_at' => now()])->save();
-        $this->bus()->run(new RenameAccountCommand($work->id, 'Desk', 2));
-        $this->assertSame(2, $work->refresh()->name_revision);
     }
 
     public function test_an_agent_can_neither_switch_nor_rename(): void

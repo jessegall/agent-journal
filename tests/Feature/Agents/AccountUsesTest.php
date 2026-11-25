@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\Accounts\CancelAccountUses\CancelAccountUsesCommand;
-use App\Commands\Accounts\HoldAccountUses\HoldAccountUsesCommand;
-use App\Commands\Accounts\SettleAccountUses\SettleAccountUsesCommand;
 use App\Contracts\Accounts\AccountUses;
 use App\Contracts\Accounts\ActiveAccountReader;
 use App\Contracts\Actors\CurrentActorSetter;
@@ -15,8 +12,6 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\CommandTransaction;
 use App\Enums\Accounts\AccountProcessRole;
 use App\Enums\Sessions\StartUnavailableReason;
-use App\Events\Sessions\AccountUseChanged;
-use App\Exceptions\AccountInUse;
 use App\Exceptions\AccountUnavailable;
 use App\Exceptions\AccountUseMissing;
 use App\Exceptions\ActorNotAllowed;
@@ -38,7 +33,6 @@ use App\Values\SelectedAccount;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Links\Note;
@@ -49,7 +43,7 @@ use Tests\TestCase;
 
 /**
  * A start's session links to the account it ran with by the account's identity alone, and Core answers how the
- * accounts are used and holds and settles their starts for maintenance, for the owner only.
+ * accounts are used, for the owner only; without accounts every start is refused with its program and a safe reason.
  */
 final class AccountUsesTest extends TestCase
 {
@@ -141,45 +135,6 @@ final class AccountUsesTest extends TestCase
         $this->expectException(AccountUseMissing::class);
 
         $this->uses()->accountOf($this->start()->id, self::ACCOUNT_TYPE);
-    }
-
-    public function test_an_agent_may_neither_read_nor_maintain_account_uses(): void
-    {
-        $account = $this->account();
-        $this->actAsAgent();
-
-        $this->assertRefused(fn () => $this->uses()->counts([$account]));
-        $this->assertRefused(fn () => $this->uses()->history($account, 10));
-        $this->assertRefused(fn () => $this->bus()->run(new HoldAccountUsesCommand($account)));
-    }
-
-    public function test_maintenance_cancels_unclaimed_starts_and_settles_only_once_claimed_ones_exited(): void
-    {
-        $account = $this->account();
-        $claimed = $this->sessionOn($account);
-        $pending = $this->sessionOn($account);
-        $this->assertTrue($this->starts[$claimed->id]->claim());
-        Event::fake([AccountUseChanged::class]);
-
-        $held = $this->bus()->run(new HoldAccountUsesCommand($account));
-        $cancelled = $this->bus()->run(new CancelAccountUsesCommand($account));
-
-        $this->assertSame([$claimed->id, $pending->id], $held->sessionIds);
-        $this->assertSame(1, $cancelled);
-        $this->assertFalse($this->starts[$pending->id]->refresh()->claim());
-
-        try {
-            $this->bus()->run(new SettleAccountUsesCommand($account));
-            $this->fail('An account with a claimed start was settled.');
-        } catch (AccountInUse) {
-            $claimed->endAt(CarbonImmutable::now());
-            $this->assertSame(1, $this->uses()->counts([$account])->runningFor($account));
-            $this->starts[$claimed->id]->stopWithProof();
-        }
-
-        $this->bus()->run(new SettleAccountUsesCommand($account));
-
-        Event::assertDispatchedTimes(AccountUseChanged::class, 3);
     }
 
     public function test_without_accounts_every_start_is_refused_with_its_program_and_a_safe_reason(): void

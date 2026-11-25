@@ -10,7 +10,6 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Files\Files;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Accounts\SignInMethod;
-use App\Enums\Accounts\SignInStatus;
 use App\Jobs\SignInDeadline;
 use App\Models\Accounts\SignInAttempt;
 use App\Support\ActorContext;
@@ -29,8 +28,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * After a restart the host's runner says it runs no sign-in: the attempts it took end as interrupted at once, a new
- * account's folder is owed its cleanup, and another host's attempts and the one it still runs are left alone.
+ * After a restart the host's runner reports at its start that it runs no sign-in.
  */
 #[TimeLimit(seconds: 3, reason: 'It commits attempts through the bus and empties four tables per test.')]
 final class SignInRestartTest extends TestCase
@@ -45,24 +43,6 @@ final class SignInRestartTest extends TestCase
         parent::setUp();
 
         Bus::fake([SignInDeadline::class]);
-    }
-
-    public function test_a_restarted_runner_ends_only_the_sign_ins_it_lost(): void
-    {
-        $lost = $this->begin('claude-code', 'host-a');
-        $other = $this->begin('codex', 'host-b');
-
-        $kept = $this->reconcile('host-a', [$lost]);
-        $ended = $this->reconcile('host-a', []);
-
-        $this->assertSame([0, 1], [$kept, $ended]);
-        $attempt = SignInAttempt::query()->withoutGlobalScopes()->findOrFail($lost);
-        $this->assertSame(SignInStatus::Interrupted, $attempt->status);
-        $this->assertTrue($attempt->cleanup_pending);
-        $this->assertSame(
-            SignInStatus::Starting,
-            SignInAttempt::query()->withoutGlobalScopes()->findOrFail($other)->status,
-        );
     }
 
     public function test_the_runner_reports_at_start_that_it_runs_nothing(): void

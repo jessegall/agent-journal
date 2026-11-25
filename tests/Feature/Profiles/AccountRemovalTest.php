@@ -4,46 +4,28 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
-use App\Commands\Accounts\BeginSignInAgain\BeginSignInAgainCommand;
-use App\Commands\Accounts\CancelSignIn\CancelSignInCommand;
-use App\Commands\Accounts\ClaimCleanup\ClaimCleanupCommand;
 use App\Commands\Accounts\CleanAccount\CleanAccountCommand;
-use App\Commands\Accounts\CleanSignInAttempt\CleanSignInAttemptCommand;
 use App\Commands\Accounts\ReconcileAccounts\ReconcileAccountsCommand;
-use App\Commands\Accounts\RemoveAccount\RemoveAccountCommand;
-use App\Commands\Accounts\RetryAccountCleanup\RetryAccountCleanupCommand;
-use App\Commands\Accounts\RetryAttemptCleanup\RetryAttemptCleanupCommand;
 use App\Contracts\Accounts\AccountOwnerDrain;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Files\Files;
 use App\Enums\Accounts\AccountProcessRole;
-use App\Enums\Accounts\AccountStatus;
-use App\Enums\Accounts\CleanupProblem;
 use App\Enums\Accounts\CleanupTarget;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Accounts\SignInMethod;
-use App\Enums\Accounts\SignInStatus;
 use App\Enums\Accounts\UsageWindowSlot;
 use App\Enums\Agents\SessionProcessStatus;
-use App\Exceptions\AccountUnavailable;
-use App\Http\Pages\Resolvers\AccountsWindowResolver;
 use App\Jobs\SignInDeadline;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\AccountUsageCost;
-use App\Models\Accounts\AccountUsageTokens;
 use App\Models\Accounts\AccountUsageWindow;
-use App\Models\Accounts\ActiveAccount;
-use App\Models\Accounts\SignInAttempt;
 use App\Support\ActorContext;
 use App\Support\Command;
-use App\Support\DefaultDrivers;
 use App\Support\JournalCommands;
 use App\Support\LocalAccountFolders;
 use App\Support\PrivateSignInProcesses;
 use App\Support\SignInProtocols;
 use App\Support\UsageReadings;
-use App\Values\AccountLabel;
 use App\Values\ClaimedCleanup;
 use App\Values\CleanupProgress;
 use App\Values\OwnerAuthority;
@@ -67,9 +49,9 @@ use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
- * Removing an account is one operation in a new generation: it leaves the choice without a replacement, waits for
- * every process on the account, and ends only when the host proved both the sign-in store and the folder gone; the
- * row and its label stay.
+ * The host's runner cleans a removed account: it signs out before it deletes the folder, a folder already gone is done
+ * without starting the program while the drain goes on, an account it cannot drain keeps its sign-in and folder, and a
+ * displaced folder a running session still uses is kept until it is free.
  */
 #[TimeLimit(seconds: 4, reason: 'It commits accounts, attempts and starts through the bus and empties seven tables.')]
 final class AccountRemovalTest extends TestCase
@@ -107,62 +89,6 @@ final class AccountRemovalTest extends TestCase
 
         Bus::fake([SignInDeadline::class]);
         $this->account = $this->chooseActiveAccounts()['codex'];
-    }
-
-    public function test_removal_cancels_a_running_sign_in_and_leaves_no_replacement_chosen(): void
-    {
-        Account::create(DefaultDrivers::CODEX, AccountLabel::from('Home'), '/journal/accounts/home');
-        $this->asOwner(new BeginSignInAgainCommand($this->account->id));
-        $generation = $this->account->refresh()->sign_in_generation;
-
-        $this->asOwner(new RemoveAccountCommand($this->account->id));
-        $this->asOwner(new RemoveAccountCommand($this->account->id));
-
-        $this->account->refresh();
-        $this->assertSame(AccountStatus::Removing, $this->account->status);
-        $this->assertSame($generation + 1, $this->account->sign_in_generation);
-        $this->assertNull($this->account->live_writer_attempt_id);
-        $this->assertSame(SignInStatus::Cancelled, SignInAttempt::query()->withoutGlobalScopes()->sole()->status);
-        $this->assertNull(
-            ActiveAccount::query()->withoutGlobalScopes()->where('account_protocol', 'codex')->value('account_id'),
-        );
-        $this->assertThrows(
-            fn () => ActiveAccount::resolveLockedAccountForStart(DefaultDrivers::CODEX),
-            AccountUnavailable::class,
-            self::NO_DEFAULT_ACCOUNT,
-        );
-    }
-
-    public function test_a_host_cleans_only_after_every_process_ended_and_only_with_both_proofs(): void
-    {
-        $this->startProcessOnAccount();
-        $this->asOwner(new RemoveAccountCommand($this->account->id));
-        $this->reconcile();
-        $this->assertNull($this->asHost(new ClaimCleanupCommand('host')));
-
-        DB::table('session_processes')->update(['status' => SessionProcessStatus::Stopped->value]);
-        $this->reconcile();
-        $claimed = $this->asHost(new ClaimCleanupCommand('host'));
-        $this->assertInstanceOf(ClaimedCleanup::class, $claimed);
-        $this->assertSame([CleanupTarget::Account, $this->account->id], [$claimed->target, $claimed->id]);
-
-        $this->clean($claimed->generation - 1, true, true);
-        $this->clean($claimed->generation, false, true);
-        $this->assertSame(AccountStatus::Removing, $this->account->refresh()->status);
-        $this->assertNotNull($this->account->directory);
-
-        $this->clean($claimed->generation, true, false);
-        $this->assertTrue($this->account->refresh()->store_removed);
-        $this->keepUsage();
-        $this->clean($claimed->generation, false, true);
-
-        $this->account->refresh();
-        $this->assertSame(AccountStatus::Removed, $this->account->status);
-        $this->assertSame(0, AccountUsageWindow::query()->withoutGlobalScopes()->count());
-        $this->assertSame(0, AccountUsageCost::query()->withoutGlobalScopes()->count());
-        $this->assertSame(0, AccountUsageTokens::query()->withoutGlobalScopes()->count());
-        $this->assertNull($this->account->directory);
-        $this->assertSame(self::ACCOUNT_LABEL, $this->account->label);
     }
 
     public function test_the_runner_signs_out_before_it_deletes_the_folder(): void
@@ -280,39 +206,6 @@ final class AccountRemovalTest extends TestCase
         rmdir($directory);
     }
 
-    public function test_an_unfinished_new_accounts_sign_in_is_cleaned_with_both_proofs(): void
-    {
-        $started = $this->asOwner(new BeginSignInCommand('claude-code', SignInMethod::OAuth));
-        $this->asOwner(new CancelSignInCommand($started->attemptId));
-
-        $claimed = $this->asHost(new ClaimCleanupCommand('host'));
-        $this->assertSame([CleanupTarget::SignInAttempt, $started->attemptId], [$claimed?->target, $claimed?->id]);
-
-        $this->asHost(new CleanSignInAttemptCommand('host', $started->attemptId, new CleanupProgress(true, true)));
-
-        $this->assertFalse(SignInAttempt::query()->withoutGlobalScopes()->sole()->cleanup_pending);
-        $this->assertNull($this->asHost(new ClaimCleanupCommand('host')));
-    }
-
-    public function test_a_cleanup_out_of_tries_waits_for_the_owners_retry_in_the_same_generation(): void
-    {
-        $this->asOwner(new RemoveAccountCommand($this->account->id));
-        $this->reconcile();
-        $generation = $this->account->refresh()->sign_in_generation;
-
-        foreach (range(1, CleanupProgress::MOST_TRIES) as $try) {
-            $this->clean($generation, false, true);
-        }
-
-        $this->assertNull($this->asHost(new ClaimCleanupCommand('host')));
-        $this->assertTrue($this->account->refresh()->awaitsCleanupRetry());
-        $this->assertSame(CleanupProblem::SignInNotVerified, $this->account->cleanup_problem);
-
-        $this->asOwner(new RetryAccountCleanupCommand($this->account->id));
-
-        $this->assertSame($generation, $this->asHost(new ClaimCleanupCommand('host'))?->generation);
-    }
-
     public function test_a_displaced_folder_a_running_session_still_uses_is_kept_until_it_is_free(): void
     {
         $directory = sys_get_temp_dir().'/account-cleanup-'.bin2hex(random_bytes(4));
@@ -356,38 +249,6 @@ final class AccountRemovalTest extends TestCase
 
         $this->assertEquals([CleanupProgress::stillBound(), new CleanupProgress(true, true)], $host->cleanups);
         $this->assertDirectoryDoesNotExist($directory);
-    }
-
-    public function test_a_folder_still_in_use_counts_no_try_and_says_so(): void
-    {
-        $started = $this->asOwner(new BeginSignInCommand('claude-code', SignInMethod::OAuth));
-        $this->asOwner(new CancelSignInCommand($started->attemptId));
-
-        foreach (range(1, CleanupProgress::MOST_TRIES + 1) as $try) {
-            $this->asHost(new CleanSignInAttemptCommand('host', $started->attemptId, CleanupProgress::stillBound()));
-        }
-
-        $attempt = SignInAttempt::query()->withoutGlobalScopes()->sole();
-        $this->assertSame([0, CleanupProblem::StillBound], [$attempt->cleanup_tries, $attempt->cleanup_problem]);
-        $this->assertSame($started->attemptId, $this->asHost(new ClaimCleanupCommand('host'))?->id);
-    }
-
-    public function test_the_owner_retries_an_unfinished_sign_ins_cleanup_by_its_attempt(): void
-    {
-        $started = $this->asOwner(new BeginSignInCommand('claude-code', SignInMethod::OAuth));
-        $this->asOwner(new CancelSignInCommand($started->attemptId));
-
-        foreach (range(1, CleanupProgress::MOST_TRIES) as $try) {
-            $this->asHost(new CleanSignInAttemptCommand('host', $started->attemptId, new CleanupProgress(false, true)));
-        }
-
-        $this->assertNull($this->asHost(new ClaimCleanupCommand('host')));
-        $listed = $this->app->make(AccountsWindowResolver::class)->list()->pendingCleanups;
-        $this->assertSame([$started->attemptId, true], [$listed[0]->attemptId, $listed[0]->awaitsRetry]);
-
-        $this->asOwner(new RetryAttemptCleanupCommand($started->attemptId));
-
-        $this->assertSame($started->attemptId, $this->asHost(new ClaimCleanupCommand('host'))?->id);
     }
 
     private function keepUsage(): void
