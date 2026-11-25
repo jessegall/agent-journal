@@ -38,7 +38,7 @@ final readonly class OwnerAuthorizerProvider implements AuthorizerProvider
      */
     public function forActor(Actor $actor): Authorizer
     {
-        if ($this->actors->authority() instanceof OwnerAuthority) {
+        if ($this->isOwner($actor)) {
             return new UnrestrictedAuthorizer();
         }
 
@@ -47,6 +47,21 @@ final readonly class OwnerAuthorizerProvider implements AuthorizerProvider
         }
 
         return $this->forTarget($actor);
+    }
+
+    /**
+     * Whether the acting user holds owner authority: installed as an owner, or admitted now under an authority that is
+     * no inbox member's.
+     */
+    public function isOwner(Actor $actor): bool
+    {
+        $authority = $this->actors->authority();
+
+        if ($authority instanceof OwnerAuthority) {
+            return true;
+        }
+
+        return ! $authority instanceof InboxMemberAuthority && $this->admission->admits($actor);
     }
 
     /**

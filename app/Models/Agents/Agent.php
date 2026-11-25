@@ -22,6 +22,7 @@ use App\Events\Sessions\AgentRetired;
 use App\Events\Sessions\AgentRuntimeAdopted;
 use App\Events\Sessions\AgentRuntimesFenced;
 use App\Exceptions\AgentOfAnotherProject;
+use App\Exceptions\ModelMissing;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Projects\Project;
 use App\Support\ActorReference;
@@ -229,6 +230,18 @@ final class Agent extends Model implements
     public static function findWithId(string $id): Option
     {
         return self::query()->whereKey($id)->firstOption();
+    }
+
+    /**
+     * The id of the project the agent belongs to.
+     *
+     * @throws ModelMissing when there is no such agent
+     */
+    public static function findProjectIdOf(string $agentId): string
+    {
+        return self::query()->whereKey($agentId)->firstOr(
+            static fn () => throw ModelMissing::for(self::class, $agentId),
+        )->project_id;
     }
 
     /**

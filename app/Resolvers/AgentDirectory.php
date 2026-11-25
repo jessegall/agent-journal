@@ -6,6 +6,7 @@ namespace App\Resolvers;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Authorization\CurrentAuthorizer;
+use App\Contracts\Projects\AgentProjects;
 use App\Contracts\Sessions\AgentDirectory as AgentDirectoryContract;
 use App\Contracts\Time\ServerClock;
 use App\Enums\Agents\AccessType;
@@ -41,7 +42,7 @@ use PhpOption\Option;
  * refusals of their starts, their latest start outcomes the viewer has not dismissed, their latest switches and their
  * latest conversations, each for every shown agent at once.
  */
-final readonly class AgentDirectory implements AgentDirectoryContract
+final readonly class AgentDirectory implements AgentDirectoryContract, AgentProjects
 {
     /**
      * How many agents Home lists; more agents than this is not a working setup.
@@ -162,6 +163,11 @@ final readonly class AgentDirectory implements AgentDirectoryContract
     public function mainAgentId(): Option
     {
         return MainAgentDesignation::resolveDesignatedAgentId();
+    }
+
+    public function projectIdOf(string $agentId): string
+    {
+        return Agent::findProjectIdOf($agentId);
     }
 
     /**
