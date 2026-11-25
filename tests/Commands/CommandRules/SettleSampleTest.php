@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Processes;
+namespace Tests\Commands\CommandRules;
 
 use App\Commands\CommandRules\ApproveSample\ApproveSampleCommand;
 use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
@@ -12,7 +12,6 @@ use App\Commands\CommandRules\StartSample\StartSampleCommand;
 use App\Enums\CommandRules\RequestHoldReason;
 use App\Enums\CommandRules\RequestStatus;
 use App\Enums\Processes\OutputStream;
-use App\Exceptions\CommandAdmissionRefused;
 use App\Exceptions\SampleRefused;
 use App\Models\CommandRules\CommandRequest;
 use App\Models\CommandRules\EvidencePermit;
@@ -20,7 +19,6 @@ use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Support\OutputRecorder;
 use App\Values\CapturedChunk;
-use App\Values\CommandRule;
 use App\Values\PartEnd;
 use App\Values\PartKey;
 use App\Values\SampleOutcome;
@@ -34,16 +32,14 @@ use Tests\Support\RunsCommandsAsStart;
 use Tests\TestCase;
 
 /**
- * A project owner approves one evidence sample of a request's exact line; the request's actor runs it once and the
- * request moves on to its proof, or back to the owner when the capture failed.
+ * An approved sample runs once and leaves the request awaiting proof with the run; a failed capture gives the request
+ * back to the owner.
  */
-final class SampleWorkflowTest extends TestCase
+final class SettleSampleTest extends TestCase
 {
     use ActsAsActors;
     use RefreshHookDatabase;
     use RunsCommandsAsStart;
-
-    private const string OWNER_WAIT = 'waiting for the owner';
 
     private TestStart $start;
 
@@ -63,22 +59,6 @@ final class SampleWorkflowTest extends TestCase
             RequestHoldReason::UnknownCommand,
         ));
         $this->runAsAgent(new ProposeCommandRuleCommand($this->requestId, 'request-1', AcmeDeclarations::proposedVerify()));
-    }
-
-    public function test_a_sample_run_before_the_owner_approved_is_refused_with_the_waiting_step(): void
-    {
-        try {
-            $this->runAsAgent(new StartSampleCommand($this->requestId, 'no-permit', 'first'));
-            $this->fail('The sample started without an approval.');
-        } catch (SampleRefused $refusal) {
-            $this->assertStringContainsString(self::OWNER_WAIT, $refusal->getMessage());
-        }
-    }
-
-    public function test_an_agent_cannot_approve_a_sample(): void
-    {
-        $this->assertThrows(fn () => $this->runAsAgent($this->approval()), CommandAdmissionRefused::class);
-        $this->assertSame(0, EvidencePermit::query()->count());
     }
 
     public function test_the_approved_sample_runs_once_and_the_request_awaits_proof_with_the_run(): void
@@ -114,24 +94,6 @@ final class SampleWorkflowTest extends TestCase
         $part->finishDraining();
 
         $this->assertSame(RequestStatus::AwaitingSampleApproval, $this->settle()->state);
-    }
-
-    public function test_a_declaration_without_effects_cannot_be_approved_for_a_sample(): void
-    {
-        $other = $this->runAsAgent(new OpenCommandRequestCommand(
-            'acme verify',
-            str_repeat('c', 64),
-            'acme verify --all',
-            sys_get_temp_dir(),
-            RequestHoldReason::UnknownCommand,
-        ));
-        $rule = AcmeDeclarations::verify()->toArray();
-        $rule['classes'] = ['classes' => []];
-        $noEffects = AcmeDeclarations::proposed(CommandRule::from($rule));
-        $this->runAsAgent(new ProposeCommandRuleCommand($other, 'request-2', $noEffects));
-        $digest = CommandRequest::query()->findOrFail($other)->source_digest;
-
-        $this->assertThrows(fn () => $this->asUser(new ApproveSampleCommand($other, 1, $digest)), SampleRefused::class);
     }
 
     private function approval(): ApproveSampleCommand

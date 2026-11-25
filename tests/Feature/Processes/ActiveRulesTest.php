@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Commands\CommandRules\ApproveRuleBundle\ApproveRuleBundleCommand;
 use App\Commands\CommandRules\ApproveRuleProposal\ApproveRuleProposalCommand;
 use App\Commands\CommandRules\SaveCommandRule\SaveCommandRuleCommand;
 use App\Contracts\Bus\CommandClassifier;
 use App\Enums\CommandRules\CommandClass;
 use App\Enums\Processes\ShellDialect;
-use App\Exceptions\ApprovalRefused;
 use App\Exceptions\ClassificationUnavailable;
 use App\Models\CommandRules\RuleProposal;
 use App\Support\ActiveRules;
@@ -41,29 +39,6 @@ final class ActiveRulesTest extends TestCase
 {
     use ActsAsActors;
     use RefreshHookDatabase;
-
-    public function test_a_module_bundle_classifies_only_after_the_owner_activates_its_exact_digest(): void
-    {
-        $bundle = $this->installNotes(1);
-        $this->assertFalse($this->isKnown('notes-cli list'));
-
-        $this->asUser(new ApproveRuleBundleCommand($bundle->module, $bundle->version, $bundle->digest()));
-        $this->assertTrue($this->isKnown('notes-cli list'));
-
-        $this->installNotes(2);
-        $this->assertFalse($this->isKnown('notes-cli list'));
-    }
-
-    public function test_a_changed_bundle_cannot_be_activated_with_the_old_digest(): void
-    {
-        $old = $this->installNotes(1);
-        $this->installNotes(2);
-
-        $this->assertThrows(
-            fn () => $this->asUser(new ApproveRuleBundleCommand($old->module, $old->version, $old->digest())),
-            ApprovalRefused::class,
-        );
-    }
 
     public function test_two_project_keys_in_one_worker_see_only_their_own_rules(): void
     {

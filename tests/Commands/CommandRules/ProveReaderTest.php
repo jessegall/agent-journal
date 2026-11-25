@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Processes;
+namespace Tests\Commands\CommandRules;
 
 use App\Commands\CommandRules\ProveReader\ProveReaderCommand;
 use App\Enums\CommandRules\RequestStatus;
@@ -19,7 +19,7 @@ use Tests\TestCase;
  * The journal proves a draft reader itself, by replaying it over real samples it captured for the request, one per
  * exit branch, after the request's actor read them.
  */
-final class ReaderProofTest extends TestCase
+final class ProveReaderTest extends TestCase
 {
     use RefreshHookDatabase;
     use RunsAcmeRequests;

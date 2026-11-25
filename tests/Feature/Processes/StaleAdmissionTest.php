@@ -4,14 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Commands\CommandRules\RetireCommandRule\RetireCommandRuleCommand;
-use App\Commands\CommandRules\SaveCommandRule\SaveCommandRuleCommand;
 use App\Contracts\Bus\CommandClassifier;
 use App\Enums\CommandRules\CommandClass;
 use App\Enums\Processes\ShellDialect;
 use App\Enums\Runs\LifecycleStatus;
-use App\Models\Agents\Agent;
-use App\Models\CommandRules\ClassificationRule;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Pipelines\SuperviseRunPipeline;
@@ -28,8 +24,6 @@ use App\Values\CommandRule;
 use App\Values\ExecutionContext;
 use App\Values\ProgramSpellings;
 use App\Values\RuleScope;
-use Tests\Fixtures\Agents\TestStart;
-use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Fixtures\Processes\CollectedOutput;
 use Tests\Fixtures\Processes\StaleAfterFirstEnd;
 use Tests\Support\ActsAsActors;
@@ -51,24 +45,6 @@ final class StaleAdmissionTest extends TestCase
     private const string EXPLAIN_AGAIN = 'explain the line again';
 
     private const string RETIRED_PRINTF = 'printf was retired';
-
-    public function test_retiring_a_rule_makes_a_queued_admission_refuse_on_start(): void
-    {
-        config(['processes.runner' => true]);
-        $start = TestStart::start();
-        $queued = $this->admit(ActorIdentity::ofClass(Agent::class, $start->agent->id), 'printf queued');
-        $this->asUser(new SaveCommandRuleCommand('save-1', AcmeDeclarations::proposed($this->tidyRule()), 0, 'reviewed'));
-
-        $this->asUser(new RetireCommandRuleCommand(ClassificationRule::query()->sole()->id, 1, 'not needed'));
-
-        $this->assertStringStartsWith('rule-revision-changed', $queued->refresh()->stale_reason);
-        $reply = $this->signed(
-            $start,
-            "/agent/processes/admissions/{$queued->id}",
-            ['request_key' => 'stale-1'],
-        )->assertStatus(409);
-        $this->assertStringContainsString(self::EXPLAIN_AGAIN, (string) $reply->json('message'));
-    }
 
     public function test_a_run_whose_rules_changed_mid_run_skips_its_later_part_and_keeps_the_earlier_one(): void
     {

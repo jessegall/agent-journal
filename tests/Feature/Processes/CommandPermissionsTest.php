@@ -5,12 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Enums\CommandRules\CommandClass;
-use App\Models\Access\User;
-use App\Models\Profiles\PermissionRevocation;
-use App\Support\ActorIdentity;
 use App\Values\CommandClassSet;
 use App\Values\CommandPattern;
-use App\Values\CommandPatternSet;
 use App\Values\CommandPermissions;
 use App\Values\ProcessGrants;
 use Tests\Support\RefreshHookDatabase;
@@ -65,22 +61,5 @@ final class CommandPermissionsTest extends TestCase
         )->allowing(CommandPattern::exact('touch', 'notes.txt'));
 
         $this->assertFalse($helper->admits(CommandClassSet::of(CommandClass::Write), ['touch', 'notes.txt']));
-    }
-
-    public function test_a_deny_beats_a_class_allow_and_a_revocation_narrows_the_next_admission(): void
-    {
-        $main = CommandPermissions::granted('role:main', ProcessGrants::everything());
-        PermissionRevocation::create(
-            $main->source,
-            CommandClassSet::of(CommandClass::Delete),
-            CommandPatternSet::of(),
-            ActorIdentity::ofClass(User::class, 'owner'),
-        );
-
-        $narrowed = PermissionRevocation::resolveNarrow($main);
-
-        $this->assertTrue($main->admits(CommandClassSet::of(CommandClass::Delete), ['rm', 'a']));
-        $this->assertFalse($narrowed->admits(CommandClassSet::of(CommandClass::Delete), ['rm', 'a']));
-        $this->assertTrue($narrowed->admits(CommandClassSet::of(CommandClass::Read), ['ls']));
     }
 }

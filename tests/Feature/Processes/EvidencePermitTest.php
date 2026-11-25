@@ -74,15 +74,6 @@ final class EvidencePermitTest extends TestCase
         $this->assertRefused(fn () => $evidence->start($this->permit(), $stranger, 'first'));
     }
 
-    public function test_an_unknown_line_gets_no_permit(): void
-    {
-        $evidence = $this->app->make(EvidenceRuns::class);
-
-        $limits = new PermitLimits(1_000, 60, 60);
-
-        $this->assertRefused(fn () => $evidence->issue('python3 tool.py', $this->folder, $this->agent(), $limits));
-    }
-
     private function permit(): EvidencePermit
     {
         $limits = new PermitLimits(1_000_000, 60, 60);

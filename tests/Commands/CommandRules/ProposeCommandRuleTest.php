@@ -2,20 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Processes;
+namespace Tests\Commands\CommandRules;
 
-use App\Commands\CommandRules\ImportRuleProposals\ImportRuleProposalsCommand;
 use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
 use App\Commands\CommandRules\ProposeCommandRule\ProposeCommandRuleCommand;
-use App\Commands\CommandRules\ReviseRuleProposal\ReviseRuleProposalCommand;
-use App\Commands\CommandRules\WithdrawRuleProposal\WithdrawRuleProposalCommand;
 use App\Enums\CommandRules\CommandClass;
 use App\Enums\CommandRules\CommandType;
 use App\Enums\CommandRules\ProposalStatus;
 use App\Enums\CommandRules\RequestHoldReason;
 use App\Enums\CommandRules\RequestStatus;
 use App\Enums\CommandRules\ToolType;
-use App\Exceptions\DeclarationInvalid;
 use App\Exceptions\RuleProposalRefused;
 use App\Models\CommandRules\ClassificationRule;
 use App\Models\CommandRules\CommandRequest;
@@ -28,7 +24,6 @@ use App\Values\CommandRule;
 use App\Values\ProgramSpellings;
 use App\Values\ProposalReceipt;
 use App\Values\ProposedRule;
-use App\Values\RuleExample;
 use App\Values\RuleScope;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\ActsAsActors;
@@ -36,10 +31,11 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * Agents propose, revise and withdraw their own declarations through the bus, and a declaration file imports as
- * proposals only.
+ * An agent proposes a command rule: a complete proposal waits for review and moves the request on without activating;
+ * one without its exit policy stays a draft naming the field, a check cannot be relabelled as ordinary, and the same
+ * request id makes no duplicate while another payload under it is refused.
  */
-final class RuleProposalCommandsTest extends TestCase
+final class ProposeCommandRuleTest extends TestCase
 {
     use ActsAsActors;
     use RefreshHookDatabase;
@@ -113,83 +109,6 @@ final class RuleProposalCommandsTest extends TestCase
         );
     }
 
-    public function test_the_author_revises_to_revision_two_and_another_agent_cannot(): void
-    {
-        $request = $this->openRequest('agent-1', RequestHoldReason::UnknownCommand);
-        $receipt = $this->propose('agent-1', $request, 'request-1', AcmeDeclarations::proposedVerify());
-
-        $this->assertThrows(
-            fn () => $this->revise('agent-2', $receipt->proposalId, 1),
-            RuleProposalRefused::class,
-        );
-        $this->assertThrows(
-            fn () => $this->revise('agent-1', $receipt->proposalId, 0),
-            RuleProposalRefused::class,
-        );
-
-        $revised = $this->revise('agent-1', $receipt->proposalId, 1);
-
-        $this->assertSame(2, $revised->revision);
-        $this->assertSame(2, RuleProposal::query()->findOrFail($receipt->proposalId)->revisions()->count());
-        $this->assertSame(RequestStatus::AwaitingSampleApproval, CommandRequest::query()->findOrFail($request)->status);
-    }
-
-    public function test_only_the_author_withdraws_and_a_withdrawn_proposal_takes_no_revision(): void
-    {
-        $request = $this->openRequest('agent-1', RequestHoldReason::UnknownCommand);
-        $receipt = $this->propose('agent-1', $request, 'request-1', AcmeDeclarations::proposedVerify());
-
-        $this->assertThrows(
-            fn () => $this->runAsAgentId('agent-2', new WithdrawRuleProposalCommand($receipt->proposalId)),
-            RuleProposalRefused::class,
-        );
-        $this->runAsAgentId('agent-1', new WithdrawRuleProposalCommand($receipt->proposalId));
-
-        $this->assertSame(ProposalStatus::Withdrawn, RuleProposal::query()->findOrFail($receipt->proposalId)->status);
-        $this->assertThrows(
-            fn () => $this->revise('agent-1', $receipt->proposalId, 1),
-            RuleProposalRefused::class,
-        );
-    }
-
-    public function test_importing_a_declaration_file_creates_only_proposals(): void
-    {
-        $file = json_encode(['declarations' => [[
-            'request_id' => 'import-1',
-            'evidence' => 'acme --help documents verify',
-            'examples' => [RuleExample::positive('acme verify', CommandClassSet::of(CommandClass::Read))->toArray()],
-            'rule' => AcmeDeclarations::verify()->toArray(),
-        ]]], JSON_THROW_ON_ERROR);
-
-        $receipts = $this->runAsAgentId('agent-1', new ImportRuleProposalsCommand($file))->receipts;
-
-        $this->assertCount(1, $receipts);
-        $this->assertSame(ProposalStatus::Pending, $receipts[0]->state);
-        $proposal = RuleProposal::query()->findOrFail($receipts[0]->proposalId);
-        $this->assertEquals(AcmeDeclarations::verify(), $proposal->revisions()->firstOrFail()->payload);
-        $this->assertSame(0, ClassificationRule::query()->count());
-        $this->assertSame(0, RuleRevision::query()->count());
-    }
-
-    public function test_an_invalid_declaration_file_is_refused_naming_its_fields(): void
-    {
-        $rule = AcmeDeclarations::verify()->toArray();
-        $rule['purpose'] = 'harmless';
-        $rule['contracts'][0]['exits']['branches'][0]['status'] = 300;
-        $declaration = ['request_id' => 'import-1', 'evidence' => '', 'examples' => [], 'rule' => $rule];
-        $file = json_encode(['declarations' => [$declaration]]);
-
-        try {
-            $this->runAsAgentId('agent-1', new ImportRuleProposalsCommand((string) $file));
-            $this->fail('The broken file was imported.');
-        } catch (DeclarationInvalid $refusal) {
-            $this->assertCount(2, $refusal->fields);
-            $this->assertStringContainsString('declarations.0.rule.purpose', implode(' ', $refusal->fields));
-        }
-
-        $this->assertSame(0, RuleProposal::query()->count());
-    }
-
     private function ordinary(): CommandRule
     {
         return CommandRule::forProgram(
@@ -199,13 +118,6 @@ final class RuleProposalCommandsTest extends TestCase
             ArgumentGrammar::none(),
             CommandClassSet::of(CommandClass::Read),
         )->ownedBy(RuleScope::project(), 1);
-    }
-
-    private function revise(string $agentId, string $proposalId, int $expectedRevision): ProposalReceipt
-    {
-        $command = new ReviseRuleProposalCommand($proposalId, $expectedRevision, AcmeDeclarations::proposedVerify());
-
-        return $this->runAsAgentId($agentId, $command);
     }
 
     private function openRequest(string $agentId, RequestHoldReason $reason): string

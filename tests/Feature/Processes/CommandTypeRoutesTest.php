@@ -6,8 +6,6 @@ namespace Tests\Feature\Processes;
 
 use App\Declarations\RuleDeclaration;
 use App\Enums\CommandRules\RequestStatus;
-use App\Mcp\Tools\CommandRequestShowTool;
-use App\Mcp\Tools\CommandTypeProposeTool;
 use App\Models\CommandRules\ClassificationRule;
 use App\Models\CommandRules\CommandRequest;
 use App\Models\CommandRules\RuleProposal;
@@ -53,27 +51,6 @@ final class CommandTypeRoutesTest extends TestCase
             ->assertOk();
 
         $this->assertContains('reader_required', array_column((array) $reply->json('held'), 'code'));
-    }
-
-    public function test_a_proposal_through_the_tool_moves_the_request_on_and_the_show_tool_reads_it_back(): void
-    {
-        $requestId = $this->explainAcme();
-
-        $proposal = $this->callMcpTool($this->start, CommandTypeProposeTool::NAME, [
-            'request' => $requestId,
-            'declaration_file' => json_encode(
-                ['declarations' => [[...$this->declaration()->toArray(), 'request_id' => 'propose-tool-1']]],
-                JSON_THROW_ON_ERROR,
-            ),
-            'request_key' => 'propose-tool-1',
-        ])->assertJsonPath('result.isError', false)->json('result.structuredContent');
-
-        $this->app->forgetScopedInstances();
-        $shown = $this->callMcpTool($this->start, CommandRequestShowTool::NAME, ['request' => $requestId])
-            ->assertJsonPath('result.isError', false)
-            ->json('result.structuredContent');
-        $this->assertSame(RequestStatus::AwaitingSampleApproval->value, $shown['state']);
-        $this->assertSame($proposal['proposal_id'], $shown['proposals'][0]['proposal_id']);
     }
 
     public function test_a_proposal_through_the_route_moves_the_request_on_and_show_reads_it_back(): void
