@@ -47,7 +47,7 @@ final readonly class RuntimeStatuses
             'processGeneration' => $runtime->process_generation,
             'canReleaseHold' => $runtime->canReleaseHold(),
             'hasScreen' => $runtime->hasScreen(),
-            'watchers' => $runtime->watcherCount(),
+            'watchers' => $runtime->countWatchers(),
         ]);
     }
 

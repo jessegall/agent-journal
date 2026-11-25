@@ -17,7 +17,6 @@ use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Sharing\Shareable;
 use App\Enums\ActorType;
-use App\Exceptions\TextVersionUnavailable;
 use App\Support\ActorContext;
 use App\Support\Cards\DockCard;
 use App\Support\Cards\DockIdentity;
@@ -172,27 +171,18 @@ final class Document extends Model implements Commentable, Dockable, EventSource
     }
 
     /**
-     * The document as a search found it: its card with a snippet of the revision that holds the words.
+     * The document as a search found it: its card with a snippet of the newest revision the search loaded into the
+     * relation it searched.
      */
-    public function searchResult(string $words, DocumentRevision $matchingRevision): PublicationCard
+    public function searchResult(string $words, string $relation): PublicationCard
     {
+        $matchingRevision = $this->foundRevision($relation);
+
         return PublicationCard::from([
             ...$this->card()->all(),
             'snippet' => $matchingRevision->snippetFor($words),
             'foundIn' => "revision {$matchingRevision->number}",
         ]);
-    }
-
-    /**
-     * The newest revision a search loaded into the relation it searched.
-     */
-    public function foundRevision(string $relation): DocumentRevision
-    {
-        $matchingRevision = $relation === 'revisions'
-            ? $this->revisions->sortByDesc('number')->first()
-            : $this->currentRevision;
-
-        return $matchingRevision ?? $this->currentRevisionOrFail();
     }
 
     /**
@@ -208,30 +198,9 @@ final class Document extends Model implements Commentable, Dockable, EventSource
      */
     public function textVersion(string|null $version = null): TextVersion
     {
-        $revision = $this->publishedRevision($version);
+        $revision = DocumentRevision::findPublishedOf($this, $version);
 
         return TextVersion::ofMarkdown((string) $revision->number, "Revision {$revision->number}", $revision->body);
-    }
-
-    /**
-     * The current revision for no version, otherwise the closed revision with that number.
-     *
-     * @throws TextVersionUnavailable
-     */
-    public function publishedRevision(string|null $version): DocumentRevision
-    {
-        if ($version === null) {
-            $revision = $this->revisions()->whereKey($this->current_revision_id)->closed()->first();
-            self::assertPublished($revision, 'current');
-
-            return $revision;
-        }
-
-        self::assertVersionNumber($version);
-        $revision = $this->revisions()->numbered((int) $version)->closed()->first();
-        self::assertPublished($revision, $version);
-
-        return $revision;
     }
 
     public function identifyFor(DockDefinition $definition): DockIdentity
@@ -258,7 +227,7 @@ final class Document extends Model implements Commentable, Dockable, EventSource
      */
     public function shareCard(): ShareRecordCard
     {
-        $revision = $this->currentRevisionOrFail();
+        $revision = DocumentRevision::findCurrentOf($this);
 
         return new ShareRecordCard($this->shareIdentity(), $revision->title, (string) $revision->number);
     }
@@ -271,16 +240,6 @@ final class Document extends Model implements Commentable, Dockable, EventSource
     public function view(): DocumentView
     {
         return RecordViews::documentView($this);
-    }
-
-    /**
-     * The current revision; every published document has one from the moment it is created.
-     */
-    public function currentRevisionOrFail(): DocumentRevision
-    {
-        $this->assertHasCurrentRevision();
-
-        return $this->currentRevision;
     }
 
     // ----------[ Relations ]----------
@@ -314,46 +273,6 @@ final class Document extends Model implements Commentable, Dockable, EventSource
     // ----------[ Asserts ]----------
 
     /**
-     * Refuses a version that names no closed revision of the document.
-     *
-     * @phpstan-assert DocumentRevision $revision
-     *
-     * @throws TextVersionUnavailable
-     */
-    private static function assertPublished(DocumentRevision|null $revision, string $version): void
-    {
-        if ($revision === null) {
-            throw TextVersionUnavailable::named($version);
-        }
-    }
-
-    /**
-     * Refuses a version that is not a revision number.
-     *
-     * @throws TextVersionUnavailable
-     */
-    private static function assertVersionNumber(string $version): void
-    {
-        if (! ctype_digit($version)) {
-            throw TextVersionUnavailable::named($version);
-        }
-    }
-
-    /**
-     * Refuses a document without its current revision.
-     *
-     * @phpstan-assert !null $this->currentRevision
-     *
-     * @throws DocumentMissing
-     */
-    private function assertHasCurrentRevision(): void
-    {
-        if ($this->currentRevision === null) {
-            throw DocumentMissing::numbered($this->number);
-        }
-    }
-
-    /**
      * Refuses a number or id no document holds.
      *
      * @phpstan-assert self $document
@@ -371,6 +290,20 @@ final class Document extends Model implements Commentable, Dockable, EventSource
         }
 
         throw DocumentMissing::identified($reference);
+    }
+
+    // ----------[ Internals ]----------
+
+    /**
+     * The newest revision a search loaded into the relation it searched.
+     */
+    private function foundRevision(string $relation): DocumentRevision
+    {
+        $matchingRevision = $relation === 'revisions'
+            ? $this->revisions->sortByDesc('number')->first()
+            : $this->currentRevision;
+
+        return $matchingRevision ?? DocumentRevision::findCurrentOf($this);
     }
 
     // ----------[ Queries ]----------

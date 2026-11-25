@@ -129,14 +129,6 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
     // ----------[ Transformers ]----------
 
     /**
-     * The key of the gateway this endpoint's configuration uses.
-     */
-    public function gatewayKey(): string
-    {
-        return ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id)->gateway_key;
-    }
-
-    /**
      * The endpoint as its gateway knows it: run, version, public origin and the reference its program is kept under.
      */
     public function toGatewayEndpoint(): GatewayEndpoint
@@ -147,6 +139,16 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
             $this->public_origin,
             GatewayEndpoint::referenceOf($this->run_id, $this->endpoint_version),
         );
+    }
+
+    // ----------[ Calculations ]----------
+
+    /**
+     * The key of the gateway this endpoint's configuration uses.
+     */
+    public function gatewayKey(): string
+    {
+        return ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id)->gateway_key;
     }
 
     // ----------[ Asserts ]----------

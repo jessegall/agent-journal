@@ -8,6 +8,7 @@ use App\Contracts\Events\Listener;
 use App\Enums\PublicationState;
 use App\Events\Hooks\ContextStarted;
 use App\Models\Agents\AgentSession;
+use App\Models\Skills\SkillGeneration;
 use App\Models\Skills\SkillPublication;
 use App\Models\Skills\SkillReceipt;
 use App\Resolvers\Support\SkillContextResolver;
@@ -33,7 +34,7 @@ final readonly class RemindRequiredSkills implements Listener
             return;
         }
 
-        $generation = $publication->generation();
+        $generation = SkillGeneration::findForPublication($publication);
         $freshContext = $event->type->isFreshContext();
 
         $profile = $this->contexts->forSession($session)->profile;

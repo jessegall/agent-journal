@@ -10,6 +10,7 @@ use App\Contracts\Records\RecordProvider;
 use App\Data\Pages\RecordCard;
 use App\Support\ReadBuilder;
 use Domain\Documents\Models\Document;
+use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Support\RecordChanges;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Model;
@@ -55,8 +56,8 @@ final readonly class DocumentLinkRecords implements RecordProvider
             'id' => $record->id,
             'number' => (string) $record->number,
             'label' => "doc {$record->number}",
-            'title' => $record->currentRevisionOrFail()->title,
-            'abstract' => $record->currentRevisionOrFail()->abstract,
+            'title' => DocumentRevision::findCurrentOf($record)->title,
+            'abstract' => DocumentRevision::findCurrentOf($record)->abstract,
             'route' => "/documents/docs/{$record->number}",
         ]);
     }

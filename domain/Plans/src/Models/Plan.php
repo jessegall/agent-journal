@@ -39,7 +39,6 @@ use Domain\Plans\Events\PlanReviewDecided;
 use Domain\Plans\Events\PlanReviewRequested;
 use Domain\Plans\Events\PlanReviewWithdrawn;
 use Domain\Plans\Events\PlanStarted;
-use Domain\Plans\Exceptions\PhaseMissing;
 use Domain\Plans\Exceptions\PlanReviewRefused;
 use Domain\Plans\Exceptions\PlanUnderReview;
 use Domain\Plans\Exceptions\StartDenied;
@@ -313,19 +312,6 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
     // ----------[ Transformers ]----------
 
     /**
-     * The phase with this number within the plan; a phase of another plan never answers.
-     *
-     * @throws PhaseMissing
-     */
-    public function phaseNumbered(int $number): Phase
-    {
-        $phase = $this->phases()->numbered($number)->first();
-        $this->assertHasPhase($phase, $number);
-
-        return $phase;
-    }
-
-    /**
      * Every task of the plan, phase by phase, in order.
      *
      * @return list<string>
@@ -510,20 +496,6 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
     {
         if ($this->state !== PlanState::Reviewing) {
             throw PlanReviewRefused::notReviewing($this->number, $this->state->value);
-        }
-    }
-
-    /**
-     * Refuses a number no phase of the plan holds.
-     *
-     * @phpstan-assert Phase $phase
-     *
-     * @throws PhaseMissing
-     */
-    private function assertHasPhase(Phase|null $phase, int $number): void
-    {
-        if ($phase === null) {
-            throw PhaseMissing::numbered($this->number, $number);
         }
     }
 

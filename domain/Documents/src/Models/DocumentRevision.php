@@ -11,9 +11,11 @@ use App\Contracts\Actors\Actor;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
+use App\Exceptions\TextVersionUnavailable;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Data\RevisionCard;
 use Domain\Documents\Data\RevisionView;
+use Domain\Documents\Exceptions\DocumentMissing;
 use Domain\Documents\Exceptions\RecordImmutable;
 use Domain\Documents\Models\Concerns\MeasuresBody;
 use Domain\Documents\Models\Concerns\SearchesText;
@@ -141,6 +143,46 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
     // ----------[ Asserts ]----------
 
     /**
+     * Refuses a document without its current revision.
+     *
+     * @phpstan-assert self $revision
+     *
+     * @throws DocumentMissing
+     */
+    private static function assertCurrentFound(self|null $revision, Document $document): void
+    {
+        if ($revision === null) {
+            throw DocumentMissing::numbered($document->number);
+        }
+    }
+
+    /**
+     * Refuses a version no published revision holds.
+     *
+     * @phpstan-assert self $revision
+     *
+     * @throws TextVersionUnavailable
+     */
+    private static function assertPublished(self|null $revision, string $version): void
+    {
+        if ($revision === null) {
+            throw TextVersionUnavailable::named($version);
+        }
+    }
+
+    /**
+     * Refuses a version that is not a revision number.
+     *
+     * @throws TextVersionUnavailable
+     */
+    private static function assertVersionNumber(string $version): void
+    {
+        if (! ctype_digit($version)) {
+            throw TextVersionUnavailable::named($version);
+        }
+    }
+
+    /**
      * Refuses every edit: a revision stays as it was written.
      *
      * @throws RecordImmutable
@@ -148,6 +190,42 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
     private function assertUnedited(): never
     {
         throw RecordImmutable::for('revision');
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The document's current revision; every published document has one from the moment it is created.
+     *
+     * @throws DocumentMissing
+     */
+    public static function findCurrentOf(Document $document): self
+    {
+        $revision = $document->currentRevision;
+        self::assertCurrentFound($revision, $document);
+
+        return $revision;
+    }
+
+    /**
+     * The document's current revision for no version, otherwise its closed revision with that number.
+     *
+     * @throws TextVersionUnavailable
+     */
+    public static function findPublishedOf(Document $document, string|null $version): self
+    {
+        if ($version === null) {
+            $revision = $document->revisions()->whereKey($document->current_revision_id)->closed()->first();
+            self::assertPublished($revision, 'current');
+
+            return $revision;
+        }
+
+        self::assertVersionNumber($version);
+        $revision = $document->revisions()->numbered((int) $version)->closed()->first();
+        self::assertPublished($revision, $version);
+
+        return $revision;
     }
 
     // ----------[ Scopes ]----------

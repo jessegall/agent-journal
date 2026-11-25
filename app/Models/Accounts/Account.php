@@ -489,18 +489,6 @@ final class Account extends Model implements EventSource, ReadableModel
     // ----------[ Transformers ]----------
 
     /**
-     * The folder a start runs the driver's sign-in from; a removed account has none.
-     *
-     * @throws AccountUnavailable
-     */
-    public function directoryForStart(): string
-    {
-        $this->assertHasDirectory();
-
-        return $this->directory;
-    }
-
-    /**
      * The account as the start it is chosen for runs with it.
      */
     public function selectedForStart(): SelectedAccount
@@ -508,7 +496,7 @@ final class Account extends Model implements EventSource, ReadableModel
         return new SelectedAccount(
             $this->recordIdentity(),
             $this->account_protocol,
-            $this->directoryForStart(),
+            $this->directoryForStart,
             $this->sign_in_generation,
         );
     }
@@ -519,6 +507,20 @@ final class Account extends Model implements EventSource, ReadableModel
     }
 
     // ----------[ Accessors ]----------
+
+    /**
+     * The folder a start runs the driver's sign-in from; reading it on a removed account, which has none, fails.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function directoryForStart(): Attribute
+    {
+        return Attribute::get(function (): string {
+            $this->assertHasDirectory();
+
+            return $this->directory;
+        });
+    }
 
     /**
      * Why a start cannot use the account now, none while it is signed in and not held for maintenance.

@@ -37,7 +37,7 @@ final readonly class DocumentPages implements DocumentReader
     public function document(int|string $id, ToolArguments $arguments): ToolResult
     {
         $document = DocumentRecords::published($id);
-        $current = $document->currentRevisionOrFail();
+        $current = DocumentRevision::findCurrentOf($document);
         $cursor = $arguments->continuation();
 
         $position = $cursor === null
@@ -48,9 +48,9 @@ final readonly class DocumentPages implements DocumentReader
             $position->assertCurrentRevision($current->number);
         }
 
-        $revision = $position->revision === $current->number ? $current : $document->publishedRevision(
-            (string) $position->revision,
-        );
+        $revision = $position->revision === $current->number
+            ? $current
+            : DocumentRevision::findPublishedOf($document, (string) $position->revision);
 
         $view = PublicationView::from($position->filters['view']);
         $card = new DocumentReadCard($document->number, $document->id, $revision->number);

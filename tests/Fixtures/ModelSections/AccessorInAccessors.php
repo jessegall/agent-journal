@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * A model whose predicate, transformer and accessor each sit in their own section.
+ * A model whose predicate, transformer, calculation and accessor each sit in their own section.
  */
 final class AccessorInAccessors extends Model
 {
@@ -27,6 +27,13 @@ final class AccessorInAccessors extends Model
     public function steps(): array
     {
         return [1];
+    }
+
+    // ----------[ Calculations ]----------
+
+    public function stepAt(int $index): int
+    {
+        return $index + 1;
     }
 
     // ----------[ Accessors ]----------

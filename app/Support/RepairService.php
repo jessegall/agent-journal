@@ -49,7 +49,7 @@ final readonly class RepairService
             return $request;
         }
 
-        if ($request->earlierRounds() >= self::ROUND_LIMIT) {
+        if ($request->countEarlierRounds() >= self::ROUND_LIMIT) {
             $this->askForDecision($request, $decider);
 
             return $request;

@@ -9,6 +9,7 @@ use App\Enums\ReadEvidence;
 use App\Events\Hooks\ContextStarted;
 use App\Listeners\AdvanceSkillContext;
 use App\Models\Agents\AgentSession;
+use App\Models\Skills\SkillGeneration;
 use App\Models\Skills\SkillPublication;
 use App\Models\Skills\SkillReceipt;
 use App\Support\ContextReminders;
@@ -90,7 +91,7 @@ final class SkillReceiptsTest extends TestCase
     {
         $publication = SkillPublication::latestOfSession($session->id);
         $this->assertNotNull($publication);
-        $entry = $publication->generation()->entry($key);
+        $entry = SkillGeneration::findForPublication($publication)->entry($key);
         $this->assertNotNull($entry);
 
         return $entry['digest'];

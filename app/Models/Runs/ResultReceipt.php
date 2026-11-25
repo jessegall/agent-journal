@@ -120,14 +120,6 @@ final class ResultReceipt extends Model implements EventSource, ReadableModel
     // ----------[ Transformers ]----------
 
     /**
-     * The canonical operation of the part this receipt is the result of.
-     */
-    public function operation(): string
-    {
-        return PartRun::query()->whereKey($this->part_run_id)->value('operation');
-    }
-
-    /**
      * This receipt as another domain reads it.
      */
     public function published(): PublishedResult
@@ -135,6 +127,16 @@ final class ResultReceipt extends Model implements EventSource, ReadableModel
         $publishedAt = $this->published_at->toImmutable();
 
         return new PublishedResult($this->id, $this->process_run_id, $this->operation(), $this->outcome, $publishedAt);
+    }
+
+    // ----------[ Calculations ]----------
+
+    /**
+     * The canonical operation of the part this receipt is the result of.
+     */
+    public function operation(): string
+    {
+        return PartRun::query()->whereKey($this->part_run_id)->value('operation');
     }
 
     // ----------[ Scopes ]----------

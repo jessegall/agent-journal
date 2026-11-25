@@ -239,14 +239,6 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
 
     // ----------[ Transformers ]----------
 
-    /**
-     * The immutable generation this publication delivers.
-     */
-    public function generation(): SkillGeneration
-    {
-        return SkillGeneration::query()->whereKey($this->generation_id)->firstOrFail();
-    }
-
     public function status(): PublicationStatus
     {
         return new PublicationStatus(

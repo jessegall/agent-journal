@@ -165,11 +165,6 @@ final class Agent extends Model implements
         return ActorType::Agent;
     }
 
-    public function actorId(): string
-    {
-        return $this->id;
-    }
-
     /**
      * The runtime of the current session, when that session runs under a driver that can be woken.
      *
@@ -184,6 +179,13 @@ final class Agent extends Model implements
         $target = new StackTarget($this->id, $this->current_session_id);
 
         return Some::create(new RunningRuntime($target, $this->runtime_generation));
+    }
+
+    // ----------[ Calculations ]----------
+
+    public function actorId(): string
+    {
+        return $this->id;
     }
 
     // ----------[ Queries ]----------

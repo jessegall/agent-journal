@@ -43,6 +43,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -328,18 +329,6 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     // ----------[ Transformers ]----------
 
     /**
-     * The key of the gateway the share is served under; none for a proposal, which has no gateway yet.
-     */
-    public function gatewayKey(): string|null
-    {
-        if ($this->share_gateway_configuration_id === null) {
-            return null;
-        }
-
-        return ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id)->gateway_key;
-    }
-
-    /**
      * The newest endpoint still running for the share's gateway configuration; none for a proposal.
      *
      * @return Option<ShareGatewayEndpoint>
@@ -376,18 +365,6 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     }
 
     /**
-     * The enabled gateway configuration the owner's grant is served under.
-     *
-     * @throws ShareGatewayUnavailable when the share is a proposal or its configuration was disabled
-     */
-    public function gatewayConfiguration(): ShareGatewayConfiguration
-    {
-        $this->assertHasGateway();
-
-        return ShareGatewayConfiguration::usable($this->share_gateway_configuration_id);
-    }
-
-    /**
      * What a lifecycle event tells about the share as it stands now.
      */
     public function fact(): ShareFact
@@ -414,6 +391,37 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     public function root(): RecordIdentity
     {
         return new RecordIdentity($this->root_type, $this->root_id);
+    }
+
+    // ----------[ Calculations ]----------
+
+    /**
+     * The key of the gateway the share is served under; none for a proposal, which has no gateway yet.
+     */
+    public function gatewayKey(): string|null
+    {
+        if ($this->share_gateway_configuration_id === null) {
+            return null;
+        }
+
+        return ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id)->gateway_key;
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * The id of the gateway configuration the owner's grant is served under; reading it on a proposal, which has no
+     * gateway yet, fails.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function gatewayConfigurationId(): Attribute
+    {
+        return Attribute::get(function (): string {
+            $this->assertHasGateway();
+
+            return $this->share_gateway_configuration_id;
+        });
     }
 
     // ----------[ Asserts ]----------

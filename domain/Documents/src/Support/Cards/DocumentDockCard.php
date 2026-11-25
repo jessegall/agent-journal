@@ -14,6 +14,7 @@ use App\Support\Cards\Subtitle;
 use App\Support\Cards\Title;
 use App\Support\Sources\Contracts\CardContext;
 use Domain\Documents\Models\Document;
+use Domain\Documents\Models\DocumentRevision;
 
 /**
  * A document's card in a dock: its current title, its revision and where it stands, with Open when the viewer may
@@ -25,7 +26,7 @@ final readonly class DocumentDockCard
 
     public function __construct(Document $document, CardContext $context)
     {
-        $revision = $document->currentRevisionOrFail();
+        $revision = DocumentRevision::findCurrentOf($document);
 
         $parts = [
             new Title('title', $revision->title),

@@ -158,6 +158,8 @@ class User extends Authenticatable implements
         return ActorType::User;
     }
 
+    // ----------[ Calculations ]----------
+
     public function actorId(): string
     {
         return $this->id;

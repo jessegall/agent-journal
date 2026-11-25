@@ -7,6 +7,7 @@ namespace App\Support;
 use App\Enums\PublicationState;
 use App\Enums\ReadEvidence;
 use App\Models\Skills\SkillContextEpoch;
+use App\Models\Skills\SkillGeneration;
 use App\Models\Skills\SkillPublication;
 use App\Models\Skills\SkillReceipt;
 
@@ -28,7 +29,7 @@ final readonly class SkillReads
         }
 
         $entry = in_array($skillKey, $publication->skill_keys, true)
-            ? $publication->generation()->entry($skillKey)
+            ? SkillGeneration::findForPublication($publication)->entry($skillKey)
             : null;
 
         if ($entry === null) {

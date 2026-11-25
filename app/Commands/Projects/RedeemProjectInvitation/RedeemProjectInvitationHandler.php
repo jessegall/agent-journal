@@ -15,6 +15,7 @@ use App\Models\Agents\Agent;
 use App\Models\Projects\ConnectionAudit;
 use App\Models\Projects\Environment;
 use App\Models\Projects\Host;
+use App\Models\Projects\InstallAttempt;
 use App\Models\Projects\Project;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectInvitation;
@@ -49,7 +50,7 @@ final readonly class RedeemProjectInvitationHandler implements CommandHandler
             throw InvitationUnusable::forTicket();
         }
 
-        $attempt = $invitation->lockAttempt();
+        $attempt = InstallAttempt::lockById($invitation->attemptId);
         $folder = $command->folder;
         $environment = $this->environmentOf($invitation, $command->projectLabel);
         $project = Project::forId($environment->project_id);

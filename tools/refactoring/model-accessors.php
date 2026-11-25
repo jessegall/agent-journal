@@ -213,7 +213,7 @@ function belongsInAccessor(string $source, string $class, Class_ $model, ClassMe
         && $method->params === []
         && givesScalar($source, $returned)
         && ! str_starts_with($method->name->toString(), '__')
-        && sectionOf($method, $body) === 'Transformers'
+        && sectionOf($method, $body) === 'Calculations'
         && preg_match(SIDE_EFFECTS, $body) !== 1
         && ! readsRows($source, $class, $model, $method, [])
         && ! str_contains((string) $method->getDocComment()?->getText(), '@throws')

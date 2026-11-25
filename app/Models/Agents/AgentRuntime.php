@@ -411,12 +411,12 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
         return $this->process_generation === $processGeneration;
     }
 
-    // ----------[ Transformers ]----------
+    // ----------[ Calculations ]----------
 
     /**
      * How many live terminal views watch the runtime, counted once with the runtime when it was read with its watchers.
      */
-    public function watcherCount(): int
+    public function countWatchers(): int
     {
         if (! array_key_exists('watchers', $this->getAttributes())) {
             $this->loadCount(['terminalViews as watchers' => self::liveViews(...)]);

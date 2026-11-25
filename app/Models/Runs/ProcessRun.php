@@ -48,7 +48,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
@@ -410,16 +409,6 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
         }
 
         return [];
-    }
-
-    /**
-     * The latest attempt of the part at a syntax node of the run.
-     *
-     * @throws ModelNotFoundException
-     */
-    public function latestAttemptAt(int $node): PartRun
-    {
-        return $this->parts()->atNode($node)->newestAttemptFirst()->firstOrFail();
     }
 
     public function identifyFor(DockDefinition $definition): DockIdentity

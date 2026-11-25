@@ -19,6 +19,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -129,19 +130,21 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
         return $this->revoked_at === null && $this->spent_at === null && $this->expires_at->isAfter($now);
     }
 
-    // ----------[ Transformers ]----------
+    // ----------[ Accessors ]----------
 
     /**
-     * The install attempt this line belongs to, locked until the transaction ends; a line issued before attempts
-     * existed has none and cannot be used.
+     * The id of the install attempt this line belongs to; reading it on a line issued before attempts existed, which
+     * has none and cannot be used, fails.
      *
-     * @throws InvitationUnusable
+     * @return Attribute<string, never>
      */
-    public function lockAttempt(): InstallAttempt
+    protected function attemptId(): Attribute
     {
-        $this->assertHasAttempt();
+        return Attribute::get(function (): string {
+            $this->assertHasAttempt();
 
-        return InstallAttempt::lockById($this->install_attempt_id);
+            return $this->install_attempt_id;
+        });
     }
 
     // ----------[ Asserts ]----------

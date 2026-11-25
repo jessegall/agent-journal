@@ -7,7 +7,8 @@ namespace Tests\Fixtures\ModelSections;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * A model whose Predicates section holds an answer that is no yes or no, and whose Transformers section holds one.
+ * A model whose Predicates section holds an answer that is no yes or no, whose Transformers section holds one, and
+ * whose Calculations section holds an answer that gives an object.
  */
 final class AnswersInTheWrongSection extends Model
 {
@@ -23,5 +24,15 @@ final class AnswersInTheWrongSection extends Model
     public function isOpen(): bool
     {
         return true;
+    }
+
+    // ----------[ Calculations ]----------
+
+    /**
+     * @return list<string>
+     */
+    public function words(string $text): array
+    {
+        return explode(' ', $text);
     }
 }

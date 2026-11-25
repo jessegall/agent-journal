@@ -10,6 +10,7 @@ use App\Enums\GatewayOperationType;
 use App\Enums\ShareAuditType;
 use App\Models\Sharing\Share;
 use App\Models\Sharing\ShareAudit;
+use App\Models\Sharing\ShareGatewayConfiguration;
 use App\Models\Sharing\ShareGatewayOperation;
 use App\Support\ActorIdentity;
 use App\Support\ShareSummary;
@@ -31,7 +32,9 @@ final readonly class RetryShareHandler implements CommandHandler
         $share = Share::ownForUpdate($command->shareId);
         $share->retryOpening();
 
-        ShareGatewayOperation::createForConfiguration($share->gatewayConfiguration(), GatewayOperationType::Open);
+        $configuration = ShareGatewayConfiguration::usable($share->gatewayConfigurationId);
+
+        ShareGatewayOperation::createForConfiguration($configuration, GatewayOperationType::Open);
         ShareAudit::create($share, ShareAuditType::Retried, ActorIdentity::of($owner), null);
 
         return $share->summary();

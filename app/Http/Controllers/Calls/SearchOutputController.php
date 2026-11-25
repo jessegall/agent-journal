@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Processes\OutputMatches;
 use App\Calls\Processes\SearchOutputCall;
+use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Support\StoredOutput;
 
@@ -16,7 +17,8 @@ final readonly class SearchOutputController
 {
     public function __invoke(SearchOutputCall $call, ProcessRun $processRun, StoredOutput $output): OutputMatches
     {
-        $offsets = $output->search($processRun->latestAttemptAt($call->part), $call->stream, $call->text);
+        $attempt = PartRun::findLatestAttemptAt($processRun, $call->part);
+        $offsets = $output->search($attempt, $call->stream, $call->text);
 
         return new OutputMatches('diagnostic output', $call->stream->value, $offsets);
     }

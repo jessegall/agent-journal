@@ -144,7 +144,7 @@ final class TextUpload extends Model implements EventSource, ReadableModel
         return $body;
     }
 
-    // ----------[ Transformers ]----------
+    // ----------[ Calculations ]----------
 
     public function attachmentText(): string
     {

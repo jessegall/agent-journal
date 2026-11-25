@@ -78,20 +78,22 @@ final class RepairRequest extends Model implements EventSource, ReadableModel
 
     // ----------[ Transformers ]----------
 
+    public function worker(): ActorIdentity
+    {
+        return new ActorIdentity(ActorType::from($this->worker_type), $this->worker_id);
+    }
+
+    // ----------[ Calculations ]----------
+
     /**
      * How many repairs this work was sent back for before this one.
      */
-    public function earlierRounds(): int
+    public function countEarlierRounds(): int
     {
         return self::query()
             ->ofWork($this->work_type, $this->work_id)
             ->whereKeyNot($this->id)
             ->count();
-    }
-
-    public function worker(): ActorIdentity
-    {
-        return new ActorIdentity(ActorType::from($this->worker_type), $this->worker_id);
     }
 
     // ----------[ Queries ]----------

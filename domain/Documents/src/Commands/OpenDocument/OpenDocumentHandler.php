@@ -10,6 +10,7 @@ use Domain\Documents\Commands\Support\DocumentCommandHandler;
 use Domain\Documents\Exceptions\DraftHeld;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentDraft;
+use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Support\RequestEditor;
 use Domain\Documents\Values\DraftReference;
 
@@ -28,7 +29,7 @@ final readonly class OpenDocumentHandler extends DocumentCommandHandler
             $this->assertDocumentRevision($document, $command->expectedRevision);
         }
 
-        $baseRevision = $document->currentRevisionOrFail();
+        $baseRevision = DocumentRevision::findCurrentOf($document);
 
         $editor = $this->editors->editor();
         $held = DocumentDraft::query()->where('document_id', $document->id)->first();

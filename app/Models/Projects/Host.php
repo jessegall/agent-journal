@@ -30,6 +30,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder as QueryBuilder;
@@ -356,20 +357,23 @@ final class Host extends Model implements EventSource, ReadableModel
         return ProtectionReport::fromStored($this->protection[$key]);
     }
 
-    /**
-     * The folder a start the host was not asked for in a folder runs in: the first of its start roots.
-     *
-     * @throws HostUnavailable
-     */
-    public function startFolder(): string
-    {
-        $folder = $this->start_roots[0] ?? null;
-        $this->assertStartFolder($folder);
-
-        return $folder;
-    }
-
     // ----------[ Accessors ]----------
+
+    /**
+     * The folder a start the host was not asked for in a folder runs in: the first of its start roots; reading it on a
+     * host with none fails.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function startFolder(): Attribute
+    {
+        return Attribute::get(function (): string {
+            $folder = $this->start_roots[0] ?? null;
+            $this->assertStartFolder($folder);
+
+            return $folder;
+        });
+    }
 
     /**
      * The sentence a broken link of this host shows: since when its calls fail and why the latest did, or since when

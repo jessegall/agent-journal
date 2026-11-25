@@ -109,7 +109,7 @@ final readonly class DraftCloseService
         string|null $reason,
     ): CloseResult {
         MarkdownCheck::publication($draft->body);
-        $base = $document->currentRevisionOrFail();
+        $base = DocumentRevision::findCurrentOf($document);
 
         if (! $draft->hasChangesFrom($base)) {
             $close = DocumentClose::create($document, $draft, $base->number, $cause, $closer, $reason, false);

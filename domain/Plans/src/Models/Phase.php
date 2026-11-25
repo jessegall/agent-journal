@@ -17,6 +17,7 @@ use App\Exceptions\RecordUnavailable;
 use App\Support\RecordIdentity;
 use Domain\Plans\Events\PhaseProgressRecorded;
 use Domain\Plans\Events\PhaseRevisionAdvanced;
+use Domain\Plans\Exceptions\PhaseMissing;
 use Domain\Plans\Exceptions\PhaseRevisionChanged;
 use Domain\Plans\Values\PhaseDetails;
 use Domain\Plans\Values\PlanPhaseTasks;
@@ -219,6 +220,20 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
     // ----------[ Asserts ]----------
 
     /**
+     * Refuses a plan without a phase of that number.
+     *
+     * @phpstan-assert self $phase
+     *
+     * @throws PhaseMissing
+     */
+    private static function assertNumberedIn(self|null $phase, Plan $plan, int $number): void
+    {
+        if ($phase === null) {
+            throw PhaseMissing::numbered($plan->number, $number);
+        }
+    }
+
+    /**
      * Refuses a change made against a revision of the phase that is no longer current.
      *
      * @throws PhaseRevisionChanged
@@ -245,6 +260,19 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
     }
 
     // ----------[ Queries ]----------
+
+    /**
+     * The phase with this number within the plan; a phase of another plan never answers.
+     *
+     * @throws PhaseMissing
+     */
+    public static function findNumberedIn(Plan $plan, int $number): self
+    {
+        $phase = $plan->phases()->numbered($number)->first();
+        self::assertNumberedIn($phase, $plan, $number);
+
+        return $phase;
+    }
 
     /**
      * The phase with this number in the plan, counted within the plan; none is refused as unavailable.

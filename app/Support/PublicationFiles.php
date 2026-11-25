@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Models\Skills\SkillGeneration;
 use App\Models\Skills\SkillPublication;
 use App\Support\Drivers\DriverSkillAdapters;
 use App\Values\DriverKey;
@@ -35,7 +36,7 @@ final readonly class PublicationFiles
         DriverSkillAdapters $adapters,
     ): self {
         $driver = $adapters->for(DriverKey::from($publication->skill_protocol));
-        $generation = $publication->generation();
+        $generation = SkillGeneration::findForPublication($publication);
         $skills = [];
 
         foreach ($publication->skill_keys as $key) {

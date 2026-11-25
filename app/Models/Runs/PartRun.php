@@ -31,6 +31,7 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
@@ -335,6 +336,18 @@ final class PartRun extends Model implements EventSource, ReadableModel
         $this->assertMayMoveTo($next);
 
         $this->lifecycle = $next;
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The latest attempt of the part at a syntax node of the run.
+     *
+     * @throws ModelNotFoundException
+     */
+    public static function findLatestAttemptAt(ProcessRun $run, int $node): self
+    {
+        return $run->parts()->atNode($node)->newestAttemptFirst()->firstOrFail();
     }
 
     // ----------[ Scopes ]----------

@@ -193,7 +193,7 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
         return ! CarbonImmutable::now()->lessThan($this->code_expires_at);
     }
 
-    // ----------[ Transformers ]----------
+    // ----------[ Calculations ]----------
 
     /**
      * Where the request stands for the owner at this server time: pending, approved and awaiting collection, issued,

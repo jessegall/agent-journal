@@ -144,6 +144,13 @@ final class StopAttempt extends Model implements EventSource, ReadableModel
 
     // ----------[ Transformers ]----------
 
+    public function reference(): StopAttemptReference
+    {
+        return new StopAttemptReference($this->id);
+    }
+
+    // ----------[ Calculations ]----------
+
     /**
      * The attempt's outcome: the same for two attempts that settled alike, with the same failures under the same
      * policy and workspace generation.
@@ -156,11 +163,6 @@ final class StopAttempt extends Model implements EventSource, ReadableModel
             (string) $this->workspace_generation,
             $failureSummary,
         ]));
-    }
-
-    public function reference(): StopAttemptReference
-    {
-        return new StopAttemptReference($this->id);
     }
 
     // ----------[ Relations ]----------

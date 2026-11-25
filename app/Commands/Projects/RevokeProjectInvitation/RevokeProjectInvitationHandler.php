@@ -7,6 +7,7 @@ namespace App\Commands\Projects\RevokeProjectInvitation;
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\ConnectionAuditType;
 use App\Models\Projects\ConnectionAudit;
+use App\Models\Projects\InstallAttempt;
 use App\Models\Projects\ProjectInvitation;
 
 /**
@@ -18,7 +19,7 @@ final readonly class RevokeProjectInvitationHandler implements CommandHandler
     public function handle(RevokeProjectInvitationCommand $command): void
     {
         $invitation = ProjectInvitation::lockPending($command->invitationId);
-        $invitation->lockAttempt()->cancel($command->seenVersion);
+        InstallAttempt::lockById($invitation->attemptId)->cancel($command->seenVersion);
         $invitation->revoke();
 
         ConnectionAudit::createForInvitation(

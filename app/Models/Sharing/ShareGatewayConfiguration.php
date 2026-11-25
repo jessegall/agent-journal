@@ -123,14 +123,6 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
     // ----------[ Transformers ]----------
 
     /**
-     * The public address a share's token opens under this configuration.
-     */
-    public function shareUrl(string $token): string
-    {
-        return rtrim($this->settings->publicOrigin, '/').'/s/'.$token;
-    }
-
-    /**
      * Whether the newest running endpoint of this revision answers; null while none runs.
      */
     public function endpointHealth(): bool|null
@@ -162,6 +154,16 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
     public function toConfiguration(): GatewayConfiguration
     {
         return new GatewayConfiguration($this->id, $this->configuration_version, $this->settings);
+    }
+
+    // ----------[ Calculations ]----------
+
+    /**
+     * The public address a share's token opens under this configuration.
+     */
+    public function shareUrl(string $token): string
+    {
+        return rtrim($this->settings->publicOrigin, '/').'/s/'.$token;
     }
 
     // ----------[ Asserts ]----------

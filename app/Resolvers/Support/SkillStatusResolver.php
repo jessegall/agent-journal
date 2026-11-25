@@ -74,10 +74,10 @@ final readonly class SkillStatusResolver
             $selected = in_array($key, $selection['selected'], true);
 
             $deliveredEntry = $delivered !== null && in_array($key, $delivered->skill_keys, true)
-                ? $delivered->generation()->entry($key)
+                ? SkillGeneration::findForPublication($delivered)->entry($key)
                 : null;
 
-            $startedEntry = in_array($key, $started->skill_keys, true) ? $started->generation()->entry($key) : null;
+            $startedEntry = in_array($key, $started->skill_keys, true) ? SkillGeneration::findForPublication($started)->entry($key) : null;
             $startedDigest = $startedEntry === null ? null : $startedEntry['digest'];
             $currentDigest = $deliveredEntry === null ? null : $deliveredEntry['digest'];
 

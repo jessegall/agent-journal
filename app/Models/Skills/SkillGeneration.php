@@ -146,6 +146,14 @@ final class SkillGeneration extends Model implements EventSource, ReadableModel
     // ----------[ Queries ]----------
 
     /**
+     * The immutable generation the publication delivers.
+     */
+    public static function findForPublication(SkillPublication $publication): self
+    {
+        return self::query()->whereKey($publication->generation_id)->firstOrFail();
+    }
+
+    /**
      * The newest ready generation, or null before the first refresh.
      */
     public static function latestReady(): self|null

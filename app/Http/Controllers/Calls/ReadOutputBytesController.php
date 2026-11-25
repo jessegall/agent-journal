@@ -9,6 +9,7 @@ use App\Calls\Processes\ReadOutputBytesCall;
 use App\Commands\CommandRules\RecordEvidenceReads\RecordEvidenceReadsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\EvidenceSource;
+use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Support\StoredOutput;
 use App\Values\EvidenceRange;
@@ -24,7 +25,7 @@ final readonly class ReadOutputBytesController
         StoredOutput $output,
         CommandBus $commands,
     ): OutputBytes {
-        $part = $processRun->latestAttemptAt($call->part);
+        $part = PartRun::findLatestAttemptAt($processRun, $call->part);
         $bytes = $output->bytes($part, $call->stream);
         $range = EvidenceRange::bytes($part->id, EvidenceSource::of($call->stream), 0, strlen($bytes));
         $commands->run(new RecordEvidenceReadsCommand($processRun->id, [$range]));

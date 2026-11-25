@@ -9,6 +9,7 @@ use App\Commands\CommandRules\RecordEvidenceReads\RecordEvidenceReadsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\EvidenceSource;
 use App\Enums\OutputStream;
+use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Values\EvidenceRange;
 
@@ -23,7 +24,7 @@ final readonly class OutputTailReads
     public function tail(string $runId, int $part, OutputStream $stream, int $lines): OutputTail
     {
         $run = ProcessRun::query()->findOrFail($runId);
-        $attempt = $run->latestAttemptAt($part);
+        $attempt = PartRun::findLatestAttemptAt($run, $part);
         $tail = $this->output->tail($attempt, $stream, $lines);
         $range = EvidenceRange::bytes($attempt->id, EvidenceSource::of($stream), $tail['before'], $tail['end']);
         $this->commands->run(new RecordEvidenceReadsCommand($run->id, [$range]));

@@ -17,8 +17,10 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
+use PhpParser\Node\NullableType;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\UnionType;
 use PhpParser\NodeFinder;
 use PhpParser\ParserFactory;
 
@@ -31,6 +33,7 @@ require_once __DIR__.'/php-parse.php';
 const BY_LOOKS = [
     'Predicates',
     'Transformers',
+    'Calculations',
     'Accessors',
     'Asserts',
 ];
@@ -40,6 +43,7 @@ const SECTIONS = [
     'Mutations',
     'Predicates',
     'Transformers',
+    'Calculations',
     'Accessors',
     'Relations',
     'Asserts',
@@ -100,6 +104,21 @@ function returnsBool(ClassMethod $method): bool
 }
 
 /**
+ * Whether a method's declared type is a string, an int or a float, with or without null: what a calculation gives.
+ */
+function returnsScalar(ClassMethod $method): bool
+{
+    $type = $method->returnType instanceof NullableType ? $method->returnType->type : $method->returnType;
+    $parts = $type instanceof UnionType ? $type->types : [$type];
+    $names = array_map(fn (mixed $part) => $part instanceof Identifier ? $part->toLowerString() : '', $parts);
+    $scalars = array_diff($names, ['null']);
+
+    $isScalar = fn (string $name) => in_array($name, ['string', 'int', 'float'], true);
+
+    return $scalars !== [] && array_all($scalars, $isScalar);
+}
+
+/**
  * Whether a method sits above the sections, before the Constructors divider: the casts and the boot hooks, so the
  * divider stands right above the first constructor (user message 22026).
  */
@@ -131,6 +150,7 @@ function sectionOf(ClassMethod $method, string $body): string
         $method->isStatic() => 'Queries',
         in_array($returns, ['void', 'never'], true) || preg_match(ROW_WRITES, $body) === 1 => 'Mutations',
         returnsBool($method) => 'Predicates',
+        returnsScalar($method) => 'Calculations',
         default => 'Transformers',
     };
 }
@@ -295,8 +315,8 @@ function constructorNameFault(ClassMethod $method, string|null $section, int $co
 }
 
 /**
- * Why a method does not belong in the Predicates or Transformers section it sits in: a predicate answers yes or no, a
- * transformer gives anything else, and both are public methods of the row (user messages 22041, 22044 and 22095).
+ * Why a method does not belong in the answer section it sits in: a predicate answers yes or no, a transformer gives an
+ * object, a calculation gives a scalar an accessor cannot (user messages 22041, 22044, 22095, 22120 and 22122).
  */
 function lookFaultOf(ClassMethod $method, string $section): string|null
 {
@@ -314,8 +334,14 @@ function lookFaultOf(ClassMethod $method, string $section): string|null
     $returnsNothing = $method->returnType instanceof Identifier
         && in_array($method->returnType->toLowerString(), ['void', 'never'], true);
 
-    if ($section === 'Transformers' && (! $isRowAnswer || returnsBool($method) || $returnsNothing)) {
-        return "method {$name} is no transformer, so it does not belong in Transformers";
+    $givesObject = ! returnsBool($method) && ! returnsScalar($method) && ! $returnsNothing;
+
+    if ($section === 'Transformers' && (! $isRowAnswer || ! $givesObject)) {
+        return "method {$name} gives no object, so it does not belong in Transformers";
+    }
+
+    if ($section === 'Calculations' && (! $isRowAnswer || ! returnsScalar($method))) {
+        return "method {$name} gives no string, int or float, so it does not belong in Calculations";
     }
 
     return null;

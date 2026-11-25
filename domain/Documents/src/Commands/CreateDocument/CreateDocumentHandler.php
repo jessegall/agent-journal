@@ -38,7 +38,7 @@ final readonly class CreateDocumentHandler extends DocumentCommandHandler
         ));
 
         $this->provenance->record($document);
-        $this->provenance->record($document->currentRevisionOrFail());
+        $this->provenance->record(DocumentRevision::findCurrentOf($document));
         $this->links->linkFrom($document, $command->relatedRecords);
 
         return new CreatedRecord($document->id, $document->number, 'doc');

@@ -22,7 +22,7 @@ trait NamesPlanPhase
         $plan = Plan::query()->findOr(Plan::idOfNumber($this->plan), fn () => throw new NotFoundHttpException());
 
         try {
-            return $plan->phaseNumbered($this->phase);
+            return Phase::findNumberedIn($plan, $this->phase);
         } catch (PhaseMissing $missingPhase) {
             throw new NotFoundHttpException(previous: $missingPhase);
         }

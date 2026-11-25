@@ -72,10 +72,9 @@ final readonly class DocumentRecords implements DocumentResolver
         return PublicationList::from([
             'rows' => array_values(
                 $page->map(
-                    fn (Document $document) => $filters->searches() ? $document->searchResult(
-                        $filters->query,
-                        $document->foundRevision($searched),
-                    ) : $document->card(),
+                    fn (Document $document) => $filters->searches()
+                        ? $document->searchResult($filters->query, $searched)
+                        : $document->card(),
                 )->all(),
             ),
             'page' => $filters->page,
@@ -114,7 +113,7 @@ final readonly class DocumentRecords implements DocumentResolver
         int|null $expectedRevision = null,
     ): RecordText {
         $document = self::published($number);
-        $current = $document->currentRevisionOrFail()->number;
+        $current = DocumentRevision::findCurrentOf($document)->number;
 
         if ($expectedRevision !== null && $expectedRevision !== $current) {
             throw StaleRead::revision($expectedRevision, $current);
