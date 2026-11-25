@@ -154,7 +154,7 @@ final class EntryPointTestsTest extends TestCase
             ...new McpToolEntries($this->app->make(McpCatalogue::class))->entries(),
             ...$this->hooks()->entries(),
             ...new MiddlewareEntries($this->app->make(CommandRegistry::class))->entries(),
-            ...new LoaderEntries()->entries(),
+            ...new LoaderEntries($this->app->make(ClientDeclarations::class))->entries(),
         ];
     }
 

@@ -11,12 +11,20 @@ use App\Contracts\Records\TypeProvider;
 use App\Data\Accounts\LoginInput;
 use App\Data\Activity\ActivityEventData;
 use App\Data\Activity\ActivityWindowData;
+use App\Data\Agents\CapacityData;
+use App\Data\Agents\CapacityInput;
+use App\Data\Agents\StartPreviewData;
+use App\Data\Agents\StartPreviewInput;
+use App\Data\Drafts\DraftAnswersInput;
+use App\Data\Drafts\DraftQuestionsInput;
 use App\Data\Drivers\DriverLookData;
+use App\Data\Messages\DraftQuestionsData;
 use App\Data\Navigation\NavigationCountsData;
 use App\Data\Navigation\NavigationData;
 use App\Data\Navigation\NavigationGroupData;
 use App\Data\Navigation\NavigationItemData;
 use App\Data\Pages\DeniedWindow;
+use App\Data\Pages\DraftedRecordData;
 use App\Data\Pages\FailedWindow;
 use App\Data\Pages\HomeData;
 use App\Data\Pages\HomeWindowData;
@@ -25,9 +33,12 @@ use App\Data\Pages\ReadyWindow;
 use App\Data\Pages\UnavailableWindow;
 use App\Data\Processes\RecoveryRefusalPartData;
 use App\Data\Processes\RuntimeEntryData;
+use App\Data\Profiles\StartReceiptData;
+use App\Data\Profiles\StartReceiptInput;
 use App\Data\Terminals\TerminalWindowData;
 use App\Data\Web\AppContextData;
 use App\Data\Web\InstallationData;
+use App\Data\Web\LoaderReplyData;
 use App\Data\Web\ViewerData;
 use App\Declarations\ActionRoute;
 use App\Declarations\DomainClient;
@@ -38,6 +49,7 @@ use App\Enums\Drivers\MarkTone;
 use App\Enums\Drivers\SignInCodeDirection;
 use App\Enums\Navigation\Icon;
 use App\Enums\Profiles\SlotContextType;
+use App\Enums\Web\LoaderStatus;
 use App\Enums\Web\ViewerType;
 use App\Enums\Web\WindowPlace;
 use App\Enums\Web\WindowStatus;
@@ -92,13 +104,21 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
             ActivityEventData::class,
             ActivityWindowData::class,
             AppContextData::class,
+            CapacityData::class,
+            CapacityInput::class,
             DeniedWindow::class,
+            DraftAnswersInput::class,
+            DraftedRecordData::class,
+            DraftQuestionsData::class,
+            DraftQuestionsInput::class,
             DriverLookData::class,
             FailedWindow::class,
             HomeData::class,
             HomeWindowData::class,
             InstallationData::class,
             LayoutData::class,
+            LoaderReplyData::class,
+            LoaderStatus::class,
             LoginInput::class,
             MarkTone::class,
             NavigationCountsData::class,
@@ -109,6 +129,10 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
             RecoveryRefusalPartData::class,
             RuntimeEntryData::class,
             SignInCodeDirection::class,
+            StartPreviewData::class,
+            StartPreviewInput::class,
+            StartReceiptData::class,
+            StartReceiptInput::class,
             TerminalWindowData::class,
             UnavailableWindow::class,
             ViewerData::class,

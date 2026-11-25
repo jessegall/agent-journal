@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support\EntryPoints;
 
+use App\Declarations\RegisteredLoader;
+use App\Support\ClientDeclarations;
 use App\Support\Web\AppContext;
 
 /**
@@ -20,6 +22,8 @@ final readonly class LoaderEntries
     public const array READ_ENTRIES = [
         AppContext::class,
     ];
+
+    public function __construct(private ClientDeclarations $declarations) {}
 
     /**
      * @return list<EntryPoint>
@@ -40,13 +44,15 @@ final readonly class LoaderEntries
     }
 
     /**
-     * The classes of every read: the loaders' readers are read here from ClientDeclarations::loaders(), beside the
-     * listed ones.
+     * The classes of every read: each declared loader's reader and the listed ones.
      *
      * @return list<class-string>
      */
     private function readClasses(): array
     {
-        return self::READ_ENTRIES;
+        return array_values(array_unique([
+            ...array_map(fn (RegisteredLoader $loader) => $loader->reader, $this->declarations->loaders()),
+            ...self::READ_ENTRIES,
+        ]));
     }
 }

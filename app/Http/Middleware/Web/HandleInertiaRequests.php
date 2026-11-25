@@ -6,6 +6,7 @@ namespace App\Http\Middleware\Web;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Actors\CurrentUserResolver;
+use App\Http\Responses\LoaderProps;
 use App\Http\Responses\NotificationProps;
 use App\Http\Responses\PageReadProps;
 use App\Http\Responses\SearchProps;
@@ -33,6 +34,7 @@ class HandleInertiaRequests extends Middleware
 
     public function __construct(
         private readonly AppContext $context,
+        private readonly LoaderProps $loaders,
         private readonly CurrentActor $actors,
         private readonly NotificationProps $notifications,
         private readonly PageReadProps $pageReads,
@@ -43,13 +45,19 @@ class HandleInertiaRequests extends Middleware
 
     /**
      * Every page a signed-in viewer sees is kept encrypted in the browser's history, so going back after signing out
-     * shows nothing private; a guest's pages are not, set on every request since the factory outlives one.
+     * shows nothing private; a guest's pages are not, set on every request since the factory outlives one. The answer
+     * to a loader call is never cached.
      */
     public function handle(Request $request, Closure $next): Response
     {
         $this->inertia->encryptHistory($this->users->currentUser()->isDefined());
+        $response = parent::handle($request, $next);
 
-        return parent::handle($request, $next);
+        if (LoaderProps::isCall($request)) {
+            $response->headers->set('Cache-Control', 'no-store, private');
+        }
+
+        return $response;
     }
 
     /**
@@ -74,6 +82,8 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             ...$this->context->data($request)->toArray(),
+            // The one loader call the request names, answered now so it can come back under either key.
+            ...$this->loaders->of($request),
             // The bell's notifications, read only by a partial reload that names them.
             ...($this->isInboxMember() ? [] : $this->notifications->of($request)),
             // The keyboard palette's search and its scope picker, read only by a partial reload that names them.

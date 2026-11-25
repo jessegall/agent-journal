@@ -25,16 +25,22 @@ final readonly class PageVisibility
 
     public function assertVisible(string $key): void
     {
-        if (! $this->owners->isAvailable($this->declarations->ownerOf($key))) {
+        if (! $this->isVisible($key)) {
             throw new NotFoundHttpException();
+        }
+    }
+
+    public function isVisible(string $key): bool
+    {
+        if (! $this->owners->isAvailable($this->declarations->ownerOf($key))) {
+            return false;
         }
 
         $actor = $this->actors->actor();
 
-        foreach ($this->declarations->visibilityChecksOf($key) as $checkClass) {
-            if (! $this->container->make($checkClass)->allows($actor)) {
-                throw new NotFoundHttpException();
-            }
-        }
+        return array_all(
+            $this->declarations->visibilityChecksOf($key),
+            fn (string $checkClass) => $this->container->make($checkClass)->allows($actor),
+        );
     }
 }

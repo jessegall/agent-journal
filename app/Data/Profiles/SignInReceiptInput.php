@@ -2,22 +2,31 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests\Profiles;
+namespace App\Data\Profiles;
 
 use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
 use App\Commands\Accounts\BeginSignInAgain\BeginSignInAgainCommand;
-use Illuminate\Foundation\Http\FormRequest;
+use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Optional;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * The owner asks what became of one sign-in start under its request key: a new account's start names its driver,
  * a renewal names its account.
  */
-final class SignInReceiptRequest extends FormRequest
+#[TypeScript]
+final class SignInReceiptInput extends Data
 {
+    public function __construct(
+        public readonly string $key,
+        public readonly string|Optional $driver,
+        public readonly string|Optional $account,
+    ) {}
+
     /**
      * @return array<string, list<string>>
      */
-    public function rules(): array
+    public static function rules(): array
     {
         return [
             'key' => ['required', 'string', 'max:128'],
@@ -26,14 +35,9 @@ final class SignInReceiptRequest extends FormRequest
         ];
     }
 
-    public function requestKey(): string
-    {
-        return $this->string('key')->toString();
-    }
-
     public function isRenewal(): bool
     {
-        return $this->filled('account');
+        return is_string($this->account);
     }
 
     /**
@@ -41,19 +45,13 @@ final class SignInReceiptRequest extends FormRequest
      */
     public function command(): string
     {
-        if ($this->isRenewal()) {
-            return BeginSignInAgainCommand::class;
-        }
-
-        return BeginSignInCommand::class;
+        return $this->isRenewal() ? BeginSignInAgainCommand::class : BeginSignInCommand::class;
     }
 
     public function target(): string
     {
-        if ($this->isRenewal()) {
-            return BeginSignInAgainCommand::targetOf($this->string('account')->toString());
-        }
-
-        return BeginSignInCommand::targetOf($this->string('driver')->toString());
+        return is_string($this->account)
+            ? BeginSignInAgainCommand::targetOf($this->account)
+            : BeginSignInCommand::targetOf((string) $this->driver);
     }
 }

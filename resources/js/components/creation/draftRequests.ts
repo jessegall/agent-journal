@@ -1,4 +1,4 @@
-import type { DraftedRecordData, DraftQuestionsData } from '@/generated/types/core';
+import type { DraftedRecordData, DraftQuestionsData } from '@/types/generated';
 import { readPage } from '@kit/pageReads';
 
 /**

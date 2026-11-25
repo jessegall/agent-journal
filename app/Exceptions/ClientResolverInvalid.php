@@ -18,9 +18,44 @@ final class ClientResolverInvalid extends ClientDeclarationError
     {
         return new self(
             sprintf(
-                '%s names the resolver %s, whose constructor takes more than one form request; a resolver reads one request.',
+                '%s names the resolver %s, whose constructor takes more than one form request; a resolver reads one '
+                    .'request.',
                 $declaration,
                 $resolver,
+            ),
+        );
+    }
+
+    public static function loaderNotOwned(string $declaration, string $reader): self
+    {
+        return new self(
+            sprintf(
+                '%s names the loader reader %s, which is not an invokable class of the declaring domain.',
+                $declaration,
+                $reader,
+            ),
+        );
+    }
+
+    public static function loaderShape(string $declaration, string $reader): self
+    {
+        return new self(
+            sprintf(
+                '%s names the loader reader %s, whose __invoke must take exactly one Data and return a Data.',
+                $declaration,
+                $reader,
+            ),
+        );
+    }
+
+    public static function loaderTypeNotOwned(string $declaration, string $dataClass, string $owner): self
+    {
+        return new self(
+            sprintf(
+                '%s reads or answers %s, which is not among the types %s declares.',
+                $declaration,
+                $dataClass,
+                $owner,
             ),
         );
     }

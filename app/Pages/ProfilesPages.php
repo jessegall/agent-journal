@@ -26,6 +26,7 @@ use App\Data\Accounts\PendingAttemptCleanupData;
 use App\Data\Accounts\SignInAttemptData;
 use App\Data\Accounts\SignInMethodData;
 use App\Data\Accounts\SignInReceiptData;
+use App\Data\Profiles\SignInReceiptInput;
 use App\Data\Accounts\StartAccountData;
 use App\Data\Profiles\ScriptDiagnostic;
 use App\Declarations\ActionRoute;
@@ -181,6 +182,7 @@ final class ProfilesPages implements NativePartProvider, NavigationProvider, Pag
             SignInAttemptData::class,
             SignInMethodData::class,
             SignInReceiptData::class,
+            SignInReceiptInput::class,
             StartAccountData::class,
             ScriptDiagnostic::class,
             AccountCheckResult::class,

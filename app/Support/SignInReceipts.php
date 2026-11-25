@@ -6,9 +6,9 @@ namespace App\Support;
 
 use App\Contracts\Bus\CallerReceipts;
 use App\Data\Accounts\SignInReceiptData;
+use App\Data\Profiles\SignInReceiptInput;
 use App\Enums\Accounts\SignInReceiptStatus;
 use App\Enums\CommandRules\ReceiptStatus;
-use App\Http\Requests\Profiles\SignInReceiptRequest;
 use App\Models\Accounts\SignInAttempt;
 
 /**
@@ -19,9 +19,9 @@ final readonly class SignInReceipts
 {
     public function __construct(private CallerReceipts $receipts) {}
 
-    public function of(SignInReceiptRequest $request): SignInReceiptData
+    public function of(SignInReceiptInput $input): SignInReceiptData
     {
-        $answers = $this->receipts->answerFor($request->command(), $request->requestKey(), $request->target());
+        $answers = $this->receipts->answerFor($input->command(), $input->key, $input->target());
 
         if ($answers === []) {
             return SignInReceiptData::without(SignInReceiptStatus::Unknown);
