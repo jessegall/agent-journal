@@ -281,6 +281,7 @@ function nameFaults(array $names, NameVocabulary $vocabulary, string $forbiddenW
                 ? null : purposeFault($declared, $verbs, $nouns),
             actionClassFault($declared, $commandVerbs, $nouns, $sharedVerbs),
             eventFault($declared),
+            stateFault($declared),
             participleOrderFault($declared, $verbs, $nouns, $happenings),
             commandMoodFault($declared, $verbs),
             questionFault($declared, $verbs),
@@ -456,6 +457,21 @@ function eventFault(DeclaredName $declared): string|null
 
     if ($isEvent && ! $saysWhatHappened) {
         return 'an event says what happened, and no word of it is a past form';
+    }
+
+    return null;
+}
+
+/**
+ * A state says with the plain verb what the agent is to do (ReadMessageState), never with the gerund
+ * (ReadingMessageState) (user message 22134).
+ */
+function stateFault(DeclaredName $declared): string|null
+{
+    $first = firstWordOf($declared->name);
+
+    if ($declared->role === 'state' && str_ends_with($first, 'ing')) {
+        return "a state says what the agent is to do with the plain verb, not {$first}";
     }
 
     return null;

@@ -83,6 +83,7 @@ function declaredNames(array $files): array
             $typeRole = match (true) {
                 $isActionClass => 'action',
                 $type instanceof Class_ && array_any($parents, fn (string $parent) => str_ends_with($parent, 'Event')) => 'event',
+                $type instanceof Class_ && array_any($parents, fn (string $parent) => str_ends_with($parent, 'AgentState')) => 'state',
                 default => 'thing',
             };
             $names[] = new DeclaredName(declarationTypeOf($type), $typeName, "{$path}:{$type->getStartLine()}", $typeRole, $owner);
