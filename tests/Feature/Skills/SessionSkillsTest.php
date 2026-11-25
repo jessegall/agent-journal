@@ -21,7 +21,6 @@ use App\Values\StackTarget;
 use Illuminate\Support\Facades\File;
 use Tests\Fixtures\Skills\RecordingStack;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\Skills\AdmitsMainAgentSkills;
 use Tests\Support\TestActors;
 use Tests\Support\UsesTemporaryFolder;
@@ -36,7 +35,6 @@ final class SessionSkillsTest extends TestCase
 {
     use AdmitsMainAgentSkills;
     use CommitsHookRows;
-    use InstallsBuiltInProfiles;
     use UsesTemporaryFolder;
 
     private const string NEW_SESSION = 'start a new session';
@@ -59,6 +57,8 @@ final class SessionSkillsTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->journal->installProfiles();
 
         $this->makeTemporaryFolder('journal-skills');
         config([Place::HostSkills->rootSetting() => $this->root]);

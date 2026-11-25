@@ -20,7 +20,6 @@ use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\ActsAsActors;
 use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\TestActors;
 use Tests\TestCase;
 
@@ -33,7 +32,6 @@ final class SkillPreviewTest extends TestCase
     use ActsAsActors;
     use CommitsHookRows;
     use HasContainerSupport;
-    use InstallsBuiltInProfiles;
 
     private const array TABLES = ['agent_sessions', 'agents', 'profile_revisions', 'profiles'];
 
@@ -52,6 +50,8 @@ final class SkillPreviewTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->journal->installProfiles();
 
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(7));
         $this->actAs(TestActors::user(7));

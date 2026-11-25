@@ -23,13 +23,10 @@ use Tests\Fixtures\Modules\Notes\CommandMiddleware\RefuseNoteAtQuota;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RefusesAll;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 use Tests\Fixtures\Profiles\TestProposals;
-use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\TestIds;
 
 final class WriteToolTest extends CommandBusTestCase
 {
-    use InstallsBuiltInProfiles;
-
     private const string QUOTA_REFUSAL = 'The note quota is full.';
 
     private const string MIDDLEWARE_REFUSAL = 'Refused by the test middleware.';
@@ -37,6 +34,13 @@ final class WriteToolTest extends CommandBusTestCase
     private const string PATH = '/agent/test/notes/write';
 
     private const string PROFILE = 'note-writer';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->installProfiles();
+    }
 
     protected function tearDown(): void
     {

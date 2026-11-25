@@ -14,7 +14,6 @@ use App\Support\Inputs\SessionStarted;
 use App\Support\Inputs\Values\SessionStartDetails;
 use Tests\Fixtures\Actors\FixedCurrentAuthorizer;
 use Tests\Support\CommittedHookStack;
-use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\TestActors;
 use Tests\Support\TestText;
 use Tests\TestCase;
@@ -26,7 +25,6 @@ use Tests\TestCase;
 final class McpInstructionsTest extends TestCase
 {
     use CommittedHookStack;
-    use InstallsBuiltInProfiles;
 
     private const string MCP_ADVICE = 'Use the journal MCP tools';
 

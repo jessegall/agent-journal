@@ -51,7 +51,6 @@ use Tests\Fixtures\Hooks\ScriptedState;
  */
 trait CommittedHookStack
 {
-    use InstallsBuiltInProfiles;
     use RefreshHookDatabase;
     use RegistersTestStates;
 
@@ -85,6 +84,7 @@ trait CommittedHookStack
         $this->app->make(StackTransaction::class)->run(
             fn () => $this->app->make(StartStacks::class)->open($this->target),
         );
+        $this->journal->installProfiles();
     }
 
     /**

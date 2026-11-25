@@ -26,7 +26,6 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Skills\Guide\BrokenGuideSkill;
 use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\TestActors;
 use Tests\TestCase;
 
@@ -38,7 +37,6 @@ final class RefreshSkillsTest extends TestCase
 {
     use ActsAsActors;
     use CommitsHookRows;
-    use InstallsBuiltInProfiles;
 
     private const string INVALID_SKILL = "Guide's skill journal-guide is invalid";
 
@@ -55,6 +53,13 @@ final class RefreshSkillsTest extends TestCase
         'agent_sessions',
         'agents',
     ];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->installProfiles();
+    }
 
     public function test_two_refreshes_without_changes_leave_one_generation_and_no_new_publications(): void
     {

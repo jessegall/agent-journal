@@ -20,7 +20,6 @@ use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\ActsAsActors;
 use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\TestActors;
 use Tests\TestCase;
 
@@ -33,9 +32,15 @@ final class SkillContextResolverTest extends TestCase
     use ActsAsActors;
     use CommitsHookRows;
     use HasContainerSupport;
-    use InstallsBuiltInProfiles;
 
     private const array TABLES = ['agent_sessions', 'agents', 'profile_revisions', 'profiles'];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->installProfiles();
+    }
 
     public function test_a_main_agent_session_matches_main_agent_and_a_helper_on_the_same_program_does_not(): void
     {

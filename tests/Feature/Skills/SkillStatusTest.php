@@ -27,7 +27,6 @@ use Illuminate\Support\Facades\Artisan;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Skills\FullDiskPublisher;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\TestActors;
 use Tests\Support\TestStartAuthority;
 use Tests\Support\UsesTemporaryFolder;
@@ -40,7 +39,6 @@ use Tests\TestCase;
 final class SkillStatusTest extends TestCase
 {
     use CommitsHookRows;
-    use InstallsBuiltInProfiles;
     use UsesTemporaryFolder;
 
     private const string NO_SPACE = 'no space left';
@@ -60,6 +58,8 @@ final class SkillStatusTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->journal->installProfiles();
 
         $this->makeTemporaryFolder('journal-skills');
         config([Place::HostSkills->rootSetting() => $this->root]);

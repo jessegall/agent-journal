@@ -33,7 +33,6 @@ use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Fixtures\Skills\FullDiskPublisher;
 use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\Skills\PublishesSkills;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
@@ -48,7 +47,6 @@ final class StartSkillsTest extends TestCase
 {
     use CommitsHookRows;
     use HasContainerSupport;
-    use InstallsBuiltInProfiles;
     use PublishesSkills;
     use WithActiveAccount;
 
@@ -88,6 +86,8 @@ final class StartSkillsTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->journal->installProfiles();
 
         $this->chooseActiveAccounts();
     }

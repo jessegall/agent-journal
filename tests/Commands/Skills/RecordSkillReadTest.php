@@ -16,7 +16,6 @@ use App\Support\DomainRegistry;
 use App\Support\ReminderContribution;
 use App\Values\StackTarget;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\Skills\AdmitsMainAgentSkills;
 use Tests\Support\Skills\FinishesToolCalls;
 use Tests\Support\Skills\PublishesSkills;
@@ -31,7 +30,6 @@ final class RecordSkillReadTest extends TestCase
     use AdmitsMainAgentSkills;
     use CommitsHookRows;
     use FinishesToolCalls;
-    use InstallsBuiltInProfiles;
     use PublishesSkills;
 
     private const array TABLES = [
@@ -49,6 +47,13 @@ final class RecordSkillReadTest extends TestCase
     /**
      * Every installed domain, since the skills this test names come from them.
      */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->installProfiles();
+    }
+
     protected static function bootedDomains(): array
     {
         return DomainRegistry::installedClasses(dirname(__DIR__, 3));

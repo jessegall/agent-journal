@@ -19,7 +19,6 @@ use App\Values\SessionSkillStatus;
 use App\Values\StackTarget;
 use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\Skills\AdmitsMainAgentSkills;
 use Tests\Support\Skills\HasSkillTargets;
 use Tests\Support\Skills\MakesUserGuideSkill;
@@ -36,7 +35,6 @@ final class SessionSkillStatusTest extends TestCase
     use AdmitsMainAgentSkills;
     use CommitsHookRows;
     use HasSkillTargets;
-    use InstallsBuiltInProfiles;
     use MakesUserGuideSkill;
 
     private const array TABLES = [
@@ -53,6 +51,13 @@ final class SessionSkillStatusTest extends TestCase
         'agents',
         'agent_sessions',
     ];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->installProfiles();
+    }
 
     public function test_a_skill_is_delivered_then_read_and_an_edit_makes_it_unread_with_a_new_digest(): void
     {
