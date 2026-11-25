@@ -38,6 +38,14 @@ final class FixtureRefused extends LogicException
         );
     }
 
+    public static function noSink(): self
+    {
+        return new self(
+            FixtureRefusalType::NoSink,
+            'The journal runs commands through their handlers: call sinkCommands() first.',
+        );
+    }
+
     public static function missingAlias(string $type, string $alias, string $owner): self
     {
         return new self(FixtureRefusalType::MissingAlias, "{$owner} has no {$type} called {$alias}: arrange it first.");

@@ -12,6 +12,7 @@ enum FixtureRefusalType
     case NoOwner;
     case SecondOwner;
     case NoServerClock;
+    case NoSink;
     case MissingAlias;
     case NotOneStart;
     case SelfShare;

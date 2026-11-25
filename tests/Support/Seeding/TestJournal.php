@@ -55,6 +55,7 @@ final class TestJournal
     use PushesStates;
     use RunsCommands;
     use SendsRequests;
+    use SinksCommands;
     use StartsScenarios;
 
     private const string OWNER = 'The journal';
