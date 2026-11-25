@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Reviews;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -113,7 +115,7 @@ final class WorkReservation extends Model implements EventSource, ReadableModel
         $reservation->setAttribute($reservation->getKeyName(), $reservation->newUniqueId());
         $reservation->insertIfAbsent();
 
-        return self::query()->where('certificate', $work->certificate)->sole();
+        return self::query()->withCertificate($work->certificate)->sole();
     }
 
     /**
@@ -125,9 +127,9 @@ final class WorkReservation extends Model implements EventSource, ReadableModel
     public static function awaitingHandoff(int $limit): array
     {
         return array_values(self::query()
-            ->whereNull('handed_off_at')
-            ->whereNull('released_at')
-            ->orderBy('updated_at')
+            ->notHandedOff()
+            ->unreleased()
+            ->leastRecentlyUpdatedFirst()
             ->readExactly($limit)
             ->get()
             ->all());
@@ -135,7 +137,7 @@ final class WorkReservation extends Model implements EventSource, ReadableModel
 
     public static function lockedFor(string $certificate): self
     {
-        return self::query()->with('certifiedWork')->where('certificate', $certificate)->lockForUpdate()->firstOrFail();
+        return self::query()->with('certifiedWork')->withCertificate($certificate)->lockForUpdate()->firstOrFail();
     }
 
     /**
@@ -151,9 +153,8 @@ final class WorkReservation extends Model implements EventSource, ReadableModel
         }
 
         return array_values(array_unique(self::query()
-            ->where('actor_type', ActorType::Agent->value)
-            ->whereIn('actor_id', $ids)
-            ->whereNull('released_at')
+            ->heldByAgents($ids)
+            ->unreleased()
             ->readAll('the open reservations of these agents, a few at most for each')
             ->pluck('actor_id')
             ->map(fn (mixed $agentId): string => (string) $agentId)
@@ -163,9 +164,77 @@ final class WorkReservation extends Model implements EventSource, ReadableModel
     public static function holds(ActorIdentity $actor): bool
     {
         return self::query()
-            ->where('actor_type', $actor->type->value)
-            ->where('actor_id', $actor->id)
-            ->whereNull('released_at')
+            ->heldBy($actor)
+            ->unreleased()
             ->exists();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The reservation of the certified work.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withCertificate(Builder $query, string $certificate): void
+    {
+        $query->where('certificate', $certificate);
+    }
+
+    /**
+     * The reservations not handed off yet.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function notHandedOff(Builder $query): void
+    {
+        $query->whereNull('handed_off_at');
+    }
+
+    /**
+     * The reservations still held.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unreleased(Builder $query): void
+    {
+        $query->whereNull('released_at');
+    }
+
+    /**
+     * The reservations updated longest ago first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function leastRecentlyUpdatedFirst(Builder $query): void
+    {
+        $query->orderBy('updated_at');
+    }
+
+    /**
+     * The reservations of the agents.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $ids
+     */
+    #[Scope]
+    protected function heldByAgents(Builder $query, array $ids): void
+    {
+        $query->where('actor_type', ActorType::Agent->value)->whereIn('actor_id', $ids);
+    }
+
+    /**
+     * The actor's reservations.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function heldBy(Builder $query, ActorIdentity $actor): void
+    {
+        $query->where('actor_type', $actor->type->value)->where('actor_id', $actor->id);
     }
 }

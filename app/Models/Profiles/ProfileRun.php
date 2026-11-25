@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Profiles;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -107,10 +109,9 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
         string $definitionDigest,
         string $reference,
     ): self {
-        $runs = self::query()->acrossActors()->ownedBy($actor)->where('work', $work->key);
+        $runs = self::query()->acrossActors()->ownedBy($actor)->aboutWork($work->key);
 
-        $run = (clone $runs)->where('trigger_reference', $reference)->first()
-            ?? (clone $runs)->whereIn('state', ProfileRunState::unfinished())->first();
+        $run = (clone $runs)->underTrigger($reference)->first() ?? (clone $runs)->unfinished()->first();
 
         if ($run !== null) {
             return $run;
@@ -193,12 +194,10 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
     public function previous(): Option
     {
         return Option::fromValue(self::query()->acrossActors()
-            ->where('actor_type', $this->actor_type)
-            ->where('actor_id', $this->actor_id)
-            ->where('work', $this->work)
-            ->where('sequence', '<', $this->sequence)
-            ->whereNotIn('state', ProfileRunState::unfinished())
-            ->orderByDesc('sequence')
+            ->ofSameRunnerAndWorkAs($this)
+            ->earlierInSequenceThan($this->sequence)
+            ->finished()
+            ->newestSequenceFirst()
             ->first());
     }
 
@@ -233,7 +232,7 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
      */
     public function hasRecordedStep(string $reference): bool
     {
-        return $this->results()->where('step_reference', $reference)->exists();
+        return $this->results()->forStep($reference)->exists();
     }
 
     // ----------[ Relations ]----------
@@ -264,7 +263,7 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
 
     private function recordedResult(string $reference): ProfileStepResult|null
     {
-        return $this->results()->where('step_reference', $reference)->first();
+        return $this->results()->forStep($reference)->first();
     }
 
     // ----------[ Queries ]----------
@@ -272,5 +271,86 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
     public static function lockedForStep(string $runId): self
     {
         return self::query()->acrossActors()->whereKey($runId)->lockForUpdate()->firstOrFail();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The runs about the work.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function aboutWork(Builder $query, string $work): void
+    {
+        $query->where('work', $work);
+    }
+
+    /**
+     * The run its trigger started under that reference.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function underTrigger(Builder $query, string $reference): void
+    {
+        $query->where('trigger_reference', $reference);
+    }
+
+    /**
+     * The runs still going.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unfinished(Builder $query): void
+    {
+        $query->whereIn('state', ProfileRunState::unfinished());
+    }
+
+    /**
+     * The runs that ended.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function finished(Builder $query): void
+    {
+        $query->whereNotIn('state', ProfileRunState::unfinished());
+    }
+
+    /**
+     * The runs of the run's actor about the run's work.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofSameRunnerAndWorkAs(Builder $query, self $run): void
+    {
+        $query->where('actor_type', $run->actor_type)
+            ->where('actor_id', $run->actor_id)
+            ->where('work', $run->work);
+    }
+
+    /**
+     * The runs before that sequence number.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function earlierInSequenceThan(Builder $query, int $sequence): void
+    {
+        $query->where('sequence', '<', $sequence);
+    }
+
+    /**
+     * The runs newest sequence number first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function newestSequenceFirst(Builder $query): void
+    {
+        $query->orderByDesc('sequence');
     }
 }

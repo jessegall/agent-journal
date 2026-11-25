@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Profiles;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -69,5 +71,18 @@ final class ProfileStepResult extends Model implements ReadableModel
         return Attribute::get(
             fn () => StepOutcome::reported($this->status, $this->port, $this->evidence),
         )->withoutObjectCaching();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The result of the step of that reference.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function forStep(Builder $query, string $reference): void
+    {
+        $query->where('step_reference', $reference);
     }
 }
