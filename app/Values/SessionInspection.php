@@ -43,7 +43,7 @@ final readonly class SessionInspection
             $policy->profile_revision,
             $policy->configuration_hash,
             $execution->mode,
-            $execution->image,
+            $execution->imageReference,
             $execution->budgets->wallSeconds,
             array_values($policy->stopConditionLabels()),
             $lastStop,

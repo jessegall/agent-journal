@@ -126,8 +126,8 @@ final class SampleWorkflowTest extends TestCase
             RequestHoldReason::UnknownCommand,
         ));
         $rule = AcmeDeclarations::verify()->toArray();
-        $rule['classes'] = [];
-        $noEffects = AcmeDeclarations::proposed(CommandRule::fromArray($rule));
+        $rule['classes'] = ['classes' => []];
+        $noEffects = AcmeDeclarations::proposed(CommandRule::from($rule));
         $this->runAsAgent(new ProposeCommandRuleCommand($other, 'request-2', $noEffects));
         $digest = CommandRequest::query()->findOrFail($other)->source_digest;
 

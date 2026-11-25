@@ -4,44 +4,45 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\Settings\StoredValue;
 use App\Declarations\VerificationContract;
 use App\Enums\CommandType;
 use App\Enums\OutputRequirement;
 use App\Enums\ScopeType;
 use App\Enums\ToolType;
 use App\Exceptions\CommandRuleInvalid;
-use App\Support\Stored\StoredCommandRule;
-use App\Support\Stored\StoredExecutableBinding;
-use App\Support\Stored\StoredRuleReference;
-use App\Support\Stored\StoredRuleScope;
-use App\Support\Stored\StoredVerificationContract;
+use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Attributes\MapName;
+use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * One declared behaviour of a program: which program and subcommands it
  * covers, the words it accepts, the classes it emits, its purpose and output requirement, the executable it trusts,
  * and who owns it at which revision. A project rule may replace exactly one other rule revision.
  */
-final readonly class CommandRule implements StoredValue
+#[MapName(SnakeCaseMapper::class)]
+final class CommandRule extends Data
 {
     /**
      * @param  list<string>  $subcommands
      * @param  list<RuleReference>  $replaces  the one rule revision this rule replaces, or none
      * @param  list<VerificationContract>  $contracts  exactly one for a check or build, none otherwise
      */
-    private function __construct(
-        public string $id,
-        public RuleScope $scope,
-        public ProgramSpellings $program,
-        public array $subcommands,
-        public ArgumentGrammar $arguments,
-        public CommandClassSet $classes,
-        public CommandType $purpose,
-        public OutputRequirement $outputRequirement,
-        public ExecutableBinding $binding,
-        public int $revision,
-        public array $replaces,
-        public array $contracts = [],
+    public function __construct(
+        public readonly string $id,
+        public readonly RuleScope $scope,
+        public readonly ProgramSpellings $program,
+        public readonly array $subcommands,
+        public readonly ArgumentGrammar $arguments,
+        public readonly CommandClassSet $classes,
+        public readonly CommandType $purpose,
+        public readonly OutputRequirement $outputRequirement,
+        public readonly ExecutableBinding $binding,
+        public readonly int $revision,
+        #[DataCollectionOf(RuleReference::class)]
+        public readonly array $replaces,
+        #[DataCollectionOf(VerificationContract::class)]
+        public readonly array $contracts = [],
     ) {}
 
     /**
@@ -125,74 +126,6 @@ final readonly class CommandRule implements StoredValue
             1,
             [],
             [$contract],
-        );
-    }
-
-    /**
-     * The rule as a proposal or an approved revision stores it, after the boundary validated it.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(): array
-    {
-        return [
-            'id' => $this->id,
-            'scope' => StoredRuleScope::fromRuleScope($this->scope)->toArray(),
-            'program' => $this->program->toArray(),
-            'subcommands' => $this->subcommands,
-            'arguments' => $this->arguments->toArray(),
-            'classes' => $this->classes->values(),
-            'purpose' => $this->purpose->value,
-            'output_requirement' => $this->outputRequirement->value,
-            'binding' => StoredExecutableBinding::fromBinding($this->binding)->toArray(),
-            'revision' => $this->revision,
-            'replaces' => array_map(fn (RuleReference $replaced): array => $replaced->toArray(), $this->replaces),
-            'contracts' => array_map(
-                fn (VerificationContract $contract): array => $contract->toArray(),
-                $this->contracts,
-            ),
-        ];
-    }
-
-    /**
-     * @param  array<string, mixed>  $fields  the shape toArray writes
-     */
-    public static function fromArray(array $fields): self
-    {
-        return self::fromStored(StoredCommandRule::from($fields));
-    }
-
-    public static function fromJson(string $json): self
-    {
-        return self::fromStored(StoredCommandRule::from(json_decode($json, true, flags: JSON_THROW_ON_ERROR)));
-    }
-
-    public static function listFromJson(string $json): array
-    {
-        return array_values(array_map(
-            self::fromStored(...),
-            StoredCommandRule::collect(json_decode($json, true, flags: JSON_THROW_ON_ERROR)),
-        ));
-    }
-
-    /**
-     * The rule its stored shape names.
-     */
-    private static function fromStored(StoredCommandRule $stored): self
-    {
-        return new self(
-            $stored->id,
-            $stored->scope->toRuleScope(),
-            ProgramSpellings::fromArray($stored->program),
-            $stored->subcommands,
-            ArgumentGrammar::fromArray($stored->arguments),
-            CommandClassSet::ofValues($stored->classes),
-            $stored->purpose,
-            $stored->outputRequirement,
-            $stored->binding->toBinding(),
-            $stored->revision,
-            array_map(fn (StoredRuleReference $replaced) => $replaced->toReference(), $stored->replaces),
-            array_map(fn (StoredVerificationContract $contract) => $contract->toContract(), $stored->contracts),
         );
     }
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Runs;
 
-use App\Casts\StoredValuesCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -17,6 +16,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Spatie\LaravelData\DataCollection;
 
 /**
  * @property string $id
@@ -24,7 +24,7 @@ use Illuminate\Support\Carbon;
  * @property string $command_request_id
  * @property string $reader_revision_id
  * @property string $rule_proposal_revision_id
- * @property StoredValuesCast<array-key, ProvenBranch>|ProvenBranch[] $proven_branches
+ * @property DataCollection<int, ProvenBranch> $proven_branches
  * @property string $actor_type
  * @property string $actor_id
  * @property Carbon $created_at
@@ -42,7 +42,7 @@ final class ReaderProof extends Model implements ReadableModel
      */
     protected function casts(): array
     {
-        return ['proven_branches' => StoredValuesCast::class.':'.ProvenBranch::class];
+        return ['proven_branches' => DataCollection::class.':'.ProvenBranch::class];
     }
 
     protected static function booted(): void
@@ -66,7 +66,7 @@ final class ReaderProof extends Model implements ReadableModel
         $readerProof->command_request_id = $reader->command_request_id;
         $readerProof->reader_revision_id = $reader->id;
         $readerProof->rule_proposal_revision_id = $declaration->id;
-        $readerProof->proven_branches = $branches;
+        $readerProof->proven_branches = ProvenBranch::collect($branches, DataCollection::class);
         $readerProof->actor_type = $prover->type->value;
         $readerProof->actor_id = $prover->id;
         $readerProof->save();

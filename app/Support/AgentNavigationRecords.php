@@ -49,7 +49,7 @@ final readonly class AgentNavigationRecords implements NavigationReader
                     'build' => $build->build,
                     'stale' => $build->isStale,
                 ],
-                $entry->builds,
+                $entry->builds->items(),
             ),
             'uses' => $entry->uses,
             'last_used_at' => $entry->last_used_at?->toIso8601String(),
@@ -73,7 +73,7 @@ final readonly class AgentNavigationRecords implements NavigationReader
             'driver' => $entry->family,
             'goal' => $entry->goal_script,
             'parameters' => $entry->goal_parameters,
-            'steps' => array_map(fn (MenuStep $step) => $step->toArray(), $entry->steps),
+            'steps' => array_map(fn (MenuStep $step) => $step->toArray(), $entry->steps->items()),
             'completes' => $entry->completes->value,
             'next_step' => $entry->next_step,
             'proof' => $entry->proof,
@@ -84,7 +84,7 @@ final readonly class AgentNavigationRecords implements NavigationReader
                 'stale' => $build->isStale,
                 'stale_reason' => $build->staleReason,
                 'stale_screen' => $build->staleScreen,
-            ], $entry->builds),
+            ], $entry->builds->items()),
         ];
     }
 
@@ -142,7 +142,7 @@ final readonly class AgentNavigationRecords implements NavigationReader
     /**
      * The stale entry the request replaces, as a hint: its steps beside the live screen; none without one.
      *
-     * @return array{id: string, steps: list<array<string, string|null>>}|null
+     * @return array{id: string, steps: list<array<string, mixed>>}|null
      */
     private function staleHint(NavigationRequest $navigation): array|null
     {
@@ -154,7 +154,7 @@ final readonly class AgentNavigationRecords implements NavigationReader
 
         return [
             'id' => $entry->id,
-            'steps' => array_map(fn (MenuStep $step) => $step->toArray(), $entry->steps),
+            'steps' => array_map(fn (MenuStep $step) => $step->toArray(), $entry->steps->items()),
         ];
     }
 

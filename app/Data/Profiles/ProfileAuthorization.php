@@ -19,12 +19,15 @@ use App\Values\AgentText;
 use App\Values\AllowedNames;
 use App\Values\WithheldGrant;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * A profile's authorization: its strategy, the policy accesses it grants and the commands it denies outright. A pair
  * its grants do not name is never granted, an undeclared one included.
  */
+#[MapName(SnakeCaseMapper::class)]
 final class ProfileAuthorization extends Data
 {
     /**

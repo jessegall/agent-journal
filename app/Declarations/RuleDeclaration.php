@@ -32,13 +32,9 @@ final class RuleDeclaration extends Data
 
     public function toProposal(): DeclaredProposal
     {
-        return new DeclaredProposal(
-            $this->requestId,
-            new ProposedRule(
-                CommandRule::fromArray($this->rule),
-                $this->evidence,
-                array_map(RuleExample::fromArray(...), $this->examples),
-            ),
-        );
+        $rule = CommandRule::from($this->rule);
+        $examples = RuleExample::collect($this->examples);
+
+        return new DeclaredProposal($this->requestId, new ProposedRule($rule, $this->evidence, $examples));
     }
 }

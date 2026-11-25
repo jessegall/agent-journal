@@ -4,16 +4,21 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use Spatie\LaravelData\Attributes\MapName;
+use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
+
 /**
  * The spellings one program family declares beside its own name, such as php8.3 for php or phpunit.phar for phpunit.
  * Only a declared spelling maps to the family; nothing is guessed from digits, extensions or hyphens.
  */
-final readonly class ProgramSpellings
+#[MapName(SnakeCaseMapper::class)]
+final class ProgramSpellings extends Data
 {
     /**
      * @param  list<string>  $spellings
      */
-    public function __construct(public string $family, public array $spellings = []) {}
+    public function __construct(public readonly string $family, public readonly array $spellings = []) {}
 
     /**
      * PHP under each versioned name a system installs it as.
@@ -28,25 +33,6 @@ final readonly class ProgramSpellings
             'php8.5',
             'php8.6',
         ]);
-    }
-
-    /**
-     * @return array{family: string, spellings: list<string>}
-     */
-    public function toArray(): array
-    {
-        return [
-            'family' => $this->family,
-            'spellings' => $this->spellings,
-        ];
-    }
-
-    /**
-     * @param  array{family: string, spellings: list<string>}  $fields
-     */
-    public static function fromArray(array $fields): self
-    {
-        return new self($fields['family'], $fields['spellings']);
     }
 
     public function names(string $name): bool

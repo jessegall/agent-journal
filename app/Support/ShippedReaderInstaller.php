@@ -141,7 +141,7 @@ final readonly class ShippedReaderInstaller
             ReaderReference::required(),
         );
 
-        $rule = CommandRule::fromArray([
+        $rule = CommandRule::from([
             ...$core->toArray(),
             'contracts' => [$contract->toArray()],
         ]);

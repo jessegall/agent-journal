@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * A set of exact command patterns.
  */
+#[MapName(SnakeCaseMapper::class)]
 final class CommandPatternSet extends Data
 {
     /**

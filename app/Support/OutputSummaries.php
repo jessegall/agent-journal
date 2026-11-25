@@ -74,7 +74,7 @@ final readonly class OutputSummaries
             return PartResult::unavailable(['no assessment']);
         }
 
-        $codes = array_map(fn (OutputProblem $problem) => $problem->code->value, $assessment->problems);
+        $codes = array_map(fn (OutputProblem $problem) => $problem->code->value, $assessment->problems->items());
 
         return PartResult::unavailable($codes);
     }

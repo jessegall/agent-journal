@@ -58,7 +58,7 @@ final class DeclarationData extends Data
             $rule->contracts,
         ));
 
-        $examples = array_map(fn (RuleExample $example) => $example->label(), $revision->examples);
+        $examples = array_map(fn (RuleExample $example) => $example->label(), $revision->examples->items());
 
         return new self(
             $revision->revision,

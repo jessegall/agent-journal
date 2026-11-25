@@ -6,18 +6,22 @@ namespace App\Values;
 
 use App\Enums\Outcome;
 use App\Exceptions\VerificationContractInvalid;
+use Spatie\LaravelData\Attributes\MapName;
+use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * The exit statuses a check is known to end with, each with its meaning and evidence. Any status outside the list is
  * an execution error; nothing assumes that a nonzero status means findings. A check whose exits are not yet proven
  * lists none, so every status is an execution error until a proof adds them.
  */
-final readonly class ExitPolicy
+#[MapName(SnakeCaseMapper::class)]
+final class ExitPolicy extends Data
 {
     /**
      * @param  list<ExitBranch>  $branches
      */
-    private function __construct(public array $branches) {}
+    public function __construct(public readonly array $branches) {}
 
     /**
      * @throws VerificationContractInvalid

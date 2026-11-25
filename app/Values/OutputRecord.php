@@ -7,21 +7,25 @@ namespace App\Values;
 use App\Enums\ClaimedOutcome;
 use App\Enums\OutputStream;
 use App\Enums\RecordRole;
+use Spatie\LaravelData\Attributes\MapName;
+use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * One record a reader recognised, with its stream, its byte range, its role and the values it captured.
  */
-final readonly class OutputRecord
+#[MapName(SnakeCaseMapper::class)]
+final class OutputRecord extends Data
 {
     /**
      * @param  array<string, string>  $captures
      */
     public function __construct(
-        public OutputStream $stream,
-        public int $start,
-        public int $end,
-        public RecordRole $role,
-        public array $captures,
+        public readonly OutputStream $stream,
+        public readonly int $start,
+        public readonly int $end,
+        public readonly RecordRole $role,
+        public readonly array $captures,
     ) {}
 
     /**
@@ -36,36 +40,6 @@ final readonly class OutputRecord
         }
 
         return null;
-    }
-
-    /**
-     * @return array{stream: string, start: int, end: int, role: string, captures: array<string, string>}
-     */
-    public function toArray(): array
-    {
-        return [
-            'stream' => $this->stream->value,
-            'start' => $this->start,
-            'end' => $this->end,
-            'role' => $this->role->value,
-            'captures' => $this->captures,
-        ];
-    }
-
-    /**
-     * @param  array{stream: string, start: int, end: int, role: string, captures: array<string, string>}  $fields
-     */
-    public static function fromArray(array $fields): self
-    {
-        $stream = OutputStream::from($fields['stream']);
-
-        return new self(
-            $stream,
-            $fields['start'],
-            $fields['end'],
-            RecordRole::from($fields['role']),
-            $fields['captures'],
-        );
     }
 
     /**

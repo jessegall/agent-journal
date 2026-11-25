@@ -5,51 +5,33 @@ declare(strict_types=1);
 namespace App\Declarations;
 
 use App\Enums\ToolType;
-use App\Exceptions\VerificationContractInvalid;
-use App\Support\Stored\StoredVerificationContract;
 use App\Values\ExecutableBinding;
 use App\Values\ExitBranch;
 use App\Values\ExitPolicy;
 use App\Values\OutputContract;
 use App\Values\ProgressPolicy;
 use App\Values\ReaderReference;
+use Spatie\LaravelData\Attributes\MapName;
+use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * What a test, check or build promises about its run: the operation and the
  * executable it binds, its output contract, its exit policy, its progress policy, its reader and its tool type. A
  * result is published only when a run meets its contract; exits of real tools are added only once proven.
  */
-final readonly class VerificationContract
+#[MapName(SnakeCaseMapper::class)]
+final class VerificationContract extends Data
 {
     public function __construct(
-        public string $operation,
-        public ToolType $tool,
-        public ExecutableBinding $binding,
-        public OutputContract $output,
-        public ExitPolicy $exits,
-        public ProgressPolicy $progress,
-        public ReaderReference $reader,
+        public readonly string $operation,
+        public readonly ToolType $tool,
+        public readonly ExecutableBinding $binding,
+        public readonly OutputContract $output,
+        public readonly ExitPolicy $exits,
+        public readonly ProgressPolicy $progress,
+        public readonly ReaderReference $reader,
     ) {}
-
-    /**
-     * The contract as a stored rule holds it.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(): array
-    {
-        return StoredVerificationContract::fromContract($this)->toArray();
-    }
-
-    /**
-     * @param  array<string, mixed>  $fields  the shape toArray writes
-     *
-     * @throws VerificationContractInvalid
-     */
-    public static function fromArray(array $fields): self
-    {
-        return StoredVerificationContract::from($fields)->toContract();
-    }
 
     /**
      * The digest of what the contract promises, apart from which reader reads it: a repaired reader keeps the digest.

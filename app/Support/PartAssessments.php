@@ -39,11 +39,11 @@ final readonly class PartAssessments
     {
         $approved = $this->rules->approvedFor($part->operation);
 
-        if ($approved === [] || $approved[0]->payload->contracts === [] || $approved[0]->reader_approvals === []) {
+        if ($approved === [] || $approved[0]->payload->contracts === [] || $approved[0]->reader_approvals->items() === []) {
             return [];
         }
 
-        $reader = ReaderRevision::query()->findOrFail($approved[0]->reader_approvals[0]->readerRevisionId);
+        $reader = ReaderRevision::query()->findOrFail($approved[0]->reader_approvals->items()[0]->readerRevisionId);
 
         return [new ApprovedPair($approved[0], $approved[0]->payload->contracts[0], $reader)];
     }

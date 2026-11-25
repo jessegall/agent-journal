@@ -5,18 +5,22 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Enums\OperandType;
+use Spatie\LaravelData\Attributes\MapName;
+use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * One option a declared command accepts, under all its spellings (-D, --delete): a flag, or an option that takes
  * one value of a type, written as its next word or after = in the long form.
  */
-final readonly class OptionGrammar
+#[MapName(SnakeCaseMapper::class)]
+final class OptionGrammar extends Data
 {
     /**
      * @param  list<string>  $names
      * @param  list<OperandType>  $operandTypes  empty for a flag, one type for an option that takes a value
      */
-    private function __construct(public array $names, public array $operandTypes, public bool $isRequired) {}
+    public function __construct(public readonly array $names, public readonly array $operandTypes, public readonly bool $isRequired) {}
 
     public static function flag(string ...$names): self
     {
@@ -26,26 +30,6 @@ final readonly class OptionGrammar
     public static function valued(OperandType $type, string ...$names): self
     {
         return new self(array_values($names), [$type], false);
-    }
-
-    /**
-     * @return array{names: list<string>, value: list<string>, required: bool}
-     */
-    public function toArray(): array
-    {
-        return [
-            'names' => $this->names,
-            'value' => array_map(fn (OperandType $type): string => $type->value, $this->operandTypes),
-            'required' => $this->isRequired,
-        ];
-    }
-
-    /**
-     * @param  array{names: list<string>, value: list<string>, required: bool}  $fields
-     */
-    public static function fromArray(array $fields): self
-    {
-        return new self($fields['names'], array_map(OperandType::from(...), $fields['value']), $fields['required']);
     }
 
     public function required(): self

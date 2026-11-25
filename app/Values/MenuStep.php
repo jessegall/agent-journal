@@ -4,27 +4,29 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\Settings\StoredValue;
 use App\Enums\NavigationKey;
 use App\Exceptions\MenuStepRefused;
-use App\Support\Stored\StoredMenuStep;
+use Spatie\LaravelData\Attributes\MapName;
+use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * One step of a menu library entry: the fingerprint of the screen it expects, and what it does there, a label to
  * choose when the main agent confirmed a menu entry or else a named key, with the text that proves it when it has
  * one. Arrow presses and screen text are never stored.
  */
-final readonly class MenuStep implements StoredValue
+#[MapName(SnakeCaseMapper::class)]
+final class MenuStep extends Data
 {
     private const string FINGERPRINT = '/^fp1:[0-9a-f]{64}$/';
 
     private const int MOST_TEXT_CHARACTERS = 200;
 
     public function __construct(
-        public string $fingerprint,
-        public string|null $choose,
-        public string|null $key,
-        public string|null $proof,
+        public readonly string $fingerprint,
+        public readonly string|null $choose,
+        public readonly string|null $key,
+        public readonly string|null $proof,
     ) {}
 
     /**
@@ -82,31 +84,5 @@ final readonly class MenuStep implements StoredValue
         }
 
         return $stepText;
-    }
-
-    public static function fromJson(string $json): self
-    {
-        return StoredMenuStep::from(json_decode($json, true, flags: JSON_THROW_ON_ERROR))->step();
-    }
-
-    public static function listFromJson(string $json): array
-    {
-        return array_values(array_map(
-            fn (StoredMenuStep $stored) => $stored->step(),
-            StoredMenuStep::collect(json_decode($json, true, flags: JSON_THROW_ON_ERROR)),
-        ));
-    }
-
-    /**
-     * @return array{fingerprint: string, choose: string|null, key: string|null, proof: string|null}
-     */
-    public function toArray(): array
-    {
-        return [
-            'fingerprint' => $this->fingerprint,
-            'choose' => $this->choose,
-            'key' => $this->key,
-            'proof' => $this->proof,
-        ];
     }
 }

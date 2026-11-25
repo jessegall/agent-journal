@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Models\CommandRules;
 
 use App\Casts\RuleScopeCast;
-use App\Casts\StoredValuesCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -27,6 +26,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Spatie\LaravelData\DataCollection;
 
 /**
  * @property string $id
@@ -42,7 +42,7 @@ use Illuminate\Support\Carbon;
  * @property string $author_id
  * @property string $request_id
  * @property string $payload_digest
- * @property StoredValuesCast<array-key, RuleReference>|RuleReference[] $replaces
+ * @property DataCollection<int, RuleReference> $replaces
  * @property int $current_revision
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
@@ -64,7 +64,7 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
         return [
             'scope' => RuleScopeCast::class,
             'state' => ProposalState::class,
-            'replaces' => StoredValuesCast::class.':'.RuleReference::class,
+            'replaces' => DataCollection::class.':'.RuleReference::class,
             'current_revision' => 'integer',
         ];
     }
@@ -103,7 +103,7 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
         $proposal->author_id = $author->id;
         $proposal->request_id = $requestId;
         $proposal->payload_digest = $proposed->digest();
-        $proposal->replaces = $proposed->rule->replaces;
+        $proposal->replaces = RuleReference::collect($proposed->rule->replaces, DataCollection::class);
         $proposal->current_revision = 0;
         $proposal->assertSaved($proposal->save());
 
@@ -135,7 +135,7 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
     {
         $this->program = $proposed->rule->programFamily();
         $this->operation = $proposed->rule->operation();
-        $this->replaces = $proposed->rule->replaces;
+        $this->replaces = RuleReference::collect($proposed->rule->replaces, DataCollection::class);
         $this->current_revision = $revision->revision;
         $this->state = $proposed->isComplete() ? ProposalState::Pending : ProposalState::Draft;
         $this->assertSaved($this->save());

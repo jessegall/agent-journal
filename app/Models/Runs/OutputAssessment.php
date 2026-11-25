@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Runs;
 
-use App\Casts\StoredValuesCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -21,6 +20,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Spatie\LaravelData\DataCollection;
 
 /**
  * @property string $id
@@ -30,7 +30,7 @@ use Illuminate\Support\Carbon;
  * @property string $rule_revision_id
  * @property InterpretationState $interpretation
  * @property AssessmentOutcome $outcome
- * @property StoredValuesCast<array-key, OutputProblem>|OutputProblem[] $problems
+ * @property DataCollection<int, OutputProblem> $problems
  * @property array $counts
  * @property array $final_offsets
  * @property ?string $replaces_assessment_id
@@ -52,7 +52,7 @@ final class OutputAssessment extends Model implements ReadableModel
         return [
             'interpretation' => InterpretationState::class,
             'outcome' => AssessmentOutcome::class,
-            'problems' => StoredValuesCast::class.':'.OutputProblem::class,
+            'problems' => DataCollection::class.':'.OutputProblem::class,
             'counts' => 'array',
             'final_offsets' => 'array',
         ];
@@ -86,7 +86,7 @@ final class OutputAssessment extends Model implements ReadableModel
         $outputAssessment->rule_revision_id = $declaration->id;
         $outputAssessment->interpretation = self::interpretationOf($validation->problems);
         $outputAssessment->outcome = $validation->outcome;
-        $outputAssessment->problems = $validation->problems;
+        $outputAssessment->problems = OutputProblem::collect($validation->problems, DataCollection::class);
         $outputAssessment->counts = $replayed->assessment->counts;
         $outputAssessment->final_offsets = $replayed->consumed->offsets;
         $outputAssessment->replaces_assessment_id = $previous?->id;
@@ -99,7 +99,7 @@ final class OutputAssessment extends Model implements ReadableModel
 
     public function isValid(): bool
     {
-        return $this->interpretation === InterpretationState::Valid && $this->problems === [];
+        return $this->interpretation === InterpretationState::Valid && $this->problems->items() === [];
     }
 
     // ----------[ Asserts ]----------

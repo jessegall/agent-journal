@@ -77,7 +77,7 @@ final class ReaderProofTest extends TestCase
         $proofId = $this->runAsAgent(new ProveReaderCommand($this->requestId, $reader, [$passed, $findings]));
 
         $proof = ReaderProof::query()->findOrFail($proofId);
-        $this->assertSame([0, 1], array_map(fn ($branch) => $branch->status, $proof->proven_branches));
+        $this->assertSame([0, 1], array_map(fn ($branch) => $branch->status, $proof->proven_branches->items()));
         $this->assertArrayHasKey('stdout', $proof->proven_branches[0]->manifests);
         $this->assertSame(RequestState::AwaitingApproval, $this->request()->state);
         $this->assertTrue(ReaderRevision::query()->findOrFail($reader)->isProven());

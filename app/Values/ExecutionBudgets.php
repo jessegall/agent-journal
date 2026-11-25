@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Exceptions\ExecutionBudgetInvalid;
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * The resources one start may use: every limit above zero, memory and swap equal, and none above
  * the host's maxima for one helper.
  */
+#[MapName(SnakeCaseMapper::class)]
 final class ExecutionBudgets extends Data
 {
     private const int GIB = 1024 * 1024 * 1024;

@@ -6,14 +6,18 @@ namespace App\Values;
 
 use App\Enums\Outcome;
 use App\Exceptions\VerificationContractInvalid;
+use Spatie\LaravelData\Attributes\MapName;
+use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * One exit status a check may end with, what it means, and the output evidence that must go with it, such as
  * summary.failed == 0. A signal is never a status.
  */
-final readonly class ExitBranch
+#[MapName(SnakeCaseMapper::class)]
+final class ExitBranch extends Data
 {
-    private function __construct(public int $status, public Outcome $outcome, public string $requires) {}
+    public function __construct(public readonly int $status, public readonly Outcome $outcome, public readonly string $requires) {}
 
     /**
      * @throws VerificationContractInvalid

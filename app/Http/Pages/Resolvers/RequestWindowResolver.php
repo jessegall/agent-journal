@@ -139,7 +139,7 @@ final readonly class RequestWindowResolver implements PageResolver
             array_values(ReaderProof::query()->ofReaderRevision($reader->id)->limit(10)->get()->map(
                 fn (ReaderProof $proof) => "{$proof->id}: ".implode(', ', array_map(
                     fn (ProvenBranch $branch) => "exit {$branch->status} {$branch->outcome->value}",
-                    $proof->proven_branches,
+                    $proof->proven_branches->items(),
                 )),
             )->all()),
         ))->all());

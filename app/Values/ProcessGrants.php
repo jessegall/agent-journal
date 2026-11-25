@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Enums\CommandClass;
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * What a profile declares its agents may run: allowed and denied command classes, the ceiling no allow goes past, and
  * allowed and denied exact patterns. A denial always beats an allow.
  */
+#[MapName(SnakeCaseMapper::class)]
 final class ProcessGrants extends Data
 {
     public function __construct(

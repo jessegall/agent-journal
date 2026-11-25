@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Models\CommandRules;
 
 use App\Casts\RuleScopeCast;
-use App\Casts\StoredValueCast;
-use App\Casts\StoredValuesCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -22,6 +20,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Spatie\LaravelData\DataCollection;
 
 /**
  * @property string $id
@@ -32,9 +31,9 @@ use Illuminate\Support\Carbon;
  * @property string $rule_id
  * @property int $revision
  * @property string $rule_proposal_revision_id
- * @property StoredValueCast<array-key, CommandRule>|CommandRule[] $payload
- * @property StoredValuesCast<array-key, ScriptBinding>|ScriptBinding[] $script_bindings
- * @property StoredValuesCast<array-key, ReaderApproval>|ReaderApproval[] $reader_approvals
+ * @property CommandRule $payload
+ * @property DataCollection<int, ScriptBinding> $script_bindings
+ * @property DataCollection<int, ReaderApproval> $reader_approvals
  * @property string $digest
  * @property string $author_type
  * @property string $author_id
@@ -61,9 +60,9 @@ final class RuleRevision extends Model implements ReadableModel
         return [
             'scope' => RuleScopeCast::class,
             'revision' => 'integer',
-            'payload' => StoredValueCast::class.':'.CommandRule::class,
-            'script_bindings' => StoredValuesCast::class.':'.ScriptBinding::class,
-            'reader_approvals' => StoredValuesCast::class.':'.ReaderApproval::class,
+            'payload' => CommandRule::class,
+            'script_bindings' => DataCollection::class.':'.ScriptBinding::class,
+            'reader_approvals' => DataCollection::class.':'.ReaderApproval::class,
             'approved_at' => 'datetime',
         ];
     }
@@ -103,8 +102,8 @@ final class RuleRevision extends Model implements ReadableModel
         $ruleRevision->revision = $approved->revision;
         $ruleRevision->rule_proposal_revision_id = $proposed->id;
         $ruleRevision->payload = $approved;
-        $ruleRevision->script_bindings = $scripts;
-        $ruleRevision->reader_approvals = $readers;
+        $ruleRevision->script_bindings = ScriptBinding::collect($scripts, DataCollection::class);
+        $ruleRevision->reader_approvals = ReaderApproval::collect($readers, DataCollection::class);
         $ruleRevision->digest = $approved->digest();
         $ruleRevision->author_type = $proposed->author_type;
         $ruleRevision->author_id = $proposed->author_id;

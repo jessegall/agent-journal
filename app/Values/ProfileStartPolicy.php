@@ -6,13 +6,16 @@ namespace App\Values;
 
 use App\Enums\ExecutionModeType;
 use App\Enums\PolicyOriginType;
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * How a profile's agent is started: its driver and whether a start may choose another, the models it allows (none
  * listed allows any), what it may do, the conditions it must pass before it stops, where it runs, and where each of
  * those came from. The worktree of its execution policy is the type's placeholder, which the host resolves per start.
  */
+#[MapName(SnakeCaseMapper::class)]
 final class ProfileStartPolicy extends Data
 {
     public const string WORKSPACE = 'workspace';

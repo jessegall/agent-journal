@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Drivers;
 
-use App\Casts\OptionalStoredValueCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -85,7 +84,7 @@ use Illuminate\Support\Carbon;
  * @property ?int $script_generation
  * @property ?string $script_evidence
  * @property ?string $navigation_request_id
- * @property ?OptionalStoredValueCast<array-key, NavigationRound>|?NavigationRound[] $navigation_round
+ * @property ?NavigationRound $navigation_round
  * @property HoldReason $hold_reason
  * @property int $row_version
  * @property ?Carbon $created_at
@@ -109,7 +108,7 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
         return [
             'parts' => 'array',
             'script_parameters' => 'array',
-            'navigation_round' => OptionalStoredValueCast::class.':'.NavigationRound::class,
+            'navigation_round' => NavigationRound::class,
             'operation' => DriverOperation::class,
             'progress' => RequestProgress::class,
             'outcome' => RequestOutcome::class,

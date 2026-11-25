@@ -7,13 +7,16 @@ namespace App\Values;
 use App\Enums\AccessRuleType;
 use App\Enums\ResourceType;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * What one profile may do on the host: root paths and destinations with the accesses each permits, process ceilings,
  * exact host operation grants and explicit denials. A protected path is never granted, and a journal grant never
  * widens any of this.
  */
+#[MapName(SnakeCaseMapper::class)]
 final class AccessPolicy extends Data
 {
     /**

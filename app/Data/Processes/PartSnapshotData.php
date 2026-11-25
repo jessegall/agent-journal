@@ -52,7 +52,7 @@ final class PartSnapshotData extends Data
         string|null $receiptId,
     ): self {
         $end = $part->end->hasStatus() ? "{$part->end_type->value} {$part->end_code}" : $part->end_type->value;
-        $problems = $assessment === null ? [] : $assessment->problems;
+        $problems = $assessment === null ? [] : $assessment->problems->items();
 
         return new self(
             $part->id,

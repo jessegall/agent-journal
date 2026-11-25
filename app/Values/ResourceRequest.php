@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Enums\ResourceType;
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * One operand an operation acts on: a path relative to the working folder or absolute, a network destination, or a
  * journal record, in canonical form.
  */
+#[MapName(SnakeCaseMapper::class)]
 final class ResourceRequest extends Data
 {
     public function __construct(public readonly ResourceType $type, public readonly string $target) {}

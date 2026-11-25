@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Enums\AccessType;
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * One protected command whose exit must be zero before a helper may finish: an absolute executable run with argv,
  * never a shell line, within its own time and output limits.
  */
+#[MapName(SnakeCaseMapper::class)]
 final class StopCondition extends Data
 {
     public const string CLEAN_WORKTREE = 'clean-worktree';

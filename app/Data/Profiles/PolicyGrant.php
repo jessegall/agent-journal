@@ -6,11 +6,14 @@ namespace App\Data\Profiles;
 
 use App\Contracts\Authorization\Policy;
 use App\Enums\AccessType;
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * One access a profile grants on one policy. The pair is the identity, and a stored grant is exactly its two keys.
  */
+#[MapName(SnakeCaseMapper::class)]
 final class PolicyGrant extends Data
 {
     /**

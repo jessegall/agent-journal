@@ -6,55 +6,31 @@ namespace App\Values;
 
 use App\Enums\OperandType;
 use App\Enums\UnresolvedType;
+use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Attributes\MapName;
+use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * The words a declared command accepts after its program and subcommands: its options, its operand slots, and
  * whether -- ends the options. A word the grammar does not accept is reported as unresolved, never passed over.
  */
-final readonly class ArgumentGrammar
+#[MapName(SnakeCaseMapper::class)]
+final class ArgumentGrammar extends Data
 {
     /**
      * @param  list<OptionGrammar>  $options
      * @param  list<OperandType>  $operands  the operand slots in order
      */
-    private function __construct(
-        public array $options,
-        public array $operands,
-        public bool $repeatsLastOperand,
-        public bool $endsOptionsAtDoubleDash,
-        public bool $acceptsNumericOptions = false,
-        public int $minimumOperands = 0,
+    public function __construct(
+        #[DataCollectionOf(OptionGrammar::class)]
+        public readonly array $options,
+        public readonly array $operands,
+        public readonly bool $repeatsLastOperand,
+        public readonly bool $endsOptionsAtDoubleDash,
+        public readonly bool $acceptsNumericOptions = false,
+        public readonly int $minimumOperands = 0,
     ) {}
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function toArray(): array
-    {
-        return [
-            'options' => array_map(fn (OptionGrammar $option): array => $option->toArray(), $this->options),
-            'operands' => array_map(fn (OperandType $type): string => $type->value, $this->operands),
-            'repeats_last_operand' => $this->repeatsLastOperand,
-            'ends_options_at_double_dash' => $this->endsOptionsAtDoubleDash,
-            'accepts_numeric_options' => $this->acceptsNumericOptions,
-            'minimum_operands' => $this->minimumOperands,
-        ];
-    }
-
-    /**
-     * @param  array<string, mixed>  $fields  the shape toArray writes
-     */
-    public static function fromArray(array $fields): self
-    {
-        return new self(
-            array_values(array_map(OptionGrammar::fromArray(...), $fields['options'])),
-            array_values(array_map(OperandType::from(...), $fields['operands'])),
-            $fields['repeats_last_operand'],
-            $fields['ends_options_at_double_dash'],
-            $fields['accepts_numeric_options'],
-            $fields['minimum_operands'],
-        );
-    }
 
     public static function none(): self
     {

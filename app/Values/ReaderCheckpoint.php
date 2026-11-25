@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\Settings\StoredValue;
 use App\Enums\OutputStream;
 use App\Enums\RecordRole;
-use App\Support\Stored\StoredReaderCheckpoint;
+use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Attributes\MapName;
+use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * Where a reader stands in a part's output: per stream the next offset it expects and the unfinished line it holds,
@@ -27,7 +29,8 @@ use App\Support\Stored\StoredReaderCheckpoint;
  *   }>,
  * }
  */
-final readonly class ReaderCheckpoint implements StoredValue
+#[MapName(SnakeCaseMapper::class)]
+final class ReaderCheckpoint extends Data
 {
     /**
      * @param  array<string, int>  $offsets  stream => next offset
@@ -36,10 +39,12 @@ final readonly class ReaderCheckpoint implements StoredValue
      * @param  list<OutputProblem>  $problems
      */
     public function __construct(
-        public array $offsets = [],
-        public array $pending = [],
-        public array $records = [],
-        public array $problems = [],
+        public readonly array $offsets = [],
+        public readonly array $pending = [],
+        #[DataCollectionOf(OutputRecord::class)]
+        public readonly array $records = [],
+        #[DataCollectionOf(OutputProblem::class)]
+        public readonly array $problems = [],
     ) {}
 
     public function offsetOf(OutputStream $stream): int
@@ -60,31 +65,5 @@ final readonly class ReaderCheckpoint implements StoredValue
     public function recordsOf(RecordRole $role): array
     {
         return array_values(array_filter($this->records, fn (OutputRecord $record): bool => $record->role === $role));
-    }
-
-    /**
-     * @return CheckpointFields
-     */
-    public function toArray(): array
-    {
-        return [
-            'offsets' => $this->offsets,
-            'pending' => array_map(base64_encode(...), $this->pending),
-            'records' => array_map(fn (OutputRecord $record) => $record->toArray(), $this->records),
-            'problems' => array_map(fn (OutputProblem $problem) => $problem->toArray(), $this->problems),
-        ];
-    }
-
-    public static function fromJson(string $json): self
-    {
-        return StoredReaderCheckpoint::from(json_decode($json, true, flags: JSON_THROW_ON_ERROR))->checkpoint();
-    }
-
-    public static function listFromJson(string $json): array
-    {
-        return array_values(array_map(
-            fn (StoredReaderCheckpoint $stored) => $stored->checkpoint(),
-            StoredReaderCheckpoint::collect(json_decode($json, true, flags: JSON_THROW_ON_ERROR)),
-        ));
     }
 }

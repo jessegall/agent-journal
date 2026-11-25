@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Drivers;
 
-use App\Casts\StoredValuesCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -33,6 +32,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Spatie\LaravelData\DataCollection;
 
 /**
  * @property string $id
@@ -44,12 +44,12 @@ use Illuminate\Support\Carbon;
  * @property int $goal_version
  * @property array $goal_parameters
  * @property string $goal_key
- * @property StoredValuesCast<array-key, MenuStep>|MenuStep[] $steps
+ * @property DataCollection<int, MenuStep> $steps
  * @property NavigationCompletion $completes
  * @property ?int $next_step
  * @property string $proof
  * @property MenuEntryState $state
- * @property StoredValuesCast<array-key, MenuEntryBuild>|MenuEntryBuild[] $builds
+ * @property DataCollection<int, MenuEntryBuild> $builds
  * @property int $uses
  * @property ?CarbonImmutable $last_used_at
  * @property ?string $last_replay_key
@@ -80,10 +80,10 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
     {
         return [
             'goal_parameters' => 'array',
-            'steps' => StoredValuesCast::class.':'.MenuStep::class,
+            'steps' => DataCollection::class.':'.MenuStep::class,
             'completes' => NavigationCompletion::class,
             'state' => MenuEntryState::class,
-            'builds' => StoredValuesCast::class.':'.MenuEntryBuild::class,
+            'builds' => DataCollection::class.':'.MenuEntryBuild::class,
             'last_used_at' => 'immutable_datetime',
         ];
     }
@@ -111,12 +111,13 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
         $entry->goal_version = $goal->version;
         $entry->goal_parameters = $goal->sortedParameters();
         $entry->goal_key = $goal->key();
-        $entry->steps = $steps;
+        $entry->steps = MenuStep::collect($steps, DataCollection::class);
         $entry->completes = $completes;
         $entry->next_step = $source->next_step;
         $entry->proof = $proof;
         $entry->state = MenuEntryState::Current;
-        $entry->builds = [MenuEntryBuild::proven($source->build, CarbonImmutable::now())];
+        $build = MenuEntryBuild::proven($source->build, CarbonImmutable::now());
+        $entry->builds = MenuEntryBuild::collect([$build], DataCollection::class);
         $entry->source_request_id = $source->id;
         $entry->belongTo($owner);
         $entry->save();
@@ -163,7 +164,7 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
      */
     public function buildOn(string $build): MenuEntryBuild|null
     {
-        return array_find($this->builds, fn (MenuEntryBuild $proven) => $proven->build === $build);
+        return array_find($this->builds->items(), fn (MenuEntryBuild $proven) => $proven->build === $build);
     }
 
     /**
@@ -232,7 +233,7 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
             $this->id,
             $this->family,
             EntryGoalAnswer::of($this->goal),
-            $this->steps,
+            $this->steps->items(),
             $this->completes->value,
             $this->next_step,
             $this->proof,
@@ -243,7 +244,7 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
 
     /**
      * @param  non-empty-list<MenuStep>  $steps
-     * @return non-empty-list<array{fingerprint: string, choose: string|null, key: string|null, proof: string|null}>
+     * @return non-empty-list<array<string, mixed>>
      */
     private static function storedSteps(array $steps): array
     {
@@ -255,9 +256,9 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
      */
     private function storeBuild(MenuEntryBuild $build): void
     {
-        $builds = array_column($this->builds, null, 'build');
+        $builds = array_column($this->builds->items(), null, 'build');
         $builds[$build->build] = $build;
-        $this->builds = array_values($builds);
+        $this->builds = MenuEntryBuild::collect($builds, DataCollection::class);
         $this->save();
     }
 

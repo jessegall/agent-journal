@@ -158,7 +158,8 @@ final class DeclarativeReaderTest extends TestCase
         $checkpoint = new ReaderCheckpoint();
 
         foreach ($frames as $frame) {
-            $checkpoint = $reader->read(ReaderCheckpoint::fromJson(json_encode($checkpoint->toArray(), JSON_THROW_ON_ERROR)), $frame);
+            $stored = json_decode(json_encode($checkpoint->toArray(), JSON_THROW_ON_ERROR), true);
+            $checkpoint = $reader->read(ReaderCheckpoint::from($stored), $frame);
         }
 
         return $reader->finish($checkpoint, $end);

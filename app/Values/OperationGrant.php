@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Values;
 
 use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * A grant of one exact host operation, limited to the operands it lists; with none listed, wherever the policy's
  * scopes would otherwise allow it.
  */
+#[MapName(SnakeCaseMapper::class)]
 final class OperationGrant extends Data
 {
     /**

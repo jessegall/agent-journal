@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use Spatie\LaravelData\Attributes\MapName;
+use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
+
 /**
  * The reader a check's output is read with: a proven reader revision, or the state that no reader is proven yet, in
  * which case the check needs one before it may run normally.
  */
-final readonly class ReaderReference
+#[MapName(SnakeCaseMapper::class)]
+final class ReaderReference extends Data
 {
-    private function __construct(public string $revision) {}
+    public function __construct(public readonly string $revision) {}
 
     public static function proven(string $revision): self
     {

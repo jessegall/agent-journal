@@ -7,12 +7,15 @@ namespace App\Values;
 use App\Enums\PolicyOriginType;
 use App\Exceptions\ProfileFieldUnknown;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * Where a revision's effective start policy came from: the hash of the activated configuration it was compiled from,
  * and the origin of each effective field.
  */
+#[MapName(SnakeCaseMapper::class)]
 final class ProfileProvenance extends Data
 {
     /**

@@ -54,10 +54,11 @@ final class StoredRuleShapeTest extends TestCase
             ->replacing(new RuleReference($core->scope, $core->id, $core->revision));
         $stored = json_encode($core->toArray(), JSON_THROW_ON_ERROR);
         $storedList = json_encode([$core->toArray(), $replacing->toArray()], JSON_THROW_ON_ERROR);
-        $readList = CommandRule::listFromJson($storedList);
+        $read = CommandRule::from(json_decode($stored, true, flags: JSON_THROW_ON_ERROR));
+        $readList = CommandRule::collect(json_decode($storedList, true, flags: JSON_THROW_ON_ERROR));
 
-        $this->assertSame($stored, json_encode(CommandRule::fromJson($stored)->toArray(), JSON_THROW_ON_ERROR));
-        $this->assertSame(self::RULE_DIGEST, CommandRule::fromJson($stored)->digest());
+        $this->assertSame($stored, json_encode($read->toArray(), JSON_THROW_ON_ERROR));
+        $this->assertSame(self::RULE_DIGEST, $read->digest());
         $this->assertSame(
             $storedList,
             json_encode(array_map(fn (CommandRule $rule) => $rule->toArray(), $readList), JSON_THROW_ON_ERROR),
@@ -80,6 +81,6 @@ final class StoredRuleShapeTest extends TestCase
 
     private function readBack(CommandRule $rule): CommandRule
     {
-        return CommandRule::fromArray(json_decode(json_encode($rule->toArray(), JSON_THROW_ON_ERROR), true));
+        return CommandRule::from(json_decode(json_encode($rule->toArray(), JSON_THROW_ON_ERROR), true));
     }
 }

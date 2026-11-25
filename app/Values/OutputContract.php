@@ -10,22 +10,26 @@ use App\Enums\FramingType;
 use App\Enums\OutputEncoding;
 use App\Enums\StreamUse;
 use App\Enums\SummaryRule;
+use Spatie\LaravelData\Attributes\MapName;
+use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * What a check's output must look like for its reader to judge it: encoding, framing,
  * schema versions, whether its streams may be merged, whether it must end with a summary, and what an empty output or
  * an empty selection means.
  */
-final readonly class OutputContract
+#[MapName(SnakeCaseMapper::class)]
+final class OutputContract extends Data
 {
     public function __construct(
-        public OutputEncoding $encoding,
-        public FramingType $framing,
-        public string $schemaVersions,
-        public StreamUse $streams,
-        public SummaryRule $summary,
-        public EmptyRunPolicy $empty,
-        public EmptySelection $emptySelection,
+        public readonly OutputEncoding $encoding,
+        public readonly FramingType $framing,
+        public readonly string $schemaVersions,
+        public readonly StreamUse $streams,
+        public readonly SummaryRule $summary,
+        public readonly EmptyRunPolicy $empty,
+        public readonly EmptySelection $emptySelection,
     ) {}
 
     /**

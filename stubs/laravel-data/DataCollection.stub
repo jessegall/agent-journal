@@ -1,0 +1,20 @@
+<?php
+
+namespace Spatie\LaravelData;
+
+/**
+ * A model column cast to a collection of Data is read from a JSON list, so its items keyed by int are a list.
+ *
+ * @template TKey of array-key
+ * @template TValue
+ *
+ * @implements \ArrayAccess<TKey, TValue>
+ * @implements \IteratorAggregate<TKey, TValue>
+ */
+class DataCollection implements \IteratorAggregate, \Countable, \ArrayAccess
+{
+    /**
+     * @return (TKey is int ? list<TValue> : array<TKey, TValue>)
+     */
+    public function items(): array {}
+}

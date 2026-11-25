@@ -108,6 +108,6 @@ final class ResultReceiptTest extends TestCase
     {
         $assessment = OutputAssessment::query()->where('part_run_id', $part->id)->latest('created_at')->firstOrFail();
 
-        return array_map(fn (OutputProblem $problem): ProblemCode => $problem->code, $assessment->problems);
+        return array_map(fn (OutputProblem $problem): ProblemCode => $problem->code, $assessment->problems->items());
     }
 }

@@ -88,7 +88,7 @@ final readonly class EvidenceRuns
      */
     public function start(EvidencePermit $permit, ActorIdentity $runner, string $requestId): ProcessRun
     {
-        $classification = $this->classify($permit->source_line, $permit->working_folder, $permit->candidate_rules);
+        $classification = $this->classify($permit->source_line, $permit->working_folder, $permit->candidate_rules->items());
         $permit->assertUsable($runner, $requestId, $this->digestOf($classification));
 
         if ($permit->wasStartedBy($requestId)) {
@@ -99,7 +99,7 @@ final readonly class EvidenceRuns
             $permit->source_line,
             $permit->working_folder,
             $runner,
-            $permit->candidate_rules,
+            $permit->candidate_rules->items(),
         );
 
         $timing = $classification->hasVerification() ? $this->timing->forCaller() : TimingVerdict::allowed();

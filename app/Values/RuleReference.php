@@ -4,36 +4,17 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\Settings\StoredValue;
-use App\Support\Stored\StoredRuleReference;
+use Spatie\LaravelData\Attributes\MapName;
+use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * Names one exact rule revision of one owner, as a project replacement must.
  */
-final readonly class RuleReference implements StoredValue
+#[MapName(SnakeCaseMapper::class)]
+final class RuleReference extends Data
 {
-    public function __construct(public RuleScope $scope, public string $id, public int $revision) {}
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function toArray(): array
-    {
-        return StoredRuleReference::fromReference($this)->toArray();
-    }
-
-    public static function fromJson(string $json): self
-    {
-        return StoredRuleReference::from(json_decode($json, true, flags: JSON_THROW_ON_ERROR))->toReference();
-    }
-
-    public static function listFromJson(string $json): array
-    {
-        return array_values(array_map(
-            fn (StoredRuleReference $stored) => $stored->toReference(),
-            StoredRuleReference::collect(json_decode($json, true, flags: JSON_THROW_ON_ERROR)),
-        ));
-    }
+    public function __construct(public readonly RuleScope $scope, public readonly string $id, public readonly int $revision) {}
 
     public function label(): string
     {

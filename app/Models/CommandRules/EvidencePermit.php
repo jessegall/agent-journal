@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\CommandRules;
 
-use App\Casts\StoredValuesCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -24,6 +23,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Spatie\LaravelData\DataCollection;
 
 /**
  * @property string $id
@@ -42,7 +42,7 @@ use Illuminate\Support\Carbon;
  * @property ?CarbonImmutable $consumed_at
  * @property ?string $process_run_id
  * @property ?string $command_request_id
- * @property StoredValuesCast<array-key, CommandRule>|CommandRule[] $candidate_rules
+ * @property DataCollection<int, CommandRule> $candidate_rules
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
@@ -64,7 +64,7 @@ final class EvidencePermit extends Model implements EventSource, ReadableModel
             'seconds_cap' => 'integer',
             'expires_at' => 'immutable_datetime',
             'consumed_at' => 'immutable_datetime',
-            'candidate_rules' => StoredValuesCast::class.':'.CommandRule::class,
+            'candidate_rules' => DataCollection::class.':'.CommandRule::class,
         ];
     }
 
@@ -97,7 +97,7 @@ final class EvidencePermit extends Model implements EventSource, ReadableModel
         $permit->seconds_cap = $limits->secondsCap;
         $permit->expires_at = CarbonImmutable::now()->addMinutes($limits->minutesValid);
         $permit->command_request_id = $request?->id;
-        $permit->candidate_rules = $candidateRules;
+        $permit->candidate_rules = CommandRule::collect($candidateRules, DataCollection::class);
         $permit->save();
 
         return $permit;

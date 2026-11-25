@@ -78,6 +78,6 @@ final readonly class RunWindowResolver implements PageResolver
             return [];
         }
 
-        return array_map(ProblemData::fromProblem(...), $assessment->problems);
+        return array_map(ProblemData::fromProblem(...), $assessment->problems->items());
     }
 }

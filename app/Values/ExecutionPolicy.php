@@ -6,12 +6,15 @@ namespace App\Values;
 
 use App\Enums\ExecutionModeType;
 use App\Exceptions\ExecutionPolicyInvalid;
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * Where and with what one start runs: host or required container, the verified image a container uses, its
  * worktree, its budgets and the network capabilities it was admitted with. It holds no provider or journal secret.
  */
+#[MapName(SnakeCaseMapper::class)]
 final class ExecutionPolicy extends Data
 {
     /**

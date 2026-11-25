@@ -171,7 +171,7 @@ final class NavigationRoundTest extends TestCase
         $this->assertSame($entry->id, $navigation->fresh()?->library_entry_id);
         $this->assertSame(
             [[...$this->step(), 'key' => null, 'proof' => null]],
-            array_map(fn (MenuStep $step) => $step->toArray(), $entry->steps),
+            array_map(fn (MenuStep $step) => $step->toArray(), $entry->steps->items()),
         );
         $stalled = DriverRequest::query()->findOrFail($navigation->driver_request_id);
         $this->assertSame(sprintf(self::SAVED_EVIDENCE, $entry->id), $stalled->script_evidence);

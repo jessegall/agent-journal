@@ -235,7 +235,7 @@ final class NavigationRaiseRouteTest extends TestCase
         $this->addPaths($navigation);
 
         $saved = $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(NavigationLibrary::class)->save($navigation, $entry->steps),
+            fn () => $this->app->make(NavigationLibrary::class)->save($navigation, $entry->steps->items()),
         );
 
         $this->assertSame($entry->id, $saved->id);

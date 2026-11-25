@@ -6,20 +6,24 @@ namespace App\Values;
 
 use App\Enums\ProgressType;
 use App\Exceptions\VerificationContractInvalid;
+use Spatie\LaravelData\Attributes\MapName;
+use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * How far a check has got: an exact total from a listing operation, which must itself be admitted and match the run's
  * selection, a percentage the tool prints, or nothing more than its completed steps.
  */
-final readonly class ProgressPolicy
+#[MapName(SnakeCaseMapper::class)]
+final class ProgressPolicy extends Data
 {
     /**
      * @param  list<string>  $listing  the listing operation's name, for an exact total
      */
-    private function __construct(
-        public ProgressType $type,
-        public array $listing,
-        public string $selectionFingerprint,
+    public function __construct(
+        public readonly ProgressType $type,
+        public readonly array $listing,
+        public readonly string $selectionFingerprint,
     ) {}
 
     /**

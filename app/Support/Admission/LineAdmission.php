@@ -308,7 +308,7 @@ final readonly class LineAdmission implements ShellAdmission
             $part->contracts,
             fn ($contract): bool => array_any(
                 $this->rules->approvedFor($contract->operation),
-                fn (RuleRevision $revision): bool => $revision->reader_approvals !== [],
+                fn (RuleRevision $revision): bool => $revision->reader_approvals->count() > 0,
             ),
         );
     }

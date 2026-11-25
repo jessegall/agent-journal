@@ -6,12 +6,15 @@ namespace App\Values;
 
 use App\Exceptions\StopConditionsInvalid;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * The ordered stop conditions of one start, checked before it starts: at most 16, each within 60 seconds and 64 KiB,
  * all together within the attempt's time, and a writing helper's always holding clean-worktree.
  */
+#[MapName(SnakeCaseMapper::class)]
 final class StopConditions extends Data
 {
     public const int DEFAULT_ATTEMPT_SECONDS = 30;

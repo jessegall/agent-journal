@@ -5,23 +5,27 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Enums\BindingType;
+use Spatie\LaravelData\Attributes\MapName;
+use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * What the host will actually execute for a program family: a built-in or module
  * program trusted by the folders it is installed in, or a project tool trusted by its path and content digest.
  * Relocating a program changes its binding, never its grammar.
  */
-final readonly class ExecutableBinding
+#[MapName(SnakeCaseMapper::class)]
+final class ExecutableBinding extends Data
 {
     /**
      * @param  list<string>  $locations  trusted install folders, or the one project-relative path of a project tool
      */
-    private function __construct(
-        public BindingType $type,
-        public string $family,
-        public array $locations,
-        public string $contentDigest,
-        public int $configurationRevision,
+    public function __construct(
+        public readonly BindingType $type,
+        public readonly string $family,
+        public readonly array $locations,
+        public readonly string $contentDigest,
+        public readonly int $configurationRevision,
     ) {}
 
     /**

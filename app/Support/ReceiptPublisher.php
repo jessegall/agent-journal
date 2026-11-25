@@ -6,7 +6,6 @@ namespace App\Support;
 
 use App\Models\Runs\OutputAssessment;
 use App\Models\Runs\ResultReceipt;
-use App\Support\Stored\StoredVerificationContract;
 use App\Values\VerifiedOutput;
 
 /**
@@ -37,7 +36,7 @@ final readonly class ReceiptPublisher
     private function exitPolicyDigest(VerifiedOutput $verified): string
     {
         $contracts = $verified->declaration->payload->contracts;
-        $exits = $contracts === [] ? [] : StoredVerificationContract::fromContract($contracts[0])->exits;
+        $exits = $contracts === [] ? [] : $contracts[0]->exits;
 
         return hash('sha256', json_encode($exits, JSON_THROW_ON_ERROR));
     }

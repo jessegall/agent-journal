@@ -5,16 +5,20 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Enums\ScopeType;
+use Spatie\LaravelData\Attributes\MapName;
+use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * The owner of a command rule: Core, one module at one version and content digest, or the project.
  */
-final readonly class RuleScope
+#[MapName(SnakeCaseMapper::class)]
+final class RuleScope extends Data
 {
-    private function __construct(
-        public ScopeType $type,
-        public string $owner,
-        public string $version,
+    public function __construct(
+        public readonly ScopeType $type,
+        public readonly string $owner,
+        public readonly string $version,
     ) {}
 
     public static function core(): self

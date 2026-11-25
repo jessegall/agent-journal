@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * One exact command an actor may or may not run: its program and every word after it, so nothing unspecified trails
  * it. No glob and no regular expression: an allowed curl --head https://example.org/ allows only that invocation.
  */
+#[MapName(SnakeCaseMapper::class)]
 final class CommandPattern extends Data
 {
     /**

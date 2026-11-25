@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\CommandRules;
 
-use App\Casts\StoredValueCast;
-use App\Casts\StoredValuesCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -22,14 +20,15 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Spatie\LaravelData\DataCollection;
 
 /**
  * @property string $id
  * @property string $rule_proposal_id
  * @property int $revision
- * @property StoredValueCast<array-key, CommandRule>|CommandRule[] $payload
+ * @property CommandRule $payload
  * @property string $evidence
- * @property StoredValuesCast<array-key, RuleExample>|RuleExample[] $examples
+ * @property DataCollection<int, RuleExample> $examples
  * @property string $author_type
  * @property string $author_id
  * @property Carbon $created_at
@@ -51,8 +50,8 @@ final class RuleProposalRevision extends Model implements ReadableModel
     {
         return [
             'revision' => 'integer',
-            'payload' => StoredValueCast::class.':'.CommandRule::class,
-            'examples' => StoredValuesCast::class.':'.RuleExample::class,
+            'payload' => CommandRule::class,
+            'examples' => DataCollection::class.':'.RuleExample::class,
         ];
     }
 
@@ -73,7 +72,7 @@ final class RuleProposalRevision extends Model implements ReadableModel
         $ruleProposalRevision->revision = $proposal->current_revision + 1;
         $ruleProposalRevision->payload = $proposed->rule;
         $ruleProposalRevision->evidence = $proposed->evidence;
-        $ruleProposalRevision->examples = $proposed->examples;
+        $ruleProposalRevision->examples = RuleExample::collect($proposed->examples, DataCollection::class);
         $ruleProposalRevision->author_type = $author->type->value;
         $ruleProposalRevision->author_id = $author->id;
         $ruleProposalRevision->save();
@@ -88,7 +87,7 @@ final class RuleProposalRevision extends Model implements ReadableModel
      */
     protected function proposedRule(): Attribute
     {
-        return Accessor::get(fn () => new ProposedRule($this->payload, $this->evidence, $this->examples));
+        return Accessor::get(fn () => new ProposedRule($this->payload, $this->evidence, $this->examples->items()));
     }
 
     // ----------[ Relations ]----------

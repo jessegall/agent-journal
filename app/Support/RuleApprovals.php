@@ -120,7 +120,7 @@ final readonly class RuleApprovals
             throw ApprovalRefused::proofMismatch($readers[0]->proofId);
         }
 
-        $covered = array_map(fn (ProvenBranch $branch): int => $branch->status, $proof->proven_branches);
+        $covered = array_map(fn (ProvenBranch $branch): int => $branch->status, $proof->proven_branches->items());
         $admitted = array_map(fn (ExitBranch $branch): int => $branch->status, $rule->contracts[0]->exits->branches);
 
         if (array_diff($admitted, $covered) !== []) {

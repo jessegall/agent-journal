@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Runs;
 
-use App\Casts\StoredValueCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -27,7 +26,7 @@ use Illuminate\Support\Carbon;
  * @property string $part_run_id
  * @property string $reader_revision_id
  * @property PositionPurpose $purpose
- * @property StoredValueCast<array-key, ReaderCheckpoint>|ReaderCheckpoint[] $checkpoint
+ * @property ReaderCheckpoint $checkpoint
  * @property InterpretationState $interpretation
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
@@ -46,7 +45,7 @@ final class ReaderPosition extends Model implements EventSource, ReadableModel
     {
         return [
             'purpose' => PositionPurpose::class,
-            'checkpoint' => StoredValueCast::class.':'.ReaderCheckpoint::class,
+            'checkpoint' => ReaderCheckpoint::class,
             'interpretation' => InterpretationState::class,
         ];
     }

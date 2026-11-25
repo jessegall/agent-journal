@@ -66,7 +66,7 @@ final class AcmeDeclarations
             ReaderReference::required(),
         );
 
-        return CommandRule::fromArray([...$rule->toArray(), 'contracts' => [$contract->toArray()]]);
+        return CommandRule::from([...$rule->toArray(), 'contracts' => [$contract->toArray()]]);
     }
 
     public static function proposedVerify(): ProposedRule
