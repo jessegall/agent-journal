@@ -9,6 +9,7 @@ use App\Enums\Agents\ActivityType;
 use App\Events\Messages\MessageSent;
 use App\Exceptions\CommandInputInvalid;
 use App\Exceptions\CommittedFactListenerFailed;
+use App\Exceptions\CrossProjectEdge;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Agents\ActivityEntry;
 use App\Models\Agents\Agent;
@@ -36,7 +37,8 @@ use Tests\TestCase;
 /**
  * A member of an inbox sends to it: the message keeps its text and sender under the inbox's next number, a reply names
  * its target by number, a resent request gives back the same message, and an inbox the sender is not attached to, an
- * unknown target or a blank body is refused and leaves nothing.
+ * unknown target or a blank body is refused and leaves nothing; an agent never writes to the inbox of an agent of
+ * another project, while an owner's chat with such an agent still delivers.
  */
 #[TestsCommand(SendMessageCommand::class)]
 final class SendMessageTest extends TestCase
@@ -50,6 +52,7 @@ final class SendMessageTest extends TestCase
     private const array TABLES = [
         'users',
         'agents',
+        'projects',
         'inboxes',
         'inbox_members',
         'assignments',
@@ -330,6 +333,29 @@ final class SendMessageTest extends TestCase
         $this->journal->run(new SendMessageCommand($inboxId, 'Over to you.'));
 
         $this->assertSame(0, ActivityEntry::query()->count());
+    }
+
+    public function test_an_agent_writing_to_the_inbox_of_an_agent_of_another_project_is_refused(): void
+    {
+        $this->journal->project('Shop')->agent('Cy', 'main-agent', 'Shop');
+        $cyInbox = $this->journal->inboxCalled('Cy');
+        InboxMember::create($cyInbox->id, $this->journal->actorCalled('Builder'), CarbonImmutable::now());
+
+        $this->journal->actAs('Builder')->assertRefused(
+            CrossProjectEdge::class,
+            fn () => $this->journal->run(new SendMessageCommand($cyInbox->id, 'Across.')),
+        );
+        $this->assertSame(0, Message::query()->withoutGlobalScopes()->where('inbox_id', $cyInbox->id)->count());
+    }
+
+    public function test_an_owners_chat_with_an_agent_of_another_project_still_delivers(): void
+    {
+        $this->journal->project('Shop')->agent('Cy', 'main-agent', 'Shop')->sharedInbox('Owner', 'Cy');
+        $chat = $this->journal->sharedInboxOf('Owner', 'Cy');
+
+        $messageId = $this->journal->actAs('Owner')->run(new SendMessageCommand($chat->id, 'To both.'));
+
+        $this->assertSame($chat->id, Message::query()->withoutGlobalScopes()->findOrFail($messageId)->inbox_id);
     }
 
     /**

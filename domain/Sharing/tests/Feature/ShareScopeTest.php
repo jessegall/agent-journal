@@ -10,6 +10,7 @@ use App\Exceptions\UnknownShareRecordType;
 use App\Models\Records\Link;
 use App\Support\RecordIdentity;
 use App\Support\ShareRecordRegistry;
+use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Support\ShareBudget;
 use Domain\Sharing\Support\ShareScope;
@@ -117,6 +118,6 @@ final class ShareScopeTest extends TestCase
 
     private function link(RecordIdentity $root, RecordIdentity $target): Link
     {
-        return Link::create($root->type, $root->id, $target->type, $target->id);
+        return Link::create($root->type, $root->id, $target->type, $target->id, ProjectOwner::global());
     }
 }

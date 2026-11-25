@@ -14,6 +14,7 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->ulidMorphs('source');
             $table->ulidMorphs('target');
+            $table->foreignUlid('project_id')->nullable()->index()->constrained('projects')->restrictOnDelete();
             $table->timestamps();
 
             $table->unique(['source_type', 'source_id', 'target_type', 'target_id']);

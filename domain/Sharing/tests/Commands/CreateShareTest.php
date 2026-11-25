@@ -18,6 +18,7 @@ use App\Support\RecordIdentity;
 use App\Support\RequestKey;
 use App\Support\ShareRecordRegistry;
 use App\Values\OwnerAuthority;
+use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Models\Document;
@@ -121,7 +122,13 @@ final class CreateShareTest extends TestCase
             101,
             102,
         ] as $number) {
-            Link::create($this->root->type, $this->root->id, 'binders.sheet', TestIds::of($number));
+            Link::create(
+                $this->root->type,
+                $this->root->id,
+                'binders.sheet',
+                TestIds::of($number),
+                ProjectOwner::global(),
+            );
         }
 
         $this->journal->actAsUserId($this->journal->ownerUser()->id);

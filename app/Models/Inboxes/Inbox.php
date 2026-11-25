@@ -26,7 +26,9 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use PhpOption\None;
 use PhpOption\Option;
+use PhpOption\Some;
 
 /**
  * @property string $id
@@ -169,6 +171,22 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
     public function members(): HasMany
     {
         return $this->hasMany(InboxMember::class);
+    }
+
+    // ----------[ Answers ]----------
+
+    /**
+     * The actor this inbox is the personal inbox of; none for a chat or any other inbox.
+     *
+     * @return Option<ActorReference>
+     */
+    public function personalActor(): Option
+    {
+        if ($this->provider_key !== self::PERSONAL_PROVIDER) {
+            return None::create();
+        }
+
+        return new Some(ActorReference::fromText($this->provider_id));
     }
 
     // ----------[ Scopes ]----------

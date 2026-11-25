@@ -10,8 +10,12 @@ use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\ReadableModel;
 use App\Events\Links\LinkRemoved;
+use App\Exceptions\CrossProjectEdge;
+use App\Models\Support\BelongsToProjectOrGlobal;
+use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -27,6 +31,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property string $source_id
  * @property string $target_type
  * @property string $target_id
+ * @property string|null $project_id
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read Model $source
@@ -35,8 +40,9 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @mixin \Eloquent
  */
 #[Table('links')]
-final class Link extends MorphPivot implements EventSource, ReadableModel
+final class Link extends MorphPivot implements EventSource, ProjectOwned, ReadableModel
 {
+    use BelongsToProjectOrGlobal;
     use BoundedReads;
     use CountsPivotLoads;
     use HasUlids;
@@ -54,10 +60,14 @@ final class Link extends MorphPivot implements EventSource, ReadableModel
     // ----------[ Constructors ]----------
 
     /**
-     * The link between the two models, made now when there is none yet in either direction.
+     * The link between the two models, made now when there is none yet in either direction, of the project of the
+     * end that has one; two ends of different projects are never linked.
+     *
+     * @throws CrossProjectEdge
      */
     public static function createForModels(Model $source, Model $target): self
     {
+        $owner = self::ownerOfEnds($source, $target);
         $existing = self::findBetween($source, $target);
 
         if ($existing !== null) {
@@ -69,34 +79,52 @@ final class Link extends MorphPivot implements EventSource, ReadableModel
         $link->source_id = $source->getKey();
         $link->target_type = $target->getMorphClass();
         $link->target_id = $target->getKey();
+        $link->project_id = $owner->isGlobal() ? null : $owner->projectId();
         $link->save();
 
         return $link;
     }
 
     /**
-     * A link stored as given, between two records named by their link type and id.
+     * A link stored as given, between two records named by their link type and id, of the owner given.
      */
-    public static function create(string $sourceType, string $sourceId, string $targetType, string $targetId): self
-    {
+    public static function create(
+        string $sourceType,
+        string $sourceId,
+        string $targetType,
+        string $targetId,
+        ProjectOwner $owner,
+    ): self {
         $link = new self();
         $link->source_type = $sourceType;
         $link->source_id = $sourceId;
         $link->target_type = $targetType;
         $link->target_id = $targetId;
+        $link->project_id = $owner->isGlobal() ? null : $owner->projectId();
         $link->save();
 
         return $link;
     }
 
     /**
-     * The link between a model and a record named only by its link alias and id, made now when there is none yet;
-     * the named record is never loaded.
+     * The link between a model and a record named only by its link alias and id, made now when there is none yet, of
+     * the model's project; the named record is never loaded.
      */
     public static function createForKey(Model $source, string $targetType, string $targetId): self
     {
-        return self::findTouchingKey($source, $targetType, $targetId)
-            ?? self::create($source->getMorphClass(), (string) $source->getKey(), $targetType, $targetId);
+        $existing = self::findTouchingKey($source, $targetType, $targetId);
+
+        if ($existing !== null) {
+            return $existing;
+        }
+
+        return self::create(
+            $source->getMorphClass(),
+            (string) $source->getKey(),
+            $targetType,
+            $targetId,
+            self::ownerOf($source),
+        );
     }
 
     // ----------[ Mutations ]----------
@@ -178,6 +206,40 @@ final class Link extends MorphPivot implements EventSource, ReadableModel
     public static function findTouchingKey(Model $source, string $targetType, string $targetId): self|null
     {
         return self::query()->touching($source)->touchingKey($targetType, $targetId)->first();
+    }
+
+    // ----------[ Internals ]----------
+
+    /**
+     * The owner a link between the two ends takes: the project of the end that has one, Global when neither has.
+     *
+     * @throws CrossProjectEdge when the ends are of two projects
+     */
+    private static function ownerOfEnds(Model $source, Model $target): ProjectOwner
+    {
+        $bothOwned = $source instanceof ProjectOwned && $target instanceof ProjectOwned;
+
+        if ($bothOwned && ! $target->projectOwner()->isGlobal()) {
+            $target->assertSameProjectAs($source);
+        }
+
+        if (self::ownerOf($source)->isGlobal()) {
+            return self::ownerOf($target);
+        }
+
+        return self::ownerOf($source);
+    }
+
+    /**
+     * The project of a record; a record no project owns counts as Global.
+     */
+    private static function ownerOf(Model $record): ProjectOwner
+    {
+        if ($record instanceof ProjectOwned) {
+            return $record->projectOwner();
+        }
+
+        return ProjectOwner::global();
     }
 
     // ----------[ Scopes ]----------

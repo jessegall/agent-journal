@@ -14,6 +14,7 @@ use App\Support\RecordIdentity;
 use App\Support\ShareContentRead;
 use App\Support\ShareRecordRegistry;
 use App\Values\OwnerAuthority;
+use App\Values\ProjectOwner;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Models\Document;
 use Domain\Plans\Enums\PlanType;
@@ -95,7 +96,13 @@ final class SaveSharePreviewTest extends TestCase
             102,
             103,
         ] as $number) {
-            Link::create($this->root->type, $this->root->id, 'binders.sheet', TestIds::of($number));
+            Link::create(
+                $this->root->type,
+                $this->root->id,
+                'binders.sheet',
+                TestIds::of($number),
+                ProjectOwner::global(),
+            );
         }
     }
 

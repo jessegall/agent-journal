@@ -9,6 +9,7 @@ use App\Models\Records\Link;
 use App\Support\RecordIdentity;
 use App\Support\RequestKey;
 use App\Support\ShareRecordRegistry;
+use App\Values\ProjectOwner;
 use Domain\Sharing\Commands\CreateShare\CreateShareCommand;
 use Domain\Sharing\Commands\RefreshShareScope\RefreshShareScopeCommand;
 use Domain\Sharing\Commands\RetryShare\RetryShareCommand;
@@ -63,7 +64,13 @@ final class RefreshShareScopeTest extends TestCase
             101,
             102,
         ] as $number) {
-            Link::create($this->root->type, $this->root->id, 'binders.sheet', TestIds::of($number));
+            Link::create(
+                $this->root->type,
+                $this->root->id,
+                'binders.sheet',
+                TestIds::of($number),
+                ProjectOwner::global(),
+            );
         }
     }
 

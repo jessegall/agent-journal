@@ -9,6 +9,7 @@ use App\Models\Records\Link;
 use App\Support\RecordIdentity;
 use App\Support\RequestKey;
 use App\Support\ShareRecordRegistry;
+use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Commands\CreateShare\CreateShareCommand;
 use Domain\Sharing\Commands\RefreshShareScope\RefreshShareScopeCommand;
@@ -67,7 +68,13 @@ final class RetryShareTest extends TestCase
             101,
             102,
         ] as $number) {
-            Link::create($this->root->type, $this->root->id, 'binders.sheet', TestIds::of($number));
+            Link::create(
+                $this->root->type,
+                $this->root->id,
+                'binders.sheet',
+                TestIds::of($number),
+                ProjectOwner::global(),
+            );
         }
     }
 
