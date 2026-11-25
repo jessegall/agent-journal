@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import TextLink from "@kit/TextLink";
-import { router, usePage } from "@inertiajs/vue3";
+import { useAppContext } from "@kit/appContext";
+import { router } from "@inertiajs/vue3";
 import { computed, onMounted, ref, watch } from "vue";
 import { newRequestId } from "@kit/requestId";
 import type { AgentOptionData, StatusActionData } from "@generated/types/chat";
@@ -46,11 +47,11 @@ type CapacityAnswer = {
 };
 
 const formModes: FormMode[] = ["start", "resume", "switch"];
-const viewer = usePage().props.currentUser as { id: string } | undefined;
+const viewerId = useAppContext().viewer.value.id;
 const openDialog =
-  viewer === undefined
+  viewerId === undefined
     ? undefined
-    : useOpenSessionDialog(viewer.id, props.agent.id);
+    : useOpenSessionDialog(viewerId, props.agent.id);
 const kept = openDialog?.read() ?? null;
 // The dialog this agent had open in this tab comes back, with the start or switch it follows.
 const formMode = ref<FormMode | null>(

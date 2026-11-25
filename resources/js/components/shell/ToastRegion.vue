@@ -10,6 +10,7 @@ import { holdsPresentation } from '@/composables/presentationLease';
 import { useBellPanel } from '@/composables/useBellPanel';
 import { onNotificationArrivals } from '@/composables/useNotifications';
 import { useToasts } from '@/composables/useToasts';
+import { useAppContext } from '@/framework/appContext';
 
 /**
  * The shell's one toast region and its one polite status: two outcomes one by one and a summary of the rest with a
@@ -21,12 +22,13 @@ const bell = useBellPanel();
 const { toasts: shown, summary, announcement, isQuiet } = toasts;
 const region = ref<HTMLElement | null>(null);
 const page = usePage();
+const { viewer } = useAppContext();
 
 /**
  * Only the tab that holds the presentation claim shows new arrivals; every other tab only counts them.
  */
 onNotificationArrivals((arrivals) => {
-    const userId = page.props.currentUser?.id;
+    const userId = viewer.value.id;
 
     if (userId === undefined || !holdsPresentation(userId)) {
         return;

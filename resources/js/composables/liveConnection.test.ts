@@ -5,7 +5,7 @@ import { defineComponent, h, reactive } from 'vue';
 import type { LiveHandlers } from '@/echo';
 
 const opened: Array<{ userId: string; handlers: LiveHandlers; leave: ReturnType<typeof vi.fn> }> = [];
-const page = reactive({ props: { currentUser: { id: 'user-1' } as { id: string } | undefined } });
+const page = reactive({ props: { viewer: { type: 'owner', id: 'user-1', canShare: true } as { type: string; id?: string; canShare: boolean } } });
 
 vi.mock('@/echo', () => ({
     connectUser: (userId: string, handlers: LiveHandlers) => {
@@ -31,7 +31,7 @@ function mountShell() {
 describe('useLiveConnection', () => {
     beforeEach(() => {
         opened.length = 0;
-        page.props.currentUser = { id: 'user-1' };
+        page.props.viewer = { type: 'owner', id: 'user-1', canShare: true };
         vi.clearAllMocks();
     });
 
@@ -77,7 +77,7 @@ describe('useLiveConnection', () => {
     it('drops the old connection on a user change and ignores what it reports later', async () => {
         const shell = mountShell();
 
-        page.props.currentUser = { id: 'user-2' };
+        page.props.viewer = { type: 'owner', id: 'user-2', canShare: true };
         await Promise.resolve();
         opened[0].handlers.onChange();
         opened[0].handlers.onSubscribed();

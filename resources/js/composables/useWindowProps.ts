@@ -1,4 +1,5 @@
 import { router, usePage } from '@inertiajs/vue3';
+import { useAppContext } from '@/framework/appContext';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { SharedPropReads } from './sharedPropReads';
 import type { PropReadOutcome } from './sharedPropReads';
@@ -30,6 +31,7 @@ let nextMount = 0;
  */
 export function useWindowProps(propName: string, askOnStart = true) {
     const page = usePage();
+    const { viewer } = useAppContext();
     const mount = ++nextMount;
     const result = computed(() => page.props[propName] as WindowResult<unknown> | null | undefined);
     const keptData = ref<unknown>(undefined);
@@ -52,7 +54,7 @@ export function useWindowProps(propName: string, askOnStart = true) {
     );
 
     function retry(): void {
-        const principal = (page.props.currentUser as { id: string } | undefined)?.id ?? 'guest';
+        const principal = viewer.value.id ?? 'guest';
         const query = page.url.includes('?') ? page.url.slice(page.url.indexOf('?')) : '';
         readKey = sharedReads.keyOf(principal, propName, query);
         sharedReads.request(readKey, propName, mount, (outcome) => (announcedOutcome.value = outcome));

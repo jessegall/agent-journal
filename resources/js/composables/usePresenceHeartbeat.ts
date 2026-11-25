@@ -1,4 +1,4 @@
-import { usePage } from '@inertiajs/vue3';
+import { useAppContext } from '@/framework/appContext';
 import { onBeforeUnmount, onMounted, watch } from 'vue';
 import { xsrfToken } from '@/echo';
 import { heartbeat } from '@/routes/actors/presence';
@@ -14,7 +14,7 @@ const HEARTBEAT_MILLISECONDS = 30_000;
  * leaves, and beats at once when the tab becomes visible again.
  */
 export function usePresenceHeartbeat(): void {
-    const page = usePage();
+    const { viewer } = useAppContext();
     const sender = presenceHeartbeat(sendHeartbeat, HEARTBEAT_MILLISECONDS);
 
     function follow(userId: string | undefined): void {
@@ -32,8 +32,8 @@ export function usePresenceHeartbeat(): void {
     }
 
     onMounted(() => {
-        follow(page.props.currentUser?.id);
-        watch(() => page.props.currentUser?.id, follow);
+        follow(viewer.value.id);
+        watch(() => viewer.value.id, follow);
         document.addEventListener('visibilitychange', beatWhenVisible);
     });
     onBeforeUnmount(() => {

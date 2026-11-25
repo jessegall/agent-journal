@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import TextLink from '@kit/TextLink';
+import { useAppContext } from "@kit/appContext";
 import { dateTime } from "@kit/format";
 import { Link, router, usePage } from "@inertiajs/vue3";
 import { computed, nextTick, onBeforeUnmount, ref, shallowRef, useId, watch } from "vue";
@@ -144,9 +145,9 @@ const shownRefusal = computed(
 
 // The chat window's own prop: the page on Chat's own page, the window's part of Home elsewhere.
 const page = usePage();
-const viewer = page.props.currentUser as { id: string } | undefined;
+const { viewer } = useAppContext();
 const restoration = useStartRestoration(
-  viewer?.id ?? "guest",
+  viewer.value.id ?? "guest",
   props.agent.id,
   props.mode,
 );

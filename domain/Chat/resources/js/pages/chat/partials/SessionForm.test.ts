@@ -231,7 +231,10 @@ function chosenIn(form: VueWrapper, field: string): string {
 }
 
 describe("SessionForm", () => {
-  beforeEach(() => window.sessionStorage.clear());
+  beforeEach(() => {
+    window.sessionStorage.clear();
+    shownPage.props = { viewer: { type: "guest", canShare: false } };
+  });
 
   it("chooses the ready account over an expired default, says why the other is unavailable, and sends one request id twice", async () => {
     const form = mount(SessionForm, {

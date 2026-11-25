@@ -1,5 +1,5 @@
 import { notifyChatAccessEnded } from '@/kit/chatAccess';
-import { usePage } from '@inertiajs/vue3';
+import { useAppContext } from '@/framework/appContext';
 import { onBeforeUnmount, onMounted, readonly, ref, watch } from 'vue';
 import type { LiveHandlers, UserConnection } from '@/echo';
 import { connectUser } from '@/echo';
@@ -69,7 +69,7 @@ export function retryLiveConnection(): void {
  * Retry, and closed when the user signs out or the shell leaves. What a replaced connection reports later is ignored.
  */
 export function useLiveConnection(): void {
-    const page = usePage();
+    const { viewer } = useAppContext();
     let connection: UserConnection | undefined;
 
     function handlersFor(isCurrent: () => boolean): LiveHandlers {
@@ -133,8 +133,8 @@ export function useLiveConnection(): void {
                 open(userId);
             }
         };
-        follow(page.props.currentUser?.id);
-        watch(() => page.props.currentUser?.id, follow);
+        follow(viewer.value.id);
+        watch(() => viewer.value.id, follow);
     });
     onBeforeUnmount(() => {
         reconnect = undefined;

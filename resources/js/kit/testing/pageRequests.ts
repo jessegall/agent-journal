@@ -52,7 +52,7 @@ type FormRoute = { url: string; method: string };
  */
 export function recordingInertia(sent: SentRequest[]) {
     return {
-        usePage: () => ({ props: { currentUser: { id: 'owner' } } }),
+        usePage: () => ({ props: { viewer: { type: 'owner', id: 'owner', canShare: true } } }),
         router: {
             post: (url: string, body: unknown, options: VisitOptions = {}) =>
                 sent.push({ method: 'POST', url, body: body ?? null, headers: options.headers ?? {} }),

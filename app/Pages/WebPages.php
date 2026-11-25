@@ -15,7 +15,6 @@ use App\Data\Navigation\NavigationCountsData;
 use App\Data\Navigation\NavigationData;
 use App\Data\Navigation\NavigationGroupData;
 use App\Data\Navigation\NavigationItemData;
-use App\Data\Pages\CurrentUserData;
 use App\Data\Pages\DeniedWindow;
 use App\Data\Pages\FailedWindow;
 use App\Data\Pages\HomeData;
@@ -25,8 +24,10 @@ use App\Data\Pages\ReadyWindow;
 use App\Data\Pages\UnavailableWindow;
 use App\Data\Processes\RecoveryRefusalPartData;
 use App\Data\Processes\RuntimeEntryData;
-use App\Data\Sharing\SharedData;
 use App\Data\Terminals\TerminalWindowData;
+use App\Data\Web\AppContextData;
+use App\Data\Web\InstallationData;
+use App\Data\Web\ViewerData;
 use App\Declarations\ActionRoute;
 use App\Declarations\DomainClient;
 use App\Declarations\NavigationItem;
@@ -34,6 +35,7 @@ use App\Declarations\Page;
 use App\Declarations\Slot;
 use App\Enums\Navigation\Icon;
 use App\Enums\Profiles\SlotContextType;
+use App\Enums\Web\ViewerType;
 use App\Enums\Web\WindowPlace;
 use App\Enums\Web\WindowStatus;
 use App\Http\Controllers\Agents\CheckCapacityController;
@@ -86,11 +88,12 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
         return [
             ActivityEventData::class,
             ActivityWindowData::class,
-            CurrentUserData::class,
+            AppContextData::class,
             DeniedWindow::class,
             FailedWindow::class,
             HomeData::class,
             HomeWindowData::class,
+            InstallationData::class,
             LayoutData::class,
             LoginInput::class,
             NavigationCountsData::class,
@@ -100,9 +103,10 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
             ReadyWindow::class,
             RecoveryRefusalPartData::class,
             RuntimeEntryData::class,
-            SharedData::class,
             TerminalWindowData::class,
             UnavailableWindow::class,
+            ViewerData::class,
+            ViewerType::class,
             WindowStatus::class,
             LoginPage::class,
         ];

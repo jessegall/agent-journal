@@ -18,6 +18,7 @@ use App\Contracts\Inboxes\InboxMemberRoutes as InboxMemberRoutesContract;
 use App\Contracts\Messages\AdmittedRecipients as AdmittedRecipientsContract;
 use App\Contracts\Reflection\TypeReflections;
 use App\Enums\Agents\AccessType;
+use App\Http\Responses\SignOutResponse;
 use App\Models\Access\Passkey;
 use App\Models\Access\User;
 use App\Policies\EnvironmentAccessPolicy;
@@ -42,6 +43,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Laravel\Fortify\Contracts\LogoutResponse;
 use Laravel\Fortify\Fortify;
 use Laravel\Passkeys\Passkeys;
 
@@ -57,6 +59,7 @@ class AccessServiceProvider extends ServiceProvider
         $this->app->bind(AdmittedRecipientsContract::class, AdmittedRecipients::class);
         $this->app->bind(InboxEligibilityContract::class, InboxEligibility::class);
         $this->app->singleton(InboxMemberRoutesContract::class, InboxMemberRoutes::class);
+        $this->app->bind(LogoutResponse::class, SignOutResponse::class);
 
         // The owner's row is read on the first use of the settings, never while a service that holds them is built.
         $this->app->singleton(AccessSettings::class, fn (): AccessSettings => $this->app->make(TypeReflections::class)

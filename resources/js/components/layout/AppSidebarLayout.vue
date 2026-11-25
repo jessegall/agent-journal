@@ -16,6 +16,7 @@ import {
 } from "@/composables/useLiveConnection";
 import { usePresenceHeartbeat } from "@/composables/usePresenceHeartbeat";
 import { useShellShortcuts } from "@/composables/useShellOverlays";
+import { useAppContext } from "@/framework/appContext";
 
 /**
  * The persistent shell every signed-in page sits in: it stays mounted across visits, only the page inside changes, and
@@ -23,6 +24,7 @@ import { useShellShortcuts } from "@/composables/useShellOverlays";
  * reconnect status.
  */
 const page = usePage();
+const { installation } = useAppContext();
 
 useLiveConnection();
 usePresenceHeartbeat();
@@ -47,7 +49,7 @@ const title = computed(() =>
           <TextLink @click="retryLiveConnection()">Retry</TextLink>
         </p>
       </template>
-      <template v-for="fault in page.props.installationFaults" :key="fault">
+      <template v-for="fault in installation.faults" :key="fault">
         <p
           role="alert"
           class="border-b border-border px-4 py-1 text-small text-danger"

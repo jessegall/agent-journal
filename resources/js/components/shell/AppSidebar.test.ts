@@ -7,8 +7,7 @@ import type { NavigationItemData } from '@/types/generated';
 const page = reactive({
     url: '/plans?state=open',
     props: {
-        name: 'Journal',
-        version: '6',
+        installation: { name: 'Journal', version: '6', faults: [] as string[] },
         navigation: { items: [], groups: [], current: [] } as {
             items: NavigationItemData[];
             groups: { key: string; label: string }[];

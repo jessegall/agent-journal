@@ -1,4 +1,4 @@
-import { usePage } from '@inertiajs/vue3';
+import { useAppContext } from '@/framework/appContext';
 import { onBeforeUnmount, onMounted, watch } from 'vue';
 import { keepStored, readStored } from './browserStorage';
 import { onPurge } from './protectedView';
@@ -32,8 +32,8 @@ function holdWhileHidden(): void {
  * the session, kept in the browser's storage and followed through its storage events.
  */
 export function useToasts(): ToastStore & { quietForUser(): void; resumeForUser(): void } {
-    const page = usePage();
-    const userId = () => page.props.currentUser?.id;
+    const { viewer } = useAppContext();
+    const userId = () => viewer.value.id;
 
     function followStoredQuiet(): void {
         const id = userId();

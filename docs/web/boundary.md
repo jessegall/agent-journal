@@ -23,7 +23,7 @@ A user who selects an agent stays the actor; the agent is the target. Nothing fo
 
 ## Web and signing in (task 99)
 
-`app/Web` (formerly the Web domain) owns the browser routes (`Routes/web.php`, loaded only by `WebServiceProvider`) and the one Inertia middleware (`Http/Middleware/HandleInertiaRequests`), which shares `SharedData`: the application name and, once signed in, `ViewerData` with the user's display name and nothing else.
+`app/Web` (formerly the Web domain) owns the browser routes (`Routes/web.php`, loaded only by `WebServiceProvider`) and the one Inertia middleware (`Http/Middleware/HandleInertiaRequests`), which shares the `AppContextData` that `AppContext` builds per request: the installation, the viewer (`ViewerData`: guest, owner or inbox member, with a signed-in user's id and display name and nothing else), the refusal code and the navigation with its counts.
 
 One route owner for signing in: Fortify keeps `views => false`, Web owns the guest `GET /login` (named `login`, rendering `LoginPage` with `LoginInput`), and the form posts to Fortify's own `POST /login`; `POST /logout` is Fortify's too. Fortify's optional features are all off: no registration, password reset, email verification, two-factor or passkeys, so no account screen exists without a page. Two-factor can come back later with its challenge page. After signing in Fortify sends the user to `/plans` (task 111 moves this to Home).
 

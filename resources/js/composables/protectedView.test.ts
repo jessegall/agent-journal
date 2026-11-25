@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { reactive } from 'vue';
 
 const listeners = new Map<string, Array<(event: CustomEvent) => void>>();
-const page = reactive({ url: '/home', props: { currentUser: { id: 'user-1' } as { id: string } | undefined } });
+const page = reactive({ url: '/home', props: { viewer: { type: 'owner', id: 'user-1', canShare: true } as { type: string; id?: string; canShare: boolean } } });
 
 vi.mock('@inertiajs/vue3', () => ({
     usePage: () => page,
@@ -37,7 +37,7 @@ describe('protected views', () => {
     beforeEach(() => {
         purge();
         page.url = '/home';
-        page.props.currentUser = { id: 'user-1' };
+        page.props.viewer = { type: 'owner', id: 'user-1', canShare: true };
     });
 
     it('cancels a protected read still in flight when a newer visit starts, so its late answer is never installed', () => {
@@ -73,7 +73,7 @@ describe('protected views', () => {
     it('reveals nothing for another user', () => {
         visit(['page']);
 
-        page.props.currentUser = { id: 'user-2' };
+        page.props.viewer = { type: 'owner', id: 'user-2', canShare: true };
 
         expect(isRevealed('page')).toBe(false);
     });
