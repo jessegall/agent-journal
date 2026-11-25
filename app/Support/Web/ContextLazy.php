@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support\Web;
 
+use App\Values\Web\LiveListeners;
 use Closure;
 use Inertia\AlwaysProp;
+use Inertia\DeferProp;
+use Inertia\LiveProp;
 use Spatie\LaravelData\Support\Lazy\ConditionalLazy;
 
 /**
@@ -27,5 +30,21 @@ final class ContextLazy extends ConditionalLazy
     public static function value(Closure $read): self
     {
         return new self(fn () => true, fn () => $read);
+    }
+
+    /**
+     * A prop read on a full visit or a partial reload that names it, and read again when one of the events arrives.
+     */
+    public static function live(Closure $read, LiveListeners $listeners): self
+    {
+        return new self(fn () => true, fn () => new LiveProp($read, $listeners->events, $listeners->channel));
+    }
+
+    /**
+     * A prop read after the first paint with the rest of its group, and read again when one of the events arrives.
+     */
+    public static function deferredLive(Closure $read, string $group, LiveListeners $listeners): self
+    {
+        return new self(fn () => true, fn () => $listeners->mark(new DeferProp($read, $group)));
     }
 }

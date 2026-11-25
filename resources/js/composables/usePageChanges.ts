@@ -1,20 +1,23 @@
+import type { PendingVisit } from '@inertiajs/core';
 import { router, usePage } from '@inertiajs/vue3';
 import { onBeforeUnmount, onMounted, reactive, readonly, ref } from 'vue';
+import { LOADER_HEADER } from '@/framework/loaders';
 import { login } from '@/routes';
 import { traceLive } from './liveTrace';
 import { purge, trackProtectedRead } from './protectedView';
 
 /**
- * Keeps the page on screen up to date. The shell's connection marks the page dirty here, and the page mounted now
- * registers how it reads itself again. The first change is read at once; changes that come during a read make one
- * trailing read after it; while a form is being sent the read waits until it is done, so it never replaces the form's
- * own answer or its errors. A failed read is tried again after 1, 2 and 4 seconds, then waits for Retry or focus.
+ * Keeps the page on screen up to date. Every reload the Inertia live client starts is taken over here: the change is
+ * marked and read as this tab's own async reload, so it never cancels a form or a navigation in flight. Changes that
+ * come during a read make one trailing read after it; while a form is being sent the read waits until it is done, so
+ * it never replaces the form's own answer or its errors. A failed read is tried again after 1, 2 and 4 seconds, then
+ * waits for Retry or focus.
  */
 export type PageReadStatus = 'idle' | 'reading' | 'retrying' | 'failed';
 
 /**
- * Why the page is to be read again: a signal from the connection, a catch-up after the channel was signed in to,
- * the window regaining focus, or a caller that knows its change.
+ * Why the page is to be read again: a live event, a catch-up after the channel was first signed in to, the window
+ * regaining focus, or a caller that knows its change.
  */
 export type DirtyReason = 'signal' | 'catch-up' | 'focus' | 'write';
 
@@ -24,9 +27,9 @@ export type DirtyReason = 'signal' | 'catch-up' | 'focus' | 'write';
 export type PageReadEnd = 'applied' | 'failed' | 'cancelled';
 
 /**
- * Reads the page again and calls ended exactly once when that read is over.
+ * Reads the named props again and calls ended exactly once when that read is over.
  */
-export type PageRead = (ended: (end: PageReadEnd) => void) => void;
+export type PageRead = (only: string[], ended: (end: PageReadEnd) => void) => void;
 
 const RETRY_DELAYS_MS = [1000, 2000, 4000];
 
@@ -42,12 +45,9 @@ export class PageReadScheduler {
     readonly appliedGeneration = ref(0);
 
     /**
-     * The window and section props on screen now, each counted by the hosts that show it; only these are read again
-     * on a change, so a hidden or closed window is never asked for.
+     * The props marked to be read again and not yet read.
      */
-    readonly shownProps = new Map<string, number>();
-
-    private read: PageRead | undefined;
+    private readonly wanted = new Set<string>();
 
     private dirtyGeneration = 0;
 
@@ -59,25 +59,14 @@ export class PageReadScheduler {
 
     private retryTimer: ReturnType<typeof setTimeout> | undefined;
 
-    /**
-     * Makes this the page's read; dirty work marked before it was mounted is read now. The answer takes it off again.
-     */
-    host(read: PageRead): () => void {
-        this.read = read;
-        this.readNext();
-
-        return () => {
-            if (this.read === read) {
-                this.read = undefined;
-            }
-        };
-    }
+    constructor(private readonly read: PageRead) {}
 
     /**
-     * Marks the page dirty and answers the generation marked: a read covers it once appliedGeneration reaches it.
+     * Marks the props dirty and answers the generation marked: a read covers it once appliedGeneration reaches it.
      */
-    markDirty(reason: DirtyReason): number {
+    markDirty(reason: DirtyReason, props: string[]): number {
         const marked = ++this.dirtyGeneration;
+        props.forEach((prop) => this.wanted.add(prop));
 
         if (reason === 'focus' && this.status.value === 'failed') {
             this.resume();
@@ -91,9 +80,10 @@ export class PageReadScheduler {
     }
 
     /**
-     * Reads again now, after a failure or when the user asks for it.
+     * Reads the props again now, after a failure or when the user asks for it.
      */
-    retry(): void {
+    retry(props: string[]): void {
+        props.forEach((prop) => this.wanted.add(prop));
         this.dirtyGeneration = Math.max(this.dirtyGeneration, this.appliedGeneration.value + 1);
         this.resume();
     }
@@ -108,6 +98,13 @@ export class PageReadScheduler {
     }
 
     /**
+     * A navigation brought a new page: dirty work a cancelled read left is read on it.
+     */
+    pageArrived(): void {
+        this.readNext();
+    }
+
+    /**
      * Nothing waits any more: the user signed out or changed.
      */
     forget(): void {
@@ -115,6 +112,7 @@ export class PageReadScheduler {
         this.retryTimer = undefined;
         this.formsSending = 0;
         this.failures = 0;
+        this.wanted.clear();
         this.dirtyGeneration = this.appliedGeneration.value;
         this.status.value = 'idle';
     }
@@ -128,34 +126,34 @@ export class PageReadScheduler {
     }
 
     private readNext(): void {
-        const read = this.read;
-
-        if (read === undefined || !this.isDirty() || !this.mayStart()) {
+        if (!this.isDirty() || !this.mayStart()) {
             return;
         }
 
         const covered = this.dirtyGeneration;
+        const only = [...this.wanted];
         let hasEnded = false;
+        this.wanted.clear();
         this.isReading = true;
         this.status.value = this.failures === 0 ? 'reading' : 'retrying';
 
-        read((end) => {
+        this.read(only, (end) => {
             if (hasEnded) {
                 return;
             }
 
             hasEnded = true;
             this.isReading = false;
-            this.settle(end, covered);
+            this.settle(end, covered, only);
 
-            // A navigation cancelled it: the page it leads to reads the dirty work when it mounts.
+            // A navigation cancelled it: the page it leads to reads the dirty work when it arrives.
             if (end !== 'cancelled') {
                 this.readNext();
             }
         });
     }
 
-    private settle(end: PageReadEnd, covered: number): void {
+    private settle(end: PageReadEnd, covered: number, only: string[]): void {
         if (end === 'applied') {
             this.failures = 0;
             this.appliedGeneration.value = Math.max(this.appliedGeneration.value, covered);
@@ -163,6 +161,8 @@ export class PageReadScheduler {
 
             return;
         }
+
+        only.forEach((prop) => this.wanted.add(prop));
 
         if (end === 'cancelled') {
             this.status.value = 'idle';
@@ -197,13 +197,100 @@ export class PageReadScheduler {
     }
 }
 
-const reads = new PageReadScheduler();
-
 /**
  * The props the last failed page read included: each keeps what it showed, read-only, until a read applies again.
  * A prop the page did not read in that batch stays fresh.
  */
 const staleProps = reactive(new Set<string>());
+
+/**
+ * Whether this tab is sending its own page read now, so its before event is let through.
+ */
+let isSendingOwnRead = false;
+
+/**
+ * The live props the page on screen holds: those the server marked live and the page asked for.
+ */
+function requestedLiveProps(): string[] {
+    const page = usePage();
+
+    return Object.keys(page.liveProps ?? {}).filter((prop) => page.props[prop] !== undefined);
+}
+
+/**
+ * One page read: an async partial reload of the props still on the page, which never cancels a form or a navigation.
+ */
+function readPage(wanted: string[], ended: (end: PageReadEnd) => void): void {
+    const requested = new Set(requestedLiveProps());
+    const only = wanted.filter((prop) => requested.has(prop));
+
+    // Nothing on the page is live: the read is over at once, after the caller has taken the generation it marked.
+    if (only.length === 0) {
+        queueMicrotask(() => ended('applied'));
+
+        return;
+    }
+
+    let end: PageReadEnd = 'cancelled';
+    let untrack: (() => void) | undefined;
+    const finish = (how: PageReadEnd) => {
+        untrack?.();
+        ended(how);
+    };
+    const failed = () => {
+        end = 'failed';
+        only.forEach((name) => staleProps.add(name));
+        traceLive('read failed');
+    };
+
+    isSendingOwnRead = true;
+
+    try {
+        router.reload({
+            only,
+            async: true,
+            preserveUrl: true,
+            preserveErrors: true,
+            onCancelToken: (token) => (untrack = trackProtectedRead(token)),
+            onStart: () => traceLive('read started'),
+            onSuccess: () => {
+                end = 'applied';
+                staleProps.clear();
+                traceLive('read applied');
+            },
+            onHttpException: (response) => {
+                failed();
+                answerRefusedRead(response.status);
+
+                return false;
+            },
+            onNetworkError: () => {
+                failed();
+
+                return false;
+            },
+            onFinish: () => finish(end),
+            onCancel: () => finish('cancelled'),
+        });
+    } finally {
+        isSendingOwnRead = false;
+    }
+}
+
+const reads = new PageReadScheduler(readPage);
+
+/**
+ * A reload the Inertia live client started: a GET partial reload that names only live props of the page and is no
+ * loader call.
+ */
+function isLiveVisit(visit: PendingVisit): boolean {
+    const live = new Set(Object.keys(usePage().liveProps ?? {}));
+
+    return visit.method === 'get'
+        && visit.only.length > 0
+        && !(LOADER_HEADER in visit.headers)
+        && visit.only.every((prop) => live.has(prop));
+}
 
 /**
  * Whether the prop was part of a page read that failed and has not been read since, whatever it last held.
@@ -227,24 +314,17 @@ export const pageReadStatus = readonly(reads.status);
 export const appliedReadGeneration = readonly(reads.appliedGeneration);
 
 /**
- * Called by the shell's connection for every change and after a lost connection came back.
- */
-export function pageChanged(): void {
-    reads.markDirty('signal');
-}
-
-/**
- * Marks the page to be read again, for a caller that knows why, and answers the generation marked.
+ * Marks the page's live props to be read again, for a caller that knows why, and answers the generation marked.
  */
 export function markDirty(reason: DirtyReason): number {
-    return reads.markDirty(reason);
+    return reads.markDirty(reason, requestedLiveProps());
 }
 
 /**
- * Reads the page again now, after a failed read.
+ * Reads the stale props again now, after a failed read.
  */
 export function retryPageRead(): void {
-    reads.retry();
+    reads.retry([...staleProps, ...requestedLiveProps()]);
 }
 
 /**
@@ -256,81 +336,34 @@ export function forgetPageChanges(): void {
 }
 
 /**
- * Called by a window or section host while its prop is on screen; the function it answers takes the prop off again.
+ * Takes over every reload the live client starts while the shell is mounted: the live visit is cancelled and its
+ * props are read as this tab's own read. A new page reads what a cancelled read left, and the window regaining focus
+ * marks the live props dirty.
  */
-export function showProp(name: string): () => void {
-    const shownProps = reads.shownProps;
-    shownProps.set(name, (shownProps.get(name) ?? 0) + 1);
-
-    return () => {
-        const count = (shownProps.get(name) ?? 1) - 1;
-
-        if (count > 0) {
-            shownProps.set(name, count);
-        } else {
-            shownProps.delete(name);
-        }
-    };
-}
-
-/**
- * Registers the mounted page's read, and removes it again when the page leaves: its own page prop, the windows and
- * sections on screen, the navigation with its counts, and the inspector when a record is open in it. The window
- * regaining focus marks the page dirty.
- */
-export function useLiveReload(): void {
-    const page = usePage();
-    const read: PageRead = (ended) => {
-        const only = ['page', ...reads.shownProps.keys(), 'navigation', 'navigationCounts'];
-
-        if (page.props.inspector !== undefined && page.props.inspector !== null) {
-            only.push('inspector');
-        }
-
-        let end: PageReadEnd = 'cancelled';
-        let untrack: (() => void) | undefined;
-        const finish = (how: PageReadEnd) => {
-            untrack?.();
-            ended(how);
-        };
-        router.reload({
-            only,
-            preserveUrl: true,
-            onCancelToken: (token) => (untrack = trackProtectedRead(token)),
-            onStart: () => traceLive('read started'),
-            onSuccess: () => {
-                end = 'applied';
-                staleProps.clear();
-                traceLive('read applied');
-            },
-            onHttpException: (response) => {
-                end = 'failed';
-                only.forEach((name) => staleProps.add(name));
-                traceLive('read failed');
-                answerRefusedRead(response.status);
-
-                return false;
-            },
-            onNetworkError: () => {
-                end = 'failed';
-                only.forEach((name) => staleProps.add(name));
-                traceLive('read failed');
-
-                return false;
-            },
-            onFinish: () => finish(end),
-            onCancel: () => finish('cancelled'),
-        });
-    };
-    const markFocused = () => reads.markDirty('focus');
-    let leave: (() => void) | undefined;
+export function useLiveVisits(): void {
+    const markFocused = () => markDirty('focus');
+    let stopBefore: (() => void) | undefined;
+    let stopNavigate: (() => void) | undefined;
 
     onMounted(() => {
-        leave = reads.host(read);
+        stopBefore = router.on('before', (event) => {
+            const visit = event.detail.visit;
+
+            if (isSendingOwnRead || !isLiveVisit(visit)) {
+                return;
+            }
+
+            traceLive('signal received');
+            reads.markDirty('signal', visit.only);
+
+            return false;
+        });
+        stopNavigate = router.on('navigate', () => reads.pageArrived());
         window.addEventListener('focus', markFocused);
     });
     onBeforeUnmount(() => {
-        leave?.();
+        stopBefore?.();
+        stopNavigate?.();
         window.removeEventListener('focus', markFocused);
     });
 }

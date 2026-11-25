@@ -16,12 +16,14 @@ vi.mock('@/echo', () => ({
     },
 }));
 vi.mock('@inertiajs/vue3', () => ({ usePage: () => page, router: { on: vi.fn(), reload: vi.fn() } }));
-vi.mock('./usePageChanges', () => ({ markDirty: vi.fn(), pageChanged: vi.fn(), forgetPageChanges: vi.fn() }));
+vi.mock('./usePageChanges', () => ({ markDirty: vi.fn(), forgetPageChanges: vi.fn(), useLiveVisits: vi.fn() }));
+vi.mock('@/framework/liveTransport', () => ({ attachLiveConnection: vi.fn() }));
 vi.mock('./protectedView', () => ({ clearProtectedViews: vi.fn(), purge: vi.fn() }));
 vi.mock('./useNotifications', () => ({ followNotificationsSignal: vi.fn(), reconcileNotifications: vi.fn() }));
 
 const { liveStage, retryLiveConnection, useLiveConnection } = await import('./useLiveConnection');
-const { markDirty, pageChanged } = await import('./usePageChanges');
+const { markDirty } = await import('./usePageChanges');
+const { attachLiveConnection } = await import('@/framework/liveTransport');
 const { clearProtectedViews, purge } = await import('./protectedView');
 
 function mountShell() {
@@ -45,7 +47,7 @@ describe('useLiveConnection', () => {
         shell.unmount();
     });
 
-    it('clears protected views when the transport is lost and catches up once signed in again', () => {
+    it('clears protected views when the transport is lost and leaves the reconnect reads to the live client', () => {
         const shell = mountShell();
         opened[0].handlers.onSubscribed();
         vi.mocked(markDirty).mockClear();
@@ -53,11 +55,9 @@ describe('useLiveConnection', () => {
         opened[0].handlers.onLost();
         expect(clearProtectedViews).toHaveBeenCalledOnce();
         expect(liveStage.value).toBe('connecting');
-        opened[0].handlers.onChange();
         opened[0].handlers.onSubscribed();
 
-        expect(pageChanged).toHaveBeenCalledOnce();
-        expect(markDirty).toHaveBeenCalledExactlyOnceWith('catch-up');
+        expect(markDirty).not.toHaveBeenCalled();
         shell.unmount();
     });
 
@@ -79,14 +79,28 @@ describe('useLiveConnection', () => {
 
         page.props.viewer = { type: 'owner', id: 'user-2', canShare: true };
         await Promise.resolve();
-        opened[0].handlers.onChange();
+        opened[0].handlers.onProtectedViewInvalidated();
         opened[0].handlers.onSubscribed();
 
         expect(opened[0].leave).toHaveBeenCalledOnce();
         expect(purge).toHaveBeenCalledOnce();
         expect(opened[1].userId).toBe('user-2');
-        expect(pageChanged).not.toHaveBeenCalled();
         expect(markDirty).not.toHaveBeenCalled();
+        expect(vi.mocked(attachLiveConnection).mock.calls.map(([attached]) => attached)).toEqual([
+            opened[0],
+            null,
+            opened[1],
+        ]);
+        shell.unmount();
+    });
+
+    it('clears protected views and reads the page again on an invalidation', () => {
+        const shell = mountShell();
+
+        opened[0].handlers.onProtectedViewInvalidated();
+
+        expect(clearProtectedViews).toHaveBeenCalledOnce();
+        expect(markDirty).toHaveBeenCalledExactlyOnceWith('signal');
         shell.unmount();
     });
 });

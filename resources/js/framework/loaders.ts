@@ -2,6 +2,11 @@ import type { Page, VisitOptions } from '@inertiajs/core';
 import { router, usePage } from '@inertiajs/vue3';
 
 /**
+ * The header that names the loader a call reads; a visit that carries it is a loader call, never a page read.
+ */
+export const LOADER_HEADER = 'X-Journal-Loader';
+
+/**
  * A loader the server declares: its key, which the call names in its header, and the prop its answer comes back
  * under; the input and answer types ride along for the type checker only.
  */
@@ -84,7 +89,7 @@ export function loadAfter<I, O>(
             preserveScroll: true,
             preserveUrl: true,
             preserveErrors: true,
-            headers: { 'X-Journal-Loader': loader.key, 'X-Journal-Loader-Input': encodedCall(token, input) },
+            headers: { [LOADER_HEADER]: loader.key, 'X-Journal-Loader-Input': encodedCall(token, input) },
             onSuccess: (page) => settle(page.props),
             // The page's own form errors come back with the answer; the answer is read all the same.
             onError: () => settle(usePage().props),

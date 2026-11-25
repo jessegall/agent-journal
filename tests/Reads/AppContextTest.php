@@ -9,7 +9,11 @@ use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Files\Files;
 use App\Enums\Files\Permissions;
 use App\Enums\Files\Place;
+use App\Events\Web\InboxAccessEnded;
+use App\Events\Web\PageChanged;
+use App\Events\Web\ProtectedViewInvalidated;
 use App\Support\InstallationFaults;
+use App\Support\UserChannel;
 use App\Support\Web\AppContext;
 use App\Values\FilePath;
 use Closure;
@@ -18,6 +22,8 @@ use Illuminate\Session\Store;
 use Illuminate\Support\Facades\Process;
 use Inertia\AlwaysProp;
 use Inertia\DeferProp;
+use Inertia\LiveProp;
+use Inertia\SupportsLiveUpdates;
 use Mockery;
 use Spatie\LaravelData\Data;
 use Tests\Support\Entries\Attributes\TestsRead;
@@ -75,9 +81,45 @@ final class AppContextTest extends TestCase
         $this->assertSame('owner', $viewer['type']);
         $this->assertSame($this->journal->ownerUser()->id, $viewer['id']);
         $this->assertSame([self::FAULT], $this->resolved($props['installation'])['faults']);
-        $this->assertInstanceOf(Closure::class, $props['navigation']);
+        $this->assertInstanceOf(LiveProp::class, $props['navigation']);
         $this->assertInstanceOf(DeferProp::class, $props['navigationCounts']);
         $this->assertSame('navigation-counts', $props['navigationCounts']->group());
+    }
+
+    public function test_the_owners_navigation_and_counts_are_read_again_on_the_page_events(): void
+    {
+        $this->journal->owner();
+        $listeners = $this->pageChangeListeners((string) $this->journal->ownerUser()->id);
+
+        $props = $this->props();
+
+        $this->assertSame($listeners, $props['navigation']->liveListeners());
+        $this->assertSame($listeners, $props['navigationCounts']->liveListeners());
+    }
+
+    public function test_an_inbox_members_navigation_is_read_again_on_its_own_channel(): void
+    {
+        $this->journal->owner()->user('Sam')->admitInboxMember('Sam')->actAsInboxMember('Sam');
+
+        $navigation = $this->props()['navigation'];
+
+        $this->assertInstanceOf(LiveProp::class, $navigation);
+        $this->assertSame(
+            $this->pageChangeListeners((string) $this->journal->userCalled('Sam')->id),
+            $navigation->liveListeners(),
+        );
+    }
+
+    public function test_a_guest_gets_no_live_prop(): void
+    {
+        $this->journal->asGuest();
+
+        $live = array_filter(
+            $this->props(),
+            fn (mixed $prop) => $prop instanceof SupportsLiveUpdates && $prop->isLive(),
+        );
+
+        $this->assertSame([], $live);
     }
 
     public function test_an_inbox_member_sees_no_faults_and_no_counts(): void
@@ -88,7 +130,7 @@ final class AppContextTest extends TestCase
 
         $this->assertSame('inbox-member', $this->resolved($props['viewer'])['type']);
         $this->assertSame([], $this->resolved($props['installation'])['faults']);
-        $this->assertInstanceOf(Closure::class, $props['navigation']);
+        $this->assertInstanceOf(LiveProp::class, $props['navigation']);
         $this->assertArrayNotHasKey('navigationCounts', $props);
     }
 
@@ -164,6 +206,19 @@ final class AppContextTest extends TestCase
         $this->assertInstanceOf(Closure::class, $props['installation']);
         $this->resolved($props['installation']);
         Process::assertRan(fn () => true);
+    }
+
+    /**
+     * The listeners a prop gets that is read again when the user's page changes.
+     *
+     * @return list<array{channel: array{name: string, type: string}, events: list<string>}>
+     */
+    private function pageChangeListeners(string $userId): array
+    {
+        return [[
+            'channel' => ['name' => UserChannel::nameFor($userId), 'type' => 'private'],
+            'events' => [PageChanged::NAME, InboxAccessEnded::NAME, ProtectedViewInvalidated::NAME],
+        ]];
     }
 
     /**

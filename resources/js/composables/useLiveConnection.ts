@@ -3,10 +3,11 @@ import { useAppContext } from '@/framework/appContext';
 import { onBeforeUnmount, onMounted, readonly, ref, watch } from 'vue';
 import type { LiveHandlers, UserConnection } from '@/echo';
 import { connectUser } from '@/echo';
+import { attachLiveConnection } from '@/framework/liveTransport';
 import { liveTrace } from './liveTrace';
 import { clearProtectedViews, purge } from './protectedView';
 import { followNotificationsSignal, reconcileNotifications } from './useNotifications';
-import { forgetPageChanges, markDirty, pageChanged } from './usePageChanges';
+import { forgetPageChanges, markDirty, useLiveVisits } from './usePageChanges';
 
 /**
  * Where the tab's live connection stands: connecting until the transport and the private channel are both signed in
@@ -21,12 +22,16 @@ export class LiveConnectionState {
     readonly generation = ref(0);
 
     /**
-     * The channel is signed in to, at first or after a reconnect: one catch-up read covers what may have been missed.
+     * The channel is signed in to. The first time, one catch-up read covers what changed before it; after a reconnect
+     * the live client reads its props again by itself.
      */
     subscribed(): void {
         this.generation.value++;
         this.stage.value = 'subscribed';
-        markDirty('catch-up');
+
+        if (this.generation.value === 1) {
+            markDirty('catch-up');
+        }
     }
 
     /**
@@ -71,6 +76,7 @@ export function retryLiveConnection(): void {
 export function useLiveConnection(): void {
     const { viewer } = useAppContext();
     let connection: UserConnection | undefined;
+    useLiveVisits();
 
     function handlersFor(isCurrent: () => boolean): LiveHandlers {
         const whileCurrent = <Arguments extends unknown[]>(run: (...values: Arguments) => void) =>
@@ -81,10 +87,9 @@ export function useLiveConnection(): void {
             };
 
         return {
-            onChange: whileCurrent(pageChanged),
             onProtectedViewInvalidated: whileCurrent(() => {
                 clearProtectedViews();
-                pageChanged();
+                markDirty('signal');
             }),
             onNotificationsChanged: whileCurrent(followNotificationsSignal),
             onChatAccessEnded: whileCurrent(notifyChatAccessEnded),
@@ -101,6 +106,7 @@ export function useLiveConnection(): void {
         state.restart();
         const opened: UserConnection = connectUser(userId, handlersFor(() => connection === opened));
         connection = opened;
+        attachLiveConnection(opened);
     }
 
     function follow(userId: string | undefined): void {
@@ -115,6 +121,7 @@ export function useLiveConnection(): void {
 
         connection?.leave();
         connection = undefined;
+        attachLiveConnection(null);
         forgetPageChanges();
 
         if (userId !== undefined) {
@@ -128,6 +135,7 @@ export function useLiveConnection(): void {
             const userId = connection?.userId;
             connection?.leave();
             connection = undefined;
+            attachLiveConnection(null);
 
             if (userId !== undefined) {
                 open(userId);

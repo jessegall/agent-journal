@@ -23,9 +23,9 @@ use App\Support\CurrentUser;
 use App\Support\HostLinkAlarms;
 use App\Support\InstallationFaults;
 use App\Values\InboxMemberAuthority;
+use App\Values\Web\LiveListeners;
 use Illuminate\Http\Request;
 use PhpOption\Option;
-use Spatie\LaravelData\Lazy;
 use Spatie\LaravelData\Optional;
 
 /**
@@ -60,13 +60,21 @@ final readonly class AppContext
             'viewer' => ContextLazy::always(fn () => $this->viewer($user, $type)),
             'drivers' => ContextLazy::value(fn () => $type === ViewerType::Guest ? [] : $this->driverLooks()),
             'refusalCode' => $this->refusalCodeOf($request),
-            'navigation' => $type === ViewerType::Guest
-                ? new Optional()
-                : ContextLazy::value(fn () => $this->navigation->tree($request)),
+            'navigation' => $user
+                ->map(fn (CurrentUser $signedIn) => ContextLazy::live(
+                    fn () => $this->navigation->tree($request),
+                    LiveListeners::pageChanges($signedIn->id),
+                ))
+                ->getOrElse(new Optional()),
             // An inbox member is shown no journal counts: it sees only the inboxes it is in.
-            'navigationCounts' => $type === ViewerType::Owner
-                ? Lazy::inertiaDeferred(fn () => $this->navigation->counts(), self::COUNTS_GROUP)
-                : new Optional(),
+            'navigationCounts' => $user
+                ->filter(fn () => $type === ViewerType::Owner)
+                ->map(fn (CurrentUser $signedIn) => ContextLazy::deferredLive(
+                    fn () => $this->navigation->counts(),
+                    self::COUNTS_GROUP,
+                    LiveListeners::pageChanges($signedIn->id),
+                ))
+                ->getOrElse(new Optional()),
         ]);
     }
 

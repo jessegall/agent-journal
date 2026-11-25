@@ -9,16 +9,22 @@ import { traceLive } from '@/composables/liveTrace';
  */
 export type UserConnection = {
     userId: string;
+    /** The user's private channel, without the private- prefix, as live props name it. */
+    channelName: () => string;
+    /** Listens for an event on the user's channel; the returned stop removes that listener alone, never the channel. */
+    listen: (event: string, handler: (payload: unknown) => void) => () => void;
+    socketId: () => string | null;
+    /** Reports true once the private channel is signed in to, and false when the transport drops. */
+    onStatus: (callback: (connected: boolean) => void) => () => void;
     leave: () => void;
 };
 
 /**
- * What the connection tells its owner: a page change, a protected view to clear, notifications to read again, the
- * private channel signed in to
- * (first and after every reconnect, when changes may have been missed), the transport lost, and a refused sign-in.
+ * What the connection tells its owner: a protected view to clear, notifications to read again, a chat whose access
+ * ended, the private channel signed in to (first and after every reconnect, when changes may have been missed), the
+ * transport lost, and a refused sign-in. Page changes reach the live props through the live transport.
  */
 export type LiveHandlers = {
-    onChange: () => void;
     onProtectedViewInvalidated: () => void;
     onNotificationsChanged: () => void;
     onChatAccessEnded: (inboxId: string) => void;
@@ -50,26 +56,24 @@ export function connectUser(userId: string, handlers: LiveHandlers): UserConnect
         }),
     });
     const channelName = `journal.user.${userId}`;
+    const statusListeners = new Set<(connected: boolean) => void>();
     let isConnected = false;
+    const channel = echo.private(channelName);
 
-    echo.private(channelName)
+    channel
         .subscribed(() => {
             traceLive('subscription authorized');
             handlers.onSubscribed();
+            statusListeners.forEach((report) => report(true));
         })
         .error(() => {
             traceLive('subscription refused');
             handlers.onRefused();
         })
-        .listen('.page.changed', () => {
-            traceLive('signal received');
-            handlers.onChange();
-        })
-        // A chat the user left, was removed from or saw closed: the page is read again without it.
+        // A chat the user left, was removed from or saw closed is cleared at once; its live props read again.
         .listen('.inbox.access-ended', (notice: { inboxId: string }) => {
             traceLive('chat access ended');
             handlers.onChatAccessEnded(notice.inboxId);
-            handlers.onChange();
         })
         .listen('.view.protected-invalidated', handlers.onProtectedViewInvalidated)
         .listen('.notifications.changed', handlers.onNotificationsChanged);
@@ -87,12 +91,25 @@ export function connectUser(userId: string, handlers: LiveHandlers): UserConnect
                 isConnected = false;
                 traceLive('transport lost');
                 handlers.onLost();
+                statusListeners.forEach((report) => report(false));
             }
         },
     );
 
     return {
         userId,
+        channelName: () => channelName,
+        listen: (event, handler) => {
+            channel.listen(event, handler);
+
+            return () => channel.stopListening(event, handler);
+        },
+        socketId: () => echo.socketId() ?? null,
+        onStatus: (callback) => {
+            statusListeners.add(callback);
+
+            return () => statusListeners.delete(callback);
+        },
         leave: () => {
             echo.leave(channelName);
             echo.disconnect();

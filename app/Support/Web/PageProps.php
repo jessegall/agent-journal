@@ -15,14 +15,14 @@ use App\Http\Requests\Web\DeclaredPageRequest;
 use App\Support\ClientDeclarations;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
-use Inertia\ResponseFactory;
 use PhpOption\Option;
 use Spatie\LaravelData\Data;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * The props of a declared page: its own result as page, each section of its slots as its own deferred prop, the
- * record open in the inspector as an optional prop, and on Home one optional prop per window. Every prop runs its
+ * record open in the inspector as an optional prop, and on Home one optional prop per window, each live on the
+ * viewer's page changes. Every prop runs its
  * visibility checks before any reader, on full and partial
  * requests alike, so a forged partial request for a hidden prop gets a denied result.
  */
@@ -33,7 +33,7 @@ final readonly class PageProps
         private WindowResults $windowResults,
         private ReaderRequests $readers,
         private SlotContexts $contexts,
-        private ResponseFactory $inertia,
+        private LiveProps $live,
         private ClientOwnerAvailability $owners,
     ) {}
 
@@ -44,22 +44,25 @@ final readonly class PageProps
      */
     public function forPage(RegisteredPage $page, DeclaredPageRequest $request): array
     {
-        $props = ['title' => $page->page->title, 'page' => fn () => $this->ownPageResult($page, $request)];
+        $props = [
+            'title' => $page->page->title,
+            'page' => $this->live->value(fn () => $this->ownPageResult($page, $request)),
+        ];
 
         $route = $request->route() instanceof Route ? $request->route() : null;
 
         foreach ($this->sectionsOf($page) as $section) {
-            $props[$section->propName] = $this->inertia->defer(
+            $props[$section->propName] = $this->live->deferred(
                 fn () => $this->sectionResult($section, $request, $route),
                 $section->propName,
             );
         }
 
-        $props['inspector'] = $this->inertia->optional(fn () => $this->inspectorResult($request));
+        $props['inspector'] = $this->live->optional(fn () => $this->inspectorResult($request));
 
         // The record open in the inspector mounts its own sections, read with its route rather than the page's.
         foreach ($this->inspectedPage($request)->map($this->sectionsOf(...))->getOrElse([]) as $section) {
-            $props["inspector_{$section->propName}"] = $this->inertia->optional(
+            $props["inspector_{$section->propName}"] = $this->live->optional(
                 fn () => $this->sectionResult($section, $request, $this->inspectedRoute($section->host, $request)),
             );
         }
@@ -90,13 +93,13 @@ final readonly class PageProps
                 continue;
             }
 
-            $props[$page->propName] = $this->inertia->optional(
+            $props[$page->propName] = $this->live->optional(
                 fn () => $this->pageResult($page, $request, $request->windowQuery($page->key)),
             );
 
             // A further copy of the window reads its own part of the query, window[<full page key>~<copy id>].
             foreach ($request->copiesAskedFor($page->propName) as $copyId) {
-                $props["{$page->propName}__{$copyId}"] = $this->inertia->optional(
+                $props["{$page->propName}__{$copyId}"] = $this->live->optional(
                     fn () => $this->pageResult($page, $request, $request->windowQuery("{$page->key}~{$copyId}")),
                 );
             }
@@ -107,7 +110,7 @@ final readonly class PageProps
 
             foreach ($this->sectionsOf($page) as $section) {
                 $loadSection = fn () => $this->sectionResult($section, $request, null);
-                $props[$section->propName] = $this->inertia->optional($loadSection);
+                $props[$section->propName] = $this->live->optional($loadSection);
             }
         }
 

@@ -7,6 +7,7 @@ namespace Tests\Architecture\Support\EntryPoints;
 use App\Declarations\RegisteredLoader;
 use App\Support\ClientDeclarations;
 use App\Support\Web\AppContext;
+use App\Support\Web\PageProps;
 
 /**
  * Every read a test is written for: the reader of each declared loader and each class of READ_ENTRIES, which builds
@@ -21,6 +22,7 @@ final readonly class LoaderEntries
      */
     public const array READ_ENTRIES = [
         AppContext::class,
+        PageProps::class,
     ];
 
     public function __construct(private ClientDeclarations $declarations) {}
