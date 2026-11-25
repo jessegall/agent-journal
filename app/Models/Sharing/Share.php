@@ -533,7 +533,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      */
     public static function endedBefore(CarbonImmutable $cutoff): Builder
     {
-        return self::query()->whereNotNull('terminal_at')->where('terminal_at', '<', $cutoff)->select('id');
+        return self::query()->endedBy($cutoff)->select('id');
     }
 
     /**
@@ -548,7 +548,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
             array_unique(
                 array_map(
                     strval(...),
-                    self::query()->liveNow()->whereNotNull('share_gateway_configuration_id')->readExactly(
+                    self::query()->liveNow()->throughGateway()->readExactly(
                         self::LIVE_LIMIT,
                     )->pluck('share_gateway_configuration_id')->all(),
                 ),
@@ -680,19 +680,9 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      */
     public static function listPage(ShareListFilters $filters, int $rows): array
     {
-        $query = self::query()->newestFirst();
-        $query->when($filters->state, fn (Builder $query, ShareState $state) => $query->inState($state));
-        $query->when($filters->rootType, fn (Builder $query, string $type) => $query->ofRootType($type));
-        $query->when($filters->configurationId, fn (Builder $query, string $id) => $query->servedBy($id));
+        $shares = self::query()->newestFirst()->filteredBy($filters)->readExactly($rows + 1)->get();
 
-        $query->when(
-            $filters->expiresBefore,
-            fn (Builder $query, CarbonImmutable $deadline) => $query->expiringBefore($deadline),
-        );
-
-        $query->when($filters->after, fn (Builder $query, string $id) => $query->olderThan($id));
-
-        return array_values($query->readExactly($rows + 1)->get()->all());
+        return array_values($shares->all());
     }
 
     /**
@@ -887,5 +877,42 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     private function factAt(CarbonImmutable $at): ShareFact
     {
         return new ShareFact($this->id, $this->share_gateway_configuration_id, $this->state, $this->scope_version, $at);
+    }
+
+    /**
+     * The shares that ended before that moment.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function endedBy(Builder $query, CarbonImmutable $cutoff): void
+    {
+        $query->whereNotNull('terminal_at')->where('terminal_at', '<', $cutoff);
+    }
+
+    /**
+     * The shares served through a gateway configuration.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function throughGateway(Builder $query): void
+    {
+        $query->whereNotNull('share_gateway_configuration_id');
+    }
+
+    /**
+     * The shares the list filters keep: each filter that is set narrows them.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function filteredBy(Builder $query, ShareListFilters $filters): void
+    {
+        $query->when($filters->state, fn (Builder $kept, ShareState $state) => $kept->inState($state))
+            ->when($filters->rootType, fn (Builder $kept, string $type) => $kept->ofRootType($type))
+            ->when($filters->configurationId, fn (Builder $kept, string $id) => $kept->servedBy($id))
+            ->when($filters->expiresBefore, fn (Builder $kept, CarbonImmutable $by) => $kept->expiringBefore($by))
+            ->when($filters->after, fn (Builder $kept, string $id) => $kept->olderThan($id));
     }
 }

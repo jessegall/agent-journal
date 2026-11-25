@@ -178,4 +178,26 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
     {
         $query->whereNotNull('closed_at');
     }
+
+    /**
+     * The closed revisions.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function closed(Builder $query): void
+    {
+        $query->whereNotNull('closed_at');
+    }
+
+    /**
+     * The revision of that number.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function numbered(Builder $query, int $number): void
+    {
+        $query->where('number', $number);
+    }
 }

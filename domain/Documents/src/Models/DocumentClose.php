@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -139,5 +141,40 @@ final class DocumentClose extends Model implements EventSource, ReadableModel
     private function assertUnedited(): never
     {
         throw RecordImmutable::for('draft close');
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The document's closes.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofDocument(Builder $query, string $documentId): void
+    {
+        $query->where('document_id', $documentId);
+    }
+
+    /**
+     * The close of that token.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withToken(Builder $query, string $token): void
+    {
+        $query->where('token', $token);
+    }
+
+    /**
+     * The closes newest first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function lastClosedFirst(Builder $query): void
+    {
+        $query->orderByDesc('closed_at')->orderByDesc('id');
     }
 }

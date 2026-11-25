@@ -159,9 +159,8 @@ final class Document extends Model implements Commentable, Dockable, EventSource
     public function closes(): array
     {
         return array_values(DocumentClose::query()
-            ->where('document_id', $this->id)
-            ->orderByDesc('closed_at')
-            ->orderByDesc('id')
+            ->ofDocument($this->id)
+            ->lastClosedFirst()
             ->get()
             ->map(fn (DocumentClose $close) => $close->card)
             ->all());
@@ -196,7 +195,7 @@ final class Document extends Model implements Commentable, Dockable, EventSource
      */
     public function closeOf(string $token): DocumentClose|null
     {
-        return DocumentClose::query()->where('document_id', $this->id)->where('token', $token)->first();
+        return DocumentClose::query()->ofDocument($this->id)->withToken($token)->first();
     }
 
     /**
@@ -217,14 +216,14 @@ final class Document extends Model implements Commentable, Dockable, EventSource
     public function publishedRevision(string|null $version): DocumentRevision
     {
         if ($version === null) {
-            $revision = $this->revisions()->whereKey($this->current_revision_id)->whereNotNull('closed_at')->first();
+            $revision = $this->revisions()->whereKey($this->current_revision_id)->closed()->first();
             self::assertPublished($revision, 'current');
 
             return $revision;
         }
 
         self::assertVersionNumber($version);
-        $revision = $this->revisions()->where('number', (int) $version)->whereNotNull('closed_at')->first();
+        $revision = $this->revisions()->numbered((int) $version)->closed()->first();
         self::assertPublished($revision, $version);
 
         return $revision;
@@ -400,7 +399,7 @@ final class Document extends Model implements Commentable, Dockable, EventSource
         $query = self::query()->with('currentRevision')->lockForUpdate();
 
         if (is_int($number)) {
-            $document = $query->where('number', $number)->first();
+            $document = $query->numberedInJournal($number)->first();
             self::assertFound($document, $number);
 
             return $document;

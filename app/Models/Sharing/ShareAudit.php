@@ -136,10 +136,11 @@ final class ShareAudit extends Model implements ReadableModel
      */
     public static function pageOf(Share $share, string|null $after, int $rows): array
     {
-        $query = self::query()->ofShare($share)->newestFirst();
-        $query->when($after, fn (Builder $query, string $id) => $query->olderThan($id));
+        $audits = self::query()->ofShare($share)->newestFirst()->olderThanWhenNamed($after)
+            ->readExactly($rows + 1)
+            ->get();
 
-        return array_values($query->readExactly($rows + 1)->get()->all());
+        return array_values($audits->all());
     }
 
     /**
@@ -150,26 +151,9 @@ final class ShareAudit extends Model implements ReadableModel
      */
     public static function lockPastRetention(CarbonImmutable $now, int $most): array
     {
-        $reads = array_map(fn (ShareAuditType $type) => $type->value, ShareAuditType::readTypes());
-        $endedLongAgo = Share::endedBefore($now->subDays(self::LIFECYCLE_DAYS));
+        $audits = self::query()->pastRetentionAt($now)->oldestFirst()->lockForUpdate()->readExactly($most)->get();
 
-        return array_values(self::query()
-            ->whereNotNull('share_id')
-            ->where(fn (Builder $query) => $query
-                ->where(
-                    fn (Builder $readEntries) => $readEntries->whereIn('type', $reads)->where(
-                        'created_at',
-                        '<',
-                        $now->subDays(self::READ_DAYS),
-                    ),
-                )
-                ->orWhere(
-                    fn (Builder $lifecycle) => $lifecycle->whereNotIn('type', $reads)->whereIn(
-                        'share_id',
-                        $endedLongAgo,
-                    ),
-                ))
-            ->oldestFirst()->lockForUpdate()->readExactly($most)->get()->all());
+        return array_values($audits->all());
     }
 
     // ----------[ Scopes ]----------
@@ -190,5 +174,34 @@ final class ShareAudit extends Model implements ReadableModel
     protected function olderThan(Builder $query, string $id): void
     {
         $query->where('id', '<', $id);
+    }
+
+    /**
+     * The rows older than that row; all of them with none.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function olderThanWhenNamed(Builder $query, string|null $after): void
+    {
+        $query->when($after, fn (Builder $older, string $id) => $older->olderThan($id));
+    }
+
+    /**
+     * The share rows past their retention then: a public read after its days, a step of a share's life once the
+     * share ended long enough ago.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function pastRetentionAt(Builder $query, CarbonImmutable $now): void
+    {
+        $reads = array_map(fn (ShareAuditType $type) => $type->value, ShareAuditType::readTypes());
+        $endedLongAgo = Share::endedBefore($now->subDays(self::LIFECYCLE_DAYS));
+        $readCutoff = $now->subDays(self::READ_DAYS);
+
+        $query->whereNotNull('share_id')->where(fn (Builder $expired) => $expired
+            ->where(fn (Builder $read) => $read->whereIn('type', $reads)->where('created_at', '<', $readCutoff))
+            ->orWhere(fn (Builder $step) => $step->whereNotIn('type', $reads)->whereIn('share_id', $endedLongAgo)));
     }
 }
