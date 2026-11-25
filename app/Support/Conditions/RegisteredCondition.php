@@ -6,7 +6,7 @@ namespace App\Support\Conditions;
 
 use App\Contracts\Skills\SkillCondition;
 use App\Contracts\Skills\SkillConditionEvaluator;
-use App\Support\EvaluationGuard;
+use App\Support\ReadOnlyStretch;
 use App\Values\ConditionResult;
 use App\Values\SkillContext;
 use Illuminate\Contracts\Debug\ExceptionHandler;
@@ -14,7 +14,7 @@ use Spatie\LaravelData\Data;
 use Throwable;
 
 /**
- * A named condition whose owner is installed: its evaluator answers inside the evaluation guard, so no command runs
+ * A named condition whose owner is installed: its evaluator answers inside the read-only stretch, so no command runs
  * meanwhile, and an evaluator that fails is reported and answers unavailable, never a match.
  */
 final readonly class RegisteredCondition implements SkillCondition
@@ -28,14 +28,17 @@ final readonly class RegisteredCondition implements SkillCondition
         private array $wireParameters,
         private Data $parameters,
         private SkillConditionEvaluator $evaluator,
-        private EvaluationGuard $guard,
+        private ReadOnlyStretch $stretch,
         private ExceptionHandler $failures,
     ) {}
 
     public function evaluate(SkillContext $context): ConditionResult
     {
         try {
-            return $this->guard->during(fn () => $this->evaluator->evaluate($context, $this->parameters));
+            return $this->stretch->during(
+                'a skill condition',
+                fn () => $this->evaluator->evaluate($context, $this->parameters),
+            );
         } catch (Throwable $failure) {
             $this->failures->report($failure);
 

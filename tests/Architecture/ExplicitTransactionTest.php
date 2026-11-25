@@ -57,7 +57,7 @@ final class ExplicitTransactionTest extends TestCase
         'app/Support/StackTransaction.php' => 'owns a unit: the stack transaction',
         'app/Support/Storage/AssignmentTransaction.php' => 'joins the open unit inside a command',
         'app/Support/DatabaseStartTransaction.php' => 'joins the open unit inside a command',
-        'app/Support/ActiveActorsResolver.php' => 'no unit: a read-only snapshot',
+        'app/Support/ReadOnlyTransaction.php' => 'no unit: a read that may not write, alone or as a snapshot',
         'app/Support/EnginePass.php' => 'no unit: rolls back what a pass left open',
         'app/Support/AgentChatAccessService.php' => 'owns a unit: the console change of an agent\'s chat access',
         'app/Support/MessageBatchService.php' => 'owns a unit: each settled batch of the sweep',

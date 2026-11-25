@@ -14,6 +14,7 @@ use App\CommandMiddleware\LogCommand;
 use App\CommandMiddleware\RecordReceipt;
 use App\CommandMiddleware\RecordRefusalReceipt;
 use App\CommandMiddleware\RefuseMissingModels;
+use App\CommandMiddleware\RefuseWritesDuringReads;
 use App\CommandMiddleware\RunInTransaction;
 use App\CommandMiddleware\ValidateCommand;
 use App\Contracts\Bus\CommandMiddleware;
@@ -30,6 +31,7 @@ final class CommandFrame
      */
     public const array FIRST = [
         LogCommand::class,
+        RefuseWritesDuringReads::class,
         CheckEntry::class,
         BindDispatcher::class,
         ValidateCommand::class,

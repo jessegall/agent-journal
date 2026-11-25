@@ -8,6 +8,8 @@ use App\Contracts\Authorization\ReadGrant;
 use App\Mcp\Contracts\McpCall;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
+use App\Support\ReadOnlyStretch;
+use App\Support\ReadOnlyTransaction;
 use App\Values\ReadRequest;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\ResponseFactory;
@@ -43,15 +45,24 @@ abstract class JournalReadTool extends JournalTool
     }
 
     /**
-     * Answers a call of the read tool once the read grant allows it, so its reply is recorded and repeated.
+     * Answers a call of the read tool once the read grant allows it, so its reply is recorded and repeated. The read
+     * runs in a read-only stretch and transaction: a command it sends is refused, and so is any write to the database.
      */
-    final public function handle(Request $request, McpCall $call, ReadGrant $reads): ResponseFactory
-    {
-        return $call->answerTool($this->name(), function () use ($request, $reads): ToolResult {
+    final public function handle(
+        Request $request,
+        McpCall $call,
+        ReadGrant $reads,
+        ReadOnlyStretch $stretch,
+        ReadOnlyTransaction $transaction,
+    ): ResponseFactory {
+        return $call->answerTool($this->name(), function () use ($request, $reads, $stretch, $transaction): ToolResult {
             $arguments = $this->arguments($request);
             $reads->assertAllowed($this->readRequest($arguments));
 
-            return $this->read($arguments);
+            return $stretch->during(
+                "the read tool {$this->name()}",
+                fn () => $transaction->run(fn () => $this->read($arguments)),
+            );
         });
     }
 

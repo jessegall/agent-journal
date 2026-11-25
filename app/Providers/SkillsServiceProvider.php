@@ -19,7 +19,7 @@ use App\Resolvers\Support\SkillContextResolver;
 use App\Resolvers\Support\SkillStatusResolver;
 use App\Support\CanonicalRenderer;
 use App\Support\ConditionTree;
-use App\Support\EvaluationGuard;
+use App\Support\ReadOnlyStretch;
 use App\Support\FileAccessPolicy;
 use App\Support\MarkdownParts;
 use App\Support\SkillPublisher;
@@ -44,7 +44,7 @@ final class SkillsServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(MarkdownPartsContract::class, MarkdownParts::class);
-        $this->app->scoped(EvaluationGuard::class);
+        $this->app->scoped(ReadOnlyStretch::class);
         $this->app->scoped(SkillContextResolver::class);
         $this->app->scoped(SkillStatusResolver::class);
 

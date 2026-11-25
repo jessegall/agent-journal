@@ -8,7 +8,6 @@ use App\CommandMiddleware\AnnounceUnavailableStart;
 use App\CommandMiddleware\CommitHeldStartRefusals;
 use App\CommandMiddleware\GuardTickOrigin;
 use App\CommandMiddleware\KeepStartReceipt;
-use App\CommandMiddleware\RefuseWritesDuringEvaluation;
 use App\Commands\Agents\ContinueStart\ContinueStartCommand;
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\Agents\StartAgent\StartAgentCommand;
@@ -38,7 +37,6 @@ final class CoreCommands
     public static function middleware(): array
     {
         return [
-            MiddlewareDeclaration::around(RefuseWritesDuringEvaluation::class, CommandScope::all()),
             MiddlewareDeclaration::around(CommitHeldStartRefusals::class, CommandScope::all()),
             MiddlewareDeclaration::around(KeepStartReceipt::class, CommandScope::command(StartAgentCommand::class)),
             ...self::startRefusalAnnouncements(),

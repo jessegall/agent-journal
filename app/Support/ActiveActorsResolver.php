@@ -10,7 +10,6 @@ use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Values\ActiveActorsSnapshot;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\ConnectionInterface;
 use Throwable;
 
 /**
@@ -21,14 +20,14 @@ final readonly class ActiveActorsResolver
 {
     public function __construct(
         private ActiveActorRegistration $counters,
-        private ConnectionInterface $database,
+        private ReadOnlyTransaction $transaction,
         private ServerClock $clock,
     ) {}
 
     public function snapshot(): ActiveActorsSnapshot
     {
         try {
-            return $this->inOneSnapshot(function (): ActiveActorsSnapshot {
+            return $this->transaction->runInOneSnapshot(function (): ActiveActorsSnapshot {
                 $observedAt = $this->clock->now();
 
                 return new ActiveActorsSnapshot(
@@ -49,25 +48,5 @@ final readonly class ActiveActorsResolver
         }
 
         return $this->counters->get($type)->count($observedAt);
-    }
-
-    /**
-     * @param  callable(): ActiveActorsSnapshot  $read
-     */
-    private function inOneSnapshot(callable $read): ActiveActorsSnapshot
-    {
-        $this->database->beginTransaction();
-
-        try {
-            $this->database->statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY');
-            $snapshot = $read();
-            $this->database->commit();
-
-            return $snapshot;
-        } catch (Throwable $failure) {
-            $this->database->rollBack();
-
-            throw $failure;
-        }
     }
 }

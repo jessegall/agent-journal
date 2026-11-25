@@ -55,7 +55,7 @@ final readonly class ConditionTree
     public function __construct(
         private ConditionRegistry $registry,
         private Container $container,
-        private EvaluationGuard $guard,
+        private ReadOnlyStretch $stretch,
         private ExceptionHandler $failures,
         private PolicyCatalogue $policies,
     ) {}
@@ -303,7 +303,7 @@ final readonly class ConditionTree
             $parameters,
             $conditionParameters,
             $this->container->make($definition->evaluator),
-            $this->guard,
+            $this->stretch,
             $this->failures,
         );
     }

@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace Tests\Middleware;
 
-use App\CommandMiddleware\RefuseWritesDuringEvaluation;
+use App\CommandMiddleware\RefuseWritesDuringReads;
 use App\Commands\Layouts\SaveLayout\SaveLayoutCommand;
 use App\Data\Layouts\LayoutShape;
-use App\Exceptions\ConditionWriteRefused;
+use App\Exceptions\ReadOnlyWriteRefused;
 use App\Models\Records\Layout;
-use App\Support\EvaluationGuard;
+use App\Support\ReadOnlyStretch;
 use Tests\Commands\Layouts\SaveLayoutTest;
 use Tests\Support\Entries\Attributes\TestsMiddleware;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * Before its transaction, every command run while a skill condition evaluates is refused and writes nothing; once the
- * evaluation ends, the same command runs.
+ * Before anything else checks it, every command run while something only reads is refused and writes nothing; once the
+ * read ends, the same command runs.
  */
-#[TestsMiddleware(RefuseWritesDuringEvaluation::class)]
-final class RefuseWritesDuringEvaluationTest extends TestCase
+#[TestsMiddleware(RefuseWritesDuringReads::class)]
+final class RefuseWritesDuringReadsTest extends TestCase
 {
     use RefreshHookDatabase;
 
@@ -30,8 +30,8 @@ final class RefuseWritesDuringEvaluationTest extends TestCase
         $command = new SaveLayoutCommand('Writing', LayoutShape::from(SaveLayoutTest::shape('chat')));
 
         $this->assertThrows(
-            fn () => $this->app->make(EvaluationGuard::class)->during(fn () => $this->journal->run($command)),
-            ConditionWriteRefused::class,
+            fn () => $this->app->make(ReadOnlyStretch::class)->during('a skill condition', fn () => $this->journal->run($command)),
+            ReadOnlyWriteRefused::class,
         );
         $this->assertSame(0, Layout::query()->count());
 
