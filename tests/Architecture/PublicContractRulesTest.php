@@ -38,12 +38,9 @@ final class PublicContractRulesTest extends TestCase
         );
     }
 
-    public function test_another_owners_value_fails_even_when_it_is_exported(): void
+    public function test_another_owners_exported_value_may_be_shown(): void
     {
-        $this->assertSame(
-            ['PlanSummary::firstTask() shows Tests\Fixtures\PublicContracts\Tasks\Api\TaskRecord, private to Tasks'],
-            $this->violationsOf([PlanSummary::class]),
-        );
+        $this->assertSame([], $this->violationsOf([PlanSummary::class]));
     }
 
     public function test_a_model_a_service_and_an_exception_outside_exceptions_cannot_be_exported(): void
