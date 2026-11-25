@@ -19,7 +19,6 @@ use Domain\Helpers\Tests\Support\DispatchesHelpers;
 use Domain\Helpers\Tests\TestCase;
 use Domain\Helpers\Values\HelperReceipt;
 use Domain\Helpers\Values\HelperWork;
-use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 
@@ -66,7 +65,7 @@ final class SendHelperTest extends TestCase
             HelperRetired::class,
         );
 
-        $other = TestStart::start();
+        $other = $this->journal->signedStart('Test agent');
         $other->startRequest($this->app);
 
         $this->assertThrows(

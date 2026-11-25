@@ -21,7 +21,6 @@ use Domain\Documents\Exceptions\DraftMarkdownInvalid;
 use Domain\Documents\Models\TextUpload;
 use Domain\Documents\Tests\TestCase;
 use Domain\Documents\Values\DraftTarget;
-use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 
 final class EditDocumentTest extends TestCase
@@ -47,7 +46,7 @@ final class EditDocumentTest extends TestCase
 
     public function test_a_designer_can_publish_a_section_from_a_sealed_upload(): void
     {
-        $designer = TestStart::start('writing-helper');
+        $designer = $this->journal->signedStart('Test agent', 'writing-helper');
         $designer->startRequest($this->app);
         $bus = $this->app->make(CommandBus::class);
         $created = $bus->run(new CreateDocumentCommand('Design', 'The next design.', "# Design\nOld text.\n"));
@@ -81,8 +80,8 @@ final class EditDocumentTest extends TestCase
 
     public function test_another_editor_cannot_take_the_draft_and_bad_markdown_stays_unpublished(): void
     {
-        $author = TestStart::start();
-        $other = TestStart::start();
+        $author = $this->journal->signedStart('Test agent 2');
+        $other = $this->journal->signedStart('Test agent 3');
         $author->startRequest($this->app);
         $bus = $this->app->make(CommandBus::class);
         $created = $bus->run(new CreateDocumentCommand('Design', 'The next design.', "# Design\nOld text.\n"));

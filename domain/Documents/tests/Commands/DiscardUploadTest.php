@@ -17,7 +17,6 @@ use Domain\Documents\Models\TextUpload;
 use Domain\Documents\Support\UploadStore;
 use Domain\Documents\Tests\TestCase;
 use Illuminate\Database\DatabaseManager;
-use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 
 final class DiscardUploadTest extends TestCase
@@ -37,8 +36,8 @@ final class DiscardUploadTest extends TestCase
 
     public function test_the_limit_and_incomplete_recovery_are_private_to_each_session(): void
     {
-        $author = TestStart::start();
-        $other = TestStart::start();
+        $author = $this->journal->signedStart('Test agent');
+        $other = $this->journal->signedStart('Test agent 2');
         $author->startRequest($this->app);
         $ids = [$this->begin('a'), $this->begin('b'), $this->begin('c'), $this->begin('d')];
         $bus = $this->app->make(CommandBus::class);

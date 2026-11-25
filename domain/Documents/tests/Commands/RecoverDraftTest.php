@@ -8,7 +8,6 @@ use App\Contracts\Bus\CommandBus;
 use App\Data\Messages\MessageTextData;
 use App\Enums\Drivers\DriverOperation;
 use App\Events\Sessions\SessionClosed;
-use App\Models\Agents\Agent;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Sessions\SessionPolicy;
 use App\Support\AgentSessions;
@@ -60,10 +59,10 @@ final class RecoverDraftTest extends TestCase
 
     public function test_a_broken_draft_is_kept_and_only_its_granted_parent_can_recover_it(): void
     {
-        $parent = TestStart::start();
+        $parent = $this->journal->signedStart('Test agent');
         $this->journal->syntheticRuntime($parent->session);
-        $other = TestStart::start();
-        $child = Agent::create('Document editor', 'writing-helper', $this->localProject());
+        $other = $this->journal->signedStart('Test agent 2');
+        $child = $this->journal->idleAgent('Document editor', 'writing-helper')->agentCalled('Document editor');
 
         $session = $this->app->make(AgentSessions::class)->start(
             $child,

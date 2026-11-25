@@ -13,7 +13,6 @@ use Domain\Documents\Commands\BeginUpload\BeginUploadCommand;
 use Domain\Documents\Commands\CommitUpload\CommitUploadCommand;
 use Domain\Documents\Enums\UploadType;
 use Domain\Documents\Tests\TestCase;
-use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 
 final class AppendUploadTest extends TestCase
@@ -33,8 +32,8 @@ final class AppendUploadTest extends TestCase
 
     public function test_a_delivery_names_only_an_attachment_its_recipient_can_read_at_that_version(): void
     {
-        $recipient = TestStart::start();
-        $other = TestStart::start();
+        $recipient = $this->journal->signedStart('Test agent');
+        $other = $this->journal->signedStart('Test agent 2');
         $recipient->startRequest($this->app);
         $id = $this->begin('notes');
         $bus = $this->app->make(CommandBus::class);

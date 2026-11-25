@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sharing\Tests\Commands;
 
 use App\Contracts\Bus\CommandBus;
-use App\Models\Access\User;
 use App\Models\CommandRules\CommandReceipt;
-use App\Support\Access\AccessSettings;
 use App\Support\GatewayConfiguration;
 use App\Support\RecordIdentity;
 use App\Support\RequestKey;
@@ -110,8 +108,7 @@ final class ConfigureShareGatewayTest extends TestCase
 
     public function test_a_secret_entered_at_the_prompt_appears_in_no_row_receipt_or_log(): void
     {
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
+        $owner = $this->journal->ownerUser();
         $logged = [];
         Event::listen(MessageLogged::class, function (MessageLogged $message) use (&$logged): void {
             $logged[] = $message->message.json_encode($message->context);

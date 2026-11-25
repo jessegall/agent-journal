@@ -9,7 +9,6 @@ use App\Contracts\Bus\CommandBus;
 use App\Exceptions\CommandAdmissionRefused;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
-use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
@@ -90,8 +89,7 @@ final class RequestShareTest extends TestCase
     {
         parent::setUp();
 
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+        $this->owner = $this->journal->owner()->ownerUser();
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forUser($this->owner->id),
             new OwnerAuthority('test'),
@@ -104,7 +102,7 @@ final class RequestShareTest extends TestCase
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->root = Document::query()->where('number', 1)->sole()->shareIdentity();
         $this->configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
-        $this->start = TestStart::start();
+        $this->start = $this->journal->signedStart('Test agent');
     }
 
     public function test_an_agent_request_creates_a_proposal_and_returns_its_number_and_state_only(): void
@@ -171,7 +169,7 @@ final class RequestShareTest extends TestCase
     public function test_an_agent_never_sees_another_agents_proposal(): void
     {
         $this->request('01JD8X0G9M3QZ6V4K2PROPOSE1');
-        $other = TestStart::start();
+        $other = $this->journal->signedStart('Test agent 2');
 
         $this->journal->actAsAgentIds($other->agent->id, $other->session->id);
 

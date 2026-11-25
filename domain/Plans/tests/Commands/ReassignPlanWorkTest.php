@@ -6,7 +6,6 @@ namespace Domain\Plans\Tests\Commands;
 
 use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
-use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentResult;
@@ -91,7 +90,9 @@ final class ReassignPlanWorkTest extends TestCase
     public function test_a_phase_cascade_moves_to_the_new_holder_with_its_tasks(): void
     {
         $root = $this->assignWork($this->working->assignmentIdentity(), $this->builder)->outcomes[0]->current;
-        $reviewer = AssigneeIdentity::of(Agent::create('Reviewer', 'read-only-helper', $this->localProject()));
+        $reviewer = AssigneeIdentity::of(
+            $this->journal->idleAgent('Reviewer', 'read-only-helper')->agentCalled('Reviewer'),
+        );
 
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
         $this->app->make(CommandBus::class)->run(

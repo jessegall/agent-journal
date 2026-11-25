@@ -39,7 +39,6 @@ use Domain\Helpers\Tests\TestCase;
 use Domain\Helpers\Values\HelperReceipt;
 use Domain\Helpers\Values\HelperWork;
 use Illuminate\Database\DatabaseManager;
-use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 
@@ -131,7 +130,7 @@ final class StartHelperTest extends TestCase
 
     public function test_a_helper_whose_policy_does_not_delegate_cannot_dispatch(): void
     {
-        $helper = TestStart::start('read-only-helper');
+        $helper = $this->journal->signedStart('Test agent', 'read-only-helper');
         $helper->startRequest($this->app);
 
         $this->assertThrows(fn () => $this->start('request-1', 'Review plan 7'), HelperUnavailable::class);
@@ -198,7 +197,7 @@ final class StartHelperTest extends TestCase
         $this->assertSame($receipt->startDetails->conversationReason, $read->startDetails->conversationReason);
         $this->assertSame('gpt-6.2-sol', $read->start->selection->model);
 
-        TestStart::start()->startRequest($this->app);
+        $this->journal->signedStart('Test agent 2')->startRequest($this->app);
 
         $this->assertThrows(
             fn () => $this->app->make(HelperRecords::class)->receiptOf($receipt->jobId),
@@ -208,7 +207,7 @@ final class StartHelperTest extends TestCase
 
     public function test_a_second_transaction_cannot_take_a_reserved_helper_start(): void
     {
-        $helper = Agent::create('Helper', 'read-only-helper', $this->localProject());
+        $helper = $this->journal->idleAgent('Helper', 'read-only-helper')->agentCalled('Helper');
         $databases = $this->app->make(DatabaseManager::class);
         $default = (string) config('database.default');
         config(['database.connections.competing' => config(sprintf('database.connections.%s', $default))]);

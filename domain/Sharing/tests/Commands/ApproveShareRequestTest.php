@@ -8,7 +8,6 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
-use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Support\RecordIdentity;
 use App\Support\RequestKey;
@@ -86,8 +85,7 @@ final class ApproveShareRequestTest extends TestCase
     {
         parent::setUp();
 
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+        $this->owner = $this->journal->owner()->ownerUser();
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forUser($this->owner->id),
             new OwnerAuthority('test'),
@@ -100,7 +98,7 @@ final class ApproveShareRequestTest extends TestCase
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->root = Document::query()->where('number', 1)->sole()->shareIdentity();
         $this->configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
-        $this->start = TestStart::start();
+        $this->start = $this->journal->signedStart('Test agent');
     }
 
     public function test_the_owner_approves_a_proposal_into_a_pending_grant(): void

@@ -17,7 +17,6 @@ use Domain\Documents\Models\TextUploadChunk;
 use Domain\Documents\Support\UploadStore;
 use Domain\Documents\Tests\TestCase;
 use Illuminate\Database\DatabaseManager;
-use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 
 final class CommitUploadTest extends TestCase
@@ -37,7 +36,7 @@ final class CommitUploadTest extends TestCase
 
     public function test_a_large_upload_seals_and_is_consumed_once_as_its_declared_type(): void
     {
-        TestStart::start()->startRequest($this->app);
+        $this->journal->signedStart('Test agent')->startRequest($this->app);
         $part = str_repeat('a', TextUpload::CHUNK_BYTES);
         $text = str_repeat($part, 32);
         $id = $this->begin($text);

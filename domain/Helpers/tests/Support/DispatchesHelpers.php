@@ -10,10 +10,8 @@ use App\Contracts\Hosts\DockerImageVerifier;
 use App\Contracts\Hosts\HostCapabilities;
 use App\Enums\Profiles\InstancePolicy;
 use App\Enums\Projects\CapabilityStatusType;
-use App\Models\Access\User;
 use App\Models\Agents\AgentSession;
 use App\Models\Sessions\SessionRequest;
-use App\Support\Access\AccessSettings;
 use App\Support\HostCapability;
 use App\Support\HostCapabilityQuery;
 use App\Values\HostCapacity;
@@ -39,8 +37,7 @@ trait DispatchesHelpers
     protected function setUpDispatchesHelpers(): void
     {
         $this->chooseActiveAccounts();
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
+        $owner = $this->journal->owner()->ownerUser();
         $this->supportContainers();
 
         $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(TestProposals::of(
@@ -50,7 +47,7 @@ trait DispatchesHelpers
             TestProposals::profile('job-reviewer', ProfileBase::readOnlyHelper(), instances: InstancePolicy::PerJob),
         )));
 
-        $this->parent = TestStart::start();
+        $this->parent = $this->journal->signedStart('Parent agent');
         $this->parent->startRequest($this->app);
         $this->supportContainers();
     }

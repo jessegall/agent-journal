@@ -9,7 +9,6 @@ use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
-use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 
@@ -37,8 +36,7 @@ trait OpensTeamInboxMessage
 
     protected function setUpOpensTeamInboxMessage(): void
     {
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+        $this->owner = $this->journal->owner()->ownerUser();
         $this->builder = $this->startedIds('Builder');
         $this->reviewer = $this->startedIds('Reviewer');
         $this->journal->actAsUserId($this->owner->id);
