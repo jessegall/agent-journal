@@ -13,6 +13,6 @@ final class QuestionNotNegatable extends LogicException
 {
     public static function for(string $method): self
     {
-        return new self("ReflectedType::{$method}() answers no yes or no, so not() cannot turn it around.");
+        return new self("Reflector::{$method}() answers no yes or no, so not() cannot turn it around.");
     }
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use App\Support\ReflectedMethod;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Tests\Architecture\Support\CallScan;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\Seeding\TestJournal;
@@ -26,14 +26,14 @@ final class FixtureVerbsProvenTest extends TestCase
     public function test_every_fixture_verb_is_called_by_a_test_of_its_fixture(): void
     {
         $journalTests = glob(base_path('tests/Feature/Seeding/*Test.php')) ?: [];
-        $unproven = $this->unprovenOf(ReflectedType::of(TestJournal::class), $journalTests);
+        $unproven = $this->unprovenOf(Reflector::of(TestJournal::class), $journalTests);
 
         foreach (glob(base_path('domain/*/tests/Fixtures/*Fixtures.php')) ?: [] as $file) {
             if (basename($file) === self::REGISTRAR) {
                 continue;
             }
 
-            $fixture = ReflectedType::find(self::classIn($file))->get();
+            $fixture = Reflector::find(self::classIn($file))->get();
             $unproven = [...$unproven, ...$this->unprovenOf($fixture, glob(dirname($file).'/*Test.php') ?: [])];
         }
 
@@ -43,11 +43,11 @@ final class FixtureVerbsProvenTest extends TestCase
     /**
      * Each public method of the class, its traits' included, that none of the tests calls, as Class::method.
      *
-     * @param  ReflectedType<object>  $type
+     * @param  Reflector<object>  $type
      * @param  list<string>  $tests
      * @return list<string>
      */
-    private function unprovenOf(ReflectedType $type, array $tests): array
+    private function unprovenOf(Reflector $type, array $tests): array
     {
         $called = [];
 

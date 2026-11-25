@@ -12,7 +12,7 @@ use App\Contracts\Work\StackTransactionRunner;
 use App\Mcp\Resources\JournalResource;
 use App\Mcp\Tools\JournalReadTool;
 use App\Mcp\Tools\JournalWriteTool;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\DatabaseManager;
@@ -103,8 +103,8 @@ final class McpToolRulesTest extends TestCase
         $violations = [];
 
         foreach (ScanCache::findings(new ClassesDeclared(), $this->mcpFiles()) as $class) {
-            $tool = ReflectedType::find($class)
-                ->filter(fn (ReflectedType $type) => $type->isSubclassOf(JournalWriteTool::class));
+            $tool = Reflector::find($class)
+                ->filter(fn (Reflector $type) => $type->isSubclassOf(JournalWriteTool::class));
 
             if ($tool->isDefined()) {
                 $violations = [...$violations, ...$this->commandViolations($tool->get())];
@@ -119,8 +119,8 @@ final class McpToolRulesTest extends TestCase
         $declaring = [];
 
         foreach (ScanCache::findings(new ClassesDeclared(), $this->mcpFiles()) as $class) {
-            $tool = ReflectedType::find($class)
-                ->filter(fn (ReflectedType $type) => $type->isSubclassOf(JournalReadTool::class));
+            $tool = Reflector::find($class)
+                ->filter(fn (Reflector $type) => $type->isSubclassOf(JournalReadTool::class));
 
             if ($tool->isDefined() && count($tool->get()->attributes(Dispatches::class)) > 0) {
                 $declaring[] = $class;
@@ -135,14 +135,14 @@ final class McpToolRulesTest extends TestCase
         $this->assertSame([
             DuplicateCommandTool::class.'::command must construct and return exactly one declared command.',
             DuplicateCommandTool::class.'::command may only prepare command arguments.',
-        ], $this->commandViolations(ReflectedType::of(DuplicateCommandTool::class)));
+        ], $this->commandViolations(Reflector::of(DuplicateCommandTool::class)));
     }
 
     /**
-     * @param  ReflectedType<object>  $type
+     * @param  Reflector<object>  $type
      * @return list<string>
      */
-    private function commandViolations(ReflectedType $type): array
+    private function commandViolations(Reflector $type): array
     {
         if ($type->isAbstract()) {
             return [];
@@ -168,7 +168,7 @@ final class McpToolRulesTest extends TestCase
         $command = $declared->first()->get()->command;
         $constructions = $finder->find($node->stmts, fn (Node $node): bool => $node instanceof Expr\New_
             && $node->class instanceof ParsedName
-            && ReflectedType::find($node->class->toString())->filter(fn (ReflectedType $made) => $made->is(Command::class))
+            && Reflector::find($node->class->toString())->filter(fn (Reflector $made) => $made->is(Command::class))
                 ->isDefined());
         $returned = end($node->stmts);
         $subject = $type->name().'::command';
@@ -197,7 +197,7 @@ final class McpToolRulesTest extends TestCase
             $node instanceof Expr\Assign => ! $node->var instanceof Expr\Variable || $node->var->name === 'this',
             $node instanceof Expr\PropertyFetch => true,
             $node instanceof Expr\StaticCall => ! $node->class instanceof ParsedName
-                || ! ReflectedType::find($node->class->toString())->filter(fn (ReflectedType $type) => $type->isEnum())
+                || ! Reflector::find($node->class->toString())->filter(fn (Reflector $type) => $type->isEnum())
                     ->isDefined(),
             $node instanceof Expr\MethodCall => ! $node->var instanceof Expr\Variable
                 || ! in_array($node->var->name, ['arguments', 'this'], true),
@@ -244,7 +244,7 @@ final class McpToolRulesTest extends TestCase
     private function isForbidden(NameUse $use): bool
     {
         return in_array($use->name, self::FORBIDDEN_NAMES, true)
-            || ReflectedType::factory()->isSubclassOf($use->name, Model::class);
+            || Reflector::factory()->isSubclassOf($use->name, Model::class);
     }
 
     /**
@@ -257,7 +257,7 @@ final class McpToolRulesTest extends TestCase
 
         foreach (ScanCache::findingsByFile(new ClassesDeclared(), $files) as $classes) {
             foreach ($classes as $class) {
-                $type = ReflectedType::find($class);
+                $type = Reflector::find($class);
 
                 if ($type->isEmpty()) {
                     continue;
@@ -269,8 +269,8 @@ final class McpToolRulesTest extends TestCase
                     array_push($found, ...$this->toolViolations($declaration));
                 }
 
-                if (ReflectedType::factory()->isSubclassOf($class, Resource::class)
-                    && ! ReflectedType::factory()->is($class, JournalResource::class)) {
+                if (Reflector::factory()->isSubclassOf($class, Resource::class)
+                    && ! Reflector::factory()->is($class, JournalResource::class)) {
                     $found[] = "{$class} does not extend JournalResource";
                 }
             }
@@ -280,10 +280,10 @@ final class McpToolRulesTest extends TestCase
     }
 
     /**
-     * @param  ReflectedType<Tool>  $type
+     * @param  Reflector<Tool>  $type
      * @return list<string>
      */
-    private function toolViolations(ReflectedType $type): array
+    private function toolViolations(Reflector $type): array
     {
         $class = $type->name();
 

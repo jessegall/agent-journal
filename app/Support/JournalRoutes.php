@@ -31,7 +31,7 @@ final readonly class JournalRoutes
                 continue;
             }
 
-            $declaration = ReflectedType::of($command);
+            $declaration = Reflector::of($command);
 
             if ($declaration->hasAttribute(JournalRoute::class)) {
                 $routes[$name] = $declaration->attribute(JournalRoute::class);

@@ -7,7 +7,7 @@ namespace Tests\Feature\Hooks;
 use App\Enums\Engine\NoSubject;
 use App\Support\References\StateReference;
 use App\Support\ReflectedProperty;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use App\Support\Stack\Contracts\StateFactory;
 use App\Support\Stack\StackRestorer;
 use App\Support\Stack\StateTypes;
@@ -105,11 +105,11 @@ final class StateTypeLifecycleTest extends TestCase
 
     private function fixtureListenerFolder(): string
     {
-        return dirname(ReflectedType::of(RegisterNoteState::class)->fileName()->getOrElse(''));
+        return dirname(Reflector::of(RegisterNoteState::class)->fileName()->getOrElse(''));
     }
 
     private function discoveryPaths(): ReflectedProperty
     {
-        return ReflectedType::of(EventServiceProvider::class)->property('eventDiscoveryPaths');
+        return Reflector::of(EventServiceProvider::class)->property('eventDiscoveryPaths');
     }
 }

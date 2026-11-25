@@ -35,7 +35,7 @@ final class ReflectedMethod
     private readonly string $label;
 
     /**
-     * @param  Closure(class-string): ReflectedType<object>  $reflectorOf  answers the ReflectedType of a declaring class
+     * @param  Closure(class-string): Reflector<object>  $reflectorOf  answers the Reflector of a declaring class
      */
     public function __construct(private readonly ReflectionMethod $method, private readonly Closure $reflectorOf)
     {
@@ -168,9 +168,9 @@ final class ReflectedMethod
     /**
      * The class that declares the method, which may be a parent of the class it was read from.
      *
-     * @return ReflectedType<object>
+     * @return Reflector<object>
      */
-    public function declaringClass(): ReflectedType
+    public function declaringClass(): Reflector
     {
         return ($this->reflectorOf)($this->method->getDeclaringClass()->getName());
     }

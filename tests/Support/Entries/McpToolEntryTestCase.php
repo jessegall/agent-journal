@@ -7,7 +7,7 @@ namespace Tests\Support\Entries;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\McpCatalogue;
 use App\Mcp\Tools\JournalTool;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Seeding\TestJournal;
@@ -82,7 +82,7 @@ abstract class McpToolEntryTestCase extends TestCase
      */
     private function tool(): string
     {
-        return ReflectedType::of($this)->attribute(TestsMcpTool::class)->tool;
+        return Reflector::of($this)->attribute(TestsMcpTool::class)->tool;
     }
 
     /**
@@ -90,7 +90,7 @@ abstract class McpToolEntryTestCase extends TestCase
      */
     private function hiddenProfile(): DiscoveryProfile|null
     {
-        $tool = ReflectedType::of($this->tool())->newInstanceWithoutConstructor();
+        $tool = Reflector::of($this->tool())->newInstanceWithoutConstructor();
 
         return array_find(DiscoveryProfile::cases(), fn (DiscoveryProfile $profile) => ! $tool->isVisibleTo($profile));
     }

@@ -63,7 +63,7 @@ final class ExportValidator
         'App\Api\Assignments\Concerns\NamesRecipient',
         'App\Api\Assignments\Concerns\NamesExpectedAssignment',
         'App\Support\Command',
-        'App\Support\ReflectedType',
+        'App\Support\Reflector',
     ];
 
     /**
@@ -170,9 +170,9 @@ final class ExportValidator
     }
 
     /**
-     * @param  ReflectedType<object>  $type
+     * @param  Reflector<object>  $type
      */
-    private function reasonNotAValue(ReflectedType $type): string|null
+    private function reasonNotAValue(Reflector $type): string|null
     {
         return match (true) {
             $type->isEnum() => null,
@@ -208,13 +208,13 @@ final class ExportValidator
     /**
      * The exported type as PHP knows it, after it is found and seen to sit in the owner's namespace.
      *
-     * @return ReflectedType<object>
+     * @return Reflector<object>
      */
-    private function ownType(string $group, string $name): ReflectedType
+    private function ownType(string $group, string $name): Reflector
     {
         $className = ltrim($name, '\\');
 
-        if (! ReflectedType::exists($className)) {
+        if (! Reflector::exists($className)) {
             throw InvalidExports::missing($this->owner, $group, $className);
         }
 
@@ -222,6 +222,6 @@ final class ExportValidator
             throw InvalidExports::outsideOwner($this->owner, $className, $this->namespace);
         }
 
-        return ReflectedType::of($className);
+        return Reflector::of($className);
     }
 }

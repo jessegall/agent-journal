@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Illuminate\Support\Str;
 use Symfony\Component\Finder\Finder;
 
@@ -23,9 +23,9 @@ final class HandlerBaseTest extends TestCase
             $domain = basename(dirname($folder, 2));
             $base = "Domain\\{$domain}\\Commands\\Support\\".Str::singular($domain).'CommandHandler';
 
-            $isBase = ReflectedType::find($base)
-                ->filter(fn (ReflectedType $type) => $type->isClass() && $type->isAbstract())
-                ->filter(fn (ReflectedType $type) => $type->isSubclassOf(CommandHandler::class))
+            $isBase = Reflector::find($base)
+                ->filter(fn (Reflector $type) => $type->isClass() && $type->isAbstract())
+                ->filter(fn (Reflector $type) => $type->isSubclassOf(CommandHandler::class))
                 ->isDefined();
 
             if (! $isBase) {
@@ -37,9 +37,9 @@ final class HandlerBaseTest extends TestCase
             foreach (Finder::create()->files()->in($folder)->depth(1)->notPath('Support')->name('*Handler.php') as $file) {
                 /** @var class-string $handler */
                 $handler = "Domain\\{$domain}\\Commands\\".$file->getRelativePath().'\\'.$file->getBasename('.php');
-                $declaration = ReflectedType::of($handler);
+                $declaration = Reflector::of($handler);
                 $extendsBase = $declaration->parent()
-                    ->filter(fn (ReflectedType $parent) => $parent->name() === $base)
+                    ->filter(fn (Reflector $parent) => $parent->name() === $base)
                     ->isDefined();
 
                 if (! $declaration->isFinal() || ! $declaration->isReadOnly() || ! $extendsBase) {

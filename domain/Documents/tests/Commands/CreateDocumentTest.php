@@ -22,7 +22,7 @@ use App\Support\RecordIdentity;
 use App\Support\RecordReference;
 use App\Support\ReflectedMethod;
 use App\Support\ReflectedParameter;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use App\Support\SignedCall;
 use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
@@ -191,7 +191,7 @@ final class CreateDocumentTest extends TestCase
         foreach ([CreateDocumentCommand::class] as $command) {
             $parameters = array_map(
                 fn (ReflectedParameter $parameter) => $parameter->name(),
-                ReflectedType::of($command)->constructor()
+                Reflector::of($command)->constructor()
                     ->map(fn (ReflectedMethod $constructor) => $constructor->parameters())
                     ->getOrElse([]),
             );

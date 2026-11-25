@@ -7,7 +7,7 @@ namespace Tests\Architecture\Support;
 use App\Support\CommandRegistry;
 use App\Support\DeclaredType;
 use App\Support\ReflectedMethod;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Closure;
 use Illuminate\Container\Container;
 use Tests\Support\CodeReferenceScan;
@@ -78,11 +78,11 @@ final readonly class CommandReach
         while ($classes !== []) {
             $class = array_pop($classes);
 
-            if (isset($seen[$class]) || ! ReflectedType::exists($class) || ! self::isProjectClass($class)) {
+            if (isset($seen[$class]) || ! Reflector::exists($class) || ! self::isProjectClass($class)) {
                 continue;
             }
 
-            $declaration = ReflectedType::of($class);
+            $declaration = Reflector::of($class);
 
             if (! $declaration->isClass()) {
                 array_push($classes, ...self::boundClassOf($class, $container));
@@ -145,7 +145,7 @@ final readonly class CommandReach
             return [];
         }
 
-        $concrete = ReflectedType::capturedBy($binding, 'concrete')->getOrElse(null);
+        $concrete = Reflector::capturedBy($binding, 'concrete')->getOrElse(null);
 
         return is_string($concrete) && $concrete !== $interface ? [$concrete] : [];
     }

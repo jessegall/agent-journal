@@ -6,7 +6,7 @@ namespace Tests\Architecture;
 
 use App\Attributes\States\StateType;
 use App\Support\ReflectedProperty;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use App\Support\Stack\StateTypes;
 use App\Support\StateLoading\RegisteredStateType;
 use App\Support\StateLoading\StateValues;
@@ -28,7 +28,7 @@ final class StateLoadingTest extends TestCase
         $unnamed = [];
 
         foreach ($this->applicationTypes() as $type) {
-            $declared = ReflectedType::of($type->stateClass)->attributes(StateType::class)->first();
+            $declared = Reflector::of($type->stateClass)->attributes(StateType::class)->first();
 
             if ($declared->isEmpty() || $declared->get()->key !== $type->key) {
                 $unnamed[] = "{$type->key}: {$type->stateClass}";
@@ -43,7 +43,7 @@ final class StateLoadingTest extends TestCase
         $untyped = [];
 
         foreach ($this->applicationTypes() as $type) {
-            foreach (ReflectedType::of($type->stateClass)->properties() as $property) {
+            foreach (Reflector::of($type->stateClass)->properties() as $property) {
                 if (! $property->isStatic() && ! self::isSavedOrInjected($property)) {
                     $untyped[] = "{$type->stateClass}::\${$property->name()}";
                 }

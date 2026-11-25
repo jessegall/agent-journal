@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support\EntryPoints;
 
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 
 /**
  * What the entries read from the code and the entries the tests name disagree on: a test away from where its entry's
@@ -53,7 +53,7 @@ final readonly class EntryTestFindings
 
         return array_values(array_map(
             fn (EntryPoint $entry) => "The read {$entry->name} has no test: write one with #[TestsRead] at "
-                ."{$entry->testPlace}/".ReflectedType::of($entry->name)->shortName().'Test.php.',
+                ."{$entry->testPlace}/".Reflector::of($entry->name)->shortName().'Test.php.',
             $untested,
         ));
     }

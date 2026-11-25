@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Facades\Schema;
@@ -43,7 +43,7 @@ final class TableModelTest extends TestCase
         $notPivots = [];
 
         foreach ($this->modelOfTable() as $table => $model) {
-            if ($this->isPivotTable($table) && ! ReflectedType::of($model)->isSubclassOf(Pivot::class)) {
+            if ($this->isPivotTable($table) && ! Reflector::of($model)->isSubclassOf(Pivot::class)) {
                 $notPivots[] = "{$table} ({$model})";
             }
         }
@@ -113,8 +113,8 @@ final class TableModelTest extends TestCase
 
             $class = $namespace[1].'\\'.basename($file, '.php');
 
-            if (ReflectedType::factory()->isSubclassOf($class, Model::class)
-                && ReflectedType::of($class)->not()->isAbstract()) {
+            if (Reflector::factory()->isSubclassOf($class, Model::class)
+                && Reflector::of($class)->not()->isAbstract()) {
                 $models[new $class()->getTable()] = $class;
             }
         }

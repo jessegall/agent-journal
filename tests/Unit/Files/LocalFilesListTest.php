@@ -10,7 +10,7 @@ use App\Exceptions\FolderClosed;
 use App\Exceptions\FolderMissing;
 use App\Exceptions\PlaceUnavailable;
 use App\Support\Files;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use App\Values\Depth;
 use App\Values\FilePath;
 use App\Values\FolderEntry;
@@ -81,7 +81,7 @@ final class LocalFilesListTest extends TestCase
 
     public function test_a_list_or_pattern_inside_a_read_is_refused(): void
     {
-        $whileReading = ReflectedType::of(Files::class)->method('whileReading');
+        $whileReading = Reflector::of(Files::class)->method('whileReading');
         $outer = $this->path('app/readme.md');
 
         $this->assertThrows(

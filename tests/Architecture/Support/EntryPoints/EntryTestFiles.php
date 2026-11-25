@@ -9,7 +9,7 @@ use App\Enums\Files\Place;
 use App\Mcp\Support\McpCatalogue;
 use App\Mcp\Tools\JournalTool;
 use App\Mcp\Tools\JournalWriteTool;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use App\Values\FilePath;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
@@ -103,13 +103,13 @@ final readonly class EntryTestFiles
      */
     private function toolFile(string $tool): EntryTestFile
     {
-        $short = ReflectedType::of($tool)->shortName();
+        $short = Reflector::of($tool)->shortName();
         $owner = preg_match('/^(Domain\\\\[^\\\\]+)\\\\/', $tool, $domain) === 1 ? $domain[1] : 'App';
         $namespace = $owner === 'App' ? 'Tests\\Mcp' : "{$owner}\\Tests\\Mcp";
         $required = $this->tools->requiredArgumentsOf($tool);
         $missing = [
             ...array_map(fn (string $argument) => "the argument {$argument}", $required),
-            ...(ReflectedType::of($tool)->isSubclassOf(JournalWriteTool::class)
+            ...(Reflector::of($tool)->isSubclassOf(JournalWriteTool::class)
                 ? ['the expected commands', 'the sink replies']
                 : []),
         ];

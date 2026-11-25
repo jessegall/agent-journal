@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\TimeLimits;
 
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Tests\Support\TimeLimits\Exceptions\ProcessorTimeUnreadable;
 use Tests\Support\TimeLimits\Exceptions\TestTimedOut;
 
@@ -69,7 +69,7 @@ final class TestAlarm
 
     public static function secondsFor(string $className, string $methodName): int
     {
-        $test = ReflectedType::find($className)->filter(fn (ReflectedType $type) => $type->isClass());
+        $test = Reflector::find($className)->filter(fn (Reflector $type) => $type->isClass());
 
         if ($test->isEmpty() || ! $test->get()->hasMethod($methodName)) {
             return self::DEFAULT_SECONDS;

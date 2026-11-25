@@ -11,7 +11,7 @@ use App\Support\CommandCall;
 use App\Support\CommandStops;
 use App\Support\MonotonicClock;
 use App\Support\OperationDeadline;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use App\Support\StopTime;
 use Exception;
 use Illuminate\Database\ConnectionInterface;
@@ -145,7 +145,7 @@ final class CommandStopTimeTest extends TestCase
     private static function serializationFailure(): QueryException
     {
         $cause = new PDOException('could not serialize access');
-        ReflectedType::of(Exception::class)->property('code')->writeTo($cause, '40001');
+        Reflector::of(Exception::class)->property('code')->writeTo($cause, '40001');
 
         return new QueryException('pgsql', 'select 1', [], $cause);
     }

@@ -8,7 +8,7 @@ use App\Contracts\Domains\ApiPayload;
 use App\Enums\Processes\ApiEffect;
 use App\Support\ApiDeclaration;
 use App\Support\DeclaredType;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use PhpOption\Option;
 
 /**
@@ -33,11 +33,11 @@ final readonly class SignedPayloadRules
         $wrong = [];
 
         foreach ($controllers as $controller) {
-            $controllerMethod = ReflectedType::of($controller)->method('__invoke');
+            $controllerMethod = Reflector::of($controller)->method('__invoke');
             $parameters = $controllerMethod->parameters();
             $call = $parameters === [] ? '' : self::namedTypeOf($parameters[0]->type());
 
-            if (! ReflectedType::exists($call) || ! ReflectedType::of($call)->isSubclassOf(ApiPayload::class)) {
+            if (! Reflector::exists($call) || ! Reflector::of($call)->isSubclassOf(ApiPayload::class)) {
                 $wrong[] = "{$controller}: its first parameter is no call";
 
                 continue;
@@ -64,11 +64,11 @@ final readonly class SignedPayloadRules
         $wrong = [];
 
         foreach ($calls as $call) {
-            $docblock = ReflectedType::of($call)->docComment()->getOrElse('');
+            $docblock = Reflector::of($call)->docComment()->getOrElse('');
             preg_match('/@implements\s+ApiPayload<(\w+)>/', $docblock, $callContractMatch);
             $answer = ApiDeclaration::of($call)->endpoint->answer;
 
-            if (($callContractMatch[1] ?? '') !== ReflectedType::of($answer)->shortName()) {
+            if (($callContractMatch[1] ?? '') !== Reflector::of($answer)->shortName()) {
                 $wrong[] = $call;
             }
         }
@@ -87,7 +87,7 @@ final readonly class SignedPayloadRules
         $found = [];
 
         foreach ($classes as $class) {
-            foreach (ReflectedType::of($class)->properties() as $property) {
+            foreach (Reflector::of($class)->properties() as $property) {
                 if ($property->isPublic() && in_array($property->name(), self::ACTOR_ID_NAMES, true)) {
                     $found[] = "{$class}::\${$property->name()}";
                 }
@@ -114,7 +114,7 @@ final readonly class SignedPayloadRules
 
         foreach ($commandSources as $command => $source) {
             foreach ($writes as $write) {
-                $short = ReflectedType::of($write)->shortName();
+                $short = Reflector::of($write)->shortName();
                 $method = lcfirst(substr($short, 0, -strlen('Payload')));
 
                 if (str_contains($source, $short) || str_contains($source, "->{$method}(")) {

@@ -14,7 +14,7 @@ use App\Support\DeclaredType;
 use App\Support\Inputs\Contracts\HookAnswerer;
 use App\Support\References\StateReference;
 use App\Support\ReflectedMethod;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use App\Support\States\AgentState;
 use App\Support\States\Exceptions\InvalidStateClass;
 use PhpOption\None;
@@ -74,7 +74,7 @@ final class StateMethods
             return new Some($events[$event::class]);
         }
 
-        $eventTypes = ReflectedType::of($event)->typeNames();
+        $eventTypes = Reflector::of($event)->typeNames();
         $group = array_find_key($events, fn (StateMethod $method, string $type) => in_array($type, $eventTypes, true));
 
         if ($group === null) {
@@ -101,10 +101,10 @@ final class StateMethods
         $parameterClass = $this->argumentClass($method);
 
         $takesEvent = $parameterClass !== null
-            && ReflectedType::factory()->is($parameterClass, Event::class);
+            && Reflector::factory()->is($parameterClass, Event::class);
 
-        if (ReflectedType::of(AgentState::class)->hasMethod($name)
-            || ReflectedType::of(TickableState::class)->hasMethod($name)) {
+        if (Reflector::of(AgentState::class)->hasMethod($name)
+            || Reflector::of(TickableState::class)->hasMethod($name)) {
             if ($takesEvent && $name !== self::HEARS) {
                 throw InvalidStateMethod::for($method, 'uses a reserved state method name for an event listener.');
             }
@@ -124,7 +124,7 @@ final class StateMethods
             throw InvalidStateMethod::for($method, 'must be a public instance method with one required Event.');
         }
 
-        $event = ReflectedType::of($parameterClass);
+        $event = Reflector::of($parameterClass);
 
         if ($event->isEnum() || $parameterClass === StateTypesRequested::class) {
             throw InvalidStateMethod::for($method, 'must receive an application event available to live states.');
@@ -169,11 +169,11 @@ final class StateMethods
 
         $name = $type->name();
 
-        if ($type->isBuiltin() || ! ReflectedType::exists($name)) {
+        if ($type->isBuiltin() || ! Reflector::exists($name)) {
             return $name === 'iterable';
         }
 
-        $declared = ReflectedType::of($name);
+        $declared = Reflector::of($name);
 
         return array_any(
             self::HOOK_ANSWER_TYPES,
@@ -186,24 +186,24 @@ final class StateMethods
      */
     private function declarationsFor(string $class): array
     {
-        if (! ReflectedType::factory()->isSubclassOf($class, AgentState::class)) {
+        if (! Reflector::factory()->isSubclassOf($class, AgentState::class)) {
             throw InvalidStateClass::for($class);
         }
 
-        return $this->byClass[$class] ??= $this->discover(ReflectedType::of($class));
+        return $this->byClass[$class] ??= $this->discover(Reflector::of($class));
     }
 
     /**
-     * @param  ReflectedType<AgentState>  $state
+     * @param  Reflector<AgentState>  $state
      * @return array{methods: array<string, StateMethod>, events: array<class-string<Event>, StateMethod>}
      */
-    private function discover(ReflectedType $state): array
+    private function discover(Reflector $state): array
     {
         if ($state->isAbstract()) {
             throw InvalidStateClass::for($state->name());
         }
 
-        $hooks = ReflectedType::of(HookAnswerer::class);
+        $hooks = Reflector::of(HookAnswerer::class);
         $methods = [];
         $events = [];
 

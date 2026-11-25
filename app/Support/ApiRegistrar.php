@@ -40,14 +40,14 @@ final readonly class ApiRegistrar implements ApiRegistrarContract
      */
     private static function callOf(string $controller): string
     {
-        $parameters = ReflectedType::of($controller)->method('__invoke')->parameters();
+        $parameters = Reflector::of($controller)->method('__invoke')->parameters();
 
         $call = $parameters === [] ? '' : $parameters[0]->type()
             ->filter(fn (DeclaredType $type) => $type->isNamed())
             ->map(fn (DeclaredType $type) => $type->name())
             ->getOrElse('');
 
-        if (! ReflectedType::exists($call)) {
+        if (! Reflector::exists($call)) {
             throw EndpointDeclarationInvalid::for($controller, 'its __invoke takes the call first');
         }
 

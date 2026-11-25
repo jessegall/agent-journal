@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support\EntryPoints;
 
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Tests\Architecture\Support\ClassesDeclared;
 use Tests\Support\ScanCache\ScanCache;
 
@@ -51,7 +51,7 @@ final readonly class EntryAttributes
 
         foreach ($this->testClasses() as $file => $classes) {
             foreach ($classes as $class) {
-                if (! ReflectedType::exists($class)) {
+                if (! Reflector::exists($class)) {
                     $unloadable[] = "{$file} declares {$class}, which does not load: give it its folder's namespace.";
                 }
             }
@@ -65,11 +65,11 @@ final readonly class EntryAttributes
      */
     private function namedBy(string $file, string $class): array
     {
-        if (! ReflectedType::exists($class) || ReflectedType::of($class)->isAbstract()) {
+        if (! Reflector::exists($class) || Reflector::of($class)->isAbstract()) {
             return [];
         }
 
-        $type = ReflectedType::of($class);
+        $type = Reflector::of($class);
         $named = [];
 
         foreach (EntryType::cases() as $entryType) {

@@ -24,7 +24,7 @@ use App\Exceptions\LinkLeavesPlace;
 use App\Exceptions\LinkLoop;
 use App\Support\CodeFiles;
 use App\Support\DeclaredType;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use App\Values\FilePath;
 use Illuminate\Support\Str;
 use Spatie\LaravelData\Data;
@@ -227,7 +227,7 @@ final readonly class DomainClient
      */
     public function assertImplements(string $declaration, string $className, string $interface): void
     {
-        if (! ReflectedType::factory()->isSubclassOf($className, $interface)) {
+        if (! Reflector::factory()->isSubclassOf($className, $interface)) {
             throw ClientResolverInvalid::notA($declaration, $className, $interface);
         }
     }
@@ -246,8 +246,8 @@ final readonly class DomainClient
      */
     public function assertInvokableController(string $declaration, string $controller): void
     {
-        if (! $this->owns($controller) || ! ReflectedType::exists($controller)
-            || ! ReflectedType::of($controller)->hasMethod('__invoke')) {
+        if (! $this->owns($controller) || ! Reflector::exists($controller)
+            || ! Reflector::of($controller)->hasMethod('__invoke')) {
             throw ClientResolverInvalid::controllerNotOwned($declaration, $controller);
         }
     }
@@ -260,12 +260,12 @@ final readonly class DomainClient
      */
     public function assertLoader(string $declaration, string $reader): void
     {
-        if (! $this->owns($reader) || ! ReflectedType::exists($reader)
-            || ! ReflectedType::of($reader)->hasMethod('__invoke')) {
+        if (! $this->owns($reader) || ! Reflector::exists($reader)
+            || ! Reflector::of($reader)->hasMethod('__invoke')) {
             throw ClientResolverInvalid::loaderNotOwned($declaration, $reader);
         }
 
-        $invoke = ReflectedType::of($reader)->method('__invoke');
+        $invoke = Reflector::of($reader)->method('__invoke');
         $input = count($invoke->parameters()) === 1 ? $invoke->firstParameterClass()->getOrElse('') : '';
         $answer = $invoke->returnType()
             ->filter(fn (DeclaredType $type) => $type->isNamed() && ! $type->isBuiltin() && ! $type->allowsNull)
@@ -273,7 +273,7 @@ final readonly class DomainClient
             ->getOrElse('');
 
         foreach ([$input, $answer] as $dataClass) {
-            if ($dataClass === '' || ! ReflectedType::factory()->isSubclassOf($dataClass, Data::class)) {
+            if ($dataClass === '' || ! Reflector::factory()->isSubclassOf($dataClass, Data::class)) {
                 throw ClientResolverInvalid::loaderShape($declaration, $reader);
             }
 

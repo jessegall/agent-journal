@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Seeding;
 
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Closure;
 use Illuminate\Contracts\Events\Dispatcher;
 use PHPUnit\Framework\Assert;
@@ -57,7 +57,7 @@ trait ObservesEvents
      */
     public function assertEvent(string $type, Closure|null $predicate = null, int $count = 1): self
     {
-        $eventType = ReflectedType::of($type);
+        $eventType = Reflector::of($type);
         $seen = array_filter(
             $this->observedEvents,
             fn (object $event) => $eventType->isInstance($event) && ($predicate === null || $predicate($event)),

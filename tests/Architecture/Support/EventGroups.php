@@ -7,7 +7,7 @@ namespace Tests\Architecture\Support;
 use App\Contracts\Events\Event;
 use App\Support\DeclaredType;
 use App\Support\ReflectedProperty;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 
 /**
  * Judges how events form groups: each implements the one base event of its domain, or of its subject in Core; every
@@ -43,9 +43,9 @@ final readonly class EventGroups
 
             $base = $bases[0];
 
-            $own = ReflectedType::of($event)->namespaceName();
+            $own = Reflector::of($event)->namespaceName();
 
-            if (ReflectedType::of($base)->namespaceName() !== $own) {
+            if (Reflector::of($base)->namespaceName() !== $own) {
                 $faults[] = "{$event} implements {$base}, the base of another domain or subject";
             }
         }
@@ -82,7 +82,7 @@ final readonly class EventGroups
     {
         $empty = array_filter(
             $this->groups,
-            fn (string $group) => array_find($this->events, fn (string $event) => in_array($group, ReflectedType::of($event)->typeNames(), true)) === null,
+            fn (string $group) => array_find($this->events, fn (string $event) => in_array($group, Reflector::of($event)->typeNames(), true)) === null,
         );
 
         return array_values(array_map(fn (string $group) => "{$group} is a group no event joins", $empty));
@@ -99,7 +99,7 @@ final readonly class EventGroups
         $byStem = [];
 
         foreach ($this->events as $event) {
-            $words = preg_split('/(?=[A-Z])/', ReflectedType::of($event)->shortName(), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+            $words = preg_split('/(?=[A-Z])/', Reflector::of($event)->shortName(), -1, PREG_SPLIT_NO_EMPTY) ?: [];
 
             if (count($words) >= 3) {
                 $byStem[($this->baseOf($event) ?? '').'|'.$words[0].$words[1]][] = $event;
@@ -131,7 +131,7 @@ final readonly class EventGroups
         foreach ($groups as $group) {
             $members = array_values(array_filter(
                 $this->events,
-                fn (string $event) => in_array($group, ReflectedType::of($event)->typeNames(), true),
+                fn (string $event) => in_array($group, Reflector::of($event)->typeNames(), true),
             ));
 
             if (count($members) < 2) {
@@ -162,11 +162,11 @@ final readonly class EventGroups
             foreach ($listeners as $listener) {
                 [$class, $method] = explode('@', $listener) + [1 => 'handle'];
 
-                if (! ReflectedType::exists($class)) {
+                if (! Reflector::exists($class)) {
                     continue;
                 }
 
-                $declared = ReflectedType::of($class)->method($method)->parameters()[0]->type();
+                $declared = Reflector::of($class)->method($method)->parameters()[0]->type();
                 $type = $declared->filter(fn (DeclaredType $one) => $one->isNamed())
                     ->map(fn (DeclaredType $one) => $one->name())
                     ->getOrElse('');
@@ -177,7 +177,7 @@ final readonly class EventGroups
                     continue;
                 }
 
-                $isNamed = ReflectedType::exists($event) && in_array($type, ReflectedType::of($event)->typeNames(), true);
+                $isNamed = Reflector::exists($event) && in_array($type, Reflector::of($event)->typeNames(), true);
 
                 if (! $isNamed) {
                     $faults[] = "{$listener} hears {$event} through a list, not through its type {$type}";
@@ -196,12 +196,12 @@ final readonly class EventGroups
     {
         $own = array_filter($this->groups, fn (string $group) => count(array_unique(array_map(
             fn (string $event) => $this->baseOf($event),
-            array_filter($this->events, fn (string $event) => in_array($group, ReflectedType::of($event)->typeNames(), true)),
+            array_filter($this->events, fn (string $event) => in_array($group, Reflector::of($event)->typeNames(), true)),
         ))) === 1);
 
         return array_values(array_filter(
             $own,
-            fn (string $group) => array_all($events, fn (string $event) => in_array($group, ReflectedType::of($event)->typeNames(), true)),
+            fn (string $group) => array_all($events, fn (string $event) => in_array($group, Reflector::of($event)->typeNames(), true)),
         ));
     }
 
@@ -226,11 +226,11 @@ final readonly class EventGroups
     private function basesOf(string $event): array
     {
         return array_values(array_filter(
-            ReflectedType::of($event)->typeNames(),
+            Reflector::of($event)->typeNames(),
             fn (string $type) => $type !== Event::class
-                && ReflectedType::of($type)->isInterface()
-                && ReflectedType::of($type)->isSubclassOf(Event::class)
-                && self::isEventsNamespace(ReflectedType::of($type)->namespaceName()),
+                && Reflector::of($type)->isInterface()
+                && Reflector::of($type)->isSubclassOf(Event::class)
+                && self::isEventsNamespace(Reflector::of($type)->namespaceName()),
         ));
     }
 
@@ -243,7 +243,7 @@ final readonly class EventGroups
     private static function propertiesOf(string $type): array
     {
         $public = array_filter(
-            ReflectedType::of($type)->properties(),
+            Reflector::of($type)->properties(),
             fn (ReflectedProperty $property) => $property->isPublic() && ! $property->isStatic(),
         );
 
@@ -266,6 +266,6 @@ final readonly class EventGroups
      */
     private static function isIn(string $event, string $folder): bool
     {
-        return dirname((string) ReflectedType::of($event)->fileName()->getOrElse('')) === $folder;
+        return dirname((string) Reflector::of($event)->fileName()->getOrElse('')) === $folder;
     }
 }

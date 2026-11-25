@@ -84,11 +84,11 @@ final readonly class DomainEntry
      */
     public static function fromClass(string $className): self
     {
-        if (! ReflectedType::factory()->isSubclassOf($className, Domain::class)) {
+        if (! Reflector::factory()->isSubclassOf($className, Domain::class)) {
             throw NotADomain::for($className);
         }
 
-        $class = ReflectedType::of($className);
+        $class = Reflector::of($className);
 
         if ($class->fileName()->isEmpty()) {
             throw NotADomain::for($className);
@@ -144,11 +144,11 @@ final readonly class DomainEntry
     {
         $className = ltrim($name, '\\');
 
-        if (! $this->ownsName($className) || ! ReflectedType::exists($className)) {
+        if (! $this->ownsName($className) || ! Reflector::exists($className)) {
             return false;
         }
 
-        $type = ReflectedType::of($className);
+        $type = Reflector::of($className);
 
         return $type->isSubclassOf(Event::class) && $type->isInstantiable();
     }
@@ -262,7 +262,7 @@ final readonly class DomainEntry
         $seen = [];
 
         foreach ($requires as $requiredClass) {
-            if (! ReflectedType::factory()->isSubclassOf($requiredClass, Domain::class)) {
+            if (! Reflector::factory()->isSubclassOf($requiredClass, Domain::class)) {
                 throw NotADomain::for($requiredClass);
             }
 
@@ -291,11 +291,11 @@ final readonly class DomainEntry
         $checked = [];
 
         foreach ($skills as $class) {
-            if (! ReflectedType::exists($class) || ReflectedType::of($class)->not()->isClass()) {
+            if (! Reflector::exists($class) || Reflector::of($class)->not()->isClass()) {
                 throw SkillDeclarationRefused::for($name, $class, 'no such class exists');
             }
 
-            if (! ReflectedType::factory()->isSubclassOf($class, Skill::class)) {
+            if (! Reflector::factory()->isSubclassOf($class, Skill::class)) {
                 throw SkillDeclarationRefused::for($name, $class, 'it does not implement '.Skill::class);
             }
 
@@ -687,7 +687,7 @@ final readonly class DomainEntry
      */
     private function provided(string $contract): Option
     {
-        if (ReflectedType::of($contract)->isInstance($this->domain)) {
+        if (Reflector::of($contract)->isInstance($this->domain)) {
             return new Some($this->domain);
         }
 

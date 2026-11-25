@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use PhpParser\ParserFactory;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPUnit\Framework\TestCase;
@@ -22,6 +22,6 @@ final class ParserPackagesTest extends TestCase
 
     public function test_the_docblock_parser_can_be_loaded(): void
     {
-        $this->assertSame(PhpDocParser::class, ReflectedType::of(PhpDocParser::class)->name());
+        $this->assertSame(PhpDocParser::class, Reflector::of(PhpDocParser::class)->name());
     }
 }

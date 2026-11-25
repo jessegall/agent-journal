@@ -11,7 +11,7 @@ use App\Providers\DomainEventServiceProvider;
 use App\Providers\DomainServiceProvider;
 use App\Support\DomainRegistry;
 use App\Support\ReflectedProperty;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use App\Support\Stack\StateTypes;
 use Domain\Comments\CommentsDomain;
 use Domain\Comments\Events\CommentPosted;
@@ -113,7 +113,7 @@ final class DomainServiceProviderTest extends TestCase
 
     private function discoveryPathsProperty(): ReflectedProperty
     {
-        return ReflectedType::of(EventServiceProvider::class)->property('eventDiscoveryPaths');
+        return Reflector::of(EventServiceProvider::class)->property('eventDiscoveryPaths');
     }
 
     /**

@@ -10,7 +10,7 @@ use App\Contracts\Domains\ApiPayload;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Mcp\Servers\JournalServer;
 use App\Support\ApiRegistrar;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Route as Routes;
 use Spatie\LaravelData\Data;
@@ -156,7 +156,7 @@ final class SignedPayloadRulesTest extends TestCase
         foreach ($files as $file) {
             $class = self::classOf($file);
 
-            if ($class !== null && ReflectedType::factory()->isSubclassOf($class, ApiPayload::class)) {
+            if ($class !== null && Reflector::factory()->isSubclassOf($class, ApiPayload::class)) {
                 $calls[] = $class;
             }
         }
@@ -180,7 +180,7 @@ final class SignedPayloadRulesTest extends TestCase
 
         foreach ($files as $file) {
             $class = self::classOf($file);
-            $isRead = $class !== null && ReflectedType::of($class)->attributes(JournalRoute::class)->first()
+            $isRead = $class !== null && Reflector::of($class)->attributes(JournalRoute::class)->first()
                 ->filter(fn (JournalRoute $route) => $route->type === JournalRouteType::Read)
                 ->isDefined();
 
@@ -210,7 +210,7 @@ final class SignedPayloadRulesTest extends TestCase
          */
         $class = $namespace[1].'\\'.$name[1];
 
-        $isClass = ReflectedType::find($class)->filter(fn (ReflectedType $type) => $type->isClass())->isDefined();
+        $isClass = Reflector::find($class)->filter(fn (Reflector $type) => $type->isClass())->isDefined();
 
         return $isClass ? $class : null;
     }

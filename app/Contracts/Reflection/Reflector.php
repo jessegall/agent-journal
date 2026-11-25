@@ -10,7 +10,7 @@ namespace App\Contracts\Reflection;
  *
  * @template-covariant T of object
  */
-interface ReflectedType
+interface Reflector
 {
     /**
      * Whether the type declares or inherits a method of that name.

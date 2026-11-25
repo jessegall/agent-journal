@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support\EntryPoints;
 
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use App\Support\StateCatalog\Contracts\StateTypes;
 use App\Support\StateLoading\RegisteredStateType;
 
@@ -23,7 +23,7 @@ final readonly class StateEntries
     {
         return array_values(array_map(function (RegisteredStateType $type): EntryPoint {
             $folder = EntryPoint::folderOf($type->stateClass, EntryType::State);
-            $file = ReflectedType::of($type->stateClass)->shortName().'Test.php';
+            $file = Reflector::of($type->stateClass)->shortName().'Test.php';
 
             return new EntryPoint(EntryType::State, $type->stateClass, "{$folder}/{$file}");
         }, $this->types->registry()->types()));

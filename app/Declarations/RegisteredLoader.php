@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Spatie\LaravelData\Data;
 
 /**
@@ -34,7 +34,7 @@ final readonly class RegisteredLoader
     {
         $key = $owner->fullKey('loader', $loader->name);
         $owner->assertLoader($key, $loader->reader);
-        $invoke = ReflectedType::of($loader->reader)->method('__invoke');
+        $invoke = Reflector::of($loader->reader)->method('__invoke');
 
         return new self(
             owner: $owner,

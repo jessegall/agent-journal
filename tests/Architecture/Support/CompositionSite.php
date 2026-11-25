@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture\Support;
 
 use App\Support\Domain;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\ServiceProvider;
@@ -32,13 +32,13 @@ enum CompositionSite: string
     public function mayName(string $className): bool
     {
         return match ($this) {
-            self::Domains => ReflectedType::factory()->isSubclassOf($className, Domain::class),
-            self::Providers => ReflectedType::factory()->isSubclassOf($className, ServiceProvider::class),
+            self::Domains => Reflector::factory()->isSubclassOf($className, Domain::class),
+            self::Providers => Reflector::factory()->isSubclassOf($className, ServiceProvider::class),
             self::Application => str_contains($className, '\\Http\\Middleware\\')
-                && ReflectedType::exists($className)
-                && ReflectedType::of($className)->isClass(),
-            self::Authentication => ReflectedType::factory()->isSubclassOf($className, Authenticatable::class),
-            self::Seeders => ReflectedType::factory()->isSubclassOf($className, Seeder::class),
+                && Reflector::exists($className)
+                && Reflector::of($className)->isClass(),
+            self::Authentication => Reflector::factory()->isSubclassOf($className, Authenticatable::class),
+            self::Seeders => Reflector::factory()->isSubclassOf($className, Seeder::class),
         };
     }
 

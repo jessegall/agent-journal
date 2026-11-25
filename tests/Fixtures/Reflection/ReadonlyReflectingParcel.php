@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Reflection;
 
 use App\Concerns\Reflects;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 
 /**
  * A final readonly class that reflects itself.
@@ -17,9 +17,9 @@ final readonly class ReadonlyReflectingParcel
     public function __construct(public string $label) {}
 
     /**
-     * @return ReflectedType<self>
+     * @return Reflector<self>
      */
-    public static function reflector(): ReflectedType
+    public static function reflector(): Reflector
     {
         return self::reflect();
     }

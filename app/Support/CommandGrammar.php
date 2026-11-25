@@ -39,7 +39,7 @@ final readonly class CommandGrammar
      */
     public function problemWithProperties(string $class, array $seen = []): string|null
     {
-        foreach (ReflectedType::of($class)->ownProperties() as $property) {
+        foreach (Reflector::of($class)->ownProperties() as $property) {
             if ($property->isMarkedWith(PropertyForMorph::class)) {
                 continue;
             }
@@ -95,7 +95,7 @@ final readonly class CommandGrammar
             return $this->problemWithList($property, $seen);
         }
 
-        $enum = ReflectedType::find($name)->filter(fn (ReflectedType $type) => $type->isEnum());
+        $enum = Reflector::find($name)->filter(fn (Reflector $type) => $type->isEnum());
 
         if ($enum->isDefined()) {
             if ($enum->get()->implements(BackedEnum::class)) {
@@ -141,9 +141,9 @@ final readonly class CommandGrammar
 
         $class = $this->classNamed($elementType, $property);
 
-        $item = ReflectedType::find($class);
+        $item = Reflector::find($class);
 
-        if ($item->filter(fn (ReflectedType $type) => $type->isEnum())->isDefined()) {
+        if ($item->filter(fn (Reflector $type) => $type->isEnum())->isDefined()) {
             if ($item->get()->implements(BackedEnum::class)) {
                 return null;
             }
@@ -161,7 +161,7 @@ final readonly class CommandGrammar
             return "is a list whose item {$problem}";
         }
 
-        $problem = $item->filter(fn (ReflectedType $type) => $type->isClass())->isDefined() ? $this->problemWithValue(
+        $problem = $item->filter(fn (Reflector $type) => $type->isClass())->isDefined() ? $this->problemWithValue(
             $class,
             $seen,
         ) : "is typed {$class}, which is no class, enum or allowed type";
@@ -222,7 +222,7 @@ final readonly class CommandGrammar
     private function isContract(string $name): bool
     {
         return str_contains($name, '\\Contracts\\')
-            && ReflectedType::find($name)->filter(fn (ReflectedType $type) => $type->isInterface())->isDefined();
+            && Reflector::find($name)->filter(fn (Reflector $type) => $type->isInterface())->isDefined();
     }
 
     private function problemWithContract(string $name): string|null
@@ -238,9 +238,9 @@ final readonly class CommandGrammar
      * Whether the class is final, or the abstract base of a Data family that picks its final class from a property,
      * such as a node of a pane grid.
      *
-     * @param  ReflectedType<object>  $declaration
+     * @param  Reflector<object>  $declaration
      */
-    private function isClosedValue(ReflectedType $declaration): bool
+    private function isClosedValue(Reflector $declaration): bool
     {
         if ($declaration->isFinal()) {
             return true;
@@ -254,7 +254,7 @@ final readonly class CommandGrammar
      */
     private function problemWithValue(string $name, array $seen): string|null
     {
-        $found = ReflectedType::find($name)->filter(fn (ReflectedType $type) => $type->isClass());
+        $found = Reflector::find($name)->filter(fn (Reflector $type) => $type->isClass());
 
         if ($found->isEmpty()) {
             return "is typed {$name}, which is no class, enum or allowed type";

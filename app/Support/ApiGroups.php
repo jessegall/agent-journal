@@ -105,7 +105,7 @@ final class ApiGroups
         foreach ($code->folder($code->projectPathOf("{$folder}/*Payload.php")) as $entry) {
             $class = $namespace.'\\'.basename($entry->name(), '.php');
 
-            if (ReflectedType::factory()->isSubclassOf($class, ApiPayload::class)) {
+            if (Reflector::factory()->isSubclassOf($class, ApiPayload::class)) {
                 $payloads[] = $class;
             }
         }
@@ -123,7 +123,7 @@ final class ApiGroups
     private static function method(string $payload): string
     {
         $endpoint = ApiDeclaration::of($payload)->endpoint;
-        $declaration = ReflectedType::of($payload);
+        $declaration = Reflector::of($payload);
         $name = lcfirst(Str::beforeLast($declaration->shortName(), 'Payload'));
 
         $parameters = $declaration->constructor()
@@ -208,9 +208,9 @@ final class ApiGroups
      * The array shapes the payload's constructor documents, so the group method types its arrays as the payload does;
      * a class named in a shape is written in full, since the group file does not share the payload's imports.
      *
-     * @param  ReflectedType<object>  $call
+     * @param  Reflector<object>  $call
      */
-    private static function docblock(ReflectedType $call): string
+    private static function docblock(Reflector $call): string
     {
         $documented = $call->constructor()->flatMap(fn (ReflectedMethod $constructor) => $constructor->docComment());
 
@@ -239,10 +239,10 @@ final class ApiGroups
     /**
      * The classes the payload's file imports, by the short name it uses for each.
      *
-     * @param  ReflectedType<object>  $call
+     * @param  Reflector<object>  $call
      * @return array<string, string>
      */
-    private static function importsOf(ReflectedType $call): array
+    private static function importsOf(Reflector $call): array
     {
         $code = CodeFiles::ofProcess();
 
@@ -267,9 +267,9 @@ final class ApiGroups
      * payload's own namespace.
      *
      * @param  array<string, string>  $imports
-     * @param  ReflectedType<object>  $call
+     * @param  Reflector<object>  $call
      */
-    private static function fullyNamed(string $type, array $imports, ReflectedType $call): string
+    private static function fullyNamed(string $type, array $imports, Reflector $call): string
     {
         return (string) preg_replace_callback(
             '/(?<![\w\\\\])[A-Z]\w*/',

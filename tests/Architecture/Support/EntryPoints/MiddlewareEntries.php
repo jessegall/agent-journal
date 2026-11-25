@@ -6,7 +6,7 @@ namespace Tests\Architecture\Support\EntryPoints;
 
 use App\Support\CommandFrame;
 use App\Support\CommandRegistry;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use App\Support\RegisteredMiddleware;
 
 /**
@@ -32,7 +32,7 @@ final readonly class MiddlewareEntries
         }
 
         return array_map(function (string $class): EntryPoint {
-            $file = ReflectedType::of($class)->shortName().'Test.php';
+            $file = Reflector::of($class)->shortName().'Test.php';
 
             return new EntryPoint(
                 EntryType::Middleware,

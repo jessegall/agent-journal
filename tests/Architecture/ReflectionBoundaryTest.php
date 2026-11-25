@@ -11,8 +11,8 @@ use Tests\Support\TimeLimits\TimeLimit;
 
 /**
  * Every first-party use of native PHP reflection, and every question about a type by its name, goes through the
- * wrapper in app/Reflection: RawReflectionRule runs over all of the project's own PHP and finds none outside
- * the wrapper's own files.
+ * Reflector and its files in RawReflectionRule::WRAPPER_FILES: RawReflectionRule runs over all of the project's own
+ * PHP and finds none outside them.
  */
 #[TimeLimit(seconds: 600, reason: 'It runs PHPStan over every PHP source the project owns.')]
 final class ReflectionBoundaryTest extends TestCase
@@ -21,7 +21,7 @@ final class ReflectionBoundaryTest extends TestCase
 
     private const string SKIPPED = 'The reflection analysis skipped sources.';
 
-    private const string HOW_TO_FIX = 'Native reflection or a raw type question outside app/Reflection; '
+    private const string HOW_TO_FIX = 'Native reflection or a raw type question outside the reflection wrapper; '
         .'ask the Reflector as each line says.';
 
     /**
