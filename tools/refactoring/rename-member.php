@@ -32,7 +32,7 @@ require dirname(__DIR__, 2).'/vendor/autoload.php';
 require_once __DIR__.'/php-parse.php';
 require_once __DIR__.'/promoted-parameters.php';
 
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PhpParser\NodeFinder;
@@ -902,7 +902,7 @@ function enclosingClass(Node $node): string|null
  */
 function enclosing(Node $node, string $kind): Node|null
 {
-    $type = Reflector::of($kind);
+    $type = ReflectedType::of($kind);
 
     for ($parent = $node->getAttribute('parent'); $parent instanceof Node; $parent = $parent->getAttribute('parent')) {
         if ($type->isInstance($parent)) {

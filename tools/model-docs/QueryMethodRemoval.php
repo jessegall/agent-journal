@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tools\ModelDocs;
 
 use App\Support\ReflectedMethod;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use Barryvdh\LaravelIdeHelper\Console\ModelsCommand;
 use Barryvdh\LaravelIdeHelper\Contracts\ModelHookInterface;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -27,7 +27,7 @@ final class QueryMethodRemoval implements ModelHookInterface
 
     public function run(ModelsCommand $command, Model $model): void
     {
-        collect(Reflector::of($model)->methods())
+        collect(ReflectedType::of($model)->methods())
             ->filter(fn (ReflectedMethod $method): bool => $this->isScope($method))
             ->map(fn (ReflectedMethod $method): string => $this->scopeName($method))
             ->merge(self::QUERY_METHODS)

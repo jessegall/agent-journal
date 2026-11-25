@@ -122,7 +122,7 @@ The engine's grant for a tick covers only that frame's target. In a handler:
 
 - `App\Hooks\Contracts\EngineStack::push($target, $reference)` pushes a state through the same push every caller uses.
   It refuses a target outside the grant (`EngineAccessRefused`) and a session that no longer runs.
-- `App\Contracts\Work\AgentStack::popExposed($target)` pops the finished and switched-off frames exposed at the top,
+- `App\Contracts\Work\AgentStacks::popExposed($target)` pops the finished and switched-off frames exposed at the top,
   with their exits; frames buried under a live one stay.
 
 Never change a stack from `onTick` itself.

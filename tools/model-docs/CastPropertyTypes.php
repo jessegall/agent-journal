@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tools\ModelDocs;
 
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use Barryvdh\LaravelIdeHelper\Console\ModelsCommand;
 use Barryvdh\LaravelIdeHelper\Contracts\ModelHookInterface;
 use Illuminate\Database\Eloquent\Model;
@@ -55,8 +55,8 @@ final class CastPropertyTypes implements ModelHookInterface
 
     private function isDataCast(string $cast): bool
     {
-        return $this->isDataCollectionCast($cast) || Reflector::find($cast)
-            ->map(fn (Reflector $type): bool => $type->implements(BaseData::class))
+        return $this->isDataCollectionCast($cast) || ReflectedType::find($cast)
+            ->map(fn (ReflectedType $type): bool => $type->implements(BaseData::class))
             ->getOrElse(false);
     }
 
@@ -81,7 +81,7 @@ final class CastPropertyTypes implements ModelHookInterface
      */
     private function statedColumnTypes(Model $model): Collection
     {
-        return Reflector::of($model)
+        return ReflectedType::of($model)
             ->method('casts')
             ->docComment()
             ->map(fn (string $comment): Collection => $this->columnTags($comment))

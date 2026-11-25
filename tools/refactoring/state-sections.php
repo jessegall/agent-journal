@@ -14,7 +14,7 @@ declare(strict_types=1);
 
 use App\Support\Inputs\Contracts\HookAnswerer;
 use App\Support\ReflectedMethod;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeFinder;
@@ -49,7 +49,7 @@ function hookMethods(): array
 {
     return array_map(
         fn (ReflectedMethod $method) => $method->name(),
-        Reflector::of(HookAnswerer::class)->methods(),
+        ReflectedType::of(HookAnswerer::class)->methods(),
     );
 }
 

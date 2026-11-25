@@ -5,7 +5,7 @@ declare(strict_types=1);
 /**
  * Prints what the Files funnel does for repeated reads, as counts and never as times: opens and fingerprint stats for
  * 1000 reads of one unchanged file, whether a file past the per-file limit is kept, the bytes kept after reading many
- * files, and the levels a deep list walks. It builds a LocalFiles over a temporary folder of its own.
+ * files, and the levels a deep list walks. It builds a Files over a temporary folder of its own.
  *
  *   php tools/refactoring/files-counts.php
  *
@@ -18,9 +18,9 @@ use App\Exceptions\DepthTooDeep;
 use App\Support\ClosedFolders;
 use App\Support\CodeFiles;
 use App\Support\FileContents;
+use App\Support\Files;
 use App\Support\FileWriter;
 use App\Support\FolderWalker;
-use App\Support\LocalFiles;
 use App\Support\PathConfinement;
 use App\Support\PlaceRoots;
 use App\Values\Depth;
@@ -63,7 +63,7 @@ $closed = new ClosedFolders($roots);
 $confinement = new PathConfinement($roots, $closed);
 $contents = new FileContents(CACHED_BYTES, LARGEST_CACHED_FILE);
 $walker = new FolderWalker($roots, $closed, $confinement);
-$files = new LocalFiles($roots, $confinement, $contents, $walker, CodeFiles::over($folder), new FileWriter());
+$files = new Files($roots, $confinement, $contents, $walker, CodeFiles::over($folder), new FileWriter());
 
 $unchanged = FilePath::in(Place::Project, 'unchanged.json');
 

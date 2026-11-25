@@ -14,7 +14,7 @@ declare(strict_types=1);
  *       the Accessors section, and PHPStan to find the callers that still call them.
  */
 
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use Illuminate\Database\Eloquent\Model;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
@@ -66,10 +66,10 @@ const METHOD_RETURNS = [
  */
 function answersAContract(string $class, string $method): bool
 {
-    $type = Reflector::of($class);
+    $type = ReflectedType::of($class);
     $others = [...array_slice($type->lineage(), 1), ...$type->interfaces(), ...$type->allTraits()];
 
-    return array_any($others, fn (Reflector $other) => $other->hasMethod($method));
+    return array_any($others, fn (ReflectedType $other) => $other->hasMethod($method));
 }
 
 /**
@@ -92,12 +92,12 @@ function readsRows(string $source, string $class, Class_ $model, ClassMethod $me
         $called = $call->class instanceof Node\Name ? importedName($source, $call->class->toString()) : '';
         $isNaming = $call->name instanceof Node\Identifier && in_array($call->name->toString(), NAMING_STATICS, true);
 
-        if (! $isNaming && $called !== $class && Reflector::exists($called) && Reflector::of($called)->isSubclassOf(Model::class)) {
+        if (! $isNaming && $called !== $class && ReflectedType::exists($called) && ReflectedType::of($called)->isSubclassOf(Model::class)) {
             return true;
         }
     }
 
-    $type = Reflector::of($class);
+    $type = ReflectedType::of($class);
 
     foreach ($finder->findInstanceOf($method, Node\Expr\MethodCall::class) as $call) {
         $name = $call->name instanceof Node\Identifier ? $call->name->toString() : '';
@@ -169,11 +169,11 @@ function returnsModel(string $source, ClassMethod $method): bool
 
         $full = importedName($source, $part);
 
-        if (! Reflector::exists($full)) {
+        if (! ReflectedType::exists($full)) {
             return false;
         }
 
-        return Reflector::of($full)->isSubclassOf(Model::class);
+        return ReflectedType::of($full)->isSubclassOf(Model::class);
     });
 }
 
@@ -203,11 +203,11 @@ function isObjectPart(string $source, string $part): bool
 
     $full = importedName($source, preg_replace('/<.*$/', '', ltrim($part, '\\')));
 
-    if (! Reflector::exists($full)) {
+    if (! ReflectedType::exists($full)) {
         return false;
     }
 
-    $type = Reflector::of($full);
+    $type = ReflectedType::of($full);
 
     return ! $type->isTrait() && ! $type->isEnum() && ! $type->isSubclassOf(Model::class);
 }
@@ -227,11 +227,11 @@ function isScalarPart(string $source, string $part): bool
 
     $full = importedName($source, $enum[1]);
 
-    if (! Reflector::exists($full)) {
+    if (! ReflectedType::exists($full)) {
         return false;
     }
 
-    return Reflector::of($full)->backingType()->isDefined();
+    return ReflectedType::of($full)->backingType()->isDefined();
 }
 
 /**
