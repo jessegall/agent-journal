@@ -362,7 +362,7 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
             ->where('status', StackStatus::Active->value)
             ->whereIn(
                 'session_id',
-                AgentSession::query()->select('id')->withAnyStatus(array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running())),
+                AgentSession::query()->select('id')->withAnyStatus(SessionStatus::running()),
             );
     }
 

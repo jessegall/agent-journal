@@ -8,6 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\NotificationMutationType;
+use Closure;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -151,10 +152,10 @@ final class NotificationChange extends Model implements ReadableModel
      * The rows of any of the given ids.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $ids
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $ids
      */
     #[Scope]
-    protected function withAnyId(Builder $query, array $ids): void
+    protected function withAnyId(Builder $query, array|Builder|Closure $ids): void
     {
         $query->whereIn('id', $ids);
     }

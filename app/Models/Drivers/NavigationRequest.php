@@ -23,6 +23,7 @@ use App\Values\NavigationScreen;
 use App\Values\NavigationUncertainty;
 use App\Values\ScriptGoal;
 use Carbon\CarbonImmutable;
+use Closure;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -434,10 +435,10 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
      * The rows of any of the given states.
      *
      * @param  Builder<self>  $query
-     * @param  list<NavigationState>  $states
+     * @param  array<array-key, NavigationState>|Builder<covariant Model>|Closure  $states
      */
     #[Scope]
-    protected function withAnyState(Builder $query, array $states): void
+    protected function withAnyState(Builder $query, array|Builder|Closure $states): void
     {
         $query->whereIn('state', $states);
     }
@@ -457,10 +458,10 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
      * The rows of any of the given ids.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $ids
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $ids
      */
     #[Scope]
-    protected function withAnyId(Builder $query, array $ids): void
+    protected function withAnyId(Builder $query, array|Builder|Closure $ids): void
     {
         $query->whereIn('id', $ids);
     }

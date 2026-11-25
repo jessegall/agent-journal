@@ -30,6 +30,7 @@ use App\Support\Sources\Contracts\Dockable;
 use App\Support\Sources\DockDefinition;
 use App\Values\TextVersion;
 use Carbon\CarbonImmutable;
+use Closure;
 use Domain\Documents\Data\DockSuggestion;
 use Domain\Documents\Data\PublicationCard;
 use Domain\Documents\Data\ReportView;
@@ -249,10 +250,10 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
      * The rows of any of the given numbers.
      *
      * @param  Builder<self>  $query
-     * @param  list<int>  $numbers
+     * @param  array<array-key, int>|Builder<covariant Model>|Closure  $numbers
      */
     #[Scope]
-    protected function withAnyNumber(Builder $query, array $numbers): void
+    protected function withAnyNumber(Builder $query, array|Builder|Closure $numbers): void
     {
         $query->whereIn('number', $numbers);
     }

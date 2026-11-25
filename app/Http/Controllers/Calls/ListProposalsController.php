@@ -21,7 +21,7 @@ final readonly class ListProposalsController
 
         $proposals = RuleProposal::query()
             ->ofProject($projects->current())
-            ->withAnyState(array_map(fn (ProposalState $state): string => $state->value, $states))
+            ->withAnyState($states)
             ->limit(100)
             ->get();
 

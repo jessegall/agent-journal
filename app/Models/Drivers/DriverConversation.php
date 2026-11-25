@@ -11,6 +11,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\ResumeRefusal;
 use App\Exceptions\ResumeRefused;
 use App\Models\Agents\AgentSession;
+use Closure;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -170,10 +171,10 @@ final class DriverConversation extends Model implements ReadableModel
      * The rows of any of the given agents.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $agentIds
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $agentIds
      */
     #[Scope]
-    protected function ofAgents(Builder $query, array $agentIds): void
+    protected function ofAgents(Builder $query, array|Builder|Closure $agentIds): void
     {
         $query->whereIn('agent_id', $agentIds);
     }

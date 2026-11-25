@@ -22,6 +22,7 @@ use App\Values\PublicationIntent;
 use App\Values\PublicationManifest;
 use App\Values\PublicationStatus;
 use Carbon\CarbonImmutable;
+use Closure;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -535,10 +536,10 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
      * The publications of the sessions.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $sessionIds
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $sessionIds
      */
     #[Scope]
-    protected function ofSessions(Builder $query, array $sessionIds): void
+    protected function ofSessions(Builder $query, array|Builder|Closure $sessionIds): void
     {
         $query->whereIn('session_id', $sessionIds);
     }
@@ -559,10 +560,10 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
      * The rows of any of the given open keys.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $openKeys
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $openKeys
      */
     #[Scope]
-    protected function withAnyOpenKey(Builder $query, array $openKeys): void
+    protected function withAnyOpenKey(Builder $query, array|Builder|Closure $openKeys): void
     {
         $query->whereIn('open_key', $openKeys);
     }

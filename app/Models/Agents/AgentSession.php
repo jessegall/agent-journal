@@ -36,6 +36,7 @@ use App\Values\SelectedDriver;
 use App\Values\SelectionSource;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
+use Closure;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -571,10 +572,10 @@ final class AgentSession extends Model implements EventSource, ReadableModel
      * The sessions of the agents.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $agentIds
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $agentIds
      */
     #[Scope]
-    protected function ofAgents(Builder $query, array $agentIds): void
+    protected function ofAgents(Builder $query, array|Builder|Closure $agentIds): void
     {
         $query->whereIn('agent_id', $agentIds);
     }
@@ -641,10 +642,10 @@ final class AgentSession extends Model implements EventSource, ReadableModel
      * The sessions started under any of the sessions.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $sessionIds
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $sessionIds
      */
     #[Scope]
-    protected function helpersOfAny(Builder $query, array $sessionIds): void
+    protected function helpersOfAny(Builder $query, array|Builder|Closure $sessionIds): void
     {
         $query->whereIn('parent_session_id', $sessionIds);
     }
@@ -661,15 +662,15 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The rows of any of the given statuss.
+     * The rows of any of the given statuses.
      *
      * @param  Builder<self>  $query
-     * @param  list<SessionStatus>  $statuss
+     * @param  array<array-key, SessionStatus>|Builder<covariant Model>|Closure  $statuses
      */
     #[Scope]
-    protected function withAnyStatus(Builder $query, array $statuss): void
+    protected function withAnyStatus(Builder $query, array|Builder|Closure $statuses): void
     {
-        $query->whereIn('status', $statuss);
+        $query->whereIn('status', $statuses);
     }
 
     /**
@@ -687,10 +688,10 @@ final class AgentSession extends Model implements EventSource, ReadableModel
      * The rows of any of the given ids.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $ids
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $ids
      */
     #[Scope]
-    protected function withAnyId(Builder $query, array $ids): void
+    protected function withAnyId(Builder $query, array|Builder|Closure $ids): void
     {
         $query->whereIn('id', $ids);
     }

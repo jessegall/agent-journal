@@ -29,7 +29,7 @@ final readonly class StoredOutput
 
         OutputChunk::query()
             ->ofPartRun($part->id)
-            ->withStream($stream->value)
+            ->withStream($stream)
             ->byOffset()
             ->readInChunks(200, function (Collection $chunks) use ($disk, &$bytes): void {
                 foreach ($chunks as $chunk) {
@@ -53,7 +53,7 @@ final readonly class StoredOutput
 
         OutputChunk::query()
             ->ofPartRun($part->id)
-            ->withStream($stream->value)
+            ->withStream($stream)
             ->where('offset', '>=', $fromOffset)
             ->byOffset()
             ->readInChunks(200, function (Collection $chunks) use ($disk, $stream, &$frames): void {

@@ -10,6 +10,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\OutputStream;
 use App\Values\CapturedChunk;
 use Carbon\CarbonImmutable;
+use Closure;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -114,10 +115,10 @@ final class OutputChunk extends Model implements ReadableModel
      * The rows of any of the given part runs.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $partRunIds
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $partRunIds
      */
     #[Scope]
-    protected function ofPartRuns(Builder $query, array $partRunIds): void
+    protected function ofPartRuns(Builder $query, array|Builder|Closure $partRunIds): void
     {
         $query->whereIn('part_run_id', $partRunIds);
     }

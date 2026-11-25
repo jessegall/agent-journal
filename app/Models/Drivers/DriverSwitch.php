@@ -27,6 +27,7 @@ use App\Models\Support\Accessor;
 use App\Values\ChosenAccount;
 use App\Values\DriverSwitchTarget;
 use App\Values\PinnedDriver;
+use Closure;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -394,10 +395,10 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
      * The rows of any of the given agents.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $agentIds
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $agentIds
      */
     #[Scope]
-    protected function ofAgents(Builder $query, array $agentIds): void
+    protected function ofAgents(Builder $query, array|Builder|Closure $agentIds): void
     {
         $query->whereIn('agent_id', $agentIds);
     }

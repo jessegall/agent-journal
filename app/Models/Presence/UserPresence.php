@@ -12,6 +12,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Events\Messages\UserPresenceConfirmed;
 use App\Support\PresenceWindow;
 use Carbon\CarbonImmutable;
+use Closure;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -104,10 +105,10 @@ final class UserPresence extends Model implements EventSource, ReadableModel
      * The rows of any of the given users.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $userIds
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $userIds
      */
     #[Scope]
-    protected function ofUsers(Builder $query, array $userIds): void
+    protected function ofUsers(Builder $query, array|Builder|Closure $userIds): void
     {
         $query->whereIn('user_id', $userIds);
     }

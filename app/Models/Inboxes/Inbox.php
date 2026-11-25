@@ -17,6 +17,7 @@ use App\Events\Inboxes\InboxOpened;
 use App\Exceptions\InboxUnavailable;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
+use Closure;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -262,10 +263,10 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
      * The rows of any of the given provider keys.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $providerKeys
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $providerKeys
      */
     #[Scope]
-    protected function withAnyProviderKey(Builder $query, array $providerKeys): void
+    protected function withAnyProviderKey(Builder $query, array|Builder|Closure $providerKeys): void
     {
         $query->whereIn('provider_key', $providerKeys);
     }

@@ -9,11 +9,13 @@ use App\Concerns\CountsPivotLoads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Values\ReadOrder;
+use Closure;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 /**
@@ -176,10 +178,10 @@ final class PhaseTask extends Pivot implements ReadableModel
      * The tasks of the phases.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $phaseIds
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $phaseIds
      */
     #[Scope]
-    protected function ofPhases(Builder $query, array $phaseIds): void
+    protected function ofPhases(Builder $query, array|Builder|Closure $phaseIds): void
     {
         $query->whereIn('phase_id', $phaseIds);
     }
@@ -210,10 +212,10 @@ final class PhaseTask extends Pivot implements ReadableModel
      * The rows of any of the given tasks.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $taskIds
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $taskIds
      */
     #[Scope]
-    protected function ofTasks(Builder $query, array $taskIds): void
+    protected function ofTasks(Builder $query, array|Builder|Closure $taskIds): void
     {
         $query->whereIn('task_id', $taskIds);
     }

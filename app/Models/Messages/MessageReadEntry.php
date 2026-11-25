@@ -12,6 +12,7 @@ use App\Contracts\Messages\MessageSender;
 use App\Events\Messages\MessageRead;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
+use Closure;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -121,10 +122,10 @@ final class MessageReadEntry extends Model implements EventSource
      * The rows of any of the given messages.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $messageIds
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $messageIds
      */
     #[Scope]
-    protected function ofMessages(Builder $query, array $messageIds): void
+    protected function ofMessages(Builder $query, array|Builder|Closure $messageIds): void
     {
         $query->whereIn('message_id', $messageIds);
     }

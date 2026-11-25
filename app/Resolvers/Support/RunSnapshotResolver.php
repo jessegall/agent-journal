@@ -66,7 +66,7 @@ final readonly class RunSnapshotResolver
 
         $position = ReaderPosition::query()
             ->ofPartRun($part->id)
-            ->withPurpose(PositionPurpose::Live->value)
+            ->withPurpose(PositionPurpose::Live)
             ->first();
 
         $assessment = OutputAssessment::latestOf($part);

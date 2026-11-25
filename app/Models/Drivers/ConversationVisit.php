@@ -9,6 +9,7 @@ use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Agents\AgentSession;
 use Carbon\CarbonImmutable;
+use Closure;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -109,10 +110,10 @@ final class ConversationVisit extends Model implements ReadableModel
      * The rows of any of the given conversations.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $conversationIds
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $conversationIds
      */
     #[Scope]
-    protected function ofConversations(Builder $query, array $conversationIds): void
+    protected function ofConversations(Builder $query, array|Builder|Closure $conversationIds): void
     {
         $query->whereIn('conversation_id', $conversationIds);
     }

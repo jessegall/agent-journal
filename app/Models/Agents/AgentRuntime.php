@@ -32,6 +32,7 @@ use App\Support\RuntimeStatuses;
 use App\Values\PinnedDriver;
 use App\Values\RuntimeIntent;
 use Carbon\CarbonImmutable;
+use Closure;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -637,10 +638,10 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
      * The runtimes of the sessions.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $sessionIds
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $sessionIds
      */
     #[Scope]
-    protected function ofSessions(Builder $query, array $sessionIds): void
+    protected function ofSessions(Builder $query, array|Builder|Closure $sessionIds): void
     {
         $query->whereIn('agent_session_id', $sessionIds);
     }
@@ -707,10 +708,10 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
      * The rows of any of the given hosts.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $hostIds
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $hostIds
      */
     #[Scope]
-    protected function ofHosts(Builder $query, array $hostIds): void
+    protected function ofHosts(Builder $query, array|Builder|Closure $hostIds): void
     {
         $query->whereIn('host_id', $hostIds);
     }

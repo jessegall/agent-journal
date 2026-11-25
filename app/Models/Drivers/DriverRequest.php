@@ -43,6 +43,7 @@ use App\Values\ScriptGoal;
 use App\Values\ScriptParameter;
 use App\Values\ScriptProgress;
 use Carbon\CarbonImmutable;
+use Closure;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -791,10 +792,10 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
      * The rows of any of the given agent runtimes.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $agentRuntimeIds
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $agentRuntimeIds
      */
     #[Scope]
-    protected function ofAgentRuntimes(Builder $query, array $agentRuntimeIds): void
+    protected function ofAgentRuntimes(Builder $query, array|Builder|Closure $agentRuntimeIds): void
     {
         $query->whereIn('agent_runtime_id', $agentRuntimeIds);
     }
@@ -822,15 +823,15 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The rows of any of the given progresss.
+     * The rows of any of the given progresses.
      *
      * @param  Builder<self>  $query
-     * @param  list<RequestProgress>  $progresss
+     * @param  array<array-key, RequestProgress>|Builder<covariant Model>|Closure  $progresses
      */
     #[Scope]
-    protected function withAnyProgress(Builder $query, array $progresss): void
+    protected function withAnyProgress(Builder $query, array|Builder|Closure $progresses): void
     {
-        $query->whereIn('progress', $progresss);
+        $query->whereIn('progress', $progresses);
     }
 
     /**
@@ -859,10 +860,10 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
      * The rows of any of the given operations.
      *
      * @param  Builder<self>  $query
-     * @param  list<DriverOperation>  $operations
+     * @param  array<array-key, DriverOperation>|Builder<covariant Model>|Closure  $operations
      */
     #[Scope]
-    protected function withAnyOperation(Builder $query, array $operations): void
+    protected function withAnyOperation(Builder $query, array|Builder|Closure $operations): void
     {
         $query->whereIn('operation', $operations);
     }

@@ -18,7 +18,7 @@ use App\Exceptions\RuleProposalRefused;
 use App\Support\ActorIdentity;
 use App\Values\ProposedRule;
 use App\Values\RuleReference;
-use App\Values\RuleScope;
+use Closure;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -326,10 +326,10 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
      * The rows of any of the given states.
      *
      * @param  Builder<self>  $query
-     * @param  list<ProposalState>  $states
+     * @param  array<array-key, ProposalState>|Builder<covariant Model>|Closure  $states
      */
     #[Scope]
-    protected function withAnyState(Builder $query, array $states): void
+    protected function withAnyState(Builder $query, array|Builder|Closure $states): void
     {
         $query->whereIn('state', $states);
     }
