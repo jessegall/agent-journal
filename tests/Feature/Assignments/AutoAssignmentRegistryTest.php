@@ -16,12 +16,14 @@ use App\Support\Domain;
 use App\Support\DomainEntry;
 use App\Support\PoolDefinition;
 use App\Support\Registry\AssignmentRegistry;
+use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Domains\Errands\ErrandAssignables;
 use Tests\Fixtures\Domains\Errands\ErrandAssigner;
 use Tests\Fixtures\Domains\Errands\ErrandsDomain;
 use Tests\Fixtures\Domains\Errands\ErrandWork;
 use Tests\Fixtures\Domains\Errands\OpenErrandPools;
 use Tests\Fixtures\Domains\Rounds\RoundsDomain;
+use Tests\Support\DomainBoot;
 use Tests\TestCase;
 
 /**
@@ -31,6 +33,14 @@ use Tests\TestCase;
  */
 final class AutoAssignmentRegistryTest extends TestCase
 {
+    /**
+     * Tasks, whose pools the application boots with.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
+
     private AssignmentRegistry $registry;
 
     protected function setUp(): void

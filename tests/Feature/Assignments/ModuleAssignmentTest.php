@@ -37,6 +37,11 @@ final class ModuleAssignmentTest extends TestCase
     use InstallsNotesModule;
     use StartsAgentRequests;
 
+    /**
+     * The stored type of a note, which stays in the rows while the module is gone.
+     */
+    private const string NOTE_TYPE = 'notes.note';
+
     private const array TABLES = ['users', 'agents', 'assignments'];
 
     private User $owner;
@@ -122,7 +127,7 @@ final class ModuleAssignmentTest extends TestCase
         AssignmentRecord::query()->insert(
             [
                 'id' => strtolower((string) Str::ulid()),
-                'record_type' => Note::linkType(),
+                'record_type' => self::NOTE_TYPE,
                 'record_id' => $noteId,
                 'holder_type' => 'agent',
                 'holder_id' => $this->writer->id,
@@ -134,7 +139,7 @@ final class ModuleAssignmentTest extends TestCase
 
         $this->assertThrows(
             fn () => $this->app->make(AssignmentResolver::class)->assignmentsFor(
-                [new RecordIdentity(Note::linkType(), $noteId)],
+                [new RecordIdentity(self::NOTE_TYPE, $noteId)],
             ),
             AssignmentTypeUnavailable::class,
         );

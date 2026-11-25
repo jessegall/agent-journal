@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\Inboxes\InstallInboxes;
 
+use App\Attributes\Commands\Entry;
+use App\Enums\Accounts\CommandEntry;
 use App\Support\Command;
 
 /**
@@ -11,4 +13,5 @@ use App\Support\Command;
  *
  * @extends Command<null>
  */
+#[Entry(CommandEntry::HostControl)]
 final readonly class InstallInboxesCommand extends Command {}

@@ -88,7 +88,7 @@ final class PlanWorkCommandsTest extends TestCase
             ],
         )
             ->assertOk()->assertJson(
-                ['cascade' => true, 'changed' => 3, 'unchanged' => 0, 'skipped' => 2],
+                ['isCascade' => true, 'changed' => 3, 'unchanged' => 0, 'skipped' => 2],
             )->assertJsonMissingPath('outcomes');
         $reference = (string) $given->json('root.holder.reference');
         $this->assertSame(3, AssignmentRecord::query()->withoutGlobalScopes()->count());

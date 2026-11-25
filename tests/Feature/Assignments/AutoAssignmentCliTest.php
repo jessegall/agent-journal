@@ -6,6 +6,7 @@ namespace Tests\Feature\Assignments;
 
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
+use Domain\Plans\PlansDomain;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Facades\Artisan;
@@ -41,7 +42,7 @@ final class AutoAssignmentCliTest extends TestCase
      */
     protected static function bootedDomains(): array
     {
-        return DomainBoot::withRequirements(TasksDomain::class);
+        return DomainBoot::withRequirements(PlansDomain::class, TasksDomain::class);
     }
 
     private TestStart $main;
