@@ -5,18 +5,22 @@ declare(strict_types=1);
 namespace Tests\Commands\Messages;
 
 use App\Commands\Messages\SendMessage\SendMessageCommand;
+use App\Enums\Agents\ActivityType;
 use App\Events\Messages\MessageSent;
 use App\Exceptions\CommandInputInvalid;
 use App\Exceptions\CommittedFactListenerFailed;
 use App\Exceptions\InboxUnavailable;
+use App\Models\Agents\ActivityEntry;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
+use App\Models\Inboxes\InboxMember;
 use App\Models\Messages\Message;
 use App\Support\ActorIdentity;
 use App\Support\DomainRegistry;
 use App\Support\IsolatedListener;
 use App\Support\StartSessions;
+use Carbon\CarbonImmutable;
 use Domain\Chat\Http\Requests\ConversationRequest;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Event;
@@ -55,6 +59,7 @@ final class SendMessageTest extends TestCase
         'links',
         'plans',
         'rules',
+        'activity_entries',
     ];
 
     private string $ownInboxId;
@@ -296,6 +301,32 @@ final class SendMessageTest extends TestCase
 
         $message = Message::query()->where('body', self::SAVED_TEXT)->sole();
         $this->assertSame([$message->id], $this->received);
+    }
+
+    public function test_an_agents_message_into_an_inbox_a_user_is_attached_to_is_a_post_of_that_agent(): void
+    {
+        $builder = $this->journal->agentCalled('Builder');
+        InboxMember::create($this->ownInboxId, ActorIdentity::of($builder), CarbonImmutable::now());
+        $this->journal->actAsAgentId($builder->id);
+
+        $this->journal->run(new SendMessageCommand($this->ownInboxId, 'The build is green.'));
+
+        $entry = ActivityEntry::query()->sole();
+        $this->assertSame(ActivityType::Posted, $entry->type);
+        $this->assertSame($builder->id, $entry->actor()->id);
+    }
+
+    public function test_messages_between_agents_alone_are_not_recorded(): void
+    {
+        $this->journal->agent('Reviewer', 'read-only-helper');
+        $builder = $this->journal->agentCalled('Builder');
+        $inboxId = $this->journal->inboxCalled('Reviewer')->id;
+        InboxMember::create($inboxId, ActorIdentity::of($builder), CarbonImmutable::now());
+        $this->journal->actAsAgentId($builder->id);
+
+        $this->journal->run(new SendMessageCommand($inboxId, 'Over to you.'));
+
+        $this->assertSame(0, ActivityEntry::query()->count());
     }
 
     /**

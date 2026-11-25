@@ -6,9 +6,11 @@ namespace Domain\Documents\Tests\Commands;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
+use App\Contracts\Files\Files;
 use App\Contracts\Records\RecordResolver;
 use App\Exceptions\CommandInputInvalid;
 use App\Exceptions\ContentMissing;
+use App\Exceptions\FileMissing;
 use App\Exceptions\RecordUnavailable;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
@@ -26,6 +28,7 @@ use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;
+use Domain\Documents\Console\Concerns\ReadsRecordBody;
 use Domain\Documents\Contracts\Documents\DocumentResolver;
 use Domain\Documents\DocumentsDomain;
 use Domain\Documents\Events\DocumentCreated;
@@ -37,6 +40,8 @@ use Domain\Documents\Tests\TestCase;
 use Domain\Plans\PlansDomain;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
+use Illuminate\Console\Command;
+use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Contracts\Events\Dispatcher;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
@@ -252,6 +257,27 @@ final class CreateDocumentTest extends TestCase
 
         $this->expectException(CommandInputInvalid::class);
         $this->bus()->run(new CreateDocumentCommand('Many', 'Too many links', "Text\n", array_fill(0, 51, $task)));
+    }
+
+    public function test_a_missing_body_file_fails_with_its_own_reason(): void
+    {
+        $this->app->make(Kernel::class)->registerCommand(new class extends Command
+        {
+            use ReadsRecordBody;
+
+            protected $signature = 'test:record-body {--body=} {--file=}';
+
+            public function handle(Files $files): int
+            {
+                $this->bodyText($files);
+
+                return self::SUCCESS;
+            }
+        });
+
+        $this->expectException(FileMissing::class);
+
+        $this->artisan('test:record-body', ['--file' => sys_get_temp_dir().'/no-such-notes.md'])->run();
     }
 
     private function bus(): CommandBus

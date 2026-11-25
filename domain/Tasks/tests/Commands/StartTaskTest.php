@@ -6,17 +6,28 @@ namespace Domain\Tasks\Tests\Commands;
 
 use App\Contracts\Assignments\AssignmentQuery;
 use App\Contracts\Bus\CommandBus;
+use App\Models\Agents\Agent;
+use App\Models\Agents\AgentSession;
+use App\Models\Agents\AgentStackRow;
+use App\Support\ActorIdentity;
+use App\Support\ListenerRegistry;
 use App\Support\PoolMembers;
+use App\Support\StartSessions;
 use Closure;
 use Domain\Plans\Events\PlanCancelled;
 use Domain\Plans\Events\PlanFinished;
+use Domain\Plans\Events\PlanProgressChanged;
 use Domain\Plans\Events\PlanStarted;
+use Domain\Plans\Listeners\CountPhaseTaskStates;
+use Domain\Plans\Models\Plan;
 use Domain\Plans\PlansDomain;
+use Domain\Plans\Support\PlanStructure;
 use Domain\Tasks\Commands\AddTaskWait\AddTaskWaitCommand;
 use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Commands\WaiveTaskWait\WaiveTaskWaitCommand;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Events\TaskBlocked;
 use Domain\Tasks\Events\TaskCancelled;
 use Domain\Tasks\Events\TaskFinished;
@@ -25,7 +36,9 @@ use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Exceptions\TaskRestartRefused;
 use Domain\Tasks\Exceptions\TaskRunTaken;
 use Domain\Tasks\Exceptions\TaskWaitsUnmet;
+use Domain\Tasks\Listeners\PushTaskState;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Models\TaskRun;
 use Domain\Tasks\Support\TaskType;
 use Domain\Tasks\TasksDomain;
 use Domain\Tasks\Tests\Fixtures\StartNamedTask;
@@ -33,8 +46,12 @@ use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Event;
+use RuntimeException;
+use Tests\Fixtures\Agents\TestSelections;
+use Tests\Fixtures\Tasks\FailsAfterPush;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Settings\SwitchesDomainsOff;
 
 /**
  * An agent starts a task: it opens the task's first run, claimed by the agent, and a retry under the same key gets
@@ -43,6 +60,7 @@ use Tests\Support\DomainBoot;
 final class StartTaskTest extends TestCase
 {
     use CommitsHookRows;
+    use SwitchesDomainsOff;
 
     /**
      * The bus commits these commands for real, so these tables are emptied around each test.
@@ -64,6 +82,12 @@ final class StartTaskTest extends TestCase
         'task_waits',
         'task_wait_history',
         'plans',
+        'phases',
+        'phase_tasks',
+        'session_tokens',
+        'hook_calls',
+        'links',
+        'settings_records',
     ];
 
     private const string START_KEY = '01JD8X0G9M3QZ6V4K2STARTKEY1';
@@ -73,6 +97,8 @@ final class StartTaskTest extends TestCase
     private Task $dependent;
 
     private Task $prerequisite;
+
+    private AgentSession $session;
 
     protected function setUp(): void
     {
@@ -204,6 +230,99 @@ final class StartTaskTest extends TestCase
         $this->assertEquals($sent()[0], unserialize(serialize($sent()[0])));
     }
 
+    public function test_the_start_and_its_repeat_each_name_the_actor_that_started_the_task(): void
+    {
+        $agent = Agent::create('Worker', 'main-agent', $this->localProject());
+        $this->session = $this->app->make(StartSessions::class)
+            ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
+            ->session;
+
+        $task = $this->tasks()->task('task')->taskCalled('task');
+        $started = $this->heard(TaskStarted::class);
+
+        $this->start($task);
+        $this->start($task);
+
+        $actor = ActorIdentity::fromText("agent:{$this->session->agent_id}");
+        $this->assertCount(2, $started());
+        $this->assertTrue($started()[0]->actor->isSameAs($actor));
+        $this->assertSame($task->id, $started()[1]->taskId);
+    }
+
+    public function test_the_plan_holding_the_task_at_its_start_is_the_one_told_after_the_commit(): void
+    {
+        $agent = Agent::create('Worker', 'main-agent', $this->localProject());
+        $this->session = $this->app->make(StartSessions::class)
+            ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
+            ->session;
+
+        $plan = Plan::factory()->create();
+        $task = $this->tasks()->task('task')->taskCalled('task');
+        $this->planStructure()->addTasks($this->planStructure()->addPhase($plan, 'Work'), [$task->id]);
+        $progress = $this->heard(PlanProgressChanged::class);
+
+        $this->start($task);
+
+        $this->assertSame([$plan->id], array_map(fn (PlanProgressChanged $changed) => $changed->planId, $progress()));
+    }
+
+    public function test_a_task_in_no_phase_tells_no_plan(): void
+    {
+        $agent = Agent::create('Worker', 'main-agent', $this->localProject());
+        $this->session = $this->app->make(StartSessions::class)
+            ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
+            ->session;
+
+        $progress = $this->heard(PlanProgressChanged::class);
+
+        $this->start($this->tasks()->task('Loose')->taskCalled('Loose'));
+
+        $this->assertSame([], $progress());
+    }
+
+    public function test_with_plans_switched_off_the_start_works_and_tells_no_plan(): void
+    {
+        $agent = Agent::create('Worker', 'main-agent', $this->localProject());
+        $this->session = $this->app->make(StartSessions::class)
+            ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
+            ->session;
+
+        $plan = Plan::factory()->create();
+        $task = $this->tasks()->task('task')->taskCalled('task');
+        $this->planStructure()->addTasks($this->planStructure()->addPhase($plan, 'Work'), [$task->id]);
+        $this->switchDomainOff('plans');
+        $progress = $this->heard(PlanProgressChanged::class);
+
+        $this->start($task);
+
+        $this->assertSame(TaskStatus::Started, $task->refresh()->status);
+        $this->assertSame([], $progress());
+    }
+
+    public function test_a_failure_after_the_push_leaves_no_task_run_or_stack_change(): void
+    {
+        $agent = Agent::create('Worker', 'main-agent', $this->localProject());
+        $this->session = $this->app->make(StartSessions::class)
+            ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
+            ->session;
+
+        $task = $this->tasks()->task('task')->taskCalled('task');
+        $stackRows = AgentStackRow::query()->withoutGlobalScopes()->count();
+        $this->app->instance(ListenerRegistry::class, new ListenerRegistry([
+            TaskStarted::class => [
+                CountPhaseTaskStates::class.'@handle',
+                PushTaskState::class.'@handle',
+                FailsAfterPush::class.'@handle',
+            ],
+        ]));
+
+        $this->assertThrows(fn () => $this->start($task), RuntimeException::class);
+
+        $this->assertSame(TaskStatus::Open, $task->refresh()->status);
+        $this->assertSame(0, TaskRun::query()->where('task_id', $task->id)->count());
+        $this->assertSame($stackRows, AgentStackRow::query()->withoutGlobalScopes()->count());
+    }
+
     private function tasks(): TaskFixtures
     {
         return $this->journal->fixtures(TaskFixtures::class);
@@ -266,6 +385,37 @@ final class StartTaskTest extends TestCase
 
         return function () use (&$sent): array {
             return $sent;
+        };
+    }
+
+    private function planStructure(): PlanStructure
+    {
+        return $this->app->make(PlanStructure::class);
+    }
+
+    private function start(Task $task): void
+    {
+        $this->journal->actAsAgentIds($this->session->agent_id, $this->session->id);
+        $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
+    }
+
+    /**
+     * Each event of the class the dispatcher delivers from now on.
+     *
+     * @template TEvent of object
+     *
+     * @param  class-string<TEvent>  $event
+     * @return callable(): list<TEvent>
+     */
+    private function heard(string $event): callable
+    {
+        $heard = [];
+        $this->app->make(Dispatcher::class)->listen($event, function (object $sent) use (&$heard): void {
+            $heard[] = $sent;
+        });
+
+        return function () use (&$heard): array {
+            return $heard;
         };
     }
 }

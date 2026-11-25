@@ -8,19 +8,25 @@ use App\Commands\Agents\StartAgent\StartAgentCommand;
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Commands\Profiles\SaveProfileDraft\SaveProfileDraftCommand;
 use App\Console\Commands\ProfileActivateCommand;
+use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Hosts\DockerImageVerifier;
 use App\Contracts\Hosts\HostCapabilities;
 use App\Contracts\Sessions\ProfileResolver;
+use App\Enums\Agents\AccessType;
 use App\Enums\Agents\ConversationModeType;
+use App\Enums\Agents\ExecutionModeType;
 use App\Enums\Asks\SupervisorCoverageType;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Profiles\ModelTier;
+use App\Enums\Profiles\PolicyOriginType;
 use App\Enums\Projects\CapabilityStatusType;
 use App\Enums\Projects\HostCapabilityType;
 use App\Enums\Sessions\StartOriginType;
 use App\Exceptions\AccountContainerUnsupported;
+use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\ContainerUnavailable;
+use App\Exceptions\GrantNotWithheld;
 use App\Exceptions\SupervisorRouteInvalid;
 use App\Exceptions\SupervisorRouteRefused;
 use App\Models\Access\User;
@@ -28,6 +34,10 @@ use App\Models\Agents\Agent;
 use App\Models\Profiles\Profile;
 use App\Models\Profiles\ProfileRevision;
 use App\Support\Access\AccessSettings;
+use App\Support\ActorContext;
+use App\Support\AgentImage;
+use App\Support\ArrangementSetting;
+use App\Support\DefaultDrivers;
 use App\Support\HostCapability;
 use App\Support\HostCapabilityQuery;
 use App\Support\ProfileProposal;
@@ -36,16 +46,28 @@ use App\Support\RecordIdentity;
 use App\Values\ActivatedProfile;
 use App\Values\AskTypeKey;
 use App\Values\DraftExpectations;
+use App\Values\ExecutionBudgets;
 use App\Values\ProfileActivation;
 use App\Values\ProfileBase;
 use App\Values\ProfileKey;
+use App\Values\ProfileSnapshot;
+use App\Values\ProfileStartPolicy;
 use App\Values\ScriptSource;
 use App\Values\StartPolicy;
+use App\Values\StartProfileAuthority;
 use App\Values\StartRequest;
+use App\Values\StopCondition;
+use App\Values\WithheldGrant;
+use Domain\Rules\Commands\ProposeRule\ProposeRuleCommand;
+use Domain\Rules\Policies\RulePolicy;
+use Domain\Rules\RulesDomain;
+use Illuminate\Support\Facades\DB;
+use Spatie\LaravelData\Exceptions\CannotCreateData;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\TestIds;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -81,6 +103,10 @@ final class ActivateProfilesTest extends TestCase
     private const string DESCRIPTION = 'Reads every change and says what is wrong with it.';
 
     private User $owner;
+
+    private const string WRITER = 'journal-writer';
+
+    private const string EXECUTOR = 'journal-executor';
 
     protected function setUp(): void
     {
@@ -198,7 +224,10 @@ final class ActivateProfilesTest extends TestCase
     public function test_mixed_type_routes_are_valid_but_a_reachable_cycle_saves_nothing(): void
     {
         $routes = [
-            'route-a' => [...self::ROUTE_PROFILE, 'supervisor' => ['default' => 'owner', 'question' => 'profile:route-b']],
+            'route-a' => [
+                ...self::ROUTE_PROFILE,
+                'supervisor' => ['default' => 'owner', 'question' => 'profile:route-b'],
+            ],
             'route-b' => [...self::ROUTE_PROFILE, 'supervisor' => ['default' => 'owner', 'stuck' => 'profile:route-a']],
         ];
         $this->activateConfiguration(['profiles' => $routes]);
@@ -239,6 +268,146 @@ final class ActivateProfilesTest extends TestCase
 
         $this->assertSame(self::DESCRIPTION, Profile::findByKey(ProfileKey::from('reviewer'))->description);
         $this->assertSame('', Profile::findByKey(ProfileKey::from('worker'))->description);
+    }
+
+    public function test_a_session_of_a_narrowed_profile_is_refused_what_it_withholds_and_the_full_one_is_not(): void
+    {
+        $this->journal->owner();
+
+        $this->activateWithheld([new WithheldGrant(RulePolicy::class, AccessType::Create)]);
+
+        $this->actUnder(self::EXECUTOR, 1);
+        $this->assertThrows(fn () => $this->propose(), ActorNotAllowed::class);
+
+        $this->actUnder(self::WRITER, 1);
+        $this->propose();
+        $this->assertFalse($this->snapshot(self::EXECUTOR, 1)->authorization->grants(
+            RulePolicy::class,
+            AccessType::Create,
+        ));
+    }
+
+    public function test_withholding_an_ability_the_base_does_not_grant_is_refused(): void
+    {
+        $this->journal->owner();
+
+        $this->assertThrows(
+            fn () => $this->activateWithheld([new WithheldGrant(RulePolicy::class, AccessType::Edit)]),
+            GrantNotWithheld::class,
+        );
+    }
+
+    public function test_a_later_activation_leaves_a_running_sessions_grants_as_they_were(): void
+    {
+        $this->journal->owner();
+
+        $this->activateWithheld([new WithheldGrant(RulePolicy::class, AccessType::Create)]);
+
+        $this->activateWithheld([]);
+
+        $this->actUnder(self::EXECUTOR, 1);
+        $this->assertThrows(fn () => $this->propose(), ActorNotAllowed::class);
+        $this->actUnder(self::EXECUTOR, 2);
+        $this->propose();
+    }
+
+    public function test_a_reader_profile_is_a_read_only_helper(): void
+    {
+        $activation = $this->activateProfile('journal-reviewer', ProfileBase::readOnlyHelper());
+
+        $snapshot = $this->resolver()->snapshotFor(ProfileKey::from('journal-reviewer'));
+
+        $this->assertSame(ProfileBase::readOnlyHelper()->key, $snapshot->base->key);
+        $start = $snapshot->start;
+        $this->assertSame(DefaultDrivers::CODEX, $start->preferredDriver);
+        $this->assertSame([], $start->stopConditions->conditions);
+        $this->assertSame(ExecutionModeType::RequiredContainer, $start->execution->mode);
+        $this->assertSame($activation->configurationHash, $start->provenance->configurationHash);
+        $this->assertSame(PolicyOriginType::GlobalDefault, $start->provenance->originOf('access'));
+    }
+
+    public function test_a_writer_profile_keeps_clean_worktree_and_the_required_container(): void
+    {
+        $this->activateProfile('journal-worker', ProfileBase::writingHelper());
+
+        $snapshot = $this->resolver()->snapshotFor(ProfileKey::from('journal-worker'));
+
+        $start = $snapshot->start;
+        $this->assertSame(ProfileBase::writingHelper()->key, $snapshot->base->key);
+        $this->assertSame(
+            [StopCondition::CLEAN_WORKTREE],
+            array_map(fn (StopCondition $condition) => $condition->key, $start->stopConditions->conditions),
+        );
+        $this->assertSame(ExecutionModeType::RequiredContainer, $start->execution->mode);
+        $this->assertSame(ProfileStartPolicy::HELPER_IMAGE, $start->execution->imageReference);
+    }
+
+    public function test_on_a_server_every_session_runs_in_the_agent_image_and_the_main_agent_gets_its_larger_budget(): void
+    {
+        $image = 'journal-agent@sha256:'.str_repeat('a', 64);
+        $this->app->instance(ArrangementSetting::class, ArrangementSetting::fromConfig('contained', 'acme', '{}'));
+        $this->app->instance(AgentImage::class, AgentImage::fromConfig($image));
+        $this->activateProfile('journal-main', ProfileBase::mainAgent());
+        $this->activateProfile('journal-reviewer', ProfileBase::readOnlyHelper());
+
+        $main = $this->resolver()->snapshotFor(ProfileKey::from('journal-main'))->start->execution;
+        $helper = $this->resolver()->snapshotFor(ProfileKey::from('journal-reviewer'))->start->execution;
+
+        $this->assertSame([ExecutionModeType::RequiredContainer, $image], [$main->mode, $main->imageReference]);
+        $this->assertSame(1024 * 1024 * 1024, $main->budgets->tmpBytes);
+        $this->assertSame([ExecutionModeType::RequiredContainer, $image], [$helper->mode, $helper->imageReference]);
+        $this->assertEquals(ExecutionBudgets::defaults(), $helper->budgets);
+    }
+
+    public function test_the_main_agent_defaults_to_a_terminal_and_each_helper_to_headless(): void
+    {
+        $this->activateProfile('journal-main', ProfileBase::mainAgent());
+        $this->activateProfile('journal-reviewer', ProfileBase::readOnlyHelper());
+        $this->activateProfile('journal-worker', ProfileBase::writingHelper());
+
+        $driverTypes = array_map(
+            fn (string $key) => $this->resolver()->snapshotFor(ProfileKey::from($key))->base->defaultDriverType,
+            ['journal-main', 'journal-reviewer', 'journal-worker'],
+        );
+
+        $this->assertSame([DriverType::Terminal, DriverType::Headless, DriverType::Headless], $driverTypes);
+    }
+
+    public function test_locally_the_main_agent_stays_on_the_protected_host_with_the_default_budget(): void
+    {
+        $this->activateProfile('journal-main', ProfileBase::mainAgent());
+
+        $main = $this->resolver()->snapshotFor(ProfileKey::from('journal-main'))->start->execution;
+
+        $this->assertSame([ExecutionModeType::ProtectedHost, null], [$main->mode, $main->imageReference]);
+        $this->assertEquals(ExecutionBudgets::defaults(), $main->budgets);
+    }
+
+    public function test_the_proposal_file_changes_nothing_the_reader_answers(): void
+    {
+        $this->activateProfile('journal-reviewer', ProfileBase::readOnlyHelper());
+        $before = $this->resolver()->snapshotFor(ProfileKey::from('journal-reviewer'));
+
+        $proposal = ['profiles' => ['journal-reviewer' => ['base' => 'writing-helper']]];
+        $this->app->make('config')->set('profiles', $proposal);
+
+        $after = $this->resolver()->snapshotFor(ProfileKey::from('journal-reviewer'));
+
+        $this->assertSame($before->base->key, $after->base->key);
+        $this->assertEquals($before->start->provenance, $after->start->provenance);
+        $this->artisan('profile:show', ['key' => 'journal-reviewer'])
+            ->expectsOutputToContain('Starts from: Read-only helper')
+            ->assertSuccessful();
+    }
+
+    public function test_a_damaged_start_policy_column_fails_the_read(): void
+    {
+        $this->activateProfile('journal-reviewer', ProfileBase::readOnlyHelper());
+        DB::table('profile_revisions')->update(['start_policy' => '{"class_grants": 3}']);
+
+        $this->expectException(CannotCreateData::class);
+
+        $this->resolver()->snapshotFor(ProfileKey::from('journal-reviewer'));
     }
 
     /**
@@ -337,5 +506,59 @@ final class ActivateProfilesTest extends TestCase
                 ],
             ],
         ])));
+    }
+
+    private function propose(): void
+    {
+        $this->app->make(CommandBus::class)->run(
+            new ProposeRuleCommand('Write tests first.', 'It keeps the work honest.'),
+        );
+    }
+
+    private function snapshot(string $profileKey, int $revision): ProfileSnapshot
+    {
+        return $this->app->make(ProfileResolver::class)->snapshotAt(ProfileKey::from($profileKey), $revision);
+    }
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(RulesDomain::class);
+    }
+
+    /**
+     * @param  list<WithheldGrant>  $withheld
+     */
+    private function activateWithheld(array $withheld): void
+    {
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
+        $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(TestProposals::of(
+            TestProposals::profile(self::EXECUTOR, ProfileBase::writingHelper(), withheldGrants: $withheld),
+            TestProposals::profile(self::WRITER, ProfileBase::writingHelper()),
+        )));
+    }
+
+    private function actUnder(string $profileKey, int $revision): void
+    {
+        $agent = Agent::create('Helper', $profileKey, $this->localProject());
+        $this->app->forgetScopedInstances();
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent($agent->id),
+            new StartProfileAuthority($this->snapshot($profileKey, $revision)),
+        );
+    }
+
+    private function resolver(): ProfileResolver
+    {
+        return $this->app->make(ProfileResolver::class);
+    }
+
+    private function activateProfile(string $key, ProfileBase $type): ProfileActivation
+    {
+        $proposal = TestProposals::of(TestProposals::profile($key, $type));
+
+        return $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand($proposal));
     }
 }

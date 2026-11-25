@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
+use App\Commands\Agents\DeliverAgent\DeliverAgentCommand;
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
@@ -14,6 +15,7 @@ use App\Contracts\Hosts\DockerImageVerifier;
 use App\Enums\Drivers\DriverCapability;
 use App\Enums\Drivers\DriverOperation;
 use App\Enums\Drivers\DriverType;
+use App\Enums\Drivers\RequestProgress;
 use App\Enums\Projects\ArrangementType;
 use App\Enums\Sessions\SessionStatus;
 use App\Events\Sessions\SessionOpened;
@@ -289,6 +291,56 @@ final class OpenAgentRuntimeTest extends TestCase
         $this->assertSame($alone->sessionId, $refused->ownerSessionId);
     }
 
+    public function test_an_unfamiliar_registration_delivers_a_turn_and_returns_its_outcome(): void
+    {
+        $key = 'example/echo-'.str_repeat('a', DriverKey::CHARACTER_LIMIT - strlen('example/echo-'));
+        $this->register($key);
+        ActiveAccount::findLockedFor('example')->select(
+            Account::create('example', AccountLabel::from('Echo account'), '/journal/accounts/example'),
+        );
+        $host = $this->enrollHost();
+        $agent = $this->agent();
+
+        $opened = $this->asOwner(new OpenAgentRuntimeCommand(
+            $agent->id,
+            $host->hostId,
+            self::FOLDER,
+            'example',
+            '1.0.0',
+            'echo',
+            DriverType::Headless,
+            'echo-small',
+        ));
+        $receipt = $this->asOwner(DeliverAgentCommand::text($agent->id, $opened->sessionId, 'echo-1', 'Say hello'));
+        $claimed = collect(
+            $this->journal->hostCall(
+                $host,
+                'POST',
+                '/host/claim?limit=10&wait=0&watched_version=0',
+            )->assertOk()->json('requests'),
+        )
+            ->firstOrFail(fn (array $request) => $request['requestId'] === $receipt->requestId);
+        $this->journal->hostCall($host, 'POST', '/host/reports/request', [
+            'request_id' => $receipt->requestId,
+            'attempt' => $claimed['attempt'],
+            'progress' => 'applied',
+            'actual_binding' => null,
+            'session_id' => $claimed['sessionId'],
+            'session_process_id' => $claimed['sessionProcessId'],
+            'process_generation' => $claimed['processGeneration'],
+        ])->assertSuccessful();
+
+        $this->assertSame(
+            [$key, 'Echo', 'Say hello', RequestProgress::Applied],
+            [
+                AgentRuntime::query()->findOrFail($opened->runtimeId)->driver_key,
+                AgentRuntime::query()->findOrFail($opened->runtimeId)->driver_label,
+                $claimed['parts'][0]['text'],
+                DriverRequest::query()->findOrFail($receipt->requestId)->progress,
+            ],
+        );
+    }
+
     private function openOn(ArrangementType $arrangement, string $driver = 'claude-code'): OpenedRuntime
     {
         $host = $this->journal->asSystem(
@@ -428,5 +480,35 @@ final class OpenAgentRuntimeTest extends TestCase
         }
 
         $this->fail('The second writer on the account was not refused.');
+    }
+
+    private function register(string $key): void
+    {
+        $registry = $this->app->make(DriverCatalogueContract::class);
+        $this->assertInstanceOf(DriverCatalogue::class, $registry);
+        $headless = $registry->forKey(DriverKey::from('claude-code-headless'))->descriptor();
+        $claude = $registry->family(DefaultDrivers::CLAUDE_CODE);
+        $registry->registerFamily(
+            new DriverFamily(
+                'example',
+                'Example',
+                ProviderKey::from('example'),
+                'echo',
+                $claude->isolatesHooksPerSession,
+                [],
+            ),
+        );
+        $registry->register(new DriverRegistration(
+            DriverKey::from($key),
+            'example',
+            DriverType::Headless,
+            'Echo',
+            [],
+            $headless->hookProtocol,
+            $headless->accountProtocol,
+            $headless->skillProtocol,
+            AcmeReaderCapabilities::class,
+            [],
+        ));
     }
 }
