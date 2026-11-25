@@ -15,12 +15,17 @@ use App\Exceptions\SkillDeclarationInvalid;
 use App\Exceptions\SkillRequestReused;
 use App\Models\Skills\Skill;
 use App\Models\Skills\SkillRevision;
+use App\Policies\AssignmentRecipientPolicy;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
+use App\Support\DomainRegistry;
 use App\Values\SectionDraft;
 use App\Values\SkillDraft;
 use App\Values\SkillRevisionResult;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
@@ -48,6 +53,12 @@ final class CreateSkillTest extends TestCase
         'number_groups',
         'command_receipts',
     ];
+
+    private const string DISPATCH = AssignmentRecipientPolicy::class.':delegate';
+
+    private const string NOTES_TEXT = 'Read the notes first.';
+
+    private const string REVIEWERS = '{"type":"profiles","version":1,"keys":["journal-reviewer"]}';
 
     protected function setUp(): void
     {
@@ -124,6 +135,89 @@ final class CreateSkillTest extends TestCase
         Event::assertDispatchedTimes(SkillsChanged::class, 1);
     }
 
+    public function test_make_edit_preview_and_restore_run_end_to_end(): void
+    {
+        $this->app->instance(AccessSettings::class, TestActors::accessSettings(7));
+
+        $this->artisan(
+            'skill:make',
+            [
+                'key' => 'user-review-notes',
+                '--description' => 'Review project notes',
+                '--conditions' => self::REVIEWERS,
+                '--body' => <<<'TEXT'
+                ## Notes
+
+                Read the notes first.
+                TEXT,
+            ],
+        )
+            ->expectsOutputToContain('Request id: ')
+            ->expectsOutputToContain('revision 1 saved; publication pending.')
+            ->expectsOutputToContain('Delivery: not yet delivered to any agent')
+            ->assertSuccessful();
+        $number = (string) Skill::query()->where('key', 'user-review-notes')->firstOrFail()->number;
+
+        $this->artisan(
+            'skill:edit',
+            ['number' => $number, '--expected-revision' => 1, '--body' => <<<'TEXT'
+            ## Notes
+
+            Read the notes twice.
+            TEXT],
+        )
+            ->expectsOutputToContain('revision 2 saved; publication pending.')
+            ->assertSuccessful();
+        $this->artisan(
+            'skill:preview',
+            ['key' => 'user-review-notes'],
+        )->expectsOutputToContain('agents whose condition matches')->assertSuccessful();
+        $this->artisan('skill:restore', ['number' => $number, '--revision' => 1, '--expected-revision' => 2])
+            ->expectsOutputToContain('revision 3 saved; publication pending.')
+            ->assertSuccessful();
+
+        Artisan::call('skill:revision', ['number' => $number, 'revision' => 3]);
+        $revision = Artisan::output();
+        $this->assertStringContainsString(self::NOTES_TEXT, $revision);
+        $this->assertStringContainsString('"keys":["journal-reviewer"]', $revision);
+    }
+
+    public function test_conditions_and_audience_flags_are_not_mixed_and_flags_compile_to_one_all_group(): void
+    {
+        $this->app->instance(AccessSettings::class, TestActors::accessSettings(7));
+
+        $this->artisan(
+            'skill:make',
+            [
+                'key' => 'user-mixed',
+                '--description' => 'Mixed',
+                '--body' => 'Text.',
+                '--conditions' => self::REVIEWERS,
+                '--ability' => [self::DISPATCH],
+            ],
+        )
+            ->expectsOutputToContain('cannot be mixed with audience flags')
+            ->assertFailed();
+
+        $this->artisan(
+            'skill:make',
+            [
+                'key' => 'user-codex-main',
+                '--description' => 'Codex main',
+                '--body' => 'Text.',
+                '--ability' => [self::DISPATCH],
+                '--driver' => ['codex'],
+            ],
+        )->assertSuccessful();
+
+        Artisan::call('skill:revision', ['number' => 'user-codex-main', 'revision' => 1]);
+        preg_match('/^Condition: (.+)$/m', Artisan::output(), $condition);
+        $this->assertEquals(['type' => 'all', 'version' => 1, 'children' => [
+            ['type' => 'drivers', 'version' => 1, 'keys' => ['codex']],
+            ['type' => 'abilities', 'version' => 1, 'keys' => [self::DISPATCH]],
+        ]], json_decode($condition[1], true, flags: JSON_THROW_ON_ERROR));
+    }
+
     private function draft(string $text): SkillDraft
     {
         return new SkillDraft(
@@ -158,5 +252,13 @@ final class CreateSkillTest extends TestCase
         }
 
         $this->fail("{$refusal} was not thrown.");
+    }
+
+    /**
+     * Every installed domain, since the skills this test names come from them.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
     }
 }

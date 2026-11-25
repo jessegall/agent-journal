@@ -11,6 +11,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Skills\SkillResolver;
 use App\Models\Skills\Skill;
 use App\Models\Skills\SkillRevision;
+use App\Support\Access\AccessSettings;
 use App\Support\DomainRegistry;
 use App\Values\OwnerAuthority;
 use App\Values\SkillKey;
@@ -60,6 +61,15 @@ final class CopySkillTest extends TestCase
             (string) $revision->sections[0]->content,
         );
         $this->assertEquals($source->condition->toArray(), $revision->condition->toArray());
+    }
+
+    public function test_editing_a_shipped_skill_offers_a_copy(): void
+    {
+        $this->app->instance(AccessSettings::class, TestActors::accessSettings(7));
+
+        $this->artisan('skill:edit', ['number' => 'journal-plans', '--expected-revision' => 1, '--body' => 'Mine.'])
+            ->expectsOutputToContain('copy it to a user- key')
+            ->assertFailed();
     }
 
     /**

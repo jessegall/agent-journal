@@ -17,13 +17,17 @@ use App\Models\Skills\SkillPublication;
 use App\Support\CoreSkills;
 use App\Support\DomainRegistry;
 use App\Support\SkillRegistry;
+use App\Support\SkillTables;
 use App\Values\RefreshResult;
 use App\Values\SectionDraft;
 use App\Values\SkillDraft;
 use App\Values\SkillOwner;
+use Illuminate\Database\DatabaseManager;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Skills\Guide\BrokenGuideSkill;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Skills\HasSkillTargets;
+use Tests\Support\Skills\IntendsSkillPublications;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -34,6 +38,8 @@ use Tests\TestCase;
 final class RefreshSkillsTest extends TestCase
 {
     use CommitsHookRows;
+    use HasSkillTargets;
+    use IntendsSkillPublications;
 
     private const string INVALID_SKILL = "Guide's skill journal-guide is invalid";
 
@@ -125,6 +131,20 @@ final class RefreshSkillsTest extends TestCase
         $this->expectException(CommandNotRegistered::class);
 
         $this->app->make(CommandBus::class)->run(new RefreshSkillsCommand());
+    }
+
+    public function test_refresh_before_migrating_says_the_tables_are_missing_and_changes_nothing(): void
+    {
+        $this->app->instance(SkillTables::class, new SkillTables(
+            $this->app->make(DatabaseManager::class)->connection()->getSchemaBuilder(),
+            ['skill_generations', 'skill_tables_not_migrated'],
+        ));
+
+        $this->artisan('skill:refresh')
+            ->expectsOutputToContain('The skills tables do not exist yet')
+            ->assertFailed();
+
+        $this->assertSame(0, SkillGeneration::query()->count());
     }
 
     private function refresh(): RefreshResult

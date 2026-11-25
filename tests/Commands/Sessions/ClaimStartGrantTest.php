@@ -4,29 +4,47 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Sessions;
 
+use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
+use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Commands\Sessions\ClaimStartGrant\ClaimStartGrantCommand;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCatalogue;
+use App\Contracts\Skills\SkillPublisher as SkillPublisherContract;
 use App\Enums\Agents\ExecutionModeType;
+use App\Enums\Drivers\DriverType;
+use App\Enums\Skills\PublicationStatus;
 use App\Exceptions\AccountFolderInvalid;
 use App\Exceptions\HostReportRefused;
+use App\Exceptions\StartRefused;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
+use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Projects\Host;
 use App\Models\Sessions\SessionPolicy;
+use App\Models\Skills\SkillPublication;
+use App\Support\ActorContext;
 use App\Support\ArrangementSetting;
 use App\Support\DefaultDrivers;
+use App\Support\DomainRegistry;
+use App\Support\OpenedRuntime;
+use App\Support\SkillPublisher;
 use App\Support\StartGrant;
 use App\Values\AccountLabel;
 use App\Values\ExecutionBudgets;
 use App\Values\ExecutionPolicy;
+use App\Values\OwnerAuthority;
 use App\Values\ProfileBase;
 use App\Values\ProfileStartPolicy;
 use App\Values\StartPolicy;
 use App\Values\StopConditions;
+use Tests\Fixtures\Skills\FullDiskPublisher;
+use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Skills\PublishesSkills;
 use Tests\TestCase;
 
 /**
@@ -37,7 +55,9 @@ use Tests\TestCase;
 final class ClaimStartGrantTest extends TestCase
 {
     use CommitsHookRows;
+    use HasContainerSupport;
     use OpensLedgerRuntimes;
+    use PublishesSkills;
 
     private const array TABLES = [
         'agents',
@@ -53,7 +73,14 @@ final class ClaimStartGrantTest extends TestCase
         'active_accounts',
         'session_processes',
         'links',
+        'skill_publications',
+        'skill_generations',
+        'command_receipts',
+        'profile_revisions',
+        'profiles',
     ];
+
+    private const string NO_SPACE = 'no space left';
 
     public function test_the_start_grant_is_handed_out_once(): void
     {
@@ -195,5 +222,72 @@ final class ClaimStartGrantTest extends TestCase
         $this->expectException(HostReportRefused::class);
 
         $this->journal->asSystem(new ClaimStartGrantCommand($other->hostId, $opened->runtimeId));
+    }
+
+    public function test_a_codex_start_gets_its_set_written_before_spawn_and_records_the_generation(): void
+    {
+        $this->journal->installProfiles();
+
+        [$host, $opened] = $this->openCodexRuntime();
+        $publication = SkillPublication::findLatestOfSession($opened->sessionId);
+
+        $this->assertNotNull($publication);
+        $this->assertSame(PublicationStatus::Delivered, $publication->status);
+        $this->assertFileExists("{$this->root}/targets/{$opened->sessionId}/codex/journal/SKILL.md");
+
+        $grant = $this->journal->asSystem(new ClaimStartGrantCommand($host, $opened->runtimeId));
+
+        $this->assertInstanceOf(StartGrant::class, $grant);
+        $this->assertCount(1, $grant->folders);
+        $this->assertSame('skills', $grant->folders[0]->name);
+        $this->assertSame([], $grant->folders[0]->arguments);
+        $this->assertContains('journal/SKILL.md', array_map(fn ($file) => $file->path, $grant->folders[0]->files));
+        $this->assertSame($publication->generation_id, AgentSession::findById($opened->sessionId)->skill_generation_id);
+    }
+
+    public function test_a_failed_set_refuses_the_grant_so_nothing_spawns(): void
+    {
+        $this->journal->installProfiles();
+
+        $this->app->instance(
+            SkillPublisherContract::class,
+            new FullDiskPublisher($this->app->make(SkillPublisher::class)),
+        );
+        [$host, $opened] = $this->openCodexRuntime();
+
+        $this->expectException(StartRefused::class);
+        $this->expectExceptionMessage(self::NO_SPACE);
+
+        $this->journal->asSystem(new ClaimStartGrantCommand($host, $opened->runtimeId));
+    }
+
+    /**
+     * @return array{0: string, 1: OpenedRuntime}
+     */
+    private function openCodexRuntime(): array
+    {
+        $host = $this->journal->asSystem(new EnrollHostCommand('test host', [self::FOLDER]));
+        $agent = Agent::create('Codex agent', 'main-agent', $this->localProject());
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
+        $opened = $this->app->make(CommandBus::class)->run(new OpenAgentRuntimeCommand(
+            $agent->id,
+            $host->hostId,
+            self::FOLDER,
+            'codex',
+            '0.165.0',
+            'codex',
+            DriverType::Headless,
+            'gpt-5.5',
+        ));
+
+        return [$host->hostId, $opened];
+    }
+
+    /**
+     * Every installed domain, since the skills this test names come from them.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
     }
 }

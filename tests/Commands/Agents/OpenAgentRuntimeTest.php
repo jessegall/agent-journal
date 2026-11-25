@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Commands\Agents;
 
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
+use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
@@ -13,9 +14,13 @@ use App\Enums\Drivers\DriverCapability;
 use App\Enums\Drivers\DriverOperation;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Projects\ArrangementType;
+use App\Enums\Sessions\SessionStatus;
+use App\Events\Sessions\SessionOpened;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Exceptions\DriverNotContainable;
 use App\Exceptions\HostArrangementRefused;
+use App\Exceptions\SkillSelectionConflict;
+use App\Listeners\AdmitStartSkills;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
@@ -27,13 +32,18 @@ use App\Support\ActorContext;
 use App\Support\ArrangementSetting;
 use App\Support\Capabilities\CodexHeadlessCapabilities;
 use App\Support\Capabilities\CodexTerminalCapabilities;
+use App\Support\DomainRegistry;
 use App\Support\OpenedRuntime;
 use App\Values\OwnerAuthority;
 use App\Values\ProfileBase;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\CountingImageVerifier;
+use Tests\Fixtures\Agents\TestSelections;
+use Tests\Fixtures\Profiles\TestProposals;
+use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Skills\PublishesSkills;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -43,7 +53,9 @@ use Tests\TestCase;
 final class OpenAgentRuntimeTest extends TestCase
 {
     use CommitsHookRows;
+    use HasContainerSupport;
     use OpensLedgerRuntimes;
+    use PublishesSkills;
     use WithActiveAccount;
 
     private const array TABLES = [
@@ -62,6 +74,10 @@ final class OpenAgentRuntimeTest extends TestCase
         'links',
         'command_receipts',
         'session_policies',
+        'skill_publications',
+        'skill_generations',
+        'profile_revisions',
+        'profiles',
     ];
 
     public function test_opening_a_runtime_records_its_first_delivery(): void
@@ -212,6 +228,23 @@ final class OpenAgentRuntimeTest extends TestCase
         $this->assertNotSame('', $this->openOn(ArrangementType::Local, 'codex')->runtimeId);
     }
 
+    public function test_a_required_skill_outside_the_selection_refuses_the_start_with_its_key(): void
+    {
+        $this->journal->installProfiles();
+
+        $this->activateReviewer(['journal-plans']);
+        $session = $this->sessionRow(
+            Agent::create('Reviewer', 'read-only-helper', $this->localProject()),
+            'claude-code',
+            1,
+        );
+
+        $this->expectException(SkillSelectionConflict::class);
+        $this->expectExceptionMessage('journal-plans');
+
+        $this->started($session);
+    }
+
     private function openOn(ArrangementType $arrangement, string $driver = 'claude-code'): OpenedRuntime
     {
         $host = $this->journal->asSystem(
@@ -241,5 +274,51 @@ final class OpenAgentRuntimeTest extends TestCase
             ArrangementSetting::class,
             ArrangementSetting::fromConfig($arrangement->value, 'journal', '{}'),
         );
+    }
+
+    /**
+     * @param  list<string>  $requiredSkills
+     */
+    private function activateReviewer(array $requiredSkills): void
+    {
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
+        $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(TestProposals::of(
+            TestProposals::profile(
+                'journal-reviewer',
+                ProfileBase::readOnlyHelper(),
+                'Review.',
+                requiredSkills: $requiredSkills,
+            ),
+        )));
+    }
+
+    private function sessionRow(Agent $agent, string $driver, int|null $profileRevision): AgentSession
+    {
+        $session = new AgentSession()->forceFill([
+            ...TestSelections::sessionColumns(),
+            'driver_key' => $driver,
+            'profile_key' => $profileRevision === null ? 'main-agent' : 'journal-reviewer',
+            'profile_revision' => $profileRevision ?? 1,
+        ]);
+        $session->agent_id = $agent->id;
+        $session->status = SessionStatus::Active;
+        $session->save();
+
+        return $session;
+    }
+
+    private function started(AgentSession $session): void
+    {
+        $this->app->make(AdmitStartSkills::class)->handle(
+            new SessionOpened($session->agent_id, $session->id),
+        );
+    }
+
+    /**
+     * Every installed domain, since the skills this test names come from them.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
     }
 }
