@@ -83,6 +83,6 @@ describe("VerifyingSessionCard", () => {
 
     await card.findAll("button")[1].trigger("click");
 
-    expect(sendPageAction.mock.calls[0][0].url).toContain("/agents/agent-1/sessions/session-1/cancel-launch");
+    expect(sendPageAction.mock.calls[0][0].url).toContain("/agents/agent-1/sessions/session-1/cancel-start");
   });
 });

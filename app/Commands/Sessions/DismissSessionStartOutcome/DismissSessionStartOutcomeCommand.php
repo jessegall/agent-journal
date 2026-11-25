@@ -11,7 +11,7 @@ use App\Policies\AgentPolicy;
 use App\Support\Command;
 
 /**
- * Hides one version of an agent's launch outcome from the viewer who dismisses it, and from nobody else; a newer
+ * Hides one version of an agent's start outcome from the viewer who dismisses it, and from nobody else; a newer
  * outcome of the same start, or a newer start, shows again.
  *
  * @extends Command<null>

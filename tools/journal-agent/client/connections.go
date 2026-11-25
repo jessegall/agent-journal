@@ -131,7 +131,7 @@ type BindingRuntimeRequest struct {
 	Profile     string `json:"profile"`
 	// Model is the model the session runs on; "default" asks for the profile's default.
 	Model string `json:"model"`
-	// StartID names this start before anything launches, so asking again after a lost reply opens nothing new.
+	// StartID names this start before anything starts, so asking again after a lost reply opens nothing new.
 	StartID string `json:"startId"`
 }
 

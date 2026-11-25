@@ -34,7 +34,7 @@ return new class extends Migration
             $table->timestampsTz();
         });
 
-        DB::statement("create unique index driver_switches_one_open on driver_switches (agent_id) where stage not in ('refused', 'confirmed', 'launch_failed', 'cancelled')");
+        DB::statement("create unique index driver_switches_one_open on driver_switches (agent_id) where stage not in ('refused', 'confirmed', 'start_failed', 'cancelled')");
     }
 
     public function down(): void

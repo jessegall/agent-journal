@@ -92,7 +92,6 @@ use App\Support\EngineTickedDelivery;
 use App\Support\EnrolledHost;
 use App\Support\HeartbeatService;
 use App\Support\InitialWakeSettlement;
-use App\Support\StartProfiles;
 use App\Support\MessageBatchService;
 use App\Support\NativeTurns;
 use App\Support\OpenedRuntime;
@@ -100,6 +99,7 @@ use App\Support\OutsideCommandAllowance;
 use App\Support\PendingWorkSources;
 use App\Support\RequestKey;
 use App\Support\StartGrant;
+use App\Support\StartProfiles;
 use App\Support\Ticks\ElapsedTime;
 use App\Values\AccountLabel;
 use App\Values\BrowserInputCapabilities;
@@ -1156,7 +1156,7 @@ final class AgentDriverLedgerTest extends TestCase
         $this->assertSame(RequestProgress::Failed, DriverRequest::query()->findOrFail($wake->requestId)->progress);
     }
 
-    public function test_a_proved_unstarted_initial_wake_ends_the_launch_once_with_its_reason(): void
+    public function test_a_proved_unstarted_initial_wake_ends_the_start_once_with_its_reason(): void
     {
         [$host, $opened] = $this->openRuntime();
         $wake = $this->asOwner(new WakeAgentCommand(
@@ -1175,7 +1175,7 @@ final class AgentDriverLedgerTest extends TestCase
         $this->assertSame(self::NO_CONTAINER, $start?->refusal);
     }
 
-    public function test_a_generic_refusal_of_the_initial_wake_keeps_the_launch_for_reconciliation(): void
+    public function test_a_generic_refusal_of_the_initial_wake_keeps_the_start_for_reconciliation(): void
     {
         [$host, $opened] = $this->openRuntime();
         $wake = $this->asOwner(new WakeAgentCommand(
@@ -1923,7 +1923,7 @@ final class AgentDriverLedgerTest extends TestCase
         $this->assertSame(RequestProgress::DeliveryUncertain, $original->fresh()?->progress);
     }
 
-    public function test_an_agent_names_its_running_session_by_the_label_and_model_it_launched_on(): void
+    public function test_an_agent_names_its_running_session_by_the_label_and_model_it_started_on(): void
     {
         [, $opened] = $this->openRuntime();
         $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);

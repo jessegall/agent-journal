@@ -13,15 +13,15 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * A Claude launch's generated settings allow the journal's own MCP tools by their literal server prefix and no other
- * server, beside every denial; Codex gets no such rule, since its account entry approves the journal. The launch's
+ * A Claude start's generated settings allow the journal's own MCP tools by their literal server prefix and no other
+ * server, beside every denial; Codex gets no such rule, since its account entry approves the journal. The start's
  * descriptor, flags and timeouts are the Go host's, proven in tools/journal-agent/profiles/claude_account_test.go.
  */
 final class ClaudeMcpStartTest extends TestCase
 {
     use RefreshHookDatabase;
 
-    public function test_a_claude_launch_allows_only_the_journal_server_and_keeps_every_denial(): void
+    public function test_a_claude_start_allows_only_the_journal_server_and_keeps_every_denial(): void
     {
         $permissions = $this->permissionsOf(DefaultDrivers::CLAUDE_CODE);
 
@@ -29,7 +29,7 @@ final class ClaudeMcpStartTest extends TestCase
         $this->assertSame(ClaudeCodeAdapter::NATIVE_CHILD_TOOLS, $permissions['deny']);
     }
 
-    public function test_a_codex_launch_gets_no_allow_rule(): void
+    public function test_a_codex_start_gets_no_allow_rule(): void
     {
         $this->assertSame([], $this->permissionsOf(DefaultDrivers::CODEX)['allow']);
     }

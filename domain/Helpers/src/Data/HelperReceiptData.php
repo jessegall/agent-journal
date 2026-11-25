@@ -28,7 +28,7 @@ final class HelperReceiptData extends Data
         public string $conversationMode,
         public string $conversationReason,
         public bool $isIndependent,
-        public string $launchReference,
+        public string $startReference,
         public string $driver,
         public string $requestedModelType,
         public string|null $requestedModel,
@@ -40,7 +40,7 @@ final class HelperReceiptData extends Data
 
     public static function fromHelperReceipt(HelperReceipt $receipt): self
     {
-        $launchDetails = $receipt->launchDetails;
+        $startDetails = $receipt->startDetails;
         $start = $receipt->start;
         $selection = $start->selection;
         $requested = $selection->requested;
@@ -49,14 +49,14 @@ final class HelperReceiptData extends Data
             'identityId' => $receipt->identityId,
             'jobId' => $receipt->jobId,
             'isNewJob' => $receipt->isNewJob,
-            'isNewIdentity' => $launchDetails->isNewIdentity,
+            'isNewIdentity' => $startDetails->isNewIdentity,
             'profileType' => $receipt->profileType,
-            'profileRevision' => $launchDetails->profileRevision,
+            'profileRevision' => $startDetails->profileRevision,
             'state' => $receipt->state->value,
-            'conversationMode' => $launchDetails->conversationMode->value,
-            'conversationReason' => $launchDetails->conversationReason,
-            'isIndependent' => $launchDetails->isIndependent,
-            'launchReference' => $start->launchReference,
+            'conversationMode' => $startDetails->conversationMode->value,
+            'conversationReason' => $startDetails->conversationReason,
+            'isIndependent' => $startDetails->isIndependent,
+            'startReference' => $start->startReference,
             'driver' => $selection->driver,
             'requestedModelType' => $requested->type->value,
             'requestedModel' => $requested->model,

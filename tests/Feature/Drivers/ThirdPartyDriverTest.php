@@ -69,7 +69,7 @@ final class ThirdPartyDriverTest extends TestCase
         $registry->register($this->acme('acme/reader', DriverType::Headless));
     }
 
-    public function test_a_profile_that_needs_a_hook_the_driver_lacks_cannot_launch_it(): void
+    public function test_a_profile_that_needs_a_hook_the_driver_lacks_cannot_start_it(): void
     {
         $registry = $this->registryWithAcme();
 

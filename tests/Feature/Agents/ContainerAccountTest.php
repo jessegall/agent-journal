@@ -38,9 +38,9 @@ use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
- * A launch keeps the account it was accepted on and is never started twice: switching the active account
- * while a helper runs moves only the next launch, a repeated claim after a lost acknowledgement starts no second
- * process, a restarted host's claimed launch stays possibly running until its exit is proven, and a driver that
+ * A start keeps the account it was accepted on and is never started twice: switching the active account
+ * while a helper runs moves only the next start, a repeated claim after a lost acknowledgement starts no second
+ * process, a restarted host's claimed start stays possibly running until its exit is proven, and a driver that
  * cannot start here ends its start with the refusal the agent then shows.
  */
 #[TimeLimit(seconds: 5, reason: 'It enrolls a host, opens runtimes and commits each start step, emptying many tables.')]
@@ -88,7 +88,7 @@ final class ContainerAccountTest extends TestCase
         });
     }
 
-    public function test_switching_the_account_moves_only_the_next_launch(): void
+    public function test_switching_the_account_moves_only_the_next_start(): void
     {
         $host = $this->enrollHost();
         $running = $this->open($host);
@@ -106,21 +106,21 @@ final class ContainerAccountTest extends TestCase
     public function test_a_repeated_claim_after_a_lost_acknowledgement_starts_no_second_process(): void
     {
         $host = $this->enrollHost();
-        $launch = $this->open($host);
+        $start = $this->open($host);
 
-        $claimed = $this->asSystem(new ClaimStartCommand($host->hostId, $launch->sessionId));
-        $again = $this->asSystem(new ClaimStartCommand($host->hostId, $launch->sessionId));
+        $claimed = $this->asSystem(new ClaimStartCommand($host->hostId, $start->sessionId));
+        $again = $this->asSystem(new ClaimStartCommand($host->hostId, $start->sessionId));
 
         $this->assertNotNull($claimed);
         $this->assertNull($again);
     }
 
-    public function test_a_restarted_hosts_claimed_launch_stays_possibly_running_until_its_exit_is_proven(): void
+    public function test_a_restarted_hosts_claimed_start_stays_possibly_running_until_its_exit_is_proven(): void
     {
         $host = $this->enrollHost();
-        $launch = $this->open($host);
-        $this->asSystem(new ClaimStartCommand($host->hostId, $launch->sessionId));
-        $key = $this->startOf($launch)->start_key;
+        $start = $this->open($host);
+        $this->asSystem(new ClaimStartCommand($host->hostId, $start->sessionId));
+        $key = $this->startOf($start)->start_key;
 
         $this->asSystem(new ReconcileStartsCommand($host->hostId, []));
 
@@ -129,10 +129,10 @@ final class ContainerAccountTest extends TestCase
         $this->asSystem(new ReconcileStartsCommand($host->hostId, [$key]));
 
         $this->assertSame([], SessionProcess::unresolvedKeysOf($host->hostId));
-        $this->assertFalse(AgentSession::query()->findOrFail($launch->sessionId)->isActive());
+        $this->assertFalse(AgentSession::query()->findOrFail($start->sessionId)->isActive());
         $this->assertSame(
             RuntimeActivity::Stopped,
-            AgentRuntime::query()->where('agent_session_id', $launch->sessionId)->sole()->activity,
+            AgentRuntime::query()->where('agent_session_id', $start->sessionId)->sole()->activity,
         );
     }
 
@@ -146,17 +146,17 @@ final class ContainerAccountTest extends TestCase
             }
         });
         $host = $this->enrollHost();
-        $launch = $this->open($host);
+        $start = $this->open($host);
 
-        $this->assertNull($this->asSystem(new ClaimStartCommand($host->hostId, $launch->sessionId)));
+        $this->assertNull($this->asSystem(new ClaimStartCommand($host->hostId, $start->sessionId)));
 
-        $start = $this->startOf($launch);
+        $start = $this->startOf($start);
         $this->assertSame(SessionProcessState::Stopped, $start->state);
         $this->assertStringContainsString(
             self::REPORT_MISSING,
             (string) $start->refusal,
         );
-        $this->assertNull($this->asSystem(new ClaimStartCommand($host->hostId, $launch->sessionId)));
+        $this->assertNull($this->asSystem(new ClaimStartCommand($host->hostId, $start->sessionId)));
         $this->actAsOwner();
         $agent = $this->app->make(AgentDirectory::class)->visibleAgent($start->agent_id);
         $this->assertSame(AgentPresence::Failed, $agent->presence);

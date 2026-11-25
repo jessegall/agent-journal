@@ -98,7 +98,7 @@ final readonly class NotifyRequestProgressHandler implements CommandHandler
             $this->navigationReports->apply($request, $command->navigation);
         }
 
-        // Only the request that starts the session's process, proved never to have made one, settles its launch; any
+        // Only the request that starts the session's process, proved never to have made one, settles its start; any
         // other refused request keeps its own failure and leaves the session as it is.
         if ($request->canRetry()) {
             $this->initialWakes->settle($request, $runtime, $command);

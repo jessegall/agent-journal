@@ -468,7 +468,7 @@ final class Host extends Model implements EventSource, ReadableModel
 
     /**
      * The protection a contained host of this installation last reported for the driver's build on the platform a
-     * launch profile names, or the unreported one asked for when no contained host has.
+     * start profile names, or the unreported one asked for when no contained host has.
      */
     public static function containedProtectionOf(ProtectionReport $unreported): ProtectionReport
     {

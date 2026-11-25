@@ -61,7 +61,7 @@ use Illuminate\Support\Carbon;
  * @property string $conversation_reason
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
- * @property mixed $launch_details attribute
+ * @property mixed $start_details attribute
  */
 #[Table('helper_jobs')]
 final class HelperJob extends Model implements Assignable, EventSource, ReadableModel
@@ -100,20 +100,20 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
         ActorIdentity $parent,
         string $brief,
         array $sourceSubjects,
-        SessionStartDetails $launchDetails,
+        SessionStartDetails $startDetails,
     ): self {
         $job = new self();
         $job->helper_identity_id = $helper->id;
         $job->helper_purpose_id = $purpose->id;
         $job->brief = $brief;
         $job->source_subjects = $sourceSubjects;
-        $job->request_id = $launchDetails->requestId;
-        $job->payload_digest = $launchDetails->payloadDigest;
-        $job->profile_revision = $launchDetails->profileRevision;
-        $job->identity_new = $launchDetails->isNewIdentity;
-        $job->independent = $launchDetails->isIndependent;
-        $job->conversation_mode = $launchDetails->conversationMode;
-        $job->conversation_reason = $launchDetails->conversationReason;
+        $job->request_id = $startDetails->requestId;
+        $job->payload_digest = $startDetails->payloadDigest;
+        $job->profile_revision = $startDetails->profileRevision;
+        $job->identity_new = $startDetails->isNewIdentity;
+        $job->independent = $startDetails->isIndependent;
+        $job->conversation_mode = $startDetails->conversationMode;
+        $job->conversation_reason = $startDetails->conversationReason;
         $job->state = JobState::Accepted;
         $job->steering = [];
         $job->belongTo($parent);
@@ -210,7 +210,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
     }
 
     /**
-     * The job's dispatch receipt, with the profile type it was launched under and Core's start for it.
+     * The job's dispatch receipt, with the profile type it was started under and Core's start for it.
      */
     public function receipt(string $profileType, OwnerStartReceipt $start, bool $isNewJob): HelperReceipt
     {
@@ -220,7 +220,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
             $isNewJob,
             $profileType,
             $this->state,
-            $this->launch_details,
+            $this->start_details,
             $start,
         );
     }
@@ -263,7 +263,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
     /**
      * @return Attribute<SessionStartDetails, never>
      */
-    protected function launchDetails(): Attribute
+    protected function startDetails(): Attribute
     {
         return Accessor::get(fn () => new SessionStartDetails(
             $this->request_id,

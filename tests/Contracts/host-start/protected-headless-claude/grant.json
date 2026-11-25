@@ -118,6 +118,6 @@
             "clone": null,
             "folder": "main"
         },
-        "launchProfile": "protected-account"
+        "startProfile": "protected-account"
     }
 }

@@ -14,9 +14,9 @@ use App\Enums\Drivers\DriverSwitchStage;
 use App\Enums\Drivers\DriverType;
 use App\Events\Sessions\DriverSwitchCancelled;
 use App\Events\Sessions\DriverSwitchConfirmed;
-use App\Events\Sessions\DriverSwitchStartFailed;
 use App\Events\Sessions\DriverSwitchPreflighted;
 use App\Events\Sessions\DriverSwitchRefused;
+use App\Events\Sessions\DriverSwitchStartFailed;
 use App\Events\Sessions\DriverSwitchStartRequested;
 use App\Events\Sessions\DriverSwitchStopped;
 use App\Events\Sessions\DriverSwitchStopRequested;
@@ -161,9 +161,9 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
         $this->raise(new DriverSwitchConfirmed($this->id));
     }
 
-    public function failLaunch(string $reason): void
+    public function failStart(string $reason): void
     {
-        $this->moveTo(DriverSwitchStage::LaunchFailed, $reason);
+        $this->moveTo(DriverSwitchStage::StartFailed, $reason);
         $this->raise(new DriverSwitchStartFailed($this->id, $reason));
     }
 
@@ -174,9 +174,9 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The owner retries a failed launch: the same request and target start again once the commit lands.
+     * The owner retries a failed start: the same request and target start again once the commit lands.
      */
-    public function retryLaunch(): void
+    public function retryStart(): void
     {
         $this->replacement_session_id = null;
         $this->markStopped();
@@ -207,7 +207,7 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
                 && $reported === SessionProcessState::Running
                 && $this->isSourceSeenAfterStop($source) => $this->cancel('the old session still runs'),
             $waitsForStart && $reported === SessionProcessState::Running => $this->confirm(),
-            $waitsForStart && $reported === SessionProcessState::Stopped => $this->failLaunch('the new session ended'),
+            $waitsForStart && $reported === SessionProcessState::Stopped => $this->failStart('the new session ended'),
             default => null,
         };
     }

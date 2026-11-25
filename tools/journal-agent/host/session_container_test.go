@@ -334,7 +334,7 @@ func TestACheckoutOfAnotherInstallationIsRefusedBeforeAnyClone(t *testing.T) {
 
 func protectedAttachableManifest() ContainerManifest {
 	protected := attachableManifest()
-	protected.LaunchProfile = LaunchProtectedAccount
+	protected.StartProfile = StartProtectedAccount
 	protected.User = "0:0"
 	protected.Capabilities = []string{"SETUID", "SETGID", "SETPCAP"}
 

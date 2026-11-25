@@ -1,5 +1,5 @@
 // Package localsession prepares and starts a provider session of a project connected to a server journal on the
-// owner's own machine: its own launch folder, home and run folder under .journal/sessions/<runtime>, settings the
+// owner's own machine: its own start folder, home and run folder under .journal/sessions/<runtime>, settings the
 // journal owns with the sealed hook adapter, argv only from the pinned start profile, the provider from the sealed
 // installation and a clean environment.
 package localsession
@@ -71,9 +71,9 @@ func (session Session) Command(extra []string) (*exec.Cmd, error) {
 		return nil, fmt.Errorf("%w: %s", ErrProviderMissing, program)
 	}
 
-	launch := filepath.Join(session.Folder(), "launch")
+	startFolder := filepath.Join(session.Folder(), "start")
 	home := filepath.Join(session.Folder(), "home")
-	for _, folder := range []string{launch, filepath.Join(home, "claude"), session.RunFolder()} {
+	for _, folder := range []string{startFolder, filepath.Join(home, "claude"), session.RunFolder()} {
 		if err := os.MkdirAll(folder, 0o700); err != nil {
 			return nil, err
 		}
@@ -95,7 +95,7 @@ func (session Session) Command(extra []string) (*exec.Cmd, error) {
 	}
 
 	command := exec.Command(program, append(arguments, extra...)...)
-	command.Dir = launch
+	command.Dir = startFolder
 	command.Env = session.environment(home)
 
 	return command, nil

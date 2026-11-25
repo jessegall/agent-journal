@@ -134,7 +134,7 @@ final class SessionPolicy extends Model implements ReadableModel
     // ----------[ Queries ]----------
 
     /**
-     * When each session's launch must have ended: its start plus the wall budget frozen with it, by session id. A
+     * When each session's start must have ended: its start plus the wall budget frozen with it, by session id. A
      * session without a frozen policy has no budget and is not named.
      *
      * @param  list<AgentSession>  $sessions

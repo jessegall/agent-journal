@@ -22,8 +22,8 @@ use App\Enums\Sessions\StartReadiness;
 use App\Support\AgentEvidence;
 use App\Support\AgentStatusRules;
 use App\Support\HoldCopy;
-use App\Support\SessionStartOutcome;
 use App\Support\RuntimeEvidence;
+use App\Support\SessionStartOutcome;
 use App\Support\StartRemedyWords;
 use App\Support\StatusAction;
 use App\Support\SwitchEvidence;
@@ -71,25 +71,25 @@ final class AgentStatusTest extends TestCase
                 ['check-status'],
             ],
             'refused and ended' => [
-                self::stopped(self::launch(StartDisposition::Refused, 'capacity-unavailable')),
+                self::stopped(self::startOutcome(StartDisposition::Refused, 'capacity-unavailable')),
                 SessionState::NoCapacity,
                 'No capacity',
                 ['check-capacity', 'dismiss'],
             ],
             'sessionless refusal' => [
-                self::stopped(self::launch(StartDisposition::Refused, 'model-required')),
+                self::stopped(self::startOutcome(StartDisposition::Refused, 'model-required')),
                 SessionState::Refused,
                 'Start refused',
                 ['start', 'dismiss'],
             ],
             'lost reply' => [
-                self::stopped(self::launch(StartDisposition::Accepted)),
+                self::stopped(self::startOutcome(StartDisposition::Accepted)),
                 SessionState::Starting,
                 'Starting',
                 [],
             ],
             'later independent start' => [
-                self::live(self::runtime(RuntimeActivity::Idle), launch: self::launch(StartDisposition::Started)),
+                self::live(self::runtime(RuntimeActivity::Idle), startOutcome: self::startOutcome(StartDisposition::Started)),
                 SessionState::Idle,
                 'Idle',
                 ['switch'],
@@ -101,7 +101,7 @@ final class AgentStatusTest extends TestCase
                 ['start'],
             ],
             'replayed sessionless receipt' => [
-                self::stopped(self::launch(StartDisposition::Refused, 'image-unverified')),
+                self::stopped(self::startOutcome(StartDisposition::Refused, 'image-unverified')),
                 SessionState::Refused,
                 'Start refused',
                 ['dismiss'],
@@ -248,7 +248,7 @@ final class AgentStatusTest extends TestCase
 
     public function test_a_refusal_names_its_reason_and_the_members_wording_of_its_remedy(): void
     {
-        $evidence = self::stopped(self::launch(StartDisposition::Refused, 'image-unverified'));
+        $evidence = self::stopped(self::startOutcome(StartDisposition::Refused, 'image-unverified'));
 
         $member = AgentStatusRules::of($evidence, self::words(false));
         $operator = AgentStatusRules::of($evidence, self::words(true));
@@ -436,7 +436,7 @@ final class AgentStatusTest extends TestCase
         RuntimeEvidence|null $runtime,
         SessionStatus $status = SessionStatus::Active,
         SwitchEvidence|null $switch = null,
-        SessionStartOutcome|null $launch = null,
+        SessionStartOutcome|null $startOutcome = null,
         SessionProcessState $start = SessionProcessState::Running,
         DriverRequestStatus|null $request = null,
         bool $isTerminal = false,
@@ -450,7 +450,7 @@ final class AgentStatusTest extends TestCase
             true,
             $switch,
             $request,
-            $launch,
+            $startOutcome,
             false,
             false,
             $isTerminal,
@@ -486,9 +486,9 @@ final class AgentStatusTest extends TestCase
         );
     }
 
-    private static function stopped(SessionStartOutcome|null $launch): AgentEvidence
+    private static function stopped(SessionStartOutcome|null $startOutcome): AgentEvidence
     {
-        return new AgentEvidence(false, null, null, null, null, false, null, null, $launch, false, false);
+        return new AgentEvidence(false, null, null, null, null, false, null, null, $startOutcome, false, false);
     }
 
     private static function runtime(
@@ -499,7 +499,7 @@ final class AgentStatusTest extends TestCase
         return new RuntimeEvidence($activity, $hold, $isStale, $isStale ? 600 : 3, 3);
     }
 
-    private static function launch(StartDisposition $disposition, string|null $reason = null): SessionStartOutcome
+    private static function startOutcome(StartDisposition $disposition, string|null $reason = null): SessionStartOutcome
     {
         return new SessionStartOutcome(
             '01jd8x0g9m3qz6v4k2t7r5w1ch',

@@ -14,8 +14,8 @@ use App\Models\Sessions\SessionCleanup;
 use App\Support\CapacityRelease;
 
 /**
- * Opens the durable cleanup of a container launch that ended, on the host it ran on; its capacity stays reserved
- * until that cleanup is done. A launch that never opened a runtime left nothing on a host, so its capacity is
+ * Opens the durable cleanup of a container start that ended, on the host it ran on; its capacity stays reserved
+ * until that cleanup is done. A start that never opened a runtime left nothing on a host, so its capacity is
  * released at once.
  */
 #[InCommandTransaction]

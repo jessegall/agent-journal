@@ -17,7 +17,7 @@ final readonly class MarkHelperJobUnfinishedHandler extends HelperCommandHandler
     /**
      * The stop evidence of a job whose helper stopped before it was finished.
      */
-    public const string ENDED_REFERENCE = 'launch-ended';
+    public const string ENDED_REFERENCE = 'start-ended';
 
     public function __construct(private HelperStarts $starts, private AgentTexts $texts) {}
 

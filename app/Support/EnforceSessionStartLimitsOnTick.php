@@ -10,7 +10,7 @@ use App\Contracts\Events\EngineListener;
 use App\Events\Engine\EngineTicked;
 
 /**
- * Enforces the launch limits on every engine pass; each pass stops a bounded number of launches.
+ * Enforces the start limits on every engine pass; each pass stops a bounded number of starts.
  */
 final readonly class EnforceSessionStartLimitsOnTick implements EngineListener
 {

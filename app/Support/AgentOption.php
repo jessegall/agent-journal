@@ -12,7 +12,7 @@ use App\Exceptions\SessionOutdated;
 
 /**
  * An agent Home can show, live or idle: its name, whether it is retired, its live session with its process generation and the switch that last
- * moved it, the actions it offers now, the conversations a resume may continue, its latest launch outcome the viewer
+ * moved it, the actions it offers now, the conversations a resume may continue, its latest start outcome the viewer
  * has not dismissed and the status all its views show.
  */
 final readonly class AgentOption
@@ -36,10 +36,10 @@ final readonly class AgentOption
         public array $actions,
         public array $conversations,
         public string|null $startRefusal,
-        public SessionStartOutcome|null $launchOutcome,
+        public SessionStartOutcome|null $startOutcome,
         public AgentStatus $status,
         public string|null $sessionDriver = null,
-        // The label of the driver the session was launched on, as stored then.
+        // The label of the driver the session was started on, as stored then.
         public string|null $sessionDriverLabel = null,
         // The model the session runs on, as the driver names it; none without a session.
         public string|null $sessionModel = null,

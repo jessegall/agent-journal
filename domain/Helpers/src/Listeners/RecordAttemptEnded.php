@@ -13,8 +13,8 @@ use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Support\HelperLifecycleEntry;
 
 /**
- * Marks a helper job unfinished once its helper's launch ended before the job was done, through its own command,
- * run by the journal after the launch ended.
+ * Marks a helper job unfinished once its helper's start ended before the job was done, through its own command,
+ * run by the journal after the start ended.
  */
 final readonly class RecordAttemptEnded implements Listener
 {

@@ -7,7 +7,7 @@ namespace App\Events\Sessions;
 use App\Contracts\Events\Event;
 
 /**
- * A fact about agents' sessions, runtimes, starts and launches: every event of that subject extends it, so a listener
+ * A fact about agents' sessions, runtimes, starts and starts: every event of that subject extends it, so a listener
  * typed on it hears them all.
  */
 abstract readonly class SessionEvent implements Event {}

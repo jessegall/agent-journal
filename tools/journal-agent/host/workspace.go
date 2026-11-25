@@ -20,7 +20,7 @@ var (
 	// ErrWorkspaceMountUnsafe refuses a mount source that is not its own canonical folder under the workspaces root.
 	ErrWorkspaceMountUnsafe = errors.New("the workspace mount source is not a canonical folder of its own")
 	// ErrWorkspaceHeld refuses a checkout another identity or purpose holds.
-	ErrWorkspaceHeld = errors.New("the workspace is held by another launch")
+	ErrWorkspaceHeld = errors.New("the workspace is held by another start")
 	// ErrWorkspaceQuotaUnavailable refuses a workspace on a host that cannot bound its size.
 	ErrWorkspaceQuotaUnavailable = errors.New("workspace-quota-unavailable: this host has no bounded workspace volume")
 )

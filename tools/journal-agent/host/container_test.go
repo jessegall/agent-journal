@@ -229,27 +229,27 @@ func TestAContainerOnAnAccountCarriesItsLabelAndBindsOnlyThatAccountsFolder(t *t
 		t.Fatalf("the account label is missing: %v %v", err, options.Config)
 	}
 
-	unsafe := map[string]func(*ContainerManifest) LaunchLabels{
-		"another account's folder": func(changed *ContainerManifest) LaunchLabels {
+	unsafe := map[string]func(*ContainerManifest) StartLabels{
+		"another account's folder": func(changed *ContainerManifest) StartLabels {
 			changed.Mounts[1].Source = "/srv/journal/accounts/8"
 			return accountLabels("7")
 		},
-		"the accounts root": func(changed *ContainerManifest) LaunchLabels {
+		"the accounts root": func(changed *ContainerManifest) StartLabels {
 			changed.Mounts[1].Source = "/srv/journal/accounts"
 			return accountLabels("7")
 		},
-		"an id that is not plain": func(changed *ContainerManifest) LaunchLabels {
+		"an id that is not plain": func(changed *ContainerManifest) StartLabels {
 			changed.Mounts[1].Source = "/srv/journal/accounts/A-7"
 			return accountLabels("A-7")
 		},
-		"a read-only account": func(changed *ContainerManifest) LaunchLabels {
+		"a read-only account": func(changed *ContainerManifest) StartLabels {
 			changed.Mounts[1].IsWritable = false
 			return accountLabels("7")
 		},
-		"an account mount with no account named": func(*ContainerManifest) LaunchLabels {
+		"an account mount with no account named": func(*ContainerManifest) StartLabels {
 			return labels()
 		},
-		"an account named with no mount": func(changed *ContainerManifest) LaunchLabels {
+		"an account named with no mount": func(changed *ContainerManifest) StartLabels {
 			changed.Mounts = slices.Delete(changed.Mounts, 1, 2)
 			return accountLabels("7")
 		},
@@ -264,7 +264,7 @@ func TestAContainerOnAnAccountCarriesItsLabelAndBindsOnlyThatAccountsFolder(t *t
 	}
 }
 
-func accountLabels(account string) LaunchLabels {
+func accountLabels(account string) StartLabels {
 	named := labels()
 	named.Account = account
 
@@ -480,7 +480,7 @@ func TestASessionsHistoryVolumeIsMadeAndAResumedOneMustExist(t *testing.T) {
 	containers, daemon := standIn(t, containedRules)
 	daemon.AddVolume("journal-history-kept", nil)
 	daemon.AddVolume("journal-session-7-workspace", nil)
-	labels := LaunchLabels{Installation: "journal", Launch: "launch-1", Session: "s1"}
+	labels := StartLabels{Installation: "journal", Start: "start-1", Session: "s1"}
 	session := containedManifest()
 	session.Mounts[2] = ContainerMount{Type: MountVolume, Source: "journal-history-s1", Target: "/home/journal/.account/projects", IsWritable: true}
 
@@ -493,8 +493,8 @@ func TestASessionsHistoryVolumeIsMadeAndAResumedOneMustExist(t *testing.T) {
 		t.Fatalf("the session's history volume was not made with its labels: %+v", made)
 	}
 
-	if _, labelled := made.Labels[launchLabel]; labelled {
-		t.Fatalf("a history volume carries the launch label, so its cleanup would remove it: %+v", made)
+	if _, labelled := made.Labels[startLabel]; labelled {
+		t.Fatalf("a history volume carries the start label, so its cleanup would remove it: %+v", made)
 	}
 
 	resumed := containedManifest()
@@ -542,7 +542,7 @@ func TestATerminalContainerRestartsByItselfAndResumesOnceItsTranscriptExists(t *
 
 func protectedManifest() ContainerManifest {
 	protected := containedManifest()
-	protected.LaunchProfile = LaunchProtectedAccount
+	protected.StartProfile = StartProtectedAccount
 	protected.User = "0:0"
 	protected.Capabilities = []string{"SETUID", "SETGID", "SETPCAP"}
 
@@ -576,29 +576,29 @@ func TestAProtectedAccountContainerStartsItsInitAsRootWithOnlyThreeCapabilities(
 }
 
 func TestAProtectedAccountManifestAskingForMoreIsRefusedBeforeAnythingIsCreated(t *testing.T) {
-	unsafe := map[string]func(*ContainerManifest) LaunchLabels{
-		"a fourth capability": func(changed *ContainerManifest) LaunchLabels {
+	unsafe := map[string]func(*ContainerManifest) StartLabels{
+		"a fourth capability": func(changed *ContainerManifest) StartLabels {
 			changed.Capabilities = append(changed.Capabilities, "NET_ADMIN")
 			return accountLabels("7")
 		},
-		"another user": func(changed *ContainerManifest) LaunchLabels {
+		"another user": func(changed *ContainerManifest) StartLabels {
 			changed.User = "10001:10001"
 			return accountLabels("7")
 		},
-		"an entrypoint": func(changed *ContainerManifest) LaunchLabels {
+		"an entrypoint": func(changed *ContainerManifest) StartLabels {
 			changed.Entrypoint = "/bin/sh"
 			return accountLabels("7")
 		},
-		"no account": func(changed *ContainerManifest) LaunchLabels {
+		"no account": func(changed *ContainerManifest) StartLabels {
 			changed.Mounts = changed.Mounts[:1]
 			return labels()
 		},
-		"a writable root": func(changed *ContainerManifest) LaunchLabels {
+		"a writable root": func(changed *ContainerManifest) StartLabels {
 			changed.IsReadOnlyRoot = false
 			return accountLabels("7")
 		},
-		"an unknown profile": func(changed *ContainerManifest) LaunchLabels {
-			changed.LaunchProfile = "root"
+		"an unknown profile": func(changed *ContainerManifest) StartLabels {
+			changed.StartProfile = "root"
 			return accountLabels("7")
 		},
 	}

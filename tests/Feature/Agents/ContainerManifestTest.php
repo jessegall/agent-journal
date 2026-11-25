@@ -579,7 +579,7 @@ final class ContainerManifestTest extends TestCase
         $this->assertSame(['0:0', ['SETUID', 'SETGID', 'SETPCAP'], 'protected-account', true, false], [
             $sent['user'],
             $sent['capabilities'],
-            $sent['launchProfile'],
+            $sent['startProfile'],
             $sent['noNewPrivileges'],
             $sent['privileged'],
         ]);
@@ -597,11 +597,11 @@ final class ContainerManifestTest extends TestCase
         $this->assertRefused(fn () => $this->protected($withoutAccount, ['SETUID', 'SETGID', 'SETPCAP'], '0:0'));
     }
 
-    public function test_a_standard_start_still_sends_its_standard_launch_profile(): void
+    public function test_a_standard_start_still_sends_its_standard_start_profile(): void
     {
         $sent = json_decode((string) json_encode($this->contained($this->containedMounts(), SecurityOptions::none())), true);
 
-        $this->assertSame('standard', $sent['launchProfile']);
+        $this->assertSame('standard', $sent['startProfile']);
     }
 
     /**

@@ -14,7 +14,7 @@ use App\Models\Sessions\SessionProcess;
 use App\Models\Sessions\SessionRequest;
 
 /**
- * Settles a launch the host proved it never started: only the start's own initial wake, refused in the attempt it
+ * Settles a start the host proved it never started: only the start's own initial wake, refused in the attempt it
  * was claimed for, bound to the session, its start and its process generation, with no process made. Anything less,
  * a generic refusal, a stale or duplicate report or an ordinary message's wake, settles nothing: the wake's request
  * keeps its own failure and the session, its credentials, its capacity and any switch stay as they are.

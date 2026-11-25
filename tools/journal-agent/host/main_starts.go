@@ -10,7 +10,7 @@ import (
 // mainStartName is the folder's record of its latest main-runtime start, by the id its device chose.
 const mainStartName = "main-start.json"
 
-// MainStart is a start of the binding's main runtime: the id chosen before anything launched, and the runtime the
+// MainStart is a start of the binding's main runtime: the id chosen before anything started, and the runtime the
 // journal answered once it did. A start with no runtime yet had its answer lost, or was cut short.
 type MainStart struct {
 	StartID   string `json:"start_id"`

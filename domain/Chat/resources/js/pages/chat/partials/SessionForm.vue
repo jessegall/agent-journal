@@ -30,7 +30,7 @@ import type { WindowResult } from "@kit/PageTypes";
 import type { DriverType } from "@kit/CoreTypes";
 import {
   accountsPage,
-  cancelLaunch,
+  cancelStart,
   recheck,
   startMain,
   switchMethod,
@@ -256,7 +256,7 @@ function cancelStart(): void {
 
   isCancelling.value = true;
   sendPageAction(
-    cancelLaunch({ agent: props.agent.id, session: props.agent.sessionId }),
+    cancelStart({ agent: props.agent.id, session: props.agent.sessionId }),
     { requestId: newRequestId() },
     {
       only: [chatProp],
@@ -692,7 +692,7 @@ function settleLeg(): void {
 }
 
 /**
- * Starts the choices again as a new switch, with a fresh request id, after the target's launch failed.
+ * Starts the choices again as a new switch, with a fresh request id, after the target's start failed.
  */
 function changeSettings(): void {
   requestId = newRequestId();
@@ -786,7 +786,7 @@ onBeforeUnmount(() => following?.stop());
             }}</Button>
           </template>
         </template>
-        <template v-if="agent.switchStage === 'launch_failed'">
+        <template v-if="agent.switchStage === 'start_failed'">
           <Button variant="ghost" size="small" @click="changeSettings"
             >Change settings</Button
           >

@@ -72,7 +72,7 @@ trait DispatchesHelpers
 
     private function endSessionOf(HelperReceipt $receipt): void
     {
-        $sessionId = SessionRequest::query()->where('request_id', $receipt->start->launchReference)->sole()->session_id;
+        $sessionId = SessionRequest::query()->where('request_id', $receipt->start->startReference)->sole()->session_id;
         AgentSession::query()->findOrFail($sessionId)->endAt(CarbonImmutable::now());
     }
 

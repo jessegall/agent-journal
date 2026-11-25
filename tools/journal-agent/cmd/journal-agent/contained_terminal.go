@@ -159,7 +159,7 @@ func (opener runtimeOpener) writeProtectedAccountFiles(
 }
 
 // sessionContainer is the one container of the start's session, named for the installation and the session and
-// labelled with its launch and its account.
+// labelled with its start and its account.
 func (opener runtimeOpener) sessionContainer(
 	runtimeID string,
 	prepared host.PreparedStart,
@@ -170,8 +170,8 @@ func (opener runtimeOpener) sessionContainer(
 	return host.SessionContainer{
 		Containers: opener.containers,
 		Name:       string(opener.installation) + "-" + session,
-		Labels: host.LaunchLabels{
-			Installation: string(opener.installation), Launch: runtimeID, Session: session,
+		Labels: host.StartLabels{
+			Installation: string(opener.installation), Start: runtimeID, Session: session,
 			Account: manifest.AccountFolder(),
 		},
 	}

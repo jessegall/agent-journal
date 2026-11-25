@@ -35,10 +35,10 @@ Route::post('/agents/{agent}/interrupt', InterruptAgentController::class)
     ->whereUlid('agent')
     ->name('agents.interrupt');
 
-Route::post('/agents/{agent}/launch-outcome/dismiss', DismissSessionStartOutcomeController::class)
+Route::post('/agents/{agent}/start-outcome/dismiss', DismissSessionStartOutcomeController::class)
     ->middleware(['web', 'auth', 'journal.user'])
     ->whereUlid('agent')
-    ->name('agents.launch-outcome.dismiss');
+    ->name('agents.start-outcome.dismiss');
 
 Route::middleware(['web', 'auth', 'journal.user'])
     ->prefix('/agents/switches/{switch}')
@@ -49,10 +49,10 @@ Route::middleware(['web', 'auth', 'journal.user'])
         Route::post('/recheck', RecheckDriverSwitchController::class)->name('recheck');
     });
 
-Route::post('/agents/{agent}/sessions/{session}/cancel-launch', CancelSessionStartController::class)
+Route::post('/agents/{agent}/sessions/{session}/cancel-start', CancelSessionStartController::class)
     ->middleware(['web', 'auth', 'journal.user'])
     ->whereUlid(['agent', 'session'])
-    ->name('agents.cancel-launch');
+    ->name('agents.cancel-start');
 
 Route::post('/agents/{agent}/sessions/{session}/check-start', CheckStartStatusController::class)
     ->middleware(['web', 'auth', 'journal.user'])

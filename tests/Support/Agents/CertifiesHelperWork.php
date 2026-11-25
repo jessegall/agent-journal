@@ -30,7 +30,7 @@ use Tests\Fixtures\Agents\TestStart;
 
 /**
  * A parent repository and a helper's clone with two commits of its own, imported through the real helper import, and
- * a launch for a helper job certified on that clone.
+ * a start for a helper job certified on that clone.
  */
 trait CertifiesHelperWork
 {
@@ -66,10 +66,10 @@ trait CertifiesHelperWork
     }
 
     /**
-     * A helper launch for the job, its policy frozen on the helper checkout, certified by the attempt.
+     * A helper start for the job, its policy frozen on the helper checkout, certified by the attempt.
      */
     private function certifyHelperWork(
-        TestStart $launch,
+        TestStart $start,
         string $certificate,
         bool $requiresReview = false,
         RecordIdentity $work = new RecordIdentity('helpers.helper-job', self::WORK_ID),
@@ -83,8 +83,8 @@ trait CertifiesHelperWork
         );
         $policy = StartPolicy::withoutProfile($execution);
         $request = new StartRequest(
-            $launch->session->start_request_id,
-            $launch->agent->id,
+            $start->session->start_request_id,
+            $start->agent->id,
             SelectedDriver::resolve('claude-code', ModelSelection::named('claude-opus-5-5'), null, null, $this->app->make(DriverCatalogue::class)),
             StartOriginType::OwnerRequest,
             $work,
@@ -95,8 +95,8 @@ trait CertifiesHelperWork
             driverType: DriverType::Headless,
         );
         $start = SessionRequest::create($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create());
-        $start->startedAs($launch->session);
-        SessionPolicy::create($launch->session, $request->policy);
+        $start->startedAs($start->session);
+        SessionPolicy::create($start->session, $request->policy);
 
         return CertifiedWork::create($start->refresh(), $certificate);
     }

@@ -82,7 +82,7 @@ final readonly class EvidenceRuns
     /**
      * The evidence run of a permit, started once: the same request id returns the run it already made; a fresh start
      * checks the runner's current permissions on every classified part first, so a permit issued before the runner's
-     * authority narrowed launches nothing.
+     * authority narrowed starts nothing.
      *
      * @throws EvidencePermitRefused
      */

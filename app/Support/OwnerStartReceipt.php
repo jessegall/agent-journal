@@ -9,14 +9,14 @@ use App\Enums\Agents\ExecutionModeType;
 use App\Values\SelectedDriver;
 
 /**
- * What an owner learns of a start for its work: the request as the launch's reference, the selection, whether the
+ * What an owner learns of a start for its work: the request as the start's reference, the selection, whether the
  * session is new, the conversation it asked for, where it runs and the actual model as the adapter reports it. It
  * holds no native id, session id or credential.
  */
 final readonly class OwnerStartReceipt
 {
     public function __construct(
-        public string $launchReference,
+        public string $startReference,
         public SelectedDriver $selection,
         public bool $isNewSession,
         public ConversationModeType $conversationMode,

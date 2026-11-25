@@ -13,7 +13,7 @@ return [
 
     /*
     | Contained only, for the acceptance run of doc 78: the drivers whose signed-in starts use the protected-account
-    | launch profile before their account-isolation row is proven, as a comma list such as claude-code,codex.
+    | start profile before their account-isolation row is proven, as a comma list such as claude-code,codex.
     */
     'protected_account_trial' => (string) env('AGENTS_PROTECTED_ACCOUNT_TRIAL', ''),
 

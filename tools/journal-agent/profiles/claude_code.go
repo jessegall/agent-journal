@@ -47,10 +47,10 @@ var claudeCodeAllowedWithoutAsking = []string{"Read", "Edit", "Write", "Notebook
 // ready.
 const claudeCodeNormalBuffer = "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1"
 
-// claudeCodeJournalServer is the name of the journal's MCP server in a launch's server list.
+// claudeCodeJournalServer is the name of the journal's MCP server in a start's server list.
 const claudeCodeJournalServer = "journal"
 
-// claudeCodeJournalTools is the one MCP allow rule of a launch: the journal's own server, never a wildcard for others.
+// claudeCodeJournalTools is the one MCP allow rule of a start: the journal's own server, never a wildcard for others.
 const claudeCodeJournalTools = "mcp__journal__*"
 
 // The client's MCP timeouts in milliseconds: to start the server, and for one tool call.
@@ -64,9 +64,9 @@ const (
 	claudeCodeJournalTimeout = 30000
 )
 
-// errUnresolvedLaunchSetting refuses a launch whose generated settings would hold an empty, relative or placeholder
+// errUnresolvedStartSetting refuses a start whose generated settings would hold an empty, relative or placeholder
 // path: the program would resolve it from a folder the model controls.
-var errUnresolvedLaunchSetting = errors.New("the launch has an unresolved setting")
+var errUnresolvedStartSetting = errors.New("the start has an unresolved setting")
 
 // claudeCodeNestedDrivers are agent drivers a shell command could start as an unseen child; Bash may not run them.
 var claudeCodeNestedDrivers = []string{"Bash(claude:*)", "Bash(codex:*)", "Bash(*claude -p*)", "Bash(*codex exec*)"}
@@ -135,7 +135,7 @@ func (profile ClaudeCode) Arguments(start contracts.Start) ([]string, error) {
 
 // Environment drops every inherited Claude Code and MCP variable: one from the starting session marks the program as
 // its child (no transcript, the parent's permission mode) and others could turn on agent teams or forked skills. A
-// start with the journal's server gets the client's MCP timeouts, and a launch its reference. Every start draws on
+// start with the journal's server gets the client's MCP timeouts, and a start its reference. Every start draws on
 // the normal buffer, the one the screen layout was measured on.
 func (ClaudeCode) Environment(inherited []string, start contracts.Start) []string {
 	kept := make([]string, 0, len(inherited)+3)
@@ -143,7 +143,7 @@ func (ClaudeCode) Environment(inherited []string, start contracts.Start) []strin
 	for _, entry := range inherited {
 		name := strings.SplitN(entry, "=", 2)[0]
 		if strings.HasPrefix(name, "CLAUDE_CODE_") || name == "CLAUDECODE" || strings.HasPrefix(name, "MCP_") ||
-			name == "JOURNAL_LAUNCH_REF" {
+			name == "JOURNAL_START_REF" {
 			continue
 		}
 		kept = append(kept, entry)
@@ -153,7 +153,7 @@ func (ClaudeCode) Environment(inherited []string, start contracts.Start) []strin
 		kept = append(kept, "MCP_TIMEOUT="+claudeCodeMcpStartTimeout, "MCP_TOOL_TIMEOUT="+claudeCodeMcpToolTimeout)
 	}
 	if start.Account != nil {
-		kept = append(kept, "JOURNAL_LAUNCH_REF="+start.Account.LaunchReference)
+		kept = append(kept, "JOURNAL_START_REF="+start.Account.StartReference)
 	}
 	if start.Protected {
 		kept = append(kept, "CLAUDE_CODE_SHELL="+claudeCodeProtectedShell, claudeCodeInContainer)
@@ -255,16 +255,16 @@ func startsJournalServer(start contracts.Start) bool {
 	return start.Account != nil && start.Account.Transport != contracts.CliTransport
 }
 
-// journalDescriptor is the launch's MCP configuration: the journal's server alone, started by absolute path, with
+// journalDescriptor is the start's MCP configuration: the journal's server alone, started by absolute path, with
 // no token, environment or placeholder in it.
 func journalDescriptor(start contracts.Start) ([]byte, error) {
 	server := start.Account.JournalServer
 	if server == nil {
-		return nil, fmt.Errorf("%w: no journal MCP server", errUnresolvedLaunchSetting)
+		return nil, fmt.Errorf("%w: no journal MCP server", errUnresolvedStartSetting)
 	}
 	for _, path := range append([]string{server.Command}, server.Arguments()...) {
 		if !isResolvedPath(path) {
-			return nil, fmt.Errorf("%w: the journal MCP path %q", errUnresolvedLaunchSetting, path)
+			return nil, fmt.Errorf("%w: the journal MCP path %q", errUnresolvedStartSetting, path)
 		}
 	}
 	return json.MarshalIndent(map[string]any{"mcpServers": map[string]any{claudeCodeJournalServer: map[string]any{
@@ -279,7 +279,7 @@ func journalDescriptor(start contracts.Start) ([]byte, error) {
 func requireAbsoluteCommand(command string) error {
 	fields := strings.Fields(command)
 	if len(fields) == 0 || !isResolvedPath(fields[0]) {
-		return fmt.Errorf("%w: the hook command %q", errUnresolvedLaunchSetting, command)
+		return fmt.Errorf("%w: the hook command %q", errUnresolvedStartSetting, command)
 	}
 	return nil
 }

@@ -22,7 +22,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[Name('helpers_cancel')]
 #[Dispatches(CancelHelperJobCommand::class)]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent)]
-#[Description('Cancel a helper job and stop its launch.')]
+#[Description('Cancel a helper job and stop its start.')]
 final class CancelHelperJobTool extends JournalWriteTool
 {
     protected function writeSchema(JsonSchema $schema): array

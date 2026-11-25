@@ -28,7 +28,7 @@ var (
 )
 
 // GrantScope is what a browser grant was issued for: the runtime's process generation and the attachment
-// incarnation, so it never acts on a relaunched program.
+// incarnation, so it never acts on a restarted program.
 type GrantScope struct {
 	Generation uint64
 	Attachment string

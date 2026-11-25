@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Enums\Sessions\StartDisposition;
 
 /**
- * An agent's latest launch: the start request it answers, where it stands, the session it started and the reason a
+ * An agent's latest start: the start request it answers, where it stands, the session it started and the reason a
  * refusal kept. Its version is where it stands, so a dismissed outcome that moves on shows again.
  */
 final readonly class SessionStartOutcome

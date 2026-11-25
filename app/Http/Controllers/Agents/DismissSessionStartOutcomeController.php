@@ -10,7 +10,7 @@ use App\Http\Responses\PageActionAnswers;
 use Illuminate\Http\RedirectResponse;
 
 /**
- * Hides one version of an agent's launch outcome from the user who dismisses it.
+ * Hides one version of an agent's start outcome from the user who dismisses it.
  */
 final readonly class DismissSessionStartOutcomeController
 {

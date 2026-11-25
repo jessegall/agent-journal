@@ -16,7 +16,7 @@ final class HelperProfilesUnavailable extends RuntimeException implements Comman
     public static function forProfile(string $profileKey, Throwable $previous): self
     {
         return new self(sprintf(
-            'Profile %s has no activated definition, so no helper was reserved or launched. Activate it first.',
+            'Profile %s has no activated definition, so no helper was reserved or started. Activate it first.',
             $profileKey,
         ), previous: $previous);
     }

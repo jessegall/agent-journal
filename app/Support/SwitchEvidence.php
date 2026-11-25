@@ -25,11 +25,11 @@ final readonly class SwitchEvidence
     }
 
     /**
-     * Whether the switch still decides the agent's status: under way, or its launch failed and it may be retried.
+     * Whether the switch still decides the agent's status: under way, or its start failed and it may be retried.
      */
     public function isUnderWay(): bool
     {
-        return ! $this->stage->isFinal() || $this->stage === DriverSwitchStage::LaunchFailed;
+        return ! $this->stage->isFinal() || $this->stage === DriverSwitchStage::StartFailed;
     }
 
     public function operation(): StatusOperation

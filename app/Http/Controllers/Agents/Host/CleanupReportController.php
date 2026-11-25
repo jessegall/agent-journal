@@ -13,7 +13,7 @@ use App\Values\HostContext;
 use Illuminate\Http\JsonResponse;
 
 /**
- * The host reads the cleanups of ended launches it still owes, by session and with the resources left, and reports
+ * The host reads the cleanups of ended starts it still owes, by session and with the resources left, and reports
  * each pass it made.
  * The host's calls run as the journal itself: a host is infrastructure, never an actor.
  */

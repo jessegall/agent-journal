@@ -10,7 +10,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // A binding's start by the id its device chose before launching anything, and the runtime it opened, so a
+        // A binding's start by the id its device chose before starting anything, and the runtime it opened, so a
         // start asked again after a lost reply answers the same runtime.
         Schema::create('binding_runtimes', function (Blueprint $table): void {
             $table->ulid('id')->primary();

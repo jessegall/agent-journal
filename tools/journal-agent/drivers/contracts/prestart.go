@@ -82,8 +82,8 @@ type AccountRequest struct {
 	Action  string
 }
 
-// LaunchRequest is an authorized start or resume of one binding, carried from the journal's grant.
-type LaunchRequest struct {
+// StartRequest is an authorized start or resume of one binding, carried from the journal's grant.
+type StartRequest struct {
 	Request RequestIdentity
 	Binding BindingIdentity
 }
@@ -94,8 +94,8 @@ type Driver interface {
 	Descriptor() Descriptor
 	Capabilities(ctx context.Context, target BoundTarget) (SupportSnapshot, error)
 	Account(ctx context.Context, request AccountRequest) (OperationResult, error)
-	Start(ctx context.Context, request LaunchRequest) (RunningDriver, error)
-	Resume(ctx context.Context, request LaunchRequest) (RunningDriver, error)
+	Start(ctx context.Context, request StartRequest) (RunningDriver, error)
+	Resume(ctx context.Context, request StartRequest) (RunningDriver, error)
 }
 
 // RunningDriver is one running binding: the lifecycle every driver offers, plus its binding, its current support,

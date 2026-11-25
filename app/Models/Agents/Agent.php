@@ -93,7 +93,7 @@ final class Agent extends Model implements
     // ----------[ Mutations ]----------
 
     /**
-     * The driver type this agent's launches use from now on when they name none, kept once a launch that asked to save it
+     * The driver type this agent's starts use from now on when they name none, kept once a start that asked to save it
      * runs.
      */
     public function preferDriverType(DriverType $driverType): void
@@ -147,7 +147,7 @@ final class Agent extends Model implements
     // ----------[ Transformers ]----------
 
     /**
-     * The driver type a launch runs: the one it names, then the agent's saved preference, then its profile's default.
+     * The driver type a start runs: the one it names, then the agent's saved preference, then its profile's default.
      */
     public function driverTypeFor(DriverType|null $named, DriverType $profileDefault): DriverType
     {

@@ -10,7 +10,7 @@ use App\Policies\AgentPolicy;
 use App\Support\Command;
 
 /**
- * Retries the launch of a switch that failed, with the same request and target; the agent stays idle until then.
+ * Retries the start of a switch that failed, with the same request and target; the agent stays idle until then.
  *
  * @extends Command<null>
  */

@@ -37,8 +37,8 @@ func ParseInstallationName(value string) (InstallationName, error) {
 	return InstallationName(value), nil
 }
 
-// ResourceName is the name of a session's container and of its launch network: <installation>-<session>, or
-// journal-<session> on a host with no installation name, as local launches have always been named.
+// ResourceName is the name of a session's container and of its start network: <installation>-<session>, or
+// journal-<session> on a host with no installation name, as local starts have always been named.
 func (name InstallationName) ResourceName(session string) string {
 	if name == "" {
 		return "journal-" + session

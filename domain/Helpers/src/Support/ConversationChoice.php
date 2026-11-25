@@ -8,7 +8,7 @@ use App\Enums\Agents\ConversationModeType;
 use Domain\Helpers\Support\Readers\HelperCandidate;
 
 /**
- * What a dispatch chose for the helper it launches: whether the identity is new, whether its conversation resumes
+ * What a dispatch chose for the helper it starts: whether the identity is new, whether its conversation resumes
  * or starts anew, and the reason its receipt states.
  */
 final readonly class ConversationChoice

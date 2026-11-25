@@ -7,7 +7,7 @@ namespace App\Enums\Agents;
 use App\Enums\Drivers\DriverSwitchStage;
 
 /**
- * What Home says an agent is doing: working in a live session, idle, in the middle of a switch, failed to launch
+ * What Home says an agent is doing: working in a live session, idle, in the middle of a switch, failed to start
  * its replacement or to have its start claimed, or retired.
  */
 enum AgentPresence: string
@@ -22,7 +22,7 @@ enum AgentPresence: string
     {
         return match (true) {
             $isRetired => self::Retired,
-            $switchStage === DriverSwitchStage::LaunchFailed, $isStartRefused => self::Failed,
+            $switchStage === DriverSwitchStage::StartFailed, $isStartRefused => self::Failed,
             $switchStage !== null && ! $switchStage->isFinal() => self::PendingSwitch,
             $isLive => self::Working,
             default => self::Idle,

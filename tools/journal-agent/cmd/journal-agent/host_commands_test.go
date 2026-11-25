@@ -163,20 +163,20 @@ func TestAUserAttachedToAServedTerminalTypesThroughItsGate(t *testing.T) {
 
 func TestATerminalStartCarriesTheGrantsCredentialAndGeneration(t *testing.T) {
 	folder := t.TempDir()
-	grant := client.Grant{Token: "launch-token", Runtime: client.RuntimeStart{Folder: folder, ProcessGeneration: 4}}
+	grant := client.Grant{Token: "start-token", Runtime: client.RuntimeStart{Folder: folder, ProcessGeneration: 4}}
 
-	launch, err := startOf(profiles.ClaudeCode{}, folder, "http://journal.test", "", "runtime-1", grant,
+	start, err := startOf(profiles.ClaudeCode{}, folder, "http://journal.test", "", "runtime-1", grant,
 		[]string{"LANG=C"}, nil, nil, "claude")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if launch.RuntimeID != "runtime-1" || launch.Command[0] != "claude" || launch.Folder != folder {
-		t.Fatalf("the launch is %+v", launch)
+	if start.RuntimeID != "runtime-1" || start.Command[0] != "claude" || start.Folder != folder {
+		t.Fatalf("the start is %+v", start)
 	}
-	for _, wanted := range []string{"JOURNAL_START_TOKEN=launch-token", "JOURNAL_PROCESS_GENERATION=4"} {
-		if !slices.Contains(launch.Env, wanted) {
-			t.Fatalf("the launch's environment has no %s", wanted)
+	for _, wanted := range []string{"JOURNAL_START_TOKEN=start-token", "JOURNAL_PROCESS_GENERATION=4"} {
+		if !slices.Contains(start.Env, wanted) {
+			t.Fatalf("the start's environment has no %s", wanted)
 		}
 	}
 }
@@ -190,38 +190,38 @@ func TestATerminalStartRunsOnTheModelTheJournalAskedFor(t *testing.T) {
 		option  string
 	}{{profiles.ClaudeCode{}, "--model"}, {profiles.Codex{}, "-m"}} {
 		folder := t.TempDir()
-		grant := client.Grant{Token: "launch-token", Runtime: client.RuntimeStart{Folder: folder, Model: &asked}}
+		grant := client.Grant{Token: "start-token", Runtime: client.RuntimeStart{Folder: folder, Model: &asked}}
 
-		launch, err := startOf(driver.profile, folder, "http://journal.test", "", "runtime-1", grant,
+		start, err := startOf(driver.profile, folder, "http://journal.test", "", "runtime-1", grant,
 			[]string{"LANG=C"}, nil, nil, driver.profile.Driver())
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		option := slices.Index(launch.Command, driver.option)
-		if option < 0 || launch.Command[option+1] != asked {
-			t.Fatalf("%s starts without the model asked for: %v", driver.profile.Driver(), launch.Command)
+		option := slices.Index(start.Command, driver.option)
+		if option < 0 || start.Command[option+1] != asked {
+			t.Fatalf("%s starts without the model asked for: %v", driver.profile.Driver(), start.Command)
 		}
 	}
 }
 
 // The Codex terminal starts the interactive client in its own PTY: no exec, no JSON stream, and the grant's
 // credential and generation in its environment like every terminal start.
-func TestACodexTerminalStartLaunchesTheInteractiveClient(t *testing.T) {
+func TestACodexTerminalStartStartsTheInteractiveClient(t *testing.T) {
 	folder := t.TempDir()
-	grant := client.Grant{Token: "launch-token", Runtime: client.RuntimeStart{Folder: folder, ProcessGeneration: 2}}
+	grant := client.Grant{Token: "start-token", Runtime: client.RuntimeStart{Folder: folder, ProcessGeneration: 2}}
 
-	launch, err := startOf(profiles.Codex{}, folder, "http://journal.test", "", "runtime-1", grant,
+	start, err := startOf(profiles.Codex{}, folder, "http://journal.test", "", "runtime-1", grant,
 		[]string{"LANG=C"}, nil, nil, "codex")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if launch.Command[0] != "codex" || slices.Contains(launch.Command, "exec") || slices.Contains(launch.Command, "--json") {
-		t.Fatalf("the codex terminal launches %v, want the interactive client", launch.Command)
+	if start.Command[0] != "codex" || slices.Contains(start.Command, "exec") || slices.Contains(start.Command, "--json") {
+		t.Fatalf("the codex terminal starts %v, want the interactive client", start.Command)
 	}
-	if !slices.Contains(launch.Env, "JOURNAL_PROCESS_GENERATION=2") {
-		t.Fatalf("the codex terminal's environment has no process generation: %v", launch.Env)
+	if !slices.Contains(start.Env, "JOURNAL_PROCESS_GENERATION=2") {
+		t.Fatalf("the codex terminal's environment has no process generation: %v", start.Env)
 	}
 }
 
@@ -231,7 +231,7 @@ func TestADriverOnTrialStartsItsProtectedContainerBeforeItsEvidenceIsRecorded(t 
 	containers := host.Containers{Rules: host.ContainerRules{AgentImage: "sha256:image"}}
 	grant := client.Grant{
 		Runtime:   client.RuntimeStart{Driver: "claude", DriverKey: "claude-code-headless", DriverBuild: "2.1.323"},
-		Container: json.RawMessage(`{"launchProfile":"protected-account"}`),
+		Container: json.RawMessage(`{"startProfile":"protected-account"}`),
 	}
 	claim := client.ClaimedStart{Recipe: client.AccountRecipe{DriverVersion: "2.1.323"}}
 
@@ -250,7 +250,7 @@ func TestAContainedAccountStartIsCheckedAgainstItsContainersProtection(t *testin
 	containers := host.Containers{Rules: host.ContainerRules{AgentImage: "sha256:image"}}
 	grant := client.Grant{
 		Runtime:   client.RuntimeStart{Driver: "claude", DriverBuild: "2.1.323"},
-		Container: json.RawMessage(`{"launchProfile":"protected-account"}`),
+		Container: json.RawMessage(`{"startProfile":"protected-account"}`),
 	}
 	claim := client.ClaimedStart{Recipe: client.AccountRecipe{DriverVersion: "2.1.323"}}
 	allowed := containedPrerequisites(state, "", nil, containers)

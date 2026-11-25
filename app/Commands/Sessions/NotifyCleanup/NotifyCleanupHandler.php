@@ -10,7 +10,7 @@ use App\Models\Sessions\SessionCleanup;
 use App\Support\CapacityRelease;
 
 /**
- * Records the host's pass and releases the launch's capacity once every transient resource is gone, since only
+ * Records the host's pass and releases the start's capacity once every transient resource is gone, since only
  * then can no process of it still run.
  */
 final readonly class NotifyCleanupHandler implements CommandHandler

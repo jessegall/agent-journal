@@ -9,7 +9,7 @@ use App\Support\EngineAccess;
 use App\Support\SessionStartLimits;
 
 /**
- * Runs the launch limits only under the engine's grant.
+ * Runs the start limits only under the engine's grant.
  */
 final readonly class EnforceSessionStartLimitsHandler implements CommandHandler
 {

@@ -22,8 +22,8 @@ use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Support\HostCapability;
 use App\Support\HostCapabilityQuery;
-use App\Support\SessionStartOutcome;
 use App\Support\RecordIdentity;
+use App\Support\SessionStartOutcome;
 use App\Support\StartReceipt;
 use App\Values\ExecutionBudgets;
 use App\Values\ExecutionPolicy;
@@ -38,7 +38,7 @@ use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
- * An agent's latest launch outcome comes from its start records, a sessionless refusal included; a viewer's dismissal
+ * An agent's latest start outcome comes from its start records, a sessionless refusal included; a viewer's dismissal
  * hides that version from that viewer alone after a reload, and a later start's outcome takes its place.
  */
 final class SessionStartOutcomeTest extends TestCase
@@ -76,7 +76,7 @@ final class SessionStartOutcomeTest extends TestCase
         $this->app->instance(DockerImageVerifier::class, new CountingImageVerifier());
     }
 
-    public function test_a_sessionless_capacity_refusal_is_the_agents_last_launch_outcome(): void
+    public function test_a_sessionless_capacity_refusal_is_the_agents_last_start_outcome(): void
     {
         $request = $this->refusedStart();
 
@@ -133,7 +133,7 @@ final class SessionStartOutcomeTest extends TestCase
 
     private function outcome(): SessionStartOutcome|null
     {
-        return $this->app->make(AgentDirectory::class)->visibleAgent($this->agentId)->launchOutcome;
+        return $this->app->make(AgentDirectory::class)->visibleAgent($this->agentId)->startOutcome;
     }
 
     private function containerRequest(): StartRequest

@@ -33,8 +33,8 @@ func TestASessionRunsTheSealedProviderWithTheJournalsOwnSettings(t *testing.T) {
 	if command.Path != filepath.Join(session.Installation, "bin", "claude") {
 		t.Fatalf("the provider came from %s", command.Path)
 	}
-	if command.Dir != filepath.Join(session.Folder(), "launch") {
-		t.Fatalf("the session launches in %s", command.Dir)
+	if command.Dir != filepath.Join(session.Folder(), "start") {
+		t.Fatalf("the session starts in %s", command.Dir)
 	}
 	arguments := strings.Join(command.Args, " ")
 	for _, want := range []string{"--setting-sources", "--session-id " + session.SessionID, "--settings " + filepath.Join(session.Folder(), "home", "settings.json")} {

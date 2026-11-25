@@ -23,7 +23,7 @@ var containedPrograms = []struct{ journal, binary string }{
 var buildVersion = regexp.MustCompile(`\d+\.\d+\.\d+`)
 
 // NotifyContainedProtection inspects each program's protection in the agent image at the build the image holds, under
-// the standard and the protected-account launch profile, and sends both to the journal, which admits a contained
+// the standard and the protected-account start profile, and sends both to the journal, which admits a contained
 // start only on the report of its profile with every item enforced.
 func NotifyContainedProtection(
 	ctx context.Context,

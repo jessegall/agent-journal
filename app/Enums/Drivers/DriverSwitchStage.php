@@ -18,7 +18,7 @@ enum DriverSwitchStage: string
     case Starting = 'starting';
     case StartUnconfirmed = 'start_unconfirmed';
     case Confirmed = 'confirmed';
-    case LaunchFailed = 'launch_failed';
+    case StartFailed = 'start_failed';
     case Cancelled = 'cancelled';
 
     /**
@@ -29,7 +29,7 @@ enum DriverSwitchStage: string
         return in_array($this, [
             self::Refused,
             self::Confirmed,
-            self::LaunchFailed,
+            self::StartFailed,
             self::Cancelled,
         ], true);
     }
@@ -47,7 +47,7 @@ enum DriverSwitchStage: string
             self::Stopped, self::Starting => 'Starting the new session',
             self::StartUnconfirmed => 'Waiting for the host to confirm the start',
             self::Confirmed => 'Switched',
-            self::LaunchFailed => 'The new session failed to start',
+            self::StartFailed => 'The new session failed to start',
             self::Cancelled => 'Cancelled',
         };
     }
@@ -107,19 +107,19 @@ enum DriverSwitchStage: string
             ],
             self::Stopped => [
                 self::Starting,
-                self::LaunchFailed,
+                self::StartFailed,
                 self::Cancelled,
             ],
             self::Starting => [
                 self::Confirmed,
                 self::StartUnconfirmed,
-                self::LaunchFailed,
+                self::StartFailed,
             ],
             self::StartUnconfirmed => [
                 self::Confirmed,
-                self::LaunchFailed,
+                self::StartFailed,
             ],
-            self::LaunchFailed => [self::Stopped],
+            self::StartFailed => [self::Stopped],
             self::Refused, self::Confirmed, self::Cancelled => [],
         };
     }

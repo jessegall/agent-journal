@@ -6,10 +6,10 @@ namespace Domain\Helpers\Support\Readers;
 
 use App\Contracts\Sessions\SessionStartCandidates;
 use App\Enums\Sessions\StartCandidateRank;
+use App\Support\RankedStartCandidate;
 use App\Support\StartCandidateFacts;
 use App\Support\StartCandidateQuery;
 use App\Support\StartProfileKey;
-use App\Support\RankedStartCandidate;
 use Carbon\CarbonImmutable;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Models\HelperIdentity;
@@ -22,7 +22,7 @@ use Domain\Helpers\Models\HelperJob;
  */
 final readonly class HelperCandidates
 {
-    public function __construct(private SessionStartCandidates $launches) {}
+    public function __construct(private SessionStartCandidates $starts) {}
 
     /**
      * @return list<HelperCandidate>
@@ -47,7 +47,7 @@ final readonly class HelperCandidates
 
         $exposedIdentityIds = $this->exposedIdentities($query, $identityIds);
 
-        $ranked = $this->launches->rank(new StartCandidateQuery(
+        $ranked = $this->starts->rank(new StartCandidateQuery(
             new StartProfileKey($query->profileKey),
             $query->driver,
             $query->model,

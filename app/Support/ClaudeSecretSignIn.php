@@ -21,7 +21,7 @@ use App\Values\SignInVerification;
 
 /**
  * A Claude Code sign-in by a value the owner gives: no driver runs until the value arrives, then it is written to a
- * private file in the account folder, which the driver reads at every launch, never through its arguments or its
+ * private file in the account folder, which the driver reads at every start, never through its arguments or its
  * environment. The status names the method, and one short model call proves the value works.
  */
 abstract readonly class ClaudeSecretSignIn implements FirstRunSettlement, SignInProtocol
@@ -150,7 +150,7 @@ abstract readonly class ClaudeSecretSignIn implements FirstRunSettlement, SignIn
     abstract protected function authMethod(): string;
 
     /**
-     * Lets the driver find the value at launch, beside its file.
+     * Lets the driver find the value at start, beside its file.
      */
     abstract protected function install(string $directory): void;
 

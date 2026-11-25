@@ -24,7 +24,7 @@ use Tests\Support\RefreshHookDatabase;
 /**
  * A helper job ends only on what Core says about its helper's stop: a certified stop finishes it with the
  * evidence, a held stop holds it for repair (heard by the job's listener alone; Core also opens a stuck ask), a
- * cancelled launch cancels it, and a job that already ended or other work is left alone.
+ * cancelled start cancels it, and a job that already ended or other work is left alone.
  */
 final class HelperJobEndingTest extends TestCase
 {
@@ -42,7 +42,7 @@ final class HelperJobEndingTest extends TestCase
         $this->assertNotNull($finished->finished_at);
     }
 
-    public function test_a_held_stop_holds_the_job_and_a_cancelled_launch_cancels_it(): void
+    public function test_a_held_stop_holds_the_job_and_a_cancelled_start_cancels_it(): void
     {
         $held = $this->job();
         $cancelled = $this->job();
@@ -89,7 +89,7 @@ final class HelperJobEndingTest extends TestCase
             $parent,
             'Fix the test',
             [],
-            self::launchFor((string) Str::ulid()),
+            self::sessionStartFor((string) Str::ulid()),
         );
     }
 

@@ -120,7 +120,7 @@ final class SessionCleanup extends Model implements EventSource, ReadableModel
     // ----------[ Queries ]----------
 
     /**
-     * Opens the cleanup of the session's ended launch on its host; opening it again finds the same one.
+     * Opens the cleanup of the session's ended start on its host; opening it again finds the same one.
      */
     public static function open(AgentSession $session, string $hostId): self
     {

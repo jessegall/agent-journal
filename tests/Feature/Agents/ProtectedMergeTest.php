@@ -88,8 +88,8 @@ final class ProtectedMergeTest extends TestCase
 
     private function approvedAttempt(): MergeAttempt
     {
-        $launch = TestStart::start('writing-helper');
-        $this->certifyHelperWork($launch, 'attempt-1');
+        $start = TestStart::start('writing-helper');
+        $this->certifyHelperWork($start, 'attempt-1');
         $work = new RecordIdentity('helpers.helper-job', self::WORK_ID);
         $import = $this->app->make(HelperCommitImport::class)->importCertified($work, 'attempt-1');
 
@@ -101,7 +101,7 @@ final class ProtectedMergeTest extends TestCase
             $import->head,
             $import->ref,
             new ReviewDecisionReference((string) Str::ulid()),
-            ActorIdentity::of($launch->agent),
+            ActorIdentity::of($start->agent),
             (string) Str::ulid(),
             0,
         ));

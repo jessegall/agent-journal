@@ -11,8 +11,8 @@ use App\Models\Profiles\ProfileRevisionHold;
 use App\Models\Sessions\SessionPolicy;
 
 /**
- * Stops the launches that may no longer run through the host's durable stop requests: a launch past its wall limit,
- * and every session started from a revoked profile revision. A stopped launch ends as any other, so its job is left
+ * Stops the starts that may no longer run through the host's durable stop requests: a start past its wall limit,
+ * and every session started from a revoked profile revision. A stopped start ends as any other, so its job is left
  * unfinished with a notice, never completed.
  */
 final readonly class SessionStartLimits
@@ -28,15 +28,15 @@ final readonly class SessionStartLimits
     ) {}
 
     /**
-     * Stops each launch that outran the wall budget frozen with its start: six hours unless its profile set another.
+     * Stops each start that outran the wall budget frozen with its start: six hours unless its profile set another.
      */
     public function stopOverdue(): void
     {
         $now = $this->clock->now();
-        $launches = AgentSession::runningLaunches(self::PASS_LIMIT);
-        $deadlines = SessionPolicy::wallDeadlinesOf($launches);
+        $starts = AgentSession::runningStarts(self::PASS_LIMIT);
+        $deadlines = SessionPolicy::wallDeadlinesOf($starts);
 
-        foreach ($launches as $session) {
+        foreach ($starts as $session) {
             if (array_key_exists($session->id, $deadlines) && $deadlines[$session->id]->isBefore($now)) {
                 $this->stop($session, "wall-limit:{$session->id}");
             }

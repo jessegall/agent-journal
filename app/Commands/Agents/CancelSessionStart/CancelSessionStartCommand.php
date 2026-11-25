@@ -12,7 +12,7 @@ use App\Support\Command;
 use App\Values\StackTarget;
 
 /**
- * Cancels the work a started agent was launched for: its runtime, when one opened, is told to stop, its workspace
+ * Cancels the work a started agent was started for: its runtime, when one opened, is told to stop, its workspace
  * stays, and the owner of the work hears that it was cancelled once the stop is recorded.
  *
  * @extends Command<bool>

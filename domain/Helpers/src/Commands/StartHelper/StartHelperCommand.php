@@ -15,7 +15,7 @@ use Spatie\LaravelData\Attributes\Validation\Required;
 
 /**
  * Gives new work to one of the caller's helpers of a profile, the best one that may take it or a new one, on the
- * model it names or the profile's default, and launches it.
+ * model it names or the profile's default, and starts it.
  *
  * @extends Command<HelperReceipt>
  */

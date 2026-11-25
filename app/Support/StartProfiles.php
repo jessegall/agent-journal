@@ -12,7 +12,7 @@ use App\Enums\Projects\HostCapabilityType;
 use App\Values\SelectedAccount;
 
 /**
- * Which launch profile a contained session starts with: a signed-in start uses the protected-account profile once its
+ * Which start profile a contained session starts with: a signed-in start uses the protected-account profile once its
  * driver's account isolation is proven, or while the trial names that driver; every other start the standard one.
  */
 final readonly class StartProfiles
@@ -54,7 +54,7 @@ final readonly class StartProfiles
     }
 
     /**
-     * The launch profile a signed-in start of the driver uses, which is the one whose protection decides whether the
+     * The start profile a signed-in start of the driver uses, which is the one whose protection decides whether the
      * driver may start contained at all.
      */
     public function forSignedIn(string $driver): StartProfileType

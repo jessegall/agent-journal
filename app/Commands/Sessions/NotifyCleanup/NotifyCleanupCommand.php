@@ -11,7 +11,7 @@ use App\Support\Command;
 use App\Values\CleanupReport;
 
 /**
- * A host reports one pass of an ended launch's cleanup: what it removed or found gone, the dirty workspace it kept
+ * A host reports one pass of an ended start's cleanup: what it removed or found gone, the dirty workspace it kept
  * and why a deletion failed. The result is where the cleanup stands. A repeated report changes nothing more.
  * Run for an authenticated host by the journal itself (internal, not exported).
  *

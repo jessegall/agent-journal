@@ -24,7 +24,7 @@ type BaseStart struct {
 	// Account is the saved account the start signs in with, as its prepared claim gives it; nil for a start with
 	// no account, such as a recording.
 	Account *AccountStart
-	// Protected is whether the start runs under the protected-account launch profile: the program alone reads the
+	// Protected is whether the start runs under the protected-account start profile: the program alone reads the
 	// sign-in, and every command the model runs goes to the executor's user.
 	Protected bool
 }
@@ -88,8 +88,8 @@ type AccountStart struct {
 	Transport  TransportProfile
 	// JournalServer is the journal's own MCP server the start loads; an account start is refused without it.
 	JournalServer *JournalServer
-	// LaunchReference names the launch to the journal's relays; it is no secret.
-	LaunchReference string
+	// StartReference names the start to the journal's relays; it is no secret.
+	StartReference string
 	// StatusLine is the command of the journal's status-line reader for a terminal start whose status line reports
 	// limit windows; empty for a start that reads none there.
 	StatusLine string

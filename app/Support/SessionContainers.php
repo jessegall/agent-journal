@@ -23,7 +23,7 @@ final readonly class SessionContainers
     public function __construct(
         private SessionPolicyReader $policies,
         private ArrangementSetting $arrangement,
-        private StartProfiles $launchProfiles,
+        private StartProfiles $startProfiles,
     ) {}
 
     /**
@@ -58,7 +58,7 @@ final readonly class SessionContainers
             $this->arrangement->sessionContainerName($runtime->agent_session_id),
             $rules,
             null,
-            $this->launchProfiles->for($runtime->family, $account),
+            $this->startProfiles->for($runtime->family, $account),
         );
     }
 

@@ -15,7 +15,7 @@ use Tests\TestCase;
 
 /**
  * A Codex account's common config.toml gets the journal's MCP entry once, whole, under the account's lock: two
- * launches each keep their own root's trust and leave one entry; a later installation path replaces it; the entry
+ * starts each keep their own root's trust and leave one entry; a later installation path replaces it; the entry
  * names only fixed paths and variable names, and a path that is relative, a placeholder or looks like a token is
  * refused.
  */
@@ -25,7 +25,7 @@ final class CodexMcpStartTest extends TestCase
         [mcp_servers.journal]
         command = "/protected/bin/php"
         args = ["/protected/journal/bin/journal-mcp"]
-        env_vars = ["JOURNAL_URL", "JOURNAL_LAUNCH_REF"]
+        env_vars = ["JOURNAL_URL", "JOURNAL_START_REF"]
         required = true
         default_tools_approval_mode = "approve"
         startup_timeout_sec = 15
@@ -64,7 +64,7 @@ final class CodexMcpStartTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_two_launches_on_one_account_keep_their_trust_and_leave_one_journal_entry(): void
+    public function test_two_starts_on_one_account_keep_their_trust_and_leave_one_journal_entry(): void
     {
         $this->prepare('one', CodexJournalServer::of(self::PHP, self::RELAY));
         $this->prepare('two', CodexJournalServer::of(self::PHP, self::RELAY));

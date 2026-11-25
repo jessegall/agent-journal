@@ -18,7 +18,7 @@ const accountProtection = `{"permissions":{"deny":["Read(//accounts/a/.credentia
 
 func TestAnAccountStartMergesTheAccountProtectionIntoTheStartSettings(t *testing.T) {
 	start := contracts.BaseStart{SettingsFolder: "/state/runtimes/r1", SessionID: "session", Account: &contracts.AccountStart{
-		Folder: "/accounts/a", Protection: accountProtection, JournalServer: &journalServer, LaunchReference: "r1",
+		Folder: "/accounts/a", Protection: accountProtection, JournalServer: &journalServer, StartReference: "r1",
 	}}.Turn("", false)
 
 	files, err := ClaudeCode{}.SettingsFiles(start)
@@ -102,11 +102,11 @@ func TestAProtectedAccountStartLeavesCommandsToTheExecutorAndNeverAsksAUser(t *t
 
 func accountStartWith(server *contracts.JournalServer, hookCommand string) contracts.Start {
 	return contracts.BaseStart{SettingsFolder: "/state/runtimes/r1", SessionID: "session", HookCommand: hookCommand, Account: &contracts.AccountStart{
-		Folder: "/accounts/a", Protection: accountProtection, JournalServer: server, LaunchReference: "r1",
+		Folder: "/accounts/a", Protection: accountProtection, JournalServer: server, StartReference: "r1",
 	}}.Turn("", false)
 }
 
-func TestAnAccountLaunchLoadsOnlyTheJournalServerByAbsolutePathWithNoToken(t *testing.T) {
+func TestAnAccountStartLoadsOnlyTheJournalServerByAbsolutePathWithNoToken(t *testing.T) {
 	start := accountStartWith(&journalServer, "/protected/journal/bin/journal-hook claude")
 
 	files, err := ClaudeCode{}.SettingsFiles(start)
@@ -165,19 +165,19 @@ func TestAnAccountLaunchLoadsOnlyTheJournalServerByAbsolutePathWithNoToken(t *te
 	}
 }
 
-func TestAnAccountLaunchGetsTheMcpTimeoutsAndItsReference(t *testing.T) {
+func TestAnAccountStartGetsTheMcpTimeoutsAndItsReference(t *testing.T) {
 	environment := ClaudeCode{}.Environment(
-		[]string{"PATH=/usr/bin", "MCP_TIMEOUT=1", "JOURNAL_LAUNCH_REF=other"},
+		[]string{"PATH=/usr/bin", "MCP_TIMEOUT=1", "JOURNAL_START_REF=other"},
 		accountStartWith(&journalServer, ""),
 	)
 
 	if !slices.Equal(environment, []string{"PATH=/usr/bin", claudeCodeNormalBuffer, "MCP_TIMEOUT=15000",
-		"MCP_TOOL_TIMEOUT=30000", "JOURNAL_LAUNCH_REF=r1"}) {
+		"MCP_TOOL_TIMEOUT=30000", "JOURNAL_START_REF=r1"}) {
 		t.Fatalf("environment %v", environment)
 	}
 }
 
-func TestCliLaunchKeepsClaudeProtectionWithoutJournalMcp(t *testing.T) {
+func TestCliStartKeepsClaudeProtectionWithoutJournalMcp(t *testing.T) {
 	earlier := accountStartWith(&journalServer, "")
 	cli := accountStartWith(nil, "")
 	cli.Account.Transport = contracts.CliTransport
@@ -229,7 +229,7 @@ func TestAStandaloneRelayIsTheServersCommandWithNoScript(t *testing.T) {
 	t.Fatal("the start has no MCP configuration")
 }
 
-func TestAnAccountLaunchWithAnUnresolvedPathIsRefused(t *testing.T) {
+func TestAnAccountStartWithAnUnresolvedPathIsRefused(t *testing.T) {
 	for name, start := range map[string]contracts.Start{
 		"no server":        accountStartWith(nil, ""),
 		"empty relay":      accountStartWith(&contracts.JournalServer{Command: "/protected/bin/php"}, ""),
@@ -237,8 +237,8 @@ func TestAnAccountLaunchWithAnUnresolvedPathIsRefused(t *testing.T) {
 		"placeholder":      accountStartWith(&contracts.JournalServer{Command: "${PHP}", Relay: journalServer.Relay}, ""),
 		"bare hook":        accountStartWith(&journalServer, "journal-hook claude"),
 	} {
-		if _, err := (ClaudeCode{}).SettingsFiles(start); !errors.Is(err, errUnresolvedLaunchSetting) {
-			t.Fatalf("%s: %v, want errUnresolvedLaunchSetting", name, err)
+		if _, err := (ClaudeCode{}).SettingsFiles(start); !errors.Is(err, errUnresolvedStartSetting) {
+			t.Fatalf("%s: %v, want errUnresolvedStartSetting", name, err)
 		}
 	}
 }
@@ -254,7 +254,7 @@ func TestBareAndPermissionModeArgumentsAreRefused(t *testing.T) {
 func statusLineOf(t *testing.T, mode recording.Mode, protection, reader string) map[string]any {
 	t.Helper()
 	start := contracts.BaseStart{SettingsFolder: "/state/runtimes/r1", SessionID: "session", Account: &contracts.AccountStart{Folder: "/accounts/a", Protection: protection, JournalServer: &journalServer,
-		LaunchReference: "r1", StatusLine: reader}}.In(mode, "", false)
+		StartReference: "r1", StatusLine: reader}}.In(mode, "", false)
 	files, err := ClaudeCode{}.SettingsFiles(start)
 	if err != nil {
 		t.Fatal(err)

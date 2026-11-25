@@ -16,7 +16,7 @@ use Carbon\CarbonImmutable;
 
 /**
  * The rows Home read for one agent, each the latest of its kind: its live session, that session's runtime and
- * supervised start, the runtime's latest request, the agent's latest switch and its latest launch outcome.
+ * supervised start, the runtime's latest request, the agent's latest switch and its latest start outcome.
  */
 final readonly class AgentFacts
 {
@@ -26,7 +26,7 @@ final readonly class AgentFacts
         public SessionProcess|null $start,
         public DriverRequest|null $request,
         public DriverSwitch|null $switch,
-        public SessionStartOutcome|null $launch,
+        public SessionStartOutcome|null $startOutcome,
         public bool $waitsOnHelpers,
         public StartReadiness|null $readiness,
     ) {}
@@ -41,7 +41,7 @@ final readonly class AgentFacts
         $session = $this->session;
         $isOwnerStart = $session?->parent_session_id !== null;
 
-        $launchInProgress = $this->launch?->disposition === StartDisposition::Accepted
+        $startInProgress = $this->startOutcome?->disposition === StartDisposition::Accepted
             || in_array($this->start?->state, SessionProcessState::unresolved(), true);
 
         return new AgentEvidence(
@@ -53,9 +53,9 @@ final readonly class AgentFacts
             $session !== null && ! $isOwnerStart,
             $this->switch === null ? null : SwitchEvidence::of($this->switch),
             $this->request?->status,
-            $this->launch,
+            $this->startOutcome,
             $isResumable,
-            $session !== null && (($isOwnerStart && $launchInProgress) || $this->readiness?->isUnverified() === true),
+            $session !== null && (($isOwnerStart && $startInProgress) || $this->readiness?->isUnverified() === true),
             $this->runtime?->hasScreen() === true,
             $canStop && $session !== null,
             $this->waitsOnHelpers,

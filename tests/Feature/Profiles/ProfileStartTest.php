@@ -318,7 +318,7 @@ final class ProfileStartTest extends TestCase
             [DefaultDrivers::CODEX, DriverType::Headless, true, $codex->id],
             $this->recorded($started->request_id, (string) $started->replacement_session_id),
         );
-        $this->assertSame(DriverSwitchStage::LaunchFailed, $failed->refresh()->stage);
+        $this->assertSame(DriverSwitchStage::StartFailed, $failed->refresh()->stage);
     }
 
     private function resume(string $conversationId): StartReceipt

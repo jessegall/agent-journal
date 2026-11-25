@@ -8,7 +8,7 @@ import (
 // ContainerPlatform names the platform of a contained host's tools in reports and evidence.
 const ContainerPlatform = "linux-container"
 
-// ProtectedContainerPlatform names the agent container under the protected-account launch profile: the program and
+// ProtectedContainerPlatform names the agent container under the protected-account start profile: the program and
 // the commands the model runs are two users, so its items hold by other mechanisms than the program's own sandbox.
 const ProtectedContainerPlatform = "linux-container-protected"
 
@@ -30,7 +30,7 @@ func ContainedPlatform(ctx context.Context, containers Containers, seccomp strin
 	}
 }
 
-// ProtectedPlatform is the agent image under the protected-account launch profile. Its evidence is kept per agent
+// ProtectedPlatform is the agent image under the protected-account start profile. Its evidence is kept per agent
 // image like the standard container's, under its own key.
 func ProtectedPlatform(containers Containers) ProtectionPlatform {
 	return ProtectionPlatform{

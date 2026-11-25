@@ -9,14 +9,14 @@ use RuntimeException;
 use Throwable;
 
 /**
- * The parent's own helper whose agent is retired, so it cannot launch; its records are kept.
+ * The parent's own helper whose agent is retired, so it cannot start; its records are kept.
  */
 final class HelperRetired extends RuntimeException implements CommandRefusal
 {
     public static function forIdentity(string $identityId, Throwable $previous): self
     {
         return new self(sprintf(
-            'Helper %s is retired and cannot launch. Choose an eligible identity; its history is retained.',
+            'Helper %s is retired and cannot start. Choose an eligible identity; its history is retained.',
             $identityId,
         ), previous: $previous);
     }

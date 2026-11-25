@@ -92,16 +92,16 @@ type ContainerManifest struct {
 	IsAttachable bool `json:"isAttachable"`
 	// WorkspacePreparation is what the host fills or checks before the container mounts the workspace; nil locally.
 	WorkspacePreparation *WorkspacePreparation `json:"workspacePreparation"`
-	// LaunchProfile is how the container starts: standard, or protected-account, whose init starts as root to hand the
+	// StartProfile is how the container starts: standard, or protected-account, whose init starts as root to hand the
 	// sign-in to the program's own user; empty reads as standard.
-	LaunchProfile string `json:"launchProfile"`
+	StartProfile string `json:"startProfile"`
 	// Entrypoint is refused when set: the host alone chooses a container's init.
 	Entrypoint string `json:"entrypoint"`
 }
 
 const (
-	LaunchStandard         = "standard"
-	LaunchProtectedAccount = "protected-account"
+	StartStandard         = "standard"
+	StartProtectedAccount = "protected-account"
 	// protectedInit is the init a protected-account container starts with, never taken from a manifest.
 	protectedInit = "/opt/journal/bin/journal-init"
 	// initReadyLine is the one line the init prints once its program and executor run.
@@ -118,15 +118,15 @@ var protectedCapabilities = []string{"SETUID", "SETGID", "SETPCAP"}
 
 // IsProtected is whether the manifest starts with the protected-account profile.
 func (manifest ContainerManifest) IsProtected() bool {
-	return manifest.LaunchProfile == LaunchProtectedAccount
+	return manifest.StartProfile == StartProtectedAccount
 }
 
-// hasKnownProfile is whether the manifest names a launch profile the host knows.
+// hasKnownProfile is whether the manifest names a start profile the host knows.
 func (manifest ContainerManifest) hasKnownProfile() bool {
-	return manifest.LaunchProfile == "" || manifest.LaunchProfile == LaunchStandard || manifest.IsProtected()
+	return manifest.StartProfile == "" || manifest.StartProfile == StartStandard || manifest.IsProtected()
 }
 
-// startsAsProfile is whether the user and capabilities are exactly the ones its launch profile allows: a named user
+// startsAsProfile is whether the user and capabilities are exactly the ones its start profile allows: a named user
 // and none for standard; root with the three protected capabilities, a read-only root, no new privileges and an
 // account mount for protected-account.
 func (manifest ContainerManifest) startsAsProfile() bool {
@@ -252,7 +252,7 @@ func (manifest ContainerManifest) AccountFolder() string {
 }
 
 // IsSafe is whether the manifest may start a container: unprivileged, with no published ports or entrypoint, the
-// user and capabilities its launch profile allows, an exact image digest, security profiles that are one value each,
+// user and capabilities its start profile allows, an exact image digest, security profiles that are one value each,
 // and only the mounts the rules allow.
 func (manifest ContainerManifest) IsSafe(rules ContainerRules) bool {
 	isConfined := !manifest.IsPrivileged && len(manifest.PublishedPorts) == 0 && manifest.Entrypoint == "" &&
@@ -266,7 +266,7 @@ func (manifest ContainerManifest) IsSafe(rules ContainerRules) bool {
 // CreateOptions are what the daemon creates the container from: its exact image digest, the unprivileged user, a
 // read-only root, no capabilities, its mounts, its security profiles, the bounded resources and the labels that let
 // reconciliation find it again.
-func (manifest ContainerManifest) CreateOptions(name string, labels LaunchLabels, rules ContainerRules) (client.ContainerCreateOptions, error) {
+func (manifest ContainerManifest) CreateOptions(name string, labels StartLabels, rules ContainerRules) (client.ContainerCreateOptions, error) {
 	if !manifest.IsSafe(rules) || !manifest.bindsOnlyAccount(labels.Account) {
 		return client.ContainerCreateOptions{}, ErrManifestUnsafe
 	}
@@ -543,7 +543,7 @@ func (containers Containers) Create(
 	ctx context.Context,
 	manifest ContainerManifest,
 	name string,
-	labels LaunchLabels,
+	labels StartLabels,
 	process ContainerProcess,
 ) (string, error) {
 	if _, err := manifest.CreateOptions(name, labels, containers.Rules); err != nil {
@@ -588,7 +588,7 @@ func (containers Containers) Create(
 
 // EnsureNetwork makes the session's own network when the agent daemon lacks it, labelled with the installation and
 // the session, so a container of the session shares no network with another.
-func (containers Containers) EnsureNetwork(ctx context.Context, name string, labels LaunchLabels) error {
+func (containers Containers) EnsureNetwork(ctx context.Context, name string, labels StartLabels) error {
 	if _, err := containers.Daemon.NetworkInspect(ctx, name, client.NetworkInspectOptions{}); err == nil {
 		return nil
 	}
@@ -645,8 +645,8 @@ func (containers Containers) hasVolume(ctx context.Context, name string) bool {
 }
 
 // EnsureVolumes makes each named volume of the manifest that the agent daemon lacks, labelled with the installation
-// and the session but no launch, so a launch's cleanup keeps it; a volume that must exist and does not refuses.
-func (containers Containers) EnsureVolumes(ctx context.Context, manifest ContainerManifest, labels LaunchLabels) error {
+// and the session but no start, so a start's cleanup keeps it; a volume that must exist and does not refuses.
+func (containers Containers) EnsureVolumes(ctx context.Context, manifest ContainerManifest, labels StartLabels) error {
 	for _, mounted := range manifest.Mounts {
 		if mounted.Type != MountVolume || containers.hasVolume(ctx, mounted.Source) {
 			continue

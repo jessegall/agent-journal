@@ -53,15 +53,13 @@ use App\Events\Sessions\DriverRequestWakeAcknowledged;
 use App\Events\Sessions\DriverRequestWakeClaimed;
 use App\Events\Sessions\DriverSwitchCancelled;
 use App\Events\Sessions\DriverSwitchConfirmed;
-use App\Events\Sessions\DriverSwitchStartFailed;
 use App\Events\Sessions\DriverSwitchPreflighted;
 use App\Events\Sessions\DriverSwitchRefused;
+use App\Events\Sessions\DriverSwitchStartFailed;
 use App\Events\Sessions\DriverSwitchStartRequested;
 use App\Events\Sessions\DriverSwitchStopped;
 use App\Events\Sessions\DriverSwitchStopRequested;
 use App\Events\Sessions\DriverTurnFinished;
-use App\Events\Sessions\SessionStartCancelled;
-use App\Events\Sessions\SessionStartEnded;
 use App\Events\Sessions\MenuEntryMarkedStale;
 use App\Events\Sessions\MenuEntryProven;
 use App\Events\Sessions\MenuEntryRetired;
@@ -77,6 +75,8 @@ use App\Events\Sessions\SessionProcessOutputAdvanced;
 use App\Events\Sessions\SessionProcessSeenRunning;
 use App\Events\Sessions\SessionProcessStopped;
 use App\Events\Sessions\SessionRequestRefused;
+use App\Events\Sessions\SessionStartCancelled;
+use App\Events\Sessions\SessionStartEnded;
 use App\Events\Sessions\SessionStateChanged;
 use App\Events\Sessions\SessionTokenIssued;
 use App\Events\Sessions\SessionTokenRevoked;
@@ -307,7 +307,7 @@ return [
     ],
     DriverSwitchStartFailed::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'DriverSwitch::failLaunch',
+        'owner' => 'DriverSwitch::failStart',
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new DriverSwitchStartFailed('switch', 'the start timed out'),

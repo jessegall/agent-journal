@@ -12,11 +12,11 @@ import (
 	"github.com/moby/moby/client"
 )
 
-// LaunchLabels name a container launch's resources, so reconciliation finds exactly those of this installation and
+// StartLabels name a container start's resources, so reconciliation finds exactly those of this installation and
 // leaves every other container alone.
-type LaunchLabels struct {
+type StartLabels struct {
 	Installation string
-	Launch       string
+	Start        string
 	Session      string
 	// Account is the plain id of the account folder the container binds, so every container that binds an account's
 	// folder can be found; empty for one that binds none.
@@ -25,16 +25,16 @@ type LaunchLabels struct {
 
 const (
 	installationLabel = "journal.installation"
-	launchLabel       = "journal.launch"
+	startLabel        = "journal.start"
 	sessionLabel      = "journal.session"
 	accountLabel      = "journal.account"
 )
 
 // asMap are the labels as the daemon takes them; the account's only when the container binds one.
-func (labels LaunchLabels) asMap() map[string]string {
+func (labels StartLabels) asMap() map[string]string {
 	named := map[string]string{
 		installationLabel: labels.Installation,
-		launchLabel:       labels.Launch,
+		startLabel:        labels.Start,
 		sessionLabel:      labels.Session,
 	}
 	if labels.Account != "" {
@@ -44,7 +44,7 @@ func (labels LaunchLabels) asMap() map[string]string {
 	return named
 }
 
-// CleanupStep mirrors App\Agents\Enums\CleanupStep: one transient resource of an ended launch.
+// CleanupStep mirrors App\Agents\Enums\CleanupStep: one transient resource of an ended start.
 type CleanupStep string
 
 const (
@@ -53,7 +53,7 @@ const (
 	CleanupRuntime   CleanupStep = "runtime"
 )
 
-// PendingCleanup mirrors one entry of the journal's pending cleanups: the ended launch's session and what is left.
+// PendingCleanup mirrors one entry of the journal's pending cleanups: the ended start's session and what is left.
 type PendingCleanup struct {
 	SessionID string        `json:"session_id"`
 	Remaining []CleanupStep `json:"remaining"`
@@ -67,9 +67,9 @@ type CleanupReport struct {
 	Failure       string        `json:"failure,omitempty"`
 }
 
-// LaunchCleanup removes an ended launch's container, launch network and ephemeral runtime folder. The workspace and
+// StartCleanup removes an ended start's container, start network and ephemeral runtime folder. The workspace and
 // its named volumes are never among them, and no account is touched.
-type LaunchCleanup struct {
+type StartCleanup struct {
 	Containers     Containers
 	Installation   InstallationName
 	RuntimeFolders string
@@ -79,7 +79,7 @@ type LaunchCleanup struct {
 // CleanUp removes what the pending cleanup still lists, the container first, since its network and folder are in
 // use until it is gone. Something already gone counts as removed, so a second pass changes nothing more; the first
 // failure ends the pass and is reported, to be retried.
-func (cleanup LaunchCleanup) CleanUp(ctx context.Context, pending PendingCleanup) CleanupReport {
+func (cleanup StartCleanup) CleanUp(ctx context.Context, pending PendingCleanup) CleanupReport {
 	report := CleanupReport{Removed: []CleanupStep{}}
 	name := cleanup.Installation.ResourceName(pending.SessionID)
 	removals := map[CleanupStep]func() error{
@@ -145,7 +145,7 @@ const (
 	removalTries = 40
 )
 
-// RemoveNetwork removes the launch network; a network already gone counts as removed.
+// RemoveNetwork removes the start network; a network already gone counts as removed.
 func (containers Containers) RemoveNetwork(ctx context.Context, name string) error {
 	_, err := containers.Daemon.NetworkRemove(ctx, name, client.NetworkRemoveOptions{})
 
@@ -237,7 +237,7 @@ func SweepOrphans(
 	return outcomes, nil
 }
 
-// CleanupJournal is the journal's side of launch cleanups: the ones this host still owes, and each pass's report.
+// CleanupJournal is the journal's side of start cleanups: the ones this host still owes, and each pass's report.
 type CleanupJournal interface {
 	PendingCleanups(ctx context.Context, answer any) error
 	NotifyCleanup(ctx context.Context, sessionID string, report any) error
@@ -245,7 +245,7 @@ type CleanupJournal interface {
 
 // RunPending makes one pass over every cleanup the journal says this host owes and reports each; a pass that
 // failed is reported with its failure and offered again by the journal on the next round.
-func (cleanup LaunchCleanup) RunPending(ctx context.Context, journal CleanupJournal) error {
+func (cleanup StartCleanup) RunPending(ctx context.Context, journal CleanupJournal) error {
 	var answer struct {
 		Pending []PendingCleanup `json:"pending"`
 	}

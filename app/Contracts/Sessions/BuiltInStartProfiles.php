@@ -26,7 +26,7 @@ interface BuiltInStartProfiles
     public function policyFor(string $profileKey): StartPolicy;
 
     /**
-     * How a start of the profile runs when neither the launch nor the agent names a driver type.
+     * How a start of the profile runs when neither the start nor the agent names a driver type.
      */
     public function defaultDriverTypeOf(string $profileKey): DriverType;
 }

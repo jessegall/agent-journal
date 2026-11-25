@@ -141,7 +141,7 @@ final class HelperSelectionTest extends TestCase
             $this->parent,
             'Review',
             [],
-            self::launchFor('request-busy'),
+            self::sessionStartFor('request-busy'),
         );
 
         $this->assertSame([], $this->candidates(DefaultDrivers::CODEX, self::LUNA));
@@ -202,7 +202,7 @@ final class HelperSelectionTest extends TestCase
             $this->parent,
             'Review',
             [],
-            self::launchFor((string) Str::ulid()),
+            self::sessionStartFor((string) Str::ulid()),
         );
 
         $this->travelTo($finishedAt);

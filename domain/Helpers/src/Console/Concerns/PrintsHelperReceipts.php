@@ -29,7 +29,7 @@ trait PrintsHelperReceipts
                 $receipt->driver,
                 $receipt->actualModel,
             ))
-            ->line("Launch {$receipt->launchReference}, runs {$receipt->executionMode}");
+            ->line("Start {$receipt->startReference}, runs {$receipt->executionMode}");
     }
 
     /**

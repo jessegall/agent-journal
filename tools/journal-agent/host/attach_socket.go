@@ -237,7 +237,7 @@ func (socket *AttachSocket) terminalFor(request AttachRequest) (*hostTerminal, e
 }
 
 // ScreenFor gives the screen of the runtime's program with the layout it is classified by, while the host runs it; a
-// program that ended has none, and a relaunch gets a new one.
+// program that ended has none, and a restart gets a new one.
 func (socket *AttachSocket) ScreenFor(runtimeID string) (RuntimeScreen, bool) {
 	socket.mutex.Lock()
 	defer socket.mutex.Unlock()
@@ -261,7 +261,7 @@ func (socket *AttachSocket) ScreenFor(runtimeID string) (RuntimeScreen, bool) {
 	return runtimeScreen, true
 }
 
-// forget drops the runtime's terminal once its program ended, unless a relaunch already put a new one in its place;
+// forget drops the runtime's terminal once its program ended, unless a restart already put a new one in its place;
 // a contained attachment that ended is remembered as lost, with its container instance.
 func (socket *AttachSocket) forget(runtimeID string, ended *hostTerminal) {
 	socket.mutex.Lock()

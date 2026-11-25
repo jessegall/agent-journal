@@ -10,7 +10,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // A viewer dismissed one version of an agent's launch outcome, the outcome of one start request.
+        // A viewer dismissed one version of an agent's start outcome, the outcome of one start request.
         Schema::create('session_outcome_dismissals', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->string('viewer_type', 16);

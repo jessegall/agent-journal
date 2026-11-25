@@ -147,7 +147,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Keeps the label of the driver the session was pinned to at launch, which it shows for good, even after that
+     * Keeps the label of the driver the session was pinned to at start, which it shows for good, even after that
      * registration is gone.
      */
     public function keepDriverLabel(string $label): void
@@ -427,20 +427,20 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The running sessions launched for an owner's work, oldest first.
+     * The running sessions started for an owner's work, oldest first.
      *
      * @return list<self>
      */
-    public static function runningLaunches(int $limit): array
+    public static function runningStarts(int $limit): array
     {
-        $launches = self::query()
+        $starts = self::query()
             ->running()
-            ->launched()
+            ->started()
             ->oldestFirst()
             ->readExactly($limit)
             ->get();
 
-        return array_values($launches->all());
+        return array_values($starts->all());
     }
 
     /**
@@ -581,12 +581,12 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The sessions a launch started, whose start record names its owner.
+     * The sessions a start started, whose start record names its owner.
      *
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function launched(Builder $query): void
+    protected function started(Builder $query): void
     {
         $query->whereIn('id', SessionRequest::query()->withOwner()->sessionIds());
     }

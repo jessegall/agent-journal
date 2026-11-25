@@ -115,11 +115,11 @@ final class AgentInboxTest extends TestCase
         $this->assertNull(AgentSession::selectedMessage($caller->session->id));
     }
 
-    public function test_a_launch_keeps_the_source_it_captured_when_the_parent_selects_another_message(): void
+    public function test_a_start_keeps_the_source_it_captured_when_the_parent_selects_another_message(): void
     {
         $parent = TestStart::start();
         $actor = ActorIdentity::of($parent->agent);
-        $first = $this->askInboxOf($actor, 'The launch source.');
+        $first = $this->askInboxOf($actor, 'The start source.');
         $second = $this->askInboxOf($actor, 'An unrelated next request.');
         $parent->startRequest($this->app);
         $this->selectMessage($parent->session->id, $first->id);

@@ -7,7 +7,7 @@ namespace App\Http\Requests\Agents;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * The key a cancellation of a launch is sent under once; the agent and its session come from the route.
+ * The key a cancellation of a start is sent under once; the agent and its session come from the route.
  */
 final class CancelSessionStartRequest extends FormRequest
 {

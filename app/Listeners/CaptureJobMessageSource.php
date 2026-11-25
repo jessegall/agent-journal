@@ -11,7 +11,7 @@ use App\Models\Agents\AgentSession;
 use App\Models\Messages\Message;
 
 /**
- * Captures a launch's authorized message source in the session transaction.
+ * Captures a start's authorized message source in the session transaction.
  */
 #[InCommandTransaction]
 final readonly class CaptureJobMessageSource implements Listener

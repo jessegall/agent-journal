@@ -6,9 +6,9 @@ import { newRequestId } from "@kit/requestId";
 import type { AgentOptionData, StatusActionData } from "@generated/types/chat";
 import {
   accountsPage,
-  cancelLaunch,
+  cancelStart,
   checkStart,
-  dismissLaunchOutcome,
+  dismissStartOutcome,
   recheck,
   retry,
   interruptTurn,
@@ -29,7 +29,7 @@ import StopConfirmation from "./StopConfirmation.vue";
  * What the chosen agent's status offers now, from the server's projection: each action maps to its route or dialog.
  * Start and Resume open the session form, Switch its switch form; Retry and Check and switch follow the
  * switch; Check status reads the agent again; Check capacity reads the host's room without reserving; Sign in opens
- * Accounts; Dismiss hides the launch outcome for this viewer; Cancel start cancels the launch. Each agent keeps its
+ * Accounts; Dismiss hides the start outcome for this viewer; Cancel start cancels the start. Each agent keeps its
  * own controls: its open dialog and a switch under way survive switching chats and a reload in this tab.
  */
 const props = defineProps<{ agent: AgentOptionData }>();
@@ -134,7 +134,7 @@ function dismiss(): void {
 
   pendingType.value = "dismiss";
   sendPageAction(
-    dismissLaunchOutcome(props.agent.id),
+    dismissStartOutcome(props.agent.id),
     { requestId: operation.id, version: operation.stage },
     { only: [], onFinish: () => (pendingType.value = null) },
   );
@@ -147,7 +147,7 @@ function cancelStart(): void {
 
   pendingType.value = "cancel-start";
   sendPageAction(
-    cancelLaunch({ agent: props.agent.id, session: props.agent.sessionId }),
+    cancelStart({ agent: props.agent.id, session: props.agent.sessionId }),
     { requestId: newRequestId() },
     { only: [], onFinish: () => (pendingType.value = null) },
   );

@@ -1,5 +1,5 @@
 // Package userservice keeps one binding's relay available with the user's own service manager: one launchd
-// LaunchAgent in the macOS login domain, or one systemd user unit on Linux, run only as that user. There is no
+// StartAgent in the macOS login domain, or one systemd user unit on Linux, run only as that user. There is no
 // system-wide daemon and no lingering; without a service manager the binding stays on demand.
 package userservice
 
@@ -85,9 +85,9 @@ func (service Service) definition() (string, []byte, []string, error) {
 	arguments := []string{service.Program, "relay", "--binding", service.BindingID, "--state", service.StateFolder}
 	switch {
 	case runtime.GOOS == "darwin" && hasProgram("launchctl"):
-		path := filepath.Join(service.Home, "Library", "LaunchAgents", service.Label()+".plist")
+		path := filepath.Join(service.Home, "Library", "StartAgents", service.Label()+".plist")
 		load := []string{"launchctl", "bootstrap", "gui/" + strconv.Itoa(os.Getuid()), path}
-		return path, launchAgent(service.Label(), arguments), load, nil
+		return path, startAgent(service.Label(), arguments), load, nil
 	case runtime.GOOS == "linux" && hasProgram("systemctl"):
 		path := filepath.Join(service.Home, ".config", "systemd", "user", service.Label()+".service")
 		load := []string{"systemctl", "--user", "enable", "--now", service.Label() + ".service"}
@@ -111,7 +111,7 @@ func hasProgram(name string) bool {
 	return err == nil
 }
 
-func launchAgent(label string, arguments []string) []byte {
+func startAgent(label string, arguments []string) []byte {
 	var plist bytes.Buffer
 	plist.WriteString(`<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">

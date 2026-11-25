@@ -12,7 +12,7 @@ use App\Enums\Sessions\StartReadiness;
 
 /**
  * Every fact the server holds of one agent that its status is decided from: retirement, the live session, its
- * supervised start and runtime, the latest switch, the runtime's latest request and the latest launch outcome the
+ * supervised start and runtime, the latest switch, the runtime's latest request and the latest start outcome the
  * viewer has not dismissed. A fact the server does not hold is null, never guessed.
  */
 final readonly class AgentEvidence
@@ -26,9 +26,9 @@ final readonly class AgentEvidence
         public bool $expectsRuntime,
         public SwitchEvidence|null $switch,
         public DriverRequestStatus|null $request,
-        public SessionStartOutcome|null $launch,
+        public SessionStartOutcome|null $start,
         public bool $isResumable,
-        public bool $canCancelLaunch,
+        public bool $canCancelStart,
         public bool $hasTerminal = false,
         public bool $canStop = false,
         public bool $waitsOnHelpers = false,
@@ -43,10 +43,10 @@ final readonly class AgentEvidence
     }
 
     /**
-     * Whether the viewer has not dismissed the refusal of the agent's latest launch.
+     * Whether the viewer has not dismissed the refusal of the agent's latest start.
      */
-    public function isLaunchRefusalShown(): bool
+    public function isStartRefusalShown(): bool
     {
-        return $this->launch?->disposition === StartDisposition::Refused;
+        return $this->start?->disposition === StartDisposition::Refused;
     }
 }

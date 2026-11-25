@@ -11,7 +11,7 @@ use App\Values\OperationSupport;
 use App\Values\SupportSnapshot;
 
 /**
- * A third-party test driver that runs but offers no hook methods, so a profile that needs them cannot launch it.
+ * A third-party test driver that runs but offers no hook methods, so a profile that needs them cannot start it.
  */
 final readonly class AcmeReaderCapabilities implements DriverCapabilities
 {

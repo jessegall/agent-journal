@@ -8,7 +8,7 @@ use App\Enums\Drivers\DriverSwitchStage;
 
 /**
  * What Home offers for an agent: open its live session's terminal, start or resume one when it is idle, switch a live one to
- * another driver, retry a switch whose launch failed, or recheck one whose stop or start is unconfirmed.
+ * another driver, retry a switch whose start failed, or recheck one whose stop or start is unconfirmed.
  */
 enum AgentAction: string
 {
@@ -33,7 +33,7 @@ enum AgentAction: string
     ): array {
         return match (true) {
             $isRetired => [],
-            $switchStage === DriverSwitchStage::LaunchFailed => [
+            $switchStage === DriverSwitchStage::StartFailed => [
                 self::Retry,
                 self::Start,
             ],

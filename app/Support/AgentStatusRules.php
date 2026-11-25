@@ -154,7 +154,7 @@ final class AgentStatusRules
                 $operation,
                 $reconcileReason,
             ),
-            DriverSwitchStage::LaunchFailed => self::labelled(
+            DriverSwitchStage::StartFailed => self::labelled(
                 SessionState::Failed,
                 $stage->label(),
                 $evidence,
@@ -270,7 +270,7 @@ final class AgentStatusRules
 
         $actions = [StatusAction::of(StatusActionType::CheckStatus)];
 
-        if ($evidence->canCancelLaunch) {
+        if ($evidence->canCancelStart) {
             $actions[] = StatusAction::of(StatusActionType::CancelStart);
         }
 
@@ -278,7 +278,7 @@ final class AgentStatusRules
     }
 
     /**
-     * Whether the host refused the session's wake without proving it never started a process: the launch stays for
+     * Whether the host refused the session's wake without proving it never started a process: the start stays for
      * reconciliation, neither starting nor ended.
      */
     private static function isWakeRefused(DriverRequestStatus|null $request): bool
@@ -302,17 +302,17 @@ final class AgentStatusRules
         );
     }
 
-    // No live session: the latest launch decides, else the agent is stopped and may start.
+    // No live session: the latest start decides, else the agent is stopped and may start.
     private static function withoutSession(AgentEvidence $evidence, StartRemedyWords $words): AgentStatus
     {
-        $launch = $evidence->launch;
+        $start = $evidence->start;
 
-        if ($launch?->disposition === StartDisposition::Accepted) {
+        if ($start?->disposition === StartDisposition::Accepted) {
             return self::starting($evidence);
         }
 
-        if ($launch?->disposition === StartDisposition::Refused) {
-            return self::refused($launch, $words);
+        if ($start?->disposition === StartDisposition::Refused) {
+            return self::refused($start, $words);
         }
 
         $actions = [StatusAction::of(StatusActionType::Start)];
@@ -326,28 +326,28 @@ final class AgentStatusRules
 
     private static function starting(AgentEvidence $evidence): AgentStatus
     {
-        $launch = $evidence->launch;
+        $start = $evidence->start;
 
         // A start past the point it can be cancelled has a session, which is stopped instead: no state is a dead end.
         $actions = match (true) {
-            $evidence->canCancelLaunch => [StatusAction::of(StatusActionType::CancelStart)],
+            $evidence->canCancelStart => [StatusAction::of(StatusActionType::CancelStart)],
             $evidence->canStop && $evidence->hasLiveSession() => [StatusAction::of(StatusActionType::Stop)],
             default => [],
         };
 
-        $operation = $launch === null ? null : new StatusOperation(
-            $launch->requestId,
+        $operation = $start === null ? null : new StatusOperation(
+            $start->requestId,
             'start',
-            $launch->version(),
+            $start->version(),
             1,
         );
 
         return self::plain(SessionState::Starting, $evidence, $actions, $operation);
     }
 
-    private static function refused(SessionStartOutcome $launch, StartRemedyWords $words): AgentStatus
+    private static function refused(SessionStartOutcome $start, StartRemedyWords $words): AgentStatus
     {
-        $reason = StartRefusalCodes::reasonOf((string) $launch->refusalReason);
+        $reason = StartRefusalCodes::reasonOf((string) $start->refusalReason);
         $remedy = $reason->remedy();
 
         $state = match ($reason) {
@@ -371,7 +371,7 @@ final class AgentStatusRules
             $state->label(),
             $reason->explanation(),
             $words->textOf($remedy),
-            new StatusOperation($launch->requestId, 'start', $launch->version(), 1),
+            new StatusOperation($start->requestId, 'start', $start->version(), 1),
             null,
             null,
             [
@@ -420,7 +420,7 @@ final class AgentStatusRules
 
     /**
      * A status beside the current session, with the refused command that stays shown until it is replaced or
-     * dismissed; only a launch refusal is the viewer's to dismiss.
+     * dismissed; only a start refusal is the viewer's to dismiss.
      *
      * @param  list<StatusAction>  $actions
      */
@@ -434,7 +434,7 @@ final class AgentStatusRules
     ): AgentStatus {
         $commandOutcome = self::commandOutcomeOf($evidence);
 
-        $dismiss = $commandOutcome !== null && $evidence->isLaunchRefusalShown()
+        $dismiss = $commandOutcome !== null && $evidence->isStartRefusalShown()
             ? [StatusAction::of(StatusActionType::Dismiss)]
             : [];
 
@@ -455,7 +455,7 @@ final class AgentStatusRules
     }
 
     /**
-     * The refused command shown beside a live session: a refused switch, or a refused launch the viewer has not
+     * The refused command shown beside a live session: a refused switch, or a refused start the viewer has not
      * dismissed.
      */
     private static function commandOutcomeOf(AgentEvidence $evidence): string|null
@@ -468,7 +468,7 @@ final class AgentStatusRules
             return 'Switch refused';
         }
 
-        if ($evidence->isLaunchRefusalShown()) {
+        if ($evidence->isStartRefusalShown()) {
             return 'Start refused';
         }
 

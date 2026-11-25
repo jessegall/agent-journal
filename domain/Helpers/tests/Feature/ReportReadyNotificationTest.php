@@ -66,7 +66,7 @@ final class ReportReadyNotificationTest extends TestCase
             $parent,
             'Write it down',
             [],
-            self::launchFor((string) Str::ulid()),
+            self::sessionStartFor((string) Str::ulid()),
         );
     }
 

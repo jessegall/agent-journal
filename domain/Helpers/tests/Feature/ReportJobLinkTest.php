@@ -106,7 +106,7 @@ final class ReportJobLinkTest extends TestCase
             $this->parent,
             'Write it down',
             [],
-            self::launchFor((string) Str::ulid()),
+            self::sessionStartFor((string) Str::ulid()),
         );
     }
 

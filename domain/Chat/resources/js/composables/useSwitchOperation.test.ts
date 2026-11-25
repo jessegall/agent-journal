@@ -130,7 +130,7 @@ describe("useSwitchOperation", () => {
   });
 
   it("runs one retry at a time, shows Checking for a recheck, and follows the same switch until it is over", async () => {
-    showSwitch("Launch failed", true);
+    showSwitch("Start failed", true);
     const { operation } = mountSwitch();
 
     operation.retry("/agents/switches/switch-1/recheck", "key-1", "Checking");
@@ -152,7 +152,7 @@ describe("useSwitchOperation", () => {
   });
 
   it("shows the reason a retry was refused", () => {
-    showSwitch("Launch failed", true);
+    showSwitch("Start failed", true);
     const { operation } = mountSwitch();
 
     operation.retry("/agents/switches/switch-1/retry", "key-1", "Retrying");

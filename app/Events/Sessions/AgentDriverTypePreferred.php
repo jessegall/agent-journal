@@ -7,7 +7,7 @@ namespace App\Events\Sessions;
 use App\Enums\Drivers\DriverType;
 
 /**
- * An agent's launches use this driver type from now on when they name none.
+ * An agent's starts use this driver type from now on when they name none.
  */
 final readonly class AgentDriverTypePreferred extends SessionEvent
 {

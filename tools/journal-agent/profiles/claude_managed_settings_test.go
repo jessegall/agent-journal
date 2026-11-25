@@ -43,10 +43,10 @@ func readManagedSettings(t *testing.T) managedSettings {
 	return settings
 }
 
-// The managed policy ignores every rule and hook a launch's own settings carry, so it must hold the launch's rules
+// The managed policy ignores every rule and hook a start's own settings carry, so it must hold the start's rules
 // itself: the same delegation and nested-program denies, the same allow list with file tools scoped to the workspace,
 // the journal's MCP tools and its hook on every event.
-func TestTheManagedPolicyCarriesEveryRuleAndHookOfTheLaunch(t *testing.T) {
+func TestTheManagedPolicyCarriesEveryRuleAndHookOfTheStart(t *testing.T) {
 	settings := readManagedSettings(t)
 
 	if !settings.AllowManagedPermissionRulesOnly || !settings.AllowManagedHooksOnly || !settings.AllowManagedMcpServersOnly {

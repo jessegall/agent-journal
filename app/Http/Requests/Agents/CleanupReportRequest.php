@@ -10,7 +10,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
- * An authenticated host's pass over one ended launch's cleanup: the resources it removed or found gone, the dirty
+ * An authenticated host's pass over one ended start's cleanup: the resources it removed or found gone, the dirty
  * workspace it kept, and why a deletion failed.
  */
 final class CleanupReportRequest extends FormRequest

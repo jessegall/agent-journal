@@ -19,7 +19,7 @@ final readonly class CancelSessionStartHandler implements CommandHandler
     ) {}
 
     /**
-     * Answers whether a runtime was told to stop: a launch whose runtime never opened has nothing to stop.
+     * Answers whether a runtime was told to stop: a start whose runtime never opened has nothing to stop.
      */
     public function handle(CancelSessionStartCommand $command): bool
     {

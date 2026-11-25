@@ -16,7 +16,7 @@ import (
 type SessionContainer struct {
 	Containers Containers
 	Name       string
-	Labels     LaunchLabels
+	Labels     StartLabels
 }
 
 // StopSeconds bounds how long a session container's program gets to exit before Docker kills it.

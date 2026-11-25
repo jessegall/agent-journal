@@ -36,7 +36,7 @@ final class HelperRecordsTest extends TestCase
             $parent,
             'Read the plan',
             ['message:1'],
-            self::launchFor('request-1'),
+            self::sessionStartFor('request-1'),
         );
 
         $this->actAsUser('another');
@@ -79,7 +79,7 @@ final class HelperRecordsTest extends TestCase
             $parent,
             'Review',
             [],
-            self::launchFor('request-2'),
+            self::sessionStartFor('request-2'),
         );
 
         $job->addSteering('Look at the tests too');

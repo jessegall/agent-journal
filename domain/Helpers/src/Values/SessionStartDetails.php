@@ -7,7 +7,7 @@ namespace Domain\Helpers\Values;
 use App\Enums\Agents\ConversationModeType;
 
 /**
- * How a dispatch launched one job, kept with the job so its receipt reads the same after a parent restart: the
+ * How a dispatch started one job, kept with the job so its receipt reads the same after a parent restart: the
  * request and the fingerprint of what it asked, the profile revision, whether the identity was new, whether the work
  * had to be independent, and the conversation it asked for with the reason.
  */

@@ -97,7 +97,7 @@ final class HelperJobsWindowTest extends TestCase
                 $parent,
                 $brief,
                 [],
-                self::launchFor(hash('xxh64', $brief)),
+                self::sessionStartFor(hash('xxh64', $brief)),
             ),
             $briefs,
         );

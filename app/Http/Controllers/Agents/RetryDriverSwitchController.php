@@ -10,7 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
 /**
- * Retries the launch of a switch that failed, with its own request and target.
+ * Retries the start of a switch that failed, with its own request and target.
  */
 final readonly class RetryDriverSwitchController
 {

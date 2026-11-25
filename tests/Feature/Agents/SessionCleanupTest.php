@@ -22,8 +22,8 @@ use App\Models\Sessions\SessionPolicy;
 use App\Models\Sessions\SessionRequest;
 use App\Support\ActorIdentity;
 use App\Support\HeartbeatService;
-use App\Support\SessionStartLimits;
 use App\Support\RecordIdentity;
+use App\Support\SessionStartLimits;
 use App\Values\CleanupReport;
 use App\Values\ExecutionBudgets;
 use App\Values\HostCapacity;
@@ -40,9 +40,9 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * An ended container launch is cleaned up durably: a full pass removes its transient resources and only
+ * An ended container start is cleaned up durably: a full pass removes its transient resources and only
  * then releases its capacity, a failed pass keeps the dirty workspace as the recovery location and retries, a repeated
- * pass changes nothing more, and a launch past its wall budget or from a revoked revision is stopped.
+ * pass changes nothing more, and a start past its wall budget or from a revoked revision is stopped.
  */
 #[TimeLimit(seconds: 4, reason: 'It starts test agent sessions and opens their runtimes.')]
 final class SessionCleanupTest extends TestCase
@@ -52,55 +52,55 @@ final class SessionCleanupTest extends TestCase
 
     private const array ALL_STEPS = [CleanupStep::Container, CleanupStep::Network, CleanupStep::Runtime];
 
-    public function test_a_full_pass_removes_the_launch_resources_and_then_releases_its_capacity(): void
+    public function test_a_full_pass_removes_the_start_resources_and_then_releases_its_capacity(): void
     {
-        $launch = $this->endedContainerLaunch();
+        $start = $this->endedContainerStart();
 
-        $this->assertSame(CleanupState::Pending, $this->cleanupOf($launch)->state);
-        $this->assertSame(ReservationState::Reserved, $this->reservationOf($launch)->state);
+        $this->assertSame(CleanupState::Pending, $this->cleanupOf($start)->state);
+        $this->assertSame(ReservationState::Reserved, $this->reservationOf($start)->state);
 
-        $state = $this->notify($launch, new CleanupReport(self::ALL_STEPS, null, null));
+        $state = $this->notify($start, new CleanupReport(self::ALL_STEPS, null, null));
 
         $this->assertSame(CleanupState::Done, $state);
-        $this->assertSame(ReservationState::Released, $this->reservationOf($launch)->state);
-        $this->assertNull($this->cleanupOf($launch)->recovery_location);
+        $this->assertSame(ReservationState::Released, $this->reservationOf($start)->state);
+        $this->assertNull($this->cleanupOf($start)->recovery_location);
     }
 
-    public function test_a_crashed_dirty_launch_keeps_its_workspace_and_a_repeated_pass_changes_nothing(): void
+    public function test_a_crashed_dirty_start_keeps_its_workspace_and_a_repeated_pass_changes_nothing(): void
     {
-        $launch = $this->endedContainerLaunch();
+        $start = $this->endedContainerStart();
 
         $failed = new CleanupReport(
             [CleanupStep::Container],
             '/workspaces/helper-7',
             'removing the network failed: daemon busy',
         );
-        $this->assertSame(CleanupState::Pending, $this->notify($launch, $failed));
-        $this->assertSame(ReservationState::Reserved, $this->reservationOf($launch)->state);
-        $pending = $this->cleanupOf($launch);
+        $this->assertSame(CleanupState::Pending, $this->notify($start, $failed));
+        $this->assertSame(ReservationState::Reserved, $this->reservationOf($start)->state);
+        $pending = $this->cleanupOf($start);
         $this->assertSame('/workspaces/helper-7', $pending->recovery_location);
         $this->assertSame([CleanupStep::Network, CleanupStep::Runtime], $pending->remainingSteps());
 
         $retried = new CleanupReport([CleanupStep::Network, CleanupStep::Runtime], null, null);
-        $this->notify($launch, $retried);
+        $this->notify($start, $retried);
         $again = new CleanupReport(self::ALL_STEPS, null, 'late failure');
-        $this->assertSame(CleanupState::Done, $this->notify($launch, $again));
+        $this->assertSame(CleanupState::Done, $this->notify($start, $again));
 
-        $done = $this->cleanupOf($launch);
+        $done = $this->cleanupOf($start);
         $this->assertSame(1, $done->attempts);
         $this->assertNull($done->last_error);
         $this->assertSame('/workspaces/helper-7', $done->recovery_location);
     }
 
-    public function test_a_launch_that_never_opened_a_runtime_releases_its_capacity_at_once(): void
+    public function test_a_start_that_never_opened_a_runtime_releases_its_capacity_at_once(): void
     {
-        $launch = TestStart::start('writing-helper');
-        $launch->openStack($this->app);
-        $this->reserve($launch);
+        $start = TestStart::start('writing-helper');
+        $start->openStack($this->app);
+        $this->reserve($start);
 
-        $this->app->make(HeartbeatService::class)->markExited($launch->session, 'exit 1');
+        $this->app->make(HeartbeatService::class)->markExited($start->session, 'exit 1');
 
-        $this->assertSame(ReservationState::Released, $this->reservationOf($launch)->state);
+        $this->assertSame(ReservationState::Released, $this->reservationOf($start)->state);
         $this->assertSame(0, SessionCleanup::query()->count());
     }
 
@@ -122,28 +122,28 @@ final class SessionCleanupTest extends TestCase
 
     public function test_check_capacity_names_the_shortage_while_held_and_fits_once_one_cleanup_releases_it(): void
     {
-        $launch = $this->endedContainerLaunch();
+        $start = $this->endedContainerStart();
         $budgets = ExecutionBudgets::defaults();
         $room = new HostCapacity($budgets->cpuCores, $budgets->memoryBytes, $budgets->workspaceBytes);
 
         $this->assertSame(CapacityResource::Cpu, CapacityReservation::shortageOf($budgets, $room));
         $this->assertSame(1, CapacityReservation::query()->count());
 
-        $this->notify($launch, new CleanupReport(self::ALL_STEPS, null, null));
+        $this->notify($start, new CleanupReport(self::ALL_STEPS, null, null));
         $this->assertNull(CapacityReservation::shortageOf($budgets, $room));
 
         CapacityReservation::create('start-other', $budgets, $room);
-        $this->assertSame(CleanupState::Done, $this->notify($launch, new CleanupReport(self::ALL_STEPS, null, null)));
+        $this->assertSame(CleanupState::Done, $this->notify($start, new CleanupReport(self::ALL_STEPS, null, null)));
         $this->assertTrue(CapacityReservation::isHeldFor('start-other'));
-        $this->assertSame(ReservationState::Released, $this->reservationOf($launch)->state);
+        $this->assertSame(ReservationState::Released, $this->reservationOf($start)->state);
     }
 
-    public function test_a_launch_past_its_wall_budget_is_stopped_and_a_younger_one_runs_on(): void
+    public function test_a_start_past_its_wall_budget_is_stopped_and_a_younger_one_runs_on(): void
     {
         $this->travel(-7)->hours();
-        $old = $this->runningLaunch();
+        $old = $this->runningStart();
         $this->travelBack();
-        $young = $this->runningLaunch();
+        $young = $this->runningStart();
 
         $this->app->make(SessionStartLimits::class)->stopOverdue();
 
@@ -153,44 +153,44 @@ final class SessionCleanupTest extends TestCase
 
     public function test_a_fence_stops_the_sessions_of_its_revision_and_is_reconciled_once_none_runs(): void
     {
-        $launch = $this->runningLaunch();
-        $fence = ProfileRevisionHold::retain($launch->session->profile_key, $launch->session->profile_revision);
+        $start = $this->runningStart();
+        $fence = ProfileRevisionHold::retain($start->session->profile_key, $start->session->profile_revision);
         $limits = $this->app->make(SessionStartLimits::class);
 
         $limits->enforceFences();
 
-        $this->assertFalse(AgentRuntime::isRunningForSession($launch->session->id));
+        $this->assertFalse(AgentRuntime::isRunningForSession($start->session->id));
         $this->assertTrue(ProfileRevisionHold::query()->whereKey($fence->id)->whereNull('reconciled_at')->exists());
 
-        $this->app->make(HeartbeatService::class)->markExited($launch->session, 'exit 0');
+        $this->app->make(HeartbeatService::class)->markExited($start->session, 'exit 0');
         $limits->enforceFences();
 
         $this->assertFalse(ProfileRevisionHold::query()->whereKey($fence->id)->whereNull('reconciled_at')->exists());
     }
 
-    private function endedContainerLaunch(): TestStart
+    private function endedContainerStart(): TestStart
     {
-        $launch = TestStart::start('writing-helper');
-        $launch->openRuntime($this->app);
-        $launch->openStack($this->app);
-        $this->reserve($launch);
+        $start = TestStart::start('writing-helper');
+        $start->openRuntime($this->app);
+        $start->openStack($this->app);
+        $this->reserve($start);
 
-        $this->app->make(HeartbeatService::class)->markExited($launch->session, 'exit 0');
+        $this->app->make(HeartbeatService::class)->markExited($start->session, 'exit 0');
 
-        return $launch;
+        return $start;
     }
 
     /**
-     * A launch for an owner's work, running in its runtime with the default budgets frozen with it.
+     * A start for an owner's work, running in its runtime with the default budgets frozen with it.
      */
-    private function runningLaunch(): TestStart
+    private function runningStart(): TestStart
     {
-        $launch = TestStart::start('writing-helper');
-        $launch->openRuntime($this->app);
-        $launch->openStack($this->app);
+        $start = TestStart::start('writing-helper');
+        $start->openRuntime($this->app);
+        $start->openStack($this->app);
         $request = new StartRequest(
-            $launch->session->start_request_id,
-            $launch->agent->id,
+            $start->session->start_request_id,
+            $start->agent->id,
             SelectedDriver::resolve('claude-code', ModelSelection::named('claude-opus-5-5'), null, null, $this->app->make(DriverCatalogue::class)),
             StartOriginType::OwnerRequest,
             new RecordIdentity('helpers.helper-job', '01m7wgahp0n7766x1e1ta8ehew'),
@@ -200,30 +200,30 @@ final class SessionCleanupTest extends TestCase
             StartPolicy::withoutProfile(TestSelections::onHost()),
             driverType: DriverType::Headless,
         );
-        SessionRequest::create($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create())->startedAs($launch->session);
-        SessionPolicy::create($launch->session, $request->policy);
+        SessionRequest::create($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create())->startedAs($start->session);
+        SessionPolicy::create($start->session, $request->policy);
 
-        return $launch;
+        return $start;
     }
 
-    private function reserve(TestStart $launch): void
+    private function reserve(TestStart $start): void
     {
         $capacity = new HostCapacity(8, 16 * 1024 ** 3, 50 * 1024 ** 3);
-        CapacityReservation::create($launch->session->start_request_id, ExecutionBudgets::defaults(), $capacity);
+        CapacityReservation::create($start->session->start_request_id, ExecutionBudgets::defaults(), $capacity);
     }
 
-    private function notify(TestStart $launch, CleanupReport $report): CleanupState
+    private function notify(TestStart $start, CleanupReport $report): CleanupState
     {
-        return $this->asSystem(new NotifyCleanupCommand('host-1', $launch->session->id, $report));
+        return $this->asSystem(new NotifyCleanupCommand('host-1', $start->session->id, $report));
     }
 
-    private function cleanupOf(TestStart $launch): SessionCleanup
+    private function cleanupOf(TestStart $start): SessionCleanup
     {
-        return SessionCleanup::query()->where('agent_session_id', $launch->session->id)->sole();
+        return SessionCleanup::query()->where('agent_session_id', $start->session->id)->sole();
     }
 
-    private function reservationOf(TestStart $launch): CapacityReservation
+    private function reservationOf(TestStart $start): CapacityReservation
     {
-        return CapacityReservation::query()->where('start_request_id', $launch->session->start_request_id)->sole();
+        return CapacityReservation::query()->where('start_request_id', $start->session->start_request_id)->sole();
     }
 }

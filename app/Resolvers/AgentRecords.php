@@ -29,8 +29,8 @@ use App\Support\AgentFacts;
 use App\Support\AgentInspection;
 use App\Support\AgentOption;
 use App\Support\AgentStatusRules;
-use App\Support\SessionStartOutcome;
 use App\Support\ResumableConversation;
+use App\Support\SessionStartOutcome;
 use App\Support\StartRemedyWords;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
@@ -38,7 +38,7 @@ use PhpOption\Option;
 
 /**
  * Reads the agents for Home in a fixed number of queries: the agents, their running sessions and runtimes, the
- * refusals of their starts, their latest launch outcomes the viewer has not dismissed, their latest switches and their
+ * refusals of their starts, their latest start outcomes the viewer has not dismissed, their latest switches and their
  * latest conversations, each for every shown agent at once.
  */
 final readonly class AgentRecords implements AgentDirectory
@@ -102,7 +102,7 @@ final readonly class AgentRecords implements AgentDirectory
 
         $refusals = SessionProcess::refusalsOf(array_values(array_map(strval(...), $ids)));
 
-        $launches = $this->launchOutcomesOf(array_values(array_map(strval(...), $ids)));
+        $startOutcomes = $this->startOutcomesOf(array_values(array_map(strval(...), $ids)));
 
         $conversations = DriverConversation::query()->ofAgents($ids)->newestCreatedFirst()
             ->readLimit(self::AGENTS_SHOWN * self::CONVERSATIONS_SHOWN)->get()->groupBy('agent_id');
@@ -118,7 +118,7 @@ final readonly class AgentRecords implements AgentDirectory
             $switches,
             $conversations,
             $refusals,
-            $launches,
+            $startOutcomes,
             $waitingOnHelpers,
             $readiness,
             $canStop,
@@ -134,7 +134,7 @@ final readonly class AgentRecords implements AgentDirectory
                     $starts->get((string) $session?->id),
                     $requests->get((string) $runtime?->id),
                     $switches->get($agent->id),
-                    $launches[$agent->id] ?? null,
+                    $startOutcomes[$agent->id] ?? null,
                     in_array($session?->id, $waitingOnHelpers, true),
                     $readiness[(string) $session?->id] ?? null,
                 ),
@@ -163,15 +163,15 @@ final readonly class AgentRecords implements AgentDirectory
     }
 
     /**
-     * The latest launch outcome of each agent, by agent, unless the viewer dismissed that version of it; an older
+     * The latest start outcome of each agent, by agent, unless the viewer dismissed that version of it; an older
      * outcome never stands in for a dismissed newer one.
      *
      * @param  list<string>  $ids
      * @return array<string, SessionStartOutcome>
      */
-    private function launchOutcomesOf(array $ids): array
+    private function startOutcomesOf(array $ids): array
     {
-        $launches = SessionRequest::latestOf($ids)->map(fn (SessionRequest $record) => new SessionStartOutcome(
+        $startOutcomes = SessionRequest::latestOf($ids)->map(fn (SessionRequest $record) => new SessionStartOutcome(
             $record->agent_id,
             $record->request_id,
             $record->disposition,
@@ -181,10 +181,10 @@ final readonly class AgentRecords implements AgentDirectory
 
         $dismissed = SessionOutcomeDismissal::dismissedKeysOf(
             ActorIdentity::of($this->actors->actor()),
-            array_values($launches->map(fn (SessionStartOutcome $launch) => $launch->requestId)->all()),
+            array_values($startOutcomes->map(fn (SessionStartOutcome $start) => $start->requestId)->all()),
         );
 
-        return $launches->reject(fn (SessionStartOutcome $launch) => in_array($launch->key(), $dismissed, true))->all();
+        return $startOutcomes->reject(fn (SessionStartOutcome $start) => in_array($start->key(), $dismissed, true))->all();
     }
 
     /**
@@ -231,7 +231,7 @@ final readonly class AgentRecords implements AgentDirectory
             ),
             $resumable,
             $startRefusal,
-            $facts->launch,
+            $facts->startOutcome,
             AgentStatusRules::of(
                 $facts->evidence($agent->isRetired(), $resumable !== [], $canStop, $now),
                 $this->remedyWords,

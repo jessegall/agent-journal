@@ -768,7 +768,7 @@ func (loop *Loop) notify(
 		Attempt:             request.Attempt,
 		Progress:            string(result.Progress),
 		SessionID:           request.SessionID,
-		SessionProcessID:      request.SessionProcessID,
+		SessionProcessID:    request.SessionProcessID,
 		ProcessGeneration:   request.ProcessGeneration,
 		HasCreatedNoProcess: result.NoProcessCreated,
 		Sequence:            loop.nextSequence(request.RuntimeID),

@@ -113,27 +113,27 @@ final class DriverSwitchTest extends TestCase
 
         $switch->beginStarting(strtolower((string) Str::ulid()));
         $switch->recheck(SessionProcessState::Stopped, null);
-        $this->assertSame(DriverSwitchStage::LaunchFailed, $switch->stage);
+        $this->assertSame(DriverSwitchStage::StartFailed, $switch->stage);
     }
 
-    public function test_a_failed_launch_offers_a_retry_of_the_same_request_once(): void
+    public function test_a_failed_start_offers_a_retry_of_the_same_request_once(): void
     {
         $switch = $this->switch();
         $switch->markPreflighted();
         $switch->beginStopping(null);
         $switch->markStopped();
         $switch->beginStarting(strtolower((string) Str::ulid()));
-        $switch->failLaunch('refused');
+        $switch->failStart('refused');
         $requestId = $switch->request_id;
 
-        $switch->retryLaunch();
+        $switch->retryStart();
 
         $this->assertSame(
             [DriverSwitchStage::Stopped, $requestId, null],
             [$switch->stage, $switch->request_id, $switch->replacement_session_id],
         );
         $this->expectException(DriverSwitchStageRefused::class);
-        $switch->retryLaunch();
+        $switch->retryStart();
     }
 
     public function test_a_stale_running_from_before_the_stop_does_not_cancel_the_switch(): void
@@ -161,7 +161,7 @@ final class DriverSwitchTest extends TestCase
         $this->assertSame(DriverSwitchStage::Cancelled, $switch->stage);
     }
 
-    public function test_both_unconfirmed_legs_block_another_writer_and_a_target_end_fails_its_launch_alone(): void
+    public function test_both_unconfirmed_legs_block_another_writer_and_a_target_end_fails_its_start_alone(): void
     {
         $switch = $this->switch();
         $switch->markPreflighted();
@@ -176,8 +176,8 @@ final class DriverSwitchTest extends TestCase
         $this->assertTrue($switch->stage->blocksWriter());
 
         $switch->recheck(SessionProcessState::Stopped, null);
-        $this->assertSame(DriverSwitchStage::LaunchFailed, $switch->stage);
-        $switch->retryLaunch();
+        $this->assertSame(DriverSwitchStage::StartFailed, $switch->stage);
+        $switch->retryStart();
         $this->assertSame(DriverSwitchStage::Stopped, $switch->stage);
     }
 

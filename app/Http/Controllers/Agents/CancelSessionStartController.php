@@ -11,15 +11,15 @@ use App\Http\Responses\PageActionAnswers;
 use Illuminate\Http\RedirectResponse;
 
 /**
- * Cancels a launch still in progress from Home through CancelSessionStartCommand and goes back to the page with whether a
+ * Cancels a start still in progress from Home through CancelSessionStartCommand and goes back to the page with whether a
  * runtime was told to stop flashed.
  */
 final readonly class CancelSessionStartController
 {
     /**
-     * The flash key that says whether the cancel stopped the launch.
+     * The flash key that says whether the cancel stopped the start.
      */
-    public const string STOPPED = 'launchStopped';
+    public const string STOPPED = 'startStopped';
 
     public function __invoke(
         CancelSessionStartRequest $request,

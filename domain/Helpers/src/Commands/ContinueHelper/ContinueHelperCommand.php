@@ -12,7 +12,7 @@ use Domain\Helpers\Values\HelperReceipt;
 use Spatie\LaravelData\Attributes\Validation\Required;
 
 /**
- * Launches another attempt at a helper's unfinished job on the model the parent names now; the job, its purpose,
+ * Starts another attempt at a helper's unfinished job on the model the parent names now; the job, its purpose,
  * brief, steering and source stay. A repeat of the request answers the same receipt.
  *
  * @extends Command<HelperReceipt>

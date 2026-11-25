@@ -165,8 +165,8 @@ vi.mock("@kit/Dialog", () => ({
 }));
 vi.mock("@kit/sessionStarts", () => ({
   accountsPage: { url: () => "/accounts" },
-  cancelLaunch: {
-    url: () => "/agents/main/sessions/session-1/cancel-launch",
+  cancelStart: {
+    url: () => "/agents/main/sessions/session-1/cancel-start",
   },
   startMain: { url: (profile: string) => `/profiles/${profile}/start-main` },
   startReceipt: {

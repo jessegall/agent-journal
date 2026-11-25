@@ -12,8 +12,8 @@ import (
 	"testing"
 )
 
-func labels() LaunchLabels {
-	return LaunchLabels{Installation: "install-1", Launch: "launch-7", Session: "session-7"}
+func labels() StartLabels {
+	return StartLabels{Installation: "install-1", Start: "start-7", Session: "session-7"}
 }
 
 // installationLabels are the labels of a container of the installation the tests sweep, running the session.
@@ -41,13 +41,13 @@ func TestAContainerAnotherCallerIsRemovingIsAskedForAgainUntilItIsGone(t *testin
 	}
 }
 
-func TestACreatedContainerCarriesTheLaunchLabels(t *testing.T) {
+func TestACreatedContainerCarriesTheStartLabels(t *testing.T) {
 	options, err := manifest().CreateOptions("helper-7", labels(), localRules)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	want := map[string]string{installationLabel: "install-1", launchLabel: "launch-7", sessionLabel: "session-7"}
+	want := map[string]string{installationLabel: "install-1", startLabel: "start-7", sessionLabel: "session-7"}
 	if !maps.Equal(options.Config.Labels, want) {
 		t.Fatalf("the labels are %v", options.Config.Labels)
 	}
@@ -66,7 +66,7 @@ func TestACleanupRemovesTheTransientResourcesAndKeepsTheWorkspace(t *testing.T) 
 			t.Fatal(err)
 		}
 	}
-	cleanup := LaunchCleanup{Containers: containers, Installation: "journal", RuntimeFolders: runtimes, StopSeconds: 10}
+	cleanup := StartCleanup{Containers: containers, Installation: "journal", RuntimeFolders: runtimes, StopSeconds: 10}
 	pending := PendingCleanup{SessionID: "session-7", Remaining: []CleanupStep{CleanupContainer, CleanupNetwork, CleanupRuntime}}
 
 	report := cleanup.CleanUp(context.Background(), pending)
@@ -89,7 +89,7 @@ func TestACleanupRemovesTheTransientResourcesAndKeepsTheWorkspace(t *testing.T) 
 
 func TestACleanupRunTwiceAfterACrashFindsEverythingGoneAndChangesNothing(t *testing.T) {
 	containers, _ := standIn(t, localRules)
-	cleanup := LaunchCleanup{Containers: containers, Installation: "journal", RuntimeFolders: t.TempDir(), StopSeconds: 10}
+	cleanup := StartCleanup{Containers: containers, Installation: "journal", RuntimeFolders: t.TempDir(), StopSeconds: 10}
 	pending := PendingCleanup{SessionID: "session-7", Remaining: []CleanupStep{CleanupContainer, CleanupNetwork, CleanupRuntime}}
 
 	report := cleanup.CleanUp(context.Background(), pending)
@@ -163,7 +163,7 @@ func (journal *cleanupJournal) NotifyCleanup(_ context.Context, sessionID string
 
 func TestARoundRunsEveryPendingCleanupAndReportsIt(t *testing.T) {
 	containers, _ := standIn(t, localRules)
-	cleanup := LaunchCleanup{Containers: containers, Installation: "journal", RuntimeFolders: t.TempDir(), StopSeconds: 10}
+	cleanup := StartCleanup{Containers: containers, Installation: "journal", RuntimeFolders: t.TempDir(), StopSeconds: 10}
 	journal := &cleanupJournal{
 		pending: []PendingCleanup{{SessionID: "session-7", Remaining: []CleanupStep{CleanupContainer, CleanupNetwork, CleanupRuntime}}},
 		reports: map[string]CleanupReport{},

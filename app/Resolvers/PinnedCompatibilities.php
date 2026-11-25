@@ -16,13 +16,13 @@ use App\Values\ProtectionReport;
 /**
  * The compatibility of each driver's pinned build, as its account-free capture and native procedure recorded it.
  * Contained, its arrangement is shown only by a contained host's report that every item is enforced in the agent
- * image, for the launch profile a signed-in start of the driver uses. A
+ * image, for the start profile a signed-in start of the driver uses. A
  * driver on the protected-account trial starts once every item has its mechanism, before the runs that show each
  * hold are recorded, since the trial is where those runs are made.
  */
 final readonly class PinnedCompatibilities implements DriverCompatibilities
 {
-    public function __construct(private ArrangementSetting $setting, private StartProfiles $launchProfiles) {}
+    public function __construct(private ArrangementSetting $setting, private StartProfiles $startProfiles) {}
 
     public function for(string $driver): DriverCompatibility
     {
@@ -32,14 +32,14 @@ final readonly class PinnedCompatibilities implements DriverCompatibilities
             return $pinned;
         }
 
-        $platform = $this->launchProfiles->forSignedIn($driver)->protectionPlatform();
+        $platform = $this->startProfiles->forSignedIn($driver)->protectionPlatform();
         $report = Host::containedProtectionOf(ProtectionReport::unreported($driver, $pinned->version, $platform));
 
         if ($report->isEnforcedInContainer()) {
             return $pinned->withEvidence(DriverEvidence::NativeShown, 'the agent image\'s protection report');
         }
 
-        if ($this->launchProfiles->isOnTrial($driver) && $report->awaitsEvidenceOnly()) {
+        if ($this->startProfiles->isOnTrial($driver) && $report->awaitsEvidenceOnly()) {
             return $pinned->withEvidence(DriverEvidence::NativeShown, 'the protected-account trial of this installation');
         }
 

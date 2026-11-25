@@ -29,9 +29,9 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * A job launched for the request on revision 1 of its profile, on a reused identity in a new conversation.
+     * A job started for the request on revision 1 of its profile, on a reused identity in a new conversation.
      */
-    protected static function launchFor(string $requestId): SessionStartDetails
+    protected static function sessionStartFor(string $requestId): SessionStartDetails
     {
         return new SessionStartDetails($requestId, hash('sha256', $requestId), 1, false, false, ConversationModeType::New, '');
     }

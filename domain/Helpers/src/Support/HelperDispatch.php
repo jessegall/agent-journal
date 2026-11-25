@@ -33,12 +33,12 @@ use App\Values\StartProfileAuthority;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Exceptions\HelperBusy;
 use Domain\Helpers\Exceptions\HelperJobUnfinished;
-use Domain\Helpers\Exceptions\HelperStartUncertain;
 use Domain\Helpers\Exceptions\HelperProfileMismatch;
 use Domain\Helpers\Exceptions\HelperProfilesUnavailable;
 use Domain\Helpers\Exceptions\HelperProfileTypeConflict;
 use Domain\Helpers\Exceptions\HelperRequestConflict;
 use Domain\Helpers\Exceptions\HelperRetired;
+use Domain\Helpers\Exceptions\HelperStartUncertain;
 use Domain\Helpers\Exceptions\HelperUnavailable;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
@@ -91,7 +91,7 @@ final readonly class HelperDispatch
         if ($profile->instances !== InstancePolicy::Reusable) {
             $choice = new ConversationChoice(true, ConversationModeType::New, self::OWN_HELPER_REASON);
 
-            return $this->launch($request, $profile, $purpose, $this->ownHelper($request, $profile), $choice);
+            return $this->startSession($request, $profile, $purpose, $this->ownHelper($request, $profile), $choice);
         }
 
         $candidate = $this->candidatesFor($request, $profile, $purpose)[0] ?? null;
@@ -99,14 +99,14 @@ final readonly class HelperDispatch
         if ($candidate === null) {
             $identity = $this->newHelper($request, $profile);
 
-            return $this->launch($request, $profile, $purpose, $identity, new ConversationChoice(
+            return $this->startSession($request, $profile, $purpose, $identity, new ConversationChoice(
                 true,
                 ConversationModeType::New,
                 self::NEW_HELPER_REASON,
             ));
         }
 
-        return $this->launch(
+        return $this->startSession(
             $request,
             $profile,
             $purpose,
@@ -144,11 +144,11 @@ final readonly class HelperDispatch
             ? new ConversationChoice(false, ConversationModeType::New, self::ADDRESSED_REASON)
             : ConversationChoice::reusing(array_values($candidates)[0]);
 
-        return $this->launch($request, $profile, $purpose, $identity, $conversation);
+        return $this->startSession($request, $profile, $purpose, $identity, $conversation);
     }
 
     /**
-     * Launches another attempt at an unfinished job on the selection the parent names now, keeping its job, purpose,
+     * Starts another attempt at an unfinished job on the selection the parent names now, keeping its job, purpose,
      * brief, steering and source; the helper resumes its conversation.
      */
     public function continueJob(
@@ -274,7 +274,7 @@ final readonly class HelperDispatch
 
     /**
      * The helper a profile with single or per-job instances works with: the one designated helper of the profile, or a
-     * fresh one for this job. A busy designated helper is refused by the launch, never copied.
+     * fresh one for this job. A busy designated helper is refused by the start, never copied.
      */
     private function ownHelper(DispatchRequest $request, ProfileSelection $profile): HelperIdentity
     {
@@ -350,7 +350,7 @@ final readonly class HelperDispatch
      * Reserves the helper's start, checks its work again under the reservation, then writes the job and its
      * responsibility and runs Core's start; a lost race refuses and the work never moves to another helper.
      */
-    private function launch(
+    private function startSession(
         DispatchRequest $request,
         ProfileSelection $profile,
         HelperPurpose $purpose,
@@ -411,7 +411,7 @@ final readonly class HelperDispatch
 
     /**
      * Refuses a helper with a job that is not over, naming why: still working, stopped unfinished, or held while
-     * nobody knows whether its launch runs.
+     * nobody knows whether its start runs.
      */
     private function assertNoOpenJob(HelperIdentity $identity): void
     {

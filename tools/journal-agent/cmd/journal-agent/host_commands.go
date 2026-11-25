@@ -192,7 +192,7 @@ func serve(arguments []string) error {
 		}
 		bindsAccount = containers.BindsAccount
 		folders = containers
-		cleanup := host.LaunchCleanup{Containers: containers, Installation: installation,
+		cleanup := host.StartCleanup{Containers: containers, Installation: installation,
 			RuntimeFolders: filepath.Join(*stateFolder, "runtimes"), StopSeconds: host.StopSeconds}
 		go runCleanups(ctx, cleanup, journal)
 		evidence := host.NativeEvidence{Folder: *stateFolder}
@@ -466,7 +466,7 @@ func (opener runtimeOpener) codexRuntime(
 	return drivers.NewCodexDriver(owner, settings, runtime.ProcessGeneration), nil
 }
 
-// headlessRuntime opens a headless runtime, one child per turn, from its launch grant, with a conversation of its own, the
+// headlessRuntime opens a headless runtime, one child per turn, from its start grant, with a conversation of its own, the
 // pinned profile of its program and the model the journal asked for.
 func (opener runtimeOpener) headlessRuntime(
 	runtimeID string,
@@ -706,7 +706,7 @@ func installedProgram(installationFolder string, profile contracts.DriverProfile
 }
 
 // accountOf is the saved account a prepared start signs in with, the journal's MCP server from the protected
-// installation and the runtime as the launch's reference.
+// installation and the runtime as the start's reference.
 func accountOf(prepared host.PreparedStart, installationFolder, runtimeID string) *contracts.AccountStart {
 	installation := host.Installation{Folder: installationFolder}
 	return prepared.AccountStart(&contracts.JournalServer{
@@ -766,7 +766,7 @@ func localPrerequisites(stateFolder, installationFolder string) host.StartPrereq
 	}
 }
 
-// containedPrerequisites allows a contained host's account start on the platform its container launches: the
+// containedPrerequisites allows a contained host's account start on the platform its container starts: the
 // protected profile's own platform for a protected-account container, the agent image's sandbox otherwise. A driver
 // on the protected-account trial starts its protected container before its evidence is recorded.
 func containedPrerequisites(stateFolder, seccomp string, trial []string, containers host.Containers) host.StartPrerequisites {
@@ -1045,18 +1045,18 @@ const (
 	statusLineSocket = "status-line.sock"
 )
 
-// cleanupInterval is how often a contained host takes the launch cleanups the journal says it owes; a closed
+// cleanupInterval is how often a contained host takes the start cleanups the journal says it owes; a closed
 // session's capacity is given back only once its cleanup is reported.
 const cleanupInterval = 10 * time.Second
 
-// runCleanups takes the journal's pending launch cleanups now and then every interval until the host stops; a failed
+// runCleanups takes the journal's pending start cleanups now and then every interval until the host stops; a failed
 // round is logged and tried again on the next.
-func runCleanups(ctx context.Context, cleanup host.LaunchCleanup, journal host.CleanupJournal) {
+func runCleanups(ctx context.Context, cleanup host.StartCleanup, journal host.CleanupJournal) {
 	ticker := time.NewTicker(cleanupInterval)
 	defer ticker.Stop()
 	for {
 		if err := cleanup.RunPending(ctx, journal); err != nil && ctx.Err() == nil {
-			log.Printf("the launch cleanups were not all done: %v", err)
+			log.Printf("the start cleanups were not all done: %v", err)
 		}
 		select {
 		case <-ctx.Done():

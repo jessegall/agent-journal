@@ -9,7 +9,7 @@ use App\Enums\Drivers\DriverType;
 
 /**
  * A start as proposed before it is admitted: the profile's decisions, the driver, build, driver type and model asked
- * for, and the placement its launch policy gives.
+ * for, and the placement its start policy gives.
  */
 final readonly class StartProposal
 {

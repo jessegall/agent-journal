@@ -44,11 +44,11 @@ func (prepared PreparedStart) Transport() contracts.TransportProfile {
 func (prepared PreparedStart) AccountStart(server *contracts.JournalServer, reference string) *contracts.AccountStart {
 	claim := prepared.Claim
 	return &contracts.AccountStart{
-		Folder:          claim.Directory,
-		Protection:      claim.Recipe.ProtectionSettings,
-		Transport:       prepared.Transport(),
-		JournalServer:   server,
-		LaunchReference: reference,
+		Folder:         claim.Directory,
+		Protection:     claim.Recipe.ProtectionSettings,
+		Transport:      prepared.Transport(),
+		JournalServer:  server,
+		StartReference: reference,
 	}
 }
 

@@ -48,7 +48,7 @@ final readonly class ContainerManifest
         public bool $isAttachable,
         // What the host fills or checks before the container mounts the workspace; none locally.
         public WorkspacePreparation|null $workspacePreparation,
-        public StartProfileType $launchProfile,
+        public StartProfileType $startProfile,
     ) {}
 
     /**
@@ -66,15 +66,15 @@ final readonly class ContainerManifest
         string $network,
         MountRules $rules,
         string|null $resumedSessionId,
-        StartProfileType $launchProfile = StartProfileType::Standard,
+        StartProfileType $startProfile = StartProfileType::Standard,
     ): self {
         $mount = $rules->workspaceMount($workspace, $use);
 
         return self::make(
             (string) $policy->imageReference,
-            $launchProfile->user(),
+            $startProfile->user(),
             true,
-            $launchProfile->capabilities(),
+            $startProfile->capabilities(),
             false,
             $network,
             [
@@ -87,7 +87,7 @@ final readonly class ContainerManifest
             $rules,
             SecurityOptions::none(),
             $policy->isAttachable,
-            $launchProfile,
+            $startProfile,
         );
     }
 
@@ -111,22 +111,22 @@ final readonly class ContainerManifest
         MountRules $rules,
         SecurityOptions $securityOptions,
         bool $isAttachable = false,
-        StartProfileType $launchProfile = StartProfileType::Standard,
+        StartProfileType $startProfile = StartProfileType::Standard,
     ): self {
         if (preg_match('/(^|@)sha256:[0-9a-f]{64}$/', $image) !== 1) {
             throw ManifestRefused::because("the image {$image} is not named by its digest");
         }
 
-        $matchesProfile = $user === $launchProfile->user() && $capabilities === $launchProfile->capabilities();
+        $matchesProfile = $user === $startProfile->user() && $capabilities === $startProfile->capabilities();
 
         if ($isPrivileged || ! $matchesProfile || ! $isReadOnlyRoot) {
-            throw ManifestRefused::because(match ($launchProfile) {
+            throw ManifestRefused::because(match ($startProfile) {
                 StartProfileType::Standard => 'a helper runs unprivileged as 10001:10001 on a read-only root with no capabilities',
                 StartProfileType::ProtectedAccount => 'a protected start runs its init as 0:0 with only SETUID, SETGID and SETPCAP, unprivileged, on a read-only root',
             });
         }
 
-        if ($launchProfile->isForAnAccount() && ! $rules->bindsAccount($mounts)) {
+        if ($startProfile->isForAnAccount() && ! $rules->bindsAccount($mounts)) {
             throw ManifestRefused::because('a protected start binds the account folder it protects');
         }
 
@@ -159,7 +159,7 @@ final readonly class ContainerManifest
             $budgets,
             $isAttachable,
             $rules->workspacePreparation(),
-            $launchProfile,
+            $startProfile,
         );
     }
 }

@@ -21,7 +21,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 #[IsDestructive(false)]
 #[Dispatches(ContinueHelperCommand::class)]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent)]
-#[Description('Continue a helper job whose launch ended before it finished, in the same conversation.')]
+#[Description('Continue a helper job whose start ended before it finished, in the same conversation.')]
 final class ContinueHelperTool extends JournalWriteTool
 {
     public const string NAME = 'helpers_continue';

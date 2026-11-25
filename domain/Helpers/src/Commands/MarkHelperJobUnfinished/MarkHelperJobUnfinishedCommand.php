@@ -12,7 +12,7 @@ use Spatie\LaravelData\Attributes\Validation\Required;
 
 /**
  * Marks an open helper job unfinished once its helper stopped before the job was done, and tells the parent how to
- * continue it. Run by the journal after the launch ended.
+ * continue it. Run by the journal after the start ended.
  *
  * @extends Command<null>
  */

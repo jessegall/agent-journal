@@ -166,7 +166,7 @@ final class HostStartsTest extends TestCase
         $this->assertSame([], $this->signed($host, 'GET', '/host/starts')->json('unresolved'));
     }
 
-    public function test_a_launch_that_saves_its_driver_type_keeps_it_for_the_agent_only_once_it_runs(): void
+    public function test_a_start_that_saves_its_driver_type_keeps_it_for_the_agent_only_once_it_runs(): void
     {
         [$host, $opened] = $this->openRuntime(shouldSaveDriverType: true);
         $agent = AgentSession::query()->withoutGlobalScopes()->with('agent')->findOrFail($opened->sessionId)->agent;
@@ -244,7 +244,7 @@ final class HostStartsTest extends TestCase
         $this->assertNotNull($policy->profile_revision);
     }
 
-    public function test_a_one_launch_driver_type_leaves_the_agent_on_its_profile_default(): void
+    public function test_a_one_start_driver_type_leaves_the_agent_on_its_profile_default(): void
     {
         [$host, $opened] = $this->openRuntime();
         $key = (string) $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])

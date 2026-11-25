@@ -10,7 +10,7 @@ use App\Exceptions\JournalServerUnresolved;
 /**
  * The journal's MCP server as a Codex account runs it from its common config.toml: the protected PHP binary running
  * the protected installation's bin/journal-mcp, both by absolute path, told only the names of the variables it reads
- * from the launch. No token, work folder or launch path is ever written into the shared file.
+ * from the start. No token, work folder or start path is ever written into the shared file.
  */
 final readonly class CodexJournalServer
 {
@@ -18,7 +18,7 @@ final readonly class CodexJournalServer
 
     public const array PASSED_VARIABLES = [
         'JOURNAL_URL',
-        'JOURNAL_LAUNCH_REF',
+        'JOURNAL_START_REF',
     ];
 
     public const int STARTUP_TIMEOUT_SECONDS = 15;

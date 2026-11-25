@@ -11,6 +11,6 @@ final readonly class RetryDriverSwitchHandler implements CommandHandler
 {
     public function handle(RetryDriverSwitchCommand $command): void
     {
-        DriverSwitch::lockedById($command->switchId)->retryLaunch();
+        DriverSwitch::lockedById($command->switchId)->retryStart();
     }
 }

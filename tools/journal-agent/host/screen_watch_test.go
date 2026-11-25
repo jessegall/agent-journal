@@ -257,7 +257,7 @@ func TestARefusedReportStopsTheRuntimeUntilTheListNamesItAgain(t *testing.T) {
 	waitUntil(t, "a frame once the list names it again", func() bool { return len(journal.frames("runtime-1")) == 1 })
 }
 
-func TestARuntimeWithoutATerminalAndARelaunchedOne(t *testing.T) {
+func TestARuntimeWithoutATerminalAndARestartedOne(t *testing.T) {
 	watcher, journal, readers := newWatcher(t, time.Hour)
 
 	watcher.Set(watch("runtime-1"))
@@ -270,16 +270,16 @@ func TestARuntimeWithoutATerminalAndARelaunchedOne(t *testing.T) {
 		t.Fatalf("the marker was sent %d times", count)
 	}
 
-	readers.run(t, "runtime-1", "first launch")
-	waitUntil(t, "a frame of the launch", func() bool { return len(journal.frames("runtime-1")) == 2 })
+	readers.run(t, "runtime-1", "first start")
+	waitUntil(t, "a frame of the start", func() bool { return len(journal.frames("runtime-1")) == 2 })
 
 	readers.end("runtime-1")
 	waitUntil(t, "the marker after the end", func() bool { return len(journal.frames("runtime-1")) == 3 })
-	readers.run(t, "runtime-1", "second launch")
-	waitUntil(t, "a frame of the relaunch", func() bool { return len(journal.frames("runtime-1")) == 4 })
+	readers.run(t, "runtime-1", "second start")
+	waitUntil(t, "a frame of the restart", func() bool { return len(journal.frames("runtime-1")) == 4 })
 
 	frames := journal.frames("runtime-1")
-	if !frames[2].HasNoTerminal || rowText(frames[3]) != "second launch" || frames[3].HasNoTerminal {
+	if !frames[2].HasNoTerminal || rowText(frames[3]) != "second start" || frames[3].HasNoTerminal {
 		t.Fatalf("frames %+v", frames)
 	}
 }

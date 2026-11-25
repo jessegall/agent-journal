@@ -116,12 +116,12 @@ func (client *Client) NotifyFailure(ctx context.Context, startKey, failure strin
 	return client.call(ctx, "/host/starts/"+startKey+"/failure", body, nil)
 }
 
-// PendingCleanups reads the launch cleanups this host still owes into the answer, as the journal lists them.
+// PendingCleanups reads the start cleanups this host still owes into the answer, as the journal lists them.
 func (client *Client) PendingCleanups(ctx context.Context, answer any) error {
 	return client.read(ctx, "/host/cleanups", answer)
 }
 
-// NotifyCleanup reports one cleanup pass of a session's ended launch.
+// NotifyCleanup reports one cleanup pass of a session's ended start.
 func (client *Client) NotifyCleanup(ctx context.Context, sessionID string, report any) error {
 	return client.call(ctx, "/host/cleanups/"+sessionID, report, nil)
 }
