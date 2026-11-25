@@ -9,7 +9,6 @@ use Domain\Plans\Mcp\Tools\CreatePhaseTool;
 use Domain\Plans\PlansDomain;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Illuminate\Support\Str;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -39,9 +38,9 @@ final class CreatePhaseToolTest extends McpToolEntryTestCase
                 'request_key' => 'plans-1',
             ])
             ->reply(AddPhaseCommand::class, (string) Str::ulid())
-            ->expects(ExpectedCommand::of(AddPhaseCommand::class, [
+            ->expects(AddPhaseCommand::class, [
                 'planId' => $plan->id,
                 'title' => 'Design',
-            ]));
+            ]);
     }
 }

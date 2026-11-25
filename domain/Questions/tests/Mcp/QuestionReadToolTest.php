@@ -8,7 +8,6 @@ use Domain\Questions\Commands\ReadQuestion\ReadQuestionCommand;
 use Domain\Questions\Mcp\Tools\QuestionReadTool;
 use Domain\Questions\QuestionsDomain;
 use Domain\Questions\Tests\Fixtures\QuestionFixtures;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -39,6 +38,6 @@ final class QuestionReadToolTest extends McpToolEntryTestCase
                 'question_id' => $question->id,
                 'request_key' => 'write-1',
             ])
-            ->expects(ExpectedCommand::of(ReadQuestionCommand::class, ['questionId' => $question->id]));
+            ->expects(ReadQuestionCommand::class, ['questionId' => $question->id]);
     }
 }

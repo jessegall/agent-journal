@@ -8,7 +8,6 @@ use Domain\Helpers\Commands\StartHelper\StartHelperCommand;
 use Domain\Helpers\HelpersDomain;
 use Domain\Helpers\Mcp\Tools\StartHelperTool;
 use Domain\Helpers\Tests\Fixtures\HelperFixtures;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -39,9 +38,9 @@ final class StartHelperToolTest extends McpToolEntryTestCase
                 'request_key' => 'helper-1',
             ])
             ->reply(StartHelperCommand::class, $helpers->receiptOf('Review'))
-            ->expects(ExpectedCommand::of(StartHelperCommand::class, [
+            ->expects(StartHelperCommand::class, [
                 'profileKey' => 'writing-helper',
                 'model' => 'claude-sonnet-5-5',
-            ]));
+            ]);
     }
 }

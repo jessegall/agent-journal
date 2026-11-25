@@ -8,7 +8,6 @@ use Domain\Tasks\Commands\FocusTask\FocusTaskCommand;
 use Domain\Tasks\Mcp\Tools\FocusTaskTool;
 use Domain\Tasks\TasksDomain;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -37,6 +36,6 @@ final class FocusTaskToolTest extends McpToolEntryTestCase
                 'task_id' => $task->id,
                 'request_key' => 'tasks-1',
             ])
-            ->expects(ExpectedCommand::of(FocusTaskCommand::class, ['taskId' => $task->id]));
+            ->expects(FocusTaskCommand::class, ['taskId' => $task->id]);
     }
 }

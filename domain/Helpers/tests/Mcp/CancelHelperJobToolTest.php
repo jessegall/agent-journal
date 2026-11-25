@@ -8,7 +8,6 @@ use Domain\Helpers\Commands\CancelHelperJob\CancelHelperJobCommand;
 use Domain\Helpers\HelpersDomain;
 use Domain\Helpers\Mcp\Tools\CancelHelperJobTool;
 use Domain\Helpers\Tests\Fixtures\HelperFixtures;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -37,6 +36,6 @@ final class CancelHelperJobToolTest extends McpToolEntryTestCase
                 'request_key' => 'helper-1',
             ])
             ->reply(CancelHelperJobCommand::class, $helpers->jobCalled('Review')->id)
-            ->expects(ExpectedCommand::of(CancelHelperJobCommand::class, ['jobId' => $helpers->jobCalled('Review')->id]));
+            ->expects(CancelHelperJobCommand::class, ['jobId' => $helpers->jobCalled('Review')->id]);
     }
 }

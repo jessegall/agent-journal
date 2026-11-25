@@ -9,7 +9,6 @@ use Domain\Helpers\HelpersDomain;
 use Domain\Helpers\Mcp\Tools\SteerHelperTool;
 use Domain\Helpers\Tests\Fixtures\HelperFixtures;
 use Domain\Helpers\Values\SteerReceipt;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -39,9 +38,9 @@ final class SteerHelperToolTest extends McpToolEntryTestCase
                 'request_key' => 'helper-1',
             ])
             ->reply(SteerHelperCommand::class, SteerReceipt::steered($helpers->jobCalled('Review')->id))
-            ->expects(ExpectedCommand::of(SteerHelperCommand::class, [
+            ->expects(SteerHelperCommand::class, [
                 'identityId' => $helpers->identityOf('Review')->id,
                 'text' => 'Look at the tests too.',
-            ]));
+            ]);
     }
 }

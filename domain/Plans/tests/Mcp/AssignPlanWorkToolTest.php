@@ -14,7 +14,6 @@ use Domain\Plans\Commands\AssignPlanWork\AssignPlanWorkCommand;
 use Domain\Plans\Mcp\Tools\AssignPlanWorkTool;
 use Domain\Plans\PlansDomain;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -55,9 +54,9 @@ final class AssignPlanWorkToolTest extends McpToolEntryTestCase
                 [new AssignmentOutcome($root, null, AssignmentOutcomeType::Changed)],
                 [],
             ))
-            ->expects(ExpectedCommand::of(AssignPlanWorkCommand::class, [
+            ->expects(AssignPlanWorkCommand::class, [
                 'root' => $root,
                 'recipient' => AssigneeIdentity::ofActorReference(ActorReference::of($builder->agent)),
-            ]));
+            ]);
     }
 }

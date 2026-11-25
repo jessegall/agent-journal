@@ -9,7 +9,6 @@ use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Mcp\Tools\CreatePlanTool;
 use Domain\Plans\PlansDomain;
 use Illuminate\Support\Str;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -39,10 +38,10 @@ final class CreatePlanToolTest extends McpToolEntryTestCase
                 'request_key' => 'plans-1',
             ])
             ->reply(CreatePlanCommand::class, (string) Str::ulid())
-            ->expects(ExpectedCommand::of(CreatePlanCommand::class, [
+            ->expects(CreatePlanCommand::class, [
                 'title' => 'Release',
                 'brief' => 'Ship version 6.',
                 'type' => PlanType::Build,
-            ]));
+            ]);
     }
 }

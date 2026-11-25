@@ -8,7 +8,6 @@ use Domain\Helpers\Commands\ContinueHelper\ContinueHelperCommand;
 use Domain\Helpers\HelpersDomain;
 use Domain\Helpers\Mcp\Tools\ContinueHelperTool;
 use Domain\Helpers\Tests\Fixtures\HelperFixtures;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -39,9 +38,9 @@ final class ContinueHelperToolTest extends McpToolEntryTestCase
                 'request_key' => 'helper-1',
             ])
             ->reply(ContinueHelperCommand::class, $helpers->receiptOf('Review'))
-            ->expects(ExpectedCommand::of(ContinueHelperCommand::class, [
+            ->expects(ContinueHelperCommand::class, [
                 'identityId' => $helpers->identityOf('Review')->id,
                 'jobId' => $helpers->jobCalled('Review')->id,
-            ]));
+            ]);
     }
 }

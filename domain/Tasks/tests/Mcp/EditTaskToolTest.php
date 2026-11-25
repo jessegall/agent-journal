@@ -8,7 +8,6 @@ use Domain\Tasks\Commands\EditTask\EditTaskCommand;
 use Domain\Tasks\Mcp\Tools\EditTaskTool;
 use Domain\Tasks\TasksDomain;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -39,9 +38,9 @@ final class EditTaskToolTest extends McpToolEntryTestCase
                 'request_key' => 'tasks-1',
             ])
             ->reply(EditTaskCommand::class, 2)
-            ->expects(ExpectedCommand::of(EditTaskCommand::class, [
+            ->expects(EditTaskCommand::class, [
                 'taskId' => $task->id,
                 'expectedRevision' => 1,
-            ]));
+            ]);
     }
 }

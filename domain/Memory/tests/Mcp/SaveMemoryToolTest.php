@@ -8,7 +8,6 @@ use Domain\Memory\Commands\SaveMemory\SaveMemoryCommand;
 use Domain\Memory\Mcp\Tools\SaveMemoryTool;
 use Domain\Memory\MemoryDomain;
 use Illuminate\Support\Str;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -37,9 +36,9 @@ final class SaveMemoryToolTest extends McpToolEntryTestCase
                 'request_key' => 'write-1',
             ])
             ->reply(SaveMemoryCommand::class, (string) Str::ulid())
-            ->expects(ExpectedCommand::of(SaveMemoryCommand::class, [
+            ->expects(SaveMemoryCommand::class, [
                 'text' => 'Run the phase tests once.',
                 'weight' => 7,
-            ]));
+            ]);
     }
 }

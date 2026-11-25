@@ -8,7 +8,6 @@ use Domain\Rules\Commands\ProposeRule\ProposeRuleCommand;
 use Domain\Rules\Mcp\Tools\ProposeRuleTool;
 use Domain\Rules\RulesDomain;
 use Illuminate\Support\Str;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -37,9 +36,9 @@ final class ProposeRuleToolTest extends McpToolEntryTestCase
                 'request_key' => 'write-1',
             ])
             ->reply(ProposeRuleCommand::class, (string) Str::ulid())
-            ->expects(ExpectedCommand::of(ProposeRuleCommand::class, [
+            ->expects(ProposeRuleCommand::class, [
                 'text' => 'Run the phase tests once.',
                 'reason' => 'User 24714.',
-            ]));
+            ]);
     }
 }

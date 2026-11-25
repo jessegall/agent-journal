@@ -9,7 +9,6 @@ use Domain\Chat\Commands\React\ReactCommand;
 use Domain\Chat\Mcp\Tools\MessageReactionTool;
 use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Illuminate\Support\Str;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -40,9 +39,9 @@ final class MessageReactionToolTest extends McpToolEntryTestCase
                 'request_key' => 'react-1',
             ])
             ->reply(ReactCommand::class, (string) Str::ulid())
-            ->expects(ExpectedCommand::of(ReactCommand::class, [
+            ->expects(ReactCommand::class, [
                 'messageId' => $message->id,
                 'emoji' => '👍',
-            ]));
+            ]);
     }
 }

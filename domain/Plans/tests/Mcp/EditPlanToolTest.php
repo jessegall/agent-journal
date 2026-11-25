@@ -8,7 +8,6 @@ use Domain\Plans\Commands\EditPlan\EditPlanCommand;
 use Domain\Plans\Mcp\Tools\EditPlanTool;
 use Domain\Plans\PlansDomain;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -39,10 +38,10 @@ final class EditPlanToolTest extends McpToolEntryTestCase
                 'request_key' => 'plans-1',
             ])
             ->reply(EditPlanCommand::class, 2)
-            ->expects(ExpectedCommand::of(EditPlanCommand::class, [
+            ->expects(EditPlanCommand::class, [
                 'planId' => $plan->id,
                 'expectedRevision' => 1,
                 'title' => 'Release six',
-            ]));
+            ]);
     }
 }

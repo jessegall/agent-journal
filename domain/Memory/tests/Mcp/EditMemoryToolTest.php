@@ -8,7 +8,6 @@ use Domain\Memory\Commands\EditMemory\EditMemoryCommand;
 use Domain\Memory\Mcp\Tools\EditMemoryTool;
 use Domain\Memory\MemoryDomain;
 use Domain\Memory\Tests\Fixtures\MemoryFixtures;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -39,10 +38,10 @@ final class EditMemoryToolTest extends McpToolEntryTestCase
                 'request_key' => 'write-1',
             ])
             ->reply(EditMemoryCommand::class, 2)
-            ->expects(ExpectedCommand::of(EditMemoryCommand::class, [
+            ->expects(EditMemoryCommand::class, [
                 'memoryId' => $memory->id,
                 'expectedRevision' => 1,
                 'weight' => 9,
-            ]));
+            ]);
     }
 }

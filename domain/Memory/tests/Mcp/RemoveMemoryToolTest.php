@@ -8,7 +8,6 @@ use Domain\Memory\Commands\RemoveMemory\RemoveMemoryCommand;
 use Domain\Memory\Mcp\Tools\RemoveMemoryTool;
 use Domain\Memory\MemoryDomain;
 use Domain\Memory\Tests\Fixtures\MemoryFixtures;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -36,6 +35,6 @@ final class RemoveMemoryToolTest extends McpToolEntryTestCase
                 'memory_id' => $memory->id,
                 'request_key' => 'write-1',
             ])
-            ->expects(ExpectedCommand::of(RemoveMemoryCommand::class, ['memoryId' => $memory->id]));
+            ->expects(RemoveMemoryCommand::class, ['memoryId' => $memory->id]);
     }
 }

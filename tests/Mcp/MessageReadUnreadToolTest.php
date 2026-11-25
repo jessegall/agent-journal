@@ -8,7 +8,6 @@ use App\Commands\Messages\ReadUnreadMessages\ReadUnreadMessagesCommand;
 use App\Mcp\Tools\MessageReadUnreadTool;
 use App\Support\ShownMessage;
 use App\Support\ShownMessages;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
@@ -29,6 +28,6 @@ final class MessageReadUnreadToolTest extends McpToolEntryTestCase
         return ToolCall::by($start)
             ->arguments(['request_key' => 'unread-1'])
             ->reply(ReadUnreadMessagesCommand::class, new ShownMessages([ShownMessage::of($message)]))
-            ->expects(ExpectedCommand::of(ReadUnreadMessagesCommand::class));
+            ->expects(ReadUnreadMessagesCommand::class);
     }
 }

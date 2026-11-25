@@ -9,7 +9,6 @@ use Domain\Reminders\Commands\FinishReminder\FinishReminderCommand;
 use Domain\Reminders\Mcp\Tools\FinishReminderTool;
 use Domain\Reminders\RemindersDomain;
 use Domain\Reminders\Tests\Fixtures\ReminderFixtures;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -39,6 +38,6 @@ final class FinishReminderToolTest extends McpToolEntryTestCase
                 'reminder_id' => $reminder->id,
                 'request_key' => 'write-1',
             ])
-            ->expects(ExpectedCommand::of(FinishReminderCommand::class, ['reminderId' => $reminder->id]));
+            ->expects(FinishReminderCommand::class, ['reminderId' => $reminder->id]);
     }
 }

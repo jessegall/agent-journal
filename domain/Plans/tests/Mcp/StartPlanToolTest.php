@@ -8,7 +8,6 @@ use Domain\Plans\Commands\StartPlan\StartPlanCommand;
 use Domain\Plans\Mcp\Tools\StartPlanTool;
 use Domain\Plans\PlansDomain;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -36,6 +35,6 @@ final class StartPlanToolTest extends McpToolEntryTestCase
                 'plan_id' => $plan->id,
                 'request_key' => 'plans-1',
             ])
-            ->expects(ExpectedCommand::of(StartPlanCommand::class, ['planId' => $plan->id]));
+            ->expects(StartPlanCommand::class, ['planId' => $plan->id]);
     }
 }

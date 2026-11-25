@@ -8,7 +8,6 @@ use Domain\Tasks\Commands\CreateTask\CreateTaskCommand;
 use Domain\Tasks\Mcp\Tools\CreateTaskTool;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -37,9 +36,9 @@ final class CreateTaskToolTest extends McpToolEntryTestCase
                 'request_key' => 'tasks-1',
             ])
             ->reply(CreateTaskCommand::class, (string) Str::ulid())
-            ->expects(ExpectedCommand::of(CreateTaskCommand::class, [
+            ->expects(CreateTaskCommand::class, [
                 'title' => 'Ship the dock',
                 'brief' => 'Dock the source beside the chat.',
-            ]));
+            ]);
     }
 }

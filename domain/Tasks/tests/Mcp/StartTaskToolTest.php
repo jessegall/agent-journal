@@ -8,7 +8,6 @@ use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Mcp\Tools\StartTaskTool;
 use Domain\Tasks\TasksDomain;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -37,6 +36,6 @@ final class StartTaskToolTest extends McpToolEntryTestCase
                 'request_key' => 'tasks-1',
             ])
             ->reply(StartTaskCommand::class, 1)
-            ->expects(ExpectedCommand::of(StartTaskCommand::class, ['taskId' => $task->id]));
+            ->expects(StartTaskCommand::class, ['taskId' => $task->id]);
     }
 }

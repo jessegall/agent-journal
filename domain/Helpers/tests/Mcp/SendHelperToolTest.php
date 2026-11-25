@@ -8,7 +8,6 @@ use Domain\Helpers\Commands\SendHelper\SendHelperCommand;
 use Domain\Helpers\HelpersDomain;
 use Domain\Helpers\Mcp\Tools\SendHelperTool;
 use Domain\Helpers\Tests\Fixtures\HelperFixtures;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -40,9 +39,9 @@ final class SendHelperToolTest extends McpToolEntryTestCase
                 'request_key' => 'helper-1',
             ])
             ->reply(SendHelperCommand::class, $helpers->receiptOf('Review'))
-            ->expects(ExpectedCommand::of(SendHelperCommand::class, [
+            ->expects(SendHelperCommand::class, [
                 'identityId' => $helpers->identityOf('Review')->id,
                 'profileKey' => 'writing-helper',
-            ]));
+            ]);
     }
 }
