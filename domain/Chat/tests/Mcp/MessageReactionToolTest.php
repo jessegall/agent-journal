@@ -5,19 +5,20 @@ declare(strict_types=1);
 namespace Domain\Chat\Tests\Mcp;
 
 use Domain\Chat\ChatDomain;
+use Domain\Chat\Commands\React\ReactCommand;
 use Domain\Chat\Mcp\Tools\MessageReactionTool;
+use Domain\Chat\Tests\Fixtures\ChatFixtures;
+use Illuminate\Support\Str;
+use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of the tool MessageReactionTool, as the generator wrote it.
+ * An agent reacts with one emoji to a message in its chat with the owner.
  */
-#[Generated]
 #[TestsMcpTool(MessageReactionTool::class)]
 final class MessageReactionToolTest extends McpToolEntryTestCase
 {
@@ -28,12 +29,13 @@ final class MessageReactionToolTest extends McpToolEntryTestCase
 
     protected function arrange(TestJournal $journal): ToolCall
     {
-        throw EntryTestNeedsArrangement::for('MessageReactionTool', [
-            'the argument message_id',
-            'the argument emoji',
-            'the argument request_key',
-            'the expected commands',
-            'the sink replies',
-        ]);
+        $start = $journal->owner()->signedStart('Builder');
+        $chats = $journal->fixtures(ChatFixtures::class)->pairChatBetween('Owner', 'Builder');
+        $message = $journal->post('Owner', $chats->pairChatOf('Owner', 'Builder'), 'The build is green.');
+
+        return ToolCall::by($start)
+            ->arguments(['message_id' => $message->id, 'emoji' => '👍', 'request_key' => 'react-1'])
+            ->reply(ReactCommand::class, (string) Str::ulid())
+            ->expects(ExpectedCommand::of(ReactCommand::class, ['messageId' => $message->id, 'emoji' => '👍']));
     }
 }
