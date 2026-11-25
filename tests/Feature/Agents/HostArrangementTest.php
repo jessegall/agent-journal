@@ -8,6 +8,7 @@ use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
+use App\Contracts\Hosts\DockerImageVerifier;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Projects\ArrangementType;
 use App\Exceptions\ArrangementUnknown;
@@ -22,6 +23,7 @@ use App\Support\Capabilities\CodexHeadlessCapabilities;
 use App\Support\OpenedRuntime;
 use App\Values\OwnerAuthority;
 use Illuminate\Support\Str;
+use Tests\Fixtures\Agents\CountingImageVerifier;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsHostCalls;
@@ -63,6 +65,7 @@ final class HostArrangementTest extends TestCase
         parent::setUp();
 
         $this->chooseActiveAccounts();
+        $this->app->instance(DockerImageVerifier::class, new CountingImageVerifier());
     }
 
     public function test_by_default_the_journal_is_local_and_a_local_host_starts_as_before(): void

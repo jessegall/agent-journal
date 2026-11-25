@@ -58,7 +58,7 @@ final class MenuEntryTest extends TestCase
             ->firstOrFail();
 
         $this->assertSame($entry->id, $found->id);
-        $this->assertEquals($this->steps(), $found->steps);
+        $this->assertEquals($this->steps(), $found->steps->all());
         $this->assertSame(false, $found->buildOn('2.1.323')?->isStale);
         $this->assertTrue($found->wasProvenElsewhere('2.2.0'));
     }

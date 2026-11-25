@@ -251,7 +251,7 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
     {
         $builds = array_column($this->builds->items(), null, 'build');
         $builds[$build->build] = $build;
-        $this->builds = MenuEntryBuild::collect($builds, DataCollection::class);
+        $this->builds = MenuEntryBuild::collect(array_values($builds), DataCollection::class);
         $this->save();
     }
 
@@ -351,7 +351,7 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
     {
         $query->whereJsonContains('builds', [[
             'build' => $build,
-            'stale' => false,
+            'is_stale' => false,
         ]]);
     }
 

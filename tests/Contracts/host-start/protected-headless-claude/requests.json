@@ -9,8 +9,8 @@
             "message": null,
             "parts": [
                 {
-                    "type": "text",
-                    "text": "Say hello"
+                    "text": "Say hello",
+                    "type": "text"
                 }
             ],
             "model": null,

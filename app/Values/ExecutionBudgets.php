@@ -8,6 +8,7 @@ use App\Exceptions\ExecutionBudgetInvalid;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;
+use Spatie\LaravelData\Support\Transformation\TransformationContextFactory;
 
 /**
  * The resources one start may use: every limit above zero, memory and swap equal, and none above
@@ -85,6 +86,16 @@ final class ExecutionBudgets extends Data
                 throw ExecutionBudgetInvalid::aboveHost($name, $budgetAmount, $most);
             }
         }
+    }
+
+    /**
+     * The budgets as the host reads them, by their property names; the stored column keeps its snake case keys.
+     *
+     * @return array<string, int|float>
+     */
+    public function hostBudgets(): array
+    {
+        return $this->transform(TransformationContextFactory::create()->withoutPropertyNameMapping());
     }
 
     /**

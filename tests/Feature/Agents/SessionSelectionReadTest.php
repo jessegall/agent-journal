@@ -61,7 +61,7 @@ final class SessionSelectionReadTest extends TestCase
         $option = $this->app->make(SessionResolver::class)->active()[0];
 
         $this->assertSame(
-            [DefaultDrivers::CLAUDE_CODE, 'claude-sonnet-5-5', ModelSelectionType::ProfileDefault, null],
+            [DefaultDrivers::CLAUDE_CODE, 'sonnet', ModelSelectionType::ProfileDefault, null],
             [
                 $option->selection->driver,
                 $option->selection->model,

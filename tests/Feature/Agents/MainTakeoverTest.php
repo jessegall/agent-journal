@@ -10,9 +10,9 @@ use App\Enums\Accounts\CommandEntry;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Inboxes\Inbox;
+use App\Models\Inboxes\InboxMember;
 use App\Support\EntryDispatchers;
 use App\Support\MainInboxHandover;
-use App\Support\RegisteredInboxes;
 use Tests\Support\MessagingTestCase;
 
 /**
@@ -49,11 +49,7 @@ final class MainTakeoverTest extends MessagingTestCase
 
     private function isSeatedAtMain(AgentSession $session): bool
     {
-        $mainInboxId = Inbox::main()->id;
-        $seated = $this->app->make(RegisteredInboxes::class)->inboxIdsOf($this->actorOf($session));
-        $inboxIds = $seated->pluck('inbox_id')->all();
-
-        return in_array($mainInboxId, $inboxIds, true);
+        return InboxMember::findActive(Inbox::main()->id, $this->actorOf($session)) !== null;
     }
 
     private function agentOf(AgentSession $session): Agent

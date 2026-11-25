@@ -10,6 +10,7 @@ use App\Exceptions\ManifestRefused;
 use App\Values\ExecutionBudgets;
 use App\Values\ExecutionPolicy;
 use App\Values\WorkspacePreparation;
+use JsonSerializable;
 
 /**
  * What the protected host starts a helper container with: the image by
@@ -17,7 +18,7 @@ use App\Values\WorkspacePreparation;
  * security profiles, rotated logs and the start's budgets, which size its tmpfs folders, and where a contained
  * workspace comes from. It is validated when built; anything else is refused by name.
  */
-final readonly class ContainerManifest
+final readonly class ContainerManifest implements JsonSerializable
 {
     public const string USER = '10001:10001';
 
@@ -50,6 +51,16 @@ final readonly class ContainerManifest
         public WorkspacePreparation|null $workspacePreparation,
         public StartProfileType $startProfile,
     ) {}
+
+    /**
+     * The manifest as the host reads it, with the budgets under their property names.
+     *
+     * @return array<string, mixed>
+     */
+    public function jsonSerialize(): array
+    {
+        return [...get_object_vars($this), 'budgets' => $this->budgets->hostBudgets()];
+    }
 
     /**
      * The manifest of one session's start: its workspace mounted at /workspace as its arrangement places it and as the

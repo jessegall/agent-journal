@@ -36,8 +36,8 @@ final class StoredPolicyShapesTest extends TestCase
         $stored = $access->toArray();
         $read = AccessPolicy::from($stored);
 
-        $this->assertSame(['read', 'execute'], $stored['paths'][0]['access']);
-        $this->assertEquals($access, $read);
+        $this->assertSame(['read', 'execute'], $stored['paths'][0]['accesses']);
+        $this->assertSame($stored, $read->toArray());
     }
 
     public function test_stop_conditions_read_back_as_they_were_stored(): void
@@ -48,7 +48,7 @@ final class StoredPolicyShapesTest extends TestCase
         $read = StopConditions::from($stored);
 
         $this->assertSame(10, $stored['conditions'][0]['timeout_seconds']);
-        $this->assertEquals($conditions, $read);
+        $this->assertSame($stored, $read->toArray());
     }
 
     public function test_an_execution_policy_reads_back_as_it_was_stored(): void
@@ -66,6 +66,6 @@ final class StoredPolicyShapesTest extends TestCase
 
         $this->assertSame('protected_host', $stored['mode']);
         $this->assertSame(2, $stored['budgets']['cpu_cores']);
-        $this->assertEquals($execution, $read);
+        $this->assertSame($stored, $read->toArray());
     }
 }

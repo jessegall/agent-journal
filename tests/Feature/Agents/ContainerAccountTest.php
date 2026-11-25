@@ -156,7 +156,7 @@ final class ContainerAccountTest extends TestCase
             self::REPORT_MISSING,
             (string) $start->refusal,
         );
-        $this->assertNull($this->asSystem(new ClaimStartCommand($host->hostId, $start->sessionId)));
+        $this->assertNull($this->asSystem(new ClaimStartCommand($host->hostId, $start->session_id)));
         $this->actAsOwner();
         $agent = $this->app->make(AgentDirectory::class)->visibleAgent($start->agent_id);
         $this->assertSame(AgentPresence::Failed, $agent->presence);

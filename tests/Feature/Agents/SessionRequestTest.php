@@ -12,13 +12,14 @@ use App\Enums\Profiles\ModelTier;
 use App\Enums\Sessions\ModelSelectionType;
 use App\Enums\Sessions\StartDisposition;
 use App\Enums\Sessions\StartOriginType;
-use App\Exceptions\SessionSelectionFixed;
 use App\Exceptions\SessionRequestMissing;
+use App\Exceptions\SessionSelectionFixed;
 use App\Exceptions\StartRequestConflict;
 use App\Models\Agents\Agent;
 use App\Models\Sessions\SessionRequest;
 use App\Support\ActorIdentity;
 use App\Support\DefaultDrivers;
+use App\Support\RecordIdentity;
 use App\Support\StartSessions;
 use App\Values\ModelSelection;
 use App\Values\ProfileDefaults;
@@ -30,6 +31,7 @@ use PhpOption\None;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -92,11 +94,11 @@ final class SessionRequestTest extends TestCase
         )->session->refresh();
 
         $this->assertSame(
-            [ModelSelectionType::ProfileDefault, null, 'claude-sonnet-5-5', $requestId],
+            [ModelSelectionType::ProfileDefault, null, 'sonnet', $requestId],
             [$session->requested_model_type, $session->requested_model, $session->model, $session->start_request_id],
         );
         $this->assertSame(
-            [DefaultDrivers::CLAUDE_CODE, 'claude-sonnet-5-5', 'journal-researcher', 4],
+            [DefaultDrivers::CLAUDE_CODE, 'sonnet', 'journal-researcher', 4],
             [
                 $session->selection->driver,
                 $session->selection->model,
@@ -149,11 +151,12 @@ final class SessionRequestTest extends TestCase
     {
         $own = $this->agent('Own');
         $other = $this->agent('Other');
+        $ownerWork = new RecordIdentity('helpers.helper-job', TestIds::of(7));
         $ownRequest = $this->request(
             $own,
             TestSelections::requestId(),
             ModelSelection::named('claude-opus-5-5'),
-            'helpers.helper-job 7',
+            $ownerWork,
         );
         $otherRequest = $this->request($other, TestSelections::requestId(), ModelSelection::named('claude-opus-5-5'));
         SessionRequest::create($ownRequest, TestSelections::pinOf($ownRequest), ActorIdentity::system(), None::create());
@@ -167,7 +170,7 @@ final class SessionRequestTest extends TestCase
         $this->assertSame($own->id, $resolver->own($ownRequest->requestId)->agentId);
         $this->assertSame(
             [$ownRequest->requestId],
-            array_map(fn ($record) => $record->requestId, $resolver->forOwnerReference('helpers.helper-job 7')),
+            array_map(fn ($record) => $record->requestId, $resolver->forOwnerReference($ownerWork->reference())),
         );
 
         $this->expectException(SessionRequestMissing::class);
@@ -184,7 +187,7 @@ final class SessionRequestTest extends TestCase
         Agent $agent,
         string $requestId,
         ModelSelection $model,
-        string|null $owner = null,
+        RecordIdentity|null $owner = null,
     ): StartRequest {
         $origin = $owner === null ? StartOriginType::MainStart : StartOriginType::OwnerRequest;
 

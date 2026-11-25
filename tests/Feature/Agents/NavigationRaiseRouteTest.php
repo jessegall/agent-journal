@@ -173,7 +173,7 @@ final class NavigationRaiseRouteTest extends TestCase
 
         $this->assertSame(['entry', false, $entry->id], [
             $answer->json('answer'),
-            $answer->json('guarded'),
+            $answer->json('isGuarded'),
             $answer->json('entry.id'),
         ]);
         $this->assertSame('GPT-6', $answer->json('entry.steps.0.choose'));
@@ -191,7 +191,7 @@ final class NavigationRaiseRouteTest extends TestCase
 
         $this->assertSame(['entry', true, $entry->id], [
             $answer->json('answer'),
-            $answer->json('guarded'),
+            $answer->json('isGuarded'),
             $answer->json('entry.id'),
         ]);
     }
@@ -207,7 +207,7 @@ final class NavigationRaiseRouteTest extends TestCase
         $answer = $this->raise($host, $opened, $request)->assertOk();
 
         $this->assertSame($entry->id, $answer->json('entry.id'));
-        $this->assertFalse($answer->json('guarded'));
+        $this->assertFalse($answer->json('isGuarded'));
     }
 
     public function test_a_guarded_entry_is_found_behind_twenty_newer_stale_entries(): void
@@ -221,7 +221,7 @@ final class NavigationRaiseRouteTest extends TestCase
         $answer = $this->raise($host, $opened, $request)->assertOk();
 
         $this->assertSame($entry->id, $answer->json('entry.id'));
-        $this->assertTrue($answer->json('guarded'));
+        $this->assertTrue($answer->json('isGuarded'));
     }
 
     public function test_saving_reuses_the_exact_path_behind_twenty_newer_paths(): void

@@ -161,8 +161,8 @@ final class ContainedProgramEvidenceTest extends TestCase
     {
         return array_map(
             fn (string $item): array => in_array($item, $unenforced, true)
-                ? ['item' => $item, 'enforced' => false, 'evidence' => '', 'reason' => $reason]
-                : ['item' => $item, 'enforced' => true, 'evidence' => 'run-1', 'reason' => ''],
+                ? ['item' => $item, 'isEnforced' => false, 'evidence' => '', 'reason' => $reason]
+                : ['item' => $item, 'isEnforced' => true, 'evidence' => 'run-1', 'reason' => ''],
             self::ITEMS,
         );
     }
