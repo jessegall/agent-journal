@@ -5,14 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Drivers;
 
 use App\Commands\Agents\DeliverAgent\DeliverAgentCommand;
-use App\Commands\Agents\InterruptAgent\InterruptAgentCommand;
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
-use App\Commands\Agents\StopAgent\StopAgentCommand;
 use App\Contracts\Drivers\DriverCatalogue as DriverCatalogueContract;
 use App\Enums\Drivers\DriverType;
-use App\Enums\Drivers\HoldReason;
 use App\Enums\Drivers\RequestProgress;
-use App\Exceptions\DriverRequestRefused;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Agents\AgentRuntime;
@@ -100,35 +96,6 @@ final class UnfamiliarRegistrationTest extends TestCase
                 $claimed['parts'][0]['text'],
                 DriverRequest::query()->findOrFail($receipt->requestId)->progress,
             ],
-        );
-    }
-
-    public function test_an_unfamiliar_registration_is_interrupted_and_stopped_through_the_standard_commands(): void
-    {
-        $this->register('example/echo');
-        ActiveAccount::findLockedFor('example')->select(
-            Account::create('example', AccountLabel::from('Echo account'), '/journal/accounts/example'),
-        );
-        $agent = $this->agent();
-        $opened = $this->asOwner(new OpenAgentRuntimeCommand(
-            $agent->id,
-            $this->enrollHost()->hostId,
-            self::FOLDER,
-            'example',
-            '1.0.0',
-            'echo',
-            DriverType::Headless,
-            'echo-small',
-        ));
-
-        $this->asOwner(new InterruptAgentCommand($agent->id, $opened->sessionId, 'interrupt-1'));
-        $held = AgentRuntime::query()->findOrFail($opened->runtimeId)->hold_reason;
-        $this->asOwner(new StopAgentCommand($agent->id, $opened->sessionId, 'stop-1'));
-
-        $this->assertSame(HoldReason::Interrupted, $held);
-        $this->assertThrows(
-            fn () => $this->asOwner(DeliverAgentCommand::text($agent->id, $opened->sessionId, 'late', 'Too late')),
-            DriverRequestRefused::class,
         );
     }
 

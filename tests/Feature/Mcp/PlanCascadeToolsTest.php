@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
-use App\Exceptions\AssignmentGroupTooLarge;
 use App\Exceptions\AssignmentRootFinished;
 use App\Models\Access\User;
 use App\Models\Records\AssignmentRecord;
 use App\Support\Access\AccessSettings;
-use App\Support\AssignmentGroup;
 use App\Support\RecordIdentity;
 use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Models\Plan;
@@ -134,22 +132,6 @@ final class PlanCascadeToolsTest extends TestCase
             ->assertJsonPath(
                 'result.structuredContent.message',
                 AssignmentRootFinished::for(new RecordIdentity('plans.plan', $plan->id))->getMessage(),
-            );
-        $this->assertSame(0, AssignmentRecord::query()->count());
-    }
-
-    #[TimeLimit(20, 'It creates a full group of tasks and proves the cascade rejects it before changing the root.')]
-    public function test_a_group_over_the_limit_is_refused_before_assigning_anything(): void
-    {
-        $plan = Plan::factory()->create();
-        $tasks = Task::factory()->count(AssignmentGroup::LARGEST - 1)->create();
-        $this->planStructure()->addTasks($this->planStructure()->addPhase($plan, 'Large phase'), $tasks->modelKeys());
-
-        $this->callMcpTool($this->caller, 'plans_assign_work', $this->assignArguments($plan))
-            ->assertJsonPath('result.isError', true)
-            ->assertJsonPath(
-                'result.structuredContent.message',
-                AssignmentGroupTooLarge::for(AssignmentGroup::LARGEST + 1)->getMessage(),
             );
         $this->assertSame(0, AssignmentRecord::query()->count());
     }

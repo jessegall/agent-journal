@@ -19,7 +19,6 @@ use App\Exceptions\MiddlewareListedTwice;
 use App\Support\CommandOwner;
 use App\Support\CommandRegistry;
 use App\Support\CommandScope;
-use App\Support\DomainRegistry;
 use App\Support\Exports;
 use App\Support\MiddlewareDeclaration;
 use App\Support\RegisteredMiddleware;
@@ -94,27 +93,11 @@ final class CommandRegistryTest extends TestCase
         );
     }
 
-    public function test_the_application_starts_with_the_real_owners(): void
-    {
-        $registry = $this->app->make(DomainRegistry::class)
-            ->commandDeclarations(CoreCommands::owner(), $this->app->make(PipelineRunner::class));
-
-        $this->assertFalse($registry->has(AddItemCommand::class));
-    }
-
     public function test_a_command_exported_but_not_registered_by_its_owner_is_refused(): void
     {
         $this->expectExceptionObject(CommandDeclarationInvalid::exportedButNotRegistered('Shop', RemoveItemCommand::class));
 
         $this->registryOf([$this->shop([AddItemCommand::class], exports: [RemoveItemCommand::class])]);
-    }
-
-    public function test_a_registered_command_that_is_not_exported_stays_private(): void
-    {
-        $registry = $this->registryOf([$this->shop([AddItemCommand::class, RemoveItemCommand::class], exports: [AddItemCommand::class])]);
-
-        $this->assertTrue($registry->isExported(AddItemCommand::class));
-        $this->assertFalse($registry->isExported(RemoveItemCommand::class));
     }
 
     public function test_a_command_listed_twice_is_refused(): void

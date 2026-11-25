@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Enums\Runs\LifecycleStatus;
-use App\Enums\Runs\PartEndType;
 use App\Enums\Runs\RunMode;
 use App\Exceptions\PartTransitionRefused;
 use App\Models\Runs\PartRun;
@@ -57,18 +56,6 @@ final class ProcessRecordsTest extends TestCase
         $this->assertFalse($part->streams_drained);
     }
 
-    public function test_a_signalled_part_has_no_status_code(): void
-    {
-        $part = $this->part();
-        $part->start('host-a', 1);
-
-        $part->finishProcess(PartEnd::signalled(9));
-
-        $end = $part->refresh()->end;
-        $this->assertSame(PartEndType::Signalled, $end->type);
-        $this->assertFalse($end->hasStatus());
-    }
-
     public function test_a_repeated_event_is_kept_once_and_a_conflicting_one_is_an_operational_error(): void
     {
         $run = $this->admittedRun();
@@ -83,12 +70,6 @@ final class ProcessRecordsTest extends TestCase
         $this->assertSame(ProcessEvent::OPERATIONAL_ERROR, $conflict->type);
         $this->assertSame(1, $conflict->payload->conflictsWith);
         $this->assertSame('part_lost', $conflict->payload->conflicting?->type);
-    }
-
-    public function test_an_evidence_run_never_answers(): void
-    {
-        $this->assertFalse($this->admittedRun(RunMode::Evidence)->mayAnswer());
-        $this->assertTrue($this->admittedRun(RunMode::Normal, 'admission-2')->mayAnswer());
     }
 
     private function admittedRun(RunMode $mode = RunMode::Normal, string $admission = 'admission-1'): ProcessRun

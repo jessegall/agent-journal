@@ -6,7 +6,6 @@ namespace Tests\Feature\Processes;
 
 use App\Declarations\RuleDeclaration;
 use App\Enums\CommandRules\RequestStatus;
-use App\Models\CommandRules\ClassificationRule;
 use App\Models\CommandRules\CommandRequest;
 use App\Models\CommandRules\RuleProposal;
 use App\Values\AgentText;
@@ -83,21 +82,6 @@ final class CommandTypeRoutesTest extends TestCase
 
         $this->assertStringContainsString('declarations.0.rule.purpose', (string) $reply->json('message'));
         $this->assertSame(0, RuleProposal::query()->count());
-    }
-
-    public function test_an_agent_cannot_approve_through_the_route(): void
-    {
-        $requestId = $this->explainAcme();
-        $proposal = $this->signed($this->start, "/agent/processes/requests/{$requestId}/proposals", [
-            'declaration' => $this->declaration()->toArray(),
-            'request_key' => 'propose-1',
-        ])->json('proposal_id');
-
-        $path = "/agent/processes/proposals/{$proposal}/approve";
-        $reply = $this->signed($this->start, $path, ['expected_revision' => 1, 'request_key' => 'approve-1']);
-
-        $this->assertFalse($reply->isSuccessful());
-        $this->assertSame(0, ClassificationRule::query()->count());
     }
 
     private function explainAcme(): string

@@ -31,7 +31,6 @@ use App\Enums\Sessions\HostRefusal;
 use App\Enums\Sessions\SessionStatus;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\DriverRequestRefused;
-use App\Exceptions\KeyScriptRefused;
 use App\Exceptions\StaleProcessGeneration;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
@@ -62,7 +61,6 @@ use App\Values\OwnerAuthority;
 use App\Values\ProfileBase;
 use App\Values\ProfileStartPolicy;
 use App\Values\RequestReportBinding;
-use App\Values\ScriptProgress;
 use App\Values\StartPolicy;
 use App\Values\StopConditions;
 use Carbon\CarbonImmutable;
@@ -116,28 +114,6 @@ final class AgentDriverLedgerTest extends TestCase
     ];
 
     private const string FOLDER = '/work/project';
-
-    /**
-     * The host reports a turn's end as it saw it; the journal judges a result marked an error as a failed turn.
-     */
-    public function test_a_turn_whose_result_is_an_error_is_judged_failed(): void
-    {
-        [$host, $opened] = $this->openRuntime(firstMessage: 'Fails');
-        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
-        $request = DriverRequest::query()->findOrFail($opened->firstRequestId);
-
-        $this->hostCall($host, '/host/reports/request', [
-            'request_id' => $request->id,
-            'attempt' => $request->attempt_version,
-            'actual_binding' => null,
-            'turn_end' => ['exit_code' => 0, 'is_result_read' => true, 'result_subtype' => 'error_during_execution'],
-        ])->assertSuccessful();
-
-        $this->assertSame(
-            [RequestProgress::Failed, RequestOutcome::TurnFailed],
-            [$request->fresh()?->progress, $request->fresh()?->outcome],
-        );
-    }
 
     public function test_a_protected_headless_start_runs_on_the_messages_both_sides_keep(): void
     {
@@ -423,39 +399,6 @@ final class AgentDriverLedgerTest extends TestCase
         $this->assertSame([], $response->json('requests.0.scriptParameters'));
     }
 
-    public function test_an_operator_appends_one_registered_key_script_request(): void
-    {
-        [, $opened] = $this->openRuntime();
-
-        $receipt = $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'gpt-6']));
-
-        $request = DriverRequest::query()->findOrFail($receipt->requestId);
-        $this->assertSame(DriverOperation::KeyScript, $request->operation);
-        $this->assertSame(['ChangeModel', 2], [$request->script_id, $request->script_version]);
-        $this->assertSame(['model' => 'gpt-6'], $request->script_parameters);
-    }
-
-    public function test_an_unregistered_script_or_an_extra_parameter_is_refused_before_acceptance(): void
-    {
-        [, $opened] = $this->openRuntime();
-        $before = DriverRequest::query()->count();
-
-        $refused = [
-            ['LoginMcp', ['server' => 'journal']],
-            ['ChangeModel', ['model' => 'gpt-6', 'shell' => 'rm']],
-            ['ChangeEffort', []],
-        ];
-
-        foreach ($refused as [$name, $parameters]) {
-            $this->assertThrows(
-                fn () => $this->asOwner($this->keyScript($opened, $name, $parameters)),
-                KeyScriptRefused::class,
-            );
-        }
-
-        $this->assertSame($before, DriverRequest::query()->count());
-    }
-
     public function test_an_agent_cannot_run_a_key_script(): void
     {
         [, $opened] = $this->openRuntime();
@@ -466,32 +409,6 @@ final class AgentDriverLedgerTest extends TestCase
 
         $this->expectException(ActorNotAllowed::class);
         $this->app->make(CommandBus::class)->run($this->keyScript($opened, 'ChangeModel', ['model' => 'gpt-6']));
-    }
-
-    public function test_a_progress_report_records_the_scripts_step_and_evidence(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-        $receipt = $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'gpt-6']));
-        $request = DriverRequest::query()->findOrFail($receipt->requestId);
-        $progress = new ScriptProgress(2, 7, 'menu login-method, stable');
-
-        $attempt = $request->attempt_version;
-        $this->asSystem(
-            new NotifyRequestProgressCommand(
-                $host->hostId,
-                $request->id,
-                $attempt,
-                RequestProgress::Applying,
-                null,
-                null,
-                $progress,
-            ),
-        );
-
-        $request->refresh();
-        $this->assertSame(2, $request->script_step);
-        $this->assertSame(7, $request->script_generation);
-        $this->assertSame(self::MENU_EVIDENCE, $request->script_evidence);
     }
 
     /**

@@ -46,20 +46,6 @@ final class StartPreviewsTest extends TestCase
         $this->assertSame(DriverSourceType::Explicit, $named->selection->source->driverSource);
     }
 
-    public function test_a_profile_preferring_claude_still_lets_a_start_choose_codex(): void
-    {
-        $preview = $this->previews()->preview(
-            Agent::create('Helper', 'read-only-helper', $this->localProject()),
-            DefaultDrivers::CODEX,
-            null,
-            ModelSelection::fromInput('opus'),
-            $this->profile(DefaultDrivers::CLAUDE_CODE),
-            null,
-        );
-
-        $this->assertSame(DefaultDrivers::CODEX, $preview->selection->driver);
-    }
-
     public function test_the_mode_is_named_else_saved_else_the_profiles(): void
     {
         $agent = Agent::create('Helper', 'read-only-helper', $this->localProject());

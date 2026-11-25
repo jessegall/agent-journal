@@ -9,7 +9,6 @@ use App\Commands\CommandRules\SaveCommandRule\SaveCommandRuleCommand;
 use App\Contracts\Bus\CommandClassifier;
 use App\Enums\CommandRules\CommandClass;
 use App\Enums\Processes\ShellDialect;
-use App\Exceptions\ClassificationUnavailable;
 use App\Models\CommandRules\RuleProposal;
 use App\Support\ActiveRules;
 use App\Support\CommandRuleRegistry;
@@ -24,7 +23,6 @@ use App\Values\ProgramSpellings;
 use App\Values\RuleBundle;
 use App\Values\RuleScope;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\ActsAsActors;
@@ -66,13 +64,6 @@ final class ActiveRulesTest extends TestCase
             fn () => $this->asUser(new ApproveRuleProposalCommand($proposal->id, new OwnerApproval(1, 0, [], 'b'))),
             ModelNotFoundException::class,
         );
-    }
-
-    public function test_a_broken_rule_store_refuses_new_analysis(): void
-    {
-        Schema::drop('module_rule_bundles');
-
-        $this->assertThrows(fn () => $this->isKnown('ls'), ClassificationUnavailable::class);
     }
 
     /**

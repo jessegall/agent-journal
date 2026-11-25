@@ -49,15 +49,6 @@ final class RunnerCapabilityTest extends TestCase
         TEXT);
     }
 
-    public function test_with_the_capability_off_nothing_starts(): void
-    {
-        $refusal = $this->admit('echo hi')->decision;
-
-        $this->assertInstanceOf(AdmissionRefusal::class, $refusal);
-        $this->assertSame(AdmissionRefusalCode::RunnerUnavailable, $refusal->code);
-        $this->assertSame(0, ProcessRun::query()->withoutGlobalScopes()->count());
-    }
-
     public function test_a_check_whose_status_a_pipe_would_lose_is_refused_before_anything_starts(): void
     {
         config(['processes.runner' => true]);

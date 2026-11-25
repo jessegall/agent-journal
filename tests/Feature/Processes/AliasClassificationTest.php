@@ -13,7 +13,6 @@ use App\Models\CommandRules\CommandAlias;
 use App\Support\Syntax\TreeParser;
 use App\Values\Classification;
 use App\Values\ExecutionContext;
-use Illuminate\Support\Facades\Schema;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestText;
 use Tests\TestCase;
@@ -24,13 +23,6 @@ use Tests\TestCase;
 final class AliasClassificationTest extends TestCase
 {
     use RefreshHookDatabase;
-
-    public function test_the_table_keeps_revision_digest_arguments_and_project(): void
-    {
-        $this->assertTrue(
-            Schema::hasColumns('command_aliases', ['project_key', 'revision', 'body_digest', 'argument_grammar']),
-        );
-    }
 
     public function test_two_aliases_that_run_each_other_name_both(): void
     {

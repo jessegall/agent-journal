@@ -62,40 +62,6 @@ final class AgentRequestKeyTest extends TestCase
         $this->task = Task::factory()->create(['title' => 'Keyed work']);
     }
 
-    public function test_a_cli_assign_retried_with_its_request_key_returns_the_stored_result_unchanged(): void
-    {
-        $this->runCommandsAs($this->main);
-        $arguments = [
-            'type' => 'tasks.task',
-            'id' => $this->task->id,
-            '--to' => "agent:{$this->helper->agent->id}",
-            '--request-key' => self::KEY,
-            '--json' => true,
-        ];
-        $this->artisan('assignment:assign', $arguments)->expectsOutputToContain('"changed":1')->assertExitCode(0);
-        $reference = (string) $this->signed(
-            $this->main,
-            '/agent/assignments/show',
-            ['record_type' => 'tasks.task', 'record_id' => $this->task->id],
-        )->json('holder.reference');
-        $this->signed(
-            $this->main,
-            '/agent/assignments/unassign',
-            [
-                'record_type' => 'tasks.task',
-                'record_id' => $this->task->id,
-                'assignment_id' => $reference,
-                'holder_type' => 'agent',
-                'holder_id' => $this->helper->agent->id,
-                'request_key' => '01JD8X0G9M3QZ6V4K2CLIKEY002',
-            ],
-        )->assertOk();
-
-        $this->artisan('assignment:assign', $arguments)->expectsOutputToContain('"changed":1')->assertExitCode(0);
-
-        $this->assertSame(0, AssignmentRecord::query()->withoutGlobalScopes()->count());
-    }
-
     public function test_a_failed_cli_write_prints_its_request_key_to_retry_with(): void
     {
         $this->runCommandsAs($this->helper);

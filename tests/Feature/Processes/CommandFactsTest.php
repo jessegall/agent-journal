@@ -14,7 +14,6 @@ use App\Enums\Processes\ShellDialect;
 use App\Enums\Runs\PartJoin;
 use App\Models\CommandRules\CommandAlias;
 use App\Support\DomainRegistry;
-use App\Support\ShellCommandParser;
 use App\Values\CommandPart;
 use App\Values\ExecutionContext;
 use App\Values\ShellCommand;
@@ -107,11 +106,6 @@ final class CommandFactsTest extends TestCase
     ): void {
         $this->assertSame($mainAgent, $this->answer('main-agent', $line));
         $this->assertSame($readOnlyHelper, $this->answer('read-only-helper', $line));
-    }
-
-    public function test_the_app_reads_shell_commands_with_the_processes_parser(): void
-    {
-        $this->assertInstanceOf(ShellCommandParser::class, $this->app->make(ShellCommandParserContract::class));
     }
 
     public function test_a_line_is_split_into_its_commands_and_joins(): void

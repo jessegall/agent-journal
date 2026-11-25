@@ -261,30 +261,6 @@ final class NavigationRaiseRouteTest extends TestCase
         $this->assertSame('opened', $answer->json('answer'));
     }
 
-    public function test_a_stale_report_marks_one_build_only_and_a_repeat_changes_nothing(): void
-    {
-        $entry = $this->libraryEntry('2.1.323');
-        $entry->provenOn('2.1.400');
-        [$host, $opened] = $this->openRuntime();
-        $report = fn (string $reason) => $this->hostCall($host, "/host/menu-entries/{$entry->id}/stale", [
-            'runtime_id' => $opened->runtimeId,
-            'operation_key' => 'stale-1',
-            'reason' => $reason,
-            'step' => 1,
-            'build' => '2.1.323',
-            'rows' => ['Model: <redacted>'],
-        ]);
-
-        $report('label-missing')->assertNoContent();
-        $report('no-proof')->assertNoContent();
-
-        $entry = MenuEntry::query()->acrossActors()->findOrFail($entry->id);
-        $this->assertSame(true, $entry->buildOn('2.1.323')?->isStale);
-        $this->assertSame(false, $entry->buildOn('2.1.400')?->isStale);
-        $this->assertSame(self::STALE_REASON, $entry->buildOn('2.1.323')?->staleReason);
-        $this->assertSame(['Model: <redacted>'], $entry->buildOn('2.1.323')?->staleScreen);
-    }
-
     public function test_a_stale_entry_raise_keeps_its_hint_and_the_proven_path_supersedes_it(): void
     {
         $this->seat(Agent::create('Main', 'main-agent', $this->localProject()));

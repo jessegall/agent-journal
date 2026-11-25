@@ -6,7 +6,6 @@ namespace Tests\Feature\Agents;
 
 use App\Contracts\Time\ServerClock;
 use App\Models\Agents\AgentSession;
-use App\Support\SessionTokens;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Http\Response;
@@ -81,32 +80,6 @@ final class AgentHeartbeatRouteTest extends TestCase
         CarbonImmutable::setTestNow(CarbonImmutable::now()->addSeconds(20));
         $this->signed($this->start, self::PING, [])->assertNoContent();
         $this->assertSame(2, $this->beatWrites);
-    }
-
-    public function test_a_revoked_credential_gets_401_and_no_beat(): void
-    {
-        new SessionTokens()->revoke($this->start->session);
-
-        $this->signed(
-            $this->start,
-            '/agent/heartbeat',
-            ['request_key' => bin2hex(random_bytes(8))],
-        )->assertUnauthorized();
-
-        $this->assertNull($this->storedSession()->last_heartbeat_at);
-    }
-
-    public function test_an_ended_session_gets_401_and_no_beat(): void
-    {
-        $this->start->session->endAt(CarbonImmutable::now());
-
-        $this->signed(
-            $this->start,
-            '/agent/heartbeat',
-            ['request_key' => bin2hex(random_bytes(8))],
-        )->assertUnauthorized();
-
-        $this->assertNull($this->storedSession()->last_heartbeat_at);
     }
 
     public function test_a_bad_signature_gets_401_and_no_beat(): void

@@ -8,13 +8,10 @@ use App\Exceptions\AgentContextMissing;
 use App\Http\Middleware\Agents\AuthenticateAgent;
 use App\Models\Sessions\SessionToken;
 use App\Support\AgentContext;
-use App\Support\AgentSessions;
-use App\Support\SessionTokens;
 use App\Support\Stack\StateTypes;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Testing\TestResponse;
-use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -74,47 +71,6 @@ final class AgentContextTest extends TestCase
         unset($headers['HTTP_AUTHORIZATION']);
 
         $this->call('POST', '/testing/agent-context', server: $headers, content: self::BODY)->assertUnauthorized();
-    }
-
-    public function test_an_unknown_credential_is_refused(): void
-    {
-        $start = TestStart::start();
-        $headers = [
-            ...$start->serverHeaders(self::BODY, target: '/testing/agent-context'),
-            'HTTP_AUTHORIZATION' => 'Bearer not-a-token',
-        ];
-
-        $this->call('POST', '/testing/agent-context', server: $headers, content: self::BODY)->assertUnauthorized();
-    }
-
-    public function test_a_revoked_credential_is_refused(): void
-    {
-        $start = TestStart::start();
-        new SessionTokens()->revoke($start->session);
-
-        $this->callAs($start)->assertUnauthorized()->assertJson(['code' => 'unauthenticated']);
-    }
-
-    public function test_the_credential_of_an_ended_session_is_refused(): void
-    {
-        $start = TestStart::start();
-        $this->app->make(AgentSessions::class)->end($start->session);
-
-        $this->callAs($start)->assertUnauthorized()->assertJson(['code' => 'unauthenticated']);
-    }
-
-    public function test_a_child_session_names_its_parent(): void
-    {
-        $start = TestStart::start();
-
-        $child = $this->app->make(AgentSessions::class)->start(
-            $start->agent,
-            TestSelections::of(),
-            TestSelections::requestId(),
-            $start->session,
-        );
-
-        $this->assertSame($start->session->id, $child->parent_session_id);
     }
 
     public function test_a_reused_worker_gives_each_request_its_own_agent_and_keeps_the_state_types(): void

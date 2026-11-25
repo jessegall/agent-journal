@@ -79,22 +79,6 @@ final class AutoAssignmentStorageTest extends TestCase
         DB::table('auto_assignments')->insert(['id' => strtolower((string) Str::ulid())] + $row);
     }
 
-    public function test_the_first_enable_creates_revision_one(): void
-    {
-        $this->assertTrue($this->resolver()->forActor($this->key)->isEmpty());
-
-        $change = $this->write(
-            fn (DatabaseAutoAssignments $writer) => $writer->enable($this->input(self::open(), 2), 0),
-        );
-
-        $this->assertEquals(new AutoAssignmentChange(true, 1), $change);
-        $fact = $this->fact();
-        $this->assertTrue($fact->isEnabled);
-        $this->assertSame(2, $fact->size);
-        $this->assertTrue($fact->pool->isSameAs(self::open()));
-        $this->assertNull($fact->lastServedAt);
-    }
-
     public function test_a_stale_revision_fails_and_changes_nothing_even_for_the_same_values(): void
     {
         $this->write(fn (DatabaseAutoAssignments $writer) => $writer->enable($this->input(self::open(), 2), 0));

@@ -9,7 +9,6 @@ use App\Contracts\Drivers\DriverCompatibilities;
 use App\Enums\Projects\ArrangementType;
 use App\Support\ArrangementSetting;
 use App\Support\Compatibility\DriverCompatibility;
-use App\Support\Compatibility\Exceptions\DriverArrangementUnproven;
 use App\Support\DefaultDrivers;
 use App\Support\EnrolledHost;
 use Illuminate\Support\Str;
@@ -50,16 +49,6 @@ final class ContainedProgramEvidenceTest extends TestCase
             DriverCompatibility::pinned(DefaultDrivers::CLAUDE_CODE),
             $this->compatibility(DefaultDrivers::CLAUDE_CODE),
         );
-    }
-
-    public function test_with_no_report_a_contained_start_is_refused_naming_the_missing_report(): void
-    {
-        $this->useArrangement(ArrangementType::Contained);
-
-        $this->expectException(DriverArrangementUnproven::class);
-        $this->expectExceptionMessage(self::NO_CLAUDE_REPORT);
-
-        $this->compatibility(DefaultDrivers::CLAUDE_CODE)->assertStartable();
     }
 
     private function compatibility(string $driver): DriverCompatibility

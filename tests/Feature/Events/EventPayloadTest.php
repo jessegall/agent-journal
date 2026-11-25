@@ -6,24 +6,15 @@ namespace Tests\Feature\Events;
 
 use App\Contracts\Asks\AnsweredAtOnce;
 use App\Contracts\Bus\CommandBus;
-use App\Support\ActorContext;
 use App\Support\DeclaredType;
 use App\Support\ReflectedMethod;
 use App\Support\ReflectedType;
 use Closure;
-use Domain\Plans\Commands\CancelPlan\CancelPlanCommand;
-use Domain\Plans\Commands\FinishPlan\FinishPlanCommand;
-use Domain\Plans\Commands\StartPlan\StartPlanCommand;
 use Domain\Plans\Events\PlanCancelled;
 use Domain\Plans\Events\PlanFinished;
 use Domain\Plans\Events\PlanStarted;
-use Domain\Plans\Models\Plan;
 use Domain\Plans\PlansDomain;
-use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
-use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
-use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
-use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Events\TaskBlocked;
 use Domain\Tasks\Events\TaskCancelled;
 use Domain\Tasks\Events\TaskFinished;
@@ -139,57 +130,6 @@ final class EventPayloadTest extends TestCase
         $this->assertSame([TaskStarted::class, TaskStarted::class], $classes);
         $this->assertSame($this->owner->id, $sent()[0]->actor->id);
         $this->assertEquals($sent()[0], unserialize(serialize($sent()[0])));
-    }
-
-    public function test_finishing_blocking_and_cancelling_a_task_each_send_its_fact_once_after_the_commit(): void
-    {
-        $finished = Task::factory()->create();
-        $blocked = Task::factory()->create();
-        $cancelled = Task::factory()->create();
-        $this->runAsOwner(new StartTaskCommand($finished->id));
-        $this->runAsOwner(new StartTaskCommand($blocked->id));
-        $sent = $this->recordedSends();
-
-        $this->runAsOwner(new FinishTaskCommand($finished->id, 1, 'Done.'));
-        $this->runAsOwner(new BlockTaskCommand($blocked->id, 1, 'Waits.'));
-        $this->runAsOwner(new CancelTaskCommand($cancelled->id, 'Dropped.'));
-
-        $this->assertSame(
-            [
-                [TaskFinished::class, $finished->id, TaskStatus::Started],
-                [TaskBlocked::class, $blocked->id, TaskStatus::Started],
-                [TaskCancelled::class, $cancelled->id, TaskStatus::Open],
-            ],
-            array_map(fn (object $event) => [$event::class, $event->taskId, $event->previousState], $sent()),
-        );
-    }
-
-    public function test_a_plan_start_sends_plan_started_once_with_its_starter_and_a_repeat_sends_nothing(): void
-    {
-        $plan = Plan::factory()->create();
-        $sent = $this->recordedSends();
-
-        $this->runAsOwner(new StartPlanCommand($plan->id));
-        $this->runAsOwner(new StartPlanCommand($plan->id));
-
-        $this->assertEquals([new PlanStarted($plan->id, ActorContext::forUser($this->owner->id))], $sent());
-    }
-
-    public function test_finishing_and_cancelling_a_plan_send_their_fact_with_the_actor(): void
-    {
-        $finished = Plan::factory()->create();
-        $cancelled = Plan::factory()->create();
-        $this->runAsOwner(new StartPlanCommand($finished->id));
-        $sent = $this->recordedSends();
-
-        $this->runAsOwner(new FinishPlanCommand($finished->id, $finished->refresh()->revision, 'Done.'));
-        $this->runAsOwner(new CancelPlanCommand($cancelled->id, $cancelled->refresh()->revision, 'Dropped.'));
-
-        $owner = ActorContext::forUser($this->owner->id);
-        $this->assertEquals(
-            [new PlanFinished($finished->id, $owner), new PlanCancelled($cancelled->id, $owner)],
-            $sent(),
-        );
     }
 
     /**

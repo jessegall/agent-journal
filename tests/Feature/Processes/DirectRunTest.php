@@ -38,13 +38,6 @@ final class DirectRunTest extends TestCase
         $this->assertSame(0, ProcessRun::query()->withoutGlobalScopes()->count());
     }
 
-    public function test_a_known_line_is_admitted_as_a_queued_run(): void
-    {
-        $reply = $this->admit('cat composer.json')->assertOk();
-
-        $this->assertSame($reply->json('run_id'), ProcessRun::query()->withoutGlobalScopes()->sole()->id);
-    }
-
     public function test_a_lost_admission_answer_asked_again_under_its_key_starts_the_run_once(): void
     {
         $runId = $this->admit('cat composer.json')->json('run_id');

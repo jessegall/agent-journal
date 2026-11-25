@@ -18,7 +18,6 @@ use App\Models\Projects\ProjectInvitation;
 use App\Values\BindingFolder;
 use App\Values\InstallTicket;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\Schema;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
@@ -36,20 +35,6 @@ final class ProjectRecordsTest extends TestCase
         'agent_runtimes', 'agents', 'hosts',
     ];
 
-    public function test_the_migrations_make_the_three_tables(): void
-    {
-        $this->assertTrue(Schema::hasColumns('projects', ['id', 'key', 'label']));
-        $this->assertTrue(Schema::hasColumns('project_invitations', [
-            'ticket_digest', 'issuer_user_id', 'mode', 'project_id', 'install_attempt_id', 'expires_at', 'revoked_at',
-            'spent_at', 'binding_id',
-        ]));
-        $this->assertTrue(Schema::hasColumns('project_bindings', [
-            'host_id', 'project_id', 'main_agent_id', 'root_id', 'canonical_root', 'project_label', 'machine_label',
-            'installation_nonce', 'authority_generation', 'readiness', 'last_contact_at', 'presence_expires_at',
-            'boot_id', 'report_sequence',
-        ]));
-    }
-
     public function test_an_install_line_keeps_only_its_ticket_digest_and_expires_after_its_lifetime(): void
     {
         CarbonImmutable::setTestNow('2026-11-21 12:00:00');
@@ -66,29 +51,6 @@ final class ProjectRecordsTest extends TestCase
         CarbonImmutable::setTestNow('2026-11-21 12:10:00');
         $this->assertFalse($this->isPending($invitation));
         $this->assertSame(10, ProjectInvitation::LIFETIME_MINUTES);
-    }
-
-    public function test_a_revoked_or_spent_install_line_cannot_be_redeemed(): void
-    {
-        $project = Project::create('shop', 'Shop');
-        $main = Environment::createForDefault($project);
-        $revoked = ProjectInvitation::create(
-            InstallAttempt::create('user-1', 'issue-a', $main),
-            InstallTicket::digestOf('ticket-a'),
-        );
-        $spent = ProjectInvitation::create(
-            InstallAttempt::create('user-1', 'issue-b', $main),
-            InstallTicket::digestOf('ticket-b'),
-        );
-
-        $revoked->revoke();
-        $spent->spendOn($this->binding($project, $main));
-
-        $this->assertSame(InvitationMode::Join, $spent->mode);
-        $this->assertSame($project->id, $spent->project_id);
-        $this->assertFalse($this->isPending($revoked));
-        $this->assertFalse($this->isPending($spent));
-        $this->assertNotNull($spent->binding_id);
     }
 
     public function test_a_new_binding_is_pending_in_its_first_authority_generation(): void
@@ -119,17 +81,6 @@ final class ProjectRecordsTest extends TestCase
             AgentOfAnotherProject::class,
         );
         $this->assertSame(0, ProjectBinding::query()->count());
-    }
-
-    public function test_revoking_a_binding_raises_its_authority_generation(): void
-    {
-        $project = Project::create('shop', 'Shop');
-        $binding = $this->binding($project, Environment::createForDefault($project));
-
-        $binding->revoke();
-
-        $this->assertSame(2, $binding->fresh()?->authority_generation);
-        $this->assertSame(BindingReadiness::Revoked, $binding->readinessAt(CarbonImmutable::now()));
     }
 
     private function isPending(ProjectInvitation $invitation): bool

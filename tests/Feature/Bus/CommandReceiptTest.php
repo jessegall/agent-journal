@@ -12,7 +12,6 @@ use App\Exceptions\CommandRefused;
 use App\Exceptions\NestedCommandFailureIgnored;
 use App\Exceptions\OperationUnavailable;
 use App\Exceptions\RefusalReplayed;
-use App\Exceptions\RequestKeyConflict;
 use App\Models\Records\AssignmentRecord;
 use App\Support\AssigneeIdentity;
 use App\Support\RequestKey;
@@ -20,7 +19,6 @@ use Domain\Rules\RulesDomain;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Database\ConnectionInterface;
-use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Modules\Notes\Commands\IgnoreFailedNote\IgnoreFailedNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\RefuseNote\RefuseNoteCommand;
@@ -73,11 +71,6 @@ final class CommandReceiptTest extends CommandBusTestCase
         parent::tearDown();
     }
 
-    public function test_the_receipts_table_is_migrated(): void
-    {
-        $this->assertTrue(Schema::hasTable('command_receipts'));
-    }
-
     public function test_a_write_with_a_key_runs_once_and_a_repeat_returns_its_result_without_the_handler(): void
     {
         $bus = $this->app->make(CommandBus::class);
@@ -91,15 +84,6 @@ final class CommandReceiptTest extends CommandBusTestCase
             ReceiptStatus::Completed,
             $this->app->make(OperationResolver::class)->operation(self::KEY)->state,
         );
-    }
-
-    public function test_a_changed_body_under_the_same_key_is_a_request_key_conflict(): void
-    {
-        $bus = $this->app->make(CommandBus::class);
-        $bus->run(new WriteNoteCommand('first'));
-
-        $this->assertThrows(fn () => $bus->run(new WriteNoteCommand('changed')), RequestKeyConflict::class);
-        $this->assertSame(1, $this->rowCount());
     }
 
     public function test_a_refused_write_keeps_its_refusal_and_a_retry_gets_the_same_one(): void

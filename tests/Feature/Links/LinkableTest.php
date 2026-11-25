@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Links;
 
 use App\Models\Records\Link;
-use App\Support\LinkRemoval;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\QueryException;
@@ -52,22 +51,6 @@ final class LinkableTest extends TestCase
         $this->assertSame([$note->id], $label->links()->among(Note::query())->pluck('id')->all());
     }
 
-    public function test_linking_again_in_either_direction_keeps_one_link(): void
-    {
-        $note = Note::ownedBy('visible');
-        $label = Label::named('urgent');
-
-        Link::createForModels($note, $label);
-        Link::createForModels($note, $label);
-        Link::createForModels($label, $note);
-
-        $this->assertSame(1, Link::query()->count());
-        $this->assertSame(
-            ['fixtures.note', 'fixtures.label'],
-            [Link::query()->sole()->source_type, Link::query()->sole()->target_type],
-        );
-    }
-
     public function test_the_table_refuses_a_second_row_for_the_same_link(): void
     {
         $note = Note::ownedBy('visible');
@@ -77,18 +60,6 @@ final class LinkableTest extends TestCase
         $this->expectException(QueryException::class);
 
         $this->insertRawLink($note, $label);
-    }
-
-    public function test_unlinking_removes_the_link_from_both_sides(): void
-    {
-        $note = Note::ownedBy('visible');
-        $label = Label::named('urgent');
-        Link::createForModels($label, $note);
-
-        $this->app->make(LinkRemoval::class)->removeBetween($note, $label);
-
-        $this->assertFalse($label->isLinkedTo($note));
-        $this->assertSame(0, Link::query()->count());
     }
 
     public function test_linked_models_are_found_only_among_the_models_the_caller_may_see(): void

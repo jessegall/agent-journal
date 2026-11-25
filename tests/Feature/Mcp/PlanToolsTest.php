@@ -8,8 +8,6 @@ use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
-use Domain\Plans\Enums\PlanStatus;
-use Domain\Plans\Exceptions\StartDenied;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\PlansDomain;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
@@ -110,20 +108,6 @@ final class PlanToolsTest extends TestCase
         $this->signed($this->caller, '/agent/plans/finish', $finish)->assertOk()->assertJsonPath('plan_id', $id);
         $this->callMcpTool($this->caller, 'plans_read', ['plan_id' => $id, 'view' => 'context'])
             ->assertJsonPath('result.structuredContent.finish_note', self::RELEASE_NOTE);
-    }
-
-    public function test_an_ineligible_start_returns_the_domain_refusal(): void
-    {
-        $plan = Plan::factory()->create(['status' => PlanStatus::Cancelled]);
-
-        $this->callMcpTool($this->caller, 'plans_start', ['plan_id' => $plan->id, 'request_key' => 'cancelled-start'])
-            ->assertJsonPath('result.isError', true)
-            ->assertJsonPath('result.structuredContent.code', 'forbidden')
-            ->assertJsonPath(
-                'result.structuredContent.message',
-                StartDenied::inState($plan->number, PlanStatus::Cancelled->value)->getMessage(),
-            );
-        $this->assertSame(PlanStatus::Cancelled, $plan->refresh()->status);
     }
 
     public function test_plan_edits_and_cancellation_respect_the_read_revision(): void

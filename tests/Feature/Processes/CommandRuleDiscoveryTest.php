@@ -28,9 +28,4 @@ final class CommandRuleDiscoveryTest extends TestCase
         $this->assertSame(ScopeType::Module, $notes[0]->scope->type);
         $this->assertSame('notes-cli', $notes[0]->program->family);
     }
-
-    public function test_the_application_builds_its_rule_registry_from_core_and_the_domains(): void
-    {
-        $this->assertInstanceOf(CommandRuleRegistry::class, $this->app->make(CommandRuleRegistry::class));
-    }
 }

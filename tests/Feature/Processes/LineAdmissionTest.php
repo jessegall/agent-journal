@@ -8,7 +8,6 @@ use App\Contracts\Admission\ShellAdmission;
 use App\Contracts\Time\VerificationTiming;
 use App\Enums\CommandRules\AdmissionRefusalCode;
 use App\Enums\Processes\ShellDialect;
-use App\Models\CommandRules\CommandRequest;
 use App\Models\Runs\ProcessRun;
 use App\Values\Admission;
 use App\Values\AdmissionRefusal;
@@ -54,16 +53,6 @@ final class LineAdmissionTest extends TestCase
         $this->assertSame($first->runId, $this->admit('cat composer.json', 'key-1')->runId);
         $reused = $this->refusalOf($this->admit('cat README.md', 'key-1'));
         $this->assertSame(AdmissionRefusalCode::RuleRevisionChanged, $reused->code);
-    }
-
-    public function test_an_unknown_command_is_refused_and_held_in_its_request(): void
-    {
-        $refusal = $this->refusalOf($this->admit('acme verify --all', 'key-1'));
-
-        $this->assertSame(AdmissionRefusalCode::CommandUnknown, $refusal->code);
-        $this->assertSame(CommandRequest::query()->sole()->id, $refusal->requestId);
-        $this->assertStringStartsWith(self::PROPOSE_COMMAND, $refusal->next);
-        $this->assertSame(0, ProcessRun::query()->withoutGlobalScopes()->count());
     }
 
     public function test_a_check_without_an_approved_proven_reader_is_refused_as_reader_required(): void

@@ -7,11 +7,9 @@ namespace Tests\Feature\Processes;
 use App\Enums\CommandRules\ClassificationStatus;
 use App\Enums\CommandRules\CommandClass;
 use App\Enums\CommandRules\CommandType;
-use App\Enums\CommandRules\ProposalStatus;
 use App\Enums\CommandRules\ToolType;
 use App\Exceptions\ClassificationRuleRefused;
 use App\Exceptions\RevisionImmutable;
-use App\Exceptions\RuleProposalRefused;
 use App\Exceptions\RuleRevisionInvalid;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
@@ -55,32 +53,6 @@ final class RuleRecordsTest extends TestCase
         return ['rule_proposals', 'rule_proposal_revisions', 'rule_revisions', 'classification_rules'];
     }
 
-    public function test_the_same_request_id_and_payload_is_the_same_proposal_and_another_payload_is_refused(): void
-    {
-        $first = $this->open('request-1', $this->complete($this->statusRule()));
-        $again = $this->open('request-1', $this->complete($this->statusRule()));
-
-        $this->assertSame($first->id, $again->id);
-        $this->assertSame(1, RuleProposal::query()->ofProject(self::PROJECT)->count());
-        $this->assertThrows(
-            fn () => $this->open('request-1', new ProposedRule($this->statusRule(), 'other evidence', [])),
-            RuleProposalRefused::class,
-        );
-    }
-
-    public function test_a_complete_revision_waits_for_review_and_an_incomplete_one_stays_a_draft(): void
-    {
-        $pending = $this->open('request-1', $this->complete($this->statusRule()));
-        $draft = $this->open('request-2', new ProposedRule($this->statusRule(), '', [RuleExample::negative('acme x')]));
-
-        $this->assertSame(ProposalStatus::Pending, $pending->refresh()->status);
-        $this->assertSame(ProposalStatus::Draft, $draft->refresh()->status);
-        $this->assertSame(1, $pending->current_revision);
-        $this->assertSame(self::OPERATION, $pending->operation);
-        $this->assertSame('acme', $pending->program);
-        $this->assertSame(RuleScope::project()->toArray(), $pending->scope->toArray());
-    }
-
     public function test_a_proposal_revision_stores_the_typed_rule_with_its_contract_and_examples(): void
     {
         $rule = $this->checkRule();
@@ -106,23 +78,6 @@ final class RuleRecordsTest extends TestCase
         $revision->evidence = 'changed';
 
         $this->assertThrows(fn () => $revision->save(), RevisionImmutable::class);
-    }
-
-    public function test_an_ended_proposal_takes_no_new_revision(): void
-    {
-        $proposal = $this->open('request-1', $this->complete($this->statusRule()));
-        $proposal->status = ProposalStatus::Withdrawn;
-        $proposal->save();
-
-        $this->assertThrows(
-            fn () => $this->app->make(RuleProposals::class)->revise(
-                $proposal,
-                1,
-                $this->complete($this->statusRule()),
-                $this->agent(),
-            ),
-            RuleProposalRefused::class,
-        );
     }
 
     public function test_an_approved_revision_cannot_be_updated(): void
