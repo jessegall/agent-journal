@@ -35,14 +35,18 @@ final readonly class UserAssignees implements AssigneeProvider
     {
         $this->actors->actor();
 
-        return $this->admitted(User::query()->whereKey($recipient->id)->sharedLock()->first(), $recipient);
+        $user = User::query()->whereKey($recipient->id)->sharedLock()->first();
+
+        return $this->admitted($user, $recipient);
     }
 
     public function requireExclusive(AssigneeIdentity $recipient): Assignee
     {
         $this->actors->actor();
 
-        return $this->admitted(User::query()->whereKey($recipient->id)->lockForUpdate()->first(), $recipient);
+        $user = User::query()->whereKey($recipient->id)->lockForUpdate()->first();
+
+        return $this->admitted($user, $recipient);
     }
 
     /**

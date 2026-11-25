@@ -166,6 +166,8 @@ final readonly class ChatWindowResolver implements PageResolver
     {
         $inboxId = $this->chats->pairWith(ActorIdentity::ofClass(Agent::class, $agent->agentId));
 
-        return $this->pages->pageFor($agent, Inbox::query()->findOrFail($inboxId), $this->request->dockToken());
+        $inbox = Inbox::query()->findOrFail($inboxId);
+
+        return $this->pages->pageFor($agent, $inbox, $this->request->dockToken());
     }
 }

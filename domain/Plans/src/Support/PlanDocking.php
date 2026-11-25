@@ -35,7 +35,9 @@ final readonly class PlanDocking implements DockableProvider
     {
         $cards = [];
 
-        foreach ($this->docked(Plan::query()->whereKey($ids)->readExactly(count($ids))->get()) as $plan) {
+        $plans = Plan::query()->whereKey($ids)->readExactly(count($ids))->get();
+
+        foreach ($this->docked($plans) as $plan) {
             $cards[] = new ComposedCard($plan->identifyFor($definition), $plan->composeDockCard($context));
         }
 

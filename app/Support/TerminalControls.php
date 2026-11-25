@@ -520,7 +520,9 @@ final readonly class TerminalControls
      */
     public function answerFor(ActorIdentity $writer, string $grantRowId, CarbonImmutable $now): TerminalControlData
     {
-        return $this->answerOf(TerminalGrant::query()->ownedBy($writer)->whereKey($grantRowId)->sole(), $now);
+        $terminalGrant = TerminalGrant::query()->ownedBy($writer)->whereKey($grantRowId)->sole();
+
+        return $this->answerOf($terminalGrant, $now);
     }
 
     private function answerOf(TerminalGrant $grant, CarbonImmutable $now): TerminalControlData

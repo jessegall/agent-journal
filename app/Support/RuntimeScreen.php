@@ -53,7 +53,9 @@ final readonly class RuntimeScreen
      */
     public function latest(ScreenRegistration $expected): ReceivedScreen|null
     {
-        return $this->slotOf($expected->runtimeId)?->screenFor($expected);
+        $slot = $this->slotOf($expected->runtimeId);
+
+        return $slot?->screenFor($expected);
     }
 
     private function slotOf(string $runtimeId): ScreenSlot|null

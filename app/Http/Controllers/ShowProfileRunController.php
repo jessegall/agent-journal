@@ -15,6 +15,8 @@ final readonly class ShowProfileRunController
 {
     public function __invoke(ShowProfileRunCall $call): ProfileRunData
     {
-        return ProfileRunData::fromRun(ProfileRun::query()->withResults()->findOrFail(strtolower($call->id)));
+        $profileRun = ProfileRun::query()->withResults()->findOrFail(strtolower($call->id));
+
+        return ProfileRunData::fromRun($profileRun);
     }
 }

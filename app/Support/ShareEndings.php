@@ -57,10 +57,8 @@ final readonly class ShareEndings
         }
 
         if ($wasLive && $share->isLastLiveOfItsConfiguration()) {
-            ShareGatewayOperation::createForConfiguration(
-                ShareGatewayConfiguration::query()->findOrFail($share->share_gateway_configuration_id),
-                GatewayOperationType::Close,
-            );
+            $configuration = ShareGatewayConfiguration::query()->findOrFail($share->share_gateway_configuration_id);
+            ShareGatewayOperation::createForConfiguration($configuration, GatewayOperationType::Close);
         }
 
         return true;

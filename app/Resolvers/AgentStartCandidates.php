@@ -161,11 +161,11 @@ final readonly class AgentStartCandidates implements SessionStartCandidates
 
         return [
             $firstCandidate->rank->value,
-            -($firstFacts->rankingFinish()?->getTimestampMs() ?? PHP_INT_MIN + 1),
+            $firstFacts->rankingOrder(),
             $firstCandidate->actor->id,
         ] <=> [
             $secondCandidate->rank->value,
-            -($secondFacts->rankingFinish()?->getTimestampMs() ?? PHP_INT_MIN + 1),
+            $secondFacts->rankingOrder(),
             $secondCandidate->actor->id,
         ];
     }

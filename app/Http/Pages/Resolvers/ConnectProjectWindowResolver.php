@@ -86,12 +86,13 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
         )));
 
         sort($expiries);
+        $nextCursor = $page->nextCursor();
 
         return BindingListData::from([
             'rows' => $this->bindingRows($bindings, $now),
             'serverTime' => $now->toIso8601String(),
             'refreshAt' => $expiries[0] ?? null,
-            'nextCursor' => $page->nextCursor()?->encode(),
+            'nextCursor' => $nextCursor?->encode(),
         ]);
     }
 

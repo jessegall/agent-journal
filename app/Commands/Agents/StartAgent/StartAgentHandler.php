@@ -94,7 +94,9 @@ final readonly class StartAgentHandler implements CommandHandler
         // A replay of a start interrupted before its receipt resumes from the evidence its key holds: a session it
         // started, else a reservation the admission finds.
         if ($record->session_id !== null) {
-            return $this->receiptOf($request, AgentSession::query()->findOrFail($record->session_id), false);
+            $session = AgentSession::query()->findOrFail($record->session_id);
+
+            return $this->receiptOf($request, $session, false);
         }
 
         // The agent's lifecycle and start reservation, then the host's capacity, then the driver's account, then

@@ -172,7 +172,9 @@ final class AutoAssignment extends Model implements EventSource, ReadableModel
      */
     public static function lockedFor(AutoAssignmentKey $key): Option
     {
-        return Option::fromValue(self::query()->forKey($key)->lockForUpdate()->first());
+        $autoAssignment = self::query()->forKey($key)->lockForUpdate()->first();
+
+        return Option::fromValue($autoAssignment);
     }
 
     /**

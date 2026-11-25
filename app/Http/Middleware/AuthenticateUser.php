@@ -9,11 +9,11 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Admission\JournalAdmission;
 use App\Contracts\Authorization\AuthoritySource;
 use App\Contracts\Inboxes\InboxEligibility;
+use App\Exceptions\JournalAccessDenied;
 use App\Support\ActorIdentity;
 use App\Values\InboxMemberAuthority;
 use App\Values\OwnerAuthority;
 use Closure;
-use App\Exceptions\JournalAccessDenied;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -77,7 +77,13 @@ final readonly class AuthenticateUser
 
     private function isChatRoute(Request $request): bool
     {
-        $name = (string) $request->route()?->getName();
+        $route = $request->route();
+
+        if ($route === null) {
+            return false;
+        }
+
+        $name = (string) $route->getName();
 
         return array_any(self::CHAT_ROUTE_PREFIXES, fn (string $prefix) => str_starts_with($name, $prefix));
     }

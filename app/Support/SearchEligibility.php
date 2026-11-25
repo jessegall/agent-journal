@@ -140,7 +140,8 @@ final readonly class SearchEligibility implements SearchSources
         $hints = [];
 
         foreach ($this->eligible($reader) as $source) {
-            $hint = $source->recognizer($this->container)?->hint($input);
+            $recognizer = $source->recognizer($this->container);
+            $hint = $recognizer?->hint($input);
 
             if ($hint !== null) {
                 $hints[] = $hint;

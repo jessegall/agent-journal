@@ -167,7 +167,9 @@ final readonly class WebNavigationRecords implements NavigationRecordsContract
     {
         $navigation = $candidate->navigation;
 
-        if ($navigation->page === null || $request->route()?->getName() !== $navigation->page->routeName()) {
+        $route = $request->route();
+
+        if ($navigation->page === null || $route === null || $route->getName() !== $navigation->page->routeName()) {
             return -1;
         }
 

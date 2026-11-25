@@ -67,9 +67,11 @@ final readonly class SkillPublications
 
         return array_map(function (PublicationIntent $intent) use ($generation, $open, $delivered): SkillPublication {
             $openKey = SkillPublication::openKeyOf($intent->sessionId, $intent->target);
-            $open->get($openKey)?->supersede();
+            $openPublication = $open->get($openKey);
+            $openPublication?->supersede();
+            $deliveredPublication = $delivered->get($openKey);
 
-            return SkillPublication::create($generation, $intent, $delivered->get($openKey)?->generation_id);
+            return SkillPublication::create($generation, $intent, $deliveredPublication?->generation_id);
         }, $intents);
     }
 

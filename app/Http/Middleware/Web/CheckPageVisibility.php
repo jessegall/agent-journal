@@ -27,7 +27,11 @@ final readonly class CheckPageVisibility
         $this->visibility->assertVisible($key);
 
         // The key is no route value of the owner's controller, so it is kept out of the parameters it receives.
-        $request->route()?->forgetParameter(DeclaredRouteKey::NAME);
+        $route = $request->route();
+
+        if ($route !== null) {
+            $route->forgetParameter(DeclaredRouteKey::NAME);
+        }
 
         return $next($request);
     }

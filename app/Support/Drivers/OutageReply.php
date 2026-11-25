@@ -54,7 +54,9 @@ final readonly class OutageReply
 
     private function neutral(string $nativeEvent): DriverReply
     {
-        if (HookEvent::tryFrom($nativeEvent)?->isToolCall() === true) {
+        $hookEvent = HookEvent::tryFrom($nativeEvent);
+
+        if ($hookEvent?->isToolCall() === true) {
             return DriverReplies::undecidedTool();
         }
 

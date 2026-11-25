@@ -289,7 +289,9 @@ final readonly class TerminalViews implements TerminalViewCloser
      */
     public function answerFor(ActorIdentity $viewer, string $viewId, CarbonImmutable $now): TerminalInterestData
     {
-        return $this->receiptOf(TerminalView::query()->ownedBy($viewer)->whereKey($viewId)->sole(), $now);
+        $terminalView = TerminalView::query()->ownedBy($viewer)->whereKey($viewId)->sole();
+
+        return $this->receiptOf($terminalView, $now);
     }
 
     private function receiptOf(TerminalView $view, CarbonImmutable $now): TerminalInterestData

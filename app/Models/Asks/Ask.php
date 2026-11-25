@@ -235,7 +235,9 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
      */
     public static function submission(ActorIdentity $actor, string $key): Option
     {
-        return Option::fromValue(self::query()->ownedBy($actor)->underSubmissionKey($key)->first());
+        $ask = self::query()->ownedBy($actor)->underSubmissionKey($key)->first();
+
+        return Option::fromValue($ask);
     }
 
     public static function openSubmissions(ActorIdentity $actor): int

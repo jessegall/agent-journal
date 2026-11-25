@@ -16,7 +16,9 @@ final readonly class RecordRunChunkHandler implements CommandHandler
 
     public function handle(RecordRunChunkCommand $command): int
     {
-        $events = new RecordedRunEvents(ProcessRun::query()->findOrFail($command->processRunId), $this->recorder);
+        $processRun = ProcessRun::query()->findOrFail($command->processRunId);
+
+        $events = new RecordedRunEvents($processRun, $this->recorder);
         $part = new PartKey($command->node, $command->attempt, $command->operation);
         $stored = $events->outputOffset($part, $command->stream);
 

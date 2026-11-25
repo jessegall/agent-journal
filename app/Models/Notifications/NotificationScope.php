@@ -170,7 +170,9 @@ final class NotificationScope extends Model implements EventSource, ReadableMode
      */
     public static function findFor(string $key, ActorIdentity $recipient): Option
     {
-        return Option::fromValue(self::query()->ofRecipient($key, $recipient)->first());
+        $notificationScope = self::query()->ofRecipient($key, $recipient)->first();
+
+        return Option::fromValue($notificationScope);
     }
 
     /**

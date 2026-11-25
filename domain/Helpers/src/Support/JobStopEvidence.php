@@ -23,12 +23,14 @@ final class JobStopEvidence
      */
     public static function openJob(string $jobId): Option
     {
-        return Option::fromValue(HelperJob::query()
+        $helperJob = HelperJob::query()
             ->acrossActors()
             ->open()
             ->whereKey($jobId)
             ->lock('for update')
-            ->first());
+            ->first();
+
+        return Option::fromValue($helperJob);
     }
 
     public static function referenceOf(StopCheckReference $attempt): string

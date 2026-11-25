@@ -711,9 +711,18 @@ final readonly class SearchCoordinator implements RecordSearch
     {
         return array_filter(
             $sources,
-            fn (DeclaredSearchable $source): bool => $source->recognizer($this->container)
-                ?->recognize($progress->words->text) !== null,
+            fn (DeclaredSearchable $source): bool => $this->recognizes($source, $progress->words->text),
         );
+    }
+
+    /**
+     * Whether the source's recognizer reads the text as one of its complete references.
+     */
+    private function recognizes(DeclaredSearchable $source, string $text): bool
+    {
+        $recognizer = $source->recognizer($this->container);
+
+        return $recognizer?->recognize($text) !== null;
     }
 
     /**

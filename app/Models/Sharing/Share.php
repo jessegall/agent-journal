@@ -323,8 +323,10 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
             return None::create();
         }
 
+        $shareGatewayConfiguration = ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id);
+
         return ShareGatewayEndpoint::newestRunningOf(
-            ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id),
+            $shareGatewayConfiguration,
         );
     }
 
@@ -624,7 +626,9 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      */
     public static function liveFor(RecordIdentity $root): Option
     {
-        return Option::fromValue(self::query()->ofRoot($root)->liveNow()->newestFirst()->first());
+        $share = self::query()->ofRoot($root)->liveNow()->newestFirst()->first();
+
+        return Option::fromValue($share);
     }
 
     /**
@@ -669,7 +673,9 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      */
     public static function byId(string $id): Option
     {
-        return Option::fromValue(self::query()->whereKey($id)->first());
+        $share = self::query()->whereKey($id)->first();
+
+        return Option::fromValue($share);
     }
 
     /**
@@ -693,7 +699,9 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      */
     public static function grantedBy(string $ownerUserId, string $id): Option
     {
-        return Option::fromValue(self::query()->whereKey($id)->grantedByOwner($ownerUserId)->first());
+        $share = self::query()->whereKey($id)->grantedByOwner($ownerUserId)->first();
+
+        return Option::fromValue($share);
     }
 
     /**
@@ -704,13 +712,15 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      */
     public static function forTokenDigest(string $digest): Option
     {
+        $share = self::query()->openedByDigest($digest)->first([
+            'id',
+            'state',
+            'scope_version',
+            'expires_at',
+        ]);
+
         return Option::fromValue(
-            self::query()->openedByDigest($digest)->first([
-                'id',
-                'state',
-                'scope_version',
-                'expires_at',
-            ]),
+            $share,
         );
     }
 

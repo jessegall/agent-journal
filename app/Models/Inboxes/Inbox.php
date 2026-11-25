@@ -117,7 +117,9 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
      */
     public static function named(string $name): Option
     {
-        return Option::fromValue(self::query()->withName($name)->first());
+        $inbox = self::query()->withName($name)->first();
+
+        return Option::fromValue($inbox);
     }
 
     /**

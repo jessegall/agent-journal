@@ -31,7 +31,12 @@ final readonly class RemoveAccountHandler implements CommandHandler
             return;
         }
 
-        SignInAttempt::liveFor($driver, $account)?->finishAt(SignInState::Cancelled, CarbonImmutable::now());
+        $liveAttempt = SignInAttempt::liveFor($driver, $account);
+
+        if ($liveAttempt !== null) {
+            $liveAttempt->finishAt(SignInState::Cancelled, CarbonImmutable::now());
+        }
+
         $this->facts->runTransactionListeners();
         $account->refresh()->beginRemoval();
         $selection->clearIfChosen($account);

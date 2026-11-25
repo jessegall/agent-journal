@@ -43,6 +43,8 @@ final readonly class InstallAttemptList
             $attempt->binding_id,
         ), array_values($page->items()));
 
-        return new InstallAttemptPage($rows, $page->nextCursor()?->encode());
+        $nextCursor = $page->nextCursor();
+
+        return new InstallAttemptPage($rows, $nextCursor?->encode());
     }
 }

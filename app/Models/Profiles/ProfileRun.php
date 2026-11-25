@@ -195,12 +195,14 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
      */
     public function previous(): Option
     {
-        return Option::fromValue(self::query()->acrossActors()
+        $profileRun = self::query()->acrossActors()
             ->ofSameRunnerAndWorkAs($this)
             ->earlierInSequenceThan($this->sequence)
             ->finished()
             ->newestSequenceFirst()
-            ->first());
+            ->first();
+
+        return Option::fromValue($profileRun);
     }
 
     /**

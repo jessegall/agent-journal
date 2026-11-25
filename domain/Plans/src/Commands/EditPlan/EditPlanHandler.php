@@ -26,7 +26,7 @@ final readonly class EditPlanHandler extends PlanCommandHandler
             $command->type ?? $plan->type,
         );
 
-        PlanReviewEdition::currentApprovalOf($plan->id)?->markHistorical();
+        PlanReviewEdition::retireCurrentApprovalOf($plan->id);
 
         return $plan->revision;
     }

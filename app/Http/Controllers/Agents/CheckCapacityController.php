@@ -25,7 +25,8 @@ final readonly class CheckCapacityController
         CapacityCheck $check,
         StartRemedyWords $words,
     ): array {
-        $shortage = $check->shortageFor(Agent::query()->findOrFail($agent), $request->mode(), $request->budgets());
+        $checkedAgent = Agent::query()->findOrFail($agent);
+        $shortage = $check->shortageFor($checkedAgent, $request->mode(), $request->budgets());
 
         if ($shortage === null) {
             return ['fits' => true];

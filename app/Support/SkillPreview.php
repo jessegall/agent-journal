@@ -56,7 +56,9 @@ final readonly class SkillPreview
      */
     public function forAgentId(SkillEntry $skill, array $skills, string $agentId): SkillAgentSelection
     {
-        return $this->forAgent($skill, $skills, Agent::query()->whereKey($agentId)->firstOrFail());
+        $agent = Agent::query()->whereKey($agentId)->firstOrFail();
+
+        return $this->forAgent($skill, $skills, $agent);
     }
 
     /**

@@ -12,6 +12,7 @@ use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
 use App\Support\ProjectKey;
+use Illuminate\Support\Collection;
 
 /**
  * The current project's newest runs the viewer may see as a list layout: what each ran, whether it was a
@@ -33,7 +34,7 @@ final readonly class RunListResolver implements PageResolver
 
         $rows = array_values($runs->map(fn (ProcessRun $run) => RunRowData::fromRun(
             $run,
-            array_values(array_unique($operations->get($run->id)?->pluck('operation')->all() ?? [])),
+            array_values(array_unique($operations->get($run->id, new Collection())->pluck('operation')->all())),
         ))->all());
 
         $list = $rows === []

@@ -226,12 +226,14 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
      */
     public static function lastClosedBefore(StackTarget $target): Option
     {
-        return Option::fromValue(self::query()
+        $agentStackRow = self::query()
             ->withoutGlobalScope(AgentSessionScope::class)
             ->ofAgentOutsideSession($target)
             ->inStatus(StackStatus::Closed)
             ->lastClosedFirst()
-            ->first());
+            ->first();
+
+        return Option::fromValue($agentStackRow);
     }
 
     /**

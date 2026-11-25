@@ -76,7 +76,11 @@ final readonly class HeartbeatService implements StartHeartbeatsContract
     public function endStart(SessionProcess $start, AgentSession $session, string $evidence): void
     {
         $start->stopWithProof();
-        DriverSwitch::stoppingOf($start->session_id)?->markStopped();
+        $stoppingSwitch = DriverSwitch::stoppingOf($start->session_id);
+
+        if ($stoppingSwitch !== null) {
+            $stoppingSwitch->markStopped();
+        }
 
         if ($session->isActive()) {
             $this->markExited($session, $evidence);

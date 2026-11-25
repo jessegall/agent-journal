@@ -68,7 +68,9 @@ final class MainAgentDesignation extends Model implements ReadableModel
      */
     public static function designatedAgentId(): Option
     {
-        return Option::fromValue(self::query()->value('agent_id'));
+        $agentId = self::query()->value('agent_id');
+
+        return Option::fromValue($agentId);
     }
 
     public static function isDesignated(): bool

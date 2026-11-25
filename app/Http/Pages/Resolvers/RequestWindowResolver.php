@@ -45,7 +45,14 @@ final readonly class RequestWindowResolver implements PageResolver
             ->firstOr(fn () => throw new NotFoundHttpException());
 
         $proposals = RuleProposal::query()->ofCommandRequest($request->id)->limit(20)->get();
-        $latest = $proposals->first()?->revisions()->orderByDesc('revision')->first()?->payload;
+        $latest = null;
+        $latestProposal = $proposals->first();
+
+        if ($latestProposal !== null) {
+            $latestRevision = $latestProposal->revisions()->orderByDesc('revision')->first();
+            $latest = $latestRevision?->payload;
+        }
+
         $active = $this->activeRule($request, $latest);
 
         $detail = RequestWindowData::from([

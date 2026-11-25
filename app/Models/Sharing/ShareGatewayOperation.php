@@ -193,7 +193,9 @@ final class ShareGatewayOperation extends Model implements EventSource, Readable
      */
     public static function nextClaimable(): Option
     {
-        return Option::fromValue(self::query()->claimable()->oldestFirst()->value('id'))->map(strval(...));
+        $shareGatewayOperationValue = self::query()->claimable()->oldestFirst()->value('id');
+
+        return Option::fromValue($shareGatewayOperationValue)->map(strval(...));
     }
 
     /**

@@ -31,8 +31,8 @@ final readonly class NavigationLibrary
         }
 
         if ($navigation->stale_entry_id !== null && $navigation->stale_entry_id !== $entry->id) {
-            MenuEntry::query()->acrossActors()->whereKey($navigation->stale_entry_id)->lockForUpdate()->first()
-                ?->supersededBy($entry);
+            $staleEntry = MenuEntry::query()->acrossActors()->whereKey($navigation->stale_entry_id)->lockForUpdate()->first();
+            $staleEntry?->supersededBy($entry);
         }
 
         $navigation->savedAs($entry);

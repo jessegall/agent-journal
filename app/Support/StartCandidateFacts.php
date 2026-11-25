@@ -31,4 +31,18 @@ final readonly class StartCandidateFacts
 
         return $this->lastFinish;
     }
+
+    /**
+     * The ranking finish as a number that sorts the latest first, with no finish after every finish.
+     */
+    public function rankingOrder(): int
+    {
+        $finish = $this->rankingFinish();
+
+        if ($finish === null) {
+            return -(PHP_INT_MIN + 1);
+        }
+
+        return -$finish->getTimestampMs();
+    }
 }

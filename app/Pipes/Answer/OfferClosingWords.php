@@ -40,8 +40,11 @@ final readonly class OfferClosingWords implements Pipe
         $input = $restored->call->input;
         assert($input instanceof StopRequested);
 
-        DriverTurn::ofSessionTurn($input->hook->sessionId, $input->stop->turnId)
-            ?->offerClosingWords($input->stop->closingWords);
+        $turn = DriverTurn::ofSessionTurn($input->hook->sessionId, $input->stop->turnId);
+
+        if ($turn !== null) {
+            $turn->offerClosingWords($input->stop->closingWords);
+        }
 
         return $restored->walked(new HookAnswer(
             Decision::deny(AgentText::of('core.messages.closing_words_offer')),

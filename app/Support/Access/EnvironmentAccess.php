@@ -7,10 +7,10 @@ namespace App\Support\Access;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Inboxes\InboxParticipationEnding;
 use App\Enums\Messages\InboxPermission;
-use App\Support\ActorIdentity;
-use Carbon\CarbonImmutable;
 use App\Models\Access\EnvironmentUserGrant;
 use App\Models\Access\User;
+use App\Support\ActorIdentity;
+use Carbon\CarbonImmutable;
 
 /**
  * Granting and revoking a user's admission to an environment and disabling an account, each with its consequence,
@@ -30,10 +30,16 @@ final readonly class EnvironmentAccess
     public function grant(string $userId, string|null $environmentId, array $permissions): void
     {
         $now = CarbonImmutable::now();
-        EnvironmentUserGrant::query()->activeFor($userId, $environmentId)->lockForUpdate()->first()?->revoke($now);
+        $grant = EnvironmentUserGrant::query()->activeFor($userId, $environmentId)->lockForUpdate()->first();
+
+        if ($grant !== null) {
+            $grant->revoke($now);
+        }
+
+        $user = User::query()->findOrFail($userId);
 
         EnvironmentUserGrant::create(
-            User::query()->findOrFail($userId),
+            $user,
             $environmentId,
             $permissions,
             ActorIdentity::of($this->actors->actor()),
@@ -50,7 +56,9 @@ final readonly class EnvironmentAccess
         }
 
         $grant->revoke(CarbonImmutable::now());
-        $this->chats->endInEnvironment(ActorIdentity::of(User::query()->findOrFail($userId)), $environmentId);
+        $user = User::query()->findOrFail($userId);
+
+        $this->chats->endInEnvironment(ActorIdentity::of($user), $environmentId);
     }
 
     public function disable(string $userId): void

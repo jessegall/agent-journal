@@ -150,7 +150,9 @@ final class ReadMessageState extends AgentState
         $this->unreadIds = array_values(array_diff($this->unreadIds, [$event->messageId]));
         $this->toolUses = 0;
 
-        yield AnswerMessageStateReference::forMessage(Message::query()->findOrFail($event->messageId), $this->agentId);
+        $message = Message::query()->findOrFail($event->messageId);
+
+        yield AnswerMessageStateReference::forMessage($message, $this->agentId);
     }
 
     /**

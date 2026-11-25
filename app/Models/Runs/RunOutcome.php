@@ -112,7 +112,9 @@ final class RunOutcome extends Model implements EventSource, ReadableModel
      */
     public static function ofRun(ProcessRun $run): Option
     {
-        return Option::fromValue(self::query()->ofAttempt($run->attempt_id)->first());
+        $runOutcome = self::query()->ofAttempt($run->attempt_id)->first();
+
+        return Option::fromValue($runOutcome);
     }
 
     /**
@@ -122,7 +124,9 @@ final class RunOutcome extends Model implements EventSource, ReadableModel
      */
     public static function lockedForAttempt(string $attemptId): Option
     {
-        return Option::fromValue(self::query()->ofAttempt($attemptId)->lockForUpdate()->first());
+        $runOutcome = self::query()->ofAttempt($attemptId)->lockForUpdate()->first();
+
+        return Option::fromValue($runOutcome);
     }
 
     // ----------[ Scopes ]----------

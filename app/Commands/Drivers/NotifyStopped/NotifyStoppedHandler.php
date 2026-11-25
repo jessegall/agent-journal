@@ -22,7 +22,11 @@ final readonly class NotifyStoppedHandler implements CommandHandler
         if ($start->stopWithProof()) {
             $this->facts->publishAfterCommit(new AccountUseChanged($start->accountIdentity));
             $this->facts->publishAfterCommit(new SessionStateChanged($start->session_id));
-            DriverSwitch::stoppingOf($start->session_id)?->markStopped();
+            $stoppingSwitch = DriverSwitch::stoppingOf($start->session_id);
+
+            if ($stoppingSwitch !== null) {
+                $stoppingSwitch->markStopped();
+            }
         }
     }
 }

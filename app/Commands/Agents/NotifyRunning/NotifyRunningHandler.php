@@ -29,7 +29,12 @@ final readonly class NotifyRunningHandler implements CommandHandler
         }
 
         $this->facts->publishAfterCommit(new SessionStateChanged($start->session_id));
-        DriverSwitch::startingOf($start->session_id)?->confirm();
+        $startingSwitch = DriverSwitch::startingOf($start->session_id);
+
+        if ($startingSwitch !== null) {
+            $startingSwitch->confirm();
+        }
+
         $saved = $this->keptDriverType($start->session_id);
 
         if ($saved !== null) {

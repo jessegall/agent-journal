@@ -237,8 +237,10 @@ final class SharePreview extends Model implements EventSource, ReadableModel
      */
     public static function openFor(string $ownerUserId, RecordIdentity $root): Option
     {
+        $sharePreview = self::query()->ownedBy($ownerUserId)->ofRoot($root)->stillOpen()->newestFirst()->first();
+
         return Option::fromValue(
-            self::query()->ownedBy($ownerUserId)->ofRoot($root)->stillOpen()->newestFirst()->first(),
+            $sharePreview,
         );
     }
 

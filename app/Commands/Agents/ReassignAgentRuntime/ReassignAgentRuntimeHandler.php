@@ -39,7 +39,9 @@ final readonly class ReassignAgentRuntimeHandler implements CommandHandler
         }
 
         $fromHostId = $runtime->host_id;
-        $token = $this->credentials->rotate(AgentSession::query()->findOrFail($target->sessionId));
+        $agentSession = AgentSession::query()->findOrFail($target->sessionId);
+
+        $token = $this->credentials->rotate($agentSession);
         $runtime->reassignTo($command->hostId ?? $fromHostId, $token);
 
         $this->facts->publishAfterCommit(new AgentRuntimeReassigned(

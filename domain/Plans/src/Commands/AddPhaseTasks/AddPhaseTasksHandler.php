@@ -23,8 +23,10 @@ final readonly class AddPhaseTasksHandler extends PlanCommandHandler
     {
         $this->tasks->requireAllVisible($command->taskIds);
 
+        $phase = Phase::query()->findOrFail($command->phaseId);
+
         $this->structure->addTasksAtRevision(
-            Phase::query()->findOrFail($command->phaseId),
+            $phase,
             $command->expectedRevision,
             $command->taskIds,
         );

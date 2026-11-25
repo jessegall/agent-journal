@@ -24,7 +24,7 @@ final readonly class PlanStructure
     public function addPhase(Plan $plan, string $title): Phase
     {
         Plan::lockForChange($plan->id);
-        PlanReviewEdition::currentApprovalOf($plan->id)?->markHistorical();
+        PlanReviewEdition::retireCurrentApprovalOf($plan->id);
 
         return Phase::create($plan, $title);
     }
@@ -60,7 +60,7 @@ final readonly class PlanStructure
         $phase->recordProgress($phase->progress->plus($placed));
         $phase->advanceRevision();
         $plan->recordProgress($plan->progress->plus($placed));
-        PlanReviewEdition::currentApprovalOf($plan->id)?->markHistorical();
+        PlanReviewEdition::retireCurrentApprovalOf($plan->id);
     }
 
     /**

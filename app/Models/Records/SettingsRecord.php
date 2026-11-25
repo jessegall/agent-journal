@@ -86,7 +86,9 @@ final class SettingsRecord extends Model implements EventSource, ReadableModel
      */
     public static function sharedRuntimeForOwner(string $owner): Option
     {
-        return Option::fromValue(self::query()->ownedBy($owner)->first());
+        $settingsRecord = self::query()->ownedBy($owner)->first();
+
+        return Option::fromValue($settingsRecord);
     }
 
     /**

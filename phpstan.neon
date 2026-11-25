@@ -29,6 +29,8 @@ parameters:
         - tests/Fixtures/StaticFactories/*
         # The core domain text fixture is a small project tree read as text; CoreNamesNoDomainTest reads it.
         - tests/Fixtures/CoreDomainText/*
+        # The nested call fixture is read as a syntax tree only; NestedCallsTest reads it.
+        - tests/Fixtures/NestedCalls/*
         # The affected tests' fixture is a small code tree read only for its syntax; AffectedTestsTest reads it.
         - tests/Fixtures/AffectedTests/*
         # The state return check's fixture answers with arrays on purpose; StateReturnsTest reads it.

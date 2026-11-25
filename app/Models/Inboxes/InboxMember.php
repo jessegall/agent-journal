@@ -115,7 +115,9 @@ final class InboxMember extends Model implements EventSource
      */
     public static function activeOf(string $inboxId, ActorIdentity $actor): Option
     {
-        return Option::fromValue(self::query()->active()->ofInbox($inboxId)->ofActor($actor)->first());
+        $inboxMember = self::query()->active()->ofInbox($inboxId)->ofActor($actor)->first();
+
+        return Option::fromValue($inboxMember);
     }
 
     /**

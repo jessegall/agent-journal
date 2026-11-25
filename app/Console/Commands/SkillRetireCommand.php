@@ -40,9 +40,11 @@ final class SkillRetireCommand extends Command
                 $requestId,
             ));
 
+            $retired = Skill::query()->whereKey($skill->id)->firstOrFail();
+
             return [
                 "Skill {$retiredSkill->number} ({$skill->key}) is retired.",
-                ...$console->statusLines(Skill::query()->whereKey($skill->id)->firstOrFail()),
+                ...$console->statusLines($retired),
             ];
         });
     }
