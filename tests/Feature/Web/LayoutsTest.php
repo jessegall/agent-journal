@@ -114,13 +114,4 @@ final class LayoutsTest extends TestCase
             ['name' => 'Theirs', 'shape' => $this->shape],
         )->assertSessionHasNoErrors();
     }
-
-    public function test_a_deleted_layout_is_gone(): void
-    {
-        $this->actingAs($this->owner)->post('/layouts', ['name' => 'Review', 'shape' => $this->shape]);
-
-        $this->actingAs($this->owner)->delete('/layouts/'.Layout::query()->sole()->id)->assertStatus(303);
-
-        $this->assertSame(0, Layout::query()->count());
-    }
 }

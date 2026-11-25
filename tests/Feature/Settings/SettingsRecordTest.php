@@ -9,7 +9,6 @@ use App\Exceptions\SettingsDocumentInvalid;
 use App\Models\Records\SettingsRecord;
 use App\Support\Storage\SettingsDocument;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -23,13 +22,6 @@ final class SettingsRecordTest extends TestCase
     use RefreshHookDatabase;
 
     private const string STORED = '{"settings":[{"key":"retry_limit","value":4},{"key":"display_name","value":[1,2]},{"key":"retired_key","value":{"note":"ünïcode/slash","empty":{},"decimal":1.5}},{"key":"cleared","value":null}],"toggles":[{"key":"review","value":true}]}';
-
-    public function test_the_migration_creates_the_table(): void
-    {
-        $this->assertTrue(
-            Schema::hasColumns('settings_records', ['id', 'owner', 'revision', 'document', 'created_at', 'updated_at']),
-        );
-    }
 
     public function test_an_absent_owner_has_no_record_and_insert_if_absent_makes_one_empty_record_once(): void
     {

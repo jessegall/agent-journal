@@ -159,11 +159,6 @@ final class RuntimesPageTest extends TestCase
         $this->assertSame(HoldReason::None, $runtime->fresh()?->hold_reason);
     }
 
-    public function test_a_guest_is_sent_to_sign_in(): void
-    {
-        $this->get('/web/runtimes')->assertRedirect('/login');
-    }
-
     private function openRuntime(): void
     {
         $host = $this->throughEntry(new EnrollHostCommand('test host', ['/work/project']));

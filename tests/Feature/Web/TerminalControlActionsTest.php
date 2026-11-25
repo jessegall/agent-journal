@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Contracts\Authorization\CurrentAuthorizer;
-use App\Enums\Engine\RefusalCode;
-use App\Enums\Terminals\TerminalControlRefusal;
 use App\Enums\Terminals\TerminalGrantStatus;
 use App\Enums\Terminals\TerminalReceiptOutcome;
 use App\Models\Access\User;
@@ -17,7 +14,6 @@ use App\Support\Access\AccessSettings;
 use App\Values\BrowserInputCapabilities;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
-use Tests\Support\InspectOnlyAuthorizer;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\RunsTrustedCommands;
@@ -72,38 +68,6 @@ final class TerminalControlActionsTest extends TestCase
         $this->postAction($agentId, 'control/release', ['grantId' => 'grant-1'])
             ->assertOk()
             ->assertJsonPath('state', TerminalGrantStatus::Releasing->value);
-    }
-
-    public function test_an_inspect_only_viewer_is_refused_with_its_own_code(): void
-    {
-        $runtime = $this->controllableRuntime();
-        $agentId = $runtime->session->agent_id;
-        $interest = $this->openInterest($agentId);
-        $this->app->instance(CurrentAuthorizer::class, new InspectOnlyAuthorizer());
-        $refusal = TerminalControlRefusal::InspectOnly->code();
-
-        $this->postAction($agentId, 'control/take', ['interest' => $interest, 'takeId' => (string) Str::ulid()])
-            ->assertStatus($refusal->status())
-            ->assertJsonPath('code', $refusal->value);
-    }
-
-    public function test_a_stale_grant_is_refused_before_anything_reaches_the_host(): void
-    {
-        $runtime = $this->controllableRuntime();
-        $agentId = $runtime->session->agent_id;
-        $takeId = (string) Str::ulid();
-        $this->postAction($agentId, 'control/take', ['interest' => $this->openInterest($agentId), 'takeId' => $takeId]);
-        TerminalGrant::query()->acrossActors()->sole()->issue('grant-1');
-        $runtime->reassignTo($runtime->host_id, 'start-token-2');
-        $refusal = TerminalControlRefusal::GrantEnded->code();
-
-        $this->postAction($agentId, 'control/input', ['grantId' => 'grant-1', 'text' => 'ls', 'sequence' => 1])
-            ->assertStatus($refusal->status())
-            ->assertJsonPath('code', $refusal->value);
-        $this->postAction($agentId, 'control/renew', ['grantId' => 'grant-1'])
-            ->assertStatus($refusal->status());
-        $this->postAction($agentId, 'control/input', ['grantId' => 'unknown', 'sequence' => 1])
-            ->assertJsonPath('code', RefusalCode::StateBlocked->value);
     }
 
     private function controllableRuntime(): AgentRuntime

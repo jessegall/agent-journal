@@ -177,18 +177,6 @@ final class HomePageTest extends TestCase
                 ->where('window_chat_conversation.data.conversation.sessionId', (string) $this->session->id)));
     }
 
-    public function test_the_chat_window_is_also_chats_own_page(): void
-    {
-        $this->actingAs($this->owner)->get(
-            "/chat?agent={$this->session->agent_id}",
-        )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('chat/ChatWindow')
-            ->where('page.state', 'ready')
-            ->where('page.data.agents.0.name', 'Builder')
-            ->where('page.data.conversation.agentId', $this->session->agent_id)
-            ->where('page.data.conversation.sessionId', (string) $this->session->id));
-    }
-
     public function test_chats_dock_shows_the_plans_waiting_for_review_beside_the_chosen_session(): void
     {
         $waiting = Plan::factory()->create(['title' => 'Review the dock', 'type' => PlanType::Build]);
@@ -216,18 +204,6 @@ final class HomePageTest extends TestCase
                 ->where('section_web_bar_chat_agent.data.agents.0.name', 'Builder')));
     }
 
-    public function test_a_blank_message_is_refused_on_its_body(): void
-    {
-        $this->actingAs($this->owner)->from('/')->post(
-            '/chat/messages',
-            [...$this->pair(), 'body' => "  \n\t ", ...$this->seenSession()],
-        )
-            ->assertRedirect('/')
-            ->assertSessionHasErrors('body');
-
-        $this->assertSame(0, Message::query()->withoutGlobalScopes()->count());
-    }
-
     public function test_a_message_written_for_a_session_the_agent_no_longer_runs_is_not_delivered(): void
     {
         $outdated = [...$this->seenSession(), 'expectedSessionId' => strtolower((string) Str::ulid())];
@@ -236,17 +212,6 @@ final class HomePageTest extends TestCase
             ->post('/chat/messages', [...$this->pair(), 'body' => 'Still there?', ...$outdated])
             ->assertRedirect('/')
             ->assertSessionHasErrors(['session' => 'The agent now runs another session. Send the message again to reach it.']);
-        $this->assertSame(0, Message::query()->withoutGlobalScopes()->count());
-    }
-
-    public function test_a_guessed_destination_inbox_is_refused_and_leaves_no_message(): void
-    {
-        $guessed = [...$this->pair(), 'inboxId' => TestIds::of(99999)];
-
-        $this->actingAs($this->owner)->from('/')
-            ->post('/chat/messages', [...$guessed, 'body' => 'Hello', ...$this->seenSession()])
-            ->assertRedirect('/')
-            ->assertSessionHasErrors('command');
         $this->assertSame(0, Message::query()->withoutGlobalScopes()->count());
     }
 

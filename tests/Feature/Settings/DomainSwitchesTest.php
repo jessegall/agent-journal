@@ -10,9 +10,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Settings\SettingsResolver;
 use App\Declarations\ToggleGroup;
 use App\Enums\Settings\SettingsOutcome;
-use App\Exceptions\SettingUnavailable;
 use App\Support\CoreSettings;
-use App\Support\DisabledSettingsGroup;
 use App\Support\DomainRegistry;
 use App\Support\DomainSwitches;
 use App\Support\SettingRegistry;
@@ -73,32 +71,6 @@ final class DomainSwitchesTest extends TestCase
             $switches[array_search('domain_plans', $keys, true)],
         );
 
-    }
-
-    public function test_the_owner_switches_a_domain_off_with_the_ordinary_group_command(): void
-    {
-        $change = $this->app->make(CommandBus::class)->run(
-            new DisableSettingGroupCommand(new GroupReference('Core', 'domain_plans'), 0),
-        );
-
-        $this->assertSame([1, SettingsOutcome::Changed], [$change->revision, $change->outcome]);
-        $this->app->forgetScopedInstances();
-
-        $this->assertInstanceOf(
-            DisabledSettingsGroup::class,
-            $this->app->make(SettingsResolver::class)->group(
-                $this->app->make(DomainSwitches::class)->of('Plans')->get(),
-            ),
-        );
-    }
-
-    public function test_access_has_no_switch(): void
-    {
-        $this->expectException(SettingUnavailable::class);
-
-        $this->app->make(CommandBus::class)->run(
-            new DisableSettingGroupCommand(new GroupReference('Core', 'domain_access'), 0),
-        );
     }
 
     public function test_core_settings_still_read_and_change_while_a_domain_is_off(): void

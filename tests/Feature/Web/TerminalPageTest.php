@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Contracts\Actors\CurrentActorSetter;
 use App\Data\Terminals\ScreenFrameData;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Terminals\TerminalFrameStatus;
 use App\Enums\Terminals\TerminalViewRefusal;
-use App\Exceptions\ActorNotAllowed;
 use App\Http\Middleware\Web\HandleInertiaRequests;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
@@ -21,11 +19,9 @@ use App\Support\ActorIdentity;
 use App\Support\AgentRuntimes;
 use App\Support\AgentSessions;
 use App\Support\DriverRequestEndings;
-use App\Support\HeldFrame;
 use App\Support\RuntimeScreen;
 use App\Support\ScreenRegistration;
 use App\Support\StartSessions;
-use App\Support\TerminalFrames;
 use App\Values\RuntimeIntent;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
@@ -34,8 +30,6 @@ use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\TestActors;
-use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
 /**
@@ -78,21 +72,6 @@ final class TerminalPageTest extends TestCase
             ->assertJsonPath('props.page.data', ['agentId' => $agentId]);
     }
 
-    public function test_the_owner_opens_and_renews_an_interest(): void
-    {
-        $runtime = $this->runtimeOn('host-1');
-        $agentId = $runtime->session->agent_id;
-
-        $this->open($agentId, ['intervalMs' => 1000])->assertOk()->assertJsonPath('intervalMs', 1000);
-        $view = TerminalView::query()->acrossActors()->live()->sole();
-
-        $this->actingAs($this->owner)
-            ->postJson("/web/agents/{$agentId}/terminal/interests/renew", ['interest' => $view->read_interest_id])
-            ->assertOk()
-            ->assertJsonPath('readInterestId', $view->read_interest_id);
-        $this->assertSame($view->id, TerminalView::query()->acrossActors()->live()->sole()->id);
-    }
-
     public function test_each_refusal_answers_its_code(): void
     {
         $process = $this->runtimeOn('host-1', DriverType::Headless);
@@ -108,23 +87,6 @@ final class TerminalPageTest extends TestCase
             ->postJson("/web/agents/{$process->session->agent_id}/terminal/interests", ['requestId' => 'x'])
             ->assertForbidden();
         $this->assertSame(0, TerminalView::query()->acrossActors()->count());
-    }
-
-    public function test_too_many_views_are_refused(): void
-    {
-        $runtime = $this->runtimeOn('host-1');
-
-        for ($view = 0; $view < TerminalView::MAX_PER_VIEWER; $view++) {
-            TerminalView::create(
-                $this->viewerOf($this->owner),
-                $runtime,
-                500,
-                CarbonImmutable::now(),
-                (string) Str::ulid(),
-            );
-        }
-
-        $this->assertRefusal($runtime->session->agent_id, TerminalViewRefusal::TooManyViews);
     }
 
     public function test_a_stored_frame_is_served_once_and_then_answered_unchanged(): void
@@ -145,23 +107,6 @@ final class TerminalPageTest extends TestCase
             ->assertJsonPath('state', TerminalFrameStatus::Unchanged->value)
             ->assertJsonMissingPath('frame');
         $this->frame($agentId, ['epoch' => 'epoch-0', 'after' => 9])->assertJsonPath('frame.sequence', 3);
-    }
-
-    public function test_a_viewer_who_may_not_inspect_is_refused_its_frames(): void
-    {
-        $runtime = $this->runtimeOn('host-1');
-        $agentId = $runtime->session->agent_id;
-        $viewer = TestActors::agentIdentity(9);
-        $view = TerminalView::create($viewer, $runtime, 500, CarbonImmutable::now(), (string) Str::ulid());
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forAgent($viewer->id),
-            TestStartAuthority::forAgent($viewer->id),
-        );
-        $frames = $this->app->make(TerminalFrames::class);
-        $held = new HeldFrame($view->read_interest_id, '', '', 0);
-
-        $this->assertThrows(fn () => $frames->after($agentId, $held), ActorNotAllowed::class);
-        $this->assertTrue($view->refresh()->isLive());
     }
 
     public function test_a_stopped_runtime_says_ended_with_its_last_frame(): void

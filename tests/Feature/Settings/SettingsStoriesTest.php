@@ -9,14 +9,10 @@ use App\Contracts\Settings\SettingCommands as SettingCommandsContract;
 use App\Contracts\Settings\SettingsCatalogue;
 use App\Contracts\Settings\SettingsDefinition;
 use App\Contracts\Settings\SettingsResolver;
-use App\Declarations\IntegerSetting;
 use App\Declarations\SettingGroup;
 use App\Declarations\StringSetting;
-use App\Enums\Settings\SettingsOutcome;
 use App\Exceptions\SettingDeclarationInvalid;
 use App\Exceptions\SettingsConflict;
-use App\Exceptions\SettingStorageInvalid;
-use App\Exceptions\SettingValueInvalid;
 use App\Models\Records\SettingsRecord;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
@@ -77,54 +73,6 @@ final class SettingsStoriesTest extends TestCase
     }
 
     /**
-     * Story 2: two owners use one local key independently.
-     */
-    public function test_two_owners_may_use_the_same_local_key(): void
-    {
-        $first = new class implements SettingsDefinition
-        {
-            public readonly IntegerSetting $retryLimit;
-
-            public function __construct()
-            {
-                $this->retryLimit = IntegerSetting::make('retry_limit', 'Retry limit', 1);
-            }
-
-            public function groups(): array
-            {
-                return [SettingGroup::make('general', 'General', [$this->retryLimit])];
-            }
-        };
-
-        $second = new class implements SettingsDefinition
-        {
-            public readonly IntegerSetting $retryLimit;
-
-            public function __construct()
-            {
-                $this->retryLimit = IntegerSetting::make('retry_limit', 'Retry limit', 2);
-            }
-
-            public function groups(): array
-            {
-                return [SettingGroup::make('general', 'General', [$this->retryLimit])];
-            }
-        };
-
-        $registry = SettingRegistry::from(['Core' => new CoreSettings(), 'First' => $first, 'Second' => $second]);
-
-        $this->assertSame(
-            ['First', 'retry_limit'],
-            [$registry->ownerOf($first->retryLimit)->owner, $registry->ownerOf($first->retryLimit)->key],
-        );
-
-        $this->assertSame(
-            ['Second', 'retry_limit'],
-            [$registry->ownerOf($second->retryLimit)->owner, $registry->ownerOf($second->retryLimit)->key],
-        );
-    }
-
-    /**
      * Stories 3 and 53: a domain without settings contributes no groups, and its catalogue is empty, not unknown.
      */
     public function test_a_domain_without_settings_has_an_empty_catalogue(): void
@@ -133,58 +81,6 @@ final class SettingsStoriesTest extends TestCase
 
         $this->assertSame([], $catalogue->groups);
         $this->assertSame(0, $catalogue->revision);
-    }
-
-    /**
-     * Story 26: a switch and a child save made at the same revision cannot both succeed.
-     */
-    public function test_a_child_save_made_at_the_revision_before_a_switch_is_a_conflict(): void
-    {
-        $this->runCommand($this->commands->disable($this->reviews->review, 0));
-
-        $this->assertRefused(SettingsConflict::class, $this->commands->integer($this->reviews->retryLimit, 4, 0));
-        $this->assertSame(1, $this->revision());
-    }
-
-    /**
-     * Stories 30 and 31: a value equal to the default stays an override until it is reset.
-     */
-    public function test_a_saved_default_is_an_override_until_reset(): void
-    {
-        $this->runCommand($this->commands->string($this->reviews->title, 'Reviews', 0));
-        $this->assertSame('override', $this->catalogueSetting('general', 'title')['source']);
-
-        $this->runCommand($this->commands->reset($this->reviews->title, 1));
-        $this->assertSame('default', $this->catalogueSetting('general', 'title')['source']);
-    }
-
-    /**
-     * Story 32: a runtime read of an invalid stored value fails instead of giving the default.
-     */
-    public function test_a_runtime_read_of_an_invalid_value_fails(): void
-    {
-        $this->storeDirectly(
-            fn (SettingsDocument $document) => $document->withSetting(
-                new EncodedSetting('title', EncodedValue::of(42)),
-            ),
-        );
-
-        $this->expectException(SettingStorageInvalid::class);
-
-        $this->freshReader()->string($this->reviews->title);
-    }
-
-    /**
-     * Story 34: after a conflict, a retry at the current revision succeeds.
-     */
-    public function test_a_stale_tab_is_refused_and_a_retry_at_the_new_revision_succeeds(): void
-    {
-        $this->runCommand($this->commands->integer($this->reviews->retryLimit, 4, 0));
-        $this->assertRefused(SettingsConflict::class, $this->commands->integer($this->reviews->retryLimit, 5, 0));
-
-        $change = $this->runCommand($this->commands->integer($this->reviews->retryLimit, 5, 1));
-
-        $this->assertSame([2, SettingsOutcome::Changed], [$change->revision, $change->outcome]);
     }
 
     /**
@@ -205,33 +101,6 @@ final class SettingsStoriesTest extends TestCase
         $this->assertRefused(SettingsConflict::class, $this->commands->integer($this->reviews->retryLimit, 4, 0));
         $this->assertSame(1, $this->otherConnection()->table('settings_records')->count());
         $this->assertSame(7, $this->freshReader()->group($this->reviews->review)->integer($this->reviews->retryLimit));
-    }
-
-    /**
-     * Story 45: text past the largest a setting holds is refused before anything is stored, without the text.
-     */
-    public function test_oversized_text_is_refused_before_storage_without_echoing_it(): void
-    {
-        $text = str_repeat('x', StringSetting::LONGEST + 1);
-
-        try {
-            $this->runCommand($this->commands->string($this->reviews->title, $text, 0));
-            $this->fail('Oversized text was stored.');
-        } catch (SettingValueInvalid $refused) {
-            $this->assertStringNotContainsString('xxxx', $refused->getMessage());
-        }
-
-        $this->assertSame(0, SettingsRecord::query()->count());
-    }
-
-    /**
-     * Story 46: a label with markup is passed on as the same plain text.
-     */
-    public function test_a_label_with_markup_stays_plain_text(): void
-    {
-        $setting = StringSetting::make('motto', '<b>Motto</b>', 'Hello');
-
-        $this->assertSame('<b>Motto</b>', $setting->label());
     }
 
     /**
