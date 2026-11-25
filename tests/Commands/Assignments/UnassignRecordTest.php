@@ -17,7 +17,6 @@ use Domain\Tasks\TasksDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\InstallsInboxes;
-use Tests\Support\StartsOwnerRequest;
 use Tests\TestCase;
 
 /**
@@ -27,7 +26,6 @@ final class UnassignRecordTest extends TestCase
 {
     use CommitsHookRows;
     use InstallsInboxes;
-    use StartsOwnerRequest;
 
     private const array TABLES = [
         'users',
@@ -38,6 +36,13 @@ final class UnassignRecordTest extends TestCase
         'assignments',
         'command_receipts',
     ];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
 
     /**
      * The domains this test uses beside core.

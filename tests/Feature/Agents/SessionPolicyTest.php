@@ -19,7 +19,6 @@ use App\Values\StartRequest;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\ServesEveryCombination;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsOwnerRequest;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -30,16 +29,17 @@ final class SessionPolicyTest extends TestCase
 {
     use RefreshHookDatabase;
     use ServesEveryCombination;
-    use StartsOwnerRequest;
     use WithActiveAccount;
 
     protected function setUp(): void
     {
         parent::setUp();
 
+        $this->journal->owner();
+
         $this->chooseActiveAccounts();
         $this->serveEveryCombination();
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAs('Owner');
     }
 
     public function test_a_start_freezes_its_policy_with_its_session(): void

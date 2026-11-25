@@ -12,7 +12,6 @@ use App\Models\Inboxes\InboxMember;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
-use Tests\Support\StartsMainAgents;
 
 /**
  * A team inbox the owner and Builder are attached to, holding one message the owner sent, with Reviewer started but
@@ -20,8 +19,6 @@ use Tests\Support\StartsMainAgents;
  */
 trait OpensTeamInboxMessage
 {
-    use StartsMainAgents;
-
     private User $owner;
 
     /**
@@ -42,8 +39,8 @@ trait OpensTeamInboxMessage
     {
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->builder = $this->startMainAgent('Builder');
-        $this->reviewer = $this->startMainAgent('Reviewer');
+        $this->builder = $this->startedIds('Builder');
+        $this->reviewer = $this->startedIds('Reviewer');
         $this->startUserRequestAs($this->owner->id);
 
         $this->team = Inbox::create(Inbox::NAMED_PROVIDER, 'team', 'Team');
@@ -74,5 +71,15 @@ trait OpensTeamInboxMessage
     {
         $this->app->forgetScopedInstances();
         $this->startRequestAs($agent[0], $agent[1]);
+    }
+
+    /**
+     * @return array{string, string} the agent id and its session id, for a main agent started under its own name
+     */
+    private function startedIds(string $name): array
+    {
+        $session = $this->journal->idleAgent($name)->startSession($name, $name)->sessionCalled($name);
+
+        return [$session->agent_id, $session->id];
     }
 }

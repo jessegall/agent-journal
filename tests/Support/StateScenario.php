@@ -122,7 +122,7 @@ final class StateScenario
         return StateValues::of($this->state());
     }
 
-    public function assertStillActive(): self
+    public function assertActive(): self
     {
         Assert::assertFalse($this->frame()->isFinished(), "The state {$this->state->typeKey} has finished.");
 

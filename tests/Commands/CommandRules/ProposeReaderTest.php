@@ -12,11 +12,11 @@ use App\Models\Agents\Agent;
 use App\Models\CommandRules\CommandRequest;
 use App\Models\Runs\ReaderRevision;
 use Illuminate\Testing\TestResponse;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedPayloads;
-use Tests\Support\StartsTestAgent;
 use Tests\TestCase;
 
 /**
@@ -27,7 +27,8 @@ final class ProposeReaderTest extends TestCase
 {
     use RefreshHookDatabase;
     use SendsSignedPayloads;
-    use StartsTestAgent;
+
+    private TestStart $start;
 
     private const string OPERATION = 'acme verify';
 
@@ -39,15 +40,20 @@ final class ProposeReaderTest extends TestCase
     {
         parent::setUp();
 
+        $this->journal->owner()->idleAgent('Test agent')->startSession('Test agent', 'Test agent');
+        $this->start = $this->journal->testStartCalled('Test agent');
+
         ProcessOutputDisk::fake();
-        $requestId = $this->runAsAgent(new OpenCommandRequestCommand(
+        $requestId = $this->journal->actAs('Test agent')->run(new OpenCommandRequestCommand(
             self::OPERATION,
             str_repeat('a', 64),
             self::OPERATION,
             '/projects/acme',
             RequestHoldReason::UnknownCommand,
         ));
-        $this->runAsAgent(new ProposeCommandRuleCommand($requestId, 'request-1', AcmeDeclarations::proposedVerify()));
+        $this->journal->actAs('Test agent')->run(
+            new ProposeCommandRuleCommand($requestId, 'request-1', AcmeDeclarations::proposedVerify()),
+        );
         $this->request = CommandRequest::query()->findOrFail($requestId);
     }
 

@@ -19,7 +19,6 @@ use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsOwnerRequest;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -30,22 +29,28 @@ use Tests\TestCase;
 final class StartAccountPageTest extends TestCase
 {
     use RefreshHookDatabase;
-    use StartsOwnerRequest;
     use WithActiveAccount;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
 
     public function test_the_owner_reaches_a_removed_account_from_its_start(): void
     {
         $account = $this->chooseActiveAccounts()['claude-code'];
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAs('Owner');
         $sessionId = $this->start();
 
-        $this->actingAs($this->owner)->get('/accounts?add=1')->assertInertia(fn (AssertableInertia $page) => $page
+        $this->actingAs($this->owner())->get('/accounts?add=1')->assertInertia(fn (AssertableInertia $page) => $page
             ->where('page.data.root.children.1.children.1.native.props.rows.0.recentStarts.0.sessionId', $sessionId));
 
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAs('Owner');
         $this->app->make(CommandBus::class)->run(new RemoveAccountCommand($account->id));
 
-        $this->actingAs($this->owner)
+        $this->actingAs($this->owner())
             ->get("/accounts/starts/{$sessionId}")
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
@@ -59,10 +64,10 @@ final class StartAccountPageTest extends TestCase
     public function test_a_guessed_start_and_another_user_see_nothing(): void
     {
         $this->chooseActiveAccounts();
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAs('Owner');
         $sessionId = $this->start();
 
-        $this->actingAs($this->owner)
+        $this->actingAs($this->owner())
             ->get('/accounts/starts/'.Str::lower((string) Str::ulid()))
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('page.state', 'failed')
@@ -87,5 +92,10 @@ final class StartAccountPageTest extends TestCase
         );
 
         return $this->app->make(CommandBus::class)->run(new StartAgentCommand($request))->sessionId;
+    }
+
+    private function owner(): User
+    {
+        return $this->journal->ownerUser();
     }
 }

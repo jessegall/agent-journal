@@ -10,11 +10,11 @@ use App\Models\CommandRules\CommandRequest;
 use App\Models\CommandRules\RuleProposal;
 use App\Values\AgentText;
 use App\Values\RuleExample;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\SendsSignedPayloads;
-use Tests\Support\StartsTestAgent;
 use Tests\Support\TestText;
 use Tests\TestCase;
 
@@ -27,11 +27,20 @@ final class CommandTypeRoutesTest extends TestCase
     use RefreshHookDatabase;
     use SendsMcpFrames;
     use SendsSignedPayloads;
-    use StartsTestAgent;
+
+    private TestStart $start;
 
     private const string PROPOSE_STEP = 'the command_types_propose tool with request ';
 
     private const string APPROVE_STEP = "waiting for the owner to approve request %s's sample";
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner()->idleAgent('Test agent')->startSession('Test agent', 'Test agent');
+        $this->start = $this->journal->testStartCalled('Test agent');
+    }
 
     public function test_explaining_an_unknown_line_opens_its_request_and_names_the_propose_step(): void
     {

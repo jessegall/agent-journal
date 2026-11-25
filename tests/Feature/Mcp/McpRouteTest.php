@@ -14,9 +14,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Laravel\Mcp\Server\Registrar;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsMcpFrames;
-use Tests\Support\StartsTestAgent;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -28,13 +28,22 @@ final class McpRouteTest extends TestCase
 {
     use CommitsHookRows;
     use SendsMcpFrames;
-    use StartsTestAgent;
+
+    private TestStart $start;
 
     private const string INSTRUCTIONS_OPENING = 'Use overview_read first.';
 
     private const array TABLES = ['agents', 'agent_sessions', 'session_tokens'];
 
     private const string ROUTE = '/agent/mcp/v1';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner()->idleAgent('Test agent')->startSession('Test agent', 'Test agent');
+        $this->start = $this->journal->testStartCalled('Test agent');
+    }
 
     public function test_a_signed_initialize_answers_with_the_journal_server_and_only_tools_and_resources(): void
     {

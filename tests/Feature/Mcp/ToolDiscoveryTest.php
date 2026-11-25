@@ -6,9 +6,9 @@ namespace Tests\Feature\Mcp;
 
 use App\Contracts\Drivers\ToolDiscovery;
 use Carbon\CarbonImmutable;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsMcpFrames;
-use Tests\Support\StartsTestAgent;
 use Tests\TestCase;
 
 /**
@@ -18,9 +18,18 @@ final class ToolDiscoveryTest extends TestCase
 {
     use CommitsHookRows;
     use SendsMcpFrames;
-    use StartsTestAgent;
+
+    private TestStart $start;
 
     private const array TABLES = ['agents', 'agent_sessions', 'session_tokens'];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner()->idleAgent('Test agent')->startSession('Test agent', 'Test agent');
+        $this->start = $this->journal->testStartCalled('Test agent');
+    }
 
     public function test_a_tools_list_sets_discovered_at_to_the_signed_issue_time(): void
     {

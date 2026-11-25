@@ -15,7 +15,6 @@ use Domain\Chat\Tests\TestCase;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensPairChats;
-use Tests\Support\StartsMainAgents;
 use Tests\Support\WritesInboxMessages;
 
 /**
@@ -26,7 +25,6 @@ final class ChatHostTest extends TestCase
 {
     use CommitsHookRows;
     use OpensPairChats;
-    use StartsMainAgents;
     use WritesInboxMessages;
 
     private const array TABLES = [
@@ -48,7 +46,9 @@ final class ChatHostTest extends TestCase
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $session = $this->startedMainAgentSession();
+        $session = $this->journal->idleAgent('Builder')
+            ->startSession('Builder', 'Builder')
+            ->sessionCalled('Builder');
 
         $chatInboxId = $this->pairChat(
             ActorIdentity::of($owner),

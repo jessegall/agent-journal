@@ -28,6 +28,7 @@ use App\Exceptions\StartPreviewStale;
 use App\Exceptions\StartRefused;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
+use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;
@@ -49,9 +50,7 @@ use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\ServesEveryCombination;
 use Tests\Support\FixedServerClock;
-use Tests\Support\HasResearcherAgent;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsOwnerRequest;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -61,15 +60,18 @@ use Tests\TestCase;
  */
 final class StartAgentTest extends TestCase
 {
-    use HasResearcherAgent;
     use RefreshHookDatabase;
     use ServesEveryCombination;
-    use StartsOwnerRequest;
     use WithActiveAccount;
+
+    private Agent $researcher;
 
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->journal->owner();
+        $this->researcher = $this->journal->idleAgent('Researcher', 'read-only-helper')->agentCalled('Researcher');
 
         $this->chooseActiveAccounts();
         $this->serveEveryCombination();
@@ -82,7 +84,7 @@ final class StartAgentTest extends TestCase
         DB::table('agent_sessions')->insert(
             [
                 'id' => (string) Str::ulid(),
-                'agent_id' => $this->agent->id,
+                'agent_id' => $this->researcher->id,
                 'driver' => 'claude-code',
                 'status' => 'active',
                 'profile_key' => 'main-agent',
@@ -102,7 +104,7 @@ final class StartAgentTest extends TestCase
             [$first->sessionId, true, false],
             [$again->sessionId, $first->isNewSession, $again->isNewSession],
         );
-        $this->assertSame(1, AgentSession::query()->where('agent_id', $this->agent->id)->count());
+        $this->assertSame(1, AgentSession::query()->where('agent_id', $this->researcher->id)->count());
         $this->assertSame(
             StartDisposition::Started,
             SessionRequest::query()->where('request_id', $request->requestId)->sole()->disposition,
@@ -117,7 +119,7 @@ final class StartAgentTest extends TestCase
 
         $this->assertThrows(fn () => $this->start($this->request()), AgentBusy::class);
 
-        $this->app->make(CommandBus::class)->run(new RetireAgentCommand($this->agent->id));
+        $this->app->make(CommandBus::class)->run(new RetireAgentCommand($this->researcher->id));
 
         $this->assertThrows(fn () => $this->start($this->request()), StartRefused::class);
     }
@@ -143,7 +145,7 @@ final class StartAgentTest extends TestCase
     {
         $request = new StartRequest(
             TestSelections::requestId(),
-            $this->agent->id,
+            $this->researcher->id,
             TestSelections::of('codex'),
             StartOriginType::MainStart,
             null,
@@ -189,7 +191,7 @@ final class StartAgentTest extends TestCase
         }
 
         $this->assertSame(0, SessionProcess::query()->withoutGlobalScopes()->count());
-        $this->assertSame(0, AgentSession::query()->where('agent_id', $this->agent->id)->count());
+        $this->assertSame(0, AgentSession::query()->where('agent_id', $this->researcher->id)->count());
     }
 
     public function test_a_main_start_opens_its_runtime_on_the_host_that_runs_it_and_wakes_it_there(): void
@@ -211,7 +213,7 @@ final class StartAgentTest extends TestCase
         Host::query()->sole()->revokeAt(CarbonImmutable::now());
 
         $this->assertThrows(fn () => $this->start($this->request()), HostUnavailable::class);
-        $this->assertSame(0, AgentSession::query()->where('agent_id', $this->agent->id)->count());
+        $this->assertSame(0, AgentSession::query()->where('agent_id', $this->researcher->id)->count());
     }
 
     public function test_a_start_no_host_took_up_within_the_presence_window_ends_and_the_agent_can_start_again(): void
@@ -256,7 +258,7 @@ final class StartAgentTest extends TestCase
     {
         return new StartRequest(
             TestSelections::requestId(),
-            $this->agent->id,
+            $this->researcher->id,
             TestSelections::of(),
             StartOriginType::MainStart,
             null,

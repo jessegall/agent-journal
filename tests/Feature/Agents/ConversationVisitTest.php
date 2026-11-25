@@ -11,6 +11,7 @@ use App\Enums\Agents\ConversationModeType;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Sessions\StartOriginType;
 use App\Exceptions\ConversationIncompatible;
+use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\ConversationVisit;
 use App\Support\ConversationVisits;
@@ -22,9 +23,7 @@ use App\Values\StartRequest;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
-use Tests\Support\HasResearcherAgent;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsOwnerRequest;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -34,10 +33,10 @@ use Tests\TestCase;
  */
 final class ConversationVisitTest extends TestCase
 {
-    use HasResearcherAgent;
     use RefreshHookDatabase;
-    use StartsOwnerRequest;
     use WithActiveAccount;
+
+    private Agent $researcher;
 
     /**
      * @var array<string, string>
@@ -47,6 +46,9 @@ final class ConversationVisitTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->journal->owner();
+        $this->researcher = $this->journal->idleAgent('Researcher', 'read-only-helper')->agentCalled('Researcher');
 
         $this->chooseActiveAccounts();
     }
@@ -107,7 +109,7 @@ final class ConversationVisitTest extends TestCase
         );
 
         $conversations = $this->app->make(DriverConversationResolver::class)->conversations(
-            $this->agent->id,
+            $this->researcher->id,
             DefaultDrivers::CLAUDE_CODE,
             'helpers.helper-job 1',
         );
@@ -119,7 +121,7 @@ final class ConversationVisitTest extends TestCase
         $this->assertSame(
             [],
             $this->app->make(DriverConversationResolver::class)->conversations(
-                $this->agent->id,
+                $this->researcher->id,
                 DefaultDrivers::CLAUDE_CODE,
                 'helpers.helper-job 2',
             ),
@@ -130,7 +132,7 @@ final class ConversationVisitTest extends TestCase
     {
         $request = new StartRequest(
             TestSelections::requestId(),
-            $this->agent->id,
+            $this->researcher->id,
             TestSelections::of(),
             StartOriginType::OwnerRequest,
             $this->ownerOf($context),

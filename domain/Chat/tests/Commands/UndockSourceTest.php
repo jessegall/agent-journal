@@ -25,7 +25,6 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\OpensPairChats;
 use Tests\Support\StartsAgentRequests;
-use Tests\Support\StartsMainAgents;
 use Tests\Support\WritesInboxMessages;
 
 /**
@@ -37,7 +36,6 @@ final class UndockSourceTest extends TestCase
     use CommitsHookRows;
     use OpensPairChats;
     use StartsAgentRequests;
-    use StartsMainAgents;
     use WritesInboxMessages;
 
     private const array TABLES = [
@@ -78,7 +76,9 @@ final class UndockSourceTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->agentId = $this->startedMainAgentSession()->agent_id;
+        $this->agentId = $this->journal->idleAgent('Builder')
+            ->startSession('Builder', 'Builder')
+            ->sessionCalled('Builder')->agent_id;
         $this->pairChat(ActorIdentity::of($this->owner), ActorIdentity::ofClass(Agent::class, $this->agentId));
         $this->task = Task::factory()->create(['title' => 'Ship the dock']);
         $this->startUserRequestAs($this->owner->id);

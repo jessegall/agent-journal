@@ -22,7 +22,6 @@ use Tests\Fixtures\Docking\ProjectionDockableProvider;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensPairChats;
 use Tests\Support\StartsAgentRequests;
-use Tests\Support\StartsMainAgents;
 use Tests\Support\WritesInboxMessages;
 
 /**
@@ -35,7 +34,6 @@ final class DockProjectionTest extends TestCase
     use CommitsHookRows;
     use OpensPairChats;
     use StartsAgentRequests;
-    use StartsMainAgents;
     use WritesInboxMessages;
 
     private const array TABLES = [
@@ -65,7 +63,9 @@ final class DockProjectionTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $agentId = $this->startedMainAgentSession()->agent_id;
+        $agentId = $this->journal->idleAgent('Builder')
+            ->startSession('Builder', 'Builder')
+            ->sessionCalled('Builder')->agent_id;
 
         $this->conversation = $this->pairChat(
             ActorIdentity::of($this->owner),

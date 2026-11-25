@@ -14,6 +14,7 @@ use App\Enums\Agents\ConversationModeType;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Sessions\SessionStatus;
 use App\Enums\Sessions\StartOriginType;
+use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Projects\Host;
 use App\Support\ActorStore;
@@ -25,9 +26,7 @@ use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\ServesEveryCombination;
 use Tests\Support\FixedServerClock;
-use Tests\Support\HasResearcherAgent;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsOwnerRequest;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -36,15 +35,18 @@ use Tests\TestCase;
  */
 final class RecordHostCallFailureTest extends TestCase
 {
-    use HasResearcherAgent;
     use RefreshHookDatabase;
     use ServesEveryCombination;
-    use StartsOwnerRequest;
     use WithActiveAccount;
+
+    private Agent $researcher;
 
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->journal->owner();
+        $this->researcher = $this->journal->idleAgent('Researcher', 'read-only-helper')->agentCalled('Researcher');
 
         $this->chooseActiveAccounts();
         $this->serveEveryCombination();
@@ -72,7 +74,7 @@ final class RecordHostCallFailureTest extends TestCase
     {
         return new StartRequest(
             TestSelections::requestId(),
-            $this->agent->id,
+            $this->researcher->id,
             TestSelections::of(),
             StartOriginType::MainStart,
             null,

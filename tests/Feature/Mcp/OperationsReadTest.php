@@ -22,7 +22,6 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\StartsAgentRequests;
-use Tests\Support\StartsTestAgent;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -35,7 +34,8 @@ final class OperationsReadTest extends TestCase
     use CommitsHookRows;
     use SendsMcpFrames;
     use StartsAgentRequests;
-    use StartsTestAgent;
+
+    private TestStart $start;
 
     private const array TABLES = [
         'agents',
@@ -48,6 +48,14 @@ final class OperationsReadTest extends TestCase
     ];
 
     private const string KEY = '01JD8X0G9M3QZ6V4K2OPERATN1';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner()->idleAgent('Test agent')->startSession('Test agent', 'Test agent');
+        $this->start = $this->journal->testStartCalled('Test agent');
+    }
 
     /**
      * The domains this test uses beside core.

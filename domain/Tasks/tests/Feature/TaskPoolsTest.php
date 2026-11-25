@@ -7,6 +7,8 @@ namespace Domain\Tasks\Tests\Feature;
 use App\Contracts\Assignments\AssignmentProviders;
 use App\Enums\Assignments\PoolMembersType;
 use App\Exceptions\InvalidRecordIds;
+use App\Models\Agents\Agent;
+use App\Support\ActorIdentity;
 use App\Support\PoolDefinition;
 use App\Support\PoolReference;
 use App\Support\RecordIdentity;
@@ -19,7 +21,6 @@ use Domain\Tasks\Support\Assignments\NamedTaskPoolFactory;
 use Domain\Tasks\Support\Assignments\OpenTaskPoolFactory;
 use Domain\Tasks\Support\TaskType;
 use Domain\Tasks\Tests\TestCase;
-use Tests\Support\HasBuilderAgent;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
 
@@ -29,8 +30,17 @@ use Tests\Support\TestIds;
  */
 final class TaskPoolsTest extends TestCase
 {
-    use HasBuilderAgent;
     use RefreshHookDatabase;
+
+    private ActorIdentity $builder;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->builder = ActorIdentity::ofClass(Agent::class, TestIds::of(7));
+        $this->journal->actAsUserId(TestIds::of(1));
+    }
 
     public function test_tasks_declares_its_assigner_and_two_pools_at_boot(): void
     {

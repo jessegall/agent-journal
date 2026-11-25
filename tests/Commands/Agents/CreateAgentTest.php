@@ -10,7 +10,6 @@ use App\Contracts\Sessions\AgentResolver;
 use App\Exceptions\CommandInputInvalid;
 use App\Models\Agents\Agent;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsOwnerRequest;
 use Tests\TestCase;
 
 /**
@@ -19,9 +18,15 @@ use Tests\TestCase;
 final class CreateAgentTest extends TestCase
 {
     use RefreshHookDatabase;
-    use StartsOwnerRequest;
 
     private const string NAME_REQUIRED = 'name: The name field is required.';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
 
     public function test_a_read_only_and_a_writing_helper_are_created_and_read_through_the_agent_reader(): void
     {

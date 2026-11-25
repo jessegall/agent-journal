@@ -24,7 +24,6 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\OpensPairChats;
 use Tests\Support\StartsAgentRequests;
-use Tests\Support\StartsMainAgents;
 use Tests\Support\WritesInboxMessages;
 
 /**
@@ -36,7 +35,6 @@ final class DockSectionTest extends TestCase
     use CommitsHookRows;
     use OpensPairChats;
     use StartsAgentRequests;
-    use StartsMainAgents;
     use WritesInboxMessages;
 
     private const array TABLES = [
@@ -68,7 +66,9 @@ final class DockSectionTest extends TestCase
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $session = $this->startedMainAgentSession();
+        $session = $this->journal->idleAgent('Builder')
+            ->startSession('Builder', 'Builder')
+            ->sessionCalled('Builder');
         $this->inboxOf(ActorIdentity::of($owner));
         $this->inboxOf(ActorIdentity::ofClass(Agent::class, $session->agent_id));
         $task = Task::factory()->create(['title' => 'Ship the dock']);
@@ -91,7 +91,9 @@ final class DockSectionTest extends TestCase
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $session = $this->startedMainAgentSession();
+        $session = $this->journal->idleAgent('Builder')
+            ->startSession('Builder', 'Builder')
+            ->sessionCalled('Builder');
 
         $message = $this->postTo($this->inboxOf(ActorIdentity::of($owner)), $owner, "Build ready\nAll checks passed.");
 

@@ -8,6 +8,8 @@ use App\Contracts\Assignments\AssignmentProviders;
 use App\Enums\Assignments\PoolInputType;
 use App\Exceptions\AssignmentPoolTooLarge;
 use App\Exceptions\AssignmentPoolUnavailable;
+use App\Models\Agents\Agent;
+use App\Support\ActorIdentity;
 use App\Support\OrderedRecordIds;
 use App\Support\PoolDefinition;
 use App\Support\PoolMembers;
@@ -24,7 +26,6 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\TaskType;
 use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Tests\Support\HasBuilderAgent;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
 
@@ -34,12 +35,21 @@ use Tests\Support\TestIds;
  */
 final class PlanTaskPoolTest extends TestCase
 {
-    use HasBuilderAgent;
     use RefreshHookDatabase;
+
+    private ActorIdentity $builder;
 
     private const string PLAN_TITLE = 'Ship the pools';
 
     private const string POOL_LABEL = 'Tasks in a started plan';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->builder = ActorIdentity::ofClass(Agent::class, TestIds::of(7));
+        $this->journal->actAsUserId(TestIds::of(1));
+    }
 
     public function test_plans_declares_the_pool_of_a_plans_tasks_at_boot(): void
     {

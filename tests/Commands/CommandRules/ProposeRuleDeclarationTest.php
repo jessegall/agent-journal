@@ -9,11 +9,11 @@ use App\Enums\CommandRules\RequestStatus;
 use App\Mcp\Tools\CommandRequestShowTool;
 use App\Mcp\Tools\CommandTypeProposeTool;
 use App\Values\RuleExample;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\SendsSignedPayloads;
-use Tests\Support\StartsTestAgent;
 use Tests\TestCase;
 
 /**
@@ -24,7 +24,16 @@ final class ProposeRuleDeclarationTest extends TestCase
     use RefreshHookDatabase;
     use SendsMcpFrames;
     use SendsSignedPayloads;
-    use StartsTestAgent;
+
+    private TestStart $start;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner()->idleAgent('Test agent')->startSession('Test agent', 'Test agent');
+        $this->start = $this->journal->testStartCalled('Test agent');
+    }
 
     public function test_a_proposal_through_the_tool_moves_the_request_on_and_the_show_tool_reads_it_back(): void
     {

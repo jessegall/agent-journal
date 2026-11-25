@@ -13,6 +13,7 @@ use App\Enums\Agents\ConversationModeType;
 use App\Enums\Agents\ExecutionModeType;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Sessions\StartOriginType;
+use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Projects\Host;
 use App\Support\ActorIdentity;
@@ -24,9 +25,7 @@ use App\Values\StartPolicy;
 use App\Values\StartRequest;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\ServesEveryCombination;
-use Tests\Support\HasResearcherAgent;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsOwnerRequest;
 use Tests\Support\TestActors;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -37,15 +36,18 @@ use Tests\TestCase;
  */
 final class StartOwnedAgentTest extends TestCase
 {
-    use HasResearcherAgent;
     use RefreshHookDatabase;
     use ServesEveryCombination;
-    use StartsOwnerRequest;
     use WithActiveAccount;
+
+    private Agent $researcher;
 
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->journal->owner();
+        $this->researcher = $this->journal->idleAgent('Researcher', 'read-only-helper')->agentCalled('Researcher');
 
         $this->chooseActiveAccounts();
         $this->serveEveryCombination();
@@ -55,7 +57,7 @@ final class StartOwnedAgentTest extends TestCase
     {
         $request = new OwnerStartRequest(
             TestSelections::requestId(),
-            ActorIdentity::of($this->agent),
+            ActorIdentity::of($this->researcher),
             TestActors::record('binders.binder', 1),
             'purpose-1',
             TestSelections::of(),
@@ -70,14 +72,14 @@ final class StartOwnedAgentTest extends TestCase
 
         $this->assertSame([$first->startReference, true, false], [$again->startReference, $first->isNewSession, $again->isNewSession]);
         $this->assertSame(ExecutionModeType::ProtectedHost, $first->executionMode);
-        $this->assertSame(1, AgentSession::query()->where('agent_id', $this->agent->id)->count());
+        $this->assertSame(1, AgentSession::query()->where('agent_id', $this->researcher->id)->count());
     }
 
     private function request(int|null $previewRevision = null): StartRequest
     {
         return new StartRequest(
             TestSelections::requestId(),
-            $this->agent->id,
+            $this->researcher->id,
             TestSelections::of(),
             StartOriginType::MainStart,
             null,
