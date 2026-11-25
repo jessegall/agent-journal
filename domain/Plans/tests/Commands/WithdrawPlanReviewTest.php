@@ -14,7 +14,6 @@ use Domain\Plans\Models\Plan;
 use Domain\Plans\Models\PlanReviewEdition;
 use Domain\Plans\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\Seeding\SeedsJournal;
 
 /**
  * Whoever asked for a review withdraws it: the review is kept as withdrawn by them and the plan is planned again; a
@@ -23,7 +22,6 @@ use Tests\Support\Seeding\SeedsJournal;
 final class WithdrawPlanReviewTest extends TestCase
 {
     use CommitsHookRows;
-    use SeedsJournal;
 
     private const array TABLES = ['plans', 'plan_review_editions'];
 
@@ -33,19 +31,19 @@ final class WithdrawPlanReviewTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal()->owner();
-        $this->plan = Plan::create('Release', 'Ship it.', PlanType::Build, $this->journal()->ownerUser());
+        $this->journal->owner();
+        $this->plan = Plan::create('Release', 'Ship it.', PlanType::Build, $this->journal->ownerUser());
     }
 
     public function test_a_withdrawn_review_is_kept_as_withdrawn_and_the_plan_is_planned_again(): void
     {
-        $reviewId = $this->journal()->run(new RequestPlanReviewCommand($this->plan->id, [$this->journal()->actorCalled('Owner')]));
+        $reviewId = $this->journal->run(new RequestPlanReviewCommand($this->plan->id, [$this->journal->actorCalled('Owner')]));
 
-        $this->journal()->run(new WithdrawPlanReviewCommand($this->plan->id));
+        $this->journal->run(new WithdrawPlanReviewCommand($this->plan->id));
 
         $review = PlanReviewEdition::query()->findOrFail($reviewId);
         $this->assertSame(
-            [PlanReviewStatus::Withdrawn, $this->journal()->ownerUser()->id, PlanStatus::Planned],
+            [PlanReviewStatus::Withdrawn, $this->journal->ownerUser()->id, PlanStatus::Planned],
             [$review->status, $review->decided_by_id, $this->plan->refresh()->status],
         );
     }
@@ -53,7 +51,7 @@ final class WithdrawPlanReviewTest extends TestCase
     public function test_a_plan_with_no_review_open_is_refused(): void
     {
         $this->assertThrows(
-            fn () => $this->journal()->run(new WithdrawPlanReviewCommand($this->plan->id)),
+            fn () => $this->journal->run(new WithdrawPlanReviewCommand($this->plan->id)),
             PlanReviewRefused::class,
             PlanReviewRefused::notReviewing($this->plan->number, PlanStatus::Planned->value)->getMessage(),
         );

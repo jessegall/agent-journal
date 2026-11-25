@@ -11,7 +11,6 @@ use Domain\Plans\Exceptions\PlanRevisionChanged;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Seeding\SeedsJournal;
 
 /**
  * A user changes a plan at the revision they read: what they name changes, the rest stays and the plan goes one
@@ -21,7 +20,6 @@ use Tests\Support\Seeding\SeedsJournal;
 final class EditPlanTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SeedsJournal;
 
     private Plan $plan;
 
@@ -29,13 +27,13 @@ final class EditPlanTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal()->owner();
-        $this->plan = Plan::create('First', 'First brief', PlanType::Build, $this->journal()->ownerUser());
+        $this->journal->owner();
+        $this->plan = Plan::create('First', 'First brief', PlanType::Build, $this->journal->ownerUser());
     }
 
     public function test_an_edit_changes_what_it_names_and_moves_the_revision_on(): void
     {
-        $revision = $this->journal()->run(new EditPlanCommand($this->plan->id, 1, brief: 'Second brief', type: PlanType::Fix));
+        $revision = $this->journal->run(new EditPlanCommand($this->plan->id, 1, brief: 'Second brief', type: PlanType::Fix));
 
         $this->plan->refresh();
         $this->assertSame(2, $revision);
@@ -44,10 +42,10 @@ final class EditPlanTest extends TestCase
 
     public function test_an_edit_at_a_stale_revision_is_a_conflict_and_keeps_the_newer_text(): void
     {
-        $this->journal()->run(new EditPlanCommand($this->plan->id, 1, 'Second'));
+        $this->journal->run(new EditPlanCommand($this->plan->id, 1, 'Second'));
 
         $this->assertThrows(
-            fn () => $this->journal()->run(new EditPlanCommand($this->plan->id, 1, 'Stale')),
+            fn () => $this->journal->run(new EditPlanCommand($this->plan->id, 1, 'Stale')),
             PlanRevisionChanged::class,
         );
         $this->assertSame(['Second', 2], [$this->plan->refresh()->title, $this->plan->revision]);
@@ -56,7 +54,7 @@ final class EditPlanTest extends TestCase
     public function test_a_title_past_its_limit_is_refused_naming_the_field(): void
     {
         $this->assertThrows(
-            fn () => $this->journal()->run(new EditPlanCommand($this->plan->id, 1, str_repeat('é', Plan::TITLE_CHARACTER_LIMIT + 1))),
+            fn () => $this->journal->run(new EditPlanCommand($this->plan->id, 1, str_repeat('é', Plan::TITLE_CHARACTER_LIMIT + 1))),
             CommandInputInvalid::class,
             'title:',
         );

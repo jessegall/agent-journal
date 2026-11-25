@@ -13,7 +13,6 @@ use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\Seeding\SeedsJournal;
 
 /**
  * The agent that runs a task finishes it with its note and works on it no more; another agent is refused, and a note
@@ -22,7 +21,6 @@ use Tests\Support\Seeding\SeedsJournal;
 final class FinishTaskTest extends TestCase
 {
     use CommitsHookRows;
-    use SeedsJournal;
 
     private const array TABLES = ['tasks', 'task_runs', 'claim_authorizations'];
 
@@ -34,14 +32,14 @@ final class FinishTaskTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal()->owner()->agent('First')->agent('Second', 'read-only-helper');
-        $this->task = Task::create('Owned work', 'Build it.', $this->journal()->ownerUser());
-        $this->run = $this->journal()->actAs('First')->run(new StartTaskCommand($this->task->id));
+        $this->journal->owner()->agent('First')->agent('Second', 'read-only-helper');
+        $this->task = Task::create('Owned work', 'Build it.', $this->journal->ownerUser());
+        $this->run = $this->journal->actAs('First')->run(new StartTaskCommand($this->task->id));
     }
 
     public function test_the_runner_finishes_with_its_note_and_works_on_it_no_more(): void
     {
-        $this->journal()->run(new FinishTaskCommand($this->task->id, $this->run, 'Built and tested.'));
+        $this->journal->run(new FinishTaskCommand($this->task->id, $this->run, 'Built and tested.'));
 
         $this->assertSame(
             [TaskStatus::Finished, 'Built and tested.'],
@@ -55,12 +53,12 @@ final class FinishTaskTest extends TestCase
         $longNote = str_repeat('é', Task::NOTE_CHARACTER_LIMIT + 1);
 
         $this->assertThrows(
-            fn () => $this->journal()->run(new FinishTaskCommand($this->task->id, $this->run, $longNote)),
+            fn () => $this->journal->run(new FinishTaskCommand($this->task->id, $this->run, $longNote)),
             CommandInputInvalid::class,
             'note:',
         );
         $this->assertThrows(
-            fn () => $this->journal()->actAs('Second')->run(new FinishTaskCommand($this->task->id, $this->run, 'Mine.')),
+            fn () => $this->journal->actAs('Second')->run(new FinishTaskCommand($this->task->id, $this->run, 'Mine.')),
             ActorNotAllowed::class,
         );
         $this->assertSame(TaskStatus::Started, $this->task->refresh()->status);

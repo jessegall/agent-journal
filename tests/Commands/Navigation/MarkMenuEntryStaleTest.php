@@ -13,7 +13,6 @@ use App\Values\MenuStep;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
-use Tests\Support\Seeding\SeedsJournal;
 use Tests\Support\SendsHostCalls;
 use Tests\TestCase;
 
@@ -26,7 +25,6 @@ final class MarkMenuEntryStaleTest extends TestCase
     use CommitsHookRows;
     use RaisesNavigationRequests;
     use RunsTrustedCommands;
-    use SeedsJournal;
     use SendsHostCalls;
 
     private const array TABLES = [
@@ -50,7 +48,7 @@ final class MarkMenuEntryStaleTest extends TestCase
 
     public function test_the_entry_goes_stale_on_the_build_once_with_its_reason_and_screen(): void
     {
-        $this->journal()->installInboxes()->owner();
+        $this->journal->installInboxes()->owner();
         [$host, $opened] = $this->openRuntime();
         $stalled = DriverRequest::query()->with('runtime')->findOrFail($this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'GPT-6']))->requestId);
         $entry = $this->entryFrom($stalled);
@@ -66,7 +64,7 @@ final class MarkMenuEntryStaleTest extends TestCase
 
     public function test_an_entry_the_owner_does_not_have_is_refused(): void
     {
-        $this->journal()->installInboxes()->owner();
+        $this->journal->installInboxes()->owner();
         [$host, $opened] = $this->openRuntime();
 
         $this->hostCall($host, '/host/menu-entries/01jd8x0g9m3qz6v4k2t7r00000/stale', [
@@ -100,7 +98,7 @@ final class MarkMenuEntryStaleTest extends TestCase
         $source->cancel();
 
         return MenuEntry::create(
-            $this->journal()->actorCalled('Owner'),
+            $this->journal->actorCalled('Owner'),
             $source,
             [new MenuStep('fp1:first', 'GPT-6', null, null)],
             NavigationCompletion::Goal,

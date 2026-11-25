@@ -1,0 +1,78 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Support\Seeding;
+
+use App\Contracts\Messages\MessageSender;
+use App\Models\Inboxes\Inbox;
+use App\Models\Inboxes\InboxMember;
+use App\Models\Messages\Message;
+use App\Support\ActorIdentity;
+use App\Support\ActorProvisioning;
+use App\Support\InboxReceiver;
+use Carbon\CarbonImmutable;
+use Domain\Chat\Support\PairChats;
+use Illuminate\Contracts\Foundation\Application;
+
+/**
+ * The inboxes a test arranges, stored as the journal stores them: an actor's personal inbox, the pair chat of two
+ * actors and a message under an inbox's next number.
+ */
+final readonly class FixtureInboxes
+{
+    public function __construct(private Application $app) {}
+
+    /**
+     * The actor's own inbox, made and joined the first time it is asked for.
+     */
+    public function personal(ActorIdentity $actor): Inbox
+    {
+        $inbox = Inbox::query()->personalTo($actor)->first();
+
+        if ($inbox !== null) {
+            return $inbox;
+        }
+
+        $this->app->make(ActorProvisioning::class)->provision($actor, 'Own');
+
+        return Inbox::findPersonalOf($actor);
+    }
+
+    /**
+     * The two actors' pair chat inbox, both attached, with the personal inbox of each made too.
+     */
+    public function pairChat(ActorIdentity $first, ActorIdentity $second): Inbox
+    {
+        $this->personal($first);
+        $this->personal($second);
+        $inbox = Inbox::create(PairChats::PAIR_PROVIDER, self::pairKey($first, $second), 'Chat');
+        $now = CarbonImmutable::now();
+        InboxMember::create($inbox->id, $first, $now);
+        InboxMember::create($inbox->id, $second, $now);
+
+        return $inbox;
+    }
+
+    /**
+     * A message the sender posts to the inbox, under the inbox's next number taken under the inbox's lock.
+     */
+    public function post(Inbox $inbox, MessageSender $sender, string $body): Message
+    {
+        $locked = Inbox::findLockedById($inbox->id);
+        $number = $locked->takeMessageNumber();
+
+        return Message::create(new InboxReceiver($locked), $number, $sender, $body);
+    }
+
+    /**
+     * The two actors in the order the pair chat keys them, whichever comes first.
+     */
+    public static function pairKey(ActorIdentity $first, ActorIdentity $second): string
+    {
+        $members = [$first->text(), $second->text()];
+        sort($members);
+
+        return implode('|', $members);
+    }
+}

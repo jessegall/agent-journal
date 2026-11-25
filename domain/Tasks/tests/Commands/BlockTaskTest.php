@@ -12,7 +12,6 @@ use Domain\Tasks\Exceptions\TaskRunOfAnotherActor;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\Seeding\SeedsJournal;
 
 /**
  * The agent that runs a task blocks it with the reason it waits; a run that is not the current one and a blank or
@@ -21,7 +20,6 @@ use Tests\Support\Seeding\SeedsJournal;
 final class BlockTaskTest extends TestCase
 {
     use CommitsHookRows;
-    use SeedsJournal;
 
     private const array TABLES = ['tasks', 'task_runs', 'claim_authorizations'];
 
@@ -33,14 +31,14 @@ final class BlockTaskTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal()->owner()->agent('First');
-        $this->task = Task::create('Owned work', 'Build it.', $this->journal()->ownerUser());
-        $this->run = $this->journal()->actAs('First')->run(new StartTaskCommand($this->task->id));
+        $this->journal->owner()->agent('First');
+        $this->task = Task::create('Owned work', 'Build it.', $this->journal->ownerUser());
+        $this->run = $this->journal->actAs('First')->run(new StartTaskCommand($this->task->id));
     }
 
     public function test_a_blocked_task_keeps_the_reason_it_waits(): void
     {
-        $this->journal()->run(new BlockTaskCommand($this->task->id, $this->run, 'Waits on review.'));
+        $this->journal->run(new BlockTaskCommand($this->task->id, $this->run, 'Waits on review.'));
 
         $this->assertSame(
             [TaskStatus::Blocked, 'Waits on review.'],
@@ -51,13 +49,13 @@ final class BlockTaskTest extends TestCase
     public function test_another_run_and_a_blank_or_empty_reason_are_refused_and_the_task_still_runs(): void
     {
         $this->assertThrows(
-            fn () => $this->journal()->run(new BlockTaskCommand($this->task->id, $this->run + 1, 'Wrong run.')),
+            fn () => $this->journal->run(new BlockTaskCommand($this->task->id, $this->run + 1, 'Wrong run.')),
             TaskRunOfAnotherActor::class,
         );
 
         foreach (['   ', ''] as $reason) {
             $this->assertThrows(
-                fn () => $this->journal()->run(new BlockTaskCommand($this->task->id, $this->run, $reason)),
+                fn () => $this->journal->run(new BlockTaskCommand($this->task->id, $this->run, $reason)),
                 CommandInputInvalid::class,
                 'reason:',
             );

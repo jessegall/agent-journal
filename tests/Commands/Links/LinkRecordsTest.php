@@ -12,7 +12,6 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\Seeding\SeedsJournal;
 use Tests\TestCase;
 
 /**
@@ -22,7 +21,6 @@ use Tests\TestCase;
 final class LinkRecordsTest extends TestCase
 {
     use CommitsHookRows;
-    use SeedsJournal;
 
     private const array TABLES = ['links', 'tasks'];
 
@@ -33,23 +31,23 @@ final class LinkRecordsTest extends TestCase
 
     public function test_two_records_are_linked_once_whichever_way_round(): void
     {
-        $this->journal()->owner();
-        $first = Task::create('First', 'One.', $this->journal()->ownerUser())->assignmentIdentity();
-        $second = Task::create('Second', 'Two.', $this->journal()->ownerUser())->assignmentIdentity();
+        $this->journal->owner();
+        $first = Task::create('First', 'One.', $this->journal->ownerUser())->assignmentIdentity();
+        $second = Task::create('Second', 'Two.', $this->journal->ownerUser())->assignmentIdentity();
 
-        $this->journal()->run(new LinkRecordsCommand($first, $second));
-        $this->journal()->run(new LinkRecordsCommand($second, $first));
+        $this->journal->run(new LinkRecordsCommand($first, $second));
+        $this->journal->run(new LinkRecordsCommand($second, $first));
 
         $this->assertSame(1, Link::query()->count());
     }
 
     public function test_a_record_that_is_not_there_is_refused_and_links_nothing(): void
     {
-        $this->journal()->owner();
-        $first = Task::create('First', 'One.', $this->journal()->ownerUser())->assignmentIdentity();
+        $this->journal->owner();
+        $first = Task::create('First', 'One.', $this->journal->ownerUser())->assignmentIdentity();
 
         $this->assertThrows(
-            fn () => $this->journal()->run(
+            fn () => $this->journal->run(
                 new LinkRecordsCommand($first, new RecordIdentity($first->type, '01jd8x0g9m3qz6v4k2t7r00000')),
             ),
             RecordUnavailable::class,

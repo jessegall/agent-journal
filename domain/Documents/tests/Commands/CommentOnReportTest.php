@@ -11,7 +11,6 @@ use Domain\Documents\Exceptions\ReportMissing;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\Seeding\SeedsJournal;
 
 /**
  * A reader comments on a report named by its number or id, as themselves; a report that is not there is refused
@@ -20,7 +19,6 @@ use Tests\Support\Seeding\SeedsJournal;
 final class CommentOnReportTest extends TestCase
 {
     use CommitsHookRows;
-    use SeedsJournal;
 
     private const array TABLES = ['reports', 'comments', 'number_groups', 'command_receipts'];
 
@@ -28,17 +26,17 @@ final class CommentOnReportTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal()->owner();
-        $this->journal()->run(new CreateReportCommand('Design', 'What we build', "# Goal\nShip it.\n"));
+        $this->journal->owner();
+        $this->journal->run(new CreateReportCommand('Design', 'What we build', "# Goal\nShip it.\n"));
     }
 
     public function test_a_comment_by_number_lands_on_the_report_as_its_author(): void
     {
-        $commentId = $this->journal()->run(new CommentOnReportCommand('1', 'Looks good.'));
+        $commentId = $this->journal->run(new CommentOnReportCommand('1', 'Looks good.'));
 
         $comment = Comment::query()->findOrFail($commentId);
         $this->assertSame(
-            [Report::linkType(), Report::query()->sole()->id, 'Looks good.', $this->journal()->ownerUser()->id],
+            [Report::linkType(), Report::query()->sole()->id, 'Looks good.', $this->journal->ownerUser()->id],
             [$comment->target_type, $comment->target_id, $comment->body, $comment->author_id],
         );
     }
@@ -46,7 +44,7 @@ final class CommentOnReportTest extends TestCase
     public function test_a_report_that_is_not_there_is_refused_and_keeps_no_comment(): void
     {
         $this->assertThrows(
-            fn () => $this->journal()->run(new CommentOnReportCommand('99', 'Lost.')),
+            fn () => $this->journal->run(new CommentOnReportCommand('99', 'Lost.')),
             ReportMissing::class,
         );
         $this->assertSame(0, Comment::query()->count());

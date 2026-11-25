@@ -16,7 +16,6 @@ use Domain\Plans\Models\PlanReviewEdition;
 use Domain\Plans\Tests\TestCase;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\Seeding\SeedsJournal;
 
 /**
  * A reviewer asks for changes to the open review of a plan with a reason: the review keeps the decision and reason,
@@ -25,7 +24,6 @@ use Tests\Support\Seeding\SeedsJournal;
 final class RequestPlanChangesTest extends TestCase
 {
     use CommitsHookRows;
-    use SeedsJournal;
 
     private const array TABLES = ['plans', 'plan_review_editions', 'command_receipts'];
 
@@ -35,16 +33,16 @@ final class RequestPlanChangesTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal()->owner();
-        $this->plan = Plan::create('Release', 'Ship it.', PlanType::Build, $this->journal()->ownerUser());
-        $this->journal()->run(new RequestPlanReviewCommand($this->plan->id, [$this->journal()->actorCalled('Owner')]));
+        $this->journal->owner();
+        $this->plan = Plan::create('Release', 'Ship it.', PlanType::Build, $this->journal->ownerUser());
+        $this->journal->run(new RequestPlanReviewCommand($this->plan->id, [$this->journal->actorCalled('Owner')]));
     }
 
     public function test_changes_asked_for_keep_the_reason_and_plan_the_plan_again(): void
     {
         $key = (string) Str::uuid();
 
-        $reviewId = $this->journal()->run(new RequestPlanChangesCommand($this->plan->id, 1, $key, 'Split the second phase.'), $key);
+        $reviewId = $this->journal->run(new RequestPlanChangesCommand($this->plan->id, 1, $key, 'Split the second phase.'), $key);
 
         $review = PlanReviewEdition::query()->findOrFail($reviewId);
         $this->assertSame(
@@ -56,16 +54,16 @@ final class RequestPlanChangesTest extends TestCase
     public function test_an_empty_reason_and_a_decided_review_are_refused(): void
     {
         $this->assertThrows(
-            fn () => $this->journal()->run(new RequestPlanChangesCommand($this->plan->id, 1, (string) Str::uuid(), '')),
+            fn () => $this->journal->run(new RequestPlanChangesCommand($this->plan->id, 1, (string) Str::uuid(), '')),
             CommandInputInvalid::class,
             'reason:',
         );
 
         $key = (string) Str::uuid();
-        $this->journal()->run(new RequestPlanChangesCommand($this->plan->id, 1, $key, 'Split it.'), $key);
+        $this->journal->run(new RequestPlanChangesCommand($this->plan->id, 1, $key, 'Split it.'), $key);
 
         $this->assertThrows(
-            fn () => $this->journal()->run(new RequestPlanChangesCommand($this->plan->id, 1, (string) Str::uuid(), 'Again.')),
+            fn () => $this->journal->run(new RequestPlanChangesCommand($this->plan->id, 1, (string) Str::uuid(), 'Again.')),
             PlanReviewRefused::class,
         );
     }

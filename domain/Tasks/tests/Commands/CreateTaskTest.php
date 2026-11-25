@@ -12,7 +12,6 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Seeding\SeedsJournal;
 
 /**
  * A user or agent makes a task: it is open at its first revision with its brief and creator; a title at its limit is
@@ -21,21 +20,20 @@ use Tests\Support\Seeding\SeedsJournal;
 final class CreateTaskTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SeedsJournal;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->journal()->owner();
+        $this->journal->owner();
     }
 
     public function test_a_task_is_open_at_its_first_revision_with_its_brief_and_creator(): void
     {
-        $task = Task::query()->findOrFail($this->journal()->run(new CreateTaskCommand('Write it', 'Write the page.')));
+        $task = Task::query()->findOrFail($this->journal->run(new CreateTaskCommand('Write it', 'Write the page.')));
 
         $this->assertSame(
-            [TaskStatus::Open, 1, 'Write the page.', User::storedType(), $this->journal()->ownerUser()->id],
+            [TaskStatus::Open, 1, 'Write the page.', User::storedType(), $this->journal->ownerUser()->id],
             [$task->status, $task->revision, $task->brief, $task->creator_type, $task->creator_id],
         );
     }
@@ -44,7 +42,7 @@ final class CreateTaskTest extends TestCase
     {
         $title = str_repeat('é', Task::TITLE_CHARACTER_LIMIT);
 
-        $taskId = $this->journal()->run(new CreateTaskCommand($title, 'Brief'));
+        $taskId = $this->journal->run(new CreateTaskCommand($title, 'Brief'));
 
         $this->assertSame($title, Task::query()->findOrFail($taskId)->title);
     }
@@ -65,7 +63,7 @@ final class CreateTaskTest extends TestCase
     public function test_input_past_its_limit_or_empty_is_refused_naming_the_field(string $title, string $brief, string $field): void
     {
         $this->assertThrows(
-            fn () => $this->journal()->run(new CreateTaskCommand($title, $brief)),
+            fn () => $this->journal->run(new CreateTaskCommand($title, $brief)),
             CommandInputInvalid::class,
             "{$field}:",
         );

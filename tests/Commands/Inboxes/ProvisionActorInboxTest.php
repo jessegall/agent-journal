@@ -11,7 +11,6 @@ use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Support\ActorIdentity;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Seeding\SeedsJournal;
 use Tests\TestCase;
 
 /**
@@ -20,7 +19,6 @@ use Tests\TestCase;
 final class ProvisionActorInboxTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SeedsJournal;
 
     private const string TRUSTED_ENTRY = 'desk install';
 
@@ -28,7 +26,7 @@ final class ProvisionActorInboxTest extends TestCase
     {
         $actor = ActorIdentity::of(User::factory()->create(['name' => 'Ada']));
 
-        $this->journal()->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, new ProvisionActorInboxCommand($actor, 'Ada'));
+        $this->journal->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, new ProvisionActorInboxCommand($actor, 'Ada'));
 
         $inbox = Inbox::findPersonalOf($actor);
         $this->assertTrue(InboxMember::isAttached($inbox->id, $actor));

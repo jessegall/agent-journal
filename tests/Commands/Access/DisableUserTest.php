@@ -10,7 +10,6 @@ use App\Support\ActorIdentity;
 use Domain\Chat\ChatDomain;
 use Tests\Support\DomainBoot;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Seeding\SeedsJournal;
 use Tests\TestCase;
 
 /**
@@ -19,7 +18,6 @@ use Tests\TestCase;
 final class DisableUserTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SeedsJournal;
 
     protected static function bootedDomains(): array
     {
@@ -28,12 +26,12 @@ final class DisableUserTest extends TestCase
 
     public function test_a_disabled_user_leaves_every_inbox(): void
     {
-        $this->journal()->owner()->user('Guest')->chat('Owner', 'Guest');
-        $guest = $this->journal()->userCalled('Guest');
+        $this->journal->owner()->user('Guest')->chat('Owner', 'Guest');
+        $guest = $this->journal->userCalled('Guest');
 
-        $this->journal()->run(new DisableUserCommand($guest->id));
+        $this->journal->run(new DisableUserCommand($guest->id));
 
         $this->assertNotNull($guest->refresh()->disabled_at);
-        $this->assertFalse(InboxMember::isAttached($this->journal()->chatOf('Owner', 'Guest')->id, ActorIdentity::of($guest)));
+        $this->assertFalse(InboxMember::isAttached($this->journal->chatOf('Owner', 'Guest')->id, ActorIdentity::of($guest)));
     }
 }

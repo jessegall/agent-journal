@@ -15,7 +15,6 @@ use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Fixtures\Modules\Notes\Models\NotePage;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsNotesModule;
-use Tests\Support\Seeding\SeedsJournal;
 
 /**
  * A reader comments on lines of a record's text: the comment is anchored to those lines of the version read, and a
@@ -25,7 +24,6 @@ final class PostTextCommentTest extends TestCase
 {
     use CommitsHookRows;
     use InstallsNotesModule;
-    use SeedsJournal;
 
     private const array TABLES = [
         'comments',
@@ -44,7 +42,7 @@ final class PostTextCommentTest extends TestCase
 
         $this->createNotesTables();
         $this->installNotesModule();
-        $this->journal()->agent('Writer', 'read-only-helper')->owner();
+        $this->journal->agent('Writer', 'read-only-helper')->owner();
     }
 
     protected function tearDown(): void
@@ -59,7 +57,7 @@ final class PostTextCommentTest extends TestCase
         $page = NotePage::written("# Plan\nFirst line.\nSecond line.\n");
         $target = new RecordIdentity(NotePage::linkType(), $page->id);
 
-        $commentId = $this->journal()->run(
+        $commentId = $this->journal->run(
             new PostTextCommentCommand($target, 'Which lines?', TextRange::lines('1', 2, 3), (string) Str::uuid()),
         );
 
@@ -71,11 +69,11 @@ final class PostTextCommentTest extends TestCase
     public function test_a_record_without_text_refuses_a_comment_on_text_and_keeps_none(): void
     {
         $note = new Note(['text' => 'Check the lock order']);
-        $note->saveFor($this->journal()->agentCalled('Writer')->id);
+        $note->saveFor($this->journal->agentCalled('Writer')->id);
         $target = new RecordIdentity(Note::linkType(), $note->id);
 
         $this->assertThrows(
-            fn () => $this->journal()->run(
+            fn () => $this->journal->run(
                 new PostTextCommentCommand($target, 'Which line?', TextRange::lines('1', 1, 1), (string) Str::uuid()),
             ),
             TargetHasNoText::class,

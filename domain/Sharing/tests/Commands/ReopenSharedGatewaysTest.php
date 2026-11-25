@@ -12,7 +12,6 @@ use Domain\Sharing\Models\ShareGatewayOperation;
 use Domain\Sharing\Tests\TestCase;
 use Illuminate\Support\Str;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Seeding\SeedsJournal;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\TestShares;
 use Tests\Support\TestActors;
@@ -24,7 +23,6 @@ use Tests\Support\TestActors;
 final class ReopenSharedGatewaysTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SeedsJournal;
 
     private const string TRUSTED_ENTRY = 'sharing supervisor';
 
@@ -44,7 +42,7 @@ final class ReopenSharedGatewaysTest extends TestCase
 
     private function reopen(): int
     {
-        return $this->journal()->runAsJournal(
+        return $this->journal->runAsJournal(
             CommandEntry::ShareGateway,
             self::TRUSTED_ENTRY,
             new ReopenSharedGatewaysCommand((string) Str::ulid()),

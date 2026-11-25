@@ -28,6 +28,7 @@ use Laravel\Fortify\Features;
 use PDO;
 use Tests\Support\Exceptions\DatabaseUsedWithoutHookDatabase;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\Seeding\JournalSeed;
 use Tests\Support\TestProjects;
 use Tests\Support\TimeLimits\Exceptions\TestTimedOut;
 use Tests\Support\TimeLimits\TestAlarm;
@@ -45,6 +46,11 @@ abstract class TestCase extends BaseTestCase
      * @var array<string, class-string> the application's morph map, before a test adds fixture types to it
      */
     private array $applicationMorphMap = [];
+
+    /**
+     * The journal this test arranges, acts on and asserts against, made anew with each application.
+     */
+    protected JournalSeed $journal;
 
     protected function setUp(): void
     {
@@ -164,7 +170,8 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * Creates the application and, before any trait sets up, stops every query of a class without RefreshHookDatabase.
+     * Creates the application and, before any trait sets up, stops every query of a class without RefreshHookDatabase
+     * and gives the test its journal for that application.
      */
     protected function refreshApplication(): void
     {
@@ -173,6 +180,8 @@ abstract class TestCase extends BaseTestCase
         if (! in_array(RefreshHookDatabase::class, class_uses_recursive(static::class), true)) {
             $this->refuseQueries($this->app->make(DatabaseManager::class));
         }
+
+        $this->journal = new JournalSeed($this->app);
     }
 
     /**

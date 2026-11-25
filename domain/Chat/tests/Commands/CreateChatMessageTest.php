@@ -11,7 +11,6 @@ use Domain\Chat\Exceptions\ChatSourceRefused;
 use Domain\Chat\Models\ChatMessage;
 use Domain\Chat\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\Seeding\SeedsJournal;
 
 /**
  * A record with an author shows in a chat as a message of its type, kept with the record it shows; a source type the
@@ -20,7 +19,6 @@ use Tests\Support\Seeding\SeedsJournal;
 final class CreateChatMessageTest extends TestCase
 {
     use CommitsHookRows;
-    use SeedsJournal;
 
     private const array TABLES = ['messages', 'chat_messages'];
 
@@ -30,15 +28,15 @@ final class CreateChatMessageTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal()->owner()->agent('Planner')->chat('Owner', 'Planner');
-        $this->chat = $this->journal()->chatOf('Owner', 'Planner');
+        $this->journal->owner()->agent('Planner')->chat('Owner', 'Planner');
+        $this->chat = $this->journal->chatOf('Owner', 'Planner');
     }
 
     public function test_an_authored_record_shows_in_the_chat_as_a_message_of_its_type(): void
     {
-        $source = $this->journal()->post('Planner', $this->chat, 'The build is green.');
+        $source = $this->journal->post('Planner', $this->chat, 'The build is green.');
 
-        $chatMessageId = $this->journal()->run(
+        $chatMessageId = $this->journal->run(
             new CreateChatMessageCommand($this->chat->id, $source->getMorphClass(), $source->id, ChatMessageType::Message),
         );
 
@@ -54,11 +52,11 @@ final class CreateChatMessageTest extends TestCase
         $before = ChatMessage::query()->withoutGlobalScopes()->count();
 
         $this->assertThrows(
-            fn () => $this->journal()->run(new CreateChatMessageCommand($this->chat->id, 'nowhere.thing', 'x', ChatMessageType::Event)),
+            fn () => $this->journal->run(new CreateChatMessageCommand($this->chat->id, 'nowhere.thing', 'x', ChatMessageType::Event)),
             ChatSourceRefused::class,
         );
         $this->assertThrows(
-            fn () => $this->journal()->run(
+            fn () => $this->journal->run(
                 new CreateChatMessageCommand($this->chat->id, $this->chat->getMorphClass(), $this->chat->id, ChatMessageType::Event),
             ),
             ChatSourceRefused::class,

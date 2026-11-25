@@ -15,7 +15,6 @@ use Domain\Rules\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\HoldingRules;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Seeding\SeedsJournal;
 
 /**
  * The user denies a proposed rule, which never holds; an agent may not deny one, and a rule that already holds cannot
@@ -24,7 +23,6 @@ use Tests\Support\Seeding\SeedsJournal;
 final class DenyRuleTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SeedsJournal;
 
     private Rule $proposed;
 
@@ -33,18 +31,18 @@ final class DenyRuleTest extends TestCase
         parent::setUp();
 
         Event::fake([RuleDenied::class]);
-        $this->journal()->agent('Planner')->owner();
+        $this->journal->agent('Planner')->owner();
         $this->proposed = Rule::create(
             'No phase waits on the user.',
             'Agents keep forgetting it.',
             null,
-            ActorContext::forAgent($this->journal()->agentCalled('Planner')->id),
+            ActorContext::forAgent($this->journal->agentCalled('Planner')->id),
         );
     }
 
     public function test_a_denied_rule_never_holds_and_says_so(): void
     {
-        $this->journal()->run(new DenyRuleCommand($this->proposed->id));
+        $this->journal->run(new DenyRuleCommand($this->proposed->id));
 
         $this->assertSame(RuleStatus::Denied, $this->proposed->refresh()->status);
         Event::assertDispatchedTimes(RuleDenied::class, 1);
@@ -52,9 +50,9 @@ final class DenyRuleTest extends TestCase
 
     public function test_an_agent_may_not_deny_and_the_rule_stays_proposed(): void
     {
-        $this->journal()->actAs('Planner');
+        $this->journal->actAs('Planner');
 
-        $this->assertThrows(fn () => $this->journal()->run(new DenyRuleCommand($this->proposed->id)), CommandAdmissionRefused::class);
+        $this->assertThrows(fn () => $this->journal->run(new DenyRuleCommand($this->proposed->id)), CommandAdmissionRefused::class);
         $this->assertSame(RuleStatus::Proposed, $this->proposed->refresh()->status);
     }
 
@@ -62,7 +60,7 @@ final class DenyRuleTest extends TestCase
     {
         $active = HoldingRules::create('Held rule.');
 
-        $this->assertThrows(fn () => $this->journal()->run(new DenyRuleCommand($active->id)), RuleNotProposed::class);
+        $this->assertThrows(fn () => $this->journal->run(new DenyRuleCommand($active->id)), RuleNotProposed::class);
         $this->assertSame(RuleStatus::Active, $active->refresh()->status);
     }
 }

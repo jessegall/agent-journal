@@ -10,7 +10,6 @@ use Domain\Tasks\Exceptions\TaskRevisionChanged;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Seeding\SeedsJournal;
 
 /**
  * A task's title or brief changes at the revision its editor read and moves the revision on; a stale revision is a
@@ -19,7 +18,6 @@ use Tests\Support\Seeding\SeedsJournal;
 final class EditTaskTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SeedsJournal;
 
     private Task $task;
 
@@ -27,27 +25,27 @@ final class EditTaskTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal()->owner();
-        $this->task = Task::create('First', 'First brief', $this->journal()->ownerUser());
+        $this->journal->owner();
+        $this->task = Task::create('First', 'First brief', $this->journal->ownerUser());
     }
 
     public function test_an_edit_changes_what_it_names_and_moves_the_revision_on(): void
     {
-        $revision = $this->journal()->run(new EditTaskCommand($this->task->id, 1, brief: 'Second brief'));
+        $revision = $this->journal->run(new EditTaskCommand($this->task->id, 1, brief: 'Second brief'));
 
         $this->assertSame([2, 'First', 'Second brief'], [$revision, $this->task->refresh()->title, $this->task->brief]);
     }
 
     public function test_a_stale_revision_is_a_conflict_and_nothing_to_change_is_refused(): void
     {
-        $this->journal()->run(new EditTaskCommand($this->task->id, 1, 'Second'));
+        $this->journal->run(new EditTaskCommand($this->task->id, 1, 'Second'));
 
         $this->assertThrows(
-            fn () => $this->journal()->run(new EditTaskCommand($this->task->id, 1, 'Stale')),
+            fn () => $this->journal->run(new EditTaskCommand($this->task->id, 1, 'Stale')),
             TaskRevisionChanged::class,
         );
         $this->assertThrows(
-            fn () => $this->journal()->run(new EditTaskCommand($this->task->id, 2)),
+            fn () => $this->journal->run(new EditTaskCommand($this->task->id, 2)),
             CommandInputInvalid::class,
             'title:',
         );

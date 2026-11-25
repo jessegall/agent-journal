@@ -8,10 +8,9 @@ use App\Contracts\Messages\MessageSender;
 use App\Models\Inboxes\Inbox;
 use App\Models\Messages\Message;
 use App\Support\ActorIdentity;
-use App\Support\ActorProvisioning;
-use App\Support\InboxReceiver;
 use Domain\Questions\Enums\QuestionType;
 use Domain\Questions\Models\Question;
+use Tests\Support\Seeding\FixtureInboxes;
 
 /**
  * Writes inbox messages and questions for tests the way a send and an ask store them: the actor's own personal inbox,
@@ -24,15 +23,7 @@ trait WritesInboxMessages
      */
     protected function inboxOf(ActorIdentity $actor): Inbox
     {
-        $inbox = Inbox::query()->personalTo($actor)->first();
-
-        if ($inbox !== null) {
-            return $inbox;
-        }
-
-        $this->app->make(ActorProvisioning::class)->provision($actor, 'Own');
-
-        return Inbox::findPersonalOf($actor);
+        return new FixtureInboxes($this->app)->personal($actor);
     }
 
     /**
@@ -40,10 +31,7 @@ trait WritesInboxMessages
      */
     protected function postTo(Inbox $inbox, MessageSender $sender, string $body): Message
     {
-        $locked = Inbox::findLockedById($inbox->id);
-        $number = $locked->takeMessageNumber();
-
-        return Message::create(new InboxReceiver($locked), $number, $sender, $body);
+        return new FixtureInboxes($this->app)->post($inbox, $sender, $body);
     }
 
     /**

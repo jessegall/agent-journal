@@ -8,7 +8,6 @@ use App\Commands\Messages\ReadMessage\ReadMessageCommand;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Messages\MessageReadEntry;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\Seeding\SeedsJournal;
 use Tests\TestCase;
 
 /**
@@ -18,7 +17,6 @@ use Tests\TestCase;
 final class ReadMessageTest extends TestCase
 {
     use CommitsHookRows;
-    use SeedsJournal;
 
     private const array TABLES = ['messages', 'message_reads'];
 
@@ -26,26 +24,26 @@ final class ReadMessageTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal()->owner()->agent('Planner')->agent('Stranger')->chat('Owner', 'Planner');
+        $this->journal->owner()->agent('Planner')->agent('Stranger')->chat('Owner', 'Planner');
     }
 
     public function test_a_member_reads_the_message_and_the_read_is_kept(): void
     {
-        $message = $this->journal()->post('Owner', $this->journal()->chatOf('Owner', 'Planner'), 'Start the build.');
+        $message = $this->journal->post('Owner', $this->journal->chatOf('Owner', 'Planner'), 'Start the build.');
 
-        $shown = $this->journal()->actAs('Planner')->run(new ReadMessageCommand($message->id));
+        $shown = $this->journal->actAs('Planner')->run(new ReadMessageCommand($message->id));
 
         $this->assertSame($message->id, $shown->id);
         $entry = MessageReadEntry::query()->sole();
-        $this->assertSame([$message->id, $this->journal()->agentCalled('Planner')->id], [$entry->message_id, $entry->reader_id]);
+        $this->assertSame([$message->id, $this->journal->agentCalled('Planner')->id], [$entry->message_id, $entry->reader_id]);
     }
 
     public function test_a_message_of_an_inbox_the_reader_is_not_in_is_refused(): void
     {
-        $message = $this->journal()->post('Owner', $this->journal()->chatOf('Owner', 'Planner'), 'Start the build.');
+        $message = $this->journal->post('Owner', $this->journal->chatOf('Owner', 'Planner'), 'Start the build.');
 
         $this->assertThrows(
-            fn () => $this->journal()->actAs('Stranger')->run(new ReadMessageCommand($message->id)),
+            fn () => $this->journal->actAs('Stranger')->run(new ReadMessageCommand($message->id)),
             InboxUnavailable::class,
         );
         $this->assertSame(0, MessageReadEntry::query()->count());

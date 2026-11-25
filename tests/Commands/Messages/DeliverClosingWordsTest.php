@@ -12,7 +12,6 @@ use App\Models\Drivers\DriverTurn;
 use App\Models\Messages\Message;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\Seeding\SeedsJournal;
 use Tests\TestCase;
 
 /**
@@ -22,7 +21,6 @@ use Tests\TestCase;
 final class DeliverClosingWordsTest extends TestCase
 {
     use CommitsHookRows;
-    use SeedsJournal;
 
     private const array TABLES = ['messages', 'message_reads', 'driver_turns'];
 
@@ -30,17 +28,17 @@ final class DeliverClosingWordsTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal()->owner()->agent('Planner')->chat('Owner', 'Planner');
+        $this->journal->owner()->agent('Planner')->chat('Owner', 'Planner');
     }
 
     public function test_the_words_go_once_to_the_inbox_of_the_last_read_message(): void
     {
-        $asked = $this->journal()->post('Owner', $this->journal()->chatOf('Owner', 'Planner'), 'How far are you?');
-        $this->journal()->actAs('Planner')->run(new ReadMessageCommand($asked->id));
+        $asked = $this->journal->post('Owner', $this->journal->chatOf('Owner', 'Planner'), 'How far are you?');
+        $this->journal->actAs('Planner')->run(new ReadMessageCommand($asked->id));
         $this->turn()->offerClosingWords('Half way.');
 
-        $sent = $this->journal()->run(new DeliverClosingWordsCommand());
-        $again = $this->journal()->run(new DeliverClosingWordsCommand());
+        $sent = $this->journal->run(new DeliverClosingWordsCommand());
+        $again = $this->journal->run(new DeliverClosingWordsCommand());
 
         $this->assertSame($sent, $again);
         $reply = Message::query()->findOrFail($sent);
@@ -49,20 +47,20 @@ final class DeliverClosingWordsTest extends TestCase
 
     public function test_no_words_offered_and_nothing_read_are_refused(): void
     {
-        $this->journal()->actAs('Planner');
+        $this->journal->actAs('Planner');
         $this->turn();
 
-        $this->assertThrows(fn () => $this->journal()->run(new DeliverClosingWordsCommand()), ClosingWordsRefused::class);
+        $this->assertThrows(fn () => $this->journal->run(new DeliverClosingWordsCommand()), ClosingWordsRefused::class);
 
         $this->turn()->offerClosingWords('Half way.');
 
-        $this->assertThrows(fn () => $this->journal()->run(new DeliverClosingWordsCommand()), ClosingWordsRefused::class);
+        $this->assertThrows(fn () => $this->journal->run(new DeliverClosingWordsCommand()), ClosingWordsRefused::class);
         $this->assertSame(0, Message::query()->withoutGlobalScopes()->count());
     }
 
     private function turn(): DriverTurn
     {
-        $runtime = AgentRuntime::findForSession($this->journal()->sessionOf('Planner')->id);
+        $runtime = AgentRuntime::findForSession($this->journal->sessionOf('Planner')->id);
 
         return DriverTurn::create($runtime->id, $runtime->process_generation, 'prompt-1', CarbonImmutable::now());
     }

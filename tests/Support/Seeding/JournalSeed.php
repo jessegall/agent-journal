@@ -4,28 +4,35 @@ declare(strict_types=1);
 
 namespace Tests\Support\Seeding;
 
+use App\Commands\Access\GrantEnvironmentAccess\GrantEnvironmentAccessCommand;
 use App\Commands\Inboxes\InstallInboxes\InstallInboxesCommand;
-use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\JournalCommands;
+use App\Contracts\Time\ServerClock;
 use App\Enums\Accounts\CommandEntry;
+use App\Enums\Messages\InboxPermission;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Inboxes\Inbox;
 use App\Models\Messages\Message;
+use App\Models\Projects\Environment;
+use App\Models\Projects\Project;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\Command;
+use App\Support\StartedAgent;
 use App\Support\StartSessions;
-use Illuminate\Contracts\Auth\Factory as AuthFactory;
+use App\Values\SelectedDriver;
+use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
+use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\FakeServerClock;
 use Tests\Support\OpensDriverRuntimes;
-use Tests\Support\OpensPairChats;
 use Tests\Support\RunsKeyedCommands;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestProjects;
-use Tests\Support\WritesInboxMessages;
 
 /**
  * The start position of a test, written as the journal it needs: its owner, other users and agents, each with the
@@ -34,11 +41,10 @@ use Tests\Support\WritesInboxMessages;
  */
 final class JournalSeed
 {
+    private const string OWNER = 'The journal';
+
     use OpensDriverRuntimes;
-    use OpensPairChats;
     use RunsKeyedCommands;
-    use StartsAgentRequests;
-    use WritesInboxMessages;
 
     /**
      * @var array<string, Inbox>
@@ -56,25 +62,67 @@ final class JournalSeed
     private array $agents = [];
 
     /**
-     * @var array<string, AgentSession>
+     * @var array<string, StartedAgent> each start of an agent, by the name the test gave it
      */
-    private array $sessions = [];
+    private array $starts = [];
+
+    /**
+     * @var array<string, list<string>> the names of each agent's starts, in the order they were made
+     */
+    private array $startNames = [];
+
+    /**
+     * @var array<string, string> the name of the agent of each start
+     */
+    private array $startAgents = [];
+
+    /**
+     * @var array<string, Project>
+     */
+    private array $projects = [];
+
+    /**
+     * @var array<string, Environment>
+     */
+    private array $environments = [];
 
     private User|null $owner = null;
 
-    private string|null $acting = null;
+    /**
+     * @var array<string, true> the names of the users the owner admitted to the inboxes
+     */
+    private array $members = [];
 
-    public function __construct(private readonly Application $app) {}
+    private readonly FixtureRequests $requests;
+
+    private readonly FixtureInboxes $inboxes;
+
+    private FakeServerClock|null $serverClock = null;
+
+    /**
+     * @var array<string, Inbox> the inboxes a test kept under a name of its own
+     */
+    private array $remembered = [];
+
+    public function __construct(private readonly Application $app)
+    {
+        $this->requests = new FixtureRequests($app);
+        $this->inboxes = new FixtureInboxes($app);
+    }
 
     /**
      * The journal's owner, a real user whose access settings the journal holds, acting from here on.
      */
     public function owner(string $name = 'Owner'): self
     {
+        if ($this->owner !== null) {
+            throw FixtureRefused::secondOwner();
+        }
+
         $this->owner = $this->makeUser($name);
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
 
-        return $this->actAs($name);
+        return $this->actAs($this->owner->name);
     }
 
     /**
@@ -99,21 +147,99 @@ final class JournalSeed
 
     /**
      * An agent of the local project on the profile, running one session started as the journal starts one, with its
-     * stack and its driver's runtime, and a personal inbox.
+     * stack and its driver's runtime, and a personal inbox; the start is named after the agent.
      */
     public function agent(string $name, string $profile = 'main-agent'): self
     {
-        $agent = Agent::create($name, $profile, TestProjects::local());
-        $this->app->make(CurrentActorSetter::class)->clear();
-        $session = $this->app->make(StartSessions::class)
-            ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
-            ->session;
-        $this->openDriverRuntime($session);
-        $this->agents[$name] = $agent;
-        $this->sessions[$name] = $session;
-        $this->inboxOf(ActorIdentity::of($agent));
+        $this->idleAgent($name, $profile);
+        $this->startSession($name, trim($name));
+        $this->openDriverRuntime($this->sessionOf($name));
 
-        return $this->acting === null ? $this : $this->actAs($this->acting);
+        return $this;
+    }
+
+    /**
+     * An agent on the profile with its personal inbox and no session yet, in the local project or the named one.
+     */
+    public function idleAgent(string $name, string $profile = 'main-agent', string|null $project = null): self
+    {
+        $name = trim($name);
+        $this->refuseTakenName($name);
+        $agent = Agent::create($name, $profile, $project === null ? TestProjects::local() : $this->projectCalled($project));
+        $this->inboxes->personal(ActorIdentity::of($agent));
+        $this->agents[$name] = $agent;
+        $this->startNames[$name] = [];
+
+        return $this;
+    }
+
+    /**
+     * One more session of the agent, started as the journal starts one, under a parent session when one is named.
+     */
+    public function startSession(
+        string $agent,
+        string $start,
+        SelectedDriver|null $selection = null,
+        string|null $parent = null,
+    ): self {
+        if (array_key_exists($start, $this->starts)) {
+            throw FixtureRefused::occupiedAlias($start, 'start');
+        }
+
+        $model = $this->agentCalled($agent);
+        $parentSession = $parent === null ? null : $this->sessionCalled($parent);
+        $started = $this->requests->during(static fn () => null, fn () => $this->app->make(StartSessions::class)->start(
+            $model,
+            $selection ?? TestSelections::of('claude-code'),
+            TestSelections::requestId(),
+            $parentSession,
+        ));
+        $this->starts[$start] = $started;
+        $this->startNames[$agent][] = $start;
+        $this->startAgents[$start] = $agent;
+
+        return $this;
+    }
+
+    /**
+     * A project of the journal besides the local one.
+     */
+    public function project(string $name): self
+    {
+        if (array_key_exists($name, $this->projects)) {
+            throw FixtureRefused::occupiedAlias($name, 'project');
+        }
+
+        $this->projects[$name] = Project::create(Str::slug($name), $name);
+
+        return $this;
+    }
+
+    /**
+     * An environment of the named project, or of the local project when none is named.
+     */
+    public function environment(string $name, string|null $project = null): self
+    {
+        if (array_key_exists($name, $this->environments)) {
+            throw FixtureRefused::occupiedAlias($name, 'environment');
+        }
+
+        $this->environments[$name] = Environment::create(
+            $project === null ? TestProjects::local() : $this->projectCalled($project),
+            $name,
+        );
+
+        return $this;
+    }
+
+    /**
+     * The owner admits the user of this name to the inboxes of the named environment.
+     */
+    public function grantEnvironment(string $environment, string $user): self
+    {
+        $this->grantAsOwner($this->userCalled($user), $this->environmentCalled($environment)->id);
+
+        return $this;
     }
 
     /**
@@ -121,7 +247,20 @@ final class JournalSeed
      */
     public function chat(string $first, string $second): self
     {
-        $this->chats[self::chatKey($first, $second)] = $this->pairChat($this->actorCalled($first), $this->actorCalled($second));
+        $one = $this->actorCalled($first);
+        $other = $this->actorCalled($second);
+
+        if ($one->isSameAs($other)) {
+            throw FixtureRefused::selfChat($first);
+        }
+
+        $key = FixtureInboxes::pairKey($one, $other);
+
+        if (array_key_exists($key, $this->chats)) {
+            throw FixtureRefused::occupiedAlias("{$first} and {$second}", 'chat');
+        }
+
+        $this->chats[$key] = $this->inboxes->pairChat($one, $other);
 
         return $this;
     }
@@ -132,18 +271,105 @@ final class JournalSeed
      */
     public function actAs(string $name): self
     {
-        $this->app->forgetScopedInstances();
-        $this->acting = $name;
-
         if (array_key_exists($name, $this->agents)) {
-            $this->app->make(AuthFactory::class)->guard()->forgetUser();
-            $this->startRequestAs($this->agents[$name]->id, $this->sessions[$name]->id);
-
-            return $this;
+            $this->requests->asAgent($this->agents[$name]->id, $this->sessionOf($name)->id);
+        } else {
+            $this->requests->asUser($this->userCalled($name));
         }
 
-        $this->app->make(AuthFactory::class)->guard()->setUser($this->userCalled($name));
-        $this->startUserRequestAs($this->userCalled($name)->id);
+        return $this;
+    }
+
+    /**
+     * The owner admits the user of this name to the journal's inboxes, as the owner's own grant does.
+     */
+    public function admitInboxMember(string $name): self
+    {
+        $this->grantAsOwner($this->userCalled($name), null);
+        $this->members[$name] = true;
+
+        return $this;
+    }
+
+    /**
+     * Acts as the admitted user of this name, signed in under the authority an inbox member's sign-in gives it.
+     */
+    public function actAsInboxMember(string $name): self
+    {
+        if (! array_key_exists($name, $this->members)) {
+            throw FixtureRefused::missingAlias('admitted inbox member', $name, self::OWNER);
+        }
+
+        $this->requests->asInboxMember($this->userCalled($name));
+
+        return $this;
+    }
+
+    /**
+     * Acts as no one: no user signed in and no actor in place.
+     */
+    public function asGuest(): self
+    {
+        $this->requests->asGuest();
+
+        return $this;
+    }
+
+    /**
+     * Acts as a user known only by its id, with no one signed in, for an id the journal may not hold.
+     */
+    public function actAsUserId(string $userId): self
+    {
+        $this->requests->asUserId($userId);
+
+        return $this;
+    }
+
+    /**
+     * Acts as an agent and session known only by their ids, which need not exist.
+     */
+    public function actAsAgentIds(string $agentId, string $sessionId): self
+    {
+        $this->requests->asAgent($agentId, $sessionId);
+
+        return $this;
+    }
+
+    public function actAsInboxMemberId(string $userId): self
+    {
+        $this->requests->asInboxMemberId($userId);
+
+        return $this;
+    }
+
+    /**
+     * Puts the journal's server clock, the time every command reads, at the moment given; Carbon keeps its own time.
+     */
+    public function useServerClockAt(CarbonImmutable $now): self
+    {
+        $this->serverClock = new FakeServerClock($now);
+        $this->app->instance(ServerClock::class, $this->serverClock);
+
+        return $this;
+    }
+
+    /**
+     * Moves the server clock useServerClockAt() put in place; Carbon stays where it is.
+     */
+    public function moveServerClockTo(CarbonImmutable $later): self
+    {
+        ($this->serverClock ?? throw FixtureRefused::noServerClock())->set($later);
+
+        return $this;
+    }
+
+    /**
+     * Moves Carbon's time, what now() gives in the test and the application; the server clock stays where it is.
+     */
+    public function travelTo(CarbonImmutable $later): self
+    {
+        Carbon::setTestNow($later);
+        CarbonImmutable::setTestNow($later);
 
         return $this;
     }
@@ -169,27 +395,71 @@ final class JournalSeed
      */
     public function post(string $sender, Inbox $inbox, string $body): Message
     {
-        return $this->postTo($inbox, $this->agents[$sender] ?? $this->userCalled($sender), $body);
+        return $this->inboxes->post($inbox, $this->agents[$sender] ?? $this->userCalled($sender), $body);
     }
 
     public function ownerUser(): User
     {
-        return $this->owner ?? throw SeedMissing::owner();
+        return $this->owner ?? throw FixtureRefused::noOwner();
     }
 
     public function userCalled(string $name): User
     {
-        return $this->users[$name] ?? throw SeedMissing::named('user', $name);
+        return $this->users[$name] ?? throw FixtureRefused::missingAlias('user', $name, self::OWNER);
     }
 
     public function agentCalled(string $name): Agent
     {
-        return $this->agents[$name] ?? throw SeedMissing::named('agent', $name);
+        return $this->agents[$name] ?? throw FixtureRefused::missingAlias('agent', $name, self::OWNER);
     }
 
+    /**
+     * The one session of the agent; an agent started more than once names its start with sessionCalled().
+     */
     public function sessionOf(string $agentName): AgentSession
     {
-        return $this->sessions[$agentName] ?? throw SeedMissing::named('agent', $agentName);
+        return $this->startOf($agentName)->session;
+    }
+
+    public function startOf(string $agentName): StartedAgent
+    {
+        $names = $this->startNames[$agentName] ?? throw FixtureRefused::missingAlias('agent', $agentName, self::OWNER);
+
+        if (count($names) !== 1) {
+            throw FixtureRefused::notOneStart($agentName, count($names));
+        }
+
+        return $this->starts[$names[0]];
+    }
+
+    public function sessionCalled(string $start): AgentSession
+    {
+        return $this->startCalled($start)->session;
+    }
+
+    public function startCalled(string $start): StartedAgent
+    {
+        return $this->starts[$start] ?? throw FixtureRefused::missingAlias('start', $start, self::OWNER);
+    }
+
+    /**
+     * The named start as a TestStart that signs with the credential the start was issued, making nothing new.
+     */
+    public function testStartCalled(string $start): TestStart
+    {
+        $started = $this->startCalled($start);
+
+        return TestStart::of($this->agentCalled($this->startAgents[$start]), $started->session, $started->token);
+    }
+
+    public function projectCalled(string $name): Project
+    {
+        return $this->projects[$name] ?? throw FixtureRefused::missingAlias('project', $name, self::OWNER);
+    }
+
+    public function environmentCalled(string $name): Environment
+    {
+        return $this->environments[$name] ?? throw FixtureRefused::missingAlias('environment', $name, self::OWNER);
     }
 
     /**
@@ -197,12 +467,28 @@ final class JournalSeed
      */
     public function inboxCalled(string $name): Inbox
     {
-        return $this->inboxOf($this->actorCalled($name));
+        return $this->remembered[$name] ?? Inbox::findPersonalOf($this->actorCalled($name));
+    }
+
+    /**
+     * Keeps an inbox a command made under a name, for inboxCalled() to give back.
+     */
+    public function rememberInbox(string $name, Inbox $inbox): self
+    {
+        if (array_key_exists($name, $this->remembered)) {
+            throw FixtureRefused::occupiedAlias($name, 'inbox');
+        }
+
+        $this->remembered[$name] = $inbox;
+
+        return $this;
     }
 
     public function chatOf(string $first, string $second): Inbox
     {
-        return $this->chats[self::chatKey($first, $second)] ?? throw SeedMissing::named('chat', "{$first} and {$second}");
+        $key = FixtureInboxes::pairKey($this->actorCalled($first), $this->actorCalled($second));
+
+        return $this->chats[$key] ?? throw FixtureRefused::missingAlias('chat', "{$first} and {$second}", self::OWNER);
     }
 
     /**
@@ -213,20 +499,37 @@ final class JournalSeed
         return ActorIdentity::of($this->agents[$name] ?? $this->userCalled($name));
     }
 
-    private static function chatKey(string $first, string $second): string
-    {
-        $names = [$first, $second];
-        sort($names);
-
-        return implode('|', $names);
-    }
-
     private function makeUser(string $name): User
     {
+        $name = trim($name);
+        $this->refuseTakenName($name);
         $user = User::factory()->create(['name' => $name]);
         $this->users[$name] = $user;
-        $this->inboxOf(ActorIdentity::of($user));
+        $this->inboxes->personal(ActorIdentity::of($user));
 
         return $user;
+    }
+
+    private function grantAsOwner(User $user, string|null $environmentId): void
+    {
+        $owner = $this->ownerUser();
+        $this->requests->during(
+            fn () => $this->requests->asUser($owner),
+            fn () => $this->run(new GrantEnvironmentAccessCommand($user->id, $environmentId, [InboxPermission::OpenInboxes])),
+        );
+    }
+
+    /**
+     * Users and agents share one set of names, so a second actor under a name already given is refused before its row.
+     */
+    private function refuseTakenName(string $name): void
+    {
+        if (array_key_exists($name, $this->users)) {
+            throw FixtureRefused::occupiedAlias($name, 'user');
+        }
+
+        if (array_key_exists($name, $this->agents)) {
+            throw FixtureRefused::occupiedAlias($name, 'agent');
+        }
     }
 }

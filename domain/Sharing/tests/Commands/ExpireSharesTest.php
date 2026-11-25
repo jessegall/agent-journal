@@ -11,7 +11,6 @@ use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Support\ShareExpiry;
 use Domain\Sharing\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Seeding\SeedsJournal;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\TestShares;
 use Tests\Support\TestActors;
@@ -23,7 +22,6 @@ use Tests\Support\TestActors;
 final class ExpireSharesTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SeedsJournal;
 
     private const string TRUSTED_ENTRY = 'sharing supervisor';
 
@@ -34,7 +32,7 @@ final class ExpireSharesTest extends TestCase
         $this->travel(2)->days();
         $current = TestShares::grantForADay(TestActors::record('binders.binder', 2), $configuration);
 
-        $expiry = $this->journal()->runAsJournal(CommandEntry::ShareGateway, self::TRUSTED_ENTRY, new ExpireSharesCommand());
+        $expiry = $this->journal->runAsJournal(CommandEntry::ShareGateway, self::TRUSTED_ENTRY, new ExpireSharesCommand());
 
         $this->assertEquals(new ShareExpiry(1, false), $expiry);
         $this->assertSame(ShareStatus::Expired, $due->refresh()->status);

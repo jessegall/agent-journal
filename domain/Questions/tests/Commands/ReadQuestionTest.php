@@ -10,7 +10,6 @@ use Domain\Questions\Exceptions\QuestionRefused;
 use Domain\Questions\Models\Question;
 use Domain\Questions\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\Seeding\SeedsJournal;
 
 /**
  * The asker and the target of a question read it; anyone else is refused.
@@ -18,7 +17,6 @@ use Tests\Support\Seeding\SeedsJournal;
 final class ReadQuestionTest extends TestCase
 {
     use CommitsHookRows;
-    use SeedsJournal;
 
     private const array TABLES = ['questions'];
 
@@ -28,11 +26,11 @@ final class ReadQuestionTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal()->owner()->agent('Planner')->agent('Stranger')->chat('Owner', 'Planner');
+        $this->journal->owner()->agent('Planner')->agent('Stranger')->chat('Owner', 'Planner');
         $this->question = Question::create(
-            $this->journal()->chatOf('Owner', 'Planner')->id,
-            $this->journal()->actorCalled('Planner'),
-            $this->journal()->actorCalled('Owner'),
+            $this->journal->chatOf('Owner', 'Planner')->id,
+            $this->journal->actorCalled('Planner'),
+            $this->journal->actorCalled('Owner'),
             'Which database?',
             QuestionType::Open,
             [],
@@ -41,18 +39,18 @@ final class ReadQuestionTest extends TestCase
 
     public function test_the_asker_and_the_target_read_the_question(): void
     {
-        $this->assertSame('Which database?', $this->journal()->run(new ReadQuestionCommand($this->question->id))->text);
+        $this->assertSame('Which database?', $this->journal->run(new ReadQuestionCommand($this->question->id))->text);
 
-        $this->journal()->actAs('Planner');
-        $this->assertSame('Which database?', $this->journal()->run(new ReadQuestionCommand($this->question->id))->text);
+        $this->journal->actAs('Planner');
+        $this->assertSame('Which database?', $this->journal->run(new ReadQuestionCommand($this->question->id))->text);
     }
 
     public function test_anyone_else_is_refused(): void
     {
-        $this->journal()->actAs('Stranger');
+        $this->journal->actAs('Stranger');
 
         $this->assertThrows(
-            fn () => $this->journal()->run(new ReadQuestionCommand($this->question->id)),
+            fn () => $this->journal->run(new ReadQuestionCommand($this->question->id)),
             QuestionRefused::class,
             QuestionRefused::notInvolved($this->question->id)->getMessage(),
         );

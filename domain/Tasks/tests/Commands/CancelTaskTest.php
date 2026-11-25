@@ -13,7 +13,6 @@ use Domain\Tasks\Exceptions\TaskChangedSinceRead;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\Seeding\SeedsJournal;
 
 /**
  * The agent that runs a task cancels it with its reason; another agent, a run that moved on since it was read, a
@@ -22,7 +21,6 @@ use Tests\Support\Seeding\SeedsJournal;
 final class CancelTaskTest extends TestCase
 {
     use CommitsHookRows;
-    use SeedsJournal;
 
     private const array TABLES = ['tasks', 'task_runs', 'claim_authorizations'];
 
@@ -32,14 +30,14 @@ final class CancelTaskTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal()->owner()->agent('First')->agent('Second', 'read-only-helper');
-        $this->task = Task::create('Owned work', 'Build it.', $this->journal()->ownerUser());
-        $this->journal()->actAs('First')->run(new StartTaskCommand($this->task->id));
+        $this->journal->owner()->agent('First')->agent('Second', 'read-only-helper');
+        $this->task = Task::create('Owned work', 'Build it.', $this->journal->ownerUser());
+        $this->journal->actAs('First')->run(new StartTaskCommand($this->task->id));
     }
 
     public function test_the_runner_cancels_with_its_reason(): void
     {
-        $this->journal()->run(new CancelTaskCommand($this->task->id, 'Superseded.'));
+        $this->journal->run(new CancelTaskCommand($this->task->id, 'Superseded.'));
 
         $this->assertSame(
             [TaskStatus::Cancelled, 'Superseded.'],
@@ -50,17 +48,17 @@ final class CancelTaskTest extends TestCase
     public function test_another_agent_a_moved_run_and_a_blank_reason_are_refused(): void
     {
         $this->assertThrows(
-            fn () => $this->journal()->actAs('Second')->run(new CancelTaskCommand($this->task->id, 'Not mine.')),
+            fn () => $this->journal->actAs('Second')->run(new CancelTaskCommand($this->task->id, 'Not mine.')),
             ActorNotAllowed::class,
         );
 
-        $this->journal()->actAs('First');
+        $this->journal->actAs('First');
         $this->assertThrows(
-            fn () => $this->journal()->run(new CancelTaskCommand($this->task->id, 'Stale.', expectedRunNumber: 2)),
+            fn () => $this->journal->run(new CancelTaskCommand($this->task->id, 'Stale.', expectedRunNumber: 2)),
             TaskChangedSinceRead::class,
         );
         $this->assertThrows(
-            fn () => $this->journal()->run(new CancelTaskCommand($this->task->id, ' ')),
+            fn () => $this->journal->run(new CancelTaskCommand($this->task->id, ' ')),
             CommandInputInvalid::class,
             'reason:',
         );
@@ -69,10 +67,10 @@ final class CancelTaskTest extends TestCase
 
     public function test_a_task_that_ended_is_not_cancelled_again(): void
     {
-        $this->journal()->run(new CancelTaskCommand($this->task->id, 'Superseded.'));
+        $this->journal->run(new CancelTaskCommand($this->task->id, 'Superseded.'));
 
         $this->assertThrows(
-            fn () => $this->journal()->run(new CancelTaskCommand($this->task->id, 'Again.')),
+            fn () => $this->journal->run(new CancelTaskCommand($this->task->id, 'Again.')),
             TaskChangedSinceRead::class,
         );
     }

@@ -10,7 +10,6 @@ use Domain\Memory\Commands\RemoveMemory\RemoveMemoryCommand;
 use Domain\Memory\Models\Memory;
 use Domain\Memory\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Seeding\SeedsJournal;
 
 /**
  * An agent removes a memory of its own; another agent's memory is not there for it and stays.
@@ -18,7 +17,6 @@ use Tests\Support\Seeding\SeedsJournal;
 final class RemoveMemoryTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SeedsJournal;
 
     private Memory $memory;
 
@@ -26,16 +24,16 @@ final class RemoveMemoryTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal()->owner()
+        $this->journal->owner()
             ->agent('Keeper', 'read-only-helper')
             ->agent('Other', 'read-only-helper')
             ->actAs('Keeper');
-        $this->memory = Memory::create(ActorIdentity::of($this->journal()->agentCalled('Keeper')), 'Forget me.', 4);
+        $this->memory = Memory::create(ActorIdentity::of($this->journal->agentCalled('Keeper')), 'Forget me.', 4);
     }
 
     public function test_an_agent_removes_its_own_memory(): void
     {
-        $removed = $this->journal()->run(new RemoveMemoryCommand($this->memory->id));
+        $removed = $this->journal->run(new RemoveMemoryCommand($this->memory->id));
 
         $this->assertSame($this->memory->id, $removed);
         $this->assertSame(0, Memory::query()->count());
@@ -43,13 +41,13 @@ final class RemoveMemoryTest extends TestCase
 
     public function test_another_agents_memory_is_not_there_for_it_and_stays(): void
     {
-        $this->journal()->actAs('Other');
+        $this->journal->actAs('Other');
 
         $this->assertThrows(
-            fn () => $this->journal()->run(new RemoveMemoryCommand($this->memory->id)),
+            fn () => $this->journal->run(new RemoveMemoryCommand($this->memory->id)),
             RecordUnavailable::class,
         );
-        $this->journal()->actAs('Keeper');
+        $this->journal->actAs('Keeper');
         $this->assertSame(1, Memory::query()->count());
     }
 }

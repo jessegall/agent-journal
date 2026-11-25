@@ -11,7 +11,6 @@ use Domain\Questions\Models\Question;
 use Domain\Questions\Models\QuestionAnswerNotice;
 use Domain\Questions\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\Seeding\SeedsJournal;
 
 /**
  * The journal hands an agent's running session the notices of answers it has not had yet, oldest first, and counts
@@ -20,7 +19,6 @@ use Tests\Support\Seeding\SeedsJournal;
 final class DeliverWaitingQuestionAnswersTest extends TestCase
 {
     use CommitsHookRows;
-    use SeedsJournal;
 
     private const string TRUSTED_ENTRY = 'opened session';
 
@@ -30,7 +28,7 @@ final class DeliverWaitingQuestionAnswersTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal()->owner()->agent('Planner')->chat('Owner', 'Planner');
+        $this->journal->owner()->agent('Planner')->chat('Owner', 'Planner');
     }
 
     public function test_the_waiting_notices_go_to_the_running_session_and_are_counted(): void
@@ -55,24 +53,24 @@ final class DeliverWaitingQuestionAnswersTest extends TestCase
 
     private function deliver(): int
     {
-        return $this->journal()->runAsJournal(
+        return $this->journal->runAsJournal(
             CommandEntry::EngineMaintenance,
             self::TRUSTED_ENTRY,
-            new DeliverWaitingQuestionAnswersCommand($this->journal()->agentCalled('Planner')->id),
+            new DeliverWaitingQuestionAnswersCommand($this->journal->agentCalled('Planner')->id),
         );
     }
 
     private function waitingNotice(string $text): QuestionAnswerNotice
     {
         $question = Question::create(
-            $this->journal()->chatOf('Owner', 'Planner')->id,
-            $this->journal()->actorCalled('Planner'),
-            $this->journal()->actorCalled('Owner'),
+            $this->journal->chatOf('Owner', 'Planner')->id,
+            $this->journal->actorCalled('Planner'),
+            $this->journal->actorCalled('Owner'),
             $text,
             QuestionType::Open,
             [],
         );
 
-        return QuestionAnswerNotice::create($question, $this->journal()->actorCalled('Planner'));
+        return QuestionAnswerNotice::create($question, $this->journal->actorCalled('Planner'));
     }
 }

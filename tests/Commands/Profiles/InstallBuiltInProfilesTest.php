@@ -8,7 +8,6 @@ use App\Commands\Profiles\InstallBuiltInProfiles\InstallBuiltInProfilesCommand;
 use App\Enums\Accounts\CommandEntry;
 use App\Models\Profiles\Profile;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Seeding\SeedsJournal;
 use Tests\TestCase;
 
 /**
@@ -17,18 +16,17 @@ use Tests\TestCase;
 final class InstallBuiltInProfilesTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SeedsJournal;
 
     private const string TRUSTED_ENTRY = 'built-in profiles';
 
     public function test_the_built_in_profiles_are_installed_once(): void
     {
-        $this->journal()->owner();
+        $this->journal->owner();
         Profile::query()->delete();
 
-        $this->journal()->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, new InstallBuiltInProfilesCommand());
+        $this->journal->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, new InstallBuiltInProfilesCommand());
         $installed = Profile::query()->count();
-        $this->journal()->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, new InstallBuiltInProfilesCommand());
+        $this->journal->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, new InstallBuiltInProfilesCommand());
 
         $this->assertTrue(Profile::query()->where('key', 'main-agent')->exists());
         $this->assertSame($installed, Profile::query()->count());

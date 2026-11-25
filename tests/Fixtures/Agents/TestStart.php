@@ -5,20 +5,20 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Agents;
 
 use App\Contracts\Actors\CurrentActorSetter;
-use App\Support\ActorContext;
-use App\Support\SignedCall;
-use App\Support\StartProfilePin;
-use App\Support\AgentRuntimes;
-use App\Support\AgentSessions;
-use App\Support\SessionTokens;
+use App\Contracts\Sessions\StartTransaction;
 use App\Enums\Drivers\DriverType;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
+use App\Support\ActorContext;
 use App\Support\AgentContext;
+use App\Support\AgentRuntimes;
+use App\Support\AgentSessions;
+use App\Support\SessionTokens;
+use App\Support\SignedCall;
+use App\Support\StartProfilePin;
+use App\Support\StartStacks;
 use App\Values\RuntimeIntent;
 use App\Values\StackTarget;
-use App\Contracts\Sessions\StartTransaction;
-use App\Support\StartStacks;
 use Carbon\CarbonImmutable;
 use Illuminate\Container\Container;
 use Illuminate\Foundation\Application;
@@ -35,6 +35,14 @@ final readonly class TestStart
         public AgentSession $session,
         public string $token,
     ) {}
+
+    /**
+     * A start the test made another way, signing with the token that start was issued.
+     */
+    public static function of(Agent $agent, AgentSession $session, string $token): self
+    {
+        return new self($agent, $session, $token);
+    }
 
     public static function start(string $profileKey = 'main-agent'): self
     {

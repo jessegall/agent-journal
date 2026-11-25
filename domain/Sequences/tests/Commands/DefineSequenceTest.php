@@ -11,7 +11,6 @@ use Domain\Sequences\Tests\TestCase;
 use Domain\Sequences\Values\SequenceStep;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Seeding\SeedsJournal;
 
 /**
  * A user defines a sequence: it keeps its name and steps at its first version and says it was defined.
@@ -19,14 +18,13 @@ use Tests\Support\Seeding\SeedsJournal;
 final class DefineSequenceTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SeedsJournal;
 
     public function test_a_defined_sequence_keeps_its_steps_at_its_first_version_and_says_so(): void
     {
         Event::fake([SequenceDefined::class]);
-        $this->journal()->owner();
+        $this->journal->owner();
 
-        $sequenceId = $this->journal()->run(new DefineSequenceCommand('Release', [self::step('tests')]));
+        $sequenceId = $this->journal->run(new DefineSequenceCommand('Release', [self::step('tests')]));
 
         $sequence = Sequence::query()->findOrFail($sequenceId);
         $this->assertSame(['Release', 1], [$sequence->name, $sequence->version]);

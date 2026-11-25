@@ -10,7 +10,6 @@ use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\Seeding\SeedsJournal;
 
 /**
  * An agent running two tasks focuses on one of them and its focus moves there; focusing on it again leaves it there.
@@ -18,22 +17,21 @@ use Tests\Support\Seeding\SeedsJournal;
 final class FocusTaskTest extends TestCase
 {
     use CommitsHookRows;
-    use SeedsJournal;
 
     private const array TABLES = ['tasks', 'task_runs', 'claim_authorizations'];
 
     public function test_the_focus_moves_to_the_task_and_stays_on_a_second_focus(): void
     {
-        $this->journal()->owner()->agent('First');
-        $first = Task::create('First', 'One.', $this->journal()->ownerUser());
-        $second = Task::create('Second', 'Two.', $this->journal()->ownerUser());
-        $this->journal()->actAs('First')->run(new StartTaskCommand($first->id));
-        $this->journal()->run(new StartTaskCommand($second->id));
+        $this->journal->owner()->agent('First');
+        $first = Task::create('First', 'One.', $this->journal->ownerUser());
+        $second = Task::create('Second', 'Two.', $this->journal->ownerUser());
+        $this->journal->actAs('First')->run(new StartTaskCommand($first->id));
+        $this->journal->run(new StartTaskCommand($second->id));
 
-        $this->journal()->run(new FocusTaskCommand($first->id));
-        $this->journal()->run(new FocusTaskCommand($first->id));
+        $this->journal->run(new FocusTaskCommand($first->id));
+        $this->journal->run(new FocusTaskCommand($first->id));
 
-        $focus = $this->app->make(AgentFocuses::class)->focusOf($this->journal()->actorCalled('First'))->get();
+        $focus = $this->app->make(AgentFocuses::class)->focusOf($this->journal->actorCalled('First'))->get();
         $this->assertSame($first->id, $focus->id);
     }
 }

@@ -16,7 +16,6 @@ use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\HoldingRules;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Seeding\SeedsJournal;
 use Tests\Support\TestText;
 
 /**
@@ -27,13 +26,12 @@ use Tests\Support\TestText;
 final class ProposeRuleTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SeedsJournal;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->journal()->owner()->agent('Planner')->actAs('Planner');
+        $this->journal->owner()->agent('Planner')->actAs('Planner');
     }
 
     /**
@@ -54,11 +52,11 @@ final class ProposeRuleTest extends TestCase
     {
         $old = HoldingRules::create('Old rule.');
 
-        $ruleId = $this->journal()->run(new ProposeRuleCommand('New rule.', 'The old one is too vague.', $old->id));
+        $ruleId = $this->journal->run(new ProposeRuleCommand('New rule.', 'The old one is too vague.', $old->id));
 
         $rule = Rule::query()->findOrFail($ruleId);
         $this->assertSame(
-            [RuleStatus::Proposed, 'The old one is too vague.', $old->id, Agent::storedType(), $this->journal()->agentCalled('Planner')->id],
+            [RuleStatus::Proposed, 'The old one is too vague.', $old->id, Agent::storedType(), $this->journal->agentCalled('Planner')->id],
             [$rule->status, $rule->reason, $rule->replaces_rule_id, $rule->proposer_type, $rule->proposer_id],
         );
         $this->assertSame(
@@ -70,7 +68,7 @@ final class ProposeRuleTest extends TestCase
     public function test_a_rule_to_replace_that_is_not_there_is_refused(): void
     {
         $this->assertThrows(
-            fn () => $this->journal()->run(new ProposeRuleCommand('New rule.', 'A reason.', (string) Str::ulid())),
+            fn () => $this->journal->run(new ProposeRuleCommand('New rule.', 'A reason.', (string) Str::ulid())),
             RuleMissing::class,
         );
         $this->assertSame(0, Rule::query()->count());
@@ -79,7 +77,7 @@ final class ProposeRuleTest extends TestCase
     #[DataProvider('refusedProposals')]
     public function test_a_proposal_past_its_limit_or_empty_is_refused_naming_the_field(ProposeRuleCommand $proposal, string $field): void
     {
-        $this->assertThrows(fn () => $this->journal()->run($proposal), CommandInputInvalid::class, "{$field}:");
+        $this->assertThrows(fn () => $this->journal->run($proposal), CommandInputInvalid::class, "{$field}:");
 
         $this->assertSame(0, Rule::query()->count());
     }
@@ -88,7 +86,7 @@ final class ProposeRuleTest extends TestCase
     {
         $text = str_repeat('é', Rule::TEXT_CHARACTER_LIMIT);
 
-        $ruleId = $this->journal()->run(new ProposeRuleCommand($text, str_repeat('é', Rule::REASON_CHARACTER_LIMIT)));
+        $ruleId = $this->journal->run(new ProposeRuleCommand($text, str_repeat('é', Rule::REASON_CHARACTER_LIMIT)));
 
         $this->assertSame($text, Rule::query()->findOrFail($ruleId)->text);
     }

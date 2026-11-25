@@ -10,7 +10,6 @@ use App\Models\Access\User;
 use App\Models\Records\Layout;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Seeding\SeedsJournal;
 use Tests\TestCase;
 
 /**
@@ -19,17 +18,16 @@ use Tests\TestCase;
 final class DeleteLayoutTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SeedsJournal;
 
     public function test_a_deleted_layout_is_gone_and_another_users_stays(): void
     {
-        $this->journal()->owner();
-        $ownLayout = Layout::create($this->journal()->ownerUser()->id, 'Writing', LayoutShape::from(SaveLayoutTest::shape('chat')));
+        $this->journal->owner();
+        $ownLayout = Layout::create($this->journal->ownerUser()->id, 'Writing', LayoutShape::from(SaveLayoutTest::shape('chat')));
         $strangersLayout = Layout::create(User::factory()->create()->id, 'Theirs', LayoutShape::from(SaveLayoutTest::shape('chat')));
 
-        $this->journal()->run(new DeleteLayoutCommand($ownLayout->id));
+        $this->journal->run(new DeleteLayoutCommand($ownLayout->id));
 
-        $this->assertThrows(fn () => $this->journal()->run(new DeleteLayoutCommand($strangersLayout->id)), ModelNotFoundException::class);
+        $this->assertThrows(fn () => $this->journal->run(new DeleteLayoutCommand($strangersLayout->id)), ModelNotFoundException::class);
         $this->assertSame([$strangersLayout->id], Layout::query()->withoutGlobalScopes()->pluck('id')->all());
     }
 }

@@ -12,7 +12,6 @@ use App\Support\ActorIdentity;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Seeding\SeedsJournal;
 use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
@@ -22,7 +21,6 @@ use Tests\TestCase;
 final class IssueEvidencePermitTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SeedsJournal;
     use SendsSignedPayloads;
 
     private TestStart $start;
@@ -61,9 +59,9 @@ final class IssueEvidencePermitTest extends TestCase
     private function issue(string $line): string
     {
         $agent = $this->agent();
-        $this->journal()->owner();
+        $this->journal->owner();
 
-        return $this->journal()->run(new IssueEvidencePermitCommand($line, $this->folder, $agent->type, $agent->id));
+        return $this->journal->run(new IssueEvidencePermitCommand($line, $this->folder, $agent->type, $agent->id));
     }
 
     private function agent(): ActorIdentity

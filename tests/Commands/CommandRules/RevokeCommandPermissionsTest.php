@@ -11,7 +11,6 @@ use App\Values\CommandClassSet;
 use App\Values\CommandPermissions;
 use App\Values\ProcessGrants;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Seeding\SeedsJournal;
 use Tests\TestCase;
 
 /**
@@ -21,12 +20,11 @@ use Tests\TestCase;
 final class RevokeCommandPermissionsTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SeedsJournal;
 
     public function test_a_deny_beats_a_class_allow_and_a_revocation_narrows_the_next_admission(): void
     {
         $main = CommandPermissions::granted('role:main', ProcessGrants::everything());
-        $this->journal()->owner()->run(new RevokeCommandPermissionsCommand($main->source, [CommandClass::Delete]));
+        $this->journal->owner()->run(new RevokeCommandPermissionsCommand($main->source, [CommandClass::Delete]));
 
         $narrowed = PermissionRevocation::resolveNarrow($main);
 

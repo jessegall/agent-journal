@@ -11,7 +11,6 @@ use Domain\Questions\Commands\HideLeftInboxNotifications\HideLeftInboxNotificati
 use Domain\Questions\Enums\QuestionType;
 use Domain\Questions\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\Seeding\SeedsJournal;
 
 /**
  * Once a member leaves an inbox, the journal hides the notifications of the questions asked of them there and counts
@@ -20,7 +19,6 @@ use Tests\Support\Seeding\SeedsJournal;
 final class HideLeftInboxNotificationsTest extends TestCase
 {
     use CommitsHookRows;
-    use SeedsJournal;
 
     private const string TRUSTED_ENTRY = 'left inbox';
 
@@ -30,7 +28,7 @@ final class HideLeftInboxNotificationsTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal()->owner()->agent('Planner')->agent('Builder')
+        $this->journal->owner()->agent('Planner')->agent('Builder')
             ->chat('Owner', 'Planner')->chat('Owner', 'Builder');
     }
 
@@ -38,12 +36,12 @@ final class HideLeftInboxNotificationsTest extends TestCase
     {
         $this->ask('Planner');
         $this->ask('Builder');
-        $owner = $this->journal()->actorCalled('Owner');
+        $owner = $this->journal->actorCalled('Owner');
 
-        $hidden = $this->journal()->runAsJournal(
+        $hidden = $this->journal->runAsJournal(
             CommandEntry::EngineMaintenance,
             self::TRUSTED_ENTRY,
-            new HideLeftInboxNotificationsCommand($owner->type, $owner->id, $this->journal()->chatOf('Owner', 'Planner')->id),
+            new HideLeftInboxNotificationsCommand($owner->type, $owner->id, $this->journal->chatOf('Owner', 'Planner')->id),
         );
 
         $this->assertSame(1, $hidden);
@@ -52,9 +50,9 @@ final class HideLeftInboxNotificationsTest extends TestCase
 
     private function ask(string $agent): void
     {
-        $this->journal()->actAs($agent)->run(new AskQuestionCommand(
-            $this->journal()->chatOf('Owner', $agent)->id,
-            $this->journal()->actorCalled('Owner'),
+        $this->journal->actAs($agent)->run(new AskQuestionCommand(
+            $this->journal->chatOf('Owner', $agent)->id,
+            $this->journal->actorCalled('Owner'),
             'Which database?',
             QuestionType::Open,
         ));

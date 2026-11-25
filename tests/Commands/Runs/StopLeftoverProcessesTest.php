@@ -8,7 +8,6 @@ use App\Commands\Runs\StopLeftoverProcesses\StopLeftoverProcessesCommand;
 use App\Contracts\Bus\CommandBus;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Runs\AdmitsShellRuns;
-use Tests\Support\Seeding\SeedsJournal;
 use Tests\TestCase;
 
 /**
@@ -19,12 +18,11 @@ final class StopLeftoverProcessesTest extends TestCase
 {
     use AdmitsShellRuns;
     use RefreshHookDatabase;
-    use SeedsJournal;
 
     public function test_a_running_run_is_refused_and_a_lost_one_goes_stale(): void
     {
         $run = $this->runningRun();
-        $this->journal()->owner();
+        $this->journal->owner();
         $bus = $this->app->make(CommandBus::class);
 
         $this->assertThrows(fn () => $bus->run(new StopLeftoverProcessesCommand($run->id)));

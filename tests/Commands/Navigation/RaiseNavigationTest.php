@@ -10,7 +10,6 @@ use App\Models\Drivers\NavigationRequest;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
-use Tests\Support\Seeding\SeedsJournal;
 use Tests\Support\SendsHostCalls;
 use Tests\TestCase;
 
@@ -23,7 +22,6 @@ final class RaiseNavigationTest extends TestCase
     use CommitsHookRows;
     use RaisesNavigationRequests;
     use RunsTrustedCommands;
-    use SeedsJournal;
     use SendsHostCalls;
 
     private const array TABLES = [
@@ -46,7 +44,7 @@ final class RaiseNavigationTest extends TestCase
 
     public function test_a_stalled_key_script_raises_one_request_per_operation(): void
     {
-        $this->journal()->installInboxes()->owner();
+        $this->journal->installInboxes()->owner();
         [$host, $opened] = $this->openRuntime();
         $stalled = DriverRequest::query()->findOrFail($this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'GPT-6']))->requestId);
         $target = "/host/runtimes/{$stalled->agent_runtime_id}/navigation";
@@ -60,7 +58,7 @@ final class RaiseNavigationTest extends TestCase
 
     public function test_a_report_from_a_past_attempt_is_refused_and_raises_nothing(): void
     {
-        $this->journal()->installInboxes()->owner();
+        $this->journal->installInboxes()->owner();
         [$host, $opened] = $this->openRuntime();
         $stalled = DriverRequest::query()->findOrFail($this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'GPT-6']))->requestId);
 

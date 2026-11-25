@@ -8,7 +8,6 @@ use App\Commands\Notifications\MarkTargetNotificationRead\MarkTargetNotification
 use App\Exceptions\NotificationUnavailable;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Seeding\DeliversNotifications;
-use Tests\Support\Seeding\SeedsJournal;
 use Tests\TestCase;
 
 /**
@@ -19,19 +18,18 @@ final class MarkTargetNotificationReadTest extends TestCase
 {
     use DeliversNotifications;
     use RefreshHookDatabase;
-    use SeedsJournal;
 
     public function test_the_notification_of_the_target_is_read_and_a_target_without_one_is_refused(): void
     {
-        $this->journal()->owner();
-        [$first, $second] = $this->notify($this->journal()->actorCalled('Owner'), 1, 2);
+        $this->journal->owner();
+        [$first, $second] = $this->notify($this->journal->actorCalled('Owner'), 1, 2);
 
-        $this->journal()->run(new MarkTargetNotificationReadCommand('chat.question', '2'));
+        $this->journal->run(new MarkTargetNotificationReadCommand('chat.question', '2'));
 
         $this->assertNull($first->refresh()->read_at);
         $this->assertNotNull($second->refresh()->read_at);
         $this->assertThrows(
-            fn () => $this->journal()->run(new MarkTargetNotificationReadCommand('chat.question', '9')),
+            fn () => $this->journal->run(new MarkTargetNotificationReadCommand('chat.question', '9')),
             NotificationUnavailable::class,
         );
     }

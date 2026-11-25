@@ -11,7 +11,6 @@ use Domain\Sequences\Models\SequenceRun;
 use Domain\Sequences\Tests\TestCase;
 use Domain\Sequences\Values\SequenceStep;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Seeding\SeedsJournal;
 
 /**
  * A user changes a sequence at the version they opened: it goes one version on and a run it already started keeps
@@ -20,7 +19,6 @@ use Tests\Support\Seeding\SeedsJournal;
 final class ChangeSequenceTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SeedsJournal;
 
     private Sequence $sequence;
 
@@ -28,7 +26,7 @@ final class ChangeSequenceTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal()->owner();
+        $this->journal->owner();
         $this->sequence = Sequence::create('Release', 'Ship a version', [self::step('tests')]);
     }
 
@@ -37,7 +35,7 @@ final class ChangeSequenceTest extends TestCase
         $run = SequenceRun::create('Release', ['tests']);
         $run->sequence()->associate($this->sequence)->save();
 
-        $this->journal()->run(new ChangeSequenceCommand($this->sequence->id, 1, 'Release', [self::step('tests'), self::step('merge')]));
+        $this->journal->run(new ChangeSequenceCommand($this->sequence->id, 1, 'Release', [self::step('tests'), self::step('merge')]));
 
         $this->assertSame(2, $this->sequence->refresh()->version);
         $this->assertCount(2, $this->sequence->steps);
@@ -46,10 +44,10 @@ final class ChangeSequenceTest extends TestCase
 
     public function test_a_change_from_an_older_version_is_refused_and_keeps_the_newer_steps(): void
     {
-        $this->journal()->run(new ChangeSequenceCommand($this->sequence->id, 1, 'Release', [self::step('merge')]));
+        $this->journal->run(new ChangeSequenceCommand($this->sequence->id, 1, 'Release', [self::step('merge')]));
 
         $this->assertThrows(
-            fn () => $this->journal()->run(new ChangeSequenceCommand($this->sequence->id, 1, 'Release', [self::step('tests')])),
+            fn () => $this->journal->run(new ChangeSequenceCommand($this->sequence->id, 1, 'Release', [self::step('tests')])),
             SequenceChangedMeanwhile::class,
         );
         $this->assertSame([2, 'merge'], [$this->sequence->refresh()->version, $this->sequence->steps[0]->id]);

@@ -7,7 +7,6 @@ namespace Tests\Commands\Sessions;
 use App\Commands\Sessions\RecordUserHeartbeat\RecordUserHeartbeatCommand;
 use App\Models\Presence\UserPresence;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Seeding\SeedsJournal;
 use Tests\TestCase;
 
 /**
@@ -16,16 +15,15 @@ use Tests\TestCase;
 final class RecordUserHeartbeatTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SeedsJournal;
 
     public function test_beats_keep_one_presence_for_the_user(): void
     {
-        $this->journal()->owner();
-        $this->journal()->run(new RecordUserHeartbeatCommand());
-        $this->journal()->run(new RecordUserHeartbeatCommand());
+        $this->journal->owner();
+        $this->journal->run(new RecordUserHeartbeatCommand());
+        $this->journal->run(new RecordUserHeartbeatCommand());
 
         $presence = UserPresence::query()->sole();
-        $this->assertSame($this->journal()->ownerUser()->id, $presence->user_id);
+        $this->assertSame($this->journal->ownerUser()->id, $presence->user_id);
         $this->assertNotNull($presence->last_heartbeat_at);
     }
 }

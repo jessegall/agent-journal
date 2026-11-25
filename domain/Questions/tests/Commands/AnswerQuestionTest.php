@@ -12,7 +12,6 @@ use Domain\Questions\Models\Question;
 use Domain\Questions\Models\QuestionAnswerNotice;
 use Domain\Questions\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\Seeding\SeedsJournal;
 
 /**
  * The target of a question answers it once: the answer is kept trimmed with its time and the asking agent's running
@@ -22,7 +21,6 @@ use Tests\Support\Seeding\SeedsJournal;
 final class AnswerQuestionTest extends TestCase
 {
     use CommitsHookRows;
-    use SeedsJournal;
 
     private const array TABLES = ['questions'];
 
@@ -30,14 +28,14 @@ final class AnswerQuestionTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal()->owner()->agent('Planner')->chat('Owner', 'Planner');
+        $this->journal->owner()->agent('Planner')->chat('Owner', 'Planner');
     }
 
     public function test_the_target_answers_and_the_answer_is_kept_trimmed_with_its_time(): void
     {
         $question = $this->asked(QuestionType::Open);
 
-        $this->journal()->run(new AnswerQuestionCommand($question->id, ' Postgres. '));
+        $this->journal->run(new AnswerQuestionCommand($question->id, ' Postgres. '));
 
         $this->assertSame('Postgres.', $question->refresh()->answer);
         $this->assertNotNull($question->answered_at);
@@ -47,10 +45,10 @@ final class AnswerQuestionTest extends TestCase
     {
         $question = $this->asked(QuestionType::Open);
 
-        $this->journal()->run(new AnswerQuestionCommand($question->id, 'Postgres.'));
+        $this->journal->run(new AnswerQuestionCommand($question->id, 'Postgres.'));
 
         $notice = QuestionAnswerNotice::query()->where('question_id', $question->id)->sole();
-        $this->assertSame($this->journal()->agentCalled('Planner')->id, $notice->recipient_id);
+        $this->assertSame($this->journal->agentCalled('Planner')->id, $notice->recipient_id);
         $this->assertNotNull($notice->delivered_at);
     }
 
@@ -59,22 +57,22 @@ final class AnswerQuestionTest extends TestCase
         $question = $this->asked(QuestionType::Open);
 
         $this->assertThrows(
-            fn () => $this->journal()->run(new AnswerQuestionCommand($question->id, ' ')),
+            fn () => $this->journal->run(new AnswerQuestionCommand($question->id, ' ')),
             CommandInputInvalid::class,
             'answer:',
         );
 
-        $this->journal()->actAs('Planner');
+        $this->journal->actAs('Planner');
         $this->assertThrows(
-            fn () => $this->journal()->run(new AnswerQuestionCommand($question->id, 'Myself.')),
+            fn () => $this->journal->run(new AnswerQuestionCommand($question->id, 'Myself.')),
             QuestionRefused::class,
             QuestionRefused::notTheTarget($question->id)->getMessage(),
         );
 
-        $this->journal()->actAs('Owner');
-        $this->journal()->run(new AnswerQuestionCommand($question->id, 'Postgres.'));
+        $this->journal->actAs('Owner');
+        $this->journal->run(new AnswerQuestionCommand($question->id, 'Postgres.'));
         $this->assertThrows(
-            fn () => $this->journal()->run(new AnswerQuestionCommand($question->id, 'SQLite.')),
+            fn () => $this->journal->run(new AnswerQuestionCommand($question->id, 'SQLite.')),
             QuestionRefused::class,
             QuestionRefused::alreadyAnswered($question->id)->getMessage(),
         );
@@ -86,7 +84,7 @@ final class AnswerQuestionTest extends TestCase
         $question = $this->asked(QuestionType::Choice, ['Postgres', 'SQLite']);
 
         $this->assertThrows(
-            fn () => $this->journal()->run(new AnswerQuestionCommand($question->id, 'MySQL')),
+            fn () => $this->journal->run(new AnswerQuestionCommand($question->id, 'MySQL')),
             QuestionRefused::class,
             QuestionRefused::notAnOption($question->id)->getMessage(),
         );
@@ -99,9 +97,9 @@ final class AnswerQuestionTest extends TestCase
     private function asked(QuestionType $type, array $options = []): Question
     {
         return Question::create(
-            $this->journal()->chatOf('Owner', 'Planner')->id,
-            $this->journal()->actorCalled('Planner'),
-            $this->journal()->actorCalled('Owner'),
+            $this->journal->chatOf('Owner', 'Planner')->id,
+            $this->journal->actorCalled('Planner'),
+            $this->journal->actorCalled('Owner'),
             'Which database?',
             $type,
             $options,

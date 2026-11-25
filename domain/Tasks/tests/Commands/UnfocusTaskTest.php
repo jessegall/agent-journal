@@ -11,7 +11,6 @@ use Domain\Tasks\Commands\UnfocusTask\UnfocusTaskCommand;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\Seeding\SeedsJournal;
 
 /**
  * An agent takes a task out of its focus; unfocusing a task it does not focus on leaves the focus where it is.
@@ -19,24 +18,23 @@ use Tests\Support\Seeding\SeedsJournal;
 final class UnfocusTaskTest extends TestCase
 {
     use CommitsHookRows;
-    use SeedsJournal;
 
     private const array TABLES = ['tasks', 'task_runs', 'claim_authorizations'];
 
     public function test_the_focused_task_leaves_the_focus_and_another_task_leaves_it_alone(): void
     {
-        $this->journal()->owner()->agent('First');
-        $first = Task::create('First', 'One.', $this->journal()->ownerUser());
-        $second = Task::create('Second', 'Two.', $this->journal()->ownerUser());
-        $this->journal()->actAs('First')->run(new StartTaskCommand($first->id));
-        $this->journal()->run(new StartTaskCommand($second->id));
-        $this->journal()->run(new FocusTaskCommand($first->id));
+        $this->journal->owner()->agent('First');
+        $first = Task::create('First', 'One.', $this->journal->ownerUser());
+        $second = Task::create('Second', 'Two.', $this->journal->ownerUser());
+        $this->journal->actAs('First')->run(new StartTaskCommand($first->id));
+        $this->journal->run(new StartTaskCommand($second->id));
+        $this->journal->run(new FocusTaskCommand($first->id));
         $focuses = $this->app->make(AgentFocuses::class);
 
-        $this->journal()->run(new UnfocusTaskCommand($second->id));
-        $this->assertSame($first->id, $focuses->focusOf($this->journal()->actorCalled('First'))->get()->id);
+        $this->journal->run(new UnfocusTaskCommand($second->id));
+        $this->assertSame($first->id, $focuses->focusOf($this->journal->actorCalled('First'))->get()->id);
 
-        $this->journal()->run(new UnfocusTaskCommand($first->id));
-        $this->assertTrue($focuses->focusOf($this->journal()->actorCalled('First'))->isEmpty());
+        $this->journal->run(new UnfocusTaskCommand($first->id));
+        $this->assertTrue($focuses->focusOf($this->journal->actorCalled('First'))->isEmpty());
     }
 }

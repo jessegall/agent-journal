@@ -8,7 +8,6 @@ use App\Commands\Records\InstallNumbers\InstallNumbersCommand;
 use App\Enums\Accounts\CommandEntry;
 use App\Models\Records\GlobalGroup;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Seeding\SeedsJournal;
 use Tests\TestCase;
 
 /**
@@ -17,7 +16,6 @@ use Tests\TestCase;
 final class InstallNumbersTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SeedsJournal;
 
     private const string TRUSTED_ENTRY = 'number install';
 
@@ -25,8 +23,8 @@ final class InstallNumbersTest extends TestCase
     {
         GlobalGroup::query()->delete();
 
-        $this->journal()->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, new InstallNumbersCommand());
-        $this->journal()->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, new InstallNumbersCommand());
+        $this->journal->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, new InstallNumbersCommand());
+        $this->journal->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, new InstallNumbersCommand());
 
         $this->assertSame(1, GlobalGroup::query()->where('name', GlobalGroup::JOURNAL)->count());
     }

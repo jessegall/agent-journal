@@ -11,7 +11,6 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\Seeding\SeedsJournal;
 use Tests\TestCase;
 
 /**
@@ -20,7 +19,6 @@ use Tests\TestCase;
 final class UnlinkRecordsTest extends TestCase
 {
     use CommitsHookRows;
-    use SeedsJournal;
 
     private const array TABLES = ['links', 'tasks'];
 
@@ -31,12 +29,12 @@ final class UnlinkRecordsTest extends TestCase
 
     public function test_the_link_goes_whichever_way_round_it_is_named_and_both_records_stay(): void
     {
-        $this->journal()->owner();
-        $first = Task::create('First', 'One.', $this->journal()->ownerUser())->assignmentIdentity();
-        $second = Task::create('Second', 'Two.', $this->journal()->ownerUser())->assignmentIdentity();
-        $this->journal()->run(new LinkRecordsCommand($first, $second));
+        $this->journal->owner();
+        $first = Task::create('First', 'One.', $this->journal->ownerUser())->assignmentIdentity();
+        $second = Task::create('Second', 'Two.', $this->journal->ownerUser())->assignmentIdentity();
+        $this->journal->run(new LinkRecordsCommand($first, $second));
 
-        $this->journal()->run(new UnlinkRecordsCommand($second, $first));
+        $this->journal->run(new UnlinkRecordsCommand($second, $first));
 
         $this->assertSame([0, 2], [Link::query()->count(), Task::query()->count()]);
     }
