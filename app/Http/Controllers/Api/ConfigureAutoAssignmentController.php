@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Api\Assignments\ConfigureAutoAssignmentPayload;
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Assignments\ConfigureAutoAssignment\ConfigureAutoAssignmentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Records\RecordResolver;
@@ -15,6 +16,7 @@ use App\Data\Assignments\AutoAssignmentChangeData;
  */
 final readonly class ConfigureAutoAssignmentController
 {
+    #[Dispatches(ConfigureAutoAssignmentCommand::class)]
     public function __invoke(
         ConfigureAutoAssignmentPayload $call,
         RecordResolver $records,

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Pages;
 
 use App\Api\Scripts\SaveProfileDraftPayload;
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Profiles\SaveProfileDraft\SaveProfileDraftCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Responses\PageActionAnswers;
@@ -22,6 +23,7 @@ final readonly class SaveDraftPageController
      */
     public const string SAVED_DRAFT = 'savedDraft';
 
+    #[Dispatches(SaveProfileDraftCommand::class)]
     public function __invoke(
         SaveProfileDraftPayload $call,
         CommandBus $commands,

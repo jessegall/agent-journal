@@ -6,6 +6,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Api\Connections\ProjectCommandFrames;
 use App\Api\Connections\RunProjectCommandPayload;
+use App\Attributes\Bus\Dispatches;
+use App\Commands\Projects\FinishProjectCommandRun\FinishProjectCommandRunCommand;
+use App\Commands\Projects\RecordProjectCommandProcess\RecordProjectCommandProcessCommand;
+use App\Commands\Projects\StartProjectCommandRun\StartProjectCommandRunCommand;
 use App\Support\AgentContext;
 use App\Support\ProjectCommands;
 use App\Support\SignedCall;
@@ -17,6 +21,9 @@ use Illuminate\Http\Request;
  */
 final readonly class RunProjectCommandController
 {
+    #[Dispatches(FinishProjectCommandRunCommand::class)]
+    #[Dispatches(RecordProjectCommandProcessCommand::class)]
+    #[Dispatches(StartProjectCommandRunCommand::class)]
     public function __invoke(
         RunProjectCommandPayload $call,
         Request $request,

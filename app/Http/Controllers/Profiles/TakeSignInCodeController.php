@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Profiles;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Accounts\TakeSignInCode\TakeSignInCodeCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Values\HostContext;
@@ -16,6 +17,7 @@ use Illuminate\Http\Request;
  */
 final readonly class TakeSignInCodeController
 {
+    #[Dispatches(TakeSignInCodeCommand::class)]
     public function __invoke(string $attempt, Request $request, HostContext $host, CommandBus $commands): JsonResponse
     {
         $poll = $commands->run(new TakeSignInCodeCommand($host->hostId, $attempt, $request->integer('generation')));

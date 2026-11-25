@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Api\Supervision\MakeAskPayload;
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Asks\AskSupervisor\AskSupervisorCommand;
 use App\Contracts\Asks\AskReader;
 use App\Contracts\Bus\CommandBus;
@@ -12,6 +13,7 @@ use App\Data\Asks\AskCard;
 
 final readonly class MakeAskController
 {
+    #[Dispatches(AskSupervisorCommand::class)]
     public function __invoke(MakeAskPayload $call, AskReader $asks, CommandBus $commands): AskCard
     {
         $reference = $commands->run(new AskSupervisorCommand($call->body, $call->requestKey->value, $call->typeKey()));

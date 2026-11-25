@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Sessions\NotifyCleanup\NotifyCleanupCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Sessions\CleanupStep;
@@ -37,6 +38,7 @@ final readonly class CleanupReportController
         return new JsonResponse(['pending' => $pending]);
     }
 
+    #[Dispatches(NotifyCleanupCommand::class)]
     public function __invoke(CleanupReportRequest $request, HostContext $host, CommandBus $commands): JsonResponse
     {
         $state = $commands->run(new NotifyCleanupCommand($host->hostId, $request->sessionId(), $request->report()));

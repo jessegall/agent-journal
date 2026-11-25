@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Profiles;
 
+use App\Attributes\Bus\Dispatches;
+use App\Commands\Agents\StartProfileMain\StartProfileMainCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Profiles\StartProfileMainRequest;
 use App\Http\Responses\PageActionAnswers;
@@ -20,6 +22,7 @@ final readonly class StartProfileMainController
      */
     public const string STARTED_SESSION = 'startedSessionId';
 
+    #[Dispatches(StartProfileMainCommand::class)]
     public function __invoke(
         StartProfileMainRequest $request,
         CommandBus $commands,

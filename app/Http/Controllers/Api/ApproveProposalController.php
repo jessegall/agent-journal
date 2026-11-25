@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Api\Processes\ApproveProposalPayload;
 use App\Api\Processes\RuleApproved;
+use App\Attributes\Bus\Dispatches;
 use App\Commands\CommandRules\ApproveRuleProposal\ApproveRuleProposalCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Values\OwnerApproval;
@@ -16,6 +17,7 @@ use App\Values\ReaderApproval;
  */
 final readonly class ApproveProposalController
 {
+    #[Dispatches(ApproveRuleProposalCommand::class)]
     public function __invoke(ApproveProposalPayload $call, CommandBus $commands): RuleApproved
     {
         $readers = $call->proof === null ? [] : [new ReaderApproval((string) $call->readerRevision, $call->proof)];

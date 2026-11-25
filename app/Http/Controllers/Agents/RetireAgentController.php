@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Agents\RetireAgent\RetireAgentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Assignments\AssignmentResultData;
@@ -16,6 +17,7 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class RetireAgentController
 {
+    #[Dispatches(RetireAgentCommand::class)]
     public function __invoke(RetireAgentRequest $request, CommandBus $commands): JsonResponse
     {
         return new JsonResponse(

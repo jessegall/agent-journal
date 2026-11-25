@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Agents\RenewRuntimeLease\RenewRuntimeLeaseCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Values\HostContext;
@@ -15,6 +16,7 @@ use Illuminate\Http\Request;
  */
 final readonly class RuntimeLeaseController
 {
+    #[Dispatches(RenewRuntimeLeaseCommand::class)]
     public function __invoke(
         string $binding,
         string $runtime,

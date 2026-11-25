@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Api\Processes\ProposalStateChanged;
 use App\Api\Processes\RejectProposalPayload;
+use App\Attributes\Bus\Dispatches;
 use App\Commands\CommandRules\RejectRuleProposal\RejectRuleProposalCommand;
 use App\Contracts\Bus\CommandBus;
 
@@ -14,6 +15,7 @@ use App\Contracts\Bus\CommandBus;
  */
 final readonly class RejectProposalController
 {
+    #[Dispatches(RejectRuleProposalCommand::class)]
     public function __invoke(RejectProposalPayload $call, CommandBus $commands): ProposalStateChanged
     {
         $rejected = $commands->run(new RejectRuleProposalCommand($call->proposal, $call->reason));

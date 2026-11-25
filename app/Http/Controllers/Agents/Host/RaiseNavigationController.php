@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Navigation\RaiseNavigation\RaiseNavigationCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Agents\NavigationRaiseData;
@@ -16,6 +17,7 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class RaiseNavigationController
 {
+    #[Dispatches(RaiseNavigationCommand::class)]
     public function __invoke(
         string $runtime,
         NavigationRaiseData $raise,

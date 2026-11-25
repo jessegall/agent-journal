@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Profiles;
 
+use App\Attributes\Bus\Dispatches;
+use App\Commands\Agents\SwitchAgentDriver\SwitchAgentDriverCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Profiles\SwitchAgentDriverRequest;
 use App\Values\DriverSwitchReceipt;
@@ -17,6 +19,7 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class SwitchAgentDriverController
 {
+    #[Dispatches(SwitchAgentDriverCommand::class)]
     public function __invoke(
         SwitchAgentDriverRequest $request,
         CommandBus $commands,

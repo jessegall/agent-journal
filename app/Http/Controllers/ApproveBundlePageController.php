@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\CommandRules\ApproveRuleBundle\ApproveRuleBundleCommand;
 use App\Http\Requests\Processes\ApproveBundleRequest;
 use App\Http\Responses\Processes\ReviewResponses;
@@ -14,6 +15,7 @@ use Illuminate\Http\RedirectResponse;
  */
 final readonly class ApproveBundlePageController
 {
+    #[Dispatches(ApproveRuleBundleCommand::class)]
     public function __invoke(ApproveBundleRequest $form, ReviewResponses $review): RedirectResponse
     {
         return $review->run(new ApproveRuleBundleCommand($form->module(), $form->moduleVersion(), $form->digest()));

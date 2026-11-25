@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Accounts\CancelSignIn\CancelSignInCommand;
 use App\Contracts\Bus\CommandBus;
 use Illuminate\Http\RedirectResponse;
@@ -14,6 +15,7 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class CancelSignInController
 {
+    #[Dispatches(CancelSignInCommand::class)]
     public function __invoke(string $attempt, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
         $commands->run(new CancelSignInCommand($attempt));

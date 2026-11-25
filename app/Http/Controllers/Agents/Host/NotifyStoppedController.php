@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Drivers\NotifyStopped\NotifyStoppedCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Agents\StartReportRequest;
@@ -16,6 +17,7 @@ use Illuminate\Http\Response;
  */
 final readonly class NotifyStoppedController
 {
+    #[Dispatches(NotifyStoppedCommand::class)]
     public function __invoke(StartReportRequest $request, HostContext $host, CommandBus $commands): Response
     {
         $commands->run(new NotifyStoppedCommand($host->hostId, $request->startKey()));

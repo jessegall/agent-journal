@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Profiles;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Accounts\ReconcileSignIns\ReconcileSignInsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Profiles\SignInReconcileRequest;
@@ -15,6 +16,7 @@ use Illuminate\Http\Response;
  */
 final readonly class ReconcileSignInsController
 {
+    #[Dispatches(ReconcileSignInsCommand::class)]
     public function __invoke(SignInReconcileRequest $request, HostContext $host, CommandBus $commands): Response
     {
         $commands->run(new ReconcileSignInsCommand($host->hostId, $request->runningAttemptIds()));

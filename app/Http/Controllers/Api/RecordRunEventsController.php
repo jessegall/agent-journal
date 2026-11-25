@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Api\Processes\RecordRunEventsPayload;
 use App\Api\Processes\RunEventsAccepted;
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Runs\RecordRunEvents\RecordRunEventsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Models\Runs\ProcessRun;
@@ -17,6 +18,7 @@ use App\Values\RunEventBatch;
  */
 final readonly class RecordRunEventsController
 {
+    #[Dispatches(RecordRunEventsCommand::class)]
     public function __invoke(
         RecordRunEventsPayload $call,
         ProcessRun $processRun,

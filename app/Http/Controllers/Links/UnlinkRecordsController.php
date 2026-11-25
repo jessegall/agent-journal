@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Links;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Links\UnlinkRecords\UnlinkRecordsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Records\RecordResolver;
@@ -13,6 +14,7 @@ use Illuminate\Routing\Redirector;
 
 final readonly class UnlinkRecordsController
 {
+    #[Dispatches(UnlinkRecordsCommand::class)]
     public function __invoke(
         LinkRecordsRequest $request,
         CommandBus $commands,

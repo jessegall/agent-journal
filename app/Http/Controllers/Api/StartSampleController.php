@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Api\Processes\SampleStarted;
 use App\Api\Processes\StartSamplePayload;
+use App\Attributes\Bus\Dispatches;
 use App\Commands\CommandRules\StartSample\StartSampleCommand;
 use App\Contracts\Bus\CommandBus;
 
@@ -14,6 +15,7 @@ use App\Contracts\Bus\CommandBus;
  */
 final readonly class StartSampleController
 {
+    #[Dispatches(StartSampleCommand::class)]
     public function __invoke(StartSamplePayload $call, CommandBus $commands): SampleStarted
     {
         $runId = $commands->run(new StartSampleCommand($call->commandRequest, $call->permit, $call->requestKey->value));

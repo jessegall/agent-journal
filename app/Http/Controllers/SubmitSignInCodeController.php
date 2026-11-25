@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Accounts\SubmitSignInCode\SubmitSignInCodeCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Profiles\SubmitSignInCodeRequest;
@@ -15,6 +16,7 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class SubmitSignInCodeController
 {
+    #[Dispatches(SubmitSignInCodeCommand::class)]
     public function __invoke(
         SubmitSignInCodeRequest $request,
         CommandBus $commands,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Settings\SetBooleanSetting\SetBooleanSettingCommand;
 use App\Commands\Settings\SetIntegerSetting\SetIntegerSettingCommand;
 use App\Commands\Settings\SetStringChoice\SetStringChoiceCommand;
@@ -28,6 +29,10 @@ use Illuminate\Http\RedirectResponse;
  */
 final readonly class SaveSettingsPageController
 {
+    #[Dispatches(SetBooleanSettingCommand::class)]
+    #[Dispatches(SetIntegerSettingCommand::class)]
+    #[Dispatches(SetStringChoiceCommand::class)]
+    #[Dispatches(SetStringSettingCommand::class)]
     public function __invoke(
         SaveSettingsRequest $request,
         SettingsCatalogue $catalogue,

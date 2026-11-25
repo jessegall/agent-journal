@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
+use App\Commands\Projects\IssueProjectInvitation\IssueProjectInvitationCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Connections\IssueProjectInvitationRequest;
 use App\Http\Responses\PageActionAnswers;
@@ -23,6 +25,7 @@ final readonly class IssueProjectInvitationController
      */
     public const string ISSUED_LINE = 'issuedLine';
 
+    #[Dispatches(IssueProjectInvitationCommand::class)]
     public function __invoke(
         IssueProjectInvitationRequest $request,
         CommandBus $commands,

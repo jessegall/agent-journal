@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Accounts\BeginSignInAgain\BeginSignInAgainCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Profiles\SignInAgainRequest;
@@ -15,6 +16,7 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class SignInAgainController
 {
+    #[Dispatches(BeginSignInAgainCommand::class)]
     public function __invoke(SignInAgainRequest $request, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
         $commands->run(new BeginSignInAgainCommand($request->accountId()));

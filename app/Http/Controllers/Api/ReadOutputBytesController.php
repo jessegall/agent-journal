@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Api\Processes\OutputBytes;
 use App\Api\Processes\ReadOutputBytesPayload;
+use App\Attributes\Bus\Dispatches;
 use App\Commands\CommandRules\RecordEvidenceReads\RecordEvidenceReadsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\CommandRules\EvidenceSource;
@@ -19,6 +20,7 @@ use App\Values\EvidenceRange;
  */
 final readonly class ReadOutputBytesController
 {
+    #[Dispatches(RecordEvidenceReadsCommand::class)]
     public function __invoke(
         ReadOutputBytesPayload $call,
         ProcessRun $processRun,

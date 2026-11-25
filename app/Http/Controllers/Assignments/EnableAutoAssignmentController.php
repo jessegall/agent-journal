@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Assignments;
 
+use App\Attributes\Bus\Dispatches;
+use App\Commands\Assignments\EnableAutoAssignment\EnableAutoAssignmentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Records\RecordResolver;
 use App\Data\Assignments\AutoAssignmentChangeData;
@@ -15,6 +17,7 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class EnableAutoAssignmentController
 {
+    #[Dispatches(EnableAutoAssignmentCommand::class)]
     public function __invoke(
         ChangeAutoAssignmentRequest $request,
         RecordResolver $records,

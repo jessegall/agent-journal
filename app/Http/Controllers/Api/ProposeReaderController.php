@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Api\Processes\ProposeReaderPayload;
 use App\Api\Processes\ReaderProposed;
+use App\Attributes\Bus\Dispatches;
 use App\Commands\CommandRules\ProposeReader\ProposeReaderCommand;
 use App\Contracts\Bus\CommandBus;
 
@@ -14,6 +15,7 @@ use App\Contracts\Bus\CommandBus;
  */
 final readonly class ProposeReaderController
 {
+    #[Dispatches(ProposeReaderCommand::class)]
     public function __invoke(ProposeReaderPayload $call, CommandBus $commands): ReaderProposed
     {
         $command = new ProposeReaderCommand($call->commandRequest, $call->declarationRevision, $call->definition);

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Terminal;
 
+use App\Attributes\Bus\Dispatches;
+use App\Commands\Terminals\SubmitPrivateInput\SubmitPrivateInputCommand;
 use App\Http\Requests\Agents\TerminalControlRequest;
 use App\Http\Responses\Agents\TerminalAnswers;
 use App\Support\PrivateValues;
@@ -16,6 +18,7 @@ use Illuminate\Http\Response;
  */
 final readonly class SubmitPrivateInputController
 {
+    #[Dispatches(SubmitPrivateInputCommand::class)]
     public function __invoke(
         TerminalControlRequest $request,
         PrivateValues $values,

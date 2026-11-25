@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Api\Processes\ApproveSamplePayload;
 use App\Api\Processes\SampleApproved;
+use App\Attributes\Bus\Dispatches;
 use App\Commands\CommandRules\ApproveSample\ApproveSampleCommand;
 use App\Contracts\Bus\CommandBus;
 
@@ -14,6 +15,7 @@ use App\Contracts\Bus\CommandBus;
  */
 final readonly class ApproveSampleController
 {
+    #[Dispatches(ApproveSampleCommand::class)]
     public function __invoke(ApproveSamplePayload $call, CommandBus $commands): SampleApproved
     {
         $command = new ApproveSampleCommand($call->commandRequest, $call->expectedRevision, $call->commandDigest);

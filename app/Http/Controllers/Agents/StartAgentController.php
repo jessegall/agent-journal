@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
+use App\Attributes\Bus\Dispatches;
+use App\Commands\Agents\StartAgent\StartAgentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Sessions\BuiltInStartProfiles;
@@ -16,6 +18,7 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class StartAgentController
 {
+    #[Dispatches(StartAgentCommand::class)]
     public function __invoke(
         StartAgentRequest $request,
         CommandBus $commands,

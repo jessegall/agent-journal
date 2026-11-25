@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Terminal;
 
+use App\Attributes\Bus\Dispatches;
+use App\Commands\Terminals\TakeTerminalControl\TakeTerminalControlCommand;
 use App\Http\Requests\Agents\TerminalControlRequest;
 use App\Http\Responses\Agents\TerminalAnswers;
 use Illuminate\Http\JsonResponse;
@@ -15,6 +17,7 @@ use Illuminate\Http\Response;
  */
 final readonly class TakeTerminalControlController
 {
+    #[Dispatches(TakeTerminalControlCommand::class)]
     public function __invoke(TerminalControlRequest $request, TerminalAnswers $answers): JsonResponse|Response
     {
         return $answers->control($request->takeCommand());

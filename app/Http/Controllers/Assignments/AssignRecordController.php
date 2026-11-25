@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Assignments;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
 use App\Contracts\Assignments\AssigneeResolver;
 use App\Contracts\Bus\CommandBus;
@@ -16,6 +17,7 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class AssignRecordController
 {
+    #[Dispatches(AssignRecordCommand::class)]
     public function __invoke(
         AssignRecordRequest $request,
         CommandBus $commands,

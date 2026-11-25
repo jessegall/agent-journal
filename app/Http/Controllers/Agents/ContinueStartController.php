@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
+use App\Attributes\Bus\Dispatches;
+use App\Commands\Agents\ContinueStart\ContinueStartCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Agents\ContinueStartRequest;
 use Illuminate\Http\JsonResponse;
@@ -13,6 +15,7 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class ContinueStartController
 {
+    #[Dispatches(ContinueStartCommand::class)]
     public function __invoke(ContinueStartRequest $request, CommandBus $commands): JsonResponse
     {
         $receipt = $commands->run($request->command());

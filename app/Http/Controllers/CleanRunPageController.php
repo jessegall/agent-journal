@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Runs\CleanProcessOutput\CleanProcessOutputCommand;
 use App\Http\Requests\Processes\RunPageRequest;
 use App\Http\Responses\Processes\ReviewResponses;
@@ -14,6 +15,7 @@ use Illuminate\Http\RedirectResponse;
  */
 final readonly class CleanRunPageController
 {
+    #[Dispatches(CleanProcessOutputCommand::class)]
     public function __invoke(RunPageRequest $request, ReviewResponses $review): RedirectResponse
     {
         return $review->run(new CleanProcessOutputCommand([$request->runId()], false));

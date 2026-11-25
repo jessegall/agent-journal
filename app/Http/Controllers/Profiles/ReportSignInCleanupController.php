@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Profiles;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Accounts\CleanSignInAttempt\CleanSignInAttemptCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Profiles\CleanupReportRequest;
@@ -15,6 +16,7 @@ use Illuminate\Http\Response;
  */
 final readonly class ReportSignInCleanupController
 {
+    #[Dispatches(CleanSignInAttemptCommand::class)]
     public function __invoke(CleanupReportRequest $request, HostContext $host, CommandBus $commands): Response
     {
         $commands->run(new CleanSignInAttemptCommand($host->hostId, $request->targetId(), $request->progress()));

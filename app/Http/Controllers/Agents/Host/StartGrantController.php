@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Sessions\ClaimStartGrant\ClaimStartGrantCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Values\HostContext;
@@ -16,6 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final readonly class StartGrantController
 {
+    #[Dispatches(ClaimStartGrantCommand::class)]
     public function __invoke(string $runtime, HostContext $host, CommandBus $commands): JsonResponse
     {
         $grant = $commands->run(new ClaimStartGrantCommand($host->hostId, $runtime));

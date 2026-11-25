@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Api\Assignments\UnassignRecordPayload;
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Assignments\UnassignRecord\UnassignRecordCommand;
 use App\Contracts\Assignments\AssigneeResolver;
 use App\Contracts\Bus\CommandBus;
@@ -15,6 +16,7 @@ use App\Data\Assignments\AssignmentResultData;
  */
 final readonly class UnassignRecordController
 {
+    #[Dispatches(UnassignRecordCommand::class)]
     public function __invoke(
         UnassignRecordPayload $call,
         CommandBus $commands,

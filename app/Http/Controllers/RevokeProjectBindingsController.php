@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Projects\RevokeProjectBindings\RevokeProjectBindingsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Responses\PageActionAnswers;
@@ -21,6 +22,7 @@ final readonly class RevokeProjectBindingsController
      */
     public const string REVOKED_BINDINGS = 'revokedBindings';
 
+    #[Dispatches(RevokeProjectBindingsCommand::class)]
     public function __invoke(
         Request $request,
         CommandBus $commands,

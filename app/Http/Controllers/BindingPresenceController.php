@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Projects\RecordBindingPresence\RecordBindingPresenceCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Connections\PresenceReportData;
@@ -16,6 +17,7 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class BindingPresenceController
 {
+    #[Dispatches(RecordBindingPresenceCommand::class)]
     public function __invoke(
         string $binding,
         PresenceReportData $report,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Agents\CheckStartStatus\CheckStartStatusCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Agents\CheckStartStatusRequest;
@@ -17,6 +18,7 @@ final readonly class CheckStartStatusController
      */
     public const string CHECKED = 'startChecked';
 
+    #[Dispatches(CheckStartStatusCommand::class)]
     public function __invoke(
         CheckStartStatusRequest $request,
         string $agent,

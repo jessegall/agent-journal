@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
+use App\Commands\Projects\RedeemProjectInvitation\RedeemProjectInvitationCommand;
 use App\Enums\Accounts\CommandEntry;
 use App\Http\Requests\Connections\RedeemProjectInvitationRequest;
 use App\Support\JournalCommands;
@@ -16,6 +18,7 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class RedeemProjectInvitationController
 {
+    #[Dispatches(RedeemProjectInvitationCommand::class)]
     public function __invoke(
         RedeemProjectInvitationRequest $request,
         JournalCommands $dispatchers,

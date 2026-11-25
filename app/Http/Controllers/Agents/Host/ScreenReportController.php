@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Agents\NotifyRuntimeScreen\NotifyRuntimeScreenCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Values\HostContext;
@@ -16,6 +17,7 @@ use Illuminate\Http\Request;
  */
 final readonly class ScreenReportController
 {
+    #[Dispatches(NotifyRuntimeScreenCommand::class)]
     public function __invoke(Request $request, HostContext $host, CommandBus $commands): JsonResponse
     {
         return new JsonResponse($commands->run(new NotifyRuntimeScreenCommand($host->hostId, $request->getContent())));

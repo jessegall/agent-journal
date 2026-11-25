@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
+use App\Attributes\Bus\Dispatches;
+use App\Commands\Accounts\AddUsageCost\AddUsageCostCommand;
+use App\Commands\Accounts\RecordThreadTokens\RecordThreadTokensCommand;
+use App\Commands\Accounts\RecordUsageWindow\RecordUsageWindowCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Agents\UsageReportData;
 use App\Values\HostContext;
@@ -15,6 +19,9 @@ use Illuminate\Http\Response;
  */
 final readonly class UsageReportController
 {
+    #[Dispatches(AddUsageCostCommand::class)]
+    #[Dispatches(RecordThreadTokensCommand::class)]
+    #[Dispatches(RecordUsageWindowCommand::class)]
     public function __invoke(UsageReportData $report, HostContext $host, CommandBus $commands): Response
     {
         $commands->run($report->commandFor($host->hostId));

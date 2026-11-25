@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Agents\ReconcileStarts\ReconcileStartsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Agents\StartReportRequest;
@@ -23,6 +24,7 @@ final readonly class ReconcileStartsController
         return new JsonResponse(['unresolved' => SessionProcess::resolveUnresolvedKeysOf($host->hostId)]);
     }
 
+    #[Dispatches(ReconcileStartsCommand::class)]
     public function __invoke(StartReportRequest $request, HostContext $host, CommandBus $commands): JsonResponse
     {
         $accounts = $commands->run(new ReconcileStartsCommand($host->hostId, $request->stoppedStartKeys()));

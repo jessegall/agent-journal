@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Drivers\ClaimDriverRequests\ClaimDriverRequestsCommand;
 use App\Commands\Projects\ClaimProjectReads\ClaimProjectReadsCommand;
 use App\Contracts\Bus\CommandBus;
@@ -28,6 +29,8 @@ use Illuminate\Validation\Rule;
  */
 final readonly class ClaimRequestsController
 {
+    #[Dispatches(ClaimDriverRequestsCommand::class)]
+    #[Dispatches(ClaimProjectReadsCommand::class)]
     public function __invoke(
         Request $request,
         HostContext $host,

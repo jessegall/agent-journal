@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Projects\RevokeProjectBinding\RevokeProjectBindingCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Responses\PageActionAnswers;
@@ -17,6 +18,7 @@ use Illuminate\Http\Request;
  */
 final readonly class RevokeProjectBindingController
 {
+    #[Dispatches(RevokeProjectBindingCommand::class)]
     public function __invoke(
         string $binding,
         Request $request,

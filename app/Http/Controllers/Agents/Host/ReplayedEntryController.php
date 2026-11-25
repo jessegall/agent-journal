@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Drivers\NotifyEntryReplayed\NotifyEntryReplayedCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Agents\EntryReplayedData;
@@ -16,6 +17,7 @@ use Illuminate\Http\Response;
  */
 final readonly class ReplayedEntryController
 {
+    #[Dispatches(NotifyEntryReplayedCommand::class)]
     public function __invoke(
         string $entry,
         EntryReplayedData $replayed,

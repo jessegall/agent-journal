@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Accounts\RenameAccount\RenameAccountCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Profiles\RenameAccountRequest;
@@ -15,6 +16,7 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class RenameAccountController
 {
+    #[Dispatches(RenameAccountCommand::class)]
     public function __invoke(
         RenameAccountRequest $request,
         CommandBus $commands,

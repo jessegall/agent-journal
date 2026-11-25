@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Profiles;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Accounts\CheckAccount\CheckAccountCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Profiles\AccountCheckRequest;
@@ -15,6 +16,7 @@ use Illuminate\Http\Response;
  */
 final readonly class ReportAccountCheckController
 {
+    #[Dispatches(CheckAccountCommand::class)]
     public function __invoke(AccountCheckRequest $request, HostContext $host, CommandBus $commands): Response
     {
         $commands->run(new CheckAccountCommand(

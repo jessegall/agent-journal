@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Api\Agents\RecordHeartbeatPayload;
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Agents\RecordHeartbeat\RecordHeartbeatCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Support\AgentContext;
@@ -15,6 +16,7 @@ use App\Values\ApiAccepted;
  */
 final readonly class RecordHeartbeatController
 {
+    #[Dispatches(RecordHeartbeatCommand::class)]
     public function __invoke(RecordHeartbeatPayload $call, AgentContext $context, CommandBus $commands): ApiAccepted
     {
         $commands->run(new RecordHeartbeatCommand($context->sessionId));

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
+use App\Attributes\Bus\Dispatches;
+use App\Commands\Projects\NotifyProjectRead\NotifyProjectReadCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Agents\ProjectReadReportRequest;
 use App\Values\HostContext;
@@ -14,6 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final readonly class ProjectReadReportController
 {
+    #[Dispatches(NotifyProjectReadCommand::class)]
     public function __invoke(ProjectReadReportRequest $request, HostContext $host, CommandBus $commands): Response
     {
         $commands->run($request->command($host->hostId));

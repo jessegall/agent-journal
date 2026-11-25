@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
+use App\Commands\Agents\OpenBindingMainRuntime\OpenBindingMainRuntimeCommand;
+use App\Commands\Projects\AssertBindingRuntime\AssertBindingRuntimeCommand;
 use App\Commands\Sessions\RecordBindingRuntime\RecordBindingRuntimeCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Connections\BindingRuntimeRequestData;
@@ -19,6 +22,9 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class BindingRuntimeController
 {
+    #[Dispatches(OpenBindingMainRuntimeCommand::class)]
+    #[Dispatches(AssertBindingRuntimeCommand::class)]
+    #[Dispatches(RecordBindingRuntimeCommand::class)]
     public function __invoke(
         string $binding,
         BindingRuntimeRequestData $request,

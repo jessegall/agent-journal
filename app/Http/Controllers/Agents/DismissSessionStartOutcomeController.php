@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
+use App\Attributes\Bus\Dispatches;
+use App\Commands\Sessions\DismissSessionStartOutcome\DismissSessionStartOutcomeCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Agents\DismissSessionStartOutcomeRequest;
 use App\Http\Responses\PageActionAnswers;
@@ -14,6 +16,7 @@ use Illuminate\Http\RedirectResponse;
  */
 final readonly class DismissSessionStartOutcomeController
 {
+    #[Dispatches(DismissSessionStartOutcomeCommand::class)]
     public function __invoke(
         DismissSessionStartOutcomeRequest $request,
         string $agent,

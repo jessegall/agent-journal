@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Api\Processes\ImportProposalsPayload;
 use App\Api\Processes\ProposalsImported;
+use App\Attributes\Bus\Dispatches;
 use App\Commands\CommandRules\ImportRuleProposals\ImportRuleProposalsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Values\ProposalReceipt;
@@ -15,6 +16,7 @@ use App\Values\ProposalReceipt;
  */
 final readonly class ImportProposalsController
 {
+    #[Dispatches(ImportRuleProposalsCommand::class)]
     public function __invoke(ImportProposalsPayload $call, CommandBus $commands): ProposalsImported
     {
         $imported = $commands->run(new ImportRuleProposalsCommand($call->declarations));

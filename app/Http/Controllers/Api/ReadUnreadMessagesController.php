@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Api\Communication\ReadUnreadMessagesPayload;
 use App\Api\Communication\UnreadMessages;
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Messages\ReadUnreadMessages\ReadUnreadMessagesCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Messages\MessageView;
@@ -15,6 +16,7 @@ use App\Data\Messages\MessageView;
  */
 final readonly class ReadUnreadMessagesController
 {
+    #[Dispatches(ReadUnreadMessagesCommand::class)]
     public function __invoke(ReadUnreadMessagesPayload $call, CommandBus $commands): UnreadMessages
     {
         $shown = $commands->run(new ReadUnreadMessagesCommand());

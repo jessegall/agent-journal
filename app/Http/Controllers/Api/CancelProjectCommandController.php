@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Api\Connections\CancelProjectCommandPayload;
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Projects\CancelProjectCommandRun\CancelProjectCommandRunCommand;
 use App\Enums\Accounts\CommandEntry;
 use App\Support\AgentContext;
@@ -16,6 +17,7 @@ use App\Values\ApiAccepted;
  */
 final readonly class CancelProjectCommandController
 {
+    #[Dispatches(CancelProjectCommandRunCommand::class)]
     public function __invoke(
         CancelProjectCommandPayload $call,
         AgentContext $agent,

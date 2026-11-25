@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Projects\RecoverProjectBinding\RecoverProjectBindingCommand;
 use App\Contracts\Hosts\HostCalls;
 use App\Enums\Accounts\CommandEntry;
@@ -20,6 +21,7 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class RecoverBindingController
 {
+    #[Dispatches(RecoverProjectBindingCommand::class)]
     public function __invoke(
         RecoverBindingRequest $request,
         HostCalls $calls,

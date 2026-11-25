@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Api\Records\AddLinkPayload;
 use App\Api\Records\LinkChanged;
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Links\LinkRecords\LinkRecordsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Records\RecordResolver;
@@ -16,6 +17,7 @@ use App\Support\RecordReference;
  */
 final readonly class AddLinkController
 {
+    #[Dispatches(LinkRecordsCommand::class)]
     public function __invoke(AddLinkPayload $call, CommandBus $commands, RecordResolver $records): LinkChanged
     {
         $source = $records->identify(RecordReference::parse($call->source));

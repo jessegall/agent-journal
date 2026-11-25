@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Api\Communication\MessageNamed;
 use App\Api\Communication\SendMessagePayload;
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Contracts\Bus\CommandBus;
 
@@ -14,6 +15,7 @@ use App\Contracts\Bus\CommandBus;
  */
 final readonly class SendMessageController
 {
+    #[Dispatches(SendMessageCommand::class)]
     public function __invoke(SendMessagePayload $call, CommandBus $commands): MessageNamed
     {
         $message = $call->message;

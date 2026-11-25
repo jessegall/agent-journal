@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Agents\CancelSessionStart\CancelSessionStartCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Agents\CancelSessionStartRequest;
@@ -21,6 +22,7 @@ final readonly class CancelSessionStartController
      */
     public const string STOPPED = 'startStopped';
 
+    #[Dispatches(CancelSessionStartCommand::class)]
     public function __invoke(
         CancelSessionStartRequest $request,
         string $agent,

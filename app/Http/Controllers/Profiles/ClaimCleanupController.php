@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Profiles;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Accounts\ClaimCleanup\ClaimCleanupCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Values\HostContext;
@@ -15,6 +16,7 @@ use Illuminate\Http\Response;
  */
 final readonly class ClaimCleanupController
 {
+    #[Dispatches(ClaimCleanupCommand::class)]
     public function __invoke(HostContext $host, CommandBus $commands): JsonResponse|Response
     {
         $claimed = $commands->run(new ClaimCleanupCommand($host->hostId));

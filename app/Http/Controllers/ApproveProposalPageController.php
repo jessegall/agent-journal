@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\CommandRules\ApproveRuleProposal\ApproveRuleProposalCommand;
 use App\Http\Requests\Processes\ReviewRequest;
 use App\Http\Responses\Processes\ReviewResponses;
@@ -14,6 +15,7 @@ use Illuminate\Http\RedirectResponse;
  */
 final readonly class ApproveProposalPageController
 {
+    #[Dispatches(ApproveRuleProposalCommand::class)]
     public function __invoke(ReviewRequest $form, string $proposal, ReviewResponses $review): RedirectResponse
     {
         return $review->run(new ApproveRuleProposalCommand($proposal, $form->approval()));

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Agents\RecheckDriverSwitch\RecheckDriverSwitchCommand;
 use App\Contracts\Bus\CommandBus;
 use Illuminate\Http\RedirectResponse;
@@ -17,6 +18,7 @@ final readonly class RecheckDriverSwitchController
     /**
      * A page's form returns to that page, which shows the switch again; another caller gets an empty answer.
      */
+    #[Dispatches(RecheckDriverSwitchCommand::class)]
     public function __invoke(
         string $switch,
         CommandBus $commands,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Accounts\SwitchAccount\SwitchAccountCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Profiles\ActivateAccountRequest;
@@ -15,6 +16,7 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class ActivateAccountController
 {
+    #[Dispatches(SwitchAccountCommand::class)]
     public function __invoke(
         ActivateAccountRequest $request,
         CommandBus $commands,

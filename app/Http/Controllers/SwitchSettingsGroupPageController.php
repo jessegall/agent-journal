@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Settings\DisableSettingGroup\DisableSettingGroupCommand;
 use App\Commands\Settings\EnableSettingGroup\EnableSettingGroupCommand;
 use App\Contracts\Bus\CommandBus;
@@ -18,6 +19,8 @@ use Illuminate\Http\RedirectResponse;
  */
 final readonly class SwitchSettingsGroupPageController
 {
+    #[Dispatches(DisableSettingGroupCommand::class)]
+    #[Dispatches(EnableSettingGroupCommand::class)]
     public function __invoke(
         SwitchSettingsGroupRequest $request,
         CommandBus $commands,

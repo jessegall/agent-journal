@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Agents\ClaimStart\ClaimStartCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Agents\StartReportRequest;
@@ -18,6 +19,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final readonly class ClaimStartController
 {
+    #[Dispatches(ClaimStartCommand::class)]
     public function __invoke(StartReportRequest $request, HostContext $host, CommandBus $commands): JsonResponse
     {
         $claimed = $commands->run(new ClaimStartCommand($host->hostId, $request->sessionId()));

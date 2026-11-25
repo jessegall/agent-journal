@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Hooks\Host;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Sessions\RecordStopConditionResults\RecordStopConditionResultsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Hooks\StopConditionResultsRequest;
@@ -16,6 +17,7 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class StopConditionResultsController
 {
+    #[Dispatches(RecordStopConditionResultsCommand::class)]
     public function __invoke(
         StopConditionResultsRequest $request,
         HostContext $host,

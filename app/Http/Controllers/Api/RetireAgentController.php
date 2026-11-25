@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Api\Agents\RetireAgentPayload;
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Agents\RetireAgent\RetireAgentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Assignments\AssignmentResultData;
@@ -15,6 +16,7 @@ use App\Support\AssignmentHolders;
  */
 final readonly class RetireAgentController
 {
+    #[Dispatches(RetireAgentCommand::class)]
     public function __invoke(RetireAgentPayload $call, CommandBus $commands): AssignmentResultData
     {
         $retirement = $commands->run(new RetireAgentCommand(strtolower($call->agentId)));

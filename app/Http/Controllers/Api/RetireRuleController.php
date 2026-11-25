@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Api\Processes\RetireRulePayload;
 use App\Api\Processes\RuleRetired;
+use App\Attributes\Bus\Dispatches;
 use App\Commands\CommandRules\RetireCommandRule\RetireCommandRuleCommand;
 use App\Contracts\Bus\CommandBus;
 
@@ -14,6 +15,7 @@ use App\Contracts\Bus\CommandBus;
  */
 final readonly class RetireRuleController
 {
+    #[Dispatches(RetireCommandRuleCommand::class)]
     public function __invoke(RetireRulePayload $call, CommandBus $commands): RuleRetired
     {
         $command = new RetireCommandRuleCommand($call->rule, $call->expectedRevision, $call->reason);

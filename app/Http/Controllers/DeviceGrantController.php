@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Projects\PollDeviceGrant\PollDeviceGrantCommand;
 use App\Commands\Projects\StartDeviceGrant\StartDeviceGrantCommand;
 use App\Contracts\Hosts\HostCalls;
@@ -26,6 +27,7 @@ final readonly class DeviceGrantController
 {
     public function __construct(private HostCalls $calls, private ServerOrigin $origin) {}
 
+    #[Dispatches(StartDeviceGrantCommand::class)]
     public function start(Request $request, JournalCommands $dispatchers): JsonResponse
     {
         $host = $this->calls->verifyRelay($request);
@@ -47,6 +49,7 @@ final readonly class DeviceGrantController
         ], JsonResponse::HTTP_CREATED, ['Cache-Control' => 'no-store']);
     }
 
+    #[Dispatches(PollDeviceGrantCommand::class)]
     public function poll(Request $request, JournalCommands $dispatchers): JsonResponse
     {
         $host = $this->calls->verifyRelay($request);

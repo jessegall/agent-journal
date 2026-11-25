@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Drivers\NotifyRuntimeActivity\NotifyRuntimeActivityCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Agents\RuntimeActivityReportData;
@@ -16,6 +17,7 @@ use Illuminate\Http\Response;
  */
 final readonly class ActivityReportController
 {
+    #[Dispatches(NotifyRuntimeActivityCommand::class)]
     public function __invoke(RuntimeActivityReportData $report, HostContext $host, CommandBus $commands): Response
     {
         $commands->run(

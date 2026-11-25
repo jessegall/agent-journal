@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Projects\RecordHostProtection\RecordHostProtectionCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Profiles\ProtectionReportData;
@@ -16,6 +17,7 @@ use Illuminate\Http\Response;
  */
 final readonly class ProtectionReportController
 {
+    #[Dispatches(RecordHostProtectionCommand::class)]
     public function __invoke(ProtectionReportData $report, HostContext $host, CommandBus $commands): Response
     {
         $commands->run(new RecordHostProtectionCommand($host->hostId, $report->report()));

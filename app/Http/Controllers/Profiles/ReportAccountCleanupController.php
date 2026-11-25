@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Profiles;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Accounts\CleanAccount\CleanAccountCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Profiles\CleanupReportRequest;
@@ -15,6 +16,7 @@ use Illuminate\Http\Response;
  */
 final readonly class ReportAccountCleanupController
 {
+    #[Dispatches(CleanAccountCommand::class)]
     public function __invoke(CleanupReportRequest $request, HostContext $host, CommandBus $commands): Response
     {
         $commands->run(new CleanAccountCommand(

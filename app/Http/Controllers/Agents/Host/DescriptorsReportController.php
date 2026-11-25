@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Projects\RecordHostDescriptors\RecordHostDescriptorsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Hosts\HostDescriptorsData;
@@ -16,6 +17,7 @@ use Illuminate\Http\Response;
  */
 final readonly class DescriptorsReportController
 {
+    #[Dispatches(RecordHostDescriptorsCommand::class)]
     public function __invoke(HostDescriptorsData $report, HostContext $host, CommandBus $commands): Response
     {
         $commands->run(new RecordHostDescriptorsCommand($host->hostId, $report->descriptors()));

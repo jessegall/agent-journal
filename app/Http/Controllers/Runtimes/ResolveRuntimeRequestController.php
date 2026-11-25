@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Runtimes;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Drivers\ResolveDriverDelivery\ResolveDriverDeliveryCommand;
 use App\Http\Requests\Web\RequestRecoveryRequest;
 use App\Http\Responses\Processes\ReviewResponses;
@@ -14,6 +15,7 @@ use Illuminate\Http\RedirectResponse;
  */
 final readonly class ResolveRuntimeRequestController
 {
+    #[Dispatches(ResolveDriverDeliveryCommand::class)]
     public function __invoke(RequestRecoveryRequest $request, ReviewResponses $review): RedirectResponse
     {
         return $review->run(new ResolveDriverDeliveryCommand(

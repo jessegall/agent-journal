@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Api\Processes\ExplainCommandPayload;
+use App\Attributes\Bus\Dispatches;
 use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Processes\ExplanationData;
@@ -25,6 +26,7 @@ final readonly class ExplainCommandController
     /**
      * Answers even when a held part opens its request: an explanation reads the line and starts nothing.
      */
+    #[Dispatches(OpenCommandRequestCommand::class)]
     public function __invoke(ExplainCommandPayload $call, CommandBus $commands): ExplanationData
     {
         $explanation = $this->explanations->explain($call->line, $call->dialect);

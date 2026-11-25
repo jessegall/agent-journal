@@ -6,6 +6,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Api\Processes\OutputSummary;
 use App\Api\Processes\ReadOutputSummaryPayload;
+use App\Attributes\Bus\Dispatches;
+use App\Commands\CommandRules\RecordEvidenceReads\RecordEvidenceReadsCommand;
 use App\Models\Runs\ProcessRun;
 use App\Support\OutputSummaries;
 
@@ -14,6 +16,7 @@ use App\Support\OutputSummaries;
  */
 final readonly class ReadOutputSummaryController
 {
+    #[Dispatches(RecordEvidenceReadsCommand::class)]
     public function __invoke(
         ReadOutputSummaryPayload $call,
         ProcessRun $processRun,

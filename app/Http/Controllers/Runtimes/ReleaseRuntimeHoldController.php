@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Runtimes;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Sessions\ReleaseAgentHold\ReleaseAgentHoldCommand;
 use App\Http\Requests\Web\HoldReleaseRequest;
 use App\Http\Responses\Processes\ReviewResponses;
@@ -14,6 +15,7 @@ use Illuminate\Http\RedirectResponse;
  */
 final readonly class ReleaseRuntimeHoldController
 {
+    #[Dispatches(ReleaseAgentHoldCommand::class)]
     public function __invoke(HoldReleaseRequest $request, ReviewResponses $review): RedirectResponse
     {
         return $review->run(new ReleaseAgentHoldCommand(

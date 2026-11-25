@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Agents\NotifyRuntimeHeartbeat\NotifyRuntimeHeartbeatCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Agents\RuntimeLivenessReportData;
@@ -16,6 +17,7 @@ use Illuminate\Http\Response;
  */
 final readonly class HeartbeatReportController
 {
+    #[Dispatches(NotifyRuntimeHeartbeatCommand::class)]
     public function __invoke(RuntimeLivenessReportData $report, HostContext $host, CommandBus $commands): Response
     {
         $commands->run(

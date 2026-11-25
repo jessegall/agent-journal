@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Communication;
 
+use App\Attributes\Bus\Dispatches;
+use App\Commands\Notifications\MarkAllNotificationsRead\MarkAllNotificationsReadCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Communication\MarkAllNotificationsReadRequest;
 use App\Http\Responses\PageActionAnswers;
@@ -15,6 +17,7 @@ use Illuminate\Http\RedirectResponse;
  */
 final readonly class MarkAllNotificationsReadController
 {
+    #[Dispatches(MarkAllNotificationsReadCommand::class)]
     public function __invoke(
         MarkAllNotificationsReadRequest $request,
         CommandBus $commands,

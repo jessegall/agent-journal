@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Projects\RecordBindingRuntimeStop\RecordBindingRuntimeStopCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Values\HostContext;
@@ -15,6 +16,7 @@ use Illuminate\Http\Response;
  */
 final readonly class BindingRuntimeStopController
 {
+    #[Dispatches(RecordBindingRuntimeStopCommand::class)]
     public function __invoke(string $binding, string $runtime, HostContext $host, CommandBus $commands): Response
     {
         $commands->run(new RecordBindingRuntimeStopCommand($host->hostId, $binding, $runtime));

@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Api\Processes\ProposalReceived;
 use App\Api\Processes\ReviseProposalPayload;
+use App\Attributes\Bus\Dispatches;
 use App\Commands\CommandRules\ReviseRuleProposal\ReviseRuleProposalCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Declarations\RuleDeclarations;
@@ -15,6 +16,7 @@ use App\Declarations\RuleDeclarations;
  */
 final readonly class ReviseProposalController
 {
+    #[Dispatches(ReviseRuleProposalCommand::class)]
     public function __invoke(
         ReviseProposalPayload $call,
         RuleDeclarations $declarations,

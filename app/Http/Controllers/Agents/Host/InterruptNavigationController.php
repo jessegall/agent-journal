@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Navigation\InterruptNavigation\InterruptNavigationCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Values\HostContext;
@@ -15,6 +16,7 @@ use Illuminate\Http\Response;
  */
 final readonly class InterruptNavigationController
 {
+    #[Dispatches(InterruptNavigationCommand::class)]
     public function __invoke(string $navigation, HostContext $host, CommandBus $commands): Response
     {
         $commands->run(new InterruptNavigationCommand($host->hostId, $navigation));

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
+use App\Attributes\Bus\Dispatches;
+use App\Commands\Agents\StopAgent\StopAgentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Agents\StopAgentRequest;
 use App\Http\Responses\PageActionAnswers;
@@ -20,6 +22,7 @@ final readonly class StopAgentController
      */
     public const string STOP_REQUEST = 'stopRequestId';
 
+    #[Dispatches(StopAgentCommand::class)]
     public function __invoke(
         StopAgentRequest $request,
         string $agent,

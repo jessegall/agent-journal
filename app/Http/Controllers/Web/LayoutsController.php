@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Web;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Layouts\ChangeLayout\ChangeLayoutCommand;
 use App\Commands\Layouts\DeleteLayout\DeleteLayoutCommand;
 use App\Commands\Layouts\SaveLayout\SaveLayoutCommand;
@@ -24,6 +25,7 @@ final readonly class LayoutsController
         private Redirector $redirect,
     ) {}
 
+    #[Dispatches(SaveLayoutCommand::class)]
     public function store(LayoutRequest $request): RedirectResponse
     {
         $this->commands->run(new SaveLayoutCommand($request->layoutName(), $request->shape()));
@@ -31,6 +33,7 @@ final readonly class LayoutsController
         return $this->redirect->back(303);
     }
 
+    #[Dispatches(ChangeLayoutCommand::class)]
     public function update(LayoutRequest $request, Layout $layout): RedirectResponse
     {
         $this->commands->run(new ChangeLayoutCommand($layout->id, $request->layoutName(), $request->shape()));
@@ -38,6 +41,7 @@ final readonly class LayoutsController
         return $this->redirect->back(303);
     }
 
+    #[Dispatches(DeleteLayoutCommand::class)]
     public function destroy(Layout $layout): RedirectResponse
     {
         $this->commands->run(new DeleteLayoutCommand($layout->id));

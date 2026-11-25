@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Api\Scripts\SaveProfileDraftPayload;
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Profiles\SaveProfileDraft\SaveProfileDraftCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Profiles\ProfileDraftData;
@@ -15,6 +16,7 @@ use App\Support\Readers\ProfileDraftReader;
  */
 final readonly class SaveProfileDraftController
 {
+    #[Dispatches(SaveProfileDraftCommand::class)]
     public function __invoke(
         SaveProfileDraftPayload $call,
         CommandBus $commands,

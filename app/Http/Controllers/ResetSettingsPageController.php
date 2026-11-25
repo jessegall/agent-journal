@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Settings\ResetSetting\ResetSettingCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Settings\SettingsCatalogue;
@@ -20,6 +21,7 @@ use Illuminate\Http\RedirectResponse;
  */
 final readonly class ResetSettingsPageController
 {
+    #[Dispatches(ResetSettingCommand::class)]
     public function __invoke(
         SettingsGroupRequest $request,
         SettingsCatalogue $catalogue,

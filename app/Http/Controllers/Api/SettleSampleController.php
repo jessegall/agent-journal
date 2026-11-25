@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Api\Processes\SampleSettled;
 use App\Api\Processes\SettleSamplePayload;
+use App\Attributes\Bus\Dispatches;
 use App\Commands\CommandRules\SettleSample\SettleSampleCommand;
 use App\Contracts\Bus\CommandBus;
 
@@ -14,6 +15,7 @@ use App\Contracts\Bus\CommandBus;
  */
 final readonly class SettleSampleController
 {
+    #[Dispatches(SettleSampleCommand::class)]
     public function __invoke(SettleSamplePayload $call, CommandBus $commands): SampleSettled
     {
         $outcome = $commands->run(new SettleSampleCommand($call->commandRequest));

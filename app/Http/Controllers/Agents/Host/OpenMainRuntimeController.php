@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Agents\OpenHostMainRuntime\OpenHostMainRuntimeCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Agents\MainRuntimeRequestData;
@@ -16,6 +17,7 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class OpenMainRuntimeController
 {
+    #[Dispatches(OpenHostMainRuntimeCommand::class)]
     public function __invoke(MainRuntimeRequestData $request, HostContext $host, CommandBus $commands): JsonResponse
     {
         $opened = $commands->run(

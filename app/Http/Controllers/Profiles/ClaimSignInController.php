@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Profiles;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Accounts\ClaimSignIn\ClaimSignInCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Values\HostContext;
@@ -16,6 +17,7 @@ use Illuminate\Http\Response;
  */
 final readonly class ClaimSignInController
 {
+    #[Dispatches(ClaimSignInCommand::class)]
     public function __invoke(HostContext $host, CommandBus $commands): JsonResponse|Response
     {
         $claimed = $commands->run(new ClaimSignInCommand($host->hostId));

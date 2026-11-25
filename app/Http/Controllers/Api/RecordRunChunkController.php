@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Api\Processes\ChunkStored;
 use App\Api\Processes\RecordRunChunkPayload;
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Runs\RecordRunChunk\RecordRunChunkCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Models\Runs\ProcessRun;
@@ -15,6 +16,7 @@ use App\Models\Runs\ProcessRun;
  */
 final readonly class RecordRunChunkController
 {
+    #[Dispatches(RecordRunChunkCommand::class)]
     public function __invoke(RecordRunChunkPayload $call, ProcessRun $processRun, CommandBus $commands): ChunkStored
     {
         abort_unless($processRun->acceptsEventKey($call->eventKey), 403, 'This event key is not the run\'s.');

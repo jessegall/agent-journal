@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Api\Processes\CheckRestoredOutputPayload;
 use App\Api\Processes\RestoreChecked;
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Runs\VerifyRestoredOutput\VerifyRestoredOutputCommand;
 use App\Contracts\Bus\CommandBus;
 
@@ -14,6 +15,7 @@ use App\Contracts\Bus\CommandBus;
  */
 final readonly class CheckRestoredOutputController
 {
+    #[Dispatches(VerifyRestoredOutputCommand::class)]
     public function __invoke(CheckRestoredOutputPayload $call, CommandBus $commands): RestoreChecked
     {
         $captures = $commands->run(new VerifyRestoredOutputCommand($call->processRun));

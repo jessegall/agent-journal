@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Projects\NotifyWorkspaceRead\NotifyWorkspaceReadCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Agents\WorkspaceReadReportRequest;
@@ -37,6 +38,7 @@ final readonly class WorkspaceReadController
         return new JsonResponse(['pending' => $pending]);
     }
 
+    #[Dispatches(NotifyWorkspaceReadCommand::class)]
     public function __invoke(WorkspaceReadReportRequest $request, HostContext $host, CommandBus $commands): Response
     {
         $commands->run(new NotifyWorkspaceReadCommand(

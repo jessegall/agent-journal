@@ -6,6 +6,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Api\Processes\OutputTail;
 use App\Api\Processes\ReadOutputTailPayload;
+use App\Attributes\Bus\Dispatches;
+use App\Commands\CommandRules\RecordEvidenceReads\RecordEvidenceReadsCommand;
 use App\Models\Runs\ProcessRun;
 use App\Support\OutputTailReads;
 
@@ -14,6 +16,7 @@ use App\Support\OutputTailReads;
  */
 final readonly class ReadOutputTailController
 {
+    #[Dispatches(RecordEvidenceReadsCommand::class)]
     public function __invoke(ReadOutputTailPayload $call, ProcessRun $processRun, OutputTailReads $reads): OutputTail
     {
         return $reads->tail($processRun->id, $call->part, $call->stream, $call->lines);

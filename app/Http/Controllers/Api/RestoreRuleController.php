@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Api\Processes\ProposalReceived;
 use App\Api\Processes\RestoreRulePayload;
+use App\Attributes\Bus\Dispatches;
 use App\Commands\CommandRules\RestoreCommandRule\RestoreCommandRuleCommand;
 use App\Contracts\Bus\CommandBus;
 
@@ -14,6 +15,7 @@ use App\Contracts\Bus\CommandBus;
  */
 final readonly class RestoreRuleController
 {
+    #[Dispatches(RestoreCommandRuleCommand::class)]
     public function __invoke(RestoreRulePayload $call, CommandBus $commands): ProposalReceived
     {
         $command = new RestoreCommandRuleCommand(

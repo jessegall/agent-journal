@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Profiles\StartSignInRequest;
@@ -15,6 +16,7 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class StartSignInController
 {
+    #[Dispatches(BeginSignInCommand::class)]
     public function __invoke(
         StartSignInRequest $request,
         CommandBus $commands,
