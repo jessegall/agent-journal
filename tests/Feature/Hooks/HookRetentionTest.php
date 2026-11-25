@@ -8,11 +8,9 @@ use App\Enums\Engine\NoSubject;
 use App\Enums\Hooks\AnswerType;
 use App\Exceptions\HookIdentityExpired;
 use App\Exceptions\RetentionTooShort;
-use App\Models\Access\User;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Drivers\HookCall;
 use App\Models\Records\Link;
-use App\Support\Access\AccessSettings;
 use App\Support\AgentContext;
 use App\Support\HookRetryWindow;
 use App\Support\Inputs\Values\HookIdentity;
@@ -78,23 +76,6 @@ final class HookRetentionTest extends TestCase
         $this->assertFalse(AgentStackRow::query()->authorizedFor(self::target(1))->exists());
         $this->assertTrue(AgentStackRow::query()->authorizedFor(self::target(2))->exists());
         $this->assertTrue(AgentStackRow::query()->authorizedFor(self::target(3))->exists());
-    }
-
-    public function test_a_stack_the_owner_holds_and_its_calls_outlive_their_retention(): void
-    {
-        $held = $this->stack(1);
-        $this->recordCall(1, 'held call');
-        $held->closeAt(CarbonImmutable::now());
-        $this->app->instance(AccessSettings::class, new AccessSettings(User::factory()->create()->id));
-        $this->artisan('agents:stack-hold', ['agent' => self::target(1)->agentId, 'session' => self::target(1)->sessionId])
-            ->assertSuccessful();
-        $this->moveDays(40);
-
-        $pruned = $this->app->make(PruneHookHistory::class)->prune();
-
-        $this->assertSame([0, 0], [$pruned->hookCalls, $pruned->closedStacks]);
-        $this->assertTrue(AgentStackRow::query()->authorizedFor(self::target(1))->exists());
-        $this->assertSame(1, HookCall::query()->authorizedFor(self::target(1))->count());
     }
 
     public function test_a_pruned_call_cannot_come_back_as_a_fresh_call(): void

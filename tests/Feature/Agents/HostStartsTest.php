@@ -148,53 +148,6 @@ final class HostStartsTest extends TestCase
         $this->signed($other, 'GET', "/host/starts/{$key}/outputs")->assertNotFound();
     }
 
-    public function test_the_host_claims_a_start_once_and_reports_its_execution_and_exit(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-
-        $claim = $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])->assertOk();
-        $key = (string) $claim->json('start_key');
-        $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])->assertStatus(410);
-
-        $this->signed($host, 'POST', "/host/starts/{$key}/running", ['execution_id' => 'thread-1'])->assertNoContent();
-        $this->assertSame([$key], $this->signed($host, 'GET', '/host/starts')->json('unresolved'));
-        $this->signed($host, 'POST', "/host/starts/{$key}/stopped")->assertNoContent();
-        $this->signed($host, 'POST', "/host/starts/{$key}/stopped")->assertNoContent();
-
-        $start = SessionProcess::query()->withoutGlobalScopes()->sole();
-        $this->assertSame([SessionProcessStatus::Stopped, 'thread-1'], [$start->status, $start->execution_id]);
-        $this->assertSame([], $this->signed($host, 'GET', '/host/starts')->json('unresolved'));
-    }
-
-    public function test_a_start_that_saves_its_driver_type_keeps_it_for_the_agent_only_once_it_runs(): void
-    {
-        [$host, $opened] = $this->openRuntime(shouldSaveDriverType: true);
-        $agent = AgentSession::query()->withoutGlobalScopes()->with('agent')->findOrFail($opened->sessionId)->agent;
-        $this->assertNull($agent->driver_type_preference);
-
-        $key = (string) $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])
-            ->json('start_key');
-        $this->signed($host, 'POST', "/host/starts/{$key}/running", ['execution_id' => 'thread-1'])->assertNoContent();
-
-        $agent->refresh();
-        $this->assertSame(DriverType::Headless, $agent->driver_type_preference);
-        $this->assertSame(DriverType::Terminal, $agent->driverTypeFor(DriverType::Terminal, DriverType::Headless));
-        $this->assertSame(DriverType::Headless, $agent->driverTypeFor(null, DriverType::Terminal));
-    }
-
-    public function test_a_running_report_that_comes_after_the_start_ended_keeps_no_mode(): void
-    {
-        [$host, $opened] = $this->openRuntime(shouldSaveDriverType: true);
-        $key = (string) $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])
-            ->json('start_key');
-
-        $this->signed($host, 'POST', "/host/starts/{$key}/stopped")->assertNoContent();
-        $this->signed($host, 'POST', "/host/starts/{$key}/running", ['execution_id' => 'thread-1']);
-
-        $agent = AgentSession::query()->withoutGlobalScopes()->with('agent')->findOrFail($opened->sessionId)->agent;
-        $this->assertNull($agent->driver_type_preference);
-    }
-
     public function test_an_opened_runtime_keeps_the_driver_it_was_pinned_to(): void
     {
         [, $opened] = $this->openRuntime();

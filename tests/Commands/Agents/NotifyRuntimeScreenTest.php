@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Agents;
+namespace Tests\Commands\Agents;
 
 use App\Contracts\Time\ServerClock;
 use App\Data\Terminals\ScreenFrameData;
@@ -32,7 +32,7 @@ use Tests\TestCase;
  * nothing, and a refused delayed frame reaches neither a watcher nor a view opened after it.
  */
 #[TimeLimit(seconds: 3, reason: 'It commits real rows on the hook database and empties its tables around each test.')]
-final class ScreenReportRouteTest extends TestCase
+final class NotifyRuntimeScreenTest extends TestCase
 {
     use CommitsHookRows;
     use OpensTerminalRuntimes;

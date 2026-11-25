@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Agents;
+namespace Tests\Commands\Agents;
 
 use App\Exceptions\MainAgentMissing;
 use App\Models\Agents\Agent;
@@ -16,7 +16,7 @@ use Tests\TestCase;
  * An installation has one designated main agent, created by agents:install once; Home and admission read it only
  * through the designation.
  */
-final class MainAgentInstallTest extends TestCase
+final class InstallMainAgentTest extends TestCase
 {
     use CommitsHookRows;
     use RunsInboxInstall;

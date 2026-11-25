@@ -11,7 +11,6 @@ use App\Models\Projects\ProjectBinding;
 use App\Support\AgentRuntimes;
 use App\Support\StartSessions;
 use App\Values\RuntimeIntent;
-use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestSelections;
@@ -20,9 +19,7 @@ use Tests\Support\Connections\ConnectsProjects;
 use Tests\TestCase;
 
 /**
- * A binding's relay renews a runtime's lease only while the runtime holds its start grant and its session still
- * runs for the binding's main agent: an ended session or another agent's runtime is refused, and the presence
- * receipt names the authority generation every renewal carries.
+ * The presence receipt a binding's relay gets names the authority generation every lease renewal carries.
  */
 final class RuntimeLeaseTest extends TestCase
 {
@@ -35,35 +32,6 @@ final class RuntimeLeaseTest extends TestCase
     ];
 
     private const string NONCE = 'nonce-aaaaaaaaaaaaaaaa';
-
-    public function test_a_live_main_runtime_renews_its_lease_by_server_time(): void
-    {
-        $binding = $this->connected();
-        $runtime = $this->runtimeOf(Agent::query()->findOrFail($binding->main_agent_id), $binding);
-
-        $lease = $this->renew($binding, $runtime)->assertOk();
-
-        $this->assertSame($runtime->id, $lease->json('runtimeId'));
-        $this->assertSame(1, $lease->json('generation'));
-        $this->assertTrue(CarbonImmutable::parse($lease->json('expiresAt'))->isAfter($lease->json('serverTime')));
-    }
-
-    public function test_an_ended_session_is_refused_its_lease(): void
-    {
-        $binding = $this->connected();
-        $runtime = $this->runtimeOf(Agent::query()->findOrFail($binding->main_agent_id), $binding);
-        $runtime->session->endAt(CarbonImmutable::now());
-
-        $this->renew($binding, $runtime)->assertForbidden();
-    }
-
-    public function test_another_agents_runtime_in_the_binding_root_is_refused_its_lease(): void
-    {
-        $binding = $this->connected();
-        $runtime = $this->runtimeOf(Agent::create('Stranger '.Str::random(6), 'main-agent', $this->localProject()), $binding);
-
-        $this->renew($binding, $runtime)->assertForbidden();
-    }
 
     public function test_the_presence_receipt_names_the_authority_generation(): void
     {

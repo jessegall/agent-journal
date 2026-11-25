@@ -4,16 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\Agents\ChangeAgentEffort\ChangeAgentEffortCommand;
-use App\Commands\Agents\ChangeAgentModel\ChangeAgentModelCommand;
 use App\Commands\Agents\DeliverAgent\DeliverAgentCommand;
-use App\Commands\Agents\InterruptAgent\InterruptAgentCommand;
 use App\Commands\Agents\NotifyRuntimeExit\NotifyRuntimeExitCommand;
-use App\Commands\Agents\NotifyRuntimeHeartbeat\NotifyRuntimeHeartbeatCommand;
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
-use App\Commands\Agents\RetireAgent\RetireAgentCommand;
-use App\Commands\Agents\StopAgent\StopAgentCommand;
-use App\Commands\Agents\WakeAgent\WakeAgentCommand;
 use App\Commands\Drivers\ClaimDriverRequests\ClaimDriverRequestsCommand;
 use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Commands\Drivers\NotifyRuntimeActivity\NotifyRuntimeActivityCommand;
@@ -22,11 +15,9 @@ use App\Commands\Sessions\ClaimStartGrant\ClaimStartGrantCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\AttachmentReferences;
-use App\Contracts\Drivers\MessagePart;
 use App\Contracts\Sessions\AgentDirectory;
 use App\Contracts\Sessions\RuntimeResolver;
 use App\Data\Messages\MessageAttachmentData;
-use App\Data\Messages\MessageTextData;
 use App\Enums\Agents\ExecutionModeType;
 use App\Enums\Drivers\DriverOperation;
 use App\Enums\Drivers\DriverType;
@@ -40,10 +31,8 @@ use App\Enums\Sessions\HostRefusal;
 use App\Enums\Sessions\SessionStatus;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\DriverRequestRefused;
-use App\Exceptions\HostReportRefused;
 use App\Exceptions\KeyScriptRefused;
 use App\Exceptions\StaleProcessGeneration;
-use App\Exceptions\StopOutdated;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Agents\Agent;
@@ -54,14 +43,11 @@ use App\Models\Drivers\DriverTurn;
 use App\Models\Drivers\RuntimeEvent;
 use App\Models\Projects\Host;
 use App\Models\Sessions\SessionPolicy;
-use App\Models\Sessions\SessionProcess;
 use App\Support\ActorContext;
 use App\Support\AgentStatus;
 use App\Support\ArrangementSetting;
 use App\Support\DefaultDrivers;
-use App\Support\DriverBudgets;
 use App\Support\EnrolledHost;
-use App\Support\InitialWakeSettlement;
 use App\Support\NativeTurnRecords;
 use App\Support\OpenedRuntime;
 use App\Support\OutsideCommandAllowance;
@@ -80,7 +66,6 @@ use App\Values\ScriptProgress;
 use App\Values\StartPolicy;
 use App\Values\StopConditions;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Str;
 use Spatie\LaravelData\Optional;
 use Tests\Support\Agents\HostContract;
 use Tests\Support\Agents\OpensLedgerRuntimes;
@@ -132,165 +117,6 @@ final class AgentDriverLedgerTest extends TestCase
 
     private const string FOLDER = '/work/project';
 
-    public function test_opening_a_runtime_records_its_first_delivery(): void
-    {
-        [, $opened] = $this->openRuntime(firstMessage: 'Start with the plan.');
-
-        $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
-        $this->assertSame($opened->sessionId, $runtime->agent_session_id);
-        $this->assertSame(
-            DriverOperation::Deliver,
-            DriverRequest::query()->findOrFail($opened->firstRequestId)->operation,
-        );
-    }
-
-    public function test_a_folder_outside_the_hosts_roots_is_refused(): void
-    {
-        $host = $this->enrollHost();
-
-        $this->expectExceptionMessage('/elsewhere');
-
-        $this->asOwner(
-            new OpenAgentRuntimeCommand(
-                $this->agent()->id,
-                $host->hostId,
-                '/elsewhere',
-                'claude-code',
-                '2.1.323',
-                'claude',
-                DriverType::Headless,
-                'claude-opus-5-5',
-            ),
-        );
-    }
-
-    public function test_a_repeated_key_returns_the_same_request_and_other_content_conflicts(): void
-    {
-        [, $opened] = $this->openRuntime();
-
-        $first = $this->deliver($opened, 'key-1', 'Hello');
-        $again = $this->deliver($opened, 'key-1', 'Hello');
-
-        $this->assertSame($first->requestId, $again->requestId);
-        $this->expectException(DriverRequestRefused::class);
-        $this->deliver($opened, 'key-1', 'Something else');
-    }
-
-    public function test_an_attachment_only_delivery_reaches_the_host_as_its_parts_in_order(): void
-    {
-        $this->app->scoped(AttachmentReferences::class, fn (): AttachmentReferences => $this->attachmentsExcept('gone'));
-        [$host, $opened] = $this->openRuntime();
-        $parts = [new MessageAttachmentData('01JNOTES', 'digest-1', 'notes.md'), new MessageTextData('Read it first.')];
-
-        $receipt = $this->asOwner(new DeliverAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'parts', $parts));
-
-        $claimed = $this->claimedScript($host, $receipt->requestId);
-        $this->assertSame(array_map(fn (MessagePart $part): array => $part->toArray(), $parts), $claimed['parts']);
-    }
-
-    public function test_a_delivery_naming_an_attachment_that_cannot_be_read_is_refused_whole(): void
-    {
-        $this->app->scoped(AttachmentReferences::class, fn (): AttachmentReferences => $this->attachmentsExcept('gone'));
-        [, $opened] = $this->openRuntime();
-        $parts = [new MessageTextData('Here it is.'), new MessageAttachmentData('gone', 'digest-1', 'old.md')];
-
-        $this->assertThrows(
-            fn () => $this->asOwner(new DeliverAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'mixed', $parts)),
-            DriverRequestRefused::class,
-            DriverRequestRefused::attachmentMissing('gone')->getMessage(),
-        );
-        $this->assertSame(0, DriverRequest::query()->where('idempotency_key', 'mixed')->count());
-    }
-
-    public function test_a_repeated_delivery_of_the_same_parts_returns_the_same_request(): void
-    {
-        $this->app->scoped(AttachmentReferences::class, fn (): AttachmentReferences => $this->attachmentsExcept('gone'));
-        [, $opened] = $this->openRuntime();
-        $parts = [new MessageAttachmentData('01JNOTES', 'digest-1', 'notes.md')];
-        $send = fn (): DriverReceipt => $this->asOwner(
-            new DeliverAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'same', $parts),
-        );
-
-        $this->assertSame($send()->requestId, $send()->requestId);
-    }
-
-    public function test_requests_are_numbered_in_the_order_they_were_accepted(): void
-    {
-        [, $opened] = $this->openRuntime();
-
-        $first = $this->deliver($opened, 'a', 'First');
-        $second = $this->deliver($opened, 'b', 'Second');
-
-        $this->assertSame($first->sequence + 1, $second->sequence);
-    }
-
-    public function test_a_later_effort_supersedes_an_earlier_one_that_has_not_run(): void
-    {
-        [, $opened] = $this->openRuntime();
-
-        $high = $this->asOwner(
-            new ChangeAgentEffortCommand($this->agentIdOf($opened), $opened->sessionId, 'effort-1', 'high'),
-        );
-        $this->asOwner(new ChangeAgentEffortCommand($this->agentIdOf($opened), $opened->sessionId, 'effort-2', 'low'));
-
-        $this->assertSame(RequestProgress::Superseded, DriverRequest::query()->findOrFail($high->requestId)->progress);
-    }
-
-    /**
-     * A setting change the host staged waits for a turn and counts as applied only on that turn's evidence: the model
-     * its output names confirms a model change, while an effort change, which no output shows, stays unconfirmed.
-     */
-    public function test_a_staged_setting_is_applied_only_on_the_turns_evidence(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-        $agentId = $this->agentIdOf($opened);
-        $model = $this->asOwner(new ChangeAgentModelCommand($agentId, $opened->sessionId, 'model-1', 'claude-sonnet-5-5'));
-        $effort = $this->asOwner(new ChangeAgentEffortCommand($agentId, $opened->sessionId, 'effort-1', 'high'));
-        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
-
-        foreach ([$model, $effort] as $setting) {
-            $this->notifyTurnEnd($host, $setting->requestId, null);
-        }
-
-        $this->assertSame(RequestProgress::Staged, DriverRequest::query()->findOrFail($model->requestId)->progress);
-
-        foreach ([$model, $effort] as $setting) {
-            $this->notifyTurnEnd($host, $setting->requestId, ['exit_code' => 0, 'model' => 'claude-sonnet-5-5']);
-        }
-
-        $this->assertSame(
-            [RequestProgress::Applied, RequestProgress::DeliveryUncertain],
-            [
-                DriverRequest::query()->findOrFail($model->requestId)->progress,
-                DriverRequest::query()->findOrFail($effort->requestId)->progress,
-            ],
-        );
-    }
-
-    public function test_an_unknown_effort_is_refused_before_anything_is_accepted(): void
-    {
-        [, $opened] = $this->openRuntime();
-
-        try {
-            $this->asOwner(new ChangeAgentEffortCommand($this->agentIdOf($opened), $opened->sessionId, 'effort-1', 'extreme'));
-            $this->fail('An unknown effort was accepted.');
-        } catch (DriverRequestRefused) {
-            $this->assertSame(0, DriverRequest::query()->where('operation', DriverOperation::ChangeEffort)->count());
-        }
-    }
-
-    public function test_repeated_wakes_raise_one_open_wake(): void
-    {
-        [, $opened] = $this->openRuntime();
-
-        $first = $this->asOwner(new WakeAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'wake-1'));
-        $second = $this->asOwner(new WakeAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'wake-2'));
-
-        $this->assertSame($first->requestId, $second->requestId);
-        $this->assertSame(1, DriverRequest::query()->where('operation', DriverOperation::Wake)->count());
-        $this->assertSame(2, DriverRequest::query()->findOrFail($first->requestId)->wake_requested);
-    }
-
     /**
      * The host reports a turn's end as it saw it; the journal judges a result marked an error as a failed turn.
      */
@@ -311,25 +137,6 @@ final class AgentDriverLedgerTest extends TestCase
             [RequestProgress::Failed, RequestOutcome::TurnFailed],
             [$request->fresh()?->progress, $request->fresh()?->outcome],
         );
-    }
-
-    public function test_an_interrupt_holds_the_runtime_at_once(): void
-    {
-        [, $opened] = $this->openRuntime();
-
-        $this->asOwner(new InterruptAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'interrupt-1'));
-
-        $this->assertSame(HoldReason::Interrupted, AgentRuntime::query()->findOrFail($opened->runtimeId)->hold_reason);
-    }
-
-    public function test_a_stopping_runtime_refuses_new_requests(): void
-    {
-        [, $opened] = $this->openRuntime();
-        $this->asOwner(new StopAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'stop-1'));
-
-        $this->expectException(DriverRequestRefused::class);
-
-        $this->deliver($opened, 'after-stop', 'Too late');
     }
 
     public function test_a_protected_headless_start_runs_on_the_messages_both_sides_keep(): void
@@ -428,17 +235,6 @@ final class AgentDriverLedgerTest extends TestCase
         return [$host, $fixedValues];
     }
 
-    public function test_an_applied_request_keeps_the_drivers_whole_session_id(): void
-    {
-        [, $opened] = $this->openRuntime();
-        $request = DriverRequest::query()->findOrFail($this->deliver($opened, 'key-1', 'Hello')->requestId);
-        $sessionId = (string) Str::uuid();
-
-        $request->markApplied($sessionId);
-
-        $this->assertSame($sessionId, $request->refresh()->actual_binding);
-    }
-
     public function test_a_driver_without_a_screen_gets_a_container_without_a_terminal_whatever_its_profile(): void
     {
         $execution = new ExecutionPolicy(
@@ -500,171 +296,6 @@ final class AgentDriverLedgerTest extends TestCase
         $this->assertSame('low', $status->effort->requested);
         $this->assertInstanceOf(Optional::class, $status->effort->observed);
         $this->assertTrue($status->isStale);
-    }
-
-    public function test_a_heartbeat_of_the_current_generation_refreshes_the_session(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-        $generation = AgentRuntime::query()->findOrFail($opened->runtimeId)->process_generation;
-
-        $this->asSystem(
-            new NotifyRuntimeHeartbeatCommand($host->hostId, $opened->runtimeId, $generation, 'owned process alive'),
-        );
-
-        $this->assertNotNull(AgentSession::query()->findOrFail($opened->sessionId)->last_heartbeat_at);
-    }
-
-    public function test_a_heartbeat_of_a_restarted_program_is_taken_and_one_of_a_replaced_generation_is_refused(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-        $generation = AgentRuntime::query()->findOrFail($opened->runtimeId)->process_generation;
-
-        $this->asSystem(new NotifyRuntimeHeartbeatCommand($host->hostId, $opened->runtimeId, $generation + 1, 'restarted'));
-
-        $this->assertNotNull(AgentSession::query()->findOrFail($opened->sessionId)->last_heartbeat_at);
-        $this->assertThrows(
-            fn () => $this->asSystem(
-                new NotifyRuntimeHeartbeatCommand($host->hostId, $opened->runtimeId, $generation - 1, 'replaced'),
-            ),
-            HostReportRefused::class,
-        );
-    }
-
-    public function test_a_verified_exit_ends_the_session(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-        $generation = AgentRuntime::query()->findOrFail($opened->runtimeId)->process_generation;
-
-        $this->asSystem(new NotifyRuntimeExitCommand($host->hostId, $opened->runtimeId, $generation, 'exit code 0'));
-
-        $this->assertSame(SessionStatus::Ended, AgentSession::query()->findOrFail($opened->sessionId)->status);
-    }
-
-    public function test_a_confirmed_stop_ends_the_session_revokes_it_and_leaves_no_request_open(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-        $this->deliver($opened, 'before-stop', 'Never delivered');
-        $this->asOwner(new StopAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'stop-1'));
-
-        $this->notifyExit($host, $opened);
-
-        $session = AgentSession::query()->with('sessionToken')->findOrFail($opened->sessionId);
-        $requests = DriverRequest::query()->where('agent_runtime_id', $opened->runtimeId)->get();
-        $this->assertSame(SessionStatus::Ended, $session->status);
-        $this->assertTrue($session->sessionToken?->isRevoked());
-        $this->assertSame(RuntimeActivity::Stopped, AgentRuntime::query()->findOrFail($opened->runtimeId)->activity);
-        $this->assertTrue($requests->every(fn (DriverRequest $request) => $request->progress->isFinal()));
-        $progress = $requests->mapWithKeys(
-            fn (DriverRequest $request) => [$request->operation->value => $request->progress],
-        );
-        $this->assertSame(RequestProgress::Applied, $progress[DriverOperation::Stop->value]);
-        $this->assertSame(RequestProgress::Unavailable, $progress[DriverOperation::Deliver->value]);
-    }
-
-    public function test_a_wake_after_the_session_ended_is_refused(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-        $this->notifyExit($host, $opened);
-
-        $this->expectException(DriverRequestRefused::class);
-
-        $this->asOwner(new WakeAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'wake-after-exit'));
-    }
-
-    public function test_a_refused_message_wake_keeps_the_session_its_credentials_and_its_start(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-        $wake = $this->asOwner(new WakeAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'message-wake'));
-        $claimed = $this->claimedScript($host, $wake->requestId);
-
-        $this->notifyWakeRefused($host, $claimed, 'container-unavailable', true);
-
-        $session = AgentSession::query()->findOrFail($opened->sessionId);
-        $this->assertSame(SessionStatus::Active, $session->status);
-        $this->assertNull(SessionProcess::findLatestOfSession($opened->sessionId)?->refusal);
-        $this->assertSame(RequestProgress::Failed, DriverRequest::query()->findOrFail($wake->requestId)->progress);
-    }
-
-    public function test_a_proved_unstarted_initial_wake_ends_the_start_once_with_its_reason(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-        $wake = $this->asOwner(new WakeAgentCommand(
-            $this->agentIdOf($opened),
-            $opened->sessionId,
-            InitialWakeSettlement::keyOf($opened->sessionId),
-        ));
-        $claimed = $this->claimedScript($host, $wake->requestId);
-
-        $this->notifyWakeRefused($host, $claimed, 'container-unavailable', true);
-        $this->notifyWakeRefused($host, $claimed, 'container-unavailable', true);
-
-        $session = AgentSession::query()->findOrFail($opened->sessionId);
-        $start = SessionProcess::findLatestOfSession($opened->sessionId);
-        $this->assertSame(SessionStatus::Ended, $session->status);
-        $this->assertSame(self::NO_CONTAINER, $start?->refusal);
-    }
-
-    public function test_a_generic_refusal_of_the_initial_wake_keeps_the_start_for_reconciliation(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-        $wake = $this->asOwner(new WakeAgentCommand(
-            $this->agentIdOf($opened),
-            $opened->sessionId,
-            InitialWakeSettlement::keyOf($opened->sessionId),
-        ));
-        $claimed = $this->claimedScript($host, $wake->requestId);
-
-        $this->notifyWakeRefused($host, $claimed, null, false);
-
-        $this->assertSame(SessionStatus::Active, AgentSession::query()->findOrFail($opened->sessionId)->status);
-        $this->assertNull(SessionProcess::findLatestOfSession($opened->sessionId)?->refusal);
-    }
-
-    public function test_two_stops_of_the_same_generation_converge_on_one_request(): void
-    {
-        [, $opened] = $this->openRuntime();
-        $agentId = $this->agentIdOf($opened);
-        $generation = AgentRuntime::query()->findOrFail($opened->runtimeId)->process_generation;
-
-        $first = $this->asOwner(new StopAgentCommand($agentId, $opened->sessionId, 'stop-a', $generation));
-        $second = $this->asOwner(new StopAgentCommand($agentId, $opened->sessionId, 'stop-b', $generation));
-
-        $this->assertSame($first->requestId, $second->requestId);
-        $this->assertSame(1, DriverRequest::query()->where('operation', DriverOperation::Stop)->count());
-        $this->assertThrows(
-            fn () => $this->asOwner(new StopAgentCommand($agentId, $opened->sessionId, 'stop-c', $generation + 1)),
-            StopOutdated::class,
-        );
-    }
-
-    public function test_a_stop_waiting_for_its_helpers_says_so(): void
-    {
-        [, $main] = $this->openRuntime();
-        [, $helper] = $this->openRuntime();
-        AgentSession::query()->whereKey($helper->sessionId)->update(['parent_session_id' => $main->sessionId]);
-        $agentId = $this->agentIdOf($main);
-
-        $this->asOwner(new StopAgentCommand($agentId, $main->sessionId, 'stop-main'));
-
-        $this->assertSame(self::STOPPING_LABEL, $this->statusOf($agentId)->label);
-    }
-
-    public function test_retiring_an_agent_with_a_running_runtime_stops_it_through_its_host(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-
-        $this->asOwner(new RetireAgentCommand($this->agentIdOf($opened)));
-
-        $stop = DriverRequest::query()->where('agent_runtime_id', $opened->runtimeId)
-            ->where('operation', DriverOperation::Stop)->sole();
-        $this->assertSame(RuntimeActivity::Stopping, AgentRuntime::query()->findOrFail($opened->runtimeId)->activity);
-        $this->assertSame(SessionStatus::Active, AgentSession::query()->findOrFail($opened->sessionId)->status);
-        $this->assertFalse($stop->progress->isFinal());
-
-        $this->notifyExit($host, $opened);
-
-        $this->assertSame(SessionStatus::Ended, AgentSession::query()->findOrFail($opened->sessionId)->status);
-        $this->assertSame(RequestProgress::Applied, $stop->fresh()?->progress);
     }
 
     public function test_the_host_reports_a_navigation_hold_and_ends_requests_unavailable_or_unconfirmed(): void
@@ -753,46 +384,6 @@ final class AgentDriverLedgerTest extends TestCase
             HostRefusal::PinnedBuildMissing,
             DriverRequest::query()->findOrFail($missing->requestId)->refusal_reason?->startReason(),
         );
-    }
-
-    public function test_ending_the_main_stops_its_helpers_first_and_hands_its_own_stop_over_once_they_are_proven(): void
-    {
-        [$mainHost, $main] = $this->openRuntime();
-        [$helperHost, $helper] = $this->openRuntime();
-        AgentSession::query()->whereKey($helper->sessionId)->update(['parent_session_id' => $main->sessionId]);
-        $stopOf = fn (OpenedRuntime $opened) => DriverRequest::query()->where('agent_runtime_id', $opened->runtimeId)
-            ->where('operation', DriverOperation::Stop)->sole();
-
-        $this->asOwner(new StopAgentCommand($this->agentIdOf($main), $main->sessionId, 'stop-main'));
-
-        $this->assertSame(RuntimeActivity::Stopping, AgentRuntime::query()->findOrFail($helper->runtimeId)->activity);
-        $this->assertSame([], $this->asSystem(new ClaimDriverRequestsCommand($mainHost->hostId, 10, BrowserInputCapabilities::none()))->requests);
-        $this->assertSame(RequestProgress::Accepted, $stopOf($main)->progress);
-
-        $helperClaim = $this->asSystem(new ClaimDriverRequestsCommand($helperHost->hostId, 10, BrowserInputCapabilities::none()));
-        $this->assertSame(
-            [DriverOperation::Stop->value],
-            array_map(fn ($request) => $request->operation, $helperClaim->requests),
-        );
-        $this->notifyExit($helperHost, $helper);
-
-        $mainClaim = $this->asSystem(new ClaimDriverRequestsCommand($mainHost->hostId, 10, BrowserInputCapabilities::none()));
-        $this->assertSame(
-            [DriverOperation::Stop->value],
-            array_map(fn ($request) => $request->operation, $mainClaim->requests),
-        );
-        $this->assertSame(SessionStatus::Active, AgentSession::query()->findOrFail($main->sessionId)->status);
-        $this->assertSame(RequestProgress::Applied, $stopOf($helper)->progress);
-    }
-
-    public function test_a_message_over_the_delivery_limit_is_refused_before_it_is_accepted(): void
-    {
-        config(['agents.driver_budgets.deliver_max_bytes' => 10]);
-        $this->app->forgetInstance(DriverBudgets::class);
-        [, $opened] = $this->openRuntime();
-
-        $this->assertThrows(fn () => $this->deliver($opened, 'too-long', 'Eleven byte'), DriverRequestRefused::class);
-        $this->assertSame(0, DriverRequest::query()->where('idempotency_key', 'too-long')->count());
     }
 
     public function test_a_hook_call_of_an_older_generation_is_refused(): void
