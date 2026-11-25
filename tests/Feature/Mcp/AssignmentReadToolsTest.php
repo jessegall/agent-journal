@@ -21,7 +21,6 @@ use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\SendsMcpFrames;
-use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
 /**
@@ -31,7 +30,6 @@ final class AssignmentReadToolsTest extends TestCase
 {
     use CommitsHookRows;
     use SendsMcpFrames;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'users',
@@ -60,7 +58,7 @@ final class AssignmentReadToolsTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->caller = TestStart::start();
-        $this->startUserRequestAs($owner->id);
+        $this->journal->actAsUserId($owner->id);
     }
 
     public function test_assignments_read_on_a_held_task_returns_the_reference_the_show_command_prints(): void

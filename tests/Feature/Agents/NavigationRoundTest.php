@@ -24,7 +24,6 @@ use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\RecordedAttention;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\InstallsInboxes;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsHostCalls;
 use Tests\TestCase;
@@ -36,7 +35,6 @@ use Tests\TestCase;
 final class NavigationRoundTest extends TestCase
 {
     use CommitsHookRows;
-    use InstallsInboxes;
     use RaisesNavigationRequests;
     use RunsTrustedCommands;
     use SendsHostCalls;
@@ -64,6 +62,8 @@ final class NavigationRoundTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->journal->installInboxes();
         $attention = new RecordedAttention();
         $this->app->bind(ActorAttention::class, fn () => $attention);
     }

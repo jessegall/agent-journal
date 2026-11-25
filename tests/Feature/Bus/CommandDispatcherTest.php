@@ -31,7 +31,7 @@ final class CommandDispatcherTest extends CommandBusTestCase
         $trail = $this->installCommandModules(
             MiddlewareDeclaration::inside(RecordDispatcher::class, CommandScope::command(WriteNoteCommand::class)),
         );
-        $this->startUserRequestAs(TestIds::of(1));
+        $this->journal->actAsUserId(TestIds::of(1));
         $note = new WriteNoteCommand('bound');
 
         $this->app->make(CommandBus::class)->run($note);
@@ -47,7 +47,7 @@ final class CommandDispatcherTest extends CommandBusTestCase
             MiddlewareDeclaration::around(UppercasesText::class, CommandScope::command(WriteNoteCommand::class)),
             MiddlewareDeclaration::inside(RecordDispatcher::class, CommandScope::command(WriteNoteCommand::class)),
         );
-        $this->startUserRequestAs(TestIds::of(1));
+        $this->journal->actAsUserId(TestIds::of(1));
 
         $this->app->make(CommandBus::class)->run(new WriteNoteCommand('loud'));
 

@@ -12,7 +12,6 @@ use App\Support\Access\AccessSettings;
 use App\Values\ExecutionBudgets;
 use App\Values\HostCapacity;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
 /**
@@ -22,7 +21,6 @@ use Tests\TestCase;
 final class CheckCapacityTest extends TestCase
 {
     use RefreshHookDatabase;
-    use StartsAgentRequests;
 
     private User $owner;
 
@@ -34,7 +32,7 @@ final class CheckCapacityTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
         $this->agent = Agent::create('Builder', 'writing-helper', $this->localProject());
         $budgets = ExecutionBudgets::defaults();
         $room = new HostCapacity($budgets->cpuCores, $budgets->memoryBytes, $budgets->workspaceBytes);

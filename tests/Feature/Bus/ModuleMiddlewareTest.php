@@ -105,7 +105,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     public function test_module_middleware_runs_by_stage_then_owner_then_declaration(): void
     {
         $trail = $this->installCommandModules();
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
 
         $this->app->make(CommandBus::class)->run(new WriteNoteCommand('ordered'));
 
@@ -120,12 +120,12 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         $this->installCommandModules(
             MiddlewareDeclaration::around(UppercasesText::class, CommandScope::command(WriteNoteCommand::class)),
         );
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
 
         $this->assertSame('LOUD', $this->rowText($this->app->make(CommandBus::class)->run(new WriteNoteCommand('loud'))));
 
         $this->installCommandModules(MiddlewareDeclaration::around(RefusesAll::class, CommandScope::all()));
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $this->expectException(CommandRefused::class);
         $this->app->make(CommandBus::class)->run(new WriteNoteCommand('refused'));
     }
@@ -152,7 +152,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         string $refusal,
     ): void {
         $this->installCommandModules(MiddlewareDeclaration::around($middleware, CommandScope::all()));
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
 
         $this->expectException($refusal);
         $this->expectExceptionMessage($middleware);
@@ -163,7 +163,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     public function test_a_middleware_that_swallows_a_failure_is_refused_and_keeps_the_failure(): void
     {
         $this->installCommandModules(MiddlewareDeclaration::inside(SwallowsFailure::class, CommandScope::all()));
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
 
         try {
             $this->app->make(CommandBus::class)->run(new RefuseNoteCommand('swallowed'));
@@ -176,7 +176,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     public function test_notes_audits_the_rules_commands_and_not_its_own_writes(): void
     {
         $trail = $this->installCommandModules();
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $bus = $this->app->make(CommandBus::class);
 
         $bus->run(
@@ -204,7 +204,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     public function test_the_audit_row_rolls_back_with_a_refused_rules_command(): void
     {
         $this->installCommandModules();
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $settled = HoldingRules::create('Already active.');
 
         try {
@@ -236,7 +236,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
             ['Plans'],
             MiddlewareDeclaration::around(LimitPlanStarts::class, CommandScope::command(StartPlanCommand::class)),
         );
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $plan = Plan::factory()->create(['title' => 'Quota', 'type' => PlanType::Build]);
 
         try {
@@ -257,7 +257,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
             MiddlewareDeclaration::around(TrimMessages::class, CommandScope::command(SendMessageCommand::class)),
         );
         $user = User::factory()->create();
-        $this->startUserRequestAs($user->id);
+        $this->journal->actAsUserId($user->id);
 
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
 
@@ -276,7 +276,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
             MiddlewareDeclaration::around(SendsToUnknownInbox::class, CommandScope::command(SendMessageCommand::class)),
         );
         $user = User::factory()->create();
-        $this->startUserRequestAs($user->id);
+        $this->journal->actAsUserId($user->id);
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
         $command = new SendMessageCommand($this->inboxOf(ActorIdentity::of($user))->id, 'Hello');
 
@@ -291,7 +291,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     public function test_a_middleware_may_not_replace_tasks_private_finish(): void
     {
         $this->installCommandModules(MiddlewareDeclaration::around(ReplacesTasksCommand::class, CommandScope::all()));
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
 
         $this->expectException(CommandReplacementRefused::class);
 
@@ -307,7 +307,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         );
         $helper = Agent::create('Helper', 'read-only-helper', $this->localProject());
         $task = Task::factory()->create(['title' => 'Held']);
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $bus = $this->app->make(CommandBus::class);
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
         $bus->run(new AssignRecordCommand($task->assignmentIdentity(), AssigneeIdentity::of($helper)));
@@ -324,7 +324,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     public function test_a_middleware_may_not_replace_another_owners_private_command(): void
     {
         $this->installCommandModules(MiddlewareDeclaration::around(ReplacesCardsCommand::class, CommandScope::all()));
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
 
         $this->expectException(CommandReplacementRefused::class);
 

@@ -30,7 +30,6 @@ use Illuminate\Support\Facades\Schema;
 use PhpOption\None;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -41,7 +40,6 @@ use Tests\TestCase;
 final class SessionRequestTest extends TestCase
 {
     use RefreshHookDatabase;
-    use StartsAgentRequests;
 
     public function test_both_tables_have_the_selection_and_request_columns(): void
     {
@@ -164,7 +162,7 @@ final class SessionRequestTest extends TestCase
         $session = $this->app->make(StartSessions::class)
             ->start($own, TestSelections::of(), TestSelections::requestId())
             ->session;
-        $this->startRequestAs($own->id, $session->id);
+        $this->journal->actAsAgentIds($own->id, $session->id);
         $resolver = $this->app->make(SessionRequestResolver::class);
 
         $this->assertSame($own->id, $resolver->own($ownRequest->requestId)->agentId);

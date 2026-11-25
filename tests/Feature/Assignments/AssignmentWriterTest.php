@@ -25,7 +25,6 @@ use Illuminate\Support\Str;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\UsesSecondConnection;
@@ -39,7 +38,6 @@ use Tests\TestCase;
 final class AssignmentWriterTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
     use UsesSecondConnection;
 
     private const array TABLES = ['users', 'agents', 'tasks', 'assignments'];
@@ -69,7 +67,7 @@ final class AssignmentWriterTest extends TestCase
         $this->main = Agent::create('Main', 'main-agent', $this->localProject());
         $this->helper = Agent::create('Helper', 'read-only-helper', $this->localProject());
         $this->task = Task::factory()->create(['title' => 'Write the reader'])->assignmentIdentity();
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
     }
 
     public function test_the_owner_assigns_once_and_the_same_holder_is_unchanged_while_another_conflicts(): void
@@ -90,10 +88,10 @@ final class AssignmentWriterTest extends TestCase
 
     public function test_a_main_agent_gives_out_work_and_a_helper_may_not(): void
     {
-        $this->startRequestAs($this->main->id, TestIds::of(1));
+        $this->journal->actAsAgentIds($this->main->id, TestIds::of(1));
         $this->writer()->assign($this->task, AssigneeIdentity::of($this->helper));
 
-        $this->startRequestAs($this->helper->id, TestIds::of(2));
+        $this->journal->actAsAgentIds($this->helper->id, TestIds::of(2));
         $other = Task::factory()->create(['title' => 'Other'])->assignmentIdentity();
         $this->assertThrows(
             fn () => $this->writer()->assign($other, AssigneeIdentity::of($this->main)),

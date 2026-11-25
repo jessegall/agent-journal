@@ -19,7 +19,6 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\OpensPairChats;
 use Tests\Support\SendsSignedPayloads;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\WritesInboxMessages;
 
 /**
@@ -32,7 +31,6 @@ final class DockCommandsTest extends TestCase
     use CommitsHookRows;
     use OpensPairChats;
     use SendsSignedPayloads;
-    use StartsAgentRequests;
     use WritesInboxMessages;
 
     private const array TABLES = [

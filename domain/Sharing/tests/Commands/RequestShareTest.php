@@ -37,7 +37,6 @@ use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Sharing\FakeShareGateway;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 
@@ -53,7 +52,6 @@ use Tests\Support\TimeLimits\TimeLimit;
 final class RequestShareTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'command_receipts',
@@ -153,7 +151,7 @@ final class RequestShareTest extends TestCase
 
     public function test_create_share_from_an_agent_is_refused_before_its_handler(): void
     {
-        $this->startRequestAs($this->start->agent->id, $this->start->session->id);
+        $this->journal->actAsAgentIds($this->start->agent->id, $this->start->session->id);
         $this->app->make(RequestKey::class)->set('01JD8X0G9M3QZ6V4K2PROPOSE2');
 
         $this->assertThrows(
@@ -175,7 +173,7 @@ final class RequestShareTest extends TestCase
         $this->request('01JD8X0G9M3QZ6V4K2PROPOSE1');
         $other = TestStart::start();
 
-        $this->startRequestAs($other->agent->id, $other->session->id);
+        $this->journal->actAsAgentIds($other->agent->id, $other->session->id);
 
         $this->assertSame([], $this->app->make(ProposalStatusResolver::class)->ownProposals());
     }
@@ -196,7 +194,7 @@ final class RequestShareTest extends TestCase
     private function request(string $key): ShareProposalStatus
     {
         $this->app->forgetScopedInstances();
-        $this->startRequestAs($this->start->agent->id, $this->start->session->id);
+        $this->journal->actAsAgentIds($this->start->agent->id, $this->start->session->id);
         $this->app->make(RequestKey::class)->set($key);
 
         return $this->app->make(CommandBus::class)->run(

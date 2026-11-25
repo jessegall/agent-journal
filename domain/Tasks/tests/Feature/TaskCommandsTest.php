@@ -18,7 +18,6 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 
 /**
@@ -28,7 +27,6 @@ use Tests\Support\TestIds;
 final class TaskCommandsTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     /**
      * The bus commits the Tasks commands for real, so these tables are emptied around each test.
@@ -52,7 +50,7 @@ final class TaskCommandsTest extends TestCase
             TaskBlocked::class,
             TaskCancelled::class,
         ]);
-        $this->startUserRequestAs(TestIds::of(7));
+        $this->journal->actAsUserId(TestIds::of(7));
     }
 
     public function test_finish_block_and_cancel_each_announce_their_change_once(): void

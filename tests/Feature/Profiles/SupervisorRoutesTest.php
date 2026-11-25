@@ -20,13 +20,12 @@ use App\Values\AskTypeKey;
 use App\Values\ProfileActivation;
 use App\Values\ProfileKey;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 final class SupervisorRoutesTest extends TestCase
 {
     use RefreshHookDatabase;
-    use StartsAgentRequests;
 
     private const string ROUTE_CYCLE = 'The question supervisor route has a cycle:';
 
@@ -97,7 +96,7 @@ final class SupervisorRoutesTest extends TestCase
      */
     private function activate(array $configuration): ProfileActivation
     {
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
 
         return $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(
             ProfileProposal::fromConfiguration(['revision' => 1, ...$configuration]),

@@ -29,21 +29,35 @@ use App\Support\PoolReference;
 use App\Support\SystemActor;
 use App\Values\TrustedEntryAuthority;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Support\TaskType;
 use Domain\Tasks\TasksDomain;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\HasAutoAssignmentWorker;
 use Tests\TestCase;
 
 final class ClaimAutoAssignmentTest extends TestCase
 {
     use CommitsHookRows;
-    use HasAutoAssignmentWorker;
+
+    private TestStart $worker;
+
+    private AutoAssignmentKey $key;
 
     private const array TABLES = [
         'assignments', 'auto_assignments', 'command_receipts',
         'tasks', 'agents', 'agent_sessions', 'session_tokens', 'users',
     ];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner()->idleAgent('Worker', 'writing-helper')->startSession('Worker', 'Worker');
+        $this->worker = $this->journal->testStartCalled('Worker');
+        $this->key = new AutoAssignmentKey(ActorIdentity::of($this->worker->agent), TaskType::linkType());
+        $this->journal->actAs('Owner');
+    }
 
     /**
      * The domains this test uses beside core.
@@ -72,7 +86,7 @@ final class ClaimAutoAssignmentTest extends TestCase
     public function test_off_inactive_and_disabled_domains_do_not_assign(): void
     {
         $this->assertSame(AutoAssignmentClaimType::Off, $this->claim($this->key)->type);
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAs('Owner');
         $inactive = ActorIdentity::of(Agent::create('Inactive', 'writing-helper', $this->localProject()));
         $key = new AutoAssignmentKey($inactive, $this->key->assignableType);
         $this->enable($key);

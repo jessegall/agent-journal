@@ -21,7 +21,6 @@ use Tests\Fixtures\Docking\ProjectionDockable;
 use Tests\Fixtures\Docking\ProjectionDockableProvider;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensPairChats;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\WritesInboxMessages;
 
 /**
@@ -33,7 +32,6 @@ final class DockProjectionTest extends TestCase
 {
     use CommitsHookRows;
     use OpensPairChats;
-    use StartsAgentRequests;
     use WritesInboxMessages;
 
     private const array TABLES = [
@@ -78,7 +76,7 @@ final class DockProjectionTest extends TestCase
             ProjectionDockableProvider::class,
         );
 
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
     }
 
     public function test_three_unreadable_batches_give_an_empty_page_and_the_readable_card_comes_next(): void

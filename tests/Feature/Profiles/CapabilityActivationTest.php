@@ -27,21 +27,20 @@ use App\Values\StartPolicy;
 use App\Values\StartRequest;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\WithActiveAccount;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 final class CapabilityActivationTest extends TestCase
 {
     use RefreshHookDatabase;
-    use StartsAgentRequests;
     use WithActiveAccount;
 
     private const string PROFILE = 'container-writer';
 
     public function test_activation_refuses_an_unproven_concrete_combination_before_publishing_the_profile(): void
     {
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $commands = $this->app->make(CommandBus::class);
         $this->recordCapabilities(CapabilityStatusType::Supported, CapabilityStatusType::Unverified);
 
@@ -56,7 +55,7 @@ final class CapabilityActivationTest extends TestCase
     public function test_a_proven_writer_combination_is_admitted_and_withdrawn_evidence_blocks_the_next_start(): void
     {
         $this->chooseActiveAccounts();
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $this->recordCapabilities(CapabilityStatusType::Supported);
         $this->mock(DockerImageVerifier::class)->shouldReceive('isVerified')->andReturn(true);
         $commands = $this->app->make(CommandBus::class);

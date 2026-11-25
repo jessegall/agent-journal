@@ -21,7 +21,6 @@ use Domain\Tasks\TasksDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\SendsSignedPayloads;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -29,7 +28,6 @@ final class WithdrawAskTest extends TestCase
 {
     use CommitsHookRows;
     use SendsSignedPayloads;
-    use StartsAgentRequests;
 
     private const string INPUT_ADVICE = 'Check the input file.';
 
@@ -52,7 +50,7 @@ final class WithdrawAskTest extends TestCase
         $this->activateProfiles();
         $requester = Agent::create('Requester', 'journal-worker', $this->localProject());
         $recipient = Agent::create('Supervisor', 'journal-code-reviewer', $this->localProject());
-        $this->startRequestAs($requester->id, TestIds::of(91));
+        $this->journal->actAsAgentIds($requester->id, TestIds::of(91));
         $commands = $this->app->make(CommandBus::class);
 
         $first = $commands->run(new AskSupervisorCommand('First question', 'first'));
@@ -66,12 +64,12 @@ final class WithdrawAskTest extends TestCase
         $this->assertEquals($first, $commands->run(new AskSupervisorCommand('First question', 'first')));
         $this->assertThrows(fn () => $commands->run(new AskSupervisorCommand('Changed', 'first')), AskRefused::class);
 
-        $this->startRequestAs($recipient->id, TestIds::of(92));
+        $this->journal->actAsAgentIds($recipient->id, TestIds::of(92));
         $inbox = $this->app->make(AskReader::class);
         $this->assertTrue($inbox->card($first)->isObligation);
         $commands->run(new ReplyToAskCommand($first, 'Check the input file.'));
 
-        $this->startRequestAs($requester->id, TestIds::of(91));
+        $this->journal->actAsAgentIds($requester->id, TestIds::of(91));
         $commands->run(new WithdrawAskCommand($second));
         $this->assertSame(self::INPUT_ADVICE, $inbox->card($first)->reply);
         $this->assertFalse($inbox->card($second)->isOpen);
@@ -85,7 +83,7 @@ final class WithdrawAskTest extends TestCase
 
     private function activateProfiles(): void
     {
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(ProfileProposal::fromConfiguration(
             (array) config('profiles'),
         )));

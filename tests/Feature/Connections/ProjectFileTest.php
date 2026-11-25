@@ -37,7 +37,6 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsHostCalls;
-use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
 /**
@@ -49,7 +48,6 @@ final class ProjectFileTest extends TestCase
     use CommitsHookRows;
     use RunsTrustedCommands;
     use SendsHostCalls;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'comments', 'project_file_versions', 'project_files', 'number_groups', 'project_reads', 'project_bindings',
@@ -154,7 +152,7 @@ final class ProjectFileTest extends TestCase
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->startUserRequestAs($owner->id);
+        $this->journal->actAsUserId($owner->id);
     }
 
     private function target(): RecordIdentity

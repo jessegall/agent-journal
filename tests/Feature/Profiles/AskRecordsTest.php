@@ -24,14 +24,13 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\SendsSignedPayloads;
-use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 final class AskRecordsTest extends TestCase
 {
     use CommitsHookRows;
     use SendsSignedPayloads;
-    use StartsAgentRequests;
 
     private const string FIXTURE_ADVICE = 'Read the fixture.';
 
@@ -96,7 +95,7 @@ final class AskRecordsTest extends TestCase
         $this->activateProfiles();
         $requester = Agent::create('Requester', 'journal-main', $this->localProject());
         $owner = User::factory()->create();
-        $this->startUserRequestAs($owner->id);
+        $this->journal->actAsUserId($owner->id);
         $this->retainFor($requester, SupervisorTarget::parse('owner'));
 
         $this->actingAs($owner)->get('/web/asks')->assertOk()->assertInertia(
@@ -108,7 +107,7 @@ final class AskRecordsTest extends TestCase
 
     private function activateProfiles(): void
     {
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(ProfileProposal::fromConfiguration(
             (array) config('profiles'),
         )));

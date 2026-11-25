@@ -16,7 +16,6 @@ use Domain\Reminders\Resolvers\Support\OwnReminders;
 use Domain\Reminders\Tests\TestCase;
 use Domain\Reminders\Values\ReminderCard;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
 
 /**
  * Reminders are read back as the owner's own page with open ones first by due time, and listed by the Reminders
@@ -25,7 +24,6 @@ use Tests\Support\StartsAgentRequests;
 final class RemindersTest extends TestCase
 {
     use RefreshHookDatabase;
-    use StartsAgentRequests;
 
     private const string TITLE = 'Read the review';
 
@@ -66,7 +64,7 @@ final class RemindersTest extends TestCase
 
     private function create(string $title, CarbonImmutable $dueAt): string
     {
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
 
         return $this->app->make(CommandBus::class)->run(new CreateReminderCommand($title, $dueAt->toIso8601String()));
     }

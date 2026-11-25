@@ -21,7 +21,6 @@ use Tests\Fixtures\Mcp\CascadeResult;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\SendsMcpFrames;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -33,7 +32,6 @@ final class OperationsReadTest extends TestCase
 {
     use CommitsHookRows;
     use SendsMcpFrames;
-    use StartsAgentRequests;
 
     private TestStart $start;
 
@@ -68,7 +66,7 @@ final class OperationsReadTest extends TestCase
     public function test_a_completed_assignment_write_reads_back_with_its_outcome(): void
     {
         $task = Task::factory()->create(['title' => 'Keyed']);
-        $this->startRequestAs($this->start->agent->id, $this->start->session->id);
+        $this->journal->actAsAgentIds($this->start->agent->id, $this->start->session->id);
         $this->app->make(RequestKey::class)->set(self::KEY);
         $this->app->make(CommandBus::class)->run(
             new AssignRecordCommand($task->assignmentIdentity(), AssigneeIdentity::of($this->start->agent)),

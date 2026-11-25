@@ -15,7 +15,6 @@ use Domain\Tasks\Tests\TestCase;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Events\Dispatcher;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 
 /**
@@ -25,7 +24,6 @@ use Tests\Support\TestIds;
 final class WorkerLifecycleFactsTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'tasks',
@@ -52,7 +50,7 @@ final class WorkerLifecycleFactsTest extends TestCase
         );
 
         $task = Task::factory()->create(['title' => 'Kept']);
-        $this->startUserRequestAs(TestIds::of(7));
+        $this->journal->actAsUserId(TestIds::of(7));
 
         $this->assertThrows(
             fn () => $this->app->make(CommandBus::class)->run(new FinishTaskCommand($task->id, 9, 'Done.')),
@@ -61,7 +59,7 @@ final class WorkerLifecycleFactsTest extends TestCase
         $this->app->forgetScopedInstances();
         $units = $this->app->make(ActiveEventUnits::class);
         $this->assertTrue($units->activeFor($this->app->make(ConnectionInterface::class))->isEmpty());
-        $this->startUserRequestAs(TestIds::of(7));
+        $this->journal->actAsUserId(TestIds::of(7));
         $this->app->make(CommandBus::class)->run(new CancelTaskCommand($task->id, 'Dropped.'));
 
         $this->assertSame([TaskCancelled::class], $facts);

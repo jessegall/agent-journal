@@ -35,7 +35,6 @@ use Domain\Documents\Exceptions\StaleRead;
 use Domain\Documents\Tests\TestCase;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 
 /**
@@ -46,7 +45,6 @@ use Tests\Support\TestIds;
 final class CommentsAndReadsTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const string THIRD_PART = 'Third part.';
 
@@ -204,7 +202,7 @@ final class CommentsAndReadsTest extends TestCase
     public function test_an_agent_comments_as_itself(): void
     {
         $agent = Agent::create('Commenter', 'read-only-helper', $this->localProject());
-        $this->startRequestAs($agent->id, TestIds::of(9));
+        $this->journal->actAsAgentIds($agent->id, TestIds::of(9));
 
         $this->comment('From an agent.', WholeRecord::Record);
 

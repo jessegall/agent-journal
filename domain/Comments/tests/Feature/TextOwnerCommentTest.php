@@ -26,7 +26,6 @@ use Tests\Fixtures\Modules\Notes\Models\NotePage;
 use Tests\Fixtures\Modules\Notes\Models\NoteSnapshot;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsNotesModule;
-use Tests\Support\StartsAgentRequests;
 
 /**
  * A record outside Documents with text in versions, a note page, is read through Core and takes its first text
@@ -36,7 +35,6 @@ final class TextOwnerCommentTest extends TestCase
 {
     use CommitsHookRows;
     use InstallsNotesModule;
-    use StartsAgentRequests;
 
     private const string SECOND_LINE = 'Second line.';
 
@@ -54,7 +52,7 @@ final class TextOwnerCommentTest extends TestCase
         $this->installNotesModule();
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->startUserRequestAs($owner->id);
+        $this->journal->actAsUserId($owner->id);
     }
 
     protected function tearDown(): void

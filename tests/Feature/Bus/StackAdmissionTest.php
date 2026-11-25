@@ -54,7 +54,7 @@ final class StackAdmissionTest extends CommandBusTestCase
     public function test_a_command_waits_for_its_sessions_stack_and_is_refused_busy_without_spending_retries(): void
     {
         $this->hold(2);
-        $this->startTestAgentRequest(1, 2);
+        $this->journal->actAsAgentIds(TestIds::of(1), TestIds::of(2));
 
         $this->assertThrows(
             fn () => $this->app->make(CommandBus::class)->run(new WriteNoteCommand('waits')),
@@ -71,7 +71,7 @@ final class StackAdmissionTest extends CommandBusTestCase
             'SELECT pg_advisory_unlock(?, hashtext(?))',
             [StackAdmission::FIRST_LOCK_KEY, TestIds::of(2)],
         );
-        $this->startTestAgentRequest(1, 2);
+        $this->journal->actAsAgentIds(TestIds::of(1), TestIds::of(2));
 
         $id = $this->app->make(CommandBus::class)->run(new WriteNoteCommand('after'));
 
@@ -81,7 +81,7 @@ final class StackAdmissionTest extends CommandBusTestCase
     public function test_a_command_of_another_session_is_not_held_up(): void
     {
         $this->hold(2);
-        $this->startTestAgentRequest(1, 3);
+        $this->journal->actAsAgentIds(TestIds::of(1), TestIds::of(3));
 
         $id = $this->app->make(CommandBus::class)->run(new WriteNoteCommand(self::OTHER_SESSION));
 
@@ -90,7 +90,7 @@ final class StackAdmissionTest extends CommandBusTestCase
 
     public function test_a_nested_command_joins_the_outer_admission(): void
     {
-        $this->startTestAgentRequest(1, 2);
+        $this->journal->actAsAgentIds(TestIds::of(1), TestIds::of(2));
 
         $id = $this->app->make(CommandBus::class)->run(new CopyNoteCommand('nested'));
 
@@ -100,7 +100,7 @@ final class StackAdmissionTest extends CommandBusTestCase
 
     public function test_the_stack_is_given_back_after_a_thrown_handler(): void
     {
-        $this->startTestAgentRequest(1, 2);
+        $this->journal->actAsAgentIds(TestIds::of(1), TestIds::of(2));
 
         $this->assertThrows(
             fn () => $this->app->make(CommandBus::class)->run(new RefuseNoteCommand('refused')),
@@ -113,7 +113,7 @@ final class StackAdmissionTest extends CommandBusTestCase
     public function test_a_user_command_takes_no_stack_lock(): void
     {
         $this->hold(2);
-        $this->startTestUserRequest(4);
+        $this->journal->actAsUserId(TestIds::of(4));
 
         $id = $this->app->make(CommandBus::class)->run(new WriteNoteCommand('user'));
 

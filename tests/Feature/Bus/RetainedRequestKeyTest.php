@@ -79,7 +79,7 @@ final class RetainedRequestKeyTest extends CommandBusTestCase
 
     public function test_a_call_without_a_key_is_refused(): void
     {
-        $this->startTestAgentRequest(1, 10);
+        $this->journal->actAsAgentIds(TestIds::of(1), TestIds::of(10));
 
         $this->expectException(RequestKeyMissing::class);
 
@@ -91,7 +91,7 @@ final class RetainedRequestKeyTest extends CommandBusTestCase
         $agentId = TestIds::of($agentIdNumber);
         $sessionId = TestIds::of($sessionIdNumber);
         $this->app->forgetScopedInstances();
-        $this->startRequestAs($agentId, $sessionId);
+        $this->journal->actAsAgentIds($agentId, $sessionId);
         $this->app->make(RequestKey::class)->set(self::KEY);
 
         return $this->app->make(CommandBus::class)->run(new RetainNoteCommand($text));

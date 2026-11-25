@@ -26,7 +26,6 @@ use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\ServesEveryCombination;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -38,7 +37,6 @@ final class ContinueStartTest extends TestCase
 {
     use RefreshHookDatabase;
     use ServesEveryCombination;
-    use StartsAgentRequests;
     use WithActiveAccount;
 
     private Agent $agent;
@@ -53,7 +51,7 @@ final class ContinueStartTest extends TestCase
         $this->serveEveryCombination();
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
         $this->agent = Agent::create('Researcher', 'read-only-helper', $this->localProject());
     }
 

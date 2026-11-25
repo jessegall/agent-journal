@@ -26,7 +26,6 @@ use Domain\Tasks\Models\Task;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\StartsAgentRequests;
 
 /**
  * A plan under review holds still. Requesting a review puts the plan in Reviewing and refuses
@@ -36,7 +35,6 @@ final class RequestPlanReviewTest extends TestCase
 {
     use ActsAsOwner;
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const string BRIEF = 'Read the notes.';
 
@@ -150,7 +148,7 @@ final class RequestPlanReviewTest extends TestCase
             'title' => 'Read',
             'brief' => self::BRIEF,
         ]);
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
         $this->structure()->addTasks($this->structure()->addPhase($plan, 'Reading'), [$task->id]);
 
         return [

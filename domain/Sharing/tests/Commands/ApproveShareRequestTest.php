@@ -36,7 +36,6 @@ use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Sharing\FakeShareGateway;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -51,7 +50,6 @@ use Tests\Support\TimeLimits\TimeLimit;
 final class ApproveShareRequestTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'command_receipts',
@@ -121,7 +119,7 @@ final class ApproveShareRequestTest extends TestCase
         $proposal = Share::query()->sole();
 
         $this->app->forgetScopedInstances();
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
         $saved = $this->preview();
         $this->app->make(RequestKey::class)->set('01JD8X0G9M3QZ6V4K2APPROVE1');
         $summary = $this->app->make(CommandBus::class)->run(
@@ -174,7 +172,7 @@ final class ApproveShareRequestTest extends TestCase
             $facts,
         );
 
-        $this->startRequestAs($this->start->agent->id, $this->start->session->id);
+        $this->journal->actAsAgentIds($this->start->agent->id, $this->start->session->id);
         $this->assertEquals(
             [new ShareProposalStatus($granted->number, ShareStatus::Pending)],
             $this->app->make(ProposalStatusResolver::class)->ownProposals(),
@@ -184,7 +182,7 @@ final class ApproveShareRequestTest extends TestCase
     private function request(string $key): ShareProposalStatus
     {
         $this->app->forgetScopedInstances();
-        $this->startRequestAs($this->start->agent->id, $this->start->session->id);
+        $this->journal->actAsAgentIds($this->start->agent->id, $this->start->session->id);
         $this->app->make(RequestKey::class)->set($key);
 
         return $this->app->make(CommandBus::class)->run(

@@ -17,7 +17,6 @@ use Domain\Tasks\Models\Task;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
 
 /**
  * Cancelling and finishing a plan from its page: a cancel against a state that changed since it was shown is refused,
@@ -26,7 +25,6 @@ use Tests\Support\StartsAgentRequests;
 final class PlanEndPageTest extends TestCase
 {
     use RefreshHookDatabase;
-    use StartsAgentRequests;
 
     private User $owner;
 
@@ -39,7 +37,7 @@ final class PlanEndPageTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->plan = Plan::factory()->create(['title' => 'Build the release page']);
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
     }
 
     public function test_a_started_plan_with_nothing_unfinished_offers_finish_and_finishing_shows_done(): void

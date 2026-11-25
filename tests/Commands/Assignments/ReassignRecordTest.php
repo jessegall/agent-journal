@@ -18,7 +18,6 @@ use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
 /**
@@ -27,7 +26,6 @@ use Tests\TestCase;
 final class ReassignRecordTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const array TABLES = ['users', 'agents', 'tasks', 'assignments', 'command_receipts'];
 
@@ -45,7 +43,7 @@ final class ReassignRecordTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $agent = Agent::create('Builder', 'read-only-helper', $this->localProject());
         $task = Task::factory()->create(['title' => 'Write the reader'])->assignmentIdentity();
-        $this->startUserRequestAs($owner->id);
+        $this->journal->actAsUserId($owner->id);
         $bus = $this->app->make(CommandBus::class);
 
         $this->app->make(RequestKey::class)->set((string) Str::ulid());

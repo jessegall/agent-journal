@@ -20,8 +20,8 @@ use Tests\Support\TestStartAuthority;
 use Throwable;
 
 /**
- * The request a test's journal acts in: each selection starts a clean request as one agent, user or chat member, the
- * way the authenticating middleware binds them, and a selection that fails puts the one before it back.
+ * Who the request a test's journal acts in acts as: one agent, user or chat member, bound the way the authenticating
+ * middleware binds them, and a selection that fails puts the one before it back.
  */
 final class FixtureRequests
 {
@@ -140,11 +140,11 @@ final class FixtureRequests
     }
 
     /**
-     * Forgets everything the request in place bound: its scoped bindings, its agent, its signed-in user and its actor.
+     * Forgets who the request in place acts as: its agent, its signed-in user and its actor; what the request bound in
+     * its scope stays, as a switch of actor inside one request keeps it.
      */
     private function clear(): void
     {
-        $this->app->forgetScopedInstances();
         $this->app->forgetInstance(AgentContext::class);
         $this->app->make(AuthFactory::class)->guard()->forgetUser();
         $this->app->make(CurrentActorSetter::class)->clear();

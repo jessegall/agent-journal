@@ -24,7 +24,6 @@ use Illuminate\Support\Str;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 use Tests\Support\UsesSecondConnection;
 use Tests\TestCase;
@@ -37,7 +36,6 @@ use Tests\TestCase;
 final class AssignedListsTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
     use UsesSecondConnection;
 
     private const array TABLES = ['agents', 'tasks', 'plans', 'phases', 'phase_tasks', 'assignments'];
@@ -60,7 +58,7 @@ final class AssignedListsTest extends TestCase
 
         $this->main = Agent::create('Main', 'main-agent', $this->localProject());
         $this->other = Agent::create('Other', 'read-only-helper', $this->localProject());
-        $this->startRequestAs($this->main->id, TestIds::of(1));
+        $this->journal->actAsAgentIds($this->main->id, TestIds::of(1));
     }
 
     public function test_only_directly_held_tasks_are_listed_by_id_finished_ones_included(): void
@@ -148,7 +146,7 @@ final class AssignedListsTest extends TestCase
 
     public function test_a_user_reads_its_own_empty_assigned_list_and_a_bad_page_is_refused(): void
     {
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
 
         $this->assertSame(0, $this->app->make(AssignedTaskResolver::class)->assignedToCaller(new TaskFilters())->total);
         $this->assertThrows(fn () => new NumberedPage(0, 20), InvalidAssignmentPage::class);

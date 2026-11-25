@@ -24,7 +24,6 @@ use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 
 /**
@@ -35,7 +34,6 @@ use Tests\Support\TestIds;
 final class AssignPlanWorkTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const array TABLES = ['users', 'agents', 'tasks', 'plans', 'phases', 'phase_tasks', 'assignments'];
 
@@ -57,7 +55,7 @@ final class AssignPlanWorkTest extends TestCase
 
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->startUserRequestAs($owner->id);
+        $this->journal->actAsUserId($owner->id);
         $this->builder = AssigneeIdentity::of(Agent::create('Builder', 'read-only-helper', $this->localProject()));
         $this->plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $this->open = Task::factory()->create(['title' => 'Open']);

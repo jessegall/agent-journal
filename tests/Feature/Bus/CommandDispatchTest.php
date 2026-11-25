@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
+use Tests\Support\TestIds;
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\CommandNestingTooDeep;
 use App\Exceptions\CommandNotRegistered;
@@ -28,7 +29,7 @@ final class CommandDispatchTest extends CommandBusTestCase
     public function test_every_registered_command_has_its_handler_and_its_result_comes_back_unchanged(): void
     {
         $this->installCommandModules();
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $bus = $this->app->make(CommandBus::class);
 
         $this->assertInstanceOf(LaravelCommandBus::class, $bus);
@@ -42,7 +43,7 @@ final class CommandDispatchTest extends CommandBusTestCase
     public function test_the_command_log_line_counts_queries_and_models_and_no_time(): void
     {
         $this->installCommandModules();
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         Log::spy();
 
         $this->app->make(CommandBus::class)->run(new WriteNoteCommand('counted'));
@@ -60,7 +61,7 @@ final class CommandDispatchTest extends CommandBusTestCase
     public function test_an_unregistered_command_is_refused_before_anything_runs(): void
     {
         $this->installCommandModules();
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
 
         $this->expectException(CommandNotRegistered::class);
 

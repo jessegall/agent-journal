@@ -12,7 +12,6 @@ use Domain\Chat\Tests\Support\OpensTeamInboxMessage;
 use Domain\Chat\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsKeyedCommands;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\WritesInboxMessages;
 
 /**
@@ -24,7 +23,6 @@ final class PinMessageTest extends TestCase
     use CommitsHookRows;
     use OpensTeamInboxMessage;
     use RunsKeyedCommands;
-    use StartsAgentRequests;
     use WritesInboxMessages;
 
     private const array TABLES = [

@@ -23,7 +23,6 @@ use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\InstallsNotesModule;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -37,7 +36,6 @@ final class ModuleAssignmentTest extends TestCase
 {
     use CommitsHookRows;
     use InstallsNotesModule;
-    use StartsAgentRequests;
 
     /**
      * Rules, which the Notes test module requires.
@@ -83,7 +81,7 @@ final class ModuleAssignmentTest extends TestCase
     public function test_a_modules_note_takes_a_holder_like_any_record(): void
     {
         $this->installNotes();
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
 
         $result = $this->app->make(AssignmentWriterInTransaction::class)->assign(
             $this->note->assignmentIdentity(),
@@ -102,13 +100,13 @@ final class ModuleAssignmentTest extends TestCase
     public function test_an_agent_sees_only_the_notes_it_wrote_and_nobody_reads_without_acting(): void
     {
         $this->installNotes();
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
         $this->app->make(AssignmentWriterInTransaction::class)->assign(
             $this->note->assignmentIdentity(),
             AssigneeIdentity::of($this->writer),
         );
 
-        $this->startRequestAs($this->main->id, TestIds::of(1));
+        $this->journal->actAsAgentIds($this->main->id, TestIds::of(1));
         $hidden = $this->app->make(AssignmentResolver::class)->assignmentsFor([$this->note->assignmentIdentity()]);
         $this->assertThrows(
             fn () => $this->app->make(AssignmentWriterInTransaction::class)->assign(
@@ -118,7 +116,7 @@ final class ModuleAssignmentTest extends TestCase
             RecordUnavailable::class,
         );
 
-        $this->startRequestAs($this->writer->id, TestIds::of(2));
+        $this->journal->actAsAgentIds($this->writer->id, TestIds::of(2));
         $own = $this->app->make(AssignmentResolver::class)->assignmentsFor([$this->note->assignmentIdentity()]);
 
         $this->app->forgetScopedInstances();
@@ -145,7 +143,7 @@ final class ModuleAssignmentTest extends TestCase
                 'updated_at' => now(),
             ],
         );
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
 
         $this->assertThrows(
             fn () => $this->app->make(AssignmentResolver::class)->assignmentsFor(

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
+use Tests\Support\TestIds;
 use App\Contracts\Bus\CommandAdmission;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Engine\CommandAdmissionStage;
@@ -37,7 +38,7 @@ final class CommandPolicyTest extends CommandBusTestCase
         $this->installCommandModules(
             MiddlewareDeclaration::inside(UppercasesText::class, CommandScope::command(WriteNoteCommand::class)),
         );
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $this->app->make(RequestKey::class)->set(self::KEY);
         $admission = $this->mock(CommandAdmission::class);
         $admission->shouldReceive('assess')->twice()->withArgs(
@@ -58,7 +59,7 @@ final class CommandPolicyTest extends CommandBusTestCase
     public function test_a_nested_command_gets_final_admission_and_rolls_back_the_outer_transaction(): void
     {
         $this->installCommandModules();
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $admission = $this->mock(CommandAdmission::class);
         $admission->shouldReceive('assess')->twice()->withArgs(
             fn (EffectiveCommand $call): bool => $call->command instanceof CopyNoteCommand,

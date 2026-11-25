@@ -32,9 +32,9 @@ use App\Values\WorkReference;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestText;
 use Tests\Support\TimeLimits\TimeLimit;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -48,7 +48,6 @@ final class StopPreparationTest extends TestCase
 {
     use CommitsHookRows;
     use RunsTrustedCommands;
-    use StartsAgentRequests;
 
     private const string FAILED_TESTS = '2 tests failed.';
 
@@ -186,7 +185,7 @@ final class StopPreparationTest extends TestCase
 
     private function activateScriptedWriter(): void
     {
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $commands = $this->app->make(CommandBus::class);
         $profile = ProfileKey::from('scripted-writer');
         $source = ScriptSource::fromDefinitions(<<<'SCRIPT'

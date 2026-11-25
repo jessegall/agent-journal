@@ -26,7 +26,6 @@ use Domain\Tasks\TasksDomain;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -38,7 +37,6 @@ use Tests\TestCase;
 final class AssignmentCascadeTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const array TABLES = ['users', 'agents', 'tasks', 'plans', 'assignments'];
 
@@ -68,7 +66,7 @@ final class AssignmentCascadeTest extends TestCase
 
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->startUserRequestAs($owner->id);
+        $this->journal->actAsUserId($owner->id);
         $this->builder = AssigneeIdentity::of(Agent::create('Builder', 'read-only-helper', $this->localProject()));
         $this->other = AssigneeIdentity::of(Agent::create('Other', 'read-only-helper', $this->localProject()));
         $this->plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);

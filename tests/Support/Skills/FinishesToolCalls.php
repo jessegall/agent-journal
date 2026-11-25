@@ -11,7 +11,6 @@ use App\Models\Agents\AgentSession;
 use App\Support\Inputs\Values\DriverToolInput;
 use App\Support\Inputs\Values\ToolResult;
 use App\Values\StackTarget;
-use Tests\Support\StartsAgentRequests;
 
 /**
  * A tool call of the session that finished well, handed to the listener that records proven skill reads in the
@@ -19,14 +18,13 @@ use Tests\Support\StartsAgentRequests;
  */
 trait FinishesToolCalls
 {
-    use StartsAgentRequests;
 
     /**
      * @param  array<string, mixed>  $arguments
      */
     private function finished(AgentSession $session, string $tool, array $arguments): void
     {
-        $this->startRequestAs($session->agent_id, $session->id);
+        $this->journal->actAsAgentIds($session->agent_id, $session->id);
         $this->app->make(RecordProvenSkillReads::class)->handle(new ToolCallFinished(
             new StackTarget($session->agent_id, $session->id),
             new ToolResult($tool, ToolOutcome::Succeeded, new DriverToolInput($arguments)),

@@ -23,7 +23,6 @@ use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\SendsSignedPayloads;
-use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
 /**
@@ -35,7 +34,6 @@ final class AssignedListCommandsTest extends TestCase
 {
     use CommitsHookRows;
     use SendsSignedPayloads;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'users',
@@ -64,7 +62,7 @@ final class AssignedListCommandsTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->caller = TestStart::start('read-only-helper');
-        $this->startUserRequestAs($owner->id);
+        $this->journal->actAsUserId($owner->id);
     }
 
     public function test_the_commands_print_what_the_started_agent_holds(): void

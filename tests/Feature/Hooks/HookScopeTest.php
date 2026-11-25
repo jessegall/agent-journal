@@ -22,7 +22,6 @@ use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -30,7 +29,6 @@ use Tests\TestCase;
 final class HookScopeTest extends TestCase
 {
     use RefreshHookDatabase;
-    use StartsAgentRequests;
 
     private const string AGENT_FILTER = '"agent_stacks"."agent_id" = ?';
 
@@ -51,12 +49,12 @@ final class HookScopeTest extends TestCase
     {
         $stateTypes = $this->app->make(StateTypes::class);
 
-        $this->startTestAgentRequest(1, 10);
+        $this->journal->actAsAgentIds(TestIds::of(1), TestIds::of(10));
         $this->assertSame([[TestIds::of(1), TestIds::of(10)]], $this->visibleStacks());
         $this->assertSame([[TestIds::of(1), TestIds::of(10)]], $this->visibleCalls());
 
         $this->app->forgetScopedInstances();
-        $this->startTestAgentRequest(2, 20);
+        $this->journal->actAsAgentIds(TestIds::of(2), TestIds::of(20));
 
         $this->assertSame([[TestIds::of(2), TestIds::of(20)]], $this->visibleStacks());
         $this->assertSame([[TestIds::of(2), TestIds::of(20)]], $this->visibleCalls());
@@ -65,14 +63,14 @@ final class HookScopeTest extends TestCase
 
     public function test_two_sessions_of_one_agent_do_not_see_each_other(): void
     {
-        $this->startTestAgentRequest(1, 11);
+        $this->journal->actAsAgentIds(TestIds::of(1), TestIds::of(11));
 
         $this->assertSame([[TestIds::of(1), TestIds::of(11)]], $this->visibleStacks());
     }
 
     public function test_a_query_after_the_request_ended_fails_instead_of_reading_everything(): void
     {
-        $this->startTestAgentRequest(1, 10);
+        $this->journal->actAsAgentIds(TestIds::of(1), TestIds::of(10));
         $this->visibleStacks();
         $this->app->forgetScopedInstances();
 
@@ -83,7 +81,7 @@ final class HookScopeTest extends TestCase
 
     public function test_the_limit_comes_back_after_the_models_boot_again(): void
     {
-        $this->startTestAgentRequest(1, 10);
+        $this->journal->actAsAgentIds(TestIds::of(1), TestIds::of(10));
         $this->visibleStacks();
 
         Model::clearBootedModels();
@@ -94,7 +92,7 @@ final class HookScopeTest extends TestCase
 
     public function test_the_system_acting_sees_no_agent_rows_and_the_agent_still_sees_its_own(): void
     {
-        $this->startTestAgentRequest(1, 10);
+        $this->journal->actAsAgentIds(TestIds::of(1), TestIds::of(10));
         $store = $this->app->make(ActorStore::class);
 
         $this->assertSame(
@@ -106,7 +104,7 @@ final class HookScopeTest extends TestCase
 
     public function test_the_locking_query_is_limited_and_names_its_table(): void
     {
-        $this->startTestAgentRequest(2, 20);
+        $this->journal->actAsAgentIds(TestIds::of(2), TestIds::of(20));
 
         $sql = AgentStackRow::query()->lockForUpdate()->toSql();
 
@@ -117,7 +115,7 @@ final class HookScopeTest extends TestCase
 
     public function test_reading_another_session_is_an_explicit_named_query(): void
     {
-        $this->startTestAgentRequest(1, 10);
+        $this->journal->actAsAgentIds(TestIds::of(1), TestIds::of(10));
         $other = TestActors::stack(2, 20);
 
         $stack = AgentStackRow::query()->authorizedFor($other)->sole();

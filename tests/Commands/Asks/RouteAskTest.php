@@ -30,7 +30,6 @@ use Domain\Tasks\TasksDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\SendsSignedPayloads;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -38,7 +37,6 @@ final class RouteAskTest extends TestCase
 {
     use CommitsHookRows;
     use SendsSignedPayloads;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'ask_hops', 'asks', 'ask_requesters', 'supervisor_changes', 'supervisor_links',
@@ -94,9 +92,9 @@ final class RouteAskTest extends TestCase
         $bus->run(new RetireAgentCommand($holder->id));
         $this->assertFalse(AssignmentRecord::query()->forRecord($ask->assignmentIdentity())->exists());
 
-        $this->startRequestAs($outsider->id, TestIds::of(91));
+        $this->journal->actAsAgentIds($outsider->id, TestIds::of(91));
         $this->assertThrows(fn () => $this->app->make(AskRecords::class)->read($reference), RecordUnavailable::class);
-        $this->startRequestAs($holder->id, TestIds::of(92));
+        $this->journal->actAsAgentIds($holder->id, TestIds::of(92));
         $this->assertSame($ask->id, $this->app->make(AskRecords::class)->read($reference)->id);
     }
 
@@ -119,7 +117,7 @@ final class RouteAskTest extends TestCase
 
     private function activateProfiles(): void
     {
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(ProfileProposal::fromConfiguration(
             (array) config('profiles'),
         )));

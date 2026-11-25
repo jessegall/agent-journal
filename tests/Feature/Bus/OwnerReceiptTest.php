@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
+use Tests\Support\TestIds;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\CommandRules\ReceiptStatus;
 use App\Exceptions\RequestKeyConflict;
@@ -36,7 +37,7 @@ final class OwnerReceiptTest extends CommandBusTestCase
         parent::setUp();
 
         $this->installCommandModules();
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
     }
 
     public function test_an_owner_call_with_a_key_runs_once_and_its_repeat_returns_the_same_result(): void
@@ -125,7 +126,7 @@ final class OwnerReceiptTest extends CommandBusTestCase
         $this->app->make(CommandBus::class)->run(new WriteNoteCommand('user'));
 
         $start = TestStart::start();
-        $this->startRequestAs($start->agent->id, $start->session->id);
+        $this->journal->actAsAgentIds($start->agent->id, $start->session->id);
         $this->app->make(CommandBus::class)->run(new WriteNoteCommand('agent'));
 
         $this->assertSame(2, $this->rowCount());

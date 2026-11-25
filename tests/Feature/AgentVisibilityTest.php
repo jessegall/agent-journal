@@ -21,7 +21,6 @@ use Illuminate\Database\Eloquent\Model;
 use Tests\Support\DomainBoot;
 use Tests\Support\HoldingRules;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -29,7 +28,6 @@ use Tests\TestCase;
 final class AgentVisibilityTest extends TestCase
 {
     use RefreshHookDatabase;
-    use StartsAgentRequests;
 
     private const string AGENT_ONE_RUN = 'Run of agent 1';
 
@@ -56,7 +54,7 @@ final class AgentVisibilityTest extends TestCase
 
     public function test_an_agent_sees_its_own_runs_and_memories_in_every_session(): void
     {
-        $this->startTestAgentRequest(1, 10);
+        $this->journal->actAsAgentIds(TestIds::of(1), TestIds::of(10));
 
         $this->assertSame(
             [self::AGENT_ONE_RUN, self::AGENT_ONE_RUN],
@@ -65,7 +63,7 @@ final class AgentVisibilityTest extends TestCase
         $this->assertSame(['Kept by agent 1'], Memory::query()->pluck('text')->all());
 
         $this->app->forgetScopedInstances();
-        $this->startTestAgentRequest(2, 20);
+        $this->journal->actAsAgentIds(TestIds::of(2), TestIds::of(20));
 
         $this->assertSame(['Run of agent 2'], SequenceRun::query()->pluck('name')->all());
         $this->assertSame(['Kept by agent 2'], Memory::query()->pluck('text')->all());
@@ -73,7 +71,7 @@ final class AgentVisibilityTest extends TestCase
 
     public function test_the_journal_reads_what_it_addressed_to_another_agent_by_name(): void
     {
-        $this->startTestAgentRequest(2, 20);
+        $this->journal->actAsAgentIds(TestIds::of(2), TestIds::of(20));
         $agentOne = TestActors::stack(1, 10);
 
         $run = $this->app->make(SequenceRecords::class)->followedBy(
@@ -90,7 +88,7 @@ final class AgentVisibilityTest extends TestCase
 
     public function test_every_agent_reads_every_task_and_rule(): void
     {
-        $this->startTestAgentRequest(2, 20);
+        $this->journal->actAsAgentIds(TestIds::of(2), TestIds::of(20));
 
         $this->assertSame(['Write the walk'], Task::query()->pluck('title')->all());
         $this->assertSame(['No phase waits on the user.'], Rule::query()->pluck('text')->all());
@@ -98,7 +96,7 @@ final class AgentVisibilityTest extends TestCase
 
     public function test_a_query_after_the_request_ended_fails_instead_of_reading_everything(): void
     {
-        $this->startTestAgentRequest(1, 10);
+        $this->journal->actAsAgentIds(TestIds::of(1), TestIds::of(10));
         Memory::query()->get();
         $this->app->forgetScopedInstances();
 
@@ -109,7 +107,7 @@ final class AgentVisibilityTest extends TestCase
 
     public function test_the_limit_comes_back_after_the_models_boot_again(): void
     {
-        $this->startTestAgentRequest(2, 20);
+        $this->journal->actAsAgentIds(TestIds::of(2), TestIds::of(20));
         SequenceRun::query()->get();
 
         Model::clearBootedModels();
@@ -120,7 +118,7 @@ final class AgentVisibilityTest extends TestCase
 
     public function test_a_user_reads_every_agents_runs_and_memories_through_the_user_read(): void
     {
-        $this->startTestUserRequest(7);
+        $this->journal->actAsUserId(TestIds::of(7));
 
         $this->assertSame(3, SequenceRun::query()->acrossOwners()->count());
         $this->assertSame(
@@ -131,7 +129,7 @@ final class AgentVisibilityTest extends TestCase
 
     public function test_an_agent_cannot_use_the_user_read(): void
     {
-        $this->startTestAgentRequest(1, 10);
+        $this->journal->actAsAgentIds(TestIds::of(1), TestIds::of(10));
 
         $this->expectException(CrossOwnerReadRefused::class);
 
@@ -142,11 +140,11 @@ final class AgentVisibilityTest extends TestCase
     {
         $runOfAgentOne = $this->runOfAgentOne();
 
-        $this->startTestUserRequest(7);
+        $this->journal->actAsUserId(TestIds::of(7));
         $this->assertSame(self::AGENT_ONE_RUN, new SequenceRun()->resolveRouteBinding($runOfAgentOne)?->name);
 
         $this->app->forgetScopedInstances();
-        $this->startTestAgentRequest(2, 20);
+        $this->journal->actAsAgentIds(TestIds::of(2), TestIds::of(20));
         $this->assertNull(new SequenceRun()->resolveRouteBinding($runOfAgentOne));
     }
 

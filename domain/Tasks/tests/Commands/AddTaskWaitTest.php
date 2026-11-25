@@ -12,7 +12,6 @@ use Domain\Tasks\Tests\TestCase;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsKeyedCommands;
-use Tests\Support\StartsAgentRequests;
 
 /**
  * A task is made to wait on another; a wait that would close a cycle and a task waiting on itself are refused and
@@ -23,7 +22,6 @@ final class AddTaskWaitTest extends TestCase
     use ActsAsOwner;
     use CommitsHookRows;
     use RunsKeyedCommands;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'users',
@@ -50,7 +48,7 @@ final class AddTaskWaitTest extends TestCase
 
         $this->first = Task::factory()->create(['title' => 'Prepare records']);
         $this->second = Task::factory()->create(['title' => 'Publish records']);
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
     }
 
     public function test_a_cycle_and_a_self_link_are_refused(): void

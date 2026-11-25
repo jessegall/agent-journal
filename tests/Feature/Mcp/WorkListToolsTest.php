@@ -17,7 +17,6 @@ use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\SendsMcpFrames;
-use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
 /**
@@ -28,7 +27,6 @@ final class WorkListToolsTest extends TestCase
 {
     use CommitsHookRows;
     use SendsMcpFrames;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'users',
@@ -62,7 +60,7 @@ final class WorkListToolsTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->caller = TestStart::start();
-        $this->startUserRequestAs($owner->id);
+        $this->journal->actAsUserId($owner->id);
         $this->writer = $this->app->make(AssignmentWriterInTransaction::class);
     }
 

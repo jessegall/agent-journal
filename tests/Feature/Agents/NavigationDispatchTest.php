@@ -24,7 +24,6 @@ use Closure;
 use Tests\Fixtures\Agents\RecordedAttention;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\InstallsInboxes;
 use Tests\Support\RunsTrustedCommands;
 use Tests\TestCase;
 
@@ -35,7 +34,6 @@ use Tests\TestCase;
 final class NavigationDispatchTest extends TestCase
 {
     use CommitsHookRows;
-    use InstallsInboxes;
     use RaisesNavigationRequests;
     use RunsTrustedCommands;
 
@@ -62,6 +60,8 @@ final class NavigationDispatchTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->journal->installInboxes();
         $this->attention = new RecordedAttention();
         $this->app->bind(ActorAttention::class, fn () => $this->attention);
     }

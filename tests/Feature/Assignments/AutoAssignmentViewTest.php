@@ -28,9 +28,9 @@ use Domain\Tasks\Support\TaskType;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\HasAutoAssignmentWorker;
 use Tests\TestCase;
 
 /**
@@ -41,7 +41,10 @@ use Tests\TestCase;
 final class AutoAssignmentViewTest extends TestCase
 {
     use CommitsHookRows;
-    use HasAutoAssignmentWorker;
+
+    private TestStart $worker;
+
+    private AutoAssignmentKey $key;
 
     private const string POOL_LABEL = 'Open tasks';
 
@@ -57,6 +60,16 @@ final class AutoAssignmentViewTest extends TestCase
         'assignments',
         'auto_assignments',
     ];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner()->idleAgent('Worker', 'writing-helper')->startSession('Worker', 'Worker');
+        $this->worker = $this->journal->testStartCalled('Worker');
+        $this->key = new AutoAssignmentKey(ActorIdentity::of($this->worker->agent), TaskType::linkType());
+        $this->journal->actAs('Owner');
+    }
 
     /**
      * The domains this test uses beside core.
@@ -145,7 +158,7 @@ final class AutoAssignmentViewTest extends TestCase
     public function test_an_agent_reading_its_own_status_sees_no_totals(): void
     {
         $this->enable(self::open(), 2);
-        $this->startRequestAs($this->worker->agent->id, $this->worker->session->id);
+        $this->journal->actAsAgentIds($this->worker->agent->id, $this->worker->session->id);
 
         $own = $this->currentStatus();
 

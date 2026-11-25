@@ -24,7 +24,7 @@ use Tests\Fixtures\UiDeclarations\Library\LibraryDomain;
 use Tests\Fixtures\UiDeclarations\Library\NobodySees;
 use Tests\Fixtures\UiDeclarations\Shelf\ShelfDomain;
 use Tests\Fixtures\UiDeclarations\Shelf\ShelfResolver;
-use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -34,14 +34,13 @@ use Tests\TestCase;
  */
 final class RecordMenusTest extends TestCase
 {
-    use StartsAgentRequests;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->install([$this->library(), $this->shelf()]);
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
     }
 
     public function test_the_same_menu_on_two_records_binds_each_records_own_values(): void

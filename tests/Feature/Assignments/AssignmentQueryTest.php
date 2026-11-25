@@ -27,7 +27,6 @@ use Tests\Fixtures\Domains\Errands\ErrandWork;
 use Tests\Support\DomainBoot;
 use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -39,7 +38,6 @@ use Tests\TestCase;
 final class AssignmentQueryTest extends TestCase
 {
     use RefreshHookDatabase;
-    use StartsAgentRequests;
 
     private const string COUNT_FAILED = 'The count failed.';
 
@@ -61,7 +59,7 @@ final class AssignmentQueryTest extends TestCase
 
         $this->builder = new AssigneeIdentity(Agent::storedType(), TestIds::of(7));
         $this->reviewer = new AssigneeIdentity(Agent::storedType(), TestIds::of(8));
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
     }
 
     public function test_the_subqueries_select_the_held_and_the_assigned_ids_of_one_type(): void

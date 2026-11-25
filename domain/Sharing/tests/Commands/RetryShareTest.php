@@ -33,7 +33,6 @@ use Tests\Fixtures\Domains\Binders\BindersDomain;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\RegistersShareDomains;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 
@@ -45,7 +44,6 @@ final class RetryShareTest extends TestCase
 {
     use RefreshHookDatabase;
     use RegistersShareDomains;
-    use StartsAgentRequests;
 
     private RecordIdentity $root;
 
@@ -141,7 +139,7 @@ final class RetryShareTest extends TestCase
     private function preview(RecordIdentity $root, array $selectedIds): SavedSharePreview
     {
         $this->app->forgetScopedInstances();
-        $this->startTestUserRequest(9);
+        $this->journal->actAsUserId(TestIds::of(9));
 
         return $this->app->make(CommandBus::class)->run(
             new SaveSharePreviewCommand($root->type, $root->id, $selectedIds, $this->configuration->id),
@@ -157,7 +155,7 @@ final class RetryShareTest extends TestCase
     {
         $key = sprintf('01JD8X0G9M3QZ6V4K2KEY%05d', ++$this->keys);
         $this->app->forgetScopedInstances();
-        $this->startTestUserRequest(9);
+        $this->journal->actAsUserId(TestIds::of(9));
         $this->app->make(RequestKey::class)->set($key);
 
         return $this->app->make(CommandBus::class)->run($command($key));

@@ -34,7 +34,7 @@ final class ValidateCommandTest extends CommandBusTestCase
 
         $this->installCommandModules();
         $start = TestStart::start();
-        $this->startRequestAs($start->agent->id, $start->session->id);
+        $this->journal->actAsAgentIds($start->agent->id, $start->session->id);
     }
 
     public function test_a_value_over_its_limit_is_refused_before_the_handler(): void

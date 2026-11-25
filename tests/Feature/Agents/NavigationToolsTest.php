@@ -15,7 +15,6 @@ use App\Values\OwnerAuthority;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\InstallsInboxes;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsMcpFrames;
 use Tests\TestCase;
@@ -27,7 +26,6 @@ use Tests\TestCase;
 final class NavigationToolsTest extends TestCase
 {
     use CommitsHookRows;
-    use InstallsInboxes;
     use RaisesNavigationRequests;
     use RunsTrustedCommands;
     use SendsMcpFrames;
@@ -60,6 +58,8 @@ final class NavigationToolsTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->journal->installInboxes();
         $this->app->instance(AccessSettings::class, new AccessSettings('owner'));
         $this->main = TestStart::start();
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));

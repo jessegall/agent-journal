@@ -13,7 +13,6 @@ use App\Support\EnrolledHost;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\InstallsInboxes;
 use Tests\Support\OpensPairChats;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsHostCalls;
@@ -27,7 +26,6 @@ use Tests\TestCase;
 final class OpenHostMainRuntimeTest extends TestCase
 {
     use CommitsHookRows;
-    use InstallsInboxes;
     use OpensLedgerRuntimes;
     use OpensPairChats;
     use RunsTrustedCommands;
@@ -51,6 +49,13 @@ final class OpenHostMainRuntimeTest extends TestCase
         'inbox_members',
         'links',
     ];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->installInboxes();
+    }
 
     public function test_the_host_opens_the_runtime_and_the_agent_takes_the_main_inbox_over(): void
     {

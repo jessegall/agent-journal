@@ -31,7 +31,6 @@ use Tests\Fixtures\UiDeclarations\Shelf\ShelfDomain;
 use Tests\Fixtures\UiDeclarations\Shelf\ShelfResolver;
 use Tests\Support\DomainBoot;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -43,7 +42,6 @@ use Tests\TestCase;
 final class PagePropsTest extends TestCase
 {
     use RefreshHookDatabase;
-    use StartsAgentRequests;
 
     /**
      * The domains this test uses beside core.
@@ -62,7 +60,7 @@ final class PagePropsTest extends TestCase
         $this->calls = new ReaderCalls();
         $this->app->instance(ReaderCalls::class, $this->calls);
         $this->app->instance(UiDeclarations::class, $this->declarations());
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
     }
 
     public function test_a_hidden_window_gives_a_denied_result_without_calling_its_reader(): void
@@ -164,7 +162,7 @@ final class PagePropsTest extends TestCase
     {
         $first = $this->homeProp('/', 'window_shelf_shelves');
         $this->app->forgetScopedInstances();
-        $this->startTestUserRequest(2);
+        $this->journal->actAsUserId(TestIds::of(2));
         $second = $this->homeProp('/', 'window_shelf_shelves');
 
         $this->assertInstanceOf(ReadyWindow::class, $first);

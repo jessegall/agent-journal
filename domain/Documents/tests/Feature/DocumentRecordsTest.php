@@ -19,12 +19,10 @@ use Domain\Documents\Models\Report;
 use Domain\Documents\Tests\TestCase;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\StartsAgentRequests;
 
 final class DocumentRecordsTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const string PUBLIC_TEXT = 'Public text.';
 
@@ -77,7 +75,7 @@ final class DocumentRecordsTest extends TestCase
             DraftMissing::class,
         );
 
-        $this->startRequestAs($author->agent->id, $reader->session->id);
+        $this->journal->actAsAgentIds($author->agent->id, $reader->session->id);
 
         $this->assertThrows(
             fn () => $this->app->make(DraftResolver::class)->current($document->number),

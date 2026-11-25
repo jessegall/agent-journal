@@ -25,7 +25,6 @@ use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\StartsAgentRequests;
 
 /**
  * A released run is resumed explicitly: a direct holder that lost and regained the task cannot use its old claim but
@@ -35,7 +34,6 @@ final class ResumeTaskRunTest extends TestCase
 {
     use ActsAsOwner;
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'users',
@@ -110,7 +108,7 @@ final class ResumeTaskRunTest extends TestCase
 
     private function runAs(AgentSession $start, StartTaskCommand|ResumeTaskRunCommand|BlockTaskCommand $command): mixed
     {
-        $this->startRequestAs($start->agent_id, $start->id);
+        $this->journal->actAsAgentIds($start->agent_id, $start->id);
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
 
         return $this->app->make(CommandBus::class)->run($command);

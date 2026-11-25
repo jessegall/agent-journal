@@ -16,7 +16,6 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\InstallsInboxes;
 use Tests\TestCase;
 
 /**
@@ -25,7 +24,6 @@ use Tests\TestCase;
 final class UnassignRecordTest extends TestCase
 {
     use CommitsHookRows;
-    use InstallsInboxes;
 
     private const array TABLES = [
         'users',
@@ -40,6 +38,8 @@ final class UnassignRecordTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->journal->installInboxes();
 
         $this->journal->owner();
     }

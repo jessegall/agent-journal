@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\StartsAgentRequests;
 
 /**
  * The tasks window lists tasks by number with the holder filter applied in the database before the count and the
@@ -22,7 +21,6 @@ use Tests\Support\StartsAgentRequests;
 final class TasksPageTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'users',
@@ -67,7 +65,7 @@ final class TasksPageTest extends TestCase
     public function test_the_unassigned_filter_counts_and_pages_in_the_database(): void
     {
         $tasks = Task::factory()->count(25)->create()->all();
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
         $writer->assign($tasks[0]->assignmentIdentity(), AssigneeIdentity::of($this->owner));
         $writer->assign($tasks[1]->assignmentIdentity(), AssigneeIdentity::of($this->owner));

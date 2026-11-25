@@ -52,7 +52,7 @@ final class CommandActorTest extends CommandBusTestCase
     public function test_each_command_logs_its_name_owner_actor_and_outcome_and_no_field(): void
     {
         $this->installCommandModules();
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $log = Log::spy();
 
         $this->app->make(CommandBus::class)->run(new WriteNoteCommand('private text'));

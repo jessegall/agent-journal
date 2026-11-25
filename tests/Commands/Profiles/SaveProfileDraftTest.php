@@ -20,14 +20,12 @@ use App\Values\DraftExpectations;
 use App\Values\ProfileKey;
 use App\Values\ScriptSource;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
 final class SaveProfileDraftTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const string REVISION_TWO = 'revision 2';
 
@@ -47,13 +45,13 @@ final class SaveProfileDraftTest extends TestCase
 
     public function test_a_user_and_an_agent_share_a_draft_with_a_single_revision_counter(): void
     {
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $commands = $this->app->make(CommandBus::class);
         $profile = ProfileKey::from('draft-test');
         $actor = Agent::create('Editor', 'writing-helper', $this->localProject());
 
         $this->assertSame(1, $commands->run(new SaveProfileDraftCommand($profile, 0, new ScriptSource('syntax error'))));
-        $this->startRequestAs($actor->id, TestIds::of(87));
+        $this->journal->actAsAgentIds($actor->id, TestIds::of(87));
 
         $draft = ScriptSource::fromDefinitions('RUN tests', self::COMMANDS);
         $this->assertSame(2, $commands->run(new SaveProfileDraftCommand($profile, 1, $draft)));
@@ -77,7 +75,7 @@ final class SaveProfileDraftTest extends TestCase
 
     public function test_activation_refuses_the_whole_proposal_if_a_saved_draft_changed(): void
     {
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $commands = $this->app->make(CommandBus::class);
         $profile = ProfileKey::from('draft-test');
 

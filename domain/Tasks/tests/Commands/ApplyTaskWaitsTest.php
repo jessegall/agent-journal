@@ -18,7 +18,6 @@ use Domain\Tasks\Values\TaskWaitPair;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsKeyedCommands;
-use Tests\Support\StartsAgentRequests;
 
 /**
  * Several waits change at once only against the graph version they were read at, and any change
@@ -29,7 +28,6 @@ final class ApplyTaskWaitsTest extends TestCase
     use ActsAsOwner;
     use CommitsHookRows;
     use RunsKeyedCommands;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'users',
@@ -65,7 +63,7 @@ final class ApplyTaskWaitsTest extends TestCase
             ],
         );
 
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
         $this->runOnBus(new AddTaskWaitCommand($this->tasks[1]->id, $this->tasks[0]->id));
         $this->runOnBus(new AddTaskWaitCommand($this->tasks[2]->id, $this->tasks[0]->id));
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Commands;
 
+use Tests\Support\TestIds;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
 use App\Support\Access\AccessSettings;
@@ -36,7 +37,6 @@ use Tests\Support\RunsTrustedCommands;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\RegistersShareDomains;
 use Tests\Support\Sharing\TestShares;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
 
 /**
@@ -48,7 +48,6 @@ final class DisableShareGatewayTest extends TestCase
     use RefreshHookDatabase;
     use RegistersShareDomains;
     use RunsTrustedCommands;
-    use StartsAgentRequests;
 
     private const string RUN = '01JD8X0G9M3QZ6V4K2RUN0000A';
 
@@ -166,7 +165,7 @@ final class DisableShareGatewayTest extends TestCase
     private function asOwner(Command $command, string|null $key = null): mixed
     {
         $this->app->forgetScopedInstances();
-        $this->startTestUserRequest(9);
+        $this->journal->actAsUserId(TestIds::of(9));
         $requestKey = $this->app->make(RequestKey::class);
         $requestKey->set($key ?? (string) Str::ulid());
 

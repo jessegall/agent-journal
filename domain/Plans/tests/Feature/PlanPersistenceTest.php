@@ -20,13 +20,11 @@ use Domain\Tasks\Contracts\TaskProgressCounter as TaskProgressCounterContract;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Resolvers\TaskProgressCounter;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 
 final class PlanPersistenceTest extends TestCase
 {
     use RefreshHookDatabase;
-    use StartsAgentRequests;
 
     /**
      * Every installed domain, since the local seeders fill each of them.
@@ -92,7 +90,7 @@ final class PlanPersistenceTest extends TestCase
             'type' => PlanType::Research,
         ]);
 
-        $this->startRequestAs(TestIds::of(2), TestIds::of(20));
+        $this->journal->actAsAgentIds(TestIds::of(2), TestIds::of(20));
 
         $this->assertSame(['Compare chat layouts'], Plan::query()->pluck('title')->all());
     }

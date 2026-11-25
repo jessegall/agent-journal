@@ -20,13 +20,12 @@ use App\Values\TextOperand;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Scripts\ExampleScriptKeyword;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 final class ScriptChecksTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const array TABLES = ['profile_draft_revisions', 'profile_drafts', 'profile_revisions', 'profiles'];
 
@@ -104,7 +103,7 @@ SCRIPT, ['tests' => [
 
     public function test_activation_freezes_the_source_graph_and_used_definition_digest(): void
     {
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $commands = $this->app->make(CommandBus::class);
         $profile = ProfileKey::from('scripted-review');
         $source = new ScriptSource("ON STOP\nYIELD \"Check again.\"\nEND");

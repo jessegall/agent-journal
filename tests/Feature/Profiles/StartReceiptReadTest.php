@@ -22,7 +22,6 @@ use App\Values\StartRequest;
 use PhpOption\None;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
 /**
@@ -33,7 +32,6 @@ use Tests\TestCase;
 final class StartReceiptReadTest extends TestCase
 {
     use RefreshHookDatabase;
-    use StartsAgentRequests;
 
     private User $owner;
 
@@ -45,7 +43,7 @@ final class StartReceiptReadTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
         $this->agent = Agent::create('Builder', 'writing-helper', $this->localProject());
     }
 

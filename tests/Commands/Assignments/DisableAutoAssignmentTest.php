@@ -9,15 +9,18 @@ use App\Commands\Assignments\EnableAutoAssignment\EnableAutoAssignmentCommand;
 use App\Contracts\Assignments\AutoAssignmentResolver;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
+use App\Support\ActorIdentity;
 use App\Support\AutoAssignmentChange;
 use App\Support\AutoAssignmentFact;
 use App\Support\AutoAssignmentInput;
+use App\Support\AutoAssignmentKey;
 use App\Support\PoolReference;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Support\TaskType;
 use Domain\Tasks\TasksDomain;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\HasAutoAssignmentWorker;
 use Tests\TestCase;
 
 /**
@@ -26,7 +29,10 @@ use Tests\TestCase;
 final class DisableAutoAssignmentTest extends TestCase
 {
     use CommitsHookRows;
-    use HasAutoAssignmentWorker;
+
+    private TestStart $worker;
+
+    private AutoAssignmentKey $key;
 
     private const array TABLES = [
         'users',
@@ -37,6 +43,16 @@ final class DisableAutoAssignmentTest extends TestCase
         'auto_assignments',
         'command_receipts',
     ];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner()->idleAgent('Worker', 'writing-helper')->startSession('Worker', 'Worker');
+        $this->worker = $this->journal->testStartCalled('Worker');
+        $this->key = new AutoAssignmentKey(ActorIdentity::of($this->worker->agent), TaskType::linkType());
+        $this->journal->actAs('Owner');
+    }
 
     /**
      * The domains this test uses beside core.

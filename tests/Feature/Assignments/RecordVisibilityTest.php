@@ -16,7 +16,6 @@ use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\InstallsNotesModule;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -29,7 +28,6 @@ final class RecordVisibilityTest extends TestCase
 {
     use CommitsHookRows;
     use InstallsNotesModule;
-    use StartsAgentRequests;
 
     private const array TABLES = ['tasks', 'users', 'agents', 'number_groups'];
 
@@ -73,7 +71,7 @@ final class RecordVisibilityTest extends TestCase
         $task = Task::factory()->create(['title' => 'Write the reader']);
 
         foreach ([$this->writer, $this->resolver] as $agent) {
-            $this->startRequestAs($agent->id, TestIds::of(50));
+            $this->journal->actAsAgentIds($agent->id, TestIds::of(50));
             $visibility = $this->app->make(RecordVisibility::class);
 
             $this->assertTrue($visibility->isVisible($task->assignmentIdentity()));
@@ -83,16 +81,16 @@ final class RecordVisibilityTest extends TestCase
 
     public function test_a_hidden_record_answers_no_to_one_actor_and_yes_to_its_owner(): void
     {
-        $this->startRequestAs($this->resolver->id, TestIds::of(50));
+        $this->journal->actAsAgentIds($this->resolver->id, TestIds::of(50));
         $this->assertFalse($this->app->make(RecordVisibility::class)->isVisible($this->note->assignmentIdentity()));
 
-        $this->startRequestAs($this->writer->id, TestIds::of(51));
+        $this->journal->actAsAgentIds($this->writer->id, TestIds::of(51));
         $this->assertTrue($this->app->make(RecordVisibility::class)->isVisible($this->note->assignmentIdentity()));
     }
 
     public function test_an_unregistered_type_answers_no(): void
     {
-        $this->startRequestAs($this->writer->id, TestIds::of(50));
+        $this->journal->actAsAgentIds($this->writer->id, TestIds::of(50));
 
         $this->assertFalse($this->app->make(RecordVisibility::class)->isVisible(TestActors::record('ledger.ledger-entry', 1)));
     }

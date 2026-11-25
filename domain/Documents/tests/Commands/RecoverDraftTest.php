@@ -35,13 +35,11 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensDriverRuntimes;
-use Tests\Support\StartsAgentRequests;
 
 final class RecoverDraftTest extends TestCase
 {
     use CommitsHookRows;
     use OpensDriverRuntimes;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'agents',
@@ -76,7 +74,7 @@ final class RecoverDraftTest extends TestCase
             $parent->session,
         );
 
-        $this->startRequestAs($child->id, $session->id);
+        $this->journal->actAsAgentIds($child->id, $session->id);
         $bus = $this->app->make(CommandBus::class);
         $created = $bus->run(new CreateDocumentCommand('Design', 'Current plan.', "# Design\nPublished text."));
         $opened = $bus->run(new OpenDocumentCommand($created->id, 1));

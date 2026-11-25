@@ -14,7 +14,6 @@ use Domain\Tasks\Tests\TestCase;
 use Domain\Tasks\Values\TaskLogLine;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\StartsAgentRequests;
 
 /**
  * A task run's log keeps its lines against the run current when they were written, in order, and is read a bounded
@@ -24,7 +23,6 @@ final class LogTaskRunTest extends TestCase
 {
     use ActsAsOwner;
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'users',
@@ -43,7 +41,7 @@ final class LogTaskRunTest extends TestCase
     public function test_lines_keep_their_run_and_order_and_page_in_both_directions(): void
     {
         $task = Task::factory()->create();
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
         $this->runCommand(new StartTaskCommand($task->id));
 
         foreach (range(1, 5) as $line) {
@@ -84,7 +82,7 @@ final class LogTaskRunTest extends TestCase
     public function test_a_caller_without_the_current_run_cannot_log(): void
     {
         $task = Task::factory()->create();
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
 
         $this->assertThrows(fn () => $this->runCommand(new LogTaskRunCommand($task->id, 1, 'No run yet.')));
         $this->assertSame(0, TaskLogEntry::query()->where('task_id', $task->id)->count());

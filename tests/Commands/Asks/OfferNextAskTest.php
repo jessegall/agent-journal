@@ -31,14 +31,13 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\SendsSignedPayloads;
-use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 final class OfferNextAskTest extends TestCase
 {
     use CommitsHookRows;
     use SendsSignedPayloads;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'ask_hops', 'asks', 'ask_requesters', 'supervisor_changes', 'supervisor_links',
@@ -103,7 +102,7 @@ final class OfferNextAskTest extends TestCase
 
     private function activateProfiles(): void
     {
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(ProfileProposal::fromConfiguration(
             (array) config('profiles'),
         )));

@@ -11,7 +11,7 @@ use App\Support\AgentStacks;
 use App\Support\StackTransaction;
 use App\Support\UserStack;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -20,11 +20,10 @@ use Tests\TestCase;
 final class StackContractsTest extends TestCase
 {
     use RefreshHookDatabase;
-    use StartsAgentRequests;
 
     public function test_each_stack_contract_resolves_to_its_core_implementation(): void
     {
-        $this->startTestAgentRequest(1, 10);
+        $this->journal->actAsAgentIds(TestIds::of(1), TestIds::of(10));
 
         $this->assertInstanceOf(AgentStacks::class, $this->app->make(AgentStacksContract::class));
         $this->assertInstanceOf(UserStack::class, $this->app->make(UserStackContract::class));

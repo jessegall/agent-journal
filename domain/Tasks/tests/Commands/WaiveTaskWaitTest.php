@@ -13,7 +13,6 @@ use Domain\Tasks\Tests\TestCase;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsKeyedCommands;
-use Tests\Support\StartsAgentRequests;
 
 /**
  * The owner waives a wait with a reason, kept with who and when, and the task is ready; an empty reason is refused.
@@ -23,7 +22,6 @@ final class WaiveTaskWaitTest extends TestCase
     use ActsAsOwner;
     use CommitsHookRows;
     use RunsKeyedCommands;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'users',
@@ -50,7 +48,7 @@ final class WaiveTaskWaitTest extends TestCase
 
         $this->first = Task::factory()->create(['title' => 'Prepare records']);
         $this->second = Task::factory()->create(['title' => 'Publish records']);
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
     }
 
     public function test_a_waiver_needs_a_reason_and_keeps_who_and_when(): void

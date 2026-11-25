@@ -17,7 +17,6 @@ use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 
@@ -28,7 +27,6 @@ use Tests\Support\TimeLimits\TimeLimit;
 final class PhaseTimingTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'agents',
@@ -67,7 +65,7 @@ final class PhaseTimingTest extends TestCase
             array_map(fn (Task $task): string => $task->id, $this->tasks),
         );
 
-        $this->startUserRequestAs(TestIds::of(7));
+        $this->journal->actAsUserId(TestIds::of(7));
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
         $writer->assign($this->plan->assignmentIdentity(), AssigneeIdentity::of($this->agent));
     }
@@ -136,7 +134,7 @@ final class PhaseTimingTest extends TestCase
     public function test_a_user_is_not_held(): void
     {
         $this->app->forgetScopedInstances();
-        $this->startUserRequestAs(TestIds::of(7));
+        $this->journal->actAsUserId(TestIds::of(7));
 
         $this->assertTrue($this->app->make(VerificationTiming::class)->forCaller()->isAllowed());
     }
@@ -144,7 +142,7 @@ final class PhaseTimingTest extends TestCase
     private function timingForAgent(): TimingVerdict
     {
         $this->app->forgetScopedInstances();
-        $this->startRequestAs($this->agent->id, TestIds::of(80));
+        $this->journal->actAsAgentIds($this->agent->id, TestIds::of(80));
 
         return $this->app->make(VerificationTiming::class)->forCaller();
     }

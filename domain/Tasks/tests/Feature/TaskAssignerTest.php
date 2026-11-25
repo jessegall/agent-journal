@@ -19,7 +19,6 @@ use Domain\Tasks\Support\Assignments\AutoAssigner;
 use Domain\Tasks\Support\TaskType;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 
 /**
@@ -29,7 +28,6 @@ use Tests\Support\TestIds;
 final class TaskAssignerTest extends TestCase
 {
     use RefreshHookDatabase;
-    use StartsAgentRequests;
 
     private ActorIdentity $builder;
 
@@ -41,7 +39,7 @@ final class TaskAssignerTest extends TestCase
 
         $this->builder = ActorIdentity::ofClass(Agent::class, TestIds::of(7));
         $this->reviewer = ActorIdentity::ofClass(Agent::class, TestIds::of(8));
-        $this->startUserRequestAs(TestIds::of(1));
+        $this->journal->actAsUserId(TestIds::of(1));
     }
 
     public function test_task_type_is_the_alias_tasks_are_assigned_under(): void

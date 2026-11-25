@@ -24,7 +24,6 @@ use App\Values\NavigationAnswer;
 use App\Values\OwnerAuthority;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\InstallsInboxes;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
@@ -36,7 +35,6 @@ use Tests\TestCase;
 final class ProveNavigationTest extends TestCase
 {
     use CommitsHookRows;
-    use InstallsInboxes;
     use RaisesNavigationRequests;
     use RunsTrustedCommands;
 
@@ -64,6 +62,8 @@ final class ProveNavigationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->journal->installInboxes();
         $this->app->instance(AccessSettings::class, new AccessSettings('owner'));
         $this->main = Agent::create('Main', 'main-agent', $this->localProject());
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));

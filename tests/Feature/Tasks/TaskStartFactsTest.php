@@ -30,7 +30,6 @@ use Tests\Fixtures\Tasks\FailsAfterPush;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\Settings\SwitchesDomainsOff;
-use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
 /**
@@ -41,7 +40,6 @@ use Tests\TestCase;
 final class TaskStartFactsTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
     use SwitchesDomainsOff;
 
     private const array TABLES = [
@@ -153,7 +151,7 @@ final class TaskStartFactsTest extends TestCase
 
     private function start(Task $task): void
     {
-        $this->startRequestAs($this->session->agent_id, $this->session->id);
+        $this->journal->actAsAgentIds($this->session->agent_id, $this->session->id);
         $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
     }
 

@@ -28,7 +28,6 @@ use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\Exceptions\SimulatedFailure;
-use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
 /**
@@ -38,7 +37,6 @@ use Tests\TestCase;
 final class AssignmentFactsTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const array TABLES = ['users', 'agents', 'tasks', 'assignments'];
 
@@ -69,7 +67,7 @@ final class AssignmentFactsTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->helper = AssigneeIdentity::of(Agent::create('Helper', 'read-only-helper', $this->localProject()));
         $this->task = Task::factory()->create(['title' => 'Write the reader'])->assignmentIdentity();
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
         $this->useTheApplicationsTransactionManager();
         $this->app->make('events')->listen(AssignmentsChanged::class, function (AssignmentsChanged $fact): void {
             $this->facts[] = $fact;

@@ -16,7 +16,6 @@ use Domain\Tasks\TasksDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\SendsSignedPayloads;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -24,7 +23,6 @@ final class AskSupervisorTest extends TestCase
 {
     use CommitsHookRows;
     use SendsSignedPayloads;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'ask_hops', 'asks', 'ask_requesters', 'supervisor_changes', 'supervisor_links',
@@ -44,13 +42,13 @@ final class AskSupervisorTest extends TestCase
     {
         $this->activateProfiles();
         $owner = User::factory()->create();
-        $this->startUserRequestAs($owner->id);
+        $this->journal->actAsUserId($owner->id);
         $this->mock(ActorAttention::class)->shouldNotReceive('request');
         $requester = Agent::create('Requester', 'journal-main', $this->localProject());
-        $this->startRequestAs($requester->id, TestIds::of(99));
+        $this->journal->actAsAgentIds($requester->id, TestIds::of(99));
 
         $ask = $this->app->make(CommandBus::class)->run(new AskSupervisorCommand('Check my result.', 'owner-question'));
-        $this->startUserRequestAs($owner->id);
+        $this->journal->actAsUserId($owner->id);
         $card = $this->app->make(AskReader::class)->card($ask);
 
         $this->assertTrue($card->isObligation);
@@ -59,7 +57,7 @@ final class AskSupervisorTest extends TestCase
 
     private function activateProfiles(): void
     {
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(ProfileProposal::fromConfiguration(
             (array) config('profiles'),
         )));

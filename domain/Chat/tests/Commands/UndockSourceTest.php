@@ -24,7 +24,6 @@ use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\OpensPairChats;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\WritesInboxMessages;
 
 /**
@@ -35,7 +34,6 @@ final class UndockSourceTest extends TestCase
 {
     use CommitsHookRows;
     use OpensPairChats;
-    use StartsAgentRequests;
     use WritesInboxMessages;
 
     private const array TABLES = [
@@ -81,7 +79,7 @@ final class UndockSourceTest extends TestCase
             ->sessionCalled('Builder')->agent_id;
         $this->pairChat(ActorIdentity::of($this->owner), ActorIdentity::ofClass(Agent::class, $this->agentId));
         $this->task = Task::factory()->create(['title' => 'Ship the dock']);
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
         $this->conversationId = $this->app->make(DockRequests::class)->inboxWith($this->agentId)->id;
     }
 
@@ -145,7 +143,7 @@ final class UndockSourceTest extends TestCase
      */
     private function runKeyed(Command $command, string $key): DockResult
     {
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
         $this->app->make(RequestKey::class)->set($key);
 
         try {

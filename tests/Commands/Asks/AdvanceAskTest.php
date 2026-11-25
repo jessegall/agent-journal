@@ -32,7 +32,6 @@ use App\Values\TrustedEntryAuthority;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\FixedServerClock;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -44,7 +43,6 @@ use Tests\TestCase;
 final class AdvanceAskTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'ask_hops', 'asks', 'ask_requesters', 'supervisor_changes', 'supervisor_links',
@@ -63,7 +61,7 @@ final class AdvanceAskTest extends TestCase
         parent::setUp();
 
         $this->owner = User::factory()->create();
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
         $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(ProfileProposal::fromConfiguration(
             (array) config('profiles'),
         )));
@@ -116,7 +114,7 @@ final class AdvanceAskTest extends TestCase
             $type->resolver()->resolve($type->subject(), $reference, null),
             SupervisorTarget::forActor(ActorIdentity::of($this->holder)),
         );
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
         $this->app->make(CommandBus::class)->run(new RouteAskCommand($reference, 0));
 
         return $ask->refresh();
@@ -156,7 +154,7 @@ final class AdvanceAskTest extends TestCase
 
     private function superviseWith(Agent $agent, SupervisorTarget $target): void
     {
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
         $type = AskTypeKey::of('question');
         $actor = ActorIdentity::of($agent);
         $version = $this->app->make(SupervisorDefinitions::class)->routeFor($actor, $type)->version;

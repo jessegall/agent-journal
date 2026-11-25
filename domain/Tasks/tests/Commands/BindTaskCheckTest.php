@@ -31,7 +31,6 @@ use PhpOption\Option;
 use PhpOption\Some;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 
 /**
@@ -43,7 +42,6 @@ final class BindTaskCheckTest extends TestCase
 {
     use ActsAsOwner;
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'users',
@@ -71,7 +69,7 @@ final class BindTaskCheckTest extends TestCase
             $other => ActorIdentity::ofClass(User::class, TestIds::of(9)),
         ]);
 
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
         $this->runCommand(new StartTaskCommand($task->id));
 
         $this->runCommand(new RunTaskCheckCommand($task->id, 1, $own, 'acme verify'));

@@ -20,7 +20,6 @@ use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\WritesInboxMessages;
 
 /**
@@ -30,7 +29,6 @@ use Tests\Support\WritesInboxMessages;
 final class ChatWindowTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
     use WritesInboxMessages;
 
     private const array TABLES = [

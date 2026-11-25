@@ -14,7 +14,6 @@ use Domain\Tasks\Tests\TestCase;
 use Domain\Tasks\Values\TaskTransition;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\StartsAgentRequests;
 
 /**
  * Each committed change of a task is kept in its history for good, with the run it belonged to, so a later run never
@@ -24,7 +23,6 @@ final class TaskHistoryTest extends TestCase
 {
     use ActsAsOwner;
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'users',
@@ -42,7 +40,7 @@ final class TaskHistoryTest extends TestCase
     public function test_a_block_of_one_run_keeps_its_reason_after_the_next_run_starts(): void
     {
         $task = Task::factory()->create();
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
 
         $this->runCommand(new StartTaskCommand($task->id));
         $this->runCommand(new BlockTaskCommand($task->id, 1, 'Waits for the schema.'));
@@ -92,7 +90,7 @@ final class TaskHistoryTest extends TestCase
     public function test_a_history_page_is_bounded_and_continues_before_its_last_entry(): void
     {
         $task = Task::factory()->create();
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
         $this->runCommand(new StartTaskCommand($task->id));
         $this->runCommand(new BlockTaskCommand($task->id, 1, 'Waits.'));
         $this->runCommand(new StartTaskCommand($task->id));

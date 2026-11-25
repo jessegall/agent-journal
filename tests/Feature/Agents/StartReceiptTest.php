@@ -40,7 +40,6 @@ use PhpOption\None;
 use Tests\Fixtures\Agents\CountingImageVerifier;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -52,7 +51,6 @@ use Tests\TestCase;
 final class StartReceiptTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
     use WithActiveAccount;
 
     private const array TABLES = [
@@ -88,7 +86,7 @@ final class StartReceiptTest extends TestCase
 
         $this->chooseActiveAccounts();
         $this->ownerId = User::factory()->create()->id;
-        $this->startUserRequestAs($this->ownerId);
+        $this->journal->actAsUserId($this->ownerId);
         $this->agentId = Agent::create('Builder', 'writing-helper', $this->localProject())->id;
         $this->proveTheHost();
     }
@@ -182,7 +180,8 @@ final class StartReceiptTest extends TestCase
             [StartDisposition::Refused, StartRefusalType::CapacityUnavailable->value, null],
             [$receipt->disposition, $receipt->refusalReason, $receipt->sessionId],
         );
-        $this->startRequestAs(Agent::create('Reader', 'writing-helper', $this->localProject())->id, TestSelections::requestId());
+        $reader = Agent::create('Reader', 'writing-helper', $this->localProject());
+        $this->journal->actAsAgentIds($reader->id, TestSelections::requestId());
         $this->assertThrows(
             fn () => $this->app->make(SessionRequestResolver::class)->receipt($request->requestId),
             SessionRequestMissing::class,

@@ -27,7 +27,6 @@ use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\DomainBoot;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
 /**
@@ -40,7 +39,6 @@ final class JobPermissionTest extends TestCase
 {
     use HasContainerSupport;
     use RefreshHookDatabase;
-    use StartsAgentRequests;
 
     private const string EXECUTOR = 'journal-executor';
 
@@ -104,7 +102,7 @@ final class JobPermissionTest extends TestCase
      */
     private function activate(array $withheld): void
     {
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
         $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(TestProposals::of(
             TestProposals::profile(self::EXECUTOR, ProfileBase::writingHelper(), withheldGrants: $withheld),
             TestProposals::profile(self::WRITER, ProfileBase::writingHelper()),

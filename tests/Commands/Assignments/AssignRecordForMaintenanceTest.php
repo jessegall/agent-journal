@@ -23,13 +23,11 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
 final class AssignRecordForMaintenanceTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const array TABLES = ['assignments', 'command_receipts', 'tasks', 'agents'];
 

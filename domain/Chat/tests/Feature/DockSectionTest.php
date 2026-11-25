@@ -23,7 +23,6 @@ use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\OpensPairChats;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\WritesInboxMessages;
 
 /**
@@ -34,7 +33,6 @@ final class DockSectionTest extends TestCase
 {
     use CommitsHookRows;
     use OpensPairChats;
-    use StartsAgentRequests;
     use WritesInboxMessages;
 
     private const array TABLES = [
@@ -76,7 +74,7 @@ final class DockSectionTest extends TestCase
 
         $this->assertSame([], $this->dockedTitles($owner, $window));
 
-        $this->startUserRequestAs($owner->id);
+        $this->journal->actAsUserId($owner->id);
         $inbox = $this->app->make(DockRequests::class)->inboxWith($session->agent_id);
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
 

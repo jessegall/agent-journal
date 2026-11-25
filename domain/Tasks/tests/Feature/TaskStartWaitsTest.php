@@ -18,7 +18,6 @@ use Domain\Tasks\Tests\TestCase;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsKeyedCommands;
-use Tests\Support\StartsAgentRequests;
 
 /**
  * A task with a wait not met cannot be started by anyone and is not in the pool; finishing the prerequisite or
@@ -30,7 +29,6 @@ final class TaskStartWaitsTest extends TestCase
     use ActsAsOwner;
     use CommitsHookRows;
     use RunsKeyedCommands;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'users',
@@ -57,7 +55,7 @@ final class TaskStartWaitsTest extends TestCase
 
         $this->prerequisite = Task::factory()->create(['title' => 'Prepare records']);
         $this->dependent = Task::factory()->create(['title' => 'Publish records']);
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
     }
 
     public function test_an_unmet_wait_keeps_the_task_out_of_starts_and_the_pool_until_its_prerequisite_finishes(): void

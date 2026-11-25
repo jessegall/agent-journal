@@ -45,7 +45,6 @@ use App\Values\StartPolicy;
 use App\Values\StartRequest;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -56,7 +55,6 @@ use Tests\TestCase;
 final class ContainerManifestTest extends TestCase
 {
     use RefreshHookDatabase;
-    use StartsAgentRequests;
     use WithActiveAccount;
 
     private const string GIT_SOURCE = '{"main":{"git":"git@github.com:acme/shop.git","revision":"main",'
@@ -693,7 +691,7 @@ final class ContainerManifestTest extends TestCase
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->startUserRequestAs($owner->id);
+        $this->journal->actAsUserId($owner->id);
     }
 
     private function containerRequest(): StartRequest

@@ -15,7 +15,6 @@ use Domain\Tasks\Tests\TestCase;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsKeyedCommands;
-use Tests\Support\StartsAgentRequests;
 
 /**
  * A wait whose prerequisite was cancelled still holds its task until it is removed; the removal frees the task and
@@ -26,7 +25,6 @@ final class RemoveTaskWaitTest extends TestCase
     use ActsAsOwner;
     use CommitsHookRows;
     use RunsKeyedCommands;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'users',
@@ -53,7 +51,7 @@ final class RemoveTaskWaitTest extends TestCase
 
         $this->first = Task::factory()->create(['title' => 'Prepare records']);
         $this->second = Task::factory()->create(['title' => 'Publish records']);
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
     }
 
     public function test_a_cancelled_prerequisite_leaves_the_wait_outstanding_and_history_keeps_every_change(): void

@@ -41,7 +41,7 @@ trait OpensTeamInboxMessage
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->builder = $this->startedIds('Builder');
         $this->reviewer = $this->startedIds('Reviewer');
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
 
         $this->team = Inbox::create(Inbox::NAMED_PROVIDER, 'team', 'Team');
         $now = CarbonImmutable::now();
@@ -70,7 +70,7 @@ trait OpensTeamInboxMessage
     private function asAgent(array $agent): void
     {
         $this->app->forgetScopedInstances();
-        $this->startRequestAs($agent[0], $agent[1]);
+        $this->journal->actAsAgentIds($agent[0], $agent[1]);
     }
 
     /**

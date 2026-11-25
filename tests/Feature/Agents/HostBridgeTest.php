@@ -27,17 +27,16 @@ use App\Values\StartPolicy;
 use App\Values\StartRequest;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 final class HostBridgeTest extends TestCase
 {
     use RefreshHookDatabase;
-    use StartsAgentRequests;
 
     public function test_unproven_account_transport_refuses_before_account_selection_or_host_preparation(): void
     {
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $this->mock(ActiveAccountReader::class)->shouldNotReceive('forStart');
         $this->mock(StartExecutor::class)->shouldNotReceive('start');
         $this->mock(HostCapabilities::class)->shouldReceive('capability')->andReturnUsing(

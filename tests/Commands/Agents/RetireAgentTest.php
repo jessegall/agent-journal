@@ -31,7 +31,6 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -46,7 +45,6 @@ use Throwable;
 final class RetireAgentTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     /**
      * The domains this test uses beside core.
@@ -86,7 +84,7 @@ final class RetireAgentTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->main = Agent::create('Main', 'main-agent', $this->localProject());
         $this->helper = Agent::create('Helper', 'read-only-helper', $this->localProject());
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
     }
 
     public function test_the_owner_retires_an_agent_releasing_its_work_and_ending_its_sessions(): void
@@ -118,13 +116,13 @@ final class RetireAgentTest extends TestCase
 
     public function test_a_main_agent_retires_a_helper_but_not_itself_and_a_helper_retires_nobody(): void
     {
-        $this->startRequestAs($this->helper->id, TestIds::of(2));
+        $this->journal->actAsAgentIds($this->helper->id, TestIds::of(2));
         $this->assertThrows(
             fn () => $this->app->make(CommandBus::class)->run(new RetireAgentCommand($this->main->id)),
             ActorNotAllowed::class,
         );
 
-        $this->startRequestAs($this->main->id, TestIds::of(1));
+        $this->journal->actAsAgentIds($this->main->id, TestIds::of(1));
         $this->assertThrows(
             fn () => $this->app->make(CommandBus::class)->run(new RetireAgentCommand($this->main->id)),
             AgentRetirementDenied::class,

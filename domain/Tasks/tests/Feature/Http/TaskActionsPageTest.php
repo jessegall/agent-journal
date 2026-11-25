@@ -15,7 +15,6 @@ use Domain\Tasks\Tests\TestCase;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
 
 /**
  * Start, block and cancel from the task page check the task's state, run and revision at commit: a stale cancel is
@@ -25,7 +24,6 @@ use Tests\Support\StartsAgentRequests;
 final class TaskActionsPageTest extends TestCase
 {
     use RefreshHookDatabase;
-    use StartsAgentRequests;
 
     private const string READER = 'page.data.root.children.1.children.1.children';
 

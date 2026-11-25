@@ -19,7 +19,6 @@ use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\SendsMcpFrames;
-use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
 /**
@@ -29,7 +28,6 @@ final class OrientationToolsTest extends TestCase
 {
     use CommitsHookRows;
     use SendsMcpFrames;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'users',
@@ -62,7 +60,7 @@ final class OrientationToolsTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->caller = TestStart::start();
         $this->other = TestStart::start();
-        $this->startUserRequestAs($owner->id);
+        $this->journal->actAsUserId($owner->id);
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
 
         $tasks = Task::factory()->count(3)->sequence(

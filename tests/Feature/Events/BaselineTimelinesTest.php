@@ -48,7 +48,6 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\RunsKeyedCommands;
 use Tests\Support\Settings\SwitchesDomainsOff;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
@@ -64,7 +63,6 @@ final class BaselineTimelinesTest extends TestCase
     use ActsAsOwner;
     use CommitsHookRows;
     use RunsKeyedCommands;
-    use StartsAgentRequests;
     use SwitchesDomainsOff;
     use WithActiveAccount;
 
@@ -471,7 +469,7 @@ final class BaselineTimelinesTest extends TestCase
     private function asAgent(object $command): void
     {
         $session = $this->session ??= $this->startedSession();
-        $this->startRequestAs($session->agent_id, $session->id);
+        $this->journal->actAsAgentIds($session->agent_id, $session->id);
         $this->app->make(CommandBus::class)->run($command);
     }
 

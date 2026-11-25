@@ -22,7 +22,6 @@ use Illuminate\Support\Str;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsKeyedCommands;
-use Tests\Support\StartsAgentRequests;
 
 /**
  * A reviewer approves the open review of a plan: one decision is kept that a replay under its key returns, and the
@@ -33,7 +32,6 @@ final class ApprovePlanReviewTest extends TestCase
     use ActsAsOwner;
     use CommitsHookRows;
     use RunsKeyedCommands;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'users',
@@ -58,7 +56,7 @@ final class ApprovePlanReviewTest extends TestCase
             'title' => 'Write',
             'brief' => 'Write the page.',
         ]);
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
         $structure = $this->app->make(PlanStructure::class);
         $structure->addTasks($structure->addPhase($this->plan, 'Writing'), [$this->task->id]);
     }

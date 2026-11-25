@@ -21,7 +21,6 @@ use Domain\Tasks\Tests\TestCase;
 use Domain\Tasks\Values\TaskLogLocation;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\StartsAgentRequests;
 
 /**
  * A log line hit opens at that line through tasks_log_read and in the inspector's Logs tab, a task hit and a log hit
@@ -31,7 +30,6 @@ final class TaskLogSearchTest extends TestCase
 {
     use ActsAsOwner;
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const int PAGE_LIMIT = 10;
 
@@ -114,7 +112,7 @@ final class TaskLogSearchTest extends TestCase
     private function loggedTask(): Task
     {
         $task = Task::factory()->create(['title' => 'Driver work']);
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
         $bus = $this->app->make(CommandBus::class);
         $bus->run(new StartTaskCommand($task->id));
 

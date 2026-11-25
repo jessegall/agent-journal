@@ -41,7 +41,6 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\RegistersShareDomains;
 use Tests\Support\Sharing\TestShares;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -55,7 +54,6 @@ final class CreateShareTest extends TestCase
 {
     use RefreshHookDatabase;
     use RegistersShareDomains;
-    use StartsAgentRequests;
 
     private const string PENDING_HAS_NO_ADDRESS = 'A pending share has no address yet.';
 
@@ -85,7 +83,7 @@ final class CreateShareTest extends TestCase
             Link::create($this->root->type, $this->root->id, 'binders.sheet', TestIds::of($number));
         }
 
-        $this->startTestUserRequest(9);
+        $this->journal->actAsUserId(TestIds::of(9));
     }
 
     public function test_the_owner_creates_a_share_from_a_fresh_preview_and_reads_its_url(): void

@@ -44,7 +44,6 @@ use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\Agents\ServesEveryCombination;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -59,7 +58,6 @@ final class StartProfileMainTest extends TestCase
     use HasContainerSupport;
     use RefreshHookDatabase;
     use ServesEveryCombination;
-    use StartsAgentRequests;
     use WithActiveAccount;
 
     private Agent $main;
@@ -80,7 +78,7 @@ final class StartProfileMainTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
         $this->main = Agent::create('Main', 'main-agent', $this->localProject());
     }
 

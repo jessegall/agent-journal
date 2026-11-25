@@ -21,7 +21,6 @@ use Tests\Support\ActsAsActors;
 use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsBuiltInProfiles;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
 use Tests\TestCase;
 
@@ -35,7 +34,6 @@ final class SkillContextResolverTest extends TestCase
     use CommitsHookRows;
     use HasContainerSupport;
     use InstallsBuiltInProfiles;
-    use StartsAgentRequests;
 
     private const array TABLES = ['agent_sessions', 'agents', 'profile_revisions', 'profiles'];
 
@@ -45,10 +43,10 @@ final class SkillContextResolverTest extends TestCase
         [$main, $mainSession] = $this->start('main-agent', null);
         [$helper, $helperSession] = $this->start('read-only-helper', 1);
 
-        $this->startRequestAs($main->id, $mainSession->id);
+        $this->journal->actAsAgentIds($main->id, $mainSession->id);
         $mainContext = $this->app->make(SkillContext::class);
         $this->app->forgetScopedInstances();
-        $this->startRequestAs($helper->id, $helperSession->id);
+        $this->journal->actAsAgentIds($helper->id, $helperSession->id);
         $helperContext = $this->app->make(SkillContext::class);
 
         $this->assertSame(ConditionOutcome::Match, Conditions::dispatchesWork()->evaluate($mainContext)->outcome);
@@ -65,7 +63,7 @@ final class SkillContextResolverTest extends TestCase
         [$helper, $session] = $this->start('read-only-helper', 1);
         $this->activateReviewer('Second.');
 
-        $this->startRequestAs($helper->id, $session->id);
+        $this->journal->actAsAgentIds($helper->id, $session->id);
         $context = $this->app->make(SkillContextResolver::class)->current();
 
         $this->assertSame(1, $context->profile->snapshot?->revision);
@@ -77,12 +75,12 @@ final class SkillContextResolverTest extends TestCase
         [$first, $firstSession] = $this->start('main-agent', null);
         [$second, $secondSession] = $this->start('main-agent', null);
 
-        $this->startRequestAs($first->id, $firstSession->id);
+        $this->journal->actAsAgentIds($first->id, $firstSession->id);
         $firstContext = $this->app->make(SkillContext::class);
         $this->assertSame($firstContext, $this->app->make(SkillContext::class));
 
         $this->app->forgetScopedInstances();
-        $this->startRequestAs($second->id, $secondSession->id);
+        $this->journal->actAsAgentIds($second->id, $secondSession->id);
         $secondContext = $this->app->make(SkillContext::class);
 
         $this->assertSame($first->id, $firstContext->actor->id);
@@ -93,7 +91,7 @@ final class SkillContextResolverTest extends TestCase
     {
         [$main, $mainSession] = $this->start('main-agent', null);
         [$other] = $this->start('main-agent', null);
-        $this->startRequestAs($main->id, $mainSession->id);
+        $this->journal->actAsAgentIds($main->id, $mainSession->id);
         $resolver = $this->app->make(SkillContextResolver::class);
 
         $this->assertSame($main->id, $resolver->forAgent($main)->actor->id);

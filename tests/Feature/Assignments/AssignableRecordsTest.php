@@ -19,7 +19,6 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -31,7 +30,6 @@ use Tests\TestCase;
 final class AssignableRecordsTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const array TABLES = ['tasks', 'plans', 'phases', 'phase_tasks'];
 
@@ -50,7 +48,7 @@ final class AssignableRecordsTest extends TestCase
         parent::setUp();
 
         $this->registry = $this->app->make(AssignmentRegistry::class);
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
     }
 
     public function test_a_task_resolves_under_its_alias_and_a_missing_one_is_unavailable(): void

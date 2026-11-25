@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature;
 
+use Tests\Support\TestIds;
 use App\Enums\Search\ScoreTier;
 use App\Enums\Search\SearchSurface;
 use App\Models\Access\User;
@@ -25,7 +26,6 @@ use Domain\Tasks\Support\TaskSearchProvider;
 use Domain\Tasks\Tests\TestCase;
 use Domain\Tasks\Values\TaskBriefPassage;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
 
 /**
  * A phrase only late in a long brief, across a segment edge, is found by the brief tier; its tasks_read action
@@ -35,7 +35,6 @@ use Tests\Support\StartsAgentRequests;
 final class TaskBriefPassageTest extends TestCase
 {
     use RefreshHookDatabase;
-    use StartsAgentRequests;
 
     private const string PHRASE = 'rotate the signing keys';
 
@@ -59,7 +58,7 @@ final class TaskBriefPassageTest extends TestCase
         ], $open->arguments);
 
         $passage = TaskBriefPassage::fromId($hit->location->id);
-        $this->startTestAgentRequest(1, 1);
+        $this->journal->actAsAgentIds(TestIds::of(1), TestIds::of(1));
         $read = $this->app->make(TaskReadResult::class)->readAt($task->id, $passage);
 
         $this->assertStringContainsString(self::PHRASE, $read->structuredContent()['brief']);
@@ -86,7 +85,7 @@ final class TaskBriefPassageTest extends TestCase
         $edited = ['brief' => 'Nothing left here.', 'revision' => $task->revision + 1];
         Task::query()->whereKey($task->id)->update($edited);
 
-        $this->startTestAgentRequest(1, 1);
+        $this->journal->actAsAgentIds(TestIds::of(1), TestIds::of(1));
         $this->expectException(TaskPassageUnavailable::class);
 
         $this->app->make(TaskReadResult::class)->readAt($task->id, $passage);

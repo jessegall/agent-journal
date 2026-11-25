@@ -46,10 +46,10 @@ final class DomainDisabledCommandsTest extends CommandBusTestCase
             $built = true;
         });
 
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $this->assertRefusedAsDisabled(new StartPlanCommand(TestIds::of(5)));
 
-        $this->startTestAgentRequest(2, 20);
+        $this->journal->actAsAgentIds(TestIds::of(2), TestIds::of(20));
         $this->assertRefusedAsDisabled(new StartPlanCommand(TestIds::of(5)));
 
         $this->assertFalse($built, self::HANDLER_BUILT);
@@ -63,7 +63,7 @@ final class DomainDisabledCommandsTest extends CommandBusTestCase
         $this->app->resolving(RefusesAll::class, function () use (&$built): void {
             $built = true;
         });
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
 
         $this->app->make(CommandBus::class)->run(new ShuffleDeckCommand('red'));
 
@@ -73,7 +73,7 @@ final class DomainDisabledCommandsTest extends CommandBusTestCase
     public function test_with_every_domain_on_the_middleware_runs_as_before(): void
     {
         $this->installCommandModules(MiddlewareDeclaration::around(RefusesAll::class, CommandScope::all()));
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
 
         $this->expectException(CommandRefused::class);
 

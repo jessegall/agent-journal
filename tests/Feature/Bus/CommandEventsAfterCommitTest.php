@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
+use Tests\Support\TestIds;
 use App\Contracts\Bus\CommandBus;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\ConnectionInterface;
@@ -29,7 +30,7 @@ final class CommandEventsAfterCommitTest extends CommandBusTestCase
         parent::setUp();
 
         $this->installCommandModules();
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $database = $this->app->make(ConnectionInterface::class);
         $this->app->make(Dispatcher::class)->listen(
             NoteAudited::class,

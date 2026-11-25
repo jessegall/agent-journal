@@ -19,7 +19,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use PDOException;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\UsesSecondConnection;
@@ -33,7 +32,6 @@ use Tests\TestCase;
 final class AssignmentStoreTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
     use UsesSecondConnection;
 
     private const array TABLES = ['assignments'];
@@ -51,7 +49,7 @@ final class AssignmentStoreTest extends TestCase
         $this->task = TestActors::record('tasks.task', 12);
         $this->builder = new AssigneeIdentity(Agent::storedType(), TestIds::of(7));
         $this->reviewer = new AssigneeIdentity(Agent::storedType(), TestIds::of(8));
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
     }
 
     public function test_an_unheld_record_gets_one_holder_and_a_second_assign_finds_it(): void

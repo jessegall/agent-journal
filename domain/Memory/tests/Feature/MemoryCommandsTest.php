@@ -14,7 +14,6 @@ use Domain\Memory\Tests\TestCase;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsSignedPayloads;
-use Tests\Support\StartsAgentRequests;
 
 /**
  * An agent keeps, changes, removes and lists its own memories through the four console commands and their signed
@@ -24,7 +23,6 @@ final class MemoryCommandsTest extends TestCase
 {
     use CommitsHookRows;
     use SendsSignedPayloads;
-    use StartsAgentRequests;
 
     private const string MEMORY_TEXT = 'Mine alone.';
 
@@ -103,7 +101,7 @@ final class MemoryCommandsTest extends TestCase
 
     public function test_reading_one_memory_gives_its_revision_and_another_agents_is_unavailable(): void
     {
-        $this->startRequestAs($this->owner->agent->id, $this->owner->session->id);
+        $this->journal->actAsAgentIds($this->owner->agent->id, $this->owner->session->id);
         $memory = Memory::create(ActorIdentity::of($this->owner->agent), 'Read me.', 4);
         $resolver = $this->app->make(MemoryResolver::class);
 
@@ -119,7 +117,7 @@ final class MemoryCommandsTest extends TestCase
         );
 
         $this->app->forgetScopedInstances();
-        $this->startRequestAs($this->other->agent->id, $this->other->session->id);
+        $this->journal->actAsAgentIds($this->other->agent->id, $this->other->session->id);
 
         $this->expectException(RecordUnavailable::class);
 

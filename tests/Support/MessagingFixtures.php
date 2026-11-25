@@ -24,7 +24,6 @@ trait MessagingFixtures
     use OpensDriverRuntimes;
     use OpensPairChats;
     use RunsKeyedCommands;
-    use StartsAgentRequests;
     use WritesInboxMessages;
 
     public const array MESSAGING_TABLES = [
@@ -71,13 +70,13 @@ trait MessagingFixtures
     protected function asOwner(): void
     {
         $this->app->forgetScopedInstances();
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
     }
 
     protected function asAgent(AgentSession $session): void
     {
         $this->app->forgetScopedInstances();
-        $this->startRequestAs($session->agent_id, $session->id);
+        $this->journal->actAsAgentIds($session->agent_id, $session->id);
     }
 
     protected function ownerInboxId(): string

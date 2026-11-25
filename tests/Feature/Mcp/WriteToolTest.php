@@ -144,7 +144,7 @@ final class WriteToolTest extends CommandBusTestCase
     private function startWithNotes(MiddlewareDeclaration ...$middleware): TestStart
     {
         $this->installCommandModules(...$middleware);
-        $this->startUserRequestAs(TestIds::of(7));
+        $this->journal->actAsUserId(TestIds::of(7));
         $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(TestProposals::of(
             TestProposals::profile(self::PROFILE, ProfileBase::mainAgent()),
         )));

@@ -272,10 +272,16 @@ final class JournalSeed
     public function actAs(string $name): self
     {
         if (array_key_exists($name, $this->agents)) {
-            $this->requests->asAgent($this->agents[$name]->id, $this->sessionOf($name)->id);
-        } else {
-            $this->requests->asUser($this->userCalled($name));
+            $session = $this->sessionOf($name);
+            $this->app->forgetScopedInstances();
+            $this->requests->asAgent($session->agent_id, $session->id);
+
+            return $this;
         }
+
+        $user = $this->userCalled($name);
+        $this->app->forgetScopedInstances();
+        $this->requests->asUser($user);
 
         return $this;
     }
@@ -316,10 +322,15 @@ final class JournalSeed
     }
 
     /**
-     * Acts as a user known only by its id, with no one signed in, for an id the journal may not hold.
+     * Acts as a user known only by its id, with no one signed in, for an id the journal may not hold; while the journal
+     * has no owner, that user stands in as the owner, as the tests that act by id expect.
      */
     public function actAsUserId(string $userId): self
     {
+        if ($this->owner === null) {
+            $this->app->instance(AccessSettings::class, new AccessSettings($userId));
+        }
+
         $this->requests->asUserId($userId);
 
         return $this;
@@ -384,6 +395,11 @@ final class JournalSeed
 
     /**
      * Runs the command as the journal itself does, from the entry and under the trusted entry its listener names.
+     *
+     * @template TResult
+     *
+     * @param  Command<TResult>  $command
+     * @return TResult
      */
     public function runAsJournal(CommandEntry $entry, string $trustedEntry, Command $command): mixed
     {

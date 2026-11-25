@@ -25,7 +25,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -36,7 +35,6 @@ use Tests\TestCase;
 final class SessionOutputGrantsTest extends TestCase
 {
     use RefreshHookDatabase;
-    use StartsAgentRequests;
     use WithActiveAccount;
 
     /**
@@ -59,7 +57,7 @@ final class SessionOutputGrantsTest extends TestCase
         $this->chooseActiveAccounts();
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->startUserRequestAs($owner->id);
+        $this->journal->actAsUserId($owner->id);
         $this->agent = Agent::create('Researcher', 'read-only-helper', $this->localProject());
         $this->visits = $this->app->make(ConversationVisits::class);
         $this->access = $this->app->make(SessionOutputAccess::class);

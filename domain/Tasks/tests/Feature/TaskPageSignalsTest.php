@@ -17,7 +17,6 @@ use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\StartsAgentRequests;
 
 /**
  * Every committed change of a task, in a plan or not, sends the page signal that makes the mounted tasks views read
@@ -27,7 +26,6 @@ final class TaskPageSignalsTest extends TestCase
 {
     use ActsAsOwner;
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'users',
@@ -45,7 +43,7 @@ final class TaskPageSignalsTest extends TestCase
     {
         Event::fake([TaskStartCommitted::class]);
         $task = Task::factory()->create();
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
 
         $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
 

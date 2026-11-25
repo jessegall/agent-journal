@@ -27,7 +27,6 @@ use Tests\Fixtures\Domains\Binders\BinderPublications;
 use Tests\Fixtures\Domains\Binders\BindersDomain;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\RegistersShareDomains;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 
@@ -39,7 +38,6 @@ final class SaveSharePreviewTest extends TestCase
 {
     use RefreshHookDatabase;
     use RegistersShareDomains;
-    use StartsAgentRequests;
 
     private RecordIdentity $root;
 
@@ -92,7 +90,7 @@ final class SaveSharePreviewTest extends TestCase
 
     public function test_a_user_who_is_not_the_owner_is_refused(): void
     {
-        $this->startTestUserRequest(8);
+        $this->journal->actAsUserId(TestIds::of(8));
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
 
         $this->expectException(SharingNotAllowed::class);
@@ -104,7 +102,7 @@ final class SaveSharePreviewTest extends TestCase
 
     public function test_without_a_default_gateway_a_preview_names_one(): void
     {
-        $this->startTestUserRequest(9);
+        $this->journal->actAsUserId(TestIds::of(9));
 
         $this->expectExceptionObject(ShareGatewayUnavailable::noDefault());
 
@@ -157,7 +155,7 @@ final class SaveSharePreviewTest extends TestCase
      */
     private function save(array $selectedIds): SavedSharePreview
     {
-        $this->startTestUserRequest(9);
+        $this->journal->actAsUserId(TestIds::of(9));
 
         return $this->app->make(CommandBus::class)->run(
             new SaveSharePreviewCommand($this->root->type, $this->root->id, $selectedIds, $this->configuration->id),

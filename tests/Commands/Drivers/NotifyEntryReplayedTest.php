@@ -20,7 +20,6 @@ use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\RecordedAttention;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\InstallsInboxes;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsHostCalls;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -32,7 +31,6 @@ use Tests\TestCase;
 final class NotifyEntryReplayedTest extends TestCase
 {
     use CommitsHookRows;
-    use InstallsInboxes;
     use OpensLedgerRuntimes;
     use RunsTrustedCommands;
     use SendsHostCalls;
@@ -63,6 +61,8 @@ final class NotifyEntryReplayedTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->journal->installInboxes();
         $this->app->instance(AccessSettings::class, new AccessSettings('owner'));
         $this->attention = new RecordedAttention();
         $this->app->bind(ActorAttention::class, fn () => $this->attention);

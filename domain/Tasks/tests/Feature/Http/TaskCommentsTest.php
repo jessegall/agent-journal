@@ -15,7 +15,6 @@ use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\StartsAgentRequests;
 
 /**
  * A task takes comments through Core's comments alone: one the caller may read gets a comment that its page reads
@@ -24,7 +23,6 @@ use Tests\Support\StartsAgentRequests;
 final class TaskCommentsTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'comments',
@@ -47,7 +45,7 @@ final class TaskCommentsTest extends TestCase
     public function test_a_comment_on_a_task_is_read_back_on_its_page(): void
     {
         $task = Task::factory()->create();
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
 
         $this->app->make(CommandBus::class)->run(new PostCommentCommand(
             new RecordIdentity(Task::linkType(), $task->id),

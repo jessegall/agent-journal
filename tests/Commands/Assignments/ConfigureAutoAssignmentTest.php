@@ -11,16 +11,19 @@ use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\AutoAssignmentPoolUnknown;
 use App\Exceptions\InvalidRecordIds;
+use App\Support\ActorIdentity;
 use App\Support\AutoAssignmentChange;
 use App\Support\AutoAssignmentFact;
 use App\Support\AutoAssignmentInput;
+use App\Support\AutoAssignmentKey;
 use App\Support\PoolReference;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Support\Assignments\OpenTaskPoolFactory;
+use Domain\Tasks\Support\TaskType;
 use Domain\Tasks\TasksDomain;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\HasAutoAssignmentWorker;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -30,7 +33,10 @@ use Tests\TestCase;
 final class ConfigureAutoAssignmentTest extends TestCase
 {
     use CommitsHookRows;
-    use HasAutoAssignmentWorker;
+
+    private TestStart $worker;
+
+    private AutoAssignmentKey $key;
 
     private const array TABLES = [
         'users',
@@ -41,6 +47,16 @@ final class ConfigureAutoAssignmentTest extends TestCase
         'auto_assignments',
         'command_receipts',
     ];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner()->idleAgent('Worker', 'writing-helper')->startSession('Worker', 'Worker');
+        $this->worker = $this->journal->testStartCalled('Worker');
+        $this->key = new AutoAssignmentKey(ActorIdentity::of($this->worker->agent), TaskType::linkType());
+        $this->journal->actAs('Owner');
+    }
 
     /**
      * The domains this test uses beside core.

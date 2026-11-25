@@ -17,13 +17,12 @@ use App\Values\AskTypeKey;
 use App\Values\ProfileActivation;
 use App\Values\SupervisorTarget;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 final class ChangeSupervisorTest extends TestCase
 {
     use RefreshHookDatabase;
-    use StartsAgentRequests;
 
     public function test_changing_a_route_keeps_other_versions_and_records_the_author(): void
     {
@@ -48,7 +47,7 @@ final class ChangeSupervisorTest extends TestCase
      */
     private function activate(array $configuration): ProfileActivation
     {
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
 
         return $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(
             ProfileProposal::fromConfiguration(['revision' => 1, ...$configuration]),

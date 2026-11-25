@@ -29,7 +29,6 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\RegistersShareDomains;
 use Tests\Support\Sharing\TestShares;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -43,7 +42,6 @@ final class CreateShareRaceTest extends TestCase
 {
     use CommitsHookRows;
     use RegistersShareDomains;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'command_receipts',
@@ -71,7 +69,7 @@ final class CreateShareRaceTest extends TestCase
         }
 
         DB::transaction(fn () => ShareInstallation::create());
-        $this->startTestUserRequest(9);
+        $this->journal->actAsUserId(TestIds::of(9));
         $saved = $this->app->make(CommandBus::class)->run(
             new SaveSharePreviewCommand('binders.binder', TestIds::of(1), [], $second->id),
         );
@@ -104,7 +102,7 @@ final class CreateShareRaceTest extends TestCase
     private function create(SavedSharePreview $saved, string $key): Share
     {
         $this->app->forgetScopedInstances();
-        $this->startTestUserRequest(9);
+        $this->journal->actAsUserId(TestIds::of(9));
         $this->app->make(RequestKey::class)->set($key);
         $summary = $this->app->make(CommandBus::class)->run(
             new CreateShareCommand($saved->previewId, $saved->checksum, ShareDuration::STANDARD_MINUTES, $key),

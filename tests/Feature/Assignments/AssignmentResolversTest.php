@@ -20,7 +20,6 @@ use Illuminate\Support\Facades\DB;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
 use Tests\TestCase;
 
@@ -31,7 +30,6 @@ use Tests\TestCase;
 final class AssignmentResolversTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const array TABLES = ['users', 'agents', 'tasks', 'assignments'];
 
@@ -54,7 +52,7 @@ final class AssignmentResolversTest extends TestCase
         $this->owner = User::factory()->create(['name' => 'Jesse']);
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->helper = AssigneeIdentity::of(Agent::create('Helper', 'read-only-helper', $this->localProject()));
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
     }
 
     public function test_twenty_records_of_one_type_cost_one_visibility_query_and_one_assignment_query(): void

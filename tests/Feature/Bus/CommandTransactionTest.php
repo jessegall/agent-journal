@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
+use Tests\Support\TestIds;
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\CommandRefused;
 use App\Exceptions\CommandTransactionMismatch;
@@ -30,7 +31,7 @@ final class CommandTransactionTest extends CommandBusTestCase
     public function test_a_command_commits_in_its_isolation_and_a_repeatable_read_command_gets_its_own(): void
     {
         $this->installCommandModules();
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $bus = $this->app->make(CommandBus::class);
 
         $id = $bus->run(new WriteNoteCommand('kept'));
@@ -43,7 +44,7 @@ final class CommandTransactionTest extends CommandBusTestCase
     public function test_a_command_dispatched_by_a_handler_joins_the_open_transaction(): void
     {
         $this->installCommandModules();
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
 
         $id = $this->app->make(CommandBus::class)->run(new CopyNoteCommand('copied'));
 
@@ -53,7 +54,7 @@ final class CommandTransactionTest extends CommandBusTestCase
     public function test_a_refusal_rolls_back_everything_the_command_wrote(): void
     {
         $this->installCommandModules();
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
 
         try {
             $this->app->make(CommandBus::class)->run(new RefuseNoteCommand('gone'));
@@ -66,7 +67,7 @@ final class CommandTransactionTest extends CommandBusTestCase
     public function test_a_handler_that_ignores_a_failed_inner_command_fails_the_whole_command(): void
     {
         $this->installCommandModules();
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
 
         try {
             $this->app->make(CommandBus::class)->run(new IgnoreFailedNoteCommand('half'));
@@ -79,7 +80,7 @@ final class CommandTransactionTest extends CommandBusTestCase
     public function test_a_transaction_a_handler_opens_itself_is_refused_and_nothing_is_left_open(): void
     {
         $this->installCommandModules();
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
 
         try {
             $this->app->make(CommandBus::class)->run(new OpenTransactionNoteCommand('own'));
@@ -93,7 +94,7 @@ final class CommandTransactionTest extends CommandBusTestCase
     public function test_a_command_joins_a_stack_transaction_of_its_isolation_and_refuses_another(): void
     {
         $this->installCommandModules();
-        $this->startTestUserRequest(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $bus = $this->app->make(CommandBus::class);
 
         $id = $this->app->make(StackTransaction::class)->run(fn () => $bus->run(new WriteNoteCommand('joined')));

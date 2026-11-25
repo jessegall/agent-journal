@@ -17,7 +17,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\UsesSecondConnection;
@@ -32,7 +31,6 @@ use Tests\TestCase;
 final class AssigneesTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
     use UsesSecondConnection;
 
     private const array TABLES = ['users', 'agents'];
@@ -48,7 +46,7 @@ final class AssigneesTest extends TestCase
         $this->owner = User::factory()->create(['name' => 'Jesse']);
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->builder = Agent::create('Builder', 'main-agent', $this->localProject());
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
     }
 
     public function test_the_owner_and_an_agent_with_the_same_id_are_different_holders(): void

@@ -20,7 +20,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\StartsAgentRequests;
 
 /**
  * Phases and plans keep their task tallies on their own rows, moved in the transaction of each placement and each
@@ -30,7 +29,6 @@ final class PlanTalliesTest extends TestCase
 {
     use ActsAsOwner;
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'users',
@@ -52,7 +50,7 @@ final class PlanTalliesTest extends TestCase
         $plan = Plan::factory()->create();
         $phase = $this->structure()->addPhase($plan, 'Work');
         [$first, $second, $third] = Task::factory()->count(3)->create()->all();
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
         $this->structure()->addTasks($phase, [
             $first->id,
             $second->id,
@@ -98,7 +96,7 @@ final class PlanTalliesTest extends TestCase
 
     public function test_the_current_phase_is_the_first_unfinished_else_the_last_and_none_without_phases(): void
     {
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
         $finished = Task::factory()->create();
         $finished->finish('Done.');
         $cancelled = Task::factory()->create();
@@ -133,7 +131,7 @@ final class PlanTalliesTest extends TestCase
 
     public function test_a_card_read_loads_the_same_rows_however_many_tasks_the_plan_holds(): void
     {
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
         $small = $this->planWithTasks('Small plan', 1);
         $large = $this->planWithTasks('Large plan', 40);
 

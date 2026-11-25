@@ -14,6 +14,7 @@ use App\Support\OutputRecorder;
 use App\Support\OutsideCommandAllowance;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\DatabaseManager;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Events\ConnectionEstablished;
 use Illuminate\Foundation\Application;
@@ -43,7 +44,7 @@ abstract class TestCase extends BaseTestCase
     use WithCachedConfig;
 
     /**
-     * @var array<string, class-string> the application's morph map, before a test adds fixture types to it
+     * @var array<string, class-string<Model>> the application's morph map, before a test adds fixture types to it
      */
     private array $applicationMorphMap = [];
 

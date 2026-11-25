@@ -18,7 +18,6 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
 /**
@@ -29,7 +28,6 @@ use Tests\TestCase;
 final class AssignedListEndpointsTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'users',
@@ -61,7 +59,7 @@ final class AssignedListEndpointsTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->caller = TestStart::start('read-only-helper');
         $this->other = TestStart::start('read-only-helper');
-        $this->startUserRequestAs($owner->id);
+        $this->journal->actAsUserId($owner->id);
     }
 
     public function test_the_caller_gets_only_the_tasks_and_plans_it_holds(): void

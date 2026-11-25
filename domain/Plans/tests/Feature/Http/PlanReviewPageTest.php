@@ -17,7 +17,6 @@ use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
 
 /**
  * A plan's review from its page: a coordinator asks for it, a decider approves the frozen edition and the reader shows
@@ -26,7 +25,6 @@ use Tests\Support\StartsAgentRequests;
 final class PlanReviewPageTest extends TestCase
 {
     use RefreshHookDatabase;
-    use StartsAgentRequests;
 
     private User $owner;
 
@@ -45,7 +43,7 @@ final class PlanReviewPageTest extends TestCase
             'title' => 'Write',
             'brief' => 'Write the page.',
         ]);
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
         $structure = $this->app->make(PlanStructure::class);
         $structure->addTasks($structure->addPhase($this->plan, 'Writing'), [$this->task->id]);
     }

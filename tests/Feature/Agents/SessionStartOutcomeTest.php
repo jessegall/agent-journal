@@ -33,7 +33,6 @@ use App\Values\StartRequest;
 use Tests\Fixtures\Agents\CountingImageVerifier;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -44,7 +43,6 @@ use Tests\TestCase;
 final class SessionStartOutcomeTest extends TestCase
 {
     use RefreshHookDatabase;
-    use StartsAgentRequests;
     use WithActiveAccount;
 
     private const string IMAGE = 'registry.example/journal-helper@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
@@ -59,7 +57,7 @@ final class SessionStartOutcomeTest extends TestCase
 
         $this->chooseActiveAccounts();
         $this->ownerId = User::factory()->create()->id;
-        $this->startUserRequestAs($this->ownerId);
+        $this->journal->actAsUserId($this->ownerId);
         $this->agentId = Agent::create('Builder', 'writing-helper', $this->localProject())->id;
         $this->app->instance(HostCapabilities::class, new class implements HostCapabilities
         {

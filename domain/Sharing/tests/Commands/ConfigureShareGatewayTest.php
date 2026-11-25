@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Commands;
 
+use Tests\Support\TestIds;
 use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
 use App\Models\CommandRules\CommandReceipt;
@@ -27,7 +28,6 @@ use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\TestShares;
 use Tests\Support\Sharing\UnconfiguredShareGateway;
 use Tests\Support\Sharing\UsesSecretsFolder;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
 
 /**
@@ -38,7 +38,6 @@ use Tests\Support\TestActors;
 final class ConfigureShareGatewayTest extends TestCase
 {
     use RefreshHookDatabase;
-    use StartsAgentRequests;
     use UsesSecretsFolder;
 
     private const string NOT_LOGGED_IN = 'not logged in';
@@ -154,7 +153,7 @@ final class ConfigureShareGatewayTest extends TestCase
     ): GatewayConfiguration {
         $key = (string) Str::ulid();
         $this->app->forgetScopedInstances();
-        $this->startTestUserRequest(9);
+        $this->journal->actAsUserId(TestIds::of(9));
         $this->app->make(RequestKey::class)->set($key);
 
         return $this->app->make(CommandBus::class)->run(

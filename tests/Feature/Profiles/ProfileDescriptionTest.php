@@ -18,7 +18,6 @@ use Domain\Rules\RulesDomain;
 use Domain\Rules\Support\ProfileRuleRecords;
 use Tests\Support\DomainBoot;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
 /**
@@ -28,7 +27,6 @@ use Tests\TestCase;
 final class ProfileDescriptionTest extends TestCase
 {
     use RefreshHookDatabase;
-    use StartsAgentRequests;
 
     private const string DESCRIPTION = 'Reads every change and says what is wrong with it.';
 
@@ -103,7 +101,7 @@ final class ProfileDescriptionTest extends TestCase
 
     private function activate(): void
     {
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
         $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(ProfileProposal::fromConfiguration([
             'revision' => 1,
             'base_overrides' => [],

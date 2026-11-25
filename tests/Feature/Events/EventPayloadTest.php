@@ -28,7 +28,6 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -43,7 +42,6 @@ final class EventPayloadTest extends TestCase
 {
     use ActsAsOwner;
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'users',
@@ -163,7 +161,7 @@ final class EventPayloadTest extends TestCase
 
     private function runAsOwner(object $command): void
     {
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
         $this->app->make(CommandBus::class)->run($command);
     }
 

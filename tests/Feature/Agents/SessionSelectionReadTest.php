@@ -22,7 +22,6 @@ use App\Values\SelectedDriver;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
 /**
@@ -32,7 +31,6 @@ use Tests\TestCase;
 final class SessionSelectionReadTest extends TestCase
 {
     use RefreshHookDatabase;
-    use StartsAgentRequests;
 
     private AgentSession $session;
 
@@ -53,7 +51,7 @@ final class SessionSelectionReadTest extends TestCase
             $selection,
             TestSelections::requestId(),
         )->session;
-        $this->startRequestAs($agent->id, $this->session->id);
+        $this->journal->actAsAgentIds($agent->id, $this->session->id);
     }
 
     public function test_the_session_list_shows_the_requested_default_and_the_resolved_model(): void

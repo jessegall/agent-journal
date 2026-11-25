@@ -9,7 +9,6 @@ use Illuminate\Database\ConnectionInterface;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\InstallsCommandModules;
-use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
 /**
@@ -21,7 +20,6 @@ abstract class CommandBusTestCase extends TestCase
     use CommitsHookRows;
     use InstallsCommandModules;
     use InstallsCommandModules;
-    use StartsAgentRequests;
 
     /**
      * None at the start: the test modules' table is made as a test sets up, and what a test writes to it is emptied

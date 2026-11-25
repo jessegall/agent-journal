@@ -10,7 +10,6 @@ use App\Support\ReflectedType;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
 /**
@@ -19,7 +18,6 @@ use Tests\TestCase;
 final class AssigneeIdentityTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const array TABLES = ['users', 'agents', 'tasks', 'assignments', 'command_receipts'];
 

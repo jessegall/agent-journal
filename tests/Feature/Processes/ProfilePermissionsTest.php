@@ -18,7 +18,6 @@ use App\Values\CommandPermissions;
 use App\Values\ProcessGrants;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
 /**
@@ -28,7 +27,6 @@ use Tests\TestCase;
 final class ProfilePermissionsTest extends TestCase
 {
     use RefreshHookDatabase;
-    use StartsAgentRequests;
 
     public function test_the_owner_gets_a_read_only_helpers_ceiling_for_that_helper(): void
     {
@@ -37,7 +35,7 @@ final class ProfilePermissionsTest extends TestCase
         $helper = Agent::create('Reader', 'read-only-helper', $this->localProject());
         $this->app->make(StartSessions::class)
             ->start($helper, TestSelections::of('claude-code'), TestSelections::requestId());
-        $this->startUserRequestAs($owner->id);
+        $this->journal->actAsUserId($owner->id);
 
         $permissions = $this->app->make(CommandPermissionResolver::class)->forActor(ActorIdentity::of($helper));
 

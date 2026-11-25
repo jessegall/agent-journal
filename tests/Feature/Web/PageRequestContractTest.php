@@ -25,7 +25,6 @@ use Tests\Support\DomainBoot;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\RunsKeyedCommands;
-use Tests\Support\StartsAgentRequests;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
@@ -40,7 +39,6 @@ final class PageRequestContractTest extends TestCase
     use OpensTerminalRuntimes;
     use RefreshHookDatabase;
     use RunsKeyedCommands;
-    use StartsAgentRequests;
     use WritesInboxMessages;
 
     private const string RECORDED_AGENT = '01JPAGEREQUESTAGENT0000000';
@@ -120,7 +118,7 @@ final class PageRequestContractTest extends TestCase
 
         $this->member = $member;
         $this->inboxOf(ActorIdentity::of($member));
-        $this->startUserRequestAs($owner->id);
+        $this->journal->actAsUserId($owner->id);
         $inboxId = $this->app->make(PairChats::class)->openGroup('Design', [ActorIdentity::of($member)]);
         $messageId = $this->runOnBus(new SendMessageCommand($inboxId, 'Hello'));
         $account = Account::create(DefaultDrivers::CLAUDE_CODE, AccountLabel::from('Work'), '/journal/accounts/recorded');

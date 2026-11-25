@@ -24,7 +24,6 @@ use Illuminate\Support\Str;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsNotesModule;
-use Tests\Support\StartsAgentRequests;
 
 /**
  * A record with no text at all, a note of the Notes fixture, takes comments about the whole record through Core alone,
@@ -34,7 +33,6 @@ final class WholeRecordCommentTest extends TestCase
 {
     use CommitsHookRows;
     use InstallsNotesModule;
-    use StartsAgentRequests;
 
     private const string NO_TEXT_REFUSAL = 'A notes.note has no text to read or point at; '
         .'a comment on it is about the whole record.';
@@ -70,7 +68,7 @@ final class WholeRecordCommentTest extends TestCase
         $writer = Agent::create('Writer', 'read-only-helper', $this->localProject());
         $this->note = new Note(['text' => 'Check the lock order']);
         $this->note->saveFor($writer->id);
-        $this->startUserRequestAs($this->owner->id);
+        $this->journal->actAsUserId($this->owner->id);
     }
 
     protected function tearDown(): void
