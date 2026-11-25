@@ -7,8 +7,8 @@ namespace Tests\Commands\Runs;
 use App\Commands\Runs\RecordRunEvents\RecordRunEventsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Runs\RunEventType;
+use App\Values\PartKey;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Runs\AdmitsShellRuns;
 use Tests\TestCase;
 
 /**
@@ -16,12 +16,14 @@ use Tests\TestCase;
  */
 final class RecordRunEventsTest extends TestCase
 {
-    use AdmitsShellRuns;
     use RefreshHookDatabase;
 
     public function test_a_heartbeat_keeps_the_run_alive(): void
     {
-        $run = $this->runningRun();
+        $run = $this->journal->owner()->agent('Runner')->actAs('Runner')
+            ->processRun('Read', 'cat composer.json')
+            ->runningPart('Read', new PartKey(1, 1, 'cat'))
+            ->processRunCalled('Read');
         $run->forceFill(['heartbeat_at' => null])->save();
 
         $this->app->make(CommandBus::class)->run(new RecordRunEventsCommand(

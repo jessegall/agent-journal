@@ -8,8 +8,8 @@ use App\Commands\Runs\StopProcessRun\StopProcessRunCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Runs\LifecycleStatus;
 use App\Exceptions\StopRefused;
+use App\Values\PartKey;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Runs\AdmitsShellRuns;
 use Tests\TestCase;
 
 /**
@@ -18,12 +18,14 @@ use Tests\TestCase;
  */
 final class StopProcessRunTest extends TestCase
 {
-    use AdmitsShellRuns;
     use RefreshHookDatabase;
 
     public function test_a_run_is_stopped_with_its_reason_once(): void
     {
-        $run = $this->runningRun();
+        $run = $this->journal->owner()->agent('Runner')->actAs('Runner')
+            ->processRun('Read', 'cat composer.json')
+            ->runningPart('Read', new PartKey(1, 1, 'cat'))
+            ->processRunCalled('Read');
         $bus = $this->app->make(CommandBus::class);
 
         $bus->run(new StopProcessRunCommand($run->id, 'not needed'));

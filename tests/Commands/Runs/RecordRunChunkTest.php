@@ -7,8 +7,8 @@ namespace Tests\Commands\Runs;
 use App\Commands\Runs\RecordRunChunk\RecordRunChunkCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Processes\OutputStream;
+use App\Values\PartKey;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Runs\AdmitsShellRuns;
 use Tests\TestCase;
 
 /**
@@ -17,12 +17,14 @@ use Tests\TestCase;
  */
 final class RecordRunChunkTest extends TestCase
 {
-    use AdmitsShellRuns;
     use RefreshHookDatabase;
 
     public function test_chunks_are_kept_in_order_and_a_resent_one_adds_nothing(): void
     {
-        $run = $this->runningRun();
+        $run = $this->journal->owner()->agent('Runner')->actAs('Runner')
+            ->processRun('Read', 'cat composer.json')
+            ->runningPart('Read', new PartKey(1, 1, 'cat'))
+            ->processRunCalled('Read');
         $bus = $this->app->make(CommandBus::class);
         $chunk = fn (int $offset, string $text) => $bus->run(
             new RecordRunChunkCommand($run->id, 1, 1, 'cat', OutputStream::Stdout, $offset, base64_encode($text)),
