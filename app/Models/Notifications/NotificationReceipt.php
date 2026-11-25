@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Notifications;
 
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -169,10 +170,10 @@ final class NotificationReceipt extends Model implements EventSource, ReadableMo
     public static function visibleInScope(string $scopeId, int|null $beforeSequence, int $limit): array
     {
         return array_values(self::query()
-            ->where('scope_id', $scopeId)
-            ->whereNull('hidden_at')
-            ->when($beforeSequence !== null, fn (Builder $older) => $older->where('sequence', '<', $beforeSequence))
-            ->orderByDesc('sequence')
+            ->inScope($scopeId)
+            ->visible()
+            ->beforeSequence($beforeSequence)
+            ->newestSequenceFirst()
             ->with('occurrence')
             ->readUpTo($limit)
             ->get()
@@ -192,12 +193,9 @@ final class NotificationReceipt extends Model implements EventSource, ReadableMo
         int $limit,
     ): array {
         return array_values(self::query()
-            ->where('scope_id', $scopeId)
-            ->whereNull('hidden_at')
-            ->whereIn(
-                'occurrence_id',
-                NotificationOccurrence::query()->targeting($targetKey, $ids)->select('id'),
-            )
+            ->inScope($scopeId)
+            ->visible()
+            ->ofOccurrences(NotificationOccurrence::query()->targeting($targetKey, $ids))
             ->readUpTo($limit)
             ->get()
             ->all());
@@ -212,12 +210,11 @@ final class NotificationReceipt extends Model implements EventSource, ReadableMo
     public static function unreadThrough(string $scopeId, int $afterSequence, int $through, int $limit): array
     {
         return array_values(self::query()
-            ->where('scope_id', $scopeId)
-            ->whereNull('read_at')
-            ->whereNull('hidden_at')
-            ->where('sequence', '>', $afterSequence)
-            ->where('sequence', '<=', $through)
-            ->orderBy('sequence')
+            ->inScope($scopeId)
+            ->unread()
+            ->visible()
+            ->inSequenceRange($afterSequence, $through)
+            ->inSequenceOrder()
             ->readUpTo($limit)
             ->get()
             ->all());
@@ -245,7 +242,9 @@ final class NotificationReceipt extends Model implements EventSource, ReadableMo
      */
     public static function findInScope(string $scopeId, string $id): Option
     {
-        return Option::fromValue(self::query()->where('scope_id', $scopeId)->whereKey($id)->first());
+        $receipt = self::query()->inScope($scopeId)->whereKey($id)->first();
+
+        return Option::fromValue($receipt);
     }
 
     /**
@@ -256,12 +255,8 @@ final class NotificationReceipt extends Model implements EventSource, ReadableMo
     public static function allForTarget(string $scopeId, string $targetKey, string $targetId, int $limit): array
     {
         return array_values(self::query()
-            ->where('scope_id', $scopeId)
-            ->whereIn(
-                'occurrence_id',
-                NotificationOccurrence::query()->where('target_key', $targetKey)->where('target_id', $targetId)
-                    ->select('id'),
-            )
+            ->inScope($scopeId)
+            ->ofOccurrences(NotificationOccurrence::query()->aboutTarget($targetKey, $targetId))
             ->readUpTo($limit)
             ->get()
             ->all());
@@ -274,14 +269,12 @@ final class NotificationReceipt extends Model implements EventSource, ReadableMo
      */
     public static function findForTarget(string $scopeId, string $targetKey, string $targetId): Option
     {
-        return Option::fromValue(self::query()
-            ->where('scope_id', $scopeId)
-            ->whereIn(
-                'occurrence_id',
-                NotificationOccurrence::query()->where('target_key', $targetKey)->where('target_id', $targetId)
-                    ->select('id'),
-            )
-            ->first());
+        $receipt = self::query()
+            ->inScope($scopeId)
+            ->ofOccurrences(NotificationOccurrence::query()->aboutTarget($targetKey, $targetId))
+            ->first();
+
+        return Option::fromValue($receipt);
     }
 
     /**
@@ -291,9 +284,102 @@ final class NotificationReceipt extends Model implements EventSource, ReadableMo
      */
     public static function findForOccurrence(string $scopeId, string $occurrenceKey): Option
     {
-        return Option::fromValue(self::query()
-            ->where('scope_id', $scopeId)
-            ->whereIn('occurrence_id', NotificationOccurrence::query()->keyed($occurrenceKey)->select('id'))
-            ->first());
+        $receipt = self::query()
+            ->inScope($scopeId)
+            ->ofOccurrences(NotificationOccurrence::query()->keyed($occurrenceKey))
+            ->first();
+
+        return Option::fromValue($receipt);
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The scope's receipts.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inScope(Builder $query, string $scopeId): void
+    {
+        $query->where('scope_id', $scopeId);
+    }
+
+    /**
+     * The receipts not hidden.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function visible(Builder $query): void
+    {
+        $query->whereNull('hidden_at');
+    }
+
+    /**
+     * The receipts not read yet.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unread(Builder $query): void
+    {
+        $query->whereNull('read_at');
+    }
+
+    /**
+     * The receipts before that sequence number; all of them with none.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function beforeSequence(Builder $query, int|null $sequence): void
+    {
+        $query->when($sequence !== null, fn (Builder $older) => $older->where('sequence', '<', $sequence));
+    }
+
+    /**
+     * The receipts after the first sequence number, up to and with the second.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inSequenceRange(Builder $query, int $after, int $through): void
+    {
+        $query->where('sequence', '>', $after)->where('sequence', '<=', $through);
+    }
+
+    /**
+     * The receipts newest sequence number first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function newestSequenceFirst(Builder $query): void
+    {
+        $query->orderByDesc('sequence');
+    }
+
+    /**
+     * The receipts in the order of their sequence number.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inSequenceOrder(Builder $query): void
+    {
+        $query->orderBy('sequence');
+    }
+
+    /**
+     * The receipts of the occurrences the query selects.
+     *
+     * @param  Builder<self>  $query
+     * @param  Builder<NotificationOccurrence>  $occurrences
+     */
+    #[Scope]
+    protected function ofOccurrences(Builder $query, Builder $occurrences): void
+    {
+        $query->whereIn('occurrence_id', $occurrences->select('id'));
     }
 }
