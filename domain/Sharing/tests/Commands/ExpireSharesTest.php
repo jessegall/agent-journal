@@ -1,0 +1,43 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Sharing\Tests\Commands;
+
+use App\Enums\Accounts\CommandEntry;
+use Domain\Sharing\Commands\ExpireShares\ExpireSharesCommand;
+use Domain\Sharing\Enums\ShareStatus;
+use Domain\Sharing\Models\ShareGatewayConfiguration;
+use Domain\Sharing\Support\ShareExpiry;
+use Domain\Sharing\Tests\TestCase;
+use Tests\Support\RefreshHookDatabase;
+use Tests\Support\Seeding\SeedsJournal;
+use Tests\Support\Sharing\FakeShareGateway;
+use Tests\Support\Sharing\TestShares;
+use Tests\Support\TestActors;
+
+/**
+ * The sharing supervisor ends every share past its deadline as expired and counts them; a share still within its
+ * deadline stays as it is.
+ */
+final class ExpireSharesTest extends TestCase
+{
+    use RefreshHookDatabase;
+    use SeedsJournal;
+
+    private const string TRUSTED_ENTRY = 'sharing supervisor';
+
+    public function test_a_share_past_its_deadline_expires_and_one_within_it_stays(): void
+    {
+        $configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
+        $due = TestShares::grantForADay(TestActors::record('binders.binder', 1), $configuration);
+        $this->travel(2)->days();
+        $current = TestShares::grantForADay(TestActors::record('binders.binder', 2), $configuration);
+
+        $expiry = $this->journal()->runAsJournal(CommandEntry::ShareGateway, self::TRUSTED_ENTRY, new ExpireSharesCommand());
+
+        $this->assertEquals(new ShareExpiry(1, false), $expiry);
+        $this->assertSame(ShareStatus::Expired, $due->refresh()->status);
+        $this->assertNotSame(ShareStatus::Expired, $current->refresh()->status);
+    }
+}

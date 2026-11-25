@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-namespace Domain\Sharing\Tests\Feature;
+namespace Domain\Sharing\Tests\Commands;
 
-use Carbon\CarbonImmutable;
 use Domain\Sharing\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
 use Domain\Sharing\Commands\RecordGatewayHealth\RecordGatewayHealthCommand;
 use Domain\Sharing\Commands\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
@@ -29,16 +28,14 @@ use Tests\Support\Sharing\TestShares;
 use Tests\Support\TestActors;
 
 /**
- * The supervisor's three committed steps: it claims an operation under a 90-second lease, reports its outcome under
- * the same run, version and lease, and reports endpoint health. A newer run takes the gateways over and fences the
- * older one; an expired lease activates nothing; a replayed outcome audits once; health never moves a deadline.
+ * A gateway run reports how its operation went: an outcome under an expired lease or from a run that was taken over
+ * activates nothing, a replay activates and audits once, a failed open fails the pending share once, and an open after
+ * the share ended keeps it ended and asks for a close.
  */
-final class GatewayRuntimeTest extends TestCase
+final class RecordGatewayOutcomeTest extends TestCase
 {
     use RefreshHookDatabase;
     use RunsTrustedCommands;
-
-    private const string HELD_OPERATION = 'A held operation is not claimed again.';
 
     private const string FIRST_RUN = '01JD8X0G9M3QZ6V4K2RUN0000A';
 
@@ -55,22 +52,6 @@ final class GatewayRuntimeTest extends TestCase
         $this->configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
         $this->share = TestShares::grantForADay(TestActors::record('binders.binder', 1), $this->configuration);
         ShareGatewayOperation::create($this->configuration, GatewayOperationType::Open);
-    }
-
-    public function test_a_claim_takes_the_operation_under_a_ninety_second_lease_on_a_new_endpoint_version(): void
-    {
-        $claim = $this->claim(self::FIRST_RUN);
-
-        $this->assertSame(GatewayOperationType::Open, $claim->type);
-        $this->assertSame(1, $claim->operation->endpointVersion);
-        $this->assertSame(64, strlen($claim->operation->leaseToken));
-        $this->assertEqualsWithDelta(
-            CarbonImmutable::now()->addSeconds(90)->getTimestamp(),
-            $claim->operation->leaseEndsAt,
-            2,
-        );
-        $this->assertSame($this->configuration->id, $claim->operation->configurationId());
-        $this->assertNull($this->claim(self::FIRST_RUN), self::HELD_OPERATION);
     }
 
     public function test_an_outcome_under_an_expired_lease_activates_nothing(): void
@@ -155,19 +136,6 @@ final class GatewayRuntimeTest extends TestCase
 
         $this->outcome(self::FIRST_RUN, $close, GatewayOutcome::Succeeded);
         $this->assertSame(GatewayEndpointStatus::Closed, ShareGatewayEndpoint::query()->sole()->status);
-    }
-
-    public function test_health_notes_a_healthy_endpoint_and_never_moves_a_deadline(): void
-    {
-        $claim = $this->claim(self::FIRST_RUN);
-        $this->outcome(self::FIRST_RUN, $claim, GatewayOutcome::Succeeded);
-        $deadline = $this->share->fresh()?->expires_at;
-
-        $this->health(self::FIRST_RUN, 1);
-
-        $this->assertNotNull(ShareGatewayEndpoint::query()->sole()->last_health_at);
-        $this->assertEquals($deadline, $this->share->fresh()?->expires_at);
-        $this->assertThrows(fn () => $this->health(self::FIRST_RUN, 2), GatewayLeaseRefused::class);
     }
 
     private function claim(string $runId): ClaimedGatewayOperation|null

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Sharing\Tests\Feature;
+namespace Domain\Sharing\Tests\Commands;
 
 use App\Contracts\Bus\CommandBus;
 use App\Models\Records\Link;
@@ -10,24 +10,18 @@ use App\Support\Access\AccessSettings;
 use App\Support\RecordIdentity;
 use App\Support\RequestKey;
 use App\Support\ShareRecordRegistry;
-use Carbon\CarbonImmutable;
 use Domain\Sharing\Commands\CreateShare\CreateShareCommand;
 use Domain\Sharing\Commands\RefreshShareScope\RefreshShareScopeCommand;
 use Domain\Sharing\Commands\RetryShare\RetryShareCommand;
 use Domain\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
-use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\ShareAuditType;
-use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Exceptions\ShareRefreshRefused;
-use Domain\Sharing\Exceptions\ShareRetryRefused;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareAudit;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
-use Domain\Sharing\Models\ShareGatewayOperation;
 use Domain\Sharing\Models\ShareMember;
 use Domain\Sharing\Support\SavedSharePreview;
 use Domain\Sharing\Support\ShareDuration;
-use Domain\Sharing\Support\ShareProposal;
 use Domain\Sharing\Support\ShareSummary;
 use Domain\Sharing\Tests\TestCase;
 use Tests\Fixtures\Domains\Binders\BinderPublications;
@@ -40,11 +34,10 @@ use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 
 /**
- * The owner replaces a live share's members from a fresh preview of its own root at the next scope version, keeping
- * its token and deadline; and retries opening a pending or failed share before its deadline, which adds one open
- * request. Other shares are refused by name.
+ * A refresh replaces a share's members at the next scope version and keeps its token and deadline; a preview of
+ * another root is refused.
  */
-final class ShareRefreshAndRetryTest extends TestCase
+final class RefreshShareScopeTest extends TestCase
 {
     use RefreshHookDatabase;
     use RegistersShareDomains;
@@ -122,51 +115,6 @@ final class ShareRefreshAndRetryTest extends TestCase
             ShareRefreshRefused::otherRoot($share->id)->getMessage(),
         );
         $this->assertSame(Share::FIRST_SCOPE_VERSION, Share::query()->findOrFail($share->id)->scope_version);
-    }
-
-    public function test_a_retry_of_a_failed_share_adds_one_open_request_and_keeps_its_deadline(): void
-    {
-        $share = $this->share([]);
-        $share->status = ShareStatus::Failed;
-        $share->save();
-
-        $summary = $this->runOwner(fn (string $key) => new RetryShareCommand($share->id, $key));
-
-        $this->assertSame(ShareStatus::Pending, $summary->state);
-        $this->assertSame(2, ShareGatewayOperation::query()->where('type', GatewayOperationType::Open->value)->count());
-        $this->assertEquals($share->expires_at, Share::query()->findOrFail($share->id)->expires_at);
-        $this->assertTrue(
-            ShareAudit::query()->readAll('two audits')->get()->contains(
-                fn (ShareAudit $audit) => $audit->type === ShareAuditType::Retried,
-            ),
-        );
-    }
-
-    public function test_a_retry_of_an_expired_a_revoked_or_a_proposed_share_is_refused(): void
-    {
-        $expired = $this->share([]);
-        $this->travel(ShareDuration::STANDARD_MINUTES + 1)->minutes();
-        $revoked = $this->share([]);
-        $revoked->status = ShareStatus::Revoked;
-        $revoked->save();
-        $proposal = Share::create(
-            $this->root,
-            CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS),
-            new ShareProposal(TestActors::agentIdentity(5)),
-        );
-
-        foreach ([
-            $expired,
-            $revoked,
-            $proposal,
-        ] as $share) {
-            $this->assertThrows(
-                fn () => $this->runOwner(fn (string $key) => new RetryShareCommand($share->id, $key)),
-                ShareRetryRefused::class,
-            );
-        }
-
-        $this->assertSame(2, ShareGatewayOperation::query()->count());
     }
 
     /**

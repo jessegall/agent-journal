@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Sharing\Tests\Feature;
+namespace Domain\Sharing\Tests\Commands;
 
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Reads\ReadMeter;
