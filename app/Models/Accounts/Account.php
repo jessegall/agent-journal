@@ -631,9 +631,9 @@ final class Account extends Model implements EventSource, ReadableModel
     private function assertLabelFree(AccountLabel $label): void
     {
         $isTaken = self::query()
-            ->where('account_protocol', $this->account_protocol)
-            ->where('label_key', $label->key())
-            ->where('state', '<>', AccountState::Removed->value)
+            ->ofDriver($this->account_protocol)
+            ->withLabel($label)
+            ->kept()
             ->whereKeyNot($this->id)
             ->exists();
 
@@ -662,9 +662,9 @@ final class Account extends Model implements EventSource, ReadableModel
     {
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
-            ->where('account_protocol', $driver)
-            ->where('label_key', $label->key())
-            ->where('state', '!=', AccountState::Removed->value)
+            ->ofDriver($driver)
+            ->withLabel($label)
+            ->kept()
             ->exists();
     }
 
@@ -710,9 +710,9 @@ final class Account extends Model implements EventSource, ReadableModel
 
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
-            ->where('account_protocol', $driver)
-            ->where('subject', $identity->subject)
-            ->where('state', '!=', AccountState::Removed->value)
+            ->ofDriver($driver)
+            ->ofSubject($identity->subject)
+            ->kept()
             ->limit(20)
             ->get()
             ->first(fn (self $account) => $account->isSamePrincipal($identity));
@@ -730,10 +730,10 @@ final class Account extends Model implements EventSource, ReadableModel
 
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
-            ->where('account_protocol', $attempt->account_protocol)
-            ->where('fingerprint', $attempt->fingerprint)
-            ->where('state', '!=', AccountState::Removed->value)
-            ->when($attempt->account_id !== null, fn ($accounts) => $accounts->whereKeyNot($attempt->account_id))
+            ->ofDriver($attempt->account_protocol)
+            ->withFingerprint($attempt->fingerprint)
+            ->kept()
+            ->apartFrom($attempt->account_id)
             ->first();
     }
 
@@ -759,9 +759,8 @@ final class Account extends Model implements EventSource, ReadableModel
     public static function listed(): array
     {
         $accounts = self::query()
-            ->where('state', '<>', AccountState::Removed->value)
-            ->orderBy('account_protocol')
-            ->orderBy('label_key')
+            ->kept()
+            ->inListOrder()
             ->readAll('the owner sees every saved account at once')
             ->get();
 
@@ -828,9 +827,8 @@ final class Account extends Model implements EventSource, ReadableModel
     {
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
-            ->whereNotNull('check_requested_generation')
-            ->whereNull('check_inconclusive_at')
-            ->orderBy('updated_at')
+            ->checkDue()
+            ->leastRecentlyUpdatedFirst()
             ->lockForUpdate()
             ->first();
     }
@@ -867,11 +865,8 @@ final class Account extends Model implements EventSource, ReadableModel
     {
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
-            ->where('state', AccountState::Removing->value)
-            ->where('cleanup_released', true)
-            ->where('cleanup_tries', '<', CleanupProgress::MOST_TRIES)
-            ->whereNotNull('directory')
-            ->orderBy('updated_at')
+            ->cleanupDue()
+            ->leastRecentlyUpdatedFirst()
             ->first();
     }
 
@@ -884,9 +879,8 @@ final class Account extends Model implements EventSource, ReadableModel
     {
         $ids = self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
-            ->where('state', AccountState::Removing->value)
-            ->where('cleanup_released', false)
-            ->orderBy('updated_at')
+            ->awaitingCleanupRelease()
+            ->leastRecentlyUpdatedFirst()
             ->readExactly($limit)
             ->pluck('id');
 
@@ -902,5 +896,118 @@ final class Account extends Model implements EventSource, ReadableModel
     protected function ofDriver(Builder $query, string $driver): void
     {
         $query->where('account_protocol', $driver);
+    }
+
+    /**
+     * The accounts of that label.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withLabel(Builder $query, AccountLabel $label): void
+    {
+        $query->where('label_key', $label->key());
+    }
+
+    /**
+     * The accounts not removed.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function kept(Builder $query): void
+    {
+        $query->where('state', '!=', AccountState::Removed->value);
+    }
+
+    /**
+     * The accounts signed in as that subject.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofSubject(Builder $query, string $subject): void
+    {
+        $query->where('subject', $subject);
+    }
+
+    /**
+     * The accounts of that key fingerprint.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withFingerprint(Builder $query, string $fingerprint): void
+    {
+        $query->where('fingerprint', $fingerprint);
+    }
+
+    /**
+     * The accounts other than that one; all of them with none named.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function apartFrom(Builder $query, string|null $accountId): void
+    {
+        $query->when($accountId !== null, fn (Builder $others) => $others->whereKeyNot($accountId));
+    }
+
+    /**
+     * The accounts by driver, then label.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inListOrder(Builder $query): void
+    {
+        $query->orderBy('account_protocol')->orderBy('label_key');
+    }
+
+    /**
+     * The accounts a check was asked for that has not come back inconclusive.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function checkDue(Builder $query): void
+    {
+        $query->whereNotNull('check_requested_generation')->whereNull('check_inconclusive_at');
+    }
+
+    /**
+     * The accounts being removed whose files are released for cleanup and may be tried again.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function cleanupDue(Builder $query): void
+    {
+        $query->where('state', AccountState::Removing->value)
+            ->where('cleanup_released', true)
+            ->where('cleanup_tries', '<', CleanupProgress::MOST_TRIES)
+            ->whereNotNull('directory');
+    }
+
+    /**
+     * The accounts being removed whose files are not released for cleanup yet.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function awaitingCleanupRelease(Builder $query): void
+    {
+        $query->where('state', AccountState::Removing->value)->where('cleanup_released', false);
+    }
+
+    /**
+     * The accounts updated longest ago first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function leastRecentlyUpdatedFirst(Builder $query): void
+    {
+        $query->orderBy('updated_at');
     }
 }
