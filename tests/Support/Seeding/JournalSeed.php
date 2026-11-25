@@ -43,8 +43,10 @@ final class JournalSeed
 {
     private const string OWNER = 'The journal';
 
+    use ArrangesProcessRuns;
     use ArrangesProfiles;
     use ArrangesSettings;
+    use ArrangesSkills;
     use AssertsLinks;
     use AssertsMessages;
     use AssertsReceipts;
