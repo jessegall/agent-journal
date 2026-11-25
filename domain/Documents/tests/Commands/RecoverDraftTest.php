@@ -9,13 +9,8 @@ use App\Data\Messages\MessageTextData;
 use App\Enums\Drivers\DriverOperation;
 use App\Events\Sessions\SessionClosed;
 use App\Models\Drivers\DriverRequest;
-use App\Models\Sessions\SessionPolicy;
 use App\Support\AgentSessions;
 use App\Support\StackTransaction;
-use App\Values\AccessPolicy;
-use App\Values\OperationGrant;
-use App\Values\ResourceRequest;
-use App\Values\StartPolicy;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\EditDocument\EditDocumentCommand;
 use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
@@ -28,10 +23,10 @@ use Domain\Documents\Exceptions\StaleRead;
 use Domain\Documents\Listeners\CloseEndedSessionDraft;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Models\RetainedDraft;
+use Domain\Documents\Tests\Support\GrantsDraftReads;
 use Domain\Documents\Tests\TestCase;
 use Domain\Documents\Values\DraftTarget;
 use Tests\Fixtures\Agents\TestSelections;
-use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 
@@ -39,6 +34,7 @@ use Tests\Support\Entries\Attributes\TestsCommand;
 final class RecoverDraftTest extends TestCase
 {
     use CommitsHookRows;
+    use GrantsDraftReads;
 
     private const array TABLES = [
         'agents',
@@ -101,29 +97,12 @@ final class RecoverDraftTest extends TestCase
         $parent->startRequest($this->app);
         $this->assertThrows(fn () => $this->app->make(DraftReader::class)->draft($kept->id), DraftMissing::class);
 
-        $this->grantSource($parent, $created->id);
+        $this->grantDraftReads($parent, $created->id);
         $this->assertStringContainsString($badText, $this->app->make(DraftReader::class)->draft($kept->id)->body);
         $this->assertThrows(fn () => $bus->run(new RecoverDraftCommand($kept->id, 99)), StaleRead::class);
         $recovered = $bus->run(new RecoverDraftCommand($kept->id, 1));
         $this->assertNotSame($opened->token, $recovered->token);
         $this->assertStringContainsString($badText, $this->app->make(DraftResolver::class)->current(1)->body);
         $this->assertSame('1', $this->app->make(DocumentResolver::class)->show($created->number)->revision);
-    }
-
-    private function grantSource(TestStart $parent, string $documentId): void
-    {
-        $start = StartPolicy::mainOnHost(base_path());
-        $source = ResourceRequest::record('documents.document:'.$documentId);
-        $grant = new OperationGrant('docs_drafts_read', [$source]);
-        $access = new AccessPolicy([], [], $start->access->processes, [$grant]);
-
-        SessionPolicy::create($parent->session, new StartPolicy(
-            $access,
-            $start->stopConditions,
-            $start->execution,
-            null,
-            null,
-            null,
-        ));
     }
 }

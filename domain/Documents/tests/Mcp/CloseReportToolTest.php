@@ -4,20 +4,19 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Mcp;
 
+use Domain\Documents\Commands\CloseReport\CloseReportCommand;
+use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Documents\DocumentsDomain;
 use Domain\Documents\Mcp\Tools\CloseReportTool;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of the tool CloseReportTool, as the generator wrote it.
+ * An agent closes a report with the reason it needs no action.
  */
-#[Generated]
 #[TestsMcpTool(CloseReportTool::class)]
 final class CloseReportToolTest extends McpToolEntryTestCase
 {
@@ -28,12 +27,18 @@ final class CloseReportToolTest extends McpToolEntryTestCase
 
     protected function arrange(TestJournal $journal): ToolCall
     {
-        throw EntryTestNeedsArrangement::for('CloseReportTool', [
-            'the argument report_id',
-            'the argument reason',
-            'the argument request_key',
-            'the expected commands',
-            'the sink replies',
-        ]);
+        $start = $journal->owner()->signedStart('Writer');
+        $report = $journal->runAs('Writer', new CreateReportCommand('Trace', 'The cause.', "# Trace\nFound it."));
+
+        return ToolCall::by($start)
+            ->arguments([
+                'report_id' => $report->number,
+                'reason' => 'Fixed in task 12.',
+                'request_key' => 'documents-1',
+            ])
+            ->expects(CloseReportCommand::class, [
+                'reportReference' => (string) $report->number,
+                'reason' => 'Fixed in task 12.',
+            ]);
     }
 }
