@@ -14,6 +14,7 @@ use App\Contracts\Assignments\AssignmentRegistration;
 use App\Contracts\Authorization\AuthorizerProviderRegistration;
 use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Inboxes\InboxEligibility;
+use App\Contracts\Inboxes\InboxMemberRoutes as InboxMemberRoutesContract;
 use App\Contracts\Messages\AdmittedRecipients;
 use App\Contracts\Reflection\TypeReflections;
 use App\Enums\Agents\AccessType;
@@ -23,7 +24,8 @@ use App\Policies\EnvironmentAccessPolicy;
 use App\Resolvers\CurrentUserRecords;
 use App\Support\Access\AccessSettings;
 use App\Support\Access\AdmittedUsers;
-use App\Support\Access\EnvironmentChatEligibility;
+use App\Support\Access\EnvironmentInboxEligibility;
+use App\Support\Access\InboxMemberRoutes;
 use App\Support\Access\OwnerAdmission;
 use App\Support\Access\OwnerAuthorizerProvider;
 use App\Support\Access\PresentUserCounter;
@@ -53,7 +55,8 @@ class AccessServiceProvider extends ServiceProvider
         $this->app->bind(CurrentUserResolver::class, CurrentUserRecords::class);
         $this->app->bind(JournalAdmission::class, OwnerAdmission::class);
         $this->app->bind(AdmittedRecipients::class, AdmittedUsers::class);
-        $this->app->bind(InboxEligibility::class, EnvironmentChatEligibility::class);
+        $this->app->bind(InboxEligibility::class, EnvironmentInboxEligibility::class);
+        $this->app->singleton(InboxMemberRoutesContract::class, InboxMemberRoutes::class);
 
         // The owner's row is read on the first use of the settings, never while a service that holds them is built.
         $this->app->singleton(AccessSettings::class, fn (): AccessSettings => $this->app->make(TypeReflections::class)

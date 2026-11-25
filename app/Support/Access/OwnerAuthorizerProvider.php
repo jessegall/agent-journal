@@ -26,8 +26,8 @@ final readonly class OwnerAuthorizerProvider implements AuthorizerProvider
     public function __construct(
         private JournalAdmission $admission,
         private CurrentActor $actors,
-        private InboxEligibility $chats,
-        private InboxMemberPolicies $chatPolicies,
+        private InboxEligibility $inboxes,
+        private InboxMemberPolicies $memberPolicies,
     ) {}
 
     /**
@@ -43,7 +43,7 @@ final readonly class OwnerAuthorizerProvider implements AuthorizerProvider
         }
 
         if ($this->actors->authority() instanceof InboxMemberAuthority) {
-            return new ChatMemberAuthorizer($this->chatPolicies);
+            return new InboxMemberAuthorizer($this->memberPolicies);
         }
 
         return $this->forTarget($actor);
@@ -58,8 +58,8 @@ final readonly class OwnerAuthorizerProvider implements AuthorizerProvider
             return new UnrestrictedAuthorizer();
         }
 
-        if ($this->chats->isAdmitted(ActorIdentity::of($target), null)) {
-            return new ChatMemberAuthorizer($this->chatPolicies);
+        if ($this->inboxes->isAdmitted(ActorIdentity::of($target), null)) {
+            return new InboxMemberAuthorizer($this->memberPolicies);
         }
 
         throw ActorNotAllowed::asNonOwner();

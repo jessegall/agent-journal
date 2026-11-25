@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Contracts\Bus\OwnerCommands;
-use App\Enums\Messages\InboxPermission;
 use App\Commands\Access\GrantEnvironmentAccess\GrantEnvironmentAccessCommand;
 use App\Commands\Access\RevokeEnvironmentAccess\RevokeEnvironmentAccessCommand;
+use App\Contracts\Bus\OwnerCommands;
+use App\Enums\Messages\InboxPermission;
 use App\Models\Access\User;
 use Illuminate\Console\Command;
 
@@ -16,12 +16,12 @@ final class GrantEnvironmentCommand extends Command
     protected $signature = 'access:grant
         {email : The address of the user}
         {--environment= : The environment id; this installation when left out}
-        {--create-chats : May open chats}
-        {--manage-members : May add and remove chat members}
-        {--receive-invitations : May be invited into chats}
+        {--open-inboxes : May open inboxes}
+        {--manage-members : May add and remove inbox members}
+        {--receive-invitations : May be invited into inboxes}
         {--revoke : Revoke the user\'s grant instead}';
 
-    protected $description = 'Admit a user to the chats of an environment with the permissions named, or revoke it';
+    protected $description = 'Admit a user to the inboxes of an environment with the permissions named, or revoke it';
 
     public function handle(OwnerCommands $commands): int
     {

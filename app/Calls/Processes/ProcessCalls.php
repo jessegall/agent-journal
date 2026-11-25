@@ -9,6 +9,7 @@ use App\Data\Processes\ExplanationData;
 use App\Enums\Processes\OutputStream;
 use App\Enums\Processes\ShellDialect;
 use App\Support\CallKey;
+use App\Values\ReaderDefinition;
 use App\Values\RunEvent;
 
 /**
@@ -142,13 +143,10 @@ final readonly class ProcessCalls
         ]));
     }
 
-    /**
-     * @param  array<string, mixed>  $definition
-     */
     public function proposeReader(
         string $commandRequest,
         int $declarationRevision,
-        array $definition,
+        ReaderDefinition $definition,
     ): ReaderProposed {
         return $this->sender->send(ProposeReaderCall::from([
             'commandRequest' => $commandRequest,

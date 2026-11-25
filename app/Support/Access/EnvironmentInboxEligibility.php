@@ -11,10 +11,10 @@ use App\Models\Access\User;
 use App\Support\ActorIdentity;
 
 /**
- * Chat eligibility from environment grants: the owner holds every permission without one, any other user what its
+ * Inbox eligibility from environment grants: the owner holds every permission without one, any other user what its
  * active grant allows, and a disabled account or an actor that is not a user nothing.
  */
-final readonly class EnvironmentChatEligibility implements InboxEligibility
+final readonly class EnvironmentInboxEligibility implements InboxEligibility
 {
     public function __construct(private AccessSettings $settings) {}
 

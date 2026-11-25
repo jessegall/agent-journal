@@ -11,7 +11,7 @@ use App\Policies\EnvironmentAccessPolicy;
 use App\Support\Command;
 
 /**
- * The owner admits a user to the chats of an environment, this installation when none is named, with the permissions
+ * The owner admits a user to the inboxes of an environment, this installation when none is named, with the permissions
  * named; the grant the user held there is replaced.
  *
  * @extends Command<null>

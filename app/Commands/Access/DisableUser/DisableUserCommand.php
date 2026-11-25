@@ -10,7 +10,7 @@ use App\Policies\EnvironmentAccessPolicy;
 use App\Support\Command;
 
 /**
- * The owner disables a user account so it is admitted nowhere, and every chat of the user ends for it.
+ * The owner disables a user account so it is admitted nowhere, and every inbox of the user ends for it.
  *
  * @extends Command<null>
  */

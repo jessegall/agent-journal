@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Contracts\Inboxes;
 
 /**
- * A place messages are addressed to, such as an agent's or a chat's inbox, by its stable id.
+ * A place messages are addressed to, such as an agent's inbox, by its stable id.
  */
 interface LabeledInbox
 {

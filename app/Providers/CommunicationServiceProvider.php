@@ -16,6 +16,7 @@ use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Authorization\ReadEntitlements;
 use App\Contracts\Inboxes\InboxDestinationResolver;
 use App\Contracts\Inboxes\InboxMemberPolicies;
+use App\Contracts\Inboxes\InboxMemberRoutes;
 use App\Contracts\Inboxes\InboxRegistration;
 use App\Contracts\Inboxes\InboxResolver;
 use App\Contracts\Inboxes\MainInbox;
@@ -99,9 +100,11 @@ final class CommunicationServiceProvider extends ServiceProvider
         AssignmentRegistration $assignments,
         NotificationTargetRegistry $notificationTargets,
         InboxMemberPolicies $inboxMembers,
+        InboxMemberRoutes $memberRoutes,
         EngineListenerSet $engineListeners,
         ActorTypes $actorTypes,
     ): void {
+        $memberRoutes->open('communication.');
         $inboxMembers->allow(MessagePolicy::class);
         $readGrant = ReadEntitlement::grant(MessagePolicy::class);
 

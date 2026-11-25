@@ -7,6 +7,7 @@ namespace Domain\Chat\Providers;
 use App\Contracts\Authorization\ReadEntitlements;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Inboxes\InboxMemberPolicies;
+use App\Contracts\Inboxes\InboxMemberRoutes;
 use App\Contracts\Inboxes\InboxParticipationEnding;
 use App\Contracts\Inboxes\InboxRegistration;
 use App\Contracts\Notifications\NotificationTargets;
@@ -53,9 +54,11 @@ final class ChatServiceProvider extends ServiceProvider
         ReadEntitlements $reads,
         InboxRegistration $inboxes,
         InboxMemberPolicies $members,
+        InboxMemberRoutes $memberRoutes,
         NotificationTargets $notificationTargets,
     ): void {
         $members->allow(MessagePinPolicy::class);
+        $memberRoutes->open('chat.');
         $notificationTargets->register(QuestionNotificationKeys::target(), QuestionNotificationTarget::class);
         $inboxes->register(ChatInboxes::PAIR_PROVIDER, CoreInboxes::class);
         $inboxes->register(ChatInboxes::GROUP_PROVIDER, CoreInboxes::class);

@@ -9,6 +9,7 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Admission\JournalAdmission;
 use App\Contracts\Authorization\AuthoritySource;
 use App\Contracts\Inboxes\InboxEligibility;
+use App\Contracts\Inboxes\InboxMemberRoutes;
 use App\Exceptions\JournalAccessDenied;
 use App\Support\ActorIdentity;
 use App\Values\InboxMemberAuthority;
@@ -23,17 +24,10 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final readonly class AuthenticateUser
 {
-    /**
-     * The routes a chat member may open: the chat window, its actions and the message reads behind them.
-     */
-    private const array CHAT_ROUTE_PREFIXES = [
-        'chat.',
-        'communication.',
-    ];
-
     public function __construct(
         private JournalAdmission $admission,
-        private InboxEligibility $chats,
+        private InboxEligibility $inboxes,
+        private InboxMemberRoutes $memberRoutes,
         private CurrentActorSetter $actors,
     ) {}
 
@@ -58,7 +52,8 @@ final readonly class AuthenticateUser
     }
 
     /**
-     * The owner gets the owner's authority; a user admitted to chats gets a chat member's, on chat routes alone.
+     * The owner gets the owner's authority; a user admitted to inboxes gets an inbox member's, on the routes opened to
+     * inbox members alone.
      *
      * @throws JournalAccessDenied
      */
@@ -68,14 +63,14 @@ final readonly class AuthenticateUser
             return new OwnerAuthority('the web sign-in');
         }
 
-        if (! $this->chats->isAdmitted(ActorIdentity::of($user), null) || ! $this->isChatRoute($request)) {
+        if (! $this->inboxes->isAdmitted(ActorIdentity::of($user), null) || ! $this->isMemberRoute($request)) {
             throw JournalAccessDenied::forUser();
         }
 
         return new InboxMemberAuthority('the web sign-in');
     }
 
-    private function isChatRoute(Request $request): bool
+    private function isMemberRoute(Request $request): bool
     {
         $route = $request->route();
 
@@ -83,8 +78,6 @@ final readonly class AuthenticateUser
             return false;
         }
 
-        $name = (string) $route->getName();
-
-        return array_any(self::CHAT_ROUTE_PREFIXES, fn (string $prefix) => str_starts_with($name, $prefix));
+        return $this->memberRoutes->admits((string) $route->getName());
     }
 }

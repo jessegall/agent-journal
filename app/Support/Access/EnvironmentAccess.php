@@ -14,13 +14,13 @@ use Carbon\CarbonImmutable;
 
 /**
  * Granting and revoking a user's admission to an environment and disabling an account, each with its consequence,
- * inside the command that asked for it: the grant row and the account are locked first, then every chat the user
+ * inside the command that asked for it: the grant row and the account are locked first, then every inbox the user
  * lost ends for it, so no read slips in between.
  */
 final readonly class EnvironmentAccess
 {
     public function __construct(
-        private InboxParticipationEnding $chats,
+        private InboxParticipationEnding $inboxes,
         private CurrentActor $actors,
     ) {}
 
@@ -58,13 +58,13 @@ final readonly class EnvironmentAccess
         $grant->revoke(CarbonImmutable::now());
         $user = User::query()->findOrFail($userId);
 
-        $this->chats->endInEnvironment(ActorIdentity::of($user), $environmentId);
+        $this->inboxes->endInEnvironment(ActorIdentity::of($user), $environmentId);
     }
 
     public function disable(string $userId): void
     {
         $user = User::lockedById($userId);
         $user->disable(CarbonImmutable::now());
-        $this->chats->endEverywhere(ActorIdentity::of($user));
+        $this->inboxes->endEverywhere(ActorIdentity::of($user));
     }
 }

@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Calls\Communication;
 
 use App\Contracts\Domains\CallSender;
-use App\Data\Messages\InboxCounts;
-use App\Data\Messages\MessagePage;
 use App\Data\Messages\MessageView;
 use App\Support\CallKey;
 
@@ -17,272 +15,20 @@ final readonly class CommunicationCalls
 {
     public function __construct(private CallSender $sender) {}
 
-    /**
-     * @param  list<string>  $handles
-     */
-    public function acknowledgeMessageBatch(
-        string $batchId,
-        array $handles,
-        string $contextKey,
-        CallKey $requestKey = new CallKey(),
-    ): MessageBatchAcknowledged {
-        return $this->sender->send(AcknowledgeMessageBatchCall::from([
-            'batchId' => $batchId,
-            'handles' => $handles,
-            'contextKey' => $contextKey,
-            'requestKey' => $requestKey,
-        ]));
-    }
-
-    public function answerChatQuestion(
-        string $questionId,
-        string $body,
-        CallKey $requestKey = new CallKey(),
-        string|null $claimToken = null,
-    ): MessageNamed {
-        return $this->sender->send(AnswerChatQuestionCall::from([
-            'questionId' => $questionId,
-            'body' => $body,
-            'requestKey' => $requestKey,
-            'claimToken' => $claimToken,
-        ]));
-    }
-
-    public function answerMessage(
-        string $messageId,
-        string $replyId,
-        CallKey $requestKey = new CallKey(),
-    ): MessageNamed {
-        return $this->sender->send(AnswerMessageCall::from([
-            'messageId' => $messageId,
-            'replyId' => $replyId,
-            'requestKey' => $requestKey,
-        ]));
-    }
-
-    public function askChatQuestion(
-        string $inboxId,
-        string $body,
-        CallKey $requestKey = new CallKey(),
-        string|null $respondent = null,
-        string|null $claimToken = null,
-    ): MessageNamed {
-        return $this->sender->send(AskChatQuestionCall::from([
-            'inboxId' => $inboxId,
-            'body' => $body,
-            'requestKey' => $requestKey,
-            'respondent' => $respondent,
-            'claimToken' => $claimToken,
-        ]));
-    }
-
-    public function askMessage(
-        NewMessage $message,
-        CallKey $requestKey = new CallKey(),
-    ): MessageNamed {
-        return $this->sender->send(AskMessageCall::from([
-            'message' => $message,
-            'requestKey' => $requestKey,
-        ]));
-    }
-
-    public function askQuestion(
-        string $body,
-        CallKey $requestKey = new CallKey(),
-        QuestionRecord|null $relatedRecord = null,
-    ): MessageNamed {
-        return $this->sender->send(AskQuestionCall::from([
-            'body' => $body,
-            'requestKey' => $requestKey,
-            'relatedRecord' => $relatedRecord,
-        ]));
-    }
-
-    public function claimSpeech(
-        string $inboxId,
-        string $rootId,
-        string $batchId,
-        string $grant,
-        CallKey $requestKey = new CallKey(),
-    ): SpeechClaim {
-        return $this->sender->send(ClaimSpeechCall::from([
-            'inboxId' => $inboxId,
-            'rootId' => $rootId,
-            'batchId' => $batchId,
-            'grant' => $grant,
-            'requestKey' => $requestKey,
-        ]));
-    }
-
-    public function countInboxMessages(
-        string $inboxId,
-    ): InboxCounts {
-        return $this->sender->send(CountInboxMessagesCall::from([
-            'inboxId' => $inboxId,
-        ]));
-    }
-
-    public function declineChatQuestion(
-        string $questionId,
-        string $reason,
-        CallKey $requestKey = new CallKey(),
-        string|null $claimToken = null,
-    ): MessageNamed {
-        return $this->sender->send(DeclineChatQuestionCall::from([
-            'questionId' => $questionId,
-            'reason' => $reason,
-            'requestKey' => $requestKey,
-            'claimToken' => $claimToken,
-        ]));
-    }
-
-    public function dismissMessage(
-        string $messageId,
-        string $reason,
-        CallKey $requestKey = new CallKey(),
-    ): MessageNamed {
-        return $this->sender->send(DismissMessageCall::from([
-            'messageId' => $messageId,
-            'reason' => $reason,
-            'requestKey' => $requestKey,
-        ]));
-    }
-
-    public function listMessagesBetween(
-        string $firstInboxId,
-        string $secondInboxId,
-        HistoryPage $page = new HistoryPage(),
-    ): MessagePage {
-        return $this->sender->send(ListMessagesBetweenCall::from([
-            'firstInboxId' => $firstInboxId,
-            'secondInboxId' => $secondInboxId,
-            'page' => $page,
-        ]));
-    }
-
-    public function postChatMessage(
-        string $inboxId,
-        string $body,
-        CallKey $requestKey = new CallKey(),
-        string|null $claimToken = null,
-    ): MessageNamed {
-        return $this->sender->send(PostChatMessageCall::from([
-            'inboxId' => $inboxId,
-            'body' => $body,
-            'requestKey' => $requestKey,
-            'claimToken' => $claimToken,
-        ]));
-    }
-
-    public function readInboxHistory(
-        string $inboxId,
-        HistoryPage $page = new HistoryPage(),
-    ): MessagePage {
-        return $this->sender->send(ReadInboxHistoryCall::from([
-            'inboxId' => $inboxId,
-            'page' => $page,
-        ]));
-    }
-
-    /**
-     * @param  list<string>  $messageIds
-     */
-    public function readMessages(
-        string $inboxId,
-        array $messageIds,
-        CallKey $requestKey = new CallKey(),
-    ): MessagesRead {
-        return $this->sender->send(ReadMessagesCall::from([
-            'inboxId' => $inboxId,
-            'messageIds' => $messageIds,
-            'requestKey' => $requestKey,
-        ]));
-    }
-
-    public function readWakeStatus(
-        string $messageId,
-    ): WakeStatuses {
-        return $this->sender->send(ReadWakeStatusCall::from([
-            'messageId' => $messageId,
-        ]));
-    }
-
-    public function releaseMessageClaim(
-        string $messageId,
-        string $claimId,
-        string $holderType,
-        string $holderId,
-        string $reason,
-        CallKey $requestKey = new CallKey(),
-    ): MessageNamed {
-        return $this->sender->send(ReleaseMessageClaimCall::from([
-            'messageId' => $messageId,
-            'claimId' => $claimId,
-            'holderType' => $holderType,
-            'holderId' => $holderId,
-            'reason' => $reason,
-            'requestKey' => $requestKey,
-        ]));
-    }
-
-    public function releaseSpeech(
-        string $inboxId,
-        string $rootId,
-        CallKey $requestKey = new CallKey(),
-    ): MessageNamed {
-        return $this->sender->send(ReleaseSpeechCall::from([
-            'inboxId' => $inboxId,
-            'rootId' => $rootId,
-            'requestKey' => $requestKey,
-        ]));
-    }
-
-    public function replyInChat(
-        string $parentId,
-        string $body,
-        CallKey $requestKey = new CallKey(),
-        string|null $inboxId = null,
-        string|null $claimToken = null,
-    ): MessageNamed {
-        return $this->sender->send(ReplyInChatCall::from([
-            'parentId' => $parentId,
-            'body' => $body,
-            'requestKey' => $requestKey,
-            'inboxId' => $inboxId,
-            'claimToken' => $claimToken,
-        ]));
-    }
-
-    public function replyToMessage(
-        string $messageId,
-        string $body,
-        CallKey $requestKey = new CallKey(),
-        int|null $expectedStateVersion = null,
-    ): MessageNamed {
-        return $this->sender->send(ReplyToMessageCall::from([
-            'messageId' => $messageId,
-            'body' => $body,
-            'requestKey' => $requestKey,
-            'expectedStateVersion' => $expectedStateVersion,
-        ]));
-    }
-
-    public function requireMessageAnswer(
+    public function readMessage(
         string $messageId,
         CallKey $requestKey = new CallKey(),
-    ): MessageNamed {
-        return $this->sender->send(RequireMessageAnswerCall::from([
+    ): MessageView {
+        return $this->sender->send(ReadMessageCall::from([
             'messageId' => $messageId,
             'requestKey' => $requestKey,
         ]));
     }
 
-    public function selectMessage(
-        string $messageId,
+    public function readUnreadMessages(
         CallKey $requestKey = new CallKey(),
-    ): MessageNamed {
-        return $this->sender->send(SelectMessageCall::from([
-            'messageId' => $messageId,
+    ): UnreadMessages {
+        return $this->sender->send(ReadUnreadMessagesCall::from([
             'requestKey' => $requestKey,
         ]));
     }
@@ -293,26 +39,6 @@ final readonly class CommunicationCalls
     ): MessageNamed {
         return $this->sender->send(SendMessageCall::from([
             'message' => $message,
-            'requestKey' => $requestKey,
-        ]));
-    }
-
-    public function showMessage(
-        string $messageId,
-    ): MessageView {
-        return $this->sender->send(ShowMessageCall::from([
-            'messageId' => $messageId,
-        ]));
-    }
-
-    public function takeNextMessages(
-        string $inboxId,
-        int $limit,
-        CallKey $requestKey = new CallKey(),
-    ): MessagesRead {
-        return $this->sender->send(TakeNextMessagesCall::from([
-            'inboxId' => $inboxId,
-            'limit' => $limit,
             'requestKey' => $requestKey,
         ]));
     }

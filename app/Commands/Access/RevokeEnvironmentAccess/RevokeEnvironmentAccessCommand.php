@@ -10,7 +10,7 @@ use App\Policies\EnvironmentAccessPolicy;
 use App\Support\Command;
 
 /**
- * The owner revokes a user's grant to an environment's chats, and every chat the user lost there ends for it.
+ * The owner revokes a user's grant to an environment's inboxes, and every inbox the user lost there ends for it.
  *
  * @extends Command<null>
  */
