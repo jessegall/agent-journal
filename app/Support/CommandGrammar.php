@@ -237,6 +237,8 @@ final readonly class CommandGrammar
     /**
      * Whether the class is final, or the abstract base of a Data family that picks its final class from a property,
      * such as a node of a pane grid.
+     *
+     * @param  Reflector<object>  $declaration
      */
     private function isClosedValue(Reflector $declaration): bool
     {

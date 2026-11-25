@@ -19,6 +19,6 @@ final class SplitData extends PaneNodeData
         public readonly PaneNodeData $first,
         public readonly PaneNodeData $second,
     ) {
-        $this->type = PaneNodeType::Split;
+        parent::__construct(PaneNodeType::Split);
     }
 }

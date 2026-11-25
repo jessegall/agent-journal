@@ -20,6 +20,6 @@ final class PaneData extends PaneNodeData
         public readonly string|null $active,
         public readonly bool $isWidthLimited,
     ) {
-        $this->type = PaneNodeType::Pane;
+        parent::__construct(PaneNodeType::Pane);
     }
 }

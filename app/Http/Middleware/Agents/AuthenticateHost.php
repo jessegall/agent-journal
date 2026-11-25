@@ -142,9 +142,15 @@ final readonly class AuthenticateHost
             return [];
         }
 
-        $calls = FailedHostCallData::collect(json_decode($header, true, flags: JSON_THROW_ON_ERROR));
+        $decoded = json_decode($header, true, flags: JSON_THROW_ON_ERROR);
 
-        return array_slice($calls, 0, self::FAILED_CALL_LIMIT);
+        if (! is_array($decoded)) {
+            return [];
+        }
+
+        $calls = FailedHostCallData::collect($decoded);
+
+        return array_values(array_slice($calls, 0, self::FAILED_CALL_LIMIT));
     }
 
     /**

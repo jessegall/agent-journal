@@ -54,7 +54,9 @@ final class ProjectReadReportRequest extends FormRequest
      */
     private function entries(): array
     {
-        return array_values(ProjectEntryData::collect($this->validated('entries', [])));
+        $entries = $this->safe()->collect('entries')->all();
+
+        return array_values(ProjectEntryData::collect($entries));
     }
 
     /**
