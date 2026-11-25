@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
+use App\Contracts\Sessions\StartTransaction;
+use Throwable;
+use Closure;
 use App\Commands\Agents\RetireAgent\RetireAgentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\ActorNotAllowed;
@@ -152,10 +155,10 @@ final class AgentRetirementTest extends TestCase
         $child = pcntl_fork();
 
         if ($child === 0) {
-            $this->giveWorkWhileHoldingTheSharedLock($task->id, $childEnd);
+            $this->runChild(fn () => $this->giveWorkWhileHoldingTheSharedLock($task->id, $childEnd), $childEnd);
         }
 
-        fgets($parentEnd);
+        $this->assertSame("locked\n", fgets($parentEnd));
         DB::reconnect();
         $result = $this->app->make(CommandBus::class)->run(new RetireAgentCommand($this->helper->id));
         pcntl_waitpid($child, $status);
@@ -211,10 +214,10 @@ final class AgentRetirementTest extends TestCase
         $child = pcntl_fork();
 
         if ($child === 0) {
-            $this->startWhileHoldingTheSharedLock($childEnd);
+            $this->runChild(fn () => $this->startWhileHoldingTheSharedLock($childEnd), $childEnd);
         }
 
-        fgets($parentEnd);
+        $this->assertSame("locked\n", fgets($parentEnd));
         DB::reconnect();
         $this->app->make(CommandBus::class)->run(new RetireAgentCommand($this->helper->id));
         pcntl_waitpid($child, $status);
@@ -234,7 +237,7 @@ final class AgentRetirementTest extends TestCase
     private function startWhileHoldingTheSharedLock($parent): never
     {
         DB::reconnect();
-        DB::transaction(function () use ($parent): void {
+        $this->app->make(StartTransaction::class)->run(function () use ($parent): void {
             $session = $this->app->make(AgentSessions::class)->start(
                 $this->helper,
                 TestSelections::of(),
@@ -297,6 +300,24 @@ final class AgentRetirementTest extends TestCase
                 return;
             }
         }
+    }
+
+    /**
+     * Runs the forked child's work and always ends the child, so a failure never runs the rest of the suite a second
+     * time; the parent reads the failure in place of the lock signal.
+     *
+     * @param  Closure(): never  $work
+     * @param  resource  $parent
+     */
+    private function runChild(Closure $work, $parent): never
+    {
+        try {
+            $work();
+        } catch (Throwable $failure) {
+            fwrite($parent, $failure::class.': '.$failure->getMessage()."\n");
+        }
+
+        exit(1);
     }
 
     /**
