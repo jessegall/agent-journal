@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
@@ -118,11 +119,7 @@ final class HelperPurpose extends Model implements ReadableModel
         $purpose->belongTo($parent);
         $purpose->insertIfAbsent();
 
-        return self::query()->ownedBy($parent)
-            ->where('profile_key', $profileKey)
-            ->where('subject_type', $subject->type)
-            ->where('subject_id', $subject->id)
-            ->sole();
+        return self::query()->ownedBy($parent)->ofProfile($profileKey)->aboutSubject($subject)->sole();
     }
 
     /**
@@ -130,7 +127,7 @@ final class HelperPurpose extends Model implements ReadableModel
      */
     public static function ofParent(ActorIdentity $parent, string $profileKey, string $purposeId): self|null
     {
-        return self::query()->ownedBy($parent)->where('profile_key', $profileKey)->whereKey($purposeId)->first();
+        return self::query()->ownedBy($parent)->ofProfile($profileKey)->whereKey($purposeId)->first();
     }
 
     public static function free(ActorIdentity $parent, string $profileKey, string $label): self
@@ -145,12 +142,49 @@ final class HelperPurpose extends Model implements ReadableModel
      */
     public static function sameAs(self $purpose): Builder
     {
-        $same = self::query()->acrossActors()->where('profile_key', $purpose->profile_key);
+        return self::query()->acrossActors()->likePurpose($purpose);
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The profile's purposes.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofProfile(Builder $query, string $profileKey): void
+    {
+        $query->where('profile_key', $profileKey);
+    }
+
+    /**
+     * The purposes about the subject.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function aboutSubject(Builder $query, RecordIdentity $subject): void
+    {
+        $query->where('subject_type', $subject->type)->where('subject_id', $subject->id);
+    }
+
+    /**
+     * The purposes the same as this one: its profile's, about its subject, or under its label.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function likePurpose(Builder $query, self $purpose): void
+    {
+        $query->ofProfile($purpose->profile_key);
 
         if ($purpose->subject_id === null) {
-            return $same->where('label', $purpose->label);
+            $query->where('label', $purpose->label);
+
+            return;
         }
 
-        return $same->where('subject_type', $purpose->subject_type)->where('subject_id', $purpose->subject_id);
+        $query->where('subject_type', $purpose->subject_type)->where('subject_id', $purpose->subject_id);
     }
 }

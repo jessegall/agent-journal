@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Drivers;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
@@ -72,13 +74,18 @@ final class DriverTurn extends Model implements EventSource, ReadableModel
         string $nativePromptId,
         CarbonImmutable $startedAt,
     ): self {
-        $key = [
+        $existing = self::query()->ofPrompt($runtimeId, $processGeneration, $nativePromptId)->first();
+
+        if ($existing !== null) {
+            return $existing;
+        }
+
+        return self::query()->create([
             'agent_runtime_id' => $runtimeId,
             'process_generation' => $processGeneration,
             'native_prompt_id' => $nativePromptId,
-        ];
-
-        return self::query()->where($key)->first() ?? self::query()->create([...$key, 'started_at' => $startedAt]);
+            'started_at' => $startedAt,
+        ]);
     }
 
     /**
@@ -169,9 +176,7 @@ final class DriverTurn extends Model implements EventSource, ReadableModel
         }
 
         return self::query()
-            ->where('agent_runtime_id', $runtime->id)
-            ->where('process_generation', $runtime->process_generation)
-            ->where('native_prompt_id', $nativePromptId)
+            ->ofPrompt($runtime->id, $runtime->process_generation, $nativePromptId)
             ->first();
     }
 
@@ -187,11 +192,59 @@ final class DriverTurn extends Model implements EventSource, ReadableModel
         }
 
         return self::query()
-            ->where('agent_runtime_id', $runtime->id)
-            ->whereNotNull('closing_words_digest')
-            ->orderByDesc('started_at')
+            ->ofRuntime($runtime->id)
+            ->withClosingWords()
+            ->lastStartedFirst()
             ->newestFirst()
             ->lockForUpdate()
             ->first();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The turn of the native prompt in that process generation of the runtime.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofPrompt(Builder $query, string $runtimeId, int $processGeneration, string $nativePromptId): void
+    {
+        $query->where('agent_runtime_id', $runtimeId)
+            ->where('process_generation', $processGeneration)
+            ->where('native_prompt_id', $nativePromptId);
+    }
+
+    /**
+     * The runtime's turns.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofRuntime(Builder $query, string $runtimeId): void
+    {
+        $query->where('agent_runtime_id', $runtimeId);
+    }
+
+    /**
+     * The turns that hold closing words.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withClosingWords(Builder $query): void
+    {
+        $query->whereNotNull('closing_words_digest');
+    }
+
+    /**
+     * The turns started last first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function lastStartedFirst(Builder $query): void
+    {
+        $query->orderByDesc('started_at');
     }
 }

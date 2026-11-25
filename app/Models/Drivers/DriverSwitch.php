@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Drivers;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -285,7 +287,7 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
 
     public static function ofRequest(string $requestId): self|null
     {
-        return self::query()->where('request_id', $requestId)->lockForUpdate()->first();
+        return self::query()->underRequest($requestId)->lockForUpdate()->first();
     }
 
     /**
@@ -294,8 +296,7 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
     public static function stoppingOf(string $sessionId): self|null
     {
         return self::query()
-            ->where('expected_session_id', $sessionId)
-            ->whereIn('stage', [DriverSwitchStage::Stopping->value, DriverSwitchStage::StopUnconfirmed->value])
+            ->stoppingSession($sessionId)
             ->lockForUpdate()
             ->first();
     }
@@ -306,8 +307,7 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
     public static function startingOf(string $sessionId): self|null
     {
         return self::query()
-            ->where('replacement_session_id', $sessionId)
-            ->whereIn('stage', [DriverSwitchStage::Starting->value, DriverSwitchStage::StartUnconfirmed->value])
+            ->startingSession($sessionId)
             ->lockForUpdate()
             ->first();
     }
@@ -318,12 +318,69 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
     public static function openOf(string $agentId): self|null
     {
         return self::query()
-            ->where('agent_id', $agentId)
-            ->whereNotIn('stage', array_map(
-                fn (DriverSwitchStage $stage) => $stage->value,
-                array_filter(DriverSwitchStage::cases(), fn (DriverSwitchStage $stage) => $stage->isFinal()),
-            ))
+            ->ofAgent($agentId)
+            ->unfinished()
             ->lockForUpdate()
             ->first();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The switch made under the request.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function underRequest(Builder $query, string $requestId): void
+    {
+        $query->where('request_id', $requestId);
+    }
+
+    /**
+     * The switch that is stopping the session.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function stoppingSession(Builder $query, string $sessionId): void
+    {
+        $query->where('expected_session_id', $sessionId)
+            ->whereIn('stage', [DriverSwitchStage::Stopping->value, DriverSwitchStage::StopUnconfirmed->value]);
+    }
+
+    /**
+     * The switch that is starting the session.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function startingSession(Builder $query, string $sessionId): void
+    {
+        $query->where('replacement_session_id', $sessionId)
+            ->whereIn('stage', [DriverSwitchStage::Starting->value, DriverSwitchStage::StartUnconfirmed->value]);
+    }
+
+    /**
+     * The agent's switches.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofAgent(Builder $query, string $agentId): void
+    {
+        $query->where('agent_id', $agentId);
+    }
+
+    /**
+     * The switches not in a final stage.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unfinished(Builder $query): void
+    {
+        $finals = array_filter(DriverSwitchStage::cases(), fn (DriverSwitchStage $stage) => $stage->isFinal());
+        $query->whereNotIn('stage', array_map(fn (DriverSwitchStage $stage) => $stage->value, $finals));
     }
 }

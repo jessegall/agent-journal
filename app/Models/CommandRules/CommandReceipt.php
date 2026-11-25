@@ -284,7 +284,7 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
             return [];
         }
 
-        return self::query()->whereIn('id', $ids)->pluck('request_key', 'id')->all();
+        return self::query()->whereKey($ids)->pluck('request_key', 'id')->all();
     }
 
     /**
@@ -295,10 +295,7 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
         $query = self::query()->withoutGlobalScope('caller');
         $caller->limit($query);
 
-        return $query->where('command', $command)
-            ->where('contract_major', self::CONTRACT_MAJOR)
-            ->where('request_key', $requestKey)
-            ->first();
+        return $query->ofRequest($command, $requestKey)->first();
     }
 
     /**
@@ -311,10 +308,7 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
         $query = self::query()->withoutGlobalScope('caller');
         $caller->limit($query);
 
-        return $query->where('command', $command)->where(
-            'contract_major',
-            self::CONTRACT_MAJOR,
-        )->where('request_key', $requestKey)->lockForUpdate()->first();
+        return $query->ofRequest($command, $requestKey)->lockForUpdate()->first();
     }
 
     // ----------[ Scopes ]----------
@@ -343,5 +337,18 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
     {
         // An empty refuses_until keeps the key refused for good, so its tombstone is never pruned.
         $query->withoutGlobalScope('caller')->whereNotNull('refuses_until')->where('refuses_until', '<', $now);
+    }
+
+    /**
+     * The receipt of the command's request under this contract.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofRequest(Builder $query, string $command, string $requestKey): void
+    {
+        $query->where('command', $command)
+            ->where('contract_major', self::CONTRACT_MAJOR)
+            ->where('request_key', $requestKey);
     }
 }

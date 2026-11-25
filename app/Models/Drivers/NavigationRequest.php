@@ -347,8 +347,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     public static function raisedForOperation(string $runtimeId, string $operationKey): self|null
     {
         return self::query()->acrossActors()
-            ->where('agent_runtime_id', $runtimeId)
-            ->where('operation_key', $operationKey)
+            ->forOperation($runtimeId, $operationKey)
             ->first();
     }
 
@@ -359,11 +358,8 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
         string $fingerprint,
     ): bool {
         return self::query()->ownedBy($owner)->open()
-            ->where('agent_runtime_id', '!=', $runtime->id)
-            ->where('family', $runtime->family)
-            ->where('build', $runtime->driver_build)
-            ->where('fingerprint', $fingerprint)
-            ->where('goal_key', $goal->key())
+            ->onOtherRuntimeOfBuild($runtime)
+            ->forMenu($fingerprint, $goal)
             ->exists();
     }
 
@@ -394,5 +390,40 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     protected function expiredBefore(Builder $query, CarbonImmutable $moment): void
     {
         $query->where('expires_at', '<', $moment);
+    }
+
+    /**
+     * The request raised for the runtime's operation.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function forOperation(Builder $query, string $runtimeId, string $operationKey): void
+    {
+        $query->where('agent_runtime_id', $runtimeId)->where('operation_key', $operationKey);
+    }
+
+    /**
+     * The requests of other runtimes of the runtime's driver family and build.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function onOtherRuntimeOfBuild(Builder $query, AgentRuntime $runtime): void
+    {
+        $query->where('agent_runtime_id', '!=', $runtime->id)
+            ->where('family', $runtime->family)
+            ->where('build', $runtime->driver_build);
+    }
+
+    /**
+     * The requests for the menu of that fingerprint and goal.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function forMenu(Builder $query, string $fingerprint, ScriptGoal $goal): void
+    {
+        $query->where('fingerprint', $fingerprint)->where('goal_key', $goal->key());
     }
 }

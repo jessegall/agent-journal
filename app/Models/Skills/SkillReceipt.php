@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Skills;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
@@ -76,10 +78,7 @@ final class SkillReceipt extends Model implements ReadableModel
         }
 
         return self::query()
-            ->where('session_id', $sessionId)
-            ->where('context_epoch', $epoch)
-            ->where('skill_key', $skillKey)
-            ->where('content_digest', $digest)
+            ->ofRead($sessionId, $epoch, $skillKey, $digest)
             ->sole();
     }
 
@@ -88,11 +87,24 @@ final class SkillReceipt extends Model implements ReadableModel
      */
     public static function hasRead(string $sessionId, string $skillKey, string $digest): bool
     {
-        return self::query()
-            ->where('session_id', $sessionId)
-            ->where('context_epoch', SkillContextEpoch::currentOf($sessionId))
+        $epoch = SkillContextEpoch::currentOf($sessionId);
+
+        return self::query()->ofRead($sessionId, $epoch, $skillKey, $digest)->exists();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The session's read of the skill's content in that context epoch.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofRead(Builder $query, string $sessionId, int $epoch, string $skillKey, string $digest): void
+    {
+        $query->where('session_id', $sessionId)
+            ->where('context_epoch', $epoch)
             ->where('skill_key', $skillKey)
-            ->where('content_digest', $digest)
-            ->exists();
+            ->where('content_digest', $digest);
     }
 }
