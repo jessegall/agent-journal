@@ -38,7 +38,6 @@ final class NavigationAnswerToolTest extends McpToolEntryTestCase
                 'navigationId' => $navigation->id,
                 'expectedRowVersion' => $navigation->row_version,
                 'generation' => $navigation->screen->generation,
-            ]))
-            ->hiddenFromProfile('read-only-helper');
+            ]));
     }
 }

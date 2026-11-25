@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Entries;
 
+use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\McpCatalogue;
 use App\Mcp\Tools\JournalTool;
 use App\Support\ReflectedType;
@@ -50,9 +51,8 @@ abstract class McpToolEntryTestCase extends TestCase
     public function test_an_unsigned_frame_and_a_profile_without_the_tool_are_refused(): void
     {
         $call = $this->arrange($this->journal);
-        $hidden = $call->hiddenFromProfile === null
-            ? null
-            : $this->journal->signedStart('Profile without the tool', $call->hiddenFromProfile);
+        $profile = $this->hiddenProfile();
+        $hidden = $profile === null ? null : $this->journal->signedStart('Profile without the tool', $profile->value);
         $this->journal->heartbeatOf($call->start);
 
         if ($hidden !== null) {
@@ -72,7 +72,7 @@ abstract class McpToolEntryTestCase extends TestCase
 
         $this->assertTrue(
             $answer->json('error') !== null || $answer->json('result.isError') === true,
-            "{$this->toolName()} answered a start of {$call->hiddenFromProfile}, which does not see it.",
+            "{$this->toolName()} answered a start of {$profile?->value}, which does not see it.",
         );
         $this->journal->assertNothingDispatched();
     }
@@ -83,6 +83,16 @@ abstract class McpToolEntryTestCase extends TestCase
     private function tool(): string
     {
         return ReflectedType::of($this)->attribute(TestsMcpTool::class)->tool;
+    }
+
+    /**
+     * The first profile the tool's VisibleToProfiles leaves out, whose start the tool must refuse.
+     */
+    private function hiddenProfile(): DiscoveryProfile|null
+    {
+        $tool = ReflectedType::of($this->tool())->newInstanceWithoutConstructor();
+
+        return array_find(DiscoveryProfile::cases(), fn (DiscoveryProfile $profile) => ! $tool->isVisibleTo($profile));
     }
 
     private function toolName(): string

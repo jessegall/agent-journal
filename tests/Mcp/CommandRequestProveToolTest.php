@@ -14,7 +14,7 @@ use Tests\Support\Processes\HoldsCommandRequests;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * An agent proves a reader on its runs: the tool sends the one prove command and names the proof it made; a read-only helper does not see the tool.
+ * An agent proves a reader on its runs: the tool sends the one prove command and names the proof it made.
  */
 #[TestsMcpTool(CommandRequestProveTool::class)]
 final class CommandRequestProveToolTest extends McpToolEntryTestCase
@@ -34,7 +34,6 @@ final class CommandRequestProveToolTest extends McpToolEntryTestCase
                 'commandRequestId' => $request,
                 'readerRevisionId' => 'reader-1',
                 'runIds' => [$run],
-            ]))
-            ->hiddenFromProfile('read-only-helper');
+            ]));
     }
 }

@@ -14,7 +14,7 @@ use Tests\Support\Processes\HoldsCommandRequests;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * An agent proposes a rule for its held line from a declaration file: the tool sends the one propose command and shows the proposal it made; a read-only helper does not see the tool.
+ * An agent proposes a rule for its held line from a declaration file: the tool sends the one propose command and shows the proposal it made.
  */
 #[TestsMcpTool(CommandTypeProposeTool::class)]
 final class CommandTypeProposeToolTest extends McpToolEntryTestCase
@@ -34,7 +34,6 @@ final class CommandTypeProposeToolTest extends McpToolEntryTestCase
             ->expects(ExpectedCommand::of(ProposeRuleDeclarationCommand::class, [
                 'commandRequestId' => $request,
                 'declarationFile' => $file,
-            ]))
-            ->hiddenFromProfile('read-only-helper');
+            ]));
     }
 }

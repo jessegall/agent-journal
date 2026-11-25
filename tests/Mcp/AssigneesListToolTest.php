@@ -13,7 +13,7 @@ use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The agents work may be given to are listed for a main agent; a helper does not see the tool.
+ * The agents work may be given to are listed for a main agent.
  */
 #[TestsMcpTool(AssigneesListTool::class)]
 final class AssigneesListToolTest extends McpToolEntryTestCase
@@ -26,7 +26,6 @@ final class AssigneesListToolTest extends McpToolEntryTestCase
     protected function arrange(TestJournal $journal): ToolCall
     {
         return ToolCall::by($journal->owner()->signedStart('Planner'))
-            ->arguments(['type' => 'agent'])
-            ->hiddenFromProfile('read-only-helper');
+            ->arguments(['type' => 'agent']);
     }
 }

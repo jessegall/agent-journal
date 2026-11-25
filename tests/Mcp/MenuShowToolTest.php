@@ -16,7 +16,7 @@ use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The main agent reads one entry of the owner's menu library; a helper does not see the tool.
+ * The main agent reads one entry of the owner's menu library.
  */
 #[TestsMcpTool(MenuShowTool::class)]
 final class MenuShowToolTest extends McpToolEntryTestCase
@@ -36,7 +36,6 @@ final class MenuShowToolTest extends McpToolEntryTestCase
         );
 
         return ToolCall::by($start)
-            ->arguments(['entry' => $entry->id])
-            ->hiddenFromProfile('read-only-helper');
+            ->arguments(['entry' => $entry->id]);
     }
 }

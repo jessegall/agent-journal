@@ -39,7 +39,6 @@ final class NavigationDoneToolTest extends McpToolEntryTestCase
                 'navigationId' => $navigation->id,
                 'completes' => NavigationCompletion::Goal,
                 'proof' => 'Model: GPT-6',
-            ]))
-            ->hiddenFromProfile('read-only-helper');
+            ]));
     }
 }

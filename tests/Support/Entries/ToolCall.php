@@ -30,11 +30,6 @@ final class ToolCall
      */
     public private(set) array $replies = [];
 
-    /**
-     * A profile whose start is refused the tool, when some profile does not see it.
-     */
-    public private(set) string|null $hiddenFromProfile = null;
-
     private function __construct(public readonly TestStart|string $start) {}
 
     /**
@@ -78,13 +73,6 @@ final class ToolCall
     public function reply(string $command, mixed $reply): self
     {
         $this->replies[$command] = $reply;
-
-        return $this;
-    }
-
-    public function hiddenFromProfile(string $profile): self
-    {
-        $this->hiddenFromProfile = $profile;
 
         return $this;
     }

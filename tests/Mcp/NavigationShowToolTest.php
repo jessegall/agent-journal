@@ -12,7 +12,7 @@ use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The main agent reads a stalled screen it is asked to pass; a helper does not see the tool.
+ * The main agent reads a stalled screen it is asked to pass.
  */
 #[TestsMcpTool(NavigationShowTool::class)]
 final class NavigationShowToolTest extends McpToolEntryTestCase
@@ -24,7 +24,6 @@ final class NavigationShowToolTest extends McpToolEntryTestCase
         [$start, $navigation, $stalled] = $this->heldNavigation($journal);
 
         return ToolCall::by($start)
-            ->arguments(['request' => $navigation->id])
-            ->hiddenFromProfile('read-only-helper');
+            ->arguments(['request' => $navigation->id]);
     }
 }

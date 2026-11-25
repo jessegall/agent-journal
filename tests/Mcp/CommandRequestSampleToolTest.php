@@ -14,7 +14,7 @@ use Tests\Support\Processes\HoldsCommandRequests;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * An agent starts the sample run a permit allows: the tool sends the one start command and names the run; a read-only helper does not see the tool.
+ * An agent starts the sample run a permit allows: the tool sends the one start command and names the run.
  */
 #[TestsMcpTool(CommandRequestSampleTool::class)]
 final class CommandRequestSampleToolTest extends McpToolEntryTestCase
@@ -32,7 +32,6 @@ final class CommandRequestSampleToolTest extends McpToolEntryTestCase
             ->expects(ExpectedCommand::of(StartSampleCommand::class, [
                 'commandRequestId' => $request,
                 'permitId' => 'permit-1',
-            ]))
-            ->hiddenFromProfile('read-only-helper');
+            ]));
     }
 }

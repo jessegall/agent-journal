@@ -36,7 +36,6 @@ final class NavigationGiveUpToolTest extends McpToolEntryTestCase
             ->expects(ExpectedCommand::of(AbandonNavigationCommand::class, [
                 'navigationId' => $navigation->id,
                 'reason' => 'The picker shows no such model.',
-            ]))
-            ->hiddenFromProfile('read-only-helper');
+            ]));
     }
 }

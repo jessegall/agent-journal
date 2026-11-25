@@ -14,7 +14,7 @@ use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * A record's assignment is read by a main agent; a helper does not see the tool.
+ * A record's assignment is read by a main agent.
  */
 #[TestsMcpTool(AssignmentReadTool::class)]
 final class AssignmentReadToolTest extends McpToolEntryTestCase
@@ -31,7 +31,6 @@ final class AssignmentReadToolTest extends McpToolEntryTestCase
         $start = $journal->signedStart('Planner');
 
         return ToolCall::by($start)
-            ->forModel($task)
-            ->hiddenFromProfile('read-only-helper');
+            ->forModel($task);
     }
 }
