@@ -34,6 +34,7 @@ use App\Support\Storage\FrameRecords;
 use App\Support\Storage\StoredFrames;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
+use Domain\Plans\PlansDomain;
 use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Database\Connection;
@@ -66,7 +67,7 @@ final class AgentStacksTest extends TestCase
      */
     protected static function bootedDomains(): array
     {
-        return DomainBoot::withRequirements(TasksDomain::class);
+        return DomainBoot::withRequirements(TasksDomain::class, PlansDomain::class);
     }
 
     use UsesSecondConnection;
