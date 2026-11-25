@@ -16,7 +16,7 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 #[MapName(SnakeCaseMapper::class)]
 final class ProcessEventFacts extends Data
 {
-    private function __construct(
+    public function __construct(
         public readonly string $type,
         public readonly string|null $part = null,
         public readonly int|null $pid = null,

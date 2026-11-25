@@ -105,7 +105,7 @@ final readonly class ShippedReaders
         return new ShippedReader(
             'phpunit',
             'core.phpunit',
-            '12.5.44',
+            '13.4.8',
             'composer.lock: phpunit/phpunit',
             'vendor/bin/phpunit --teamcity',
             new ReaderDefinition([

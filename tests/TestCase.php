@@ -10,6 +10,7 @@ use App\Support\Domain;
 use App\Support\DomainRegistry;
 use App\Support\OuterTransactionOwner;
 use App\Support\OutsideCommandAllowance;
+use App\Support\SpoolRecorder;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -20,6 +21,7 @@ use Illuminate\Foundation\Testing\WithCachedConfig;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Translation\Translator;
 use Laravel\Fortify\Features;
 use PDO;
@@ -66,6 +68,7 @@ abstract class TestCase extends BaseTestCase
         File::ensureDirectoryExists($folder, Place::ProcessOutput->folderMode());
         config([Place::ProcessOutput->rootSetting() => (string) realpath($folder)]);
         $this->app->forgetInstance(Files::class);
+        Storage::forgetDisk(SpoolRecorder::DISK);
     }
 
     /**
