@@ -16,6 +16,7 @@ use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\Command;
 use App\Support\StartSessions;
+use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Contracts\Foundation\Application;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\OpensDriverRuntimes;
@@ -115,7 +116,8 @@ final class JournalSeed
     }
 
     /**
-     * Starts a fresh request as the user or agent of this name, the actor of every command run after.
+     * Starts a fresh request as the user or agent of this name, the actor of every command run after; a user's request
+     * is signed in as that user.
      */
     public function actAs(string $name): self
     {
@@ -123,11 +125,13 @@ final class JournalSeed
         $this->acting = $name;
 
         if (array_key_exists($name, $this->agents)) {
+            $this->app->make(AuthFactory::class)->guard()->forgetUser();
             $this->startRequestAs($this->agents[$name]->id, $this->sessions[$name]->id);
 
             return $this;
         }
 
+        $this->app->make(AuthFactory::class)->guard()->setUser($this->userCalled($name));
         $this->startUserRequestAs($this->userCalled($name)->id);
 
         return $this;

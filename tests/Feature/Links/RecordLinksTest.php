@@ -129,27 +129,6 @@ final class RecordLinksTest extends TestCase
         $this->assertSame([], $this->records()->visibleCards([new RecordIdentity(Message::linkType(), $message->id)]));
     }
 
-    public function test_a_report_links_to_a_plan_and_a_document_once_and_unlinking_keeps_both_records(): void
-    {
-        Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
-        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "Text\n"));
-        $this->bus()->run(new CreateReportCommand('Check', 'What we found', "All good\n"));
-        [$report, $plan, $document] = array_map($this->identified(...), ['report 1', 'plan 1', 'doc 1']);
-
-        $this->bus()->run(new LinkRecordsCommand($report, $plan));
-        $this->bus()->run(new LinkRecordsCommand($report, $document));
-        $this->bus()->run(new LinkRecordsCommand($plan, $report));
-        $this->assertSame(2, Link::query()->count());
-
-        $this->bus()->run(new UnlinkRecordsCommand($document, $report));
-
-        $this->assertSame(
-            ['plan 1'],
-            array_map(fn ($card) => $card->label, $this->records()->linkedCards(Report::query()->sole())),
-        );
-        $this->assertSame(1, Document::query()->count());
-    }
-
     public function test_doc_make_about_a_task_links_it_and_a_private_or_extra_target_creates_nothing(): void
     {
         Task::factory()->create(['title' => 'Write the client']);

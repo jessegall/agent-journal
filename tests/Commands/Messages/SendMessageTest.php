@@ -51,8 +51,8 @@ final class SendMessageTest extends TestCase
 
         Event::fake([MessageSent::class]);
         $this->journal()->agent('Builder', 'read-only-helper')->owner();
-        $this->ownInboxId = $this->journal()->inboxOf('Owner')->id;
-        $this->builderInboxId = $this->journal()->inboxOf('Builder')->id;
+        $this->ownInboxId = $this->journal()->inboxCalled('Owner')->id;
+        $this->builderInboxId = $this->journal()->inboxCalled('Builder')->id;
     }
 
     public function test_a_sent_message_keeps_its_text_and_sender_under_the_inboxs_next_number(): void
