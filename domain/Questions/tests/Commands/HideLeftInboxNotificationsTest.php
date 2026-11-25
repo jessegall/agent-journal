@@ -41,7 +41,11 @@ final class HideLeftInboxNotificationsTest extends TestCase
         $hidden = $this->journal->runAsJournal(
             CommandEntry::EngineMaintenance,
             self::TRUSTED_ENTRY,
-            new HideLeftInboxNotificationsCommand($owner->type, $owner->id, $this->journal->chatOf('Owner', 'Planner')->id),
+            new HideLeftInboxNotificationsCommand(
+                $owner->type,
+                $owner->id,
+                $this->journal->chatOf('Owner', 'Planner')->id,
+            ),
         );
 
         $this->assertSame(1, $hidden);

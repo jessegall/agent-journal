@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Questions\Tests\Commands;
 
 use Domain\Questions\Commands\ReadQuestion\ReadQuestionCommand;
-use Domain\Questions\Enums\QuestionType;
 use Domain\Questions\Exceptions\QuestionRefused;
 use Domain\Questions\Models\Question;
+use Domain\Questions\Tests\Fixtures\QuestionFixtures;
 use Domain\Questions\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
 
@@ -27,14 +27,9 @@ final class ReadQuestionTest extends TestCase
         parent::setUp();
 
         $this->journal->owner()->agent('Planner')->agent('Stranger')->chat('Owner', 'Planner');
-        $this->question = Question::create(
-            $this->journal->chatOf('Owner', 'Planner')->id,
-            $this->journal->actorCalled('Planner'),
-            $this->journal->actorCalled('Owner'),
-            'Which database?',
-            QuestionType::Open,
-            [],
-        );
+        $this->question = $this->journal->fixtures(QuestionFixtures::class)
+            ->question('Database', $this->journal->chatOf('Owner', 'Planner'), 'Planner', 'Owner')
+            ->questionCalled('Database');
     }
 
     public function test_the_asker_and_the_target_read_the_question(): void

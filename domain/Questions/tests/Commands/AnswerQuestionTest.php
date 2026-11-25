@@ -10,6 +10,7 @@ use Domain\Questions\Enums\QuestionType;
 use Domain\Questions\Exceptions\QuestionRefused;
 use Domain\Questions\Models\Question;
 use Domain\Questions\Models\QuestionAnswerNotice;
+use Domain\Questions\Tests\Fixtures\QuestionFixtures;
 use Domain\Questions\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
 
@@ -96,13 +97,15 @@ final class AnswerQuestionTest extends TestCase
      */
     private function asked(QuestionType $type, array $options = []): Question
     {
-        return Question::create(
-            $this->journal->chatOf('Owner', 'Planner')->id,
-            $this->journal->actorCalled('Planner'),
-            $this->journal->actorCalled('Owner'),
-            'Which database?',
-            $type,
-            $options,
-        );
+        return $this->journal->fixtures(QuestionFixtures::class)
+            ->question(
+                'Database',
+                $this->journal->chatOf('Owner', 'Planner'),
+                'Planner',
+                'Owner',
+                type: $type,
+                options: $options,
+            )
+            ->questionCalled('Database');
     }
 }

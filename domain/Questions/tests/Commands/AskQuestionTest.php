@@ -40,21 +40,32 @@ final class AskQuestionTest extends TestCase
 
         $question = Question::query()->findOrFail($questionId);
         $this->assertSame(
-            ['Which database?', QuestionType::Open, $this->journal->agentCalled('Planner')->id, $this->journal->ownerUser()->id],
+            [
+                'Which database?',
+                QuestionType::Open,
+                $this->journal->agentCalled('Planner')->id,
+                $this->journal->ownerUser()->id,
+            ],
             [$question->text, $question->type, $question->sender_id, $question->target_id],
         );
     }
 
     public function test_a_choice_keeps_its_options_trimmed(): void
     {
-        $questionId = $this->journal->run($this->ask('Which database?', QuestionType::Choice, [' Postgres ', 'SQLite']));
+        $questionId = $this->journal->run(
+            $this->ask('Which database?', QuestionType::Choice, [' Postgres ', 'SQLite']),
+        );
 
         $this->assertSame(['Postgres', 'SQLite'], Question::query()->findOrFail($questionId)->options);
     }
 
     public function test_a_blank_text_an_open_question_with_options_and_a_choice_without_two_options_are_refused(): void
     {
-        $this->assertThrows(fn () => $this->journal->run($this->ask(' ', QuestionType::Open)), CommandInputInvalid::class, 'text:');
+        $this->assertThrows(
+            fn () => $this->journal->run($this->ask(' ', QuestionType::Open)),
+            CommandInputInvalid::class,
+            'text:',
+        );
         $this->assertThrows(
             fn () => $this->journal->run($this->ask('Which?', QuestionType::Open, ['A', 'B'])),
             QuestionRefused::class,
@@ -86,7 +97,10 @@ final class AskQuestionTest extends TestCase
         );
 
         $this->journal->actAs('Stranger');
-        $this->assertThrows(fn () => $this->journal->run($this->ask('Which?', QuestionType::Open)), InboxUnavailable::class);
+        $this->assertThrows(
+            fn () => $this->journal->run($this->ask('Which?', QuestionType::Open)),
+            InboxUnavailable::class,
+        );
 
         $this->assertSame(0, Question::query()->count());
     }

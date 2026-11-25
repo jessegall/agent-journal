@@ -6,9 +6,8 @@ namespace Domain\Questions\Tests\Commands;
 
 use App\Enums\Accounts\CommandEntry;
 use Domain\Questions\Commands\DeliverWaitingQuestionAnswers\DeliverWaitingQuestionAnswersCommand;
-use Domain\Questions\Enums\QuestionType;
-use Domain\Questions\Models\Question;
 use Domain\Questions\Models\QuestionAnswerNotice;
+use Domain\Questions\Tests\Fixtures\QuestionFixtures;
 use Domain\Questions\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
 
@@ -62,14 +61,9 @@ final class DeliverWaitingQuestionAnswersTest extends TestCase
 
     private function waitingNotice(string $text): QuestionAnswerNotice
     {
-        $question = Question::create(
-            $this->journal->chatOf('Owner', 'Planner')->id,
-            $this->journal->actorCalled('Planner'),
-            $this->journal->actorCalled('Owner'),
-            $text,
-            QuestionType::Open,
-            [],
-        );
+        $question = $this->journal->fixtures(QuestionFixtures::class)
+            ->question($text, $this->journal->chatOf('Owner', 'Planner'), 'Planner', 'Owner', $text)
+            ->questionCalled($text);
 
         return QuestionAnswerNotice::create($question, $this->journal->actorCalled('Planner'));
     }
