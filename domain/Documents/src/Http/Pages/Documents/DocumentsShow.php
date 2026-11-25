@@ -18,17 +18,18 @@ use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
 use App\Support\Layout\PublicationTab;
 use Closure;
+use Domain\Comments\Contracts\CommentResolver;
 use Domain\Comments\Data\CommentList;
+use Domain\Comments\Data\RecordCommentsPartData;
+use Domain\Comments\Data\RecordReadsData;
 use Domain\Documents\Data\DocumentCommentsPartData;
 use Domain\Documents\Data\DocumentFeedbackPartData;
 use Domain\Documents\Data\DocumentRecipientData;
 use Domain\Documents\Data\DocumentView;
 use Domain\Documents\Data\DraftEditorPartData;
 use Domain\Documents\Data\DraftState;
-use Domain\Documents\Data\RecordCommentsPartData;
 use Domain\Documents\Data\RecordInspection;
 use Domain\Documents\Data\RecordLinksPartData;
-use Domain\Documents\Data\RecordReadsData;
 use Domain\Documents\Data\RecordSharePartData;
 use Domain\Documents\Data\RecoverDraftPartData;
 use Domain\Documents\Data\RevisionCard;
@@ -46,7 +47,11 @@ use Spatie\LaravelData\Optional;
  */
 final readonly class DocumentsShow extends DocumentsPage
 {
-    public function __construct(private RecordMenus $menus, private AgentDirectory $agents) {}
+    public function __construct(
+        private RecordMenus $menus,
+        private AgentDirectory $agents,
+        private CommentResolver $comments,
+    ) {}
 
     /**
      * Each closure reads what one tab shows, only when that tab is chosen.
@@ -131,6 +136,7 @@ final readonly class DocumentsShow extends DocumentsPage
         $lines = DocumentCommentsPartData::of(
             $document->revision,
             $label,
+            $this->comments->commentAddress(),
             $document->body,
             $commentList,
             $feedback->recipients,
@@ -146,7 +152,7 @@ final readonly class DocumentsShow extends DocumentsPage
             'version' => $document->revision,
         ]);
 
-        $parts[] = LayoutPartData::native('comments', LayoutNativeData::of('documents/RecordComments', $comments));
+        $parts[] = LayoutPartData::native('comments', LayoutNativeData::of('comments/RecordComments', $comments));
 
         return LayoutPartData::box('text', 'stack', ...$parts);
     }

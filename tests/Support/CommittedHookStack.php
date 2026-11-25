@@ -16,7 +16,10 @@ use App\Enums\Processes\ShellDialect;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Agents\AgentStackRow;
+use App\Models\Inboxes\Inbox;
 use App\Support\ActorContext;
+use App\Support\ActorIdentity;
+use App\Support\ActorProvisioning;
 use App\Support\AgentContext;
 use App\Support\AgentRuntimes;
 use App\Support\AgentStacks;
@@ -102,6 +105,12 @@ trait CommittedHookStack
         );
         $agent->id = TestIds::of(1);
         $agent->save();
+
+        $actor = ActorIdentity::of($agent);
+
+        if (! Inbox::query()->personalTo($actor)->exists()) {
+            $this->app->make(ActorProvisioning::class)->provision($actor, $agent->name);
+        }
         $session = AgentSession::query()->find(TestIds::of(10))
             ?? new AgentSession()->forceFill(TestSelections::sessionColumns());
         $session->id = TestIds::of(10);

@@ -52,7 +52,7 @@ final readonly class FileCommentThreads implements FileComments
 
     public function commentAddress(): string
     {
-        return route('comments.post', absolute: false);
+        return $this->comments->commentAddress();
     }
 
     public function tellAddress(): string

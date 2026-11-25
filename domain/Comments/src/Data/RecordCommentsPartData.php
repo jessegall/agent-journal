@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Domain\Documents\Data;
+namespace Domain\Comments\Data;
 
-use Domain\Comments\Data\CommentList;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
@@ -18,7 +18,7 @@ final class RecordCommentsPartData extends Data
     public function __construct(
         public readonly CommentList $comments,
         public readonly string $target,
-        public readonly RecordReadsData $reads,
-        public readonly string $version = '1',
+        public readonly RecordReadsData|Optional $reads = new Optional(),
+        public readonly string|Optional $version = new Optional(),
     ) {}
 }

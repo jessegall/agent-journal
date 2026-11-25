@@ -17,7 +17,7 @@ use App\Support\Layout\LayoutRowData;
 use App\Support\Layout\PublicationPage;
 use App\Support\Layout\PublicationTab;
 use Closure;
-use Domain\Documents\Data\RecordCommentsPartData;
+use Domain\Comments\Data\RecordCommentsPartData;
 use Domain\Documents\Data\RecordInspection;
 use Domain\Documents\Data\RecordLinksPartData;
 use Domain\Documents\Data\RecordSharePartData;
@@ -93,7 +93,7 @@ final readonly class ReportsShow extends ReportsPage
             );
         }
 
-        $parts[] = LayoutPartData::native('comments', LayoutNativeData::of('documents/RecordComments', $comments));
+        $parts[] = LayoutPartData::native('comments', LayoutNativeData::of('comments/RecordComments', $comments));
 
         return LayoutPartData::box('text', 'stack', ...$parts);
     }

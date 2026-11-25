@@ -11,8 +11,8 @@ use App\Data\Docks\DockablePublicationData;
 use App\Support\Cards\DockIdentity;
 use App\Support\RecordReference;
 use Domain\Comments\Contracts\CommentResolver;
+use Domain\Comments\Data\RecordCommentsPartData;
 use Domain\Documents\Contracts\Reports\ReportResolver;
-use Domain\Documents\Data\RecordCommentsPartData;
 use Domain\Documents\Http\Pages\Reports\ReportsShow;
 use Domain\Documents\Http\Requests\RecordPageRequest;
 use Domain\Documents\Models\Report;
@@ -50,6 +50,7 @@ final readonly class ReportWindowResolver implements PageResolver
                 'comments' => $this->comments->list($identity, $this->request->commentsPage()),
                 'target' => "report {$number}",
                 'reads' => $this->reads->of($identity),
+                'version' => '1',
             ]),
             fn () => $this->reports->links($number),
             fn () => $this->reports->inspect($number),

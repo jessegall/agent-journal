@@ -14,7 +14,7 @@ use App\Support\Layout\LayoutNativeData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
 use App\Support\Layout\PublicationTab;
-use Domain\Tasks\Data\TaskCommentsData;
+use Domain\Comments\Data\RecordCommentsPartData;
 use Domain\Tasks\Data\TaskLogsPartData;
 use Domain\Tasks\Data\TaskProofsPartData;
 use Domain\Tasks\Data\TaskReaderData;
@@ -68,8 +68,8 @@ final readonly class TasksShow extends TasksPage
                 PublicationTab::deferred('comments', 'Comments', fn () => LayoutPartData::native(
                     'comments',
                     LayoutNativeData::of(
-                        'tasks/TaskCommentsTab',
-                        TaskCommentsData::from([
+                        'comments/RecordComments',
+                        RecordCommentsPartData::from([
                             'comments' => $reader->comments,
                             'target' => $reader->label,
                         ]),

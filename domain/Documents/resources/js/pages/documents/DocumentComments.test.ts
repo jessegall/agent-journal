@@ -6,12 +6,11 @@ import type { DocumentCommentsPartData } from '@generated/types/documents';
 import DocumentComments from './DocumentComments.vue';
 import { draftFor } from '@kit/lineComments';
 
-vi.mock('@generated/routes/comments', () => ({ post: { url: () => '/comments' } }));
-
 function part(overrides: Partial<DocumentCommentsPartData> = {}): DocumentCommentsPartData {
     return {
         revision: '3',
         target: 'doc 7',
+        commentAddress: '/comments',
         blocks: [1, 2, 3, 4].map((line) => ({ type: 'paragraph', text: `Line ${line}`, firstLine: line, lastLine: line })),
         threads: [],
         recipients: [],

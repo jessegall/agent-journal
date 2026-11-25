@@ -65,7 +65,6 @@ use Domain\Documents\Data\DraftView;
 use Domain\Documents\Data\PublicationCard;
 use Domain\Documents\Data\PublicationList;
 use Domain\Documents\Data\RecordInspection;
-use Domain\Documents\Data\RecordReadsData;
 use Domain\Documents\Data\RecordText;
 use Domain\Documents\Data\ReportView;
 use Domain\Documents\Data\RevisionCard;
@@ -192,7 +191,6 @@ final class DocumentsDomain extends Domain implements
                 RecordText::class,
                 EditingStatus::class,
                 DraftState::class,
-                RecordReadsData::class,
                 DraftView::class,
                 RevisionCard::class,
                 RevisionView::class,
@@ -346,7 +344,6 @@ final class DocumentsDomain extends Domain implements
         return [
             'DocumentComments.vue',
             'DraftEditor.vue',
-            'RecordComments.vue',
             'RecordLinks.vue',
             'RecordShare.vue',
             'RecoverForm.vue',

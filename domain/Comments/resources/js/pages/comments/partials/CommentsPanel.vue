@@ -2,7 +2,7 @@
 import { router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 import type { CommentList, RecordCommentView, TextCommentView } from '@generated/types/comments';
-import type { RecordReadsData } from '@/generated/types/documents';
+import type { RecordReadsData } from '@generated/types/comments';
 import Button from '@kit/Button';
 import CommentComposer from './CommentComposer.vue';
 import CommentItem from './CommentItem.vue';

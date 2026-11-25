@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
-import type { RecordReadsData } from '@/generated/types/documents';
+import type { RecordReadsData } from '@generated/types/comments';
 import type { Section } from '@kit/CoreTypes';
 import { post } from '@generated/routes/comments';
 import Button from '@kit/Button';

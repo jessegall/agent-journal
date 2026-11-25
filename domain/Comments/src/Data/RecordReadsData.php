@@ -2,12 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Domain\Documents\Data;
+namespace Domain\Comments\Data;
 
 use App\Data\Pages\TextSections;
 use App\Support\TextPart;
-use Domain\Comments\Data\RecordCommentLocation;
-use Domain\Comments\Data\TextCommentLocation;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;

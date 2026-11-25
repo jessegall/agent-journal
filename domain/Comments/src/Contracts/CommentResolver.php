@@ -22,6 +22,11 @@ interface CommentResolver
     public function list(RecordIdentity $target, IdListPage $page): CommentList;
 
     /**
+     * The address a user's comment on a record is posted to.
+     */
+    public function commentAddress(): string;
+
+    /**
      * Where the comment sits in the record: on the whole record, or on the text the selection marks.
      */
     public function location(

@@ -53,6 +53,11 @@ final readonly class CommentResolver implements CommentResolverContract
         ]);
     }
 
+    public function commentAddress(): string
+    {
+        return route('comments.post', absolute: false);
+    }
+
     public function location(
         RecordIdentity $target,
         string $commentId,

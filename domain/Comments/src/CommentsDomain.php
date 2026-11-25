@@ -7,6 +7,7 @@ namespace Domain\Comments;
 use App\Concerns\HasLinkRecords;
 use App\Contracts\Authorization\PolicyProvider;
 use App\Contracts\Bus\CommandProvider;
+use App\Contracts\Drivers\NativePartProvider;
 use App\Contracts\Records\LinkRecordProvider;
 use App\Contracts\Sharing\ShareRecordContributor;
 use App\Enums\Agents\AccessType;
@@ -25,7 +26,9 @@ use Domain\Comments\Contracts\PublicCommentResolver;
 use Domain\Comments\Data\CommentDetails;
 use Domain\Comments\Data\CommentList;
 use Domain\Comments\Data\RecordCommentLocation;
+use Domain\Comments\Data\RecordCommentsPartData;
 use Domain\Comments\Data\RecordCommentView;
+use Domain\Comments\Data\RecordReadsData;
 use Domain\Comments\Data\TextCommentLocation;
 use Domain\Comments\Data\TextCommentView;
 use Domain\Comments\Enums\CommentType;
@@ -41,6 +44,7 @@ use Domain\Comments\Support\PublicCommentPage;
 final class CommentsDomain extends Domain implements
     CommandProvider,
     LinkRecordProvider,
+    NativePartProvider,
     PolicyProvider,
     ShareRecordContributor
 {
@@ -80,8 +84,20 @@ final class CommentsDomain extends Domain implements
                 CommentType::class,
                 CommentPolicy::class,
                 ListCommentsPayload::class,
+                RecordReadsData::class,
+                RecordCommentsPartData::class,
             )
             ->build();
+    }
+
+    /**
+     * The native part a record page mounts for its comments.
+     *
+     * @return list<string>
+     */
+    public function nativeParts(): array
+    {
+        return ['RecordComments.vue'];
     }
 
     public function commands(): array

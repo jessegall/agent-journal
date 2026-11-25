@@ -27,6 +27,7 @@ use Tests\Fixtures\Domains\Shelves\Listeners\CountCommentPosted;
 use Tests\Fixtures\Domains\Shelves\ShelvesDomain;
 use Tests\Fixtures\Domains\Tasks\TaskList;
 use Tests\Fixtures\Domains\Tasks\TasksDomain;
+use Tests\Support\DomainBoot;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -52,7 +53,7 @@ final class DomainServiceProviderTest extends TestCase
 
     public function test_the_migrations_of_every_domain_are_found(): void
     {
-        $this->registerDomains([ShelvesDomain::class, CommentsDomain::class, BooksDomain::class, TasksDomain::class]);
+        $this->registerDomains(DomainBoot::withRequirements(ShelvesDomain::class, CommentsDomain::class, BooksDomain::class, TasksDomain::class));
 
         $migrator = $this->app->make(Migrator::class);
         $files = array_keys($migrator->getMigrationFiles($migrator->paths()));
@@ -63,7 +64,7 @@ final class DomainServiceProviderTest extends TestCase
 
     public function test_a_domain_event_maps_to_its_listener(): void
     {
-        $this->registerDomains([ShelvesDomain::class, CommentsDomain::class]);
+        $this->registerDomains(DomainBoot::withRequirements(ShelvesDomain::class, CommentsDomain::class));
 
         $events = new DomainEventServiceProvider($this->app)->discoverEvents();
 
@@ -72,7 +73,7 @@ final class DomainServiceProviderTest extends TestCase
 
     public function test_a_domain_listens_to_another_domains_exported_event(): void
     {
-        $this->registerDomains([ShelvesDomain::class, CommentsDomain::class]);
+        $this->registerDomains(DomainBoot::withRequirements(ShelvesDomain::class, CommentsDomain::class));
 
         $events = new DomainEventServiceProvider($this->app)->discoverEvents();
 
@@ -84,7 +85,7 @@ final class DomainServiceProviderTest extends TestCase
 
     public function test_the_discovery_paths_are_the_domain_listener_folders(): void
     {
-        $this->registerDomains([ShelvesDomain::class, CommentsDomain::class, BooksDomain::class]);
+        $this->registerDomains(DomainBoot::withRequirements(ShelvesDomain::class, CommentsDomain::class, BooksDomain::class));
 
         $paths = new DomainEventServiceProvider($this->app)->discoverEventsWithin();
         $folders = $this->app->make(DomainRegistry::class)->listenerFolders();

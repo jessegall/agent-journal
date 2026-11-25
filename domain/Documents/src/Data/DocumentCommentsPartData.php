@@ -28,6 +28,7 @@ final class DocumentCommentsPartData extends Data
     public function __construct(
         public readonly string $revision,
         public readonly string $target,
+        public readonly string $commentAddress,
         #[DataCollectionOf(DocumentBlockData::class)]
         public readonly array $blocks,
         #[DataCollectionOf(DocumentThreadData::class)]
@@ -46,6 +47,7 @@ final class DocumentCommentsPartData extends Data
     public static function of(
         string $revision,
         string $target,
+        string $commentAddress,
         string $body,
         CommentList $comments,
         array $recipients = [],
@@ -54,6 +56,7 @@ final class DocumentCommentsPartData extends Data
         return new self(
             $revision,
             $target,
+            $commentAddress,
             MarkdownBlocks::of($body),
             array_values(array_map(
                 fn (TextCommentView $view) => new DocumentThreadData(

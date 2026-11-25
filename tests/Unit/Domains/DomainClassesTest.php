@@ -71,7 +71,7 @@ final class DomainClassesTest extends TestCase
             'TaskGraphResolver',
             'TaskGraphSuggestion',
             'TaskList',
-            'TaskState',
+            'TaskStatus',
             'TaskListResolver',
             'TaskDetailsResolver',
             'TaskExecution',
@@ -108,7 +108,7 @@ final class DomainClassesTest extends TestCase
             'PlanReviewRequested',
             'PlanReviewWithdrawn',
             'PlanReviewDecided',
-            'PlanReviewState',
+            'PlanReviewStatus',
             'PlanResolver',
             'StartPlanCommand',
             'AssignPlanWorkCommand',
@@ -124,7 +124,7 @@ final class DomainClassesTest extends TestCase
             'AssignedPlanList',
             'PlanProgress',
             'PlanType',
-            'PlanState',
+            'PlanStatus',
             'PlanFinished',
             'PlanCancelled',
             'PlanDetailsResolver',
@@ -153,7 +153,7 @@ final class DomainClassesTest extends TestCase
             'RuleFilters',
             'RuleList',
             'RuleView',
-            'RuleState',
+            'RuleStatus',
             'RuleMissing',
             'RuleNotProposed',
             'RuleDetailsResolver',
@@ -172,7 +172,7 @@ final class DomainClassesTest extends TestCase
             'ShownQuestion',
         ]];
 
-        yield 'Comments' => [CommentsDomain::class, [], [
+        yield 'Comments' => [CommentsDomain::class, [ChatDomain::class], [
             'PostCommentCommand',
             'PostTextCommentCommand',
             'CommentPosted',
@@ -188,8 +188,10 @@ final class DomainClassesTest extends TestCase
             'PublicComment',
             'CommentPolicy',
             'CommentType',
-            'ListCommentsCall',
+            'ListCommentsPayload',
             'PublicCommentPage',
+            'RecordReadsData',
+            'RecordCommentsPartData',
         ]];
 
         yield 'Reminders' => [RemindersDomain::class, [], []];
@@ -209,7 +211,7 @@ final class DomainClassesTest extends TestCase
             'HelperRetired',
             'HelperUnavailable',
             'HelperWork',
-            'JobState',
+            'JobStatus',
             'SessionStartDetails',
             'SendHelperCommand',
             'StartHelperCommand',

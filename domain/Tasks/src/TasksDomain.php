@@ -173,7 +173,6 @@ final class TasksDomain extends Domain implements
     public function nativeParts(): array
     {
         return [
-            'TaskCommentsTab.vue',
             'TaskGraph.vue',
             'TaskLogsTab.vue',
             'TaskProofsTab.vue',
