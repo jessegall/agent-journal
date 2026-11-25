@@ -115,7 +115,7 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
         $attempt->setAttribute($attempt->getKeyName(), $attempt->newUniqueId());
 
         if (! $attempt->insertIfAbsent()) {
-            $attempt = self::query()->where('owner_user_id', $userId)->where('idempotency_key', $idempotencyKey)->sole();
+            $attempt = self::query()->ofOwner($userId)->withIdempotencyKey($idempotencyKey)->sole();
         }
 
         if ($attempt->wasRecentlyCreated) {

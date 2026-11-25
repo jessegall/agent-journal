@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
+use App\Support\Reflector;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\InterpolatedStringPart;
 use PhpParser\Node\Scalar\InterpolatedString;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\NodeFinder;
+use PHPUnit\Framework\Assert;
 use Tests\Support\ScanCache\FileScan;
 
 /**
@@ -22,7 +24,7 @@ final readonly class LiteralSentenceAssertionScan implements FileScan
 {
     public function key(): string
     {
-        return 'literal-sentence-assertions-4';
+        return 'literal-sentence-assertions-5';
     }
 
     public function findingsIn(ParsedFile $file): array
@@ -51,15 +53,21 @@ final readonly class LiteralSentenceAssertionScan implements FileScan
     }
 
     /**
-     * The literal sentences handed to the call itself, not those inside a call or construction among its arguments.
+     * The literal sentences handed to the call itself, not those inside a call or construction among its arguments,
+     * nor the failure message an assertion shows when it fails.
      *
      * @return list<string>
      */
     private static function sentencesOf(Expr\MethodCall|Expr\StaticCall $call): array
     {
         $sentences = [];
+        $messageAt = self::messagePositionOf($call);
 
-        foreach ($call->getArgs() as $argument) {
+        foreach ($call->getArgs() as $position => $argument) {
+            if ($position === $messageAt || $argument->name?->toString() === 'message') {
+                continue;
+            }
+
             $text = self::literalTextOf($argument->value);
 
             if ($text !== null && preg_match('/\S\s+\S/', $text) === 1) {
@@ -68,6 +76,27 @@ final readonly class LiteralSentenceAssertionScan implements FileScan
         }
 
         return $sentences;
+    }
+
+    /**
+     * Where PHPUnit's assertion of that name takes its failure message; none for a call PHPUnit does not declare.
+     */
+    private static function messagePositionOf(Expr\MethodCall|Expr\StaticCall $call): int|null
+    {
+        $assert = Reflector::of(Assert::class);
+        $name = $call->name instanceof Node\Identifier ? $call->name->toString() : '';
+
+        if (! $assert->hasMethod($name)) {
+            return null;
+        }
+
+        foreach ($assert->method($name)->parameters() as $position => $parameter) {
+            if ($parameter->name() === 'message') {
+                return $position;
+            }
+        }
+
+        return null;
     }
 
     /**

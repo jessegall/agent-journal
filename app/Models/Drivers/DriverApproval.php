@@ -62,7 +62,7 @@ final class DriverApproval extends Model implements EventSource, ReadableModel
      */
     public static function forKey(DriverKey $key): self
     {
-        $existing = self::query()->where('driver_key', (string) $key)->first();
+        $existing = self::query()->ofKeys([(string) $key])->first();
 
         if ($existing !== null) {
             return $existing;

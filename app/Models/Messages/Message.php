@@ -219,7 +219,7 @@ final class Message extends Model implements AuthoredModel, EventSource, Readabl
     #[Scope]
     protected function whereReadBy(Builder $query, MessageParticipant $reader): void
     {
-        $query->whereHas('reads', fn (Builder $read) => $read->whereReader($reader));
+        $query->whereHas('reads', fn (Builder $read) => $read->ofReader($reader));
     }
 
     /**
@@ -228,7 +228,7 @@ final class Message extends Model implements AuthoredModel, EventSource, Readabl
     #[Scope]
     protected function whereNotReadBy(Builder $query, MessageParticipant $reader): void
     {
-        $query->whereDoesntHave('reads', fn (Builder $read) => $read->whereReader($reader));
+        $query->whereDoesntHave('reads', fn (Builder $read) => $read->ofReader($reader));
     }
 
     /**

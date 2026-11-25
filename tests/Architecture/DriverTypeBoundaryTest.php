@@ -21,10 +21,12 @@ final class DriverTypeBoundaryTest extends TestCase
         .'DriverType::\w+\s*[!=]==?|[!=]==?\s*DriverType::|match\s*\([^)]*driver_?[tT]ype\)|case\s+DriverType::/';
 
     /**
-     * The driver registration: a registration, the registry that finds one by family and driver type, and the
-     * registered driver that refuses a request for a driver type it was not registered for.
+     * The driver registration: a registration, the registry that finds one by family and driver type, the host's
+     * enrolled descriptor of a registration, found the same way, and the registered driver that refuses a request for a
+     * driver type it was not registered for.
      */
     private const array REGISTRATION = [
+        'app/Data/Hosts/EnrolledDescriptorData.php',
         'app/Support/DriverRegistry.php',
         'app/Support/RegisteredDriver.php',
         'app/Values/DriverRegistration.php',

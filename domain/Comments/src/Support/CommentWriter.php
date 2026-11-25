@@ -7,18 +7,17 @@ namespace Domain\Comments\Support;
 use App\Contracts\Reads\TextContent;
 use App\Contracts\Records\Commentable;
 use App\Contracts\Records\RecordResolver;
-use App\Contracts\Work\ActorStackSessions;
-use Domain\Comments\Enums\WholeRecord;
 use App\Exceptions\SubmissionKeyConflict;
 use App\Exceptions\TargetHasNoText;
-use Domain\Comments\Exceptions\TargetNotCommentable;
-use Domain\Comments\Models\Comment;
-use App\Values\TextRange;
-use Illuminate\Database\Eloquent\Model;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\MarkdownText;
 use App\Support\RecordIdentity;
+use App\Values\TextRange;
+use Domain\Comments\Enums\WholeRecord;
+use Domain\Comments\Exceptions\TargetNotCommentable;
+use Domain\Comments\Models\Comment;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Writes a comment for the author it is given: the record is authorized first, a retry under the same submission key
@@ -28,7 +27,6 @@ final readonly class CommentWriter
 {
     public function __construct(
         private RecordResolver $records,
-        private ActorStackSessions $stackSessions,
     ) {}
 
     public function post(
@@ -46,9 +44,8 @@ final readonly class CommentWriter
 
         $body = MarkdownText::comment($text);
         $author = ActorIdentity::of($actor);
-        $sessionId = $this->stackSessions->admittableSessions()[0] ?? null;
         $hash = self::hashOf($targetIdentity, $subject, $body);
-        $earlier = Comment::query()->submittedAs($author, $sessionId, $submissionKey)->first();
+        $earlier = Comment::query()->submittedAs($author, $submissionKey)->first();
 
         if ($earlier !== null) {
             if ($earlier->submission_hash === $hash) {
@@ -62,13 +59,12 @@ final readonly class CommentWriter
             ? Comment::create(
                 $target,
                 $author,
-                $sessionId,
                 $body,
                 $subject->anchorIn(self::textOf($target, $targetIdentity)->textVersion($subject->version)),
                 $submissionKey,
                 $hash,
             )
-            : Comment::create($target, $author, $sessionId, $body, null, $submissionKey, $hash);
+            : Comment::create($target, $author, $body, null, $submissionKey, $hash);
 
         return $comment->id;
     }

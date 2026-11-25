@@ -72,7 +72,7 @@ final class InboxMember extends Model implements EventSource
      */
     public static function create(string $inboxId, ActorIdentity $actor, CarbonImmutable $at): void
     {
-        if (self::query()->active()->ofActor($actor)->where('inbox_id', $inboxId)->exists()) {
+        if (self::query()->active()->ofActor($actor)->ofInbox($inboxId)->exists()) {
             return;
         }
 

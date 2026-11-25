@@ -6,10 +6,11 @@ namespace Domain\Questions\Models;
 
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
+use App\Models\Support\Accessor;
+use App\Support\ActorIdentity;
+use Carbon\CarbonImmutable;
 use Domain\Questions\Events\QuestionAnswerNoticeDelivered;
 use Domain\Questions\Events\QuestionAnswerNoticeWritten;
-use App\Models\Support\Accessor;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -21,7 +22,8 @@ use Illuminate\Support\Carbon;
 /**
  * @property string $id
  * @property string $question_id
- * @property string $agent_id
+ * @property string $recipient_type
+ * @property string $recipient_id
  * @property ?CarbonImmutable $delivered_at
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
@@ -75,9 +77,9 @@ final class QuestionAnswerNotice extends Model implements EventSource
 
     // ----------[ Queries ]----------
 
-    public static function write(Question $question, string $agentId): self
+    public static function write(Question $question, ActorIdentity $recipient): self
     {
-        $existing = self::query()->where('question_id', $question->id)->first();
+        $existing = self::query()->ofQuestion($question->id)->first();
 
         if ($existing !== null) {
             return $existing;
@@ -85,9 +87,10 @@ final class QuestionAnswerNotice extends Model implements EventSource
 
         $notice = new self();
         $notice->question_id = $question->id;
-        $notice->agent_id = $agentId;
+        $notice->recipient_type = $recipient->type;
+        $notice->recipient_id = $recipient->id;
         $notice->assertSaved($notice->save());
-        $notice->raise(new QuestionAnswerNoticeWritten($notice->id, $question->id, $agentId));
+        $notice->raise(new QuestionAnswerNoticeWritten($notice->id, $question->id, $recipient));
 
         return $notice;
     }
@@ -98,8 +101,17 @@ final class QuestionAnswerNotice extends Model implements EventSource
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function undeliveredFor(Builder $query, string $agentId): void
+    protected function ofQuestion(Builder $query, string $questionId): void
     {
-        $query->where('agent_id', $agentId)->whereNull('delivered_at')->orderBy('created_at')->orderBy('id');
+        $query->where('question_id', $questionId);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function undeliveredFor(Builder $query, ActorIdentity $recipient): void
+    {
+        $query->where('recipient_type', $recipient->type)->where('recipient_id', $recipient->id)->whereNull('delivered_at')->orderBy('created_at')->orderBy('id');
     }
 }

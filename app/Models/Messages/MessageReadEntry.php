@@ -52,11 +52,7 @@ final class MessageReadEntry extends Model implements EventSource
 
     public static function create(Message $message, MessageSender&MessageReceiver $reader, CarbonImmutable $at): void
     {
-        $entry = self::query()
-            ->where('message_id', $message->id)
-            ->where('reader_type', $reader->participantType())
-            ->where('reader_id', $reader->participantId())
-            ->first();
+        $entry = self::query()->ofMessages([$message->id])->ofReader($reader)->first();
 
         if ($entry === null) {
             $entry = new self();
@@ -102,14 +98,14 @@ final class MessageReadEntry extends Model implements EventSource
     #[Scope]
     protected function latestOf(Builder $query, MessageParticipant $reader): void
     {
-        $query->whereReader($reader)->orderByDesc('last_read_at')->orderByDesc('id');
+        $query->ofReader($reader)->orderByDesc('last_read_at')->orderByDesc('id');
     }
 
     /**
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function whereReader(Builder $query, MessageParticipant $reader): void
+    protected function ofReader(Builder $query, MessageParticipant $reader): void
     {
         $query->where('reader_type', $reader->participantType())->where('reader_id', $reader->participantId());
     }

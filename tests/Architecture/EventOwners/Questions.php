@@ -35,7 +35,7 @@ return [
         'owner' => 'QuestionAnswerNotice::write',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new QuestionAnswerNoticeWritten('notice', 'question', 'agent'),
+        'sample' => fn () => new QuestionAnswerNoticeWritten('notice', 'question', ActorIdentity::ofClass(Agent::class, 'agent')),
     ],
     QuestionAnswerNoticeDelivered::class => [
         'role' => EventRole::RowFact,

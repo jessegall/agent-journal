@@ -158,7 +158,7 @@ final readonly class ChatPages
         $messageIds = $rows->where('source_type', Message::linkType())->pluck('source_id')->all();
 
         return array_values(array_map(strval(...), MessageReadEntry::query()
-            ->whereReader($this->viewerModel())
+            ->ofReader($this->viewerModel())
             ->ofMessages($messageIds)
             ->pluck('message_id')
             ->all()));

@@ -49,7 +49,7 @@ final readonly class RequestWindowResolver implements PageResolver
         $latestProposal = $proposals->first();
 
         if ($latestProposal !== null) {
-            $latestRevision = $latestProposal->revisions()->orderByDesc('revision')->first();
+            $latestRevision = $latestProposal->revisions()->newestRevisionFirst()->first();
             $latest = $latestRevision?->payload;
         }
 

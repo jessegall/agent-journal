@@ -10,20 +10,20 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Sharing\Shareable;
-use Domain\Comments\Data\CommentDetails;
-use Domain\Comments\Enums\WholeRecord;
 use App\Enums\Records\TextAnchorType;
-use Domain\Comments\Events\CommentPosted;
-use Domain\Comments\Exceptions\CommentAnchorCorrupt;
-use Domain\Comments\Exceptions\CommentImmutable;
 use App\Exceptions\IncompleteTextAnchor;
 use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
-use Domain\Comments\Support\CommentDetailsFactory;
 use App\Support\RecordIdentity;
 use App\Support\ShareRelationSet;
 use App\Values\TextAnchor;
 use Carbon\CarbonImmutable;
+use Domain\Comments\Data\CommentDetails;
+use Domain\Comments\Enums\WholeRecord;
+use Domain\Comments\Events\CommentPosted;
+use Domain\Comments\Exceptions\CommentAnchorCorrupt;
+use Domain\Comments\Exceptions\CommentImmutable;
+use Domain\Comments\Support\CommentDetailsFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -37,7 +37,6 @@ use Illuminate\Support\Carbon;
  * @property string $target_id
  * @property string $author_type
  * @property string $author_id
- * @property ?string $author_session_id
  * @property string $body
  * @property ?string $version_id
  * @property ?string $version_label
@@ -91,7 +90,6 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
     public static function create(
         Model $target,
         ActorIdentity $author,
-        string|null $sessionId,
         string $body,
         TextAnchor|null $anchor,
         string $key,
@@ -105,7 +103,6 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
         $comment->target_id = (string) $target->getKey();
         $comment->author_type = $author->type;
         $comment->author_id = $author->id;
-        $comment->author_session_id = $sessionId;
 
         if ($anchor !== null) {
             $comment->version_id = $anchor->versionId;
@@ -335,11 +332,8 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function submittedAs(Builder $query, ActorIdentity $author, string|null $sessionId, string $key): void
+    protected function submittedAs(Builder $query, ActorIdentity $author, string $key): void
     {
-        $query->where(
-            'author_type',
-            $author->type,
-        )->where('author_id', $author->id)->where('author_session_id', $sessionId)->where('submission_key', $key);
+        $query->where('author_type', $author->type)->where('author_id', $author->id)->where('submission_key', $key);
     }
 }

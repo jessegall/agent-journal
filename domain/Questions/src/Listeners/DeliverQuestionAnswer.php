@@ -30,7 +30,7 @@ final readonly class DeliverQuestionAnswer implements Listener
             return;
         }
 
-        $notice = QuestionAnswerNotice::write($question, $sender->id);
+        $notice = QuestionAnswerNotice::write($question, $sender);
         $session = AgentSession::liveOf($sender->id);
 
         if ($session !== null) {
