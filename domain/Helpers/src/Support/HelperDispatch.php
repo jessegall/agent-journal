@@ -343,8 +343,7 @@ final readonly class HelperDispatch
     }
 
     /**
-     * The project a new helper belongs to: its parent agent's, or for now the local project when the user dispatches
-     * it, until the dispatch names its project.
+     * The project a new helper belongs to: its parent agent's, or the local project when the user dispatches it.
      */
     private function projectIdOf(DispatchRequest $request): string
     {
