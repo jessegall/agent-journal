@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandBus;
 use Domain\Sequences\Commands\AdvanceSequence\AdvanceSequenceCommand;
 use Domain\Sequences\Commands\StartSequence\StartSequenceCommand;
 use Domain\Sequences\Enums\SequenceRunStatus;
-use Domain\Sequences\Models\SequenceRun;
+use Domain\Sequences\Tests\Fixtures\SequenceFixtures;
 use Domain\Sequences\Tests\TestCase;
 use Tests\Support\CommittedHookStack;
 
@@ -21,7 +21,10 @@ final class AdvanceSequenceTest extends TestCase
 
     public function test_a_run_goes_to_its_next_step_and_finishes_after_its_last(): void
     {
-        $run = SequenceRun::create('Close a task', ['Read the brief.', 'Run the phase tests.']);
+        $run = $this->journal->fixtures(SequenceFixtures::class)->run(
+            'Close a task',
+            ['Read the brief.', 'Run the phase tests.'],
+        )->runCalled('Close a task');
         $bus = $this->app->make(CommandBus::class);
         $bus->run(new StartSequenceCommand($run->id, $this->target->sessionId));
 

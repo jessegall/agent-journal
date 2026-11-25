@@ -25,12 +25,14 @@ final class SequenceFixtures
     }
 
     /**
+     * A run of the steps no one follows yet, titled after its name unless a title is given.
+     *
      * @param  list<string>  $steps
      */
-    public function run(string $name, array $steps): self
+    public function run(string $name, array $steps, string|null $title = null): self
     {
         $this->aliases->claim($name);
-        $this->aliases->remember($name, SequenceRun::create($name, $steps));
+        $this->aliases->remember($name, SequenceRun::create($title ?? $name, $steps));
 
         return $this;
     }

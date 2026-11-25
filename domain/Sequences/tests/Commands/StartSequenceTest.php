@@ -10,7 +10,7 @@ use App\Models\Agents\AgentStackRow;
 use Carbon\CarbonImmutable;
 use Domain\Sequences\Commands\StartSequence\StartSequenceCommand;
 use Domain\Sequences\Enums\SequenceRunStatus;
-use Domain\Sequences\Models\SequenceRun;
+use Domain\Sequences\Tests\Fixtures\SequenceFixtures;
 use Domain\Sequences\Tests\TestCase;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\TestIds;
@@ -25,7 +25,10 @@ final class StartSequenceTest extends TestCase
 
     public function test_a_started_run_follows_the_agent_at_its_first_step_with_its_state_on_the_stack(): void
     {
-        $run = SequenceRun::create('Close a task', ['Read the brief.', 'Run the phase tests.']);
+        $run = $this->journal->fixtures(SequenceFixtures::class)->run(
+            'Close a task',
+            ['Read the brief.', 'Run the phase tests.'],
+        )->runCalled('Close a task');
 
         $this->app->make(CommandBus::class)->run(new StartSequenceCommand($run->id, $this->target->sessionId));
 
@@ -39,11 +42,16 @@ final class StartSequenceTest extends TestCase
 
     public function test_a_failed_push_rolls_the_start_back(): void
     {
-        $run = SequenceRun::create('Close a task', ['Read the brief.']);
+        $run = $this->journal->fixtures(SequenceFixtures::class)->run(
+            'Close a task',
+            ['Read the brief.'],
+        )->runCalled('Close a task');
         AgentStackRow::query()->sole()->closeAt(CarbonImmutable::now());
 
         $this->assertThrows(
-            fn () => $this->app->make(CommandBus::class)->run(new StartSequenceCommand($run->id, $this->target->sessionId)),
+            fn () => $this->app->make(CommandBus::class)->run(
+                new StartSequenceCommand($run->id, $this->target->sessionId),
+            ),
             StackAlreadyClosed::class,
         );
         $this->assertNull($run->refresh()->actor_id);

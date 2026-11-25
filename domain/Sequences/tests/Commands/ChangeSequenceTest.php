@@ -7,7 +7,7 @@ namespace Domain\Sequences\Tests\Commands;
 use Domain\Sequences\Commands\ChangeSequence\ChangeSequenceCommand;
 use Domain\Sequences\Exceptions\SequenceChangedMeanwhile;
 use Domain\Sequences\Models\Sequence;
-use Domain\Sequences\Models\SequenceRun;
+use Domain\Sequences\Tests\Fixtures\SequenceFixtures;
 use Domain\Sequences\Tests\TestCase;
 use Domain\Sequences\Values\SequenceStep;
 use Tests\Support\RefreshHookDatabase;
@@ -32,10 +32,12 @@ final class ChangeSequenceTest extends TestCase
 
     public function test_a_change_goes_one_version_on_and_a_started_run_keeps_its_own_steps(): void
     {
-        $run = SequenceRun::create('Release', ['tests']);
+        $run = $this->journal->fixtures(SequenceFixtures::class)->run('Release', ['tests'])->runCalled('Release');
         $run->sequence()->associate($this->sequence)->save();
 
-        $this->journal->run(new ChangeSequenceCommand($this->sequence->id, 1, 'Release', [self::step('tests'), self::step('merge')]));
+        $this->journal->run(
+            new ChangeSequenceCommand($this->sequence->id, 1, 'Release', [self::step('tests'), self::step('merge')]),
+        );
 
         $this->assertSame(2, $this->sequence->refresh()->version);
         $this->assertCount(2, $this->sequence->steps);
@@ -47,7 +49,9 @@ final class ChangeSequenceTest extends TestCase
         $this->journal->run(new ChangeSequenceCommand($this->sequence->id, 1, 'Release', [self::step('merge')]));
 
         $this->assertThrows(
-            fn () => $this->journal->run(new ChangeSequenceCommand($this->sequence->id, 1, 'Release', [self::step('tests')])),
+            fn () => $this->journal->run(
+                new ChangeSequenceCommand($this->sequence->id, 1, 'Release', [self::step('tests')]),
+            ),
             SequenceChangedMeanwhile::class,
         );
         $this->assertSame([2, 'merge'], [$this->sequence->refresh()->version, $this->sequence->steps[0]->id]);

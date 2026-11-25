@@ -9,6 +9,7 @@ use App\Models\Agents\Agent;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use Domain\Sequences\Models\SequenceRun;
+use Domain\Sequences\Tests\Fixtures\SequenceFixtures;
 use Domain\Sequences\Tests\TestCase;
 use Illuminate\Support\Str;
 use Tests\Support\RefreshHookDatabase;
@@ -22,6 +23,8 @@ final class SequenceRunsListTest extends TestCase
     use RefreshHookDatabase;
 
     private User $owner;
+
+    private int $madeRuns = 0;
 
     protected function setUp(): void
     {
@@ -38,7 +41,7 @@ final class SequenceRunsListTest extends TestCase
         $older = $this->runFor($first);
         $newer = $this->runFor($first);
         $other = $this->runFor($second);
-        SequenceRun::create('Not started', ['Wait.']);
+        $this->journal->fixtures(SequenceFixtures::class)->run('Not started', ['Wait.']);
 
         $page = $this->pageOf('/sequences/runs?'.http_build_query(['actor' => $first->text()]));
 
@@ -102,10 +105,10 @@ final class SequenceRunsListTest extends TestCase
 
     private function runFor(ActorIdentity $follower): SequenceRun
     {
-        $run = SequenceRun::create('Release', [
-            'Read the brief.',
-            'Run the tests.',
-        ]);
+        $name = 'Release '.++$this->madeRuns;
+        $run = $this->journal->fixtures(SequenceFixtures::class)
+            ->run($name, ['Read the brief.', 'Run the tests.'], 'Release')
+            ->runCalled($name);
         $run->startFor($follower, (string) Str::uuid());
 
         return $run;

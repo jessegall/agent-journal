@@ -7,7 +7,7 @@ namespace Domain\Sequences\Tests\Feature;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
 use Domain\Sequences\Models\Sequence;
-use Domain\Sequences\Models\SequenceRun;
+use Domain\Sequences\Tests\Fixtures\SequenceFixtures;
 use Domain\Sequences\Tests\TestCase;
 use Domain\Sequences\Values\SequenceStep;
 use Inertia\Testing\AssertableInertia;
@@ -44,7 +44,10 @@ final class SequenceRunPageTest extends TestCase
             ]),
         ]);
 
-        $run = SequenceRun::create('Release', ['Run the tests']);
+        $run = $this->journal->fixtures(SequenceFixtures::class)->run(
+            'Release',
+            ['Run the tests'],
+        )->runCalled('Release');
         $run->sequence()->associate($sequence)->save();
 
         $this->actingAs($this->owner)->get('/sequences')->assertOk()->assertSee($sequence->id);
@@ -72,10 +75,10 @@ final class SequenceRunPageTest extends TestCase
 
     public function test_a_run_nobody_follows_yet_opens_from_its_sequence(): void
     {
-        $run = SequenceRun::create('Release', [
+        $run = $this->journal->fixtures(SequenceFixtures::class)->run('Release', [
             'Read the brief.',
             'Run the tests.',
-        ]);
+        ])->runCalled('Release');
 
         $this->actingAs($this->owner)->get("/sequences/runs/{$run->number}")->assertOk();
     }
