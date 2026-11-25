@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Engine;
+namespace Tests\Commands\Agents;
 
 use App\Commands\Agents\SettleFrameTimes\SettleFrameTimesCommand;
 use App\Contracts\Bus\CommandBus;

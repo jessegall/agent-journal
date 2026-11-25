@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Assignments;
+namespace Tests\Commands\Agents;
 
 use App\Commands\Agents\RetireAgent\RetireAgentCommand;
 use App\Contracts\Bus\CommandBus;
@@ -43,7 +43,7 @@ use Throwable;
  * given in the meantime still releases that work.
  */
 #[TimeLimit(seconds: 5, reason: 'Retirement waits out locks another connection holds.')]
-final class AgentRetirementTest extends TestCase
+final class RetireAgentTest extends TestCase
 {
     use CommitsHookRows;
     use StartsAgentRequests;

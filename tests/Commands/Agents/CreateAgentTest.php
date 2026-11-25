@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Agents;
+namespace Tests\Commands\Agents;
 
 use App\Commands\Agents\CreateAgent\CreateAgentCommand;
 use App\Contracts\Bus\CommandBus;
@@ -16,7 +16,7 @@ use Tests\TestCase;
 /**
  * Core creates helper agents through CreateAgentCommand, and refuses a blank name.
  */
-final class AgentCreationTest extends TestCase
+final class CreateAgentTest extends TestCase
 {
     use RefreshHookDatabase;
     use StartsOwnerRequest;

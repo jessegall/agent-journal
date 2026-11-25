@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Agents;
+namespace Tests\Commands\Agents;
 
 use App\Commands\Agents\ContinueStart\ContinueStartCommand;
 use App\Commands\Agents\StartAgent\StartAgentCommand;

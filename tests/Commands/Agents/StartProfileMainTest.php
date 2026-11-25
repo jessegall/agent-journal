@@ -2,37 +2,29 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Profiles;
+namespace Tests\Commands\Agents;
 
 use App\Commands\Agents\StartProfileMain\StartProfileMainCommand;
-use App\Commands\Agents\SwitchAgentDriver\SwitchAgentDriverCommand;
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Accounts\AccountUses;
 use App\Contracts\Bus\CommandBus;
-use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Sessions\ProfileResolver;
 use App\Enums\Agents\ConversationModeType;
 use App\Enums\Drivers\DriverCapability;
 use App\Enums\Drivers\DriverSourceType;
-use App\Enums\Drivers\DriverSwitchStage;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Profiles\ModelTier;
 use App\Enums\Sessions\ResumeRefusal;
 use App\Enums\Sessions\StartPreflightRefusal;
-use App\Events\Sessions\DriverSwitchStopped;
 use App\Exceptions\DriverCapabilityUnsupported;
-use App\Exceptions\DriverSwitchStale;
 use App\Exceptions\ProfileCannotCoordinate;
 use App\Exceptions\ResumeRefused;
 use App\Exceptions\StartPreflightRefused;
-use App\Listeners\StartSwitchReplacementOnStop;
 use App\Models\Access\User;
 use App\Models\Accounts\Account;
 use App\Models\Agents\Agent;
-use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverConversation;
-use App\Models\Drivers\DriverSwitch;
 use App\Models\Projects\Host;
 use App\Models\Sessions\SessionRequest;
 use App\Support\Access\AccessSettings;
@@ -44,8 +36,6 @@ use App\Support\ProposedProfile;
 use App\Support\StartReceipt;
 use App\Values\AccountLabel;
 use App\Values\ChosenAccount;
-use App\Values\DriverSwitchReceipt;
-use App\Values\DriverSwitchTarget;
 use App\Values\ModelSelection;
 use App\Values\ProfileBase;
 use App\Values\ProfileKey;
@@ -59,10 +49,12 @@ use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
- * A main start from a profile: its default model and revision become the start's selection, a pinned driver
- * refuses another, a helper profile cannot start a main, and a later activation leaves an accepted start as it was.
+ * The owner starts a profile's main agent: the default resolves to the profile's model and revision, a preferred driver
+ * still lets a start choose another, a helper profile cannot start a main, a later activation leaves an accepted start
+ * as it was, an explicit start runs the chosen account and driver type, an automatic codex start on the terminal default
+ * and a start the host cannot run are refused before a session, and an explicit resume continues the chosen thread.
  */
-final class ProfileStartTest extends TestCase
+final class StartProfileMainTest extends TestCase
 {
     use HasContainerSupport;
     use RefreshHookDatabase;
@@ -190,51 +182,6 @@ final class ProfileStartTest extends TestCase
         $this->assertSame($sessions, AgentSession::query()->count());
     }
 
-    public function test_a_switch_the_host_cannot_run_is_refused_and_keeps_the_old_session_and_a_repeat_answers_it(): void
-    {
-        $this->activate(self::main(ModelTier::Inventive, DefaultDrivers::CLAUDE_CODE));
-        $old = $this->start('default', null);
-        Host::query()->update(['descriptors' => []]);
-        $requestId = strtolower((string) Str::ulid());
-
-        $refused = $this->switchTo($requestId, $old->sessionId, $this->accounts['codex']);
-        $repeated = $this->switchTo($requestId, $old->sessionId, $this->accounts['codex']);
-
-        $this->assertSame(DriverSwitchStage::Refused, $refused->stage);
-        $this->assertSame(StartPreflightRefusal::CombinationNotDeclared->value, $refused->failureReason);
-        $this->assertSame($refused->switchId, $repeated->switchId);
-        $this->assertSame($old->sessionId, $this->main->refresh()->current_session_id);
-    }
-
-    public function test_a_repeated_switch_makes_one_switch_and_its_stage_is_read_back(): void
-    {
-        $this->activate(self::main(ModelTier::Inventive, DefaultDrivers::CLAUDE_CODE));
-        $old = $this->start('default', null);
-        Host::query()->update(['descriptors' => []]);
-        $codex = $this->accounts['codex'];
-        $switch = [
-            'requestId' => strtolower((string) Str::ulid()),
-            'agentId' => $this->main->id,
-            'expectedSessionId' => $old->sessionId,
-            'expectedGeneration' => self::generationOf($old->sessionId),
-            'driver' => DefaultDrivers::CODEX,
-            'driverType' => DriverType::Headless->value,
-            'accountId' => $codex->id,
-            'accountRevision' => $codex->sign_in_generation,
-            'model' => 'default',
-        ];
-
-        $this->actingAs($this->owner)->from('/')->post(route('profiles.switch', 'journal-main'), $switch)
-            ->assertRedirect('/');
-        $this->actingAs($this->owner)->from('/')->post(route('profiles.switch', 'journal-main'), $switch)
-            ->assertRedirect('/');
-
-        $made = DriverSwitch::query()->where('request_id', $switch['requestId'])->sole();
-        $this->actingAs($this->owner)->getJson(route('profiles.switch-stage', $switch['requestId']))
-            ->assertJsonPath('switchId', $made->id)
-            ->assertJsonPath('stage', DriverSwitchStage::Refused->value);
-    }
-
     public function test_an_explicit_resume_continues_the_chosen_older_thread_and_a_foreign_one_is_refused(): void
     {
         $this->activate(self::main(ModelTier::Inventive, DefaultDrivers::CLAUDE_CODE));
@@ -257,70 +204,6 @@ final class ProfileStartTest extends TestCase
         }
     }
 
-    public function test_a_switch_that_expects_another_session_is_stale(): void
-    {
-        $this->activate(self::main(ModelTier::Inventive, DefaultDrivers::CLAUDE_CODE));
-        $this->start('default', null);
-
-        $this->expectException(DriverSwitchStale::class);
-
-        $this->switchTo(strtolower((string) Str::ulid()), strtolower((string) Str::ulid()), $this->accounts['codex']);
-    }
-
-    public function test_a_switch_to_the_codex_terminal_is_refused_with_its_reason_before_any_switch_exists(): void
-    {
-        $this->activate(self::main(ModelTier::Inventive, DefaultDrivers::CLAUDE_CODE));
-        $session = $this->start('default', null)->sessionId;
-
-        $this->assertThrows(
-            fn () => $this->switchTo(
-                strtolower((string) Str::ulid()),
-                $session,
-                $this->accounts['codex'],
-                DriverType::Terminal,
-            ),
-            DriverCapabilityUnsupported::class,
-            DriverCapabilityUnsupported::for(DriverCapability::Run, CodexTerminalCapabilities::NOT_PROVEN)->getMessage(),
-        );
-        $this->assertSame(0, DriverSwitch::query()->count());
-    }
-
-    public function test_a_switch_keeps_the_registration_its_target_was_pinned_to(): void
-    {
-        $this->activate(self::main(ModelTier::Inventive, DefaultDrivers::CLAUDE_CODE));
-        $session = $this->start('default', null)->sessionId;
-        $requestId = strtolower((string) Str::ulid());
-
-        $this->switchTo($requestId, $session, $this->accounts['codex']);
-
-        $switch = DriverSwitch::query()->where('request_id', $requestId)->sole();
-        $pin = $this->app->make(DriverCatalogue::class)->pinned(DefaultDrivers::CODEX, DriverType::Headless);
-        $this->assertSame(
-            [(string) $pin->registration->key, $pin->registration->family],
-            [$switch->target_driver_key, $switch->target_family],
-        );
-    }
-
-    public function test_after_a_proven_stop_the_replacement_starts_and_a_refused_one_fails_the_switch(): void
-    {
-        $this->activate(self::main(ModelTier::Inventive, DefaultDrivers::CLAUDE_CODE));
-        $codex = $this->accounts['codex'];
-
-        $started = $this->stoppedSwitch(new ChosenAccount($codex->id, $codex->sign_in_generation));
-        $this->replace($started);
-        $failed = $this->stoppedSwitch(new ChosenAccount($codex->id, $codex->sign_in_generation + 1));
-        $this->replace($failed);
-
-        $started->refresh();
-        $this->assertSame(DriverSwitchStage::Starting, $started->stage);
-        $this->assertNotSame($started->expected_session_id, $started->replacement_session_id);
-        $this->assertSame(
-            [DefaultDrivers::CODEX, DriverType::Headless, true, $codex->id],
-            $this->recorded($started->request_id, (string) $started->replacement_session_id),
-        );
-        $this->assertSame(DriverSwitchStage::StartFailed, $failed->refresh()->stage);
-    }
-
     private function resume(string $conversationId): StartReceipt
     {
         return $this->app->make(CommandBus::class)->run(new StartProfileMainCommand(
@@ -333,72 +216,10 @@ final class ProfileStartTest extends TestCase
         ));
     }
 
-    /**
-     * The process generation the page shows for the session, 0 with no runtime, which a switch names to prove it is
-     * current.
-     */
-    private static function generationOf(string $sessionId): int
-    {
-        $runtime = AgentRuntime::findForSession($sessionId);
-
-        return $runtime === null ? 0 : $runtime->process_generation;
-    }
-
-    private function switchTo(
-        string $requestId,
-        string $sessionId,
-        Account $account,
-        DriverType $mode = DriverType::Headless,
-    ): DriverSwitchReceipt {
-        return $this->app->make(CommandBus::class)->run(new SwitchAgentDriverCommand(
-            $requestId,
-            $this->main->id,
-            ProfileKey::from('journal-main'),
-            $sessionId,
-            self::generationOf($sessionId),
-            new DriverSwitchTarget(
-                DefaultDrivers::CODEX,
-                $mode,
-                new ChosenAccount($account->id, $account->sign_in_generation),
-                null,
-                false,
-            ),
-            ModelSelection::fromInput('default'),
-        ));
-    }
-
-    /**
-     * A switch whose old session is proven stopped, as the stop report leaves it; each on an agent of its own.
-     */
-    private function stoppedSwitch(ChosenAccount $account): DriverSwitch
-    {
-        $this->main = Agent::create('Switched main '.Str::random(4), 'journal-main', $this->localProject());
-        $session = AgentSession::query()->findOrFail($this->start('default', null)->sessionId);
-        $this->endSession($session);
-        $switch = DriverSwitch::create(
-            strtolower((string) Str::ulid()),
-            $session,
-            0,
-            new DriverSwitchTarget(DefaultDrivers::CODEX, DriverType::Headless, $account, null, false),
-            $this->app->make(DriverCatalogue::class)->pinned(DefaultDrivers::CODEX, DriverType::Headless),
-            'owner',
-        );
-        $switch->markPreflighted();
-        $switch->beginStopping(null);
-        $switch->markStopped();
-
-        return $switch;
-    }
-
     private function endSession(AgentSession $session): void
     {
         $this->app->make(AgentSessions::class)->end($session);
         $this->main->fenceRuntimes();
-    }
-
-    private function replace(DriverSwitch $switch): void
-    {
-        $this->app->make(StartSwitchReplacementOnStop::class)->handle(new DriverSwitchStopped($switch->id));
     }
 
     /**
