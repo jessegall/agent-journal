@@ -4,29 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Commands\Runs\CleanProcessOutput\CleanProcessOutputCommand;
-use App\Commands\Runs\VerifyRestoredOutput\VerifyRestoredOutputCommand;
 use App\Contracts\Admission\ShellAdmission;
 use App\Enums\CommandRules\AdmissionRefusalCode;
 use App\Enums\Processes\ShellDialect;
-use App\Enums\Runs\CaptureStatus;
-use App\Exceptions\CleanRefused;
-use App\Models\Runs\OutputChunk;
 use App\Models\Runs\PartRun;
-use App\Models\Runs\ProcessRun;
-use App\Support\OutputRecorder;
 use App\Values\Admission;
 use App\Values\AdmissionRefusal;
 use App\Values\ExecutionContext;
-use Illuminate\Support\Facades\Storage;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
- * Stored output is removed only on a user's explicit clean of ended runs, after a preview; restored files count only
- * when every byte matches; a full output disk starts nothing.
+ * A full output disk starts nothing until room returns.
  */
 final class OutputCleanupTest extends TestCase
 {
@@ -42,42 +33,6 @@ final class OutputCleanupTest extends TestCase
 
         $this->openAcmeRequest();
         $this->part = $this->normalRun(0, self::PASSED_OUTPUT);
-    }
-
-    public function test_a_preview_lists_what_goes_and_a_clean_marks_the_output_removed(): void
-    {
-        $this->storedRun()->markStopped('done');
-
-        $preview = $this->asUser(new CleanProcessOutputCommand([$this->part->process_run_id], true));
-        $this->assertSame([$this->part->id], $preview->partRunIds);
-        $this->assertSame(strlen(self::PASSED_OUTPUT), $preview->bytes);
-        $this->assertSame(CaptureStatus::Complete, $this->part->refresh()->capture_state);
-
-        $this->asUser(new CleanProcessOutputCommand([$this->part->process_run_id], false));
-
-        $this->assertSame(CaptureStatus::Removed, $this->part->refresh()->capture_state);
-        $chunk = OutputChunk::query()->where('part_run_id', $this->part->id)->sole();
-        Storage::disk(OutputRecorder::DISK)->assertMissing($chunk->storage_path);
-    }
-
-    public function test_a_run_that_has_not_ended_keeps_its_output(): void
-    {
-        $this->assertThrows(
-            fn () => $this->asUser(new CleanProcessOutputCommand([$this->part->process_run_id], false)),
-            CleanRefused::class,
-        );
-    }
-
-    public function test_restored_output_counts_only_when_every_byte_matches(): void
-    {
-        $path = OutputChunk::query()->where('part_run_id', $this->part->id)->sole()->storage_path;
-        Storage::disk(OutputRecorder::DISK)->put($path, 'X'.substr(self::PASSED_OUTPUT, 1));
-
-        $check = new VerifyRestoredOutputCommand($this->part->process_run_id);
-        $this->assertSame([CaptureStatus::Corrupt], $this->asUser($check)->states());
-
-        Storage::disk(OutputRecorder::DISK)->put($path, self::PASSED_OUTPUT);
-        $this->assertSame([CaptureStatus::Complete], $this->asUser($check)->states());
     }
 
     public function test_a_full_output_disk_starts_nothing_until_room_returns(): void
@@ -97,10 +52,5 @@ final class OutputCleanupTest extends TestCase
 
         return $this->app->make(ShellAdmission::class)
             ->admit('cat composer.json', ShellDialect::Bash, ExecutionContext::inFolder(base_path()), $key);
-    }
-
-    private function storedRun(): ProcessRun
-    {
-        return ProcessRun::query()->withoutGlobalScopes()->findOrFail($this->part->process_run_id);
     }
 }

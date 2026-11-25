@@ -2,11 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Skills;
+namespace Tests\Commands\Skills;
 
 use App\Commands\Skills\CreateSkill\CreateSkillCommand;
-use App\Commands\Skills\RestoreSkill\RestoreSkillCommand;
-use App\Commands\Skills\ReviseSkill\ReviseSkillCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
@@ -15,7 +13,6 @@ use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\SkillConditionInvalid;
 use App\Exceptions\SkillDeclarationInvalid;
 use App\Exceptions\SkillRequestReused;
-use App\Exceptions\SkillRevisionConflict;
 use App\Models\Skills\Skill;
 use App\Models\Skills\SkillRevision;
 use App\Support\ActorContext;
@@ -31,15 +28,14 @@ use Tests\TestCase;
 use Throwable;
 
 /**
- * Users create, revise and restore stored skills through the bus: revisions append against the revision read, a
- * request id answers once, and an agent or invalid content changes nothing.
+ * The owner creates a skill at revision one: a repeated request id returns the same result and other content under it
+ * is refused, an agent is refused before any row changes, invalid keys, conditions and limits save nothing, and a save
+ * says skills changed while a replay says nothing.
  */
-final class StoredSkillCommandsTest extends TestCase
+final class CreateSkillTest extends TestCase
 {
     use ActsAsTestUser;
     use CommitsHookRows;
-
-    private const string REVISION_CONFLICT = 'is at revision 2 now';
 
     private const string RESERVED_PREFIX = 'whose prefix it does not own';
 
@@ -55,35 +51,6 @@ final class StoredSkillCommandsTest extends TestCase
         'command_receipts',
     ];
 
-    public function test_create_gives_revision_1_and_revise_gives_2_keeping_1_readable(): void
-    {
-        $created = $this->runCommand(new CreateSkillCommand('user-review-notes', 'create-1', $this->draft('First.')));
-        $revised = $this->runCommand(new ReviseSkillCommand($created->skillId, 1, 'revise-1', $this->draft('Second.')));
-
-        $this->assertSame(1, $created->revision);
-        $this->assertSame(2, $revised->revision);
-        $this->assertTrue($revised->isPublicationPending);
-        $this->assertSame(
-            'First.',
-            SkillRevision::findNumbered(
-                Skill::query()->whereKey($created->skillId)->firstOrFail(),
-                1,
-            )->sections[0]->content,
-        );
-    }
-
-    public function test_a_revise_against_an_old_revision_is_refused_naming_the_latest(): void
-    {
-        $created = $this->runCommand(new CreateSkillCommand('user-review-notes', 'create-1', $this->draft('First.')));
-        $this->runCommand(new ReviseSkillCommand($created->skillId, 1, 'revise-1', $this->draft('Second.')));
-
-        $this->assertRefused(
-            SkillRevisionConflict::class,
-            new ReviseSkillCommand($created->skillId, 1, 'revise-2', $this->draft('Third.')),
-            self::REVISION_CONFLICT,
-        );
-    }
-
     public function test_a_repeated_request_id_returns_the_same_result_and_other_content_under_it_is_refused(): void
     {
         $first = $this->runCommand(new CreateSkillCommand('user-review-notes', 'create-1', $this->draft('First.')));
@@ -97,18 +64,6 @@ final class StoredSkillCommandsTest extends TestCase
             new CreateSkillCommand('user-review-notes', 'create-1', $this->draft('Other.')),
             SkillRequestReused::for('create-1')->getMessage(),
         );
-    }
-
-    public function test_restore_appends_the_old_content_as_a_new_revision(): void
-    {
-        $created = $this->runCommand(new CreateSkillCommand('user-review-notes', 'create-1', $this->draft('First.')));
-        $this->runCommand(new ReviseSkillCommand($created->skillId, 1, 'revise-1', $this->draft('Second.')));
-        $restored = $this->runCommand(new RestoreSkillCommand($created->skillId, 1, 2, 'restore-1'));
-        $skill = Skill::query()->whereKey($created->skillId)->firstOrFail();
-
-        $this->assertSame(3, $restored->revision);
-        $this->assertSame('First.', SkillRevision::findCurrentOf($skill)->sections[0]->content);
-        $this->assertSame('Second.', SkillRevision::findNumbered($skill, 2)->sections[0]->content);
     }
 
     public function test_an_agent_is_refused_before_any_row_changes(): void

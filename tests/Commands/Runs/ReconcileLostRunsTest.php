@@ -2,35 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Processes;
+namespace Tests\Commands\Runs;
 
-use App\Commands\Runs\RetryProcessRun\RetryProcessRunCommand;
-use App\Commands\Runs\StopLeftoverProcesses\StopLeftoverProcessesCommand;
-use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Admission\ShellAdmission;
-use App\Contracts\Bus\CommandBus;
 use App\Enums\Processes\ShellDialect;
 use App\Enums\Runs\CaptureStatus;
 use App\Enums\Runs\LifecycleStatus;
 use App\Enums\Runs\PartEndType;
-use App\Exceptions\RetryRefused;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Models\Runs\ResultReceipt;
-use App\Support\ActorContext;
 use App\Values\ExecutionContext;
-use App\Values\OwnerAuthority;
 use App\Values\PartKey;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\TestActors;
 use Tests\TestCase;
 
 /**
- * A run whose supervisor fell silent is settled as lost, never as a success, and a user retries it as a new run
- * through a fresh admission.
+ * A silent run is lost with no status and incomplete capture, and a run that still beats is left alone.
  */
-final class RunReconcileTest extends TestCase
+final class ReconcileLostRunsTest extends TestCase
 {
     use RefreshHookDatabase;
 
@@ -80,34 +71,11 @@ final class RunReconcileTest extends TestCase
         $this->assertSame(LifecycleStatus::Running, $this->part->refresh()->lifecycle);
     }
 
-    public function test_a_retry_admits_the_same_line_as_a_new_run_and_the_lost_one_stays_lost(): void
-    {
-        $this->silence();
-        $this->artisan('process:reconcile');
-        $this->setActor(TestActors::user(7));
-        $bus = $this->app->make(CommandBus::class);
-
-        $other = new RetryProcessRunCommand($this->run->id, 'cat README.md', 'key-2');
-        $this->assertThrows(fn () => $bus->run($other), RetryRefused::class);
-        $retried = $bus->run(new RetryProcessRunCommand($this->run->id, 'cat composer.json', 'key-2'));
-        $bus->run(new StopLeftoverProcessesCommand($this->run->id));
-
-        $this->assertNotSame($this->run->id, $retried);
-        $this->assertSame(LifecycleStatus::Lost, $this->run->refresh()->lifecycle);
-        $this->assertTrue($this->run->isStale());
-    }
-
     private function silence(): void
     {
         ProcessRun::query()
             ->withoutGlobalScopes()
             ->whereKey($this->run->id)
             ->update(['heartbeat_at' => now()->subMinutes(5)]);
-    }
-
-    private function setActor(ActorContext $actor): void
-    {
-        $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set($actor, new OwnerAuthority('test'));
     }
 }

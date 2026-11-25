@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Skills;
+namespace Tests\Commands\Skills;
 
 use App\Commands\Skills\CreateSkill\CreateSkillCommand;
 use App\Commands\Skills\RefreshSkills\RefreshSkillsCommand;

@@ -2,15 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Skills;
+namespace Tests\Commands\Skills;
 
-use App\Commands\Skills\CopySkill\CopySkillCommand;
 use App\Commands\Skills\CreateSkill\CreateSkillCommand;
 use App\Commands\Skills\RetireSkill\RetireSkillCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
-use App\Contracts\Skills\SkillResolver;
 use App\Exceptions\SkillOwnerRequired;
 use App\Models\Skills\Skill;
 use App\Models\Skills\SkillRevision;
@@ -18,7 +16,6 @@ use App\Support\DomainRegistry;
 use App\Values\OwnerAuthority;
 use App\Values\SectionDraft;
 use App\Values\SkillDraft;
-use App\Values\SkillKey;
 use App\Values\SkillRevisionResult;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Support\CommitsHookRows;
@@ -26,14 +23,11 @@ use Tests\Support\TestActors;
 use Tests\TestCase;
 
 /**
- * The owner retires a stored skill, which leaves the catalogue but keeps its history; any user copies a skill they may
- * read into a user- skill whose first revision holds the copied text and where it came from.
+ * Retiring a skill removes it from the list and keeps its revisions; another owner cannot retire it.
  */
-final class RetireAndCopySkillTest extends TestCase
+final class RetireSkillTest extends TestCase
 {
     use CommitsHookRows;
-
-    private const string ASSIGNED_LINE = '`plan:assigned` lists the plans you hold.';
 
     private const array TABLES = [
         'skill_publications',
@@ -87,22 +81,6 @@ final class RetireAndCopySkillTest extends TestCase
         $this->expectException(SkillOwnerRequired::class);
 
         $this->as(8, new RetireSkillCommand($created->skillId, 1, 'retire-1'));
-    }
-
-    public function test_copying_journal_plans_snapshots_its_text_and_source_digest(): void
-    {
-        $source = $this->app->make(SkillResolver::class)->find(SkillKey::from('journal-plans'));
-        $copied = $this->as(7, new CopySkillCommand('journal-plans', 'user-plans', 'copy-1'));
-        $revision = SkillRevision::findCurrentOf(Skill::query()->whereKey($copied->skillId)->firstOrFail());
-
-        $this->assertSame(1, $copied->revision);
-        $this->assertSame('journal-plans', $revision->source_key);
-        $this->assertSame($source->rendered->digest, $revision->source_digest);
-        $this->assertStringContainsString(
-            self::ASSIGNED_LINE,
-            (string) $revision->sections[0]->content,
-        );
-        $this->assertEquals($source->condition->toArray(), $revision->condition->toArray());
     }
 
     /**

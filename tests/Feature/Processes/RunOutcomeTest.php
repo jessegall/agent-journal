@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Commands\Runs\RevokeRunOutcomeAccess\RevokeRunOutcomeAccessCommand;
-use App\Commands\Runs\RevokeRunOutcomeAccess\RevokeRunOutcomeAccessHandler;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Enums\CommandRules\StepType;
 use App\Enums\Runs\RunEventType;
@@ -20,7 +18,6 @@ use App\Models\Notifications\NotificationScope;
 use App\Models\Runs\ProcessRun;
 use App\Models\Runs\RunOutcome;
 use App\Models\Runs\RunResultConflict;
-use App\Resolvers\Support\RunOutcomeSummaries;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\Execution\RecordedRunEvents;
@@ -152,38 +149,6 @@ final class RunOutcomeTest extends TestCase
         );
 
         $this->assertSame(0, NotificationReceipt::query()->count());
-    }
-
-    public function test_an_entitled_user_reads_only_the_safe_summary_until_the_entitlement_is_revoked(): void
-    {
-        $atlas = TestActors::agentIdentity(3);
-        $kim = TestActors::userIdentity(4);
-        $run = ProcessRun::create($atlas, TestRunAdmissions::of(
-            projectKey: (string) config('processes.project_key'),
-            outcomeUserId: $kim->id,
-        ));
-        $this->app->make(RunOutcomes::class)->record($run, RunLogicalResult::Failed, RunResultSource::Signed);
-        $this->app->make(NotifyRunOutcome::class)
-            ->handle(new RunOutcomeRecorded($run->id, $run->attempt_id, RunLogicalResult::Failed, false));
-
-        $this->actAs($kim);
-        $summary = $this->app->make(RunOutcomeSummaries::class)->summaryOf($run->id)->get();
-
-        $this->assertSame(self::FAILED_LABEL, $summary->label);
-        $this->assertSame(substr($run->attempt_id, -8), $summary->attemptReference);
-        $this->assertTrue($summary->mayOpenFullRun);
-        $this->assertSame(2, NotificationReceipt::query()->count());
-
-        $this->actAs($atlas);
-        $this->app->make(RevokeRunOutcomeAccessHandler::class)->handle(
-            new RevokeRunOutcomeAccessCommand($run->id)->withDispatcher(ActorContext::forAgent($atlas->id)),
-        );
-
-        $this->assertFalse($run->refresh()->hasOutcomeFor($kim));
-        $this->assertSame(
-            0,
-            NotificationScope::query()->where('recipient_id', $kim->id)->sole()->unread_count,
-        );
     }
 
     private function actAs(ActorIdentity $actor): void

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Processes;
+namespace Tests\Commands\Runs;
 
 use App\Commands\Runs\AssessPartOutput\AssessPartOutputCommand;
 use App\Contracts\Bus\ResultReceipts;
@@ -24,7 +24,7 @@ use Tests\TestCase;
  * A check's run gets a result receipt only through the evidence validator, from a valid assessment by its approved
  * reader; anything else is a stored assessment with problem codes and no result.
  */
-final class ResultReceiptTest extends TestCase
+final class AssessPartOutputTest extends TestCase
 {
     use RefreshHookDatabase;
     use SendsSignedPayloads;

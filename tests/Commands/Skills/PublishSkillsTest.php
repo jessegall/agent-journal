@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Skills;
+namespace Tests\Commands\Skills;
 
 use App\Commands\Skills\PrepareSkillPublication\PrepareSkillPublicationCommand;
 use App\Commands\Skills\PublishSkills\PublishSkillsCommand;
@@ -25,7 +25,7 @@ use Tests\TestCase;
  * A pending publication is staged in bounded steps and activated by switching the journal's own pointer; a failed
  * write keeps the previous pointer, a target the journal does not own is left alone, and a stale worker stops.
  */
-final class SkillPublishingTest extends TestCase
+final class PublishSkillsTest extends TestCase
 {
     use CommitsHookRows;
     use HasSkillTargets;
