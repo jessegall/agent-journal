@@ -24,7 +24,7 @@ final readonly class CallerReceiptRecords implements CallerReceipts
             return [];
         }
 
-        $answered = $receipt->result['value'] ?? '';
+        $answered = $receipt->result->value ?? '';
 
         return [new ReceiptAnswer(
             $receipt->state,

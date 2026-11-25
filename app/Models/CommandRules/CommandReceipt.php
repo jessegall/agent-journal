@@ -10,6 +10,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Bus\TargetedCommand;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Data\Receipts\ReceiptResultData;
 use App\Enums\ReceiptState;
 use App\Enums\RefusalCode;
 use App\Events\Engine\CommandReceiptCompleted;
@@ -48,7 +49,7 @@ use Illuminate\Support\Carbon;
  * @property string $fingerprint
  * @property string|null $target
  * @property ReceiptState $state
- * @property array{value: mixed, php: string}|null $result
+ * @property ReceiptResultData|null $result
  * @property string|null $refusal_code
  * @property string|null $refusal_message
  * @property array<string, mixed>|null $refusal_details
@@ -95,7 +96,7 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
     {
         return [
             'state' => ReceiptState::class,
-            'result' => 'array',
+            'result' => ReceiptResultData::class,
             'refusal_details' => 'array',
             'contract_major' => 'integer',
             'answers_until' => 'immutable_datetime',
@@ -137,10 +138,7 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
     public function complete(mixed $reply): void
     {
         $this->state = ReceiptState::Completed;
-        $this->result = [
-            'value' => PlainValue::of($reply),
-            'php' => base64_encode(serialize($reply)),
-        ];
+        $this->result = ReceiptResultData::of($reply);
         $this->assertSaved($this->save());
         $this->raise(new CommandReceiptCompleted($this->id));
     }
@@ -205,7 +203,7 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
     {
         $this->assertReplayable();
 
-        return unserialize(base64_decode((string) $this->result['php']));
+        return $this->result->reply();
     }
 
     public function toOperation(): Operation
@@ -214,7 +212,7 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
             $this->request_key,
             CommandName::of($this->command),
             $this->state,
-            $this->result['value'] ?? null,
+            $this->result?->value,
             $this->refusal_code === null ? null : RefusalCode::from($this->refusal_code),
             $this->refusal_message,
             CarbonImmutable::instance($this->created_at ?? CarbonImmutable::now()),
