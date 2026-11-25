@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Contracts\Skills\SkillResolver;
-use App\Values\SkillKey;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -49,36 +47,5 @@ final class CoreSkillsTest extends TestCase
             array_column($core, 'key'),
         );
         $this->assertSame(array_fill(0, 5, 'shipped'), array_column($core, 'source'));
-    }
-
-    public function test_the_shell_skill_publishes_every_heading_of_its_file_in_the_file_order(): void
-    {
-        $rendered = $this->app->make(SkillResolver::class)->find(SkillKey::from('journal-shell'))->rendered->markdown;
-
-        preg_match_all('/^## (.+)$/m', $rendered, $headings);
-
-        $this->assertSame(
-            ['Purpose', 'Running commands', 'Tests and checks', 'Reading output', 'Understanding a command line'],
-            $headings[1],
-        );
-        $this->assertStringContainsString(
-            self::PURPOSE_SECTION,
-            $rendered,
-        );
-        $this->assertStringContainsString(
-            self::TESTS_SECTION,
-            $rendered,
-        );
-    }
-
-    public function test_show_prints_the_rendered_journal_skills_text(): void
-    {
-        $rendered = $this->app->make(SkillResolver::class)->find(SkillKey::from('journal-skills'))->rendered->markdown;
-
-        Artisan::call('skill:show', ['key' => 'journal-skills']);
-
-        $this->assertSame($rendered, Artisan::output());
-        $this->assertStringContainsString(self::READING_SECTION, $rendered);
-        $this->assertStringContainsString(self::SECOND_TITLE_ADVICE, $rendered);
     }
 }

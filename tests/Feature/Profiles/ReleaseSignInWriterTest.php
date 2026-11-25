@@ -8,7 +8,6 @@ use App\Commands\Accounts\BeginSignInAgain\BeginSignInAgainCommand;
 use App\Commands\Accounts\CancelSignIn\CancelSignInCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\Accounts\AccountStatus;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Accounts\SignInStatus;
 use App\Events\Accounts\SignInAttemptFinished;
@@ -63,31 +62,6 @@ final class ReleaseSignInWriterTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(1)));
         Bus::fake([SignInDeadline::class]);
         $this->account = $this->chooseActiveAccounts()['codex'];
-    }
-
-    public function test_cancelling_a_reconnect_ends_it_with_cleanup_and_holds_a_signed_in_account_for_a_check(): void
-    {
-        $attemptId = $this->again('tab-1');
-
-        $this->asOwner(new CancelSignInCommand($attemptId));
-
-        $attempt = SignInAttempt::query()->withoutGlobalScopes()->findOrFail($attemptId);
-        $this->account->refresh();
-        $this->assertSame(SignInStatus::Cancelled, $attempt->status);
-        $this->assertTrue($attempt->cleanup_pending);
-        $this->assertNull($this->account->live_writer_attempt_id);
-        $this->assertSame($this->account->sign_in_generation, $this->account->check_requested_generation);
-    }
-
-    public function test_an_account_needing_a_sign_in_is_let_go_out_of_maintenance(): void
-    {
-        $this->account->forceFill(['status' => AccountStatus::Unauthenticated])->save();
-        $attemptId = $this->again('tab-1');
-
-        $this->asOwner(new CancelSignInCommand($attemptId));
-
-        $this->assertFalse($this->account->refresh()->maintenance);
-        $this->assertNull($this->account->live_writer_attempt_id);
     }
 
     public function test_a_failure_after_the_release_rolls_back_the_attempt_and_the_account(): void

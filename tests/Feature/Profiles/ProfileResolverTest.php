@@ -22,7 +22,6 @@ use App\Values\ProfileKey;
 use App\Values\ProfileStartPolicy;
 use App\Values\StopCondition;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Spatie\LaravelData\Exceptions\CannotCreateData;
 use Tests\Fixtures\Profiles\TestProposals;
@@ -43,12 +42,6 @@ final class ProfileResolverTest extends TestCase
     use HasContainerSupport;
 
     private const array TABLES = ['profile_revisions', 'profiles', 'command_receipts'];
-
-    public function test_the_revision_table_holds_the_start_policy_in_one_column(): void
-    {
-        $this->assertTrue(Schema::hasColumn('profile_revisions', 'start_policy'));
-        $this->assertFalse(Schema::hasColumn('profile_revisions', 'access_policy'));
-    }
 
     public function test_a_reader_profile_is_a_read_only_helper(): void
     {

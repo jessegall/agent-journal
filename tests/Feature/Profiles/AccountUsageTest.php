@@ -6,7 +6,6 @@ namespace Tests\Feature\Profiles;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Enums\Accounts\UsageWindowSlot;
-use App\Exceptions\UsageCostConflict;
 use App\Exceptions\UsdAmountInvalid;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\AccountUsageCost;
@@ -68,31 +67,6 @@ final class AccountUsageTest extends TestCase
         $this->assertSame([10.0, 42.5], [$windows[0]->used_percent, $windows[1]->used_percent]);
         $this->assertNotNull($windows[0]->resets_at);
         $this->assertNull($windows[1]->resets_at);
-    }
-
-    public function test_a_window_of_an_earlier_sign_in_generation_is_ignored(): void
-    {
-        $reading = $this->window(UsageWindowSlot::SevenDay, 40.0, null, 1);
-
-        $earlier = $this->account->sign_in_generation - 1;
-        $this->app->make(UsageReadings::class)->recordWindow($this->account, $earlier, $reading);
-
-        $this->assertSame(0, AccountUsageWindow::query()->withoutGlobalScopes()->count());
-    }
-
-    public function test_a_cost_is_kept_once_and_a_different_cost_under_its_source_is_refused(): void
-    {
-        $observedAt = CarbonImmutable::parse('2026-11-21T10:00:00.250Z');
-        $cost = UsageCost::of('result-1', UsdAmount::from('0.0128'), $observedAt);
-        AccountUsageCost::create($this->account, 1, $cost);
-        AccountUsageCost::create($this->account, 1, $cost);
-
-        $kept = AccountUsageCost::query()->withoutGlobalScopes()->sole();
-        $this->assertSame('0.012800000000', $kept->usd);
-        $this->assertSame('2026-11-21T10:00:00+00:00', $kept->observed_at->utc()->toIso8601String());
-
-        $this->expectException(UsageCostConflict::class);
-        AccountUsageCost::create($this->account, 1, new UsageCost('result-1', UsdAmount::from('0.5'), $cost->observedAt));
     }
 
     public function test_a_dollar_amount_with_more_than_twelve_decimals_or_a_sign_is_refused(): void

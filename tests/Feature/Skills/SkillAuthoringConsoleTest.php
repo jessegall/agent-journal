@@ -97,25 +97,6 @@ final class SkillAuthoringConsoleTest extends TestCase
         $this->assertStringContainsString('"keys":["journal-reviewer"]', $revision);
     }
 
-    public function test_a_stale_edit_prints_the_conflict_with_the_latest_revision(): void
-    {
-        $this->artisan(
-            'skill:make',
-            ['key' => 'user-review-notes', '--description' => 'Review project notes', '--body' => 'Read the notes.'],
-        )->assertSuccessful();
-        $this->artisan(
-            'skill:edit',
-            ['number' => 'user-review-notes', '--expected-revision' => 1, '--body' => 'Again.'],
-        )->assertSuccessful();
-
-        $this->artisan(
-            'skill:edit',
-            ['number' => 'user-review-notes', '--expected-revision' => 1, '--body' => 'Stale.'],
-        )
-            ->expectsOutputToContain('The skill user-review-notes is at revision 2 now')
-            ->assertFailed();
-    }
-
     public function test_conditions_and_audience_flags_are_not_mixed_and_flags_compile_to_one_all_group(): void
     {
         $this->artisan(

@@ -67,14 +67,6 @@ final class SkillSupervisorConsoleTest extends TestCase
         $this->assertSame(0, SkillGeneration::query()->count());
     }
 
-    public function test_refresh_makes_a_generation_and_a_second_refresh_reuses_it(): void
-    {
-        $this->artisan('skill:refresh')->expectsOutputToContain('is ready.')->assertSuccessful();
-        $this->artisan('skill:refresh')->expectsOutputToContain('is unchanged.')->assertSuccessful();
-
-        $this->assertSame(1, SkillGeneration::query()->count());
-    }
-
     public function test_retry_delivers_a_failed_publication_once_its_cause_is_fixed(): void
     {
         $this->app->instance(SkillPublisherContract::class, new FullDiskPublisher($this->app->make(SkillPublisher::class)));

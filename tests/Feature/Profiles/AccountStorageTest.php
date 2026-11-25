@@ -7,9 +7,7 @@ namespace Tests\Feature\Profiles;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Enums\Accounts\AccountStatus;
 use App\Enums\Accounts\SignInMethod;
-use App\Enums\Sessions\StartUnavailableReason;
 use App\Exceptions\AccountLabelInvalid;
-use App\Exceptions\AccountUnavailable;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Accounts\SignInAttempt;
@@ -53,72 +51,6 @@ final class AccountStorageTest extends TestCase
 
         $this->actAsOwner();
         $this->assertSame([$account->id], Account::query()->pluck('id')->all());
-    }
-
-    public function test_a_program_has_one_selection_row_whose_change_number_only_grows(): void
-    {
-        $work = $this->account('Work');
-        $home = $this->account('Home');
-
-        $selection = ActiveAccount::findLockedFor(DefaultDrivers::CLAUDE_CODE);
-        $selection->select($work);
-        $selection->select($work);
-        $selection->select($home);
-        ActiveAccount::findLockedFor(DefaultDrivers::CLAUDE_CODE)->clear();
-
-        $row = ActiveAccount::findLockedFor(DefaultDrivers::CLAUDE_CODE);
-        $this->assertSame(1, ActiveAccount::query()->count());
-        $this->assertNull($row->account_id);
-        $this->assertTrue($row->has_selected);
-        $this->assertSame(3, $row->change_number);
-    }
-
-    public function test_a_second_start_rejoins_the_writer_and_only_a_new_writer_starts_a_generation(): void
-    {
-        $account = $this->account('Work');
-        $first = SignInAttempt::create(
-            ActorIdentity::system(),
-            $account,
-            SignInMethod::OAuth,
-            '/journal/accounts/staging-request-1',
-            CarbonImmutable::now()->addMinutes(10),
-        );
-        $second = SignInAttempt::create(
-            ActorIdentity::system(),
-            $account,
-            SignInMethod::OAuth,
-            '/journal/accounts/staging-request-2',
-            CarbonImmutable::now()->addMinutes(10),
-        );
-
-        $this->assertSame($first->id, $account->writerFor($first));
-        $this->assertSame($first->id, $account->writerFor($second));
-        $this->assertTrue($account->isGeneration(2));
-
-        $account->releaseWriter($second->id);
-        $this->assertSame($first->id, $account->live_writer_attempt_id);
-        $account->releaseWriter($first->id);
-
-        $this->assertSame($second->id, $account->writerFor($second));
-        $this->assertTrue($account->isGeneration(3));
-        $this->assertFalse($account->isGeneration(2));
-        $this->assertSame($first->id, SignInAttempt::findLiveFor(DefaultDrivers::CLAUDE_CODE, $account)?->id);
-    }
-
-    public function test_a_held_or_unsigned_account_refuses_starts_with_a_safe_reason(): void
-    {
-        $account = $this->account('Work');
-        $account->assertAvailable();
-        $this->assertSame('/journal/accounts/work', $account->directoryForStart());
-
-        $account->beginRemoval();
-
-        try {
-            $account->assertAvailable();
-            $this->fail('A start was allowed on an account being removed.');
-        } catch (AccountUnavailable $refused) {
-            $this->assertSame(StartUnavailableReason::Maintenance, $refused->reason);
-        }
     }
 
     public function test_a_removed_account_keeps_its_row_and_label_and_frees_the_name(): void

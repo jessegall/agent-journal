@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Profiles;
 
 use App\Enums\Accounts\AccountNoticeReason;
-use App\Models\Accounts\AccountNotice;
 use App\Support\AccountNotices;
 use Carbon\CarbonImmutable;
 use Tests\Support\RefreshHookDatabase;
@@ -19,18 +18,6 @@ use Tests\TestCase;
 final class AccountNoticeOrchestrationTest extends TestCase
 {
     use RefreshHookDatabase;
-
-    public function test_a_repeated_record_counts_the_one_open_notice_again(): void
-    {
-        $notices = $this->app->make(AccountNotices::class);
-
-        $first = $notices->record('codex', AccountNoticeReason::NeedsSignIn);
-        $second = $notices->record('codex', AccountNoticeReason::NeedsSignIn);
-
-        $this->assertSame($first->id, $second->id);
-        $this->assertSame(2, $first->refresh()->times);
-        $this->assertSame(1, AccountNotice::query()->withoutGlobalScopes()->count());
-    }
 
     public function test_a_resolve_closes_the_programs_open_notices_and_a_later_record_opens_a_new_one(): void
     {

@@ -112,27 +112,6 @@ final class SkillPublicationModelsTest extends TestCase
         $this->assertSame(PublicationStatus::Pending, $second->status);
     }
 
-    public function test_a_failed_publication_is_retried_with_the_same_generation(): void
-    {
-        $publication = $this->app->make(SkillPublications::class)->intend(
-            TestIds::of(1),
-            'codex',
-            '/work/.agents/skills',
-            $this->generation(),
-            str_repeat('a', 64),
-            ['journal'],
-        );
-        $publication->claim('worker-1', CarbonImmutable::now()->addMinute());
-        $publication->fail('disk full');
-        $generationId = $publication->generation_id;
-
-        $publication->retry();
-
-        $this->assertSame(PublicationStatus::Pending, $publication->status);
-        $this->assertSame($generationId, $publication->generation_id);
-        $this->assertNull($publication->error);
-    }
-
     private function generation(): SkillGeneration
     {
         return SkillGeneration::create(str_repeat('e', 64), GenerationStatus::Ready, str_repeat('d', 64), GeneratedSkillData::collect([

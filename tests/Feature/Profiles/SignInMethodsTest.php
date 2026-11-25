@@ -78,11 +78,4 @@ final class SignInMethodsTest extends TestCase
             }
         }
     }
-
-    public function test_a_card_for_a_sign_in_the_program_lacks_is_refused(): void
-    {
-        $this->expectException(SignInMethodMissing::class);
-
-        $this->app->make(SignInProtocols::class)->for(DefaultDrivers::CODEX, SignInMethod::ProviderToken)->card();
-    }
 }

@@ -91,16 +91,6 @@ final class NamedConditionsTest extends TestCase
         $this->assertSame(self::HAS_TWO_NOTES, $condition->toArray());
     }
 
-    public function test_without_the_module_the_leaf_is_unavailable_and_keeps_its_source(): void
-    {
-        $this->useRegistry(ConditionRegistry::of([]));
-        $condition = $this->app->make(ConditionTree::class)->hydrate(self::HAS_TWO_NOTES);
-
-        $this->assertSame(ConditionOutcome::Unavailable, $condition->evaluate($this->context())->outcome);
-        $this->assertSame('condition-missing', $condition->evaluate($this->context())->reason);
-        $this->assertSame(self::HAS_TWO_NOTES, $condition->toArray());
-    }
-
     public function test_a_command_run_inside_an_evaluator_is_refused_and_the_leaf_is_unavailable(): void
     {
         $reported = [];

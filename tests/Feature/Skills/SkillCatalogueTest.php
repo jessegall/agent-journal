@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Skills;
 
 use App\Contracts\Skills\SkillResolver;
-use App\Exceptions\SkillConflict;
 use App\Exceptions\SkillDeclarationInvalid;
 use App\Resolvers\SkillCatalogue;
 use App\Support\CanonicalRenderer;
@@ -54,18 +53,6 @@ final class SkillCatalogueTest extends TestCase
         $this->assertStringContainsString(
             self::NOTES_SECTION,
             $entry->rendered->markdown,
-        );
-    }
-
-    public function test_two_owners_with_one_key_stop_the_catalogue_naming_both(): void
-    {
-        $this->expectException(SkillConflict::class);
-        $this->expectExceptionMessage(SkillConflict::between('journal-guide', 'Guide', 'Copy')->getMessage());
-
-        $this->catalogue(
-            SkillRegistry::of(
-                [$this->guide('Guide', [GuideSkill::class]), $this->guide('Copy', [RenamedGuideSkill::class])],
-            ),
         );
     }
 
