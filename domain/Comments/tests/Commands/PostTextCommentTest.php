@@ -110,7 +110,13 @@ final class PostTextCommentTest extends TestCase
 
         $comment = Comment::query()->findOrFail($commentId);
         $this->assertSame('Which lines?', $comment->body);
-        $this->assertSame([2, 3], [$comment->first_line, $comment->last_line]);
+        $this->assertSame([
+            2,
+            3,
+        ], [
+            $comment->first_line,
+            $comment->last_line,
+        ]);
     }
 
     public function test_a_record_without_text_refuses_a_comment_on_text_and_keeps_none(): void
@@ -183,7 +189,12 @@ final class PostTextCommentTest extends TestCase
             (string) Str::uuid(),
         ));
 
-        foreach (['second', 'third', 'fourth', 'fifth'] as $minutes => $text) {
+        foreach ([
+            'second',
+            'third',
+            'fourth',
+            'fifth',
+        ] as $minutes => $text) {
             CarbonImmutable::setTestNow(CarbonImmutable::now()->addMinutes($minutes + 1));
             $this->notifyWhole($text);
         }
@@ -192,7 +203,12 @@ final class PostTextCommentTest extends TestCase
 
         $kept = ProjectFileVersion::query()->pluck('text')->all();
         sort($kept);
-        $this->assertSame(['fifth', 'first', 'fourth', 'third'], $kept);
+        $this->assertSame([
+            'fifth',
+            'first',
+            'fourth',
+            'third',
+        ], $kept);
     }
 
     public function test_a_note_page_is_read_and_takes_its_first_text_comment_beside_a_whole_record_one(): void

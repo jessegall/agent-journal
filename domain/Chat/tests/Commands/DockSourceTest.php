@@ -208,11 +208,18 @@ final class DockSourceTest extends TestCase
 
         $this->journal->mcpRequest($helper, 'tools/call', [
             'name' => 'dock_add',
-            'arguments' => ['type' => 'tasks.task', 'id' => $this->task->id, 'request_key' => 'forged-dock'],
+            'arguments' => [
+                'type' => 'tasks.task',
+                'id' => $this->task->id,
+                'request_key' => 'forged-dock',
+            ],
         ])->assertBadRequest()->assertJsonPath('error.code', -32602);
 
         $this->journal->relayAgentCommands($helper);
-        $this->artisan('dock:add', ['type' => 'tasks.task', 'id' => $this->task->id])->assertFailed();
+        $this->artisan('dock:add', [
+            'type' => 'tasks.task',
+            'id' => $this->task->id,
+        ])->assertFailed();
 
         $this->assertSame(0, DockPlacement::query()->count());
     }
@@ -327,13 +334,21 @@ final class DockSourceTest extends TestCase
         $this->actingAs($this->owner)
             ->postJson(
                 '/chat/dock',
-                ['inboxId' => $this->chatInboxId, 'type' => Note::linkType(), 'id' => $ownersNote->id],
+                [
+                    'inboxId' => $this->chatInboxId,
+                    'type' => Note::linkType(),
+                    'id' => $ownersNote->id,
+                ],
             )
             ->assertJson(['outcome' => 'added']);
 
         $this->journal->relayAgentCommands($this->agent);
 
-        $this->artisan('dock:add', ['type' => Note::linkType(), 'id' => $agentsNote->id, '--json' => true])
+        $this->artisan('dock:add', [
+            'type' => Note::linkType(),
+            'id' => $agentsNote->id,
+            '--json' => true,
+        ])
             ->expectsOutputToContain('"outcome":"added"')
             ->assertExitCode(0);
 

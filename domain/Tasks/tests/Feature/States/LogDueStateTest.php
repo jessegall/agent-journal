@@ -28,7 +28,10 @@ final class LogDueStateTest extends TestCase
     /**
      * Facts reach a stack once its change commits, so these tests commit and empty what they wrote.
      */
-    private const array TABLES = ['agent_stacks', 'command_receipts'];
+    private const array TABLES = [
+        'agent_stacks',
+        'command_receipts',
+    ];
 
     private SessionHooks $hooks;
 
@@ -47,11 +50,17 @@ final class LogDueStateTest extends TestCase
 
         $this->logDue()
             ->given(
-                [...$uses, $this->hooks->shell('composer update')],
+                [
+                    ...$uses,
+                    $this->hooks->shell('composer update'),
+                ],
                 fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Delegate),
             )
             ->given(
-                [$this->hooks->toolFinished(), $this->hooks->shell('composer update')],
+                [
+                    $this->hooks->toolFinished(),
+                    $this->hooks->shell('composer update'),
+                ],
                 fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Deny),
             )
             ->given(

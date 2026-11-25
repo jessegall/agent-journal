@@ -18,7 +18,11 @@ final class UnpinMessageTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['messages', 'message_pins', 'command_receipts'];
+    private const array TABLES = [
+        'messages',
+        'message_pins',
+        'command_receipts',
+    ];
 
     private string $chatId;
 

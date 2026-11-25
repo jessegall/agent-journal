@@ -37,12 +37,20 @@ final class AddPhaseTest extends TestCase
 
     public function test_phases_are_added_each_after_the_last(): void
     {
-        foreach (['Read', 'Build', 'Check'] as $title) {
+        foreach ([
+            'Read',
+            'Build',
+            'Check',
+        ] as $title) {
             $this->journal->run(new AddPhaseCommand($this->plan->id, $title));
         }
 
         $this->assertSame(
-            ['Read', 'Build', 'Check'],
+            [
+                'Read',
+                'Build',
+                'Check',
+            ],
             Phase::query()->where('plan_id', $this->plan->id)->orderBy('number')->pluck('title')->all(),
         );
     }

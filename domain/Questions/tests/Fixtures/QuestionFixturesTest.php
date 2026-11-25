@@ -16,7 +16,10 @@ final class QuestionFixturesTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['questions', 'question_answer_notices'];
+    private const array TABLES = [
+        'questions',
+        'question_answer_notices',
+    ];
 
     public function test_an_answer_is_kept_trimmed_and_the_asker_is_told_once(): void
     {

@@ -27,7 +27,15 @@ final class BeginUploadTest extends TestCase
         $uploadId = $this->journal->run(new BeginUploadCommand(UploadType::DocumentBody, strlen($text), hash('sha256', $text)));
 
         $upload = TextUpload::query()->findOrFail($uploadId);
-        $this->assertSame([UploadType::DocumentBody, strlen($text), 0], [$upload->type, $upload->bytes, $upload->received_bytes]);
+        $this->assertSame([
+            UploadType::DocumentBody,
+            strlen($text),
+            0,
+        ], [
+            $upload->type,
+            $upload->bytes,
+            $upload->received_bytes,
+        ]);
     }
 
     public function test_a_size_past_the_limit_is_refused_and_begins_nothing(): void

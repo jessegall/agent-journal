@@ -85,7 +85,10 @@ final class AnswerQuestionTest extends TestCase
 
     public function test_a_choice_answered_outside_its_options_is_refused(): void
     {
-        $question = $this->asked(QuestionType::Choice, ['Postgres', 'SQLite']);
+        $question = $this->asked(QuestionType::Choice, [
+            'Postgres',
+            'SQLite',
+        ]);
 
         $this->assertThrows(
             fn () => $this->journal->run(new AnswerQuestionCommand($question->id, 'MySQL')),

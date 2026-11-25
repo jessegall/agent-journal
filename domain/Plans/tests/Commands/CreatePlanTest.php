@@ -37,13 +37,29 @@ final class CreatePlanTest extends TestCase
         $plan = Plan::query()->findOrFail($planId);
 
         $this->assertSame(
-            ['Ship version 6.', PlanType::Build, PlanStatus::Planned, 1],
-            [$plan->brief, $plan->type, $plan->status, $plan->revision],
+            [
+                'Ship version 6.',
+                PlanType::Build,
+                PlanStatus::Planned,
+                1,
+            ],
+            [
+                $plan->brief,
+                $plan->type,
+                $plan->status,
+                $plan->revision,
+            ],
         );
 
         $this->assertSame(
-            [User::storedType(), $this->journal->ownerUser()->id],
-            [$plan->creator_type, $plan->creator_id],
+            [
+                User::storedType(),
+                $this->journal->ownerUser()->id,
+            ],
+            [
+                $plan->creator_type,
+                $plan->creator_id,
+            ],
         );
     }
 
@@ -62,13 +78,29 @@ final class CreatePlanTest extends TestCase
      */
     public static function refusedInput(): iterable
     {
-        yield 'a long title' => [str_repeat('é', Plan::TITLE_CHARACTER_LIMIT + 1), 'Brief', 'title'];
+        yield 'a long title' => [
+            str_repeat('é', Plan::TITLE_CHARACTER_LIMIT + 1),
+            'Brief',
+            'title',
+        ];
 
-        yield 'a two-line title' => ["Release\nnow", 'Brief', 'title'];
+        yield 'a two-line title' => [
+            "Release\nnow",
+            'Brief',
+            'title',
+        ];
 
-        yield 'an empty title' => ['', 'Brief', 'title'];
+        yield 'an empty title' => [
+            '',
+            'Brief',
+            'title',
+        ];
 
-        yield 'a long brief' => ['Release', str_repeat('é', Plan::BRIEF_CHARACTER_LIMIT + 1), 'brief'];
+        yield 'a long brief' => [
+            'Release',
+            str_repeat('é', Plan::BRIEF_CHARACTER_LIMIT + 1),
+            'brief',
+        ];
     }
 
     #[DataProvider('refusedInput')]

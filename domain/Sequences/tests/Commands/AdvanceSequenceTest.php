@@ -19,7 +19,11 @@ final class AdvanceSequenceTest extends TestCase
     /**
      * The bus commits these commands for real, so these tables are emptied around each test.
      */
-    private const array TABLES = ['sequence_runs', 'agent_stacks', 'command_receipts'];
+    private const array TABLES = [
+        'sequence_runs',
+        'agent_stacks',
+        'command_receipts',
+    ];
 
     private const string RUN = 'Close a task';
 
@@ -30,7 +34,10 @@ final class AdvanceSequenceTest extends TestCase
         parent::setUp();
 
         $this->journal->owner()->agent('Writer')->actAs('Writer');
-        $this->runs = $this->journal->fixtures(SequenceFixtures::class)->run(self::RUN, ['Read the brief.', 'Run the phase tests.']);
+        $this->runs = $this->journal->fixtures(SequenceFixtures::class)->run(self::RUN, [
+            'Read the brief.',
+            'Run the phase tests.',
+        ]);
     }
 
     public function test_a_run_goes_to_its_next_step_and_finishes_after_its_last(): void

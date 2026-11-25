@@ -62,8 +62,18 @@ final class SequenceFixtures
         $agent = $this->journal->actorCalled($follower);
 
         Assert::assertSame(
-            [SequenceRunStatus::Running, $step, $agent->type, $agent->id],
-            [$run->status, $run->current_step, $run->actor_type, $run->actor_id],
+            [
+                SequenceRunStatus::Running,
+                $step,
+                $agent->type,
+                $agent->id,
+            ],
+            [
+                $run->status,
+                $run->current_step,
+                $run->actor_type,
+                $run->actor_id,
+            ],
             "The run {$name} stands otherwise.",
         );
 
@@ -85,8 +95,18 @@ final class SequenceFixtures
         $run = $this->runCalled($name);
 
         Assert::assertSame(
-            [null, null, $priorStep, $priorStatus],
-            [$run->actor_type, $run->actor_id, $run->current_step, $run->status],
+            [
+                null,
+                null,
+                $priorStep,
+                $priorStatus,
+            ],
+            [
+                $run->actor_type,
+                $run->actor_id,
+                $run->current_step,
+                $run->status,
+            ],
             "The run {$name} was taken or moved.",
         );
 

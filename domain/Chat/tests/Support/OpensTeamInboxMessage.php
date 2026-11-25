@@ -78,6 +78,9 @@ trait OpensTeamInboxMessage
     {
         $session = $this->journal->idleAgent($name)->startSession($name, $name)->sessionCalled($name);
 
-        return [$session->agent_id, $session->id];
+        return [
+            $session->agent_id,
+            $session->id,
+        ];
     }
 }

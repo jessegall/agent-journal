@@ -34,7 +34,13 @@ final class TaskFixturesTest extends TestCase
         $this->tasks->task('Write it')->assertRunCount('Write it', 0);
 
         $task = $this->tasks->taskCalled('Write it');
-        $this->assertSame([TaskStatus::Open, $this->journal->ownerUser()->id], [$task->status, $task->creator_id]);
+        $this->assertSame([
+            TaskStatus::Open,
+            $this->journal->ownerUser()->id,
+        ], [
+            $task->status,
+            $task->creator_id,
+        ]);
     }
 
     public function test_a_started_run_is_claimed_by_the_named_agent_and_its_log_is_its_own(): void

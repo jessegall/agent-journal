@@ -70,8 +70,14 @@ final class FinishTaskTest extends TestCase
         $this->journal->run(new FinishTaskCommand($this->task->id, $this->run, 'Built and tested.'));
 
         $this->assertSame(
-            [TaskStatus::Finished, 'Built and tested.'],
-            [$this->task->refresh()->status, $this->task->result_note],
+            [
+                TaskStatus::Finished,
+                'Built and tested.',
+            ],
+            [
+                $this->task->refresh()->status,
+                $this->task->result_note,
+            ],
         );
 
         $this->assertTrue($this->app->make(AssignedTaskResolver::class)->currentForCaller()->isEmpty());

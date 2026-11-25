@@ -181,7 +181,13 @@ final class TaskFixtures
         $wait = TaskWait::findBetween($this->taskCalled($task)->id, $before->id)
             ?? Assert::fail("{$task} does not wait on {$prerequisite}.");
 
-        Assert::assertSame([$isSatisfied, $isWaived], [$wait->isSatisfiedBy($before->status), $wait->isWaived()]);
+        Assert::assertSame([
+            $isSatisfied,
+            $isWaived,
+        ], [
+            $wait->isSatisfiedBy($before->status),
+            $wait->isWaived(),
+        ]);
 
         return $this;
     }

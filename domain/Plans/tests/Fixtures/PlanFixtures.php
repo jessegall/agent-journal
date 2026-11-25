@@ -158,7 +158,13 @@ final class PlanFixtures
     {
         $phase = $this->phaseCalled($name);
 
-        Assert::assertSame([$this->planCalled($plan)->id, $number], [$phase->plan_id, $phase->number]);
+        Assert::assertSame([
+            $this->planCalled($plan)->id,
+            $number,
+        ], [
+            $phase->plan_id,
+            $phase->number,
+        ]);
 
         return $this;
     }

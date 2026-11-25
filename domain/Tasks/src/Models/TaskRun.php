@@ -63,13 +63,20 @@ final class TaskRun extends Model implements Assignable, EventSource, ReadableMo
     // ----------[ Constructors ]----------
 
     /**
-     * A new run started by the starter, answering to the inbox the starter replies at, fixed from now on.
+     * The task's current run, opened by the starter the first time it is asked for and answering to the inbox the
+     * starter replies at, fixed from then on.
      */
-    public static function create(Task $task, int $number, ActorIdentity $starter): self
+    public static function createForTask(Task $task, ActorIdentity $starter): self
     {
+        $current = self::findForTask($task, $task->run_number);
+
+        if ($current !== null) {
+            return $current;
+        }
+
         $run = new self();
         $run->task_id = $task->id;
-        $run->run_number = $number;
+        $run->run_number = $task->run_number;
         $run->started_by_type = $starter->type;
         $run->started_by_id = $starter->id;
         $run->status = TaskRunStatus::Running;
@@ -77,15 +84,6 @@ final class TaskRun extends Model implements Assignable, EventSource, ReadableMo
         $run->save();
 
         return $run;
-    }
-
-    /**
-     * The task's current run, opened by the starter the first time it is asked for.
-     */
-    public static function createForTask(Task $task, ActorIdentity $starter): self
-    {
-        return self::findForTask($task, $task->run_number)
-            ?? self::create($task, $task->run_number, $starter);
     }
 
     // ----------[ Mutations ]----------

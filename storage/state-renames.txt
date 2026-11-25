@@ -1,0 +1,2 @@
+constant App\Enums\AccountState SignedIn Authenticated
+constant App\Enums\AccountState NeedsSignIn Unauthenticated

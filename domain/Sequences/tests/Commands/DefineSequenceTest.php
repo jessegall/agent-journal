@@ -27,7 +27,13 @@ final class DefineSequenceTest extends TestCase
         $sequenceId = $this->journal->run(new DefineSequenceCommand('Release', [self::step('tests')]));
 
         $sequence = Sequence::query()->findOrFail($sequenceId);
-        $this->assertSame(['Release', 1], [$sequence->name, $sequence->version]);
+        $this->assertSame([
+            'Release',
+            1,
+        ], [
+            $sequence->name,
+            $sequence->version,
+        ]);
         $this->assertEquals([self::step('tests')->toArray()], $sequence->steps->toArray());
         Event::assertDispatched(SequenceDefined::class, fn (SequenceDefined $event) => $event->sequenceId === $sequenceId);
     }

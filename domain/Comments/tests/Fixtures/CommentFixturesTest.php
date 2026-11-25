@@ -60,7 +60,10 @@ final class CommentFixturesTest extends TestCase
 
         $page->forceFill(['text' => "# Plan\nA new first line.\n"])->save();
 
-        $comments->assertAnchor('Which', $target, TextAnchorType::Lines, version: '1', lines: [2, 3])
+        $comments->assertAnchor('Which', $target, TextAnchorType::Lines, version: '1', lines: [
+            2,
+            3,
+        ])
             ->assertComment('Whole', author: 'Writer', body: 'All of it.')
             ->assertCount($target, 2)
             ->assertCount($other, 0);

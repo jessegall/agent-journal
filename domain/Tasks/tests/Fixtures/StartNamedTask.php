@@ -23,7 +23,10 @@ final readonly class StartNamedTask implements StartScenario
     {
         return new ScenarioRequirements(
             domains: [TasksDomain::class],
-            names: [$this->owner, $this->worker],
+            names: [
+                $this->owner,
+                $this->worker,
+            ],
             sessions: [$this->worker],
         );
     }

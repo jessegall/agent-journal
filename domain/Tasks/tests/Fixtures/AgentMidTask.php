@@ -29,7 +29,11 @@ final readonly class AgentMidTask implements StartScenario
 
     public function freshNames(): array
     {
-        return [$this->owner, $this->worker, $this->task];
+        return [
+            $this->owner,
+            $this->worker,
+            $this->task,
+        ];
     }
 
     public function start(TestJournal $journal): RunningTask

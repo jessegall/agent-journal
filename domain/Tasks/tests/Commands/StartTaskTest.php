@@ -115,7 +115,13 @@ final class StartTaskTest extends TestCase
         $run = $this->journal->actAs('First')->run($start, self::START_KEY);
         $retry = $this->journal->run($start, self::START_KEY);
 
-        $this->assertSame([1, 1], [$run, $retry]);
+        $this->assertSame([
+            1,
+            1,
+        ], [
+            $run,
+            $retry,
+        ]);
         $this->tasks->assertStarted('Owned work', by: 'First')->assertRunCount('Owned work', 1);
     }
 
@@ -225,7 +231,10 @@ final class StartTaskTest extends TestCase
 
         $classes = array_map(fn (object $event) => $event::class, $sent());
 
-        $this->assertSame([TaskStarted::class, TaskStarted::class], $classes);
+        $this->assertSame([
+            TaskStarted::class,
+            TaskStarted::class,
+        ], $classes);
         $this->assertSame($this->journal->ownerUser()->id, $sent()[0]->actor->id);
         $this->assertEquals($sent()[0], unserialize(serialize($sent()[0])));
     }

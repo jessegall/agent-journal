@@ -130,7 +130,10 @@ final class FinishPlanTest extends TestCase
     {
         $plan = $this->startedPlan([TaskStatus::Finished]);
 
-        foreach (['', str_repeat('é', Plan::NOTE_CHARACTER_LIMIT + 1)] as $note) {
+        foreach ([
+            '',
+            str_repeat('é', Plan::NOTE_CHARACTER_LIMIT + 1),
+        ] as $note) {
             $this->assertThrows(
                 fn () => $this->bus()->run(new FinishPlanCommand($plan->id, 1, $note)),
                 CommandInputInvalid::class,
@@ -181,7 +184,10 @@ final class FinishPlanTest extends TestCase
         $started = $this->journal->mcpTool(
             $this->caller,
             'plans_start',
-            ['plan_id' => $id, 'request_key' => 'start-plan'],
+            [
+                'plan_id' => $id,
+                'request_key' => 'start-plan',
+            ],
         )->assertOk();
 
         $this->assertFalse($started->json('result.isError'), $started->getContent());
@@ -198,7 +204,10 @@ final class FinishPlanTest extends TestCase
         $read = $this->journal->mcpTool(
             $this->caller,
             'plans_read',
-            ['plan_id' => $id, 'view' => 'context'],
+            [
+                'plan_id' => $id,
+                'view' => 'context',
+            ],
         )->assertOk()
             ->assertJsonPath('result.structuredContent.progress.finished', 2)
             ->assertJsonPath('result.structuredContent.progress.total', 2)
@@ -225,7 +234,10 @@ final class FinishPlanTest extends TestCase
             $finish,
         )->assertOk()->assertJsonPath('plan_id', $id);
 
-        $this->journal->mcpTool($this->caller, 'plans_read', ['plan_id' => $id, 'view' => 'context'])->assertOk()
+        $this->journal->mcpTool($this->caller, 'plans_read', [
+            'plan_id' => $id,
+            'view' => 'context',
+        ])->assertOk()
             ->assertJsonPath('result.structuredContent.finish_note', self::RELEASE_NOTE);
     }
 
@@ -301,7 +313,9 @@ final class FinishPlanTest extends TestCase
     private function phase(string $planId, string $title, string $key): string
     {
         return $this->journal->mcpTool($this->caller, 'phases_create', [
-            'plan_id' => $planId, 'title' => $title, 'request_key' => $key,
+            'plan_id' => $planId,
+            'title' => $title,
+            'request_key' => $key,
         ])->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent.phase_id');
     }
 }

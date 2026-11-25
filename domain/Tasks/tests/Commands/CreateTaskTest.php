@@ -44,8 +44,20 @@ final class CreateTaskTest extends TestCase
         $task = Task::query()->findOrFail($this->journal->run(new CreateTaskCommand('Write it', 'Write the page.')));
 
         $this->assertSame(
-            [TaskStatus::Open, 1, 'Write the page.', User::storedType(), $this->journal->ownerUser()->id],
-            [$task->status, $task->revision, $task->brief, $task->creator_type, $task->creator_id],
+            [
+                TaskStatus::Open,
+                1,
+                'Write the page.',
+                User::storedType(),
+                $this->journal->ownerUser()->id,
+            ],
+            [
+                $task->status,
+                $task->revision,
+                $task->brief,
+                $task->creator_type,
+                $task->creator_id,
+            ],
         );
     }
 
@@ -63,11 +75,23 @@ final class CreateTaskTest extends TestCase
      */
     public static function refusedInput(): iterable
     {
-        yield 'a long title' => [str_repeat('é', Task::TITLE_CHARACTER_LIMIT + 1), 'Brief', 'title'];
+        yield 'a long title' => [
+            str_repeat('é', Task::TITLE_CHARACTER_LIMIT + 1),
+            'Brief',
+            'title',
+        ];
 
-        yield 'an empty title' => ['', 'Brief', 'title'];
+        yield 'an empty title' => [
+            '',
+            'Brief',
+            'title',
+        ];
 
-        yield 'a long brief' => ['Write it', str_repeat('é', Task::NOTE_CHARACTER_LIMIT + 1), 'brief'];
+        yield 'a long brief' => [
+            'Write it',
+            str_repeat('é', Task::NOTE_CHARACTER_LIMIT + 1),
+            'brief',
+        ];
     }
 
     #[DataProvider('refusedInput')]

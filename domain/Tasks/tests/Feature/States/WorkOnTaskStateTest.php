@@ -34,7 +34,13 @@ final class WorkOnTaskStateTest extends TestCase
     /**
      * Facts reach a stack once its change commits, so these tests commit and empty what they wrote.
      */
-    private const array TABLES = ['agent_stacks', 'tasks', 'task_runs', 'assignments', 'command_receipts'];
+    private const array TABLES = [
+        'agent_stacks',
+        'tasks',
+        'task_runs',
+        'assignments',
+        'command_receipts',
+    ];
 
     private RunningTask $work;
 
@@ -97,7 +103,10 @@ final class WorkOnTaskStateTest extends TestCase
     public function test_a_log_on_its_task_starts_the_count_again(): void
     {
         $this->working()->given(
-            [$this->toolFinished(), new TaskLogged($this->work->task->id, 'entry-1')],
+            [
+                $this->toolFinished(),
+                new TaskLogged($this->work->task->id, 'entry-1'),
+            ],
             fn (StateObservation $state) => $state->assertValue('toolUsesSinceLog', 0),
         );
     }

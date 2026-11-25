@@ -30,7 +30,14 @@ final class PlanWorkingStateTest extends TestCase
     /**
      * The bus commits these commands for real, so these tables are emptied around each test.
      */
-    private const array TABLES = ['plans', 'phases', 'phase_tasks', 'tasks', 'agent_stacks', 'command_receipts'];
+    private const array TABLES = [
+        'plans',
+        'phases',
+        'phase_tasks',
+        'tasks',
+        'agent_stacks',
+        'command_receipts',
+    ];
 
     private const string PLAN = 'Build the release page';
 
@@ -100,7 +107,13 @@ final class PlanWorkingStateTest extends TestCase
 
         $this->journal->assertEventCount(PlanProgressChanged::class, 1)->assertEvent(
             PlanProgressChanged::class,
-            fn (PlanProgressChanged $changed) => [$changed->hasFinished, $changed->total] === [0, 1],
+            fn (PlanProgressChanged $changed) => [
+                $changed->hasFinished,
+                $changed->total,
+            ] === [
+                0,
+                1,
+            ],
         );
     }
 

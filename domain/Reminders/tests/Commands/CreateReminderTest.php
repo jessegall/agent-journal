@@ -37,8 +37,16 @@ final class CreateReminderTest extends TestCase
         $reminder = Reminder::query()->findOrFail($reminderId);
 
         $this->assertSame(
-            ['Read the review', ReminderStatus::Open, ActorIdentity::of($this->journal->ownerUser())->id],
-            [$reminder->title, $reminder->status, $reminder->owningActor()->id],
+            [
+                'Read the review',
+                ReminderStatus::Open,
+                ActorIdentity::of($this->journal->ownerUser())->id,
+            ],
+            [
+                $reminder->title,
+                $reminder->status,
+                $reminder->owningActor()->id,
+            ],
         );
 
         $this->assertTrue(CarbonImmutable::parse(self::DUE_AT)->equalTo($reminder->due_at));

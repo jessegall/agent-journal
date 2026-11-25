@@ -59,8 +59,14 @@ final class BlockTaskTest extends TestCase
         $this->journal->run(new BlockTaskCommand($this->task->id, $this->run, 'Waits on review.'));
 
         $this->assertSame(
-            [TaskStatus::Blocked, 'Waits on review.'],
-            [$this->task->refresh()->status, $this->task->block_reason],
+            [
+                TaskStatus::Blocked,
+                'Waits on review.',
+            ],
+            [
+                $this->task->refresh()->status,
+                $this->task->block_reason,
+            ],
         );
     }
 
@@ -71,7 +77,10 @@ final class BlockTaskTest extends TestCase
             TaskRunOfAnotherActor::class,
         );
 
-        foreach (['   ', ''] as $reason) {
+        foreach ([
+            '   ',
+            '',
+        ] as $reason) {
             $this->assertThrows(
                 fn () => $this->journal->run(new BlockTaskCommand($this->task->id, $this->run, $reason)),
                 CommandInputInvalid::class,

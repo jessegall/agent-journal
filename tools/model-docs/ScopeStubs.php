@@ -24,7 +24,11 @@ final readonly class ScopeStubs
 {
     private const string SCOPE_PREFIX = 'scope';
 
-    private const array NOT_SCOPES = ['scope', 'scopes', 'scopeQuery'];
+    private const array NOT_SCOPES = [
+        'scope',
+        'scopes',
+        'scopeQuery',
+    ];
 
     /**
      * @param  array<string, string>  $scopes  each scope's @method line, by name
@@ -165,6 +169,13 @@ final readonly class ScopeStubs
 
         $name = $type->isBuiltin() ? $type->name() : '\\'.$type->className();
 
-        return $parameter->allowsNull() && ! in_array($name, ['mixed', 'null'], true) ? "{$name}|null" : $name;
+        if ($parameter->allowsNull() && ! in_array($name, [
+            'mixed',
+            'null',
+        ], true)) {
+            return "{$name}|null";
+        }
+
+        return $name;
     }
 }

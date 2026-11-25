@@ -26,7 +26,12 @@ final class RequestPlanChangesTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['plans', 'plan_review_editions', 'command_receipts', 'number_groups'];
+    private const array TABLES = [
+        'plans',
+        'plan_review_editions',
+        'command_receipts',
+        'number_groups',
+    ];
 
     private Plan $plan;
 
@@ -55,8 +60,16 @@ final class RequestPlanChangesTest extends TestCase
         $review = PlanReviewEdition::query()->findOrFail($reviewId);
 
         $this->assertSame(
-            [PlanReviewStatus::ChangesRequested, 'Split the second phase.', PlanStatus::Planned],
-            [$review->status, $review->decision_reason, $this->plan->refresh()->status],
+            [
+                PlanReviewStatus::ChangesRequested,
+                'Split the second phase.',
+                PlanStatus::Planned,
+            ],
+            [
+                $review->status,
+                $review->decision_reason,
+                $this->plan->refresh()->status,
+            ],
         );
     }
 

@@ -105,7 +105,10 @@ final class ReassignPlanWorkTest extends TestCase
             new ReassignPlanWorkCommand($this->working->assignmentIdentity(), $root->reference, $reviewer),
         );
 
-        $this->assertSame([$reviewer->id, $reviewer->id], AssignmentRecord::query()->pluck('holder_id')->all());
+        $this->assertSame([
+            $reviewer->id,
+            $reviewer->id,
+        ], AssignmentRecord::query()->pluck('holder_id')->all());
     }
 
     /**

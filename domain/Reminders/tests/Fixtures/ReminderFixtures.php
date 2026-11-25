@@ -46,7 +46,13 @@ final class ReminderFixtures
         $reminder = $this->reminderCalled($name);
         $actor = $this->journal->actorCalled($owner);
 
-        Assert::assertSame([$actor->type, $actor->id], [$reminder->actor_type, $reminder->actor_id]);
+        Assert::assertSame([
+            $actor->type,
+            $actor->id,
+        ], [
+            $reminder->actor_type,
+            $reminder->actor_id,
+        ]);
 
         return $this;
     }

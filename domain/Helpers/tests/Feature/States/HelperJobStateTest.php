@@ -31,7 +31,10 @@ final class HelperJobStateTest extends TestCase
     /**
      * Facts reach a stack once its change commits, so these tests commit and empty what they wrote.
      */
-    private const array TABLES = ['agent_stacks', 'command_receipts'];
+    private const array TABLES = [
+        'agent_stacks',
+        'command_receipts',
+    ];
 
     protected function setUp(): void
     {

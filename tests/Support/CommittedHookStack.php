@@ -72,7 +72,10 @@ trait CommittedHookStack
         config(['processes.runner' => true]);
         $this->target = $this->startedTarget();
         $this->openRuntime();
-        $this->tasks = new InMemoryTasks([42 => TaskStatus::Started, 43 => TaskStatus::Started]);
+        $this->tasks = new InMemoryTasks([
+            42 => TaskStatus::Started,
+            43 => TaskStatus::Started,
+        ]);
         $this->app->instance(InMemoryTasks::class, $this->tasks);
         $this->app->scoped(ShellCommandParser::class, fn () => new ListedCommandParser());
         $this->registerTestState('test.tasks', InMemoryTaskState::class);
@@ -94,7 +97,11 @@ trait CommittedHookStack
     private function startedTarget(): StackTarget
     {
         $agent = Agent::query()->find(TestIds::of(1)) ?? new Agent()->forceFill(
-            ['name' => 'Hook agent', 'profile_key' => 'main-agent', 'project_id' => TestProjects::local()->id],
+            [
+                'name' => 'Hook agent',
+                'profile_key' => 'main-agent',
+                'project_id' => TestProjects::local()->id,
+            ],
         );
         $agent->id = TestIds::of(1);
         $agent->save();
@@ -104,6 +111,7 @@ trait CommittedHookStack
         if (! Inbox::query()->personalTo($actor)->exists()) {
             $this->app->make(ActorProvisioning::class)->provision($actor, $agent->name);
         }
+
         $session = AgentSession::query()->find(TestIds::of(10))
             ?? new AgentSession()->forceFill(TestSelections::sessionColumns());
         $session->id = TestIds::of(10);
@@ -119,7 +127,10 @@ trait CommittedHookStack
     protected function rewriting(): StateReference
     {
         return new StateReference('test.rewriting', NoSubject::None, [
-            'replacements' => ['composer test' => 'git status', 'make docs' => 'acme publish --docs'],
+            'replacements' => [
+                'composer test' => 'git status',
+                'make docs' => 'acme publish --docs',
+            ],
         ]);
     }
 
@@ -177,7 +188,10 @@ trait CommittedHookStack
 
     protected function task(int $number): StateReference
     {
-        return new StateReference('test.tasks', new SubjectReference((string) $number, 1), ['number' => $number, 'runNumber' => 1]);
+        return new StateReference('test.tasks', new SubjectReference((string) $number, 1), [
+            'number' => $number,
+            'runNumber' => 1,
+        ]);
     }
 
     protected function machine(): AgentStateMachine
@@ -190,7 +204,11 @@ trait CommittedHookStack
         return new DriverCapabilities(
             'Test driver',
             'pre-tool, post-tool and stop replies',
-            ['onShellCommand', 'onToolFinished', 'onStop'],
+            [
+                'onShellCommand',
+                'onToolFinished',
+                'onStop',
+            ],
             $rewrites,
         );
     }

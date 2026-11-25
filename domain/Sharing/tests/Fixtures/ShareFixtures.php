@@ -73,8 +73,20 @@ final class ShareFixtures
         $share = $this->shareCalled($name);
 
         Assert::assertSame(
-            [$root->type, $root->id, $this->journal->userCalled($owner)->id, $configurationVersion, $status],
-            [$share->root_type, $share->root_id, $share->owner_user_id, $share->configuration_version, $share->status],
+            [
+                $root->type,
+                $root->id,
+                $this->journal->userCalled($owner)->id,
+                $configurationVersion,
+                $status,
+            ],
+            [
+                $share->root_type,
+                $share->root_id,
+                $share->owner_user_id,
+                $share->configuration_version,
+                $share->status,
+            ],
             "The share {$name} was granted otherwise.",
         );
 

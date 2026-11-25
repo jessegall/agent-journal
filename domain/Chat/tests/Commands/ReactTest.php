@@ -35,12 +35,22 @@ final class ReactTest extends TestCase
         $replyId = $this->journal->run(new ReactCommand($this->message->id, '👍'));
 
         $reply = Message::query()->findOrFail($replyId);
-        $this->assertSame(['👍', $this->message->id], [$reply->body, $reply->target_message_id]);
+        $this->assertSame([
+            '👍',
+            $this->message->id,
+        ], [
+            $reply->body,
+            $reply->target_message_id,
+        ]);
     }
 
     public function test_anything_but_one_emoji_is_refused_and_sends_nothing(): void
     {
-        foreach (['ok', '👍👍', ''] as $emoji) {
+        foreach ([
+            'ok',
+            '👍👍',
+            '',
+        ] as $emoji) {
             $this->assertThrows(
                 fn () => $this->journal->run(new ReactCommand($this->message->id, $emoji)),
                 ReactionRefused::class,

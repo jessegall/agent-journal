@@ -26,7 +26,12 @@ final class SequenceStateContributionTest extends TestCase
     /**
      * The bus and the hooks commit for real, so these tables are emptied around each test.
      */
-    private const array TABLES = ['sequence_runs', 'agent_stacks', 'hook_calls', 'command_receipts'];
+    private const array TABLES = [
+        'sequence_runs',
+        'agent_stacks',
+        'hook_calls',
+        'command_receipts',
+    ];
 
     private const string RUN = 'Close a task';
 
@@ -39,7 +44,10 @@ final class SequenceStateContributionTest extends TestCase
         $this->journal->owner()->agent('Writer')->actAs('Writer');
 
         $this->runs = $this->journal->fixtures(SequenceFixtures::class)
-            ->run(self::RUN, ['Read the brief.', 'Run the phase tests.'])
+            ->run(self::RUN, [
+                'Read the brief.',
+                'Run the phase tests.',
+            ])
             ->startRun(self::RUN, 'Writer');
     }
 

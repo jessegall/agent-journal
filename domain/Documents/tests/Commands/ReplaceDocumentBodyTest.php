@@ -20,7 +20,13 @@ final class ReplaceDocumentBodyTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['document_closes', 'document_drafts', 'document_revisions', 'documents', 'number_groups'];
+    private const array TABLES = [
+        'document_closes',
+        'document_drafts',
+        'document_revisions',
+        'documents',
+        'number_groups',
+    ];
 
     public function test_the_body_is_replaced_and_a_save_on_an_older_version_is_refused(): void
     {

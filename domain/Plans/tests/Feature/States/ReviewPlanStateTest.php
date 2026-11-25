@@ -31,7 +31,10 @@ final class ReviewPlanStateTest extends TestCase
     /**
      * Facts reach a stack once its change commits, so these tests commit and empty what they wrote.
      */
-    private const array TABLES = ['agent_stacks', 'command_receipts'];
+    private const array TABLES = [
+        'agent_stacks',
+        'command_receipts',
+    ];
 
     protected function setUp(): void
     {
@@ -51,7 +54,10 @@ final class ReviewPlanStateTest extends TestCase
     public function test_with_a_reviewer_out_the_stop_passes_to_the_states_below(): void
     {
         $this->reviewing()->given(
-            [new HelperSentOnRecord($this->plan(), TestIds::of(7)), $this->stop()],
+            [
+                new HelperSentOnRecord($this->plan(), TestIds::of(7)),
+                $this->stop(),
+            ],
             function (StateObservation $state) {
                 $state->assertStateAnswer(AnswerType::Delegate);
                 $state->assertValue('reviewersOut.agentIds', [TestIds::of(7)]);
@@ -81,7 +87,10 @@ final class ReviewPlanStateTest extends TestCase
                 fn (StateObservation $state) => $state->assertValue('reviewersOut.agentIds', [$eight]),
             )
             ->given(
-                [new HelperFinishedOnRecord($this->plan(), $eight), $this->stop()],
+                [
+                    new HelperFinishedOnRecord($this->plan(), $eight),
+                    $this->stop(),
+                ],
                 fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Deny),
             );
     }

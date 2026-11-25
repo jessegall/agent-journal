@@ -71,13 +71,22 @@ final class CommentFixtures
         $comment = $this->commentCalled($name);
 
         Assert::assertSame(
-            [$target->type, $target->id, $anchorType->value, $version, $lines],
+            [
+                $target->type,
+                $target->id,
+                $anchorType->value,
+                $version,
+                $lines,
+            ],
             [
                 $comment->target_type,
                 $comment->target_id,
                 $comment->anchor_type,
                 $comment->version_id,
-                [$comment->first_line, $comment->last_line],
+                [
+                    $comment->first_line,
+                    $comment->last_line,
+                ],
             ],
             "The comment {$name} is anchored otherwise.",
         );
@@ -94,8 +103,16 @@ final class CommentFixtures
         $writer = $this->journal->actorCalled($author);
 
         Assert::assertSame(
-            [$writer->type, $writer->id, $body],
-            [$comment->author_type, $comment->author_id, $comment->body],
+            [
+                $writer->type,
+                $writer->id,
+                $body,
+            ],
+            [
+                $comment->author_type,
+                $comment->author_id,
+                $comment->body,
+            ],
         );
 
         return $this;

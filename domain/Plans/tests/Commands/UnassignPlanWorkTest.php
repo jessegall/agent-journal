@@ -95,7 +95,10 @@ final class UnassignPlanWorkTest extends TestCase
     {
         $root = $this->assignWork($this->working->assignmentIdentity(), $this->builder)->outcomes[0]->current;
 
-        $this->assertEqualsCanonicalizing([Phase::linkType(), 'tasks.task'], $this->heldTypes());
+        $this->assertEqualsCanonicalizing([
+            Phase::linkType(),
+            'tasks.task',
+        ], $this->heldTypes());
 
         $this->unassignWork($this->working->assignmentIdentity(), $root->reference);
 

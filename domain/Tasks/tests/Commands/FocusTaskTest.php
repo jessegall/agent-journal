@@ -18,7 +18,11 @@ final class FocusTaskTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['tasks', 'task_runs', 'claim_authorizations'];
+    private const array TABLES = [
+        'tasks',
+        'task_runs',
+        'claim_authorizations',
+    ];
 
     public function test_the_focus_moves_to_the_task_and_stays_on_a_second_focus(): void
     {

@@ -25,7 +25,11 @@ final class StartSequenceTest extends TestCase
     /**
      * The bus commits these commands for real, so these tables are emptied around each test.
      */
-    private const array TABLES = ['sequence_runs', 'agent_stacks', 'command_receipts'];
+    private const array TABLES = [
+        'sequence_runs',
+        'agent_stacks',
+        'command_receipts',
+    ];
 
     private const string RUN = 'Close a task';
 
@@ -36,7 +40,10 @@ final class StartSequenceTest extends TestCase
         parent::setUp();
 
         $this->journal->owner()->agent('Writer')->actAs('Writer');
-        $this->runs = $this->journal->fixtures(SequenceFixtures::class)->run(self::RUN, ['Read the brief.', 'Run the phase tests.']);
+        $this->runs = $this->journal->fixtures(SequenceFixtures::class)->run(self::RUN, [
+            'Read the brief.',
+            'Run the phase tests.',
+        ]);
     }
 
     public function test_a_started_run_follows_the_agent_at_its_first_step_with_its_state_on_the_stack(): void

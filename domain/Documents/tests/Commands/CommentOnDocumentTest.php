@@ -90,8 +90,18 @@ final class CommentOnDocumentTest extends TestCase
         $comment = Comment::query()->findOrFail($commentId);
 
         $this->assertSame(
-            [Document::linkType(), Document::query()->sole()->id, 'Looks good.', $this->journal->ownerUser()->id],
-            [$comment->target_type, $comment->target_id, $comment->body, $comment->author_id],
+            [
+                Document::linkType(),
+                Document::query()->sole()->id,
+                'Looks good.',
+                $this->journal->ownerUser()->id,
+            ],
+            [
+                $comment->target_type,
+                $comment->target_id,
+                $comment->body,
+                $comment->author_id,
+            ],
         );
     }
 

@@ -45,7 +45,13 @@ final class ReopenSharedGatewaysTest extends TestCase
         $first = $this->reopen();
         $second = $this->reopen();
 
-        $this->assertSame([1, 0], [$first, $second]);
+        $this->assertSame([
+            1,
+            0,
+        ], [
+            $first,
+            $second,
+        ]);
         $this->assertSame(1, ShareGatewayOperation::query()->where('type', GatewayOperationType::Open->value)->count());
     }
 

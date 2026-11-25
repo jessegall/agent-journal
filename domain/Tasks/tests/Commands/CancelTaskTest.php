@@ -23,7 +23,11 @@ final class CancelTaskTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['tasks', 'task_runs', 'claim_authorizations'];
+    private const array TABLES = [
+        'tasks',
+        'task_runs',
+        'claim_authorizations',
+    ];
 
     private Task $task;
 
@@ -41,8 +45,14 @@ final class CancelTaskTest extends TestCase
         $this->journal->run(new CancelTaskCommand($this->task->id, 'Superseded.'));
 
         $this->assertSame(
-            [TaskStatus::Cancelled, 'Superseded.'],
-            [$this->task->refresh()->status, $this->task->cancel_reason],
+            [
+                TaskStatus::Cancelled,
+                'Superseded.',
+            ],
+            [
+                $this->task->refresh()->status,
+                $this->task->cancel_reason,
+            ],
         );
     }
 

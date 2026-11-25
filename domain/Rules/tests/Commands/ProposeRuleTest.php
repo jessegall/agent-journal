@@ -39,13 +39,25 @@ final class ProposeRuleTest extends TestCase
      */
     public static function refusedProposals(): iterable
     {
-        yield 'a long text' => [new ProposeRuleCommand(str_repeat('é', Rule::TEXT_CHARACTER_LIMIT + 1), 'Reason'), 'text'];
+        yield 'a long text' => [
+            new ProposeRuleCommand(str_repeat('é', Rule::TEXT_CHARACTER_LIMIT + 1), 'Reason'),
+            'text',
+        ];
 
-        yield 'an empty text' => [new ProposeRuleCommand('', 'Reason'), 'text'];
+        yield 'an empty text' => [
+            new ProposeRuleCommand('', 'Reason'),
+            'text',
+        ];
 
-        yield 'a long reason' => [new ProposeRuleCommand('Text', str_repeat('é', Rule::REASON_CHARACTER_LIMIT + 1)), 'reason'];
+        yield 'a long reason' => [
+            new ProposeRuleCommand('Text', str_repeat('é', Rule::REASON_CHARACTER_LIMIT + 1)),
+            'reason',
+        ];
 
-        yield 'an empty reason' => [new ProposeRuleCommand('Text', ''), 'reason'];
+        yield 'an empty reason' => [
+            new ProposeRuleCommand('Text', ''),
+            'reason',
+        ];
     }
 
     public function test_a_proposal_keeps_its_reason_proposer_and_replaced_rule_and_does_not_hold(): void
@@ -59,8 +71,20 @@ final class ProposeRuleTest extends TestCase
         $rule = Rule::query()->findOrFail($ruleId);
 
         $this->assertSame(
-            [RuleStatus::Proposed, 'The old one is too vague.', $old->id, Agent::storedType(), $this->journal->agentCalled('Planner')->id],
-            [$rule->status, $rule->reason, $rule->replaces_rule_id, $rule->proposer_type, $rule->proposer_id],
+            [
+                RuleStatus::Proposed,
+                'The old one is too vague.',
+                $old->id,
+                Agent::storedType(),
+                $this->journal->agentCalled('Planner')->id,
+            ],
+            [
+                $rule->status,
+                $rule->reason,
+                $rule->replaces_rule_id,
+                $rule->proposer_type,
+                $rule->proposer_id,
+            ],
         );
 
         $this->assertSame(

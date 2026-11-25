@@ -39,7 +39,15 @@ final class MemoryFixtures
     {
         $memory = $this->memoryCalled($name);
 
-        Assert::assertSame([$revision, $weight, $text], [$memory->revision, $memory->weight, $memory->text]);
+        Assert::assertSame([
+            $revision,
+            $weight,
+            $text,
+        ], [
+            $memory->revision,
+            $memory->weight,
+            $memory->text,
+        ]);
 
         return $this;
     }

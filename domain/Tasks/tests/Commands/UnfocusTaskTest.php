@@ -20,7 +20,11 @@ final class UnfocusTaskTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['tasks', 'task_runs', 'claim_authorizations'];
+    private const array TABLES = [
+        'tasks',
+        'task_runs',
+        'claim_authorizations',
+    ];
 
     public function test_the_focused_task_leaves_the_focus_and_another_task_leaves_it_alone(): void
     {

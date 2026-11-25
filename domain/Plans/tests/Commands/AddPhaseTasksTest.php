@@ -62,9 +62,15 @@ final class AddPhaseTasksTest extends TestCase
 
     public function test_tasks_join_a_phase_in_order_once_tasks_confirmed_them(): void
     {
-        [$first, $second] = [$this->tasks->taskCalled('First'), $this->tasks->taskCalled('Second')];
+        [$first, $second] = [
+            $this->tasks->taskCalled('First'),
+            $this->tasks->taskCalled('Second'),
+        ];
 
-        $this->journal->run(new AddPhaseTasksCommand($this->phaseId(), 1, [$second->id, $first->id]));
+        $this->journal->run(new AddPhaseTasksCommand($this->phaseId(), 1, [
+            $second->id,
+            $first->id,
+        ]));
 
         $this->plans->assertPhaseTask('Read', $second->assignmentIdentity(), 1)
             ->assertPhaseTask('Read', $first->assignmentIdentity(), 2);
@@ -76,7 +82,10 @@ final class AddPhaseTasksTest extends TestCase
 
         $this->journal->assertRefused(
             TaskMissing::class,
-            fn () => $this->journal->run(new AddPhaseTasksCommand($this->phaseId(), 1, [$real, TestIds::of(999999)])),
+            fn () => $this->journal->run(new AddPhaseTasksCommand($this->phaseId(), 1, [
+                $real,
+                TestIds::of(999999),
+            ])),
         );
 
         $this->assertSame([], $this->plans->phaseCalled('Read')->taskIds());
@@ -88,7 +97,10 @@ final class AddPhaseTasksTest extends TestCase
 
         $this->journal->assertRefused(
             TaskAlreadyInAPhase::class,
-            fn () => $this->journal->run(new AddPhaseTasksCommand($this->phaseId(), 1, [$task, $task])),
+            fn () => $this->journal->run(new AddPhaseTasksCommand($this->phaseId(), 1, [
+                $task,
+                $task,
+            ])),
             fn (TaskAlreadyInAPhase $refusal) => $this->assertEquals(TaskAlreadyInAPhase::forTask($task), $refusal),
         );
 

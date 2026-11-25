@@ -21,7 +21,10 @@ final class DeliverWaitingQuestionAnswersTest extends TestCase
 
     private const string TRUSTED_ENTRY = 'opened session';
 
-    private const array TABLES = ['questions', 'question_answer_notices'];
+    private const array TABLES = [
+        'questions',
+        'question_answer_notices',
+    ];
 
     protected function setUp(): void
     {
