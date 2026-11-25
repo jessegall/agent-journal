@@ -102,4 +102,9 @@ final class FixtureRefused extends LogicException
     {
         return new self("The scenario makes {$name} twice: give each thing it makes a name of its own.");
     }
+
+    public static function settingValue(string $key): self
+    {
+        return new self("The setting {$key} takes no value of that type: give it one of its own type.");
+    }
 }
