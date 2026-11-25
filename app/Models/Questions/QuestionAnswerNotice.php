@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Questions;
 
+use App\Models\Support\Accessor;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
@@ -63,7 +64,7 @@ final class QuestionAnswerNotice extends Model implements EventSource
      */
     protected function deliveryKey(): Attribute
     {
-        return Attribute::get(fn (): string => "question-answer:{$this->question_id}");
+        return Accessor::get(fn (): string => "question-answer:{$this->question_id}");
     }
 
     // ----------[ Relations ]----------

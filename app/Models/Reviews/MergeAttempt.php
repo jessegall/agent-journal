@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Reviews;
 
+use App\Models\Support\Accessor;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -190,7 +191,7 @@ final class MergeAttempt extends Model implements EventSource, ReadableModel
      */
     protected function resultRef(): Attribute
     {
-        return Attribute::get(fn () => "refs/journal/merge/{$this->id}");
+        return Accessor::get(fn () => "refs/journal/merge/{$this->id}");
     }
 
     // ----------[ Queries ]----------

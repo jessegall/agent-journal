@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Records;
 
+use App\Models\Support\Accessor;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -190,7 +191,7 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
      */
     protected function placeLabel(): Attribute
     {
-        return Attribute::get(function () {
+        return Accessor::get(function () {
             $subject = $this->subject();
 
             if ($subject instanceof TextAnchor) {

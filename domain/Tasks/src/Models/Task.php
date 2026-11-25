@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Models;
 
+use App\Models\Support\Accessor;
 use App\Concerns\BoundedReads;
 use App\Concerns\HasComments;
 use App\Concerns\HasNumber;
@@ -340,7 +341,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
      */
     protected function stateText(): Attribute
     {
-        return Attribute::get(fn () => match ($this->state) {
+        return Accessor::get(fn () => match ($this->state) {
             TaskState::Finished => $this->result_note,
             TaskState::Blocked => $this->block_reason,
             TaskState::Cancelled => $this->cancel_reason,

@@ -164,14 +164,32 @@ function returnsModel(string $source, ClassMethod $method): bool
 }
 
 /**
- * Whether a type is one an accessor may give: a string, an int, a float or a backed enum (user messages 22093 and
- * 22095); a bool is a predicate's and anything built is a transformer's.
+ * Whether a type is one an accessor may give: a string, an int, a float, a backed enum or an object that is no model
+ * (user messages 22093, 22095 and 22169); a bool is a predicate's, another model a relation's, and an array belongs
+ * in Data.
  */
-function givesScalar(string $source, string $type): bool
+function givesAccessorValue(string $source, string $type): bool
 {
     $parts = array_diff(explode('|', ltrim($type, '?')), ['null']);
 
-    return $parts !== [] && array_all($parts, fn (string $part) => isScalarPart($source, $part));
+    return $parts !== [] && array_all(
+        $parts,
+        fn (string $part) => isScalarPart($source, $part) || isObjectPart($source, $part),
+    );
+}
+
+/**
+ * Whether one part of a type names a class or interface that is no model, as a property read may give.
+ */
+function isObjectPart(string $source, string $part): bool
+{
+    if (preg_match('/^\\\\?[A-Z][\\w\\\\]*(<.*>)?$/', $part) !== 1) {
+        return false;
+    }
+
+    $full = importedName($source, preg_replace('/<.*$/', '', ltrim($part, '\\')));
+
+    return (class_exists($full) || interface_exists($full)) && ! is_subclass_of($full, Model::class) && ! enum_exists($full);
 }
 
 /**
@@ -206,9 +224,9 @@ function belongsInAccessor(string $source, string $class, Class_ $model, ClassMe
         && ! $method->isStatic()
         && ! $method->isAbstract()
         && $method->params === []
-        && givesScalar($source, $returned)
+        && givesAccessorValue($source, $returned)
         && ! str_starts_with($method->name->toString(), '__')
-        && sectionOf($method, $body) === 'Calculations'
+        && in_array(sectionOf($method, $body), ['Calculations', 'Transformers'], true)
         && preg_match(SIDE_EFFECTS, $body) !== 1
         && ! readsRows($source, $class, $model, $method, [])
         && ! str_contains((string) $method->getDocComment()?->getText(), '@throws')
@@ -243,9 +261,14 @@ function accessorFaultsOf(string $source, string $class, Class_ $model): array
             $faults[] = "{$method->getStartLine()}\taccessor {$name} reads rows";
         }
 
-        if (isAccessor($method) && ! givesScalar($source, accessorTypeOf($method))) {
+        if (isAccessor($method) && ! givesAccessorValue($source, accessorTypeOf($method))) {
             $faults[] = "{$method->getStartLine()}\taccessor {$name} gives ".accessorTypeOf($method)
-                .'; an accessor gives only a string, int, float or backed enum, so make it a predicate or transformer';
+                .'; an accessor gives a string, int, float, backed enum or object, so make a yes or no a predicate';
+        }
+
+        if (isAccessor($method) && preg_match('/\bAttribute::(get|make|set)\(/', $body) === 1) {
+            $faults[] = "{$method->getStartLine()}\taccessor {$name} is built with Laravel's Attribute: build it with "
+                .'App\\Models\\Support\\Accessor';
         }
 
         $isAnswer = isAccessor($method) || sectionOf($method, $body) === 'Transformers';
@@ -255,8 +278,8 @@ function accessorFaultsOf(string $source, string $class, Class_ $model): array
         }
 
         if (belongsInAccessor($source, $class, $model, $method)) {
-            $faults[] = "{$method->getStartLine()}\tanswer {$name} takes nothing and gives a string, int, float or"
-                .' backed enum, so it is an accessor';
+            $faults[] = "{$method->getStartLine()}\tanswer {$name} takes nothing and gives a string, int, float, enum or"
+                .' object, so it is an accessor';
         }
     }
 
@@ -317,7 +340,7 @@ function accessorDocOf(ClassMethod $method, string $returned): string
 }
 
 /**
- * The method's body as the closure the accessor hands to Attribute::get.
+ * The method's body as the closure the accessor hands to Accessor::get.
  */
 function accessorClosureOf(string $source, ClassMethod $method): string
 {
@@ -350,7 +373,7 @@ function accessorOf(string $source, ClassMethod $method): string
 
     return accessorDocOf($method, $returned)
         ."    protected function {$method->name->toString()}(): Attribute\n    {\n"
-        .'        return Attribute::get('.accessorClosureOf($source, $method).");\n    }";
+        .'        return Accessor::get('.accessorClosureOf($source, $method).");\n    }";
 }
 
 /**

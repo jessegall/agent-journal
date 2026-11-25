@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Models;
 
+use App\Models\Support\Accessor;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -164,7 +165,7 @@ final class DocumentDraft extends Model implements EventSource, ReadableModel
      */
     protected function holderLabel(): Attribute
     {
-        return Attribute::get(fn () => "{$this->author_type->value} {$this->author_id}");
+        return Accessor::get(fn () => "{$this->author_type->value} {$this->author_id}");
     }
 
     // ----------[ Relations ]----------

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
+use App\Models\Support\Accessor;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
@@ -385,7 +386,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
      */
     protected function revokedAtText(): Attribute
     {
-        return Attribute::get(fn () => (string) $this->revoked_at?->toIso8601String());
+        return Accessor::get(fn () => (string) $this->revoked_at?->toIso8601String());
     }
 
     // ----------[ Relations ]----------

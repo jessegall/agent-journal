@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Reviews;
 
+use App\Models\Support\Accessor;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
@@ -60,7 +61,7 @@ final class CertifiedWork extends Model implements ReadableModel
      */
     protected function importRef(): Attribute
     {
-        return Attribute::get(fn () => "refs/helpers/{$this->work_type}/{$this->work_id}/{$this->certificate}");
+        return Accessor::get(fn () => "refs/helpers/{$this->work_type}/{$this->work_id}/{$this->certificate}");
     }
 
     // ----------[ Asserts ]----------

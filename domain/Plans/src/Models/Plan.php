@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Models;
 
+use App\Models\Support\Accessor;
 use App\Concerns\BoundedReads;
 use App\Concerns\HasNumber;
 use App\Concerns\Linkable;
@@ -438,7 +439,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
      */
     protected function shareSummary(): Attribute
     {
-        return Attribute::get(fn () => <<<TEXT
+        return Accessor::get(fn () => <<<TEXT
         # {$this->title}
 
         This plan is {$this->state->value}.

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Asks;
 
+use App\Models\Support\Accessor;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
@@ -142,7 +143,7 @@ final class AskHop extends Model implements EventSource, ReadableModel
      */
     protected function holderKey(): Attribute
     {
-        return Attribute::get(fn () => "{$this->actor_type}:{$this->actor_id}");
+        return Accessor::get(fn () => "{$this->actor_type}:{$this->actor_id}");
     }
 
     // ----------[ Queries ]----------

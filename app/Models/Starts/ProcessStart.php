@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Starts;
 
+use App\Models\Support\Accessor;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
@@ -234,7 +235,7 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
      */
     protected function settingsIdentity(): Attribute
     {
-        return Attribute::get(fn () => $this->account_type.':'.$this->account_id);
+        return Accessor::get(fn () => $this->account_type.':'.$this->account_id);
     }
 
     // ----------[ Asserts ]----------

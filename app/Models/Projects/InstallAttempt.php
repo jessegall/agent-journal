@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
+use App\Models\Support\Accessor;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
@@ -205,7 +206,7 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
      */
     protected function targetLabel(): Attribute
     {
-        return Attribute::get(fn () => $this->targetText());
+        return Accessor::get(fn () => $this->targetText());
     }
 
     // ----------[ Relations ]----------

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Models;
 
+use App\Models\Support\Accessor;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -47,7 +48,7 @@ final class TextUploadChunk extends Model implements ReadableModel
      */
     protected function text(): Attribute
     {
-        return Attribute::get(fn () => base64_decode($this->encoded_text));
+        return Accessor::get(fn () => base64_decode($this->encoded_text));
     }
 
     // ----------[ Relations ]----------

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Skills;
 
+use App\Models\Support\Accessor;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
@@ -261,7 +262,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
      */
     protected function targetName(): Attribute
     {
-        return Attribute::get(fn () => self::openKeyOf($this->session_id, $this->target));
+        return Accessor::get(fn () => self::openKeyOf($this->session_id, $this->target));
     }
 
     /**
@@ -271,7 +272,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
      */
     protected function targetKey(): Attribute
     {
-        return Attribute::get(fn () => self::openKeyOf($this->session_id, $this->target));
+        return Accessor::get(fn () => self::openKeyOf($this->session_id, $this->target));
     }
 
     // ----------[ Asserts ]----------

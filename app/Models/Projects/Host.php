@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
+use App\Models\Support\Accessor;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -381,7 +382,7 @@ final class Host extends Model implements EventSource, ReadableModel
      */
     protected function linkAlarm(): Attribute
     {
-        return Attribute::get(function (): string {
+        return Accessor::get(function (): string {
             if ($this->failing_since !== null) {
                 return "The host {$this->installation_name} has failed to reach the journal since "
                     ."{$this->failing_since->format('H:i T')}: its last call, {$this->last_failure}.";

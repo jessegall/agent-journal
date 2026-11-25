@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Accounts;
 
+use App\Models\Support\Accessor;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -527,7 +528,7 @@ final class Account extends Model implements EventSource, ReadableModel
      */
     protected function startUnavailableReason(): Attribute
     {
-        return Attribute::get(function () {
+        return Accessor::get(function () {
             if ($this->state->canStart() && ! $this->maintenance) {
                 return null;
             }

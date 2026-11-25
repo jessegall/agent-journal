@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Accounts;
 
+use App\Models\Support\Accessor;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
@@ -417,7 +418,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      */
     protected function type(): Attribute
     {
-        return Attribute::get(fn () => $this->account_id === null ? SignInType::NewAccount : SignInType::SignInAgain);
+        return Accessor::get(fn () => $this->account_id === null ? SignInType::NewAccount : SignInType::SignInAgain);
     }
 
     // ----------[ Relations ]----------
