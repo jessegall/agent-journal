@@ -40,7 +40,7 @@ final class StopCheckTest extends TestCase
 
     public function test_the_host_stores_every_status_and_the_attempt_settles_by_them(): void
     {
-        $start = TestStart::start('writing-helper');
+        $start = $this->journal->signedStart('Writer', 'writing-helper');
         $statuses = StopConditionResultType::cases();
         $attempt = $this->open($start, 'stop-1', $this->keysOf($statuses));
 
@@ -56,7 +56,7 @@ final class StopCheckTest extends TestCase
 
     public function test_the_same_submission_answers_the_stored_state_and_a_changed_one_conflicts(): void
     {
-        $start = TestStart::start('writing-helper');
+        $start = $this->journal->signedStart('Writer', 'writing-helper');
         $attempt = $this->open($start, 'stop-1', ['passed']);
         $passing = $this->results($attempt, [StopConditionResultType::Passed]);
 
@@ -72,7 +72,7 @@ final class StopCheckTest extends TestCase
 
     public function test_a_stale_generation_a_changed_digest_or_other_conditions_are_refused(): void
     {
-        $start = TestStart::start('writing-helper');
+        $start = $this->journal->signedStart('Writer', 'writing-helper');
         $attempt = $this->open($start, 'stop-1', ['passed']);
         $report = $this->notify('passed', StopConditionResultType::Passed);
         $other = $this->notify('other', StopConditionResultType::Passed);
@@ -91,7 +91,7 @@ final class StopCheckTest extends TestCase
 
     public function test_a_helper_session_cannot_post_its_own_results(): void
     {
-        $start = TestStart::start('writing-helper');
+        $start = $this->journal->signedStart('Writer', 'writing-helper');
         $attempt = $this->open($start, 'stop-1', ['passed']);
         $start->startRequest($this->app);
 
@@ -105,7 +105,7 @@ final class StopCheckTest extends TestCase
 
     public function test_the_session_reads_its_attempt_summaries_through_the_evidence(): void
     {
-        $start = TestStart::start('writing-helper');
+        $start = $this->journal->signedStart('Writer', 'writing-helper');
         $attempt = $this->open($start, 'stop-1', ['failed']);
         $this->journal->asSystem($this->results($attempt, [StopConditionResultType::Failed]));
         $start->startRequest($this->app);
@@ -119,7 +119,7 @@ final class StopCheckTest extends TestCase
 
     public function test_old_raw_output_is_pruned_while_the_summary_stays(): void
     {
-        $start = TestStart::start('writing-helper');
+        $start = $this->journal->signedStart('Writer', 'writing-helper');
         $attempt = $this->open($start, 'stop-1', ['passed']);
         $this->travelTo(CarbonImmutable::now()->subDays(8));
         $this->journal->asSystem($this->results($attempt, [StopConditionResultType::Passed]));
@@ -135,7 +135,7 @@ final class StopCheckTest extends TestCase
 
     public function test_the_host_route_takes_the_results_and_answers_the_settled_state(): void
     {
-        $start = TestStart::start('writing-helper');
+        $start = $this->journal->signedStart('Writer', 'writing-helper');
         $attempt = $this->open($start, 'stop-1', ['passed']);
         $target = sprintf('/host/stop-attempts/%s/results', $attempt->id);
 

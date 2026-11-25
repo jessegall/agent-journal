@@ -43,7 +43,7 @@ final class HookPreparationTest extends TestCase
     {
         parent::setUp();
 
-        $this->start = TestStart::start('main-agent');
+        $this->start = $this->journal->signedStart('Main agent', 'main-agent');
         $this->bypassLog = sys_get_temp_dir().'/hook-preparation-'.getmypid().'.jsonl';
     }
 

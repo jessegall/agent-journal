@@ -6,7 +6,6 @@ namespace Tests\Feature\Hooks;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Events\Hooks\StateTypesRequested;
-use App\Models\Agents\Agent;
 use App\Models\Agents\AgentStackRow;
 use App\Support\ActorContext;
 use App\Support\AgentContext;
@@ -45,6 +44,8 @@ final class TickingStackFlagTest extends TestCase
     private const array TABLES = ['agents', 'agent_sessions', 'session_tokens', 'agent_stacks', 'hook_calls'];
 
     private FinishedSubjects $finished;
+
+    private int $startCount = 0;
 
     protected function setUp(): void
     {
@@ -100,7 +101,7 @@ final class TickingStackFlagTest extends TestCase
     private function start(): StartedAgent
     {
         return $this->app->make(StartSessions::class)->start(
-            Agent::create('Test agent', 'main-agent', $this->localProject()),
+            $this->journal->idleAgent('Test agent '.++$this->startCount, 'main-agent')->agentCalled('Test agent '.$this->startCount),
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
         );

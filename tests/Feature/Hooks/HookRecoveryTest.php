@@ -9,7 +9,6 @@ use App\Contracts\Bus\CommandBus;
 use App\Enums\Agents\StackStatus;
 use App\Enums\Sessions\SessionStatus;
 use App\Exceptions\CredentialRejected;
-use App\Models\Agents\Agent;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Drivers\HookCall;
 use App\Support\ActorContext;
@@ -132,7 +131,7 @@ final class HookRecoveryTest extends TestCase
     private function start(): StartedAgent
     {
         return $this->app->make(StartSessions::class)->start(
-            Agent::create('Test agent', 'main-agent', $this->localProject()),
+            $this->journal->idleAgent('Test agent', 'main-agent')->agentCalled('Test agent'),
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
         );

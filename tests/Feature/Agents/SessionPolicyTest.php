@@ -11,7 +11,6 @@ use App\Enums\Agents\ConversationModeType;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Sessions\StartOriginType;
 use App\Exceptions\SessionPolicyFrozen;
-use App\Models\Agents\Agent;
 use App\Models\Sessions\SessionPolicy;
 use App\Support\StartReceipt;
 use App\Values\StartPolicy;
@@ -66,7 +65,7 @@ final class SessionPolicyTest extends TestCase
 
     private function startUnder(StartPolicy $policy): StartReceipt
     {
-        $agent = Agent::create('Frozen policy agent', 'read-only-helper', $this->localProject());
+        $agent = $this->journal->idleAgent('Frozen policy agent', 'read-only-helper')->agentCalled('Frozen policy agent');
 
         return $this->app->make(CommandBus::class)->run(new StartAgentCommand(new StartRequest(
             TestSelections::requestId(),

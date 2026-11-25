@@ -79,7 +79,7 @@ final class HookRelayTest extends TestCase
     {
         parent::setUp();
 
-        $this->start = TestStart::start('main-agent');
+        $this->start = $this->journal->signedStart('Main agent', 'main-agent');
         $this->app->make(StackTransaction::class)->run(fn () => $this->app->make(StartStacks::class)->open(
             new StackTarget($this->start->agent->id, $this->start->session->id),
         ));

@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Enums\Engine\NoSubject;
-use App\Models\Access\User;
 use App\Support\References\StateReference;
-use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -29,7 +27,7 @@ final class StackInspectionTest extends TestCase
         $this->answerStop();
         $stdout = $this->answerStop();
 
-        $inspection = $this->actingAs(User::factory()->create())->getJson(
+        $inspection = $this->actingAs($this->journal->owner()->ownerUser())->getJson(
             '/hooks/stacks/'.TestIds::of(1).'/'.TestIds::of(10),
         )->assertOk()->json();
 
@@ -52,7 +50,7 @@ final class StackInspectionTest extends TestCase
     {
         $this->answerStop();
 
-        $steps = $this->actingAs(User::factory()->create())->getJson(
+        $steps = $this->actingAs($this->journal->owner()->ownerUser())->getJson(
             '/hooks/stacks/'.TestIds::of(1).'/'.TestIds::of(10),
         )->json('lastCall.steps');
 
@@ -64,7 +62,7 @@ final class StackInspectionTest extends TestCase
 
     public function test_a_stack_without_answered_calls_shows_no_last_call(): void
     {
-        $inspection = $this->actingAs(User::factory()->create())->getJson(
+        $inspection = $this->actingAs($this->journal->owner()->ownerUser())->getJson(
             '/hooks/stacks/'.TestIds::of(1).'/'.TestIds::of(10),
         )->assertOk()->json();
 
@@ -73,7 +71,7 @@ final class StackInspectionTest extends TestCase
 
     public function test_a_stack_that_does_not_exist_is_not_found(): void
     {
-        $this->actingAs(User::factory()->create())->getJson('/hooks/stacks/1/99')->assertNotFound();
+        $this->actingAs($this->journal->owner()->ownerUser())->getJson('/hooks/stacks/1/99')->assertNotFound();
     }
 
     public function test_a_guest_cannot_read_a_stack(): void
@@ -83,7 +81,7 @@ final class StackInspectionTest extends TestCase
 
     public function test_an_agent_with_its_own_credential_cannot_read_a_stack(): void
     {
-        $agent = TestStart::start();
+        $agent = $this->journal->signedStart('Main agent', 'main-agent');
 
         $this->call(
             'GET',

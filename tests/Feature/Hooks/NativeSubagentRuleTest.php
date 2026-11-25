@@ -51,7 +51,7 @@ final class NativeSubagentRuleTest extends TestCase
     {
         parent::setUp();
 
-        $this->start = TestStart::start('main-agent');
+        $this->start = $this->journal->signedStart('Main agent', 'main-agent');
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent($this->start->agent->id),
             TestStartAuthority::forAgent($this->start->agent->id),

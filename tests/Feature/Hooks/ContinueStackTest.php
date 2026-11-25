@@ -89,7 +89,7 @@ final class ContinueStackTest extends TestCase
      */
     private function closedStackWith(array $typeKeys): TestStart
     {
-        $start = TestStart::start('writing-helper');
+        $start = $this->journal->signedStart('Writer', 'writing-helper');
         $start->openStack($this->app);
         $row = AgentStackRow::query()->withoutGlobalScopes()->where('session_id', $start->session->id)->sole();
         $frames = [$row->frames->all()[0]];

@@ -5,12 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Commands\Agents\CancelSessionStart\CancelSessionStartCommand;
-use App\Commands\Sessions\CertifyPassedStops\CertifyPassedStopsCommand;
 use App\Commands\Sessions\RecordStopConditionResults\RecordStopConditionResultsCommand;
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\Accounts\CommandEntry;
 use App\Enums\Agents\ConversationModeType;
 use App\Enums\Drivers\DriverOperation;
 use App\Enums\Drivers\DriverType;
@@ -26,11 +22,7 @@ use App\Models\Sessions\SessionPolicy;
 use App\Models\Sessions\SessionRequest;
 use App\Models\Sessions\StopCheck;
 use App\Support\ActorIdentity;
-use App\Support\CommandEntrance;
-use App\Support\EngineAccess;
 use App\Support\RecordIdentity;
-use App\Support\RequestKey;
-use App\Support\SystemActor;
 use App\Values\ModelSelection;
 use App\Values\SelectedDriver;
 use App\Values\StartPolicy;
@@ -38,7 +30,6 @@ use App\Values\StartRequest;
 use App\Values\StopCondition;
 use App\Values\StopConditionResultReport;
 use App\Values\StopConditions;
-use App\Values\TrustedEntryAuthority;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use PhpOption\None;
@@ -86,7 +77,7 @@ final class HelperCompletionTest extends TestCase
     public function test_a_reader_with_no_conditions_finishes_on_its_stack_checks_alone(): void
     {
         Event::fake([HelperCompletionCertified::class]);
-        $start = TestStart::start('read-only-helper');
+        $start = $this->journal->signedStart('Reader', 'read-only-helper');
         SessionPolicy::create($start->session, StartPolicy::mainOnHost('/workspace'));
         $this->startedFor($start);
 
@@ -148,7 +139,7 @@ final class HelperCompletionTest extends TestCase
 
     private function helperWithConditions(): TestStart
     {
-        $start = TestStart::start('writing-helper');
+        $start = $this->journal->signedStart('Writer', 'writing-helper');
         $policy = StartPolicy::mainOnHost('/workspace');
         SessionPolicy::create($start->session, new StartPolicy(
             $policy->access,
@@ -226,20 +217,5 @@ final class HelperCompletionTest extends TestCase
                 ),
             ]
         ));
-    }
-
-    /**
-     * Runs the engine's sweep of passed stops, as one engine pass does.
-     */
-    private function certifyPassedStops(string $pass): void
-    {
-        $this->app->make(CurrentActorSetter::class)->set(new SystemActor(), new TrustedEntryAuthority('engine pass'));
-        $this->app->make(EngineAccess::class)->grantMaintenance(CertifyPassedStopsCommand::MAINTENANCE_SCOPE);
-        $this->app->make(RequestKey::class)->set($pass);
-        $bus = $this->app->make(CommandBus::class);
-        $this->app->make(CommandEntrance::class)->through(
-            CommandEntry::EngineMaintenance,
-            fn () => $bus->run(new CertifyPassedStopsCommand()),
-        );
     }
 }

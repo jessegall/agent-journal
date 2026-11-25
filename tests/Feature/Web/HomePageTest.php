@@ -59,7 +59,7 @@ final class HomePageTest extends TestCase
         parent::setUp();
 
         $this->journal->owner();
-        $agent = Agent::create('Chat builder', 'main-agent', $this->localProject());
+        $agent = $this->journal->idleAgent('Chat builder', 'main-agent')->agentCalled('Chat builder');
         $this->session = $this->app->make(StartSessions::class)->start(
             $agent,
             TestSelections::of('claude-code'),

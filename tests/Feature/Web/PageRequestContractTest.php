@@ -78,7 +78,7 @@ final class PageRequestContractTest extends TestCase
     #[DataProvider('recordedRequests')]
     public function test_a_request_the_page_sends_passes_the_server_validation(string $file): void
     {
-        $owner = User::factory()->create();
+        $owner = $this->journal->owner()->ownerUser();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         /** @var array{method: string, url: string, body: array<string, mixed>|null, headers?: array<string, string>, as?: string} $request */
         $request = HostContract::of("page-requests/{$file}")->readFor($this->recordsFor($owner));
@@ -101,8 +101,8 @@ final class PageRequestContractTest extends TestCase
     private function recordsFor(User $owner): array
     {
         $agentId = $this->runtimeOn('host-1')->session->agent_id;
-        $member = User::factory()->create(['name' => 'Bea']);
-        $candidate = User::factory()->create(['name' => 'Cy']);
+        $member = $this->journal->user('Bea')->userCalled('Bea');
+        $candidate = $this->journal->user('Cy')->userCalled('Cy');
 
         foreach ([$member, $candidate] as $invited) {
             EnvironmentUserGrant::create(

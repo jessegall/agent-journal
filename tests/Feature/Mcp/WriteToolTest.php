@@ -146,6 +146,6 @@ final class WriteToolTest extends CommandBusTestCase
         $catalogue->registerTool(WriteNoteTool::class);
         $this->app->instance(McpCatalogue::class, $catalogue);
 
-        return TestStart::start(self::PROFILE);
+        return $this->journal->signedStart('Started agent', self::PROFILE);
     }
 }

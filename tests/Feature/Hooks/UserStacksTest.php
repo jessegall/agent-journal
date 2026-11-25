@@ -45,6 +45,8 @@ final class UserStacksTest extends TestCase
 
     private StackTarget $target;
 
+    private int $startCount = 0;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -111,7 +113,7 @@ final class UserStacksTest extends TestCase
      */
     private function start(): StartedAgent
     {
-        $agent = Agent::create('Test agent', 'main-agent', $this->localProject());
+        $agent = $this->journal->idleAgent('Test agent '.++$this->startCount, 'main-agent')->agentCalled('Test agent '.$this->startCount);
 
         return $this->app->make(StartSessions::class)->start(
             $agent,

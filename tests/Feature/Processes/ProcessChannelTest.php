@@ -39,7 +39,7 @@ final class ProcessChannelTest extends TestCase
 
         ProcessOutputDisk::fake();
         config(['processes.runner' => true]);
-        $this->start = TestStart::start();
+        $this->start = $this->journal->signedStart('Main agent', 'main-agent');
         $this->journal->relayAgentCommands($this->start);
         $this->folder = sys_get_temp_dir().'/channel-'.bin2hex(random_bytes(4));
         mkdir($this->folder);

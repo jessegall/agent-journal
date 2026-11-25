@@ -69,7 +69,7 @@ final class HookEndpointTest extends TestCase
         parent::setUp();
 
         config(['processes.runner' => true]);
-        $this->start = TestStart::start('main-agent');
+        $this->start = $this->journal->signedStart('Main agent', 'main-agent');
         $this->start->openRuntime($this->app);
         $this->asStartedAgent(fn () => $this->app->make(StackTransaction::class)->run(
             fn () => $this->app->make(StartStacks::class)->open($this->target()),

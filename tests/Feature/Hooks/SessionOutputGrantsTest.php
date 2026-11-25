@@ -10,7 +10,6 @@ use App\Contracts\Reads\SessionOutputAccess;
 use App\Enums\Agents\ConversationModeType;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Sessions\StartOriginType;
-use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Sessions\SessionOutputGrant;
@@ -55,10 +54,10 @@ final class SessionOutputGrantsTest extends TestCase
         parent::setUp();
 
         $this->chooseActiveAccounts();
-        $owner = User::factory()->create();
+        $owner = $this->journal->owner()->ownerUser();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->journal->actAsUserId($owner->id);
-        $this->agent = Agent::create('Researcher', 'read-only-helper', $this->localProject());
+        $this->agent = $this->journal->idleAgent('Researcher', 'read-only-helper')->agentCalled('Researcher');
         $this->visits = $this->app->make(ConversationVisits::class);
         $this->access = $this->app->make(SessionOutputAccess::class);
     }
@@ -84,7 +83,7 @@ final class SessionOutputGrantsTest extends TestCase
     {
         $sibling = $this->start(
             'helpers.helper-job 1',
-            Agent::create('Reviewer', 'read-only-helper', $this->localProject()),
+            $this->journal->idleAgent('Reviewer', 'read-only-helper')->agentCalled('Reviewer'),
         );
         $session = $this->start('helpers.helper-job 2');
         $this->enter($sibling, 'native-parent', 'call-1');
@@ -121,7 +120,7 @@ final class SessionOutputGrantsTest extends TestCase
     {
         $predecessor = $this->start('helpers.helper-job 1');
         $this->enter($predecessor, 'native-a', 'call-1');
-        $other = Agent::create('Reviewer', 'read-only-helper', $this->localProject());
+        $other = $this->journal->idleAgent('Reviewer', 'read-only-helper')->agentCalled('Reviewer');
         $this->app->make(StartSessions::class)->end($predecessor);
 
         $successor = $this->start($predecessor->id);

@@ -47,7 +47,7 @@ final class AgentInstructionsTest extends TestCase
 
     private function sessionOn(string $profile): AgentSession
     {
-        $agent = Agent::create(ucfirst($profile), 'read-only-helper', $this->localProject());
+        $agent = $this->journal->idleAgent(ucfirst($profile), 'read-only-helper')->agentCalled(ucfirst($profile));
         $session = new AgentSession()->forceFill([
             ...TestSelections::sessionColumns(),
             'profile_key' => $profile,

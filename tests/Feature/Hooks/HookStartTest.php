@@ -10,7 +10,6 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Drivers\RewriteSupport;
 use App\Exceptions\ProfileMissing;
-use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Agents\AgentStackRow;
 use App\Support\ActorContext;
@@ -61,6 +60,8 @@ final class HookStartTest extends TestCase
         'process_runs',
         'command_requests',
     ];
+
+    private int $startCount = 0;
 
     /**
      * The domains this test uses beside core.
@@ -121,7 +122,7 @@ final class HookStartTest extends TestCase
         $parent = $this->start('main-agent');
         $task = Task::factory()->create(['title' => 'Write the walk']);
         $this->as($parent, fn () => $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id)));
-        $childAgent = Agent::create('Helper', 'read-only-helper', $this->localProject());
+        $childAgent = $this->journal->idleAgent('Helper', 'read-only-helper')->agentCalled('Helper');
 
         $child = $this->app->make(StartSessions::class)->start(
             $childAgent,
@@ -139,7 +140,7 @@ final class HookStartTest extends TestCase
 
     private function start(string $profileKey, string $driver = 'claude-code'): StartedAgent
     {
-        $agent = Agent::create('Test agent', $profileKey, $this->localProject());
+        $agent = $this->journal->idleAgent('Test agent '.++$this->startCount, $profileKey)->agentCalled('Test agent '.$this->startCount);
 
         return $this->app->make(StartSessions::class)->start(
             $agent,
