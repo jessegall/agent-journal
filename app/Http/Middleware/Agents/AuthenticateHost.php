@@ -9,6 +9,7 @@ use App\Commands\Projects\RecordHostCallFailure\RecordHostCallFailureCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Hosts\HostCalls;
 use App\Contracts\Hosts\LocalProjectHosts;
+use App\Data\Hosts\FailedHostCallData;
 use App\Enums\CommandEntry;
 use App\Enums\HostRouteRole;
 use App\Exceptions\CallSignatureInvalid;
@@ -18,7 +19,6 @@ use App\Models\Projects\Host;
 use App\Support\ActorStore;
 use App\Support\Command;
 use App\Support\CommandEntrance;
-use App\Values\FailedHostCall;
 use App\Values\HostContext;
 use Carbon\CarbonImmutable;
 use Closure;
@@ -133,7 +133,7 @@ final readonly class AuthenticateHost
      * The calls the host reports failed on its side, as the host's client sends them; a header it cannot read keeps
      * none.
      *
-     * @return list<FailedHostCall>
+     * @return list<FailedHostCallData>
      */
     private function reportedFailures(Request $request): array
     {
@@ -143,7 +143,7 @@ final readonly class AuthenticateHost
         foreach (is_array($decoded) ? array_slice($decoded, 0, self::FAILED_CALL_LIMIT) : [] as $call) {
             if (is_array($call) && is_string($call['route'] ?? null) && is_int($call['status'] ?? null)
                 && is_string($call['reason'] ?? null) && is_string($call['since'] ?? null)) {
-                $reported[] = new FailedHostCall(
+                $reported[] = new FailedHostCallData(
                     mb_substr($call['route'], 0, 200),
                     $call['status'],
                     mb_substr($call['reason'], 0, 300),

@@ -35,7 +35,7 @@ final class HelperRecordsTest extends TestCase
             $purpose,
             $parent,
             'Read the plan',
-            ['subjects' => ['message:1']],
+            ['message:1'],
             self::launchFor('request-1'),
         );
 
@@ -78,7 +78,7 @@ final class HelperRecordsTest extends TestCase
             $purpose,
             $parent,
             'Review',
-            ['subjects' => []],
+            [],
             self::launchFor('request-2'),
         );
 

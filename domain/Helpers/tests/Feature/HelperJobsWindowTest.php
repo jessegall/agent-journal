@@ -96,7 +96,7 @@ final class HelperJobsWindowTest extends TestCase
                 $purpose,
                 $parent,
                 $brief,
-                ['subjects' => []],
+                [],
                 self::launchFor(hash('xxh64', $brief)),
             ),
             $briefs,

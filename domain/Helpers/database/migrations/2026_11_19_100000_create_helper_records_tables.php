@@ -63,7 +63,7 @@ return new class extends Migration
             $table->foreignUlid('helper_identity_id')->constrained('helper_identities')->restrictOnDelete();
             $table->foreignUlid('helper_purpose_id')->constrained('helper_purposes')->restrictOnDelete();
             $table->text('brief');
-            $table->json('source_snapshot');
+            $table->json('source_subjects');
             $table->string('request_id', 64);
             $table->string('state', 16);
             $table->json('steering');

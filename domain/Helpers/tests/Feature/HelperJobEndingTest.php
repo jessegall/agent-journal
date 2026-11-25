@@ -88,7 +88,7 @@ final class HelperJobEndingTest extends TestCase
             $purpose,
             $parent,
             'Fix the test',
-            ['subjects' => []],
+            [],
             self::launchFor((string) Str::ulid()),
         );
     }

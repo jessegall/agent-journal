@@ -140,7 +140,7 @@ final class HelperSelectionTest extends TestCase
             $this->review,
             $this->parent,
             'Review',
-            ['subjects' => []],
+            [],
             self::launchFor('request-busy'),
         );
 
@@ -201,7 +201,7 @@ final class HelperSelectionTest extends TestCase
             $this->review,
             $this->parent,
             'Review',
-            ['subjects' => []],
+            [],
             self::launchFor((string) Str::ulid()),
         );
 

@@ -366,7 +366,7 @@ final readonly class HelperDispatch
             $purpose,
             $request->parent,
             $request->work->brief,
-            $request->work->sourceSnapshot(),
+            $request->work->sourceSubjects,
             new JobLaunch(
                 $request->requestId,
                 $request->digest(),

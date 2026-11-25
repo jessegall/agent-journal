@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Commands\Projects\RecordHostCallAnswered;
 
 use App\Attributes\Entry;
+use App\Data\Hosts\FailedHostCallData;
 use App\Enums\CommandEntry;
 use App\Support\Command;
-use App\Values\FailedHostCall;
 
 /**
  * Keeps that the journal answered a host's call, which ends a failing link, with the calls the host reported failed
@@ -19,7 +19,7 @@ use App\Values\FailedHostCall;
 final readonly class RecordHostCallAnsweredCommand extends Command
 {
     /**
-     * @param  list<FailedHostCall>  $reportedFailures
+     * @param  list<FailedHostCallData>  $reportedFailures
      */
     public function __construct(
         public string $hostId,

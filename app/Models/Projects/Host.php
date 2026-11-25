@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
-use Spatie\LaravelData\DataCollection;
-use App\Data\Hosts\EnrolledDescriptorData;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Data\Hosts\EnrolledDescriptorData;
+use App\Data\Hosts\FailedHostCallData;
 use App\Enums\ArrangementType;
 use App\Enums\DriverType;
 use App\Enums\ExecutionModeType;
@@ -25,7 +25,6 @@ use App\Exceptions\HostArrangementRefused;
 use App\Exceptions\HostCredentialRejected;
 use App\Exceptions\HostUnavailable;
 use App\Values\BrowserInputCapabilities;
-use App\Values\FailedHostCall;
 use App\Values\ProtectionReport;
 use App\Values\StartProposal;
 use Carbon\CarbonImmutable;
@@ -36,6 +35,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder as QueryBuilder;
+use Spatie\LaravelData\DataCollection;
 
 /**
  * A machine enrolled to run agent drivers: an infrastructure principal with its own credential, never an actor.
@@ -54,7 +54,7 @@ use Illuminate\Database\Query\Builder as QueryBuilder;
  * @property CarbonImmutable|null $failing_since
  * @property string|null $failing_route
  * @property string|null $last_failure
- * @property list<array{route: string, status: int, reason: string, since: string}>|null $reported_failures
+ * @property DataCollection<int, FailedHostCallData>|null $reported_failures
  * @property bool $browser_input
  * @property bool $browser_keys
  * @property bool $browser_paste
@@ -92,7 +92,7 @@ final class Host extends Model implements EventSource, ReadableModel
             'revoked_at' => 'immutable_datetime',
             'last_answered_at' => 'immutable_datetime',
             'failing_since' => 'immutable_datetime',
-            'reported_failures' => 'array',
+            'reported_failures' => DataCollection::class.':'.FailedHostCallData::class,
         ];
     }
 
@@ -184,7 +184,7 @@ final class Host extends Model implements EventSource, ReadableModel
      * Keeps that the journal answered one of the host's calls: an answer on the failing route ends the failure, and a
      * call the host reported failed on another route, such as one the journal stopped before it could answer, fails.
      *
-     * @param  list<FailedHostCall>  $reported
+     * @param  list<FailedHostCallData>  $reported
      */
     public function recordCallAnswered(string $route, array $reported, CarbonImmutable $at): void
     {
@@ -205,7 +205,7 @@ final class Host extends Model implements EventSource, ReadableModel
         }
 
         if ($reported !== []) {
-            $this->reported_failures = array_map(fn (FailedHostCall $call) => $call->toArray(), $reported);
+            $this->reported_failures = $reported;
         }
 
         $this->assertSaved($this->save());
@@ -324,7 +324,7 @@ final class Host extends Model implements EventSource, ReadableModel
      * Whether an answered call has anything to keep: a failure its route ends, failures the host reported, or a last
      * answer older than a minute, so a quiet host shows while a busy one writes its row once a minute.
      *
-     * @param  list<FailedHostCall>  $reported
+     * @param  list<FailedHostCallData>  $reported
      */
     public function hasAnswerToRecord(string $route, array $reported, CarbonImmutable $at): bool
     {

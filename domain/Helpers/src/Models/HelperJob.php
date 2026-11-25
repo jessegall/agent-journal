@@ -48,7 +48,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $helper_identity_id
  * @property string $helper_purpose_id
  * @property string $brief
- * @property array{subjects: list<string>} $source_snapshot
+ * @property list<string> $source_subjects
  * @property string $request_id
  * @property JobState $state
  * @property list<string> $steering
@@ -64,7 +64,7 @@ use Illuminate\Database\Eloquent\Model;
 #[Table('helper_jobs')]
 #[Fillable([
     'brief',
-    'source_snapshot',
+    'source_subjects',
     'request_id',
     'state',
     'steering',
@@ -86,7 +86,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
     {
         return [
             'state' => JobState::class,
-            'source_snapshot' => 'array',
+            'source_subjects' => 'array',
             'steering' => 'array',
             'finished_at' => 'immutable_datetime',
             'identity_new' => 'boolean',
@@ -98,21 +98,21 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
     // ----------[ Constructors ]----------
 
     /**
-     * @param  array{subjects: list<string>}  $sourceSnapshot
+     * @param  list<string>  $sourceSubjects
      */
     public static function create(
         HelperIdentity $helper,
         HelperPurpose $purpose,
         ActorIdentity $parent,
         string $brief,
-        array $sourceSnapshot,
+        array $sourceSubjects,
         JobLaunch $launch,
     ): self {
         $job = new self();
         $job->helper_identity_id = $helper->id;
         $job->helper_purpose_id = $purpose->id;
         $job->brief = $brief;
-        $job->source_snapshot = $sourceSnapshot;
+        $job->source_subjects = $sourceSubjects;
         $job->request_id = $launch->requestId;
         $job->payload_digest = $launch->payloadDigest;
         $job->profile_revision = $launch->profileRevision;
@@ -276,7 +276,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
      */
     public function sourceSubjects(): array
     {
-        return $this->source_snapshot['subjects'];
+        return $this->source_subjects;
     }
 
     // ----------[ Asserts ]----------
@@ -374,7 +374,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
                 ->where('subject_type', $subject->type)
                 ->where('subject_id', $subject->id)
                 ->select('id'))
-            ->orWhereJsonContains('source_snapshot->subjects', sprintf('%s:%s', $subject->type, $subject->id)));
+            ->orWhereJsonContains('source_subjects', sprintf('%s:%s', $subject->type, $subject->id)));
     }
 
     /**

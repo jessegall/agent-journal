@@ -44,14 +44,6 @@ final readonly class HelperWork
     }
 
     /**
-     * @return array{subjects: list<string>}
-     */
-    public function sourceSnapshot(): array
-    {
-        return ['subjects' => $this->sourceSubjects];
-    }
-
-    /**
      * @return list<string|bool|null|list<string>>
      */
     public function fingerprint(): array

@@ -65,7 +65,7 @@ final class ReportReadyNotificationTest extends TestCase
             HelperPurpose::free($parent, 'writing-helper', 'General work '.Str::random(6)),
             $parent,
             'Write it down',
-            ['subjects' => []],
+            [],
             self::launchFor((string) Str::ulid()),
         );
     }

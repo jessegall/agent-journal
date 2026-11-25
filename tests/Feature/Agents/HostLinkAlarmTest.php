@@ -110,6 +110,6 @@ final class HostLinkAlarmTest extends TestCase
 
         $this->hostCallReporting($host, self::ANSWERED_ROUTE, $reported)->assertSuccessful();
 
-        $this->assertEquals($reported, Host::query()->findOrFail($host->hostId)->reported_failures);
+        $this->assertEquals($reported, Host::query()->findOrFail($host->hostId)->reported_failures?->toArray());
     }
 }
