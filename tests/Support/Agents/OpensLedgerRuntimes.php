@@ -6,6 +6,7 @@ namespace Tests\Support\Agents;
 
 use App\Commands\Terminals\RunKeyScript\RunKeyScriptCommand;
 use App\Contracts\Bus\Command;
+use App\Enums\Drivers\DriverType;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Support\EnrolledHost;
@@ -42,15 +43,21 @@ trait OpensLedgerRuntimes
      *
      * @return array{EnrolledHost, OpenedRuntime}
      */
-    private function openRuntime(string|null $firstMessage = null, string $build = '2.1.323'): array
-    {
+    private function openRuntime(
+        string|null $firstMessage = null,
+        string $build = '2.1.323',
+        string $driver = 'claude-code',
+        DriverType $driverType = DriverType::Headless,
+    ): array {
         $number = ++$this->openedRuntimeCount;
         $this->journal->idleAgent("Driven agent {$number}")->enrollHost("Test host {$number}", [self::FOLDER]);
         $opened = $this->journal->openRuntimeOn(
             "Driven agent {$number}",
             "Test host {$number}",
             self::FOLDER,
+            driver: $driver,
             build: $build,
+            driverType: $driverType,
             firstMessage: $firstMessage,
         );
 

@@ -11,9 +11,11 @@ use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCompatibilities;
+use App\Enums\Agents\SessionProcessStatus;
 use App\Enums\Drivers\DriverEvidence;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Runs\RuntimeActivity;
+use App\Events\Sessions\SessionStateChanged;
 use App\Models\Accounts\Account;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
@@ -24,7 +26,9 @@ use App\Support\Compatibility\DriverCompatibility;
 use App\Support\EnrolledHost;
 use App\Support\OpenedRuntime;
 use App\Values\OwnerAuthority;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
+use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
@@ -55,6 +59,7 @@ final class ReconcileStartsTest extends TestCase
         'links',
         'command_receipts',
         'assignments',
+        'session_policies',
     ];
 
     private const string FOLDER = '/work/project';
@@ -96,6 +101,44 @@ final class ReconcileStartsTest extends TestCase
         );
     }
 
+    public function test_after_a_restart_only_proven_exits_end_and_another_host_reaches_nothing(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $other = $this->enrollHost();
+        $key = (string) $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])
+            ->json('start_key');
+
+        $this->signed($other, 'POST', "/host/starts/{$key}/stopped")->assertNotFound();
+        $this->signed($other, 'POST', '/host/starts/reconcile', ['stopped' => [$key]])
+            ->assertJson(['accounts_changed' => 0]);
+        $this->assertSame([$key], $this->signed($host, 'GET', '/host/starts')->json('unresolved'));
+
+        $this->signed($host, 'POST', '/host/starts/reconcile', ['stopped' => [$key]])
+            ->assertJson(['accounts_changed' => 1]);
+        $this->assertSame(
+            SessionProcessStatus::Stopped,
+            SessionProcess::query()->withoutGlobalScopes()->sole()->status,
+        );
+    }
+
+    // A session its restarted host no longer serves is stopped by itself, and the pages hear it.
+    public function test_a_start_the_restarted_host_ended_ends_its_session_and_tells_the_open_pages(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $key = (string) $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])
+            ->json('start_key');
+        Event::fake([SessionStateChanged::class]);
+
+        $this->signed($host, 'POST', '/host/starts/reconcile', ['stopped' => [$key]])->assertOk();
+
+        $session = AgentSession::query()->withoutGlobalScopes()->findOrFail($opened->sessionId);
+        $this->assertFalse($session->isActive());
+        Event::assertDispatched(
+            SessionStateChanged::class,
+            fn (SessionStateChanged $change) => $change->sessionId === $opened->sessionId,
+        );
+    }
+
     private function startOf(OpenedRuntime $runtime): SessionProcess
     {
         return SessionProcess::query()->withoutGlobalScopes()->where('session_id', $runtime->sessionId)->sole();
@@ -130,5 +173,39 @@ final class ReconcileStartsTest extends TestCase
     private function actAsOwner(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
+    }
+
+    /**
+     * @param  array<string, mixed>  $body
+     */
+    private function signed(EnrolledHost $host, string $method, string $target, array $body = []): TestResponse
+    {
+        return $this->journal->hostCall($host, $method, $target, $body === [] ? '' : (string) json_encode($body));
+    }
+
+    /**
+     * @return array{EnrolledHost, OpenedRuntime}
+     */
+    private function openRuntime(
+        bool $shouldSaveDriverType = false,
+        string $driver = 'claude-code',
+        DriverType $driverType = DriverType::Headless,
+    ): array {
+        $host = $this->enrollHost();
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
+        $agent = Agent::create('Started agent '.Str::random(6), 'main-agent', $this->localProject());
+        $command = new OpenAgentRuntimeCommand(
+            $agent->id,
+            $host->hostId,
+            self::FOLDER,
+            $driver,
+            '2.1.323',
+            'claude',
+            $driverType,
+            'claude-opus-5-5',
+            shouldSaveDriverType: $shouldSaveDriverType,
+        );
+
+        return [$host, $this->app->make(CommandBus::class)->run($command)];
     }
 }

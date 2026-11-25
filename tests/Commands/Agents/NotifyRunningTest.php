@@ -120,6 +120,18 @@ final class NotifyRunningTest extends TestCase
         $this->assertNull($agent->driver_type_preference);
     }
 
+    public function test_a_one_start_driver_type_leaves_the_agent_on_its_profile_default(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $key = (string) $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])
+            ->json('start_key');
+        $this->signed($host, 'POST', "/host/starts/{$key}/running", ['execution_id' => 'thread-1'])->assertNoContent();
+
+        $agent = AgentSession::query()->withoutGlobalScopes()->with('agent')->findOrFail($opened->sessionId)->agent;
+        $this->assertNull($agent->driver_type_preference);
+        $this->assertSame(DriverType::Terminal, $agent->driverTypeFor(null, DriverType::Terminal));
+    }
+
     // A session its restarted host no longer serves is stopped by itself, and the pages hear it.
     /**
      * @param  array<string, mixed>  $body
