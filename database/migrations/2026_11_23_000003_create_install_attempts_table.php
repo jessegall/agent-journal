@@ -18,7 +18,7 @@ return new class extends Migration
             // The owner's key for one action: two first submissions under it make one attempt.
             $table->string('idempotency_key');
             $table->string('mode');
-            $table->foreignUlid('project_id')->nullable()->constrained('projects');
+            $table->foreignUlid('project_id')->nullable()->constrained('projects')->restrictOnDelete();
             $table->foreignUlid('environment_id')->nullable()->constrained('project_environments')->nullOnDelete();
             $table->string('state');
             $table->foreignUlid('binding_id')->nullable()->constrained('project_bindings');

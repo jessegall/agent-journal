@@ -13,10 +13,12 @@ return new class extends Migration
         // The environments of a connected project; every binding works in one, its commands scoped to it.
         Schema::create('project_environments', function (Blueprint $table): void {
             $table->ulid('id')->primary();
-            $table->foreignUlid('project_id')->constrained('projects');
+            $table->foreignUlid('project_id')->constrained('projects')->restrictOnDelete();
             $table->string('label');
             $table->timestampTz('created_at')->nullable();
             $table->unique(['project_id', 'label']);
+            // Lets a table name an environment together with its project in one foreign key.
+            $table->unique(['id', 'project_id']);
         });
     }
 

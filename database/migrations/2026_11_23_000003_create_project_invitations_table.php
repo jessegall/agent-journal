@@ -16,7 +16,7 @@ return new class extends Migration
             $table->char('ticket_digest', 64)->unique();
             $table->string('issuer_user_id');
             $table->string('mode');
-            $table->foreignUlid('project_id')->nullable()->constrained('projects');
+            $table->foreignUlid('project_id')->nullable()->constrained('projects')->restrictOnDelete();
             // One owner action's key: issuing again under it replaces the line still pending under it.
             $table->timestampTz('expires_at');
             $table->timestampTz('revoked_at')->nullable();

@@ -10,7 +10,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // One row per project connected from another machine; the installation's own project stays its config key.
+        // One row per project; every record that belongs to a project names it.
         Schema::create('projects', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->string('key')->unique();
