@@ -77,7 +77,7 @@ final class RepairRequest extends Model implements EventSource, ReadableModel
         $this->raise(new RepairRequestSettled($this->id, $state));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Transformers ]----------
 
     /**
      * How many repairs this work was sent back for before this one.

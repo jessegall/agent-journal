@@ -8,15 +8,25 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * A model whose accessor sits in Accessors, after its Getters.
+ * A model whose predicate, transformer and accessor each sit in their own section.
  */
 final class AccessorInAccessors extends Model
 {
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function isDone(): bool
     {
         return true;
+    }
+
+    // ----------[ Transformers ]----------
+
+    /**
+     * @return list<int>
+     */
+    public function steps(): array
+    {
+        return [1];
     }
 
     // ----------[ Accessors ]----------

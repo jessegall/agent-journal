@@ -119,7 +119,7 @@ final class DocumentDraft extends Model implements EventSource, ReadableModel
         $this->raise(new DocumentDraftSaved($this->document_id, $this->version));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function isEditedBy(ActorIdentity $editor): bool
     {
@@ -131,16 +131,18 @@ final class DocumentDraft extends Model implements EventSource, ReadableModel
         return $this->version === $version;
     }
 
-    public function view(Document $document): DraftView
-    {
-        return RecordViews::draftView($this, $document);
-    }
-
     public function hasChangesFrom(DocumentRevision $baseRevision): bool
     {
         return $this->title !== $baseRevision->title
             || $this->abstract !== $baseRevision->abstract
             || $this->body !== $baseRevision->body;
+    }
+
+    // ----------[ Transformers ]----------
+
+    public function view(Document $document): DraftView
+    {
+        return RecordViews::draftView($this, $document);
     }
 
     public function reference(Document $document): DraftReference

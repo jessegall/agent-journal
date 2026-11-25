@@ -154,7 +154,7 @@ final class ProfileRevision extends Model implements ReadableModel
         ]);
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Transformers ]----------
 
     public function snapshot(ProfileKey $key): ProfileSnapshot
     {

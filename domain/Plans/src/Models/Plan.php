@@ -300,7 +300,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
         ));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     /**
      * Whether the plan is being worked: started, and neither finished nor cancelled.
@@ -309,6 +309,8 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
     {
         return $this->state === PlanState::Started;
     }
+
+    // ----------[ Transformers ]----------
 
     /**
      * The phase with this number within the plan; a phase of another plan never answers.

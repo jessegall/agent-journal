@@ -103,7 +103,7 @@ final class StopAttempt extends Model implements EventSource, ReadableModel
         $this->raise(new StopAttemptCertified($this->id));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     /**
      * Whether results run under this policy digest and workspace generation belong to this attempt.
@@ -128,20 +128,6 @@ final class StopAttempt extends Model implements EventSource, ReadableModel
         return $asked === $definitionHashes;
     }
 
-    /**
-     * The attempt's outcome: the same for two attempts that settled alike, with the same failures under the same
-     * policy and workspace generation.
-     */
-    public function outcomeOf(string $failureSummary): string
-    {
-        return hash('sha256', implode("\n", [
-            $this->state->value,
-            $this->policy_digest,
-            (string) $this->workspace_generation,
-            $failureSummary,
-        ]));
-    }
-
     public function isSettled(): bool
     {
         return $this->state !== StopAttemptState::Pending;
@@ -155,6 +141,22 @@ final class StopAttempt extends Model implements EventSource, ReadableModel
     public function isCertified(): bool
     {
         return $this->certified_at !== null;
+    }
+
+    // ----------[ Transformers ]----------
+
+    /**
+     * The attempt's outcome: the same for two attempts that settled alike, with the same failures under the same
+     * policy and workspace generation.
+     */
+    public function outcomeOf(string $failureSummary): string
+    {
+        return hash('sha256', implode("\n", [
+            $this->state->value,
+            $this->policy_digest,
+            (string) $this->workspace_generation,
+            $failureSummary,
+        ]));
     }
 
     // ----------[ Accessors ]----------

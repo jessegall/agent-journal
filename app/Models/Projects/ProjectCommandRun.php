@@ -162,7 +162,7 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
         $this->raise(new ProjectCommandReconciled($this->id, $settled));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     /**
      * Whether the run may still be running: running, or asked to cancel and not yet stopped.
@@ -171,6 +171,16 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
     {
         return $this->state->isActive();
     }
+
+    /**
+     * Whether the request id was given for this operation: the same arguments, piped input, binding and agent.
+     */
+    public function isOfOperation(string $fingerprint): bool
+    {
+        return hash_equals($this->fingerprint, $fingerprint);
+    }
+
+    // ----------[ Transformers ]----------
 
     /**
      * Where the run stands by what can be proved now: as recorded while its worker lives or its recorded process
@@ -191,14 +201,6 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
         }
 
         return CommandRunState::Interrupted;
-    }
-
-    /**
-     * Whether the request id was given for this operation: the same arguments, piped input, binding and agent.
-     */
-    public function isOfOperation(string $fingerprint): bool
-    {
-        return hash_equals($this->fingerprint, $fingerprint);
     }
 
     // ----------[ Accessors ]----------

@@ -411,7 +411,7 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
         return $this->process_generation === $processGeneration;
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Transformers ]----------
 
     /**
      * How many live terminal views watch the runtime, counted once with the runtime when it was read with its watchers.

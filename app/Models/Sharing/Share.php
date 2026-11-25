@@ -292,7 +292,41 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
         $this->raise(new ShareFailed($this->fact));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
+
+    /**
+     * Whether no other live, unexpired share is served by this share's gateway configuration.
+     */
+    public function isLastLiveOfItsConfiguration(): bool
+    {
+        return $this->share_gateway_configuration_id !== null
+            && ! self::query()
+                ->liveNow()
+                ->servedBy($this->share_gateway_configuration_id)
+                ->whereKeyNot($this->id)
+                ->exists();
+    }
+
+    /**
+     * Whether a public read may proceed: the share is active and its deadline has not passed, whatever the state
+     * column has caught up with.
+     */
+    public function isReadableNow(): bool
+    {
+        return $this->state === ShareState::Active && $this->expires_at->isFuture();
+    }
+
+    /**
+     * Whether one of these users granted the share; a proposal was granted by nobody.
+     *
+     * @param  list<string>  $userIds
+     */
+    public function isGrantedByOneOf(array $userIds): bool
+    {
+        return $this->owner_user_id !== null && in_array($this->owner_user_id, $userIds, true);
+    }
+
+    // ----------[ Transformers ]----------
 
     /**
      * The key of the gateway the share is served under; none for a proposal, which has no gateway yet.
@@ -323,28 +357,6 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     }
 
     /**
-     * Whether no other live, unexpired share is served by this share's gateway configuration.
-     */
-    public function isLastLiveOfItsConfiguration(): bool
-    {
-        return $this->share_gateway_configuration_id !== null
-            && ! self::query()
-                ->liveNow()
-                ->servedBy($this->share_gateway_configuration_id)
-                ->whereKeyNot($this->id)
-                ->exists();
-    }
-
-    /**
-     * Whether a public read may proceed: the share is active and its deadline has not passed, whatever the state
-     * column has caught up with.
-     */
-    public function isReadableNow(): bool
-    {
-        return $this->state === ShareState::Active && $this->expires_at->isFuture();
-    }
-
-    /**
      * The public address of the share while it is active and unexpired; nothing for a proposal or an ended share.
      *
      * @return Option<string>
@@ -362,16 +374,6 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
                 $this->share_gateway_configuration_id,
             )->shareUrl($this->token_ciphertext),
         );
-    }
-
-    /**
-     * Whether one of these users granted the share; a proposal was granted by nobody.
-     *
-     * @param  list<string>  $userIds
-     */
-    public function isGrantedByOneOf(array $userIds): bool
-    {
-        return $this->owner_user_id !== null && in_array($this->owner_user_id, $userIds, true);
     }
 
     /**

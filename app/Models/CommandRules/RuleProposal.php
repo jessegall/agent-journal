@@ -156,8 +156,6 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
         $this->raise(new RuleProposalAdopted($this->id));
     }
 
-    // ----------[ Getters ]----------
-
     /**
      * The owner approved the current revision; the proposal is ended.
      *
@@ -175,6 +173,8 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
     {
         $this->end(ProposalState::Rejected);
     }
+
+    // ----------[ Predicates ]----------
 
     public function isAuthoredBy(ActorIdentity $actor): bool
     {

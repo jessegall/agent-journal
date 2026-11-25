@@ -100,7 +100,7 @@ final class CleanupOperation extends Model implements EventSource, ReadableModel
         $this->raise(new CleanupPassRecorded($this->id, $this->state));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function isDone(): bool
     {

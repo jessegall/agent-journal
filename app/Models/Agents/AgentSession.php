@@ -184,8 +184,6 @@ final class AgentSession extends Model implements EventSource, ReadableModel
         $this->raise(new AgentSessionHeartbeatRecorded($this->id));
     }
 
-    // ----------[ Getters ]----------
-
     /**
      * Starts the session of one start with the driver and model it runs and the request that started it.
      *
@@ -198,6 +196,24 @@ final class AgentSession extends Model implements EventSource, ReadableModel
         $this->status = SessionStatus::Active;
         $this->useSelection($selection, $requestId);
     }
+
+    /**
+     * The driver ended without an end hook, and the evidence says how the journal knows.
+     */
+    public function endWithEvidenceAt(CarbonImmutable $time, string $evidence): void
+    {
+        $this->end_evidence = $evidence;
+        $this->endAt($time);
+    }
+
+    // ----------[ Predicates ]----------
+
+    public function isActive(): bool
+    {
+        return $this->status->isRunning();
+    }
+
+    // ----------[ Transformers ]----------
 
     /**
      * This session as a use of the account it ran with; it runs until it ends.
@@ -213,20 +229,6 @@ final class AgentSession extends Model implements EventSource, ReadableModel
             CarbonImmutable::instance($this->created_at),
             $this->ended_at,
         );
-    }
-
-    /**
-     * The driver ended without an end hook, and the evidence says how the journal knows.
-     */
-    public function endWithEvidenceAt(CarbonImmutable $time, string $evidence): void
-    {
-        $this->end_evidence = $evidence;
-        $this->endAt($time);
-    }
-
-    public function isActive(): bool
-    {
-        return $this->status->isRunning();
     }
 
     /**

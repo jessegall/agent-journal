@@ -70,7 +70,7 @@ final class ProjectFile extends Model implements Commentable, Numbered, Readable
         return $file;
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Transformers ]----------
 
     /**
      * The kept version with this digest, if the file was read with it before.

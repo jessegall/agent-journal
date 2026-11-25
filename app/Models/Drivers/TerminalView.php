@@ -147,7 +147,7 @@ final class TerminalView extends Model implements EventSource, ReadableModel
         $this->raise(new TerminalViewClosed($this->id));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     /**
      * Whether the view still watches the runtime as it ran when the view opened or last followed it.

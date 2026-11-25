@@ -84,7 +84,7 @@ final class ReportJobLink extends Model implements EventSource, ReadableModel
         return $link;
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function isFor(HelperJob $job): bool
     {

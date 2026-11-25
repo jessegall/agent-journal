@@ -135,7 +135,7 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
         $this->raise(new PhaseProgressRecorded($this->id));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Transformers ]----------
 
     /**
      * @return list<string>

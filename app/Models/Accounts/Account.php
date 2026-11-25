@@ -423,7 +423,7 @@ final class Account extends Model implements EventSource, ReadableModel
         $this->raise(new AccountRemoved($this->account_protocol, $this->id));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     /**
      * Whether the sign-in and this account both name the provider's own verified subject, so they can be compared at
@@ -485,6 +485,8 @@ final class Account extends Model implements EventSource, ReadableModel
             AccountState::Removed,
         ], true);
     }
+
+    // ----------[ Transformers ]----------
 
     /**
      * The folder a start runs the driver's sign-in from; a removed account has none.

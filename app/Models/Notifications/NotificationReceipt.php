@@ -133,7 +133,7 @@ final class NotificationReceipt extends Model implements EventSource, ReadableMo
         return true;
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function isNew(): bool
     {

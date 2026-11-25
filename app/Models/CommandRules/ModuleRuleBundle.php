@@ -57,7 +57,7 @@ final class ModuleRuleBundle extends Model implements ReadableModel
         return ['approved_at' => 'datetime'];
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function approves(RuleBundle $bundle): bool
     {

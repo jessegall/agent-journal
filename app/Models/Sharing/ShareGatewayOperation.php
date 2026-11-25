@@ -150,7 +150,7 @@ final class ShareGatewayOperation extends Model implements EventSource, Readable
         $this->raise(new ShareGatewayOperationFinished($this->id, $outcome));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     /**
      * Whether no run holds the operation now and it has no outcome.

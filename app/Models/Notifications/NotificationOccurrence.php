@@ -75,7 +75,7 @@ final class NotificationOccurrence extends Model implements ReadableModel
         return $occurrence;
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     /**
      * Whether this call inserted the occurrence, rather than meeting one of the same key.

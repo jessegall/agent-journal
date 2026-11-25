@@ -103,7 +103,7 @@ final class RunOutcome extends Model implements EventSource, ReadableModel
         $this->raise(new RunOutcomeRecorded($this->run_id, $this->attempt_id, $result, true));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function isProvisional(): bool
     {

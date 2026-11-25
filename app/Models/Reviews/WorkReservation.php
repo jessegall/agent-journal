@@ -99,7 +99,7 @@ final class WorkReservation extends Model implements EventSource, ReadableModel
         $this->raise(new WorkReservationReleased($this->id));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Relations ]----------
 
     /**
      * @return BelongsTo<CertifiedWork, $this>

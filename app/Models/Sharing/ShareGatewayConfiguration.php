@@ -114,12 +114,14 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
         $this->raise(new ShareGatewayMadeDefault($this->id));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function isDisabled(): bool
     {
         return $this->disabled_at !== null;
     }
+
+    // ----------[ Transformers ]----------
 
     /**
      * The public address a share's token opens under this configuration.

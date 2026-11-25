@@ -103,12 +103,14 @@ final class TaskRun extends Model implements Assignable, EventSource, ReadableMo
         $this->raise(new TaskRunEnded($this->id, $this->task_id));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function isFinished(): bool
     {
         return $this->state === TaskRunState::Finished;
     }
+
+    // ----------[ Transformers ]----------
 
     public function assignmentIdentity(): RecordIdentity
     {

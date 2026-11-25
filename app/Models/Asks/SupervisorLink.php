@@ -81,7 +81,7 @@ final class SupervisorLink extends Model implements EventSource, ReadableModel
         $this->raise(new SupervisorLinkChanged($this->id));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Transformers ]----------
 
     public function versionFor(AskTypeKey|null $type): int
     {

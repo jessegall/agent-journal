@@ -199,7 +199,7 @@ final class TerminalGrant extends Model implements EventSource, ReadableModel
         return $sequence;
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     /**
      * Whether the grant may still write at the given time: issued, not expired, for the runtime as it runs now.

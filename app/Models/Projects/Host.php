@@ -216,7 +216,7 @@ final class Host extends Model implements EventSource, ReadableModel
         $this->raise(new HostRevoked($this->id));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     /**
      * Whether the host runs starts of this placement: a contained host in containers, a local one on the host.
@@ -306,31 +306,6 @@ final class Host extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * @return list<array{key: string, build: string, arrangement: string, placement: string, family: string|null, driver_type: string|null, unavailable_reason: string|null}>
-     */
-    private function availableDescriptors(): array
-    {
-        return array_values(array_filter(
-            $this->descriptors,
-            fn (array $descriptor) => $descriptor['unavailable_reason'] === null,
-        ));
-    }
-
-    /**
-     * The protection this host reported for the build the unreported report names, or that report when it has none.
-     */
-    public function protectionOf(ProtectionReport $unreported): ProtectionReport
-    {
-        $key = $unreported->key();
-
-        if (! array_key_exists($key, $this->protection)) {
-            return $unreported;
-        }
-
-        return ProtectionReport::fromStored($this->protection[$key]);
-    }
-
-    /**
      * Whether a folder lies inside one of the roots this host may start in.
      */
     public function permitsFolder(string $folder): bool
@@ -360,6 +335,27 @@ final class Host extends Model implements EventSource, ReadableModel
             || $this->last_answered_at->lt($at->subMinute());
     }
 
+    public function isRevoked(): bool
+    {
+        return $this->revoked_at !== null;
+    }
+
+    // ----------[ Transformers ]----------
+
+    /**
+     * The protection this host reported for the build the unreported report names, or that report when it has none.
+     */
+    public function protectionOf(ProtectionReport $unreported): ProtectionReport
+    {
+        $key = $unreported->key();
+
+        if (! array_key_exists($key, $this->protection)) {
+            return $unreported;
+        }
+
+        return ProtectionReport::fromStored($this->protection[$key]);
+    }
+
     /**
      * The sentence a broken link of this host shows: since when its calls fail and why the latest did, or since when
      * it has been quiet.
@@ -373,11 +369,6 @@ final class Host extends Model implements EventSource, ReadableModel
 
         return "The host {$this->installation_name} has not called the journal since "
             ."{$this->last_answered_at?->format('H:i T')}.";
-    }
-
-    public function isRevoked(): bool
-    {
-        return $this->revoked_at !== null;
     }
 
     /**
@@ -451,6 +442,19 @@ final class Host extends Model implements EventSource, ReadableModel
         if ($folder === null) {
             throw HostUnavailable::withoutStartFolder($this->id);
         }
+    }
+
+    // ----------[ Internals ]----------
+
+    /**
+     * @return list<array{key: string, build: string, arrangement: string, placement: string, family: string|null, driver_type: string|null, unavailable_reason: string|null}>
+     */
+    private function availableDescriptors(): array
+    {
+        return array_values(array_filter(
+            $this->descriptors,
+            fn (array $descriptor) => $descriptor['unavailable_reason'] === null,
+        ));
     }
 
     // ----------[ Queries ]----------

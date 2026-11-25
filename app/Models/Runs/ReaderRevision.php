@@ -100,7 +100,7 @@ final class ReaderRevision extends Model implements ReadableModel
         return $this->proofs()->exists();
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Transformers ]----------
 
     /**
      * @throws ReaderDefinitionInvalid
@@ -110,6 +110,8 @@ final class ReaderRevision extends Model implements ReadableModel
         return ReaderDefinition::fromArray($this->definition);
     }
 
+    // ----------[ Relations ]----------
+
     /**
      * @return HasMany<ReaderProof, $this>
      */
@@ -117,8 +119,6 @@ final class ReaderRevision extends Model implements ReadableModel
     {
         return $this->hasMany(ReaderProof::class);
     }
-
-    // ----------[ Relations ]----------
 
     /**
      * @return BelongsTo<CommandRequest, $this>

@@ -130,7 +130,7 @@ final class CodeReview extends Model implements EventSource, ReadableModel
         $this->raise(new CodeReviewSettled($this->id, $state));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function isAwaitingImport(): bool
     {

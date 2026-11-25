@@ -127,8 +127,6 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
         $this->raise(new RuleRemoved($this->id));
     }
 
-    // ----------[ Getters ]----------
-
     /**
      * Makes the proposal hold, approved by an actor other than the one who proposed it.
      *
@@ -147,10 +145,14 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
         $this->raise(new RuleDenied($this->id));
     }
 
+    // ----------[ Predicates ]----------
+
     public function canBeReviewed(): bool
     {
         return $this->state === RuleState::Proposed;
     }
+
+    // ----------[ Transformers ]----------
 
     /**
      * The rule as a read shows it, with the number of the rule it replaces, if any.

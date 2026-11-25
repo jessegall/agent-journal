@@ -75,6 +75,23 @@ function isAccessor(ClassMethod $method): bool
 }
 
 /**
+ * The last part of a method's declared return type: a class's short name or a built-in type; none when it declares
+ * none or a union.
+ */
+function returnedName(ClassMethod $method): string
+{
+    if ($method->returnType instanceof Name) {
+        return $method->returnType->getLast();
+    }
+
+    if ($method->returnType instanceof Identifier) {
+        return $method->returnType->toLowerString();
+    }
+
+    return '';
+}
+
+/**
  * Whether a method answers yes or no: its declared return type is bool.
  */
 function returnsBool(ClassMethod $method): bool
@@ -101,7 +118,7 @@ function isPreamble(ClassMethod $method): bool
 function sectionOf(ClassMethod $method, string $body): string
 {
     $name = $method->name->toString();
-    $returns = $method->returnType instanceof Name ? $method->returnType->getLast() : '';
+    $returns = returnedName($method);
     $isScope = str_starts_with($name, 'scope') || str_contains($body, '#[Scope]');
 
     return match (true) {
@@ -112,7 +129,7 @@ function sectionOf(ClassMethod $method, string $body): string
         ! $method->isPublic() => 'Internals',
         $method->isStatic() && preg_match(ROW_MAKES, $body) === 1 => 'Constructors',
         $method->isStatic() => 'Queries',
-        $returns === 'void' || preg_match(ROW_WRITES, $body) === 1 => 'Mutations',
+        in_array($returns, ['void', 'never'], true) || preg_match(ROW_WRITES, $body) === 1 => 'Mutations',
         returnsBool($method) => 'Predicates',
         default => 'Transformers',
     };
@@ -284,7 +301,11 @@ function constructorNameFault(ClassMethod $method, string|null $section, int $co
 function lookFaultOf(ClassMethod $method, string $section): string|null
 {
     $name = $method->name->toString();
-    $isRowAnswer = $method->isPublic() && ! $method->isStatic() && ! isAccessor($method);
+    $isRowAnswer = $method->isPublic() && ! $method->isStatic();
+
+    if (isAccessor($method)) {
+        return null;
+    }
 
     if ($section === 'Predicates' && (! $isRowAnswer || ! returnsBool($method))) {
         return "method {$name} answers no yes or no, so it does not belong in Predicates";
@@ -384,8 +405,8 @@ function markedSections(string $source): array
 }
 
 /**
- * The section a method already sits in, by the last marker above it, as long as that section is a known one and the
- * method is no accessor; none for a method with no marker above it, so it is placed by its looks.
+ * The section a method already sits in, by the last marker above it, as long as that section is a known one kept by
+ * place; none under a section placed by looks, an unknown one or no marker, so the method is placed by its looks.
  *
  * @param  array<int, string>  $marked
  */
@@ -394,7 +415,13 @@ function currentSectionOf(array $marked, ClassMethod $method): string|null
     $current = null;
 
     foreach ($marked as $offset => $name) {
-        if ($offset < startOf($method) && in_array($name, SECTIONS, true) && ! in_array($name, BY_LOOKS, true)) {
+        if ($offset >= startOf($method)) {
+            continue;
+        }
+
+        $current = null;
+
+        if (in_array($name, SECTIONS, true) && ! in_array($name, BY_LOOKS, true)) {
             $current = $name;
         }
     }

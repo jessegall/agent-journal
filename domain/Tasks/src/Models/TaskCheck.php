@@ -119,12 +119,14 @@ final class TaskCheck extends Model implements EventSource, ReadableModel
         $this->raise(new TaskCheckRecorded($this->task_id, $this->id));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function isBound(): bool
     {
         return $this->result_receipt_id !== null;
     }
+
+    // ----------[ Transformers ]----------
 
     /**
      * A task's checks in the order they were asked for; the table has no updated_at.

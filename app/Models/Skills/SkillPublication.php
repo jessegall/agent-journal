@@ -199,15 +199,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
         $this->raiseMoved();
     }
 
-    // ----------[ Getters ]----------
-
-    /**
-     * The immutable generation this publication delivers.
-     */
-    public function generation(): SkillGeneration
-    {
-        return SkillGeneration::query()->whereKey($this->generation_id)->firstOrFail();
-    }
+    // ----------[ Predicates ]----------
 
     public function isHeldBy(int $fence): bool
     {
@@ -245,9 +237,14 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
         return $this->updated_at !== null && $this->updated_at->lessThan($moment);
     }
 
-    public static function openKeyOf(string $sessionId, string $target): string
+    // ----------[ Transformers ]----------
+
+    /**
+     * The immutable generation this publication delivers.
+     */
+    public function generation(): SkillGeneration
     {
-        return $sessionId.'|'.$target;
+        return SkillGeneration::query()->whereKey($this->generation_id)->firstOrFail();
     }
 
     // ----------[ Accessors ]----------
@@ -364,6 +361,11 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     }
 
     // ----------[ Queries ]----------
+
+    public static function openKeyOf(string $sessionId, string $target): string
+    {
+        return $sessionId.'|'.$target;
+    }
 
     /**
      * The selection digest of each session's newest open or delivered publication, by session id, in one query.

@@ -129,7 +129,25 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
         $this->raise(new AskClosed($this->id, $this->type_key->key));
     }
 
-    // ----------[ Getters ]----------
+    public function closeUnanswered(UnansweredReason $reason): void
+    {
+        $this->outcome = $reason;
+        $this->close();
+    }
+
+    // ----------[ Predicates ]----------
+
+    public function isUnanswered(): bool
+    {
+        return ! $this->open && $this->outcome !== null;
+    }
+
+    public function hasOutlived(CarbonImmutable $now): bool
+    {
+        return CarbonImmutable::instance($this->created_at)->addHours(self::LIFETIME_HOURS) <= $now;
+    }
+
+    // ----------[ Transformers ]----------
 
     public function replay(AskTypeKey $type, string $body): AskReference
     {
@@ -148,22 +166,6 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
         $this->assertPendingAt($version);
 
         return SupervisorTarget::parse($this->pending_target);
-    }
-
-    public function closeUnanswered(UnansweredReason $reason): void
-    {
-        $this->outcome = $reason;
-        $this->close();
-    }
-
-    public function isUnanswered(): bool
-    {
-        return ! $this->open && $this->outcome !== null;
-    }
-
-    public function hasOutlived(CarbonImmutable $now): bool
-    {
-        return CarbonImmutable::instance($this->created_at)->addHours(self::LIFETIME_HOURS) <= $now;
     }
 
     // ----------[ Accessors ]----------

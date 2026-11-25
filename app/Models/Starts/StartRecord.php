@@ -316,7 +316,7 @@ final class StartRecord extends Model implements EventSource, ReadableModel
         $this->raise(new StartIntentForgotten($this->id));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function wasRequestedBy(ActorIdentity $actor): bool
     {

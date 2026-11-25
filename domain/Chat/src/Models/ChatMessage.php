@@ -117,7 +117,7 @@ final class ChatMessage extends Model implements EventSource
         $this->raise(new ChatMessageChanged($this->inbox_id, $this->id));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Transformers ]----------
 
     /**
      * The actor who made the entry's source.

@@ -101,7 +101,7 @@ final class ShareInstallation extends Model implements EventSource, ReadableMode
         return $takesOver;
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function isCurrentRun(string $runId): bool
     {

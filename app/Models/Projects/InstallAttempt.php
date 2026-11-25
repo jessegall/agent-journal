@@ -178,7 +178,7 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
         $this->raise(new InstallAttemptSpent($this->id, $binding->id, CarbonImmutable::now()));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Transformers ]----------
 
     /**
      * Where the attempt stands now: an open attempt whose line can no longer be redeemed reads as expired.

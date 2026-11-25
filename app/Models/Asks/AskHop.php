@@ -121,12 +121,14 @@ final class AskHop extends Model implements EventSource, ReadableModel
         $this->raise(new AskHopAttentionRecorded($this->ask_id, $this->id, $attention));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function isHeldByAgent(): bool
     {
         return $this->actor()->type->isAgent();
     }
+
+    // ----------[ Transformers ]----------
 
     public function lockDelivery(): self
     {

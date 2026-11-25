@@ -93,7 +93,7 @@ final class ReaderPosition extends Model implements EventSource, ReadableModel
         $this->raise(new ReaderPositionAdvanced($this->id));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function hasFailed(): bool
     {

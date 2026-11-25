@@ -293,7 +293,35 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
         $this->raise(new SignInAttemptReleased($this->account_protocol, $this->id, $this->account_id));
     }
 
-    // ----------[ Getters ]----------
+    /**
+     * A new account came of the attempt: it ends complete and names that account as its result.
+     */
+    public function completeWith(Account $account): void
+    {
+        $this->result_account_id = $account->id;
+        $this->end(SignInState::Complete);
+    }
+
+    /**
+     * The key or login is one an account already holds: the attempt ends already added and names that account.
+     */
+    public function finishMatching(Account $account): void
+    {
+        $this->result_account_id = $account->id;
+        $this->finish(SignInState::AlreadyAdded);
+    }
+
+    /**
+     * Ends the attempt and lets go of the account folder it wrote, so a later attempt may write it; an account signed
+     * in again that may have changed is checked before starts use it again.
+     */
+    public function finish(SignInState $state): void
+    {
+        $this->end($state);
+        $this->raise(new SignInAttemptFinished($this->account_protocol, $this->id, $this->account_id));
+    }
+
+    // ----------[ Predicates ]----------
 
     /**
      * Whether a renewal has not started on the host yet because agents still run on the account it renews.
@@ -346,6 +374,22 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
         return $this->expires_at <= $now;
     }
 
+    public function awaitsCleanupRetry(): bool
+    {
+        return $this->cleanup_pending && $this->hasUsedEveryCleanupTry();
+    }
+
+    /**
+     * Whether a sign-in result the host reports still speaks for this attempt: it is live, within its deadline, and
+     * made in the attempt's sign-in generation.
+     */
+    public function accepts(int $generation, CarbonImmutable $now): bool
+    {
+        return $this->state->canComplete() && ! $this->isExpiredAt($now) && $this->generation === $generation;
+    }
+
+    // ----------[ Transformers ]----------
+
     /**
      * Ends a live attempt in the given state at this moment: an attempt that already ended keeps its result, and one
      * at or past its deadline ends Expired whatever was asked. Answers the state the attempt is in afterwards.
@@ -366,48 +410,6 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
         $this->finish($state);
 
         return $state;
-    }
-
-    /**
-     * A new account came of the attempt: it ends complete and names that account as its result.
-     */
-    public function completeWith(Account $account): void
-    {
-        $this->result_account_id = $account->id;
-        $this->end(SignInState::Complete);
-    }
-
-    /**
-     * The key or login is one an account already holds: the attempt ends already added and names that account.
-     */
-    public function finishMatching(Account $account): void
-    {
-        $this->result_account_id = $account->id;
-        $this->finish(SignInState::AlreadyAdded);
-    }
-
-    /**
-     * Ends the attempt and lets go of the account folder it wrote, so a later attempt may write it; an account signed
-     * in again that may have changed is checked before starts use it again.
-     */
-    public function finish(SignInState $state): void
-    {
-        $this->end($state);
-        $this->raise(new SignInAttemptFinished($this->account_protocol, $this->id, $this->account_id));
-    }
-
-    public function awaitsCleanupRetry(): bool
-    {
-        return $this->cleanup_pending && $this->hasUsedEveryCleanupTry();
-    }
-
-    /**
-     * Whether a sign-in result the host reports still speaks for this attempt: it is live, within its deadline, and
-     * made in the attempt's sign-in generation.
-     */
-    public function accepts(int $generation, CarbonImmutable $now): bool
-    {
-        return $this->state->canComplete() && ! $this->isExpiredAt($now) && $this->generation === $generation;
     }
 
     // ----------[ Accessors ]----------

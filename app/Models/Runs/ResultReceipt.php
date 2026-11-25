@@ -110,7 +110,14 @@ final class ResultReceipt extends Model implements EventSource, ReadableModel
         $this->raise(new ResultReceiptSuperseded($this->id, $newer->id));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
+
+    public function isCurrent(): bool
+    {
+        return $this->superseded_by_id === null;
+    }
+
+    // ----------[ Transformers ]----------
 
     /**
      * The canonical operation of the part this receipt is the result of.
@@ -118,11 +125,6 @@ final class ResultReceipt extends Model implements EventSource, ReadableModel
     public function operation(): string
     {
         return PartRun::query()->whereKey($this->part_run_id)->value('operation');
-    }
-
-    public function isCurrent(): bool
-    {
-        return $this->superseded_by_id === null;
     }
 
     /**

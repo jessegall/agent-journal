@@ -94,7 +94,7 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
         return $entry;
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Transformers ]----------
 
     /**
      * The lines of one task in their order; the table has no updated_at.

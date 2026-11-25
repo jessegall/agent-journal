@@ -71,7 +71,7 @@ final class Profile extends Model implements EventSource, ReadableModel
         $this->raise(new ProfileRetired($this->id));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function isRetired(): bool
     {

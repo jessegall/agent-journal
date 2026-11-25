@@ -165,7 +165,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
         return $navigation;
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Mutations ]----------
 
     /**
      * The proven path was saved as the menu entry.
@@ -174,24 +174,6 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     {
         $this->library_entry_id = $entry->id;
         $this->change();
-    }
-
-    public function assignmentIdentity(): RecordIdentity
-    {
-        return new RecordIdentity(self::LINK_TYPE, $this->id);
-    }
-
-    /**
-     * Whether the main agent is answering the request, the one state in which a proof may be given.
-     */
-    public function isAnswering(): bool
-    {
-        return $this->state === NavigationState::Answering;
-    }
-
-    public function isAtRowVersion(int $version): bool
-    {
-        return $this->row_version === $version;
     }
 
     /**
@@ -278,6 +260,28 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     public function expire(): void
     {
         $this->moveTo(NavigationState::Expired);
+    }
+
+    // ----------[ Predicates ]----------
+
+    /**
+     * Whether the main agent is answering the request, the one state in which a proof may be given.
+     */
+    public function isAnswering(): bool
+    {
+        return $this->state === NavigationState::Answering;
+    }
+
+    public function isAtRowVersion(int $version): bool
+    {
+        return $this->row_version === $version;
+    }
+
+    // ----------[ Transformers ]----------
+
+    public function assignmentIdentity(): RecordIdentity
+    {
+        return new RecordIdentity(self::LINK_TYPE, $this->id);
     }
 
     // ----------[ Accessors ]----------

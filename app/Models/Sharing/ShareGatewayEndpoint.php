@@ -110,15 +110,7 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
         $this->raise(new ShareGatewayEndpointFoundHealthy($this->id));
     }
 
-    // ----------[ Getters ]----------
-
-    /**
-     * The key of the gateway this endpoint's configuration uses.
-     */
-    public function gatewayKey(): string
-    {
-        return ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id)->gateway_key;
-    }
+    // ----------[ Predicates ]----------
 
     /**
      * Whether the endpoint answered a health check within the last 45 seconds.
@@ -133,6 +125,16 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
     public function isVersion(int $version): bool
     {
         return $this->endpoint_version === $version;
+    }
+
+    // ----------[ Transformers ]----------
+
+    /**
+     * The key of the gateway this endpoint's configuration uses.
+     */
+    public function gatewayKey(): string
+    {
+        return ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id)->gateway_key;
     }
 
     // ----------[ Accessors ]----------

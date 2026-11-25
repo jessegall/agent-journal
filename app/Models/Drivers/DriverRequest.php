@@ -288,7 +288,26 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
         $this->raise(new DriverRequestWakeAcknowledged($this->id, $acknowledged));
     }
 
-    // ----------[ Getters ]----------
+    /**
+     * Keeps why the host refused the request and whether it proved no process of the driver was made; settling a
+     * launch on it is the start's own decision.
+     */
+    public function recordRefusal(HostWakeRefusal $reason, bool $hasCreatedNoProcess): void
+    {
+        $this->refusal_reason = $reason;
+        $this->no_process_created = $hasCreatedNoProcess;
+        $this->save();
+    }
+
+    /**
+     * Drops the request's payload once its host reported how it ended, as a browser writer's typed text is never kept.
+     */
+    public function forgetPayload(): void
+    {
+        $this->message = null;
+        $this->parts = null;
+        $this->save();
+    }
 
     /**
      * Its runtime's process ended for good: a stop has been done, anything else can no longer be.
@@ -303,6 +322,114 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
 
         $this->finish(RequestProgress::Unavailable, null);
     }
+
+    /**
+     * A user found evidence that the uncertain delivery arrived.
+     */
+    public function resolveAsApplied(): void
+    {
+        $this->markApplied('resolved_by_user');
+    }
+
+    /**
+     * A user found evidence that the uncertain delivery never arrived, so it may be retried.
+     */
+    public function resolveAsNotApplied(): void
+    {
+        $this->finish(RequestProgress::Unavailable, null);
+    }
+
+    /**
+     * Gives the failed setting change a new value in its own place in the queue, as a new attempt; the host then
+     * waits for the driver's evidence of it before any content behind it runs.
+     */
+    public function repairWith(DriverRequestPayload $envelope): void
+    {
+        $this->carry($envelope);
+        $this->payload_digest = $envelope->digestFor($this->operation->value);
+        $this->retry();
+    }
+
+    public function supersede(): void
+    {
+        $this->finish(RequestProgress::Superseded, null);
+    }
+
+    public function cancel(): void
+    {
+        $this->finish(RequestProgress::Cancelled, null);
+    }
+
+    public function fail(RequestOutcome $outcome): void
+    {
+        $this->finish(RequestProgress::Failed, $outcome);
+    }
+
+    /**
+     * The host could not carry the request out at all, such as when its runtime could not be opened; a user may
+     * send it again.
+     */
+    public function markUnavailable(RequestOutcome $outcome): void
+    {
+        $this->finish(RequestProgress::Unavailable, $outcome);
+    }
+
+    public function markUncertain(): void
+    {
+        $this->finish(RequestProgress::DeliveryUncertain, null);
+    }
+
+    /**
+     * Takes the payload's typed columns: its message, model, effort or key script.
+     */
+    public function carry(DriverRequestPayload $envelope): void
+    {
+        $this->message = $envelope->message;
+
+        $this->parts = $envelope->parts === []
+            ? null
+            : array_map(fn (MessagePart $part): array => $part->toArray(), $envelope->parts);
+
+        $this->model = $envelope->model;
+        $this->effort = $envelope->effort;
+        $this->script_id = $envelope->scriptId;
+        $this->script_version = $envelope->scriptVersion;
+        $this->script_parameters = $envelope->scriptParameters;
+        $this->navigation_request_id = $envelope->navigationRound?->navigationRequestId;
+        $this->navigation_round = $envelope->navigationRound;
+    }
+
+    /**
+     * Activity of the woken session after the host took the wake acknowledges what the host claimed: a wake promises
+     * attention, not reading. A wake raised since goes back to pending for the next claim.
+     */
+    public function acknowledgeActivityAt(CarbonImmutable $activityAt): void
+    {
+        if ($this->wake_claimed === null || $this->staged_at === null || $activityAt->lessThan($this->staged_at)) {
+            return;
+        }
+
+        $this->acknowledgeWake($this->wake_claimed);
+
+        if ($this->wake_requested > $this->wake_claimed) {
+            $this->accept();
+
+            return;
+        }
+
+        $this->markApplied('session_activity');
+    }
+
+    /**
+     * Settles a wake of an idle session with nothing pending: no turn starts.
+     */
+    public function settleWithoutWork(): void
+    {
+        $this->wake_acknowledged = $this->wake_requested;
+        $this->markApplied('no_pending_work', RequestOutcome::NoWork);
+    }
+
+    // ----------[ Predicates ]----------
 
     /**
      * Whether the request is still at the row version the caller read.
@@ -368,22 +495,6 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * A user found evidence that the uncertain delivery arrived.
-     */
-    public function resolveAsApplied(): void
-    {
-        $this->markApplied('resolved_by_user');
-    }
-
-    /**
-     * A user found evidence that the uncertain delivery never arrived, so it may be retried.
-     */
-    public function resolveAsNotApplied(): void
-    {
-        $this->finish(RequestProgress::Unavailable, null);
-    }
-
-    /**
      * Whether the request changes a setting of the runtime: its model or its effort.
      */
     public function changesASetting(): bool
@@ -400,17 +511,6 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
     public function canRepair(): bool
     {
         return $this->changesASetting() && $this->canRetry();
-    }
-
-    /**
-     * Gives the failed setting change a new value in its own place in the queue, as a new attempt; the host then
-     * waits for the driver's evidence of it before any content behind it runs.
-     */
-    public function repairWith(DriverRequestPayload $envelope): void
-    {
-        $this->carry($envelope);
-        $this->payload_digest = $envelope->digestFor($this->operation->value);
-        $this->retry();
     }
 
     /**
@@ -437,46 +537,6 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
         return $this->isStoppedKeyScript() && $this->script_step !== null;
     }
 
-    public function supersede(): void
-    {
-        $this->finish(RequestProgress::Superseded, null);
-    }
-
-    public function cancel(): void
-    {
-        $this->finish(RequestProgress::Cancelled, null);
-    }
-
-    public function fail(RequestOutcome $outcome): void
-    {
-        $this->finish(RequestProgress::Failed, $outcome);
-    }
-
-    /**
-     * Keeps why the host refused the request and whether it proved no process of the driver was made; settling a
-     * launch on it is the start's own decision.
-     */
-    public function recordRefusal(HostWakeRefusal $reason, bool $hasCreatedNoProcess): void
-    {
-        $this->refusal_reason = $reason;
-        $this->no_process_created = $hasCreatedNoProcess;
-        $this->save();
-    }
-
-    /**
-     * The host could not carry the request out at all, such as when its runtime could not be opened; a user may
-     * send it again.
-     */
-    public function markUnavailable(RequestOutcome $outcome): void
-    {
-        $this->finish(RequestProgress::Unavailable, $outcome);
-    }
-
-    public function markUncertain(): void
-    {
-        $this->finish(RequestProgress::DeliveryUncertain, null);
-    }
-
     /**
      * Whether this request starts the session's process: its initial wake, or the first message it was opened with.
      */
@@ -494,6 +554,8 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
         return $this->operation === DriverOperation::Wake
             && $this->idempotency_key === InitialWakeSettlement::keyOf($sessionId);
     }
+
+    // ----------[ Transformers ]----------
 
     /**
      * The request as its host receives it to carry out, bound to the runtime's session and process generation and the
@@ -523,66 +585,6 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
             $runtime->process_generation,
             $isBootstrap,
         );
-    }
-
-    /**
-     * Drops the request's payload once its host reported how it ended, as a browser writer's typed text is never kept.
-     */
-    public function forgetPayload(): void
-    {
-        $this->message = null;
-        $this->parts = null;
-        $this->save();
-    }
-
-    /**
-     * Takes the payload's typed columns: its message, model, effort or key script.
-     */
-    public function carry(DriverRequestPayload $envelope): void
-    {
-        $this->message = $envelope->message;
-
-        $this->parts = $envelope->parts === []
-            ? null
-            : array_map(fn (MessagePart $part): array => $part->toArray(), $envelope->parts);
-
-        $this->model = $envelope->model;
-        $this->effort = $envelope->effort;
-        $this->script_id = $envelope->scriptId;
-        $this->script_version = $envelope->scriptVersion;
-        $this->script_parameters = $envelope->scriptParameters;
-        $this->navigation_request_id = $envelope->navigationRound?->navigationRequestId;
-        $this->navigation_round = $envelope->navigationRound;
-    }
-
-    /**
-     * Activity of the woken session after the host took the wake acknowledges what the host claimed: a wake promises
-     * attention, not reading. A wake raised since goes back to pending for the next claim.
-     */
-    public function acknowledgeActivityAt(CarbonImmutable $activityAt): void
-    {
-        if ($this->wake_claimed === null || $this->staged_at === null || $activityAt->lessThan($this->staged_at)) {
-            return;
-        }
-
-        $this->acknowledgeWake($this->wake_claimed);
-
-        if ($this->wake_requested > $this->wake_claimed) {
-            $this->accept();
-
-            return;
-        }
-
-        $this->markApplied('session_activity');
-    }
-
-    /**
-     * Settles a wake of an idle session with nothing pending: no turn starts.
-     */
-    public function settleWithoutWork(): void
-    {
-        $this->wake_acknowledged = $this->wake_requested;
-        $this->markApplied('no_pending_work', RequestOutcome::NoWork);
     }
 
     /**

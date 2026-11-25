@@ -134,7 +134,7 @@ final class RuleRevision extends Model implements ReadableModel
         ]);
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     /**
      * Whether this revision belongs to the classification rule: the same project, owner and rule id.

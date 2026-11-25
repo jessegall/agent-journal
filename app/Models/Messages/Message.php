@@ -84,7 +84,7 @@ final class Message extends Model implements AuthoredModel, EventSource, Readabl
         return $message;
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Transformers ]----------
 
     /**
      * Who sent the message.

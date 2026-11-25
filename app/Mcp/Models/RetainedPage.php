@@ -85,7 +85,7 @@ final class RetainedPage extends Model implements ReadableModel
         ]);
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Transformers ]----------
 
     /**
      * Pages past their expiry, of every session, for the daily prune.

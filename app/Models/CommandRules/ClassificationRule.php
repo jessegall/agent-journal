@@ -86,8 +86,6 @@ final class ClassificationRule extends Model implements EventSource, ReadableMod
         $this->raise(new ClassificationRuleRetired($this->id, $reason));
     }
 
-    // ----------[ Getters ]----------
-
     /**
      * Makes a newer approved revision the active one.
      *

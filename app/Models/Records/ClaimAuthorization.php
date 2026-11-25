@@ -50,7 +50,7 @@ final class ClaimAuthorization extends Model implements ReadableModel
         return ['basis_type' => ClaimBasis::class];
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     /**
      * Whether the exact assignments the claim stands on still exist and are still held as they were proved.

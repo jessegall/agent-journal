@@ -129,7 +129,7 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
         return $this->revoked_at === null && $this->spent_at === null && $this->expires_at->isAfter($now);
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Transformers ]----------
 
     /**
      * The install attempt this line belongs to, locked until the transaction ends; a line issued before attempts

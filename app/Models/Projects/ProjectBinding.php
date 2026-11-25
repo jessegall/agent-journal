@@ -263,7 +263,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         $this->raise(new ProjectBindingEnvironmentAssigned($this->id, $environment->id, CarbonImmutable::now()));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function isRevoked(): bool
     {
@@ -315,6 +315,8 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     {
         return $this->host_id === $hostId && ! $this->isRevoked();
     }
+
+    // ----------[ Transformers ]----------
 
     /**
      * Where the binding stands at this server time: a ready binding whose presence expired is offline.

@@ -75,16 +75,18 @@ final class AgentFocus extends Model implements EventSource, ReadableModel
         $this->raise(new AgentFocusCleared($this->agent_id, $record->type, $record->id));
     }
 
-    // ----------[ Getters ]----------
-
-    public function record(): RecordIdentity
-    {
-        return new RecordIdentity($this->focused_type, $this->focused_id);
-    }
+    // ----------[ Predicates ]----------
 
     public function holds(RecordIdentity $record): bool
     {
         return $this->focused_type === $record->type && $this->focused_id === $record->id;
+    }
+
+    // ----------[ Transformers ]----------
+
+    public function record(): RecordIdentity
+    {
+        return new RecordIdentity($this->focused_type, $this->focused_id);
     }
 
     // ----------[ Queries ]----------

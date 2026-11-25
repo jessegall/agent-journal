@@ -44,7 +44,7 @@ final class ProfileDraft extends Model implements ReadableModel
         return ['revision' => 'integer'];
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Transformers ]----------
 
     public function sourceAt(int $expected): ScriptSource
     {

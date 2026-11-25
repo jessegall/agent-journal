@@ -65,7 +65,7 @@ final class DriverConversation extends Model implements ReadableModel
         ]);
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     /**
      * Whether a session of this agent, started for this context, may continue the conversation.

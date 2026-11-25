@@ -120,7 +120,7 @@ final class Skill extends Model implements EventSource, Numbered, ReadableModel
         return $current;
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function isRetired(): bool
     {

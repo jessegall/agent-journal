@@ -189,7 +189,7 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
         $this->raise(new ProjectReadFailed($this->id, $failure));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function isSettled(): bool
     {
@@ -207,13 +207,6 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
     public function isOfHost(string $hostId): bool
     {
         return ProjectBinding::query()->whereKey($this->binding_id)->onHost($hostId)->exists();
-    }
-
-    private function settle(ProjectReadState $state): void
-    {
-        $this->state = $state;
-        $this->answered_at = CarbonImmutable::now();
-        $this->save();
     }
 
     // ----------[ Accessors ]----------
@@ -242,6 +235,15 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
         if ($row === null) {
             throw ProjectReadRefused::missing($readId);
         }
+    }
+
+    // ----------[ Internals ]----------
+
+    private function settle(ProjectReadState $state): void
+    {
+        $this->state = $state;
+        $this->answered_at = CarbonImmutable::now();
+        $this->save();
     }
 
     // ----------[ Queries ]----------

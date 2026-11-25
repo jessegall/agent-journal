@@ -54,7 +54,7 @@ final class PhaseTask extends Pivot implements ReadableModel
         return ['position' => 'integer'];
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Transformers ]----------
 
     /**
      * The places of a phase in their order; the table has no created_at.
@@ -66,6 +66,8 @@ final class PhaseTask extends Pivot implements ReadableModel
             'phase_tasks.position',
         ], 'phase_tasks.id');
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * The number of the phase each task of the plan is in, by task id, read once for the whole plan.
@@ -80,8 +82,6 @@ final class PhaseTask extends Pivot implements ReadableModel
             ->pluck('phases.number', 'phase_tasks.task_id')
             ->all());
     }
-
-    // ----------[ Queries ]----------
 
     /**
      * The task placed in the phase at this position.

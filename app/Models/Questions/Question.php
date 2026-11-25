@@ -115,7 +115,14 @@ final class Question extends Model implements AuthoredModel, EventSource, Readab
         $this->raise(new QuestionAnswered($this->id, $this->inbox_id, $answerer));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
+
+    public function isAnswered(): bool
+    {
+        return $this->answered_at !== null;
+    }
+
+    // ----------[ Transformers ]----------
 
     public function sender(): ActorIdentity
     {
@@ -130,11 +137,6 @@ final class Question extends Model implements AuthoredModel, EventSource, Readab
     public function target(): ActorIdentity
     {
         return new ActorIdentity(ActorType::from($this->target_type), $this->target_id);
-    }
-
-    public function isAnswered(): bool
-    {
-        return $this->answered_at !== null;
     }
 
     // ----------[ Asserts ]----------

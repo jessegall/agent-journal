@@ -106,7 +106,7 @@ final class EnvironmentUserGrant extends Model implements EventSource, ReadableM
         $this->raise(new EnvironmentUserGrantRevoked($this->id));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function allows(InboxPermission $permission): bool
     {

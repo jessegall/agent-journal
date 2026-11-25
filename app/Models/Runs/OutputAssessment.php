@@ -110,7 +110,7 @@ final class OutputAssessment extends Model implements ReadableModel
         ]);
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function isValid(): bool
     {

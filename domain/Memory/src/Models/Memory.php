@@ -102,7 +102,7 @@ final class Memory extends Model implements EventSource, Numbered, ReadableModel
         $this->raise(new MemoryRevised($this->id));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function isAtRevision(int $expectedRevision): bool
     {

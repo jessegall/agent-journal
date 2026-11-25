@@ -77,7 +77,7 @@ final class StartToken extends Model implements EventSource, ReadableModel
         $this->raise(new StartTokenRevoked($this->id));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function isRevoked(): bool
     {

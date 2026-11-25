@@ -113,8 +113,6 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
         $this->raise(new ActiveAccountCleared($this->account_protocol));
     }
 
-    // ----------[ Getters ]----------
-
     /**
      * Chooses the account when the driver never had one chosen, as for its first signed-in account.
      */

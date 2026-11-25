@@ -132,12 +132,14 @@ final class AutoAssignment extends Model implements EventSource, ReadableModel
         self::query()->whereKey($this->id)->update(['last_served_at' => $time]);
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function isAtRevision(int $expected): bool
     {
         return $this->configuration_revision === $expected;
     }
+
+    // ----------[ Transformers ]----------
 
     /**
      * @throws AutoAssignmentPoolUnreadable
@@ -155,6 +157,8 @@ final class AutoAssignment extends Model implements EventSource, ReadableModel
             $this->last_served_at,
         );
     }
+
+    // ----------[ Internals ]----------
 
     /**
      * @param  ReadBuilder<self>  $query

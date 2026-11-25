@@ -134,7 +134,7 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
         return $comment;
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Transformers ]----------
 
     public function shareIdentity(): RecordIdentity
     {

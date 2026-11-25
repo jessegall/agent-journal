@@ -155,7 +155,7 @@ final class Document extends Model implements Commentable, Dockable, EventSource
         $this->raise(new DocumentPublished($this->id, $this->number, $revision->number));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Transformers ]----------
 
     /**
      * How the document's drafts ended, newest first.

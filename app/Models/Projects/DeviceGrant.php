@@ -181,12 +181,19 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
         $this->raise(new DeviceGrantRevoked($this->id));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function isApproved(): bool
     {
         return $this->state === DeviceGrantState::Approved;
     }
+
+    public function isCodeExpired(): bool
+    {
+        return ! CarbonImmutable::now()->lessThan($this->code_expires_at);
+    }
+
+    // ----------[ Transformers ]----------
 
     /**
      * Where the request stands for the owner at this server time: pending, approved and awaiting collection, issued,
@@ -199,11 +206,6 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
         }
 
         return $this->state->value;
-    }
-
-    public function isCodeExpired(): bool
-    {
-        return ! CarbonImmutable::now()->lessThan($this->code_expires_at);
     }
 
     // ----------[ Relations ]----------

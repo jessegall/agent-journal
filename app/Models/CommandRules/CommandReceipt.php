@@ -168,7 +168,7 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
         $this->raise(new CommandReceiptRefused($this->id, $code));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     /**
      * Whether this receipt's key may answer the command: the key expired and is used again, or it holds this command.
@@ -195,6 +195,8 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
     {
         return $this->state === ReceiptState::Expired || $this->answers_until->isPast();
     }
+
+    // ----------[ Transformers ]----------
 
     /**
      * The answer the write got the first time: its result again, or its refusal thrown again.

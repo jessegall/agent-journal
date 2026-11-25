@@ -133,7 +133,19 @@ final class Agent extends Model implements
         $this->raise(new AgentRetired($this->id));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
+
+    public function isCurrentRuntime(AgentSession $session): bool
+    {
+        return $this->current_session_id === $session->id;
+    }
+
+    public function isRetired(): bool
+    {
+        return $this->retired_at !== null;
+    }
+
+    // ----------[ Transformers ]----------
 
     /**
      * The driver type a launch runs: the one it names, then the agent's saved preference, then its profile's default.
@@ -141,11 +153,6 @@ final class Agent extends Model implements
     public function driverTypeFor(DriverType|null $named, DriverType $profileDefault): DriverType
     {
         return $named ?? $this->driver_type_preference ?? $profileDefault;
-    }
-
-    public function isCurrentRuntime(AgentSession $session): bool
-    {
-        return $this->current_session_id === $session->id;
     }
 
     public function assigneeIdentity(): AssigneeIdentity
@@ -161,11 +168,6 @@ final class Agent extends Model implements
     public function actorId(): string
     {
         return $this->id;
-    }
-
-    public function isRetired(): bool
-    {
-        return $this->retired_at !== null;
     }
 
     /**

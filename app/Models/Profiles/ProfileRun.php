@@ -184,7 +184,27 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
         $this->raise(new ProfileRunFinished($this->id, $state));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
+
+    /**
+     * Whether the actor's last run on this work before this one ended held, so the owner was told already.
+     */
+    public function followsHeldRun(): bool
+    {
+        return $this->previous()
+            ->filter(fn (self $previous) => $previous->state === ProfileRunState::Held)
+            ->isDefined();
+    }
+
+    /**
+     * Whether the step's result is already recorded, so a repeated report records nothing.
+     */
+    public function hasRecordedStep(string $reference): bool
+    {
+        return $this->results()->forStep($reference)->exists();
+    }
+
+    // ----------[ Transformers ]----------
 
     /**
      * The actor's last run on this work that ended before this one began.
@@ -202,16 +222,6 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Whether the actor's last run on this work before this one ended held, so the owner was told already.
-     */
-    public function followsHeldRun(): bool
-    {
-        return $this->previous()
-            ->filter(fn (self $previous) => $previous->state === ProfileRunState::Held)
-            ->isDefined();
-    }
-
-    /**
      * The outcome recorded for one of the run's steps.
      *
      * @return Option<StepOutcome>
@@ -225,14 +235,6 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
         }
 
         return new Some($result->outcome);
-    }
-
-    /**
-     * Whether the step's result is already recorded, so a repeated report records nothing.
-     */
-    public function hasRecordedStep(string $reference): bool
-    {
-        return $this->results()->forStep($reference)->exists();
     }
 
     // ----------[ Relations ]----------

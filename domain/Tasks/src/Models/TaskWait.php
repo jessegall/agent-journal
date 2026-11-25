@@ -127,7 +127,7 @@ final class TaskWait extends Model implements EventSource, ReadableModel
         ));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function isWaived(): bool
     {

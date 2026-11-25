@@ -108,7 +108,7 @@ final class TaskHistoryEntry extends Model implements ReadableModel
         return $entry;
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Transformers ]----------
 
     /**
      * The entries of one task in their order; the table has no updated_at.

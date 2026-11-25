@@ -299,7 +299,16 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
         $this->raise(new ProcessRunOutcomeUserRevoked($this->id));
     }
 
-    // ----------[ Getters ]----------
+    /**
+     * A user stops the processes a lost run left running; only a lost run has leftover processes to stop.
+     */
+    public function stopLeftoverProcesses(): void
+    {
+        $this->assertLost();
+        $this->markStale('stopped: the run was lost and a user stopped what survived');
+    }
+
+    // ----------[ Predicates ]----------
 
     /**
      * Whether its result may answer the agent: an evidence run never gets a result receipt.
@@ -322,36 +331,6 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
     public function hasEnded(): bool
     {
         return self::areAllPartsFinal($this->parts()->readLimit(500)->get());
-    }
-
-    /**
-     * A user stops the processes a lost run left running; only a lost run has leftover processes to stop.
-     */
-    public function stopLeftoverProcesses(): void
-    {
-        $this->assertLost();
-        $this->markStale('stopped: the run was lost and a user stopped what survived');
-    }
-
-    /**
-     * Who hears of the attempt's result: the responsible actor and the user a request on its behalf entitled. A
-     * success reaches them only for a run someone asked for, a failure or an unknown result always, a stop never.
-     *
-     * @return list<ActorIdentity>
-     */
-    public function outcomeRecipients(RunLogicalResult $result): array
-    {
-        $isTold = match ($result) {
-            RunLogicalResult::Succeeded => $this->request_intent->isRequested(),
-            RunLogicalResult::Failed, RunLogicalResult::Unknown => true,
-            RunLogicalResult::Stopped => false,
-        };
-
-        if ($isTold) {
-            return $this->outcomeAudience();
-        }
-
-        return [];
     }
 
     /**
@@ -408,6 +387,29 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
 
         return $this->lifecycle === LifecycleState::Running
             && $lastSign?->lessThan(CarbonImmutable::now()->subSeconds($quietSeconds)) === true;
+    }
+
+    // ----------[ Transformers ]----------
+
+    /**
+     * Who hears of the attempt's result: the responsible actor and the user a request on its behalf entitled. A
+     * success reaches them only for a run someone asked for, a failure or an unknown result always, a stop never.
+     *
+     * @return list<ActorIdentity>
+     */
+    public function outcomeRecipients(RunLogicalResult $result): array
+    {
+        $isTold = match ($result) {
+            RunLogicalResult::Succeeded => $this->request_intent->isRequested(),
+            RunLogicalResult::Failed, RunLogicalResult::Unknown => true,
+            RunLogicalResult::Stopped => false,
+        };
+
+        if ($isTold) {
+            return $this->outcomeAudience();
+        }
+
+        return [];
     }
 
     /**

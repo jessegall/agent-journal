@@ -95,7 +95,7 @@ final class Link extends MorphPivot implements EventSource, ReadableModel
         $this->raise(new LinkRemoved($this->id));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Transformers ]----------
 
     /**
      * The record on the other side of this link from the one given, by its link alias and id.

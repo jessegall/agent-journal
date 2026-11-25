@@ -196,7 +196,7 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
         return "step {$step} of ".count($this->steps).' · '.$this->steps[$step - 1];
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Transformers ]----------
 
     public function identifyFor(DockDefinition $definition): DockIdentity
     {
@@ -227,22 +227,6 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
         ));
     }
 
-    /**
-     * Where a step stands: done, running now, or waiting for its turn, and how the run ended on its current step.
-     */
-    private function stepLabel(int $step): StateLabel
-    {
-        $key = "step-{$step}-state";
-        $isDone = $step < $this->current_step || $this->state === SequenceRunState::Finished;
-        $isRunning = $step === $this->current_step && $this->state->needsWork();
-
-        return match (true) {
-            $isDone => new StateLabel($key, 'Done', Tone::Muted),
-            $isRunning => new StateLabel($key, 'Running', Tone::Note),
-            default => new StateLabel($key, 'Waiting', Tone::Neutral),
-        };
-    }
-
     // ----------[ Asserts ]----------
 
     /**
@@ -257,6 +241,24 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
         if ($row === null) {
             throw SequenceRunMissing::forId($id);
         }
+    }
+
+    // ----------[ Internals ]----------
+
+    /**
+     * Where a step stands: done, running now, or waiting for its turn, and how the run ended on its current step.
+     */
+    private function stepLabel(int $step): StateLabel
+    {
+        $key = "step-{$step}-state";
+        $isDone = $step < $this->current_step || $this->state === SequenceRunState::Finished;
+        $isRunning = $step === $this->current_step && $this->state->needsWork();
+
+        return match (true) {
+            $isDone => new StateLabel($key, 'Done', Tone::Muted),
+            $isRunning => new StateLabel($key, 'Running', Tone::Note),
+            default => new StateLabel($key, 'Waiting', Tone::Neutral),
+        };
     }
 
     // ----------[ Queries ]----------

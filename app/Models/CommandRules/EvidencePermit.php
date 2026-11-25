@@ -143,7 +143,7 @@ final class EvidencePermit extends Model implements EventSource, ReadableModel
         $this->raise(new EvidencePermitExpired($this->id));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function wasStartedBy(string $requestId): bool
     {

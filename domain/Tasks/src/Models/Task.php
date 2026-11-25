@@ -234,7 +234,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
         $this->raise(new TaskCancelled($this->id, $previousState, (string) Str::ulid()));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function isOpenForAssignment(): bool
     {
@@ -245,6 +245,8 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
     {
         return $number === $this->run_number;
     }
+
+    // ----------[ Transformers ]----------
 
     /**
      * Who works on the task's latest run, with the runner's label when the caller may see it, and the agent whose focus

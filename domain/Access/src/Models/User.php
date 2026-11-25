@@ -139,12 +139,14 @@ class User extends Authenticatable implements
         $this->save();
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function isDisabled(): bool
     {
         return $this->disabled_at !== null;
     }
+
+    // ----------[ Transformers ]----------
 
     public function assigneeIdentity(): AssigneeIdentity
     {

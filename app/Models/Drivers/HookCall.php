@@ -78,7 +78,7 @@ final class HookCall extends Model implements EventSource, ReadableModel
         $this->raise(new HookCallRecorded($this->id));
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     /**
      * Whether this recorded call is the same call as the identity: the same id with the same input.

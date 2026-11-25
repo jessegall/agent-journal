@@ -9,9 +9,10 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * An Eloquent model's methods sit in marked sections, Constructors, Mutations, Getters, Accessors, Relations,
- * Asserts, Internals, Queries and Scopes, in that order (user messages 22032, 22039 and 22042), and an accessor (a
- * method returning Attribute) sits only in Accessors. A constructor is named create, or createFor and what it is made
+ * An Eloquent model's methods sit in marked sections, Constructors, Mutations, Predicates, Transformers, Accessors,
+ * Relations, Asserts, Internals, Queries and Scopes, in that order (user messages 22032, 22039, 22042 and 22044): a
+ * yes or no answer in Predicates, any other answer in Transformers, and an accessor (returning Attribute) only in
+ * Accessors. A constructor is named create, or createFor and what it is made
  * from when the model has several, and a row builder only one constructor uses is inlined into it (user messages 22052
  * and 22060). tools/refactoring/model-sections.php lists every fault, and sorts with --fix.
  */
@@ -20,7 +21,12 @@ final class ModelSectionsTest extends TestCase
 {
     private const string HOW_TO_FIX = 'Sort them with php tools/refactoring/model-sections.php --fix app domain: ';
 
-    private const string MISPLACED_ACCESSOR = 'accessor progress sits in Getters, not in Accessors';
+    private const string MISPLACED_ACCESSOR = 'accessor progress sits in Transformers, not in Accessors';
+
+    private const string VALUE_IN_PREDICATES = 'method label answers no yes or no, so it does not belong in Predicates';
+
+    private const string QUESTION_IN_TRANSFORMERS = 'method isOpen is no transformer, so it does not belong in '
+        .'Transformers';
 
     private const string PLAIN_METHOD_IN_ACCESSORS = 'method isDone is no accessor, so it does not belong in Accessors';
 
@@ -53,6 +59,14 @@ final class ModelSectionsTest extends TestCase
 
         $this->assertStringContainsString(self::MISPLACED_ACCESSOR, $output);
         $this->assertStringContainsString(self::PLAIN_METHOD_IN_ACCESSORS, $output);
+    }
+
+    public function test_a_value_in_predicates_and_a_question_in_transformers_are_flagged(): void
+    {
+        $output = $this->checkOutput('tests/Fixtures/ModelSections/AnswersInTheWrongSection.php');
+
+        $this->assertStringContainsString(self::VALUE_IN_PREDICATES, $output);
+        $this->assertStringContainsString(self::QUESTION_IN_TRANSFORMERS, $output);
     }
 
     public function test_an_assert_outside_asserts_and_a_plain_method_inside_it_are_flagged(): void

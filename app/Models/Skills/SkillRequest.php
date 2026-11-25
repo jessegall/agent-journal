@@ -74,7 +74,7 @@ final class SkillRequest extends Model implements ReadableModel
         ]);
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function sentWith(string $inputDigest): bool
     {

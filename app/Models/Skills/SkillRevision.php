@@ -125,7 +125,7 @@ final class SkillRevision extends Model implements ReadableModel
         ]);
     }
 
-    // ----------[ Getters ]----------
+    // ----------[ Transformers ]----------
 
     /**
      * The revision's condition, read through the condition tree as it stands today.
