@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Commands\Sessions;
 
 use App\Commands\Sessions\NotifyCleanup\NotifyCleanupCommand;
+use App\Enums\Sessions\CapacityResource;
 use App\Enums\Sessions\CleanupStatus;
 use App\Enums\Sessions\CleanupStep;
 use App\Enums\Sessions\ReservationStatus;
@@ -68,6 +69,24 @@ final class NotifyCleanupTest extends TestCase
         $this->assertSame(1, $done->attempts);
         $this->assertNull($done->last_error);
         $this->assertSame('/workspaces/helper-7', $done->recovery_location);
+    }
+
+    public function test_check_capacity_names_the_shortage_while_held_and_fits_once_one_cleanup_releases_it(): void
+    {
+        $start = $this->endedContainerStart();
+        $budgets = ExecutionBudgets::defaults();
+        $room = new HostCapacity($budgets->cpuCores, $budgets->memoryBytes, $budgets->workspaceBytes);
+
+        $this->assertSame(CapacityResource::Cpu, CapacityReservation::resolveShortageOf($budgets, $room));
+        $this->assertSame(1, CapacityReservation::query()->count());
+
+        $this->notify($start, new CleanupReport(self::ALL_STEPS, null, null));
+        $this->assertNull(CapacityReservation::resolveShortageOf($budgets, $room));
+
+        CapacityReservation::create('start-other', $budgets, $room);
+        $this->assertSame(CleanupStatus::Done, $this->notify($start, new CleanupReport(self::ALL_STEPS, null, null)));
+        $this->assertTrue(CapacityReservation::isHeldFor('start-other'));
+        $this->assertSame(ReservationStatus::Released, $this->reservationOf($start)->status);
     }
 
     private function endedContainerStart(): TestStart

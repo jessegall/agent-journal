@@ -7,11 +7,13 @@ namespace Tests\Commands\Agents;
 use App\Commands\Agents\RetireAgent\RetireAgentCommand;
 use App\Commands\Agents\StartAgent\StartAgentCommand;
 use App\Commands\Projects\RecordHostCallFailure\RecordHostCallFailureCommand;
+use App\Contracts\Accounts\ActiveAccountReader;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Hosts\DockerImageVerifier;
 use App\Contracts\Hosts\HostCapabilities;
 use App\Contracts\Sessions\SessionRequestResolver;
+use App\Contracts\Sessions\StartExecutor;
 use App\Contracts\Sessions\StartHeartbeats;
 use App\Contracts\Time\ServerClock;
 use App\Enums\Accounts\CommandEntry;
@@ -21,21 +23,25 @@ use App\Enums\Agents\SessionProcessStatus;
 use App\Enums\Drivers\DriverOperation;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Projects\CapabilityStatusType;
+use App\Enums\Projects\HostCapabilityType;
 use App\Enums\Sessions\SessionStatus;
 use App\Enums\Sessions\StartDisposition;
 use App\Enums\Sessions\StartOriginType;
 use App\Enums\Sessions\StartRefusalType;
 use App\Enums\Sessions\StartUnavailableReason;
 use App\Events\Sessions\StartAccepted;
+use App\Exceptions\AccountContainerUnsupported;
 use App\Exceptions\AccountUnavailable;
 use App\Exceptions\AgentBusy;
 use App\Exceptions\CapacityUnavailable;
+use App\Exceptions\ContainerUnavailable;
 use App\Exceptions\HostUnavailable;
 use App\Exceptions\SessionRequestMissing;
 use App\Exceptions\StartPreviewStale;
 use App\Exceptions\StartRefusalReplayed;
 use App\Exceptions\StartRefused;
 use App\Exceptions\StartRequestConflict;
+use App\Models\Access\User;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Agents\Agent;
@@ -47,10 +53,12 @@ use App\Models\Sessions\CapacityReservation;
 use App\Models\Sessions\SessionProcess;
 use App\Models\Sessions\SessionRequest;
 use App\Resolvers\Support\PendingStartSecrets;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\ActorStore;
 use App\Support\CommandEntrance;
+use App\Support\DefaultDrivers;
 use App\Support\HostCapability;
 use App\Support\HostCapabilityQuery;
 use App\Support\RecordIdentity;
@@ -71,6 +79,7 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\ServesEveryCombination;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\FixedServerClock;
+use Tests\Support\TestIds;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -351,7 +360,10 @@ final class StartAgentTest extends TestCase
 
         $this->assertThrows(
             fn () => $this->start(
-                $this->containerRequest($request->requestId, new RecordIdentity('tests.owner', '01m7wgahp0n7766x1e1ta8ehex')),
+                $this->containerRequest(
+                    $request->requestId,
+                    new RecordIdentity('tests.owner', '01m7wgahp0n7766x1e1ta8ehex'),
+                ),
             ),
             StartRequestConflict::class,
         );
@@ -412,6 +424,115 @@ final class StartAgentTest extends TestCase
             fn () => $this->app->make(SessionRequestResolver::class)->receipt($request->requestId),
             SessionRequestMissing::class,
         );
+    }
+
+    public function test_unproven_account_transport_refuses_before_account_selection_or_host_preparation(): void
+    {
+        $this->journal->actAsUserId(TestIds::of(1));
+        $this->mock(ActiveAccountReader::class)->shouldNotReceive('forStart');
+        $this->mock(StartExecutor::class)->shouldNotReceive('start');
+        $this->mock(HostCapabilities::class)->shouldReceive('capability')->andReturnUsing(
+            fn (HostCapabilityQuery $query) => new HostCapability(
+                $query,
+                $query->capability === HostCapabilityType::AccountTransport
+                    ? CapabilityStatusType::Unverified : CapabilityStatusType::Supported,
+                'Test evidence',
+                'Recorded for the test.',
+            ),
+        );
+        $commands = $this->app->make(CommandBus::class);
+        $actor = Agent::create('Builder', 'writing-helper', $this->localProject());
+
+        foreach (DefaultDrivers::familyKeys() as $driver) {
+            $this->assertThrows(
+                fn () => $commands->run(new StartAgentCommand($this->requestFor($actor, $driver))),
+                AccountContainerUnsupported::class,
+            );
+        }
+    }
+
+    public function test_a_named_program_and_model_start_the_agent(): void
+    {
+        $agent = Agent::create('Started by hand', 'read-only-helper', $this->localProject());
+
+        $response = $this->actingAs($this->journal->ownerUser())->postJson(route('agents.start', $agent->id), [
+            'requestId' => (string) Str::ulid(),
+            'driver' => 'codex',
+            'model' => 'gpt-6-luna',
+        ]);
+
+        $response->assertOk();
+        $response->assertJsonPath('driver', 'codex');
+        $response->assertJsonPath('requestedModel', 'gpt-6-luna');
+        $this->assertSame(1, AgentSession::query()->where('agent_id', $agent->id)->count());
+    }
+
+    public function test_a_missing_program_or_model_or_the_default_model_is_refused_without_a_session(): void
+    {
+        $agent = Agent::create('Started by hand', 'read-only-helper', $this->localProject());
+        $inputs = [['model' => 'gpt-6-luna'], ['driver' => 'codex'], ['driver' => 'codex', 'model' => 'default']];
+
+        foreach ($inputs as $input) {
+            $response = $this->actingAs($this->journal->ownerUser())->postJson(
+                route('agents.start', $agent->id),
+                ['requestId' => (string) Str::ulid(), ...$input],
+            );
+
+            $this->assertGreaterThanOrEqual(400, $response->status(), json_encode($input, JSON_THROW_ON_ERROR));
+        }
+
+        $this->assertSame(0, AgentSession::query()->where('agent_id', $agent->id)->count());
+    }
+
+    public function test_a_host_without_a_proven_container_runtime_refuses_before_reserving(): void
+    {
+        $this->signIn();
+        $this->app->instance(HostCapabilities::class, new class implements HostCapabilities
+        {
+            public function capability(HostCapabilityQuery $query): HostCapability
+            {
+                $status = $query->capability === HostCapabilityType::AccountTransport
+                    ? CapabilityStatusType::Supported
+                    : CapabilityStatusType::Unverified;
+
+                return new HostCapability($query, $status, 'docs/x.md', 'Runtime unavailable.');
+            }
+        });
+
+        $this->assertThrows(fn () => $this->start($this->newAgentContainerRequest()), ContainerUnavailable::class);
+
+        $this->assertSame(0, CapacityReservation::query()->count());
+    }
+
+    public function test_capacity_beyond_the_host_refuses(): void
+    {
+        $this->signIn();
+        $this->app->instance(HostCapabilities::class, new class implements HostCapabilities
+        {
+            public function capability(HostCapabilityQuery $query): HostCapability
+            {
+                return new HostCapability(
+                    $query,
+                    CapabilityStatusType::Supported,
+                    'docs/x.md',
+                    'Proven for this test.',
+                );
+            }
+        });
+        $this->app->instance(DockerImageVerifier::class, new class implements DockerImageVerifier
+        {
+            public function isVerified(string $imageReference): bool
+            {
+                return true;
+            }
+        });
+        $this->app->instance(HostCapacity::class, new HostCapacity(3, 16 * 1024 ** 3, 50 * 1024 ** 3));
+
+        $this->start($this->newAgentContainerRequest());
+
+        $this->assertThrows(fn () => $this->start($this->newAgentContainerRequest()), CapacityUnavailable::class);
+        $this->assertSame(1, CapacityReservation::query()->count());
+        $this->assertSame(1, AgentSession::query()->count());
     }
 
     private function request(int|null $previewRevision = null): StartRequest
@@ -492,5 +613,66 @@ final class StartAgentTest extends TestCase
         });
         $this->images = new CountingImageVerifier();
         $this->app->instance(DockerImageVerifier::class, $this->images);
+    }
+
+    private function requestFor(Agent $actor, string $driver): StartRequest
+    {
+        $image = 'registry.example/journal-helper@sha256:'.str_repeat('a', 64);
+        $policy = new ExecutionPolicy(
+            ExecutionModeType::RequiredContainer,
+            $image,
+            'helper-7',
+            ExecutionBudgets::defaults(),
+            [],
+        );
+
+        return new StartRequest(
+            TestSelections::requestId(),
+            $actor->id,
+            TestSelections::of($driver),
+            StartOriginType::OwnerRequest,
+            new RecordIdentity('tests.owner', '01m7wgahp0n7766x1e1ta8ehew'),
+            null,
+            ConversationModeType::New,
+            null,
+            StartPolicy::withoutProfile($policy),
+            driverType: DriverType::Headless,
+        );
+    }
+
+    private function newAgentContainerRequest(): StartRequest
+    {
+        $agent = Agent::create('Builder', 'writing-helper', $this->localProject());
+
+        return new StartRequest(
+            TestSelections::requestId(),
+            $agent->id,
+            TestSelections::of(),
+            StartOriginType::OwnerRequest,
+            new RecordIdentity('tests.owner', '01m7wgahp0n7766x1e1ta8ehew'),
+            null,
+            ConversationModeType::New,
+            null,
+            StartPolicy::withoutProfile($this->policy()),
+            driverType: DriverType::Headless,
+        );
+    }
+
+    private function policy(): ExecutionPolicy
+    {
+        return new ExecutionPolicy(
+            ExecutionModeType::RequiredContainer,
+            self::IMAGE,
+            'helper-7',
+            ExecutionBudgets::defaults(),
+            [],
+        );
+    }
+
+    private function signIn(): void
+    {
+        $owner = User::factory()->create();
+        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
+        $this->journal->actAsUserId($owner->id);
     }
 }

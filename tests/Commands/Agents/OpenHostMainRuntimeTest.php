@@ -6,6 +6,7 @@ namespace Tests\Commands\Agents;
 
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
+use App\Models\Agents\AgentSession;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Support\ActorIdentity;
@@ -66,6 +67,21 @@ final class OpenHostMainRuntimeTest extends TestCase
         $main = Inbox::findMain()->id;
         $this->assertNotNull(InboxMember::findActive($main, ActorIdentity::of($after)));
         $this->assertNull(InboxMember::findActive($main, ActorIdentity::of($before)));
+    }
+
+    public function test_the_agent_that_takes_the_main_inbox_over_fences_the_runtime_of_the_one_before(): void
+    {
+        $host = $this->enrollHost();
+        $before = $this->agent();
+        $this->open($host, $before)->assertCreated();
+        $after = $this->agent();
+
+        $opened = $this->open($host, $after)->assertCreated();
+
+        $this->assertTrue($before->refresh()->currentRuntime()->isEmpty());
+        $this->assertTrue(
+            $after->refresh()->isCurrentRuntime(AgentSession::query()->findOrFail($opened->json('session_id'))),
+        );
     }
 
     private function open(EnrolledHost $host, Agent $agent): TestResponse
