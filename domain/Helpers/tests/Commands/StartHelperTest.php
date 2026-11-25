@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Helpers\Tests\Feature;
+namespace Domain\Helpers\Tests\Commands;
 
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCatalogue;
@@ -24,16 +24,12 @@ use App\Support\HostCapability;
 use App\Support\HostCapabilityQuery;
 use App\Support\StartReceipt;
 use App\Values\ProfileBase;
-use Carbon\CarbonImmutable;
 use Domain\Helpers\Commands\SendHelper\SendHelperCommand;
 use Domain\Helpers\Commands\StartHelper\StartHelperCommand;
 use Domain\Helpers\Enums\JobStatus;
-use Domain\Helpers\Exceptions\HelperBusy;
-use Domain\Helpers\Exceptions\HelperJobUnfinished;
 use Domain\Helpers\Exceptions\HelperProfilesUnavailable;
 use Domain\Helpers\Exceptions\HelperProfileTypeConflict;
 use Domain\Helpers\Exceptions\HelperRequestConflict;
-use Domain\Helpers\Exceptions\HelperRetired;
 use Domain\Helpers\Exceptions\HelperUnavailable;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
@@ -48,13 +44,13 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
- * A parent dispatches its helpers through StartHelperCommand and SendHelperCommand: a start names the resolved model, revision and
- * type; a send keeps the identity it names; busy, unfinished, retired and foreign helpers refuse with their own
- * refusal; a main or missing profile refuses before anything is written; a repeat finds the same job; a nested
- * refusal rolls everything back; and two starts never both hold one helper's reservation.
+ * A parent starts a helper: the start names the resolved model, revision and type and runs in its profile's mode or
+ * is refused, never swapped; a main or missing profile and a policy that does not delegate refuse before anything is
+ * written; a repeat finds the same job, a nested refusal rolls everything back, and two starts never both hold one
+ * helper's reservation.
  */
 #[TimeLimit(seconds: 5, reason: 'It activates profiles and starts agent sessions for several dispatches.')]
-final class HelperDispatchTest extends TestCase
+final class StartHelperTest extends TestCase
 {
     use DispatchesHelpers;
     use RefreshHookDatabase;
@@ -79,18 +75,6 @@ final class HelperDispatchTest extends TestCase
         $this->assertSame(JobStatus::Accepted, $receipt->state);
         $this->assertSame(self::SHELL_LIKE_BRIEF, HelperJob::query()->findOrFail($receipt->jobId)->brief);
         $this->assertSame(1, AssignmentRecord::query()->where('record_id', $receipt->jobId)->count());
-    }
-
-    public function test_a_send_with_a_new_subject_keeps_the_named_identity_and_starts_a_new_conversation(): void
-    {
-        $first = $this->start('request-1', 'Review plan 7');
-        $this->finish($first);
-
-        $sent = $this->send('request-2', $first->identityId, 'Review plan 8');
-
-        $this->assertSame($first->identityId, $sent->identityId);
-        $this->assertFalse($sent->startDetails->isNewIdentity);
-        $this->assertSame(ConversationModeType::New, $sent->startDetails->conversationMode);
     }
 
     public function test_a_helper_starts_in_its_profile_mode_and_a_saved_mode_it_cannot_run_is_refused(): void
@@ -124,36 +108,6 @@ final class HelperDispatchTest extends TestCase
     private function keyOf(string $family, DriverType $mode): string
     {
         return (string) $this->app->make(DriverCatalogue::class)->keyFor($family, $mode);
-    }
-
-    public function test_a_busy_unfinished_retired_or_foreign_helper_refuses_with_its_own_refusal(): void
-    {
-        $busy = $this->start('request-1', 'Review plan 7');
-        $this->assertThrows(fn () => $this->send('request-2', $busy->identityId, 'Review plan 8'), HelperBusy::class);
-
-        HelperJob::query()->findOrFail($busy->jobId)->markUnfinished('stop:1');
-        $this->endSessionOf($busy);
-
-        $this->assertThrows(
-            fn () => $this->send('request-3', $busy->identityId, 'Review plan 8'),
-            HelperJobUnfinished::class,
-        );
-
-        HelperJob::query()->findOrFail($busy->jobId)->cancel();
-        $this->agentOf($busy)->retireAt(CarbonImmutable::now());
-
-        $this->assertThrows(
-            fn () => $this->send('request-4', $busy->identityId, 'Review plan 8'),
-            HelperRetired::class,
-        );
-
-        $other = TestStart::start();
-        $other->startRequest($this->app);
-
-        $this->assertThrows(
-            fn () => $this->send('request-5', $busy->identityId, 'Review plan 8'),
-            HelperUnavailable::class,
-        );
     }
 
     public function test_a_main_profile_or_a_missing_one_refuses_before_anything_is_written(): void
@@ -293,12 +247,5 @@ final class HelperDispatchTest extends TestCase
     {
         HelperJob::query()->findOrFail($receipt->jobId)->finish('report:1');
         $this->endSessionOf($receipt);
-    }
-
-    private function agentOf(HelperReceipt $receipt): Agent
-    {
-        $identity = HelperIdentity::query()->findOrFail($receipt->identityId);
-
-        return Agent::query()->findOrFail($identity->helper_actor_id);
     }
 }

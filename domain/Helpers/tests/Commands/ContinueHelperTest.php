@@ -2,22 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Domain\Helpers\Tests\Feature;
+namespace Domain\Helpers\Tests\Commands;
 
 use App\Contracts\Bus\CommandBus;
 use App\Events\Sessions\SessionStartEnded;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Models\Sessions\SessionRequest;
 use App\Support\Capabilities\CodexHeadlessCapabilities;
-use Domain\Helpers\Commands\CancelHelperJob\CancelHelperJobCommand;
 use Domain\Helpers\Commands\ContinueHelper\ContinueHelperCommand;
-use Domain\Helpers\Commands\SteerHelper\SteerHelperCommand;
 use Domain\Helpers\Enums\JobStatus;
 use Domain\Helpers\Exceptions\HelperJobAlreadyEnded;
 use Domain\Helpers\Exceptions\HelperStartUncertain;
 use Domain\Helpers\Models\HelperJob;
-use Domain\Helpers\Models\HelperMessage;
-use Domain\Helpers\Models\HelperNotice;
 use Domain\Helpers\Tests\Support\DispatchesHelpers;
 use Domain\Helpers\Tests\TestCase;
 use Domain\Helpers\Values\HelperReceipt;
@@ -27,13 +23,12 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
- * A parent continues, steers and cancels its helper jobs as commands: an ended attempt leaves the job
- * unfinished with a notice that holds the exact continue command, a continue keeps the job and brief on the model
- * named now, a finished job refuses with a send command, a steer changes no selection, and a cancel marks the job
- * cancelled.
+ * A parent continues an unfinished job: it keeps the job and brief on the model named now and a repeat finds the
+ * same job; a driver that cannot reopen a conversation refuses by its reason, a finished job refuses with a send
+ * command and a live one as uncertain.
  */
 #[TimeLimit(seconds: 8, reason: 'It activates profiles and starts agent sessions for several dispatches.')]
-final class HelperContinueTest extends TestCase
+final class ContinueHelperTest extends TestCase
 {
     use DispatchesHelpers;
     use RefreshHookDatabase;
@@ -42,30 +37,12 @@ final class HelperContinueTest extends TestCase
 
     private const string SEND_CALL = "helpers_send with identity_id '%s'";
 
-    private const string CONTINUE_CALL = 'helpers_continue with';
-
     /**
      * A driver that reopens an earlier conversation; Codex headless cannot yet.
      */
     private const string RESUMING_DRIVER = 'claude-code';
 
     private const string CODEX = 'codex';
-
-    public function test_an_ended_attempt_leaves_the_job_unfinished_with_a_complete_continue_command(): void
-    {
-        $receipt = $this->start('request-1', 'Review plan 7');
-
-        $this->endAttempt($receipt);
-
-        $job = HelperJob::query()->findOrFail($receipt->jobId);
-        $notice = HelperNotice::query()->sole();
-        $this->assertSame(JobStatus::Unfinished, $job->status);
-
-        $this->assertStringContainsString(
-            sprintf("helpers_continue with identity_id '%s', job_id '%s' and model '", $receipt->identityId, $receipt->jobId),
-            $notice->text,
-        );
-    }
 
     public function test_a_continue_keeps_the_job_and_brief_and_starts_on_the_model_named_now(): void
     {
@@ -112,30 +89,6 @@ final class HelperContinueTest extends TestCase
             HelperJobAlreadyEnded::class,
             sprintf(self::SEND_CALL, $receipt->identityId),
         );
-    }
-
-    public function test_a_steer_adds_to_the_live_job_and_is_kept_when_none_is_live(): void
-    {
-        $receipt = $this->start('request-1', 'Review plan 7');
-
-        $steered = $this->commands()->run(new SteerHelperCommand($receipt->identityId, 'Look at the tests too'));
-        $this->endAttempt($receipt);
-        $kept = $this->commands()->run(new SteerHelperCommand($receipt->identityId, 'And the docs'));
-
-        $this->assertSame($receipt->jobId, $steered->jobId);
-        $this->assertSame(['Look at the tests too'], HelperJob::query()->findOrFail($receipt->jobId)->steering);
-        $this->assertSame($kept->messageId, HelperMessage::query()->sole()->id);
-        $this->assertStringContainsString(self::CONTINUE_CALL, (string) $kept->suggestedCommand);
-    }
-
-    public function test_a_cancel_marks_an_unfinished_job_cancelled(): void
-    {
-        $receipt = $this->start('request-1', 'Review plan 7');
-        $this->endAttempt($receipt);
-
-        $this->commands()->run(new CancelHelperJobCommand($receipt->jobId, 'cancel-1'));
-
-        $this->assertSame(JobStatus::Cancelled, HelperJob::query()->findOrFail($receipt->jobId)->status);
     }
 
     private function endAttempt(HelperReceipt $receipt): void
