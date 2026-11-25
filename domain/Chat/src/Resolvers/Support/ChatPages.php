@@ -25,11 +25,15 @@ use Domain\Chat\Data\ChatEntryData;
 use Domain\Chat\Data\ChatRowsPageData;
 use Domain\Chat\Data\ChatSummaryData;
 use Domain\Chat\Data\ConversationData;
+use Domain\Chat\Data\MessageEntryData;
 use Domain\Chat\Data\ParticipantData;
+use Domain\Chat\Data\QuestionEntryData;
 use Domain\Chat\Enums\ChatMessageType;
 use Domain\Chat\Models\ChatMessage;
 use Domain\Chat\Support\ChatInboxes;
 use Domain\Chat\Support\DockProjection;
+use Domain\Questions\Contracts\QuestionSummaryReader;
+use Domain\Questions\Support\ShownQuestion;
 use Illuminate\Support\Collection;
 
 /**
@@ -45,6 +49,7 @@ final readonly class ChatPages
         private DockProjection $dock,
         private InboxEligibility $eligibility,
         private MessageParticipants $participants,
+        private QuestionSummaryReader $questions,
     ) {}
 
     public function pageFor(AgentOption|null $agent, Inbox $inbox, string|null $dockToken): ConversationData
@@ -130,8 +135,10 @@ final readonly class ChatPages
             ->all());
         $viewer = ActorIdentity::of($this->actors->actor());
         $readIds = $this->readIdsAmong($rows);
+        $questions = $this->questionsAmong($rows);
+        $rows->loadMorph('source', [Message::class => ['target']]);
 
-        return array_values($rows->map(function (ChatMessage $row) use ($names, $events, $viewer, $readIds): ChatEntryData {
+        return array_values($rows->map(function (ChatMessage $row) use ($names, $events, $viewer, $readIds, $questions): ChatEntryData {
             $author = $row->author;
 
             return ChatEntryData::from([
@@ -141,10 +148,79 @@ final readonly class ChatPages
                 'author' => $author->text(),
                 'authorLabel' => $names->nameOf($author),
                 'createdAt' => $row->created_at->toIso8601String(),
-                ...self::sourceFieldsOf($row, $viewer, $readIds),
+                ...$this->sourceFieldsOf($row, $viewer, $readIds, $questions),
                 ...($row->type === ChatMessageType::Event && isset($events[$row->id]) ? ['event' => $events[$row->id]] : []),
             ]);
         })->all());
+    }
+
+    /**
+     * The row's source as its card shows it: a message or a reaction by its message, a question by its question; an
+     * event carries its card apart.
+     *
+     * @param  list<string>  $readIds
+     * @param  array<string, ShownQuestion>  $questions
+     * @return array<string, MessageEntryData|QuestionEntryData>
+     */
+    private function sourceFieldsOf(ChatMessage $row, ActorIdentity $viewer, array $readIds, array $questions): array
+    {
+        if ($row->type === ChatMessageType::Question) {
+            return ['question' => $this->questionEntryOf($questions[$row->source_id], $viewer)];
+        }
+
+        $message = $row->source;
+
+        if (! $message instanceof Message) {
+            return [];
+        }
+
+        return ['message' => MessageEntryData::from([
+            'id' => $message->id,
+            'number' => $message->number,
+            'body' => $message->body,
+            'targetMessageId' => $message->target_message_id,
+            'targetNumber' => $message->target?->number,
+            'isReadByViewer' => in_array($message->id, $readIds, true),
+        ])];
+    }
+
+    /**
+     * A question's card: only its target may answer it, and only while it has no answer.
+     */
+    private function questionEntryOf(ShownQuestion $question, ActorIdentity $viewer): QuestionEntryData
+    {
+        $target = ActorIdentity::fromStored($question->targetType, $question->targetId);
+
+        return QuestionEntryData::from([
+            'id' => $question->id,
+            'text' => $question->text,
+            'type' => $question->type,
+            'options' => $question->options,
+            'target' => $target->text(),
+            'answer' => $question->answer,
+            'canAnswer' => $question->answer === null && $target->isSameAs($viewer),
+        ]);
+    }
+
+    /**
+     * The questions among the rows, by id.
+     *
+     * @param  Collection<int, ChatMessage>  $rows
+     * @return array<string, ShownQuestion>
+     */
+    private function questionsAmong(Collection $rows): array
+    {
+        $ids = array_values(array_map(
+            strval(...),
+            $rows->where('type', ChatMessageType::Question)->pluck('source_id')->all(),
+        ));
+        $questions = [];
+
+        foreach ($this->questions->shownByIds($ids) as $question) {
+            $questions[$question->id] = $question;
+        }
+
+        return $questions;
     }
 
     /**

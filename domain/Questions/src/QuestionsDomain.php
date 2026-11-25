@@ -16,6 +16,7 @@ use Domain\Questions\Commands\ReadQuestion\ReadQuestionCommand;
 use Domain\Questions\Contracts\QuestionSummaryReader;
 use Domain\Questions\Events\QuestionAnswered;
 use Domain\Questions\Events\QuestionAsked;
+use Domain\Questions\Support\ShownQuestion;
 use Domain\Questions\Values\QuestionNotificationKeys;
 use Domain\Questions\Values\QuestionSummary;
 
@@ -40,7 +41,7 @@ final class QuestionsDomain extends Domain implements CommandProvider, McpToolPr
             ->commands(AnswerQuestionCommand::class)
             ->events(QuestionAsked::class, QuestionAnswered::class)
             ->contracts(QuestionSummaryReader::class)
-            ->values(QuestionNotificationKeys::class, QuestionSummary::class)
+            ->values(QuestionNotificationKeys::class, QuestionSummary::class, ShownQuestion::class)
             ->build();
     }
 

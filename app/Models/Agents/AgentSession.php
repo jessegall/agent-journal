@@ -793,13 +793,6 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The sessions that keep no job source message yet.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-
-    /**
      * The session whose start token hashes to the given hash.
      *
      * @param  Builder<self>  $query

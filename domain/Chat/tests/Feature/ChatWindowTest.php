@@ -76,7 +76,7 @@ final class ChatWindowTest extends TestCase
         MainAgentDesignation::create($main);
 
         $this->actingAs($this->owner)->get('/chat')->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.setupRequired', false)
+            ->where('page.data.isSetupRequired', false)
             ->where('page.data.selectedAgentId', $main->id)
             ->where('page.data.conversation.agentId', $main->id)
             ->where('page.data.conversation.sessionId', null)

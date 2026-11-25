@@ -113,7 +113,7 @@ final class HomePageTest extends TestCase
                 ->where('window_chat_conversation.data.agents.0.id', $this->session->agent_id)
                 ->where('window_chat_conversation.data.agents.0.name', 'Builder')
                 ->where('window_chat_conversation.data.agents.0.actions', ['switch'])
-                ->where('window_chat_conversation.data.setupRequired', true)
+                ->where('window_chat_conversation.data.isSetupRequired', true)
                 ->missing('window_chat_conversation.data.conversation')));
     }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Questions\Contracts;
 
+use Domain\Questions\Support\ShownQuestion;
 use Domain\Questions\Values\QuestionSummary;
 
 /**
@@ -18,4 +19,12 @@ interface QuestionSummaryReader
      * @return list<QuestionSummary>
      */
     public function byIds(array $ids): array;
+
+    /**
+     * The questions with these ids that exist, whole: text, options, target and answer.
+     *
+     * @param  list<string>  $ids
+     * @return list<ShownQuestion>
+     */
+    public function shownByIds(array $ids): array;
 }

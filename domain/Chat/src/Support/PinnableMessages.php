@@ -10,6 +10,7 @@ use App\Exceptions\MessageMissing;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Messages\Message;
 use App\Support\ActorIdentity;
+use App\Support\ShownMessage;
 
 /**
  * A message the current actor may pin: one stored in the inbox named, which the actor is attached to.
@@ -29,6 +30,6 @@ final readonly class PinnableMessages
             throw MessageMissing::forId($messageId);
         }
 
-        return MessageView::of($message);
+        return MessageView::of(ShownMessage::of($message));
     }
 }

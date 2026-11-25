@@ -14,8 +14,20 @@ final readonly class QuestionSummaries implements QuestionSummaryReader
 {
     public function byIds(array $ids): array
     {
-        $questions = Question::query()->whereKey($ids)->limit(count($ids))->get()->all();
+        return array_map(fn (Question $question) => $question->summary, $this->questionsOf($ids));
+    }
 
-        return array_map(fn (Question $question) => $question->summary(), array_values($questions));
+    public function shownByIds(array $ids): array
+    {
+        return array_map(ShownQuestion::of(...), $this->questionsOf($ids));
+    }
+
+    /**
+     * @param  list<string>  $ids
+     * @return list<Question>
+     */
+    private function questionsOf(array $ids): array
+    {
+        return array_values(Question::query()->whereKey($ids)->limit(count($ids))->get()->all());
     }
 }
