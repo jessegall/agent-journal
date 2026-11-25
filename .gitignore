@@ -82,3 +82,6 @@ secrets/*
 # Pictures and reports of tools/design-compare
 /storage/design-compare/
 /storage/acceptance/
+
+/_ide_helper.php
+/_ide_helper_models.php

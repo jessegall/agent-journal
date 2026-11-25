@@ -12,8 +12,8 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Leaves a model's query and scope methods out of its doc block: IDE Helper types them as a builder or the model,
- * which hides the builder Larastan reads from the code itself.
+ * Leaves a model's query and scope methods out of the doc block written into the model: IDE Helper types them as a
+ * builder or the model, which hides the builder Larastan reads from the code. The IDE-only helper file keeps them.
  */
 final class QueryMethodRemoval implements ModelHookInterface
 {
@@ -27,6 +27,10 @@ final class QueryMethodRemoval implements ModelHookInterface
 
     public function run(ModelsCommand $command, Model $model): void
     {
+        if (! $command->option('write')) {
+            return;
+        }
+
         collect(ReflectedType::of($model)->methods())
             ->filter(fn (ReflectedMethod $method): bool => $this->isScope($method))
             ->map(fn (ReflectedMethod $method): string => $this->scopeName($method))
