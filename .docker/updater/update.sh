@@ -11,6 +11,7 @@ main() {
     running_loop=${JOURNAL_UPDATER_LOOP:-/usr/local/bin/journal-updater}
     mirror=$state/mirror.git
     images=docs/accounts/docker-images.json
+    export LC_ALL=C
     cd "$root"
 
     newest=$(find_newest_commit)
@@ -68,15 +69,17 @@ remove_deleted_files() {
 }
 
 # A failed install leaves the files it extracted, and one deleted again before the next commit is in neither diff:
-# every file of the code folders that the commit lacks goes, so the app never loads a class that is gone.
+# every file of the code folders that the commit lacks and git does not ignore goes.
 remove_stray_code() {
-    local kept stray
-    kept=$(mktemp)
-    git -C "$mirror" ls-tree -r --name-only "$newest" -- app domain config routes database lang | sort > "$kept"
-    find app domain config routes database lang -type f 2>/dev/null | sort | comm -13 "$kept" - | while read -r stray; do
+    local folders="app domain config routes database lang resources" kept found ignored stray
+    kept=$(mktemp) found=$(mktemp) ignored=$(mktemp)
+    git -C "$mirror" ls-tree -r --name-only "$newest" -- $folders | sort > "$kept"
+    find $folders -type f 2>/dev/null | sort | comm -13 "$kept" - > "$found"
+    git --git-dir="$mirror" --work-tree=. check-ignore --no-index --stdin < "$found" | sort > "$ignored"
+    comm -23 "$found" "$ignored" | while read -r stray; do
         rm -f -- "./$stray"
     done
-    rm -f -- "$kept"
+    rm -f -- "$kept" "$found" "$ignored"
 }
 
 # The version the journal shows: the commit, its branch and its release tag, if it has one. It lives in a folder the

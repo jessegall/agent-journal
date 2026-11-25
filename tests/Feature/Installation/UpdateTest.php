@@ -31,6 +31,8 @@ final class UpdateTest extends TestCase
 
     private const string STRAY_CLASS = 'app/Models/ProgramConversation.php';
 
+    private const string GENERATED_FILE = 'resources/js/generated/routes.ts';
+
     private const string SANDBOX_TOOL_CHECK = '--entrypoint socat';
 
     private const string MCP_RELAY_CHECK = '--entrypoint /opt/journal/bin/journal-mcp';
@@ -329,7 +331,9 @@ final class UpdateTest extends TestCase
 
     public function test_a_file_a_failed_install_left_goes_once_a_later_commit_no_longer_holds_it(): void
     {
+        $this->installation->push(['.gitignore' => "/resources/js/generated/\n"]);
         $this->installation->update();
+        $this->installation->writeFile(self::GENERATED_FILE, 'export {};');
         $this->installation->push([
             self::STRAY_CLASS => '<?php',
             'database/migrations/2026_01_01_000000_create_notes_table.php' => '<?php',
@@ -343,6 +347,7 @@ final class UpdateTest extends TestCase
 
         $this->assertSame(0, $update->getExitCode(), $update->getErrorOutput());
         $this->assertFalse($this->installation->holdsFile(self::STRAY_CLASS));
+        $this->assertTrue($this->installation->holdsFile(self::GENERATED_FILE));
         $this->assertTrue($this->installation->holdsFile('database/migrations/2026_01_01_000000_create_notes_table.php'));
     }
 

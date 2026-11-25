@@ -78,6 +78,15 @@ final readonly class StandInInstallation
     }
 
     /**
+     * Writes a file into the installation folder, as a build or the app writes one that no commit holds.
+     */
+    public function writeFile(string $path, string $content): void
+    {
+        File::ensureDirectoryExists(dirname("{$this->root()}/{$path}"));
+        File::put("{$this->root()}/{$path}", $content);
+    }
+
+    /**
      * Whether the installation folder holds the file, a path relative to it.
      */
     public function holdsFile(string $path): bool
