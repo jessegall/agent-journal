@@ -63,6 +63,28 @@ final class ClassificationRule extends Model implements EventSource, ReadableMod
         ];
     }
 
+    // ----------[ Constructors ]----------
+
+    /**
+     * The project's classification rule of a declaration, or a new one not yet active when it has none.
+     */
+    public static function create(string $projectKey, CommandRule $rule): self
+    {
+        $existing = self::query()->ofProject($projectKey)->ofRule($rule->scope, $rule->id)->first();
+
+        if ($existing !== null) {
+            return $existing;
+        }
+
+        $classification = new self();
+        $classification->project_key = $projectKey;
+        $classification->scope = $rule->scope;
+        $classification->rule_id = $rule->id;
+        $classification->active_revision = 0;
+
+        return $classification;
+    }
+
     // ----------[ Mutations ]----------
 
     /**
@@ -174,28 +196,6 @@ final class ClassificationRule extends Model implements EventSource, ReadableMod
         $this->state = ClassificationState::Active;
         $this->state_reason = $reason;
         $this->save();
-    }
-
-    // ----------[ Queries ]----------
-
-    /**
-     * The project's classification rule of a declaration, or a new one not yet active when it has none.
-     */
-    public static function forRule(string $projectKey, CommandRule $rule): self
-    {
-        $existing = self::query()->ofProject($projectKey)->ofRule($rule->scope, $rule->id)->first();
-
-        if ($existing !== null) {
-            return $existing;
-        }
-
-        $classification = new self();
-        $classification->project_key = $projectKey;
-        $classification->scope = $rule->scope;
-        $classification->rule_id = $rule->id;
-        $classification->active_revision = 0;
-
-        return $classification;
     }
 
     // ----------[ Scopes ]----------

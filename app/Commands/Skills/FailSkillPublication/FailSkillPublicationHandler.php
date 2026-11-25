@@ -11,6 +11,6 @@ final readonly class FailSkillPublicationHandler implements CommandHandler
 {
     public function handle(FailSkillPublicationCommand $command): void
     {
-        SkillPublication::lockById($command->publicationId)->fail($command->reason);
+        SkillPublication::findLockedById($command->publicationId)->fail($command->reason);
     }
 }

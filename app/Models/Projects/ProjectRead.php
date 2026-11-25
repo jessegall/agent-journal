@@ -227,7 +227,7 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function claimableFor(string $hostId, int $limit, CarbonImmutable $now): array
+    public static function findClaimableFor(string $hostId, int $limit, CarbonImmutable $now): array
     {
         $pending = self::query()
             ->claimableAt($now)
@@ -247,7 +247,7 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
      *
      * @return Option<self>
      */
-    public static function recentOf(
+    public static function findRecentOf(
         ProjectBinding $binding,
         ProjectReadType $type,
         string $path,
@@ -267,7 +267,7 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
      *
      * @throws ProjectReadRefused
      */
-    public static function lockById(string $readId): self
+    public static function findLockedById(string $readId): self
     {
         return self::query()
             ->whereKey($readId)

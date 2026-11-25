@@ -64,6 +64,6 @@ final class PlanRequest extends FormRequest
 
     public function planId(): string
     {
-        return Plan::idOfNumber($this->routeNumber('plan')) ?? throw new NotFoundHttpException();
+        return Plan::resolveIdOfNumber($this->routeNumber('plan')) ?? throw new NotFoundHttpException();
     }
 }

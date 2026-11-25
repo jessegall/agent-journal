@@ -39,9 +39,9 @@ final readonly class SignInCompletion
     public function complete(string $attemptId, int $generation, SignInIdentity $identity): void
     {
         $now = CarbonImmutable::now();
-        $driver = SignInAttempt::driverForJournal($attemptId);
-        $selection = ActiveAccount::lockedForJournal($driver);
-        $attempt = SignInAttempt::lockedForJournal($attemptId);
+        $driver = SignInAttempt::resolveDriverForJournal($attemptId);
+        $selection = ActiveAccount::findLockedForJournal($driver);
+        $attempt = SignInAttempt::findLockedForJournal($attemptId);
 
         if ($attempt->isPublishedIn($generation)) {
             return;
@@ -65,8 +65,8 @@ final readonly class SignInCompletion
 
         $staging = (string) $attempt->directory;
 
-        $holder = Account::holdingKeyOf($attempt)
-            ?? ($attempt->account_id === null ? Account::holdingPrincipal($driver, $identity) : null);
+        $holder = Account::findHoldingKeyOf($attempt)
+            ?? ($attempt->account_id === null ? Account::findHoldingPrincipal($driver, $identity) : null);
 
         if ($holder !== null) {
             $attempt->finishMatching($holder);
@@ -78,10 +78,10 @@ final readonly class SignInCompletion
         if ($attempt->account_id === null) {
             $fallback = $attempt->method->accountNameFor($this->drivers->family($driver)->label);
             $proposed = AccountLabel::proposedFrom($identity->display, $fallback);
-            $account = Account::create($driver, Account::freeLabel($driver, $proposed), $staging);
+            $account = Account::create($driver, Account::resolveFreeLabel($driver, $proposed), $staging);
             $attempt->completeWith($account);
         } else {
-            $account = Account::lockedForJournal($attempt->account_id);
+            $account = Account::findLockedForJournal($attempt->account_id);
 
             if (! $attempt->method->isSecret() && ! $account->canCompareWith($identity)) {
                 $this->endWithout($attempt, SignInState::Unverified, $now);

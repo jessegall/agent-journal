@@ -16,7 +16,7 @@ final readonly class CloseReportHandler extends DocumentCommandHandler
 
     public function handle(CloseReportCommand $command): void
     {
-        $report = Report::lockedForClosing(RecordReference::idOrNumber($command->reportReference));
+        $report = Report::findLockedForClosing(RecordReference::idOrNumber($command->reportReference));
 
         $this->changes->requireChangeOf($report);
 

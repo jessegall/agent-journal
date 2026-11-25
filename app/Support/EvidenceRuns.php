@@ -97,7 +97,7 @@ final readonly class EvidenceRuns
         $permit->assertUsable($runner, $requestId, $this->digestOf($classification));
 
         if ($permit->wasStartedBy($requestId)) {
-            return ProcessRun::ofAnyActor($permit->process_run_id);
+            return ProcessRun::findForAnyActor($permit->process_run_id);
         }
 
         $this->checkedClassification(

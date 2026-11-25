@@ -26,11 +26,11 @@ final readonly class StateEventStacks
     {
         $dispatch->assertTargetGranted($target);
 
-        if (! AgentSession::lockRunningTarget($target)) {
+        if (! AgentSession::hasLockedRunningTarget($target)) {
             return None::create();
         }
 
-        return AgentStackRow::lockActiveAuthorizedFor($target)->map(
+        return AgentStackRow::findLockedActiveAuthorizedFor($target)->map(
             fn (AgentStackRow $row) => $this->restorer->restore($row->frames, $row->target),
         );
     }

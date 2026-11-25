@@ -25,10 +25,10 @@ final readonly class ShareListResolver implements PageResolver
     public function read(): DeclaredLayoutData
     {
         $filters = $this->request->filters();
-        $found = Share::listPage($filters->toFilters(), self::ROWS);
+        $found = Share::findListPage($filters->toFilters(), self::ROWS);
         $rows = array_slice($found, 0, self::ROWS);
 
-        $gatewayKeys = ShareGatewayConfiguration::gatewayKeysOf(
+        $gatewayKeys = ShareGatewayConfiguration::resolveGatewayKeysOf(
             array_values(
                 array_unique(
                     array_filter(array_map(fn (Share $share) => $share->share_gateway_configuration_id, $rows)),

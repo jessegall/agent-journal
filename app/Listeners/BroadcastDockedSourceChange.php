@@ -35,7 +35,7 @@ final readonly class BroadcastDockedSourceChange implements Listener
         $source = new DockIdentity($fact->dockType(), $fact->dockId());
         $userIds = array_map(
             fn (ActorIdentity $user) => $user->id,
-            InboxMember::attachedTo($this->docked->inboxesDocking($source), User::class),
+            InboxMember::resolveAttachedTo($this->docked->inboxesDocking($source), User::class),
         );
 
         if ($userIds === []) {

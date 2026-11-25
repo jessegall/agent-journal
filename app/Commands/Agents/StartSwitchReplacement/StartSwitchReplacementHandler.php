@@ -18,7 +18,7 @@ final readonly class StartSwitchReplacementHandler implements CommandHandler
 
     public function handle(StartSwitchReplacementCommand $command): void
     {
-        $switch = DriverSwitch::lockedById($command->switchId);
+        $switch = DriverSwitch::findLockedById($command->switchId);
 
         if ($switch->stage !== DriverSwitchStage::Stopped) {
             return;

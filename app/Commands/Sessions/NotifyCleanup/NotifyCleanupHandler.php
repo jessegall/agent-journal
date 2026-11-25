@@ -19,7 +19,7 @@ final readonly class NotifyCleanupHandler implements CommandHandler
 
     public function handle(NotifyCleanupCommand $command): CleanupState
     {
-        $cleanup = SessionCleanup::ofSessionOn($command->hostId, $command->sessionId);
+        $cleanup = SessionCleanup::findForSessionOn($command->hostId, $command->sessionId);
         $cleanup->recordPass($command->report);
 
         if ($cleanup->isDone()) {

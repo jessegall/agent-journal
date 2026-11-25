@@ -249,7 +249,7 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
      *
      * @throws RecordUnavailable
      */
-    public static function numberedIn(string $planId, int $number): self
+    public static function findNumberedInPlanId(string $planId, int $number): self
     {
         return self::query()
             ->ofPlan($planId)
@@ -264,7 +264,7 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
      * @param  list<string>  $planIds
      * @return array<string, int>
      */
-    public static function currentNumbersOf(array $planIds): array
+    public static function resolveCurrentNumbersOf(array $planIds): array
     {
         return self::query()->ofPlans($planIds)
             ->selectRaw(
@@ -282,7 +282,7 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
      *
      * @return EloquentCollection<int, self>
      */
-    public static function headingsIn(string $planId, int $after, int $limit): EloquentCollection
+    public static function findHeadingsIn(string $planId, int $after, int $limit): EloquentCollection
     {
         return self::query()->ofPlan($planId)->numberedAfter($after)->inNumberOrder()->readUpTo($limit)->get();
     }

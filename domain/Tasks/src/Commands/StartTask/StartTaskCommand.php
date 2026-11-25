@@ -26,6 +26,6 @@ final readonly class StartTaskCommand extends Command implements RecordCommand
 
     public function subject(): Task
     {
-        return Task::lockedForStart($this->taskId);
+        return Task::findLockedForStart($this->taskId);
     }
 }

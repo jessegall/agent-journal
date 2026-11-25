@@ -14,6 +14,6 @@ final readonly class LocalProjectHosts implements LocalProjectHostsContract
 {
     public function liveBindingOf(string $hostId): array
     {
-        return ProjectBinding::liveIdOfLocalHost($hostId);
+        return ProjectBinding::resolveLiveIdOfLocalHost($hostId);
     }
 }

@@ -17,7 +17,7 @@ final readonly class NotifyFailureHandler implements CommandHandler
 
     public function handle(NotifyFailureCommand $command): void
     {
-        $start = SessionProcess::claimedBy($command->hostId, $command->startKey);
+        $start = SessionProcess::findClaimedBy($command->hostId, $command->startKey);
 
         if (! $start->stopWithProof()) {
             return;

@@ -103,7 +103,7 @@ final class LinkRemovalTest extends TestCase
         $share = Share::query()->findOrFail($this->member->share_id);
 
         $this->assertNotNull($this->member->fresh()?->invalidated_at);
-        $this->assertSame([], ShareMember::approvedLinkIdsOf($share));
+        $this->assertSame([], ShareMember::resolveApprovedLinkIdsOf($share));
     }
 
     public function test_a_candidate_whose_link_is_not_approved_is_not_shared_yet(): void
@@ -127,7 +127,7 @@ final class LinkRemovalTest extends TestCase
             ],
         );
 
-        $this->assertSame([$other], $candidates->notSharedYet(ShareMember::approvedLinkIdsOf($share)));
+        $this->assertSame([$other], $candidates->notSharedYet(ShareMember::resolveApprovedLinkIdsOf($share)));
     }
 
     private function identityOf(Agent $agent): RecordIdentity

@@ -116,7 +116,7 @@ final class AccountUsageTokens extends Model implements EventSource, ReadableMod
     /**
      * The thread's count on the account in the generation, locked; none before its first count.
      */
-    public static function lockedFor(Account $account, int $generation, ThreadTokens $tokens): self|null
+    public static function findLockedFor(Account $account, int $generation, ThreadTokens $tokens): self|null
     {
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
@@ -133,7 +133,7 @@ final class AccountUsageTokens extends Model implements EventSource, ReadableMod
      * @param  list<Account>  $accounts
      * @return array<string, self>
      */
-    public static function newestOf(array $accounts): array
+    public static function findNewestOf(array $accounts): array
     {
         if ($accounts === []) {
             return [];

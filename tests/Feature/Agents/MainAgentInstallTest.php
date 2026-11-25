@@ -33,7 +33,7 @@ final class MainAgentInstallTest extends TestCase
     {
         $this->expectException(MainAgentMissing::class);
 
-        MainAgentDesignation::designatedAgent();
+        MainAgentDesignation::resolveDesignatedAgent();
     }
 
     public function test_the_install_designates_one_main_agent_and_a_second_run_changes_nothing(): void
@@ -42,11 +42,11 @@ final class MainAgentInstallTest extends TestCase
         $this->localProject();
 
         $this->artisan('agents:install')->assertSuccessful();
-        $main = MainAgentDesignation::designatedAgent();
+        $main = MainAgentDesignation::resolveDesignatedAgent();
         $this->artisan('agents:install')->assertSuccessful();
 
         $this->assertSame(ProfileBase::mainAgent()->key, $main->profile_key);
-        $this->assertSame($main->id, MainAgentDesignation::designatedAgent()->id);
+        $this->assertSame($main->id, MainAgentDesignation::resolveDesignatedAgent()->id);
         $this->assertSame(1, Agent::query()->withoutGlobalScopes()->count());
         $this->assertSame(1, MainAgentDesignation::query()->count());
     }

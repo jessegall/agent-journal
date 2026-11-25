@@ -203,7 +203,7 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
     /**
      * The rule read under its row lock, for a change that must happen once.
      */
-    public static function lockedById(string $ruleId): self
+    public static function findLockedById(string $ruleId): self
     {
         return self::query()->whereKey($ruleId)->lockForUpdate()->firstOr(RuleMissing::throwing()->withId($ruleId));
     }

@@ -22,7 +22,7 @@ final readonly class MakeShareGatewayDefaultController
         CommandBus $commands,
         Redirector $redirect,
     ): RedirectResponse {
-        $settings = ShareGatewayConfiguration::usable($request->configurationId())->settings;
+        $settings = ShareGatewayConfiguration::findUsable($request->configurationId())->settings;
 
         $commands->run(
             new ConfigureShareGatewayCommand(

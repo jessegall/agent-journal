@@ -25,7 +25,7 @@ final readonly class CertifyPassedStopsHandler implements CommandHandler
     {
         $this->access->assertMaintenanceGranted(CertifyPassedStopsCommand::MAINTENANCE_SCOPE);
 
-        foreach (StopCheck::passedUncertified(self::PASS_LIMIT) as $attempt) {
+        foreach (StopCheck::findPassedUncertified(self::PASS_LIMIT) as $attempt) {
             $this->certification->certify($attempt);
         }
     }

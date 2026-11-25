@@ -35,7 +35,7 @@ trait WithActiveAccount
         foreach (DefaultDrivers::familyKeys() as $driver) {
             $directory = "/journal/accounts/{$driver}";
             $account = Account::create($driver, AccountLabel::from('Test account'), $directory);
-            ActiveAccount::lockedFor($driver)->select($account);
+            ActiveAccount::findLockedFor($driver)->select($account);
             $chosen[$driver] = $account;
         }
 

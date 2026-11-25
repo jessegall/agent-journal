@@ -27,7 +27,7 @@ final readonly class AutoAssigner implements AutoAssignerContract
 
     public function pick(ActorIdentity $assignee, AssignmentPool $pool, int $room): OrderedRecordIds
     {
-        return Task::candidates($pool->members(), $this->assignments->assignedIds(TaskType::linkType()), $room);
+        return Task::resolveCandidates($pool->members(), $this->assignments->assignedIds(TaskType::linkType()), $room);
     }
 
     /**
@@ -36,7 +36,7 @@ final readonly class AutoAssigner implements AutoAssignerContract
      */
     public function requireCandidate(RecordIdentity $record): void
     {
-        $task = Task::lockedById($record->id);
+        $task = Task::findLockedById($record->id);
 
         if (! $task->isOpenForAssignment()) {
             throw TaskNotOpenForAssignment::forTask($task->number, $task->state->value);

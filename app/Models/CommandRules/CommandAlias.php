@@ -53,6 +53,27 @@ final class CommandAlias extends Model implements EventSource, ReadableModel
         ];
     }
 
+    // ----------[ Constructors ]----------
+
+    /**
+     * The project's alias of this name, or a new one at revision 0 that is saved with its first body.
+     */
+    public static function create(string $projectKey, string $name): self
+    {
+        $existing = self::query()->named($name, $projectKey)->first();
+
+        if ($existing !== null) {
+            return $existing;
+        }
+
+        $alias = new self();
+        $alias->project_key = $projectKey;
+        $alias->name = $name;
+        $alias->revision = 0;
+
+        return $alias;
+    }
+
     // ----------[ Mutations ]----------
 
     /**
@@ -87,27 +108,6 @@ final class CommandAlias extends Model implements EventSource, ReadableModel
             $this->body_digest,
             $this->argument_grammar,
         ));
-    }
-
-    // ----------[ Queries ]----------
-
-    /**
-     * The project's alias of this name, or a new one at revision 0 that is saved with its first body.
-     */
-    public static function forName(string $projectKey, string $name): self
-    {
-        $existing = self::query()->named($name, $projectKey)->first();
-
-        if ($existing !== null) {
-            return $existing;
-        }
-
-        $alias = new self();
-        $alias->project_key = $projectKey;
-        $alias->name = $name;
-        $alias->revision = 0;
-
-        return $alias;
     }
 
     // ----------[ Scopes ]----------

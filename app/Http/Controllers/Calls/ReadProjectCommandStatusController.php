@@ -26,7 +26,7 @@ final readonly class ReadProjectCommandStatusController
         CommandRunEvidence $evidence,
     ): ProjectCommandStatus {
         $own = array_filter(
-            ProjectBinding::ofMainAgent($agent->agentId),
+            ProjectBinding::findForMainAgent($agent->agentId),
             fn (ProjectBinding $binding) => $binding->id === $call->bindingId,
         );
 
@@ -34,7 +34,7 @@ final readonly class ReadProjectCommandStatusController
             throw VerbNotServed::notYourBinding($call->bindingId);
         }
 
-        foreach (ProjectCommandRun::ofRequestBy($call->requestKey, $agent->agentId, $call->bindingId) as $run) {
+        foreach (ProjectCommandRun::findForRequestBy($call->requestKey, $agent->agentId, $call->bindingId) as $run) {
             $state = $run->settledStateBy($evidence);
 
             return ProjectCommandStatus::of($state, $state->isActive() ? [] : $run->recordedFrames());

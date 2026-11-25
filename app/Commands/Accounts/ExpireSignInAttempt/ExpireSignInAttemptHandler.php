@@ -17,7 +17,7 @@ final readonly class ExpireSignInAttemptHandler implements CommandHandler
 
     public function handle(ExpireSignInAttemptCommand $command): bool
     {
-        $attempt = SignInAttempt::lockedForJournal($command->attemptId);
+        $attempt = SignInAttempt::findLockedForJournal($command->attemptId);
 
         if (! $attempt->isLive() || ! $attempt->isExpiredAt(CarbonImmutable::now())) {
             return false;

@@ -42,7 +42,7 @@ final readonly class RedeemProjectInvitationHandler implements CommandHandler
 
     public function handle(RedeemProjectInvitationCommand $command): Redemption
     {
-        $invitation = ProjectInvitation::lockRedeemableFor($command->ticket);
+        $invitation = ProjectInvitation::findLockedRedeemableFor($command->ticket);
 
         $issuerIsOwner = $invitation->issuer_user_id === $this->admission->owner()->actorId();
 
@@ -51,10 +51,10 @@ final readonly class RedeemProjectInvitationHandler implements CommandHandler
         }
 
         $attemptId = $invitation->attemptId();
-        $attempt = InstallAttempt::lockById($attemptId);
+        $attempt = InstallAttempt::findLockedById($attemptId);
         $folder = $command->folder;
         $environment = $this->environmentOf($invitation, $command->projectLabel);
-        $project = Project::forId($environment->project_id);
+        $project = Project::findForId($environment->project_id);
 
         $host = Host::create(
             $folder->machineLabel,
@@ -88,7 +88,7 @@ final readonly class RedeemProjectInvitationHandler implements CommandHandler
     private function environmentOf(ProjectInvitation $invitation, string $label): Environment
     {
         if ($invitation->project_id !== null) {
-            return Environment::lockOfProjectForLine((string) $invitation->environment_id, $invitation->project_id);
+            return Environment::findLockedOfProjectForLine((string) $invitation->environment_id, $invitation->project_id);
         }
 
         $slug = Str::slug($label);

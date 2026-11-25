@@ -91,7 +91,7 @@ final class RefreshSkillsTest extends TestCase
             GenerationState::Failed,
             SkillGeneration::query()->whereKey($failed->generationId)->firstOrFail()->state,
         );
-        $this->assertSame($ready->generationId, SkillGeneration::latestReady()?->id);
+        $this->assertSame($ready->generationId, SkillGeneration::findLatestReady()?->id);
     }
 
     public function test_a_stored_edit_leads_to_a_pending_publication_for_a_running_session(): void
@@ -114,7 +114,7 @@ final class RefreshSkillsTest extends TestCase
             PublicationState::Pending->value,
         )->firstOrFail();
         $this->assertSame(2, SkillGeneration::query()->count());
-        $this->assertSame(SkillGeneration::latestReady()?->id, $pending->generation_id);
+        $this->assertSame(SkillGeneration::findLatestReady()?->id, $pending->generation_id);
         $this->assertStringEndsWith("/targets/{$session->id}/claude-code", $pending->target);
     }
 

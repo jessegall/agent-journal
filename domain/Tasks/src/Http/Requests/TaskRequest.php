@@ -141,6 +141,6 @@ final class TaskRequest extends FormRequest
 
     public function taskId(): string
     {
-        return Task::idOfNumber($this->routeNumber('task')) ?? throw new NotFoundHttpException();
+        return Task::resolveIdOfNumber($this->routeNumber('task')) ?? throw new NotFoundHttpException();
     }
 }

@@ -31,7 +31,7 @@ final readonly class CleanupReportController
                 'session_id' => $cleanup->agent_session_id,
                 'remaining' => array_map(fn (CleanupStep $step) => $step->value, $cleanup->remainingSteps()),
             ],
-            SessionCleanup::pendingOn($host->hostId, self::PENDING_LIMIT),
+            SessionCleanup::findPendingOn($host->hostId, self::PENDING_LIMIT),
         );
 
         return new JsonResponse(['pending' => $pending]);

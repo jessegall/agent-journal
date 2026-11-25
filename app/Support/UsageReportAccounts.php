@@ -26,13 +26,13 @@ final readonly class UsageReportAccounts
      */
     public function accountOf(ReportedStart $reported): Account
     {
-        $start = SessionProcess::claimedBy($reported->hostId, $reported->key);
+        $start = SessionProcess::findClaimedBy($reported->hostId, $reported->key);
 
         if ($start->account_type !== Account::linkType() || $start->account_generation !== $reported->generation) {
             throw UsageReportRefused::otherGeneration($reported->key);
         }
 
-        $account = Account::lockedForJournal($start->account_id);
+        $account = Account::findLockedForJournal($start->account_id);
 
         if ($account->isBeingRemoved()) {
             throw AccountMissing::for($account->id);

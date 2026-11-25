@@ -27,7 +27,7 @@ final readonly class MainInbox implements MainInboxContract
 
     public function occupant(): Option
     {
-        return Option::fromValue(InboxMember::attachedTo([Inbox::main()->id], Agent::class)[0] ?? null);
+        return Option::fromValue(InboxMember::resolveAttachedTo([Inbox::findMain()->id], Agent::class)[0] ?? null);
     }
 
     public function receive(NavigationRequest $request): void
@@ -61,6 +61,6 @@ final readonly class MainInbox implements MainInboxContract
 
     private function main(): Inbox
     {
-        return Inbox::main();
+        return Inbox::findMain();
     }
 }

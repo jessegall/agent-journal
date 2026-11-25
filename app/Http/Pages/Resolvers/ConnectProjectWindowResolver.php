@@ -51,8 +51,8 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
     public function read(): ConnectProjectWindowData
     {
         $now = CarbonImmutable::now();
-        $projects = Project::listed();
-        $environments = Environment::listedOfProjects(array_map(fn (Project $project) => $project->id, $projects));
+        $projects = Project::findListed();
+        $environments = Environment::findListedOfProjects(array_map(fn (Project $project) => $project->id, $projects));
 
         return ConnectProjectWindowData::from([
             'serverName' => $this->origin->name(),
@@ -75,7 +75,7 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
      */
     private function bindingList(CarbonImmutable $now): BindingListData
     {
-        $page = ProjectBinding::pageAfter($this->bindingsCursor());
+        $page = ProjectBinding::findPageAfter($this->bindingsCursor());
         $bindings = array_values($page->items());
 
         $expiries = array_values(array_filter(array_map(
@@ -117,7 +117,7 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
      */
     private function bindingRows(array $bindings, CarbonImmutable $now): array
     {
-        $grants = DeviceGrant::listedOfBindings(array_map(fn (ProjectBinding $binding) => $binding->id, $bindings));
+        $grants = DeviceGrant::findListedOfBindings(array_map(fn (ProjectBinding $binding) => $binding->id, $bindings));
 
         $approvers = array_values(array_filter(array_map(
             fn (DeviceGrant $grant) => $grant->approved_by_user_id,
@@ -129,7 +129,7 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
             array_values(array_unique($approvers)),
         ));
 
-        $audits = ConnectionAudit::newestOfBindings(array_map(fn (ProjectBinding $binding) => $binding->id, $bindings));
+        $audits = ConnectionAudit::findNewestOfBindings(array_map(fn (ProjectBinding $binding) => $binding->id, $bindings));
 
         return array_map(fn (ProjectBinding $binding) => ProjectBindingRowData::fromBinding(
             $binding,

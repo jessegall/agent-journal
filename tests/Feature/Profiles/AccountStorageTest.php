@@ -44,7 +44,7 @@ final class AccountStorageTest extends TestCase
     public function test_the_owner_reads_accounts_and_an_agent_reads_none(): void
     {
         $account = $this->account('Work');
-        ActiveAccount::lockedFor(DefaultDrivers::CLAUDE_CODE)->select($account);
+        ActiveAccount::findLockedFor(DefaultDrivers::CLAUDE_CODE)->select($account);
         $this->actAsAgent();
 
         $this->assertSame(0, Account::query()->count());
@@ -60,13 +60,13 @@ final class AccountStorageTest extends TestCase
         $work = $this->account('Work');
         $home = $this->account('Home');
 
-        $selection = ActiveAccount::lockedFor(DefaultDrivers::CLAUDE_CODE);
+        $selection = ActiveAccount::findLockedFor(DefaultDrivers::CLAUDE_CODE);
         $selection->select($work);
         $selection->select($work);
         $selection->select($home);
-        ActiveAccount::lockedFor(DefaultDrivers::CLAUDE_CODE)->clear();
+        ActiveAccount::findLockedFor(DefaultDrivers::CLAUDE_CODE)->clear();
 
-        $row = ActiveAccount::lockedFor(DefaultDrivers::CLAUDE_CODE);
+        $row = ActiveAccount::findLockedFor(DefaultDrivers::CLAUDE_CODE);
         $this->assertSame(1, ActiveAccount::query()->count());
         $this->assertNull($row->account_id);
         $this->assertTrue($row->has_selected);
@@ -102,7 +102,7 @@ final class AccountStorageTest extends TestCase
         $this->assertSame($second->id, $account->writerFor($second));
         $this->assertTrue($account->isGeneration(3));
         $this->assertFalse($account->isGeneration(2));
-        $this->assertSame($first->id, SignInAttempt::liveFor(DefaultDrivers::CLAUDE_CODE, $account)?->id);
+        $this->assertSame($first->id, SignInAttempt::findLiveFor(DefaultDrivers::CLAUDE_CODE, $account)?->id);
     }
 
     public function test_a_held_or_unsigned_account_refuses_starts_with_a_safe_reason(): void

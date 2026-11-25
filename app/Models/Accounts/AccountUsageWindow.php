@@ -111,7 +111,7 @@ final class AccountUsageWindow extends Model implements EventSource, ReadableMod
     /**
      * The account's window of the reading's limit and slot in the generation, locked; none before its first reading.
      */
-    public static function lockedFor(Account $account, int $generation, UsageWindowReading $reading): self|null
+    public static function findLockedFor(Account $account, int $generation, UsageWindowReading $reading): self|null
     {
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
@@ -127,7 +127,7 @@ final class AccountUsageWindow extends Model implements EventSource, ReadableMod
      * @param  list<Account>  $accounts
      * @return array<string, list<self>>
      */
-    public static function currentOf(array $accounts): array
+    public static function findCurrentOf(array $accounts): array
     {
         if ($accounts === []) {
             return [];

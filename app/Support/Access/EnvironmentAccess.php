@@ -63,7 +63,7 @@ final readonly class EnvironmentAccess
 
     public function disable(string $userId): void
     {
-        $user = User::lockedById($userId);
+        $user = User::findLockedById($userId);
         $user->disable(CarbonImmutable::now());
         $this->inboxes->endEverywhere(ActorIdentity::of($user));
     }

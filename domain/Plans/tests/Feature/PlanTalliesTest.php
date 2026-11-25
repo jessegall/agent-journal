@@ -114,7 +114,7 @@ final class PlanTalliesTest extends TestCase
 
         $bare = Plan::factory()->create();
 
-        $current = Phase::currentNumbersOf([
+        $current = Phase::resolveCurrentNumbersOf([
             $complete->id,
             $cancelledFirst->id,
             $bare->id,

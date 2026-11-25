@@ -28,7 +28,7 @@ final readonly class NativeTurnRecords implements NativeTurnRecordsContract
      */
     public function checkGeneration(string $sessionId, int|null $generation): void
     {
-        $runtime = AgentRuntime::ofSession($sessionId);
+        $runtime = AgentRuntime::findForSession($sessionId);
 
         if ($runtime !== null && $generation !== null && $generation < $runtime->process_generation) {
             throw StaleProcessGeneration::of($generation, $runtime->process_generation);
@@ -41,7 +41,7 @@ final readonly class NativeTurnRecords implements NativeTurnRecordsContract
      */
     public function acknowledgeWake(string $sessionId, CarbonImmutable $activityAt): void
     {
-        $runtime = AgentRuntime::ofSession($sessionId);
+        $runtime = AgentRuntime::findForSession($sessionId);
 
         if ($runtime === null) {
             return;
@@ -66,7 +66,7 @@ final readonly class NativeTurnRecords implements NativeTurnRecordsContract
      */
     public function recordPrompt(string $sessionId, int|null $generation, string|null $promptId): void
     {
-        $runtime = AgentRuntime::ofSession($sessionId);
+        $runtime = AgentRuntime::findForSession($sessionId);
 
         if ($runtime === null || $promptId === null) {
             return;

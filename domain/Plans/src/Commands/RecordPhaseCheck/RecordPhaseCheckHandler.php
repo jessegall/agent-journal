@@ -44,6 +44,6 @@ final readonly class RecordPhaseCheckHandler extends PlanCommandHandler
             throw PhaseCheckRefused::stale($receipt->receiptId, $receipt->runId);
         }
 
-        return PhaseCheck::record($phase, $receipt, ActorIdentity::of($command->dispatchedBy()))->id;
+        return PhaseCheck::create($phase, $receipt, ActorIdentity::of($command->dispatchedBy()))->id;
     }
 }

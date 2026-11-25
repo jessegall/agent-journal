@@ -59,7 +59,7 @@ final readonly class SequenceRecords
      */
     public function followers(): array
     {
-        return SequenceRun::followers();
+        return SequenceRun::resolveFollowers();
     }
 
     /**

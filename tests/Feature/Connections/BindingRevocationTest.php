@@ -80,7 +80,7 @@ final class BindingRevocationTest extends TestCase
         $this->assertSame($revoked->revokedAtText, $second->json('revokedAt'));
         $this->assertSame(2, $revoked->authority_generation);
         $this->assertCount(1, array_filter(
-            ConnectionAudit::newest(10),
+            ConnectionAudit::findNewest(10),
             fn (ConnectionAudit $audit) => $audit->type === ConnectionAuditType::BindingRevoked,
         ));
     }
@@ -117,7 +117,7 @@ final class BindingRevocationTest extends TestCase
         $this->recoverBinding('nonce-aaaaaaaaaaaaaaaa')->assertOk();
         $this->actingAs($this->owner)->deleteJson("/project-connections/bindings/{$binding}")->assertOk();
 
-        $audits = array_reverse(ConnectionAudit::newest(10));
+        $audits = array_reverse(ConnectionAudit::findNewest(10));
 
         $this->assertSame(
             [
@@ -168,6 +168,6 @@ final class BindingRevocationTest extends TestCase
      */
     private function mainOf(Project $project): Environment
     {
-        return Environment::listedOf($project->id)[0];
+        return Environment::findListedOf($project->id)[0];
     }
 }

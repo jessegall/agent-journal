@@ -20,12 +20,12 @@ final readonly class AgentFocuses implements AgentFocusesContract
     public function focus(ActorIdentity $agent, Focusable $focusable): void
     {
         $focusable->assertFocusable();
-        AgentFocus::lockedFor($agent->id)->moveTo($focusable->focusIdentity());
+        AgentFocus::create($agent->id)->moveTo($focusable->focusIdentity());
     }
 
     public function unfocus(ActorIdentity $agent, Focusable $focusable): void
     {
-        AgentFocus::lockedFor($agent->id)->clear($focusable->focusIdentity());
+        AgentFocus::create($agent->id)->clear($focusable->focusIdentity());
     }
 
     public function focusOf(ActorIdentity $agent): Option

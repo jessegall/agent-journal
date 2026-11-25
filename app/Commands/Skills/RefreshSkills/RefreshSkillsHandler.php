@@ -71,7 +71,7 @@ final readonly class RefreshSkillsHandler implements CommandHandler
 
         $skillEntries = $catalogue->all();
         $catalogueDigest = $this->digestOf($skillEntries);
-        $previous = SkillGeneration::latestReady();
+        $previous = SkillGeneration::findLatestReady();
         $reused = $previous !== null && $previous->catalogue_digest === $catalogueDigest;
 
         $generation = $reused
@@ -101,8 +101,8 @@ final readonly class RefreshSkillsHandler implements CommandHandler
     private function intendPublications(SkillGeneration $generation, array $entries): int
     {
         $intents = [];
-        $contexts = $this->contexts->forSessions(AgentSession::runningForMaintenance(self::MOST_SESSIONS));
-        $current = SkillPublication::currentSelectionsOf(array_keys($contexts));
+        $contexts = $this->contexts->forSessions(AgentSession::findRunningForMaintenance(self::MOST_SESSIONS));
+        $current = SkillPublication::resolveCurrentSelectionsOf(array_keys($contexts));
 
         foreach ($contexts as $sessionId => $context) {
             if ($context->driver === null || ! $this->adapters->supports($context->driver)) {

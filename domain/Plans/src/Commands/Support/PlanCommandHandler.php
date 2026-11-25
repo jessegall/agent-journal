@@ -22,7 +22,7 @@ abstract readonly class PlanCommandHandler implements CommandHandler
      */
     final protected function lockPlanAtRevision(string $planId, int $expectedRevision): Plan
     {
-        $plan = Plan::lockForChange($planId);
+        $plan = Plan::findLockedForChange($planId);
 
         if ($plan->revision !== $expectedRevision) {
             throw PlanRevisionChanged::for($plan->number, $expectedRevision, $plan->revision);

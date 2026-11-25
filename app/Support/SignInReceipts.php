@@ -58,7 +58,7 @@ final readonly class SignInReceipts
 
     private function started(string $attemptId): SignInReceiptData
     {
-        $attempt = SignInAttempt::readableByOwner($attemptId);
+        $attempt = SignInAttempt::findReadableByOwner($attemptId);
 
         if ($attempt === null) {
             return SignInReceiptData::without(SignInReceiptStatus::Unknown);

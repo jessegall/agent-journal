@@ -181,7 +181,7 @@ final class NotificationScope extends Model implements EventSource, ReadableMode
      *
      * @return Option<string>
      */
-    public static function userOf(string $id): Option
+    public static function resolveUserOf(string $id): Option
     {
         $scope = self::query()->whereKey($id)->ofUsers()->first();
 
@@ -191,7 +191,7 @@ final class NotificationScope extends Model implements EventSource, ReadableMode
     /**
      * The recipient's scope under its row lock, for a change of its receipts or its count.
      */
-    public static function lockedFor(string $key, ActorIdentity $recipient): self
+    public static function findLockedFor(string $key, ActorIdentity $recipient): self
     {
         return self::query()->ofRecipient($key, $recipient)->lockForUpdate()->firstOrFail();
     }

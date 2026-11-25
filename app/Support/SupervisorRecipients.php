@@ -21,7 +21,7 @@ final readonly class SupervisorRecipients
     public function resolve(SupervisorTarget $target): Option
     {
         if ($target->isProfile()) {
-            return Agent::soleActorForProfile($target->profileKey()->key);
+            return Agent::resolveSoleActorForProfile($target->profileKey()->key);
         }
 
         if ($target->isOwner()) {

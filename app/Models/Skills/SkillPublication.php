@@ -98,7 +98,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
         $skillPublication->skill_keys = $intent->skillKeys;
         $skillPublication->expected_previous_generation_id = $expectedPreviousGenerationId;
         $skillPublication->state = PublicationState::Pending;
-        $skillPublication->open_key = self::openKeyOf($intent->sessionId, $intent->target);
+        $skillPublication->open_key = self::resolveOpenKeyOf($intent->sessionId, $intent->target);
         $skillPublication->assertSaved($skillPublication->save());
 
         return $skillPublication;
@@ -167,7 +167,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
         $this->assertNewest();
         $this->moveTo(PublicationState::Pending);
         $this->error = null;
-        $this->open_key = self::openKeyOf($this->session_id, $this->target);
+        $this->open_key = self::resolveOpenKeyOf($this->session_id, $this->target);
         $this->save();
         $this->raiseMoved();
     }
@@ -250,7 +250,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
      */
     protected function targetName(): Attribute
     {
-        return Accessor::get(fn () => self::openKeyOf($this->session_id, $this->target));
+        return Accessor::get(fn () => self::resolveOpenKeyOf($this->session_id, $this->target));
     }
 
     /**
@@ -260,7 +260,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
      */
     protected function targetKey(): Attribute
     {
-        return Accessor::get(fn () => self::openKeyOf($this->session_id, $this->target));
+        return Accessor::get(fn () => self::resolveOpenKeyOf($this->session_id, $this->target));
     }
 
     // ----------[ Asserts ]----------
@@ -326,7 +326,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
 
     // ----------[ Queries ]----------
 
-    public static function openKeyOf(string $sessionId, string $target): string
+    public static function resolveOpenKeyOf(string $sessionId, string $target): string
     {
         return $sessionId.'|'.$target;
     }
@@ -337,7 +337,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
      * @param  list<string>  $sessionIds
      * @return array<string, string>
      */
-    public static function currentSelectionsOf(array $sessionIds): array
+    public static function resolveCurrentSelectionsOf(array $sessionIds): array
     {
         $publications = self::query()
             ->ofSessions($sessionIds)
@@ -359,7 +359,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     /**
      * @throws SkillPublicationMissing
      */
-    public static function lockById(string $publicationId): self
+    public static function findLockedById(string $publicationId): self
     {
         return self::query()
             ->whereKey($publicationId)
@@ -372,7 +372,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function settled(int $limit): array
+    public static function findSettled(int $limit): array
     {
         $settled = self::query()
             ->inAnyState([
@@ -392,7 +392,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function open(int $limit): array
+    public static function findOpen(int $limit): array
     {
         $open = self::query()
             ->inAnyState([
@@ -412,7 +412,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
      * @param  list<string>  $ids
      * @return list<self>
      */
-    public static function latestOfSessions(array $ids, int $limit): array
+    public static function findLatestOfSessions(array $ids, int $limit): array
     {
         $latest = self::query()
             ->ofSessions($ids)
@@ -430,7 +430,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
      * @param  list<string>  $ids
      * @return array<string, PublicationState>
      */
-    public static function statesOf(array $ids): array
+    public static function resolveStatesOf(array $ids): array
     {
         $publications = self::query()->whereKey($ids)->readExactly(max(1, count($ids)))->get();
 
@@ -441,7 +441,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
      * The session's first publication: the set its driver was started with, which a driver that loads skills only
      * at a new session keeps.
      */
-    public static function firstOfSession(string $sessionId): self
+    public static function findFirstOfSession(string $sessionId): self
     {
         return self::query()
             ->ofSessions([$sessionId])
@@ -452,7 +452,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     /**
      * The session's newest delivered publication, or null when none was delivered yet.
      */
-    public static function latestDeliveredOfSession(string $sessionId): self|null
+    public static function findLatestDeliveredOfSession(string $sessionId): self|null
     {
         return self::query()
             ->ofSessions([$sessionId])
@@ -464,7 +464,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     /**
      * The session's newest publication, or null when none was asked for it.
      */
-    public static function latestOfSession(string $sessionId): self|null
+    public static function findLatestOfSession(string $sessionId): self|null
     {
         return self::query()
             ->ofSessions([$sessionId])
@@ -477,7 +477,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function latestOfEverySession(int $limit): array
+    public static function findLatestOfEverySession(int $limit): array
     {
         $latest = self::query()
             ->newestFirst()

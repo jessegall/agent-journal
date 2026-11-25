@@ -42,7 +42,7 @@ final class ReadPermits
             throw ShareLinkRefused::malformed();
         }
 
-        $share = Share::forTokenDigest(ShareToken::digestOf($token))->getOrThrow(ShareLinkRefused::unknown());
+        $share = Share::findForTokenDigest(ShareToken::digestOf($token))->getOrThrow(ShareLinkRefused::unknown());
         $permit = new ReadPermit($share->id, $share->scope_version, bin2hex(random_bytes(self::REFERENCE_BYTES)));
         $this->permits->put($permit->reference, $permit);
 

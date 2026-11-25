@@ -17,12 +17,12 @@ final readonly class NotifyStoppedHandler implements CommandHandler
 
     public function handle(NotifyStoppedCommand $command): void
     {
-        $start = SessionProcess::claimedBy($command->hostId, $command->startKey);
+        $start = SessionProcess::findClaimedBy($command->hostId, $command->startKey);
 
         if ($start->stopWithProof()) {
             $this->facts->publishAfterCommit(new AccountUseChanged($start->accountIdentity));
             $this->facts->publishAfterCommit(new SessionStateChanged($start->session_id));
-            $stoppingSwitch = DriverSwitch::stoppingOf($start->session_id);
+            $stoppingSwitch = DriverSwitch::findStoppingOf($start->session_id);
 
             if ($stoppingSwitch !== null) {
                 $stoppingSwitch->markStopped();

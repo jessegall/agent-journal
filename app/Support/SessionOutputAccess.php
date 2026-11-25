@@ -15,13 +15,13 @@ final readonly class SessionOutputAccess implements SessionOutputAccessContract
 {
     public function grantedTo(string $sessionId): array
     {
-        $start = SessionProcess::currentOf($sessionId);
+        $start = SessionProcess::findCurrentOf($sessionId);
 
         if ($start === null) {
             return [];
         }
 
-        return SessionOutputGrant::currentOf($start);
+        return SessionOutputGrant::resolveCurrentOf($start);
     }
 
     public function mayRead(string $sessionId, string $path): bool

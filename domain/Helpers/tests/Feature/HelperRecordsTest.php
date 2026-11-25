@@ -50,8 +50,8 @@ final class HelperRecordsTest extends TestCase
     {
         $parent = $this->actAsUser('parent');
         $subject = new RecordIdentity('tasks.task', (string) Str::ulid());
-        $first = HelperPurpose::forSubjectOnce($parent, 'read-only-helper', $subject);
-        $again = HelperPurpose::forSubjectOnce($parent, 'read-only-helper', $subject);
+        $first = HelperPurpose::create($parent, 'read-only-helper', $subject);
+        $again = HelperPurpose::create($parent, 'read-only-helper', $subject);
 
         $this->assertSame($first->id, $again->id);
         $this->assertSame(1, HelperPurpose::query()->where('subject_id', $subject->id)->count());
@@ -104,7 +104,7 @@ final class HelperRecordsTest extends TestCase
                 'read-only-helper',
                 'read-only-helper',
             ),
-            HelperPurpose::free($parent, 'read-only-helper', 'General review'),
+            HelperPurpose::findFree($parent, 'read-only-helper', 'General review'),
         ];
     }
 }

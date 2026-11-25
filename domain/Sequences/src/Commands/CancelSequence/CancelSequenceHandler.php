@@ -14,6 +14,6 @@ final readonly class CancelSequenceHandler extends SequenceCommandHandler
 {
     public function handle(CancelSequenceCommand $command): void
     {
-        SequenceRun::lockedById($command->sequenceRunId)->cancel();
+        SequenceRun::findLockedById($command->sequenceRunId)->cancel();
     }
 }

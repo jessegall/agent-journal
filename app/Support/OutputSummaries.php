@@ -68,7 +68,7 @@ final readonly class OutputSummaries
             return PartResult::receipted($receipt->get()->outcome->value, $receipt->get()->receiptId);
         }
 
-        $assessment = OutputAssessment::latestOf($part);
+        $assessment = OutputAssessment::findLatestOf($part);
 
         if ($assessment === null) {
             return PartResult::unavailable(['no assessment']);

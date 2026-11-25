@@ -18,7 +18,7 @@ final readonly class PollDeviceGrantHandler implements CommandHandler
 {
     public function handle(PollDeviceGrantCommand $command): DevicePollOutcome
     {
-        $grant = DeviceGrant::lockByDeviceCode($command->deviceCodeDigest);
+        $grant = DeviceGrant::findLockedByDeviceCode($command->deviceCodeDigest);
 
         if ($grant->binding->host_id !== $command->hostId) {
             throw DeviceGrantRefused::unknownCode();

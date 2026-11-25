@@ -471,7 +471,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     /**
      * The oldest attempt no host runs yet, locked for its claim; none when nothing waits.
      */
-    public static function oldestWaitingAt(CarbonImmutable $now): self|null
+    public static function findOldestWaitingAt(CarbonImmutable $now): self|null
     {
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
@@ -484,7 +484,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     /**
      * A new, unused staging folder under the accounts root, one for every attempt.
      */
-    public static function newFolderIn(string $root): string
+    public static function resolveNewFolderIn(string $root): string
     {
         return $root.'/'.Str::lower((string) Str::ulid());
     }
@@ -493,7 +493,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      * The earliest attempt still signing in a new account of the driver, or this account, which a second start
      * rejoins instead of starting another writer.
      */
-    public static function liveFor(string $driver, Account|null $account): self|null
+    public static function findLiveFor(string $driver, Account|null $account): self|null
     {
         return self::query()
             ->ofDriver($driver)
@@ -507,7 +507,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     /**
      * The attempt, while the owner may read it; none once it is gone or another owner's.
      */
-    public static function readableByOwner(string $attemptId): self|null
+    public static function findReadableByOwner(string $attemptId): self|null
     {
         return self::query()->whereKey($attemptId)->with('resultAccount')->first();
     }
@@ -517,7 +517,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      *
      * @throws SignInAttemptMissing
      */
-    public static function lockedForOwner(string $attemptId): self
+    public static function findLockedForOwner(string $attemptId): self
     {
         return self::query()->whereKey($attemptId)->lockForUpdate()->firstOr(
             SignInAttemptMissing::throwing()->for($attemptId),
@@ -529,7 +529,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      *
      * @throws SignInAttemptMissing
      */
-    public static function lockedForJournal(string $attemptId): self
+    public static function findLockedForJournal(string $attemptId): self
     {
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
@@ -542,7 +542,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      *
      * @throws SignInAttemptMissing
      */
-    public static function driverForJournal(string $attemptId): string
+    public static function resolveDriverForJournal(string $attemptId): string
     {
         $driver = self::query()->withoutGlobalScope(
             AccountOwnerScope::class,
@@ -557,7 +557,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      *
      * @return list<string>
      */
-    public static function expiredLiveIds(CarbonImmutable $now, int $limit): array
+    public static function resolveExpiredLiveIds(CarbonImmutable $now, int $limit): array
     {
         $ids = self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
@@ -576,7 +576,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function recentFor(CarbonImmutable $now): array
+    public static function findRecentFor(CarbonImmutable $now): array
     {
         $attempts = self::query()
             ->liveOrUpdatedSince($now->subMinutes(15))
@@ -594,7 +594,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      * @param  list<string>  $runningAttemptIds
      * @return list<self>
      */
-    public static function lostBy(string $hostId, array $runningAttemptIds): array
+    public static function findLostBy(string $hostId, array $runningAttemptIds): array
     {
         $attempts = self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
@@ -615,7 +615,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      *
      * @throws SignInAttemptMissing
      */
-    public static function runBy(string $hostId, string $attemptId): self
+    public static function findRunBy(string $hostId, string $attemptId): self
     {
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
@@ -627,7 +627,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      * The ended attempt whose staging folder a host has still to clean, for a new account or a reconnect alike; a
      * reconnect never touched the account's saved folder, so only its own staging folder is cleaned.
      */
-    public static function nextDueForCleanup(): self|null
+    public static function findNextDueForCleanup(): self|null
     {
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
@@ -642,7 +642,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function pendingCleanups(): array
+    public static function findPendingCleanups(): array
     {
         $attempts = self::query()
             ->cleanupPending()
@@ -659,7 +659,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      *
      * @return list<string>
      */
-    public static function waitingForUsesIds(int $limit): array
+    public static function resolveWaitingForUsesIds(int $limit): array
     {
         $ids = self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)

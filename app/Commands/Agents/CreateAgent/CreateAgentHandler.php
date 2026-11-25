@@ -19,7 +19,7 @@ final readonly class CreateAgentHandler implements CommandHandler
 
     public function handle(CreateAgentCommand $command): ActorIdentity
     {
-        $project = Project::forId($command->projectId);
+        $project = Project::findForId($command->projectId);
         $agent = Agent::create($command->name, $command->profileKey, $project);
         $actor = ActorIdentity::of($agent);
         $this->desks->provision($actor, $agent->name);

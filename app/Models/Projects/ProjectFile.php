@@ -115,7 +115,7 @@ final class ProjectFile extends Model implements Commentable, Numbered, Readable
      *
      * @return Option<self>
      */
-    public static function atPath(string $bindingId, string $path): Option
+    public static function findAtPath(string $bindingId, string $path): Option
     {
         return self::query()->atPathOf($bindingId, $path)->firstOption();
     }

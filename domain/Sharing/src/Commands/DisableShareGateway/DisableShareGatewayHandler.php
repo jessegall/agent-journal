@@ -36,10 +36,10 @@ final readonly class DisableShareGatewayHandler extends SharingCommandHandler
         $owner = $command->dispatchedBy();
         $this->policy->assertManager($owner);
         ShareInstallation::create();
-        $configuration = ShareGatewayConfiguration::lockById($command->configurationId);
+        $configuration = ShareGatewayConfiguration::findLockedById($command->configurationId);
 
         $actor = ActorIdentity::of($owner);
-        $this->endings->revokeAll(Share::lockUnendedOf($configuration->id), $actor);
+        $this->endings->revokeAll(Share::findLockedUnendedOf($configuration->id), $actor);
         $this->cancelOpensOf($configuration);
 
         if (ShareGatewayEndpoint::hasAnyRunningOf($configuration)) {

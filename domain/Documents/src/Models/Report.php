@@ -173,7 +173,7 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
 
     // ----------[ Queries ]----------
 
-    public static function lockedForClosing(int|string $reference): self
+    public static function findLockedForClosing(int|string $reference): self
     {
         $reports = self::query()->lockForUpdate();
 

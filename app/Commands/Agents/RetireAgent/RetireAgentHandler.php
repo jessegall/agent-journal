@@ -104,7 +104,7 @@ final readonly class RetireAgentHandler implements CommandHandler
                 $this->requests->stop(new StackTarget($target->id, $session->id), "retire-{$session->id}");
             }
 
-            if (AgentRuntime::existsForSession($session->id)) {
+            if (AgentRuntime::hasSession($session->id)) {
                 continue;
             }
 
@@ -124,7 +124,7 @@ final readonly class RetireAgentHandler implements CommandHandler
      */
     private function cancelPendingOfAgent(string $agentId): array
     {
-        $starts = SessionProcess::supervised()
+        $starts = SessionProcess::query()->supervised()
             ->where('agent_id', $agentId)
             ->where('state', SessionProcessState::Pending->value)
             ->lockForUpdate()

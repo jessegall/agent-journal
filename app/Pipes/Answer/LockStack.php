@@ -16,6 +16,6 @@ final readonly class LockStack implements Pipe
 {
     public function handle(HookCallStage $call): LockedCall
     {
-        return $call->locked(AgentStackRow::lockFor($call->target));
+        return $call->locked(AgentStackRow::findLockedFor($call->target));
     }
 }

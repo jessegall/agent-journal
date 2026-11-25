@@ -18,9 +18,9 @@ final readonly class RevokeProjectInvitationHandler implements CommandHandler
 {
     public function handle(RevokeProjectInvitationCommand $command): void
     {
-        $invitation = ProjectInvitation::lockPending($command->invitationId);
+        $invitation = ProjectInvitation::findLockedPending($command->invitationId);
         $attemptId = $invitation->attemptId();
-        InstallAttempt::lockById($attemptId)->cancel($command->seenVersion);
+        InstallAttempt::findLockedById($attemptId)->cancel($command->seenVersion);
         $invitation->revoke();
 
         ConnectionAudit::createForInvitation(

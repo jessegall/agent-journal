@@ -32,7 +32,7 @@ trait WritesInboxMessages
 
         $this->app->make(ActorProvisioning::class)->provision($actor, 'Own');
 
-        return Inbox::personalOf($actor);
+        return Inbox::findPersonalOf($actor);
     }
 
     /**
@@ -40,7 +40,7 @@ trait WritesInboxMessages
      */
     protected function postTo(Inbox $inbox, MessageSender $sender, string $body): Message
     {
-        $locked = Inbox::lockedById($inbox->id);
+        $locked = Inbox::findLockedById($inbox->id);
         $number = $locked->takeMessageNumber();
 
         return Message::create(new InboxReceiver($locked), $number, $sender, $body);

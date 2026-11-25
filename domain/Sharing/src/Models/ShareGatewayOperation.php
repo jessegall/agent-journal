@@ -192,7 +192,7 @@ final class ShareGatewayOperation extends Model implements EventSource, Readable
      *
      * @return Option<string>
      */
-    public static function nextClaimable(): Option
+    public static function resolveNextClaimable(): Option
     {
         $shareGatewayOperationValue = self::query()->claimable()->oldestFirst()->value('id');
 
@@ -205,7 +205,7 @@ final class ShareGatewayOperation extends Model implements EventSource, Readable
      * @param  list<string>  $ids
      * @return list<string>
      */
-    public static function configurationsWaitingToOpen(array $ids): array
+    public static function resolveConfigurationsWaitingToOpen(array $ids): array
     {
         return array_values(array_unique(self::query()
             ->unfinished()
@@ -221,7 +221,7 @@ final class ShareGatewayOperation extends Model implements EventSource, Readable
      *
      * @throws GatewayLeaseRefused
      */
-    public static function of(string $id): self
+    public static function findOf(string $id): self
     {
         return self::query()->whereKey($id)->firstOr(GatewayLeaseRefused::throwing()->forOperation($id));
     }
@@ -229,9 +229,9 @@ final class ShareGatewayOperation extends Model implements EventSource, Readable
     /**
      * The operation of this id, locked until the transaction ends.
      */
-    public static function lockById(string $id): self
+    public static function findLockedById(string $id): self
     {
-        return self::lockedById($id);
+        return self::findLockedById($id);
     }
 
     // ----------[ Scopes ]----------

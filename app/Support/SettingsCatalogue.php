@@ -50,14 +50,14 @@ final readonly class SettingsCatalogue implements SettingsCatalogueContract
             throw SettingsOwnerUnknown::for($owner);
         }
 
-        return $this->catalogueOf($owner, SettingsRecord::sharedRuntimeForOwner($owner));
+        return $this->catalogueOf($owner, SettingsRecord::findSharedRuntimeForOwner($owner));
     }
 
     public function everyOwner(): array
     {
         $this->gate->require();
         $owners = array_keys($this->registry->definitions());
-        $records = SettingsRecord::sharedRuntimeForOwners($owners);
+        $records = SettingsRecord::findSharedRuntimeForOwners($owners);
 
         return array_map(
             fn (string $owner) => $this->catalogueOf($owner, Option::fromArraysValue($records, $owner)),

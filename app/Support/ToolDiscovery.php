@@ -26,7 +26,7 @@ final readonly class ToolDiscovery implements ToolDiscoveryContract
 
     public function isDiscoveredInCurrentGeneration(string $sessionId): bool
     {
-        return AgentRuntime::generationStartOfSession($sessionId)
+        return AgentRuntime::resolveGenerationStartOfSession($sessionId)
             ->map(fn (CarbonImmutable $start) => AgentSession::isDiscoveredInOrAfterSecondOf($sessionId, $start))
             ->getOrElse(true);
     }

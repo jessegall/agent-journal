@@ -177,7 +177,7 @@ final class StopCheckTest extends TestCase
     {
         $hook = new HookIdentity($start->agent->id, $start->session->id, $stopId, 'digest');
 
-        return StopCheck::openFor($hook, self::DIGEST, 1, array_fill_keys($conditions, self::HASH));
+        return StopCheck::create($hook, self::DIGEST, 1, array_fill_keys($conditions, self::HASH));
     }
 
     /**

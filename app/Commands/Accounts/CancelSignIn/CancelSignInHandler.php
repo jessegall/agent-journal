@@ -20,7 +20,7 @@ final readonly class CancelSignInHandler implements CommandHandler
 
     public function handle(CancelSignInCommand $command): void
     {
-        $attempt = SignInAttempt::lockedForOwner($command->attemptId);
+        $attempt = SignInAttempt::findLockedForOwner($command->attemptId);
 
         if (! $attempt->isLive()) {
             return;

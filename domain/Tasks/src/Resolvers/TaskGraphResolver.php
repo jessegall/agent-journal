@@ -31,9 +31,9 @@ final readonly class TaskGraphResolver implements TaskGraphResolverContract
     {
         $this->visibility->requireAllVisible($ids);
 
-        $tasks = Task::ofIds($ids);
+        $tasks = Task::findForIds($ids);
 
-        $waits = TaskWait::within($ids);
+        $waits = TaskWait::findWithin($ids);
 
         $edges = array_map(
             fn (TaskWait $wait) => new TaskGraphEdge(

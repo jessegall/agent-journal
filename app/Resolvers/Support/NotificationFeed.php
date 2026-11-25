@@ -44,7 +44,7 @@ final readonly class NotificationFeed
     private function pageOf(NotificationScope $scope, string|null $cursor): NotificationPage
     {
         $before = $cursor === null ? null : NotificationCursor::read($cursor, $scope->id)->beforeSequence;
-        $examined = NotificationReceipt::visibleInScope($scope->id, $before, NotificationPage::SIZE + 1);
+        $examined = NotificationReceipt::findVisibleInScope($scope->id, $before, NotificationPage::SIZE + 1);
         $receipts = array_slice($examined, 0, NotificationPage::SIZE);
         $last = end($receipts);
         $hasOlder = count($examined) > NotificationPage::SIZE && $last !== false;

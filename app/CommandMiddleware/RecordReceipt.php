@@ -44,7 +44,7 @@ final readonly class RecordReceipt implements CommandMiddleware
 
         $this->key->markReceiptTaken();
         $caller = $this->callers->forCommand($call->name(), $call->actor());
-        $receipt = CommandReceipt::lockedFor($caller, $call->name(), $key);
+        $receipt = CommandReceipt::findLockedFor($caller, $call->name(), $key);
 
         if ($receipt !== null) {
             if (! $receipt->admitsCommand($call->command())) {

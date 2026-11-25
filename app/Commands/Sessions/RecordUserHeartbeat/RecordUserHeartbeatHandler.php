@@ -17,6 +17,6 @@ final readonly class RecordUserHeartbeatHandler implements CommandHandler
     public function handle(RecordUserHeartbeatCommand $command): void
     {
         $now = $this->clock->now();
-        UserPresence::lockedFor($command->dispatchedBy()->id, $now)->beatAt($now);
+        UserPresence::create($command->dispatchedBy()->id, $now)->beatAt($now);
     }
 }

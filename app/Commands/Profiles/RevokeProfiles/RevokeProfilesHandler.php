@@ -26,10 +26,10 @@ final readonly class RevokeProfilesHandler implements CommandHandler
 
     public function handle(RevokeProfilesCommand $command): int
     {
-        $profiles = array_map(Profile::lockByKey(...), $command->keys);
+        $profiles = array_map(Profile::findLockedByKey(...), $command->keys);
 
         foreach ($profiles as $profile) {
-            $revision = ProfileRevision::currentOf($profile);
+            $revision = ProfileRevision::findCurrentOf($profile);
             $profile->retire();
             $this->commands->run(new HoldProfileRevisionCommand($profile->key, $revision->revision));
 

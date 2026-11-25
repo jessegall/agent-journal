@@ -118,7 +118,7 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
      */
     public function endpointHealth(): bool|null
     {
-        return ShareGatewayEndpoint::newestRunningOf($this)
+        return ShareGatewayEndpoint::findNewestRunningOf($this)
             ->map(fn (ShareGatewayEndpoint $endpoint) => $endpoint->isHealthy())
             ->getOrElse(null);
     }
@@ -130,7 +130,7 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
      */
     public function unendedShares(): array
     {
-        return Share::unendedOf($this->id);
+        return Share::findUnendedOf($this->id);
     }
 
     // ----------[ Calculations ]----------
@@ -173,7 +173,7 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
      *
      * @throws ShareGatewayUnavailable
      */
-    public static function usable(string $configurationId): self
+    public static function findUsable(string $configurationId): self
     {
         return self::query()
             ->enabled()
@@ -186,7 +186,7 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
      *
      * @throws ShareGatewayUnavailable
      */
-    public static function lockUsable(string $configurationId): self
+    public static function findLockedUsable(string $configurationId): self
     {
         return self::query()
             ->enabled()
@@ -198,9 +198,9 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
     /**
      * The configuration of this id, enabled or not, locked until the transaction ends.
      */
-    public static function lockById(string $configurationId): self
+    public static function findLockedById(string $configurationId): self
     {
-        return self::lockedById($configurationId);
+        return self::findLockedById($configurationId);
     }
 
     /**
@@ -209,7 +209,7 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
      * @param  list<string>  $ids
      * @return list<self>
      */
-    public static function lockAllById(array $ids): array
+    public static function findLockedAllById(array $ids): array
     {
         return array_values(self::query()
             ->whereKey($ids)
@@ -225,7 +225,7 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
      *
      * @return list<self>
      */
-    public static function allRevisions(): array
+    public static function findAllRevisions(): array
     {
         return array_values(
             self::query()->newestFirst()
@@ -241,7 +241,7 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
      * @param  list<string>  $ids
      * @return array<string, string>
      */
-    public static function gatewayKeysOf(array $ids): array
+    public static function resolveGatewayKeysOf(array $ids): array
     {
         return array_map(
             strval(...),
@@ -254,7 +254,7 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
      *
      * @throws ShareGatewayUnavailable
      */
-    public static function usableDefault(): self
+    public static function findUsableDefault(): self
     {
         return self::query()->enabled()->markedDefault()->firstOr(ShareGatewayUnavailable::throwing()->noDefault());
     }

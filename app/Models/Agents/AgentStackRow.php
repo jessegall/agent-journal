@@ -179,7 +179,7 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
      *
      * @return Option<self>
      */
-    public static function activeFor(StackTarget $target): Option
+    public static function findActiveFor(StackTarget $target): Option
     {
         $row = self::query()->forTarget($target)->first();
 
@@ -195,7 +195,7 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
      *
      * @return Option<self>
      */
-    public static function activeAuthorizedFor(StackTarget $target): Option
+    public static function findActiveAuthorizedFor(StackTarget $target): Option
     {
         $row = self::query()->authorizedFor($target)->first();
 
@@ -209,7 +209,7 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
     /**
      * @return Option<self>
      */
-    public static function lockActiveAuthorizedFor(StackTarget $target): Option
+    public static function findLockedActiveAuthorizedFor(StackTarget $target): Option
     {
         $row = self::query()->authorizedFor($target)->lockForUpdate()->first();
 
@@ -225,7 +225,7 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
      *
      * @return Option<self>
      */
-    public static function lastClosedBefore(StackTarget $target): Option
+    public static function findLastClosedBefore(StackTarget $target): Option
     {
         $agentStackRow = self::query()
             ->withoutGlobalScope(AgentSessionScope::class)
@@ -240,7 +240,7 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
     /**
      * The active stack of the target, locked for this transaction.
      */
-    public static function lockFor(StackTarget $target): self
+    public static function findLockedFor(StackTarget $target): self
     {
         $row = self::query()
             ->forTarget($target)
@@ -257,7 +257,7 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
      *
      * @param  Builder<self>  $query
      */
-    public static function lockKeptFor(Builder $query, StackTarget $target): self
+    public static function findLockedKeptFor(Builder $query, StackTarget $target): self
     {
         return $query->lockForUpdate()->firstOr(StackMissing::throwing()->forTarget($target->description()));
     }
@@ -266,7 +266,7 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
      * The active stack of a target the caller was authorized for (its start, or a user acting on it), read through
      * the explicit authorized query and locked.
      */
-    public static function lockAuthorizedFor(StackTarget $target): self
+    public static function findLockedAuthorizedFor(StackTarget $target): self
     {
         $row = self::query()
             ->authorizedFor($target)
@@ -281,7 +281,7 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
      * @param  list<string>  $sessions
      * @return list<self>
      */
-    public static function lockActiveOf(ActorIdentity $actor, array $sessions): array
+    public static function findLockedActiveOf(ActorIdentity $actor, array $sessions): array
     {
         if ($sessions === []) {
             return [];

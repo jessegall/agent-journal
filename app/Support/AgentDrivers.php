@@ -25,7 +25,7 @@ final readonly class AgentDrivers
 
         $drivers = [];
 
-        foreach (AgentSession::runningDriversOf($agentIds) as $agentId => $driver) {
+        foreach (AgentSession::resolveRunningDriversOf($agentIds) as $agentId => $driver) {
             $drivers[Agent::storedType().':'.$agentId] = $driver;
         }
 

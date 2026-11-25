@@ -27,6 +27,6 @@ final readonly class ProjectEnvironmentList
             throw InstallAttemptRefused::notAllowed();
         }
 
-        return Environment::listedOf($project->id);
+        return Environment::findListedOf($project->id);
     }
 }

@@ -58,7 +58,7 @@ final readonly class ProfileAuthorizerProvider implements AuthorizerProvider
      */
     public function forTarget(Actor $target): Authorizer
     {
-        $session = AgentSession::liveOf($target->actorId())
+        $session = AgentSession::findLiveOf($target->actorId())
             ?? throw ActorNotAllowed::withoutStoredAuthority('agent without a live session');
 
         try {

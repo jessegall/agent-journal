@@ -100,7 +100,7 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
         $grant = new self();
         $grant->binding_id = $binding->id;
         $grant->reference = ShortReference::withPrefix('TS');
-        $grant->generation = self::nextGenerationOf($binding);
+        $grant->generation = self::resolveNextGenerationOf($binding);
         $grant->start_key = $startKey;
         $grant->environment_id = $binding->environment_id;
         $grant->device_code_digest = $codeDigest;
@@ -252,7 +252,7 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
     /**
      * The grant of this user code, with its binding, for the owner to check.
      */
-    public static function ofUserCode(string $code): self
+    public static function findForUserCode(string $code): self
     {
         return self::query()->with([
             'binding',
@@ -266,7 +266,7 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function lockOfStart(ProjectBinding $binding, string $startKey): array
+    public static function findLockedOfStart(ProjectBinding $binding, string $startKey): array
     {
         return array_values(self::query()->ofBindings([$binding->id])->underStartKey($startKey)
             ->lockForUpdate()->limit(1)->get()->all());
@@ -278,7 +278,7 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
      * @param  list<string>  $ids
      * @return list<self>
      */
-    public static function listedOfBindings(array $ids): array
+    public static function findListedOfBindings(array $ids): array
     {
         return array_values(self::query()->ofBindings($ids)->newestFirst()
             ->readAll('a binding has a device grant per shell that asked')->get()->all());
@@ -287,7 +287,7 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
     /**
      * The generation the binding's next sign-in gets: one past its newest.
      */
-    public static function nextGenerationOf(ProjectBinding $binding): int
+    public static function resolveNextGenerationOf(ProjectBinding $binding): int
     {
         return (int) self::query()->ofBindings([$binding->id])->max('generation') + 1;
     }
@@ -295,7 +295,7 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
     /**
      * The grant of this id, locked until the transaction ends.
      */
-    public static function lockById(string $id): self
+    public static function findLockedById(string $id): self
     {
         return self::query()->with('binding')->whereKey($id)->lockForUpdate()->firstOrFail();
     }
@@ -305,7 +305,7 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
      *
      * @throws DeviceGrantRefused
      */
-    public static function lockPendingByUserCode(string $code): self
+    public static function findLockedPendingByUserCode(string $code): self
     {
         return self::query()
             ->with('binding')
@@ -320,7 +320,7 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
      *
      * @throws DeviceGrantRefused
      */
-    public static function lockByDeviceCode(string $digest): self
+    public static function findLockedByDeviceCode(string $digest): self
     {
         return self::query()
             ->with('binding')
@@ -334,7 +334,7 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
      *
      * @throws DeviceGrantRefused
      */
-    public static function usableByDigest(string $digest): self
+    public static function findUsableByDigest(string $digest): self
     {
         return self::query()
             ->with('binding')
@@ -348,7 +348,7 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function lockLiveOf(ProjectBinding $binding): array
+    public static function findLockedLiveOf(ProjectBinding $binding): array
     {
         return array_values(self::query()->ofBindings([$binding->id])
             ->unrevoked()->lockForUpdate()

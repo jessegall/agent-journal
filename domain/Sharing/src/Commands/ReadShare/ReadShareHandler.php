@@ -62,7 +62,7 @@ final readonly class ReadShareHandler extends SharingCommandHandler
         }
 
         $permit = $this->permits->take($command->permitReference);
-        $share = Share::lockForRead($permit->shareId);
+        $share = Share::findLockedForRead($permit->shareId);
         $root = $share->root;
 
         if (! $share->isReadableNow()
@@ -99,7 +99,7 @@ final readonly class ReadShareHandler extends SharingCommandHandler
             $relation = $this->records->relation($from->type, $hop->relation);
 
             if ($relation->type !== ShareRelationType::Linked
-                || ! ShareMember::approvesOverLiveLink($share, $from, $hop->target)) {
+                || ! ShareMember::isApprovedOverLiveLink($share, $from, $hop->target)) {
                 return false;
             }
 
@@ -151,7 +151,7 @@ final readonly class ReadShareHandler extends SharingCommandHandler
     {
         $cards = [];
 
-        foreach (ShareMember::approvedTargetsFrom($share, $target) as $type => $targets) {
+        foreach (ShareMember::resolveApprovedTargetsFrom($share, $target) as $type => $targets) {
             if (! $this->records->has($type)) {
                 continue;
             }

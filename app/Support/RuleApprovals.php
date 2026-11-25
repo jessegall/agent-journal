@@ -51,7 +51,7 @@ final readonly class RuleApprovals
         $rule = $declaration->payload;
         $this->checkConflicts($rule);
         $this->checkReaders($rule, $declaration, $approval->readers);
-        $classification = ClassificationRule::forRule($proposal->project_key, $rule);
+        $classification = ClassificationRule::create($proposal->project_key, $rule);
         $classification->assertExpectedRevision($approval->expectedActiveRevision);
         $request = $proposal->commandRequest()->lockForUpdate()->first();
 

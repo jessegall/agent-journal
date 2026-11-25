@@ -22,7 +22,7 @@ final readonly class SealedAttachments implements AttachmentReferences
     public function assertReadable(MessageAttachmentData $part, string $recipientSessionId): void
     {
         try {
-            $upload = TextUpload::sealedFor($this->sessions, $recipientSessionId, $part->attachmentId);
+            $upload = TextUpload::findSealedFor($this->sessions, $recipientSessionId, $part->attachmentId);
         } catch (UploadExpired $expired) {
             throw DriverRequestRefused::attachmentMissing($part->attachmentId, $expired);
         }

@@ -81,7 +81,7 @@ final class HelperJobEndingTest extends TestCase
             'writing-helper',
         );
 
-        $purpose = HelperPurpose::free($parent, 'writing-helper', 'General work '.Str::random(6));
+        $purpose = HelperPurpose::findFree($parent, 'writing-helper', 'General work '.Str::random(6));
 
         return HelperJob::create(
             $helper,

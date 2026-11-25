@@ -37,7 +37,7 @@ final readonly class UploadStore
 
     public function append(string $uploadId, int $index, string $text, string $digest): void
     {
-        $upload = TextUpload::locked($uploadId);
+        $upload = TextUpload::findLocked($uploadId);
 
         if ($upload->hasReceivedChunk($index, $text, $digest)) {
             return;
@@ -61,18 +61,18 @@ final readonly class UploadStore
 
     public function seal(string $uploadId): void
     {
-        TextUpload::locked($uploadId)->seal();
+        TextUpload::findLocked($uploadId)->seal();
     }
 
     public function discard(string $uploadId): void
     {
-        TextUpload::locked($uploadId)->delete();
+        TextUpload::findLocked($uploadId)->delete();
     }
 
     public function consume(string $uploadId, UploadType $type): string
     {
         $this->transaction->assertRunning($this->database->connection());
 
-        return TextUpload::locked($uploadId)->consume($type);
+        return TextUpload::findLocked($uploadId)->consume($type);
     }
 }

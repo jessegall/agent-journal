@@ -469,7 +469,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
      *
      * @throws BindingUnrecoverable
      */
-    public static function ofHostByNonce(string $hostId, string $installationNonce): self
+    public static function findForHostByNonce(string $hostId, string $installationNonce): self
     {
         return self::query()
             ->onHost($hostId)
@@ -482,7 +482,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
      *
      * @throws PresenceRefused
      */
-    public static function ofHost(string $hostId, string $id): self
+    public static function findForHost(string $hostId, string $id): self
     {
         return self::query()
             ->whereKey($id)
@@ -496,7 +496,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
      *
      * @return CursorPaginator<int, self>
      */
-    public static function pageAfter(string|null $cursor): CursorPaginator
+    public static function findPageAfter(string|null $cursor): CursorPaginator
     {
         return self::query()->with([
             'project',
@@ -511,7 +511,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function ofMainAgent(string $agentId): array
+    public static function findForMainAgent(string $agentId): array
     {
         return array_values(
             self::query()->with('project')->withMainAgent($agentId)->unrevoked()->limit(1)->get()->all(),
@@ -525,7 +525,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
      * @param  list<string>  $environmentIds
      * @return Option<self>
      */
-    public static function lastHeardFromIn(array $environmentIds): Option
+    public static function findLastHeardFromIn(array $environmentIds): Option
     {
         return self::query()
             ->unrevoked()
@@ -537,7 +537,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     /**
      * The binding's authority generation, which every lease renewal of its runtimes must carry.
      */
-    public static function authorityGenerationOf(string $bindingId): int
+    public static function resolveAuthorityGenerationOf(string $bindingId): int
     {
         return self::query()->whereKey($bindingId)->firstOrFail()->authority_generation;
     }
@@ -555,7 +555,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
      *
      * @return list<string>
      */
-    public static function liveIdOfLocalHost(string $hostId): array
+    public static function resolveLiveIdOfLocalHost(string $hostId): array
     {
         return array_values(self::query()->onHost($hostId)->unrevoked()->onLocalHost()
             ->limit(1)->pluck('id')->all());
@@ -564,7 +564,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     /**
      * The binding of this id, locked until the transaction ends.
      */
-    public static function lockById(string $id): self
+    public static function findLockedById(string $id): self
     {
         return self::query()->with('host')->whereKey($id)->lockForUpdate()->firstOrFail();
     }

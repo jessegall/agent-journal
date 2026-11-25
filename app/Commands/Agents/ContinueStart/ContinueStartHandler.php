@@ -63,7 +63,7 @@ final readonly class ContinueStartHandler implements CommandHandler
      */
     private function driverTypeOf(AgentSession $predecessor): DriverType
     {
-        $runtime = AgentRuntime::ofSession($predecessor->id);
+        $runtime = AgentRuntime::findForSession($predecessor->id);
 
         if ($runtime !== null) {
             return $runtime->driver_type;

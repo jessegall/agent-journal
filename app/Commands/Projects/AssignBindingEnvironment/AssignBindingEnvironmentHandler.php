@@ -15,7 +15,7 @@ final readonly class AssignBindingEnvironmentHandler implements CommandHandler
 {
     public function handle(AssignBindingEnvironmentCommand $command): void
     {
-        $binding = ProjectBinding::lockById($command->bindingId);
-        $binding->assignEnvironment(Environment::ofProjectById($binding->project_id, $command->environmentId));
+        $binding = ProjectBinding::findLockedById($command->bindingId);
+        $binding->assignEnvironment(Environment::findForProjectById($binding->project_id, $command->environmentId));
     }
 }

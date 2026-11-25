@@ -20,7 +20,7 @@ final readonly class RecordHeartbeatHandler implements CommandHandler
 
     public function handle(RecordHeartbeatCommand $command): void
     {
-        $session = AgentSession::lockedForHeartbeat($command->sessionId);
+        $session = AgentSession::findLockedForHeartbeat($command->sessionId);
         $this->assertUsableSession($session);
 
         $session->recordHeartbeatAt($this->clock->now());

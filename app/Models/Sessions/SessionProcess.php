@@ -23,7 +23,6 @@ use App\Exceptions\SessionProcessUnknown;
 use App\Models\Agents\AgentSession;
 use App\Models\Support\Accessor;
 use App\Models\Support\SessionProcessScope;
-use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;
 use App\Values\SelectedAccount;
 use Carbon\CarbonImmutable;
@@ -238,22 +237,12 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
     // ----------[ Queries ]----------
 
     /**
-     * The named read of the supervisor and the account-use read, across every agent's starts.
-     *
-     * @return ReadBuilder<self>
-     */
-    public static function supervised(): ReadBuilder
-    {
-        return self::query()->withoutGlobalScope(SessionProcessScope::class);
-    }
-
-    /**
      * The session's start that may still run, locked: the newest one not cancelled or stopped; none for a session
      * the journal does not supervise.
      */
-    public static function lockedCurrentOf(string $sessionId): self|null
+    public static function findLockedCurrentOf(string $sessionId): self|null
     {
-        return self::supervised()
+        return self::query()->supervised()
             ->unresolved()
             ->ofSessions([$sessionId])
             ->newestFirst()
@@ -264,17 +253,17 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
     /**
      * The session's start that may still run, for reading what it granted; none when no start runs.
      */
-    public static function currentOf(string $sessionId): self|null
+    public static function findCurrentOf(string $sessionId): self|null
     {
-        return self::supervised()->unresolved()->ofSessions([$sessionId])->newestFirst()->first();
+        return self::query()->supervised()->unresolved()->ofSessions([$sessionId])->newestFirst()->first();
     }
 
     /**
      * The session's latest start, for telling which account and generation a failure it reports belongs to.
      */
-    public static function latestOfSession(string $sessionId): self|null
+    public static function findLatestOfSession(string $sessionId): self|null
     {
-        return self::supervised()->ofSessions([$sessionId])->newestFirst()->first();
+        return self::query()->supervised()->ofSessions([$sessionId])->newestFirst()->first();
     }
 
     /**
@@ -284,9 +273,9 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
      * @param  list<string>  $ids
      * @return array<string, string>
      */
-    public static function latestIdsOfSessions(array $ids): array
+    public static function resolveLatestIdsOfSessions(array $ids): array
     {
-        return self::supervised()
+        return self::query()->supervised()
             ->ofSessions($ids)
             ->newestOfItsSession()
             ->readExactly(count($ids))
@@ -301,9 +290,9 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
      * @param  list<string>  $agentIds
      * @return array<string, string>
      */
-    public static function refusalsOf(array $agentIds): array
+    public static function resolveRefusalsOf(array $agentIds): array
     {
-        $latest = self::supervised()
+        $latest = self::query()->supervised()
             ->ofAgents($agentIds)
             ->newestOfItsAgent()
             ->readExactly(count($agentIds))
@@ -319,9 +308,9 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
      *
      * @throws SessionProcessUnknown
      */
-    public static function claimedBy(string $hostId, string $startKey): self
+    public static function findClaimedBy(string $hostId, string $startKey): self
     {
-        return self::supervised()
+        return self::query()->supervised()
             ->onHost($hostId)
             ->underStartKey($startKey)
             ->lockForUpdate()->firstOr(SessionProcessUnknown::throwing()->for($startKey));
@@ -332,9 +321,9 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
      *
      * @return list<string>
      */
-    public static function unresolvedKeysOf(string $hostId): array
+    public static function resolveUnresolvedKeysOf(string $hostId): array
     {
-        $keys = self::supervised()
+        $keys = self::query()->supervised()
             ->onHost($hostId)
             ->unresolved()
             ->oldestFirst()
@@ -347,9 +336,9 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
     /**
      * How many starts on the account may still have or make a process, for the account-use read.
      */
-    public static function unresolvedCountOf(RecordIdentity $account): int
+    public static function countUnresolvedOf(RecordIdentity $account): int
     {
-        return self::supervised()->onAccount($account)->unresolved()->count();
+        return self::query()->supervised()->onAccount($account)->unresolved()->count();
     }
 
     /**
@@ -357,9 +346,9 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
      *
      * @return list<string>
      */
-    public static function unresolvedSessionIdsOf(RecordIdentity $account): array
+    public static function resolveUnresolvedSessionIdsOf(RecordIdentity $account): array
     {
-        $sessionIds = self::supervised()
+        $sessionIds = self::query()->supervised()
             ->onAccount($account)
             ->unresolved()
             ->oldestFirst()
@@ -374,9 +363,9 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
      *
      * @return list<string>
      */
-    public static function unresolvedSessionIdsOn(string $hostId): array
+    public static function resolveUnresolvedSessionIdsOn(string $hostId): array
     {
-        $sessionIds = self::supervised()
+        $sessionIds = self::query()->supervised()
             ->onHost($hostId)
             ->unresolved()
             ->oldestFirst()
@@ -485,5 +474,16 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
     protected function underStartKey(Builder $query, string $startKey): void
     {
         $query->where('start_key', $startKey);
+    }
+
+    /**
+     * The named read of the supervisor and the account-use read, across every agent's starts.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function supervised(Builder $query): void
+    {
+        $query->withoutGlobalScope(SessionProcessScope::class);
     }
 }

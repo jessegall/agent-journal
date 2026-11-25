@@ -86,7 +86,7 @@ final class TaskWaitsTest extends TestCase
 
         $this->runCommand(new WaiveTaskWaitCommand($this->second->id, $this->first->id, 'Done by hand.'));
 
-        $wait = TaskWait::between($this->second->id, $this->first->id);
+        $wait = TaskWait::findBetween($this->second->id, $this->first->id);
         $this->assertNotNull($wait?->waived_at);
         $this->assertSame([
             $this->owner->id,

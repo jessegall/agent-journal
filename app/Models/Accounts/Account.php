@@ -669,7 +669,7 @@ final class Account extends Model implements EventSource, ReadableModel
     /**
      * The method the account signed in by, read by the journal for a start on it; none for an account that is gone.
      */
-    public static function methodOf(string $accountId): SignInMethod|null
+    public static function resolveMethodOf(string $accountId): SignInMethod|null
     {
         return self::query()->withoutGlobalScope(AccountOwnerScope::class)->whereKey($accountId)->first()?->method;
     }
@@ -677,7 +677,7 @@ final class Account extends Model implements EventSource, ReadableModel
     /**
      * The first free label of the driver for a new account: the proposed one, else its numbered variants from 2.
      */
-    public static function freeLabel(string $driver, AccountLabel $proposed): AccountLabel
+    public static function resolveFreeLabel(string $driver, AccountLabel $proposed): AccountLabel
     {
         $label = $proposed;
 
@@ -692,7 +692,7 @@ final class Account extends Model implements EventSource, ReadableModel
      * The driver's account, not removed, that holds the principal a verified sign-in proved; none for a sign-in that
      * proved no subject.
      */
-    public static function holdingPrincipal(string $driver, SignInIdentity $identity): self|null
+    public static function findHoldingPrincipal(string $driver, SignInIdentity $identity): self|null
     {
         if ($identity->subject === null) {
             return null;
@@ -712,7 +712,7 @@ final class Account extends Model implements EventSource, ReadableModel
      * Whether another account of the attempt's driver, not removed, already signs in by the key or token the attempt
      * was given; an attempt without a key holds none.
      */
-    public static function holdingKeyOf(SignInAttempt $attempt): self|null
+    public static function findHoldingKeyOf(SignInAttempt $attempt): self|null
     {
         if ($attempt->fingerprint === null) {
             return null;
@@ -733,7 +733,7 @@ final class Account extends Model implements EventSource, ReadableModel
      *
      * @throws AccountMissing
      */
-    public static function lockedForChange(string $accountId): self
+    public static function findLockedForChange(string $accountId): self
     {
         $account = self::query()->whereKey($accountId)->lockForUpdate()->firstOr(
             AccountMissing::throwing()->for($accountId),
@@ -748,7 +748,7 @@ final class Account extends Model implements EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function listed(): array
+    public static function findListed(): array
     {
         $accounts = self::query()
             ->kept()
@@ -765,7 +765,7 @@ final class Account extends Model implements EventSource, ReadableModel
      *
      * @throws AccountUnavailable
      */
-    public static function lockedForStart(string $accountId): self
+    public static function findLockedForStart(string $accountId): self
     {
         $account = self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
@@ -784,7 +784,7 @@ final class Account extends Model implements EventSource, ReadableModel
      *
      * @throws AccountUnavailable
      */
-    public static function lockedChosenForStart(string $driver, string $accountId, int $reviewedSignIn): self
+    public static function findLockedChosenForStart(string $driver, string $accountId, int $reviewedSignIn): self
     {
         $account = self::query()
             ->whereKey($accountId)
@@ -800,7 +800,7 @@ final class Account extends Model implements EventSource, ReadableModel
     /**
      * The account locked for the journal's own maintenance or the host that signs it in, whoever acts.
      */
-    public static function lockedForJournal(string $accountId): self
+    public static function findLockedForJournal(string $accountId): self
     {
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
@@ -813,7 +813,7 @@ final class Account extends Model implements EventSource, ReadableModel
      * The next account whose check a host runs, for the journal's host transport whoever acts; none when none waits.
      * A held account whose last check could not tell waits for the owner's recheck.
      */
-    public static function nextDueForCheck(): self|null
+    public static function findNextDueForCheck(): self|null
     {
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
@@ -826,7 +826,7 @@ final class Account extends Model implements EventSource, ReadableModel
     /**
      * The driver of an account, for the journal's own maintenance or the host, read before its locks are taken.
      */
-    public static function driverForJournal(string $accountId): string
+    public static function resolveDriverForJournal(string $accountId): string
     {
         $driver = self::query()->withoutGlobalScope(
             AccountOwnerScope::class,
@@ -840,7 +840,7 @@ final class Account extends Model implements EventSource, ReadableModel
      *
      * @throws AccountMissing
      */
-    public static function driverOf(string $accountId): string
+    public static function resolveDriverOf(string $accountId): string
     {
         $driver = self::query()->whereKey($accountId)->value('account_protocol');
         self::assertDriverFound($driver, $accountId);
@@ -851,7 +851,7 @@ final class Account extends Model implements EventSource, ReadableModel
     /**
      * The removed accounts whose processes are all gone and whose sign-in or folder a host has still to clean.
      */
-    public static function nextDueForCleanup(): self|null
+    public static function findNextDueForCleanup(): self|null
     {
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
@@ -865,7 +865,7 @@ final class Account extends Model implements EventSource, ReadableModel
      *
      * @return list<string>
      */
-    public static function waitingForCleanupIds(int $limit): array
+    public static function resolveWaitingForCleanupIds(int $limit): array
     {
         $ids = self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)

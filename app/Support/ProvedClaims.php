@@ -24,15 +24,15 @@ final readonly class ProvedClaims
             return [];
         }
 
-        $claims = AssignmentRecord::ofRecords($type, $recordIds);
-        $proofs = ClaimAuthorization::ofClaims(array_map(fn (AssignmentRecord $claim) => $claim->id, $claims));
+        $claims = AssignmentRecord::findForRecords($type, $recordIds);
+        $proofs = ClaimAuthorization::findForClaims(array_map(fn (AssignmentRecord $claim) => $claim->id, $claims));
 
-        $liveHolders = AssignmentRecord::holdersOf(array_merge(...array_map(
+        $liveHolders = AssignmentRecord::resolveHoldersOf(array_merge(...array_map(
             fn (ClaimAuthorization $proof) => $proof->sourceIds(),
             array_values($proofs),
         )));
 
-        $activeMemberIds = InboxMember::activeIdsAmong(array_values(array_filter(array_map(
+        $activeMemberIds = InboxMember::resolveActiveIdsAmong(array_values(array_filter(array_map(
             fn (ClaimAuthorization $proof) => $proof->inbox_member_id,
             array_values($proofs),
         ))));

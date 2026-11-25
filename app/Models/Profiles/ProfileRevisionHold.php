@@ -46,6 +46,22 @@ final class ProfileRevisionHold extends Model implements EventSource, ReadableMo
         ];
     }
 
+    // ----------[ Constructors ]----------
+
+    /**
+     * Keeps the fence of the revision once; fencing the same revision again changes nothing.
+     */
+    public static function create(string $key, int $revision): self
+    {
+        $fence = new self();
+        $fence->profile_key = $key;
+        $fence->profile_revision = $revision;
+        $fence->setAttribute($fence->getKeyName(), $fence->newUniqueId());
+        $fence->insertIfAbsent();
+
+        return self::query()->ofRevision($key, $revision)->sole();
+    }
+
     // ----------[ Mutations ]----------
 
     public function markReconciledAt(CarbonImmutable $time): void
@@ -58,25 +74,11 @@ final class ProfileRevisionHold extends Model implements EventSource, ReadableMo
     // ----------[ Queries ]----------
 
     /**
-     * Keeps the fence of the revision once; fencing the same revision again changes nothing.
-     */
-    public static function retain(string $key, int $revision): self
-    {
-        $fence = new self();
-        $fence->profile_key = $key;
-        $fence->profile_revision = $revision;
-        $fence->setAttribute($fence->getKeyName(), $fence->newUniqueId());
-        $fence->insertIfAbsent();
-
-        return self::query()->ofRevision($key, $revision)->sole();
-    }
-
-    /**
      * The fences whose sessions may still run, oldest first.
      *
      * @return list<self>
      */
-    public static function pending(int $limit): array
+    public static function findPending(int $limit): array
     {
         $pending = self::query()->unreconciled()->oldestFirst()->readExactly($limit)->get();
 

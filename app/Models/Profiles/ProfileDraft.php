@@ -42,6 +42,58 @@ final class ProfileDraft extends Model implements ReadableModel
         return ['revision' => 'integer'];
     }
 
+    // ----------[ Constructors ]----------
+
+    /**
+     * The profile's draft, or an empty one at revision 0 when nobody saved one yet.
+     */
+    public static function createForProfile(ProfileKey $profile): self
+    {
+        $existing = self::query()->with('currentRevision')->ofProfile($profile)->first();
+
+        if ($existing !== null) {
+            return $existing;
+        }
+
+        $draft = new self();
+        $draft->profile_key = $profile->key;
+        $draft->revision = 0;
+
+        return $draft;
+    }
+
+    /**
+     * @param  list<string>  $profiles
+     * @return array<string, self>
+     */
+    public static function createForProfiles(array $profiles): array
+    {
+        if ($profiles === []) {
+            return [];
+        }
+
+        sort($profiles);
+
+        foreach ($profiles as $profile) {
+            $draft = new self();
+            $draft->setRawAttributes([
+                'id' => (string) Str::ulid(),
+                'profile_key' => $profile,
+            ]);
+            $draft->insertIfAbsent();
+        }
+
+        return self::query()
+            ->ofProfiles($profiles)
+            ->inProfileOrder()
+            ->lockForUpdate()
+            ->with('currentRevision')
+            ->readExactly(count($profiles))
+            ->get()
+            ->keyBy('profile_key')
+            ->all();
+    }
+
     // ----------[ Transformers ]----------
 
     public function sourceAt(int $expected): ScriptSource
@@ -73,58 +125,6 @@ final class ProfileDraft extends Model implements ReadableModel
         if ($expected !== $this->revision) {
             throw ProfileDraftRefused::stale(ProfileKey::from($this->profile_key), $expected, $this->revision);
         }
-    }
-
-    // ----------[ Queries ]----------
-
-    /**
-     * The profile's draft, or an empty one at revision 0 when nobody saved one yet.
-     */
-    public static function of(ProfileKey $profile): self
-    {
-        $existing = self::query()->with('currentRevision')->ofProfile($profile)->first();
-
-        if ($existing !== null) {
-            return $existing;
-        }
-
-        $draft = new self();
-        $draft->profile_key = $profile->key;
-        $draft->revision = 0;
-
-        return $draft;
-    }
-
-    /**
-     * @param  list<string>  $profiles
-     * @return array<string, self>
-     */
-    public static function lockForProfiles(array $profiles): array
-    {
-        if ($profiles === []) {
-            return [];
-        }
-
-        sort($profiles);
-
-        foreach ($profiles as $profile) {
-            $draft = new self();
-            $draft->setRawAttributes([
-                'id' => (string) Str::ulid(),
-                'profile_key' => $profile,
-            ]);
-            $draft->insertIfAbsent();
-        }
-
-        return self::query()
-            ->ofProfiles($profiles)
-            ->inProfileOrder()
-            ->lockForUpdate()
-            ->with('currentRevision')
-            ->readExactly(count($profiles))
-            ->get()
-            ->keyBy('profile_key')
-            ->all();
     }
 
     // ----------[ Scopes ]----------

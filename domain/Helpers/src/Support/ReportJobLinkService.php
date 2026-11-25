@@ -44,7 +44,7 @@ final readonly class ReportJobLinkService
             return;
         }
 
-        $existing = ReportJobLink::ofReport($reportId);
+        $existing = ReportJobLink::findForReport($reportId);
 
         if ($existing->isDefined() && ! $existing->get()->isFor($job)) {
             ReportJobDiscrepancy::create($reportId, $reference, $filer, ReportJobDiscrepancyReason::ConflictingJob);

@@ -71,7 +71,7 @@ final readonly class ShareGrants
     ): Share {
         $consumed = $this->consume($owner, $previewId, $previewChecksum);
         $this->assertLiveSlotFree();
-        $proposal = Share::lockProposal($proposalId);
+        $proposal = Share::findLockedProposal($proposalId);
 
         if (! $proposal->root->isSameAs($consumed->root)) {
             throw ShareProposalUnavailable::forOtherRoot($proposalId);
@@ -124,11 +124,11 @@ final readonly class ShareGrants
     private function consume(Actor $owner, string $previewId, string $previewChecksum): ConsumedPreview
     {
         $this->policy->assertManager($owner);
-        $configurationId = SharePreview::of($previewId)->share_gateway_configuration_id;
+        $configurationId = SharePreview::findOf($previewId)->share_gateway_configuration_id;
 
         ShareInstallation::create();
-        $configuration = ShareGatewayConfiguration::lockUsable($configurationId);
-        $preview = SharePreview::lockFor($previewId);
+        $configuration = ShareGatewayConfiguration::findLockedUsable($configurationId);
+        $preview = SharePreview::findLockedFor($previewId);
         $candidates = $this->scope->discover($preview->root, ShareBudget::forPreview($this->meter));
         $selection = $preview->consumeFor($owner->actorId(), $previewChecksum, $candidates);
 
@@ -142,7 +142,7 @@ final readonly class ShareGrants
      */
     private function assertLiveSlotFree(): void
     {
-        if (Share::liveCount() >= Share::LIVE_LIMIT) {
+        if (Share::resolveLiveCount() >= Share::LIVE_LIMIT) {
             throw ShareQuotaReached::at(Share::LIVE_LIMIT);
         }
     }

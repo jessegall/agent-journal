@@ -23,7 +23,7 @@ final readonly class NotifyProjectReadHandler implements CommandHandler
      */
     public function handle(NotifyProjectReadCommand $command): void
     {
-        $read = ProjectRead::lockById($command->readId);
+        $read = ProjectRead::findLockedById($command->readId);
 
         if (! $read->isOfHost($command->hostId)) {
             throw ProjectReadRefused::ofAnotherActor($read->id);
@@ -53,7 +53,7 @@ final readonly class NotifyProjectReadHandler implements CommandHandler
         $read->answerWithText($text, $command->isTruncated);
 
         if (! $command->isTruncated) {
-            $file = ProjectFile::atPath($read->binding_id, $read->path)
+            $file = ProjectFile::findAtPath($read->binding_id, $read->path)
                 ->getOrCall(fn () => ProjectFile::create($read->binding_id, $read->path));
 
             $file->versionWith($text->digest)

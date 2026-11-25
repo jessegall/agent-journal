@@ -11,7 +11,7 @@ final readonly class RetryAccountCleanupHandler implements CommandHandler
 {
     public function handle(RetryAccountCleanupCommand $command): void
     {
-        $account = Account::lockedForChange($command->accountId);
+        $account = Account::findLockedForChange($command->accountId);
         $account->retryCleanup();
     }
 }

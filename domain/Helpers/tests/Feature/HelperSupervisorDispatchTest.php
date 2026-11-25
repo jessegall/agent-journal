@@ -41,7 +41,7 @@ final class HelperSupervisorDispatchTest extends TestCase
             $first,
             $second,
         ]);
-        $identity = HelperIdentity::designatedFor('lone-reviewer')->get();
+        $identity = HelperIdentity::findDesignatedFor('lone-reviewer')->get();
         $this->assertSame(1, HelperIdentity::query()->acrossActors()->where('profile_key', 'lone-reviewer')->count());
         $this->assertSame('user', $identity->actor_type);
     }
@@ -53,7 +53,7 @@ final class HelperSupervisorDispatchTest extends TestCase
         $outcome = $this->app->make(SupervisorDispatch::class)->startFor($this->request('Review plan 7'));
 
         $this->assertSame(SupervisorDispatchOutcome::Unavailable, $outcome);
-        $this->assertTrue(HelperIdentity::designatedFor('lone-reviewer')->isEmpty());
+        $this->assertTrue(HelperIdentity::findDesignatedFor('lone-reviewer')->isEmpty());
     }
 
     public function test_without_helpers_every_start_is_unavailable(): void

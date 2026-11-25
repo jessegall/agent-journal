@@ -37,7 +37,7 @@ final readonly class ProfilesShow extends ProfilesPage
 
     public function part(ProfileKey $key): LayoutPartData
     {
-        $profile = Profile::byKey($key);
+        $profile = Profile::findByKey($key);
 
         $page = DetailPage::make($profile->label);
 
@@ -51,7 +51,7 @@ final readonly class ProfilesShow extends ProfilesPage
 
         $snapshot = $this->profiles->snapshotFor($key);
         $tier = $snapshot->preferredTier;
-        $script = ProfileRevision::currentOf($profile)->script_source;
+        $script = ProfileRevision::findCurrentOf($profile)->script_source;
 
         $rows = [
             SettingsRow::value('type', 'Type', $snapshot->base->label, 'The kind of agent it is.'),

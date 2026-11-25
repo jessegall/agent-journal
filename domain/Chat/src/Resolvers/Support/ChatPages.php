@@ -57,8 +57,8 @@ final readonly class ChatPages
     {
         $viewer = ActorIdentity::of($this->actors->actor());
         $members = [
-            ...InboxMember::attachedTo([$inbox->id], User::class),
-            ...InboxMember::attachedTo([$inbox->id], Agent::class),
+            ...InboxMember::resolveAttachedTo([$inbox->id], User::class),
+            ...InboxMember::resolveAttachedTo([$inbox->id], Agent::class),
         ];
         $names = $this->labels->labelsFor($members);
         $drivers = $this->agentDrivers->driversOf($members);

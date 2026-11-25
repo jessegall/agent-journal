@@ -21,7 +21,7 @@ final readonly class LogTaskRunHandler extends TaskCommandHandler
     public function handle(LogTaskRunCommand $command, Task $task): string
     {
         $this->assertCurrentTaskRun($task, $command->runNumber);
-        $run = TaskRun::ofTask($task, $command->runNumber);
+        $run = TaskRun::findForTask($task, $command->runNumber);
 
         if ($run === null) {
             throw TaskRunOfAnotherActor::forRun($task->number, $command->runNumber);

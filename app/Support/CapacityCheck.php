@@ -37,6 +37,6 @@ final readonly class CapacityCheck
             return null;
         }
 
-        return CapacityReservation::shortageOf($budgets, $this->capacity);
+        return CapacityReservation::resolveShortageOf($budgets, $this->capacity);
     }
 }

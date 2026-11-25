@@ -64,7 +64,7 @@ final class NumberAllocationTest extends TestCase
         $this->createLedgerTables();
         $this->bootModules(LedgerDomain::class);
         $this->app->make(OutsideCommandAllowance::class)->forbid();
-        GlobalGroup::installJournal();
+        GlobalGroup::create();
         $this->startTestUserRequest(1);
         $this->commands = $this->app->make(CommandBus::class);
     }

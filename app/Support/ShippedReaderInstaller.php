@@ -162,7 +162,7 @@ final readonly class ShippedReaderInstaller
             new StartSampleCommand($requestId, $permit, "shipped-{$reader->tool}-{$sample->file}"),
         );
 
-        $run = ProcessRun::ofAnyActor($runId);
+        $run = ProcessRun::findForAnyActor($runId);
         $bytes = $reader->outputOf($sample);
 
         $part = $this->transaction->run(function () use ($run, $reader, $sample, $bytes): PartRun {

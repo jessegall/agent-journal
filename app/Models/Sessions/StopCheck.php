@@ -77,6 +77,37 @@ final class StopCheck extends Model implements EventSource, ReadableModel
         ];
     }
 
+    // ----------[ Constructors ]----------
+
+    /**
+     * The pending attempt of this stop callback, opened once: a retried callback finds the attempt it opened.
+     *
+     * @param  array<string, string>  $conditionHashes  condition key => hash of its definition
+     */
+    public static function create(
+        HookIdentity $stop,
+        string $policyDigest,
+        int $workspaceGeneration,
+        array $conditionHashes,
+    ): self {
+        $attempt = new self();
+        $attempt->setAttribute($attempt->getKeyName(), $attempt->newUniqueId());
+        $attempt->agent_id = $stop->agentId;
+        $attempt->session_id = $stop->sessionId;
+        $attempt->stop_id = $stop->hookId;
+        $attempt->policy_digest = $policyDigest;
+        $attempt->workspace_generation = $workspaceGeneration;
+        $attempt->condition_hashes = $conditionHashes;
+        $attempt->state = StopCheckState::Pending;
+
+        $attempt->insertIfAbsent();
+
+        return self::query()
+            ->withoutGlobalScope(AgentSessionScope::class)
+            ->ofStop($stop)
+            ->sole();
+    }
+
     // ----------[ Mutations ]----------
 
     /**
@@ -181,41 +212,12 @@ final class StopCheck extends Model implements EventSource, ReadableModel
     /**
      * The agent whose session made the attempt, as the actor that asks for help when its stop is held.
      */
-    public static function agentOf(StopCheckReference $attempt): ActorIdentity
+    public static function resolveAgentOf(StopCheckReference $attempt): ActorIdentity
     {
         $sessionId = self::query()->withoutGlobalScope(AgentSessionScope::class)->findOrFail($attempt->attemptId)
             ->session_id;
 
-        return ActorIdentity::ofClass(Agent::class, AgentSession::byId($sessionId)->agent_id);
-    }
-
-    /**
-     * The pending attempt of this stop callback, opened once: a retried callback finds the attempt it opened.
-     *
-     * @param  array<string, string>  $conditionHashes  condition key => hash of its definition
-     */
-    public static function openFor(
-        HookIdentity $stop,
-        string $policyDigest,
-        int $workspaceGeneration,
-        array $conditionHashes,
-    ): self {
-        $attempt = new self();
-        $attempt->setAttribute($attempt->getKeyName(), $attempt->newUniqueId());
-        $attempt->agent_id = $stop->agentId;
-        $attempt->session_id = $stop->sessionId;
-        $attempt->stop_id = $stop->hookId;
-        $attempt->policy_digest = $policyDigest;
-        $attempt->workspace_generation = $workspaceGeneration;
-        $attempt->condition_hashes = $conditionHashes;
-        $attempt->state = StopCheckState::Pending;
-
-        $attempt->insertIfAbsent();
-
-        return self::query()
-            ->withoutGlobalScope(AgentSessionScope::class)
-            ->ofStop($stop)
-            ->sole();
+        return ActorIdentity::ofClass(Agent::class, AgentSession::findById($sessionId)->agent_id);
     }
 
     /**
@@ -224,7 +226,7 @@ final class StopCheck extends Model implements EventSource, ReadableModel
      * @param  list<string>  $sessionIds
      * @return list<self>
      */
-    public static function pendingOf(array $sessionIds): array
+    public static function findPendingOf(array $sessionIds): array
     {
         return array_values(self::query()
             ->withoutGlobalScope(AgentSessionScope::class)
@@ -242,7 +244,7 @@ final class StopCheck extends Model implements EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function passedUncertified(int $limit): array
+    public static function findPassedUncertified(int $limit): array
     {
         return array_values(self::query()
             ->withoutGlobalScope(AgentSessionScope::class)
@@ -259,7 +261,7 @@ final class StopCheck extends Model implements EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function latestSettledOf(string $sessionId, int $count): array
+    public static function findLatestSettledOf(string $sessionId, int $count): array
     {
         return array_values(self::query()
             ->withoutGlobalScope(AgentSessionScope::class)

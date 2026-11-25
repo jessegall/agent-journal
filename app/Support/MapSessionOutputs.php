@@ -29,7 +29,7 @@ final readonly class MapSessionOutputs
         string|null $transcriptPath,
     ): void {
         $start->advanceOutputGeneration();
-        $granted = SessionOutputGrant::heldBy($session->id) ?: $this->continuedFrom($session);
+        $granted = SessionOutputGrant::resolveHeldBy($session->id) ?: $this->continuedFrom($session);
 
         $paths = $transcriptPath === null ? null : SessionOutputPaths::verified(
             $this->adapters->for((string) $session->driver_key),
@@ -62,7 +62,7 @@ final readonly class MapSessionOutputs
             ->exists();
 
         if ($isSameAgent) {
-            return SessionOutputGrant::heldBy($predecessorId);
+            return SessionOutputGrant::resolveHeldBy($predecessorId);
         }
 
         return [];

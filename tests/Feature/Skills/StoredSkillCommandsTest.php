@@ -65,7 +65,7 @@ final class StoredSkillCommandsTest extends TestCase
         $this->assertTrue($revised->isPublicationPending);
         $this->assertSame(
             'First.',
-            SkillRevision::numbered(
+            SkillRevision::findNumbered(
                 Skill::query()->whereKey($created->skillId)->firstOrFail(),
                 1,
             )->sections[0]->content,
@@ -107,8 +107,8 @@ final class StoredSkillCommandsTest extends TestCase
         $skill = Skill::query()->whereKey($created->skillId)->firstOrFail();
 
         $this->assertSame(3, $restored->revision);
-        $this->assertSame('First.', SkillRevision::currentOf($skill)->sections[0]->content);
-        $this->assertSame('Second.', SkillRevision::numbered($skill, 2)->sections[0]->content);
+        $this->assertSame('First.', SkillRevision::findCurrentOf($skill)->sections[0]->content);
+        $this->assertSame('Second.', SkillRevision::findNumbered($skill, 2)->sections[0]->content);
     }
 
     public function test_an_agent_is_refused_before_any_row_changes(): void

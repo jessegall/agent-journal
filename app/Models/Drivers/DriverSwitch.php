@@ -270,7 +270,7 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
 
     // ----------[ Queries ]----------
 
-    public static function ofRequest(string $requestId): self|null
+    public static function findForRequest(string $requestId): self|null
     {
         return self::query()->underRequest($requestId)->lockForUpdate()->first();
     }
@@ -278,7 +278,7 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
     /**
      * The open switch waiting for the stop of this session, locked.
      */
-    public static function stoppingOf(string $sessionId): self|null
+    public static function findStoppingOf(string $sessionId): self|null
     {
         return self::query()
             ->stoppingSession($sessionId)
@@ -289,7 +289,7 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
     /**
      * The open switch waiting for this replacement session to run, locked.
      */
-    public static function startingOf(string $sessionId): self|null
+    public static function findStartingOf(string $sessionId): self|null
     {
         return self::query()
             ->startingSession($sessionId)
@@ -300,7 +300,7 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
     /**
      * The agent's switch that has not ended, locked; the caller holds the agent's lifecycle lock first.
      */
-    public static function openOf(string $agentId): self|null
+    public static function findOpenOf(string $agentId): self|null
     {
         return self::query()
             ->ofAgent($agentId)

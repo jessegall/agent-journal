@@ -33,12 +33,12 @@ final readonly class RecordGatewayOutcomeHandler extends SharingCommandHandler
     public function handle(RecordGatewayOutcomeCommand $command): void
     {
         $this->assertCurrentGatewayRun(ShareInstallation::create(), $command->runId);
-        $claimed = ShareGatewayOperation::of($command->operationId);
-        $configuration = ShareGatewayConfiguration::lockById($claimed->share_gateway_configuration_id);
-        $endpoint = ShareGatewayEndpoint::lockHeldBy($configuration->id, $command->endpointVersion, $command->runId);
+        $claimed = ShareGatewayOperation::findOf($command->operationId);
+        $configuration = ShareGatewayConfiguration::findLockedById($claimed->share_gateway_configuration_id);
+        $endpoint = ShareGatewayEndpoint::findLockedHeldBy($configuration->id, $command->endpointVersion, $command->runId);
         $opens = $claimed->type === GatewayOperationType::Open;
-        $shares = $opens ? Share::lockAwaitingGatewayOf($configuration->id) : [];
-        $operation = ShareGatewayOperation::lockById($command->operationId);
+        $shares = $opens ? Share::findLockedAwaitingGatewayOf($configuration->id) : [];
+        $operation = ShareGatewayOperation::findLockedById($command->operationId);
 
         if (! $operation->isHeldBy($command->runId, $command->endpointVersion, $command->leaseToken)) {
             throw GatewayLeaseRefused::forOperation($command->operationId);

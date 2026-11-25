@@ -198,7 +198,7 @@ final class StartAgentTest extends TestCase
 
         $receipt = $this->start($this->request());
 
-        $runtime = AgentRuntime::ofSession($receipt->sessionId);
+        $runtime = AgentRuntime::findForSession($receipt->sessionId);
         $wake = DriverRequest::query()->where('agent_runtime_id', $runtime?->id)->sole();
         $this->assertSame(
             [$host->id, base_path(), DriverOperation::Wake],

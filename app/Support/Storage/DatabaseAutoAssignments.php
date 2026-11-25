@@ -66,18 +66,18 @@ final readonly class DatabaseAutoAssignments implements AutoAssignmentResolver, 
 
     public function enabled(IdListPage $page): AutoAssignmentPage
     {
-        return AutoAssignment::enabledPage($page);
+        return AutoAssignment::resolveEnabledPage($page);
     }
 
     public function listFor(ActorIdentity $actor, IdListPage $page): AutoAssignmentPage
     {
-        return AutoAssignment::pageFor($actor, $page);
+        return AutoAssignment::resolvePageFor($actor, $page);
     }
 
     public function enable(AutoAssignmentInput $input, int $expectedRevision): AutoAssignmentChange
     {
         $this->transaction->assertOpen();
-        $existing = AutoAssignment::lockedFor($input->key);
+        $existing = AutoAssignment::findLockedFor($input->key);
 
         if ($existing->isEmpty()) {
             return $this->enableFirst($input, $expectedRevision);
@@ -93,7 +93,7 @@ final readonly class DatabaseAutoAssignments implements AutoAssignmentResolver, 
     public function configure(AutoAssignmentInput $input, int $expectedRevision): AutoAssignmentChange
     {
         $this->transaction->assertOpen();
-        $row = AutoAssignment::lockedFor($input->key)->getOrThrow(AutoAssignmentMissing::forKey($input->key));
+        $row = AutoAssignment::findLockedFor($input->key)->getOrThrow(AutoAssignmentMissing::forKey($input->key));
         $this->assertAtRevision($row, $expectedRevision);
         $changed = $row->configure($row->enabled, $input->pool, $input->size);
 
@@ -103,7 +103,7 @@ final readonly class DatabaseAutoAssignments implements AutoAssignmentResolver, 
     public function disable(AutoAssignmentKey $key, int $expectedRevision): AutoAssignmentChange
     {
         $this->transaction->assertOpen();
-        $existing = AutoAssignment::lockedFor($key);
+        $existing = AutoAssignment::findLockedFor($key);
 
         if ($existing->isEmpty()) {
             return $this->unchangedMissing($expectedRevision);
@@ -119,7 +119,7 @@ final readonly class DatabaseAutoAssignments implements AutoAssignmentResolver, 
     public function claim(AutoAssignmentKey $key, Closure $claim): AutoAssignmentOutcome
     {
         $this->transaction->assertOpen();
-        $row = AutoAssignment::lockedFor($key);
+        $row = AutoAssignment::findLockedFor($key);
 
         if ($row->isEmpty() || ! $row->get()->enabled) {
             return AutoAssignmentOutcome::off();

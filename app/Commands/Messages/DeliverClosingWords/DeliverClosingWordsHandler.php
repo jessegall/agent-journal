@@ -30,7 +30,7 @@ final readonly class DeliverClosingWordsHandler implements CommandHandler
     public function handle(DeliverClosingWordsCommand $command): string
     {
         $agent = $this->participants->reader($command->dispatchedBy());
-        $turn = DriverTurn::withClosingWordsOf($this->session->sessionId()) ?? throw ClosingWordsRefused::noOffer();
+        $turn = DriverTurn::findWithClosingWordsOf($this->session->sessionId()) ?? throw ClosingWordsRefused::noOffer();
 
         if ($turn->delivered_message_id !== null) {
             return $turn->delivered_message_id;

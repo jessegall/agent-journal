@@ -56,9 +56,9 @@ final readonly class PartAssessments
     public function assess(PartRun $part, ApprovedPair $pair): string
     {
         $replayed = $this->replays->replay($pair->reader, $pair->contract, $part);
-        ReaderPosition::replayOf($part, $pair->reader, $replayed->consumed)->rewindTo($replayed->consumed);
+        ReaderPosition::findReplayOf($part, $pair->reader, $replayed->consumed)->rewindTo($replayed->consumed);
         $validation = $this->validator->validate($part, $replayed->assessment, $replayed->consumed, $pair->contract);
-        $run = ProcessRun::ofAnyActor($part->process_run_id);
+        $run = ProcessRun::findForAnyActor($part->process_run_id);
         $assessment = OutputAssessment::create($run, $part, $pair->declaration, $pair->reader, $replayed, $validation);
         $this->updates->settled($part);
 

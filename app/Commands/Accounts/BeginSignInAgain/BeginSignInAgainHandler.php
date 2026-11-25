@@ -31,10 +31,10 @@ final readonly class BeginSignInAgainHandler implements CommandHandler
 
     public function handle(BeginSignInAgainCommand $command): SignInStarted
     {
-        $driver = Account::driverOf($command->accountId);
-        ActiveAccount::lockedFor($driver);
-        $account = Account::lockedForChange($command->accountId);
-        $running = SignInAttempt::liveFor($driver, $account);
+        $driver = Account::resolveDriverOf($command->accountId);
+        ActiveAccount::findLockedFor($driver);
+        $account = Account::findLockedForChange($command->accountId);
+        $running = SignInAttempt::findLiveFor($driver, $account);
 
         if ($running !== null) {
             return new SignInStarted($running->id, true);
@@ -42,7 +42,7 @@ final readonly class BeginSignInAgainHandler implements CommandHandler
 
         $account->holdForMaintenance();
         $expiresAt = CarbonImmutable::now()->addMinutes($this->config->integer('accounts.sign_in_minutes'));
-        $directory = SignInAttempt::newFolderIn($this->config->string('accounts.root'));
+        $directory = SignInAttempt::resolveNewFolderIn($this->config->string('accounts.root'));
 
         $attempt = SignInAttempt::create(
             ActorIdentity::of($command->dispatchedBy()),

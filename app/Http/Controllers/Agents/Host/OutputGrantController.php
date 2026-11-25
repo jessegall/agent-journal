@@ -22,11 +22,11 @@ final readonly class OutputGrantController
     public function __invoke(StartReportRequest $request, HostContext $host, OutputGrantSeal $seal): JsonResponse
     {
         $startKey = $request->startKey();
-        $start = SessionProcess::claimedBy($host->hostId, $startKey);
+        $start = SessionProcess::findClaimedBy($host->hostId, $startKey);
 
         $paths = array_map(
             fn (SessionOutputPaths $paths) => $paths->transcriptPath,
-            SessionOutputGrant::currentOf($start),
+            SessionOutputGrant::resolveCurrentOf($start),
         );
 
         return new JsonResponse([

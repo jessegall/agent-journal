@@ -33,7 +33,7 @@ final readonly class AgentStacks implements AgentStacksContract
         $this->transaction->assertOpen($target);
         $this->access->assertTargetGranted($target);
 
-        $this->statePush->push($target, AgentStackRow::lockFor($target), $state);
+        $this->statePush->push($target, AgentStackRow::findLockedFor($target), $state);
     }
 
     public function activate(StackTarget $target, StateReference $state): void
@@ -41,7 +41,7 @@ final readonly class AgentStacks implements AgentStacksContract
         $this->transaction->assertOpen($target);
         $this->access->assertTargetGranted($target);
 
-        if (! $this->statePush->push($target, AgentStackRow::lockFor($target), $state)->holdsLive($state)) {
+        if (! $this->statePush->push($target, AgentStackRow::findLockedFor($target), $state)->holdsLive($state)) {
             throw ActivationDeclined::for($state, $target);
         }
     }
@@ -51,7 +51,7 @@ final readonly class AgentStacks implements AgentStacksContract
         $this->transaction->assertOpen($target);
         $this->access->assertTargetGranted($target);
 
-        $this->statePush->lift($target, AgentStackRow::lockFor($target), $state);
+        $this->statePush->lift($target, AgentStackRow::findLockedFor($target), $state);
     }
 
     public function activateForCaller(StateReference $state): void

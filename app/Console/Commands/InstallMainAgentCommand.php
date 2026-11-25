@@ -26,9 +26,9 @@ final class InstallMainAgentCommand extends Command
             return self::SUCCESS;
         }
 
-        $project = Project::forKey($config->string('processes.project_key'));
+        $project = Project::findForKey($config->string('processes.project_key'));
         $dispatchers->runAsJournal(CommandEntry::HostControl, 'main agent install', new InstallMainAgent($project->id));
-        $this->info(sprintf('The main agent is %s.', MainAgentDesignation::designatedAgent()->name));
+        $this->info(sprintf('The main agent is %s.', MainAgentDesignation::resolveDesignatedAgent()->name));
 
         return self::SUCCESS;
     }

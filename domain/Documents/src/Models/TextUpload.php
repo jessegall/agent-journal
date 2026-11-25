@@ -256,7 +256,7 @@ final class TextUpload extends Model implements EventSource, ReadableModel
 
     // ----------[ Queries ]----------
 
-    public static function locked(string $id): self
+    public static function findLocked(string $id): self
     {
         return self::query()
             ->unexpired()
@@ -265,7 +265,7 @@ final class TextUpload extends Model implements EventSource, ReadableModel
             ->firstOr(UploadExpired::throwing()->forUpload());
     }
 
-    public static function sealed(string $id): self
+    public static function findSealed(string $id): self
     {
         return self::query()->unexpired()->alreadySealed()->findOr($id, UploadExpired::throwing()->forUpload());
     }
@@ -275,7 +275,7 @@ final class TextUpload extends Model implements EventSource, ReadableModel
      *
      * @throws UploadExpired
      */
-    public static function sealedFor(SessionProvenance $sessions, string $sessionId, string $id): self
+    public static function findSealedFor(SessionProvenance $sessions, string $sessionId, string $id): self
     {
         $uploads = self::query()->withoutGlobalScope(self::SESSION_SCOPE);
 

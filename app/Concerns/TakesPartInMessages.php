@@ -38,6 +38,6 @@ trait TakesPartInMessages
         $identity = ActorIdentity::of($this);
 
         return Inbox::query()->forwarding()->attachedTo($identity)->oldestFirst()->first()
-            ?? Inbox::personalOf($identity);
+            ?? Inbox::findPersonalOf($identity);
     }
 }

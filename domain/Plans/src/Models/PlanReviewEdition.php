@@ -141,7 +141,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
     /**
      * The plan's edition still asked for, if any.
      */
-    public static function requestedOf(string $planId): self|null
+    public static function findRequestedOf(string $planId): self|null
     {
         return self::query()->ofPlan($planId)->inState(PlanReviewState::Requested)->newestNumberFirst()->first();
     }
@@ -149,7 +149,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
     /**
      * The plan's edition with this number, if any.
      */
-    public static function numberedIn(string $planId, int $number): self|null
+    public static function findNumberedIn(string $planId, int $number): self|null
     {
         return self::query()->ofPlan($planId)->numbered($number)->first();
     }
@@ -157,7 +157,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
     /**
      * The plan's latest edition, whatever its state, if any.
      */
-    public static function latestOf(string $planId): self|null
+    public static function findLatestOf(string $planId): self|null
     {
         return self::query()->ofPlan($planId)->newestNumberFirst()->first();
     }
@@ -165,7 +165,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
     /**
      * The plan's latest approved edition, current or historical, if any.
      */
-    public static function latestApprovalOf(string $planId): self|null
+    public static function findLatestApprovalOf(string $planId): self|null
     {
         return self::query()->ofPlan($planId)->inState(PlanReviewState::Approved)->newestNumberFirst()->first();
     }
@@ -173,7 +173,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
     /**
      * The plan's latest approved edition that still matches the plan, if any.
      */
-    public static function currentApprovalOf(string $planId): self|null
+    public static function findCurrentApprovalOf(string $planId): self|null
     {
         return self::query()->ofPlan($planId)->inState(PlanReviewState::Approved)->current()
             ->newestNumberFirst()

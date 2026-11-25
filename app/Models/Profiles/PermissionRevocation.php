@@ -88,7 +88,7 @@ final class PermissionRevocation extends Model implements ReadableModel
     /**
      * The permissions narrowed by every revocation of their source.
      */
-    public static function narrow(CommandPermissions $permissions): CommandPermissions
+    public static function resolveNarrow(CommandPermissions $permissions): CommandPermissions
     {
         self::query()->ofSource($permissions->source)->oldestFirst()->readInChunks(200, function (
             Collection $revocations,

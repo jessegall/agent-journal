@@ -28,7 +28,7 @@ final readonly class SessionInspections
      */
     private function lastStop(string $sessionId, array $labels): array
     {
-        $attempts = StopCheck::latestSettledOf($sessionId, 1);
+        $attempts = StopCheck::findLatestSettledOf($sessionId, 1);
 
         if ($attempts === [] || $labels === []) {
             return [];

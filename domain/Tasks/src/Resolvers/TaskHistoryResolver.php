@@ -23,7 +23,7 @@ final readonly class TaskHistoryResolver implements TaskHistoryResolverContract
     {
         $this->visibility->requireVisible($taskId);
         $size = min(max(1, $limit), self::LARGEST_PAGE);
-        $entries = TaskHistoryEntry::pageOf($taskId, $beforeSequence, $size + 1);
+        $entries = TaskHistoryEntry::findPageOf($taskId, $beforeSequence, $size + 1);
         $shown = $entries->take($size);
 
         return new TaskHistoryPage(

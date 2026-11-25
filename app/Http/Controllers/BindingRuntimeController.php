@@ -28,7 +28,7 @@ final readonly class BindingRuntimeController
         $commands->run($request->asBindingRuntime($host->hostId, $binding));
 
         // A start asked again under its id, after a lost reply or a restart, answers the runtime it opened.
-        foreach ($request->startId === '' ? [] : BindingRuntime::ofBinding($binding, $request->startId) as $earlier) {
+        foreach ($request->startId === '' ? [] : BindingRuntime::findForBinding($binding, $request->startId) as $earlier) {
             return $this->answer($binding, $earlier->session_id, $earlier->runtime_id, JsonResponse::HTTP_OK);
         }
 
@@ -49,7 +49,7 @@ final readonly class BindingRuntimeController
             [
                 'session_id' => $sessionId,
                 'runtime_id' => $runtimeId,
-                'authority_generation' => ProjectBinding::authorityGenerationOf($binding),
+                'authority_generation' => ProjectBinding::resolveAuthorityGenerationOf($binding),
             ],
             $status,
         );

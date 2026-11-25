@@ -86,7 +86,7 @@ final class IssueChildClaimTest extends TestCase
 
     private function readCommitOf(ProjectBinding $binding, string $reference): void
     {
-        WorkspaceRead::retain(
+        WorkspaceRead::create(
             new WorkspaceReadReference($reference),
             TestActors::agentIdentity(1),
             WorkReference::free('chain-1'),

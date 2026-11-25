@@ -30,15 +30,15 @@ final readonly class TaskWaitResolver implements TaskWaitResolverContract
     public function waitsOf(string $taskId): TaskWaits
     {
         $this->visibility->requireVisible($taskId);
-        $waits = TaskWait::waitsOf($taskId, self::MOST_WAITS_SHOWN);
-        $holds = TaskWait::holdersOf($taskId, self::MOST_WAITS_SHOWN);
+        $waits = TaskWait::findWaitsOf($taskId, self::MOST_WAITS_SHOWN);
+        $holds = TaskWait::findHoldersOf($taskId, self::MOST_WAITS_SHOWN);
 
-        $others = Task::ofIds(array_values([
+        $others = Task::findForIds(array_values([
             ...array_map(strval(...), $waits->pluck('prerequisite_task_id')->all()),
             ...array_map(strval(...), $holds->pluck('dependent_task_id')->all()),
         ]));
 
-        $self = Task::ofId($taskId);
+        $self = Task::findForId($taskId);
 
         return new TaskWaits(
             array_values($waits->map(fn (TaskWait $wait) => self::linkOf(
@@ -60,15 +60,15 @@ final readonly class TaskWaitResolver implements TaskWaitResolverContract
     {
         $this->actors->actor();
 
-        return TaskWait::dependentIdsAmong($ids);
+        return TaskWait::resolveDependentIdsAmong($ids);
     }
 
     public function readyAmong(array $ids): array
     {
         $this->actors->actor();
-        $waits = TaskWait::waitsOfTasks($ids);
+        $waits = TaskWait::findWaitsOfTasks($ids);
 
-        $prerequisites = Task::ofIds(
+        $prerequisites = Task::findForIds(
             array_values(array_map(strval(...), $waits->pluck('prerequisite_task_id')->all())),
         );
 

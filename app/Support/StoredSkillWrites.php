@@ -44,7 +44,7 @@ final readonly class StoredSkillWrites
     public function once(string $requestId, string $inputDigest, Closure $write): SkillRevisionResult
     {
         $author = $this->author();
-        $earlier = SkillRequest::earlier($author, $requestId);
+        $earlier = SkillRequest::findEarlier($author, $requestId);
 
         if ($earlier !== null) {
             if ($earlier->sentWith($inputDigest)) {

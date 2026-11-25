@@ -31,7 +31,7 @@ final readonly class RunClaims implements RunClaimsContract
         $current = $this->store->lockCurrent($run);
 
         if ($current->isDefined()) {
-            $proof = ClaimAuthorization::ofClaim($current->get()->reference->id);
+            $proof = ClaimAuthorization::findForClaim($current->get()->reference->id);
             $holder = $current->get()->holder();
 
             if ($proof !== null && $proof->isValidFor($holder)) {
@@ -95,19 +95,19 @@ final readonly class RunClaims implements RunClaimsContract
         if ($work->holder()->isSameAs($claimant)) {
             $claim = $this->responsibilities->assign($run, $claimant)->reference;
 
-            return new RunClaim($claim, ClaimAuthorization::forDirectRun($claim, $work->reference)->sourceIds());
+            return new RunClaim($claim, ClaimAuthorization::findForDirectRun($claim, $work->reference)->sourceIds());
         }
 
         if ($work->holder()->type !== Inbox::ASSIGNEE_TYPE) {
             throw RunClaimRefused::notTheHolder($run->id);
         }
 
-        $member = InboxMember::activeOf(
+        $member = InboxMember::findActiveOf(
             $work->holder()->id,
             ActorIdentity::fromStored($claimant->type, $claimant->id),
         )->getOrThrow(RunClaimRefused::notTheHolder($run->id));
         $claim = $this->responsibilities->assign($run, $claimant)->reference;
-        $proof = ClaimAuthorization::forInboxRun($claim, $member, $work->reference);
+        $proof = ClaimAuthorization::findForInboxRun($claim, $member, $work->reference);
 
         return new RunClaim($claim, $proof->sourceIds());
     }

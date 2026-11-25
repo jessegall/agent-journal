@@ -31,7 +31,7 @@ final readonly class InstallAttemptList
         }
 
         $now = CarbonImmutable::now();
-        $page = InstallAttempt::listedFor($actor->actorId(), $cursor);
+        $page = InstallAttempt::findListedFor($actor->actorId(), $cursor);
 
         $rows = array_map(fn (InstallAttempt $attempt) => new InstallAttemptRow(
             $attempt->reference,

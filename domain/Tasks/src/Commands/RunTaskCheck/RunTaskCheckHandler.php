@@ -27,7 +27,7 @@ final readonly class RunTaskCheckHandler extends TaskCommandHandler
     public function handle(RunTaskCheckCommand $command, Task $task): string
     {
         $this->assertCurrentTaskRun($task, $command->runNumber);
-        $run = TaskRun::ofTask($task, $command->runNumber);
+        $run = TaskRun::findForTask($task, $command->runNumber);
 
         if ($run === null) {
             throw TaskRunOfAnotherActor::forRun($task->number, $command->runNumber);
@@ -43,7 +43,7 @@ final readonly class RunTaskCheckHandler extends TaskCommandHandler
             throw TaskCheckRefused::notYourRun($command->processRunId);
         }
 
-        if (TaskCheck::ofProcessRun($command->processRunId) !== null) {
+        if (TaskCheck::findForProcessRun($command->processRunId) !== null) {
             throw TaskCheckRefused::alreadyRegistered($command->processRunId);
         }
 

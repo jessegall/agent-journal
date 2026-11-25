@@ -88,7 +88,7 @@ final class ReportJobLink extends Model implements EventSource, ReadableModel
      *
      * @return Option<self>
      */
-    public static function ofReport(string $reportId): Option
+    public static function findForReport(string $reportId): Option
     {
         $reportJobLink = self::query()->forReport($reportId)->first();
 

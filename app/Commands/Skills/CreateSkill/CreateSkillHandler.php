@@ -31,7 +31,7 @@ final readonly class CreateSkillHandler implements CommandHandler
                 throw SkillDeclarationInvalid::reservedKey(SkillOwner::STORED, $key->key);
             }
 
-            if (Skill::keyTaken($key)) {
+            if (Skill::isKeyTaken($key)) {
                 throw SkillKeyTaken::for($key->key);
             }
 

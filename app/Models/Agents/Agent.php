@@ -35,6 +35,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Override;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
@@ -174,7 +175,7 @@ final class Agent extends Model implements
      */
     public function currentRuntime(): Option
     {
-        if ($this->current_session_id === null || ! AgentRuntime::runsForSession($this->current_session_id)) {
+        if ($this->current_session_id === null || ! AgentRuntime::canActForSession($this->current_session_id)) {
             return None::create();
         }
 
@@ -213,6 +214,7 @@ final class Agent extends Model implements
 
     // ----------[ Queries ]----------
 
+    #[Override]
     public static function storedType(): string
     {
         return 'agent';
@@ -223,7 +225,7 @@ final class Agent extends Model implements
      *
      * @return Option<self>
      */
-    public static function withId(string $id): Option
+    public static function findWithId(string $id): Option
     {
         return self::query()->whereKey($id)->firstOption();
     }
@@ -231,7 +233,7 @@ final class Agent extends Model implements
     /**
      * @return Option<ActorIdentity>
      */
-    public static function soleActorForProfile(string $profile): Option
+    public static function resolveSoleActorForProfile(string $profile): Option
     {
         $matches = self::query()
             ->ofProfile($profile)
@@ -252,7 +254,7 @@ final class Agent extends Model implements
      * @param  list<string>  $ids
      * @return array<string, self>
      */
-    public static function byIds(array $ids): array
+    public static function findByIds(array $ids): array
     {
         $agents = self::query()->whereKey($ids)->readExactly(max(1, count($ids)))->get();
 

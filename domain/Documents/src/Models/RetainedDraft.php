@@ -17,6 +17,7 @@ use Domain\Documents\Events\DraftKept;
 use Domain\Documents\Exceptions\RecordImmutable;
 use Domain\Documents\Support\DraftText;
 use Domain\Documents\Values\RetainedDraftView;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -119,10 +120,11 @@ final class RetainedDraft extends Model implements EventSource, ReadableModel
     // ----------[ Queries ]----------
 
     /**
-     * @return Builder<self>
+     * @param  Builder<self>  $query
      */
-    public static function forRecovery(): Builder
+    #[Scope]
+    protected function forRecovery(Builder $query): void
     {
-        return self::query()->withoutGlobalScope(self::DRAFT_SCOPE);
+        $query->withoutGlobalScope(self::DRAFT_SCOPE);
     }
 }

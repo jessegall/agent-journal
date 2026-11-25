@@ -17,7 +17,7 @@ final readonly class EditTaskHandler extends TaskCommandHandler
      */
     public function handle(EditTaskCommand $command): int
     {
-        $task = Task::lockedById($command->taskId);
+        $task = Task::findLockedById($command->taskId);
 
         if ($task->revision !== $command->expectedRevision) {
             throw TaskRevisionChanged::for($task->number, $command->expectedRevision, $task->revision);

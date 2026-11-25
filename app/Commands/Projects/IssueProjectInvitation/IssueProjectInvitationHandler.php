@@ -35,7 +35,7 @@ final readonly class IssueProjectInvitationHandler implements CommandHandler
         $isFirstLine = $attempt->version === 0;
         $attempt->replace($command->seenVersion);
 
-        foreach (ProjectInvitation::lockPendingOf($attempt) as $pending) {
+        foreach (ProjectInvitation::findLockedPendingOf($attempt) as $pending) {
             $pending->revoke();
         }
 
@@ -58,15 +58,15 @@ final readonly class IssueProjectInvitationHandler implements CommandHandler
     private function attemptOf(IssueProjectInvitationCommand $command, string $owner): InstallAttempt
     {
         if ($command->attemptReference !== null) {
-            return InstallAttempt::lockOfOwner($owner, $command->attemptReference);
+            return InstallAttempt::findLockedOfOwner($owner, $command->attemptReference);
         }
 
         if ($command->projectId === null) {
             return InstallAttempt::create($owner, $command->issuanceKey, null);
         }
 
-        $project = Project::forId($command->projectId);
-        $joins = Environment::ofProjectById($project->id, (string) $command->environmentId);
+        $project = Project::findForId($command->projectId);
+        $joins = Environment::findForProjectById($project->id, (string) $command->environmentId);
 
         return InstallAttempt::create($owner, $command->issuanceKey, $joins);
     }

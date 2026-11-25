@@ -31,7 +31,7 @@ final readonly class InstallScriptController
         }
 
         try {
-            ProjectInvitation::redeemableFor($ticket);
+            ProjectInvitation::findRedeemableFor($ticket);
         } catch (InvitationUnusable) {
             return new Response(self::FAILURE, Response::HTTP_NOT_FOUND, self::HEADERS);
         }

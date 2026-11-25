@@ -58,6 +58,26 @@ final class InboxMember extends Model implements EventSource, ReadableModel
         ];
     }
 
+    // ----------[ Constructors ]----------
+
+    /**
+     * Attaches the actor to the inbox; an actor already attached stays as it is.
+     */
+    public static function create(string $inboxId, ActorIdentity $actor, CarbonImmutable $at): void
+    {
+        if (self::query()->active()->ofActor($actor)->ofInbox($inboxId)->exists()) {
+            return;
+        }
+
+        $member = new self();
+        $member->inbox_id = $inboxId;
+        $member->actor_type = $actor->type;
+        $member->actor_id = $actor->id;
+        $member->joined_at = $at;
+        $member->assertSaved($member->save());
+        $member->raise(new InboxJoined($inboxId, $actor));
+    }
+
     // ----------[ Mutations ]----------
 
     /**
@@ -81,24 +101,6 @@ final class InboxMember extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Attaches the actor to the inbox; an actor already attached stays as it is.
-     */
-    public static function create(string $inboxId, ActorIdentity $actor, CarbonImmutable $at): void
-    {
-        if (self::query()->active()->ofActor($actor)->ofInbox($inboxId)->exists()) {
-            return;
-        }
-
-        $member = new self();
-        $member->inbox_id = $inboxId;
-        $member->actor_type = $actor->type;
-        $member->actor_id = $actor->id;
-        $member->joined_at = $at;
-        $member->assertSaved($member->save());
-        $member->raise(new InboxJoined($inboxId, $actor));
-    }
-
-    /**
      * Whether the actor is attached to the inbox now.
      */
     public static function isAttached(string $inboxId, ActorIdentity $actor): bool
@@ -112,7 +114,7 @@ final class InboxMember extends Model implements EventSource, ReadableModel
      * @param  list<string>  $ids
      * @return list<string>
      */
-    public static function activeIdsAmong(array $ids): array
+    public static function resolveActiveIdsAmong(array $ids): array
     {
         if ($ids === []) {
             return [];
@@ -126,7 +128,7 @@ final class InboxMember extends Model implements EventSource, ReadableModel
      *
      * @return Option<self>
      */
-    public static function activeOf(string $inboxId, ActorIdentity $actor): Option
+    public static function findActiveOf(string $inboxId, ActorIdentity $actor): Option
     {
         $inboxMember = self::query()->active()->ofInbox($inboxId)->ofActor($actor)->first();
 
@@ -140,7 +142,7 @@ final class InboxMember extends Model implements EventSource, ReadableModel
      * @param  class-string<StoredActor>  $actorClass
      * @return list<ActorIdentity>
      */
-    public static function attachedTo(array $inboxIds, string $actorClass): array
+    public static function resolveAttachedTo(array $inboxIds, string $actorClass): array
     {
         $type = ActorIdentity::storedTypeOf($actorClass);
 

@@ -35,7 +35,7 @@ final readonly class PlanAssignmentGroup
 
     private function forPlan(RecordIdentity $root): AssignmentGroup
     {
-        $plan = Plan::lockStructure($root->id);
+        $plan = Plan::findLockedStructure($root->id);
         self::assertWithinLimit(1 + $plan->phases()->count() + $plan->total_tasks);
 
         $phases = Phase::query()->ofPlan($plan->id)->readAll('every phase of the plan is assigned')->byNumber()->get();
@@ -49,7 +49,7 @@ final readonly class PlanAssignmentGroup
     private function forPhase(RecordIdentity $root): AssignmentGroup
     {
         $phase = Phase::query()->findOr($root->id, RecordUnavailable::throwing()->for($root));
-        Plan::lockStructure($phase->plan_id);
+        Plan::findLockedStructure($phase->plan_id);
         self::assertWithinLimit(1 + $phase->total_tasks);
 
         return $this->group($root, $phase->plan_id, $this->tasks->records($this->taskIdsOf(new Collection([$phase]))));

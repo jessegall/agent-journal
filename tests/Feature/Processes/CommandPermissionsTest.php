@@ -77,7 +77,7 @@ final class CommandPermissionsTest extends TestCase
             ActorIdentity::ofClass(User::class, 'owner'),
         );
 
-        $narrowed = PermissionRevocation::narrow($main);
+        $narrowed = PermissionRevocation::resolveNarrow($main);
 
         $this->assertTrue($main->admits(CommandClassSet::of(CommandClass::Delete), ['rm', 'a']));
         $this->assertFalse($narrowed->admits(CommandClassSet::of(CommandClass::Delete), ['rm', 'a']));

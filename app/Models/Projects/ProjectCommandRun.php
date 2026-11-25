@@ -208,7 +208,7 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
      *
      * @return list<self>
      */
-    public static function lockByRequest(string $requestKey): array
+    public static function findLockedByRequest(string $requestKey): array
     {
         return array_values(self::query()->ofRequest($requestKey)->lockForUpdate()->limit(1)->get()->all());
     }
@@ -219,7 +219,7 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
      *
      * @return list<self>
      */
-    public static function ofRequestBy(string $requestKey, string $agentId, string $bindingId): array
+    public static function findForRequestBy(string $requestKey, string $agentId, string $bindingId): array
     {
         return array_values(
             self::query()->ofRequest($requestKey)->ofAgent($agentId)->ofBinding($bindingId)->limit(1)->get()->all(),
@@ -232,7 +232,7 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
      *
      * @return list<self>
      */
-    public static function lockRunningOf(ProjectBinding $binding): array
+    public static function findLockedRunningOf(ProjectBinding $binding): array
     {
         return array_values(self::query()->ofBinding($binding->id)->active()->lockForUpdate()
             ->readAll('a binding runs a few journal verbs at once')->get()->all());

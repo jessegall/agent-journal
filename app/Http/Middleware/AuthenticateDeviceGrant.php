@@ -40,7 +40,7 @@ final readonly class AuthenticateDeviceGrant
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $grant = DeviceGrant::usableByDigest(InstallTicket::digestOf((string) $request->bearerToken()));
+        $grant = DeviceGrant::findUsableByDigest(InstallTicket::digestOf((string) $request->bearerToken()));
         $caller = new DeviceCaller($grant->id, $grant->binding_id, (string) $grant->approved_by_user_id);
         $approver = $this->approverOf($caller);
 

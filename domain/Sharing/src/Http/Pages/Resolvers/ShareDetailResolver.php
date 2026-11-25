@@ -34,7 +34,7 @@ final readonly class ShareDetailResolver implements PageResolver
 
     public function read(): DeclaredLayoutData
     {
-        $share = Share::byId($this->request->shareId())->getOrThrow(ShareUnavailable::for($this->request->shareId()));
+        $share = Share::findById($this->request->shareId())->getOrThrow(ShareUnavailable::for($this->request->shareId()));
 
         $controls = ShareControlsPartData::from([
             'id' => $share->id,
@@ -49,7 +49,7 @@ final readonly class ShareDetailResolver implements PageResolver
             $controls,
             $this->request->chosenTab(),
             fn () => ShareAuditData::fromPage($this->audits->page($share, $this->request->auditAfter())),
-            fn () => array_map(ShareMemberData::fromMember(...), ShareMember::currentOf($share)),
+            fn () => array_map(ShareMemberData::fromMember(...), ShareMember::findCurrentOf($share)),
         );
     }
 }

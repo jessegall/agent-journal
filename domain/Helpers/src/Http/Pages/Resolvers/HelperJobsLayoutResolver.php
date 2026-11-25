@@ -24,7 +24,7 @@ final readonly class HelperJobsLayoutResolver implements PageResolver
 
     public function read(): DeclaredLayoutData
     {
-        $jobs = HelperJob::newest(self::JOB_LIMIT);
+        $jobs = HelperJob::findNewest(self::JOB_LIMIT);
         $title = LayoutPartData::text('title', 'Helper jobs', 'heading');
 
         if ($jobs->isEmpty()) {
@@ -36,7 +36,7 @@ final readonly class HelperJobsLayoutResolver implements PageResolver
             ));
         }
 
-        $openCount = HelperJob::openCount();
+        $openCount = HelperJob::resolveOpenCount();
 
         return DeclaredLayoutData::of(LayoutPartData::box(
             'helper-jobs',

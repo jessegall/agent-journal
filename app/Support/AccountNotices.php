@@ -20,8 +20,8 @@ final readonly class AccountNotices
      */
     public function record(string $driver, AccountNoticeReason $reason): AccountNotice
     {
-        ActiveAccount::lockedForJournal($driver);
-        $open = AccountNotice::lockedOpenFor($driver, $reason);
+        ActiveAccount::findLockedForJournal($driver);
+        $open = AccountNotice::findLockedOpenFor($driver, $reason);
 
         if ($open === null) {
             return AccountNotice::create($driver, $reason);
@@ -37,9 +37,9 @@ final readonly class AccountNotices
      */
     public function resolveOpen(string $driver, CarbonImmutable $now): void
     {
-        ActiveAccount::lockedForJournal($driver);
+        ActiveAccount::findLockedForJournal($driver);
 
-        foreach (AccountNotice::lockedOpenOf($driver) as $notice) {
+        foreach (AccountNotice::findLockedOpenOf($driver) as $notice) {
             $notice->resolveAt($now);
         }
     }

@@ -124,11 +124,11 @@ final class ContainerAccountTest extends TestCase
 
         $this->asSystem(new ReconcileStartsCommand($host->hostId, []));
 
-        $this->assertSame([$key], SessionProcess::unresolvedKeysOf($host->hostId));
+        $this->assertSame([$key], SessionProcess::resolveUnresolvedKeysOf($host->hostId));
 
         $this->asSystem(new ReconcileStartsCommand($host->hostId, [$key]));
 
-        $this->assertSame([], SessionProcess::unresolvedKeysOf($host->hostId));
+        $this->assertSame([], SessionProcess::resolveUnresolvedKeysOf($host->hostId));
         $this->assertFalse(AgentSession::query()->findOrFail($start->sessionId)->isActive());
         $this->assertSame(
             RuntimeActivity::Stopped,

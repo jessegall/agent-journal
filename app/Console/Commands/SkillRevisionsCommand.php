@@ -46,7 +46,7 @@ final class SkillRevisionsCommand extends Command
                         $revision->source_key ?? '',
                         $revision->created_at->toIso8601String(),
                     ],
-                    SkillRevision::historyOf($skill, self::ROWS),
+                    SkillRevision::findHistoryOf($skill, self::ROWS),
                 ),
             );
 

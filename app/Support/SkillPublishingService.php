@@ -65,7 +65,7 @@ final readonly class SkillPublishingService
     {
         $outcomes = [];
 
-        foreach (SkillPublication::open(self::PUBLICATION_LIMIT) as $publication) {
+        foreach (SkillPublication::findOpen(self::PUBLICATION_LIMIT) as $publication) {
             $outcomes[$publication->id] = $this->publish($publication->id, $holder);
         }
 

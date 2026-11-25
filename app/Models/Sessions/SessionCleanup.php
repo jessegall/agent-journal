@@ -63,6 +63,26 @@ final class SessionCleanup extends Model implements EventSource, ReadableModel
         ];
     }
 
+    // ----------[ Constructors ]----------
+
+    /**
+     * Opens the cleanup of the session's ended start on its host; opening it again finds the same one.
+     */
+    public static function create(AgentSession $session, string $hostId): self
+    {
+        $operation = new self();
+        $operation->start_request_id = $session->start_request_id;
+        $operation->agent_session_id = $session->id;
+        $operation->host_id = $hostId;
+        $operation->removed_steps = [];
+        $operation->state = CleanupState::Pending;
+
+        $operation->setAttribute($operation->getKeyName(), $operation->newUniqueId());
+        $operation->insertIfAbsent();
+
+        return self::query()->ofStartRequest($session->start_request_id)->sole();
+    }
+
     // ----------[ Mutations ]----------
 
     /**
@@ -124,29 +144,11 @@ final class SessionCleanup extends Model implements EventSource, ReadableModel
     // ----------[ Queries ]----------
 
     /**
-     * Opens the cleanup of the session's ended start on its host; opening it again finds the same one.
-     */
-    public static function open(AgentSession $session, string $hostId): self
-    {
-        $operation = new self();
-        $operation->start_request_id = $session->start_request_id;
-        $operation->agent_session_id = $session->id;
-        $operation->host_id = $hostId;
-        $operation->removed_steps = [];
-        $operation->state = CleanupState::Pending;
-
-        $operation->setAttribute($operation->getKeyName(), $operation->newUniqueId());
-        $operation->insertIfAbsent();
-
-        return self::query()->ofStartRequest($session->start_request_id)->sole();
-    }
-
-    /**
      * The cleanups the host still owes, oldest first.
      *
      * @return list<self>
      */
-    public static function pendingOn(string $hostId, int $limit): array
+    public static function findPendingOn(string $hostId, int $limit): array
     {
         $pending = self::query()
             ->onHost($hostId)
@@ -158,7 +160,7 @@ final class SessionCleanup extends Model implements EventSource, ReadableModel
         return array_values($pending->all());
     }
 
-    public static function ofSessionOn(string $hostId, string $sessionId): self
+    public static function findForSessionOn(string $hostId, string $sessionId): self
     {
         return self::query()->onHost($hostId)->ofSession($sessionId)->firstOrFail();
     }

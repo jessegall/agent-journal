@@ -113,7 +113,7 @@ final class SettingsResolver implements SettingsResolverContract
     private function read(string $owner): StoredSettings
     {
         try {
-            $record = SettingsRecord::sharedRuntimeForOwner($owner);
+            $record = SettingsRecord::findSharedRuntimeForOwner($owner);
         } catch (QueryException|LostConnectionException $failure) {
             throw SettingsUnavailable::for($owner, $failure);
         }

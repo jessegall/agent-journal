@@ -111,7 +111,7 @@ final class AccountUsageTest extends TestCase
         $this->addCost($this->account, 1, 'c', '9', '2026-10-31T23:59:59Z');
         $this->addCost($other, 1, 'd', '0', '2026-11-10T00:00:00Z');
 
-        $totals = AccountUsageCost::monthTotals(
+        $totals = AccountUsageCost::resolveMonthTotals(
             [$this->account->id, $other->id],
             CarbonImmutable::parse('2026-11-21T12:00:00Z'),
         );
@@ -130,7 +130,7 @@ final class AccountUsageTest extends TestCase
         $this->recordTokens('thread-a', 900, '2026-11-21T10:01:00Z');
         $this->recordTokens('thread-b', 300, '2026-11-21T09:00:00Z');
 
-        $newest = AccountUsageTokens::newestOf([$this->account->refresh()]);
+        $newest = AccountUsageTokens::findNewestOf([$this->account->refresh()]);
 
         $snapshot = $newest[$this->account->id];
         $this->assertSame(['thread-a', 1500], [$snapshot->thread_id, $snapshot->total]);

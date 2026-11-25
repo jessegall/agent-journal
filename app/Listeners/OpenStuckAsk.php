@@ -30,7 +30,7 @@ final readonly class OpenStuckAsk implements Listener
     public function handle(HelperStopHeld $event): void
     {
         $ask = $this->opening->open(
-            StopCheck::agentOf($event->attempt),
+            StopCheck::resolveAgentOf($event->attempt),
             $this->types->get(CoreAskType::Stuck->key()),
             "stop-held:{$event->attempt->attemptId}",
             self::BODY,

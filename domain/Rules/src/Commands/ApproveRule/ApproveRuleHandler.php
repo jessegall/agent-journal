@@ -15,7 +15,7 @@ final readonly class ApproveRuleHandler extends RuleCommandHandler
 {
     public function handle(ApproveRuleCommand $command): void
     {
-        $rule = Rule::lockedById($command->ruleId);
+        $rule = Rule::findLockedById($command->ruleId);
         $rule->approveBy(ActorIdentity::of($command->dispatchedBy()));
     }
 }

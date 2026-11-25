@@ -48,7 +48,7 @@ final readonly class FileWindowResolver implements PageResolver
     public function read(): FileWindowData
     {
         $path = $this->request->path();
-        $found = ProjectBinding::lastHeardFromIn($this->served->environmentIds());
+        $found = ProjectBinding::findLastHeardFromIn($this->served->environmentIds());
 
         if (! $found->isDefined()) {
             return $this->window(FileWindowState::None, $path);
@@ -146,7 +146,7 @@ final readonly class FileWindowResolver implements PageResolver
      */
     private function commentsOf(ProjectBinding $binding, ProjectFileAnswer $answer, array $lines): array
     {
-        $found = ProjectFile::atPath($binding->id, $answer->path);
+        $found = ProjectFile::findAtPath($binding->id, $answer->path);
 
         if (! $found->isDefined() || $this->comments->tellAddress() === null) {
             return [

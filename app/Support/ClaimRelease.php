@@ -18,13 +18,13 @@ final readonly class ClaimRelease implements ClaimReleaseContract
 
     public function releaseAuthorizedBy(AssignmentReference $source): void
     {
-        $claimIds = AssignmentRecord::claimIdsProvedBy($source);
+        $claimIds = AssignmentRecord::resolveClaimIdsProvedBy($source);
 
         if ($claimIds === []) {
             return;
         }
 
-        AssignmentRecord::claimsProvedBy($source)->delete();
+        AssignmentRecord::query()->claimsProvedBy($source)->delete();
         $this->facts->publishAfterCommit(new AssignmentsEnded($claimIds));
     }
 }

@@ -118,7 +118,7 @@ final class ConnectionAudit extends Model implements ReadableModel
      *
      * @return list<self>
      */
-    public static function newest(int $most): array
+    public static function findNewest(int $most): array
     {
         return array_values(self::query()->newestFirst()->limit($most)->get()->all());
     }
@@ -129,7 +129,7 @@ final class ConnectionAudit extends Model implements ReadableModel
      * @param  list<string>  $ids
      * @return list<self>
      */
-    public static function newestOfBindings(array $ids): array
+    public static function findNewestOfBindings(array $ids): array
     {
         $ranked = self::query()->select('*')
             ->selectRaw('row_number() over (partition by binding_id order by created_at desc, id desc) as step_rank')

@@ -110,6 +110,6 @@ final class ConnectedProjectTest extends TestCase
      */
     private function mainOf(Project $project): Environment
     {
-        return Environment::listedOf($project->id)[0];
+        return Environment::findListedOf($project->id)[0];
     }
 }

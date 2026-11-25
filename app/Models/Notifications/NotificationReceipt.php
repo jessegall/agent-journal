@@ -162,7 +162,7 @@ final class NotificationReceipt extends Model implements EventSource, ReadableMo
      *
      * @return list<self>
      */
-    public static function visibleInScope(string $scopeId, int|null $beforeSequence, int $limit): array
+    public static function findVisibleInScope(string $scopeId, int|null $beforeSequence, int $limit): array
     {
         return array_values(self::query()
             ->inScope($scopeId)
@@ -181,7 +181,7 @@ final class NotificationReceipt extends Model implements EventSource, ReadableMo
      * @param  Builder<*>  $ids
      * @return list<self>
      */
-    public static function visibleWithTargetIn(
+    public static function findVisibleWithTargetIn(
         string $scopeId,
         string $targetKey,
         Builder $ids,
@@ -202,7 +202,7 @@ final class NotificationReceipt extends Model implements EventSource, ReadableMo
      *
      * @return list<self>
      */
-    public static function unreadThrough(string $scopeId, int $afterSequence, int $through, int $limit): array
+    public static function findUnreadThrough(string $scopeId, int $afterSequence, int $through, int $limit): array
     {
         return array_values(self::query()
             ->inScope($scopeId)
@@ -221,7 +221,7 @@ final class NotificationReceipt extends Model implements EventSource, ReadableMo
      * @param  list<string>  $ids
      * @return array<string, self>
      */
-    public static function withOccurrences(array $ids): array
+    public static function findWithOccurrences(array $ids): array
     {
         if ($ids === []) {
             return [];
@@ -247,7 +247,7 @@ final class NotificationReceipt extends Model implements EventSource, ReadableMo
      *
      * @return list<self>
      */
-    public static function allForTarget(string $scopeId, string $targetKey, string $targetId, int $limit): array
+    public static function findAllForTarget(string $scopeId, string $targetKey, string $targetId, int $limit): array
     {
         return array_values(self::query()
             ->inScope($scopeId)

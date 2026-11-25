@@ -15,7 +15,7 @@ final readonly class CancelProjectCommandRunHandler implements CommandHandler
 {
     public function handle(CancelProjectCommandRunCommand $command): void
     {
-        foreach (ProjectCommandRun::lockByRequest($command->requestKey) as $run) {
+        foreach (ProjectCommandRun::findLockedByRequest($command->requestKey) as $run) {
             if ($run->agent_id !== $command->agentId || ! $run->isRunning()) {
                 continue;
             }

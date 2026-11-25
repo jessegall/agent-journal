@@ -28,7 +28,7 @@ final class SkillRevisionCommand extends Command
         return $this->printRefusals(function () use ($console) {
             $console->actAsOwner();
 
-            $revision = SkillRevision::numbered(
+            $revision = SkillRevision::findNumbered(
                 $console->storedSkill($this->skillNumber()),
                 (int) $this->argument('revision'),
             );

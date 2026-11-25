@@ -24,7 +24,7 @@ final readonly class TaskLogResolver implements TaskLogResolverContract
     {
         $this->visibility->requireVisible($taskId);
         $size = self::sizeOf($limit);
-        $read = TaskLogEntry::pageBefore($taskId, null, $size + 1);
+        $read = TaskLogEntry::findPageBefore($taskId, null, $size + 1);
         $lines = $read->take($size)->reverse()->values();
 
         return $this->page($lines, $read->count() > $size, $lines->last()?->sequence);
@@ -34,7 +34,7 @@ final readonly class TaskLogResolver implements TaskLogResolverContract
     {
         $this->visibility->requireVisible($taskId);
         $size = self::sizeOf($limit);
-        $read = TaskLogEntry::pageBefore($taskId, $sequence, $size + 1);
+        $read = TaskLogEntry::findPageBefore($taskId, $sequence, $size + 1);
 
         return $this->page($read->take($size)->reverse()->values(), $read->count() > $size, null);
     }
@@ -43,7 +43,7 @@ final readonly class TaskLogResolver implements TaskLogResolverContract
     {
         $this->visibility->requireVisible($taskId);
         $size = self::sizeOf($limit);
-        $lines = TaskLogEntry::pageAfter($taskId, $sequence, $size);
+        $lines = TaskLogEntry::findPageAfter($taskId, $sequence, $size);
 
         return new TaskLogPage(
             array_values($lines->map(fn (TaskLogEntry $entry) => $entry->line)->all()),

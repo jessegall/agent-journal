@@ -77,19 +77,19 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
         $now = CarbonImmutable::now();
         $claimed = [];
 
-        $held = SessionRequest::sessionsHoldingDeliveries(array_values(array_map(
+        $held = SessionRequest::resolveSessionsHoldingDeliveries(array_values(array_map(
             fn (AgentRuntime $runtime) => $runtime->agent_session_id,
             $runtimes->all(),
         )));
 
         $bootstrapped = [];
 
-        $starts = SessionProcess::latestIdsOfSessions(array_values(array_map(
+        $starts = SessionProcess::resolveLatestIdsOfSessions(array_values(array_map(
             fn (AgentRuntime $runtime) => $runtime->agent_session_id,
             $runtimes->all(),
         )));
 
-        $waitingOnHelpers = AgentRuntime::sessionsWaitingOnHelpers(array_values(array_map(
+        $waitingOnHelpers = AgentRuntime::resolveSessionsWaitingOnHelpers(array_values(array_map(
             fn (AgentRuntime $runtime) => $runtime->agent_session_id,
             $runtimes->all(),
         )));
@@ -154,7 +154,7 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
         }
 
         if ($bootstrapped !== []) {
-            SessionRequest::lockedAcceptedOf($bootstrapped)->each(
+            SessionRequest::findLockedAcceptedOf($bootstrapped)->each(
                 fn (SessionRequest $record) => $record->prepareIdentity(),
             );
         }

@@ -23,7 +23,7 @@ final readonly class KeepRepeatedClosingWordsPrivate implements Pipe
             return $restored;
         }
 
-        $turn = DriverTurn::ofSessionTurn($input->hook->sessionId, $input->stop->turnId);
+        $turn = DriverTurn::findForSessionTurn($input->hook->sessionId, $input->stop->turnId);
 
         if ($turn?->hasOffered($input->stop->closingWords) === true && $turn->isOfferPending()) {
             $turn->keepClosingWordsPrivate();

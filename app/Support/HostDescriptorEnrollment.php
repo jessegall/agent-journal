@@ -40,7 +40,7 @@ final readonly class HostDescriptorEnrollment
             $registrations[(string) $registration->key] = $registration;
         }
 
-        $approvals = DriverApproval::buildsByKey(array_keys($registrations));
+        $approvals = DriverApproval::resolveBuildsByKey(array_keys($registrations));
 
         $seen = [];
         $enrolled = [];

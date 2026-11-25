@@ -54,7 +54,7 @@ final readonly class StartReceiptController
             'sessionId' => $receipt->sessionId,
             'generation' => $receipt->sessionId === null
                 ? null
-                : AgentRuntime::ofSession($receipt->sessionId)?->process_generation,
+                : AgentRuntime::findForSession($receipt->sessionId)?->process_generation,
         ];
     }
 

@@ -147,6 +147,6 @@ final class SessionSkillsTest extends TestCase
      */
     private function latestKeys(AgentSession $session): array
     {
-        return SkillPublication::latestOfSession($session->id)?->skill_keys ?? [];
+        return SkillPublication::findLatestOfSession($session->id)?->skill_keys ?? [];
     }
 }

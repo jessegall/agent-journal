@@ -27,6 +27,6 @@ final readonly class ShareLinkResolver
             return None::create();
         }
 
-        return Share::grantedBy($resolver->actorId(), $shareId)->flatMap(fn (Share $share) => $share->ownerUrl());
+        return Share::findGrantedBy($resolver->actorId(), $shareId)->flatMap(fn (Share $share) => $share->ownerUrl());
     }
 }

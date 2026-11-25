@@ -25,13 +25,13 @@ final readonly class OpenSessionCleanup implements Listener
 
     public function handle(SessionClosed $event): void
     {
-        $session = AgentSession::byId($event->sessionId);
+        $session = AgentSession::findById($event->sessionId);
 
         if (! CapacityReservation::isHeldFor($session->start_request_id)) {
             return;
         }
 
-        $host = AgentRuntime::hostOfSession($session->id);
+        $host = AgentRuntime::resolveHostOfSession($session->id);
 
         if ($host->isEmpty()) {
             $this->capacity->releaseFor($session->start_request_id);
@@ -39,6 +39,6 @@ final readonly class OpenSessionCleanup implements Listener
             return;
         }
 
-        SessionCleanup::open($session, $host->get());
+        SessionCleanup::create($session, $host->get());
     }
 }

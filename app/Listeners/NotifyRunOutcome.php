@@ -25,7 +25,7 @@ final readonly class NotifyRunOutcome implements Listener
 
     public function handle(RunOutcomeRecorded $fact): void
     {
-        $recipients = ProcessRun::ofAnyActor($fact->runId)->outcomeRecipients($fact->result);
+        $recipients = ProcessRun::findForAnyActor($fact->runId)->outcomeRecipients($fact->result);
 
         if ($recipients === []) {
             return;

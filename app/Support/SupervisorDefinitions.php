@@ -42,7 +42,7 @@ final readonly class SupervisorDefinitions implements SupervisorDefinitionsContr
             $coverage[$profile->key->key] = $this->coverage->forRoutes($profile->routes, $profiles);
         }
 
-        $this->requireAcyclic($profiles, SupervisorLink::graphRoutes());
+        $this->requireAcyclic($profiles, SupervisorLink::resolveGraphRoutes());
 
         return $coverage;
     }
@@ -68,7 +68,7 @@ final readonly class SupervisorDefinitions implements SupervisorDefinitionsContr
         $this->requireAcyclic(
             $profiles,
             [
-                ...SupervisorLink::graphRoutes(),
+                ...SupervisorLink::resolveGraphRoutes(),
                 SupervisorTarget::forActor($command->actor)->key => $routes,
             ],
         );
@@ -125,7 +125,7 @@ final readonly class SupervisorDefinitions implements SupervisorDefinitionsContr
             throw SupervisorRouteRefused::actorUnavailable();
         }
 
-        $agent = Agent::byIds([$actor->id])[$actor->id] ?? null;
+        $agent = Agent::findByIds([$actor->id])[$actor->id] ?? null;
 
         if ($agent === null || $agent->isRetired()) {
             throw SupervisorRouteRefused::actorUnavailable();

@@ -18,7 +18,7 @@ final readonly class CallerReceipts implements CallerReceiptsContract
     public function answerFor(string $command, string $requestKey, string $target): array
     {
         $caller = $this->callers->forCommand($command, $this->callers->current()->actor);
-        $receipt = CommandReceipt::readFor($caller, $command, $requestKey);
+        $receipt = CommandReceipt::findReadFor($caller, $command, $requestKey);
 
         if ($receipt === null || ! $receipt->isForTarget($target)) {
             return [];

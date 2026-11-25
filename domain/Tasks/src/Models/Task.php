@@ -215,6 +215,24 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
         $this->raise(new TaskCancelled($this->id, $previousState, (string) Str::ulid()));
     }
 
+    /**
+     * Holds the lock of the graph of waits of each environment, in order, to the end of the transaction; every change
+     * of a wait and every fresh start takes it before any task row.
+     *
+     * @param  list<string>  $environments  '' for the tasks made here
+     */
+    public static function lockWaitGraphs(array $environments): void
+    {
+        $ordered = array_values(array_unique($environments));
+        sort($ordered);
+
+        foreach ($ordered as $environment) {
+            self::query()->getConnection()->select('select pg_advisory_xact_lock(hashtext(?))', [
+                "task-waits:{$environment}",
+            ]);
+        }
+    }
+
     // ----------[ Predicates ]----------
 
     public function isOpenForAssignment(): bool
@@ -304,7 +322,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
             return null;
         }
 
-        return TaskRun::ofTask($this, $this->run_number);
+        return TaskRun::findForTask($this, $this->run_number);
     }
 
     // ----------[ Accessors ]----------
@@ -382,7 +400,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
      *
      * @return Option<TaskSummary>
      */
-    public static function summaryOf(StateReference $frame): Option
+    public static function resolveSummaryOf(StateReference $frame): Option
     {
         if (! $frame->subject instanceof SubjectReference) {
             return None::create();
@@ -398,34 +416,16 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
     }
 
     /**
-     * Holds the lock of the graph of waits of each environment, in order, to the end of the transaction; every change
-     * of a wait and every fresh start takes it before any task row.
-     *
-     * @param  list<string>  $environments  '' for the tasks made here
-     */
-    public static function lockWaitGraphs(array $environments): void
-    {
-        $ordered = array_values(array_unique($environments));
-        sort($ordered);
-
-        foreach ($ordered as $environment) {
-            self::query()->getConnection()->select('select pg_advisory_xact_lock(hashtext(?))', [
-                "task-waits:{$environment}",
-            ]);
-        }
-    }
-
-    /**
      * The task locked for a start: the graph of waits of its environment first, then its own row, so a start and a
      * change of its waits never check against each other's stale state.
      *
      * @throws TaskMissing
      */
-    public static function lockedForStart(string $id): self
+    public static function findLockedForStart(string $id): self
     {
         self::lockWaitGraphs([(string) self::query()->whereKey($id)->value('environment_id')]);
 
-        return self::lockedById($id);
+        return self::findLockedById($id);
     }
 
     /**
@@ -433,7 +433,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
      *
      * @throws TaskMissing
      */
-    public static function ofId(string $id): self
+    public static function findForId(string $id): self
     {
         return self::query()->whereKey($id)->firstOr(TaskMissing::throwing()->forId($id));
     }
@@ -444,7 +444,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
      * @param  list<string>  $ids
      * @return array<string, self>
      */
-    public static function ofIds(array $ids): array
+    public static function findForIds(array $ids): array
     {
         if ($ids === []) {
             return [];
@@ -464,7 +464,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
     /**
      * The task read under its row lock, for a change that must happen once.
      */
-    public static function lockedById(string $id): self
+    public static function findLockedById(string $id): self
     {
         return self::query()->whereKey($id)->lockForUpdate()->firstOr(TaskMissing::throwing()->forId($id));
     }
@@ -472,7 +472,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
     /**
      * The number the task with this id shows.
      */
-    public static function numberOf(string $id): int
+    public static function resolveNumberOf(string $id): int
     {
         return (int) self::query()->whereKey($id)->readExactly(1)->value('number');
     }
@@ -483,7 +483,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
      *
      * @throws CandidateLimitInvalid
      */
-    public static function candidates(PoolMembers $members, QueryBuilder $assignedIds, int $limit): OrderedRecordIds
+    public static function resolveCandidates(PoolMembers $members, QueryBuilder $assignedIds, int $limit): OrderedRecordIds
     {
         self::assertCandidateLimit($limit);
 
@@ -492,7 +492,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
         }
 
         $query = self::query()->open()->outsideSelectedIds($assignedIds)
-            ->outsideSelectedIds(TaskWait::unmetDependentIds());
+            ->outsideSelectedIds(TaskWait::query()->unmetDependentIds());
 
         $ordered = match ($members->type) {
             PoolMembersType::All => $query->oldestFirst(),

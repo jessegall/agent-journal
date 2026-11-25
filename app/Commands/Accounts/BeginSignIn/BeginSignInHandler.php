@@ -36,15 +36,15 @@ final readonly class BeginSignInHandler implements CommandHandler
             throw SignInMethodMissing::for($driver, $command->method->value);
         }
 
-        ActiveAccount::lockedFor($driver);
-        $running = SignInAttempt::liveFor($driver, null);
+        ActiveAccount::findLockedFor($driver);
+        $running = SignInAttempt::findLiveFor($driver, null);
 
         if ($running !== null) {
             return new SignInStarted($running->id, true);
         }
 
         $expiresAt = CarbonImmutable::now()->addMinutes($this->config->integer('accounts.sign_in_minutes'));
-        $directory = SignInAttempt::newFolderIn($this->config->string('accounts.root'));
+        $directory = SignInAttempt::resolveNewFolderIn($this->config->string('accounts.root'));
 
         $attempt = SignInAttempt::create(
             ActorIdentity::of($command->dispatchedBy()),

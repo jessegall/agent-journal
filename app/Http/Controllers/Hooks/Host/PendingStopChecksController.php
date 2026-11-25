@@ -19,7 +19,7 @@ final readonly class PendingStopChecksController
 {
     public function __invoke(HostContext $host, SessionPolicyReader $policies): JsonResponse
     {
-        $attempts = StopCheck::pendingOf(SessionProcess::unresolvedSessionIdsOn($host->hostId));
+        $attempts = StopCheck::findPendingOf(SessionProcess::resolveUnresolvedSessionIdsOn($host->hostId));
 
         return new JsonResponse(['attempts' => array_map(
             fn (StopCheck $attempt) => PendingStopCheckData::of(

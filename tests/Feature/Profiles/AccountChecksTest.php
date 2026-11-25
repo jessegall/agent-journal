@@ -62,7 +62,7 @@ final class AccountChecksTest extends TestCase
             new OwnerAuthority('test'),
         );
         $this->account = Account::create(DefaultDrivers::CODEX, AccountLabel::from('Work'), '/journal/accounts/work');
-        ActiveAccount::lockedFor(DefaultDrivers::CODEX)->select($this->account);
+        ActiveAccount::findLockedFor(DefaultDrivers::CODEX)->select($this->account);
     }
 
     public function test_only_a_rejected_sign_in_of_the_current_generation_asks_for_a_check(): void

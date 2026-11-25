@@ -20,6 +20,6 @@ final readonly class CreateTaskPageController
     {
         $id = $commands->run(new CreateTaskCommand($request->title(), $request->brief()));
 
-        return $redirect->to(route('tasks.task', ['task' => Task::numberOf($id)], false), 303);
+        return $redirect->to(route('tasks.task', ['task' => Task::resolveNumberOf($id)], false), 303);
     }
 }

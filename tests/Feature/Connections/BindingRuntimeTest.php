@@ -110,7 +110,7 @@ final class BindingRuntimeTest extends TestCase
 
         $this->assertSame(
             [ActorIdentity::of($serverMain)->text()],
-            array_map(fn (ActorIdentity $member) => $member->text(), InboxMember::attachedTo([Inbox::main()->id], Agent::class)),
+            array_map(fn (ActorIdentity $member) => $member->text(), InboxMember::resolveAttachedTo([Inbox::findMain()->id], Agent::class)),
         );
         $this->assertTrue(Agent::query()->findOrFail($serverMain->id)->currentRuntime()->isEmpty());
     }

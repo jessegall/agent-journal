@@ -127,7 +127,7 @@ final class AccountRemovalTest extends TestCase
             ActiveAccount::query()->withoutGlobalScopes()->where('account_protocol', 'codex')->value('account_id'),
         );
         $this->assertThrows(
-            fn () => ActiveAccount::lockedAccountForStart(DefaultDrivers::CODEX),
+            fn () => ActiveAccount::resolveLockedAccountForStart(DefaultDrivers::CODEX),
             AccountUnavailable::class,
             self::NO_DEFAULT_ACCOUNT,
         );

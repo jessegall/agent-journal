@@ -19,7 +19,7 @@ final readonly class AttachmentReader implements AttachmentReaderContract
 
     public function attachment(string $id, string|null $continuation): ToolResult
     {
-        $upload = TextUpload::sealed($id);
+        $upload = TextUpload::findSealed($id);
 
         $position = $continuation === null
             ? new Continuation(self::TOOL, $id, [], 1)

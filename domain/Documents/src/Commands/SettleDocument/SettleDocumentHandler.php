@@ -17,7 +17,7 @@ final readonly class SettleDocumentHandler extends DocumentCommandHandler
 
     public function handle(SettleDocumentCommand $command): void
     {
-        $document = Document::lockedForEditing($command->documentNumber);
+        $document = Document::findLockedForEditing($command->documentNumber);
         $this->assertDocumentRevision($document, $command->expectedRevision);
 
         if (DocumentDraft::query()->ofDocument($document->id)->exists()) {

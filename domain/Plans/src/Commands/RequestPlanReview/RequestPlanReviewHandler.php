@@ -20,7 +20,7 @@ final readonly class RequestPlanReviewHandler extends PlanCommandHandler
      */
     public function handle(RequestPlanReviewCommand $command): string
     {
-        $plan = Plan::lockStructure($command->planId);
+        $plan = Plan::findLockedStructure($command->planId);
 
         if ($plan->state !== PlanState::Planned) {
             throw PlanReviewRefused::notPlanned($plan->number, $plan->state->value);

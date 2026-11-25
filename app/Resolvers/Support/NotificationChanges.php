@@ -44,7 +44,7 @@ final readonly class NotificationChanges
             return $this->reset($scope);
         }
 
-        $examined = NotificationChange::between($scope->id, $read->afterVersion, $upper, NotificationChangePage::SIZE);
+        $examined = NotificationChange::findBetween($scope->id, $read->afterVersion, $upper, NotificationChangePage::SIZE);
         $last = $examined === [] ? $upper : end($examined)->version;
         $isDone = $examined === [] || $last >= $upper || count($examined) < NotificationChangePage::SIZE;
         $after = $isDone ? $upper : $last;
@@ -73,7 +73,7 @@ final readonly class NotificationChanges
             return false;
         }
 
-        return NotificationChange::oldestVersionOf($scope->id)
+        return NotificationChange::resolveOldestVersionOf($scope->id)
             ->map(fn (int $oldest) => $oldest > $afterVersion + 1)
             ->getOrElse(true);
     }
@@ -96,7 +96,7 @@ final readonly class NotificationChanges
      */
     private function itemsOf(array $changes): array
     {
-        $receipts = NotificationReceipt::withOccurrences(
+        $receipts = NotificationReceipt::findWithOccurrences(
             array_values(array_unique(array_map(fn (NotificationChange $change) => $change->receipt_id, $changes))),
         );
 

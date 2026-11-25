@@ -43,7 +43,7 @@ final readonly class NotifyRequestProgressHandler implements CommandHandler
 
     public function handle(NotifyRequestProgressCommand $command): void
     {
-        $request = DriverRequest::lockedById($command->requestId);
+        $request = DriverRequest::findLockedById($command->requestId);
         $runtime = $this->runtimes->lockedFor($command->hostId, $request->agent_runtime_id);
 
         if ($command->attempt < $request->attempt_version) {
@@ -107,7 +107,7 @@ final readonly class NotifyRequestProgressHandler implements CommandHandler
         // A host that could not send its ready report again leaves an unverified start without proof: it stays held,
         // uncertain. A start already verified keeps its proof; the answer only showed the host is there.
         if ($request->operation === DriverOperation::ResendReadiness && $request->progress->isRefused()) {
-            SessionRequest::lockedLatestOf($runtime->agent_session_id)
+            SessionRequest::findLockedLatestOf($runtime->agent_session_id)
                 ->filter(fn (SessionRequest $start) => $start->readiness->isUnverified())
                 ->forAll(fn (SessionRequest $start) => $start->markReadinessUnseen());
         }

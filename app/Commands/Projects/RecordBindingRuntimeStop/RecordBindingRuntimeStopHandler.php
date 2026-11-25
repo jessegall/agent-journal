@@ -15,7 +15,7 @@ final readonly class RecordBindingRuntimeStopHandler implements CommandHandler
 {
     public function handle(RecordBindingRuntimeStopCommand $command): void
     {
-        $binding = ProjectBinding::lockById($command->bindingId);
+        $binding = ProjectBinding::findLockedById($command->bindingId);
 
         if ($binding->host_id !== $command->hostId) {
             throw PresenceRefused::notTheHost($binding->id);

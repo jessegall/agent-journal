@@ -29,7 +29,7 @@ final readonly class FileAccessPolicy implements FileAccessPolicyContract
             return None::create();
         }
 
-        if (strtolower($folder[1]) !== AgentRuntime::ofSession($sessionId)?->id) {
+        if (strtolower($folder[1]) !== AgentRuntime::findForSession($sessionId)?->id) {
             return Some::create(AgentText::of('core.drivers.other_runtime'));
         }
 

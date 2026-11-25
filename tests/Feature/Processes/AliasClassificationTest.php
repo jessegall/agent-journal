@@ -44,7 +44,7 @@ final class AliasClassificationTest extends TestCase
             'name' => 'checks',
             'line' => 'php artisan test --compact',
         ])->expectsOutput('Saved. The alias is at revision 2.')->assertSuccessful();
-        $alias = CommandAlias::forName($this->context()->projectKey(), 'checks');
+        $alias = CommandAlias::create($this->context()->projectKey(), 'checks');
 
         $classification = $this->classify('journal run checks');
 
@@ -116,7 +116,7 @@ final class AliasClassificationTest extends TestCase
      */
     private function recordAlias(string $projectKey, string $name, string $line, array $arguments = []): CommandAlias
     {
-        $alias = CommandAlias::forName($projectKey, $name);
+        $alias = CommandAlias::create($projectKey, $name);
         $alias->recordLine($line, $arguments);
 
         return $alias;

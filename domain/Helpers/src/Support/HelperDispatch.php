@@ -286,7 +286,7 @@ final readonly class HelperDispatch
             return $this->newHelper($request, $profile);
         }
 
-        $designated = HelperIdentity::designatedFor($request->profileKey);
+        $designated = HelperIdentity::findDesignatedFor($request->profileKey);
 
         if ($designated->isDefined() && ! $this->hasRetired($designated->get())) {
             $this->assertIndependentFor($request, $designated->get());
@@ -317,7 +317,7 @@ final readonly class HelperDispatch
      */
     private function assertIndependentFor(DispatchRequest $request, HelperIdentity $designated): void
     {
-        if ($request->work->isIndependent && HelperJob::existsFor($designated, $this->purposeOf($request))) {
+        if ($request->work->isIndependent && HelperJob::hasJobFor($designated, $this->purposeOf($request))) {
             throw HelperUnavailable::forIndependentReview($request->profileKey);
         }
     }
@@ -353,7 +353,7 @@ final readonly class HelperDispatch
             return Agent::query()->findOrFail($request->parent->id)->project_id;
         }
 
-        return Project::forKey($this->projectKey->current())->id;
+        return Project::findForKey($this->projectKey->current())->id;
     }
 
     private function newHelper(DispatchRequest $request, ProfileSelection $profile): HelperIdentity

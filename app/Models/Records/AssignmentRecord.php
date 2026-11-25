@@ -17,7 +17,6 @@ use App\Models\Support\SignedInScope;
 use App\Support\AssigneeIdentity;
 use App\Support\Assignment;
 use App\Support\AssignmentReference;
-use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
 use Illuminate\Container\Container;
@@ -113,25 +112,13 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
     // ----------[ Queries ]----------
 
     /**
-     * The claims a lost assignment proved, whoever holds them, for their release.
-     *
-     * @return ReadBuilder<self>
-     */
-    public static function claimsProvedBy(AssignmentReference $source): ReadBuilder
-    {
-        return self::query()
-            ->withoutGlobalScope(SignedInScope::class)
-            ->provedBy($source);
-    }
-
-    /**
      * The ids of the claims a lost assignment proved, whoever holds them.
      *
      * @return list<string>
      */
-    public static function claimIdsProvedBy(AssignmentReference $source): array
+    public static function resolveClaimIdsProvedBy(AssignmentReference $source): array
     {
-        $claims = self::claimsProvedBy($source)->readAll('every claim a lost assignment proved ends with it');
+        $claims = self::query()->claimsProvedBy($source)->readAll('every claim a lost assignment proved ends with it');
 
         return array_values(array_map('strval', $claims->pluck('id')->all()));
     }
@@ -142,7 +129,7 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
      * @param  list<string>  $ids
      * @return array<string, AssigneeIdentity>
      */
-    public static function holdersOf(array $ids): array
+    public static function resolveHoldersOf(array $ids): array
     {
         return self::query()
             ->withoutGlobalScope(SignedInScope::class)
@@ -158,7 +145,7 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
      * @param  list<string>  $ids
      * @return array<string, Assignment>
      */
-    public static function assignmentsOf(array $ids): array
+    public static function resolveAssignmentsOf(array $ids): array
     {
         return self::query()
             ->withoutGlobalScope(SignedInScope::class)
@@ -174,7 +161,7 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
      * @param  list<string>  $ids
      * @return list<self>
      */
-    public static function ofRecords(string $type, array $ids): array
+    public static function findForRecords(string $type, array $ids): array
     {
         return array_values(self::query()
             ->withoutGlobalScope(SignedInScope::class)
@@ -314,7 +301,7 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
     #[Scope]
     protected function provedBy(Builder $query, AssignmentReference $source): void
     {
-        $query->whereIn('id', ClaimAuthorization::claimIdsFor($source));
+        $query->whereIn('id', ClaimAuthorization::query()->claimIdsFor($source));
     }
 
     /**
@@ -400,5 +387,16 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
     protected function recordIds(Builder $query): void
     {
         $query->select('record_id');
+    }
+
+    /**
+     * The claims a lost assignment proved, whoever holds them, for their release.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function claimsProvedBy(Builder $query, AssignmentReference $source): void
+    {
+        $query->withoutGlobalScope(SignedInScope::class)->provedBy($source);
     }
 }

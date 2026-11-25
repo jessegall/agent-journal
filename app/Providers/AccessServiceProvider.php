@@ -65,7 +65,7 @@ class AccessServiceProvider extends ServiceProvider
                 AccessSettings $settings,
             ): void {
                 $ownerEmail = $this->app->make('config')->get('access.owner_email');
-                $settings->__construct(is_string($ownerEmail) ? User::ownerIdFor($ownerEmail) : null);
+                $settings->__construct(is_string($ownerEmail) ? User::resolveOwnerIdFor($ownerEmail) : null);
             }));
 
         $this->app->scoped(UserAssignees::class);

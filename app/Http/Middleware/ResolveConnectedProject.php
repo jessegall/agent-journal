@@ -34,7 +34,7 @@ final readonly class ResolveConnectedProject
             throw BindingRevoked::forAgent($agentId);
         }
 
-        foreach (ProjectBinding::ofMainAgent($agentId) as $binding) {
+        foreach (ProjectBinding::findForMainAgent($agentId) as $binding) {
             $this->projects->connect(
                 new ConnectedProject($binding->project->key, $binding->canonical_root, $binding->environment_id),
             );

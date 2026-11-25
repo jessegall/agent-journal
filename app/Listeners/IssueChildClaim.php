@@ -23,7 +23,7 @@ final class IssueChildClaim implements Listener
 {
     public function handle(ChildCheckoutRequested $request): void
     {
-        foreach (ProjectBinding::liveIdOfLocalHost($request->hostId) as $bindingId) {
+        foreach (ProjectBinding::resolveLiveIdOfLocalHost($request->hostId) as $bindingId) {
             foreach ($this->claimsOf($bindingId, $request) as $claim) {
                 $request->slot->fill($claim->checkout);
             }
@@ -37,21 +37,21 @@ final class IssueChildClaim implements Listener
      */
     private function claimsOf(string $bindingId, ChildCheckoutRequested $request): array
     {
-        $issued = ChildClaim::ofChildAgent($request->childAgentId);
+        $issued = ChildClaim::findForChildAgent($request->childAgentId);
 
         if ($issued !== []) {
             return $issued;
         }
 
-        $parent = AgentRuntime::ofSession($request->parentSessionId);
+        $parent = AgentRuntime::findForSession($request->parentSessionId);
 
         if ($parent === null) {
             return [];
         }
 
         $binding = ProjectBinding::query()->findOrFail($bindingId);
-        $parentAgentId = AgentSession::byId($request->parentSessionId)->agent_id;
-        $parentClaims = ChildClaim::ofChildAgent($parentAgentId);
+        $parentAgentId = AgentSession::findById($request->parentSessionId)->agent_id;
+        $parentClaims = ChildClaim::findForChildAgent($parentAgentId);
 
         return array_map(
             fn ($read) => $parentClaims === []
@@ -63,7 +63,7 @@ final class IssueChildClaim implements Listener
                     $read,
                 )
                 : ChildClaim::createForParent($parentClaims[0], $request->childAgentId, ChildRole::Writer, $read),
-            WorkspaceRead::latestCommitReadOf($parentAgentId),
+            WorkspaceRead::resolveLatestCommitReadOf($parentAgentId),
         );
     }
 }

@@ -20,7 +20,7 @@ final readonly class StartIdentity
 {
     public function settle(AgentRuntime $runtime, NotifyRequestProgressCommand $report): void
     {
-        SessionRequest::lockedLatestOf($runtime->agent_session_id)
+        SessionRequest::findLockedLatestOf($runtime->agent_session_id)
             ->filter(fn (SessionRequest $record) => $record->readiness->takesReadiness())
             ->forAll(fn (SessionRequest $record) => $this->settleRecord($record, $runtime, $report));
     }

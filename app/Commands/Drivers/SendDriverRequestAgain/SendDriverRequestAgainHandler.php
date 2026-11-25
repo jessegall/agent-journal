@@ -17,7 +17,7 @@ final readonly class SendDriverRequestAgainHandler implements CommandHandler
 
     public function handle(SendDriverRequestAgainCommand $command): string
     {
-        $original = DriverRequest::lockedById($command->requestId);
+        $original = DriverRequest::findLockedById($command->requestId);
         $runtime = AgentRuntime::query()->findOrFail($original->agent_runtime_id);
         $key = self::KEY_PREFIX.$original->id;
 

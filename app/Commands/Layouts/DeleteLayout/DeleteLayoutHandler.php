@@ -11,6 +11,6 @@ final readonly class DeleteLayoutHandler implements CommandHandler
 {
     public function handle(DeleteLayoutCommand $command): void
     {
-        Layout::lockedForChange($command->layoutId)->remove();
+        Layout::findLockedForChange($command->layoutId)->remove();
     }
 }

@@ -35,7 +35,7 @@ final readonly class AccountUses implements AccountUsesContract
         $counts = new AccountUseCounts();
 
         foreach ($accounts as $account) {
-            $counts = $counts->with($account, SessionProcess::unresolvedCountOf($account));
+            $counts = $counts->with($account, SessionProcess::countUnresolvedOf($account));
         }
 
         return $counts;
@@ -57,7 +57,7 @@ final readonly class AccountUses implements AccountUsesContract
     public function accountOf(string $sessionId, string $accountType): RecordIdentity
     {
         $this->authorizeRead();
-        $accounts = $this->links->linkedOfType(AgentSession::byId($sessionId), $accountType);
+        $accounts = $this->links->linkedOfType(AgentSession::findById($sessionId), $accountType);
 
         if (count($accounts) !== 1) {
             throw AccountUseMissing::forSession($sessionId, $accountType, count($accounts));

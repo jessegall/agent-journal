@@ -63,7 +63,7 @@ final class SessionOutcomeDismissal extends Model implements ReadableModel
      * @param  list<string>  $requestIds
      * @return list<string>
      */
-    public static function dismissedKeysOf(ActorIdentity $viewer, array $requestIds): array
+    public static function resolveDismissedKeysOf(ActorIdentity $viewer, array $requestIds): array
     {
         return array_values(self::query()
             ->dismissedBy($viewer)

@@ -346,7 +346,7 @@ final class SessionRequest extends Model implements EventSource, ReadableModel
      * @param  list<string>  $agentIds
      * @return Collection<string, self>
      */
-    public static function latestOf(array $agentIds): Collection
+    public static function findLatestOf(array $agentIds): Collection
     {
         return self::query()
             ->ofAgents($agentIds)
@@ -359,7 +359,7 @@ final class SessionRequest extends Model implements EventSource, ReadableModel
     /**
      * The driver type the start of this session asked to keep for its agent once it runs, none when it asked nothing.
      */
-    public static function savedDriverTypeOf(string $sessionId): DriverType|null
+    public static function resolveSavedDriverTypeOf(string $sessionId): DriverType|null
     {
         $record = self::query()->ofSessions([$sessionId])->remembered()->first();
 
@@ -372,10 +372,10 @@ final class SessionRequest extends Model implements EventSource, ReadableModel
      * @param  list<string>  $ids
      * @return list<string>
      */
-    public static function sessionsHoldingDeliveries(array $ids): array
+    public static function resolveSessionsHoldingDeliveries(array $ids): array
     {
         return array_keys(array_filter(
-            self::latestReadinessOf($ids),
+            self::resolveLatestReadinessOf($ids),
             fn (StartReadiness $readiness) => $readiness->shouldHoldDeliveries(),
         ));
     }
@@ -386,7 +386,7 @@ final class SessionRequest extends Model implements EventSource, ReadableModel
      * @param  list<string>  $ids
      * @return array<string, StartReadiness>
      */
-    public static function latestReadinessOf(array $ids): array
+    public static function resolveLatestReadinessOf(array $ids): array
     {
         return self::query()
             ->ofSessions($ids)
@@ -404,7 +404,7 @@ final class SessionRequest extends Model implements EventSource, ReadableModel
      * @param  list<string>  $ids
      * @return Collection<int, self>
      */
-    public static function lockedAcceptedOf(array $ids): Collection
+    public static function findLockedAcceptedOf(array $ids): Collection
     {
         return self::query()
             ->ofSessions($ids)
@@ -419,7 +419,7 @@ final class SessionRequest extends Model implements EventSource, ReadableModel
      *
      * @return Option<self>
      */
-    public static function lockedLatestOf(string $sessionId): Option
+    public static function findLockedLatestOf(string $sessionId): Option
     {
         $record = self::query()->ofSessions([$sessionId])->newestFirst()->lockForUpdate()->first();
 
@@ -431,7 +431,7 @@ final class SessionRequest extends Model implements EventSource, ReadableModel
      *
      * @return Option<self>
      */
-    public static function ownerStartOf(string $sessionId): Option
+    public static function findOwnerStartOf(string $sessionId): Option
     {
         $record = self::query()->ofSessions([$sessionId])->ofOrigin(StartOriginType::OwnerRequest)->withOwner()
             ->first();
@@ -442,7 +442,7 @@ final class SessionRequest extends Model implements EventSource, ReadableModel
     /**
      * The native conversation the session's start chose to continue, if it chose one.
      */
-    public static function conversationTargetOf(string $sessionId): string|null
+    public static function resolveConversationTargetOf(string $sessionId): string|null
     {
         return self::query()->ofSessions([$sessionId])->value('conversation_target');
     }
@@ -450,7 +450,7 @@ final class SessionRequest extends Model implements EventSource, ReadableModel
     /**
      * Whether the owner chose the conversation this session resumes, so the host may not start fresh in its place.
      */
-    public static function requiresConversation(string $sessionId): bool
+    public static function isConversationRequired(string $sessionId): bool
     {
         return self::query()
             ->ofSessions([$sessionId])
@@ -462,7 +462,7 @@ final class SessionRequest extends Model implements EventSource, ReadableModel
     /**
      * Whether the session was started to resume an earlier conversation of the same agent.
      */
-    public static function resumesConversation(string $sessionId): bool
+    public static function isConversationResumed(string $sessionId): bool
     {
         return self::query()
             ->ofSessions([$sessionId])

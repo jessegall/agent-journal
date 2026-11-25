@@ -100,7 +100,7 @@ final class AskClockTest extends TestCase
         $this->advanceAt($ask, $start->addMinutes(16));
 
         $this->assertTrue($ask->refresh()->open);
-        $this->assertSame($this->owner->id, AskHop::currentFor($ask)->actor_id);
+        $this->assertSame($this->owner->id, AskHop::findCurrentFor($ask)->actor_id);
 
         $this->advanceAt($ask, $start->addMinutes(32));
 
@@ -124,8 +124,8 @@ final class AskClockTest extends TestCase
     private function routedAsk(string $body): Ask
     {
         $type = $this->app->make(AskTypeRegistry::class)->get(AskTypeKey::of('question'));
-        $reference = Ask::newReference();
-        $ask = Ask::submit(
+        $reference = Ask::resolveNewReference();
+        $ask = Ask::create(
             $reference,
             ActorIdentity::of($this->requester),
             $type->key(),
@@ -142,7 +142,7 @@ final class AskClockTest extends TestCase
 
     private function answer(Ask $ask): void
     {
-        AskHop::currentFor($ask->refresh())->answer('Done.', 'delivered');
+        AskHop::findCurrentFor($ask->refresh())->answer('Done.', 'delivered');
         $ask->close();
     }
 

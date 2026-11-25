@@ -32,7 +32,7 @@ final readonly class ChatCandidatesController
         $chats->assertManages($input->inboxId);
         $members = array_map(
             fn (ActorIdentity $member) => $member->id,
-            InboxMember::attachedTo([$input->inboxId], User::class),
+            InboxMember::resolveAttachedTo([$input->inboxId], User::class),
         );
         $candidates = array_values(array_map(
             fn (string $userId) => ActorIdentity::ofClass(User::class, $userId),

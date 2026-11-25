@@ -83,7 +83,7 @@ final class CommandRequest extends Model implements ReadableModel
         $commandRequest->operation = $command->operation;
         $commandRequest->binding_digest = $command->bindingDigest;
         $commandRequest->source_digest = hash('sha256', $command->line);
-        $commandRequest->source_excerpt = self::excerptOf($command->line);
+        $commandRequest->source_excerpt = self::resolveExcerptOf($command->line);
         $commandRequest->source_line = $command->line;
         $commandRequest->working_folder = $command->workingFolder;
         $commandRequest->hold_reason = $command->reason;
@@ -148,7 +148,7 @@ final class CommandRequest extends Model implements ReadableModel
     /**
      * The line as a request shows it: control bytes as spaces, cut to the excerpt length.
      */
-    public static function excerptOf(string $line): string
+    public static function resolveExcerptOf(string $line): string
     {
         return mb_substr((string) preg_replace('/[\x00-\x1F\x7F]/', ' ', $line), 0, self::EXCERPT_LENGTH);
     }
@@ -156,7 +156,7 @@ final class CommandRequest extends Model implements ReadableModel
     /**
      * The request with that id, locked for the change about to be made to it.
      */
-    public static function lockedForChange(string $id): self
+    public static function findLockedForChange(string $id): self
     {
         return self::query()->whereKey($id)->lockForUpdate()->sole();
     }

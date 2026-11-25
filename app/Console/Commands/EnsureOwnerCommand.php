@@ -34,7 +34,7 @@ final class EnsureOwnerCommand extends Command
             return self::SUCCESS;
         }
 
-        $owner = User::installOwner('Owner', $email, $password);
+        $owner = User::createForInstallation('Owner', $email, $password);
 
         if ($owner->wasRecentlyCreated) {
             $commands->runAsJournal(

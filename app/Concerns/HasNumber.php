@@ -40,13 +40,13 @@ trait HasNumber
 
     public function numberHolder(): Model
     {
-        return GlobalGroup::journal();
+        return GlobalGroup::findJournal();
     }
 
     /**
      * The id of the record with this number, for a model numbered across the journal; none when no record has it.
      */
-    public static function idOfNumber(int $number): string|null
+    public static function resolveIdOfNumber(int $number): string|null
     {
         $id = static::query()->where('number', $number)->value((new static())->getKeyName());
 

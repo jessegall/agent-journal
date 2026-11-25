@@ -77,7 +77,7 @@ final class WorkspaceReadCommitTest extends TestCase
 
     private function retained(string $reference): WorkspaceRead
     {
-        return WorkspaceRead::retain(new WorkspaceReadReference($reference), TestActors::agentIdentity(1), WorkReference::free('chain-1'));
+        return WorkspaceRead::create(new WorkspaceReadReference($reference), TestActors::agentIdentity(1), WorkReference::free('chain-1'));
     }
 
     /**
@@ -96,6 +96,6 @@ final class WorkspaceReadCommitTest extends TestCase
 
     private function commitOf(WorkspaceRead $read): CommitObservation
     {
-        return WorkspaceRead::byReference($read->reference)->facts->get()->commit;
+        return WorkspaceRead::findByReference($read->reference)->facts->get()->commit;
     }
 }

@@ -151,7 +151,7 @@ final class HelperIdentity extends Model implements EventSource, ReadableModel
      *
      * @return Option<self>
      */
-    public static function designatedFor(string $profileKey): Option
+    public static function findDesignatedFor(string $profileKey): Option
     {
         $helperIdentity = self::query()->acrossActors()->designatedAs($profileKey)->first();
 

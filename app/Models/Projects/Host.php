@@ -461,7 +461,7 @@ final class Host extends Model implements EventSource, ReadableModel
      *
      * @throws HostCredentialRejected
      */
-    public static function forSecret(string $secret): self
+    public static function findForSecret(string $secret): self
     {
         $host = self::query()->withSecret($secret)->firstOr(HostCredentialRejected::throwing()->unknown());
         $host->assertNotRevoked();
@@ -473,7 +473,7 @@ final class Host extends Model implements EventSource, ReadableModel
      * The protection a contained host of this installation last reported for the driver's build on the platform a
      * start profile names, or the unreported one asked for when no contained host has.
      */
-    public static function containedProtectionOf(ProtectionReport $unreported): ProtectionReport
+    public static function resolveContainedProtectionOf(ProtectionReport $unreported): ProtectionReport
     {
         $host = self::query()
             ->contained()
@@ -493,7 +493,7 @@ final class Host extends Model implements EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function servingEnrolled(): array
+    public static function findServingEnrolled(): array
     {
         return array_values(
             self::query()
@@ -511,14 +511,14 @@ final class Host extends Model implements EventSource, ReadableModel
      *
      * @throws HostUnavailable
      */
-    public static function runningStart(
+    public static function findRunningStart(
         string $driver,
         string $build,
         ExecutionModeType $placement,
         DriverType $driverType,
     ): self {
         $hosts = array_values(array_filter(
-            self::servingEnrolled(),
+            self::findServingEnrolled(),
             fn (self $host) => $host->runsPlacement($placement) && $host->declaresRun(
                 $driver,
                 $build,

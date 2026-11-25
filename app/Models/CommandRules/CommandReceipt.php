@@ -258,7 +258,7 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
     /**
      * The caller's receipt of the command under the key, read without a lock, if it has one.
      */
-    public static function readFor(ReceiptCaller $caller, string $command, string $requestKey): self|null
+    public static function findReadFor(ReceiptCaller $caller, string $command, string $requestKey): self|null
     {
         $query = self::query()->withoutGlobalScope('caller');
         $caller->limit($query);
@@ -271,7 +271,7 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
      *
      * @param  class-string  $command
      */
-    public static function lockedFor(ReceiptCaller $caller, string $command, string $requestKey): self|null
+    public static function findLockedFor(ReceiptCaller $caller, string $command, string $requestKey): self|null
     {
         $query = self::query()->withoutGlobalScope('caller');
         $caller->limit($query);

@@ -30,7 +30,7 @@ final readonly class SessionStartCandidates implements SessionStartCandidatesCon
         ));
 
         $agentIds = array_map(fn (StartCandidateFacts $helper) => $helper->actor->id, $helpers);
-        $agents = Agent::byIds($agentIds);
+        $agents = Agent::findByIds($agentIds);
         $busy = $this->busyAgents($agentIds);
 
         $purposeConversations = DriverConversation::query()

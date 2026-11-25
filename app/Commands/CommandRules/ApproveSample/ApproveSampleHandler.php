@@ -28,7 +28,7 @@ final readonly class ApproveSampleHandler implements CommandHandler
      */
     public function handle(ApproveSampleCommand $command): string
     {
-        $request = CommandRequest::lockedForChange($command->commandRequestId);
+        $request = CommandRequest::findLockedForChange($command->commandRequestId);
 
         if ($command->commandDigest !== $request->source_digest) {
             throw SampleRefused::otherCommand($request->id);

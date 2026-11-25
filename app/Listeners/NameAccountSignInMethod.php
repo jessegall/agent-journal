@@ -20,7 +20,7 @@ final readonly class NameAccountSignInMethod implements Listener
             return;
         }
 
-        $method = Account::methodOf($requested->account->id);
+        $method = Account::resolveMethodOf($requested->account->id);
 
         if ($method === null) {
             return;

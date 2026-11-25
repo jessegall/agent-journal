@@ -54,7 +54,7 @@ final readonly class TaskWaitRules
             throw TaskWaitRefused::dependentStarted($dependent->number);
         }
 
-        if (TaskWait::between($dependent->id, $prerequisite->id) !== null) {
+        if (TaskWait::findBetween($dependent->id, $prerequisite->id) !== null) {
             throw TaskWaitRefused::alreadyWaits($dependent->number, $prerequisite->number);
         }
 
@@ -72,10 +72,10 @@ final readonly class TaskWaitRules
             throw TaskWaitRefused::dependentEnded($dependent->number, $dependent->state->value);
         }
 
-        $wait = TaskWait::between($dependent->id, $prerequisiteId);
+        $wait = TaskWait::findBetween($dependent->id, $prerequisiteId);
 
         if ($wait === null) {
-            throw TaskWaitRefused::noWait($dependent->number, Task::numberOf($prerequisiteId));
+            throw TaskWaitRefused::noWait($dependent->number, Task::resolveNumberOf($prerequisiteId));
         }
 
         return $wait;

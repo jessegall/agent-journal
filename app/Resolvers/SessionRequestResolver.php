@@ -71,7 +71,7 @@ final readonly class SessionRequestResolver implements SessionRequestResolverCon
             return None::create();
         }
 
-        return SessionRequest::ownerStartOf($this->sessions->sessionId())->map(self::detailsOf(...));
+        return SessionRequest::findOwnerStartOf($this->sessions->sessionId())->map(self::detailsOf(...));
     }
 
     private function maintainsAgents(): bool

@@ -23,6 +23,6 @@ final readonly class ProposalStatusResolver
     {
         $proposer = ActorIdentity::of($this->actors->actor());
 
-        return array_map(fn (Share $proposal) => $proposal->proposal_status, Share::proposedBy($proposer));
+        return array_map(fn (Share $proposal) => $proposal->proposal_status, Share::findProposedBy($proposer));
     }
 }

@@ -33,7 +33,7 @@ final readonly class CountPhaseTaskStates implements Listener
             return;
         }
 
-        $plan = Plan::lockStructure((string) $planId);
+        $plan = Plan::findLockedStructure((string) $planId);
         $phase = Phase::query()->holdingTask($event->taskId)->sole();
 
         $phase->recordProgress(PlanProgressCount::afterMove($phase->progress, $event->previousState, $enteredState));

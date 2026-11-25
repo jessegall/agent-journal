@@ -14,7 +14,7 @@ final readonly class DenyRuleHandler extends RuleCommandHandler
 {
     public function handle(DenyRuleCommand $command): void
     {
-        $rule = Rule::lockedById($command->ruleId);
+        $rule = Rule::findLockedById($command->ruleId);
         $rule->deny();
     }
 }

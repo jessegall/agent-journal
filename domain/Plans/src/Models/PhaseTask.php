@@ -50,6 +50,22 @@ final class PhaseTask extends Pivot implements ReadableModel
         return ['position' => 'integer'];
     }
 
+    // ----------[ Constructors ]----------
+
+    /**
+     * The task placed in the phase at this position.
+     */
+    public static function create(Phase $phase, string $taskId, int $position): self
+    {
+        $phaseTask = new self();
+        $phaseTask->phase_id = $phase->id;
+        $phaseTask->task_id = $taskId;
+        $phaseTask->position = $position;
+        $phaseTask->save();
+
+        return $phaseTask;
+    }
+
     // ----------[ Transformers ]----------
 
     /**
@@ -70,7 +86,7 @@ final class PhaseTask extends Pivot implements ReadableModel
      *
      * @return array<string, int>
      */
-    public static function phaseNumbersInPlan(string $planId): array
+    public static function resolvePhaseNumbersInPlan(string $planId): array
     {
         return array_map(intval(...), self::query()
             ->inPlanOrder($planId)
@@ -80,26 +96,12 @@ final class PhaseTask extends Pivot implements ReadableModel
     }
 
     /**
-     * The task placed in the phase at this position.
-     */
-    public static function create(Phase $phase, string $taskId, int $position): self
-    {
-        $phaseTask = new self();
-        $phaseTask->phase_id = $phase->id;
-        $phaseTask->task_id = $taskId;
-        $phaseTask->position = $position;
-        $phaseTask->save();
-
-        return $phaseTask;
-    }
-
-    /**
      * The task ids of each of the phases, each phase's in its order, read in one query and keyed by phase id.
      *
      * @param  list<string>  $phaseIds
      * @return array<string, list<string>>
      */
-    public static function taskIdsByPhase(array $phaseIds): array
+    public static function resolveTaskIdsByPhase(array $phaseIds): array
     {
         $taskIds = array_fill_keys($phaseIds, []);
 
@@ -125,7 +127,7 @@ final class PhaseTask extends Pivot implements ReadableModel
      *
      * @return array<int, string>
      */
-    public static function pageOf(string $phaseId, int $afterPosition, int $limit): array
+    public static function resolvePageOf(string $phaseId, int $afterPosition, int $limit): array
     {
         return self::query()->ofPhase($phaseId)->placedAfter($afterPosition)->inPositionOrder()->readUpTo($limit)
             ->pluck('task_id', 'position')

@@ -37,7 +37,7 @@ final readonly class GatewaySettingsResolver implements PageResolver
                 $configuration,
                 $this->gateways,
             ),
-            ShareGatewayConfiguration::allRevisions(),
+            ShareGatewayConfiguration::findAllRevisions(),
         );
 
         $parts = [LayoutPartData::box('header', 'header', LayoutPartData::text('title', 'Share gateways', 'heading'))];

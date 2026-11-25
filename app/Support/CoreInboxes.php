@@ -23,6 +23,6 @@ final readonly class CoreInboxes implements InboxProvider, NamedInboxes
 
     public function inboxNamed(string $name): Option
     {
-        return Inbox::named($name);
+        return Inbox::findNamed($name);
     }
 }

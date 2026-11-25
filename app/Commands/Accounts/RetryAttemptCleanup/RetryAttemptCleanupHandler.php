@@ -11,7 +11,7 @@ final readonly class RetryAttemptCleanupHandler implements CommandHandler
 {
     public function handle(RetryAttemptCleanupCommand $command): void
     {
-        $attempt = SignInAttempt::lockedForOwner($command->attemptId);
+        $attempt = SignInAttempt::findLockedForOwner($command->attemptId);
         $attempt->retryCleanup();
     }
 }

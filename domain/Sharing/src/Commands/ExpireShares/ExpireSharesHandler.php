@@ -17,7 +17,7 @@ final readonly class ExpireSharesHandler extends SharingCommandHandler
 
     public function handle(ExpireSharesCommand $command): ShareExpiry
     {
-        $due = Share::lockPastDeadline(self::MOST_PER_RUN + 1);
+        $due = Share::findLockedPastDeadline(self::MOST_PER_RUN + 1);
         $batch = array_slice($due, 0, self::MOST_PER_RUN);
 
         foreach ($batch as $share) {

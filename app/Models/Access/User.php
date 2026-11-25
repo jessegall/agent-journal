@@ -33,6 +33,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use Override;
 
 /**
  * @property string $id
@@ -121,6 +122,25 @@ class User extends Authenticatable implements
         return $user;
     }
 
+    /**
+     * The installation's owner account, made the first time and found by its email after that.
+     */
+    public static function createForInstallation(string $name, string $email, string $password): self
+    {
+        $owner = new self();
+        $owner->name = $name;
+        $owner->email = $email;
+        $owner->password = $password;
+        $owner->setAttribute($owner->getKeyName(), $owner->newUniqueId());
+
+        // The inserted row is returned as it is, so its caller sees wasRecentlyCreated; an owner already there is read.
+        if ($owner->insertIfAbsent()) {
+            return $owner;
+        }
+
+        return self::query()->withEmail($email)->sole();
+    }
+
     // ----------[ Mutations ]----------
 
     /**
@@ -175,34 +195,16 @@ class User extends Authenticatable implements
 
     // ----------[ Queries ]----------
 
+    #[Override]
     public static function storedType(): string
     {
         return 'user';
     }
 
     /**
-     * The installation's owner account, made the first time and found by its email after that.
-     */
-    public static function installOwner(string $name, string $email, string $password): self
-    {
-        $owner = new self();
-        $owner->name = $name;
-        $owner->email = $email;
-        $owner->password = $password;
-        $owner->setAttribute($owner->getKeyName(), $owner->newUniqueId());
-
-        // The inserted row is returned as it is, so its caller sees wasRecentlyCreated; an owner already there is read.
-        if ($owner->insertIfAbsent()) {
-            return $owner;
-        }
-
-        return self::query()->withEmail($email)->sole();
-    }
-
-    /**
      * The id of the user with this email address, the journal's owner; none when no such user exists yet.
      */
-    public static function ownerIdFor(string $email): string|null
+    public static function resolveOwnerIdFor(string $email): string|null
     {
         $id = self::query()->withEmail($email)->value('id');
 

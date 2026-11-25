@@ -37,6 +37,6 @@ final readonly class CallerStackTargets
      */
     public function lockedRowsOf(ActorIdentity $actor): array
     {
-        return AgentStackRow::lockActiveOf($actor, $this->sessions->sessionsOf($actor));
+        return AgentStackRow::findLockedActiveOf($actor, $this->sessions->sessionsOf($actor));
     }
 }

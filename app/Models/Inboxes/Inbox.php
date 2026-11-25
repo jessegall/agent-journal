@@ -118,7 +118,7 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
     /**
      * @return Option<self>
      */
-    public static function named(string $name): Option
+    public static function findNamed(string $name): Option
     {
         $inbox = self::query()->withName($name)->first();
 
@@ -128,9 +128,9 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
     /**
      * @throws InboxUnavailable
      */
-    public static function main(): self
+    public static function findMain(): self
     {
-        return self::named(self::MAIN)->getOrThrow(InboxUnavailable::forName(self::MAIN));
+        return self::findNamed(self::MAIN)->getOrThrow(InboxUnavailable::forName(self::MAIN));
     }
 
     /**
@@ -138,7 +138,7 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
      *
      * @throws InboxUnavailable
      */
-    public static function personalOf(ActorIdentity $actor): self
+    public static function findPersonalOf(ActorIdentity $actor): self
     {
         return self::query()->personalTo($actor)->firstOr(InboxUnavailable::throwing()->forActor($actor->id));
     }
@@ -148,7 +148,7 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
      *
      * @throws InboxUnavailable
      */
-    public static function lockedById(string $id): self
+    public static function findLockedById(string $id): self
     {
         return self::query()->whereKey($id)->lockForUpdate()->firstOr(InboxUnavailable::throwing()->forId($id));
     }

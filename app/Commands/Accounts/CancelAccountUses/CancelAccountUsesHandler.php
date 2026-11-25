@@ -32,7 +32,7 @@ final readonly class CancelAccountUsesHandler implements CommandHandler
      */
     private function cancelPendingOf(RecordIdentity $account): int
     {
-        return SessionProcess::supervised()
+        return SessionProcess::query()->supervised()
             ->onAccount($account)
             ->where('state', SessionProcessState::Pending->value)
             ->update([

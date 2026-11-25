@@ -49,12 +49,12 @@ final class SkillReceipt extends Model implements ReadableModel
         ];
     }
 
-    // ----------[ Queries ]----------
+    // ----------[ Constructors ]----------
 
     /**
      * Records the read once per session, context, skill and text.
      */
-    public static function record(
+    public static function create(
         string $sessionId,
         int $epoch,
         string $skillKey,
@@ -79,12 +79,14 @@ final class SkillReceipt extends Model implements ReadableModel
             ->sole();
     }
 
+    // ----------[ Queries ]----------
+
     /**
      * Whether the session read this text of the skill in its current context.
      */
     public static function hasRead(string $sessionId, string $skillKey, string $digest): bool
     {
-        $epoch = SkillContextEpoch::currentOf($sessionId);
+        $epoch = SkillContextEpoch::resolveCurrentOf($sessionId);
 
         return self::query()->ofRead($sessionId, $epoch, $skillKey, $digest)->exists();
     }

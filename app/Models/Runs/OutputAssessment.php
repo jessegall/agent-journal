@@ -142,7 +142,7 @@ final class OutputAssessment extends Model implements ReadableModel
     /**
      * The newest assessment of that part's output; none before its first.
      */
-    public static function latestOf(PartRun $part): self|null
+    public static function findLatestOf(PartRun $part): self|null
     {
         return self::query()->ofPart($part)->first();
     }

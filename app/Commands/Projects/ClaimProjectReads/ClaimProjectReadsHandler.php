@@ -17,7 +17,7 @@ final readonly class ClaimProjectReadsHandler implements CommandHandler
     public function handle(ClaimProjectReadsCommand $command): ProjectReadClaims
     {
         $now = $this->clock->now();
-        $reads = ProjectRead::claimableFor($command->hostId, ClaimProjectReadsCommand::CLAIM_LIMIT, $now);
+        $reads = ProjectRead::findClaimableFor($command->hostId, ClaimProjectReadsCommand::CLAIM_LIMIT, $now);
 
         foreach ($reads as $read) {
             $read->markClaimed($now);

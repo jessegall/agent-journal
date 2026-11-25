@@ -37,7 +37,7 @@ final readonly class AssignedTaskResolver implements AssignedTaskResolverContrac
     public function currentForCaller(): Option
     {
         return $this->states->ofCaller(WorkOnTaskStateReference::TYPE_KEY)
-            ->flatMap(fn (StateReference $frame) => Task::summaryOf($frame));
+            ->flatMap(fn (StateReference $frame) => Task::resolveSummaryOf($frame));
     }
 
     public function assignedToCaller(TaskFilters $filters): TaskList

@@ -155,7 +155,7 @@ final class ProfileRevision extends Model implements ReadableModel
      *
      * @throws ProfileMissing
      */
-    public static function currentOf(Profile $profile): self
+    public static function findCurrentOf(Profile $profile): self
     {
         return self::query()
             ->ofProfile($profile)
@@ -166,7 +166,7 @@ final class ProfileRevision extends Model implements ReadableModel
     /**
      * The profile's revision with this number.
      */
-    public static function numbered(Profile $profile, int $revision): self
+    public static function findNumbered(Profile $profile, int $revision): self
     {
         return self::query()->ofProfile($profile)->atRevision($revision)->firstOrFail();
     }
@@ -175,7 +175,7 @@ final class ProfileRevision extends Model implements ReadableModel
      * @param  list<string>  $keys
      * @return array<string, ScriptSource>
      */
-    public static function currentSources(array $keys): array
+    public static function resolveCurrentSources(array $keys): array
     {
         if ($keys === []) {
             return [];
@@ -196,7 +196,7 @@ final class ProfileRevision extends Model implements ReadableModel
     /**
      * @return list<SupervisorProfile>
      */
-    public static function currentSupervisorProfiles(): array
+    public static function resolveCurrentSupervisorProfiles(): array
     {
         $profiles = [];
 

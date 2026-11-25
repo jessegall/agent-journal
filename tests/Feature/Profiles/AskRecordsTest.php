@@ -215,7 +215,7 @@ final class AskRecordsTest extends TestCase
         $commands->run(new WithdrawAskCommand($second));
         $this->assertSame(self::INPUT_ADVICE, $inbox->card($first)->reply);
         $this->assertFalse($inbox->card($second)->isOpen);
-        $this->assertSame(3, Ask::openSubmissions(ActorIdentity::of($requester)));
+        $this->assertSame(3, Ask::resolveOpenSubmissions(ActorIdentity::of($requester)));
         $this->assertSame(3, AssignmentRecord::query()->count());
         $this->assertSame(
             AskHop::PENDING_DELIVERY,
@@ -315,9 +315,9 @@ final class AskRecordsTest extends TestCase
         $actor = ActorIdentity::of($requester);
         $type = $this->app->make(AskTypeRegistry::class)->get(AskTypeKey::of('question'));
         $this->app->make(CommandBus::class)->run(new ChangeSupervisorCommand($actor, $target, $routeVersion, $type->key()));
-        $reference = Ask::newReference();
+        $reference = Ask::resolveNewReference();
 
-        return Ask::submit(
+        return Ask::create(
             $reference,
             $actor,
             $type->key(),

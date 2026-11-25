@@ -34,7 +34,7 @@ final readonly class ReadinessCheckSweep
             ->each(function (DriverRequest $request): void {
                 $request->markUnavailable(RequestOutcome::Unconfirmed);
 
-                SessionRequest::lockedLatestOf($request->runtime->agent_session_id)->forAll(
+                SessionRequest::findLockedLatestOf($request->runtime->agent_session_id)->forAll(
                     fn (SessionRequest $start) => $start->markReadinessUnseen(),
                 );
             }));

@@ -58,7 +58,7 @@ final class AccountSharingTest extends TestCase
     {
         parent::setUp();
         $this->registerFamily();
-        ActiveAccount::lockedFor('example')->select(
+        ActiveAccount::findLockedFor('example')->select(
             Account::create('example', AccountLabel::from('Shared account'), '/journal/accounts/example'),
         );
     }

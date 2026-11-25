@@ -99,7 +99,7 @@ final class SessionOutputGrant extends Model implements ReadableModel
      *
      * @return array<string, SessionOutputPaths>
      */
-    public static function heldBy(string $sessionId): array
+    public static function resolveHeldBy(string $sessionId): array
     {
         $grants = self::query()->ofSession($sessionId)->readLimit(self::MOST_GRANTS)->get();
 
@@ -111,7 +111,7 @@ final class SessionOutputGrant extends Model implements ReadableModel
      *
      * @return list<SessionOutputPaths>
      */
-    public static function currentOf(SessionProcess $start): array
+    public static function resolveCurrentOf(SessionProcess $start): array
     {
         $grants = self::query()
             ->currentMappingOf($start)

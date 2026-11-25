@@ -45,6 +45,22 @@ final class SkillContextEpoch extends Model implements EventSource, ReadableMode
         ];
     }
 
+    // ----------[ Constructors ]----------
+
+    /**
+     * The session's epoch row, made at epoch 0 the first time and locked for the transaction.
+     */
+    public static function create(string $sessionId): self
+    {
+        $epoch = new self();
+        $epoch->session_id = $sessionId;
+        $epoch->epoch = 0;
+        $epoch->setAttribute($epoch->getKeyName(), $epoch->newUniqueId());
+        $epoch->insertIfAbsent();
+
+        return self::query()->ofSession($sessionId)->lockForUpdate()->firstOrFail();
+    }
+
     // ----------[ Mutations ]----------
 
     /**
@@ -60,23 +76,9 @@ final class SkillContextEpoch extends Model implements EventSource, ReadableMode
     // ----------[ Queries ]----------
 
     /**
-     * The session's epoch row, made at epoch 0 the first time and locked for the transaction.
-     */
-    public static function lockedFor(string $sessionId): self
-    {
-        $epoch = new self();
-        $epoch->session_id = $sessionId;
-        $epoch->epoch = 0;
-        $epoch->setAttribute($epoch->getKeyName(), $epoch->newUniqueId());
-        $epoch->insertIfAbsent();
-
-        return self::query()->ofSession($sessionId)->lockForUpdate()->firstOrFail();
-    }
-
-    /**
      * The session's current context epoch; 0 until its first clear or compaction.
      */
-    public static function currentOf(string $sessionId): int
+    public static function resolveCurrentOf(string $sessionId): int
     {
         return self::query()->ofSession($sessionId)->first()->epoch ?? 0;
     }

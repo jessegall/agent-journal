@@ -29,7 +29,7 @@ final readonly class NotifySignInHandler implements CommandHandler
 
     public function handle(NotifySignInCommand $command): void
     {
-        $attempt = SignInAttempt::runBy($command->hostId, $command->attemptId);
+        $attempt = SignInAttempt::findRunBy($command->hostId, $command->attemptId);
 
         match ($command->outcome) {
             SignInOutcome::Waiting => $attempt->waitForUser(),

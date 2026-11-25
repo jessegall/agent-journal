@@ -42,12 +42,12 @@ final class FailureReceipt extends Model implements ReadableModel
         ];
     }
 
-    // ----------[ Queries ]----------
+    // ----------[ Constructors ]----------
 
     /**
      * Keeps the failure the hook reported unless its event was already received, and answers whether it is new.
      */
-    public static function receive(HookIdentity $hook, DriverFailure $failure): bool
+    public static function create(HookIdentity $hook, DriverFailure $failure): bool
     {
         $receipt = new self();
 

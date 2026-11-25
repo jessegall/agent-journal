@@ -72,7 +72,7 @@ final readonly class RunWindowResolver implements PageResolver
      */
     private function problemsOf(PartRun $part): array
     {
-        $assessment = OutputAssessment::latestOf($part);
+        $assessment = OutputAssessment::findLatestOf($part);
 
         if ($assessment === null) {
             return [];

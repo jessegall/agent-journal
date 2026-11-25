@@ -129,7 +129,7 @@ final class Sequence extends Model implements EventSource, ReadableModel
     /**
      * @throws SequenceMissing
      */
-    public static function byId(string $id): self
+    public static function findById(string $id): self
     {
         return self::query()->whereKey($id)->firstOr(SequenceMissing::throwing()->forId($id));
     }
@@ -139,7 +139,7 @@ final class Sequence extends Model implements EventSource, ReadableModel
      *
      * @throws SequenceMissing
      */
-    public static function lockedById(string $id): self
+    public static function findLockedById(string $id): self
     {
         return self::query()->whereKey($id)->lockForUpdate()->firstOr(SequenceMissing::throwing()->forId($id));
     }

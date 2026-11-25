@@ -33,16 +33,16 @@ final readonly class AskSupervisorHandler implements CommandHandler
         $requester = ActorIdentity::of($command->dispatchedBy());
         $body = trim($command->body);
         AskRefused::assertValidSubmission($body, $command->submissionKey);
-        AskRequester::lockSubmissions($requester);
+        AskRequester::create($requester);
 
         $type = $this->types->get($command->typeKey());
-        $retained = Ask::submission($requester, $command->submissionKey);
+        $retained = Ask::findSubmission($requester, $command->submissionKey);
 
         if ($retained->isDefined()) {
             return $retained->get()->replay($type->key(), $body);
         }
 
-        if (Ask::openSubmissions($requester) >= self::OPEN_LIMIT) {
+        if (Ask::resolveOpenSubmissions($requester) >= self::OPEN_LIMIT) {
             throw AskRefused::openLimit(self::OPEN_LIMIT);
         }
 

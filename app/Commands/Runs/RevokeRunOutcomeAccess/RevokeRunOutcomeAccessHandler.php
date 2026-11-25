@@ -22,7 +22,7 @@ final readonly class RevokeRunOutcomeAccessHandler implements CommandHandler
      */
     public function handle(RevokeRunOutcomeAccessCommand $command): void
     {
-        $run = ProcessRun::lockedForOutcome($command->runId);
+        $run = ProcessRun::findLockedForOutcome($command->runId);
 
         if (! $run->isByActor(ActorIdentity::of($command->dispatchedBy()))) {
             throw RunOutcomeAccessRefused::ofAnotherActor($run->id);

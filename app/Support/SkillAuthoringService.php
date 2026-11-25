@@ -51,7 +51,7 @@ final readonly class SkillAuthoringService
     public function storedSkill(string $numberOrKey): Skill
     {
         if (ctype_digit($numberOrKey)) {
-            $id = Skill::idOfNumber((int) $numberOrKey);
+            $id = Skill::resolveIdOfNumber((int) $numberOrKey);
 
             if ($id === null) {
                 throw SkillMissing::forNumber(
@@ -215,7 +215,7 @@ final readonly class SkillAuthoringService
      */
     public function statusLines(Skill $skill): array
     {
-        $current = SkillRevision::currentOf($skill);
+        $current = SkillRevision::findCurrentOf($skill);
 
         return [
             'Source: stored',
@@ -231,7 +231,7 @@ final readonly class SkillAuthoringService
      */
     public function currentDraft(Skill $skill): SkillDraft
     {
-        return SkillRevision::currentOf($skill)->draft;
+        return SkillRevision::findCurrentOf($skill)->draft;
     }
 
     /**
@@ -239,7 +239,7 @@ final readonly class SkillAuthoringService
      */
     public function revisionView(Skill $skill, int $number): SkillRevisionView
     {
-        $revision = SkillRevision::numbered($skill, $number);
+        $revision = SkillRevision::findNumbered($skill, $number);
 
         return SkillRevisionView::from([
             'revision' => $revision->revision,
@@ -270,6 +270,6 @@ final readonly class SkillAuthoringService
             author: "{$revision->author_type}:{$revision->author_id}",
             copiedFrom: $revision->source_key,
             savedAt: $revision->created_at->toIso8601String(),
-        ), SkillRevision::historyOf($skill, $rows));
+        ), SkillRevision::findHistoryOf($skill, $rows));
     }
 }

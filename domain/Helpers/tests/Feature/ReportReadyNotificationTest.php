@@ -62,7 +62,7 @@ final class ReportReadyNotificationTest extends TestCase
     {
         return HelperJob::create(
             $helper,
-            HelperPurpose::free($parent, 'writing-helper', 'General work '.Str::random(6)),
+            HelperPurpose::findFree($parent, 'writing-helper', 'General work '.Str::random(6)),
             $parent,
             'Write it down',
             [],

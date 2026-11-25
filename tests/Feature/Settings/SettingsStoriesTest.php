@@ -301,7 +301,7 @@ final class SettingsStoriesTest extends TestCase
 
     private function revision(): int
     {
-        return SettingsRecord::sharedRuntimeForOwner('Reviews')->get()->revision;
+        return SettingsRecord::findSharedRuntimeForOwner('Reviews')->get()->revision;
     }
 
     /**

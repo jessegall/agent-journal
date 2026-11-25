@@ -24,7 +24,7 @@ final readonly class PushReadMessageState implements Listener
 
     public function handle(MessageSent $event): void
     {
-        foreach (InboxMember::attachedTo([$event->inboxId], Agent::class) as $agent) {
+        foreach (InboxMember::resolveAttachedTo([$event->inboxId], Agent::class) as $agent) {
             if (! $event->sender->isSameAs($agent)) {
                 $this->stacks->pushFor(
                     $agent,

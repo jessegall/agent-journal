@@ -11,6 +11,6 @@ final readonly class RecheckAccountHandler implements CommandHandler
 {
     public function handle(RecheckAccountCommand $command): void
     {
-        Account::lockedForChange($command->accountId)->recheck();
+        Account::findLockedForChange($command->accountId)->recheck();
     }
 }

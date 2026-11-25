@@ -29,8 +29,8 @@ final readonly class SaveSharePreviewHandler extends SharingCommandHandler
         $root = new RecordIdentity($command->rootType, $command->rootId);
 
         $configuration = $command->gatewayConfigurationId === null
-            ? ShareGatewayConfiguration::usableDefault()
-            : ShareGatewayConfiguration::usable($command->gatewayConfigurationId);
+            ? ShareGatewayConfiguration::findUsableDefault()
+            : ShareGatewayConfiguration::findUsable($command->gatewayConfigurationId);
 
         $candidates = $this->scope->discover($root, ShareBudget::forPreview($this->meter));
         $selection = $candidates->selection($command->selectedIds);

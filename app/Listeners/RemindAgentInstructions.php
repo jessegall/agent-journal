@@ -32,7 +32,7 @@ final readonly class RemindAgentInstructions implements Listener
             'send' => $this->tools->toolNameDispatching(SendMessageCommand::class),
         ]), true);
 
-        $profile = $this->contexts->forSession(AgentSession::byId($event->target->sessionId))->profile;
+        $profile = $this->contexts->forSession(AgentSession::findById($event->target->sessionId))->profile;
 
         if ($profile->snapshot === null || trim($profile->snapshot->instructions) === '') {
             return;

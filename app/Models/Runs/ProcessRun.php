@@ -505,7 +505,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
     /**
      * The run with that id whichever actor owns it, for the journal's own work on a run it was handed.
      */
-    public static function ofAnyActor(string $id): self
+    public static function findForAnyActor(string $id): self
     {
         return self::query()->acrossActors()->findOrFail($id);
     }
@@ -513,7 +513,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
     /**
      * The run under its row lock, whichever actor owns it: the lock its attempt's one result is recorded under.
      */
-    public static function lockedForOutcome(string $id): self
+    public static function findLockedForOutcome(string $id): self
     {
         return self::query()->acrossActors()->whereKey($id)->lockForUpdate()->firstOrFail();
     }

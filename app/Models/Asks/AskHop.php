@@ -126,7 +126,7 @@ final class AskHop extends Model implements EventSource, ReadableModel
 
     public function lockDelivery(): self
     {
-        return self::lockedById($this->id);
+        return self::findLockedById($this->id);
     }
 
     // ----------[ Accessors ]----------
@@ -148,7 +148,7 @@ final class AskHop extends Model implements EventSource, ReadableModel
      *
      * @return Option<ActorIdentity>
      */
-    public static function holderBefore(string $askId, string $hopId): Option
+    public static function resolveHolderBefore(string $askId, string $hopId): Option
     {
         return self::query()
             ->ofAsks([$askId])
@@ -164,7 +164,7 @@ final class AskHop extends Model implements EventSource, ReadableModel
      *
      * @return Option<ActorIdentity>
      */
-    public static function latestHolderOf(string $askId): Option
+    public static function resolveLatestHolderOf(string $askId): Option
     {
         return self::query()
             ->ofAsks([$askId])
@@ -174,7 +174,7 @@ final class AskHop extends Model implements EventSource, ReadableModel
             ->map(fn (self $hop) => $hop->actor());
     }
 
-    public static function currentFor(Ask $ask): self
+    public static function findCurrentFor(Ask $ask): self
     {
         return self::query()->ofAsks([$ask->id])->atVersion($ask->version)->firstOrFail();
     }
@@ -183,7 +183,7 @@ final class AskHop extends Model implements EventSource, ReadableModel
      * @param  list<string>  $asks
      * @return array<string, string>
      */
-    public static function repliesTo(array $asks): array
+    public static function resolveRepliesTo(array $asks): array
     {
         return self::query()->ofAsks($asks)->answered()->pluck('result', 'ask_id')->all();
     }
@@ -195,7 +195,7 @@ final class AskHop extends Model implements EventSource, ReadableModel
      * @param  list<string>  $hops
      * @return array<string, int>
      */
-    public static function activeVersions(array $hops): array
+    public static function resolveActiveVersions(array $hops): array
     {
         if ($hops === []) {
             return [];
@@ -205,7 +205,7 @@ final class AskHop extends Model implements EventSource, ReadableModel
             ->pluck('ask_hops.version', 'ask_hops.id')->map(fn (mixed $version) => (int) $version)->all();
     }
 
-    public static function nextFor(ActorIdentity $holder): self|null
+    public static function findNextFor(ActorIdentity $holder): self|null
     {
         return self::query()->currentHops()
             ->byActor($holder)
@@ -219,7 +219,7 @@ final class AskHop extends Model implements EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function unansweredCurrent(int $limit): array
+    public static function findUnansweredCurrent(int $limit): array
     {
         $hops = self::query()->currentHops()
             ->unanswered()
@@ -235,7 +235,7 @@ final class AskHop extends Model implements EventSource, ReadableModel
      *
      * @return array<string, CarbonImmutable>
      */
-    public static function lastAnswerTimes(): array
+    public static function resolveLastAnswerTimes(): array
     {
         $answered = self::query()
             ->answered()

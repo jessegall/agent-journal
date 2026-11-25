@@ -18,6 +18,6 @@ final readonly class HoldAgentStackHandler implements CommandHandler
     {
         $stacks = AgentStackRow::query()->acrossEveryAgent()->forTarget($command->target);
 
-        AgentStackRow::lockKeptFor($stacks, $command->target)->holdForInvestigation(CarbonImmutable::now());
+        AgentStackRow::findLockedKeptFor($stacks, $command->target)->holdForInvestigation(CarbonImmutable::now());
     }
 }

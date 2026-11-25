@@ -97,7 +97,7 @@ final class ReportJobLinkTest extends TestCase
 
     private function jobOf(HelperIdentity $identity): HelperJob
     {
-        $purpose = HelperPurpose::free($this->parent, 'writing-helper', 'General work '.Str::random(6));
+        $purpose = HelperPurpose::findFree($this->parent, 'writing-helper', 'General work '.Str::random(6));
 
         return HelperJob::create(
             $identity,

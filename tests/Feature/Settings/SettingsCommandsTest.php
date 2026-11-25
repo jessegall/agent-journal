@@ -160,7 +160,7 @@ final class SettingsCommandsTest extends TestCase
         $this->assertRefused(SettingsConflict::class, $this->commands->integer($this->reviews->retryLimit, 4, 0));
         $this->assertRefused(SettingsConflict::class, $this->commands->integer($this->reviews->retryLimit, 5, 0));
         $this->assertSame(4, $this->reviewGroup()->integer($this->reviews->retryLimit));
-        $this->assertSame(1, SettingsRecord::sharedRuntimeForOwner('Reviews')->get()->revision);
+        $this->assertSame(1, SettingsRecord::findSharedRuntimeForOwner('Reviews')->get()->revision);
     }
 
     public function test_two_first_writes_leave_one_record_and_one_conflict(): void
@@ -188,7 +188,7 @@ final class SettingsCommandsTest extends TestCase
 
         $this->assertRefused(SettingDisabled::class, $this->commands->integer($this->reviews->retryLimit, 4, 1));
         $this->assertRefused(SettingDisabled::class, $this->commands->reset($this->reviews->retryLimit, 1));
-        $this->assertSame(1, SettingsRecord::sharedRuntimeForOwner('Reviews')->get()->revision);
+        $this->assertSame(1, SettingsRecord::findSharedRuntimeForOwner('Reviews')->get()->revision);
     }
 
     public function test_an_agent_another_user_and_a_forged_address_are_refused_before_any_record_is_touched(): void
@@ -337,7 +337,7 @@ final class SettingsCommandsTest extends TestCase
 
     private function storedDocument(): SettingsDocument
     {
-        return SettingsRecord::sharedRuntimeForOwner('Reviews')->get()->document;
+        return SettingsRecord::findSharedRuntimeForOwner('Reviews')->get()->document;
     }
 
     private function storedText(): string

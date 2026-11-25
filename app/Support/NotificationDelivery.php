@@ -38,7 +38,7 @@ final readonly class NotificationDelivery
 
         foreach ($this->inLockOrder($recipients) as [$key, $recipient]) {
             NotificationScope::create($key, $recipient);
-            $scope = NotificationScope::lockedFor($key, $recipient);
+            $scope = NotificationScope::findLockedFor($key, $recipient);
             $receipt = NotificationReceipt::create($occurrence, $scope);
 
             if ($receipt->isNew()) {

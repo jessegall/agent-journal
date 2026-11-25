@@ -99,7 +99,7 @@ final readonly class DockRequests
      */
     public function lockedInbox(string|null $chat): Inbox
     {
-        return Inbox::lockedById($this->chosenInbox($chat)->id);
+        return Inbox::findLockedById($this->chosenInbox($chat)->id);
     }
 
     /**

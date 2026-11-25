@@ -167,9 +167,9 @@ final class DriverTurn extends Model implements EventSource, ReadableModel
     /**
      * The turn of this native prompt in the session's runtime now; none while the runtime has not seen it.
      */
-    public static function ofSessionTurn(string $sessionId, string $nativePromptId): self|null
+    public static function findForSessionTurn(string $sessionId, string $nativePromptId): self|null
     {
-        $runtime = AgentRuntime::ofSession($sessionId);
+        $runtime = AgentRuntime::findForSession($sessionId);
 
         if ($runtime === null) {
             return null;
@@ -183,9 +183,9 @@ final class DriverTurn extends Model implements EventSource, ReadableModel
     /**
      * The newest turn of the session's runtime with closing words offered or delivered.
      */
-    public static function withClosingWordsOf(string $sessionId): self|null
+    public static function findWithClosingWordsOf(string $sessionId): self|null
     {
-        $runtime = AgentRuntime::ofSession($sessionId);
+        $runtime = AgentRuntime::findForSession($sessionId);
 
         if ($runtime === null) {
             return null;

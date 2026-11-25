@@ -126,11 +126,11 @@ final class SessionCleanupTest extends TestCase
         $budgets = ExecutionBudgets::defaults();
         $room = new HostCapacity($budgets->cpuCores, $budgets->memoryBytes, $budgets->workspaceBytes);
 
-        $this->assertSame(CapacityResource::Cpu, CapacityReservation::shortageOf($budgets, $room));
+        $this->assertSame(CapacityResource::Cpu, CapacityReservation::resolveShortageOf($budgets, $room));
         $this->assertSame(1, CapacityReservation::query()->count());
 
         $this->notify($start, new CleanupReport(self::ALL_STEPS, null, null));
-        $this->assertNull(CapacityReservation::shortageOf($budgets, $room));
+        $this->assertNull(CapacityReservation::resolveShortageOf($budgets, $room));
 
         CapacityReservation::create('start-other', $budgets, $room);
         $this->assertSame(CleanupState::Done, $this->notify($start, new CleanupReport(self::ALL_STEPS, null, null)));
@@ -154,7 +154,7 @@ final class SessionCleanupTest extends TestCase
     public function test_a_fence_stops_the_sessions_of_its_revision_and_is_reconciled_once_none_runs(): void
     {
         $start = $this->runningStart();
-        $fence = ProfileRevisionHold::retain($start->session->profile_key, $start->session->profile_revision);
+        $fence = ProfileRevisionHold::create($start->session->profile_key, $start->session->profile_revision);
         $limits = $this->app->make(SessionStartLimits::class);
 
         $limits->enforceFences();

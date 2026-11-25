@@ -121,7 +121,7 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
      *
      * @return Collection<int, self>
      */
-    public static function pageAfter(string $taskId, int $sequence, int $limit): Collection
+    public static function findPageAfter(string $taskId, int $sequence, int $limit): Collection
     {
         return self::query()->ofTask($taskId)->after($sequence)->inSequenceOrder()->oldestFirst()->limit($limit)->get();
     }
@@ -129,7 +129,7 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
     /**
      * @return Collection<int, self>
      */
-    public static function pageBefore(string $taskId, int|null $sequence, int $limit): Collection
+    public static function findPageBefore(string $taskId, int|null $sequence, int $limit): Collection
     {
         return self::query()->ofTask($taskId)
             ->before($sequence)

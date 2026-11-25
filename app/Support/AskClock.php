@@ -31,9 +31,9 @@ final readonly class AskClock
      */
     public function dueHops(CarbonImmutable $now, int $limit): array
     {
-        $hops = AskHop::unansweredCurrent(self::SCAN_LIMIT);
-        $asks = Ask::openByIds(array_values(array_unique(array_map(fn (AskHop $hop) => $hop->ask_id, $hops))));
-        $answerTimes = AskHop::lastAnswerTimes();
+        $hops = AskHop::findUnansweredCurrent(self::SCAN_LIMIT);
+        $asks = Ask::findOpenByIds(array_values(array_unique(array_map(fn (AskHop $hop) => $hop->ask_id, $hops))));
+        $answerTimes = AskHop::resolveLastAnswerTimes();
         $deadlines = [];
 
         foreach ($this->queues($hops, $asks) as $holderKey => $queue) {

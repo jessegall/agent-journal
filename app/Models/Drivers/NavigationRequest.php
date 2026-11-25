@@ -126,7 +126,7 @@ final class NavigationRequest extends Model implements Assignable, EventSource, 
         string $operationKey,
         CarbonImmutable $expiresAt,
     ): self {
-        $raisedBefore = self::raisedForOperation($request->agent_runtime_id, $operationKey);
+        $raisedBefore = self::findRaisedForOperation($request->agent_runtime_id, $operationKey);
 
         if ($raisedBefore !== null) {
             return $raisedBefore;
@@ -349,7 +349,7 @@ final class NavigationRequest extends Model implements Assignable, EventSource, 
 
     // ----------[ Queries ]----------
 
-    public static function raisedForOperation(string $runtimeId, string $operationKey): self|null
+    public static function findRaisedForOperation(string $runtimeId, string $operationKey): self|null
     {
         return self::query()->acrossActors()
             ->forOperation($runtimeId, $operationKey)

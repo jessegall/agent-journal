@@ -23,7 +23,7 @@ final readonly class SupplyAccountSecret implements Listener
             return;
         }
 
-        if (Account::methodOf($requested->account->id) !== SignInMethod::ProviderToken) {
+        if (Account::resolveMethodOf($requested->account->id) !== SignInMethod::ProviderToken) {
             return;
         }
 

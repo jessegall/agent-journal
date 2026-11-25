@@ -54,8 +54,8 @@ final class ProfileDescriptionTest extends TestCase
     {
         $this->activate();
 
-        $this->assertSame(self::DESCRIPTION, Profile::byKey(ProfileKey::from('reviewer'))->description);
-        $this->assertSame('', Profile::byKey(ProfileKey::from('worker'))->description);
+        $this->assertSame(self::DESCRIPTION, Profile::findByKey(ProfileKey::from('reviewer'))->description);
+        $this->assertSame('', Profile::findByKey(ProfileKey::from('worker'))->description);
     }
 
     public function test_every_built_in_profile_has_a_description(): void

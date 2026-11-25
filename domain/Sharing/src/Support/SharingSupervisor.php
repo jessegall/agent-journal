@@ -93,7 +93,7 @@ final class SharingSupervisor
      */
     public function checkHealth(): void
     {
-        foreach (ShareGatewayEndpoint::openOfRun($this->runId) as $endpoint) {
+        foreach (ShareGatewayEndpoint::findOpenOfRun($this->runId) as $endpoint) {
             $this->assertNoTransaction();
             $healthy = $this->gateways->healthOf($endpoint)->isHealthy();
 
@@ -133,7 +133,7 @@ final class SharingSupervisor
      */
     public function stopAll(): void
     {
-        foreach (ShareGatewayEndpoint::openOfRun($this->runId) as $endpoint) {
+        foreach (ShareGatewayEndpoint::findOpenOfRun($this->runId) as $endpoint) {
             $this->gateways->get($endpoint->gatewayKey())->close($endpoint->toGatewayEndpoint);
         }
     }

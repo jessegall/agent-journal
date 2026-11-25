@@ -192,7 +192,7 @@ final class DeliveredSkillsGuardTest extends TestCase
 
     private function ownRuntimeId(): string
     {
-        return AgentRuntime::ofSession($this->target->sessionId)->id;
+        return AgentRuntime::findForSession($this->target->sessionId)->id;
     }
 
     private function ownRuntimeFolder(): string

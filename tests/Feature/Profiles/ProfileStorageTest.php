@@ -57,23 +57,23 @@ final class ProfileStorageTest extends TestCase
         $this->assertSame([], $snapshot->skillAllowlist);
         $this->assertSame(ProfileBase::readOnlyHelper()->key, $snapshot->base->key);
 
-        $profile = Profile::byKey(ProfileKey::from('journal-reviewer'));
-        $this->assertSame(self::REVIEW_ONCE, ProfileRevision::numbered($profile, 1)->instructions);
-        $this->assertNull(ProfileRevision::numbered($profile, 1)->skill_allowlist);
+        $profile = Profile::findByKey(ProfileKey::from('journal-reviewer'));
+        $this->assertSame(self::REVIEW_ONCE, ProfileRevision::findNumbered($profile, 1)->instructions);
+        $this->assertNull(ProfileRevision::findNumbered($profile, 1)->skill_allowlist);
     }
 
     public function test_an_activation_records_the_dispatching_actor_as_author(): void
     {
         $this->activate($this->reviewer('Review the change.', null));
 
-        $revision = ProfileRevision::numbered(Profile::byKey(ProfileKey::from('journal-reviewer')), 1);
+        $revision = ProfileRevision::findNumbered(Profile::findByKey(ProfileKey::from('journal-reviewer')), 1);
         $this->assertSame([User::storedType(), TestIds::of(7)], [$revision->author_type, $revision->author_id]);
     }
 
     public function test_a_revision_refuses_to_change(): void
     {
         $this->activate($this->reviewer('Review the change.', null));
-        $revision = ProfileRevision::numbered(Profile::byKey(ProfileKey::from('journal-reviewer')), 1);
+        $revision = ProfileRevision::findNumbered(Profile::findByKey(ProfileKey::from('journal-reviewer')), 1);
         $revision->instructions = 'Changed in place.';
 
         $this->expectException(ProfileRevisionImmutable::class);
@@ -84,7 +84,7 @@ final class ProfileStorageTest extends TestCase
     public function test_a_revoked_profile_is_retired_for_the_reader_and_activating_it_again_keeps_its_identity(): void
     {
         $this->activate($this->reviewer('Review the change.', null));
-        $id = Profile::byKey(ProfileKey::from('journal-reviewer'))->id;
+        $id = Profile::findByKey(ProfileKey::from('journal-reviewer'))->id;
         $resolver = $this->app->make(ProfileResolver::class);
 
         $revoke = new RevokeProfilesCommand([ProfileKey::from('journal-reviewer')]);
@@ -99,7 +99,7 @@ final class ProfileStorageTest extends TestCase
 
         $this->activate($this->reviewer('Back again.', null));
         $this->assertTrue($resolver->has(ProfileKey::from('journal-reviewer')));
-        $this->assertSame($id, Profile::byKey(ProfileKey::from('journal-reviewer'))->id);
+        $this->assertSame($id, Profile::findByKey(ProfileKey::from('journal-reviewer'))->id);
         $this->assertSame(2, $resolver->snapshotFor(ProfileKey::from('journal-reviewer'))->revision);
     }
 

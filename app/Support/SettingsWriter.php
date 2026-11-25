@@ -151,7 +151,7 @@ final readonly class SettingsWriter
     {
         $this->transaction->assertRunning(new SettingsRecord()->getConnection());
         SettingsRecord::create($owner);
-        $record = SettingsRecord::lockedForOwner($owner);
+        $record = SettingsRecord::findLockedForOwner($owner);
 
         if ($record->revision !== $expectedRevision) {
             throw SettingsConflict::for($owner, $key, $expectedRevision, $record->revision);

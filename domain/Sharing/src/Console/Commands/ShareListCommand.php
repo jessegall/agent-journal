@@ -27,7 +27,7 @@ final class ShareListCommand extends Command
         $owner->actAsOwner();
         $state = $this->option('state') === null ? null : ShareState::from((string) $this->option('state'));
         $after = $this->option('after') === null ? null : (string) $this->option('after');
-        $found = Share::listPage(new ShareListFilters($state, null, null, null, $after), self::ROWS);
+        $found = Share::findListPage(new ShareListFilters($state, null, null, null, $after), self::ROWS);
         $rows = array_slice($found, 0, self::ROWS);
 
         $this->table(

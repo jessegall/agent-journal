@@ -20,7 +20,7 @@ final readonly class AnnounceSessionStartEnded implements Listener
 
     public function handle(SessionClosed $event): void
     {
-        SessionRequest::ownerStartOf($event->sessionId)->forAll(
+        SessionRequest::findOwnerStartOf($event->sessionId)->forAll(
             fn (SessionRequest $start) => $this->events->dispatch(new SessionStartEnded($start->owner_work)),
         );
     }

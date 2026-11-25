@@ -122,7 +122,7 @@ final class AccountUsageCost extends Model implements EventSource, ReadableModel
      * @param  list<string>  $ids
      * @return array<string, MonthCost>
      */
-    public static function monthTotals(array $ids, CarbonImmutable $instant): array
+    public static function resolveMonthTotals(array $ids, CarbonImmutable $instant): array
     {
         $monthStart = $instant->utc()->startOfMonth();
 

@@ -31,7 +31,7 @@ final readonly class WorkspaceReadController
                 'actor_id' => $read->actor_id,
                 'work' => $read->work,
             ],
-            WorkspaceRead::pendingOn($host->hostId, self::PENDING_LIMIT),
+            WorkspaceRead::findPendingOn($host->hostId, self::PENDING_LIMIT),
         );
 
         return new JsonResponse(['pending' => $pending]);

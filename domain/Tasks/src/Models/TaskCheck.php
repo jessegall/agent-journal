@@ -150,7 +150,7 @@ final class TaskCheck extends Model implements EventSource, ReadableModel
     /**
      * The check bound to the process run, if any.
      */
-    public static function ofProcessRun(string $runId): self|null
+    public static function findForProcessRun(string $runId): self|null
     {
         return self::query()->ofRun($runId)->first();
     }
@@ -160,7 +160,7 @@ final class TaskCheck extends Model implements EventSource, ReadableModel
      *
      * @return Collection<int, self>
      */
-    public static function pageOf(string $taskId, string|null $afterId, int $limit): Collection
+    public static function findPageOf(string $taskId, string|null $afterId, int $limit): Collection
     {
         return self::query()->ofTask($taskId)->olderThan($afterId)->newestFirst()->limit($limit)->get();
     }

@@ -32,7 +32,7 @@ final readonly class ProjectWindowResolver implements PageResolver
 
     public function read(): ProjectWindowData
     {
-        $found = ProjectBinding::lastHeardFromIn($this->served->environmentIds());
+        $found = ProjectBinding::findLastHeardFromIn($this->served->environmentIds());
 
         if (! $found->isDefined()) {
             return $this->window(ProjectWindowState::None, null, null);

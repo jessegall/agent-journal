@@ -23,7 +23,7 @@ final readonly class TaskProofResolver implements TaskProofResolverContract
     {
         $this->visibility->requireVisible($taskId);
         $size = min(max(1, $limit), self::LARGEST_PAGE);
-        $checks = TaskCheck::pageOf($taskId, $afterId, $size + 1);
+        $checks = TaskCheck::findPageOf($taskId, $afterId, $size + 1);
         $shown = $checks->take($size);
 
         return new TaskProofPage(

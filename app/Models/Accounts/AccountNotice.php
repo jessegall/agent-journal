@@ -94,7 +94,7 @@ final class AccountNotice extends Model implements EventSource, ReadableModel
     /**
      * The driver's open notice of the reason, locked, if one is open.
      */
-    public static function lockedOpenFor(string $driver, AccountNoticeReason $reason): self|null
+    public static function findLockedOpenFor(string $driver, AccountNoticeReason $reason): self|null
     {
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
@@ -110,7 +110,7 @@ final class AccountNotice extends Model implements EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function lockedOpenOf(string $driver): array
+    public static function findLockedOpenOf(string $driver): array
     {
         $notices = self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
@@ -129,7 +129,7 @@ final class AccountNotice extends Model implements EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function openNotices(): array
+    public static function findOpenNotices(): array
     {
         return array_values(self::query()->open()->newestFirst()->limit(20)->get()->all());
     }

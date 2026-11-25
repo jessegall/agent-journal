@@ -23,16 +23,16 @@ final readonly class CancelSessionStartHandler implements CommandHandler
      */
     public function handle(CancelSessionStartCommand $command): bool
     {
-        $hasRuntime = AgentRuntime::existsForSession($command->sessionId);
+        $hasRuntime = AgentRuntime::hasSession($command->sessionId);
 
-        SessionRequest::lockedLatestOf($command->sessionId)
+        SessionRequest::findLockedLatestOf($command->sessionId)
             ->forAll(fn (SessionRequest $start) => $start->cancelVerification());
 
         if ($hasRuntime) {
             $this->requests->stop($command->target(), $command->idempotencyKey);
         }
 
-        SessionRequest::ownerStartOf($command->sessionId)->forAll(
+        SessionRequest::findOwnerStartOf($command->sessionId)->forAll(
             fn (SessionRequest $start) => $this->facts->publishAfterCommit(
                 new SessionStartCancelled($start->owner_work),
             ),

@@ -58,10 +58,10 @@ final class StoredSkillModelsTest extends TestCase
 
         $this->assertSame([1, 2], [$first->revision, $second->revision]);
         $this->assertSame($second->id, $skill->current_revision_id);
-        $this->assertSame('First.', SkillRevision::numbered($skill, 1)->sections[0]->content);
+        $this->assertSame('First.', SkillRevision::findNumbered($skill, 1)->sections[0]->content);
         $this->assertSame(
             Conditions::dispatchesWork()->toArray(),
-            SkillRevision::currentOf($skill)->conditionThrough($this->app->make(ConditionTree::class))->toArray(),
+            SkillRevision::findCurrentOf($skill)->conditionThrough($this->app->make(ConditionTree::class))->toArray(),
         );
 
         $restored = $this->writes()->restoreFrom($skill, $first, Conditions::everyone(), $this->author());
@@ -85,12 +85,12 @@ final class StoredSkillModelsTest extends TestCase
         );
         SkillRequest::create($this->author(), 'request-1', $this->draft('First.')->digest(), $revision);
 
-        $earlier = SkillRequest::earlier($this->author(), 'request-1');
+        $earlier = SkillRequest::findEarlier($this->author(), 'request-1');
 
         $this->assertNotNull($earlier);
         $this->assertTrue($earlier->sentWith($this->draft('First.')->digest()));
         $this->assertFalse($earlier->sentWith($this->draft('Other.')->digest()));
-        $this->assertNull(SkillRequest::earlier(TestActors::userIdentity(9), 'request-1'));
+        $this->assertNull(SkillRequest::findEarlier(TestActors::userIdentity(9), 'request-1'));
     }
 
     public function test_visibility_keeps_another_environment_out(): void
@@ -101,7 +101,7 @@ final class StoredSkillModelsTest extends TestCase
 
         $this->assertSame(
             ['user-everywhere', 'user-here'],
-            array_map(fn (Skill $skill) => $skill->key, Skill::activeIn(SkillContextResolver::ENVIRONMENT, 10)),
+            array_map(fn (Skill $skill) => $skill->key, Skill::findActiveIn(SkillContextResolver::ENVIRONMENT, 10)),
         );
         $this->assertSame(3, Skill::query()->count());
     }

@@ -35,7 +35,7 @@ final readonly class DeviceOverviews
             throw VerbNotServed::environmentUnassigned($binding->id);
         }
 
-        $environment = Environment::ofProjectById($binding->project_id, (string) $binding->environment_id);
+        $environment = Environment::findForProjectById($binding->project_id, (string) $binding->environment_id);
 
         return new DeviceOverview(
             $binding->project_label,

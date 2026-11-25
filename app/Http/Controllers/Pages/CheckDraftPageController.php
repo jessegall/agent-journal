@@ -27,7 +27,7 @@ final readonly class CheckDraftPageController
         ProfileDraftReader $drafts,
         PageActionAnswers $answers,
     ): RedirectResponse {
-        $revision = ProfileDraft::of(ProfileKey::from($call->profile))->revision;
+        $revision = ProfileDraft::createForProfile(ProfileKey::from($call->profile))->revision;
 
         $checked = $drafts->checked($call->profile, $revision, $call->scriptSource());
 

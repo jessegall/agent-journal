@@ -117,7 +117,7 @@ final class DockPlacement extends Model implements EventSource, ReadableModel
     /**
      * The placement of the source in the chat, when it is docked there.
      */
-    public static function docked(Inbox $inbox, DockIdentity $source): self|null
+    public static function findDocked(Inbox $inbox, DockIdentity $source): self|null
     {
         return self::query()->inInbox($inbox)->ofSource($source)->lockForUpdate()->first();
     }
@@ -125,7 +125,7 @@ final class DockPlacement extends Model implements EventSource, ReadableModel
     /**
      * The placement of this id in the chat, when it still docks this source there.
      */
-    public static function matching(Inbox $inbox, string $placementId, DockIdentity $source): self|null
+    public static function findMatching(Inbox $inbox, string $placementId, DockIdentity $source): self|null
     {
         return self::query()
             ->inInbox($inbox)

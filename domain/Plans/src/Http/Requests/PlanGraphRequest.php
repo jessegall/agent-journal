@@ -30,7 +30,7 @@ final class PlanGraphRequest extends FormRequest
 
     public function plan(): Plan
     {
-        $plan = Plan::query()->find(Plan::idOfNumber($this->routeNumber('plan')));
+        $plan = Plan::query()->find(Plan::resolveIdOfNumber($this->routeNumber('plan')));
 
         if ($plan === null) {
             throw new NotFoundHttpException();

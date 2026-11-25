@@ -30,7 +30,7 @@ final readonly class OfferClosingWords implements Pipe
             return false;
         }
 
-        $turn = DriverTurn::ofSessionTurn($input->hook->sessionId, $input->stop->turnId);
+        $turn = DriverTurn::findForSessionTurn($input->hook->sessionId, $input->stop->turnId);
 
         return $turn !== null && ! $turn->hasOffered($input->stop->closingWords);
     }
@@ -40,7 +40,7 @@ final readonly class OfferClosingWords implements Pipe
         $input = $restored->call->input;
         assert($input instanceof StopRequested);
 
-        $turn = DriverTurn::ofSessionTurn($input->hook->sessionId, $input->stop->turnId);
+        $turn = DriverTurn::findForSessionTurn($input->hook->sessionId, $input->stop->turnId);
 
         if ($turn !== null) {
             $turn->offerClosingWords($input->stop->closingWords);

@@ -137,7 +137,7 @@ final class SessionPolicy extends Model implements ReadableModel
      * @param  list<AgentSession>  $sessions
      * @return array<string, CarbonImmutable>
      */
-    public static function wallDeadlinesOf(array $sessions): array
+    public static function resolveWallDeadlinesOf(array $sessions): array
     {
         if ($sessions === []) {
             return [];

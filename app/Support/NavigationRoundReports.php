@@ -64,8 +64,8 @@ final readonly class NavigationRoundReports
             $evidence = 'proven, saved as menu entry '.$this->library->save($navigation, $report->steps)->id;
         }
 
-        $stalled = DriverRequest::lockedById($navigation->driver_request_id);
-        $runtime = AgentRuntime::lockedById($navigation->agent_runtime_id);
+        $stalled = DriverRequest::findLockedById($navigation->driver_request_id);
+        $runtime = AgentRuntime::findLockedById($navigation->agent_runtime_id);
         $runtime->holdFor(HoldReason::None);
 
         if ($navigation->completes === NavigationCompletion::Goal) {

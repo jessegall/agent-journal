@@ -47,12 +47,12 @@ final class Project extends Model implements EventSource, ReadableModel
 
     // ----------[ Queries ]----------
 
-    public static function forId(string $id): self
+    public static function findForId(string $id): self
     {
         return self::query()->whereKey($id)->firstOrFail();
     }
 
-    public static function forKey(string $key): self
+    public static function findForKey(string $key): self
     {
         return self::query()->withKey($key)->firstOrFail();
     }
@@ -62,7 +62,7 @@ final class Project extends Model implements EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function listed(): array
+    public static function findListed(): array
     {
         return array_values(
             self::query()->inLabelOrder()->readAll('an installation connects a handful of projects')->get()->all(),

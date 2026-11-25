@@ -122,7 +122,7 @@ final class ShareAudit extends Model implements ReadableModel
      *
      * @return list<self>
      */
-    public static function pageOf(Share $share, string|null $after, int $rows): array
+    public static function findPageOf(Share $share, string|null $after, int $rows): array
     {
         $audits = self::query()->ofShare($share)->newestFirst()->olderThanWhenNamed($after)
             ->readExactly($rows + 1)
@@ -137,7 +137,7 @@ final class ShareAudit extends Model implements ReadableModel
      *
      * @return list<self>
      */
-    public static function lockPastRetention(CarbonImmutable $now, int $most): array
+    public static function findLockedPastRetention(CarbonImmutable $now, int $most): array
     {
         $audits = self::query()->pastRetentionAt($now)->oldestFirst()->lockForUpdate()->readExactly($most)->get();
 
@@ -185,7 +185,7 @@ final class ShareAudit extends Model implements ReadableModel
     protected function pastRetentionAt(Builder $query, CarbonImmutable $now): void
     {
         $reads = array_map(fn (ShareAuditType $type) => $type->value, ShareAuditType::readTypes());
-        $endedLongAgo = Share::endedBefore($now->subDays(self::LIFECYCLE_DAYS));
+        $endedLongAgo = Share::query()->endedBefore($now->subDays(self::LIFECYCLE_DAYS));
         $readCutoff = $now->subDays(self::READ_DAYS);
 
         $query->whereNotNull('share_id')->where(fn (Builder $expired) => $expired

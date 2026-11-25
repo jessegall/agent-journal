@@ -55,7 +55,7 @@ final class ForwardedAssignmentTest extends TestCase
 
     public function test_a_task_given_to_the_actor_at_main_is_held_by_main_and_names_both(): void
     {
-        $main = Inbox::main();
+        $main = Inbox::findMain();
         $agent = $this->withInbox(Agent::create('Main', 'main-agent', $this->localProject()));
         InboxMember::create($main->id, ActorIdentity::of($agent), CarbonImmutable::now());
         $task = Task::factory()->create()->assignmentIdentity();

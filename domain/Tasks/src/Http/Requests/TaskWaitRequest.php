@@ -33,12 +33,12 @@ final class TaskWaitRequest extends FormRequest
 
     public function taskId(): string
     {
-        return Task::idOfNumber($this->routeNumber('task')) ?? throw new NotFoundHttpException();
+        return Task::resolveIdOfNumber($this->routeNumber('task')) ?? throw new NotFoundHttpException();
     }
 
     public function prerequisiteId(): string
     {
-        return Task::idOfNumber((int) $this->string('prerequisite')->toString()) ?? throw new NotFoundHttpException();
+        return Task::resolveIdOfNumber((int) $this->string('prerequisite')->toString()) ?? throw new NotFoundHttpException();
     }
 
     public function reason(): string

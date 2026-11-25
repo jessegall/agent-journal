@@ -23,7 +23,7 @@ final readonly class SendQuestionReminderHandler implements CommandHandler
 
     public function handle(SendQuestionReminderCommand $command): void
     {
-        $question = Question::lockedById($command->questionId);
+        $question = Question::findLockedById($command->questionId);
 
         if ($question->answered) {
             $this->stacks->popExposed($command->target);

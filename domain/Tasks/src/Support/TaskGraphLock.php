@@ -25,7 +25,7 @@ final readonly class TaskGraphLock
         ]);
 
         return [
-            $locked[$dependentId] ?? Task::lockedById($dependentId),
+            $locked[$dependentId] ?? Task::findLockedById($dependentId),
             $locked[$prerequisiteId] ?? null,
         ];
     }
@@ -51,7 +51,7 @@ final readonly class TaskGraphLock
         $locked = [];
 
         foreach ($sorted as $id) {
-            $locked[$id] = Task::lockedById($id);
+            $locked[$id] = Task::findLockedById($id);
         }
 
         return $locked;

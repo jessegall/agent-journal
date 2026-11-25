@@ -51,7 +51,7 @@ final readonly class StartTaskHandler extends TaskCommandHandler
 
         $this->facts->holdUntilReturn(function () use ($task, $actor): void {
             $task->start($actor);
-            $run = TaskRun::currentFor($task, $actor);
+            $run = TaskRun::createForTask($task, $actor);
             $claim = $this->claims->take($run->assignmentIdentity(), $task->assignmentIdentity(), $actor);
 
             $this->facts->publishAfterCommit(

@@ -47,12 +47,12 @@ final class PhaseCheck extends Model implements ReadableModel
         return ['recorded_at' => 'datetime'];
     }
 
-    // ----------[ Queries ]----------
+    // ----------[ Constructors ]----------
 
     /**
      * The phase relies on this receipt's result; recording the same receipt again changes nothing.
      */
-    public static function record(Phase $phase, PublishedResult $receipt, ActorIdentity $recorder): self
+    public static function create(Phase $phase, PublishedResult $receipt, ActorIdentity $recorder): self
     {
         $check = new self();
         $check->phase_id = $phase->id;

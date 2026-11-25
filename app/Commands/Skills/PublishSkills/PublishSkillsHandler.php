@@ -24,7 +24,7 @@ final readonly class PublishSkillsHandler implements CommandHandler
 
     public function handle(PublishSkillsCommand $command): PublicationClaim
     {
-        $publication = SkillPublication::lockById($command->publicationId);
+        $publication = SkillPublication::findLockedById($command->publicationId);
 
         if (! $publication->isClaimable(CarbonImmutable::now())) {
             throw SkillPublicationFailed::notClaimable($publication->state);

@@ -65,7 +65,7 @@ final class ContinueStartTest extends TestCase
         $session->endAt(CarbonImmutable::now());
         $label = AccountLabel::from('Second');
         $newAccount = Account::create(DefaultDrivers::CLAUDE_CODE, $label, '/journal/accounts/second');
-        ActiveAccount::lockedFor(DefaultDrivers::CLAUDE_CODE)->select($newAccount);
+        ActiveAccount::findLockedFor(DefaultDrivers::CLAUDE_CODE)->select($newAccount);
 
         $successor = $this->bus()->run(new ContinueStartCommand($first, $this->agent->id));
         $again = $this->bus()->run(new ContinueStartCommand($first, $this->agent->id));

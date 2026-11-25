@@ -37,7 +37,7 @@ final readonly class RunOutcomeSummaries
 
         return $run
             ->filter(fn (ProcessRun $found) => $this->mayHearOf($found))
-            ->flatMap(fn (ProcessRun $found) => RunOutcome::ofRun($found)
+            ->flatMap(fn (ProcessRun $found) => RunOutcome::findForRun($found)
                 ->map(fn (RunOutcome $outcome) => $this->summary($found, $outcome)));
     }
 

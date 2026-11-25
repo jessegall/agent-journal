@@ -88,7 +88,7 @@ final readonly class JournalAssignableProvider implements JournalAssignableProvi
         }
 
         $ask = $escalates
-            ? Ask::lockedForMaintenance($record->id)
+            ? Ask::findLockedForMaintenance($record->id)
             : $this->asks->read(new AskReference($record->id));
 
         if (! $ask->open) {
@@ -121,7 +121,7 @@ final readonly class JournalAssignableProvider implements JournalAssignableProvi
      */
     private function requireEscalationRecipient(JournalAssignment $assignment): void
     {
-        $ask = Ask::lockedForMaintenance($assignment->record->id);
+        $ask = Ask::findLockedForMaintenance($assignment->record->id);
         $pending = $ask->requirePending($assignment->expectedVersion);
 
         $isRecipient = $this->recipients->resolve($pending)

@@ -86,7 +86,7 @@ final class SettingsRecord extends Model implements EventSource, ReadableModel
      *
      * @return Option<self>
      */
-    public static function sharedRuntimeForOwner(string $owner): Option
+    public static function findSharedRuntimeForOwner(string $owner): Option
     {
         $settingsRecord = self::query()->ownedBy($owner)->first();
 
@@ -99,7 +99,7 @@ final class SettingsRecord extends Model implements EventSource, ReadableModel
      * @param  list<string>  $owners
      * @return array<string, self>
      */
-    public static function sharedRuntimeForOwners(array $owners): array
+    public static function findSharedRuntimeForOwners(array $owners): array
     {
         return self::query()->ofOwners($owners)->limit(count($owners))->get()->keyBy('owner')->all();
     }
@@ -107,7 +107,7 @@ final class SettingsRecord extends Model implements EventSource, ReadableModel
     /**
      * The owner's record, locked until the transaction ends; insertIfAbsent runs first, so the record exists.
      */
-    public static function lockedForOwner(string $owner): self
+    public static function findLockedForOwner(string $owner): self
     {
         return self::query()->ownedBy($owner)->lockForUpdate()->firstOrFail();
     }

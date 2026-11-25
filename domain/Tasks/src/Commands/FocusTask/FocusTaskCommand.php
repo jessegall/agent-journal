@@ -24,6 +24,6 @@ final readonly class FocusTaskCommand extends Command implements RecordCommand
 
     public function subject(): Task
     {
-        return Task::lockedById($this->taskId);
+        return Task::findLockedById($this->taskId);
     }
 }

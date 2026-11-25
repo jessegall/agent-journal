@@ -26,7 +26,7 @@ final readonly class PublishSignInChallengeHandler implements CommandHandler
 
     public function handle(PublishSignInChallengeCommand $command): void
     {
-        $attempt = SignInAttempt::runBy($command->hostId, $command->attemptId);
+        $attempt = SignInAttempt::findRunBy($command->hostId, $command->attemptId);
 
         if (! $attempt->isLive()) {
             return;

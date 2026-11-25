@@ -209,7 +209,7 @@ final class DeviceGrantsTest extends TestCase
         $grant = (string) $this->relay('/api/device-grants/poll', ['deviceCode' => $deviceCode])->json('grant');
         $this->actingAs($this->owner)->deleteJson("/project-connections/bindings/{$binding}")->assertOk();
 
-        $audits = array_reverse(ConnectionAudit::newestOfBindings([$binding]));
+        $audits = array_reverse(ConnectionAudit::findNewestOfBindings([$binding]));
         $project = ProjectBinding::query()->findOrFail($binding)->project_id;
 
         $this->assertSame(

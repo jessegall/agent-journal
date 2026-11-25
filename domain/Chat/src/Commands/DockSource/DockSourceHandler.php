@@ -25,7 +25,7 @@ final readonly class DockSourceHandler extends ChatCommandHandler
         $inbox = $this->requests->lockedInbox($command->chat);
         $source = new DockIdentity($command->type, $command->id);
         $this->requests->assertReadable($source, $command->presentation);
-        $existing = DockPlacement::docked($inbox, $source);
+        $existing = DockPlacement::findDocked($inbox, $source);
 
         if ($existing !== null) {
             return DockResult::of(DockOutcome::Present, $existing->id);

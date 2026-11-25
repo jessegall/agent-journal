@@ -18,7 +18,7 @@ final readonly class RecoverProjectBindingHandler implements CommandHandler
 {
     public function handle(RecoverProjectBindingCommand $command): Redemption
     {
-        $binding = ProjectBinding::ofHostByNonce($command->hostId, $command->installationNonce);
+        $binding = ProjectBinding::findForHostByNonce($command->hostId, $command->installationNonce);
 
         ConnectionAudit::createForBinding(
             ConnectionAuditType::Recovered,

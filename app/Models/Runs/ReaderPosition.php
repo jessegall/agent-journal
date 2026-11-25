@@ -119,7 +119,7 @@ final class ReaderPosition extends Model implements EventSource, ReadableModel
     /**
      * The live position of a reader in a part, started empty the first time.
      */
-    public static function of(PartRun $part, ReaderRevision $revision): self
+    public static function findOf(PartRun $part, ReaderRevision $revision): self
     {
         return self::madeFor($part, $revision, PositionPurpose::Live, new ReaderCheckpoint());
     }
@@ -127,7 +127,7 @@ final class ReaderPosition extends Model implements EventSource, ReadableModel
     /**
      * A replay's own position, apart from the live one: it starts again from the first byte each time.
      */
-    public static function replayOf(PartRun $part, ReaderRevision $revision, ReaderCheckpoint $consumed): self
+    public static function findReplayOf(PartRun $part, ReaderRevision $revision, ReaderCheckpoint $consumed): self
     {
         return self::madeFor($part, $revision, PositionPurpose::Replay, $consumed);
     }

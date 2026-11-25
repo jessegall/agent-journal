@@ -31,12 +31,12 @@ final class AskRequester extends Model implements ReadableModel
     use InsertsAbsentRows;
     use Linkable;
 
-    // ----------[ Queries ]----------
+    // ----------[ Constructors ]----------
 
     /**
      * Writes the requester row so a concurrent repeatable-read submission retries with a fresh snapshot.
      */
-    public static function lockSubmissions(ActorIdentity $actor): void
+    public static function create(ActorIdentity $actor): void
     {
         $requester = new self();
 

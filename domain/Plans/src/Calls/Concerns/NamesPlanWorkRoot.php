@@ -38,6 +38,6 @@ trait NamesPlanWorkRoot
 
         $plan = $records->identify(RecordReference::of('plan', RecordReference::number($this->rootPlan)));
 
-        return Phase::numberedIn($plan->id, $number)->assignmentIdentity();
+        return Phase::findNumberedInPlanId($plan->id, $number)->assignmentIdentity();
     }
 }

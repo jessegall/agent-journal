@@ -23,7 +23,7 @@ final readonly class RecordGatewayHealthHandler extends SharingCommandHandler
         $this->assertCurrentGatewayRun($installation, $command->runId);
         $installation->holdFor($command->runId);
 
-        $endpoint = ShareGatewayEndpoint::lockHeldBy(
+        $endpoint = ShareGatewayEndpoint::findLockedHeldBy(
             $command->configurationId,
             $command->endpointVersion,
             $command->runId,

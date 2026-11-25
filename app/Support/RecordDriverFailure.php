@@ -21,11 +21,11 @@ final readonly class RecordDriverFailure
 
     public function record(HookIdentity $hook, FailureDetails $details): void
     {
-        if (! FailureReceipt::receive($hook, $details->failure)) {
+        if (! FailureReceipt::create($hook, $details->failure)) {
             return;
         }
 
-        $start = SessionProcess::latestOfSession($hook->sessionId);
+        $start = SessionProcess::findLatestOfSession($hook->sessionId);
 
         $failed = new DriverFailed(
             $hook->agentId,

@@ -27,7 +27,7 @@ final readonly class AccountSharingService
      */
     public function assertMayStart(PinnedDriver $driver, SelectedAccount $account): void
     {
-        $sessionIds = SessionProcess::unresolvedSessionIdsOf($account->record);
+        $sessionIds = SessionProcess::resolveUnresolvedSessionIdsOf($account->record);
 
         if ($sessionIds === []) {
             return;
@@ -37,7 +37,7 @@ final readonly class AccountSharingService
             throw AccountWriterTaken::inUseBy($sessionIds[0]);
         }
 
-        foreach (AgentRuntime::driverKeysOfSessions($sessionIds) as $sessionId => $driverKey) {
+        foreach (AgentRuntime::resolveDriverKeysOfSessions($sessionIds) as $sessionId => $driverKey) {
             $support = $this->drivers->forKey(DriverKey::from($driverKey))
                 ->capabilities(BoundTarget::beforePlacement());
 

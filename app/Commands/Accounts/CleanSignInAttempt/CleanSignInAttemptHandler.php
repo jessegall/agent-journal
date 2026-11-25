@@ -11,6 +11,6 @@ final readonly class CleanSignInAttemptHandler implements CommandHandler
 {
     public function handle(CleanSignInAttemptCommand $command): bool
     {
-        return SignInAttempt::lockedForJournal($command->attemptId)->applyCleanup($command->progress);
+        return SignInAttempt::findLockedForJournal($command->attemptId)->applyCleanup($command->progress);
     }
 }

@@ -30,8 +30,8 @@ final readonly class DeliverQuestionAnswer implements Listener
             return;
         }
 
-        $notice = QuestionAnswerNotice::write($question, $sender);
-        $session = AgentSession::liveOf($sender->id);
+        $notice = QuestionAnswerNotice::create($question, $sender);
+        $session = AgentSession::findLiveOf($sender->id);
 
         if ($session !== null) {
             $this->notices->deliver($notice, $session->id);

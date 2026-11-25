@@ -31,7 +31,7 @@ final readonly class ReplayAssessmentHandler implements CommandHandler
     public function handle(ReplayAssessmentCommand $command): string
     {
         $part = PartRun::query()->whereKey($command->partRunId)->lockForUpdate()->sole();
-        $run = ProcessRun::ofAnyActor($part->process_run_id);
+        $run = ProcessRun::findForAnyActor($part->process_run_id);
         $actor = ActorIdentity::of($command->dispatchedBy());
 
         if (! $this->administration->isGrantedToCaller() && ! $run->isByActor($actor)) {
@@ -62,7 +62,7 @@ final readonly class ReplayAssessmentHandler implements CommandHandler
      */
     private function checkSameContract(PartRun $part, ApprovedPair $pair): void
     {
-        $previous = OutputAssessment::latestOf($part);
+        $previous = OutputAssessment::findLatestOf($part);
 
         if ($previous === null) {
             return;

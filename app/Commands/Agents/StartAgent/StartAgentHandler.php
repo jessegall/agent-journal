@@ -104,7 +104,7 @@ final readonly class StartAgentHandler implements CommandHandler
         $agent = Agent::query()->findOrFail($request->agentId);
         $this->sessions->reserveStart($agent);
 
-        if (DriverSwitch::openOf($agent->id)?->stage->blocksWriter() === true) {
+        if (DriverSwitch::findOpenOf($agent->id)?->stage->blocksWriter() === true) {
             throw AgentBusy::forAgent($agent->id);
         }
 
@@ -165,7 +165,7 @@ final readonly class StartAgentHandler implements CommandHandler
 
         $driver = $request->selection->driver;
         $build = $this->builds->versionOf($driver);
-        $host = Host::runningStart($driver, $build, $request->execution()->mode, $request->driverType);
+        $host = Host::findRunningStart($driver, $build, $request->execution()->mode, $request->driverType);
 
         return new RuntimeIntent(
             $host->id,

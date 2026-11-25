@@ -17,7 +17,7 @@ final readonly class ShareAuditResolver
 
     public function page(Share $share, string|null $after): ShareAuditPage
     {
-        $found = ShareAudit::pageOf($share, $after, self::ROWS);
+        $found = ShareAudit::findPageOf($share, $after, self::ROWS);
         $rows = array_slice($found, 0, self::ROWS);
         $last = $rows === [] ? null : $rows[array_key_last($rows)];
 

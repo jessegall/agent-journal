@@ -26,7 +26,7 @@ final readonly class TaskWaitGraph
 
         while ($lastShown !== []) {
             $next = array_values(array_filter(
-                TaskWait::prerequisiteIdsOf($lastShown, self::MOST_TASKS_WALKED),
+                TaskWait::resolvePrerequisiteIdsOf($lastShown, self::MOST_TASKS_WALKED),
                 fn (string $id) => ! isset($seen[$id]),
             ));
 

@@ -30,8 +30,8 @@ final readonly class CloseChatController
         $chats->assertManages($input->inboxId);
 
         foreach ([
-            ...InboxMember::attachedTo([$input->inboxId], User::class),
-            ...InboxMember::attachedTo([$input->inboxId], Agent::class),
+            ...InboxMember::resolveAttachedTo([$input->inboxId], User::class),
+            ...InboxMember::resolveAttachedTo([$input->inboxId], Agent::class),
         ] as $member) {
             $commands->run(new LeaveInboxCommand($input->inboxId, $member));
         }

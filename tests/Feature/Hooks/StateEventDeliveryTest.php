@@ -184,7 +184,7 @@ final class StateEventDeliveryTest extends TestCase
         $effects = $this->app->make(NoteEffects::class);
         $effects->afterRecording(function (RecordNoteEffectCommand $command) use ($reference): void {
             if ($command->label === 'replace') {
-                $row = AgentStackRow::lockAuthorizedFor($this->target);
+                $row = AgentStackRow::findLockedAuthorizedFor($this->target);
                 $stack = $this->app->make(StackRestorer::class)->restore($row->frames, $row->target);
                 $without = $stack->poppedOf($stack->top());
                 $row->saveFrames($without->records(), $this->app->make(StateTypes::class)->ticking());

@@ -98,7 +98,7 @@ final class SkillReceiptsTest extends TestCase
 
     private function deliveredDigest(AgentSession $session, string $key): string
     {
-        $publication = SkillPublication::latestOfSession($session->id);
+        $publication = SkillPublication::findLatestOfSession($session->id);
         $this->assertNotNull($publication);
         $entry = SkillGeneration::findForPublication($publication)->entry($key);
         $this->assertNotNull($entry);

@@ -20,22 +20,22 @@ final readonly class ProfileRecords implements ProfileResolver, ProfileScripts
 {
     public function snapshotFor(ProfileKey $key): ProfileSnapshot
     {
-        return ProfileRevision::currentOf($this->admitted($key))->snapshot($key);
+        return ProfileRevision::findCurrentOf($this->admitted($key))->snapshot($key);
     }
 
     public function snapshotAt(ProfileKey $key, int $revision): ProfileSnapshot
     {
-        return ProfileRevision::numbered(Profile::byKey($key), $revision)->snapshot($key);
+        return ProfileRevision::findNumbered(Profile::findByKey($key), $revision)->snapshot($key);
     }
 
     public function scriptAt(ProfileKey $key, int $revision): ProfileScript
     {
-        return ProfileRevision::numbered(Profile::byKey($key), $revision)->script;
+        return ProfileRevision::findNumbered(Profile::findByKey($key), $revision)->script;
     }
 
     public function admittedPin(ProfileKey $key, int $revision): ProfileSnapshot
     {
-        return ProfileRevision::numbered($this->admitted($key), $revision)->snapshot($key);
+        return ProfileRevision::findNumbered($this->admitted($key), $revision)->snapshot($key);
     }
 
     public function has(ProfileKey $key): bool
@@ -45,7 +45,7 @@ final readonly class ProfileRecords implements ProfileResolver, ProfileScripts
 
     public function supervisorProfiles(): array
     {
-        return ProfileRevision::currentSupervisorProfiles();
+        return ProfileRevision::resolveCurrentSupervisorProfiles();
     }
 
     /**
@@ -53,7 +53,7 @@ final readonly class ProfileRecords implements ProfileResolver, ProfileScripts
      */
     private function admitted(ProfileKey $key): Profile
     {
-        $profile = Profile::byKey($key);
+        $profile = Profile::findByKey($key);
 
         if ($profile->isRetired()) {
             throw ProfileRetired::for($key);

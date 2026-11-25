@@ -140,8 +140,8 @@ final class TickDeliveryTest extends TestCase
 
         $this->passAt(0.0);
 
-        $this->assertArrayHasKey('effect-of-a', EngineFrameTime::settledAtFor(['effect-of-a']));
-        $this->assertSame([], EngineFrameTime::settledAtFor(['a']));
+        $this->assertArrayHasKey('effect-of-a', EngineFrameTime::resolveSettledAtFor(['effect-of-a']));
+        $this->assertSame([], EngineFrameTime::resolveSettledAtFor(['a']));
         $this->assertFalse($this->app->make(FrameBaselines::class)->has('a'));
     }
 
@@ -156,7 +156,7 @@ final class TickDeliveryTest extends TestCase
 
         $this->passAt(0.0);
 
-        $this->assertSame([], EngineFrameTime::settledAtFor(['effect-of-a']));
+        $this->assertSame([], EngineFrameTime::resolveSettledAtFor(['effect-of-a']));
         $this->assertSame(['a'], array_map(fn ($subject) => $subject->subjectId, $this->guard->checked));
         $this->assertTrue($this->app->make(FrameBaselines::class)->has('a'));
     }
@@ -171,7 +171,7 @@ final class TickDeliveryTest extends TestCase
         $this->assertCount(1, $this->deltasOf('b'));
         $this->assertTrue($this->app->make(FrameBaselines::class)->has('b'));
         $this->assertFalse($this->app->make(FrameBaselines::class)->has('a'));
-        $this->assertSame(['b'], array_keys(EngineFrameTime::settledAtFor(['a', 'b'])));
+        $this->assertSame(['b'], array_keys(EngineFrameTime::resolveSettledAtFor(['a', 'b'])));
     }
 
     /**

@@ -11,7 +11,7 @@ final readonly class FailDriverSwitchStartHandler implements CommandHandler
 {
     public function handle(FailDriverSwitchStartCommand $command): void
     {
-        $switch = DriverSwitch::lockedById($command->switchId);
+        $switch = DriverSwitch::findLockedById($command->switchId);
         $switch->failStart($command->reason);
     }
 }

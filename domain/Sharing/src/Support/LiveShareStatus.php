@@ -17,6 +17,6 @@ final readonly class LiveShareStatus implements ShareStatusResolver
 {
     public function isPubliclyShared(RecordIdentity $record): bool
     {
-        return Share::liveFor($record)->isDefined() || ShareMember::isApprovedInLiveShare($record);
+        return Share::findLiveFor($record)->isDefined() || ShareMember::isApprovedInLiveShare($record);
     }
 }

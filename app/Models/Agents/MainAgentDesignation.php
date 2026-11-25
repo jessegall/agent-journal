@@ -58,7 +58,7 @@ final class MainAgentDesignation extends Model implements ReadableModel
     /**
      * @throws MainAgentMissing
      */
-    public static function designatedAgent(): Agent
+    public static function resolveDesignatedAgent(): Agent
     {
         $designation = self::query()->with('agent')->firstOr(MainAgentMissing::throwing()->forInstallation());
 
@@ -68,7 +68,7 @@ final class MainAgentDesignation extends Model implements ReadableModel
     /**
      * @return Option<string>
      */
-    public static function designatedAgentId(): Option
+    public static function resolveDesignatedAgentId(): Option
     {
         $agentId = self::query()->value('agent_id');
 

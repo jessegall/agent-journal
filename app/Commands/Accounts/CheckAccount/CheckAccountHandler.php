@@ -22,9 +22,9 @@ final readonly class CheckAccountHandler implements CommandHandler
 
     public function handle(CheckAccountCommand $command): void
     {
-        $driver = Account::driverForJournal($command->accountId);
-        $selection = ActiveAccount::lockedForJournal($driver);
-        $account = Account::lockedForJournal($command->accountId);
+        $driver = Account::resolveDriverForJournal($command->accountId);
+        $selection = ActiveAccount::findLockedForJournal($driver);
+        $account = Account::findLockedForJournal($command->accountId);
 
         if (! $account->applyCheck($command->generation, $command->accountCheck, CarbonImmutable::now())) {
             return;

@@ -38,7 +38,7 @@ final class HostRoleTest extends TestCase
             [
                 Host::query()->findOrFail($binding->host_id)->isConnectedFolderRelay(),
                 $enrolled->isConnectedFolderRelay(),
-                array_map(fn (Host $host) => $host->id, Host::servingEnrolled()),
+                array_map(fn (Host $host) => $host->id, Host::findServingEnrolled()),
             ],
         );
     }

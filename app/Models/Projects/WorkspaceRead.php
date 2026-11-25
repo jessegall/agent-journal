@@ -73,6 +73,24 @@ final class WorkspaceRead extends Model implements EventSource, ReadableModel
         ];
     }
 
+    // ----------[ Constructors ]----------
+
+    /**
+     * Retains the read for its reference once; asking again finds the same read.
+     */
+    public static function create(WorkspaceReadReference $reference, ActorIdentity $actor, WorkReference $work): self
+    {
+        $read = new self();
+        $read->read_reference = $reference->key;
+        $read->actor_type = $actor->type;
+        $read->actor_id = $actor->id;
+        $read->work = $work->key;
+        $read->setAttribute($read->getKeyName(), $read->newUniqueId());
+        $read->insertIfAbsent();
+
+        return self::query()->underReference($reference)->sole();
+    }
+
     // ----------[ Mutations ]----------
 
     /**
@@ -146,27 +164,11 @@ final class WorkspaceRead extends Model implements EventSource, ReadableModel
     // ----------[ Queries ]----------
 
     /**
-     * Retains the read for its reference once; asking again finds the same read.
-     */
-    public static function retain(WorkspaceReadReference $reference, ActorIdentity $actor, WorkReference $work): self
-    {
-        $read = new self();
-        $read->read_reference = $reference->key;
-        $read->actor_type = $actor->type;
-        $read->actor_id = $actor->id;
-        $read->work = $work->key;
-        $read->setAttribute($read->getKeyName(), $read->newUniqueId());
-        $read->insertIfAbsent();
-
-        return self::query()->underReference($reference)->sole();
-    }
-
-    /**
      * The reads waiting for the host the actors' runtimes run on, oldest first.
      *
      * @return list<self>
      */
-    public static function pendingOn(string $hostId, int $limit): array
+    public static function findPendingOn(string $hostId, int $limit): array
     {
         $pending = self::query()
             ->unsampled()
@@ -184,7 +186,7 @@ final class WorkspaceRead extends Model implements EventSource, ReadableModel
      *
      * @return list<WorkspaceFacts>
      */
-    public static function latestCommitReadOf(string $agentId): array
+    public static function resolveLatestCommitReadOf(string $agentId): array
     {
         $read = self::query()->byAgent($agentId)->sampledAtCommit()->lastSampledFirst()->limit(1)->get();
 
@@ -199,7 +201,7 @@ final class WorkspaceRead extends Model implements EventSource, ReadableModel
         return $facts;
     }
 
-    public static function byReference(WorkspaceReadReference $reference): self
+    public static function findByReference(WorkspaceReadReference $reference): self
     {
         return self::query()->underReference($reference)->firstOrFail();
     }

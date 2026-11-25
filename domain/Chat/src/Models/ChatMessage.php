@@ -88,7 +88,7 @@ final class ChatMessage extends Model implements EventSource, ReadableModel
         }
 
         $author = $source->author();
-        $latest = self::lockNewestInInbox($inboxId);
+        $latest = self::findLockedNewestInInbox($inboxId);
 
         $entry = new self();
         $entry->inbox_id = $inboxId;
@@ -224,7 +224,7 @@ final class ChatMessage extends Model implements EventSource, ReadableModel
     /**
      * The inbox's newest entry, locked so the next entry's group is worked out from it alone; none in an empty inbox.
      */
-    public static function lockNewestInInbox(string $inboxId): self|null
+    public static function findLockedNewestInInbox(string $inboxId): self|null
     {
         return self::query()->newestInInbox($inboxId)->lockForUpdate()->first();
     }

@@ -157,7 +157,7 @@ final class SkillRevision extends Model implements ReadableModel
 
     // ----------[ Queries ]----------
 
-    public static function currentOf(Skill $skill): self
+    public static function findCurrentOf(Skill $skill): self
     {
         return self::query()->ofSkill($skill)->whereKey($skill->current_revision_id)->firstOrFail();
     }
@@ -168,7 +168,7 @@ final class SkillRevision extends Model implements ReadableModel
      * @param  list<Skill>  $skills
      * @return array<string, self>
      */
-    public static function currentOfEach(array $skills): array
+    public static function findCurrentOfEach(array $skills): array
     {
         $ids = array_values(array_filter(array_map(fn (Skill $skill) => $skill->current_revision_id, $skills)));
 
@@ -179,7 +179,7 @@ final class SkillRevision extends Model implements ReadableModel
         return self::query()->whereKey($ids)->readExactly(count($ids))->get()->keyBy('skill_id')->all();
     }
 
-    public static function numbered(Skill $skill, int $revision): self
+    public static function findNumbered(Skill $skill, int $revision): self
     {
         return self::query()->ofSkill($skill)->atRevision($revision)->firstOrFail();
     }
@@ -189,7 +189,7 @@ final class SkillRevision extends Model implements ReadableModel
      *
      * @return list<self>
      */
-    public static function historyOf(Skill $skill, int $limit): array
+    public static function findHistoryOf(Skill $skill, int $limit): array
     {
         return array_values(self::query()->ofSkill($skill)->newestRevisionFirst()->readExactly($limit)->get()->all());
     }

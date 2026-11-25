@@ -211,7 +211,7 @@ final class Question extends Model implements AuthoredModel, EventSource, Readab
 
     // ----------[ Queries ]----------
 
-    public static function lockedById(string $id): self
+    public static function findLockedById(string $id): self
     {
         return self::query()->whereKey($id)->lockForUpdate()->firstOrFail();
     }

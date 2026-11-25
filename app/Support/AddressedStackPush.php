@@ -29,7 +29,7 @@ final readonly class AddressedStackPush
         $this->transaction->assertOpen($target);
 
         $this->assertRunning($target);
-        $stack = AgentStackRow::lockAuthorizedFor($target);
+        $stack = AgentStackRow::findLockedAuthorizedFor($target);
         $this->statePush->push($target, $stack, $state);
     }
 

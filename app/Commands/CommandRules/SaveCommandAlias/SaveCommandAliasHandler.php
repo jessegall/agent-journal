@@ -11,7 +11,7 @@ final readonly class SaveCommandAliasHandler implements CommandHandler
 {
     public function handle(SaveCommandAliasCommand $command): int
     {
-        $alias = CommandAlias::forName($command->projectKey, $command->name);
+        $alias = CommandAlias::create($command->projectKey, $command->name);
         $alias->recordLine($command->line, $command->arguments);
 
         return $alias->revision;

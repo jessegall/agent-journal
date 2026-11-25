@@ -171,7 +171,7 @@ final class AutoAssignment extends Model implements EventSource, ReadableModel
      *
      * @return Option<self>
      */
-    public static function lockedFor(AutoAssignmentKey $key): Option
+    public static function findLockedFor(AutoAssignmentKey $key): Option
     {
         $autoAssignment = self::query()->forKey($key)->lockForUpdate()->first();
 
@@ -181,7 +181,7 @@ final class AutoAssignment extends Model implements EventSource, ReadableModel
     /**
      * One page of the auto-assignments that are on, by id, for the engine to consider.
      */
-    public static function enabledPage(IdListPage $page): AutoAssignmentPage
+    public static function resolveEnabledPage(IdListPage $page): AutoAssignmentPage
     {
         return self::pageOf(self::query()->enabled(), $page);
     }
@@ -189,7 +189,7 @@ final class AutoAssignment extends Model implements EventSource, ReadableModel
     /**
      * One page of the actor's auto-assignments, on or off, by id.
      */
-    public static function pageFor(ActorIdentity $actor, IdListPage $page): AutoAssignmentPage
+    public static function resolvePageFor(ActorIdentity $actor, IdListPage $page): AutoAssignmentPage
     {
         return self::pageOf(self::query()->ofActor($actor), $page);
     }

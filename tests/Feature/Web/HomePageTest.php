@@ -331,7 +331,7 @@ final class HomePageTest extends TestCase
         return [
             'agent' => $this->session->agent_id,
             'expectedSessionId' => $this->session->id,
-            'expectedGeneration' => AgentRuntime::ofSession($this->session->id)?->process_generation ?? 0,
+            'expectedGeneration' => AgentRuntime::findForSession($this->session->id)?->process_generation ?? 0,
         ];
     }
 }

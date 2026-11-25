@@ -16,7 +16,7 @@ final readonly class RetryDriverRequestHandler implements CommandHandler
 
     public function handle(RetryDriverRequestCommand $command): int
     {
-        $request = DriverRequest::lockedById($command->requestId);
+        $request = DriverRequest::findLockedById($command->requestId);
 
         // A second tab retrying the same failure gets the attempt the first one made.
         if ($request->wasRetriedFrom($command->expectedRowVersion)) {

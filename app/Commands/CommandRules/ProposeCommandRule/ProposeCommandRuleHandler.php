@@ -34,7 +34,7 @@ final readonly class ProposeCommandRuleHandler implements CommandHandler
     public function handle(ProposeCommandRuleCommand $command): ProposalReceipt
     {
         $actor = ActorIdentity::of($command->dispatchedBy());
-        $request = CommandRequest::lockedForChange($command->commandRequestId);
+        $request = CommandRequest::findLockedForChange($command->commandRequestId);
 
         if (! $request->acceptsProposalFrom($actor, $this->administration->isGrantedToCaller())) {
             throw RuleProposalRefused::notTheRequester($request->id);

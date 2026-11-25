@@ -65,7 +65,7 @@ final class HelperInstancesTest extends TestCase
         $second = $this->start((string) Str::ulid(), 'Review plan 8', profileKey: 'lone-reviewer');
 
         $this->assertNotSame($first->identityId, $second->identityId);
-        $this->assertSame($second->identityId, HelperIdentity::designatedFor('lone-reviewer')->get()->id);
+        $this->assertSame($second->identityId, HelperIdentity::findDesignatedFor('lone-reviewer')->get()->id);
     }
 
     public function test_the_single_helper_cannot_review_a_purpose_it_worked_on_independently(): void

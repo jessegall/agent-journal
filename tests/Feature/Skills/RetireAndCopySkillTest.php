@@ -70,7 +70,7 @@ final class RetireAndCopySkillTest extends TestCase
             'user-review-notes',
             array_column(json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR), 'key'),
         );
-        $this->assertCount(1, SkillRevision::historyOf(Skill::query()->whereKey($created->skillId)->firstOrFail(), 10));
+        $this->assertCount(1, SkillRevision::findHistoryOf(Skill::query()->whereKey($created->skillId)->firstOrFail(), 10));
     }
 
     public function test_another_owner_cannot_retire_it(): void
@@ -93,7 +93,7 @@ final class RetireAndCopySkillTest extends TestCase
     {
         $source = $this->app->make(SkillResolver::class)->find(SkillKey::from('journal-plans'));
         $copied = $this->as(7, new CopySkillCommand('journal-plans', 'user-plans', 'copy-1'));
-        $revision = SkillRevision::currentOf(Skill::query()->whereKey($copied->skillId)->firstOrFail());
+        $revision = SkillRevision::findCurrentOf(Skill::query()->whereKey($copied->skillId)->firstOrFail());
 
         $this->assertSame(1, $copied->revision);
         $this->assertSame('journal-plans', $revision->source_key);

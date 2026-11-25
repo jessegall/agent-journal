@@ -28,7 +28,7 @@ final readonly class SequenceEditorResolver implements PageResolver
     public function read(): DeclaredLayoutData
     {
         try {
-            $sequence = Sequence::byId($this->request->sequenceId());
+            $sequence = Sequence::findById($this->request->sequenceId());
         } catch (SequenceMissing $missing) {
             throw new NotFoundHttpException(previous: $missing);
         }

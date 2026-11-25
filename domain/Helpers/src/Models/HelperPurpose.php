@@ -57,6 +57,28 @@ final class HelperPurpose extends Model implements ReadableModel
         return ['purpose_type' => PurposeType::class];
     }
 
+    // ----------[ Constructors ]----------
+
+    /**
+     * The one purpose of the parent and profile for the record, made by the first of any concurrent starts; a later
+     * start reads the one that won. Its label is the record's alias and id, never a fetched title.
+     */
+    public static function create(ActorIdentity $parent, string $profileKey, RecordIdentity $subject): self
+    {
+        $purpose = new self();
+        $purpose->profile_key = $profileKey;
+        $purpose->purpose_type = PurposeType::Subject;
+        $purpose->subject_type = $subject->type;
+        $purpose->subject_id = $subject->id;
+        $purpose->label = "{$subject->type}:{$subject->id}";
+
+        $purpose->id = strtolower((string) Str::ulid());
+        $purpose->belongTo($parent);
+        $purpose->insertIfAbsent();
+
+        return self::query()->ownedBy($parent)->ofProfile($profileKey)->aboutSubject($subject)->sole();
+    }
+
     // ----------[ Accessors ]----------
 
     /**
@@ -105,46 +127,16 @@ final class HelperPurpose extends Model implements ReadableModel
     // ----------[ Queries ]----------
 
     /**
-     * The one purpose of the parent and profile for the record, made by the first of any concurrent starts; a later
-     * start reads the one that won. Its label is the record's alias and id, never a fetched title.
-     */
-    public static function forSubjectOnce(ActorIdentity $parent, string $profileKey, RecordIdentity $subject): self
-    {
-        $purpose = new self();
-        $purpose->profile_key = $profileKey;
-        $purpose->purpose_type = PurposeType::Subject;
-        $purpose->subject_type = $subject->type;
-        $purpose->subject_id = $subject->id;
-        $purpose->label = "{$subject->type}:{$subject->id}";
-
-        $purpose->id = strtolower((string) Str::ulid());
-        $purpose->belongTo($parent);
-        $purpose->insertIfAbsent();
-
-        return self::query()->ownedBy($parent)->ofProfile($profileKey)->aboutSubject($subject)->sole();
-    }
-
-    /**
      * The parent's own purpose with that id for the profile; none when it belongs to another parent or profile.
      */
-    public static function ofParent(ActorIdentity $parent, string $profileKey, string $purposeId): self|null
+    public static function findForParent(ActorIdentity $parent, string $profileKey, string $purposeId): self|null
     {
         return self::query()->ownedBy($parent)->ofProfile($profileKey)->whereKey($purposeId)->first();
     }
 
-    public static function free(ActorIdentity $parent, string $profileKey, string $label): self
+    public static function findFree(ActorIdentity $parent, string $profileKey, string $label): self
     {
         return self::start($parent, $profileKey, PurposeType::Free, null, $label);
-    }
-
-    /**
-     * The purposes of any holder that name the same work as this one: the same subject, or the same label.
-     *
-     * @return Builder<self>
-     */
-    public static function sameAs(self $purpose): Builder
-    {
-        return self::query()->acrossActors()->likePurpose($purpose);
     }
 
     // ----------[ Scopes ]----------
@@ -210,5 +202,16 @@ final class HelperPurpose extends Model implements ReadableModel
     protected function withSubjectType(Builder $query, string $subjectType): void
     {
         $query->where('subject_type', $subjectType);
+    }
+
+    /**
+     * The purposes of any holder that name the same work as this one: the same subject, or the same label.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function sameAs(Builder $query, self $purpose): void
+    {
+        $query->acrossActors()->likePurpose($purpose);
     }
 }

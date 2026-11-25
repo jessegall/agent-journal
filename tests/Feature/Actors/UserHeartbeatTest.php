@@ -72,6 +72,6 @@ final class UserHeartbeatTest extends TestCase
 
     private function beat(string $userId, CarbonImmutable $time): void
     {
-        UserPresence::lockedFor($userId, $time)->beatAt($time);
+        UserPresence::create($userId, $time)->beatAt($time);
     }
 }

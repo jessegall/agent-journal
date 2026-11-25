@@ -141,7 +141,7 @@ final class SignInAgainTest extends TestCase
         $this->assertSame(SignInState::Complete, $attempt->state);
         $this->assertSame($saved, $attempt->directory);
         $this->assertTrue($attempt->cleanup_pending);
-        $this->assertSame($attemptId, SignInAttempt::nextDueForCleanup()?->id);
+        $this->assertSame($attemptId, SignInAttempt::findNextDueForCleanup()?->id);
     }
 
     public function test_another_principal_ends_as_a_different_account_and_none_cannot_verify_and_both_replace_nothing(): void
@@ -206,7 +206,7 @@ final class SignInAgainTest extends TestCase
         $attempt = SignInAttempt::query()->whereKey($attemptId)->sole();
         $this->account->forceFill(['directory' => $attempt->directory])->save();
 
-        $this->assertNull(SignInAttempt::nextDueForCleanup());
+        $this->assertNull(SignInAttempt::findNextDueForCleanup());
     }
 
     /**
@@ -239,9 +239,9 @@ final class SignInAgainTest extends TestCase
         $this->assertNotSame($saved, $staging);
         $this->assertStringStartsWith(config('accounts.root').'/', $staging);
         $this->assertSame($saved, $this->account->refresh()->directory);
-        $pending = array_map(fn (SignInAttempt $attempt) => $attempt->id, SignInAttempt::pendingCleanups());
+        $pending = array_map(fn (SignInAttempt $attempt) => $attempt->id, SignInAttempt::findPendingCleanups());
         $this->assertSame([$attemptId], $pending);
-        $this->assertSame($attemptId, SignInAttempt::nextDueForCleanup()?->id);
+        $this->assertSame($attemptId, SignInAttempt::findNextDueForCleanup()?->id);
     }
 
     public function test_a_cancelled_sign_in_of_a_valid_account_survives_its_certain_check(): void
@@ -269,14 +269,14 @@ final class SignInAgainTest extends TestCase
         $this->asHost(new CheckAccountCommand('host', $this->account->id, $generation, AccountCheckResult::Unknown));
 
         $this->assertTrue($this->account->refresh()->isCheckInconclusive());
-        $this->assertNull(Account::nextDueForCheck());
+        $this->assertNull(Account::findNextDueForCheck());
 
         $this->actAsOwner();
         $this->app->make(CommandBus::class)->run(new RecheckAccountCommand($this->account->id));
 
         $this->assertFalse($this->account->refresh()->isCheckInconclusive());
         $this->assertTrue($this->account->isHeldForCheck());
-        $this->assertSame($this->account->id, Account::nextDueForCheck()?->id);
+        $this->assertSame($this->account->id, Account::findNextDueForCheck()?->id);
         $this->assertThrows(
             fn () => $this->app->make(CommandBus::class)->run(new RecheckAccountCommand($this->account->id)),
             AccountRecheckRefused::class,
@@ -405,7 +405,7 @@ final class SignInAgainTest extends TestCase
 
     private function claimSignIn(string $hostId, CarbonImmutable $now): SignInAttempt|null
     {
-        $attempt = SignInAttempt::oldestWaitingAt($now);
+        $attempt = SignInAttempt::findOldestWaitingAt($now);
         $attempt?->claimOn($hostId);
 
         return $attempt;

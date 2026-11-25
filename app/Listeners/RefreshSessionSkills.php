@@ -48,9 +48,9 @@ final readonly class RefreshSessionSkills implements Listener
 
     public function handle(ContextStarted $event): void
     {
-        $session = AgentSession::byId($event->target->sessionId);
+        $session = AgentSession::findById($event->target->sessionId);
         $driver = StartDriver::of($session->driver_key, $this->drivers)->driver;
-        $generation = SkillGeneration::latestReady();
+        $generation = SkillGeneration::findLatestReady();
 
         if ($driver === null || ! $this->adapters->supports($driver) || $generation === null) {
             return;
@@ -65,7 +65,7 @@ final readonly class RefreshSessionSkills implements Listener
             return;
         }
 
-        $latest = SkillPublication::latestOfSession($session->id);
+        $latest = SkillPublication::findLatestOfSession($session->id);
         $publication = $latest;
 
         if ($latest === null || $latest->selection_digest !== $selected->digest) {
@@ -84,7 +84,7 @@ final readonly class RefreshSessionSkills implements Listener
             $this->facts->publishAfterCommit(new SessionSkillsIntended($publication->id));
         }
 
-        $started = SkillPublication::firstOfSession($session->id);
+        $started = SkillPublication::findFirstOfSession($session->id);
 
         if ($started->selection_digest !== $selected->digest && $this->reloadsAtNewSession($driver)) {
             $event->reminders->add($this->newSessionNotice($driver, $selected), true);

@@ -23,7 +23,7 @@ final readonly class RevokeProjectBindingsHandler implements CommandHandler
 
         foreach ($command->ids as $bindingId) {
             $outcomes[] = $this->revocation->revoke(
-                ProjectBinding::lockById($bindingId),
+                ProjectBinding::findLockedById($bindingId),
                 $command->dispatchedBy()->actorId(),
             );
         }

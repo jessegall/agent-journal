@@ -83,7 +83,7 @@ final class Layout extends Model implements EventSource, ReadableModel
     /**
      * The layout locked for a change; one of another user's is outside the scope, so it is missing (404).
      */
-    public static function lockedForChange(string $layoutId): self
+    public static function findLockedForChange(string $layoutId): self
     {
         return self::query()->whereKey($layoutId)->lockForUpdate()->firstOrFail();
     }

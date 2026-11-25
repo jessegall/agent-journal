@@ -22,7 +22,7 @@ final readonly class SkillReads
      */
     public function record(string $sessionId, string $skillKey, ReadEvidence $evidence): bool
     {
-        $publication = SkillPublication::latestOfSession($sessionId);
+        $publication = SkillPublication::findLatestOfSession($sessionId);
 
         if ($publication === null || $publication->state !== PublicationState::Delivered) {
             return false;
@@ -36,9 +36,9 @@ final readonly class SkillReads
             return false;
         }
 
-        SkillReceipt::record(
+        SkillReceipt::create(
             $sessionId,
-            SkillContextEpoch::currentOf($sessionId),
+            SkillContextEpoch::resolveCurrentOf($sessionId),
             $skillKey,
             $entry->digest,
             $evidence,

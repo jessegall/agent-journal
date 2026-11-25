@@ -35,7 +35,7 @@ final readonly class CommandPermissionResolver implements CommandPermissionResol
         $authority = $this->actors->authority();
 
         if (! $authority instanceof StartProfileAuthority) {
-            return PermissionRevocation::narrow(
+            return PermissionRevocation::resolveNarrow(
                 CommandPermissions::granted($authority->description(), ProcessGrants::everything()),
             );
         }
@@ -52,7 +52,7 @@ final readonly class CommandPermissionResolver implements CommandPermissionResol
             return $this->forCurrentSession();
         }
 
-        $session = AgentSession::liveOf($actor->id)
+        $session = AgentSession::findLiveOf($actor->id)
             ?? throw ActorNotAllowed::withoutStoredAuthority('actor without a live session');
 
         try {
@@ -74,6 +74,6 @@ final readonly class CommandPermissionResolver implements CommandPermissionResol
     {
         $source = "profile:{$profile->key}@{$profile->revision}";
 
-        return PermissionRevocation::narrow(CommandPermissions::granted($source, $profile->processGrants()));
+        return PermissionRevocation::resolveNarrow(CommandPermissions::granted($source, $profile->processGrants()));
     }
 }

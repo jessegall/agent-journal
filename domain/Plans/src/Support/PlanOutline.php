@@ -33,7 +33,7 @@ final readonly class PlanOutline
 
     public function of(string $planId, int|null $currentPhase, OutlinePageAsk $ask): PlanOutlineData
     {
-        $headings = Phase::headingsIn($planId, $ask->phasesAfter, self::PHASES_PER_PAGE + 1);
+        $headings = Phase::findHeadingsIn($planId, $ask->phasesAfter, self::PHASES_PER_PAGE + 1);
         $shown = $headings->take(self::PHASES_PER_PAGE);
 
         return PlanOutlineData::from([
@@ -46,7 +46,7 @@ final readonly class PlanOutline
                 : Optional::create(),
             'phaseTasks' => $ask->phase === null
                 ? Optional::create()
-                : $this->tasksOf(Phase::numberedIn($planId, $ask->phase), $ask->tasksAfter, $ask->revision),
+                : $this->tasksOf(Phase::findNumberedInPlanId($planId, $ask->phase), $ask->tasksAfter, $ask->revision),
         ]);
     }
 
@@ -58,7 +58,7 @@ final readonly class PlanOutline
     {
         $isRevisionChanged = $revision !== 0 && $revision !== $phase->revision;
         $after = $isRevisionChanged ? 0 : $afterPosition;
-        $page = PhaseTask::pageOf($phase->id, $after, self::TASKS_PER_PAGE + 1);
+        $page = PhaseTask::resolvePageOf($phase->id, $after, self::TASKS_PER_PAGE + 1);
         $shown = array_slice($page, 0, self::TASKS_PER_PAGE, true);
 
         return PhaseTaskPageData::from([

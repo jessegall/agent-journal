@@ -43,9 +43,9 @@ final readonly class PlanReviewView
             AccessType::Admin,
         ]);
         $mayEdit = in_array(AccessType::Edit, $allowed, true);
-        $requested = PlanReviewEdition::requestedOf($plan->id);
-        $latest = PlanReviewEdition::latestOf($plan->id);
-        $approval = PlanReviewEdition::latestApprovalOf($plan->id);
+        $requested = PlanReviewEdition::findRequestedOf($plan->id);
+        $latest = PlanReviewEdition::findLatestOf($plan->id);
+        $approval = PlanReviewEdition::findLatestApprovalOf($plan->id);
 
         return PlanReviewData::from([
             'mayRequest' => $mayEdit && $plan->state === PlanState::Planned,

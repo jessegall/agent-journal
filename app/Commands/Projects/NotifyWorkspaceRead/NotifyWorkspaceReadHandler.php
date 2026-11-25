@@ -20,7 +20,7 @@ final readonly class NotifyWorkspaceReadHandler implements CommandHandler
 
     public function handle(NotifyWorkspaceReadCommand $command): void
     {
-        $read = WorkspaceRead::byReference($command->reference);
+        $read = WorkspaceRead::findByReference($command->reference);
 
         $read->answer(new WorkspaceFacts(
             $command->isAvailable,

@@ -11,7 +11,7 @@ final readonly class RecordProjectCommandProcessHandler implements CommandHandle
 {
     public function handle(RecordProjectCommandProcessCommand $command): void
     {
-        foreach (ProjectCommandRun::lockByRequest($command->requestKey) as $run) {
+        foreach (ProjectCommandRun::findLockedByRequest($command->requestKey) as $run) {
             $run->recordProcess($command->pid);
         }
     }

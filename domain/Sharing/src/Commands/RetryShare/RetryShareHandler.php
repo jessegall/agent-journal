@@ -33,7 +33,7 @@ final readonly class RetryShareHandler extends SharingCommandHandler
         $share->retryOpening();
 
         $configurationId = $share->gatewayConfigurationId();
-        $configuration = ShareGatewayConfiguration::usable($configurationId);
+        $configuration = ShareGatewayConfiguration::findUsable($configurationId);
 
         ShareGatewayOperation::create($configuration, GatewayOperationType::Open);
         ShareAudit::create($share, ShareAuditType::Retried, ActorIdentity::of($owner), null);

@@ -20,7 +20,7 @@ final readonly class CheckStartStatusHandler implements CommandHandler
      */
     public function handle(CheckStartStatusCommand $command): bool
     {
-        if (! AgentRuntime::existsForSession($command->sessionId)) {
+        if (! AgentRuntime::hasSession($command->sessionId)) {
             return false;
         }
 

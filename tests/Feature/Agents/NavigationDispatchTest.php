@@ -79,7 +79,7 @@ final class NavigationDispatchTest extends TestCase
         $this->inTransaction(fn () => $dispatch->deliver($navigation, 2));
 
         $holder = $this->holderOf($navigation);
-        $mainInbox = Inbox::main();
+        $mainInbox = Inbox::findMain();
         $this->assertSame([$mainInbox->assigneeIdentity()->type, $mainInbox->id], [$holder->type, $holder->id]);
         $keys = array_column($this->attention->wakes, 1);
         $this->assertCount(3, $keys);
@@ -110,7 +110,7 @@ final class NavigationDispatchTest extends TestCase
         $this->inTransaction(fn () => $dispatch->deliver($navigation, 1));
 
         $this->assertSame([], $this->attention->wakes);
-        $mainInbox = Inbox::main();
+        $mainInbox = Inbox::findMain();
         $this->assertSame($mainInbox->id, $this->holderOf($navigation)->id);
     }
 

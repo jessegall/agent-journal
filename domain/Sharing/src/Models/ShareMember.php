@@ -100,7 +100,7 @@ final class ShareMember extends Model implements ReadableModel
      *
      * @return list<self>
      */
-    public static function currentOf(Share $share): array
+    public static function findCurrentOf(Share $share): array
     {
         return array_values(
             self::query()
@@ -118,7 +118,7 @@ final class ShareMember extends Model implements ReadableModel
      *
      * @return list<string>
      */
-    public static function approvedLinkIdsOf(Share $share): array
+    public static function resolveApprovedLinkIdsOf(Share $share): array
     {
         return array_values(
             array_map(
@@ -145,7 +145,7 @@ final class ShareMember extends Model implements ReadableModel
             ],
         );
 
-        $scopeOfShare = Share::liveScopeVersions(array_values(array_unique($members->pluck('share_id')->all())));
+        $scopeOfShare = Share::resolveLiveScopeVersions(array_values(array_unique($members->pluck('share_id')->all())));
 
         return $members->contains(
             fn (self $member) => ($scopeOfShare[$member->share_id] ?? null) === $member->scope_version,
@@ -155,7 +155,7 @@ final class ShareMember extends Model implements ReadableModel
     /**
      * Whether the share's current scope approves the target linked from the source, over a link that still exists.
      */
-    public static function approvesOverLiveLink(Share $share, RecordIdentity $source, RecordIdentity $target): bool
+    public static function isApprovedOverLiveLink(Share $share, RecordIdentity $source, RecordIdentity $target): bool
     {
         $linkIds = self::query()->ofScope($share)
             ->stillApproved()
@@ -173,7 +173,7 @@ final class ShareMember extends Model implements ReadableModel
      *
      * @return array<string, list<RecordIdentity>>
      */
-    public static function approvedTargetsFrom(Share $share, RecordIdentity $source): array
+    public static function resolveApprovedTargetsFrom(Share $share, RecordIdentity $source): array
     {
         $grouped = [];
 

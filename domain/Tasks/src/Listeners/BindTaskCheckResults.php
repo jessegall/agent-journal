@@ -29,7 +29,7 @@ final readonly class BindTaskCheckResults implements Listener
 
     public function handle(RunChanged $event): void
     {
-        $check = TaskCheck::ofProcessRun($event->runId);
+        $check = TaskCheck::findForProcessRun($event->runId);
 
         if ($check === null || $check->isBound()) {
             return;

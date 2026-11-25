@@ -76,7 +76,7 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
     public function endStart(SessionProcess $start, AgentSession $session, string $evidence): void
     {
         $start->stopWithProof();
-        $stoppingSwitch = DriverSwitch::stoppingOf($start->session_id);
+        $stoppingSwitch = DriverSwitch::findStoppingOf($start->session_id);
 
         if ($stoppingSwitch !== null) {
             $stoppingSwitch->markStopped();
@@ -128,7 +128,7 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
         $unreachableHosts = Host::query()->unreachableSince($cutoff)->keys();
         $isAnyHostReachable = Host::query()->unrevoked()->excludingKeys($unreachableHosts)->exists();
 
-        SessionProcess::supervised()
+        SessionProcess::query()->supervised()
             ->where('state', SessionProcessState::Pending->value)
             ->where(fn ($starts) => $starts
                 ->where('created_at', '<=', $now->subMinutes(self::UNREACHABLE_HOST_WAIT_MINUTES))
@@ -171,7 +171,7 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
     private function endUnclaimed(string $sessionId, CarbonImmutable $now): void
     {
         $this->transaction->runForSession($sessionId, function () use ($sessionId, $now): void {
-            $start = SessionProcess::lockedCurrentOf($sessionId);
+            $start = SessionProcess::findLockedCurrentOf($sessionId);
 
             if ($start === null || $start->state !== SessionProcessState::Pending) {
                 return;

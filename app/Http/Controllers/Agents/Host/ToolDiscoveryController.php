@@ -17,7 +17,7 @@ final readonly class ToolDiscoveryController
 {
     public function __invoke(string $runtime, HostContext $host, ToolDiscovery $discovery): JsonResponse
     {
-        $session = AgentRuntime::sessionOfHostRuntime($host->hostId, $runtime);
+        $session = AgentRuntime::resolveSessionOfHostRuntime($host->hostId, $runtime);
 
         return new JsonResponse(['discovered' => $discovery->isDiscoveredInCurrentGeneration($session)]);
     }

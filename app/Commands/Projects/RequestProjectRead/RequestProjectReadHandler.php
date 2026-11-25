@@ -32,13 +32,13 @@ final readonly class RequestProjectReadHandler implements CommandHandler
             }
         }
 
-        $binding = ProjectBinding::lockById($command->bindingId);
+        $binding = ProjectBinding::findLockedById($command->bindingId);
         $requester = ActorIdentity::of($command->dispatchedBy());
         $now = $this->clock->now();
 
         return new ProjectFileAnswers(array_map(
             fn (string $path) => ProjectFileAnswer::of(
-                ProjectRead::recentOf($binding, $command->type, $path, $requester, $now)
+                ProjectRead::findRecentOf($binding, $command->type, $path, $requester, $now)
                     ->getOrCall(fn () => ProjectRead::create($binding, $command->type, $path, $requester)),
             ),
             array_values(array_unique($command->paths)),

@@ -104,7 +104,7 @@ final readonly class ProjectCommands
         }
 
         $own = array_filter(
-            ProjectBinding::ofMainAgent($agentId),
+            ProjectBinding::findForMainAgent($agentId),
             fn (ProjectBinding $binding) => $binding->id === $call->bindingId,
         );
 

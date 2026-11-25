@@ -102,7 +102,7 @@ final class SignInRestartTest extends TestCase
 
     private function claimSignIn(string $hostId, CarbonImmutable $now): SignInAttempt|null
     {
-        $attempt = SignInAttempt::oldestWaitingAt($now);
+        $attempt = SignInAttempt::findOldestWaitingAt($now);
         $attempt?->claimOn($hostId);
 
         return $attempt;

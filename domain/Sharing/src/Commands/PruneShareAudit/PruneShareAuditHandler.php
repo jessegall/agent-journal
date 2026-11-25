@@ -24,7 +24,7 @@ final readonly class PruneShareAuditHandler extends SharingCommandHandler
     public function handle(PruneShareAuditCommand $command): AuditPruning
     {
         $now = CarbonImmutable::now();
-        $due = ShareAudit::lockPastRetention($now, self::MOST_PER_RUN + 1);
+        $due = ShareAudit::findLockedPastRetention($now, self::MOST_PER_RUN + 1);
         $batch = array_slice($due, 0, self::MOST_PER_RUN);
 
         if ($batch === []) {

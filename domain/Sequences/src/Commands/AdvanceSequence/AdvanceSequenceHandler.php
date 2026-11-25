@@ -14,6 +14,6 @@ final readonly class AdvanceSequenceHandler extends SequenceCommandHandler
 {
     public function handle(AdvanceSequenceCommand $command): void
     {
-        SequenceRun::lockedById($command->sequenceRunId)->advance();
+        SequenceRun::findLockedById($command->sequenceRunId)->advance();
     }
 }

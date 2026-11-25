@@ -25,7 +25,7 @@ final readonly class PrepareSkillPublicationHandler implements CommandHandler
 
     public function handle(PrepareSkillPublicationCommand $command): PreparationProgress
     {
-        $publication = SkillPublication::lockById($command->publicationId);
+        $publication = SkillPublication::findLockedById($command->publicationId);
 
         if (! $publication->isHeldBy($command->fence)) {
             throw SkillPublicationStale::for($command->fence, $publication->fencing_version);

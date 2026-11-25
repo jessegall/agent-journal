@@ -75,7 +75,7 @@ final readonly class ResumeTaskRunHandler extends TaskCommandHandler
             $subject = $current->subject;
 
             if ($subject instanceof SubjectReference && $subject->id !== $task->id) {
-                throw TaskResumeCovered::by(Task::numberOf($subject->id), $task->number);
+                throw TaskResumeCovered::by(Task::resolveNumberOf($subject->id), $task->number);
             }
         }
     }

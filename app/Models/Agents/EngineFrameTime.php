@@ -47,7 +47,7 @@ final class EngineFrameTime extends Model implements ReadableModel
      * @param  list<string>  $ids
      * @return array<string, CarbonImmutable>
      */
-    public static function settledAtFor(array $ids): array
+    public static function resolveSettledAtFor(array $ids): array
     {
         if ($ids === []) {
             return [];

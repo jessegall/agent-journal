@@ -21,7 +21,7 @@ final readonly class BindTaskCheckHandler extends TaskCommandHandler
             return;
         }
 
-        $check = TaskCheck::ofProcessRun($result->runId);
+        $check = TaskCheck::findForProcessRun($result->runId);
 
         if ($check === null) {
             return;

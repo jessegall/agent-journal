@@ -27,7 +27,7 @@ final readonly class ProfilesIndex extends ProfilesPage
      */
     public function of(string $selectedKey, array $reader): DeclaredLayoutData
     {
-        $profiles = Profile::listed(self::ROWS);
+        $profiles = Profile::findListed(self::ROWS);
 
         return ListPage::make(
             'Profiles',

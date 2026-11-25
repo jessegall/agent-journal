@@ -124,7 +124,7 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
             $attempt->raise(new InstallAttemptOpened($attempt->id, $attempt->reference, CarbonImmutable::now()));
         }
 
-        return self::lockById($attempt->id);
+        return self::findLockedById($attempt->id);
     }
 
     // ----------[ Mutations ]----------
@@ -269,7 +269,7 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
      *
      * @throws InstallAttemptRefused
      */
-    public static function lockOfOwner(string $userId, string $reference): self
+    public static function findLockedOfOwner(string $userId, string $reference): self
     {
         return self::query()
             ->ofOwner($userId)
@@ -278,9 +278,9 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
             ->firstOr(InstallAttemptRefused::throwing()->unknown($reference));
     }
 
-    public static function lockById(string $id): self
+    public static function findLockedById(string $id): self
     {
-        return self::lockedById($id);
+        return self::findLockedById($id);
     }
 
     /**
@@ -288,7 +288,7 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
      *
      * @return CursorPaginator<int, self>
      */
-    public static function listedFor(string $userId, string|null $cursor): CursorPaginator
+    public static function findListedFor(string $userId, string|null $cursor): CursorPaginator
     {
         $since = CarbonImmutable::now()->subDays(self::LISTED_DAYS);
 

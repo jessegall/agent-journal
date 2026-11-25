@@ -11,6 +11,6 @@ final readonly class RetrySkillPublicationHandler implements CommandHandler
 {
     public function handle(RetrySkillPublicationCommand $command): void
     {
-        SkillPublication::lockById($command->publicationId)->retry();
+        SkillPublication::findLockedById($command->publicationId)->retry();
     }
 }

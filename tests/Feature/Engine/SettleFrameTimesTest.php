@@ -73,7 +73,7 @@ final class SettleFrameTimesTest extends TestCase
         $this->assertSame(2, $writes);
         $this->assertEquals(
             array_fill_keys(['frame-1', 'frame-2', 'frame-3'], CarbonImmutable::parse('2026-11-18 12:00:01.500000')),
-            EngineFrameTime::settledAtFor(['frame-1', 'frame-2', 'frame-3']),
+            EngineFrameTime::resolveSettledAtFor(['frame-1', 'frame-2', 'frame-3']),
         );
     }
 
@@ -85,7 +85,7 @@ final class SettleFrameTimesTest extends TestCase
             $this->app->make(EngineAccess::class)->grantFrame($this->target, 'frame-1');
             $this->app->make(CommandBus::class)->run(new SettleFrameTimesCommand($settlements));
         });
-        $this->assertCount(3, EngineFrameTime::settledAtFor(['frame-1', 'frame-2', 'frame-3']));
+        $this->assertCount(3, EngineFrameTime::resolveSettledAtFor(['frame-1', 'frame-2', 'frame-3']));
 
         $this->assertThrows(fn () => $this->pass(fn () => $this->app->make(
             CommandBus::class,
@@ -97,7 +97,7 @@ final class SettleFrameTimesTest extends TestCase
                 CarbonImmutable::now(),
             ),
         ]))), EngineAccessRefused::class);
-        $this->assertSame([], EngineFrameTime::settledAtFor(['frame-4']));
+        $this->assertSame([], EngineFrameTime::resolveSettledAtFor(['frame-4']));
     }
 
     public function test_pruning_a_closed_stack_removes_its_checkpoints(): void
@@ -107,7 +107,7 @@ final class SettleFrameTimesTest extends TestCase
 
         $this->app->make(PruneHookHistory::class)->prune();
 
-        $this->assertSame([], EngineFrameTime::settledAtFor(['frame-1', 'frame-2', 'frame-3']));
+        $this->assertSame([], EngineFrameTime::resolveSettledAtFor(['frame-1', 'frame-2', 'frame-3']));
     }
 
     private function settleUnderTiming(CarbonImmutable $settledAt): void

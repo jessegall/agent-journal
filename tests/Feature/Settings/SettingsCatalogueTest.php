@@ -232,7 +232,7 @@ final class SettingsCatalogueTest extends TestCase
     private function storeDirectly(string $owner, Closure $change): void
     {
         SettingsRecord::create($owner);
-        $record = SettingsRecord::sharedRuntimeForOwner($owner)->get();
+        $record = SettingsRecord::findSharedRuntimeForOwner($owner)->get();
         $record->revise($change($record->document));
     }
 }

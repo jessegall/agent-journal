@@ -21,7 +21,7 @@ final readonly class RenewRuntimeLeaseHandler implements CommandHandler
 {
     public function handle(RenewRuntimeLeaseCommand $command): RuntimeLease
     {
-        $binding = ProjectBinding::lockById($command->bindingId);
+        $binding = ProjectBinding::findLockedById($command->bindingId);
 
         if (! $binding->isReportableBy($command->hostId)) {
             throw LeaseRefused::for($command->runtimeId, 'the binding is not this host\'s or is revoked');

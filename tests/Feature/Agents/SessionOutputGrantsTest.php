@@ -77,7 +77,7 @@ final class SessionOutputGrantsTest extends TestCase
         $this->assertTrue($this->access->mayRead($session->id, self::PROJECT.'/native-a/tool-results/out.txt'));
         $this->assertTrue($this->access->mayRead($session->id, self::PROJECT.'/native-b/tool-results/out.txt'));
         $this->assertCount(2, $this->access->grantedTo($session->id));
-        $start = SessionProcess::currentOf($session->id);
+        $start = SessionProcess::findCurrentOf($session->id);
         $this->assertSame(3, $start?->output_generation);
         $this->assertSame(0, SessionOutputGrant::query()->where('mapping_generation', '<', 3)->count());
     }
@@ -111,7 +111,7 @@ final class SessionOutputGrantsTest extends TestCase
         $session = $this->start('helpers.helper-job 1');
         $this->enter($session, 'native-a', 'call-1');
 
-        SessionProcess::currentOf($session->id)?->stopWithProof();
+        SessionProcess::findCurrentOf($session->id)?->stopWithProof();
 
         $this->assertSame([], $this->access->grantedTo($session->id));
     }

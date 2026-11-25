@@ -247,7 +247,7 @@ final class ProfileStartTest extends TestCase
 
         $record = SessionRequest::query()->where('request_id', $resumed->requestId)->sole();
         $this->assertSame(['older-thread-0001', ConversationModeType::Resume], [$record->conversation_target, $record->conversation_mode]);
-        $this->assertTrue(SessionRequest::requiresConversation($resumed->sessionId));
+        $this->assertTrue(SessionRequest::isConversationRequired($resumed->sessionId));
 
         try {
             $this->resume(strtolower((string) Str::ulid()));
@@ -339,7 +339,7 @@ final class ProfileStartTest extends TestCase
      */
     private static function generationOf(string $sessionId): int
     {
-        $runtime = AgentRuntime::ofSession($sessionId);
+        $runtime = AgentRuntime::findForSession($sessionId);
 
         return $runtime === null ? 0 : $runtime->process_generation;
     }

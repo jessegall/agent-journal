@@ -41,8 +41,8 @@ final readonly class ConversationVisits implements ConversationVisitsContract
         string $eventId,
         CarbonImmutable $observedAt,
     ): void {
-        $session = AgentSession::lockedForUpdate($sessionId);
-        $start = SessionProcess::lockedCurrentOf($session->id);
+        $session = AgentSession::findLockedForUpdate($sessionId);
+        $start = SessionProcess::findLockedCurrentOf($session->id);
         $settings = $start === null ? self::HOST_SETTINGS : $start->settingsIdentity;
         $context = SessionRequest::query()->underRequest($session->start_request_id)->value('context_reference');
 
@@ -71,7 +71,7 @@ final readonly class ConversationVisits implements ConversationVisitsContract
      */
     public function compacted(string $sessionId, string $eventId, CarbonImmutable $observedAt): void
     {
-        $session = AgentSession::lockedForUpdate($sessionId);
+        $session = AgentSession::findLockedForUpdate($sessionId);
 
         $conversation = $session->current_conversation_id === null ? null : DriverConversation::query()->find(
             $session->current_conversation_id,

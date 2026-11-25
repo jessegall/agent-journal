@@ -486,7 +486,7 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
     /**
      * The runtime a session opens on a host, as its intent describes it, not saved yet.
      */
-    public static function existsForSession(string $sessionId): bool
+    public static function hasSession(string $sessionId): bool
     {
         return self::query()->ofSessions([$sessionId])->exists();
     }
@@ -494,7 +494,7 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
     /**
      * Whether the session has a runtime and may still act: a runtime of an ended session takes no more work.
      */
-    public static function runsForSession(string $sessionId): bool
+    public static function canActForSession(string $sessionId): bool
     {
         return self::query()
             ->ofSessions([$sessionId])
@@ -507,7 +507,7 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
      *
      * @return Option<string>
      */
-    public static function hostOfSession(string $sessionId): Option
+    public static function resolveHostOfSession(string $sessionId): Option
     {
         $hostId = self::query()->ofSessions([$sessionId])->value('host_id');
 
@@ -517,7 +517,7 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
     /**
      * The session of the host's own runtime; another host's runtime is not found.
      */
-    public static function sessionOfHostRuntime(string $hostId, string $runtimeId): string
+    public static function resolveSessionOfHostRuntime(string $hostId, string $runtimeId): string
     {
         return self::query()->whereKey($runtimeId)->onHost($hostId)->firstOrFail()->agent_session_id;
     }
@@ -528,7 +528,7 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
      *
      * @return Option<CarbonImmutable>
      */
-    public static function generationStartOfSession(string $sessionId): Option
+    public static function resolveGenerationStartOfSession(string $sessionId): Option
     {
         $runtime = self::query()->ofSessions([$sessionId])->first();
 
@@ -551,7 +551,7 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function runningHelpersOf(string $sessionId): array
+    public static function findRunningHelpersOf(string $sessionId): array
     {
         return array_values(self::query()
             ->with('session')
@@ -568,7 +568,7 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
      * @param  list<string>  $ids
      * @return list<string>
      */
-    public static function sessionsWaitingOnHelpers(array $ids): array
+    public static function resolveSessionsWaitingOnHelpers(array $ids): array
     {
         $sessionsWithRunningHelpers = AgentSession::query()
             ->helpersOfAny($ids)
@@ -583,7 +583,7 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
     /**
      * The runtime of that session; none before the session opened one.
      */
-    public static function ofSession(string $sessionId): self|null
+    public static function findForSession(string $sessionId): self|null
     {
         return self::query()->ofSessions([$sessionId])->first();
     }
@@ -594,7 +594,7 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
      * @param  list<string>  $ids
      * @return array<string, string>
      */
-    public static function driverKeysOfSessions(array $ids): array
+    public static function resolveDriverKeysOfSessions(array $ids): array
     {
         return self::query()
             ->ofSessions($ids)

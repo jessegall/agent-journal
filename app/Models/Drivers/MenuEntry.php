@@ -261,7 +261,7 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
     /**
      * @param  non-empty-list<MenuStep>  $steps
      */
-    public static function lockForPath(NavigationRequest $navigation, array $steps): self|null
+    public static function findLockedForPath(NavigationRequest $navigation, array $steps): self|null
     {
         return self::query()->ownedBy($navigation->actor())->current()->forDriver($navigation->family)
             ->matching($steps[0]->fingerprint, $navigation->goal)
@@ -274,7 +274,7 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
     /**
      * @param  list<string>  $declinedEntries
      */
-    public static function replayFor(
+    public static function findReplayFor(
         ActorIdentity $owner,
         AgentRuntime $runtime,
         ScriptGoal $goal,

@@ -27,8 +27,8 @@ final readonly class RemindRequiredSkills implements Listener
 
     public function handle(ContextStarted $event): void
     {
-        $session = AgentSession::byId($event->target->sessionId);
-        $publication = SkillPublication::latestOfSession($session->id);
+        $session = AgentSession::findById($event->target->sessionId);
+        $publication = SkillPublication::findLatestOfSession($session->id);
 
         if ($publication === null || $publication->state !== PublicationState::Delivered) {
             return;

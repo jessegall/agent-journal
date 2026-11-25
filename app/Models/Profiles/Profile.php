@@ -88,7 +88,7 @@ final class Profile extends Model implements EventSource, ReadableModel
      *
      * @throws ProfileMissing
      */
-    public static function lockByKey(ProfileKey $key): self
+    public static function findLockedByKey(ProfileKey $key): self
     {
         return self::query()->withKey($key)->lockForUpdate()->firstOr(ProfileMissing::throwing()->for($key));
     }
@@ -98,7 +98,7 @@ final class Profile extends Model implements EventSource, ReadableModel
      *
      * @throws ProfileMissing
      */
-    public static function byKey(ProfileKey $key): self
+    public static function findByKey(ProfileKey $key): self
     {
         return self::query()->withKey($key)->firstOr(ProfileMissing::throwing()->for($key));
     }
@@ -113,7 +113,7 @@ final class Profile extends Model implements EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function listed(int $limit): array
+    public static function findListed(int $limit): array
     {
         return array_values(self::query()->inKeyOrder()->readExactly($limit)->get()->all());
     }

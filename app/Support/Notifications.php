@@ -63,7 +63,7 @@ final readonly class Notifications implements NotificationsContract
             return 0;
         }
 
-        $receipts = NotificationReceipt::visibleWithTargetIn($scope->get()->id, $targetType, $ids, $limit);
+        $receipts = NotificationReceipt::findVisibleWithTargetIn($scope->get()->id, $targetType, $ids, $limit);
         $at = CarbonImmutable::now();
 
         foreach ($receipts as $receipt) {
@@ -92,7 +92,7 @@ final readonly class Notifications implements NotificationsContract
     private function receiptsOf(NotificationTarget $target, ActorIdentity $recipient): array
     {
         return NotificationScope::findFor($this->scopes->keyFor($recipient), $recipient)
-            ->map(fn (NotificationScope $scope) => NotificationReceipt::allForTarget(
+            ->map(fn (NotificationScope $scope) => NotificationReceipt::findAllForTarget(
                 $scope->id,
                 $target->key,
                 $target->id,

@@ -52,7 +52,7 @@ final readonly class OwnerStartRequest
             $this->policy,
             $driverType,
             conversationTarget: $this->conversationMode === ConversationModeType::Resume
-                ? DriverConversation::lastUnder($this->agent->id, $this->contextReference, $this->selection->driver)
+                ? DriverConversation::resolveLastUnder($this->agent->id, $this->contextReference, $this->selection->driver)
                 : null,
         );
     }

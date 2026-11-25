@@ -22,6 +22,6 @@ final readonly class ReleaseSignInWriter implements Listener
             return;
         }
 
-        Account::lockedForJournal($finished->accountId)->endSignInAgain($finished->attemptId);
+        Account::findLockedForJournal($finished->accountId)->endSignInAgain($finished->attemptId);
     }
 }

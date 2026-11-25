@@ -83,7 +83,7 @@ final class NotificationChange extends Model implements ReadableModel
      *
      * @return list<self>
      */
-    public static function between(string $scopeId, int $afterVersion, int $throughVersion, int $limit): array
+    public static function findBetween(string $scopeId, int $afterVersion, int $throughVersion, int $limit): array
     {
         return array_values(self::query()
             ->ofScope($scopeId)
@@ -99,7 +99,7 @@ final class NotificationChange extends Model implements ReadableModel
      *
      * @return Option<int>
      */
-    public static function oldestVersionOf(string $scopeId): Option
+    public static function resolveOldestVersionOf(string $scopeId): Option
     {
         $version = self::query()->ofScope($scopeId)->min('version');
 

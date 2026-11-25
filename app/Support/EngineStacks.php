@@ -36,11 +36,11 @@ final readonly class EngineStacks
         $this->transaction->assertOpen($target);
         $this->access->assertTargetGranted($target);
 
-        if (! AgentSession::sharedLockFor($target->sessionId)->isActive()) {
+        if (! AgentSession::findSharedLockFor($target->sessionId)->isActive()) {
             throw StackTargetRefused::forTarget($target->description());
         }
 
-        $row = AgentStackRow::lockAuthorizedFor($target);
+        $row = AgentStackRow::findLockedAuthorizedFor($target);
         $this->statePush->push($target, $row, $reference);
     }
 
@@ -51,7 +51,7 @@ final readonly class EngineStacks
     {
         $this->transaction->assertOpen($target);
         $this->access->assertTargetGranted($target);
-        $row = AgentStackRow::lockKeptFor(AgentStackRow::query()->authorizedFor($target), $target);
+        $row = AgentStackRow::findLockedKeptFor(AgentStackRow::query()->authorizedFor($target), $target);
 
         if (! $row->isActive()) {
             return;
@@ -77,7 +77,7 @@ final readonly class EngineStacks
         $this->transaction->assertOpen($target);
         $after = $stack->records();
 
-        AgentStackRow::lockActiveAuthorizedFor($target)
+        AgentStackRow::findLockedActiveAuthorizedFor($target)
             ->filter(fn (AgentStackRow $row) => ! $row->frames->hasSameValuesAs($after))
             ->forAll(fn (AgentStackRow $row) => $row->saveFrames($after, $this->types->ticking()));
     }

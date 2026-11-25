@@ -16,7 +16,7 @@ final readonly class SettleAccountUsesHandler implements CommandHandler
 
     public function handle(SettleAccountUsesCommand $command): void
     {
-        $running = SessionProcess::unresolvedCountOf($command->account);
+        $running = SessionProcess::countUnresolvedOf($command->account);
 
         if ($running > 0) {
             throw AccountInUse::forAccount($command->account, $running);

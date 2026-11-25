@@ -88,7 +88,7 @@ final class HelperJobsWindowTest extends TestCase
             'read-only-helper',
         );
 
-        $purpose = HelperPurpose::free($parent, 'read-only-helper', 'General review');
+        $purpose = HelperPurpose::findFree($parent, 'read-only-helper', 'General review');
 
         array_map(
             fn (string $brief) => HelperJob::create(

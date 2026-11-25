@@ -25,8 +25,8 @@ final readonly class AdvanceAskHandler implements CommandHandler
     public function handle(AdvanceAskCommand $command): void
     {
         $this->access->assertMaintenanceGranted(AdvanceAskCommand::MAINTENANCE_SCOPE);
-        $ask = Ask::lockedForMaintenance($command->askId);
-        $hop = AskHop::currentFor($ask);
+        $ask = Ask::findLockedForMaintenance($command->askId);
+        $hop = AskHop::findCurrentFor($ask);
 
         if ($ask->open && $hop->result === null) {
             $this->escalation->advance($ask, $hop, $this->clock->now());

@@ -41,7 +41,7 @@ final readonly class RaiseNavigationHandler implements CommandHandler
     {
         $runtime = $this->runtimes->lockedFor($command->hostId, $command->runtimeId)->load('session.agent');
         $request = $this->stalledScript($command, $runtime);
-        $raisedBefore = NavigationRequest::raisedForOperation($runtime->id, $command->operationKey);
+        $raisedBefore = NavigationRequest::findRaisedForOperation($runtime->id, $command->operationKey);
 
         if ($raisedBefore !== null) {
             return NavigationRaiseAnswer::opened($raisedBefore->id);

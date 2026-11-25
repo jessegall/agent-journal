@@ -646,7 +646,7 @@ final class AgentDriverLedgerTest extends TestCase
     public function test_a_contained_main_sessions_grant_carries_its_attachable_container(): void
     {
         $account = Account::create(DefaultDrivers::CLAUDE_CODE, AccountLabel::from('Plain'), '/journal/accounts/01plain');
-        ActiveAccount::lockedFor(DefaultDrivers::CLAUDE_CODE)->select($account);
+        ActiveAccount::findLockedFor(DefaultDrivers::CLAUDE_CODE)->select($account);
         [$host, $opened] = $this->openRuntime();
         // The driver runs in a terminal of its own, which is what makes a main session's container attachable.
         AgentRuntime::query()->findOrFail($opened->runtimeId)->forceFill(['has_screen' => true])->save();
@@ -729,7 +729,7 @@ final class AgentDriverLedgerTest extends TestCase
     {
         config(['agents.protected_account_trial' => DefaultDrivers::CLAUDE_CODE]);
         $account = Account::create(DefaultDrivers::CLAUDE_CODE, AccountLabel::from('Plain'), '/journal/accounts/01plain');
-        ActiveAccount::lockedFor(DefaultDrivers::CLAUDE_CODE)->select($account);
+        ActiveAccount::findLockedFor(DefaultDrivers::CLAUDE_CODE)->select($account);
         [$host, $opened] = $this->openRuntime('Say hello');
         // The host is a contained one, as the installation's arrangement below says.
         Host::query()->findOrFail($host->hostId)->forceFill(['arrangement' => ArrangementType::Contained])->save();
@@ -1100,7 +1100,7 @@ final class AgentDriverLedgerTest extends TestCase
 
         $session = AgentSession::query()->findOrFail($opened->sessionId);
         $this->assertSame(SessionStatus::Active, $session->status);
-        $this->assertNull(SessionProcess::latestOfSession($opened->sessionId)?->refusal);
+        $this->assertNull(SessionProcess::findLatestOfSession($opened->sessionId)?->refusal);
         $this->assertSame(RequestProgress::Failed, DriverRequest::query()->findOrFail($wake->requestId)->progress);
     }
 
@@ -1118,7 +1118,7 @@ final class AgentDriverLedgerTest extends TestCase
         $this->notifyWakeRefused($host, $claimed, 'container-unavailable', true);
 
         $session = AgentSession::query()->findOrFail($opened->sessionId);
-        $start = SessionProcess::latestOfSession($opened->sessionId);
+        $start = SessionProcess::findLatestOfSession($opened->sessionId);
         $this->assertSame(SessionStatus::Ended, $session->status);
         $this->assertSame(self::NO_CONTAINER, $start?->refusal);
     }
@@ -1136,7 +1136,7 @@ final class AgentDriverLedgerTest extends TestCase
         $this->notifyWakeRefused($host, $claimed, null, false);
 
         $this->assertSame(SessionStatus::Active, AgentSession::query()->findOrFail($opened->sessionId)->status);
-        $this->assertNull(SessionProcess::latestOfSession($opened->sessionId)?->refusal);
+        $this->assertNull(SessionProcess::findLatestOfSession($opened->sessionId)?->refusal);
     }
 
     public function test_two_stops_of_the_same_generation_converge_on_one_request(): void

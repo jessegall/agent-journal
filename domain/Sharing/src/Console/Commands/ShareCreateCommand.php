@@ -29,7 +29,7 @@ final class ShareCreateCommand extends Command
             $this->option('request-key') === null ? null : (string) $this->option('request-key'),
         );
 
-        $preview = SharePreview::of((string) $this->argument('preview'));
+        $preview = SharePreview::findOf((string) $this->argument('preview'));
         $minutes = $this->option('minutes') === null ? ShareDuration::STANDARD_MINUTES : (int) $this->option('minutes');
         $summary = $commands->run(new CreateShareCommand($preview->id, $preview->checksum, $minutes, $key));
 

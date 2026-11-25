@@ -24,8 +24,8 @@ final readonly class StoredSkillSource
      */
     public function skills(): array
     {
-        $skills = Skill::activeIn(SkillContextResolver::ENVIRONMENT, self::MOST_SKILLS);
-        $revisions = SkillRevision::currentOfEach($skills);
+        $skills = Skill::findActiveIn(SkillContextResolver::ENVIRONMENT, self::MOST_SKILLS);
+        $revisions = SkillRevision::findCurrentOfEach($skills);
 
         return array_values(array_map(
             fn (Skill $skill) => new StoredSkill(

@@ -22,9 +22,9 @@ final readonly class ReopenSharedGatewaysHandler extends SharingCommandHandler
     public function handle(ReopenSharedGatewaysCommand $command): int
     {
         $this->runs->hold($command->runId);
-        $configurations = ShareGatewayConfiguration::lockAllById(Share::reopenableConfigurations());
+        $configurations = ShareGatewayConfiguration::findLockedAllById(Share::resolveReopenableConfigurations());
 
-        $waiting = ShareGatewayOperation::configurationsWaitingToOpen(array_map(
+        $waiting = ShareGatewayOperation::resolveConfigurationsWaitingToOpen(array_map(
             fn (ShareGatewayConfiguration $configuration) => $configuration->id,
             $configurations,
         ));

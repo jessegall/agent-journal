@@ -31,7 +31,7 @@ final readonly class HandStartSkillsToHost implements Listener
 
     public function handle(StartGrantRequested $event): void
     {
-        $publication = SkillPublication::latestOfSession($event->sessionId);
+        $publication = SkillPublication::findLatestOfSession($event->sessionId);
 
         if ($publication === null) {
             return;
@@ -50,6 +50,6 @@ final readonly class HandStartSkillsToHost implements Listener
             $delivery->folderArguments,
         ));
 
-        AgentSession::byId($event->sessionId)->recordSkillGeneration($publication->generation_id);
+        AgentSession::findById($event->sessionId)->recordSkillGeneration($publication->generation_id);
     }
 }

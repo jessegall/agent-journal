@@ -15,6 +15,6 @@ final readonly class UnfocusTaskHandler extends TaskCommandHandler
 
     public function handle(UnfocusTaskCommand $command): void
     {
-        $this->focuses->unfocus(ActorIdentity::of($command->dispatchedBy()), Task::lockedById($command->taskId));
+        $this->focuses->unfocus(ActorIdentity::of($command->dispatchedBy()), Task::findLockedById($command->taskId));
     }
 }

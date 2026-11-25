@@ -331,7 +331,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
             $this->share_gateway_configuration_id,
         );
 
-        return ShareGatewayEndpoint::newestRunningOf(
+        return ShareGatewayEndpoint::findNewestRunningOf(
             $shareGatewayConfiguration,
         );
     }
@@ -489,7 +489,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      *
      * @return list<self>
      */
-    public static function lockPastDeadline(int $most): array
+    public static function findLockedPastDeadline(int $most): array
     {
         return array_values(
             self::query()->pastDeadline()->oldestFirst()->lockForUpdate()->readExactly($most)->get()->all(),
@@ -501,7 +501,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      *
      * @return list<self>
      */
-    public static function lockAwaitingGatewayOf(string $configurationId): array
+    public static function findLockedAwaitingGatewayOf(string $configurationId): array
     {
         return array_values(
             self::query()->servedBy($configurationId)->awaitingGateway()->oldestFirst()->lockForUpdate()->readExactly(
@@ -511,22 +511,12 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     }
 
     /**
-     * The ids of the shares that ended before the cutoff, as a subquery.
-     *
-     * @return Builder<self>
-     */
-    public static function endedBefore(CarbonImmutable $cutoff): Builder
-    {
-        return self::query()->endedBy($cutoff)->select('id');
-    }
-
-    /**
      * The gateway configurations that serve at least one share still live and unexpired: what a new supervisor run
      * opens again. Proposals and ended shares never open a tunnel.
      *
      * @return list<string>
      */
-    public static function reopenableConfigurations(): array
+    public static function resolveReopenableConfigurations(): array
     {
         return array_values(
             array_unique(
@@ -546,7 +536,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      *
      * @return list<self>
      */
-    public static function unendedOf(string $configurationId): array
+    public static function findUnendedOf(string $configurationId): array
     {
         return array_values(
             self::query()->servedBy($configurationId)->unended()->oldestFirst()->readExactly(
@@ -560,7 +550,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      *
      * @return list<self>
      */
-    public static function lockUnendedOf(string $configurationId): array
+    public static function findLockedUnendedOf(string $configurationId): array
     {
         return array_values(
             self::query()->servedBy($configurationId)->unended()->oldestFirst()->lockForUpdate()->readExactly(
@@ -574,7 +564,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      *
      * @return list<self>
      */
-    public static function lockPendingOf(string $configurationId): array
+    public static function findLockedPendingOf(string $configurationId): array
     {
         return array_values(
             self::query()->servedBy($configurationId)->inState(
@@ -594,7 +584,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     /**
      * How many unexpired proposals the installation holds now; counted under the installation lock.
      */
-    public static function proposedCount(): int
+    public static function resolveProposedCount(): int
     {
         return self::query()->proposedNow()->count();
     }
@@ -604,7 +594,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      *
      * @throws ShareProposalUnavailable
      */
-    public static function lockProposal(string $id): self
+    public static function findLockedProposal(string $id): self
     {
         return self::query()
             ->whereKey($id)
@@ -618,7 +608,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      *
      * @return list<self>
      */
-    public static function proposedBy(ActorIdentity $requester): array
+    public static function findProposedBy(ActorIdentity $requester): array
     {
         return array_values(
             self::query()->requestedBy($requester)->newestFirst()->limit(self::PROPOSED_LIMIT)->get()->all(),
@@ -630,7 +620,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      *
      * @return Option<self>
      */
-    public static function liveFor(RecordIdentity $root): Option
+    public static function findLiveFor(RecordIdentity $root): Option
     {
         $share = self::query()->ofRoot($root)->liveNow()->newestFirst()->first();
 
@@ -643,7 +633,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      * @param  list<string>  $ids
      * @return array<string, int>
      */
-    public static function liveScopeVersions(array $ids): array
+    public static function resolveLiveScopeVersions(array $ids): array
     {
         return self::query()->whereKey($ids)->liveNow()->readExactly(count($ids))->pluck('scope_version', 'id')->map(
             fn (mixed $version) => (int) $version,
@@ -654,7 +644,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      * How many live, unexpired shares the installation holds now, whatever their state column has caught up with;
      * counted under the installation lock.
      */
-    public static function liveCount(): int
+    public static function resolveLiveCount(): int
     {
         return self::query()->liveNow()->count();
     }
@@ -665,7 +655,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      *
      * @return list<self>
      */
-    public static function listPage(ShareListFilters $filters, int $rows): array
+    public static function findListPage(ShareListFilters $filters, int $rows): array
     {
         $shares = self::query()->newestFirst()->filteredBy($filters)->readExactly($rows + 1)->get();
 
@@ -677,7 +667,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      *
      * @return Option<self>
      */
-    public static function byId(string $id): Option
+    public static function findById(string $id): Option
     {
         $share = self::query()->whereKey($id)->first();
 
@@ -689,7 +679,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      *
      * @return list<self>
      */
-    public static function openProposalsFor(RecordIdentity $root): array
+    public static function findOpenProposalsFor(RecordIdentity $root): array
     {
         return array_values(
             self::query()->ofRoot($root)->proposedNow()->newestFirst()->readExactly(
@@ -703,7 +693,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      *
      * @return Option<self>
      */
-    public static function grantedBy(string $ownerUserId, string $id): Option
+    public static function findGrantedBy(string $ownerUserId, string $id): Option
     {
         $share = self::query()->whereKey($id)->grantedByOwner($ownerUserId)->first();
 
@@ -716,7 +706,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      *
      * @return Option<self>
      */
-    public static function forTokenDigest(string $digest): Option
+    public static function findForTokenDigest(string $digest): Option
     {
         $share = self::query()->openedByDigest($digest)->first([
             'id',
@@ -734,7 +724,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      * The share locked for reading until the transaction ends: readers share the lock, while a revoke or a scope
      * change waits for them.
      */
-    public static function lockForRead(string $id): self
+    public static function findLockedForRead(string $id): self
     {
         return self::query()->whereKey($id)->sharedLock()->firstOrFail();
     }
@@ -915,5 +905,16 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
             ->when($filters->configurationId, fn (Builder $kept, string $id) => $kept->servedBy($id))
             ->when($filters->expiresBefore, fn (Builder $kept, CarbonImmutable $by) => $kept->expiringBefore($by))
             ->when($filters->after, fn (Builder $kept, string $id) => $kept->olderThan($id));
+    }
+
+    /**
+     * The ids of the shares that ended before the cutoff, as a subquery.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function endedBefore(Builder $query, CarbonImmutable $cutoff): void
+    {
+        $query->endedBy($cutoff)->select('id');
     }
 }

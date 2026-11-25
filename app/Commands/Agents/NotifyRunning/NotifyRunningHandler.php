@@ -20,7 +20,7 @@ final readonly class NotifyRunningHandler implements CommandHandler
 
     public function handle(NotifyRunningCommand $command): void
     {
-        $start = SessionProcess::claimedBy($command->hostId, $command->startKey);
+        $start = SessionProcess::findClaimedBy($command->hostId, $command->startKey);
 
         // Only this report moving the start to running confirms its switch and keeps its driver type; a delayed one after
         // the start ended or was superseded confirms nothing and leaves the agent's saved driver type as it was.
@@ -29,7 +29,7 @@ final readonly class NotifyRunningHandler implements CommandHandler
         }
 
         $this->facts->publishAfterCommit(new SessionStateChanged($start->session_id));
-        $startingSwitch = DriverSwitch::startingOf($start->session_id);
+        $startingSwitch = DriverSwitch::findStartingOf($start->session_id);
 
         if ($startingSwitch !== null) {
             $startingSwitch->confirm();
@@ -48,12 +48,12 @@ final readonly class NotifyRunningHandler implements CommandHandler
      */
     private function keptDriverType(string $sessionId): DriverType|null
     {
-        $runtime = AgentRuntime::ofSession($sessionId);
+        $runtime = AgentRuntime::findForSession($sessionId);
 
         if ($runtime !== null && $runtime->remember) {
             return $runtime->driver_type;
         }
 
-        return SessionRequest::savedDriverTypeOf($sessionId);
+        return SessionRequest::resolveSavedDriverTypeOf($sessionId);
     }
 }

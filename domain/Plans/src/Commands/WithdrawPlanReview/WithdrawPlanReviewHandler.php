@@ -20,8 +20,8 @@ final readonly class WithdrawPlanReviewHandler extends PlanCommandHandler
      */
     public function handle(WithdrawPlanReviewCommand $command): void
     {
-        $plan = Plan::lockStructure($command->planId);
-        $edition = PlanReviewEdition::requestedOf($plan->id);
+        $plan = Plan::findLockedStructure($command->planId);
+        $edition = PlanReviewEdition::findRequestedOf($plan->id);
 
         if ($plan->state !== PlanState::Reviewing || $edition === null) {
             throw PlanReviewRefused::notReviewing($plan->number, $plan->state->value);

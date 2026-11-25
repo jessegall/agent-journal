@@ -74,7 +74,7 @@ final readonly class AskReader implements AskReaderContract
         $holder = AssigneeIdentity::ofActorIdentity($actor);
         $records = array_map(fn (Ask $ask) => $ask->assignmentIdentity(), $asks);
         $assignments = $this->assignments->assignmentsFor($records);
-        $replies = AskHop::repliesTo(array_map(fn (Ask $ask) => $ask->id, $asks));
+        $replies = AskHop::resolveRepliesTo(array_map(fn (Ask $ask) => $ask->id, $asks));
 
         return array_map(function (Ask $ask) use ($assignments, $holder, $replies): AskCard {
             $assigned = $assignments->forRecord($ask->assignmentIdentity())

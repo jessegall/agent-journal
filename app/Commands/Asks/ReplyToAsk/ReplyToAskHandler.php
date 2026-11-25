@@ -39,7 +39,7 @@ final readonly class ReplyToAskHandler implements CommandHandler
 
         $this->admission->requireCurrent($command->ask, CoreAskType::Question->requiredCommand(), $ask->version);
 
-        $hop = AskHop::currentFor($ask);
+        $hop = AskHop::findCurrentFor($ask);
         $this->attention->retainReply($ask, $hop, $body);
         $this->assignments->releaseForJournal($ask->assignmentIdentity());
         $ask->close();

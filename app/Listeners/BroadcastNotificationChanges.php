@@ -21,7 +21,7 @@ final readonly class BroadcastNotificationChanges implements Listener
 
     public function handle(NotificationsChanged $fact): void
     {
-        NotificationScope::userOf($fact->scopeId)->forAll(
+        NotificationScope::resolveUserOf($fact->scopeId)->forAll(
             fn (string $userId) => $this->events->dispatch(new NotificationsInvalidated([$userId])),
         );
     }

@@ -16,7 +16,7 @@ final readonly class HoldAccountUsesHandler implements CommandHandler
 
     public function handle(HoldAccountUsesCommand $command): HeldAccountUses
     {
-        $sessionIds = SessionProcess::unresolvedSessionIdsOf($command->account);
+        $sessionIds = SessionProcess::resolveUnresolvedSessionIdsOf($command->account);
         $this->facts->publishAfterCommit(new AccountUseChanged($command->account));
 
         return new HeldAccountUses($command->account, $sessionIds);

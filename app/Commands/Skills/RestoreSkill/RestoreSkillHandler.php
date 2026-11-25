@@ -23,9 +23,9 @@ final readonly class RestoreSkillHandler implements CommandHandler
             'sha256',
             "{$skillId}|{$command->revision}|{$command->expectedRevision}",
         ), function () use ($command, $skillId) {
-            $skill = Skill::lockVisible($skillId, SkillContextResolver::ENVIRONMENT);
+            $skill = Skill::findLockedVisible($skillId, SkillContextResolver::ENVIRONMENT);
             $skill->assertWritableAt($command->expectedRevision);
-            $earlier = SkillRevision::numbered($skill, $command->revision);
+            $earlier = SkillRevision::findNumbered($skill, $command->revision);
 
             return $this->writes->restoreFrom(
                 $skill,

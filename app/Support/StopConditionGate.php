@@ -81,7 +81,7 @@ final readonly class StopConditionGate implements StopConditionGateContract
             return StopPreparation::finalChecks();
         }
 
-        $work = SessionRequest::ownerStartOf($stop->sessionId)
+        $work = SessionRequest::findOwnerStartOf($stop->sessionId)
             ->map(fn (SessionRequest $start) => WorkReference::forRecord($start->owner_work))
             ->getOrElse(WorkReference::free(self::OWN_WORK));
 
@@ -133,7 +133,7 @@ final readonly class StopConditionGate implements StopConditionGateContract
 
     private function openAttempt(HookIdentity $stop, StartPolicy $policy): StopCheck
     {
-        return StopCheck::openFor(
+        return StopCheck::create(
             $stop,
             $policy->digest(),
             StopCheck::FIRST_GENERATION,
@@ -185,7 +185,7 @@ final readonly class StopConditionGate implements StopConditionGateContract
 
     private function tellOwnerHeld(StopCheck $attempt): void
     {
-        SessionRequest::ownerStartOf($attempt->session_id)->forAll(
+        SessionRequest::findOwnerStartOf($attempt->session_id)->forAll(
             fn (SessionRequest $start) => $this->facts->publishAfterCommit(
                 new HelperStopHeld($start->owner_work, $attempt->reference),
             ),

@@ -43,7 +43,7 @@ final readonly class SkillContextResolver
      */
     public function current(): SkillContext
     {
-        $session = AgentSession::byId($this->session->sessionId());
+        $session = AgentSession::findById($this->session->sessionId());
 
         $agent = Agent::query()->whereKey($session->agent_id)->firstOrFail();
 
@@ -79,7 +79,7 @@ final readonly class SkillContextResolver
             throw SkillAgentHidden::for();
         }
 
-        $session = AgentSession::latestOf($agent->id) ?? throw SkillContextUnavailable::neverStarted($agent->id);
+        $session = AgentSession::findLatestOf($agent->id) ?? throw SkillContextUnavailable::neverStarted($agent->id);
 
         return $this->contextOf($agent, $session, $this->profileOf($session));
     }
@@ -111,7 +111,7 @@ final readonly class SkillContextResolver
     public function forSessions(array $sessions): array
     {
         $agentIds = array_map(fn (AgentSession $session) => $session->agent_id, $sessions);
-        $agents = Agent::byIds(array_values(array_unique($agentIds)));
+        $agents = Agent::findByIds(array_values(array_unique($agentIds)));
         $profiles = [];
         $contexts = [];
 

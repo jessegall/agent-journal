@@ -14,6 +14,6 @@ final readonly class InstallNumbersHandler implements CommandHandler
 {
     public function handle(InstallNumbersCommand $command): void
     {
-        GlobalGroup::installJournal();
+        GlobalGroup::create();
     }
 }

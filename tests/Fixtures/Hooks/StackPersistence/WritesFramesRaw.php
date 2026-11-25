@@ -15,7 +15,7 @@ final readonly class WritesFramesRaw
 {
     public function replace(StackTarget $target, FrameRecords $frames): void
     {
-        $row = AgentStackRow::lockFor($target);
+        $row = AgentStackRow::findLockedFor($target);
         $row->frames = $frames;
     }
 }

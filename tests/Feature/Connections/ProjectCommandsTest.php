@@ -155,7 +155,7 @@ final class ProjectCommandsTest extends TestCase
         $this->expectException(DeviceGrantRefused::class);
 
         try {
-            DeviceGrant::usableByDigest(InstallTicket::digestOf('device-grant'));
+            DeviceGrant::findUsableByDigest(InstallTicket::digestOf('device-grant'));
         } finally {
             $this->assertFalse($stream->fresh()?->isRunning());
             $this->assertTrue($otherStream->fresh()?->isRunning());

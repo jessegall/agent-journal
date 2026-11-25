@@ -28,12 +28,12 @@ final readonly class AskService
         RecordIdentity|null $work,
         AskOriginType $origin,
     ): Ask {
-        $reference = Ask::newReference();
+        $reference = Ask::resolveNewReference();
         $subject = $type->resolver()->resolve($type->subject(), $reference, $work);
         $this->graph->acquire();
         $route = $this->routes->routeFor($requester, $type->key());
 
-        return Ask::submit(
+        return Ask::create(
             $reference,
             $requester,
             $type->key(),
@@ -58,12 +58,12 @@ final readonly class AskService
         RecordIdentity|null $work,
         AskOriginType $origin,
     ): Ask {
-        $reference = Ask::newReference();
+        $reference = Ask::resolveNewReference();
         $subject = $type->resolver()->resolve($type->subject(), $reference, $work);
         $this->graph->acquire();
         $route = $this->routes->routeForProfile($routeProfile, $type->key());
 
-        return Ask::submit(
+        return Ask::create(
             $reference,
             $requester,
             $type->key(),

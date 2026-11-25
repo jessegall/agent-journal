@@ -53,8 +53,8 @@ final class ClaimAuthorization extends Model implements ReadableModel
     {
         return $this->isValidAgainst(
             $claimant,
-            AssignmentRecord::holdersOf($this->sourceIds()),
-            InboxMember::activeIdsAmong(array_filter([$this->inbox_member_id])),
+            AssignmentRecord::resolveHoldersOf($this->sourceIds()),
+            InboxMember::resolveActiveIdsAmong(array_filter([$this->inbox_member_id])),
         );
     }
 
@@ -109,7 +109,7 @@ final class ClaimAuthorization extends Model implements ReadableModel
     /**
      * A task run claimed through the claimant's membership of the inbox that holds the task.
      */
-    public static function forInboxRun(AssignmentReference $claim, InboxMember $member, AssignmentReference $work): self
+    public static function findForInboxRun(AssignmentReference $claim, InboxMember $member, AssignmentReference $work): self
     {
         return self::prove($claim, ClaimBasis::InboxRun, $member->id, $work->id);
     }
@@ -117,7 +117,7 @@ final class ClaimAuthorization extends Model implements ReadableModel
     /**
      * A task run claimed by the actor that holds the task itself.
      */
-    public static function forDirectRun(AssignmentReference $claim, AssignmentReference $work): self
+    public static function findForDirectRun(AssignmentReference $claim, AssignmentReference $work): self
     {
         return self::prove($claim, ClaimBasis::DirectRun, null, $work->id);
     }
@@ -125,21 +125,9 @@ final class ClaimAuthorization extends Model implements ReadableModel
     /**
      * The proof behind one claim, when it has one.
      */
-    public static function ofClaim(string $assignmentId): self|null
+    public static function findForClaim(string $assignmentId): self|null
     {
         return self::query()->forClaim($assignmentId)->first();
-    }
-
-    /**
-     * The ids of the claims that stand on this exact assignment, as a subquery.
-     *
-     * @return Builder<self>
-     */
-    public static function claimIdsFor(AssignmentReference $source): Builder
-    {
-        return self::query()
-            ->select('claim_assignment_id')
-            ->forWork($source);
     }
 
     /**
@@ -148,7 +136,7 @@ final class ClaimAuthorization extends Model implements ReadableModel
      * @param  list<string>  $assignmentIds
      * @return array<string, self>
      */
-    public static function ofClaims(array $assignmentIds): array
+    public static function findForClaims(array $assignmentIds): array
     {
         return self::query()
             ->forClaims($assignmentIds)
@@ -192,5 +180,16 @@ final class ClaimAuthorization extends Model implements ReadableModel
     protected function forWork(Builder $query, AssignmentReference $source): void
     {
         $query->where('work_assignment_id', $source->id);
+    }
+
+    /**
+     * The ids of the claims that stand on this exact assignment, as a subquery.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function claimIdsFor(Builder $query, AssignmentReference $source): void
+    {
+        $query->select('claim_assignment_id')->forWork($source);
     }
 }

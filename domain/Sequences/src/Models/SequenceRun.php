@@ -243,7 +243,7 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
      *
      * @throws CrossOwnerReadRefused
      */
-    public static function followers(): array
+    public static function resolveFollowers(): array
     {
         $runs = self::query()
             ->acrossOwners()
@@ -265,7 +265,7 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
     /**
      * The run read under its row lock, among those the actor may see, for a change that must happen once.
      */
-    public static function lockedById(string $id): self
+    public static function findLockedById(string $id): self
     {
         // A run belongs to no actor until it is started, so its start may also take a run nobody follows yet.
         return self::lockedForActorOrUnheld($id, SequenceRunMissing::throwing()->forId($id));

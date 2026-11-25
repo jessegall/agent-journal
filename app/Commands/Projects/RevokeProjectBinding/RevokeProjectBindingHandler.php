@@ -20,7 +20,7 @@ final readonly class RevokeProjectBindingHandler implements CommandHandler
     public function handle(RevokeProjectBindingCommand $command): BindingOutcome
     {
         return $this->revocation->revoke(
-            ProjectBinding::lockById($command->bindingId),
+            ProjectBinding::findLockedById($command->bindingId),
             $command->dispatchedBy()->actorId(),
         );
     }

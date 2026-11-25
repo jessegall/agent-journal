@@ -16,8 +16,8 @@ final readonly class TakeSignInCodeHandler implements CommandHandler
 
     public function handle(TakeSignInCodeCommand $command): SignInPoll
     {
-        $attemptId = SignInAttempt::runBy($command->hostId, $command->attemptId)->id;
-        $attempt = SignInAttempt::lockedForJournal($attemptId);
+        $attemptId = SignInAttempt::findRunBy($command->hostId, $command->attemptId)->id;
+        $attempt = SignInAttempt::findLockedForJournal($attemptId);
 
         $isLive = $attempt->isLive()
             && ! $attempt->isExpiredAt(CarbonImmutable::now())

@@ -290,7 +290,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
     /**
      * Whether the helper already had a job of this purpose: the same subject, or the same named work.
      */
-    public static function existsFor(HelperIdentity $identity, HelperPurpose $purpose): bool
+    public static function hasJobFor(HelperIdentity $identity, HelperPurpose $purpose): bool
     {
         return self::query()->acrossActors()
             ->ofIdentity($identity)
@@ -303,7 +303,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
      *
      * @return Collection<int, self>
      */
-    public static function newest(int $limit): Collection
+    public static function findNewest(int $limit): Collection
     {
         return self::query()->acrossActors()->newestFirst()->limit($limit)->get();
     }
@@ -311,7 +311,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
     /**
      * How many jobs of every helper are not yet finished, cancelled or failed.
      */
-    public static function openCount(): int
+    public static function resolveOpenCount(): int
     {
         return self::query()->acrossActors()->open()->count();
     }
@@ -379,7 +379,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
     #[Scope]
     protected function forPurposeLike(Builder $query, HelperPurpose $purpose): void
     {
-        $query->whereIn('helper_purpose_id', HelperPurpose::sameAs($purpose)->select('id'));
+        $query->whereIn('helper_purpose_id', HelperPurpose::query()->sameAs($purpose)->select('id'));
     }
 
     /**

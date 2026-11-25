@@ -109,7 +109,7 @@ final class TaskStartWaitsTest extends TestCase
      */
     private function pooled(): array
     {
-        return Task::candidates(
+        return Task::resolveCandidates(
             PoolMembers::all(),
             $this->app->make(AssignmentQuery::class)->assignedIds(TaskType::linkType()),
             50,

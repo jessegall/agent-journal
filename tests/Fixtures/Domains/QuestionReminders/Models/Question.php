@@ -38,7 +38,7 @@ final class Question extends Model implements ReadableModel
         ];
     }
 
-    public static function lockedById(string $id): self
+    public static function findLockedById(string $id): self
     {
         return self::query()->whereKey($id)->lockForUpdate()->firstOrFail();
     }

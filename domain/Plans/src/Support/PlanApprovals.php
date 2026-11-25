@@ -17,7 +17,7 @@ final readonly class PlanApprovals
      */
     public function retireCurrentOf(Plan $plan): void
     {
-        $approval = PlanReviewEdition::currentApprovalOf($plan->id);
+        $approval = PlanReviewEdition::findCurrentApprovalOf($plan->id);
 
         if ($approval === null) {
             return;

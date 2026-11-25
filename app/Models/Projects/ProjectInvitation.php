@@ -155,7 +155,7 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
      *
      * @throws InvitationUnusable
      */
-    public static function redeemableFor(string $ticket): self
+    public static function findRedeemableFor(string $ticket): self
     {
         return self::query()->pending()->withTicket($ticket)->firstOr(InvitationUnusable::throwing()->forTicket());
     }
@@ -165,7 +165,7 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
      *
      * @throws InvitationUnusable
      */
-    public static function lockRedeemableFor(string $ticket): self
+    public static function findLockedRedeemableFor(string $ticket): self
     {
         return self::query()
             ->pending()
@@ -179,7 +179,7 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
      *
      * @return list<self>
      */
-    public static function lockPendingOf(InstallAttempt $attempt): array
+    public static function findLockedPendingOf(InstallAttempt $attempt): array
     {
         return array_values(self::query()->pending()->ofAttempt($attempt)->lockForUpdate()
             ->limit(1)->get()->all());
@@ -190,7 +190,7 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
      *
      * @throws InvitationUnusable
      */
-    public static function lockPending(string $id): self
+    public static function findLockedPending(string $id): self
     {
         return self::query()
             ->pending()

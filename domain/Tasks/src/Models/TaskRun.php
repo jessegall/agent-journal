@@ -79,6 +79,15 @@ final class TaskRun extends Model implements Assignable, EventSource, ReadableMo
         return $run;
     }
 
+    /**
+     * The task's current run, opened by the starter the first time it is asked for.
+     */
+    public static function createForTask(Task $task, ActorIdentity $starter): self
+    {
+        return self::findForTask($task, $task->run_number)
+            ?? self::create($task, $task->run_number, $starter);
+    }
+
     // ----------[ Mutations ]----------
 
     /**
@@ -137,21 +146,12 @@ final class TaskRun extends Model implements Assignable, EventSource, ReadableMo
     // ----------[ Queries ]----------
 
     /**
-     * The task's current run, opened by the starter the first time it is asked for.
-     */
-    public static function currentFor(Task $task, ActorIdentity $starter): self
-    {
-        return self::ofTask($task, $task->run_number)
-            ?? self::create($task, $task->run_number, $starter);
-    }
-
-    /**
      * The started runs among exact task and run number pairs, in one bounded query; a pair never started is left out.
      *
      * @param  list<array{0: string, 1: int}>  $pairs
      * @return Collection<int, self>
      */
-    public static function ofPairs(array $pairs): Collection
+    public static function findForPairs(array $pairs): Collection
     {
         if ($pairs === []) {
             return new Collection();
@@ -166,7 +166,7 @@ final class TaskRun extends Model implements Assignable, EventSource, ReadableMo
     /**
      * The task's run of this number, when it was started.
      */
-    public static function ofTask(Task $task, int $number): self|null
+    public static function findForTask(Task $task, int $number): self|null
     {
         return self::query()->ofRun($task->id, $number)->first();
     }

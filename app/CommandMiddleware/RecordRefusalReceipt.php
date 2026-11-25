@@ -59,7 +59,7 @@ final readonly class RecordRefusalReceipt implements CommandMiddleware
         $code = RefusalCode::of($failure);
         $caller = $this->callers->forCommand($call->name(), $call->actor());
         $recovery = $failure instanceof RefusalRecovery ? $failure->recovery() : null;
-        $taken = CommandReceipt::lockedFor($caller, $call->command()::class, $key);
+        $taken = CommandReceipt::findLockedFor($caller, $call->command()::class, $key);
 
         if ($taken !== null) {
             $taken->refuse($code, $failure->getMessage(), $recovery);

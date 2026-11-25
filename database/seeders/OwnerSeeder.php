@@ -35,6 +35,6 @@ final class OwnerSeeder extends Seeder
      */
     public function owner(): User
     {
-        return User::installOwner('Owner', 'owner@journal.local', 'password');
+        return User::createForInstallation('Owner', 'owner@journal.local', 'password');
     }
 }

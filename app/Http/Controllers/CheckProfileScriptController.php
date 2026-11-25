@@ -17,7 +17,7 @@ final readonly class CheckProfileScriptController
 {
     public function __invoke(CheckProfileScriptCall $call, ProfileDraftReader $drafts): ProfileDraftData
     {
-        $revision = ProfileDraft::of(ProfileKey::from($call->profile))->revision;
+        $revision = ProfileDraft::createForProfile(ProfileKey::from($call->profile))->revision;
 
         return $drafts->checked($call->profile, $revision, $call->scriptSource());
     }

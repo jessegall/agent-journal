@@ -162,7 +162,7 @@ final class ChildClaim extends Model implements ReadableModel
      *
      * @return list<self>
      */
-    public static function ofChildAgent(string $agentId): array
+    public static function findForChildAgent(string $agentId): array
     {
         return array_values(self::query()->forChildAgent($agentId)->newestFirst()->limit(1)->get()->all());
     }

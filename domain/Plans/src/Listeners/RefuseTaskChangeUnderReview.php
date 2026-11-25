@@ -29,6 +29,6 @@ final readonly class RefuseTaskChangeUnderReview implements Listener
             return;
         }
 
-        Plan::lockForChange((string) $planId);
+        Plan::findLockedForChange((string) $planId);
     }
 }

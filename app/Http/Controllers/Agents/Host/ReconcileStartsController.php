@@ -20,7 +20,7 @@ final readonly class ReconcileStartsController
 {
     public function index(HostContext $host): JsonResponse
     {
-        return new JsonResponse(['unresolved' => SessionProcess::unresolvedKeysOf($host->hostId)]);
+        return new JsonResponse(['unresolved' => SessionProcess::resolveUnresolvedKeysOf($host->hostId)]);
     }
 
     public function __invoke(StartReportRequest $request, HostContext $host, CommandBus $commands): JsonResponse

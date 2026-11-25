@@ -114,7 +114,7 @@ SCRIPT, ['tests' => [
         ]]);
         $commands->run(new ActivateProfilesCommand($proposal, DraftExpectations::fromOptions([$profile->key.'=1'])));
 
-        $revision = ProfileRevision::currentOf(Profile::byKey($profile));
+        $revision = ProfileRevision::findCurrentOf(Profile::findByKey($profile));
         $this->assertSame($source->toArray(), $revision->script_source->toArray());
         $script = $revision->script;
         $this->assertSame('line-2', $script->compiled->handlers['STOP']->entry);

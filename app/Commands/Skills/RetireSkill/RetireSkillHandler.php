@@ -22,7 +22,7 @@ final readonly class RetireSkillHandler implements CommandHandler
             'sha256',
             "retire|{$skillId}|{$command->expectedRevision}",
         ), function () use ($command, $skillId) {
-            $skill = Skill::lockVisible($skillId, SkillContextResolver::ENVIRONMENT);
+            $skill = Skill::findLockedVisible($skillId, SkillContextResolver::ENVIRONMENT);
             $skill->assertWritableAt($command->expectedRevision);
 
             return $skill->retireBy($this->writes->author());

@@ -14,7 +14,7 @@ final readonly class RecheckDriverSwitchHandler implements CommandHandler
 {
     public function handle(RecheckDriverSwitchCommand $command): void
     {
-        $switch = DriverSwitch::lockedById($command->switchId);
+        $switch = DriverSwitch::findLockedById($command->switchId);
 
         $session = in_array($switch->stage, [
             DriverSwitchStage::Stopping,
@@ -23,7 +23,7 @@ final readonly class RecheckDriverSwitchHandler implements CommandHandler
             ? $switch->expected_session_id
             : $switch->replacement_session_id;
 
-        $start = $session === null ? null : SessionProcess::latestOfSession($session);
-        $switch->recheck($start?->state, AgentRuntime::ofSession($switch->expected_session_id));
+        $start = $session === null ? null : SessionProcess::findLatestOfSession($session);
+        $switch->recheck($start?->state, AgentRuntime::findForSession($switch->expected_session_id));
     }
 }

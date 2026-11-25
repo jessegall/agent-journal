@@ -49,6 +49,26 @@ final class QuestionAnswerNotice extends Model implements EventSource, ReadableM
         return ['delivered_at' => 'immutable_datetime'];
     }
 
+    // ----------[ Constructors ]----------
+
+    public static function create(Question $question, ActorIdentity $recipient): self
+    {
+        $existing = self::query()->ofQuestion($question->id)->first();
+
+        if ($existing !== null) {
+            return $existing;
+        }
+
+        $notice = new self();
+        $notice->question_id = $question->id;
+        $notice->recipient_type = $recipient->type;
+        $notice->recipient_id = $recipient->id;
+        $notice->assertSaved($notice->save());
+        $notice->raise(new QuestionAnswerNoticeWritten($notice->id, $question->id, $recipient));
+
+        return $notice;
+    }
+
     // ----------[ Mutations ]----------
 
     public function markDelivered(CarbonImmutable $at): void
@@ -79,26 +99,6 @@ final class QuestionAnswerNotice extends Model implements EventSource, ReadableM
     public function question(): BelongsTo
     {
         return $this->belongsTo(Question::class);
-    }
-
-    // ----------[ Queries ]----------
-
-    public static function write(Question $question, ActorIdentity $recipient): self
-    {
-        $existing = self::query()->ofQuestion($question->id)->first();
-
-        if ($existing !== null) {
-            return $existing;
-        }
-
-        $notice = new self();
-        $notice->question_id = $question->id;
-        $notice->recipient_type = $recipient->type;
-        $notice->recipient_id = $recipient->id;
-        $notice->assertSaved($notice->save());
-        $notice->raise(new QuestionAnswerNoticeWritten($notice->id, $question->id, $recipient));
-
-        return $notice;
     }
 
     // ----------[ Scopes ]----------

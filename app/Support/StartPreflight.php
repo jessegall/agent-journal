@@ -56,7 +56,7 @@ final readonly class StartPreflight implements StartPreflightContract
      */
     private function hostRefusals(StartProposal $proposal): array
     {
-        $hosts = array_filter(Host::servingEnrolled(), fn (Host $host) => $host->runsPlacement($proposal->placement));
+        $hosts = array_filter(Host::findServingEnrolled(), fn (Host $host) => $host->runsPlacement($proposal->placement));
 
         if ($hosts === []) {
             return [StartPreflightRefusal::NoHost];

@@ -31,7 +31,7 @@ final readonly class SwitchAgentDriverHandler implements CommandHandler
      */
     public function handle(SwitchAgentDriverCommand $command): DriverSwitchReceipt
     {
-        $existing = DriverSwitch::ofRequest($command->requestId);
+        $existing = DriverSwitch::findForRequest($command->requestId);
 
         if ($existing !== null) {
             return DriverSwitchReceipt::of($existing);
@@ -58,7 +58,7 @@ final readonly class SwitchAgentDriverHandler implements CommandHandler
 
         if ($refusals === []) {
             $switch->markPreflighted();
-            $switch->beginStopping(AgentRuntime::ofSession($session->id));
+            $switch->beginStopping(AgentRuntime::findForSession($session->id));
             $this->commands->run(new StopAgentCommand($agent->id, $session->id, $command->requestId));
         } else {
             $switch->refuse($refusals[0]->value);
@@ -72,7 +72,7 @@ final readonly class SwitchAgentDriverHandler implements CommandHandler
      */
     private function assertCurrent(Agent $agent, SwitchAgentDriverCommand $command): void
     {
-        $runtime = AgentRuntime::ofSession($command->expectedSessionId);
+        $runtime = AgentRuntime::findForSession($command->expectedSessionId);
         $generation = $runtime === null ? 0 : $runtime->process_generation;
 
         $isCurrent = $agent->current_session_id === $command->expectedSessionId

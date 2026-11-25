@@ -22,7 +22,7 @@ final readonly class ReleaseSignInAgainHandler implements CommandHandler
 
     public function handle(ReleaseSignInAgainCommand $command): bool
     {
-        $attempt = SignInAttempt::lockedForJournal($command->attemptId);
+        $attempt = SignInAttempt::findLockedForJournal($command->attemptId);
 
         if (! $attempt->isLive() || ! $attempt->waits_for_uses || $attempt->account_id === null) {
             return false;

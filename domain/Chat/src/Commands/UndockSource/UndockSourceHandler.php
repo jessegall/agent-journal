@@ -24,7 +24,7 @@ final readonly class UndockSourceHandler extends ChatCommandHandler
         $inbox = $this->requests->lockedInbox($command->chat);
         $source = new DockIdentity($command->type, $command->id);
         $this->requests->assertReadable($source);
-        $placement = DockPlacement::matching($inbox, $command->placementId, $source);
+        $placement = DockPlacement::findMatching($inbox, $command->placementId, $source);
 
         if ($placement === null) {
             return DockResult::unavailable();

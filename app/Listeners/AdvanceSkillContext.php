@@ -20,6 +20,6 @@ final readonly class AdvanceSkillContext implements Listener
             return;
         }
 
-        SkillContextEpoch::lockedFor($event->target->sessionId)->advance();
+        SkillContextEpoch::create($event->target->sessionId)->advance();
     }
 }

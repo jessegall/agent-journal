@@ -22,7 +22,7 @@ final readonly class ReviseSkillHandler implements CommandHandler
             'sha256',
             "{$skillId}|{$command->expectedRevision}|".$command->draft->digest(),
         ), function () use ($command, $skillId) {
-            $skill = Skill::lockVisible($skillId, SkillContextResolver::ENVIRONMENT);
+            $skill = Skill::findLockedVisible($skillId, SkillContextResolver::ENVIRONMENT);
             $skill->assertWritableAt($command->expectedRevision);
             $draft = $command->draft;
 

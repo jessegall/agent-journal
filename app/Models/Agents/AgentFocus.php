@@ -51,6 +51,25 @@ final class AgentFocus extends Model implements EventSource, ReadableModel
         ];
     }
 
+    // ----------[ Constructors ]----------
+
+    /**
+     * The agent's focus, locked; a new, unsaved one when it focuses on nothing yet.
+     */
+    public static function create(string $agentId): self
+    {
+        $focus = self::query()->ofAgent($agentId)->lockForUpdate()->first();
+
+        if ($focus instanceof self) {
+            return $focus;
+        }
+
+        $focus = new self();
+        $focus->agent_id = $agentId;
+
+        return $focus;
+    }
+
     // ----------[ Mutations ]----------
 
     /**
@@ -97,25 +116,6 @@ final class AgentFocus extends Model implements EventSource, ReadableModel
     protected function record(): Attribute
     {
         return Accessor::get(fn () => new RecordIdentity($this->focused_type, $this->focused_id));
-    }
-
-    // ----------[ Queries ]----------
-
-    /**
-     * The agent's focus, locked; a new, unsaved one when it focuses on nothing yet.
-     */
-    public static function lockedFor(string $agentId): self
-    {
-        $focus = self::query()->ofAgent($agentId)->lockForUpdate()->first();
-
-        if ($focus instanceof self) {
-            return $focus;
-        }
-
-        $focus = new self();
-        $focus->agent_id = $agentId;
-
-        return $focus;
     }
 
     // ----------[ Scopes ]----------

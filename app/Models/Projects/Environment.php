@@ -78,7 +78,7 @@ final class Environment extends Model implements EventSource, ReadableModel
      *
      * @throws InvitationUnusable
      */
-    public static function lockOfProjectForLine(string $id, string $projectId): self
+    public static function findLockedOfProjectForLine(string $id, string $projectId): self
     {
         return self::query()
             ->whereKey($id)
@@ -90,7 +90,7 @@ final class Environment extends Model implements EventSource, ReadableModel
     /**
      * The environment of this id in this project.
      */
-    public static function ofProjectById(string $projectId, string $id): self
+    public static function findForProjectById(string $projectId, string $id): self
     {
         return self::query()->whereKey($id)->ofProject($projectId)->firstOrFail();
     }
@@ -100,7 +100,7 @@ final class Environment extends Model implements EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function listedOf(string $projectId): array
+    public static function findListedOf(string $projectId): array
     {
         return array_values(self::query()->ofProject($projectId)->inLabelOrder()->limit(self::LISTED_LIMIT)
             ->get()->all());
@@ -112,7 +112,7 @@ final class Environment extends Model implements EventSource, ReadableModel
      * @param  list<string>  $ids
      * @return list<self>
      */
-    public static function listedOfProjects(array $ids): array
+    public static function findListedOfProjects(array $ids): array
     {
         return array_values(self::query()->ofProjects($ids)->inLabelOrder()
             ->readUpTo(self::LISTED_LIMIT * max(count($ids), 1))->get()->all());

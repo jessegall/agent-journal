@@ -89,6 +89,16 @@ final class Link extends MorphPivot implements EventSource, ReadableModel
         return $link;
     }
 
+    /**
+     * The link between a model and a record named only by its link alias and id, made now when there is none yet;
+     * the named record is never loaded.
+     */
+    public static function createForKey(Model $source, string $targetType, string $targetId): self
+    {
+        return self::query()->touching($source)->touchingKey($targetType, $targetId)->first()
+            ?? self::create($source->getMorphClass(), (string) $source->getKey(), $targetType, $targetId);
+    }
+
     // ----------[ Mutations ]----------
 
     /**
@@ -150,18 +160,6 @@ final class Link extends MorphPivot implements EventSource, ReadableModel
     public function target(): MorphTo
     {
         return $this->morphTo();
-    }
-
-    // ----------[ Queries ]----------
-
-    /**
-     * The link between a model and a record named only by its link alias and id, made now when there is none yet;
-     * the named record is never loaded.
-     */
-    public static function createForKey(Model $source, string $targetType, string $targetId): self
-    {
-        return self::query()->touching($source)->touchingKey($targetType, $targetId)->first()
-            ?? self::create($source->getMorphClass(), (string) $source->getKey(), $targetType, $targetId);
     }
 
     // ----------[ Scopes ]----------

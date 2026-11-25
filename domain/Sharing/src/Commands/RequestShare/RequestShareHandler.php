@@ -38,7 +38,7 @@ final readonly class RequestShareHandler extends SharingCommandHandler
 
         ShareInstallation::create();
 
-        if (Share::proposedCount() >= Share::PROPOSED_LIMIT) {
+        if (Share::resolveProposedCount() >= Share::PROPOSED_LIMIT) {
             throw ShareQuotaReached::forProposals(Share::PROPOSED_LIMIT);
         }
 

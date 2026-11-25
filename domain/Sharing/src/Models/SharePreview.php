@@ -213,7 +213,7 @@ final class SharePreview extends Model implements EventSource, ReadableModel
      *
      * @throws SharePreviewRefused
      */
-    public static function of(string $previewId): self
+    public static function findOf(string $previewId): self
     {
         return self::query()->whereKey($previewId)->firstOr(SharePreviewRefused::throwing()->unknown($previewId));
     }
@@ -223,7 +223,7 @@ final class SharePreview extends Model implements EventSource, ReadableModel
      *
      * @throws SharePreviewRefused
      */
-    public static function lockFor(string $previewId): self
+    public static function findLockedFor(string $previewId): self
     {
         return self::query()
             ->whereKey($previewId)
@@ -236,7 +236,7 @@ final class SharePreview extends Model implements EventSource, ReadableModel
      *
      * @return Option<self>
      */
-    public static function openFor(string $ownerUserId, RecordIdentity $root): Option
+    public static function findOpenFor(string $ownerUserId, RecordIdentity $root): Option
     {
         $sharePreview = self::query()->ownedBy($ownerUserId)->ofRoot($root)->stillOpen()->newestFirst()->first();
 

@@ -32,7 +32,7 @@ final readonly class RecordTaskHistory implements Listener
         TaskHistoryEntry::create(
             $event->historyEntryId,
             $task,
-            $task->run_number === 0 ? null : TaskRun::ofTask($task, $task->run_number),
+            $task->run_number === 0 ? null : TaskRun::findForTask($task, $task->run_number),
             $actor,
             $event->previousState,
             $task->stateText,

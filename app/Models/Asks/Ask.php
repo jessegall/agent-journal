@@ -36,6 +36,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 use PhpOption\Option;
 
 /**
@@ -85,6 +86,52 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
             'outcome' => UnansweredReason::class,
             'type_key' => AskTypeKeyCast::class,
         ];
+    }
+
+    // ----------[ Constructors ]----------
+
+    public static function create(
+        AskReference $reference,
+        ActorIdentity $requester,
+        AskTypeKey $type,
+        string $submissionKey,
+        string $body,
+        AskSubject $subject,
+        SupervisorTarget $target,
+        AskOriginType $origin = AskOriginType::Internal,
+        ProfileKey|null $routeProfile = null,
+    ): self {
+        $work = $subject->work->isFree() ? 'free' : $subject->work->key;
+        $digest = hash('sha256', json_encode([
+            $type->key,
+            $body,
+            $work,
+        ], JSON_THROW_ON_ERROR));
+        $ask = new self();
+
+        $ask->setRawAttributes([
+            'id' => $reference->id,
+            'actor_type' => $requester->type,
+            'actor_id' => $requester->id,
+            'type_key' => $type->key,
+            'origin' => $origin->value,
+            'submission_key' => $submissionKey,
+            'submission_hash' => $digest,
+            'body' => $body,
+            'subject_type' => $subject->type->key,
+            'work' => $subject->work->key,
+            'head' => $subject->head,
+            'pending_target' => $target->key,
+            'route_profile' => $routeProfile?->key,
+            'version' => 0,
+            'open' => true,
+        ]);
+
+        $ask->insertIfAbsent();
+        $ask = self::query()->ownedBy($requester)->underSubmissionKey($submissionKey)->firstOrFail();
+        $ask->assertSubmittedAs($digest);
+
+        return $ask;
     }
 
     // ----------[ Mutations ]----------
@@ -226,22 +273,22 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
 
     // ----------[ Queries ]----------
 
-    public static function newReference(): AskReference
+    public static function resolveNewReference(): AskReference
     {
-        return new AskReference(new self()->newUniqueId());
+        return new AskReference(strtolower((string) Str::ulid()));
     }
 
     /**
      * @return Option<self>
      */
-    public static function submission(ActorIdentity $actor, string $key): Option
+    public static function findSubmission(ActorIdentity $actor, string $key): Option
     {
         $ask = self::query()->ownedBy($actor)->underSubmissionKey($key)->first();
 
         return Option::fromValue($ask);
     }
 
-    public static function openSubmissions(ActorIdentity $actor): int
+    public static function resolveOpenSubmissions(ActorIdentity $actor): int
     {
         return self::query()->ownedBy($actor)
             ->fromOrigin(AskOriginType::Supervisor)
@@ -249,51 +296,7 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
             ->count();
     }
 
-    public static function submit(
-        AskReference $reference,
-        ActorIdentity $requester,
-        AskTypeKey $type,
-        string $submissionKey,
-        string $body,
-        AskSubject $subject,
-        SupervisorTarget $target,
-        AskOriginType $origin = AskOriginType::Internal,
-        ProfileKey|null $routeProfile = null,
-    ): self {
-        $work = $subject->work->isFree() ? 'free' : $subject->work->key;
-        $digest = hash('sha256', json_encode([
-            $type->key,
-            $body,
-            $work,
-        ], JSON_THROW_ON_ERROR));
-        $ask = new self();
-
-        $ask->setRawAttributes([
-            'id' => $reference->id,
-            'actor_type' => $requester->type,
-            'actor_id' => $requester->id,
-            'type_key' => $type->key,
-            'origin' => $origin->value,
-            'submission_key' => $submissionKey,
-            'submission_hash' => $digest,
-            'body' => $body,
-            'subject_type' => $subject->type->key,
-            'work' => $subject->work->key,
-            'head' => $subject->head,
-            'pending_target' => $target->key,
-            'route_profile' => $routeProfile?->key,
-            'version' => 0,
-            'open' => true,
-        ]);
-
-        $ask->insertIfAbsent();
-        $ask = self::query()->ownedBy($requester)->underSubmissionKey($submissionKey)->firstOrFail();
-        $ask->assertSubmittedAs($digest);
-
-        return $ask;
-    }
-
-    public static function forAttention(string $id): self
+    public static function findForAttention(string $id): self
     {
         return self::query()->acrossActors()->whereKey($id)->firstOrFail();
     }
@@ -304,7 +307,7 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
      * @param  list<string>  $ids
      * @return array<string, self>
      */
-    public static function openByIds(array $ids): array
+    public static function findOpenByIds(array $ids): array
     {
         if ($ids === []) {
             return [];
@@ -320,7 +323,7 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function openFor(RecordIdentity $work): array
+    public static function findOpenFor(RecordIdentity $work): array
     {
         return array_values(self::query()
             ->acrossActors()
@@ -332,7 +335,7 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
             ->all());
     }
 
-    public static function lockedForMaintenance(string $id): self
+    public static function findLockedForMaintenance(string $id): self
     {
         return self::query()->acrossActors()->whereKey($id)->lockForUpdate()->firstOrFail();
     }

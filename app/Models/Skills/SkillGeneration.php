@@ -153,7 +153,7 @@ final class SkillGeneration extends Model implements EventSource, ReadableModel
     /**
      * The newest ready generation, or null before the first refresh.
      */
-    public static function latestReady(): self|null
+    public static function findLatestReady(): self|null
     {
         return self::query()->inState(GenerationState::Ready)->newestFirst()->first();
     }
@@ -161,7 +161,7 @@ final class SkillGeneration extends Model implements EventSource, ReadableModel
     /**
      * The newest generation of any state, for status.
      */
-    public static function latest(): self|null
+    public static function findLatest(): self|null
     {
         return self::query()->newestFirst()->first();
     }

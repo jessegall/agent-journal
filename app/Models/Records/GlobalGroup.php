@@ -32,20 +32,12 @@ final class GlobalGroup extends Model implements ReadableModel
 
     public const string JOURNAL = 'journal';
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The journal's own group, which numbers:install creates before any numbered record is written.
-     */
-    public static function journal(): self
-    {
-        return self::query()->named(self::JOURNAL)->firstOr(GlobalGroupMissing::throwing()->named(self::JOURNAL));
-    }
+    // ----------[ Constructors ]----------
 
     /**
      * Creates the journal's group unless it is there already.
      */
-    public static function installJournal(): self
+    public static function create(): self
     {
         $group = new self();
         $group->name = self::JOURNAL;
@@ -53,6 +45,16 @@ final class GlobalGroup extends Model implements ReadableModel
         $group->insertIfAbsent();
 
         return self::query()->named(self::JOURNAL)->sole();
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The journal's own group, which numbers:install creates before any numbered record is written.
+     */
+    public static function findJournal(): self
+    {
+        return self::query()->named(self::JOURNAL)->firstOr(GlobalGroupMissing::throwing()->named(self::JOURNAL));
     }
 
     // ----------[ Scopes ]----------

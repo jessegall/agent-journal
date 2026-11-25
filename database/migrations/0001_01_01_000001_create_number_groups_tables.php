@@ -30,7 +30,7 @@ return new class extends Migration
         });
 
         DB::statement('ALTER TABLE number_groups ADD CONSTRAINT number_groups_last_number_not_negative CHECK (last_number >= 0)');
-        GlobalGroup::installJournal();
+        GlobalGroup::create();
     }
 
     public function down(): void

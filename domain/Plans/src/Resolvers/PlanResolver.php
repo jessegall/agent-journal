@@ -168,7 +168,7 @@ final readonly class PlanResolver implements PlanResolverContract
      */
     private function cardsOf(EloquentCollection $plans, Option $focused): array
     {
-        $currentPhaseOf = Phase::currentNumbersOf(array_values(array_map(strval(...), $plans->modelKeys())));
+        $currentPhaseOf = Phase::resolveCurrentNumbersOf(array_values(array_map(strval(...), $plans->modelKeys())));
 
         $holders = $this->assignees->holdersOfRecords(
             array_values($plans->map(fn (Plan $plan) => $plan->assignmentIdentity())->all()),

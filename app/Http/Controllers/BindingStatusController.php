@@ -16,6 +16,6 @@ final readonly class BindingStatusController
 {
     public function __invoke(string $binding, HostContext $host): JsonResponse
     {
-        return new JsonResponse(ProjectBinding::ofHost($host->hostId, $binding)->presenceReceipt->toArray());
+        return new JsonResponse(ProjectBinding::findForHost($host->hostId, $binding)->presenceReceipt->toArray());
     }
 }

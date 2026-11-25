@@ -28,6 +28,6 @@ final readonly class CurrentRuntimes
 
         $sessionId = $agent->currentRuntime()->get()->target->sessionId;
 
-        return AgentRuntime::ofSession($sessionId) ?? throw TerminalViewRefused::mayNotInspect();
+        return AgentRuntime::findForSession($sessionId) ?? throw TerminalViewRefused::mayNotInspect();
     }
 }

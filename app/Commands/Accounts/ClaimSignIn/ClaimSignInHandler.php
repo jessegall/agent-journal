@@ -13,7 +13,7 @@ final readonly class ClaimSignInHandler implements CommandHandler
 {
     public function handle(ClaimSignInCommand $command): ClaimedSignIn|null
     {
-        $attempt = SignInAttempt::oldestWaitingAt(CarbonImmutable::now());
+        $attempt = SignInAttempt::findOldestWaitingAt(CarbonImmutable::now());
 
         if ($attempt === null) {
             return null;

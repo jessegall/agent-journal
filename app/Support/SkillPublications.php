@@ -43,7 +43,7 @@ final readonly class SkillPublications
     public function intendMany(SkillGeneration $generation, array $intents): array
     {
         $openKeys = array_map(
-            fn (PublicationIntent $intent) => SkillPublication::openKeyOf($intent->sessionId, $intent->target),
+            fn (PublicationIntent $intent) => SkillPublication::resolveOpenKeyOf($intent->sessionId, $intent->target),
             $intents,
         );
 
@@ -66,7 +66,7 @@ final readonly class SkillPublications
             ->keyBy(fn (SkillPublication $publication) => $publication->target_key);
 
         return array_map(function (PublicationIntent $intent) use ($generation, $open, $delivered): SkillPublication {
-            $openKey = SkillPublication::openKeyOf($intent->sessionId, $intent->target);
+            $openKey = SkillPublication::resolveOpenKeyOf($intent->sessionId, $intent->target);
             $openPublication = $open->get($openKey);
             $openPublication?->supersede();
             $deliveredPublication = $delivered->get($openKey);

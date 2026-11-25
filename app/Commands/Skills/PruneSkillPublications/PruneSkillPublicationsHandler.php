@@ -35,7 +35,7 @@ final readonly class PruneSkillPublicationsHandler implements CommandHandler
         $retired = 0;
         $conflicts = [];
 
-        foreach (SkillPublication::settled(self::MOST_PUBLICATIONS) as $publication) {
+        foreach (SkillPublication::findSettled(self::MOST_PUBLICATIONS) as $publication) {
             $target = $publication->targetName;
             $keptPerTarget[$target] ??= 0;
 

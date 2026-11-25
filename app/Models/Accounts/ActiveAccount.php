@@ -162,7 +162,7 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
      * The driver's selection row, made when it is first needed and locked for the rest of the transaction; two
      * requests that make it at once end with the same one row.
      */
-    public static function lockedFor(string $driver): self
+    public static function findLockedFor(string $driver): self
     {
         self::makeIfAbsent($driver);
 
@@ -175,7 +175,7 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
      *
      * @throws AccountUnavailable
      */
-    public static function lockedAccountForStart(string $driver): Account
+    public static function resolveLockedAccountForStart(string $driver): Account
     {
         $selection = self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
@@ -185,14 +185,14 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
         $accountId = $selection?->account_id;
         self::assertAccountChosen($accountId, $driver);
 
-        return Account::lockedForStart($accountId);
+        return Account::findLockedForStart($accountId);
     }
 
     /**
      * The driver's selection row for the journal's own maintenance or the host, made when first needed and locked;
      * whoever acts.
      */
-    public static function lockedForJournal(string $driver): self
+    public static function findLockedForJournal(string $driver): self
     {
         self::makeIfAbsent($driver);
 
@@ -206,7 +206,7 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
     /**
      * The account new starts of the driver use, none while the owner chose none; read under the owner's scope.
      */
-    public static function defaultAccountIdOf(string $driver): string|null
+    public static function resolveDefaultAccountIdOf(string $driver): string|null
     {
         return self::query()->ofDriver($driver)->value('account_id');
     }
@@ -216,7 +216,7 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function listed(): array
+    public static function findListed(): array
     {
         return array_values(self::query()->inDriverOrder()->readAll('one row per driver')->get()->all());
     }

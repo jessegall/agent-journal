@@ -25,7 +25,7 @@ final readonly class StopCertification
 
         $attempt->certify();
 
-        SessionRequest::ownerStartOf($attempt->session_id)->forAll(
+        SessionRequest::findOwnerStartOf($attempt->session_id)->forAll(
             fn (SessionRequest $start) => $this->facts->publishAfterCommit(
                 new HelperCompletionCertified($start->owner_work, $attempt->reference),
             ),

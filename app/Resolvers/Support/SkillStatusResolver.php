@@ -51,12 +51,12 @@ final readonly class SkillStatusResolver
     public function skillsOfSession(string $sessionId): array
     {
         $this->visiblePublicationsOf($sessionId);
-        $session = AgentSession::byId($sessionId);
+        $session = AgentSession::findById($sessionId);
         $skillEntries = $this->skills->all();
         $selection = $this->selectionOf($session, $skillEntries);
-        $delivered = SkillPublication::latestDeliveredOfSession($sessionId);
-        $started = SkillPublication::firstOfSession($sessionId);
-        $generation = SkillGeneration::latestReady();
+        $delivered = SkillPublication::findLatestDeliveredOfSession($sessionId);
+        $started = SkillPublication::findFirstOfSession($sessionId);
+        $generation = SkillGeneration::findLatestReady();
         $driver = DriverKey::from($started->skill_protocol);
 
         $reloadsAtNewSession = $this->adapters->supports($driver)
@@ -171,7 +171,7 @@ final readonly class SkillStatusResolver
     private function statusOf(array $publications): SkillStatus
     {
         return new SkillStatus(
-            SkillGeneration::latest()?->status,
+            SkillGeneration::findLatest()?->status,
             array_map(fn (SkillPublication $publication) => $publication->status, $publications),
         );
     }
@@ -184,11 +184,11 @@ final readonly class SkillStatusResolver
         $actor = $this->actors->actor();
 
         if ($this->inspection->seesEveryAgent()) {
-            return SkillPublication::latestOfEverySession(self::MOST_SESSIONS);
+            return SkillPublication::findLatestOfEverySession(self::MOST_SESSIONS);
         }
 
-        $sessionIds = AgentSession::idsOfAgent($actor->actorId(), self::MOST_SESSIONS);
+        $sessionIds = AgentSession::resolveIdsOfAgent($actor->actorId(), self::MOST_SESSIONS);
 
-        return SkillPublication::latestOfSessions($sessionIds, self::MOST_SESSIONS);
+        return SkillPublication::findLatestOfSessions($sessionIds, self::MOST_SESSIONS);
     }
 }

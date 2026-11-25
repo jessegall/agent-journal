@@ -32,7 +32,7 @@ final readonly class BroadcastPageChange implements Listener
         $userIds = $fact instanceof InboxScopedFact
             ? array_map(
                 fn (ActorIdentity $user) => $user->id,
-                InboxMember::attachedTo([$fact->scopedInboxId()], User::class),
+                InboxMember::resolveAttachedTo([$fact->scopedInboxId()], User::class),
             )
             : $this->recipients->userIds();
 

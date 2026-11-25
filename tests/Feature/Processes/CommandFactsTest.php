@@ -174,7 +174,7 @@ final class CommandFactsTest extends TestCase
      */
     private function recordAlias(string $projectKey, string $name, string $line, array $arguments = []): CommandAlias
     {
-        $alias = CommandAlias::forName($projectKey, $name);
+        $alias = CommandAlias::create($projectKey, $name);
         $alias->recordLine($line, $arguments);
 
         return $alias;

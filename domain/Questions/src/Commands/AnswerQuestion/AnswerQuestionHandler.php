@@ -26,7 +26,7 @@ final readonly class AnswerQuestionHandler extends QuestionCommandHandler
     public function handle(AnswerQuestionCommand $command): void
     {
         $answerer = ActorIdentity::of($command->dispatchedBy());
-        $question = Question::lockedById($command->questionId);
+        $question = Question::findLockedById($command->questionId);
 
         if (! InboxMember::isAttached($question->inbox_id, $answerer)) {
             throw InboxUnavailable::forActor($question->inbox_id);

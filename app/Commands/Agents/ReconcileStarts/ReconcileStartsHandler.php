@@ -41,7 +41,7 @@ final readonly class ReconcileStartsHandler implements CommandHandler
      */
     private function stopProven(string $hostId, array $keys): array
     {
-        $starts = SessionProcess::supervised()
+        $starts = SessionProcess::query()->supervised()
             ->where('host_id', $hostId)
             ->whereIn('start_key', $keys)
             ->unresolved()

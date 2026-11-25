@@ -60,7 +60,7 @@ final class BindingRuntime extends Model implements EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function ofBinding(string $bindingId, string $startId): array
+    public static function findForBinding(string $bindingId, string $startId): array
     {
         return array_values(self::query()->ofBindingAndStart($bindingId, $startId)->limit(1)
             ->get()->all());

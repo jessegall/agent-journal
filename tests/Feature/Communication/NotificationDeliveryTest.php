@@ -110,7 +110,7 @@ final class NotificationDeliveryTest extends TestCase
 
     private function scopeOf(ActorIdentity $recipient): NotificationScope
     {
-        return NotificationScope::lockedFor($this->app->make(NotificationScopes::class)->keyFor($recipient), $recipient);
+        return NotificationScope::findLockedFor($this->app->make(NotificationScopes::class)->keyFor($recipient), $recipient);
     }
 
     private function receiptOf(ActorIdentity $recipient): NotificationReceipt

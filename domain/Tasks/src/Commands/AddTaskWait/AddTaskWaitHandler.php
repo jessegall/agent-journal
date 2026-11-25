@@ -36,7 +36,7 @@ final readonly class AddTaskWaitHandler extends TaskCommandHandler
     public function handle(AddTaskWaitCommand $command): string
     {
         if ($command->dependentTaskId === $command->prerequisiteTaskId) {
-            throw TaskWaitRefused::onItself(Task::ofId($command->dependentTaskId)->number);
+            throw TaskWaitRefused::onItself(Task::findForId($command->dependentTaskId)->number);
         }
 
         $this->tasks->requireVisible($command->prerequisiteTaskId);

@@ -14,7 +14,7 @@ final readonly class RemoveRuleHandler extends RuleCommandHandler
 {
     public function handle(RemoveRuleCommand $command): void
     {
-        $rule = Rule::lockedById($command->ruleId);
+        $rule = Rule::findLockedById($command->ruleId);
         $rule->remove();
     }
 }

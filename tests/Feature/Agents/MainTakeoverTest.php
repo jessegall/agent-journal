@@ -49,7 +49,7 @@ final class MainTakeoverTest extends MessagingTestCase
 
     private function isSeatedAtMain(AgentSession $session): bool
     {
-        return InboxMember::findActive(Inbox::main()->id, $this->actorOf($session)) !== null;
+        return InboxMember::findActive(Inbox::findMain()->id, $this->actorOf($session)) !== null;
     }
 
     private function agentOf(AgentSession $session): Agent

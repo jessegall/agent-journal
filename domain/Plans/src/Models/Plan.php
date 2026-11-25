@@ -56,6 +56,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Override;
 use PhpOption\Option;
 
 /**
@@ -542,9 +543,9 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
      * of a plan's membership and every cascade over it takes this lock first; a future move between plans takes both
      * plans' locks in id order.
      */
-    public static function lockStructure(string $planId): self
+    public static function findLockedStructure(string $planId): self
     {
-        return self::lockedById($planId);
+        return self::findLockedById($planId);
     }
 
     /**
@@ -553,9 +554,9 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
      *
      * @throws PlanUnderReview
      */
-    public static function lockForChange(string $planId): self
+    public static function findLockedForChange(string $planId): self
     {
-        $plan = self::lockStructure($planId);
+        $plan = self::findLockedStructure($planId);
         $plan->assertNotUnderReview();
 
         return $plan;
@@ -564,6 +565,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
     /**
      * A plan is shared as a summary root; the documents and reports linked to it are the owner's to select.
      */
+    #[Override]
     public static function shareRelations(): ShareRelationSet
     {
         return ShareRelationSet::linked('records', 'share-linked-record');

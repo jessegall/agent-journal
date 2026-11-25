@@ -59,12 +59,12 @@ final readonly class NotificationReceipts
     public function markAllThrough(ActorIdentity $actor, int $through, CarbonImmutable $at): bool
     {
         $scope = NotificationScope::findFor($this->scopes->keyFor($actor), $actor)
-            ->map(fn (NotificationScope $found) => NotificationScope::lockedById($found->id))
+            ->map(fn (NotificationScope $found) => NotificationScope::findLockedById($found->id))
             ->getOrThrow(NotificationUnavailable::create());
 
         $scope->beginMarkAll($through);
 
-        $batch = NotificationReceipt::unreadThrough(
+        $batch = NotificationReceipt::findUnreadThrough(
             $scope->id,
             $scope->mark_all_after,
             (int) $scope->mark_all_through,
@@ -104,8 +104,8 @@ final readonly class NotificationReceipts
      */
     private function change(NotificationReceipt $receipt, callable $mutation): bool
     {
-        $scope = NotificationScope::lockedById($receipt->scope_id);
-        $locked = NotificationReceipt::lockedById($receipt->id);
+        $scope = NotificationScope::findLockedById($receipt->scope_id);
+        $locked = NotificationReceipt::findLockedById($receipt->id);
         $wasCounted = $locked->isCounted();
 
         if (! $mutation($locked)) {

@@ -14,6 +14,7 @@ declare(strict_types=1);
  */
 
 use PhpParser\Node;
+use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
@@ -23,6 +24,7 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\UnionType;
 use PhpParser\NodeFinder;
 use PhpParser\ParserFactory;
+use PhpParser\PrettyPrinter\Standard;
 
 require_once dirname(__DIR__, 2).'/vendor/autoload.php';
 require_once __DIR__.'/models.php';
@@ -69,6 +71,24 @@ const RELATIONS = [
 const MARKER_ANYWHERE = '/^[ \t]*\/\/ -+\[ (\w+) \]-+[ \t]*$/m';
 
 const ROW_WRITES = '/->(save|update|delete|forceDelete|increment|decrement|forceFill|fill|touch|push|restore)\(/';
+
+/** The words a static of Queries starts with: what it hands back, the model, a value, a count or a yes or no. */
+const QUERY_NAME = '/^(find|resolve|count|is|has|can)[A-Z]/';
+
+/** The reads that end a query; a constructor or a mutation leaves them to a find or resolve method of Queries. */
+const QUERY_ENDS = [
+    'avg',
+    'count',
+    'exists',
+    'first',
+    'get',
+    'max',
+    'min',
+    'pluck',
+    'sole',
+    'sum',
+    'value',
+];
 
 /**
  * Whether a method is an accessor: it returns an Attribute, whatever its visibility.
@@ -292,7 +312,7 @@ function inlineFaultsOf(string $source, Class_ $class): array
 function isOwnAssert(Node\Stmt $statement): bool
 {
     $call = $statement instanceof Node\Stmt\Expression ? $statement->expr : null;
-    $isOwn = $call instanceof Node\Expr\MethodCall && $call->var instanceof Node\Expr\Variable && $call->var->name === 'this'
+    $isOwn = $call instanceof MethodCall && $call->var instanceof Node\Expr\Variable && $call->var->name === 'this'
         || $call instanceof StaticCall && $call->class instanceof Name && in_array($call->class->toLowerString(), [
             'self',
             'static',
@@ -309,7 +329,7 @@ function readRowOf(Node\Stmt $statement): string|null
 {
     $assign = $statement instanceof Node\Stmt\Expression ? $statement->expr : null;
     $read = $assign instanceof Node\Expr\Assign ? $assign->expr : null;
-    $isRowRead = $read instanceof Node\Expr\MethodCall && $read->name instanceof Identifier
+    $isRowRead = $read instanceof MethodCall && $read->name instanceof Identifier
         && in_array($read->name->toString(), [
             'first',
             'find',
@@ -474,6 +494,104 @@ function lookFaultOf(ClassMethod $method, string $section): string|null
 }
 
 /**
+ * Why a static of Queries is named or built wrong: it starts with find when it hands back the model, none or a list of
+ * it, resolve when it hands back a value, count for a count and is, has or can for a yes or no, and it never makes or
+ * writes a row. A method that implements a contract, marked #[Override], keeps the contract's name.
+ */
+function queryFaultOf(ClassMethod $method, string|null $section, string $model, string $body): string|null
+{
+    $name = $method->name->toString();
+
+    if ($section !== 'Queries' || ! $method->isPublic() || ! $method->isStatic() || isOverride($method)) {
+        return null;
+    }
+
+    if (preg_match(ROW_MAKES, $body) === 1 || preg_match(ROW_WRITES, $body) === 1) {
+        return "query {$name} makes or writes a row: it is a constructor named create, in Constructors";
+    }
+
+    if (preg_match(QUERY_NAME, $name, $word) !== 1) {
+        return "query {$name} starts with find, resolve, count, is, has or can, by what it hands back";
+    }
+
+    $modelType = '/(?<![\\w\\\\])(self|static|'.$model.')(?![\\w\\\\])/';
+    $givesModel = preg_match($modelType, returnedTypeText($method)) === 1;
+
+    return match (true) {
+        $word[1] === 'find' && ! $givesModel => "query {$name} hands back no {$model}: name it resolve",
+        $word[1] === 'resolve' && $givesModel => "query {$name} hands back the {$model}: name it find",
+        $word[1] === 'count' && returnedName($method) !== 'int' => "query {$name} counts nothing: it returns an int",
+        in_array($word[1], ['is', 'has', 'can'], true) && ! returnsBool($method) => "query {$name} answers no yes or no",
+        default => null,
+    };
+}
+
+/**
+ * The return type a method states, its @return line before its declared type.
+ */
+function returnedTypeText(ClassMethod $method): string
+{
+    if (preg_match('/@return\s+(.+)$/m', $method->getDocComment()?->getText() ?? '', $documented) === 1) {
+        return $documented[1];
+    }
+
+    if ($method->returnType === null) {
+        return '';
+    }
+
+    return new Standard()->prettyPrint([$method->returnType]);
+}
+
+function isOverride(ClassMethod $method): bool
+{
+    foreach ($method->attrGroups as $group) {
+        foreach ($group->attrs as $attribute) {
+            if (ltrim($attribute->name->toString(), '\\') === 'Override') {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Why a constructor or a mutation reads for itself: it ends a query with a read such as max or first, which a find or
+ * resolve method of Queries does in one named place.
+ */
+function endedQueryFaultOf(ClassMethod $method, string|null $section): string|null
+{
+    if (! in_array($section, ['Constructors', 'Mutations'], true)) {
+        return null;
+    }
+
+    $ending = new NodeFinder()->findFirst($method->stmts ?? [], function (Node $node): bool {
+        if (! $node instanceof MethodCall || ! $node->name instanceof Identifier) {
+            return false;
+        }
+
+        if (! in_array($node->name->toString(), QUERY_ENDS, true)) {
+            return false;
+        }
+
+        $root = $node->var;
+
+        while ($root instanceof MethodCall) {
+            $root = $root->var;
+        }
+
+        return $root instanceof StaticCall && $root->name instanceof Identifier && $root->name->toString() === 'query';
+    });
+
+    if (! $ending instanceof MethodCall) {
+        return null;
+    }
+
+    return "method {$method->name->toString()} ends a query with {$ending->name->toString()}(): read it through a find"
+        .' or resolve method of Queries';
+}
+
+/**
  * The faults of a model's sections as "line<TAB>fault".
  *
  * @return list<string>
@@ -481,8 +599,9 @@ function lookFaultOf(ClassMethod $method, string $section): string|null
 function faultsOf(string $source, Class_ $class): array
 {
     $constructorCount = count(constructorsOf($source, $class));
+    $model = $class->name?->toString() ?? '';
 
-    $check = function (ClassMethod $method, string|null $section) use ($constructorCount): string|null {
+    $check = function (ClassMethod $method, string|null $section) use ($constructorCount, $model, $source): string|null {
         $name = $method->name->toString();
 
         if (isPreamble($method)) {
@@ -501,6 +620,13 @@ function faultsOf(string $source, Class_ $class): array
 
         if ($constructorFault !== null) {
             return $constructorFault;
+        }
+
+        $queryFault = queryFaultOf($method, $section, $model, textOf($source, $method))
+            ?? endedQueryFaultOf($method, $section);
+
+        if ($queryFault !== null) {
+            return $queryFault;
         }
 
         $isAssert = str_starts_with($name, 'assert');
@@ -601,8 +727,14 @@ function placedSection(array $marked, ClassMethod $method, string $body): string
 
     $current = currentSectionOf($marked, $method);
 
-    if ($current === 'Constructors' && $method->isStatic() && ! str_starts_with($method->name->toString(), 'create')) {
+    $isCreate = str_starts_with($method->name->toString(), 'create');
+
+    if ($current === 'Constructors' && $method->isStatic() && ! $isCreate) {
         return 'Queries';
+    }
+
+    if ($current === 'Queries' && $method->isStatic() && $method->isPublic() && $isCreate) {
+        return 'Constructors';
     }
 
     return $current ?? sectionOf($method, $body);

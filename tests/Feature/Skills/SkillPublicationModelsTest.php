@@ -37,7 +37,7 @@ final class SkillPublicationModelsTest extends TestCase
         $this->assertTrue(Schema::hasTable('skill_publications'));
 
         $generation = $this->generation();
-        $this->assertSame(GenerationState::Ready, SkillGeneration::latestReady()?->state);
+        $this->assertSame(GenerationState::Ready, SkillGeneration::findLatestReady()?->state);
         $entry = $generation->entry('journal');
         $this->assertNotNull($entry);
         $this->assertSame('journal', $entry->key);

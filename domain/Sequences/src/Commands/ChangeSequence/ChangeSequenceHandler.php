@@ -12,7 +12,7 @@ final readonly class ChangeSequenceHandler extends SequenceCommandHandler
 {
     public function handle(ChangeSequenceCommand $command): void
     {
-        $sequence = Sequence::lockedById($command->sequenceId);
+        $sequence = Sequence::findLockedById($command->sequenceId);
 
         if ($sequence->version !== $command->openedVersion) {
             throw SequenceChangedMeanwhile::since($command->openedVersion, $sequence->version);

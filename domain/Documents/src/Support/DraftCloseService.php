@@ -55,7 +55,7 @@ final readonly class DraftCloseService
      */
     public function closeEnded(DocumentDraft $draft): void
     {
-        $document = Document::lockedForEditing($draft->document->number);
+        $document = Document::findLockedForEditing($draft->document->number);
         $held = DocumentDraft::query()->find($draft->id);
 
         if ($held === null) {
@@ -81,7 +81,7 @@ final readonly class DraftCloseService
         Actor|null $closer,
         string|null $reason,
     ): CloseResult {
-        $document = Document::lockedForEditing($target->documentKey());
+        $document = Document::findLockedForEditing($target->documentKey());
         $closed = $document->closeOf($target->token);
 
         if ($closed !== null) {

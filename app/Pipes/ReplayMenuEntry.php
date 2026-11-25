@@ -16,7 +16,7 @@ final readonly class ReplayMenuEntry implements Pipe
 {
     public function handle(NavigationAdmission $raise): NavigationRaiseAnswer|NavigationAdmission
     {
-        $entry = MenuEntry::replayFor(
+        $entry = MenuEntry::findReplayFor(
             $raise->owner,
             $raise->runtime,
             $raise->request->scriptGoal(),

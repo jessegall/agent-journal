@@ -16,6 +16,6 @@ final readonly class AccountNoticesSection implements SectionResolver
 {
     public function read(SlotContext $context): AccountNoticesData
     {
-        return AccountNoticesData::from(['notices' => AccountNotice::openNotices()]);
+        return AccountNoticesData::from(['notices' => AccountNotice::findOpenNotices()]);
     }
 }

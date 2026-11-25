@@ -49,7 +49,7 @@ final class PlanTaskRequest extends FormRequest
 
     public function planId(): string
     {
-        return Plan::idOfNumber($this->planNumber()) ?? throw new NotFoundHttpException();
+        return Plan::resolveIdOfNumber($this->planNumber()) ?? throw new NotFoundHttpException();
     }
 
     /**

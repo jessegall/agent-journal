@@ -92,7 +92,7 @@ final class HelperNotice extends Model implements EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function undeliveredFor(ActorIdentity $parent): array
+    public static function findUndeliveredFor(ActorIdentity $parent): array
     {
         return array_values(self::query()
             ->ownedBy($parent)

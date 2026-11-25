@@ -19,7 +19,7 @@ final readonly class ProfileDraftReader
 
     public function draft(ProfileKey $profile): ProfileDraftData
     {
-        $draft = ProfileDraft::of($profile);
+        $draft = ProfileDraft::createForProfile($profile);
 
         return $this->checked($profile->key, $draft->revision, $draft->sourceAt($draft->revision));
     }

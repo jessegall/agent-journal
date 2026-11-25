@@ -31,7 +31,7 @@ final readonly class DraftEditService
             throw DraftConflict::withoutVersion();
         }
 
-        $document = Document::lockedForEditing($target->documentKey());
+        $document = Document::findLockedForEditing($target->documentKey());
 
         $draft = DocumentDraft::query()->ofDocument($document->id)->withToken($target->token)->firstOr(
             DraftMissing::throwing()->forDocument($document->number),

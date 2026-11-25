@@ -29,7 +29,7 @@ final readonly class ProposeReaderHandler implements CommandHandler
     public function handle(ProposeReaderCommand $command): string
     {
         $actor = ActorIdentity::of($command->dispatchedBy());
-        $request = CommandRequest::lockedForChange($command->commandRequestId);
+        $request = CommandRequest::findLockedForChange($command->commandRequestId);
 
         if (! $request->acceptsProposalFrom($actor, $this->administration->isGrantedToCaller())) {
             throw ReaderProposalRefused::notTheRequester($request->id);

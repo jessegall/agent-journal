@@ -43,6 +43,25 @@ final class DriverApproval extends Model implements EventSource, ReadableModel
         return ['build_pins' => 'array'];
     }
 
+    // ----------[ Constructors ]----------
+
+    /**
+     * The driver's approval, or a new one not yet saved when the owner never approved it.
+     */
+    public static function create(DriverKey $key): self
+    {
+        $existing = self::query()->ofKeys([(string) $key])->first();
+
+        if ($existing !== null) {
+            return $existing;
+        }
+
+        $approval = new self();
+        $approval->driver_key = (string) $key;
+
+        return $approval;
+    }
+
     // ----------[ Mutations ]----------
 
     /**
@@ -60,29 +79,12 @@ final class DriverApproval extends Model implements EventSource, ReadableModel
     // ----------[ Queries ]----------
 
     /**
-     * The driver's approval, or a new one not yet saved when the owner never approved it.
-     */
-    public static function forKey(DriverKey $key): self
-    {
-        $existing = self::query()->ofKeys([(string) $key])->first();
-
-        if ($existing !== null) {
-            return $existing;
-        }
-
-        $approval = new self();
-        $approval->driver_key = (string) $key;
-
-        return $approval;
-    }
-
-    /**
      * The approved builds of each approved driver among these keys, by key.
      *
      * @param  list<string>  $keys
      * @return array<string, list<string>>
      */
-    public static function buildsByKey(array $keys): array
+    public static function resolveBuildsByKey(array $keys): array
     {
         return self::query()
             ->ofKeys($keys)

@@ -20,7 +20,7 @@ final readonly class StartDeviceGrantHandler implements CommandHandler
 {
     public function handle(StartDeviceGrantCommand $command): DeviceGrantStart
     {
-        $binding = ProjectBinding::lockById($command->bindingId);
+        $binding = ProjectBinding::findLockedById($command->bindingId);
 
         if (! $binding->isReportableBy($command->hostId)) {
             throw PresenceRefused::notTheHost($binding->id);
@@ -41,7 +41,7 @@ final readonly class StartDeviceGrantHandler implements CommandHandler
      */
     private function grantOf(ProjectBinding $binding, StartDeviceGrantCommand $command): DeviceGrant
     {
-        foreach (DeviceGrant::lockOfStart($binding, $command->startKey) as $earlier) {
+        foreach (DeviceGrant::findLockedOfStart($binding, $command->startKey) as $earlier) {
             $earlier->assertNotCollected();
             $earlier->restartWith($command->deviceCodeDigest);
 

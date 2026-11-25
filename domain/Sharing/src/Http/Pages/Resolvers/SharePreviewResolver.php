@@ -39,13 +39,13 @@ final readonly class SharePreviewResolver implements PageResolver
         $root = $this->request->shareRoot($this->records);
         $candidates = $this->scope->discover($root, ShareBudget::forPreview($this->meter));
 
-        $live = Share::liveFor($root);
+        $live = Share::findLiveFor($root);
 
         $approved = $live->map(
-            fn (Share $share) => ShareMember::approvedLinkIdsOf($share),
+            fn (Share $share) => ShareMember::resolveApprovedLinkIdsOf($share),
         )->getOrElse([]);
 
-        $saved = SharePreview::openFor($this->actors->actor()->actorId(), $root);
+        $saved = SharePreview::findOpenFor($this->actors->actor()->actorId(), $root);
 
         return SharePreviewData::from([
             'rootReference' => $this->request->rootReference(),
@@ -56,7 +56,7 @@ final readonly class SharePreviewResolver implements PageResolver
             ),
             'savedPreview' => SavedSharePreviewData::optionalOrMissing($saved->getOrElse(null)),
             'liveShare' => RootShareData::optionalOrMissing($live->getOrElse(null)),
-            'openProposals' => Share::openProposalsFor($root),
+            'openProposals' => Share::findOpenProposalsFor($root),
         ]);
     }
 }

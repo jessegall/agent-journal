@@ -20,7 +20,7 @@ final readonly class ReleaseAccountRemovalHandler implements CommandHandler
 
     public function handle(ReleaseAccountRemovalCommand $command): bool
     {
-        $account = Account::lockedForJournal($command->accountId);
+        $account = Account::findLockedForJournal($command->accountId);
 
         if (! $account->cleanup_pending || $account->cleanup_released) {
             return false;

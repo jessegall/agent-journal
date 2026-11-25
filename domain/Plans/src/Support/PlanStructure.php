@@ -25,7 +25,7 @@ final readonly class PlanStructure
 
     public function addPhase(Plan $plan, string $title): Phase
     {
-        Plan::lockForChange($plan->id);
+        Plan::findLockedForChange($plan->id);
         $this->approvals->retireCurrentOf($plan);
 
         return Phase::create($plan, $title);
@@ -43,7 +43,7 @@ final readonly class PlanStructure
      */
     public function addTasks(Phase $phase, array $ids): void
     {
-        $plan = Plan::lockForChange($phase->plan_id);
+        $plan = Plan::findLockedForChange($phase->plan_id);
         $phase->refresh();
         $duplicateTaskIds = array_keys(array_filter(array_count_values($ids), fn (int $count) => $count > 1));
         $alreadyPlacedTaskId = PhaseTask::query()->ofTasks($ids)->value('task_id');
@@ -76,7 +76,7 @@ final readonly class PlanStructure
      */
     public function addTasksAtRevision(Phase $phase, int $expectedRevision, array $ids): void
     {
-        Plan::lockForChange($phase->plan_id);
+        Plan::findLockedForChange($phase->plan_id);
         $phase->refresh();
         $phase->assertAtRevision($expectedRevision);
         $this->addTasks($phase, $ids);

@@ -87,7 +87,7 @@ final class CapacityReservation extends Model implements ReadableModel
      */
     private static function assertFits(ExecutionBudgets $budgets, HostCapacity $capacity): void
     {
-        $shortage = self::shortageOf($budgets, $capacity);
+        $shortage = self::resolveShortageOf($budgets, $capacity);
 
         if ($shortage === null) {
             return;
@@ -102,7 +102,7 @@ final class CapacityReservation extends Model implements ReadableModel
      * The resource these budgets would not fit in beside every reservation still held, none when they fit or the
      * host's capacity is not guarded. It reads only and reserves nothing; admission asks it again under its lock.
      */
-    public static function shortageOf(ExecutionBudgets $budgets, HostCapacity $capacity): CapacityResource|null
+    public static function resolveShortageOf(ExecutionBudgets $budgets, HostCapacity $capacity): CapacityResource|null
     {
         if (! $capacity->isGuarded) {
             return null;

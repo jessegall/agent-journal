@@ -77,7 +77,7 @@ final readonly class AgentDirectory implements AgentDirectoryContract
         $runtimes = AgentRuntime::query()->ofSessions($sessions->pluck('id')->all())
             ->limit(self::AGENTS_SHOWN)->get()->keyBy('agent_session_id');
 
-        $starts = SessionProcess::supervised()->whereIn('session_id', $sessions->pluck('id')->all())
+        $starts = SessionProcess::query()->supervised()->whereIn('session_id', $sessions->pluck('id')->all())
             ->orderByDesc('created_at')->limit(self::AGENTS_SHOWN * 2)->get()->unique('session_id')
             ->keyBy('session_id');
 
@@ -85,12 +85,12 @@ final readonly class AgentDirectory implements AgentDirectoryContract
             ->bySequenceDescending()->limit(self::AGENTS_SHOWN * 2)->get()->unique('agent_runtime_id')
             ->keyBy('agent_runtime_id');
 
-        $waitingOnHelpers = AgentRuntime::sessionsWaitingOnHelpers(array_values(array_map(
+        $waitingOnHelpers = AgentRuntime::resolveSessionsWaitingOnHelpers(array_values(array_map(
             strval(...),
             $sessions->pluck('id')->all(),
         )));
 
-        $readiness = SessionRequest::latestReadinessOf(array_values(array_map(
+        $readiness = SessionRequest::resolveLatestReadinessOf(array_values(array_map(
             strval(...),
             $sessions->pluck('id')->all(),
         )));
@@ -100,7 +100,7 @@ final readonly class AgentDirectory implements AgentDirectoryContract
         $switches = DriverSwitch::query()->ofAgents($ids)->newestCreatedFirst()
             ->limit(self::AGENTS_SHOWN * 2)->get()->unique('agent_id')->keyBy('agent_id');
 
-        $refusals = SessionProcess::refusalsOf(array_values(array_map(strval(...), $ids)));
+        $refusals = SessionProcess::resolveRefusalsOf(array_values(array_map(strval(...), $ids)));
 
         $startOutcomes = $this->startOutcomesOf(array_values(array_map(strval(...), $ids)));
 
@@ -159,7 +159,7 @@ final readonly class AgentDirectory implements AgentDirectoryContract
 
     public function mainAgentId(): Option
     {
-        return MainAgentDesignation::designatedAgentId();
+        return MainAgentDesignation::resolveDesignatedAgentId();
     }
 
     /**
@@ -171,7 +171,7 @@ final readonly class AgentDirectory implements AgentDirectoryContract
      */
     private function startOutcomesOf(array $ids): array
     {
-        $startOutcomes = SessionRequest::latestOf($ids)->map(fn (SessionRequest $record) => new SessionStartOutcome(
+        $startOutcomes = SessionRequest::findLatestOf($ids)->map(fn (SessionRequest $record) => new SessionStartOutcome(
             $record->agent_id,
             $record->request_id,
             $record->disposition,
@@ -179,7 +179,7 @@ final readonly class AgentDirectory implements AgentDirectoryContract
             $record->refusal_reason,
         ));
 
-        $dismissed = SessionOutcomeDismissal::dismissedKeysOf(
+        $dismissed = SessionOutcomeDismissal::resolveDismissedKeysOf(
             ActorIdentity::of($this->actors->actor()),
             array_values($startOutcomes->map(fn (SessionStartOutcome $start) => $start->requestId)->all()),
         );

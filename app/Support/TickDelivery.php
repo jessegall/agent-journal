@@ -60,7 +60,7 @@ final readonly class TickDelivery
         $passNow = $this->serverClock->now();
         $passClockNanoseconds = $this->clock->nanoseconds();
 
-        $checkpoints = EngineFrameTime::settledAtFor(
+        $checkpoints = EngineFrameTime::resolveSettledAtFor(
             array_map(fn (TickCandidate $candidate) => $candidate->frameId, $batch->candidates),
         );
 

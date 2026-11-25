@@ -43,7 +43,7 @@ final readonly class AdmitStartSkills implements Listener
 
     public function handle(SessionOpened $event): void
     {
-        $session = AgentSession::byId($event->sessionId);
+        $session = AgentSession::findById($event->sessionId);
         $family = StartDriver::of($session->driver_key, $this->drivers)->driver;
 
         if ($family === null || ! $this->drivers->hasFamily($family->key)) {
@@ -56,7 +56,7 @@ final readonly class AdmitStartSkills implements Listener
             throw StartRefused::skillsUnsupported((string) $session->driver_key);
         }
 
-        $generation = SkillGeneration::latestReady();
+        $generation = SkillGeneration::findLatestReady();
 
         if ($generation === null) {
             return;

@@ -50,6 +50,6 @@ final readonly class TaskGraphVersion
      */
     public function current(array $ids): string
     {
-        return $this->of(Task::ofIds($ids), TaskWait::within($ids));
+        return $this->of(Task::findForIds($ids), TaskWait::findWithin($ids));
     }
 }

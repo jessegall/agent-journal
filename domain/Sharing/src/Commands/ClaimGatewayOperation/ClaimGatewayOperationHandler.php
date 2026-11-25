@@ -29,18 +29,18 @@ final readonly class ClaimGatewayOperationHandler extends SharingCommandHandler
     {
         $this->runs->hold($command->runId);
 
-        $operationId = $command->operationId ?? ShareGatewayOperation::nextClaimable()->getOrElse(null);
+        $operationId = $command->operationId ?? ShareGatewayOperation::resolveNextClaimable()->getOrElse(null);
 
         if ($operationId === null) {
             return null;
         }
 
-        $configuration = ShareGatewayConfiguration::lockById(
-            ShareGatewayOperation::of($operationId)->share_gateway_configuration_id,
+        $configuration = ShareGatewayConfiguration::findLockedById(
+            ShareGatewayOperation::findOf($operationId)->share_gateway_configuration_id,
         );
 
-        $running = ShareGatewayEndpoint::lockRunningOf($configuration, $command->runId);
-        $operation = ShareGatewayOperation::lockById($operationId);
+        $running = ShareGatewayEndpoint::findLockedRunningOf($configuration, $command->runId);
+        $operation = ShareGatewayOperation::findLockedById($operationId);
 
         if (! $operation->isClaimable()) {
             return null;
@@ -52,7 +52,7 @@ final readonly class ClaimGatewayOperationHandler extends SharingCommandHandler
             return null;
         }
 
-        $endpoint = $running->getOrCall(fn () => ShareGatewayEndpoint::openNextFor($configuration, $command->runId));
+        $endpoint = $running->getOrCall(fn () => ShareGatewayEndpoint::createForConfiguration($configuration, $command->runId));
 
         if ($operation->type === GatewayOperationType::Close) {
             $endpoint->moveTo(GatewayEndpointState::Closing);

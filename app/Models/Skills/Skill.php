@@ -101,7 +101,7 @@ final class Skill extends Model implements EventSource, Numbered, ReadableModel
 
         $this->retired_at = CarbonImmutable::now();
         $this->assertSaved($this->save());
-        $current = SkillRevision::currentOf($this);
+        $current = SkillRevision::findCurrentOf($this);
         $this->raise(new SkillsChanged($this->id, $current->revision));
 
         return $current;
@@ -138,7 +138,7 @@ final class Skill extends Model implements EventSource, Numbered, ReadableModel
             throw SkillRetired::for($this->key);
         }
 
-        $latest = SkillRevision::currentOf($this)->revision;
+        $latest = SkillRevision::findCurrentOf($this)->revision;
 
         if ($latest !== $expectedRevision) {
             throw SkillRevisionConflict::latest($this->key, $latest);
@@ -162,12 +162,12 @@ final class Skill extends Model implements EventSource, Numbered, ReadableModel
     /**
      * The visible skill with this id, locked until the transaction ends.
      */
-    public static function lockVisible(string $skillId, string $environment): self
+    public static function findLockedVisible(string $skillId, string $environment): self
     {
         return self::query()->visibleIn($environment)->whereKey($skillId)->lockForUpdate()->firstOrFail();
     }
 
-    public static function keyTaken(SkillKey $key): bool
+    public static function isKeyTaken(SkillKey $key): bool
     {
         return self::query()->withKey($key)->exists();
     }
@@ -177,7 +177,7 @@ final class Skill extends Model implements EventSource, Numbered, ReadableModel
      *
      * @return list<self>
      */
-    public static function activeIn(string $environment, int $limit): array
+    public static function findActiveIn(string $environment, int $limit): array
     {
         return array_values(
             self::query()->visibleIn($environment)

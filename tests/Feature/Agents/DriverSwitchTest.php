@@ -78,7 +78,7 @@ final class DriverSwitchTest extends TestCase
         $switch->refresh();
         $this->assertSame(DriverSwitchStage::Confirmed, $switch->stage);
         $this->assertTrue($switch->stage->isFinal());
-        $this->assertNull(DriverSwitch::openOf($this->session->agent_id));
+        $this->assertNull(DriverSwitch::findOpenOf($this->session->agent_id));
     }
 
     public function test_a_jump_past_its_stages_is_refused(): void
@@ -93,7 +93,7 @@ final class DriverSwitchTest extends TestCase
     public function test_an_agent_has_one_open_switch_at_most(): void
     {
         $open = $this->switch();
-        $this->assertSame($open->id, DriverSwitch::openOf($this->session->agent_id)?->id);
+        $this->assertSame($open->id, DriverSwitch::findOpenOf($this->session->agent_id)?->id);
 
         $this->expectException(UniqueConstraintViolationException::class);
 

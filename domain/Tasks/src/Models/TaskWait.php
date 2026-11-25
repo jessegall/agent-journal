@@ -136,7 +136,7 @@ final class TaskWait extends Model implements EventSource, ReadableModel
     /**
      * The wait of the dependent on the prerequisite, if there is one.
      */
-    public static function between(string $dependentId, string $prerequisiteId): self|null
+    public static function findBetween(string $dependentId, string $prerequisiteId): self|null
     {
         return self::query()->ofDependents([$dependentId])->onPrerequisite($prerequisiteId)->first();
     }
@@ -147,7 +147,7 @@ final class TaskWait extends Model implements EventSource, ReadableModel
      * @param  list<string>  $dependentIds
      * @return list<string>
      */
-    public static function prerequisiteIdsOf(array $dependentIds, int $limit): array
+    public static function resolvePrerequisiteIdsOf(array $dependentIds, int $limit): array
     {
         $ids = self::query()
             ->ofDependents($dependentIds)
@@ -159,23 +159,12 @@ final class TaskWait extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The ids of the tasks with a wait not met: not waived, and its prerequisite gone or not finished, as a subquery
-     * a task query narrows by before its count and limit.
-     *
-     * @return Builder<self>
-     */
-    public static function unmetDependentIds(): Builder
-    {
-        return self::query()->select('dependent_task_id')->unmet();
-    }
-
-    /**
      * The given tasks that wait on any task.
      *
      * @param  list<string>  $ids
      * @return list<string>
      */
-    public static function dependentIdsAmong(array $ids): array
+    public static function resolveDependentIdsAmong(array $ids): array
     {
         $waiting = self::query()
             ->ofDependents($ids)
@@ -189,7 +178,7 @@ final class TaskWait extends Model implements EventSource, ReadableModel
     /**
      * @return Collection<int, self>
      */
-    public static function waitsOf(string $dependentId, int $limit): Collection
+    public static function findWaitsOf(string $dependentId, int $limit): Collection
     {
         return self::query()->ofDependents([$dependentId])->oldestFirst()->limit($limit)->get();
     }
@@ -197,7 +186,7 @@ final class TaskWait extends Model implements EventSource, ReadableModel
     /**
      * @return Collection<int, self>
      */
-    public static function holdersOf(string $prerequisiteId, int $limit): Collection
+    public static function findHoldersOf(string $prerequisiteId, int $limit): Collection
     {
         return self::query()->onPrerequisite($prerequisiteId)->oldestFirst()->limit($limit)->get();
     }
@@ -208,7 +197,7 @@ final class TaskWait extends Model implements EventSource, ReadableModel
      * @param  list<string>  $ids
      * @return list<self>
      */
-    public static function within(array $ids): array
+    public static function findWithin(array $ids): array
     {
         if ($ids === []) {
             return [];
@@ -217,7 +206,7 @@ final class TaskWait extends Model implements EventSource, ReadableModel
         $among = array_flip($ids);
 
         return array_values(array_filter(
-            self::waitsOfTasks($ids)->all(),
+            self::findWaitsOfTasks($ids)->all(),
             fn (self $wait) => isset($among[$wait->prerequisite_task_id]),
         ));
     }
@@ -226,7 +215,7 @@ final class TaskWait extends Model implements EventSource, ReadableModel
      * @param  list<string>  $dependentIds
      * @return Collection<int, self>
      */
-    public static function waitsOfTasks(array $dependentIds): Collection
+    public static function findWaitsOfTasks(array $dependentIds): Collection
     {
         return self::query()->ofDependents($dependentIds)->readAll('the direct waits of the tasks asked about')->get();
     }
@@ -289,5 +278,17 @@ final class TaskWait extends Model implements EventSource, ReadableModel
         $finished = Task::query()->keys()->finished();
 
         $query->whereNull('waived_at')->whereNotIn('prerequisite_task_id', $finished);
+    }
+
+    /**
+     * The ids of the tasks with a wait not met: not waived, and its prerequisite gone or not finished, as a subquery
+     * a task query narrows by before its count and limit.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unmetDependentIds(Builder $query): void
+    {
+        $query->select('dependent_task_id')->unmet();
     }
 }

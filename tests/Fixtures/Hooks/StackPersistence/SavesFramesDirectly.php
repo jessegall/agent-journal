@@ -16,7 +16,7 @@ final readonly class SavesFramesDirectly
 {
     public function save(StackTarget $target, FrameRecords $frames, TickingTypes $ticking): void
     {
-        $row = AgentStackRow::lockFor($target);
+        $row = AgentStackRow::findLockedFor($target);
 
         $row->saveFrames($frames, $ticking);
     }

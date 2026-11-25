@@ -29,6 +29,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Override;
 
 /**
  * @property string $id
@@ -276,6 +277,7 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
     /**
      * A comment reaches no other record; it is shared only through its parent.
      */
+    #[Override]
     public static function shareRelations(): ShareRelationSet
     {
         return ShareRelationSet::none();

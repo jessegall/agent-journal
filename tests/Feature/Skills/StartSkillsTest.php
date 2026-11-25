@@ -97,7 +97,7 @@ final class StartSkillsTest extends TestCase
     public function test_a_codex_start_gets_its_set_written_before_spawn_and_records_the_generation(): void
     {
         [$host, $opened] = $this->openCodexRuntime();
-        $publication = SkillPublication::latestOfSession($opened->sessionId);
+        $publication = SkillPublication::findLatestOfSession($opened->sessionId);
 
         $this->assertNotNull($publication);
         $this->assertSame(PublicationState::Delivered, $publication->state);
@@ -110,7 +110,7 @@ final class StartSkillsTest extends TestCase
         $this->assertSame('skills', $grant->folders[0]->name);
         $this->assertSame([], $grant->folders[0]->arguments);
         $this->assertContains('journal/SKILL.md', array_map(fn ($file) => $file->path, $grant->folders[0]->files));
-        $this->assertSame($publication->generation_id, AgentSession::byId($opened->sessionId)->skill_generation_id);
+        $this->assertSame($publication->generation_id, AgentSession::findById($opened->sessionId)->skill_generation_id);
     }
 
     public function test_a_failed_set_refuses_the_grant_so_nothing_spawns(): void
@@ -155,8 +155,8 @@ final class StartSkillsTest extends TestCase
         $this->started($main);
         $this->started($reviewer);
 
-        $mainSet = SkillPublication::latestOfSession($main->id);
-        $reviewerSet = SkillPublication::latestOfSession($reviewer->id);
+        $mainSet = SkillPublication::findLatestOfSession($main->id);
+        $reviewerSet = SkillPublication::findLatestOfSession($reviewer->id);
         $this->assertNotNull($mainSet);
         $this->assertNotNull($reviewerSet);
         $this->assertNotSame($mainSet->target, $reviewerSet->target);

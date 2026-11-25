@@ -14,7 +14,7 @@ final readonly class ApproveDeviceGrantHandler implements CommandHandler
 {
     public function handle(ApproveDeviceGrantCommand $command): void
     {
-        $grant = DeviceGrant::lockPendingByUserCode($command->userCode);
+        $grant = DeviceGrant::findLockedPendingByUserCode($command->userCode);
         $userId = $command->dispatchedBy()->actorId();
         $grant->approveBy($userId);
 

@@ -29,11 +29,11 @@ final readonly class BindingRevocation
         $binding->revoke();
         $binding->host->revokeAt(CarbonImmutable::now());
 
-        foreach (DeviceGrant::lockLiveOf($binding) as $grant) {
+        foreach (DeviceGrant::findLockedLiveOf($binding) as $grant) {
             $grant->revoke();
         }
 
-        foreach (ProjectCommandRun::lockRunningOf($binding) as $run) {
+        foreach (ProjectCommandRun::findLockedRunningOf($binding) as $run) {
             $run->cancel();
         }
 

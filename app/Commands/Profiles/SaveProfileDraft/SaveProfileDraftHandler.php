@@ -25,7 +25,7 @@ final readonly class SaveProfileDraftHandler implements CommandHandler
 
     private function saveFor(ProfileKey $profile, int $expected, ScriptSource $source, ActorIdentity $author): int
     {
-        $draft = ProfileDraft::lockForProfiles([$profile->key])[$profile->key];
+        $draft = ProfileDraft::createForProfiles([$profile->key])[$profile->key];
         $draft->sourceAt($expected);
         $revision = ProfileDraftRevision::create($draft, $source, $author);
         $draft->revision = $revision->revision;

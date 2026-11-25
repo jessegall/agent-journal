@@ -42,7 +42,7 @@ trait BoundedReads
     /**
      * The row with this id, locked for update until the transaction ends; a missing row fails the read.
      */
-    public static function lockedById(string $id): static
+    public static function findLockedById(string $id): static
     {
         return static::query()->whereKey($id)->lockForUpdate()->firstOrFail();
     }

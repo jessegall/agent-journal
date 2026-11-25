@@ -123,7 +123,7 @@ final class ConditionalReviewStateTest extends TestCase
         $this->assertSame(3, $first->retryLimit());
 
         SettingsRecord::create('Reviews');
-        $record = SettingsRecord::sharedRuntimeForOwner('Reviews')->get();
+        $record = SettingsRecord::findSharedRuntimeForOwner('Reviews')->get();
         $record->revise($record->document->withToggle(new EncodedToggle('review', EncodedValue::of(false))));
 
         $sameRequest = $this->builtReview();

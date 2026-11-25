@@ -66,7 +66,7 @@ final class ChatHostTest extends TestCase
                 'body' => 'Is the build green?',
                 'agent' => $session->agent_id,
                 'expectedSessionId' => $session->id,
-                'expectedGeneration' => AgentRuntime::ofSession($session->id)?->process_generation ?? 0,
+                'expectedGeneration' => AgentRuntime::findForSession($session->id)?->process_generation ?? 0,
             ])
             ->assertRedirect($conversation);
 

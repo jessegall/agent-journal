@@ -20,7 +20,7 @@ final class ProfileListCommand extends Command
 
     public function handle(): int
     {
-        $profiles = Profile::listed(self::ROWS);
+        $profiles = Profile::findListed(self::ROWS);
 
         $this->table(
             [

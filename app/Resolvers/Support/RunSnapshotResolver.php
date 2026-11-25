@@ -69,7 +69,7 @@ final readonly class RunSnapshotResolver
             ->withPurpose(PositionPurpose::Live)
             ->first();
 
-        $assessment = OutputAssessment::latestOf($part);
+        $assessment = OutputAssessment::findLatestOf($part);
         $receipt = $this->receipts->forPart($part->id);
         $receipt = $receipt->isDefined() ? $receipt->get()->receiptId : null;
 

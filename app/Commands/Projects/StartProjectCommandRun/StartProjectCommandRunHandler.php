@@ -23,7 +23,7 @@ final readonly class StartProjectCommandRunHandler implements CommandHandler
 
     public function handle(StartProjectCommandRunCommand $command): CommandRunStart
     {
-        foreach (ProjectCommandRun::lockByRequest($command->requestKey) as $earlier) {
+        foreach (ProjectCommandRun::findLockedByRequest($command->requestKey) as $earlier) {
             if (! $earlier->isOfOperation($command->fingerprint)) {
                 throw VerbNotServed::anotherOperation($command->requestKey);
             }
@@ -33,7 +33,7 @@ final readonly class StartProjectCommandRunHandler implements CommandHandler
             return new CommandRunStart(false, $earlier->state, $earlier->recordedFrames());
         }
 
-        $binding = ProjectBinding::lockById($command->bindingId);
+        $binding = ProjectBinding::findLockedById($command->bindingId);
 
         ProjectCommandRun::create(
             $command->requestKey,

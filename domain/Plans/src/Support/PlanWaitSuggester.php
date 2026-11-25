@@ -17,7 +17,7 @@ final readonly class PlanWaitSuggester
 {
     public function suggestionFor(TaskGraph $graph): TaskGraphSuggestion
     {
-        $phaseOf = PhaseTask::phaseNumbersInPlan($graph->planId);
+        $phaseOf = PhaseTask::resolvePhaseNumbersInPlan($graph->planId);
 
         $needed = array_values(array_filter(
             $graph->edges,

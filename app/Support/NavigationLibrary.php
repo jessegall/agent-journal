@@ -20,7 +20,7 @@ final readonly class NavigationLibrary
      */
     public function save(NavigationRequest $navigation, array $steps): MenuEntry
     {
-        $entry = MenuEntry::lockForPath($navigation, $steps);
+        $entry = MenuEntry::findLockedForPath($navigation, $steps);
 
         if ($entry === null) {
             $completes = $navigation->completes ?? NavigationCompletion::Goal;

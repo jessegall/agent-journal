@@ -37,7 +37,7 @@ final readonly class ReadPartLiveHandler implements CommandHandler
             return '';
         }
 
-        $position = ReaderPosition::of($part, $pairs[0]->reader);
+        $position = ReaderPosition::findOf($part, $pairs[0]->reader);
 
         if ($position->hasFailed()) {
             return $position->interpretation->value;

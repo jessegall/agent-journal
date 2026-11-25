@@ -94,7 +94,7 @@ final class SupervisorLink extends Model implements EventSource, ReadableModel
     /**
      * @return array<string, SupervisorRoutes>
      */
-    public static function graphRoutes(): array
+    public static function resolveGraphRoutes(): array
     {
         $routes = [];
 

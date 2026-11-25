@@ -20,11 +20,11 @@ final class ProfileShowCommand extends Command
 
     public function handle(): int
     {
-        $profile = Profile::byKey(ProfileKey::from((string) $this->argument('key')));
+        $profile = Profile::findByKey(ProfileKey::from((string) $this->argument('key')));
 
         $revision = $this->option('revision') === null
-            ? ProfileRevision::currentOf($profile)
-            : ProfileRevision::numbered(
+            ? ProfileRevision::findCurrentOf($profile)
+            : ProfileRevision::findNumbered(
                 $profile,
                 (int) $this->option('revision'),
             );

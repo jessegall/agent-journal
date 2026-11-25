@@ -31,6 +31,6 @@ final readonly class RunTaskCheckCommand extends Command implements RecordComman
 
     public function subject(): Task
     {
-        return Task::lockedById($this->taskId);
+        return Task::findLockedById($this->taskId);
     }
 }

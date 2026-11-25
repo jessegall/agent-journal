@@ -19,6 +19,6 @@ final readonly class ApproveDriverHandler implements CommandHandler
     public function handle(ApproveDriverCommand $command): void
     {
         $this->drivers->forKey($command->key);
-        DriverApproval::forKey($command->key)->approveBuilds($command->buildPins);
+        DriverApproval::create($command->key)->approveBuilds($command->buildPins);
     }
 }

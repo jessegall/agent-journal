@@ -319,7 +319,7 @@ final class Document extends Model implements Commentable, Dockable, EventSource
      *
      * @throws DocumentMissing
      */
-    public static function lockedForEditing(int|string $number): self
+    public static function findLockedForEditing(int|string $number): self
     {
         $query = self::query()->with('currentRevision')->lockForUpdate();
 

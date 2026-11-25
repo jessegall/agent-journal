@@ -33,8 +33,8 @@ final readonly class SessionStartLimits
     public function stopOverdue(): void
     {
         $now = $this->clock->now();
-        $starts = AgentSession::runningStarts(self::PASS_LIMIT);
-        $deadlines = SessionPolicy::wallDeadlinesOf($starts);
+        $starts = AgentSession::findRunningStarts(self::PASS_LIMIT);
+        $deadlines = SessionPolicy::resolveWallDeadlinesOf($starts);
 
         foreach ($starts as $session) {
             if (array_key_exists($session->id, $deadlines) && $deadlines[$session->id]->isBefore($now)) {
@@ -48,8 +48,8 @@ final readonly class SessionStartLimits
      */
     public function enforceFences(): void
     {
-        foreach (ProfileRevisionHold::pending(self::PASS_LIMIT) as $fence) {
-            $sessions = AgentSession::runningFromRevision(
+        foreach (ProfileRevisionHold::findPending(self::PASS_LIMIT) as $fence) {
+            $sessions = AgentSession::findRunningFromRevision(
                 $fence->profile_key,
                 $fence->profile_revision,
                 self::PASS_LIMIT,

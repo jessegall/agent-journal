@@ -11,6 +11,6 @@ final readonly class RecordAccountFailureHandler implements CommandHandler
 {
     public function handle(RecordAccountFailureCommand $command): bool
     {
-        return Account::lockedForJournal($command->accountId)->requestCheck($command->generation);
+        return Account::findLockedForJournal($command->accountId)->requestCheck($command->generation);
     }
 }

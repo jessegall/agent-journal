@@ -22,7 +22,7 @@ final readonly class AgentNotices implements AgentNoticesContract
 
     public function notify(string $agentId, string $text, string $key): void
     {
-        $session = AgentSession::liveOf($agentId);
+        $session = AgentSession::findLiveOf($agentId);
 
         if ($session !== null) {
             $this->journal->runAsJournal(

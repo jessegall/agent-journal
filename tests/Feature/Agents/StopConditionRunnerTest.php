@@ -158,6 +158,6 @@ final class StopConditionRunnerTest extends TestCase
             1,
         );
         SessionProcess::create($start->session, $account);
-        SessionProcess::supervised()->where('session_id', $start->session->id)->sole()->claimOn($hostId);
+        SessionProcess::query()->supervised()->where('session_id', $start->session->id)->sole()->claimOn($hostId);
     }
 }

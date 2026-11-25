@@ -23,7 +23,7 @@ final readonly class ReconcileSignInsHandler implements CommandHandler
     {
         $ended = 0;
 
-        foreach (SignInAttempt::lostBy($command->hostId, $command->runningAttemptIds) as $attempt) {
+        foreach (SignInAttempt::findLostBy($command->hostId, $command->runningAttemptIds) as $attempt) {
             $attempt->finishAt(SignInState::Interrupted, CarbonImmutable::now());
             $this->facts->runTransactionListeners();
             $ended++;

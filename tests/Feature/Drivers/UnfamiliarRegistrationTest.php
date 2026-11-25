@@ -63,7 +63,7 @@ final class UnfamiliarRegistrationTest extends TestCase
     {
         $key = 'example/echo-'.str_repeat('a', DriverKey::CHARACTER_LIMIT - strlen('example/echo-'));
         $this->register($key);
-        ActiveAccount::lockedFor('example')->select(
+        ActiveAccount::findLockedFor('example')->select(
             Account::create('example', AccountLabel::from('Echo account'), '/journal/accounts/example'),
         );
         $host = $this->enrollHost();
@@ -106,7 +106,7 @@ final class UnfamiliarRegistrationTest extends TestCase
     public function test_an_unfamiliar_registration_is_interrupted_and_stopped_through_the_standard_commands(): void
     {
         $this->register('example/echo');
-        ActiveAccount::lockedFor('example')->select(
+        ActiveAccount::findLockedFor('example')->select(
             Account::create('example', AccountLabel::from('Echo account'), '/journal/accounts/example'),
         );
         $agent = $this->agent();

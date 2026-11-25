@@ -68,7 +68,7 @@ final readonly class SessionContainers
      */
     private function accountOf(AgentRuntime $runtime): SelectedAccount|null
     {
-        $start = SessionProcess::currentOf($runtime->agent_session_id);
+        $start = SessionProcess::findCurrentOf($runtime->agent_session_id);
 
         if ($start === null) {
             return null;

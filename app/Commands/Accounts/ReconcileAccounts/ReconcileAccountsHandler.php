@@ -26,15 +26,15 @@ final readonly class ReconcileAccountsHandler implements CommandHandler
     {
         $expired = 0;
 
-        foreach (SignInAttempt::expiredLiveIds(CarbonImmutable::now(), self::BATCH) as $attemptId) {
+        foreach (SignInAttempt::resolveExpiredLiveIds(CarbonImmutable::now(), self::BATCH) as $attemptId) {
             $expired += $this->commands->run(new ExpireSignInAttemptCommand($attemptId)) ? 1 : 0;
         }
 
-        foreach (SignInAttempt::waitingForUsesIds(self::BATCH) as $attemptId) {
+        foreach (SignInAttempt::resolveWaitingForUsesIds(self::BATCH) as $attemptId) {
             $this->commands->run(new ReleaseSignInAgainCommand($attemptId));
         }
 
-        foreach (Account::waitingForCleanupIds(self::BATCH) as $accountId) {
+        foreach (Account::resolveWaitingForCleanupIds(self::BATCH) as $accountId) {
             $this->commands->run(new ReleaseAccountRemovalCommand($accountId));
         }
 

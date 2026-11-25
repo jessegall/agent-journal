@@ -26,7 +26,7 @@ final readonly class UsageReadings
             return;
         }
 
-        $window = AccountUsageWindow::lockedFor($account, $generation, $reading);
+        $window = AccountUsageWindow::findLockedFor($account, $generation, $reading);
 
         if ($window === null) {
             AccountUsageWindow::create($account, $generation, $reading);
@@ -43,7 +43,7 @@ final readonly class UsageReadings
 
     public function recordTokens(Account $account, int $generation, ThreadTokens $tokens): void
     {
-        $count = AccountUsageTokens::lockedFor($account, $generation, $tokens);
+        $count = AccountUsageTokens::findLockedFor($account, $generation, $tokens);
 
         if ($count === null) {
             AccountUsageTokens::create($account, $generation, $tokens);

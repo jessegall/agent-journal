@@ -12,7 +12,7 @@ final readonly class DismissAccountNoticeHandler implements CommandHandler
 {
     public function handle(DismissAccountNoticeCommand $command): void
     {
-        $notice = AccountNotice::lockedById($command->noticeId);
+        $notice = AccountNotice::findLockedById($command->noticeId);
 
         if ($notice->resolved_at !== null) {
             return;

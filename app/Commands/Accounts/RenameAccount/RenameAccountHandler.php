@@ -13,7 +13,7 @@ final readonly class RenameAccountHandler implements CommandHandler
     public function handle(RenameAccountCommand $command): void
     {
         $label = AccountLabel::from($command->label);
-        $account = Account::lockedForChange($command->accountId);
+        $account = Account::findLockedForChange($command->accountId);
         $account->rename($label, $command->seenRevision);
 
     }

@@ -11,6 +11,6 @@ final readonly class ChangeLayoutHandler implements CommandHandler
 {
     public function handle(ChangeLayoutCommand $command): void
     {
-        Layout::lockedForChange($command->layoutId)->saveNameAndShape($command->name, $command->shape);
+        Layout::findLockedForChange($command->layoutId)->saveNameAndShape($command->name, $command->shape);
     }
 }

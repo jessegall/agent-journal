@@ -97,7 +97,7 @@ final class DriverConversation extends Model implements ReadableModel
      * The native id of the agent's latest conversation under this context in this driver, the one a resume
      * continues; none when it never had one there.
      */
-    public static function lastUnder(string $agentId, string $contextReference, string $driver): string|null
+    public static function resolveLastUnder(string $agentId, string $contextReference, string $driver): string|null
     {
         $conversation = self::query()
             ->heldUnder($agentId, $contextReference, $driver)
@@ -113,7 +113,7 @@ final class DriverConversation extends Model implements ReadableModel
      *
      * @throws ResumeRefused
      */
-    public static function chosenFor(
+    public static function resolveChosenFor(
         string $conversationId,
         string $agentId,
         string $driver,

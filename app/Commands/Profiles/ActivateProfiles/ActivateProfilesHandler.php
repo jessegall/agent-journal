@@ -92,7 +92,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
 
         $changes = array_map($this->changeOf(...), $definitions);
         $author = ActorIdentity::of($actor);
-        $current = ProfileRevision::currentSources($keys);
+        $current = ProfileRevision::resolveCurrentSources($keys);
 
         $compiled = array_map(
             fn (
@@ -130,7 +130,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
      */
     private static function draftSources(ProfileProposal $proposal, DraftExpectations $expected, array $keys): array
     {
-        $drafts = ProfileDraft::lockForProfiles($keys);
+        $drafts = ProfileDraft::createForProfiles($keys);
         $sources = [];
 
         foreach ($proposal->profiles as $profile) {

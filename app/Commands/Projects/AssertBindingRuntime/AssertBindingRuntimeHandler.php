@@ -21,7 +21,7 @@ final readonly class AssertBindingRuntimeHandler implements CommandHandler
 
     public function handle(AssertBindingRuntimeCommand $command): void
     {
-        $binding = ProjectBinding::lockById($command->bindingId);
+        $binding = ProjectBinding::findLockedById($command->bindingId);
 
         if (! $binding->isReportableBy($command->hostId)) {
             throw BindingRuntimeRefused::notTheHost($binding->id);

@@ -171,7 +171,7 @@ final readonly class TaskWindowResolver implements PageResolver
      */
     private function waitActionsOf(string $taskId): TaskWaitActionsData
     {
-        $task = Task::ofId($taskId);
+        $task = Task::findForId($taskId);
         $allowed = $this->authorizer->filterActions(TaskPolicy::class, $task, [
             AccessType::Edit,
             AccessType::Admin,
@@ -203,7 +203,7 @@ final readonly class TaskWindowResolver implements PageResolver
      */
     private function actionsOf(string $taskId): TaskActionsData
     {
-        $task = Task::ofId($taskId);
+        $task = Task::findForId($taskId);
 
         $allowed = $this->authorizer->filterActions(
             RecordPolicy::class,

@@ -36,7 +36,7 @@ final readonly class ClaimStartHandler implements CommandHandler
      */
     public function handle(ClaimStartCommand $command): ClaimedStart|null
     {
-        $runtime = AgentRuntime::ofSession($command->sessionId)
+        $runtime = AgentRuntime::findForSession($command->sessionId)
             ?? throw StartClaimRefused::withoutRuntime($command->sessionId);
 
         if (! $runtime->isAssignedTo($command->hostId)) {
@@ -85,8 +85,8 @@ final readonly class ClaimStartHandler implements CommandHandler
             $start->account_generation,
             $settings->signInMethod($driver),
             $settings->recipeFor($driver, $start->transport_profile),
-            SessionRequest::conversationTargetOf($start->session_id),
-            SessionRequest::requiresConversation($start->session_id),
+            SessionRequest::resolveConversationTargetOf($start->session_id),
+            SessionRequest::isConversationRequired($start->session_id),
             $checkout->checkouts(),
         );
     }
@@ -97,7 +97,7 @@ final readonly class ClaimStartHandler implements CommandHandler
      */
     private function claimFor(string $hostId, string $sessionId): SessionProcess|null
     {
-        $start = SessionProcess::supervised()
+        $start = SessionProcess::query()->supervised()
             ->where('session_id', $sessionId)
             ->where('state', SessionProcessState::Pending->value)
             ->lockForUpdate()

@@ -81,6 +81,17 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
         return $endpoint;
     }
 
+    /**
+     * A new endpoint version of the configuration for the run, after every version it had; a closing version is never
+     * opened again.
+     */
+    public static function createForConfiguration(ShareGatewayConfiguration $configuration, string $runId): self
+    {
+        $latest = self::query()->ofConfiguration($configuration->id)->max('endpoint_version');
+
+        return self::create($configuration, (is_numeric($latest) ? (int) $latest : 0) + 1, $runId);
+    }
+
     // ----------[ Mutations ]----------
 
     public function moveTo(GatewayEndpointState $state): void
@@ -151,7 +162,7 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
      *
      * @return Option<self>
      */
-    public static function lockRunningOf(ShareGatewayConfiguration $configuration, string $runId): Option
+    public static function findLockedRunningOf(ShareGatewayConfiguration $configuration, string $runId): Option
     {
         $endpoint = self::query()->ofConfiguration($configuration->id)->ofRun($runId)->stillRunning()
             ->newestVersionFirst()->lockForUpdate()->first();
@@ -164,7 +175,7 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
      *
      * @return Option<self>
      */
-    public static function newestRunningOf(ShareGatewayConfiguration $configuration): Option
+    public static function findNewestRunningOf(ShareGatewayConfiguration $configuration): Option
     {
         $endpoint = self::query()->ofConfiguration($configuration->id)->stillRunning()->newestVersionFirst()->first();
 
@@ -176,7 +187,7 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
      *
      * @return list<self>
      */
-    public static function openOfRun(string $runId): array
+    public static function findOpenOfRun(string $runId): array
     {
         return array_values(
             self::query()->ofRun($runId)->open()->oldestFirst()->limit(Share::LIVE_LIMIT)->get()->all(),
@@ -192,22 +203,11 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
     }
 
     /**
-     * A new endpoint version of the configuration for the run, after every version it had; a closing version is never
-     * opened again.
-     */
-    public static function openNextFor(ShareGatewayConfiguration $configuration, string $runId): self
-    {
-        $latest = self::query()->ofConfiguration($configuration->id)->max('endpoint_version');
-
-        return self::create($configuration, (is_numeric($latest) ? (int) $latest : 0) + 1, $runId);
-    }
-
-    /**
      * The endpoint of this id, locked until the transaction ends.
      */
-    public static function lockById(string $id): self
+    public static function findLockedById(string $id): self
     {
-        return self::lockedById($id);
+        return self::findLockedById($id);
     }
 
     /**
@@ -215,7 +215,7 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
      *
      * @throws GatewayLeaseRefused
      */
-    public static function lockHeldBy(string $configurationId, int $version, string $runId): self
+    public static function findLockedHeldBy(string $configurationId, int $version, string $runId): self
     {
         return self::query()
             ->ofConfiguration($configurationId)

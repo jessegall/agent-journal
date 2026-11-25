@@ -21,7 +21,7 @@ final readonly class RecordBindingPresenceHandler implements CommandHandler
 
     public function handle(RecordBindingPresenceCommand $command): PresenceReceipt
     {
-        $binding = ProjectBinding::lockById($command->bindingId);
+        $binding = ProjectBinding::findLockedById($command->bindingId);
 
         if (! $binding->isReportableBy($command->hostId)) {
             throw PresenceRefused::notTheHost($binding->id);

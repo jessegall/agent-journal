@@ -23,8 +23,8 @@ final readonly class PlanReviewDecision
      */
     public function certified(string $planId, int $editionNumber): array
     {
-        $plan = Plan::lockStructure($planId);
-        $edition = PlanReviewEdition::numberedIn($plan->id, $editionNumber);
+        $plan = Plan::findLockedStructure($planId);
+        $edition = PlanReviewEdition::findNumberedIn($plan->id, $editionNumber);
 
         if ($edition === null) {
             throw PlanReviewRefused::notReviewing($plan->number, $plan->state->value);

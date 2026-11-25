@@ -335,7 +335,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     /**
      * The session with this id.
      */
-    public static function byId(string $sessionId): self
+    public static function findById(string $sessionId): self
     {
         return self::query()->whereKey($sessionId)->firstOrFail();
     }
@@ -343,7 +343,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     /**
      * The agent's most recent running session, or null when none runs.
      */
-    public static function liveOf(string $agentId): self|null
+    public static function findLiveOf(string $agentId): self|null
     {
         return self::query()->runningFor($agentId)->newestFirst()->first();
     }
@@ -354,7 +354,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
      * @param  list<string>  $ids
      * @return array<string, string>
      */
-    public static function runningDriversOf(array $ids): array
+    public static function resolveRunningDriversOf(array $ids): array
     {
         return self::query()
             ->ofAgents($ids)
@@ -371,7 +371,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     /**
      * The agent's most recent session, or null when it never started.
      */
-    public static function latestOf(string $agentId): self|null
+    public static function findLatestOf(string $agentId): self|null
     {
         return self::query()->ofAgents([$agentId])->newestFirst()->first();
     }
@@ -381,7 +381,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
      *
      * @return list<string>
      */
-    public static function idsOfAgent(string $agentId, int $limit): array
+    public static function resolveIdsOfAgent(string $agentId, int $limit): array
     {
         $ids = self::query()
             ->ofAgents([$agentId])
@@ -397,7 +397,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function runningForMaintenance(int $limit): array
+    public static function findRunningForMaintenance(int $limit): array
     {
         $running = self::query()
             ->running()
@@ -413,7 +413,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function runningStarts(int $limit): array
+    public static function findRunningStarts(int $limit): array
     {
         $starts = self::query()
             ->running()
@@ -430,7 +430,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function runningFromRevision(string $key, int $revision, int $limit): array
+    public static function findRunningFromRevision(string $key, int $revision, int $limit): array
     {
         $sessions = self::query()
             ->running()
@@ -441,15 +441,15 @@ final class AgentSession extends Model implements EventSource, ReadableModel
         return array_values($sessions->all());
     }
 
-    public static function lockedForUpdate(string $sessionId): self
+    public static function findLockedForUpdate(string $sessionId): self
     {
-        return self::lockedById($sessionId);
+        return self::findLockedById($sessionId);
     }
 
     /**
      * Locks the session's row, with its start token and agent, so a heartbeat waits for an end or a retirement.
      */
-    public static function lockedForHeartbeat(string $sessionId): self
+    public static function findLockedForHeartbeat(string $sessionId): self
     {
         return self::query()->whereKey($sessionId)->with([
             'sessionToken',
@@ -477,12 +477,12 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     /**
      * Holds the session's row shared for this transaction, so it cannot end while a change to its stack goes on.
      */
-    public static function sharedLockFor(string $sessionId): self
+    public static function findSharedLockFor(string $sessionId): self
     {
         return self::query()->whereKey($sessionId)->sharedLock()->firstOrFail();
     }
 
-    public static function lockRunningTarget(StackTarget $target): bool
+    public static function hasLockedRunningTarget(StackTarget $target): bool
     {
         $running = self::query()->runningFor($target->agentId)->whereKey($target->sessionId)->sharedLock()->first();
 

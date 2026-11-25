@@ -140,7 +140,7 @@ final class ProjectReadTest extends TestCase
     {
         $read = $this->read(ProjectReadType::File, 'src/main.go');
 
-        $recent = ProjectRead::recentOf(
+        $recent = ProjectRead::findRecentOf(
             $this->binding,
             ProjectReadType::File,
             'src/main.go',

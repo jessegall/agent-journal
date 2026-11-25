@@ -48,7 +48,7 @@ final readonly class HostCalls implements HostCallsContract
             throw HostCredentialRejected::stale($issuedAt);
         }
 
-        $host = Host::forSecret($secret);
+        $host = Host::findForSecret($secret);
 
         if (! $this->cache->add("host-call:{$host->id}:{$callId}", true, self::WINDOW_SECONDS * 2)) {
             throw HostCredentialRejected::replayed($callId);

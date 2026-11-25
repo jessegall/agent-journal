@@ -57,7 +57,7 @@ final readonly class StartStacks
         ]);
         AgentStackRow::create($target, $frames, $this->types->ticking());
 
-        AgentStackRow::lockAuthorizedFor($target)->frames->checkBottom();
+        AgentStackRow::findLockedAuthorizedFor($target)->frames->checkBottom();
     }
 
     /**
@@ -71,11 +71,11 @@ final readonly class StartStacks
      */
     private function carriedFrames(StackTarget $target): array
     {
-        if (! SessionRequest::resumesConversation($target->sessionId)) {
+        if (! SessionRequest::isConversationResumed($target->sessionId)) {
             return [];
         }
 
-        $previous = AgentStackRow::lastClosedBefore($target)->map(fn (AgentStackRow $row) => $row->frames->all());
+        $previous = AgentStackRow::findLastClosedBefore($target)->map(fn (AgentStackRow $row) => $row->frames->all());
         $carriedFrames = [];
 
         foreach ($previous->getOrElse([]) as $record) {
@@ -105,6 +105,6 @@ final readonly class StartStacks
     {
         $this->transaction->assertOpen($target);
 
-        AgentStackRow::lockAuthorizedFor($target)->closeAt(CarbonImmutable::now());
+        AgentStackRow::findLockedAuthorizedFor($target)->closeAt(CarbonImmutable::now());
     }
 }

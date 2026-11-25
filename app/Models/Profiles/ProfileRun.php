@@ -257,7 +257,7 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
 
     // ----------[ Queries ]----------
 
-    public static function lockedForStep(string $runId): self
+    public static function findLockedForStep(string $runId): self
     {
         return self::query()->acrossActors()->whereKey($runId)->lockForUpdate()->firstOrFail();
     }

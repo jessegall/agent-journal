@@ -112,7 +112,7 @@ final class RunOutcome extends Model implements EventSource, ReadableModel
      *
      * @return Option<self>
      */
-    public static function ofRun(ProcessRun $run): Option
+    public static function findForRun(ProcessRun $run): Option
     {
         $runOutcome = self::query()->ofAttempt($run->attempt_id)->first();
 
@@ -124,7 +124,7 @@ final class RunOutcome extends Model implements EventSource, ReadableModel
      *
      * @return Option<self>
      */
-    public static function lockedForAttempt(string $attemptId): Option
+    public static function findLockedForAttempt(string $attemptId): Option
     {
         $runOutcome = self::query()->ofAttempt($attemptId)->lockForUpdate()->first();
 

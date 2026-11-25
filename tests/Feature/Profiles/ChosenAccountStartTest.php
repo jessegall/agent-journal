@@ -44,7 +44,7 @@ final class ChosenAccountStartTest extends TestCase
         $automatic = DB::transaction(fn () => $this->accounts()->forStart(DefaultDrivers::CODEX));
 
         $this->assertSame([$chosen->id, $default->id], [$explicit->record->id, $automatic->record->id]);
-        $this->assertSame($default->id, ActiveAccount::lockedFor(DefaultDrivers::CODEX)->account_id);
+        $this->assertSame($default->id, ActiveAccount::findLockedFor(DefaultDrivers::CODEX)->account_id);
     }
 
     public function test_a_chosen_account_whose_sign_in_changed_is_refused_for_review(): void
