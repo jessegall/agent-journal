@@ -6,18 +6,16 @@ namespace Domain\Plans\Tests\Mcp;
 
 use Domain\Plans\Mcp\Tools\PhaseReadTool;
 use Domain\Plans\PlansDomain;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of the tool PhaseReadTool, as the generator wrote it.
+ * A main agent reads one phase of a plan with its tasks.
  */
-#[Generated]
 #[TestsMcpTool(PhaseReadTool::class)]
 final class PhaseReadToolTest extends McpToolEntryTestCase
 {
@@ -28,8 +26,9 @@ final class PhaseReadToolTest extends McpToolEntryTestCase
 
     protected function arrange(TestJournal $journal): ToolCall
     {
-        throw EntryTestNeedsArrangement::for('PhaseReadTool', [
-            'the argument phase_id',
-        ]);
+        $start = $journal->owner()->signedStart('Planner');
+        $phase = $journal->fixtures(PlanFixtures::class)->plan('Release')->phase('Release', 'Design')->phaseCalled('Design');
+
+        return ToolCall::by($start)->arguments(['phase_id' => $phase->id]);
     }
 }

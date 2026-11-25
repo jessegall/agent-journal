@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Mcp;
 
+use Domain\Plans\Commands\CreatePlan\CreatePlanCommand;
+use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Mcp\Tools\CreatePlanTool;
 use Domain\Plans\PlansDomain;
+use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of the tool CreatePlanTool, as the generator wrote it.
+ * An agent drafts a plan with a title, a brief and its type, and is given the plan.
  */
-#[Generated]
 #[TestsMcpTool(CreatePlanTool::class)]
 final class CreatePlanToolTest extends McpToolEntryTestCase
 {
@@ -28,13 +28,11 @@ final class CreatePlanToolTest extends McpToolEntryTestCase
 
     protected function arrange(TestJournal $journal): ToolCall
     {
-        throw EntryTestNeedsArrangement::for('CreatePlanTool', [
-            'the argument title',
-            'the argument brief',
-            'the argument type',
-            'the argument request_key',
-            'the expected commands',
-            'the sink replies',
-        ]);
+        $start = $journal->owner()->signedStart('Planner');
+
+        return ToolCall::by($start)
+            ->arguments(['title' => 'Release', 'brief' => 'Ship version 6.', 'type' => 'build', 'request_key' => 'plans-1'])
+            ->reply(CreatePlanCommand::class, '01kd0000000000000000000003')
+            ->expects(ExpectedCommand::of(CreatePlanCommand::class, ['title' => 'Release', 'brief' => 'Ship version 6.', 'type' => PlanType::Build]));
     }
 }
