@@ -13,7 +13,7 @@ return new class extends Migration
         Schema::create('result_receipts', function (Blueprint $table) {
             $table->ulid('id');
             $table->primary('id');
-            $table->string('project_key', 64);
+            $table->foreignUlid('project_id')->constrained('projects')->restrictOnDelete();
             $table->foreignUlid('process_run_id')->constrained('process_runs')->cascadeOnDelete();
             $table->foreignUlid('part_run_id')->constrained('part_runs')->cascadeOnDelete();
             $table->unsignedInteger('attempt');
@@ -28,7 +28,7 @@ return new class extends Migration
             $table->foreign('superseded_by_id')->references('id')->on('result_receipts')->nullOnDelete();
             $table->timestampTz('published_at');
 
-            $table->index(['project_key', 'part_run_id']);
+            $table->index(['project_id', 'part_run_id']);
         });
     }
 

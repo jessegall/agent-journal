@@ -14,7 +14,7 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->string('admission_id', 64)->unique();
             $table->string('mode', 16);
-            $table->string('project_key', 64);
+            $table->foreignUlid('project_id')->constrained('projects')->restrictOnDelete();
             $table->string('actor_type', 16)->nullable();
             $table->string('actor_id')->nullable();
             $table->string('source_digest', 64);
@@ -43,7 +43,7 @@ return new class extends Migration
             $table->ulid('attempt_id')->unique();
             $table->timestampsTz();
 
-            $table->index(['project_key', 'actor_type', 'actor_id']);
+            $table->index(['project_id', 'actor_type', 'actor_id']);
         });
     }
 

@@ -12,6 +12,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Events\Connections\ProjectCreated;
 use App\Exceptions\ModelMissing;
 use Carbon\CarbonImmutable;
+use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -62,6 +63,14 @@ final class Project extends Model implements EventSource, ReadableModel
     }
 
     /**
+     * The journal's own project, the one its configured key names.
+     */
+    public static function findLocal(): self
+    {
+        return self::findForKey(self::localKey());
+    }
+
+    /**
      * Every connected project, by label; an installation connects a handful.
      *
      * @return list<self>
@@ -71,6 +80,23 @@ final class Project extends Model implements EventSource, ReadableModel
         return array_values(
             self::query()->inLabelOrder()->readAll('an installation connects a handful of projects')->get()->all(),
         );
+    }
+
+    // ----------[ Answers ]----------
+
+    /**
+     * Whether this is the journal's own project rather than a connected one.
+     */
+    public function isLocal(): bool
+    {
+        return $this->key === self::localKey();
+    }
+
+    // ----------[ Internals ]----------
+
+    private static function localKey(): string
+    {
+        return Container::getInstance()->make('config')->string('processes.project_key');
     }
 
     // ----------[ Scopes ]----------

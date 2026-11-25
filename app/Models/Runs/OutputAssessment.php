@@ -6,12 +6,14 @@ namespace App\Models\Runs;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Runs\AssessmentOutcome;
 use App\Enums\Runs\InterpretationStatus;
 use App\Enums\Runs\ProblemCode;
 use App\Exceptions\RevisionImmutable;
 use App\Models\CommandRules\RuleRevision;
+use App\Models\Support\BelongsToProject;
 use App\Values\OutputProblem;
 use App\Values\OutputValidation;
 use App\Values\ReplayedOutput;
@@ -24,7 +26,7 @@ use Spatie\LaravelData\DataCollection;
 
 /**
  * @property string $id
- * @property string $project_key
+ * @property string $project_id
  * @property string $part_run_id
  * @property string $reader_revision_id
  * @property string $rule_revision_id
@@ -38,8 +40,9 @@ use Spatie\LaravelData\DataCollection;
  *
  * @mixin \Eloquent
  */
-final class OutputAssessment extends Model implements ReadableModel
+final class OutputAssessment extends Model implements ProjectOwned, ReadableModel
 {
+    use BelongsToProject;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -85,7 +88,7 @@ final class OutputAssessment extends Model implements ReadableModel
         $previous = self::findLatestOf($part);
 
         $outputAssessment = new self();
-        $outputAssessment->project_key = $run->project_key;
+        $outputAssessment->project_id = $run->project_id;
         $outputAssessment->part_run_id = $part->id;
         $outputAssessment->reader_revision_id = $reader->id;
         $outputAssessment->rule_revision_id = $declaration->id;
@@ -148,15 +151,6 @@ final class OutputAssessment extends Model implements ReadableModel
     }
 
     // ----------[ Scopes ]----------
-
-    /**
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function ofProject(Builder $query, string $projectKey): void
-    {
-        $query->where('project_key', $projectKey);
-    }
 
     /**
      * The part's assessments.

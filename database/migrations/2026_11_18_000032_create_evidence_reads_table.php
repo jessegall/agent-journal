@@ -12,7 +12,7 @@ return new class extends Migration
     {
         Schema::create('evidence_reads', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->string('project_key', 64);
+            $table->foreignUlid('project_id')->index()->constrained('projects')->restrictOnDelete();
             $table->string('actor_type', 16);
             $table->string('actor_id');
             $table->foreignUlid('process_run_id')->constrained('process_runs')->cascadeOnDelete();

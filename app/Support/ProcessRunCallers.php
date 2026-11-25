@@ -11,15 +11,13 @@ use PhpOption\Option;
 use PhpOption\Some;
 
 /**
- * Reads who opened a run of the current project from the run's own row.
+ * Reads who opened a run of the selected project from the run's own row.
  */
 final readonly class ProcessRunCallers implements ProcessRunCallersContract
 {
-    public function __construct(private ServedEnvironment $projects) {}
-
     public function callerOf(string $runId): Option
     {
-        $run = ProcessRun::query()->withProjectKey($this->projects->current())->whereKey($runId)->first();
+        $run = ProcessRun::query()->whereKey($runId)->first();
 
         if ($run === null || $run->actor_type === null || $run->actor_id === null) {
             return None::create();

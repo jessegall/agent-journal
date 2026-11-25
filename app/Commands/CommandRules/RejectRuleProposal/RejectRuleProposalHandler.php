@@ -10,14 +10,10 @@ use App\Events\Processes\RuleRejected;
 use App\Exceptions\RequestTransitionRefused;
 use App\Exceptions\RuleProposalRefused;
 use App\Models\CommandRules\RuleProposal;
-use App\Support\ServedEnvironment;
 
 final readonly class RejectRuleProposalHandler implements CommandHandler
 {
-    public function __construct(
-        private CommandFacts $facts,
-        private ServedEnvironment $projects,
-    ) {}
+    public function __construct(private CommandFacts $facts) {}
 
     /**
      * @throws RuleProposalRefused
@@ -26,7 +22,6 @@ final readonly class RejectRuleProposalHandler implements CommandHandler
     public function handle(RejectRuleProposalCommand $command): string
     {
         $proposal = RuleProposal::query()
-            ->ofProject($this->projects->current())
             ->whereKey($command->proposalId)
             ->lockForUpdate()
             ->sole();

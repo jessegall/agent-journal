@@ -12,7 +12,7 @@ use App\Values\AliasLookup;
  */
 final readonly class NoAliases implements AliasResolver
 {
-    public function find(string $name, string $projectKey): AliasLookup
+    public function find(string $name): AliasLookup
     {
         return AliasLookup::missing($name);
     }

@@ -8,6 +8,7 @@ use App\Exceptions\RuleProposalRefused;
 use App\Models\CommandRules\CommandRequest;
 use App\Models\CommandRules\RuleProposal;
 use App\Models\CommandRules\RuleProposalRevision;
+use App\Models\Projects\Project;
 use App\Values\ProposedRule;
 
 /**
@@ -22,13 +23,13 @@ final readonly class RuleProposals
      * @throws RuleProposalRefused when the request id already proposed another payload
      */
     public function open(
-        string $projectKey,
+        Project $project,
         ActorReference $author,
         string $requestId,
         ProposedRule $proposed,
         CommandRequest|null $answers,
     ): RuleProposal {
-        $proposal = RuleProposal::create($projectKey, $author, $requestId, $proposed, $answers);
+        $proposal = RuleProposal::create($project, $author, $requestId, $proposed, $answers);
 
         if ($proposal->current_revision === 0) {
             $this->record($proposal, $proposed, $author);

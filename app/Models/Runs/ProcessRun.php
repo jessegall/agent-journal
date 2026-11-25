@@ -8,6 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Processes\ShellDialect;
 use App\Enums\Runs\CaptureStatus;
@@ -28,6 +29,7 @@ use App\Exceptions\RetryRefused;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Support\BelongsToOneActor;
+use App\Models\Support\BelongsToProject;
 use App\Support\ActorReference;
 use App\Support\Cards\DockCard;
 use App\Support\Cards\DockIdentity;
@@ -54,7 +56,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $id
  * @property string $admission_id
  * @property RunMode $mode
- * @property string $project_key
+ * @property string $project_id
  * @property string|null $actor_type
  * @property string|null $actor_id
  * @property string $source_digest
@@ -90,9 +92,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * @mixin \Eloquent
  */
-final class ProcessRun extends Model implements Dockable, EventSource, ReadableModel
+final class ProcessRun extends Model implements Dockable, EventSource, ProjectOwned, ReadableModel
 {
     use BelongsToOneActor;
+    use BelongsToProject;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -151,7 +154,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
         $run = new self();
         $run->admission_id = $admission->admissionId;
         $run->mode = $admission->mode;
-        $run->project_key = $admission->projectKey;
+        $run->project_id = $admission->projectId;
         $run->source_digest = $admission->sourceDigest;
         $run->dialect = $admission->dialect;
         $run->tree_digest = $admission->plan->treeDigest;
@@ -533,14 +536,14 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
     }
 
     /**
-     * Runs of the project that have not ended: admissions not yet started and runs still going.
+     * Runs that have not ended: admissions not yet started and runs still going.
      *
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function unfinishedIn(Builder $query, string $projectKey): void
+    protected function unfinished(Builder $query): void
     {
-        $query->where('project_key', $projectKey)->whereIn('lifecycle', [
+        $query->whereIn('lifecycle', [
             LifecycleStatus::Queued->value,
             LifecycleStatus::Running->value,
             LifecycleStatus::Draining->value,
@@ -559,17 +562,6 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
             ->where(fn (Builder $silent) => $silent
                 ->where('heartbeat_at', '<', $moment)
                 ->orWhere(fn (Builder $never) => $never->whereNull('heartbeat_at')->where('started_at', '<', $moment)));
-    }
-
-    /**
-     * The rows of the given project key.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function withProjectKey(Builder $query, string $projectKey): void
-    {
-        $query->where('project_key', $projectKey);
     }
 
     /**

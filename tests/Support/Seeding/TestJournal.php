@@ -205,9 +205,9 @@ final class TestJournal
      * An agent of the local project on the profile, running one session started as the journal starts one, with its
      * stack and its driver's runtime, and a personal inbox; the start is named after the agent.
      */
-    public function agent(string $name, string $profile = 'main-agent'): self
+    public function agent(string $name, string $profile = 'main-agent', string|null $project = null): self
     {
-        $this->idleAgent($name, $profile);
+        $this->idleAgent($name, $profile, $project);
         $this->startSession($name, trim($name));
         $this->syntheticRuntime($name);
 

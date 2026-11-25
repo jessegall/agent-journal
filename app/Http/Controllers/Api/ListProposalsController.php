@@ -8,19 +8,17 @@ use App\Api\Processes\ListProposalsPayload;
 use App\Api\Processes\ProposalList;
 use App\Enums\CommandRules\ProposalStatus;
 use App\Models\CommandRules\RuleProposal;
-use App\Support\ServedEnvironment;
 
 /**
  * Lists the project's proposals in the asked state.
  */
 final readonly class ListProposalsController
 {
-    public function __invoke(ListProposalsPayload $call, ServedEnvironment $projects): ProposalList
+    public function __invoke(ListProposalsPayload $call): ProposalList
     {
         $states = $call->states === [] ? ProposalStatus::cases() : array_map(ProposalStatus::from(...), $call->states);
 
         $proposals = RuleProposal::query()
-            ->ofProject($projects->current())
             ->withAnyState($states)
             ->limit(100)
             ->get();

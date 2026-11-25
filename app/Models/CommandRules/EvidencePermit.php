@@ -8,11 +8,14 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\ReadableModel;
 use App\Events\Processes\EvidencePermitConsumed;
 use App\Events\Processes\EvidencePermitExpired;
 use App\Exceptions\EvidencePermitRefused;
+use App\Models\Projects\Project;
 use App\Models\Runs\ProcessRun;
+use App\Models\Support\BelongsToProject;
 use App\Support\ActorReference;
 use App\Values\CommandRule;
 use App\Values\PermitLimits;
@@ -26,7 +29,7 @@ use Spatie\LaravelData\DataCollection;
 
 /**
  * @property string $id
- * @property string $project_key
+ * @property string $project_id
  * @property string $working_folder
  * @property string $source_line
  * @property string $source_digest
@@ -47,8 +50,9 @@ use Spatie\LaravelData\DataCollection;
  *
  * @mixin \Eloquent
  */
-final class EvidencePermit extends Model implements EventSource, ReadableModel
+final class EvidencePermit extends Model implements EventSource, ProjectOwned, ReadableModel
 {
+    use BelongsToProject;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -80,7 +84,7 @@ final class EvidencePermit extends Model implements EventSource, ReadableModel
      * @param  list<CommandRule>  $candidateRules
      */
     public static function create(
-        string $projectKey,
+        Project $project,
         PermittedLine $line,
         ActorReference $runner,
         PermitLimits $limits,
@@ -88,7 +92,7 @@ final class EvidencePermit extends Model implements EventSource, ReadableModel
         array $candidateRules,
     ): self {
         $permit = new self();
-        $permit->project_key = $projectKey;
+        $permit->project_id = $project->id;
         $permit->working_folder = $line->workingFolder;
         $permit->source_line = $line->line;
         $permit->source_digest = hash('sha256', $line->line);
@@ -173,15 +177,6 @@ final class EvidencePermit extends Model implements EventSource, ReadableModel
     }
 
     // ----------[ Scopes ]----------
-
-    /**
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function ofProject(Builder $query, string $projectKey): void
-    {
-        $query->where('project_key', $projectKey);
-    }
 
     /**
      * The rows of the given command request.

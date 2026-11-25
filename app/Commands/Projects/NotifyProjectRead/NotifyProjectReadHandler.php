@@ -54,7 +54,7 @@ final readonly class NotifyProjectReadHandler implements CommandHandler
 
         if (! $command->isTruncated) {
             $file = ProjectFile::findAtPath($read->binding_id, $read->path)
-                ->getOrCall(fn () => ProjectFile::create($read->binding_id, $read->path));
+                ->getOrCall(fn () => ProjectFile::create($read->binding, $read->path));
 
             $file->versionWith($text->digest)
                 ->getOrCall(fn () => ProjectFileVersion::create($file, $text->digest, $text->text));

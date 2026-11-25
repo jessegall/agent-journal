@@ -139,7 +139,7 @@ final class CreateTaskTest extends TestCase
     private function createThrough(string $environmentId, string $title): Task
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(ServedEnvironment::class)->connect(new ConnectedProject('shop', '/work/shop', $environmentId));
+        $this->app->make(ServedEnvironment::class)->connect(new ConnectedProject('/work/shop', $environmentId));
 
         return $this->create($title);
     }

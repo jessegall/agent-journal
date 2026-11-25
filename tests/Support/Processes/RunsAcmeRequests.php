@@ -162,8 +162,7 @@ trait RunsAcmeRequests
     private function normalRun(int $status, string $output, RunMode $mode = RunMode::Normal): PartRun
     {
         $actor = ActorReference::ofClass(Agent::class, $this->start->agent->id);
-        $projectKey = (string) config('processes.project_key');
-        $run = ProcessRun::create($actor, TestRunAdmissions::of(mode: $mode, projectKey: $projectKey));
+        $run = ProcessRun::create($actor, TestRunAdmissions::of(mode: $mode));
         $part = PartRun::create($run, new PartKey(1, 1, 'acme verify'));
         $part->start('host', 1);
         $recorder = $this->app->make(OutputRecorder::class);

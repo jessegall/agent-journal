@@ -13,7 +13,7 @@ use App\Models\CommandRules\RuleRevision;
 final readonly class RuleActivated implements ActiveRuleChange, ProcessEvent
 {
     public function __construct(
-        public string $projectKey,
+        public string $projectId,
         public string $ruleId,
         public int $revision,
         public string $digest,
@@ -22,12 +22,7 @@ final readonly class RuleActivated implements ActiveRuleChange, ProcessEvent
 
     public static function forRevision(RuleRevision $approved, string $reason): self
     {
-        return new self($approved->project_key, $approved->rule_id, $approved->revision, $approved->digest, $reason);
-    }
-
-    public function project(): string
-    {
-        return $this->projectKey;
+        return new self($approved->project_id, $approved->rule_id, $approved->revision, $approved->digest, $reason);
     }
 
     public function staleReason(): string

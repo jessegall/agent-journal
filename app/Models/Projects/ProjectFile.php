@@ -8,10 +8,12 @@ use App\Concerns\BoundedReads;
 use App\Concerns\HasNumber;
 use App\Concerns\Linkable;
 use App\Contracts\Reads\TextContent;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\Commentable;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Exceptions\TextVersionUnavailable;
+use App\Models\Support\BelongsToProject;
 use App\Values\TextVersion;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -28,6 +30,7 @@ use PhpOption\Option;
  * @property string $number_group_id
  * @property int $number
  * @property string $binding_id
+ * @property string $project_id
  * @property string $path
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
@@ -37,8 +40,9 @@ use PhpOption\Option;
  * @mixin \Eloquent
  */
 #[Table('project_files')]
-final class ProjectFile extends Model implements Commentable, Numbered, ReadableModel, TextContent
+final class ProjectFile extends Model implements Commentable, Numbered, ProjectOwned, ReadableModel, TextContent
 {
+    use BelongsToProject;
     use BoundedReads;
     use HasNumber;
     use HasUlids;
@@ -54,12 +58,13 @@ final class ProjectFile extends Model implements Commentable, Numbered, Readable
     // ----------[ Constructors ]----------
 
     /**
-     * A file of the connected folder its host read whole for the first time.
+     * A file of the connected folder its host read whole for the first time, of the binding's project.
      */
-    public static function create(string $bindingId, string $path): self
+    public static function create(ProjectBinding $binding, string $path): self
     {
         $file = new self();
-        $file->binding_id = $bindingId;
+        $file->binding_id = $binding->id;
+        $file->project_id = $binding->project_id;
         $file->path = $path;
         $file->save();
 

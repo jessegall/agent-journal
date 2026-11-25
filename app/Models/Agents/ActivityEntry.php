@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $actor_type
  * @property string $actor_id
  * @property string|null $environment_id
+ * @property string|null $project_id
  * @property ActivityLevel $level
  * @property ActivityType $type
  * @property string $subject
@@ -35,8 +36,9 @@ use Illuminate\Database\Eloquent\Model;
  * @mixin \Eloquent
  */
 #[Table('activity_entries')]
-final class ActivityEntry extends Model implements ReadableModel
+final class ActivityEntry extends Model implements ProjectOwned, ReadableModel
 {
+    use BelongsToProject;
     use BoundedReads;
     use HasActorColumns;
     use HasUlids;
@@ -94,12 +96,14 @@ final class ActivityEntry extends Model implements ReadableModel
         ActivityType $type,
         string $subject,
         string|null $environmentId,
+        ProjectOwner $owner,
         array $found = [],
     ): self {
         $entry = new self();
         $entry->actor_type = $actor->type;
         $entry->actor_id = $actor->id;
         $entry->environment_id = $environmentId;
+        $entry->project_id = $owner->isGlobal() ? null : $owner->projectId();
         $entry->level = $type->defaultLevel();
         $entry->type = $type;
         $entry->subject = mb_substr($subject, 0, self::SUBJECT_CHARACTER_LIMIT);

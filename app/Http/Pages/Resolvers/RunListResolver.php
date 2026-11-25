@@ -11,20 +11,17 @@ use App\Models\Runs\ProcessRun;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
-use App\Support\ServedEnvironment;
 use Illuminate\Support\Collection;
 
 /**
- * The current project's newest runs the viewer may see as a list layout: what each ran, whether it was a
+ * The selected project's newest runs the viewer may see as a list layout: what each ran, whether it was a
  * normal run or evidence only, its lifecycle and start, each opening its own run; a notice when there is none.
  */
 final readonly class RunListResolver implements PageResolver
 {
-    public function __construct(private ServedEnvironment $projects) {}
-
     public function read(): DeclaredLayoutData
     {
-        $runs = ProcessRun::query()->forActor()->withProjectKey($this->projects->current())->limit(50)->get();
+        $runs = ProcessRun::query()->forActor()->limit(50)->get();
 
         $operations = PartRun::query()
             ->ofRuns($runs->modelKeys())

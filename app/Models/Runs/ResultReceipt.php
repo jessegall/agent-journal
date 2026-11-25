@@ -8,9 +8,11 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Runs\AssessmentOutcome;
 use App\Events\Processes\ResultReceiptSuperseded;
+use App\Models\Support\BelongsToProject;
 use App\Values\PublishedResult;
 use App\Values\VerifiedOutput;
 use Carbon\CarbonImmutable;
@@ -21,7 +23,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
- * @property string $project_key
+ * @property string $project_id
  * @property string $process_run_id
  * @property string $part_run_id
  * @property int $attempt
@@ -37,8 +39,9 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class ResultReceipt extends Model implements EventSource, ReadableModel
+final class ResultReceipt extends Model implements EventSource, ProjectOwned, ReadableModel
 {
+    use BelongsToProject;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -68,7 +71,7 @@ final class ResultReceipt extends Model implements EventSource, ReadableModel
     public static function create(VerifiedOutput $verified, string $exitPolicyDigest): self
     {
         $resultReceipt = new self();
-        $resultReceipt->project_key = $verified->run->project_key;
+        $resultReceipt->project_id = $verified->run->project_id;
         $resultReceipt->process_run_id = $verified->run->id;
         $resultReceipt->part_run_id = $verified->part->id;
         $resultReceipt->attempt = $verified->part->attempt;
@@ -126,15 +129,6 @@ final class ResultReceipt extends Model implements EventSource, ReadableModel
     }
 
     // ----------[ Scopes ]----------
-
-    /**
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function ofProject(Builder $query, string $projectKey): void
-    {
-        $query->where('project_key', $projectKey);
-    }
 
     /**
      * @param  Builder<self>  $query

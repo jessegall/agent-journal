@@ -18,6 +18,6 @@ final readonly class RefuseStaleRuns implements Listener
 
     public function handle(ActiveRuleChange $change): void
     {
-        $this->commands->run(new MarkRunsStaleCommand($change->project(), $change->staleReason()));
+        $this->commands->run(new MarkRunsStaleCommand($change->projectId, $change->staleReason()));
     }
 }

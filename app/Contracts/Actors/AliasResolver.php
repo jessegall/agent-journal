@@ -7,12 +7,12 @@ namespace App\Contracts\Actors;
 use App\Values\AliasLookup;
 
 /**
- * Reads a project's saved command aliases by name.
+ * Reads the selected project's saved command aliases by name.
  */
 interface AliasResolver
 {
     /**
-     * The actor or record an alias names in the project, or why none answers to it.
+     * The alias of this name in the selected project, or why none answers to it.
      */
-    public function find(string $name, string $projectKey): AliasLookup;
+    public function find(string $name): AliasLookup;
 }

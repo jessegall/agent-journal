@@ -15,6 +15,7 @@ return new class extends Migration
             $table->foreignUlid('number_group_id')->constrained('number_groups')->restrictOnDelete();
             $table->unsignedBigInteger('number');
             $table->foreignUlid('binding_id')->constrained('project_bindings')->cascadeOnDelete();
+            $table->foreignUlid('project_id')->index()->constrained('projects')->restrictOnDelete();
             $table->string('path', 1024);
             $table->timestampsTz();
 

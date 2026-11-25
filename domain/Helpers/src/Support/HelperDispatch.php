@@ -28,7 +28,6 @@ use App\Support\ActorReference;
 use App\Support\AssigneeIdentity;
 use App\Support\OwnerStartRequest;
 use App\Support\RecordIdentity;
-use App\Support\ServedEnvironment;
 use App\Values\ModelSelection;
 use App\Values\ProfileKey;
 use App\Values\ProfileSelection;
@@ -80,7 +79,6 @@ final readonly class HelperDispatch
         private CommandBus $commands,
         private JournalAdmission $admission,
         private HelperRecordFacts $helperFacts,
-        private ServedEnvironment $projectKey,
     ) {}
 
     public function start(DispatchRequest $request): HelperReceipt
@@ -345,7 +343,8 @@ final readonly class HelperDispatch
     }
 
     /**
-     * The project a new helper belongs to: its parent agent's, or the served project when the user dispatches it.
+     * The project a new helper belongs to: its parent agent's, or for now the local project when the user dispatches
+     * it, until the dispatch names its project.
      */
     private function projectIdOf(DispatchRequest $request): string
     {
@@ -353,7 +352,7 @@ final readonly class HelperDispatch
             return Agent::query()->findOrFail($request->parent->id)->project_id;
         }
 
-        return Project::findForKey($this->projectKey->current())->id;
+        return Project::findLocal()->id;
     }
 
     private function newHelper(DispatchRequest $request, ProfileSelection $profile): HelperIdentity

@@ -15,12 +15,9 @@ use App\Models\Runs\ReaderRevision;
  */
 final readonly class CommandRequestViews
 {
-    public function __construct(private ServedEnvironment $projects) {}
-
     public function show(string $requestId): CommandRequestShown
     {
         $request = CommandRequest::query()
-            ->ofProject($this->projects->current())
             ->whereKey($requestId)
             ->firstOrFail();
 

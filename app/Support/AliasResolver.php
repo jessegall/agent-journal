@@ -18,9 +18,9 @@ final readonly class AliasResolver implements AliasResolverContract
         return CommandAlias::query()->withName($name)->exists();
     }
 
-    public function find(string $name, string $projectKey): AliasLookup
+    public function find(string $name): AliasLookup
     {
-        $alias = CommandAlias::query()->named($name, $projectKey)->first();
+        $alias = CommandAlias::query()->withName($name)->first();
 
         if ($alias === null) {
             return AliasLookup::missing($name);

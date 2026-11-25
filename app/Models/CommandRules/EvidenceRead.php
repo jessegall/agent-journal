@@ -7,9 +7,11 @@ namespace App\Models\CommandRules;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsRowSets;
 use App\Concerns\Linkable;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\CommandRules\EvidenceSource;
 use App\Models\Runs\ProcessRun;
+use App\Models\Support\BelongsToProject;
 use App\Support\ActorReference;
 use App\Values\EvidenceRange;
 use Carbon\CarbonImmutable;
@@ -20,7 +22,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
- * @property string $project_key
+ * @property string $project_id
  * @property string $actor_type
  * @property string $actor_id
  * @property string $process_run_id
@@ -32,8 +34,9 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class EvidenceRead extends Model implements ReadableModel
+final class EvidenceRead extends Model implements ProjectOwned, ReadableModel
 {
+    use BelongsToProject;
     use BoundedReads;
     use HasUlids;
     use InsertsRowSets;
@@ -68,7 +71,7 @@ final class EvidenceRead extends Model implements ReadableModel
     {
         $reads = array_map(function (EvidenceRange $range) use ($run, $reader): self {
             $read = new self();
-            $read->project_key = $run->project_key;
+            $read->project_id = $run->project_id;
             $read->actor_type = $reader->type;
             $read->actor_id = $reader->id;
             $read->process_run_id = $run->id;
@@ -84,15 +87,6 @@ final class EvidenceRead extends Model implements ReadableModel
     }
 
     // ----------[ Queries ]----------
-
-    /**
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function ofProject(Builder $query, string $projectKey): void
-    {
-        $query->where('project_key', $projectKey);
-    }
 
     // ----------[ Scopes ]----------
 

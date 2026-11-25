@@ -18,5 +18,5 @@ use App\Support\Command;
 #[Authorize(ProcessPolicy::class, AccessType::Edit)]
 final readonly class MarkRunsStaleCommand extends Command
 {
-    public function __construct(public string $projectKey, public string $reason) {}
+    public function __construct(public string $projectId, public string $reason) {}
 }

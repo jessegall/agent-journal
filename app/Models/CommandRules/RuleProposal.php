@@ -9,6 +9,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\CommandRules\ProposalStatus;
 use App\Events\Processes\RuleProposalAdopted;
@@ -16,6 +17,8 @@ use App\Events\Processes\RuleProposalApproved;
 use App\Events\Processes\RuleProposalRejected;
 use App\Events\Processes\RuleProposalWithdrawn;
 use App\Exceptions\RuleProposalRefused;
+use App\Models\Projects\Project;
+use App\Models\Support\BelongsToProject;
 use App\Support\ActorReference;
 use App\Values\ProposedRule;
 use App\Values\RuleReference;
@@ -33,7 +36,7 @@ use Spatie\LaravelData\DataCollection;
 
 /**
  * @property string $id
- * @property string $project_key
+ * @property string $project_id
  * @property string $scope_type
  * @property string $scope_owner
  * @property string $scope_version
@@ -56,8 +59,9 @@ use Spatie\LaravelData\DataCollection;
  *
  * @mixin \Eloquent
  */
-final class RuleProposal extends Model implements EventSource, ReadableModel
+final class RuleProposal extends Model implements EventSource, ProjectOwned, ReadableModel
 {
+    use BelongsToProject;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -85,13 +89,13 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
      * @throws RuleProposalRefused when the request id already proposed another payload
      */
     public static function create(
-        string $projectKey,
+        Project $project,
         ActorReference $author,
         string $requestId,
         ProposedRule $proposed,
         CommandRequest|null $answers,
     ): self {
-        $existing = self::findRequestedBy($projectKey, $author, $requestId);
+        $existing = self::findRequestedBy($project, $author, $requestId);
 
         if ($existing !== null) {
             $existing->assertSameRequest($proposed);
@@ -100,7 +104,7 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
         }
 
         $proposal = new self();
-        $proposal->project_key = $projectKey;
+        $proposal->project_id = $project->id;
         $proposal->scope = $proposed->rule->scope;
         $proposal->command_request_id = $answers?->id;
         $proposal->program = $proposed->rule->programFamily();
@@ -288,21 +292,12 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
     /**
      * The proposal this author's request made in the project; none before it.
      */
-    public static function findRequestedBy(string $projectKey, ActorReference $author, string $requestId): self|null
+    public static function findRequestedBy(Project $project, ActorReference $author, string $requestId): self|null
     {
-        return self::query()->ofProject($projectKey)->requestedBy($author, $requestId)->first();
+        return self::query()->inProject($project->id)->requestedBy($author, $requestId)->first();
     }
 
     // ----------[ Scopes ]----------
-
-    /**
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function ofProject(Builder $query, string $projectKey): void
-    {
-        $query->where('project_key', $projectKey);
-    }
 
     /**
      * @param  Builder<self>  $query

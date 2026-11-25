@@ -11,7 +11,7 @@ use App\Exceptions\ApprovalRefused;
 use App\Models\CommandRules\ModuleRuleBundle;
 use App\Support\ActorReference;
 use App\Support\CommandRuleRegistry;
-use App\Support\ServedEnvironment;
+use App\Support\Projects\SelectedProject;
 use App\Values\RuleBundle;
 
 /**
@@ -22,7 +22,7 @@ final readonly class ApproveRuleBundleHandler implements CommandHandler
 {
     public function __construct(
         private CommandRuleRegistry $rules,
-        private ServedEnvironment $projects,
+        private SelectedProject $projects,
         private CommandFacts $facts,
     ) {}
 
@@ -43,7 +43,7 @@ final readonly class ApproveRuleBundleHandler implements CommandHandler
         }
 
         $owner = ActorReference::of($command->dispatchedBy());
-        $approval = ModuleRuleBundle::create($this->projects->current(), $installed[0], $owner);
+        $approval = ModuleRuleBundle::create($this->projects->find(), $installed[0], $owner);
         $this->facts->publishAfterCommit(BundleActivated::forApproval($approval));
 
         return $approval->id;

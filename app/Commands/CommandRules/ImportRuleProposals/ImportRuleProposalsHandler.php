@@ -9,9 +9,9 @@ use App\Declarations\RuleDeclarations;
 use App\Exceptions\DeclarationInvalid;
 use App\Exceptions\RuleProposalRefused;
 use App\Support\ActorReference;
+use App\Support\Projects\SelectedProject;
 use App\Support\ProposalChecks;
 use App\Support\RuleProposals;
-use App\Support\ServedEnvironment;
 use App\Values\DeclaredProposal;
 use App\Values\ImportedProposals;
 use App\Values\ProposalReceipt;
@@ -25,7 +25,7 @@ final readonly class ImportRuleProposalsHandler implements CommandHandler
     public function __construct(
         private RuleDeclarations $declarations,
         private ProposalChecks $checks,
-        private ServedEnvironment $projects,
+        private SelectedProject $projects,
         private RuleProposals $proposals,
     ) {}
 
@@ -36,7 +36,7 @@ final readonly class ImportRuleProposalsHandler implements CommandHandler
     public function handle(ImportRuleProposalsCommand $command): ImportedProposals
     {
         $actor = ActorReference::of($command->dispatchedBy());
-        $projectKey = $this->projects->current();
+        $project = $this->projects->find();
         $declared = $this->declarations->read($command->declarations);
 
         foreach ($declared as $declaration) {
@@ -44,7 +44,7 @@ final readonly class ImportRuleProposalsHandler implements CommandHandler
         }
 
         $open = fn (DeclaredProposal $declaration) => ProposalReceipt::of(
-            $this->proposals->open($projectKey, $actor, $declaration->requestId, $declaration->proposed, null),
+            $this->proposals->open($project, $actor, $declaration->requestId, $declaration->proposed, null),
             $declaration->proposed,
         );
 

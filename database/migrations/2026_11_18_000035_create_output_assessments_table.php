@@ -13,7 +13,7 @@ return new class extends Migration
         Schema::create('output_assessments', function (Blueprint $table) {
             $table->ulid('id');
             $table->primary('id');
-            $table->string('project_key', 64);
+            $table->foreignUlid('project_id')->constrained('projects')->restrictOnDelete();
             $table->foreignUlid('part_run_id')->constrained('part_runs')->cascadeOnDelete();
             $table->foreignUlid('reader_revision_id')->constrained('reader_revisions')->cascadeOnDelete();
             $table->foreignUlid('rule_revision_id')->constrained('rule_revisions')->cascadeOnDelete();
@@ -26,7 +26,7 @@ return new class extends Migration
             $table->foreign('replaces_assessment_id')->references('id')->on('output_assessments')->nullOnDelete();
             $table->timestampTz('created_at');
 
-            $table->index(['project_key', 'part_run_id']);
+            $table->index(['project_id', 'part_run_id']);
         });
     }
 

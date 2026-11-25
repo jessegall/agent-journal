@@ -18,7 +18,6 @@ use App\Support\Layout\LayoutNativeData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
 use App\Support\ProjectRules;
-use App\Support\ServedEnvironment;
 use App\Values\RuleBundle;
 
 /**
@@ -29,16 +28,14 @@ use App\Values\RuleBundle;
 final readonly class RequestListResolver implements PageResolver
 {
     public function __construct(
-        private ServedEnvironment $projects,
         private CommandRuleRegistry $rules,
         private ProjectRules $approved,
     ) {}
 
     public function read(): DeclaredLayoutData
     {
-        $project = $this->projects->current();
-        $requests = CommandRequest::query()->ofProject($project)->limit(100)->get();
-        $rules = ClassificationRule::query()->ofProject($project)->readLimit(200)->get();
+        $requests = CommandRequest::query()->limit(100)->get();
+        $rules = ClassificationRule::query()->readLimit(200)->get();
         $activated = $this->approved->approvedBundles();
 
         $waiting = array_filter(
