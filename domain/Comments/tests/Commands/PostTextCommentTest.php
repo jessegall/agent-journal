@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Comments\Tests\Commands;
 
 use App\Contracts\Bus\CommandBus;
+use App\Contracts\Reads\TextResolver;
 use App\Enums\Projects\ProjectReadType;
 use App\Exceptions\InvalidTextRange;
 use App\Exceptions\TargetHasNoText;
@@ -20,17 +21,26 @@ use App\Models\Projects\ProjectRead;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\EnrolledHost;
+use App\Support\IdListPage;
 use App\Support\ProjectReadRetentionService;
 use App\Support\RecordIdentity;
+use App\Support\TextSelection;
 use App\Values\BindingFolder;
+use App\Values\PageSize;
 use App\Values\TextRange;
 use Carbon\CarbonImmutable;
+use Domain\Comments\Commands\PostComment\PostCommentCommand;
 use Domain\Comments\Commands\PostTextComment\PostTextCommentCommand;
+use Domain\Comments\Contracts\CommentResolver;
+use Domain\Comments\Data\RecordCommentView;
+use Domain\Comments\Data\TextCommentView;
+use Domain\Comments\Exceptions\TargetNotCommentable;
 use Domain\Comments\Models\Comment;
 use Domain\Comments\Tests\TestCase;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Fixtures\Modules\Notes\Models\NotePage;
+use Tests\Fixtures\Modules\Notes\Models\NoteSnapshot;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsNotesModule;
 
@@ -70,6 +80,8 @@ final class PostTextCommentTest extends TestCase
     private const string PATH = 'src/main.go';
 
     private const string SOURCE = "package main\n\nfunc main() {}\n";
+
+    private const string SECOND_LINE = 'Second line.';
 
     protected function setUp(): void
     {
@@ -178,6 +190,70 @@ final class PostTextCommentTest extends TestCase
         $this->assertSame(['fifth', 'first', 'fourth', 'third'], $kept);
     }
 
+    public function test_a_note_page_is_read_and_takes_its_first_text_comment_beside_a_whole_record_one(): void
+    {
+        $owner = User::factory()->create();
+        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
+        $this->journal->actAsUserId($owner->id);
+
+        $page = $this->noteTarget(NotePage::written(<<<'TEXT'
+        # Plan
+        First line.
+        Second line.
+
+        TEXT));
+
+        $this->assertSame([
+            '1',
+            4,
+        ], [
+            $this->text()->version($page)->id,
+            $this->text()->version($page)->lineCount,
+        ]);
+        $this->assertSame(
+            ['Plan'],
+            array_map(
+                fn ($section) => $section->heading,
+                $this->text()->sections($page, '1', 0, PageSize::from(null))->sections,
+            ),
+        );
+        $this->assertStringContainsString(
+            self::SECOND_LINE,
+            $this->text()->read($page, '1', TextSelection::from(['firstLine' => 1]))->text,
+        );
+
+        $this->bus()->run(
+            new PostTextCommentCommand($page, 'Which lines?', TextRange::lines('1', 2, 3), (string) Str::uuid()),
+        );
+        $this->bus()->run(new PostCommentCommand($page, 'About the page.', (string) Str::uuid()));
+        $items = $this->app->make(CommentResolver::class)->list($page, new IdListPage())->comments;
+
+        $this->assertInstanceOf(TextCommentView::class, $items[0]);
+        $this->assertInstanceOf(RecordCommentView::class, $items[1]);
+    }
+
+    public function test_a_note_snapshot_is_read_but_takes_no_comment(): void
+    {
+        $owner = User::factory()->create();
+        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
+        $this->journal->actAsUserId($owner->id);
+
+        $snapshot = $this->noteTarget(NoteSnapshot::written(<<<'TEXT'
+        # Snapshot
+        Kept.
+
+        TEXT));
+
+        $this->assertSame('1', $this->text()->version($snapshot)->id);
+        $this->expectException(TargetNotCommentable::class);
+
+        try {
+            $this->bus()->run(new PostCommentCommand($snapshot, 'Hello.', (string) Str::uuid()));
+        } finally {
+            $this->assertSame(0, Comment::query()->count());
+        }
+    }
+
     private function bus(): CommandBus
     {
         return $this->app->make(CommandBus::class);
@@ -218,5 +294,15 @@ final class PostTextCommentTest extends TestCase
             ProjectFile::linkType(),
             ProjectFile::query()->where('path', self::PATH)->firstOrFail()->id,
         );
+    }
+
+    private function noteTarget(NotePage|NoteSnapshot $record): RecordIdentity
+    {
+        return new RecordIdentity($record::linkType(), $record->id);
+    }
+
+    private function text(): TextResolver
+    {
+        return $this->app->make(TextResolver::class);
     }
 }

@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Commands;
 
+use App\Commands\Agents\RetireAgent\RetireAgentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Hosts\HostCapabilities;
+use App\Contracts\Records\RecordVisibility;
 use App\Contracts\Sessions\StartReservations;
 use App\Enums\Agents\ConversationModeType;
 use App\Enums\Agents\ExecutionModeType;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Projects\CapabilityStatusType;
 use App\Enums\Projects\HostCapabilityType;
+use App\Events\Hooks\HelperSentOnRecord;
 use App\Exceptions\AccountContainerUnsupported;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Models\Agents\Agent;
@@ -22,14 +25,18 @@ use App\Support\ActorIdentity;
 use App\Support\DefaultDrivers;
 use App\Support\HostCapability;
 use App\Support\HostCapabilityQuery;
+use App\Support\RecordIdentity;
 use App\Support\StartReceipt;
 use App\Values\ProfileBase;
+use Domain\Helpers\Commands\CancelHelperJob\CancelHelperJobCommand;
 use Domain\Helpers\Commands\SendHelper\SendHelperCommand;
 use Domain\Helpers\Commands\StartHelper\StartHelperCommand;
 use Domain\Helpers\Enums\JobStatus;
+use Domain\Helpers\Exceptions\HelperBusy;
 use Domain\Helpers\Exceptions\HelperProfilesUnavailable;
 use Domain\Helpers\Exceptions\HelperProfileTypeConflict;
 use Domain\Helpers\Exceptions\HelperRequestConflict;
+use Domain\Helpers\Exceptions\HelperRetired;
 use Domain\Helpers\Exceptions\HelperUnavailable;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
@@ -39,6 +46,8 @@ use Domain\Helpers\Tests\TestCase;
 use Domain\Helpers\Values\HelperReceipt;
 use Domain\Helpers\Values\HelperWork;
 use Illuminate\Database\DatabaseManager;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Str;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 
@@ -230,6 +239,119 @@ final class StartHelperTest extends TestCase
         $databases->purge('competing');
     }
 
+    public function test_a_start_without_a_model_is_refused_before_any_call(): void
+    {
+        $this->journal->relayAgentCommands($this->parent);
+
+        $this->artisan('helper:start', [
+            'profile' => 'plan-reviewer',
+            '--brief' => 'Review it.',
+        ])
+            ->expectsOutputToContain('model-required')
+            ->assertFailed();
+
+        $this->assertSame(0, HelperJob::query()->acrossActors()->count());
+    }
+
+    public function test_a_start_prints_the_identity_job_conversation_and_models(): void
+    {
+        $this->journal->relayAgentCommands($this->parent);
+
+        $this->artisan('helper:start', [
+            'profile' => 'plan-reviewer',
+            '--model' => 'default',
+            '--purpose-text' => 'Review plan 7',
+            '--brief' => 'Review it.',
+        ])
+            ->expectsOutputToContain('Conversation new')
+            ->expectsOutputToContain('actual: '.StartReceipt::ACTUAL_MODEL_NOT_REPORTED)
+            ->assertSuccessful();
+
+        $this->assertSame(JobStatus::Running, HelperJob::query()->acrossActors()->sole()->status);
+    }
+
+    public function test_a_helper_started_on_a_plan_is_announced_with_its_agent(): void
+    {
+        $plan = new RecordIdentity('plans.plan', (string) Str::ulid());
+
+        $this->app->instance(RecordVisibility::class, new class implements RecordVisibility
+        {
+            public function isVisible(RecordIdentity $record): bool
+            {
+                return true;
+            }
+        });
+
+        $heard = [];
+
+        Event::listen(HelperSentOnRecord::class, function (HelperSentOnRecord $event) use (&$heard): void {
+            $heard[] = $event;
+        });
+
+        $this->app->make(CommandBus::class)->run(new StartHelperCommand(
+            'request-plan',
+            'plan-reviewer',
+            'default',
+            null,
+            new HelperWork($plan, null, null, 'Review it.', [], false),
+        ));
+
+        $identity = HelperIdentity::query()->findOrFail(HelperJob::query()->sole()->helper_identity_id);
+        $this->assertCount(1, $heard);
+        $this->assertEquals($plan, $heard[0]->subject);
+        $this->assertSame($identity->helperActor->id, $heard[0]->helperAgentId);
+    }
+
+    public function test_a_single_profile_binds_its_one_helper_and_never_makes_a_second(): void
+    {
+        $first = $this->start((string) Str::ulid(), 'Review plan 7', profileKey: 'lone-reviewer');
+        $this->cancelAndEnd($first);
+        $second = $this->start((string) Str::ulid(), 'Review plan 8', profileKey: 'lone-reviewer');
+
+        $this->assertSame($first->identityId, $second->identityId);
+        $this->expectException(HelperBusy::class);
+
+        $this->start((string) Str::ulid(), 'Review plan 9', profileKey: 'lone-reviewer');
+    }
+
+    public function test_a_retired_single_helper_is_replaced_once_its_process_ended(): void
+    {
+        $first = $this->start((string) Str::ulid(), 'Review plan 7', profileKey: 'lone-reviewer');
+        $this->cancelAndEnd($first);
+        $this->retireHelperOf($first);
+
+        $second = $this->start((string) Str::ulid(), 'Review plan 8', profileKey: 'lone-reviewer');
+
+        $this->assertNotSame($first->identityId, $second->identityId);
+        $this->assertSame($second->identityId, HelperIdentity::findDesignatedFor('lone-reviewer')->get()->id);
+    }
+
+    public function test_the_single_helper_cannot_review_a_purpose_it_worked_on_independently(): void
+    {
+        $first = $this->start((string) Str::ulid(), 'Review plan 7', profileKey: 'lone-reviewer');
+        $this->cancelAndEnd($first);
+        $this->expectException(HelperUnavailable::class);
+
+        $this->app->make(CommandBus::class)->run(new StartHelperCommand(
+            (string) Str::ulid(),
+            'lone-reviewer',
+            'default',
+            null,
+            new HelperWork(null, null, 'Review plan 7', 'Review it again.', [], true),
+        ));
+    }
+
+    public function test_a_replay_after_the_reused_helper_retired_mid_job_is_refused(): void
+    {
+        $requestId = (string) Str::ulid();
+        $first = $this->start($requestId, 'Review plan 7');
+        $this->endSessionOf($first);
+        $this->retireHelperOf($first);
+        $this->expectException(HelperRetired::class);
+
+        $this->start($requestId, 'Review plan 7');
+    }
+
     private function send(string $requestId, string $identityId, string $purpose): HelperReceipt
     {
         return $this->app->make(CommandBus::class)->run(new SendHelperCommand(
@@ -245,6 +367,21 @@ final class StartHelperTest extends TestCase
     private function finish(HelperReceipt $receipt): void
     {
         HelperJob::query()->findOrFail($receipt->jobId)->finish('report:1');
+        $this->endSessionOf($receipt);
+    }
+
+    private function retireHelperOf(HelperReceipt $receipt): void
+    {
+        $agentId = HelperIdentity::query()->acrossActors()->findOrFail($receipt->identityId)->helper_actor_id;
+        $this->app->make(CommandBus::class)->run(new RetireAgentCommand($agentId));
+    }
+
+    private function cancelAndEnd(HelperReceipt $receipt): void
+    {
+        $this->app->make(CommandBus::class)->run(
+            new CancelHelperJobCommand($receipt->jobId, 'cancel-'.$receipt->jobId),
+        );
+
         $this->endSessionOf($receipt);
     }
 }

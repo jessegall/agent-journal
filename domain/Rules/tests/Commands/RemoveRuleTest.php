@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Tests\Commands;
 
+use App\Contracts\Bus\CommandBus;
+use App\Events\Web\PageChanged;
 use App\Exceptions\CommandAdmissionRefused;
+use App\Support\Access\AccessSettings;
 use Domain\Rules\Commands\RemoveRule\RemoveRuleCommand;
 use Domain\Rules\Enums\RuleStatus;
 use Domain\Rules\Events\RuleRemoved;
@@ -14,7 +17,8 @@ use Domain\Rules\Tests\Fixtures\RuleFixtures;
 use Domain\Rules\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
-use Tests\Support\RefreshHookDatabase;
+use Tests\Support\CommitsHookRows;
+use Tests\Support\HoldingRules;
 
 /**
  * The user removes a rule that holds, which then no longer does; an agent may not remove one, and a rule that is not
@@ -22,9 +26,14 @@ use Tests\Support\RefreshHookDatabase;
  */
 final class RemoveRuleTest extends TestCase
 {
-    use RefreshHookDatabase;
+    use CommitsHookRows;
 
     private Rule $active;
+
+    private const array TABLES = [
+        'rules',
+        'users',
+    ];
 
     protected function setUp(): void
     {
@@ -49,7 +58,10 @@ final class RemoveRuleTest extends TestCase
     {
         $this->journal->actAs('Planner');
 
-        $this->assertThrows(fn () => $this->journal->run(new RemoveRuleCommand($this->active->id)), CommandAdmissionRefused::class);
+        $this->assertThrows(
+            fn () => $this->journal->run(new RemoveRuleCommand($this->active->id)),
+            CommandAdmissionRefused::class,
+        );
         $this->assertSame(RuleStatus::Active, $this->active->refresh()->status);
     }
 
@@ -62,5 +74,25 @@ final class RemoveRuleTest extends TestCase
             RuleMissing::class,
             RuleMissing::withId($missingId)->getMessage(),
         );
+    }
+
+    public function test_a_removed_rule_changes_the_page_too(): void
+    {
+        Event::fake([PageChanged::class]);
+
+        $this->app->make(CommandBus::class)->run(new RemoveRuleCommand(HoldingRules::create('Old rule.')->id));
+
+        Event::assertDispatchedTimes(PageChanged::class, 1);
+    }
+
+    public function test_with_no_owner_nobody_is_told(): void
+    {
+        Event::fake([PageChanged::class]);
+
+        $this->app->instance(AccessSettings::class, new AccessSettings(null));
+
+        $this->app->make(CommandBus::class)->run(new RemoveRuleCommand(HoldingRules::create('Old rule.')->id));
+
+        Event::assertNotDispatched(PageChanged::class);
     }
 }

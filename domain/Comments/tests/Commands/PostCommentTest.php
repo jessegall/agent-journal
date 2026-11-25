@@ -4,13 +4,20 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Tests\Commands;
 
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Records\RecordResolver;
 use App\Exceptions\RecordUnavailable;
 use App\Exceptions\SubmissionKeyConflict;
 use App\Support\ActorIdentity;
+use App\Support\IdListPage;
 use App\Support\RecordIdentity;
 use Domain\Comments\Commands\PostComment\PostCommentCommand;
+use Domain\Comments\Contracts\CommentResolver;
+use Domain\Comments\Data\RecordCommentLocation;
+use Domain\Comments\Data\RecordCommentView;
 use Domain\Comments\Models\Comment;
 use Domain\Comments\Tests\TestCase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Support\CommitsHookRows;
@@ -40,6 +47,12 @@ final class PostCommentTest extends TestCase
     ];
 
     private RecordIdentity $note;
+
+    private const string FIRST_ABSTRACT = 'Comment 1.';
+
+    private const string NOTE_LABEL = 'note %d';
+
+    private const string WIRE_TEXT = 'Over the wire.';
 
     protected function setUp(): void
     {
@@ -93,5 +106,129 @@ final class PostCommentTest extends TestCase
             RecordUnavailable::class,
         );
         $this->assertSame(0, Comment::query()->count());
+    }
+
+    public function test_a_comment_on_the_whole_note_is_listed_and_leads_to_the_note(): void
+    {
+        $commentId = $this->app->make(CommandBus::class)->run(
+            new PostCommentCommand($this->target(), self::QUESTION, (string) Str::uuid()),
+        );
+
+        $items = $this->app->make(CommentResolver::class)->list($this->target(), new IdListPage())->comments;
+        $location = $this->app->make(CommentResolver::class)->location($this->target(), $commentId);
+
+        $this->assertInstanceOf(RecordCommentView::class, $items[0]);
+        $this->assertSame(self::QUESTION, $items[0]->comment->body);
+        $this->assertInstanceOf(RecordCommentLocation::class, $location);
+        $this->assertSame(sprintf(self::NOTE_LABEL, $this->noteNumber()), $location->target->label);
+    }
+
+    public function test_a_signed_in_user_comments_and_reads_the_comments_over_http(): void
+    {
+        $this->actingAs($this->journal->ownerUser())
+            ->post(
+                '/comments/post',
+                [
+                    'target' => sprintf(self::NOTE_LABEL, $this->noteNumber()),
+                    'body' => self::WIRE_TEXT,
+                    'submission_key' => (string) Str::uuid(),
+                ],
+            )
+            ->assertRedirect();
+
+        $this->actingAs($this->journal->ownerUser())
+            ->getJson('/comments/list?target='.urlencode(sprintf(self::NOTE_LABEL, $this->noteNumber())))
+            ->assertOk()
+            ->assertJsonPath('items.0.type', 'record')
+            ->assertJsonPath('items.0.comment.body', self::WIRE_TEXT);
+    }
+
+    public function test_a_mixed_or_partial_place_is_refused_with_nothing_stored(): void
+    {
+        $note = sprintf(self::NOTE_LABEL, $this->noteNumber());
+
+        $this->actingAs($this->journal->ownerUser())
+            ->postJson(
+                '/comments/post',
+                [
+                    'target' => $note,
+                    'body' => 'Mixed.',
+                    'submission_key' => (string) Str::uuid(),
+                    'version' => '1',
+                    'section' => 3,
+                    'quote' => 'x',
+                    'first_line' => 1,
+                    'last_line' => 1,
+                    'start_offset' => 0,
+                    'end_offset' => 1,
+                ],
+            )
+            ->assertUnprocessable();
+        $this->actingAs($this->journal->ownerUser())
+            ->postJson(
+                '/comments/post',
+                [
+                    'target' => $note,
+                    'body' => 'No version.',
+                    'submission_key' => (string) Str::uuid(),
+                    'first_line' => 12,
+                    'last_line' => 16,
+                ],
+            )
+            ->assertUnprocessable();
+
+        $this->assertSame(0, Comment::query()->count());
+    }
+
+    public function test_an_author_field_is_refused(): void
+    {
+        $this->actingAs($this->journal->ownerUser())
+            ->postJson(
+                '/comments/post',
+                [
+                    'target' => sprintf(self::NOTE_LABEL, $this->noteNumber()),
+                    'body' => 'Spoofed.',
+                    'submission_key' => (string) Str::uuid(),
+                    'author_id' => 'someone',
+                ],
+            )
+            ->assertUnprocessable();
+
+        $this->assertSame(0, Comment::query()->count());
+    }
+
+    public function test_comment_cards_come_in_one_batch_and_hide_comments_on_unreadable_records(): void
+    {
+        $ids = array_map(
+            fn (int $index) => $this->app->make(CommandBus::class)->run(
+                new PostCommentCommand($this->target(), "Comment {$index}.", (string) Str::uuid()),
+            ),
+            range(1, 3),
+        );
+        $wanted = [
+            ...array_map(fn (string $id) => new RecordIdentity(Comment::linkType(), $id), $ids),
+            new RecordIdentity(Comment::linkType(), strtolower((string) Str::ulid())),
+        ];
+
+        DB::enableQueryLog();
+        $cards = $this->app->make(RecordResolver::class)->visibleCards($wanted);
+        $queries = count(DB::getQueryLog());
+
+        $this->assertSame(
+            array_fill(0, 3, "comment on note {$this->noteNumber()}"),
+            array_map(fn ($card) => $card->label, $cards),
+        );
+        $this->assertSame(self::FIRST_ABSTRACT, $cards[0]->abstract);
+        $this->assertLessThanOrEqual(4, $queries);
+    }
+
+    private function target(): RecordIdentity
+    {
+        return new RecordIdentity(Note::linkType(), $this->note->id);
+    }
+
+    private function noteNumber(): int
+    {
+        return Note::query()->withoutGlobalScopes()->findOrFail($this->note->id)->number;
     }
 }
