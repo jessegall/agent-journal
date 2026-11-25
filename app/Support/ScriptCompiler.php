@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Values\CompiledScript;
+use App\Values\ParsedHandler;
 use App\Values\ScriptHandler;
 use App\Values\ScriptSource;
 
@@ -13,7 +14,7 @@ final readonly class ScriptCompiler
     public function __construct(private KeywordRegistry $keywords, private ObjectRegistry $objects) {}
 
     /**
-     * @param  list<ScriptHandler>  $handlers
+     * @param  list<ParsedHandler>  $handlers
      */
     public function compile(ScriptSource $source, array $handlers): CompiledScript
     {

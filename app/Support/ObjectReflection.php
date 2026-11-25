@@ -75,7 +75,7 @@ final readonly class ObjectReflection
             throw ScriptDefinitionRefused::invalidMember($class, $property->name());
         }
 
-        return new ObjectMember($property->name(), new OperationKey($member->read));
+        return new ObjectMember($member->name, $property->name(), new OperationKey($member->read));
     }
 
     /**

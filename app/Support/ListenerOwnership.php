@@ -186,20 +186,6 @@ final readonly class ListenerOwnership
     }
 
     /**
-     * @return list<class-string<Event>>
-     */
-    public function exportedEvents(): array
-    {
-        return [
-            ...$this->coreExports->events,
-            ...array_merge(
-                [],
-                ...array_map(fn (DomainEntry $entry) => $entry->exports->events, $this->registry->all()),
-            ),
-        ];
-    }
-
-    /**
      * Whether the listener takes a group the event belongs to and may hear: a group of Core, of its own domain or one
      * its domain exports. An event joins a group by implementing it, so the group's listeners hear it unexported.
      */

@@ -91,7 +91,7 @@ final readonly class ProfileRunExecution implements ScriptExecution
 
     private function read(BooleanOperand $condition): ObjectRead
     {
-        return $this->reader->read($condition->object, $condition->member, $this->context);
+        return $this->reader->member($condition->object, $condition->member, $this->context);
     }
 
     private function holds(BooleanOperand $condition, ObjectRead $read): bool

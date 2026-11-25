@@ -18,14 +18,27 @@ final readonly class ObjectReader
 {
     public function __construct(private ObjectRegistry $objects) {}
 
-    public function read(string $objectKey, string $member, ScriptContext $context): ObjectRead
+    /**
+     * The script member a condition names by its word, read from the property that holds it.
+     */
+    public function member(string $objectKey, string $member, ScriptContext $context): ObjectRead
+    {
+        $property = $this->objects->get($objectKey)->members[$member]->property;
+
+        return $this->read($objectKey, $property, $context);
+    }
+
+    /**
+     * One property of the object, by its name.
+     */
+    public function read(string $objectKey, string $property, ScriptContext $context): ObjectRead
     {
         try {
-            $value = $this->objects->make($objectKey, $context)->{$member};
+            $value = $this->objects->make($objectKey, $context)->{$property};
         } catch (WorkspaceReadPending $pending) {
             return ObjectRead::pending($pending->reference->key);
         } catch (Throwable $failure) {
-            return ObjectRead::failed("Reading {$objectKey}.{$member} failed: {$failure->getMessage()}");
+            return ObjectRead::failed("Reading {$objectKey}.{$property} failed: {$failure->getMessage()}");
         }
 
         return ObjectRead::value($value);

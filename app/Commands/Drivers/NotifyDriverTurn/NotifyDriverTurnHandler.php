@@ -24,7 +24,7 @@ final readonly class NotifyDriverTurnHandler implements CommandHandler
         $runtime = $this->runtimes->lockedFor($command->hostId, $command->runtimeId);
         $now = CarbonImmutable::now();
 
-        DriverTurn::create($runtime->id, $command->processGeneration, $command->nativePromptId, $now);
+        $turn = DriverTurn::create($runtime->id, $command->processGeneration, $command->nativePromptId, $now);
 
         $activity = $command->hasFinished ? RuntimeActivity::Idle : RuntimeActivity::Running;
 

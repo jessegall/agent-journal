@@ -12,8 +12,8 @@ use App\Values\BlockOperand;
 use App\Values\BooleanOperand;
 use App\Values\CommandOperand;
 use App\Values\KeywordDefinition;
+use App\Values\ParsedHandler;
 use App\Values\ParsedStatement;
-use App\Values\ScriptHandler;
 use App\Values\ScriptLine;
 use App\Values\TextOperand;
 
@@ -27,7 +27,7 @@ final readonly class ScriptParser
 
     /**
      * @param  list<ScriptLine>  $lines
-     * @return list<ScriptHandler>
+     * @return list<ParsedHandler>
      */
     public function parse(array $lines): array
     {
@@ -47,7 +47,7 @@ final readonly class ScriptParser
         return array_values($handlers);
     }
 
-    private function handler(ScriptCursor $cursor, ScriptLine $line): ScriptHandler
+    private function handler(ScriptCursor $cursor, ScriptLine $line): ParsedHandler
     {
         $opening = $this->keyword($line);
 
@@ -83,7 +83,7 @@ final readonly class ScriptParser
         $statements = $this->body($cursor, 0);
         $this->end($cursor, $line);
 
-        return new ScriptHandler($trigger->get()->definition, $line->source, $statements);
+        return new ParsedHandler($trigger->get()->definition, $line->source, $statements);
     }
 
     /**

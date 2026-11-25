@@ -13,7 +13,7 @@ final readonly class InvalidScriptObject
 {
     public function __construct(
         public ScriptContext $context,
-        #[ScriptMember(read: 'workspace.status')]
+        #[ScriptMember(read: 'workspace.status', name: 'status')]
         public string $status = '',
     ) {}
 }

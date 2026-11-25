@@ -80,7 +80,7 @@ final class OutputAssessment extends Model implements ReadableModel
         ReplayedOutput $replayed,
         OutputValidation $validation,
     ): self {
-        $previous = self::query()->ofPart($part)->newestFirst()->first();
+        $previous = self::query()->ofPart($part)->first();
 
         $outputAssessment = new self();
         $outputAssessment->project_key = $run->project_key;
@@ -142,7 +142,7 @@ final class OutputAssessment extends Model implements ReadableModel
      */
     public static function latestOf(PartRun $part): self|null
     {
-        return self::query()->ofPart($part)->newestFirst()->first();
+        return self::query()->ofPart($part)->first();
     }
 
     // ----------[ Scopes ]----------

@@ -72,8 +72,8 @@ final class ScriptDefinitionsTest extends TestCase
         $this->assertInstanceOf(ExampleScriptObject::class, $first);
         $this->assertInstanceOf(ExampleScriptObject::class, $second);
         $this->assertNotSame($first, $second);
-        $this->assertTrue($first->selected);
-        $this->assertFalse($second->selected);
+        $this->assertTrue($first->isSelected);
+        $this->assertFalse($second->isSelected);
     }
 
     private function context(string $trigger): ScriptContext

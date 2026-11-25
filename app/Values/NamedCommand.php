@@ -13,7 +13,7 @@ final class NamedCommand extends ScriptOperand
 {
     /**
      * @param  list<string>  $arguments
-     * @param  non-empty-list<AccessType>  $effects
+     * @param  list<AccessType>  $effects  never empty: the parser refuses a command without effects
      */
     public function __construct(
         public readonly string $key,

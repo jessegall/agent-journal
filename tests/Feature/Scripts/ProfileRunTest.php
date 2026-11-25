@@ -40,7 +40,7 @@ final class ProfileRunTest extends TestCase
         $context = $this->context();
         $reader = $this->app->make(ObjectReader::class);
 
-        $pending = $reader->read('workspace', 'dirty', $context);
+        $pending = $reader->member('workspace', 'dirty', $context);
 
         $this->assertSame(StepStatus::Pending, $pending->unread?->status);
         $this->assertSame('read-1', $pending->unread->evidence);
@@ -48,8 +48,8 @@ final class ProfileRunTest extends TestCase
         $this->answer(isDirty: true);
         $this->answer(isDirty: false);
 
-        $this->assertTrue($reader->read('workspace', 'dirty', $context)->value);
-        $this->assertFalse($reader->read('workspace', 'clean', $context)->value);
+        $this->assertTrue($reader->member('workspace', 'dirty', $context)->value);
+        $this->assertFalse($reader->member('workspace', 'clean', $context)->value);
     }
 
     public function test_a_failed_read_is_a_diagnostic_and_never_false(): void

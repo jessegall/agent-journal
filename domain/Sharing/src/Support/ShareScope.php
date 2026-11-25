@@ -6,14 +6,15 @@ namespace Domain\Sharing\Support;
 
 use App\Exceptions\RecordUnavailable;
 use App\Exceptions\ShareBudgetExceeded;
-use Domain\Sharing\Exceptions\ShareScopeTooLarge;
 use App\Exceptions\UnknownShareRecordType;
 use App\Models\Records\Link;
 use App\Support\RecordIdentity;
 use App\Support\ScopedReadMeter;
+use App\Support\ShareRecordCard;
 use App\Support\ShareRecordRegistry;
 use App\Support\ShareSelection;
 use App\Support\ShareTargetRead;
+use Domain\Sharing\Exceptions\ShareScopeTooLarge;
 
 /**
  * Finds what a share of a root could include, for the owner's preview: the root's card from its own provider, then

@@ -6,5 +6,9 @@ namespace App\Values;
 
 final readonly class ObjectMember
 {
-    public function __construct(public string $name, public OperationKey $read) {}
+    /**
+     * @param  string  $name  the word a script names the member by
+     * @param  string  $property  the object's property that holds its value
+     */
+    public function __construct(public string $name, public string $property, public OperationKey $read) {}
 }
