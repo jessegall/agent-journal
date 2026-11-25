@@ -74,7 +74,7 @@ trait CertifiesHelperWork
         bool $requiresReview = false,
         RecordIdentity $work = new RecordIdentity('helpers.helper-job', self::WORK_ID),
     ): CertifiedWork {
-        $execution = ExecutionPolicy::make(
+        $execution = new ExecutionPolicy(
             ExecutionModeType::ProtectedHost,
             null,
             "{$this->folder}/helper",

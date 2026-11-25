@@ -5,17 +5,18 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Enums\CommandClass;
+use Spatie\LaravelData\Data;
 
 /**
  * A set of command classes, each held once and in the order of the enum; membership is exact, so edit never stands in
  * for write.
  */
-final readonly class CommandClassSet
+final class CommandClassSet extends Data
 {
     /**
      * @param  list<CommandClass>  $classes
      */
-    private function __construct(public array $classes) {}
+    public function __construct(public readonly array $classes) {}
 
     public static function of(CommandClass ...$classes): self
     {

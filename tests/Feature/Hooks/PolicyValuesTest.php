@@ -119,33 +119,33 @@ final class PolicyValuesTest extends TestCase
             ),
         );
         $this->assertSame([], ProfileBase::readOnlyHelper()->defaultStopConditions());
-        $this->assertSame(30, StopConditions::make([])->attemptSeconds);
+        $this->assertSame(30, new StopConditions([])->attemptSeconds);
 
         $this->assertRefused(
             StopConditionsInvalid::class,
-            fn () => StopConditions::make([$this->condition('slow', 61)], 120),
+            fn () => new StopConditions([$this->condition('slow', 61)], 120),
         );
         $this->assertRefused(
             StopConditionsInvalid::class,
-            fn () => StopConditions::make([$this->condition('a', 20), $this->condition('b', 20)]),
+            fn () => new StopConditions([$this->condition('a', 20), $this->condition('b', 20)]),
         );
-        $this->assertRefused(StopConditionsInvalid::class, fn () => StopConditions::make([], 121));
+        $this->assertRefused(StopConditionsInvalid::class, fn () => new StopConditions([], 121));
         $this->assertRefused(
             StopConditionsInvalid::class,
-            fn () => StopConditions::make(
+            fn () => new StopConditions(
                 array_map(fn (int $number) => $this->condition("c{$number}", 1), range(1, 17)),
                 120,
             ),
         );
         $this->assertRefused(
             StopConditionsInvalid::class,
-            fn () => StopConditions::make(
+            fn () => new StopConditions(
                 [new StopCondition('path', 'Path', 'journal-check', [], [], 'workspace', 5, 1024, 'Fix it.')],
             ),
         );
         $this->assertRefused(
             StopConditionsInvalid::class,
-            fn () => StopConditions::make([$this->condition('twice', 5), $this->condition('twice', 5)]),
+            fn () => new StopConditions([$this->condition('twice', 5), $this->condition('twice', 5)]),
         );
     }
 
@@ -170,7 +170,7 @@ final class PolicyValuesTest extends TestCase
         $this->assertSame(ExecutionModeType::RequiredContainer, ProfileBase::readOnlyHelper()->defaultExecutionMode());
         $this->assertSame(
             ExecutionModeType::RequiredContainer,
-            ExecutionPolicy::make(
+            new ExecutionPolicy(
                 ExecutionModeType::RequiredContainer,
                 'registry/helper@sha256:abc',
                 'worktree-1',
@@ -182,19 +182,19 @@ final class PolicyValuesTest extends TestCase
         $this->assertTrue(ProfileBase::writingHelper()->isContainerRequired());
         $this->assertRefused(
             ExecutionPolicyInvalid::class,
-            fn () => ExecutionPolicy::make(ExecutionModeType::RequiredContainer, null, 'worktree-1', $budgets, []),
+            fn () => new ExecutionPolicy(ExecutionModeType::RequiredContainer, null, 'worktree-1', $budgets, []),
         );
         $this->assertRefused(
             ExecutionBudgetInvalid::class,
-            fn () => ExecutionBudgets::make(9, 1024, 1024, 1, 1, 1, 1, 1, 1),
+            fn () => new ExecutionBudgets(9, 1024, 1024, 1, 1, 1, 1, 1, 1),
         );
         $this->assertRefused(
             ExecutionBudgetInvalid::class,
-            fn () => ExecutionBudgets::make(2, 1024, 2048, 1, 1, 1, 1, 1, 1),
+            fn () => new ExecutionBudgets(2, 1024, 2048, 1, 1, 1, 1, 1, 1),
         );
         $this->assertRefused(
             ExecutionBudgetInvalid::class,
-            fn () => ExecutionBudgets::make(0, 1024, 1024, 1, 1, 1, 1, 1, 1),
+            fn () => new ExecutionBudgets(0, 1024, 1024, 1, 1, 1, 1, 1, 1),
         );
     }
 

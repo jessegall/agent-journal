@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\Starts\DismissLaunchOutcome\DismissLaunchOutcomeCommand;
 use App\Commands\Agents\StartAgent\StartAgentCommand;
+use App\Commands\Starts\DismissLaunchOutcome\DismissLaunchOutcomeCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Hosts\DockerImageVerifier;
 use App\Contracts\Hosts\HostCapabilities;
@@ -147,7 +147,7 @@ final class LaunchOutcomeTest extends TestCase
             null,
             ConversationModeType::New,
             null,
-            StartPolicy::withoutProfile(ExecutionPolicy::make(
+            StartPolicy::withoutProfile(new ExecutionPolicy(
                 ExecutionModeType::RequiredContainer,
                 self::IMAGE,
                 'helper-7',

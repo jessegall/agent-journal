@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Exceptions\StopConditionsInvalid;
+use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Data;
 
 /**
  * The ordered stop conditions of one start, checked before it starts: at most 16, each within 60 seconds and 64 KiB,
  * all together within the attempt's time, and a writing helper's always holding clean-worktree.
  */
-final readonly class StopConditions
+final class StopConditions extends Data
 {
     public const int DEFAULT_ATTEMPT_SECONDS = 30;
 
@@ -24,19 +26,14 @@ final readonly class StopConditions
 
     /**
      * @param  list<StopCondition>  $conditions
-     */
-    private function __construct(
-        public array $conditions,
-        public int $attemptSeconds,
-    ) {}
-
-    /**
-     * @param  list<StopCondition>  $conditions
      *
      * @throws StopConditionsInvalid
      */
-    public static function make(array $conditions, int $attemptSeconds = self::DEFAULT_ATTEMPT_SECONDS): self
-    {
+    public function __construct(
+        #[DataCollectionOf(StopCondition::class)]
+        public readonly array $conditions,
+        public readonly int $attemptSeconds = self::DEFAULT_ATTEMPT_SECONDS,
+    ) {
         if (count($conditions) > self::MOST_CONDITIONS) {
             throw StopConditionsInvalid::tooMany(count($conditions));
         }
@@ -57,8 +54,6 @@ final readonly class StopConditions
         ) > $attemptSeconds) {
             throw StopConditionsInvalid::overAttempt($attemptSeconds);
         }
-
-        return new self($conditions, $attemptSeconds);
     }
 
     public function isEmpty(): bool

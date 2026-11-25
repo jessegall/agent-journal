@@ -45,7 +45,7 @@ final class SessionInspectionTest extends TestCase
         $revision = $this->app->make(ProfileResolver::class)->snapshotFor(ProfileKey::from('writing-helper'))->revision;
         SessionPolicy::create($writer->session, new StartPolicy(
             $policy->access,
-            StopConditions::make([StopCondition::cleanWorktree()]),
+            new StopConditions([StopCondition::cleanWorktree()]),
             $policy->execution,
             'writing-helper',
             $revision,

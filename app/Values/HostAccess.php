@@ -6,17 +6,18 @@ namespace App\Values;
 
 use App\Enums\AccessType;
 use App\Enums\ResourceType;
+use Spatie\LaravelData\Data;
 
 /**
  * One scope a profile may work in on the host, with the accesses it permits there: a root path ('.' is the whole
  * workspace the driver's own sandbox confines it to) or a network destination ('*' is any destination).
  */
-final readonly class HostAccess
+final class HostAccess extends Data
 {
     /**
      * @param  list<AccessType>  $accesses
      */
-    public function __construct(public ResourceType $type, public string $scope, public array $accesses) {}
+    public function __construct(public readonly ResourceType $type, public readonly string $scope, public readonly array $accesses) {}
 
     /**
      * @param  list<AccessType>  $accesses

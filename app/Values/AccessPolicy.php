@@ -6,13 +6,15 @@ namespace App\Values;
 
 use App\Enums\AccessRuleType;
 use App\Enums\ResourceType;
+use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Data;
 
 /**
  * What one profile may do on the host: root paths and destinations with the accesses each permits, process ceilings,
  * exact host operation grants and explicit denials. A protected path is never granted, and a journal grant never
  * widens any of this.
  */
-final readonly class AccessPolicy
+final class AccessPolicy extends Data
 {
     /**
      * Files no profile may touch wherever they lie, whatever grants them: the drivers' own sign-ins.
@@ -29,11 +31,14 @@ final readonly class AccessPolicy
      * @param  list<string>  $denials  host operation and read names refused whatever else grants them
      */
     public function __construct(
-        public array $paths,
-        public array $destinations,
-        public ProcessGrants $processes,
-        public array $operationGrants = [],
-        public array $denials = [],
+        #[DataCollectionOf(HostAccess::class)]
+        public readonly array $paths,
+        #[DataCollectionOf(HostAccess::class)]
+        public readonly array $destinations,
+        public readonly ProcessGrants $processes,
+        #[DataCollectionOf(OperationGrant::class)]
+        public readonly array $operationGrants = [],
+        public readonly array $denials = [],
     ) {}
 
     public function allows(Operation $operation): bool

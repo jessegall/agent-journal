@@ -139,8 +139,8 @@ final class MandatoryAdmissionTest extends TestCase
             AgentSession::query()->findOrFail($this->target->sessionId),
             new StartPolicy(
                 ProfileBase::mainAgent()->defaultAccess(),
-                StopConditions::make([]),
-                ExecutionPolicy::make(
+                new StopConditions([]),
+                new ExecutionPolicy(
                     ExecutionModeType::RequiredContainer,
                     self::IMAGE,
                     ProfileStartPolicy::WORKSPACE,

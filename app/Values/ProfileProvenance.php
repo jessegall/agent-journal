@@ -6,19 +6,22 @@ namespace App\Values;
 
 use App\Enums\PolicyOriginType;
 use App\Exceptions\ProfileFieldUnknown;
+use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Data;
 
 /**
  * Where a revision's effective start policy came from: the hash of the activated configuration it was compiled from,
  * and the origin of each effective field.
  */
-final readonly class ProfileProvenance
+final class ProfileProvenance extends Data
 {
     /**
      * @param  list<FieldOrigin>  $origins
      */
     public function __construct(
-        public string $configurationHash,
-        public array $origins,
+        public readonly string $configurationHash,
+        #[DataCollectionOf(FieldOrigin::class)]
+        public readonly array $origins,
     ) {}
 
     /**

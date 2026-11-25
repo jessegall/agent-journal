@@ -6,9 +6,6 @@ namespace Tests\Feature\Agents;
 
 use App\Enums\AccessType;
 use App\Enums\ExecutionModeType;
-use App\Support\Stored\StoredAccessPolicy;
-use App\Support\Stored\StoredExecutionPolicy;
-use App\Support\Stored\StoredStopConditions;
 use App\Values\AccessPolicy;
 use App\Values\ExecutionBudgets;
 use App\Values\ExecutionPolicy;
@@ -36,8 +33,8 @@ final class StoredPolicyShapesTest extends TestCase
             ['tasks.delete'],
         );
 
-        $stored = StoredAccessPolicy::fromAccessPolicy($access)->toArray();
-        $read = StoredAccessPolicy::from($stored)->toAccessPolicy();
+        $stored = $access->toArray();
+        $read = AccessPolicy::from($stored);
 
         $this->assertSame(['read', 'execute'], $stored['paths'][0]['access']);
         $this->assertEquals($access, $read);
@@ -45,10 +42,10 @@ final class StoredPolicyShapesTest extends TestCase
 
     public function test_stop_conditions_read_back_as_they_were_stored(): void
     {
-        $conditions = StopConditions::make([StopCondition::cleanWorktree()], 40);
+        $conditions = new StopConditions([StopCondition::cleanWorktree()], 40);
 
-        $stored = StoredStopConditions::fromStopConditions($conditions)->toArray();
-        $read = StoredStopConditions::from($stored)->toStopConditions();
+        $stored = $conditions->toArray();
+        $read = StopConditions::from($stored);
 
         $this->assertSame(10, $stored['conditions'][0]['timeout_seconds']);
         $this->assertEquals($conditions, $read);
@@ -56,7 +53,7 @@ final class StoredPolicyShapesTest extends TestCase
 
     public function test_an_execution_policy_reads_back_as_it_was_stored(): void
     {
-        $execution = ExecutionPolicy::make(
+        $execution = new ExecutionPolicy(
             ExecutionModeType::ProtectedHost,
             null,
             '/workspace',
@@ -64,8 +61,8 @@ final class StoredPolicyShapesTest extends TestCase
             ['egress'],
         );
 
-        $stored = StoredExecutionPolicy::fromExecutionPolicy($execution)->toArray();
-        $read = StoredExecutionPolicy::from($stored)->toExecutionPolicy();
+        $stored = $execution->toArray();
+        $read = ExecutionPolicy::from($stored);
 
         $this->assertSame('protected_host', $stored['mode']);
         $this->assertSame(2, $stored['budgets']['cpu_cores']);

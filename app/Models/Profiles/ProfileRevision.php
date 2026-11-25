@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Models\Profiles;
 
 use App\Casts\ProfileBaseCast;
-use App\Casts\ProfileStartPolicyCast;
 use App\Casts\ScriptSourceCast;
 use App\Casts\SupervisorRoutesCast;
 use App\Concerns\BoundedReads;
@@ -26,6 +25,7 @@ use App\Values\ProfileDefinition;
 use App\Values\ProfileKey;
 use App\Values\ProfileScript;
 use App\Values\ProfileSnapshot;
+use App\Values\ProfileStartPolicy;
 use App\Values\ScriptSource;
 use App\Values\SupervisorProfile;
 use App\Values\SupervisorRoutes;
@@ -45,12 +45,7 @@ use Illuminate\Support\Carbon;
  * @property ModelTier $preferred_tier
  * @property ?array $skill_allowlist
  * @property array $required_skills
- * @property ?string $preferred_driver
- * @property array $access_policy
- * @property array $stop_conditions
- * @property array $execution_policy
- * @property string $configuration_hash
- * @property array $provenance
+ * @property ProfileStartPolicy $start_policy
  * @property ProfileAuthorization $authorization
  * @property SupervisorRoutes $supervisor
  * @property InstancePolicy $instances
@@ -83,7 +78,7 @@ final class ProfileRevision extends Model implements ReadableModel
             'preferred_tier' => ModelTier::class,
             'skill_allowlist' => 'array',
             'required_skills' => 'array',
-            'start_policy' => ProfileStartPolicyCast::class,
+            'start_policy' => ProfileStartPolicy::class,
             'authorization' => ProfileAuthorization::class,
             'supervisor' => SupervisorRoutesCast::class,
             'instances' => InstancePolicy::class,

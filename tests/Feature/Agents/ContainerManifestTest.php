@@ -680,7 +680,7 @@ final class ContainerManifestTest extends TestCase
 
     private function policy(): ExecutionPolicy
     {
-        return ExecutionPolicy::make(
+        return new ExecutionPolicy(
             ExecutionModeType::RequiredContainer,
             self::IMAGE,
             'helper-7',

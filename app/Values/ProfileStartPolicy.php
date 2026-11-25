@@ -6,13 +6,14 @@ namespace App\Values;
 
 use App\Enums\ExecutionModeType;
 use App\Enums\PolicyOriginType;
+use Spatie\LaravelData\Data;
 
 /**
  * How a profile's agent is started: its driver and whether a start may choose another, the models it allows (none
  * listed allows any), what it may do, the conditions it must pass before it stops, where it runs, and where each of
  * those came from. The worktree of its execution policy is the type's placeholder, which the host resolves per start.
  */
-final readonly class ProfileStartPolicy
+final class ProfileStartPolicy extends Data
 {
     public const string WORKSPACE = 'workspace';
 
@@ -29,12 +30,12 @@ final readonly class ProfileStartPolicy
      * @param  string|null  $preferredDriver  the driver family a start preselects; any start may choose another
      */
     public function __construct(
-        public string|null $preferredDriver,
-        public AccessPolicy $access,
-        public StopConditions $stopConditions,
-        public ExecutionPolicy $execution,
-        public ProfileProvenance $provenance,
-        public bool $requiresReview = false,
+        public readonly string|null $preferredDriver,
+        public readonly AccessPolicy $access,
+        public readonly StopConditions $stopConditions,
+        public readonly ExecutionPolicy $execution,
+        public readonly ProfileProvenance $provenance,
+        public readonly bool $requiresReview = false,
     ) {}
 
     /**
@@ -45,7 +46,7 @@ final readonly class ProfileStartPolicy
         return new self(
             $preferredDriver,
             $type->defaultAccess(),
-            StopConditions::make($type->defaultStopConditions()),
+            new StopConditions($type->defaultStopConditions()),
             self::defaultExecution($type),
             new ProfileProvenance(
                 $configurationHash,
@@ -63,7 +64,7 @@ final readonly class ProfileStartPolicy
         $mode = $type->defaultExecutionMode();
         $image = $mode === ExecutionModeType::RequiredContainer ? self::HELPER_IMAGE : null;
 
-        return ExecutionPolicy::make($mode, $image, self::WORKSPACE, ExecutionBudgets::defaults(), []);
+        return new ExecutionPolicy($mode, $image, self::WORKSPACE, ExecutionBudgets::defaults(), []);
     }
 
     /**

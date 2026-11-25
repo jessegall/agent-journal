@@ -687,7 +687,7 @@ final class AgentDriverLedgerTest extends TestCase
             ArrangementSetting::fromConfig('contained', 'acme', '{"main":{"folder":"main"}}'),
         );
         $image = 'journal-agent@sha256:'.str_repeat('a', 64);
-        $execution = ExecutionPolicy::make(
+        $execution = new ExecutionPolicy(
             ExecutionModeType::RequiredContainer,
             $image,
             ProfileStartPolicy::WORKSPACE,
@@ -698,7 +698,7 @@ final class AgentDriverLedgerTest extends TestCase
         SessionPolicy::query()->where('session_id', $opened->sessionId)->delete();
         SessionPolicy::create(
             AgentSession::query()->findOrFail($opened->sessionId),
-            new StartPolicy(ProfileBase::mainAgent()->defaultAccess(), StopConditions::make([]), $execution, null, null, null),
+            new StartPolicy(ProfileBase::mainAgent()->defaultAccess(), new StopConditions([]), $execution, null, null, null),
         );
 
         $grant = $this->asSystem(new ClaimStartGrantCommand($host->hostId, $opened->runtimeId));
@@ -770,7 +770,7 @@ final class AgentDriverLedgerTest extends TestCase
             ArrangementSetting::fromConfig('contained', 'acme', '{"main":{"folder":"main"}}'),
         );
         $this->app->forgetInstance(LaunchProfiles::class);
-        $execution = ExecutionPolicy::make(
+        $execution = new ExecutionPolicy(
             ExecutionModeType::RequiredContainer,
             'journal-agent@sha256:'.str_repeat('a', 64),
             ProfileStartPolicy::WORKSPACE,
@@ -781,7 +781,7 @@ final class AgentDriverLedgerTest extends TestCase
         SessionPolicy::query()->where('session_id', $opened->sessionId)->delete();
         SessionPolicy::create(
             AgentSession::query()->findOrFail($opened->sessionId),
-            new StartPolicy(ProfileBase::mainAgent()->defaultAccess(), StopConditions::make([]), $execution, null, null, null),
+            new StartPolicy(ProfileBase::mainAgent()->defaultAccess(), new StopConditions([]), $execution, null, null, null),
         );
 
         $fixedValues = [
@@ -827,7 +827,7 @@ final class AgentDriverLedgerTest extends TestCase
             ArrangementSetting::class,
             ArrangementSetting::fromConfig('contained', 'acme', '{"main":{"folder":"main"}}'),
         );
-        $execution = ExecutionPolicy::make(
+        $execution = new ExecutionPolicy(
             ExecutionModeType::RequiredContainer,
             'journal-agent@sha256:'.str_repeat('a', 64),
             ProfileStartPolicy::WORKSPACE,
@@ -838,7 +838,7 @@ final class AgentDriverLedgerTest extends TestCase
         SessionPolicy::query()->where('session_id', $opened->sessionId)->delete();
         SessionPolicy::create(
             AgentSession::query()->findOrFail($opened->sessionId),
-            new StartPolicy(ProfileBase::mainAgent()->defaultAccess(), StopConditions::make([]), $execution, null, null, null),
+            new StartPolicy(ProfileBase::mainAgent()->defaultAccess(), new StopConditions([]), $execution, null, null, null),
         );
 
         $this->assertThrows(
@@ -860,7 +860,7 @@ final class AgentDriverLedgerTest extends TestCase
 
     public function test_a_driver_without_a_screen_gets_a_container_without_a_terminal_whatever_its_profile(): void
     {
-        $execution = ExecutionPolicy::make(
+        $execution = new ExecutionPolicy(
             ExecutionModeType::RequiredContainer,
             'journal-agent@sha256:'.str_repeat('a', 64),
             ProfileStartPolicy::WORKSPACE,

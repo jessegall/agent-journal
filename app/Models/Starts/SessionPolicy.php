@@ -10,10 +10,10 @@ use App\Contracts\Records\ReadableModel;
 use App\Exceptions\SessionPolicyFrozen;
 use App\Models\Agents\AgentSession;
 use App\Models\Support\Accessor;
-use App\Support\Stored\StoredAccessPolicy;
-use App\Support\Stored\StoredExecutionPolicy;
-use App\Support\Stored\StoredStopConditions;
+use App\Values\AccessPolicy;
+use App\Values\ExecutionPolicy;
 use App\Values\StartPolicy;
+use App\Values\StopConditions;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -29,9 +29,9 @@ use Illuminate\Support\Carbon;
  * @property ?string $profile_key
  * @property ?int $profile_revision
  * @property ?string $configuration_hash
- * @property StoredAccessPolicy $access_policy
- * @property StoredStopConditions $stop_conditions
- * @property StoredExecutionPolicy $execution_policy
+ * @property AccessPolicy $access_policy
+ * @property StopConditions $stop_conditions
+ * @property ExecutionPolicy $execution_policy
  * @property string $policy_digest
  * @property bool $requires_review
  * @property ?Carbon $created_at
@@ -51,9 +51,9 @@ final class SessionPolicy extends Model implements ReadableModel
     protected function casts(): array
     {
         return [
-            'access_policy' => StoredAccessPolicy::class,
-            'stop_conditions' => StoredStopConditions::class,
-            'execution_policy' => StoredExecutionPolicy::class,
+            'access_policy' => AccessPolicy::class,
+            'stop_conditions' => StopConditions::class,
+            'execution_policy' => ExecutionPolicy::class,
             'requires_review' => 'boolean',
         ];
     }
@@ -76,9 +76,9 @@ final class SessionPolicy extends Model implements ReadableModel
         $frozen->profile_revision = $policy->profileRevision;
         $frozen->configuration_hash = $policy->configurationHash;
         $frozen->requires_review = $policy->requiresReview;
-        $frozen->access_policy = StoredAccessPolicy::fromAccessPolicy($policy->access);
-        $frozen->stop_conditions = StoredStopConditions::fromStopConditions($policy->stopConditions);
-        $frozen->execution_policy = StoredExecutionPolicy::fromExecutionPolicy($policy->execution);
+        $frozen->access_policy = $policy->access;
+        $frozen->stop_conditions = $policy->stopConditions;
+        $frozen->execution_policy = $policy->execution;
         $frozen->policy_digest = $policy->digest();
         $frozen->save();
 
@@ -109,9 +109,9 @@ final class SessionPolicy extends Model implements ReadableModel
     protected function policy(): Attribute
     {
         return Accessor::get(fn () => new StartPolicy(
-            $this->access_policy->toAccessPolicy(),
-            $this->stop_conditions->toStopConditions(),
-            $this->execution_policy->toExecutionPolicy(),
+            $this->access_policy,
+            $this->stop_conditions,
+            $this->execution_policy,
             $this->profile_key,
             $this->profile_revision,
             $this->configuration_hash,

@@ -155,7 +155,7 @@ final readonly class PolicyResolver
             }
         }
 
-        return StopConditions::make($conditions);
+        return new StopConditions($conditions);
     }
 
     /**
@@ -166,7 +166,7 @@ final readonly class PolicyResolver
         $type = $profile->base;
 
         if ($this->arrangement->arrangement->isContained()) {
-            return ExecutionPolicy::make(
+            return new ExecutionPolicy(
                 ExecutionModeType::RequiredContainer,
                 $this->image->reference,
                 ProfileStartPolicy::WORKSPACE,
@@ -184,7 +184,7 @@ final readonly class PolicyResolver
 
         $image = $mode === ExecutionModeType::RequiredContainer ? $this->image->reference : null;
 
-        return ExecutionPolicy::make(
+        return new ExecutionPolicy(
             $mode,
             $image,
             ProfileStartPolicy::WORKSPACE,

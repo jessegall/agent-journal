@@ -218,7 +218,7 @@ final class HelperCompletionTest extends TestCase
         $policy = StartPolicy::mainOnHost('/workspace');
         SessionPolicy::create($start->session, new StartPolicy(
             $policy->access,
-            StopConditions::make([StopCondition::cleanWorktree()]),
+            new StopConditions([StopCondition::cleanWorktree()]),
             $policy->execution,
             'writing-helper',
             1,

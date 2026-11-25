@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Enums\ExecutionModeType;
-use App\Support\Stored\StoredAccessPolicy;
-use App\Support\Stored\StoredExecutionPolicy;
-use App\Support\Stored\StoredStopConditions;
 
 /**
  * The policy a start runs under, frozen with the session it starts: what the agent may reach, when it may stop, how
@@ -33,7 +30,7 @@ final readonly class StartPolicy
     {
         return new self(
             new AccessPolicy([], [], ProcessGrants::everything()),
-            StopConditions::make([]),
+            new StopConditions([]),
             $execution,
             null,
             null,
@@ -48,7 +45,7 @@ final readonly class StartPolicy
     public static function mainOnHost(string $worktree): self
     {
         return self::withoutProfile(
-            ExecutionPolicy::make(ExecutionModeType::ProtectedHost, null, $worktree, ExecutionBudgets::defaults(), []),
+            new ExecutionPolicy(ExecutionModeType::ProtectedHost, null, $worktree, ExecutionBudgets::defaults(), []),
         );
     }
 
@@ -66,9 +63,9 @@ final readonly class StartPolicy
     public function digest(): string
     {
         return hash('sha256', json_encode([
-            StoredAccessPolicy::fromAccessPolicy($this->access),
-            StoredStopConditions::fromStopConditions($this->stopConditions),
-            StoredExecutionPolicy::fromExecutionPolicy($this->execution),
+            $this->access,
+            $this->stopConditions,
+            $this->execution,
             $this->profileKey,
             $this->profileRevision,
             $this->configurationHash,

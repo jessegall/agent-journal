@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Enums\AccessType;
+use Spatie\LaravelData\Data;
 
 /**
  * One protected command whose exit must be zero before a helper may finish: an absolute executable run with argv,
  * never a shell line, within its own time and output limits.
  */
-final readonly class StopCondition
+final class StopCondition extends Data
 {
     public const string CLEAN_WORKTREE = 'clean-worktree';
 
@@ -23,15 +24,15 @@ final readonly class StopCondition
      * @param  list<AccessType>  $accessTypes
      */
     public function __construct(
-        public string $key,
-        public string $label,
-        public string $executable,
-        public array $arguments,
-        public array $accessTypes,
-        public string $directory,
-        public int $timeoutSeconds,
-        public int $outputBytes,
-        public string $guidance,
+        public readonly string $key,
+        public readonly string $label,
+        public readonly string $executable,
+        public readonly array $arguments,
+        public readonly array $accessTypes,
+        public readonly string $directory,
+        public readonly int $timeoutSeconds,
+        public readonly int $outputBytes,
+        public readonly string $guidance,
     ) {}
 
     /**

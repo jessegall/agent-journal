@@ -19,12 +19,7 @@ return new class extends Migration
             $table->unsignedTinyInteger('preferred_tier');
             $table->json('skill_allowlist')->nullable();
             $table->json('required_skills');
-            $table->string('preferred_driver', 32)->nullable();
-            $table->json('access_policy');
-            $table->json('stop_conditions');
-            $table->json('execution_policy');
-            $table->string('configuration_hash', 64);
-            $table->json('provenance');
+            $table->json('start_policy');
             $table->json('authorization');
             $table->json('supervisor');
             $table->string('instances', 16);

@@ -41,7 +41,7 @@ return [
      * version of the package, these features will be enabled by default.
      */
     'features' => [
-        'cast_and_transform_iterables' => false,
+        'cast_and_transform_iterables' => true,
 
         /*
          * When trying to set a computed property value, the package will throw an exception.
@@ -126,7 +126,7 @@ return [
      */
     'structure_caching' => [
         'enabled' => true,
-        'directories' => [app_path('Data')],
+        'directories' => [app_path('Data'), app_path('Values')],
         'cache' => [
             'store' => env('CACHE_STORE', env('CACHE_DRIVER', 'file')),
             'prefix' => 'laravel-data',

@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use Spatie\LaravelData\Data;
+
 /**
  * A set of exact command patterns.
  */
-final readonly class CommandPatternSet
+final class CommandPatternSet extends Data
 {
     /**
      * @param  list<CommandPattern>  $patterns
      */
-    private function __construct(public array $patterns) {}
+    public function __construct(public readonly array $patterns) {}
 
     public static function of(CommandPattern ...$patterns): self
     {

@@ -220,7 +220,7 @@ final class StartReceiptTest extends TestCase
             null,
             ConversationModeType::New,
             null,
-            StartPolicy::withoutProfile(ExecutionPolicy::make(
+            StartPolicy::withoutProfile(new ExecutionPolicy(
                 ExecutionModeType::RequiredContainer,
                 self::IMAGE,
                 'helper-7',

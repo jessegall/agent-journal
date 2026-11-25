@@ -5,19 +5,20 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Enums\CommandClass;
+use Spatie\LaravelData\Data;
 
 /**
  * What a profile declares its agents may run: allowed and denied command classes, the ceiling no allow goes past, and
  * allowed and denied exact patterns. A denial always beats an allow.
  */
-final readonly class ProcessGrants
+final class ProcessGrants extends Data
 {
     public function __construct(
-        public CommandClassSet $allowed,
-        public CommandClassSet $denied,
-        public CommandClassSet $ceiling,
-        public CommandPatternSet $allowedPatterns,
-        public CommandPatternSet $deniedPatterns,
+        public readonly CommandClassSet $allowed,
+        public readonly CommandClassSet $denied,
+        public readonly CommandClassSet $ceiling,
+        public readonly CommandPatternSet $allowedPatterns,
+        public readonly CommandPatternSet $deniedPatterns,
     ) {}
 
     /**

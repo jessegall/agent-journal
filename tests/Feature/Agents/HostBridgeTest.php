@@ -63,7 +63,7 @@ final class HostBridgeTest extends TestCase
     private function requestFor(Agent $actor, string $driver): StartRequest
     {
         $image = 'registry.example/journal-helper@sha256:'.str_repeat('a', 64);
-        $policy = ExecutionPolicy::make(
+        $policy = new ExecutionPolicy(
             ExecutionModeType::RequiredContainer,
             $image,
             'helper-7',

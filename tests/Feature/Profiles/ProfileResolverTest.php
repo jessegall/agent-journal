@@ -12,7 +12,6 @@ use App\Enums\ExecutionModeType;
 use App\Enums\PolicyOriginType;
 use App\Enums\RefusalCode;
 use App\Exceptions\ProfileMissing;
-use App\Exceptions\ProfileRevisionUnreadable;
 use App\Support\AgentImage;
 use App\Support\ArrangementSetting;
 use App\Support\DefaultDrivers;
@@ -25,6 +24,7 @@ use App\Values\StopCondition;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Spatie\LaravelData\Exceptions\CannotCreateData;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\ActsAsTestUser;
 use Tests\Support\Agents\HasContainerSupport;
@@ -44,16 +44,10 @@ final class ProfileResolverTest extends TestCase
 
     private const array TABLES = ['profile_revisions', 'profiles', 'command_receipts'];
 
-    public function test_the_revision_table_holds_the_start_policy_columns(): void
+    public function test_the_revision_table_holds_the_start_policy_in_one_column(): void
     {
-        $this->assertTrue(Schema::hasColumns('profile_revisions', [
-            'preferred_driver',
-            'access_policy',
-            'stop_conditions',
-            'execution_policy',
-            'configuration_hash',
-            'provenance',
-        ]));
+        $this->assertTrue(Schema::hasColumn('profile_revisions', 'start_policy'));
+        $this->assertFalse(Schema::hasColumn('profile_revisions', 'access_policy'));
     }
 
     public function test_a_reader_profile_is_a_read_only_helper(): void
@@ -168,9 +162,9 @@ final class ProfileResolverTest extends TestCase
     public function test_a_damaged_start_policy_column_fails_the_read(): void
     {
         $this->activate('journal-reviewer', ProfileBase::readOnlyHelper());
-        DB::table('profile_revisions')->update(['access_policy' => '{"class_grants": 3}']);
+        DB::table('profile_revisions')->update(['start_policy' => '{"class_grants": 3}']);
 
-        $this->expectException(ProfileRevisionUnreadable::class);
+        $this->expectException(CannotCreateData::class);
 
         $this->resolver()->snapshotFor(ProfileKey::from('journal-reviewer'));
     }

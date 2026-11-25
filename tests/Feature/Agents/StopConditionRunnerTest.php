@@ -56,7 +56,7 @@ final class StopConditionRunnerTest extends TestCase
         $this->assertSame([TestText::words(AgentText::of('core.stop.checks_running'))], $this->messagesOf($decision));
         $this->assertSame(AnswerType::Allow, $this->typeOf($again));
         $this->assertSame(
-            StopConditions::make([StopCondition::cleanWorktree()])->definitionHashes(),
+            new StopConditions([StopCondition::cleanWorktree()])->definitionHashes(),
             $attempt->condition_hashes,
         );
     }
@@ -118,7 +118,7 @@ final class StopConditionRunnerTest extends TestCase
         $policy = StartPolicy::mainOnHost('/workspace');
         SessionPolicy::create($start->session, new StartPolicy(
             $policy->access,
-            StopConditions::make([StopCondition::cleanWorktree()]),
+            new StopConditions([StopCondition::cleanWorktree()]),
             $policy->execution,
             'writing-helper',
             1,

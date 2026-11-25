@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Exceptions\ExecutionBudgetInvalid;
+use Spatie\LaravelData\Data;
 
 /**
  * The resources one start may use: every limit above zero, memory and swap equal, and none above
  * the host's maxima for one helper.
  */
-final readonly class ExecutionBudgets
+final class ExecutionBudgets extends Data
 {
     private const int GIB = 1024 * 1024 * 1024;
 
@@ -26,32 +27,20 @@ final readonly class ExecutionBudgets
 
     public const int DEFAULT_HOME_BYTES = 64 * self::MIB;
 
-    private function __construct(
-        public int $cpuCores,
-        public int $memoryBytes,
-        public int $memorySwapBytes,
-        public int $processes,
-        public int $openFiles,
-        public int $tmpBytes,
-        public int $homeBytes,
-        public int $workspaceBytes,
-        public int $wallSeconds,
-    ) {}
-
     /**
      * @throws ExecutionBudgetInvalid
      */
-    public static function make(
-        int $cpuCores,
-        int $memoryBytes,
-        int $memorySwapBytes,
-        int $processes,
-        int $openFiles,
-        int $tmpBytes,
-        int $homeBytes,
-        int $workspaceBytes,
-        int $wallSeconds,
-    ): self {
+    public function __construct(
+        public readonly int $cpuCores,
+        public readonly int $memoryBytes,
+        public readonly int $memorySwapBytes,
+        public readonly int $processes,
+        public readonly int $openFiles,
+        public readonly int $tmpBytes,
+        public readonly int $homeBytes,
+        public readonly int $workspaceBytes,
+        public readonly int $wallSeconds,
+    ) {
         foreach (compact(
             'cpuCores',
             'memoryBytes',
@@ -93,18 +82,6 @@ final readonly class ExecutionBudgets
                 throw ExecutionBudgetInvalid::aboveHost($name, $budgetAmount, $most);
             }
         }
-
-        return new self(
-            $cpuCores,
-            $memoryBytes,
-            $memorySwapBytes,
-            $processes,
-            $openFiles,
-            $tmpBytes,
-            $homeBytes,
-            $workspaceBytes,
-            $wallSeconds,
-        );
     }
 
     /**
@@ -113,7 +90,7 @@ final readonly class ExecutionBudgets
      */
     public static function mainAgent(): self
     {
-        return self::make(
+        return new self(
             4,
             8 * self::GIB,
             8 * self::GIB,
@@ -132,7 +109,7 @@ final readonly class ExecutionBudgets
      */
     public static function defaults(): self
     {
-        return self::make(
+        return new self(
             2,
             4 * self::GIB,
             4 * self::GIB,

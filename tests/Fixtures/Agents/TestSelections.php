@@ -66,7 +66,7 @@ final class TestSelections
      */
     public static function onHost(): ExecutionPolicy
     {
-        return ExecutionPolicy::make(
+        return new ExecutionPolicy(
             ExecutionModeType::ProtectedHost,
             null,
             '/workspaces/test',

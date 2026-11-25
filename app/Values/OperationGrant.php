@@ -4,18 +4,22 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Data;
+
 /**
  * A grant of one exact host operation, limited to the operands it lists; with none listed, wherever the policy's
  * scopes would otherwise allow it.
  */
-final readonly class OperationGrant
+final class OperationGrant extends Data
 {
     /**
      * @param  list<ResourceRequest>  $resources
      */
     public function __construct(
-        public string $operation,
-        public array $resources,
+        public readonly string $operation,
+        #[DataCollectionOf(ResourceRequest::class)]
+        public readonly array $resources,
     ) {}
 
     public function covers(Operation $operation): bool

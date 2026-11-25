@@ -38,7 +38,7 @@ final class CheckCapacityRequest extends FormRequest
         $defaults = ExecutionBudgets::defaults();
         $memory = $this->integer('memoryBytes', $defaults->memoryBytes);
 
-        return ExecutionBudgets::make(
+        return new ExecutionBudgets(
             $this->integer('cpuCores', $defaults->cpuCores),
             $memory,
             $memory,
