@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support\Entries;
 
 use App\Contracts\Bus\Command;
+use App\Support\RecordIdentity;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Bus\ExpectedCommand;
 
@@ -49,9 +50,17 @@ final class ToolCall
      */
     public function arguments(array $arguments): self
     {
-        $this->arguments = $arguments;
+        $this->arguments = [...$this->arguments, ...$arguments];
 
         return $this;
+    }
+
+    /**
+     * The record the tool works on, sent as its record_type and record_id arguments.
+     */
+    public function record(RecordIdentity $record): self
+    {
+        return $this->arguments(['record_type' => $record->type, 'record_id' => $record->id]);
     }
 
     public function expects(ExpectedCommand ...$expected): self

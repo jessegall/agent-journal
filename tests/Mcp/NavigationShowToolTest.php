@@ -5,24 +5,26 @@ declare(strict_types=1);
 namespace Tests\Mcp;
 
 use App\Mcp\Tools\NavigationShowTool;
-use Tests\Support\Entries\Attributes\Generated;
+use Tests\Support\Agents\HoldsNavigationRequests;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of the tool NavigationShowTool, as the generator wrote it.
+ * The main agent reads a stalled screen it is asked to pass; a helper does not see the tool.
  */
-#[Generated]
 #[TestsMcpTool(NavigationShowTool::class)]
 final class NavigationShowToolTest extends McpToolEntryTestCase
 {
+    use HoldsNavigationRequests;
+
     protected function arrange(TestJournal $journal): ToolCall
     {
-        throw EntryTestNeedsArrangement::for('NavigationShowTool', [
-            'the argument request',
-        ]);
+        [$start, $navigation, $stalled] = $this->heldNavigation($journal);
+
+        return ToolCall::by($start)
+            ->arguments(['request' => $navigation->id])
+            ->hiddenFromProfile('read-only-helper');
     }
 }

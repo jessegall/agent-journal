@@ -4,28 +4,30 @@ declare(strict_types=1);
 
 namespace Tests\Mcp;
 
+use App\Commands\Messages\ReadMessage\ReadMessageCommand;
 use App\Mcp\Tools\MessageReadTool;
-use Tests\Support\Entries\Attributes\Generated;
+use App\Support\ShownMessage;
+use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of the tool MessageReadTool, as the generator wrote it.
+ * An agent reads one message of its inbox: the tool sends the one read command and shows the message it answers.
  */
-#[Generated]
 #[TestsMcpTool(MessageReadTool::class)]
 final class MessageReadToolTest extends McpToolEntryTestCase
 {
     protected function arrange(TestJournal $journal): ToolCall
     {
-        throw EntryTestNeedsArrangement::for('MessageReadTool', [
-            'the argument message_id',
-            'the argument request_key',
-            'the expected commands',
-            'the sink replies',
-        ]);
+        $start = $journal->owner()->signedStart('Planner');
+        $journal->sharedInbox('Owner', 'Planner');
+        $message = $journal->post('Owner', $journal->sharedInboxOf('Owner', 'Planner'), 'How far are you?');
+
+        return ToolCall::by($start)
+            ->arguments(['message_id' => $message->id, 'request_key' => 'read-1'])
+            ->reply(ReadMessageCommand::class, ShownMessage::of($message))
+            ->expects(ExpectedCommand::of(ReadMessageCommand::class, ['messageId' => $message->id]));
     }
 }

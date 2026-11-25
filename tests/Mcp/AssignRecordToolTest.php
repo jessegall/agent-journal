@@ -41,9 +41,8 @@ final class AssignRecordToolTest extends McpToolEntryTestCase
         $record = new RecordIdentity('tasks.task', $task->id);
 
         return ToolCall::by($start)
+            ->record($record)
             ->arguments([
-                'record_type' => 'tasks.task',
-                'record_id' => $task->id,
                 'recipient' => ['type' => 'agent', 'id' => $builder->agent->id],
                 'request_key' => 'assign-1',
             ])

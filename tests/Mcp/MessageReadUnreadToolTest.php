@@ -4,27 +4,31 @@ declare(strict_types=1);
 
 namespace Tests\Mcp;
 
+use App\Commands\Messages\ReadUnreadMessages\ReadUnreadMessagesCommand;
 use App\Mcp\Tools\MessageReadUnreadTool;
-use Tests\Support\Entries\Attributes\Generated;
+use App\Support\ShownMessage;
+use App\Support\ShownMessages;
+use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of the tool MessageReadUnreadTool, as the generator wrote it.
+ * An agent reads every message it has not read yet: the tool sends the one read command and shows them oldest first.
  */
-#[Generated]
 #[TestsMcpTool(MessageReadUnreadTool::class)]
 final class MessageReadUnreadToolTest extends McpToolEntryTestCase
 {
     protected function arrange(TestJournal $journal): ToolCall
     {
-        throw EntryTestNeedsArrangement::for('MessageReadUnreadTool', [
-            'the argument request_key',
-            'the expected commands',
-            'the sink replies',
-        ]);
+        $start = $journal->owner()->signedStart('Planner');
+        $journal->sharedInbox('Owner', 'Planner');
+        $message = $journal->post('Owner', $journal->sharedInboxOf('Owner', 'Planner'), 'How far are you?');
+
+        return ToolCall::by($start)
+            ->arguments(['request_key' => 'unread-1'])
+            ->reply(ReadUnreadMessagesCommand::class, new ShownMessages([ShownMessage::of($message)]))
+            ->expects(ExpectedCommand::of(ReadUnreadMessagesCommand::class));
     }
 }

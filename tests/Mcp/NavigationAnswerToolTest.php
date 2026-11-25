@@ -4,30 +4,41 @@ declare(strict_types=1);
 
 namespace Tests\Mcp;
 
+use App\Commands\Navigation\AnswerNavigation\AnswerNavigationCommand;
 use App\Mcp\Tools\NavigationAnswerTool;
-use Tests\Support\Entries\Attributes\Generated;
+use Tests\Support\Agents\HoldsNavigationRequests;
+use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of the tool NavigationAnswerTool, as the generator wrote it.
+ * The main agent sends one round to a stalled screen: the tool sends the one answer command at the version and generation it read.
  */
-#[Generated]
 #[TestsMcpTool(NavigationAnswerTool::class)]
 final class NavigationAnswerToolTest extends McpToolEntryTestCase
 {
+    use HoldsNavigationRequests;
+
     protected function arrange(TestJournal $journal): ToolCall
     {
-        throw EntryTestNeedsArrangement::for('NavigationAnswerTool', [
-            'the argument request',
-            'the argument version',
-            'the argument generation',
-            'the argument request_key',
-            'the expected commands',
-            'the sink replies',
-        ]);
+        [$start, $navigation, $stalled] = $this->heldNavigation($journal);
+
+        return ToolCall::by($start)
+            ->arguments([
+                'request' => $navigation->id,
+                'version' => $navigation->row_version,
+                'generation' => $navigation->screen->generation,
+                'keys' => ['down'],
+                'request_key' => 'answer-1',
+            ])
+            ->reply(AnswerNavigationCommand::class, $stalled->receipt)
+            ->expects(ExpectedCommand::of(AnswerNavigationCommand::class, [
+                'navigationId' => $navigation->id,
+                'expectedRowVersion' => $navigation->row_version,
+                'generation' => $navigation->screen->generation,
+            ]))
+            ->hiddenFromProfile('read-only-helper');
     }
 }
