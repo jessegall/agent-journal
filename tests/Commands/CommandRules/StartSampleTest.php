@@ -14,7 +14,6 @@ use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\ActsAsActors;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\RunsCommandsAsStart;
 use Tests\TestCase;
 
 /**
@@ -24,7 +23,6 @@ final class StartSampleTest extends TestCase
 {
     use ActsAsActors;
     use RefreshHookDatabase;
-    use RunsCommandsAsStart;
 
     private const string OWNER_WAIT = 'waiting for the owner';
 
@@ -38,20 +36,29 @@ final class StartSampleTest extends TestCase
 
         ProcessOutputDisk::fake();
         $this->start = TestStart::start();
-        $this->requestId = $this->runAsAgent(new OpenCommandRequestCommand(
+        $this->requestId = $this->journal->actAsAgentIds(
+            $this->start->agent->id,
+            $this->start->session->id,
+        )->runUnkeyed(new OpenCommandRequestCommand(
             'acme verify',
             str_repeat('a', 64),
             'acme verify',
             sys_get_temp_dir(),
             RequestHoldReason::UnknownCommand,
         ));
-        $this->runAsAgent(new ProposeCommandRuleCommand($this->requestId, 'request-1', AcmeDeclarations::proposedVerify()));
+        $this->journal->runAsStart(
+            $this->start,
+            new ProposeCommandRuleCommand($this->requestId, 'request-1', AcmeDeclarations::proposedVerify()),
+        );
     }
 
     public function test_a_sample_run_before_the_owner_approved_is_refused_with_the_waiting_step(): void
     {
         try {
-            $this->runAsAgent(new StartSampleCommand($this->requestId, 'no-permit', 'first'));
+            $this->journal->runAsStart(
+                $this->start,
+                new StartSampleCommand($this->requestId, 'no-permit', 'first'),
+            );
             $this->fail('The sample started without an approval.');
         } catch (SampleRefused $refusal) {
             $this->assertStringContainsString(self::OWNER_WAIT, $refusal->getMessage());

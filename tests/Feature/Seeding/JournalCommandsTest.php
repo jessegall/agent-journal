@@ -70,7 +70,11 @@ final class JournalCommandsTest extends TestCase
         $this->journal->owner();
 
         $this->assertThrows(
-            fn () => $this->journal->runAsJournal(CommandEntry::ShareGateway, 'inbox install', new InstallInboxesCommand()),
+            fn () => $this->journal->runAsJournal(
+                CommandEntry::ShareGateway,
+                'inbox install',
+                new InstallInboxesCommand(),
+            ),
         );
     }
 

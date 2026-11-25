@@ -16,7 +16,6 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\SendsMcpFrames;
 use Tests\TestCase;
 
 /**
@@ -26,7 +25,6 @@ use Tests\TestCase;
 final class WorkListToolsTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsMcpFrames;
 
     private const array TABLES = [
         'users',
@@ -86,10 +84,10 @@ final class WorkListToolsTest extends TestCase
             AssigneeIdentity::of($other->agent),
         );
 
-        $result = $this->callMcpTool(
+        $result = $this->journal->mcpTool(
             $this->caller,
             'tasks_assigned',
-        )->assertJsonPath('result.isError', false)->json('result.structuredContent');
+        )->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent');
 
         $this->assertSame(2, $result['total']);
         $this->assertEquals(
@@ -104,7 +102,10 @@ final class WorkListToolsTest extends TestCase
 
     public function test_an_agent_holding_nothing_gets_an_empty_list_and_no_continuation(): void
     {
-        $result = $this->callMcpTool($this->caller, 'tasks_assigned')->json('result.structuredContent');
+        $result = $this->journal->mcpTool(
+            $this->caller,
+            'tasks_assigned',
+        )->assertOk()->json('result.structuredContent');
 
         $this->assertSame([], $result['cards']);
         $this->assertSame(0, $result['total']);
@@ -116,7 +117,10 @@ final class WorkListToolsTest extends TestCase
         $plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $this->writer->assign($plan->assignmentIdentity(), AssigneeIdentity::of($this->caller->agent));
 
-        $card = $this->callMcpTool($this->caller, 'plans_assigned')->json('result.structuredContent.cards.0');
+        $card = $this->journal->mcpTool(
+            $this->caller,
+            'plans_assigned',
+        )->assertOk()->json('result.structuredContent.cards.0');
 
         $this->assertSame('Release', $card['title']);
         $this->assertSame($plan->status->value, $card['state']);
@@ -125,7 +129,7 @@ final class WorkListToolsTest extends TestCase
 
     public function test_plans_list_refuses_per_page(): void
     {
-        $this->callMcpTool($this->caller, 'plans_list', ['per_page' => 50])
+        $this->journal->mcpTool($this->caller, 'plans_list', ['per_page' => 50])->assertOk()
             ->assertJsonPath('result.isError', true)
             ->assertJsonPath('result.structuredContent.code', 'invalid_input')
             ->assertSee('per_page');
@@ -141,7 +145,7 @@ final class WorkListToolsTest extends TestCase
             $held[] = $task->id;
         }
 
-        $first = $this->callMcpTool($this->caller, 'tasks_assigned')->json('result.structuredContent');
+        $first = $this->journal->mcpTool($this->caller, 'tasks_assigned')->assertOk()->json('result.structuredContent');
         $this->assertLessThan(20, count($first['cards']));
         $this->assertSame('tasks_assigned', $first['next_actions'][0]['tool']);
         $this->assertSame(['continuation'], array_keys($first['next_actions'][0]['arguments']));
@@ -150,11 +154,11 @@ final class WorkListToolsTest extends TestCase
         $next = $first['next_actions'];
 
         while ($next !== []) {
-            $page = $this->callMcpTool(
+            $page = $this->journal->mcpTool(
                 $this->caller,
                 'tasks_assigned',
                 $next[0]['arguments'],
-            )->assertJsonPath('result.isError', false)->json('result.structuredContent');
+            )->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent');
             $seen = [...$seen, ...array_column($page['cards'], 'id')];
             $next = $page['next_actions'];
         }
@@ -165,7 +169,7 @@ final class WorkListToolsTest extends TestCase
 
     public function test_a_continuation_sent_with_a_page_is_invalid_input(): void
     {
-        $this->callMcpTool($this->caller, 'tasks_assigned', ['continuation' => 'cursor', 'page' => 2])
+        $this->journal->mcpTool($this->caller, 'tasks_assigned', ['continuation' => 'cursor', 'page' => 2])->assertOk()
             ->assertJsonPath('result.isError', true)
             ->assertJsonPath('result.structuredContent.code', 'invalid_input');
     }

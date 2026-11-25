@@ -22,7 +22,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Bus;
 use Tests\Fixtures\Profiles\RecordingSignInHost;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsKeyedCommands;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -34,7 +33,6 @@ use Tests\TestCase;
 final class SignInRestartTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsKeyedCommands;
 
     private const array TABLES = ['accounts', 'active_accounts', 'sign_in_attempts', 'command_receipts'];
 
@@ -49,7 +47,13 @@ final class SignInRestartTest extends TestCase
     {
         $host = new RecordingSignInHost(null);
 
-        new PrivateSignInProcesses($host, new SignInProtocols($this->app), static fn () => null, $this->app->make(Files::class), new LocalAccountFolders($this->app->make(Files::class)))->reconcileAtStart();
+        new PrivateSignInProcesses(
+            $host,
+            new SignInProtocols($this->app),
+            static fn () => null,
+            $this->app->make(Files::class),
+            new LocalAccountFolders($this->app->make(Files::class)),
+        )->reconcileAtStart();
 
         $this->assertSame([[]], $host->reconciled);
     }
@@ -61,7 +65,7 @@ final class SignInRestartTest extends TestCase
             new OwnerAuthority('test'),
         );
         $begin = new BeginSignInCommand($driver, SignInMethod::OAuth);
-        $attemptId = $this->runOnBus($begin, "key-{$driver}")
+        $attemptId = $this->journal->run($begin, "key-{$driver}")
             ->attemptId;
         $this->assertSame($attemptId, $this->claimSignIn($hostId, CarbonImmutable::now())?->id);
 

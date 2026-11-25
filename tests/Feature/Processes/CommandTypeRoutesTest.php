@@ -13,8 +13,6 @@ use App\Values\RuleExample;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsMcpFrames;
-use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TestText;
 use Tests\TestCase;
 
@@ -25,8 +23,6 @@ use Tests\TestCase;
 final class CommandTypeRoutesTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SendsMcpFrames;
-    use SendsSignedPayloads;
 
     private TestStart $start;
 
@@ -44,7 +40,12 @@ final class CommandTypeRoutesTest extends TestCase
 
     public function test_explaining_an_unknown_line_opens_its_request_and_names_the_propose_step(): void
     {
-        $reply = $this->signed($this->start, '/agent/processes/explain', ['line' => 'acme verify'])->assertOk();
+        $reply = $this->journal->agentCall(
+            $this->start,
+            'POST',
+            '/agent/processes/explain',
+            ['line' => 'acme verify'],
+        )->assertOk();
 
         $this->assertSame(TestText::words(AgentText::of('core.shell.nothing_started')), $reply->json('notice'));
         $this->assertSame('acme', $reply->json('held.0.operation'));
@@ -55,7 +56,12 @@ final class CommandTypeRoutesTest extends TestCase
 
     public function test_explaining_a_check_without_a_proven_reader_opens_a_reader_request(): void
     {
-        $reply = $this->signed($this->start, '/agent/processes/explain', ['line' => 'vendor/bin/phpstan analyse'])
+        $reply = $this->journal->agentCall(
+            $this->start,
+            'POST',
+            '/agent/processes/explain',
+            ['line' => 'vendor/bin/phpstan analyse'],
+        )
             ->assertOk();
 
         $this->assertContains('reader_required', array_column((array) $reply->json('held'), 'code'));
@@ -65,14 +71,19 @@ final class CommandTypeRoutesTest extends TestCase
     {
         $requestId = $this->explainAcme();
 
-        $reply = $this->signed($this->start, "/agent/processes/requests/{$requestId}/proposals", [
+        $reply = $this->journal->agentCall($this->start, 'POST', "/agent/processes/requests/{$requestId}/proposals", [
             'declaration' => $this->declaration()->toArray(),
             'request_key' => 'propose-1',
         ])->assertOk();
 
         $this->assertSame('pending', $reply->json('state'));
         $this->app->forgetScopedInstances();
-        $shown = $this->signed($this->start, "/agent/processes/requests/{$requestId}/show", [])->assertOk();
+        $shown = $this->journal->agentCall(
+            $this->start,
+            'POST',
+            "/agent/processes/requests/{$requestId}/show",
+            [],
+        )->assertOk();
         $this->assertSame(RequestStatus::AwaitingSampleApproval->value, $shown->json('state'));
         $this->assertSame(sprintf(self::APPROVE_STEP, $requestId), $shown->json('next'));
         $this->assertSame($reply->json('proposal_id'), $shown->json('proposals.0.proposal_id'));
@@ -84,7 +95,7 @@ final class CommandTypeRoutesTest extends TestCase
         $declaration = $this->declaration()->toArray();
         $declaration['rule']['purpose'] = 'harmless';
 
-        $reply = $this->signed($this->start, "/agent/processes/requests/{$requestId}/proposals", [
+        $reply = $this->journal->agentCall($this->start, 'POST', "/agent/processes/requests/{$requestId}/proposals", [
             'declaration' => $declaration,
             'request_key' => 'propose-1',
         ])->assertStatus(422);
@@ -95,7 +106,12 @@ final class CommandTypeRoutesTest extends TestCase
 
     private function explainAcme(): string
     {
-        return (string) $this->signed($this->start, '/agent/processes/explain', ['line' => 'acme verify'])
+        return (string) $this->journal->agentCall(
+            $this->start,
+            'POST',
+            '/agent/processes/explain',
+            ['line' => 'acme verify'],
+        )
             ->json('held.0.requestId');
     }
 

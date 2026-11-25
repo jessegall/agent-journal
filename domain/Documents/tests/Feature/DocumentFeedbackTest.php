@@ -25,7 +25,7 @@ final class DocumentFeedbackTest extends TestCase
 
         $this->setUpMessaging();
 
-        $this->runOnBus(new CreateDocumentCommand('Design', 'What we build', "# Goal\nShip it.\nThen rest.\n"));
+        $this->journal->run(new CreateDocumentCommand('Design', 'What we build', "# Goal\nShip it.\nThen rest.\n"));
     }
 
     public function test_asking_an_agent_for_feedback_on_the_document_sends_them_a_message(): void

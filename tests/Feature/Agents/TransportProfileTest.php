@@ -13,13 +13,11 @@ use Illuminate\Contracts\Config\Repository;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\SendsMcpFrames;
 use Tests\TestCase;
 
 final class TransportProfileTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsMcpFrames;
 
     private const array TABLES = ['session_processes', 'agents', 'agent_sessions', 'session_tokens', 'agent_stacks'];
 
@@ -35,7 +33,7 @@ final class TransportProfileTest extends TestCase
 
         $config->set('agents.transport_profile', 'cli');
         $cli = $starts->register(TestStart::start()->session, $account);
-        $this->callMcpTool($caller, 'overview_read')->assertJsonPath('result.isError', false);
+        $this->journal->mcpTool($caller, 'overview_read')->assertOk()->assertJsonPath('result.isError', false);
 
         $config->set('agents.transport_profile', 'mcp');
         $restored = $starts->register(TestStart::start()->session, $account);

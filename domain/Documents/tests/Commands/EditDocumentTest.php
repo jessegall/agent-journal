@@ -23,12 +23,10 @@ use Domain\Documents\Tests\TestCase;
 use Domain\Documents\Values\DraftTarget;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\SendsSignedPayloads;
 
 final class EditDocumentTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsSignedPayloads;
 
     private const array TABLES = [
         'agents',

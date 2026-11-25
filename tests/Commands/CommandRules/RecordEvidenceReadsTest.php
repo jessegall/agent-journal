@@ -23,7 +23,6 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TestRunAdmissions;
 use Tests\TestCase;
 
@@ -34,7 +33,6 @@ use Tests\TestCase;
 final class RecordEvidenceReadsTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SendsSignedPayloads;
 
     private TestStart $start;
 
@@ -91,7 +89,12 @@ final class RecordEvidenceReadsTest extends TestCase
      */
     private function readOutput(ProcessRun $run, string $read, array $body): void
     {
-        $this->signed($this->start, "/agent/processes/runs/{$run->id}/output/{$read}", $body)->assertOk();
+        $this->journal->agentCall(
+            $this->start,
+            'POST',
+            "/agent/processes/runs/{$run->id}/output/{$read}",
+            $body,
+        )->assertOk();
     }
 
     private function sampleRun(): ProcessRun

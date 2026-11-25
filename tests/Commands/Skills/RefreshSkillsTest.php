@@ -27,7 +27,6 @@ use Tests\Fixtures\Skills\Guide\BrokenGuideSkill;
 use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsBuiltInProfiles;
-use Tests\Support\RunsTrustedCommands;
 use Tests\Support\TestActors;
 use Tests\TestCase;
 
@@ -40,7 +39,6 @@ final class RefreshSkillsTest extends TestCase
     use ActsAsActors;
     use CommitsHookRows;
     use InstallsBuiltInProfiles;
-    use RunsTrustedCommands;
 
     private const string INVALID_SKILL = "Guide's skill journal-guide is invalid";
 
@@ -131,7 +129,7 @@ final class RefreshSkillsTest extends TestCase
     {
         $this->app->forgetScopedInstances();
 
-        return $this->throughEntry(new RefreshSkillsCommand());
+        return $this->journal->throughEntry(new RefreshSkillsCommand());
     }
 
     private function start(): AgentSession

@@ -49,9 +49,9 @@ final class MessageEventsTest extends MessagingTestCase
         $key = (string) Str::ulid();
         $command = new SendMessageCommand($this->pairInboxIdOf($this->builder), 'Once.');
 
-        $first = $this->runOnBus($command, $key);
+        $first = $this->journal->run($command, $key);
         $this->asOwner();
-        $this->runOnBus($command, $key);
+        $this->journal->run($command, $key);
 
         $this->assertSame([$first], $this->received);
     }

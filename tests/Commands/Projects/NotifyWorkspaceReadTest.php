@@ -18,7 +18,6 @@ use App\Values\WorkReference;
 use App\Values\WorkspaceReadReference;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\RunsTrustedCommands;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -31,7 +30,6 @@ use Tests\TestCase;
 final class NotifyWorkspaceReadTest extends TestCase
 {
     use RefreshHookDatabase;
-    use RunsTrustedCommands;
 
     public function test_a_workspace_read_waits_for_its_host_and_then_gives_its_one_answer(): void
     {
@@ -73,11 +71,21 @@ final class NotifyWorkspaceReadTest extends TestCase
 
     private function answer(bool $isDirty): void
     {
-        $this->asSystem(new NotifyWorkspaceReadCommand('host-1', new WorkspaceReadReference('read-1'), true, $isDirty, ! $isDirty, 3, CommitObservation::notRecorded()));
+        $this->journal->asSystem(
+            new NotifyWorkspaceReadCommand(
+                'host-1',
+                new WorkspaceReadReference('read-1'),
+                true,
+                $isDirty,
+                ! $isDirty,
+                3,
+                CommitObservation::notRecorded(),
+            ),
+        );
     }
 
     private function notify(ProfileRun $run, string $step, StepStatus $status): void
     {
-        $this->asSystem(new RecordScriptStepResultCommand('host-1', $run->id, $step, $status, 'next', null));
+        $this->journal->asSystem(new RecordScriptStepResultCommand('host-1', $run->id, $step, $status, 'next', null));
     }
 }

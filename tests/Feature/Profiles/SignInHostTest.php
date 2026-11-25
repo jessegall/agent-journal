@@ -32,9 +32,6 @@ use Tests\Fixtures\Profiles\FinishingProtocol;
 use Tests\Fixtures\Profiles\LingeringProtocol;
 use Tests\Fixtures\Profiles\RecordingSignInHost;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsKeyedCommands;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -47,9 +44,6 @@ use Tests\TestCase;
 final class SignInHostTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsKeyedCommands;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
 
     private const string FRESH_SIGN_IN = 'start a fresh sign-in';
 
@@ -112,7 +106,7 @@ final class SignInHostTest extends TestCase
         $owner = ActorContext::forUser($this->owner()->id);
         $this->app->make(CurrentActorSetter::class)->set($owner, new OwnerAuthority('test'));
         $this->assertThrows(
-            fn () => $this->runOnBus(new BeginSignInCommand('codex', SignInMethod::ProviderToken), 'request-4'),
+            fn () => $this->journal->run(new BeginSignInCommand('codex', SignInMethod::ProviderToken), 'request-4'),
             SignInMethodMissing::class,
         );
         $this->assertSame(1, SignInAttempt::query()->withoutGlobalScopes()->count());
@@ -126,7 +120,13 @@ final class SignInHostTest extends TestCase
         $protocols = new SignInProtocols($this->app);
         $protocols->register('claude-code', SignInMethod::OAuth, ClosedInputProtocol::class);
 
-        new PrivateSignInProcesses($host, $protocols, static fn () => usleep(10_000), $this->app->make(Files::class), new LocalAccountFolders($this->app->make(Files::class)))->runNext();
+        new PrivateSignInProcesses(
+            $host,
+            $protocols,
+            static fn () => usleep(10_000),
+            $this->app->make(Files::class),
+            new LocalAccountFolders($this->app->make(Files::class)),
+        )->runNext();
 
         $this->assertSame([SignInOutcome::Waiting, SignInOutcome::Interrupted], $host->outcomes);
         $this->assertStringContainsString(self::FRESH_SIGN_IN, (string) end($host->refusals));
@@ -147,7 +147,13 @@ final class SignInHostTest extends TestCase
         $protocols = new SignInProtocols($this->app);
         $protocols->register('claude-code', SignInMethod::OAuth, LingeringProtocol::class);
 
-        $ran = new PrivateSignInProcesses($host, $protocols, static fn () => usleep(50_000), $this->app->make(Files::class), new LocalAccountFolders($this->app->make(Files::class)))->runNext();
+        $ran = new PrivateSignInProcesses(
+            $host,
+            $protocols,
+            static fn () => usleep(50_000),
+            $this->app->make(Files::class),
+            new LocalAccountFolders($this->app->make(Files::class)),
+        )->runNext();
 
         $this->assertTrue($ran);
         $this->assertSame([SignInOutcome::Waiting], $host->outcomes);
@@ -161,7 +167,13 @@ final class SignInHostTest extends TestCase
         $protocols = new SignInProtocols($this->app);
         $protocols->register('claude-code', SignInMethod::OAuth, FinishingProtocol::class);
 
-        $ran = new PrivateSignInProcesses($host, $protocols, static fn () => usleep(10_000), $this->app->make(Files::class), new LocalAccountFolders($this->app->make(Files::class)))->runNext();
+        $ran = new PrivateSignInProcesses(
+            $host,
+            $protocols,
+            static fn () => usleep(10_000),
+            $this->app->make(Files::class),
+            new LocalAccountFolders($this->app->make(Files::class)),
+        )->runNext();
 
         $this->assertTrue($ran);
         $this->assertSame([SignInOutcome::Waiting, SignInOutcome::Verified], $host->outcomes);
@@ -178,7 +190,13 @@ final class SignInHostTest extends TestCase
         $protocols = new SignInProtocols($this->app);
         $protocols->register('claude-code', SignInMethod::OAuth, LingeringProtocol::class);
 
-        new PrivateSignInProcesses($host, $protocols, static fn () => usleep(10_000), $this->app->make(Files::class), new LocalAccountFolders($this->app->make(Files::class)))->runNext();
+        new PrivateSignInProcesses(
+            $host,
+            $protocols,
+            static fn () => usleep(10_000),
+            $this->app->make(Files::class),
+            new LocalAccountFolders($this->app->make(Files::class)),
+        )->runNext();
 
         $this->assertSame([SignInOutcome::Waiting], $host->outcomes);
         $this->assertSame(2, $host->pollCount);
@@ -192,7 +210,13 @@ final class SignInHostTest extends TestCase
         $protocols = new SignInProtocols($this->app);
         $protocols->register('claude-code', SignInMethod::OAuth, FinishingProtocol::class);
 
-        new PrivateSignInProcesses($host, $protocols, static fn () => null, $this->app->make(Files::class), new LocalAccountFolders($this->app->make(Files::class)))->runNext();
+        new PrivateSignInProcesses(
+            $host,
+            $protocols,
+            static fn () => null,
+            $this->app->make(Files::class),
+            new LocalAccountFolders($this->app->make(Files::class)),
+        )->runNext();
 
         $this->assertSame([SignInOutcome::Failed], $host->outcomes);
     }
@@ -202,7 +226,13 @@ final class SignInHostTest extends TestCase
         $claimed = self::claimed('codex', SignInMethod::OAuth, $this->root.'/x');
         $host = new RecordingSignInHost($claimed);
 
-        new PrivateSignInProcesses($host, new SignInProtocols($this->app), static fn () => null, $this->app->make(Files::class), new LocalAccountFolders($this->app->make(Files::class)))->runNext();
+        new PrivateSignInProcesses(
+            $host,
+            new SignInProtocols($this->app),
+            static fn () => null,
+            $this->app->make(Files::class),
+            new LocalAccountFolders($this->app->make(Files::class)),
+        )->runNext();
 
         $this->assertSame([SignInOutcome::Failed], $host->outcomes);
     }
@@ -224,7 +254,7 @@ final class SignInHostTest extends TestCase
         $this->app->make(CurrentActorSetter::class)->set($owner, new OwnerAuthority('test'));
 
         $begin = new BeginSignInCommand('claude-code', SignInMethod::OAuth);
-        $started = $this->runOnBus($begin, (string) Str::ulid());
+        $started = $this->journal->run($begin, (string) Str::ulid());
 
         return $started->attemptId;
     }
@@ -261,11 +291,11 @@ final class SignInHostTest extends TestCase
      */
     private function signed(EnrolledHost $host, string $target, array $body = []): TestResponse
     {
-        return $this->signedHostCall($host, 'POST', $target, $body === [] ? '' : (string) json_encode($body));
+        return $this->journal->hostCall($host, 'POST', $target, $body === [] ? '' : (string) json_encode($body));
     }
 
     private function enrollHost(): EnrolledHost
     {
-        return $this->asSystem(new EnrollHostCommand('test host '.Str::random(6), ['/work']));
+        return $this->journal->asSystem(new EnrollHostCommand('test host '.Str::random(6), ['/work']));
     }
 }

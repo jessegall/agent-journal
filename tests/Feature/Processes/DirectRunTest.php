@@ -12,7 +12,6 @@ use App\Values\AgentText;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\Processes\RunsDirectLines;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TestText;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -25,7 +24,6 @@ final class DirectRunTest extends TestCase
 {
     use RefreshHookDatabase;
     use RunsDirectLines;
-    use SendsSignedPayloads;
 
     public function test_an_unknown_line_is_refused_with_its_request_and_nothing_starts(): void
     {
@@ -43,11 +41,11 @@ final class DirectRunTest extends TestCase
         $runId = $this->admit('cat composer.json')->json('run_id');
         $path = "/agent/processes/admissions/{$runId}";
 
-        $first = $this->signed($this->start, $path, ['request_key' => 'take-1'])->json();
-        $again = $this->signed($this->start, $path, ['request_key' => 'take-1'])->json();
-        $other = $this->signed($this->start, $path, ['request_key' => 'take-2'])->json();
+        $first = $this->journal->agentCall($this->start, 'POST', $path, ['request_key' => 'take-1'])->json();
+        $again = $this->journal->agentCall($this->start, 'POST', $path, ['request_key' => 'take-1'])->json();
+        $other = $this->journal->agentCall($this->start, 'POST', $path, ['request_key' => 'take-2'])->json();
         ProcessRun::query()->withoutGlobalScopes()->findOrFail($runId)->recordHeartbeat();
-        $afterStart = $this->signed($this->start, $path, ['request_key' => 'take-1'])->json();
+        $afterStart = $this->journal->agentCall($this->start, 'POST', $path, ['request_key' => 'take-1'])->json();
 
         $this->assertSame('to_run', $first['state']);
         $this->assertSame($first['event_key'], $again['event_key']);
@@ -58,7 +56,7 @@ final class DirectRunTest extends TestCase
     #[TimeLimit(10, 'It admits and runs printf through the signed channel.')]
     public function test_process_run_line_refuses_or_runs_and_prints_its_output_number(): void
     {
-        $this->runCommandsAs($this->start);
+        $this->journal->relayAgentCommands($this->start);
 
         $this->artisan('process:run', ['--line' => 'acme verify'])
             ->expectsOutputToContain('Nothing in this request started.')
@@ -77,6 +75,6 @@ final class DirectRunTest extends TestCase
             'requestKey' => 'direct-1',
         ]);
 
-        return $this->signed($this->start, '/agent/processes/admit', $call->toArray());
+        return $this->journal->agentCall($this->start, 'POST', '/agent/processes/admit', $call->toArray());
     }
 }

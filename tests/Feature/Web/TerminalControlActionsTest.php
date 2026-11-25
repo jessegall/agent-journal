@@ -16,8 +16,6 @@ use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\TestCase;
 
 /**
@@ -29,8 +27,6 @@ final class TerminalControlActionsTest extends TestCase
 {
     use OpensTerminalRuntimes;
     use RefreshHookDatabase;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
 
     private User $owner;
 
@@ -72,7 +68,7 @@ final class TerminalControlActionsTest extends TestCase
 
     private function controllableRuntime(): AgentRuntime
     {
-        $host = $this->enrolledHost();
+        $host = $this->journal->enrolledHost();
         $everyInput = new BrowserInputCapabilities(true, true, true, true, true);
         Host::query()->whereKey($host->hostId)->sole()->advertiseBrowserInput($everyInput);
 

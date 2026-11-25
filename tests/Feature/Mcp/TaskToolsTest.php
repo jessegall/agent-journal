@@ -11,8 +11,6 @@ use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\SendsMcpFrames;
-use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -20,8 +18,6 @@ use Tests\TestCase;
 final class TaskToolsTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsMcpFrames;
-    use SendsSignedPayloads;
 
     private const string EDITED_TITLE = 'Edited title';
 
@@ -56,9 +52,14 @@ final class TaskToolsTest extends TestCase
     public function test_create_and_edit_share_the_signed_route_receipts_and_list_the_edited_task(): void
     {
         $create = ['title' => 'First title', 'brief' => 'Read this.', 'request_key' => 'make-task'];
-        $id = $this->callMcpTool($this->caller, 'tasks_create', $create)
+        $id = $this->journal->mcpTool($this->caller, 'tasks_create', $create)->assertOk()
             ->assertJsonPath('result.isError', false)->json('result.structuredContent.task_id');
-        $this->signed($this->caller, '/agent/tasks/create', $create)->assertOk()->assertJsonPath('task_id', $id);
+        $this->journal->agentCall(
+            $this->caller,
+            'POST',
+            '/agent/tasks/create',
+            $create,
+        )->assertOk()->assertJsonPath('task_id', $id);
 
         $edit = [
             'task_id' => $id,
@@ -67,11 +68,16 @@ final class TaskToolsTest extends TestCase
             'brief' => 'New context.',
             'request_key' => 'edit-task',
         ];
-        $this->signed($this->caller, '/agent/tasks/edit', $edit)->assertOk()->assertJsonPath('revision', 2);
-        $this->callMcpTool($this->caller, 'tasks_edit', $edit)
+        $this->journal->agentCall(
+            $this->caller,
+            'POST',
+            '/agent/tasks/edit',
+            $edit,
+        )->assertOk()->assertJsonPath('revision', 2);
+        $this->journal->mcpTool($this->caller, 'tasks_edit', $edit)->assertOk()
             ->assertJsonPath('result.isError', false)->assertJsonPath('result.structuredContent.revision', 2);
 
-        $this->callMcpTool($this->caller, 'tasks_list', ['search' => 'Edited', 'per_page' => 1])
+        $this->journal->mcpTool($this->caller, 'tasks_list', ['search' => 'Edited', 'per_page' => 1])->assertOk()
             ->assertJsonPath('result.structuredContent.total', 1)
             ->assertJsonPath('result.structuredContent.cards.0.id', $id)
             ->assertJsonPath('result.structuredContent.cards.0.title', self::EDITED_TITLE);
@@ -83,20 +89,24 @@ final class TaskToolsTest extends TestCase
         $other = TestStart::start();
         $run = $this->start($task);
 
-        $this->callMcpTool($other, 'tasks_start', ['task_id' => $task->id, 'request_key' => 'other-start'])
+        $this->journal->mcpTool(
+            $other,
+            'tasks_start',
+            ['task_id' => $task->id, 'request_key' => 'other-start'],
+        )->assertOk()
             ->assertJsonPath('result.isError', true)
             ->assertJsonPath('result.structuredContent.code', 'conflict')
             ->assertJsonPath('result.structuredContent.next_action.tool', 'tasks_read')
             ->assertJsonPath('result.structuredContent.next_action.arguments.task_id', $task->id);
 
-        $this->callMcpTool($this->caller, 'tasks_finish', [
+        $this->journal->mcpTool($this->caller, 'tasks_finish', [
             'task_id' => $task->id,
             'run_number' => $run,
             'note' => 'Complete.',
             'request_key' => 'finish-task',
-        ])->assertJsonPath('result.structuredContent.state', 'finished');
+        ])->assertOk()->assertJsonPath('result.structuredContent.state', 'finished');
 
-        $this->callMcpTool($this->caller, 'tasks_read', ['task_id' => $task->id, 'view' => 'context'])
+        $this->journal->mcpTool($this->caller, 'tasks_read', ['task_id' => $task->id, 'view' => 'context'])->assertOk()
             ->assertJsonPath('result.structuredContent.state', 'finished')
             ->assertJsonPath('result.structuredContent.result_note', 'Complete.');
     }
@@ -106,19 +116,19 @@ final class TaskToolsTest extends TestCase
         $task = Task::factory()->create();
         $run = $this->start($task);
 
-        $this->callMcpTool($this->caller, 'tasks_block', [
+        $this->journal->mcpTool($this->caller, 'tasks_block', [
             'task_id' => $task->id,
             'run_number' => $run,
             'reason' => 'Needs a decision.',
             'request_key' => 'block-task',
-        ])->assertJsonPath('result.structuredContent.state', 'blocked');
-        $this->callMcpTool($this->caller, 'tasks_cancel', [
+        ])->assertOk()->assertJsonPath('result.structuredContent.state', 'blocked');
+        $this->journal->mcpTool($this->caller, 'tasks_cancel', [
             'task_id' => $task->id,
             'reason' => 'Work was superseded.',
             'request_key' => 'cancel-task',
-        ])->assertJsonPath('result.structuredContent.state', 'cancelled');
+        ])->assertOk()->assertJsonPath('result.structuredContent.state', 'cancelled');
 
-        $this->callMcpTool($this->caller, 'tasks_read', ['task_id' => $task->id, 'view' => 'context'])
+        $this->journal->mcpTool($this->caller, 'tasks_read', ['task_id' => $task->id, 'view' => 'context'])->assertOk()
             ->assertJsonPath('result.structuredContent.block_reason', self::BLOCK_REASON)
             ->assertJsonPath('result.structuredContent.cancel_reason', self::CANCEL_REASON);
     }
@@ -128,15 +138,15 @@ final class TaskToolsTest extends TestCase
         $brief = str_repeat('é', 1600);
         $task = Task::factory()->create(['brief' => $brief]);
         $uri = "journal://v1/tasks/{$task->id}";
-        $summary = $this->callMcpTool($this->caller, 'tasks_read', ['task_id' => $task->id])
+        $summary = $this->journal->mcpTool($this->caller, 'tasks_read', ['task_id' => $task->id])->assertOk()
             ->assertJsonPath('result.isError', false)->json('result.structuredContent');
         $this->assertSame($summary, $this->resource($uri));
 
-        $first = $this->callMcpTool(
+        $first = $this->journal->mcpTool(
             $this->caller,
             'tasks_read',
             ['task_id' => $task->id, 'view' => 'context'],
-        )->assertJsonPath('result.isError', false)->json('result.structuredContent');
+        )->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent');
         $resource = $this->resource($uri.'?view=context');
         $this->assertSame($first['brief'], $resource['brief']);
         $this->assertSame($first['revision'], $resource['revision']);
@@ -151,11 +161,11 @@ final class TaskToolsTest extends TestCase
     private function start(Task $task): int
     {
         $this->caller->openStack($this->app);
-        $response = $this->callMcpTool(
+        $response = $this->journal->mcpTool(
             $this->caller,
             'tasks_start',
             ['task_id' => $task->id, 'request_key' => 'start-task'],
-        );
+        )->assertOk();
         $this->assertFalse($response->json('result.isError'), $response->getContent());
 
         return $response->json('result.structuredContent.run_number');
@@ -167,7 +177,7 @@ final class TaskToolsTest extends TestCase
     private function resource(string $uri): array
     {
         return json_decode(
-            $this->sendMcp($this->caller, 'resources/read', ['uri' => $uri])->assertOk()
+            $this->journal->mcpRequest($this->caller, 'resources/read', ['uri' => $uri])->assertOk()
                 ->json('result.contents.0.text'),
             true,
             flags: JSON_THROW_ON_ERROR,

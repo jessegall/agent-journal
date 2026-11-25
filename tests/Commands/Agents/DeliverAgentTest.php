@@ -21,8 +21,6 @@ use Illuminate\Support\Str;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensPairChats;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
@@ -37,8 +35,6 @@ final class DeliverAgentTest extends TestCase
     use CommitsHookRows;
     use OpensLedgerRuntimes;
     use OpensPairChats;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
     use WritesInboxMessages;
 
     private const array TABLES = [
@@ -71,11 +67,16 @@ final class DeliverAgentTest extends TestCase
 
     public function test_an_attachment_only_delivery_reaches_the_host_as_its_parts_in_order(): void
     {
-        $this->app->scoped(AttachmentReferences::class, fn (): AttachmentReferences => $this->attachmentsExcept('gone'));
+        $this->app->scoped(
+            AttachmentReferences::class,
+            fn (): AttachmentReferences => $this->attachmentsExcept('gone'),
+        );
         [$host, $opened] = $this->openRuntime();
         $parts = [new MessageAttachmentData('01JNOTES', 'digest-1', 'notes.md'), new MessageTextData('Read it first.')];
 
-        $receipt = $this->asOwner(new DeliverAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'parts', $parts));
+        $receipt = $this->asOwner(
+            new DeliverAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'parts', $parts),
+        );
 
         $claimed = $this->claimedScript($host, $receipt->requestId);
         $this->assertSame(array_map(fn (MessagePart $part): array => $part->toArray(), $parts), $claimed['parts']);
@@ -83,12 +84,17 @@ final class DeliverAgentTest extends TestCase
 
     public function test_a_delivery_naming_an_attachment_that_cannot_be_read_is_refused_whole(): void
     {
-        $this->app->scoped(AttachmentReferences::class, fn (): AttachmentReferences => $this->attachmentsExcept('gone'));
+        $this->app->scoped(
+            AttachmentReferences::class,
+            fn (): AttachmentReferences => $this->attachmentsExcept('gone'),
+        );
         [, $opened] = $this->openRuntime();
         $parts = [new MessageTextData('Here it is.'), new MessageAttachmentData('gone', 'digest-1', 'old.md')];
 
         $this->assertThrows(
-            fn () => $this->asOwner(new DeliverAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'mixed', $parts)),
+            fn () => $this->asOwner(
+                new DeliverAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'mixed', $parts),
+            ),
             DriverRequestRefused::class,
             DriverRequestRefused::attachmentMissing('gone')->getMessage(),
         );
@@ -97,7 +103,10 @@ final class DeliverAgentTest extends TestCase
 
     public function test_a_repeated_delivery_of_the_same_parts_returns_the_same_request(): void
     {
-        $this->app->scoped(AttachmentReferences::class, fn (): AttachmentReferences => $this->attachmentsExcept('gone'));
+        $this->app->scoped(
+            AttachmentReferences::class,
+            fn (): AttachmentReferences => $this->attachmentsExcept('gone'),
+        );
         [, $opened] = $this->openRuntime();
         $parts = [new MessageAttachmentData('01JNOTES', 'digest-1', 'notes.md')];
         $send = fn (): DriverReceipt => $this->asOwner(
@@ -145,8 +154,9 @@ final class DeliverAgentTest extends TestCase
      */
     private function claimedScript(EnrolledHost $host, string $requestId): array
     {
-        $requests = $this->hostCall(
+        $requests = $this->journal->hostCall(
             $host,
+            'POST',
             '/host/claim?limit=10&wait=0&watched_version=0',
         )->assertOk()->json('requests');
 

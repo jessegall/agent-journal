@@ -22,8 +22,6 @@ use App\Support\OpenedRuntime;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensPairChats;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
@@ -37,8 +35,6 @@ final class WakeAgentTest extends TestCase
     use CommitsHookRows;
     use OpensLedgerRuntimes;
     use OpensPairChats;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
     use WritesInboxMessages;
 
     private const string NO_CONTAINER = 'The host cannot provide a container.';
@@ -137,8 +133,9 @@ final class WakeAgentTest extends TestCase
      */
     private function claimedScript(EnrolledHost $host, string $requestId): array
     {
-        $requests = $this->hostCall(
+        $requests = $this->journal->hostCall(
             $host,
+            'POST',
             '/host/claim?limit=10&wait=0&watched_version=0',
         )->assertOk()->json('requests');
 
@@ -156,7 +153,7 @@ final class WakeAgentTest extends TestCase
         string|null $reason,
         bool $hasCreatedNoProcess,
     ): void {
-        $this->hostCall($host, '/host/reports/request', [
+        $this->journal->hostCall($host, 'POST', '/host/reports/request', [
             'request_id' => $claimed['requestId'],
             'attempt' => $claimed['attempt'],
             'progress' => 'failed',
@@ -174,6 +171,8 @@ final class WakeAgentTest extends TestCase
     {
         $generation = AgentRuntime::query()->findOrFail($opened->runtimeId)->process_generation;
 
-        $this->asSystem(new NotifyRuntimeExitCommand($host->hostId, $opened->runtimeId, $generation, 'exit code 0'));
+        $this->journal->asSystem(
+            new NotifyRuntimeExitCommand($host->hostId, $opened->runtimeId, $generation, 'exit code 0'),
+        );
     }
 }

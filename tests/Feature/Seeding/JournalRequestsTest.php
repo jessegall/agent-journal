@@ -23,7 +23,10 @@ final class JournalRequestsTest extends TestCase
 
         $this->assertThrows(fn () => $this->journal->actAs('Nobody'), FixtureRefused::class);
 
-        $this->assertEquals($this->journal->actorCalled('Ada'), ActorIdentity::of($this->app->make(CurrentActor::class)->actor()));
+        $this->assertEquals(
+            $this->journal->actorCalled('Ada'),
+            ActorIdentity::of($this->app->make(CurrentActor::class)->actor()),
+        );
     }
 
     public function test_switching_from_an_agent_to_the_owner_signs_the_owner_in(): void
@@ -31,6 +34,9 @@ final class JournalRequestsTest extends TestCase
         $this->journal->owner()->agent('Ada')->actAs('Ada')->actAs('Owner');
 
         $this->assertSame($this->journal->ownerUser()->id, $this->app->make('auth')->guard()->id());
-        $this->assertEquals($this->journal->actorCalled('Owner'), ActorIdentity::of($this->app->make(CurrentActor::class)->actor()));
+        $this->assertEquals(
+            $this->journal->actorCalled('Owner'),
+            ActorIdentity::of($this->app->make(CurrentActor::class)->actor()),
+        );
     }
 }

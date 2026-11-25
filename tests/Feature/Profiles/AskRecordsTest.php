@@ -23,14 +23,12 @@ use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
 final class AskRecordsTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsSignedPayloads;
 
     private const string FIXTURE_ADVICE = 'Read the fixture.';
 
@@ -63,7 +61,7 @@ final class AskRecordsTest extends TestCase
         $this->activateProfiles();
         $start = TestStart::start('journal-code-reviewer');
         $recipient = TestStart::start('journal-main');
-        $this->runCommandsAs($start);
+        $this->journal->relayAgentCommands($start);
 
         $this->artisan('ask:make', ['text' => 'Why does this fail?'])->assertSuccessful();
         $this->artisan('ask:list')->assertSuccessful();
@@ -77,7 +75,7 @@ final class AskRecordsTest extends TestCase
                 ->toAssignment->holder()->isSameAs($recipient->agent->assigneeIdentity()),
         );
 
-        $this->signed($recipient, '/agent/asks/reply', [
+        $this->journal->agentCall($recipient, 'POST', '/agent/asks/reply', [
             'id' => $ask->id,
             'body' => 'Read the fixture.',
             'request_key' => 'reply-to-fixture-ask',
@@ -117,7 +115,9 @@ final class AskRecordsTest extends TestCase
     {
         $actor = ActorIdentity::of($requester);
         $type = $this->app->make(AskTypeRegistry::class)->get(AskTypeKey::of('question'));
-        $this->app->make(CommandBus::class)->run(new ChangeSupervisorCommand($actor, $target, $routeVersion, $type->key()));
+        $this->app->make(CommandBus::class)->run(
+            new ChangeSupervisorCommand($actor, $target, $routeVersion, $type->key()),
+        );
         $reference = Ask::resolveNewReference();
 
         return Ask::create(

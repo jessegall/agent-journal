@@ -9,8 +9,6 @@ use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\NavigationRequest;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\TestCase;
 
 /**
@@ -21,8 +19,6 @@ final class RaiseNavigationTest extends TestCase
 {
     use CommitsHookRows;
     use RaisesNavigationRequests;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
 
     private const array TABLES = [
         'agents',
@@ -46,11 +42,23 @@ final class RaiseNavigationTest extends TestCase
     {
         $this->journal->installInboxes()->owner();
         [$host, $opened] = $this->openRuntime();
-        $stalled = DriverRequest::query()->findOrFail($this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'GPT-6']))->requestId);
+        $stalled = DriverRequest::query()->findOrFail(
+            $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'GPT-6']))->requestId,
+        );
         $target = "/host/runtimes/{$stalled->agent_runtime_id}/navigation";
 
-        $first = $this->hostCall($host, $target, $this->raised($stalled, 'raise-1'))->assertOk()->json();
-        $again = $this->hostCall($host, $target, $this->raised($stalled, 'raise-1'))->assertOk()->json();
+        $first = $this->journal->hostCall(
+            $host,
+            'POST',
+            $target,
+            $this->raised($stalled, 'raise-1'),
+        )->assertOk()->json();
+        $again = $this->journal->hostCall(
+            $host,
+            'POST',
+            $target,
+            $this->raised($stalled, 'raise-1'),
+        )->assertOk()->json();
 
         $this->assertEquals($first, $again);
         $this->assertSame(1, NavigationRequest::query()->acrossActors()->count());
@@ -60,10 +68,13 @@ final class RaiseNavigationTest extends TestCase
     {
         $this->journal->installInboxes()->owner();
         [$host, $opened] = $this->openRuntime();
-        $stalled = DriverRequest::query()->findOrFail($this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'GPT-6']))->requestId);
+        $stalled = DriverRequest::query()->findOrFail(
+            $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'GPT-6']))->requestId,
+        );
 
-        $this->hostCall(
+        $this->journal->hostCall(
             $host,
+            'POST',
             "/host/runtimes/{$stalled->agent_runtime_id}/navigation",
             ['attempt' => $stalled->attempt_version + 1] + $this->raised($stalled, 'raise-1'),
         )->assertForbidden();

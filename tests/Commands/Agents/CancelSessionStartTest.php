@@ -29,7 +29,6 @@ use PhpOption\None;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
 use Tests\TestCase;
 
 /**
@@ -39,7 +38,6 @@ final class CancelSessionStartTest extends TestCase
 {
     use CommitsHookRows;
     use OpensLedgerRuntimes;
-    use RunsTrustedCommands;
 
     private const array TABLES = [
         'agents',
@@ -95,7 +93,12 @@ final class CancelSessionStartTest extends TestCase
             StartPolicy::withoutProfile(TestSelections::onHost()),
             driverType: DriverType::Headless,
         );
-        $record = SessionRequest::create($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create());
+        $record = SessionRequest::create(
+            $request,
+            TestSelections::pinOf($request),
+            ActorIdentity::system(),
+            None::create(),
+        );
         $record->startedAs($session);
         $receipt = $this->app->make(AgentWakes::class)->wake(
             new StackTarget($session->agent_id, $session->id),
@@ -118,13 +121,15 @@ final class CancelSessionStartTest extends TestCase
      */
     private function claimed(EnrolledHost $host): array
     {
-        return $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()))->requests;
+        return $this->journal->asSystem(
+            new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()),
+        )->requests;
     }
 
     private function notifyApplied(EnrolledHost $host, DriverRequest $wake, string $conversation): void
     {
         $wake->refresh();
-        $this->asSystem(new NotifyRequestProgressCommand(
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
             $host->hostId,
             $wake->id,
             $wake->attempt_version,
@@ -132,7 +137,7 @@ final class CancelSessionStartTest extends TestCase
             null,
             null,
         ));
-        $this->asSystem(new NotifyRequestProgressCommand(
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
             $host->hostId,
             $wake->id,
             $wake->attempt_version,

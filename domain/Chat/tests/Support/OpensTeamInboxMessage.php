@@ -48,7 +48,7 @@ trait OpensTeamInboxMessage
         InboxMember::create($this->team->id, ActorIdentity::of($this->owner), $now);
         InboxMember::create($this->team->id, ActorIdentity::ofClass(Agent::class, $this->builder[0]), $now);
 
-        $this->messageId = $this->runOnBus(new SendMessageCommand($this->team->id, 'Pin me.'));
+        $this->messageId = $this->journal->run(new SendMessageCommand($this->team->id, 'Pin me.'));
     }
 
     /**

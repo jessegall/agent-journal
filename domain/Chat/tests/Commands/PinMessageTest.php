@@ -11,7 +11,6 @@ use Domain\Chat\Resolvers\Support\MessagePinRecords;
 use Domain\Chat\Tests\Support\OpensTeamInboxMessage;
 use Domain\Chat\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsKeyedCommands;
 use Tests\Support\WritesInboxMessages;
 
 /**
@@ -22,7 +21,6 @@ final class PinMessageTest extends TestCase
 {
     use CommitsHookRows;
     use OpensTeamInboxMessage;
-    use RunsKeyedCommands;
     use WritesInboxMessages;
 
     private const array TABLES = [
@@ -77,7 +75,7 @@ final class PinMessageTest extends TestCase
 
     private function pin(): void
     {
-        $this->runOnBus(new PinMessageCommand($this->team->id, $this->messageId));
+        $this->journal->run(new PinMessageCommand($this->team->id, $this->messageId));
     }
 
     /**

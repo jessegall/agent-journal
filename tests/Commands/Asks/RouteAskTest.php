@@ -29,14 +29,12 @@ use App\Values\SupervisorTarget;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
 final class RouteAskTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsSignedPayloads;
 
     private const array TABLES = [
         'ask_hops', 'asks', 'ask_requesters', 'supervisor_changes', 'supervisor_links',
@@ -74,7 +72,9 @@ final class RouteAskTest extends TestCase
         $this->assertSame(1, AskHop::query()->count());
         $keys->set('public-reassign-ask');
         $this->assertThrows(
-            fn () => $bus->run(new ReassignRecordCommand($record, $assignment->reference, $requester->assigneeIdentity())),
+            fn () => $bus->run(
+                new ReassignRecordCommand($record, $assignment->reference, $requester->assigneeIdentity()),
+            ),
             AssignmentTypeInternal::class,
         );
     }
@@ -127,7 +127,9 @@ final class RouteAskTest extends TestCase
     {
         $actor = ActorIdentity::of($requester);
         $type = $this->app->make(AskTypeRegistry::class)->get(AskTypeKey::of('question'));
-        $this->app->make(CommandBus::class)->run(new ChangeSupervisorCommand($actor, $target, $routeVersion, $type->key()));
+        $this->app->make(CommandBus::class)->run(
+            new ChangeSupervisorCommand($actor, $target, $routeVersion, $type->key()),
+        );
         $reference = Ask::resolveNewReference();
 
         return Ask::create(

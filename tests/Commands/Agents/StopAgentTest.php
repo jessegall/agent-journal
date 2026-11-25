@@ -30,8 +30,6 @@ use App\Values\OwnerAuthority;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensPairChats;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
@@ -44,8 +42,6 @@ final class StopAgentTest extends TestCase
     use CommitsHookRows;
     use OpensLedgerRuntimes;
     use OpensPairChats;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
     use WritesInboxMessages;
 
     private const string STOPPING_LABEL = 'Stopping · Waiting for helpers';
@@ -116,17 +112,26 @@ final class StopAgentTest extends TestCase
         $this->asOwner(new StopAgentCommand($this->agentIdOf($main), $main->sessionId, 'stop-main'));
 
         $this->assertSame(RuntimeActivity::Stopping, AgentRuntime::query()->findOrFail($helper->runtimeId)->activity);
-        $this->assertSame([], $this->asSystem(new ClaimDriverRequestsCommand($mainHost->hostId, 10, BrowserInputCapabilities::none()))->requests);
+        $this->assertSame(
+            [],
+            $this->journal->asSystem(
+                new ClaimDriverRequestsCommand($mainHost->hostId, 10, BrowserInputCapabilities::none()),
+            )->requests,
+        );
         $this->assertSame(RequestProgress::Accepted, $stopOf($main)->progress);
 
-        $helperClaim = $this->asSystem(new ClaimDriverRequestsCommand($helperHost->hostId, 10, BrowserInputCapabilities::none()));
+        $helperClaim = $this->journal->asSystem(
+            new ClaimDriverRequestsCommand($helperHost->hostId, 10, BrowserInputCapabilities::none()),
+        );
         $this->assertSame(
             [DriverOperation::Stop->value],
             array_map(fn ($request) => $request->operation, $helperClaim->requests),
         );
         $this->notifyExit($helperHost, $helper);
 
-        $mainClaim = $this->asSystem(new ClaimDriverRequestsCommand($mainHost->hostId, 10, BrowserInputCapabilities::none()));
+        $mainClaim = $this->journal->asSystem(
+            new ClaimDriverRequestsCommand($mainHost->hostId, 10, BrowserInputCapabilities::none()),
+        );
         $this->assertSame(
             [DriverOperation::Stop->value],
             array_map(fn ($request) => $request->operation, $mainClaim->requests),
@@ -146,7 +151,9 @@ final class StopAgentTest extends TestCase
     {
         $generation = AgentRuntime::query()->findOrFail($opened->runtimeId)->process_generation;
 
-        $this->asSystem(new NotifyRuntimeExitCommand($host->hostId, $opened->runtimeId, $generation, 'exit code 0'));
+        $this->journal->asSystem(
+            new NotifyRuntimeExitCommand($host->hostId, $opened->runtimeId, $generation, 'exit code 0'),
+        );
     }
 
     private function deliver(OpenedRuntime $opened, string $key, string $message): DriverReceipt

@@ -21,7 +21,6 @@ use Domain\Sharing\Tests\TestCase;
 use Illuminate\Database\ConnectionInterface;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\SendsSignedPayloads;
 use Tests\Support\Sharing\FakeShareGateway;
 
 /**
@@ -35,7 +34,6 @@ use Tests\Support\Sharing\FakeShareGateway;
 final class ShareEntriesTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsSignedPayloads;
 
     private const array TABLES = [
         'command_receipts',
@@ -90,15 +88,11 @@ final class ShareEntriesTest extends TestCase
     {
         $start = TestStart::start();
 
-        $request = $this->signed(
-            $start,
-            '/agent/sharing/request',
-            [
-                'alias' => 'doc',
-                'number' => '1',
-                'request_key' => '01JD8X0G9M3QZ6V4K2AGENT0001',
-            ],
-        )->assertOk();
+        $request = $this->journal->agentCall($start, 'POST', '/agent/sharing/request', [
+            'alias' => 'doc',
+            'number' => '1',
+            'request_key' => '01JD8X0G9M3QZ6V4K2AGENT0001',
+        ])->assertOk();
         $this->assertSame([
             'number',
             'state',
@@ -109,7 +103,7 @@ final class ShareEntriesTest extends TestCase
         $proposal->status = ShareStatus::Active;
         $proposal->save();
 
-        $status = $this->signed($start, '/agent/sharing/status', [])->assertOk();
+        $status = $this->journal->agentCall($start, 'POST', '/agent/sharing/status', [])->assertOk();
         $this->assertSame([[
             'number' => $proposal->number,
             'state' => 'active',
@@ -120,7 +114,7 @@ final class ShareEntriesTest extends TestCase
     public function test_the_agent_cli_requests_a_share_and_prints_number_and_state_only(): void
     {
         $start = TestStart::start();
-        $this->runCommandsAs($start);
+        $this->journal->relayAgentCommands($start);
 
         $this->artisan('share:request', [
             'alias' => 'doc',

@@ -24,7 +24,6 @@ use Tests\Support\Agents\HostContract;
 use Tests\Support\DomainBoot;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\RunsKeyedCommands;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
@@ -38,7 +37,6 @@ final class PageRequestContractTest extends TestCase
 {
     use OpensTerminalRuntimes;
     use RefreshHookDatabase;
-    use RunsKeyedCommands;
     use WritesInboxMessages;
 
     private const string RECORDED_AGENT = '01JPAGEREQUESTAGENT0000000';
@@ -72,7 +70,9 @@ final class PageRequestContractTest extends TestCase
      */
     public static function recordedRequests(): iterable
     {
-        foreach (Finder::create()->files()->in(dirname(__DIR__, 2).'/Contracts/page-requests')->name('*.json') as $file) {
+        foreach (Finder::create()->files()->in(
+            dirname(__DIR__, 2).'/Contracts/page-requests',
+        )->name('*.json') as $file) {
             yield $file->getBasename('.json') => [$file->getBasename()];
         }
     }
@@ -120,8 +120,12 @@ final class PageRequestContractTest extends TestCase
         $this->inboxOf(ActorIdentity::of($member));
         $this->journal->actAsUserId($owner->id);
         $inboxId = $this->app->make(PairChats::class)->openGroup('Design', [ActorIdentity::of($member)]);
-        $messageId = $this->runOnBus(new SendMessageCommand($inboxId, 'Hello'));
-        $account = Account::create(DefaultDrivers::CLAUDE_CODE, AccountLabel::from('Work'), '/journal/accounts/recorded');
+        $messageId = $this->journal->run(new SendMessageCommand($inboxId, 'Hello'));
+        $account = Account::create(
+            DefaultDrivers::CLAUDE_CODE,
+            AccountLabel::from('Work'),
+            '/journal/accounts/recorded',
+        );
         $question = $this->askInboxOf(ActorIdentity::of($owner), 'Which plan first?');
         $attempt = SignInAttempt::create(
             ActorIdentity::of($owner),

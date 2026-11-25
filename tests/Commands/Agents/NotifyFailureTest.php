@@ -23,8 +23,6 @@ use App\Values\OwnerAuthority;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -36,8 +34,6 @@ use Tests\TestCase;
 final class NotifyFailureTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
     use WithActiveAccount;
 
     private const array TABLES = [
@@ -79,11 +75,26 @@ final class NotifyFailureTest extends TestCase
     public function test_a_failed_start_stops_with_proof_and_a_second_report_changes_nothing(): void
     {
         [$host, $opened] = $this->openRuntime();
-        $key = (string) $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])->json('start_key');
+        $key = (string) $this->signed(
+            $host,
+            'POST',
+            '/host/starts/claim',
+            ['session_id' => $opened->sessionId],
+        )->json('start_key');
 
-        $this->signed($host, 'POST', "/host/starts/{$key}/failure", ['failure' => DriverFailure::RateLimit->value])->assertNoContent();
+        $this->signed(
+            $host,
+            'POST',
+            "/host/starts/{$key}/failure",
+            ['failure' => DriverFailure::RateLimit->value],
+        )->assertNoContent();
         $stopped = SessionProcess::query()->withoutGlobalScopes()->sole()->updated_at;
-        $this->signed($host, 'POST', "/host/starts/{$key}/failure", ['failure' => DriverFailure::BillingError->value])->assertNoContent();
+        $this->signed(
+            $host,
+            'POST',
+            "/host/starts/{$key}/failure",
+            ['failure' => DriverFailure::BillingError->value],
+        )->assertNoContent();
 
         $start = SessionProcess::query()->withoutGlobalScopes()->sole();
         $this->assertSame(SessionProcessStatus::Stopped, $start->status);
@@ -96,7 +107,7 @@ final class NotifyFailureTest extends TestCase
      */
     private function signed(EnrolledHost $host, string $method, string $target, array $body = []): TestResponse
     {
-        return $this->signedHostCall($host, $method, $target, $body === [] ? '' : (string) json_encode($body));
+        return $this->journal->hostCall($host, $method, $target, $body === [] ? '' : (string) json_encode($body));
     }
 
     /**
@@ -127,6 +138,6 @@ final class NotifyFailureTest extends TestCase
 
     private function enrollHost(): EnrolledHost
     {
-        return $this->asSystem(new EnrollHostCommand('test host '.Str::random(6), [self::FOLDER]));
+        return $this->journal->asSystem(new EnrollHostCommand('test host '.Str::random(6), [self::FOLDER]));
     }
 }

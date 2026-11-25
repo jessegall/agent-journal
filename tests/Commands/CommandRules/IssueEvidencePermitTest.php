@@ -12,7 +12,6 @@ use App\Support\ActorIdentity;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -21,7 +20,6 @@ use Tests\TestCase;
 final class IssueEvidencePermitTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SendsSignedPayloads;
 
     private TestStart $start;
 
@@ -34,7 +32,7 @@ final class IssueEvidencePermitTest extends TestCase
         ProcessOutputDisk::fake();
         config(['processes.runner' => true]);
         $this->start = TestStart::start();
-        $this->runCommandsAs($this->start);
+        $this->journal->relayAgentCommands($this->start);
         $this->folder = sys_get_temp_dir().'/evidence-'.bin2hex(random_bytes(4));
         mkdir($this->folder.'/project', recursive: true);
         touch($this->folder.'/project/notes.txt');
@@ -47,7 +45,10 @@ final class IssueEvidencePermitTest extends TestCase
         $permitId = $this->issue('ls project');
 
         $permit = EvidencePermit::query()->findOrFail($permitId);
-        $this->assertSame(['ls project', $agent->type, $agent->id], [$permit->source_line, $permit->runner_type, $permit->runner_id]);
+        $this->assertSame(
+            ['ls project', $agent->type, $agent->id],
+            [$permit->source_line, $permit->runner_type, $permit->runner_id],
+        );
     }
 
     public function test_an_unknown_line_gets_no_permit(): void

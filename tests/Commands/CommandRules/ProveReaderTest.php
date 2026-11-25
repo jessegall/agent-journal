@@ -12,7 +12,6 @@ use App\Models\Runs\ReaderProof;
 use App\Models\Runs\ReaderRevision;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -23,7 +22,6 @@ final class ProveReaderTest extends TestCase
 {
     use RefreshHookDatabase;
     use RunsAcmeRequests;
-    use SendsSignedPayloads;
 
     private const string UNRECOGNIZED_OUTPUT = 'output_unrecognized at stdout bytes 0-16';
 
@@ -74,7 +72,10 @@ final class ProveReaderTest extends TestCase
         $findings = $this->sample(1, self::FINDINGS_OUTPUT, isRead: true);
         $reader = $this->reader();
 
-        $proofId = $this->runAsAgent(new ProveReaderCommand($this->requestId, $reader, [$passed, $findings]));
+        $proofId = $this->journal->runAsStart(
+            $this->start,
+            new ProveReaderCommand($this->requestId, $reader, [$passed, $findings]),
+        );
 
         $proof = ReaderProof::query()->findOrFail($proofId);
         $this->assertSame([0, 1], array_map(fn ($branch) => $branch->status, $proof->proven_branches->items()));
@@ -89,7 +90,10 @@ final class ProveReaderTest extends TestCase
     {
         $passed = $this->sample(0, self::PASSED_OUTPUT, isRead: true);
         $findings = $this->sample(1, self::FINDINGS_OUTPUT, isRead: true);
-        $this->runAsAgent(new ProveReaderCommand($this->requestId, $this->reader(), [$passed, $findings]));
+        $this->journal->runAsStart(
+            $this->start,
+            new ProveReaderCommand($this->requestId, $this->reader(), [$passed, $findings]),
+        );
 
         $changed = ReaderRevision::query()->findOrFail($this->reader());
 
@@ -102,7 +106,10 @@ final class ProveReaderTest extends TestCase
     private function failedProof(string $reader, array $runs): ReaderProofFailed
     {
         try {
-            $this->runAsAgent(new ProveReaderCommand($this->requestId, $reader, $runs));
+            $this->journal->runAsStart(
+                $this->start,
+                new ProveReaderCommand($this->requestId, $reader, $runs),
+            );
         } catch (ReaderProofFailed $refusal) {
             return $refusal;
         }

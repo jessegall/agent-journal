@@ -16,7 +16,6 @@ use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\SendsMcpFrames;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WritesInboxMessages;
@@ -31,7 +30,6 @@ use Tests\TestCase;
 final class SearchToolTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsMcpFrames;
     use WritesInboxMessages;
 
     private const array TABLES = [
@@ -45,7 +43,12 @@ final class SearchToolTest extends TestCase
      */
     protected static function bootedDomains(): array
     {
-        return DomainBoot::withRequirements(DocumentsDomain::class, PlansDomain::class, RulesDomain::class, TasksDomain::class);
+        return DomainBoot::withRequirements(
+            DocumentsDomain::class,
+            PlansDomain::class,
+            RulesDomain::class,
+            TasksDomain::class,
+        );
     }
 
     public function test_the_six_scoped_searches_return_their_records(): void
@@ -61,22 +64,26 @@ final class SearchToolTest extends TestCase
                 $caller->agent,
                 'Use the violet harbor.',
             )->id,
-            'documents.document' => $this->callMcpTool($caller, 'docs_create', [
+            'documents.document' => $this->journal->mcpTool($caller, 'docs_create', [
                 'title' => 'Dispatch guide',
                 'abstract' => 'Safe dispatch.',
                 'body' => "# Guide\nStart again from the violet harbor.",
                 'request_key' => 'search-document',
-            ])->json('result.structuredContent.document_id'),
-            'documents.report' => $this->callMcpTool($caller, 'reports_create', [
+            ])->assertOk()->json('result.structuredContent.document_id'),
+            'documents.report' => $this->journal->mcpTool($caller, 'reports_create', [
                 'title' => 'Violet harbor check',
                 'abstract' => 'What was checked.',
                 'body' => "# Check\nAll clear.",
                 'request_key' => 'search-report',
-            ])->json('result.structuredContent.record_id'),
+            ])->assertOk()->json('result.structuredContent.record_id'),
         ];
 
         foreach ($records as $within => $id) {
-            $hits = $this->callMcpTool($caller, 'search', ['query' => 'violet harbor', 'within' => $within])
+            $hits = $this->journal->mcpTool(
+                $caller,
+                'search',
+                ['query' => 'violet harbor', 'within' => $within],
+            )->assertOk()
                 ->assertJsonPath('result.isError', false)
                 ->json('result.structuredContent.hits');
 

@@ -11,8 +11,6 @@ use App\Models\Agents\AgentSession;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensPairChats;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
@@ -25,8 +23,6 @@ final class NotifyRuntimeHeartbeatTest extends TestCase
     use CommitsHookRows;
     use OpensLedgerRuntimes;
     use OpensPairChats;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
     use WritesInboxMessages;
 
     private const array TABLES = [
@@ -50,7 +46,7 @@ final class NotifyRuntimeHeartbeatTest extends TestCase
         [$host, $opened] = $this->openRuntime();
         $generation = AgentRuntime::query()->findOrFail($opened->runtimeId)->process_generation;
 
-        $this->asSystem(
+        $this->journal->asSystem(
             new NotifyRuntimeHeartbeatCommand($host->hostId, $opened->runtimeId, $generation, 'owned process alive'),
         );
 
@@ -62,11 +58,13 @@ final class NotifyRuntimeHeartbeatTest extends TestCase
         [$host, $opened] = $this->openRuntime();
         $generation = AgentRuntime::query()->findOrFail($opened->runtimeId)->process_generation;
 
-        $this->asSystem(new NotifyRuntimeHeartbeatCommand($host->hostId, $opened->runtimeId, $generation + 1, 'restarted'));
+        $this->journal->asSystem(
+            new NotifyRuntimeHeartbeatCommand($host->hostId, $opened->runtimeId, $generation + 1, 'restarted'),
+        );
 
         $this->assertNotNull(AgentSession::query()->findOrFail($opened->sessionId)->last_heartbeat_at);
         $this->assertThrows(
-            fn () => $this->asSystem(
+            fn () => $this->journal->asSystem(
                 new NotifyRuntimeHeartbeatCommand($host->hostId, $opened->runtimeId, $generation - 1, 'replaced'),
             ),
             HostReportRefused::class,

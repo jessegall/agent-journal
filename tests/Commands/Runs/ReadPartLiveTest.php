@@ -11,7 +11,6 @@ use App\Models\Runs\ReaderPosition;
 use App\Resolvers\Support\ActivityProjection;
 use Tests\Support\Processes\StartsWithApprovedAcmePair;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -21,7 +20,6 @@ use Tests\TestCase;
 final class ReadPartLiveTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SendsSignedPayloads;
     use StartsWithApprovedAcmePair;
 
     public function test_a_part_is_read_live_into_a_provisional_position(): void

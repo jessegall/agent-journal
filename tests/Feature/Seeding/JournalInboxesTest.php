@@ -42,8 +42,16 @@ final class JournalInboxesTest extends TestCase
     {
         $this->journal->owner()->user('Sam')->chat('Owner', 'Sam');
 
-        $this->assertThrows(fn () => $this->journal->chat('Sam', 'Owner'), FixtureRefused::class, 'already belongs to a chat');
-        $this->assertThrows(fn () => $this->journal->chat('Sam', 'Sam'), FixtureRefused::class, 'cannot chat with itself');
+        $this->assertThrows(
+            fn () => $this->journal->chat('Sam', 'Owner'),
+            FixtureRefused::class,
+            'already belongs to a chat',
+        );
+        $this->assertThrows(
+            fn () => $this->journal->chat('Sam', 'Sam'),
+            FixtureRefused::class,
+            'cannot chat with itself',
+        );
     }
 
     public function test_posts_take_the_next_numbers_of_the_inbox(): void
@@ -55,6 +63,7 @@ final class JournalInboxesTest extends TestCase
         $second = $this->journal->post('Sam', $chat, 'Hi');
 
         $this->assertSame($first->number + 1, $second->number);
+        $this->journal->assertMessageSent($chat, 'Owner', 'Hello')->assertMessageSent($chat, 'Sam', 'Hello', 0);
         $this->assertSame($chat->id, $this->journal->rememberInbox('Talk', $chat)->inboxCalled('Talk')->id);
     }
 }

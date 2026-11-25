@@ -20,8 +20,6 @@ use App\Values\DriverReceipt;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensPairChats;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
@@ -34,8 +32,6 @@ final class RetryDriverRequestTest extends TestCase
     use CommitsHookRows;
     use OpensLedgerRuntimes;
     use OpensPairChats;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
     use WritesInboxMessages;
 
     private const array TABLES = [
@@ -59,7 +55,7 @@ final class RetryDriverRequestTest extends TestCase
         [$host, $opened] = $this->openRuntime();
         $unavailable = $this->deliver($opened, 'host-restarted', 'Hello');
         $failed = $this->deliver($opened, 'host-refused', 'Hello again');
-        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
         $this->notifyProgress($host->hostId, $unavailable->requestId, RequestProgress::Unavailable);
         $this->notifyProgress($host->hostId, $failed->requestId, RequestProgress::Failed);
 
@@ -78,10 +74,10 @@ final class RetryDriverRequestTest extends TestCase
     {
         [$host, $opened] = $this->openRuntime();
         $receipt = $this->deliver($opened, 'fails-once', 'Hello');
-        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
         $request = DriverRequest::query()->findOrFail($receipt->requestId);
         $oldAttempt = $request->attempt_version;
-        $this->asSystem(new NotifyRequestProgressCommand(
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
             $host->hostId,
             $request->id,
             $oldAttempt,
@@ -101,7 +97,7 @@ final class RetryDriverRequestTest extends TestCase
             [$request->progress, $request->attempt_version],
         );
         $this->expectException(HostReportRefused::class);
-        $this->asSystem(new NotifyRequestProgressCommand(
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
             $host->hostId,
             $request->id,
             $oldAttempt,
@@ -120,7 +116,7 @@ final class RetryDriverRequestTest extends TestCase
     {
         $request = DriverRequest::query()->findOrFail($requestId);
 
-        $this->asSystem(new NotifyRequestProgressCommand(
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
             $hostId,
             $request->id,
             $request->attempt_version,

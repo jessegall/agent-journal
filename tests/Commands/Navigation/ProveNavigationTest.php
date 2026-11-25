@@ -24,7 +24,6 @@ use App\Values\NavigationAnswer;
 use App\Values\OwnerAuthority;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
 use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
@@ -36,7 +35,6 @@ final class ProveNavigationTest extends TestCase
 {
     use CommitsHookRows;
     use RaisesNavigationRequests;
-    use RunsTrustedCommands;
 
     private const array TABLES = [
         'users',
@@ -78,7 +76,12 @@ final class ProveNavigationTest extends TestCase
 
         $receipt = $this->asAgent(
             $this->main,
-            new ProveNavigationCommand($navigation->id, $navigation->row_version, NavigationCompletion::Step, 'Set model'),
+            new ProveNavigationCommand(
+                $navigation->id,
+                $navigation->row_version,
+                NavigationCompletion::Step,
+                'Set model',
+            ),
         );
 
         $navigation->refresh();
@@ -98,7 +101,10 @@ final class ProveNavigationTest extends TestCase
         $version = $navigation->row_version;
         $goal = NavigationCompletion::Goal;
         $refused = [
-            'empty' => [new ProveNavigationCommand($navigation->id, $version, $goal, ' '), NavigationProofRefused::class],
+            'empty' => [
+                new ProveNavigationCommand($navigation->id, $version, $goal, ' '),
+                NavigationProofRefused::class,
+            ],
             'on screen' => [
                 new ProveNavigationCommand($navigation->id, $version, $goal, 'gpt-5'),
                 NavigationProofRefused::class,

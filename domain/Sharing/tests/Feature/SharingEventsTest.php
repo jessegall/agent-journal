@@ -25,7 +25,6 @@ use Domain\Sharing\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\TestShares;
 use Tests\Support\TestActors;
@@ -39,7 +38,6 @@ use Tests\Support\TimeLimits\TimeLimit;
 final class SharingEventsTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsTrustedCommands;
 
     private const string TRIGGER_REFUSAL = 'refused for the test';
 
@@ -100,7 +98,7 @@ final class SharingEventsTest extends TestCase
 
     public function test_share_activated_reaches_a_listener_after_commit_once_and_not_on_a_replay(): void
     {
-        $claim = $this->asSystem(new ClaimGatewayOperationCommand(self::RUN));
+        $claim = $this->journal->asSystem(new ClaimGatewayOperationCommand(self::RUN));
         $this->assertInstanceOf(ClaimedGatewayOperation::class, $claim);
         $outcome = new RecordGatewayOutcomeCommand(
             self::RUN,
@@ -110,8 +108,8 @@ final class SharingEventsTest extends TestCase
             GatewayOutcome::Succeeded,
         );
 
-        $this->asSystem($outcome);
-        $this->asSystem($outcome);
+        $this->journal->asSystem($outcome);
+        $this->journal->asSystem($outcome);
 
         $this->assertCount(1, $this->received);
         $this->assertInstanceOf(ShareActivated::class, $this->received[0]);

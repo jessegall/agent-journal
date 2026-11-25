@@ -36,7 +36,6 @@ use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\InstallsNotesModule;
 use Tests\Support\OpensPairChats;
 use Tests\Support\Processes\ProcessOutputDisk;
-use Tests\Support\SendsMcpFrames;
 use Tests\Support\TestRunAdmissions;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WritesInboxMessages;
@@ -53,7 +52,6 @@ final class ProcessAndCleanupDockTest extends TestCase
     use CommitsHookRows;
     use InstallsNotesModule;
     use OpensPairChats;
-    use SendsMcpFrames;
     use WritesInboxMessages;
 
     private const string RUN_TITLE = '"text":"Run of acme verify"';
@@ -134,7 +132,11 @@ final class ProcessAndCleanupDockTest extends TestCase
 
         $other = TestStart::start();
         $this->inboxOf(ActorIdentity::of($other->agent));
-        $this->callMcpTool($other, 'dock_add', ['type' => ProcessRun::DOCK_TYPE, 'id' => $runId, 'request_key' => 'other'])
+        $this->journal->mcpTool(
+            $other,
+            'dock_add',
+            ['type' => ProcessRun::DOCK_TYPE, 'id' => $runId, 'request_key' => 'other'],
+        )->assertOk()
             ->assertJsonPath('result.isError', true);
     }
 
@@ -182,7 +184,11 @@ final class ProcessAndCleanupDockTest extends TestCase
 
     private function dock(string $type, string $id): TestResponse
     {
-        return $this->callMcpTool($this->agent, 'dock_add', ['type' => $type, 'id' => $id, 'request_key' => 'dock-'.md5($id)]);
+        return $this->journal->mcpTool(
+            $this->agent,
+            'dock_add',
+            ['type' => $type, 'id' => $id, 'request_key' => 'dock-'.md5($id)],
+        )->assertOk();
     }
 
     private function cards(): string

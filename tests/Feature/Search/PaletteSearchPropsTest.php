@@ -20,7 +20,6 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\SendsMcpFrames;
 use Tests\Support\TestActors;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -35,7 +34,6 @@ final class PaletteSearchPropsTest extends TestCase
 {
     use ActsAsActors;
     use CommitsHookRows;
-    use SendsMcpFrames;
 
     private const array TABLES = [
         'users', 'tasks', 'plans', 'number_groups', 'links', 'agents', 'agent_sessions', 'session_tokens',
@@ -65,7 +63,7 @@ final class PaletteSearchPropsTest extends TestCase
         Plan::factory()->create(['title' => 'Driver rollout']);
         $caller = TestStart::start();
 
-        $agentHits = $this->callMcpTool($caller, 'search', ['query' => 'driver'])
+        $agentHits = $this->journal->mcpTool($caller, 'search', ['query' => 'driver'])->assertOk()
             ->assertJsonPath('result.isError', false)
             ->json('result.structuredContent.hits');
         $paletteHits = $this->palette(['searchQuery' => 'driver'])->hits;

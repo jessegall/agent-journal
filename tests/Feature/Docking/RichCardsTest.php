@@ -31,7 +31,6 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\InstallsNotesModule;
 use Tests\Support\OpensPairChats;
-use Tests\Support\SendsMcpFrames;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
@@ -47,7 +46,6 @@ final class RichCardsTest extends TestCase
     use CommitsHookRows;
     use InstallsNotesModule;
     use OpensPairChats;
-    use SendsMcpFrames;
     use WritesInboxMessages;
 
     private const string NO_PHASES_TEXT = '"text":"No phases yet"';
@@ -89,7 +87,13 @@ final class RichCardsTest extends TestCase
      */
     protected static function bootedDomains(): array
     {
-        return DomainBoot::withRequirements(RulesDomain::class, ChatDomain::class, DocumentsDomain::class, PlansDomain::class, TasksDomain::class);
+        return DomainBoot::withRequirements(
+            RulesDomain::class,
+            ChatDomain::class,
+            DocumentsDomain::class,
+            PlansDomain::class,
+            TasksDomain::class,
+        );
     }
 
     private TestStart $agent;
@@ -118,7 +122,9 @@ final class RichCardsTest extends TestCase
     public function test_a_docked_report_shows_open_and_then_closed_once_settled(): void
     {
         $this->agent->startRequest($this->app);
-        $report = $this->app->make(CommandBus::class)->run(new CreateReportCommand('Evidence', 'First run.', 'Filed text.'));
+        $report = $this->app->make(CommandBus::class)->run(
+            new CreateReportCommand('Evidence', 'First run.', 'Filed text.'),
+        );
         $this->dock('documents.report', $report->id);
 
         $this->assertStringContainsString('"text":"Evidence"', $this->cards());
@@ -178,7 +184,11 @@ final class RichCardsTest extends TestCase
 
     private function dock(string $type, string $id): void
     {
-        $this->callMcpTool($this->agent, 'dock_add', ['type' => $type, 'id' => $id, 'request_key' => "dock-{$id}"])
+        $this->journal->mcpTool(
+            $this->agent,
+            'dock_add',
+            ['type' => $type, 'id' => $id, 'request_key' => "dock-{$id}"],
+        )->assertOk()
             ->assertJsonPath('result.structuredContent.outcome', 'added');
     }
 

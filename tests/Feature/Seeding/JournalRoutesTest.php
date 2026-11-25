@@ -37,12 +37,27 @@ final class JournalRoutesTest extends TestCase
     public function test_an_agent_call_signs_with_its_start_and_an_old_start_is_refused(): void
     {
         $this->journal->owner()->idleAgent('Writer')->startSession('Writer', 'First');
-        $this->journal->agentCall('First', 'POST', '/agent/heartbeat', ['request_key' => bin2hex(random_bytes(8))])->assertSuccessful();
+        $this->journal->agentCall(
+            'First',
+            'POST',
+            '/agent/heartbeat',
+            ['request_key' => bin2hex(random_bytes(8))],
+        )->assertSuccessful();
 
         $this->journal->startSession('Writer', 'Second');
 
-        $this->journal->agentCall('First', 'POST', '/agent/heartbeat', ['request_key' => bin2hex(random_bytes(8))])->assertUnauthorized();
-        $this->journal->agentCall('Second', 'POST', '/agent/heartbeat', ['request_key' => bin2hex(random_bytes(8))])->assertSuccessful();
+        $this->journal->agentCall(
+            'First',
+            'POST',
+            '/agent/heartbeat',
+            ['request_key' => bin2hex(random_bytes(8))],
+        )->assertUnauthorized();
+        $this->journal->agentCall(
+            'Second',
+            'POST',
+            '/agent/heartbeat',
+            ['request_key' => bin2hex(random_bytes(8))],
+        )->assertSuccessful();
     }
 
     public function test_a_host_call_is_verified_over_its_method_target_and_bytes(): void

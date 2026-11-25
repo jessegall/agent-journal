@@ -12,8 +12,6 @@ use App\Models\Projects\Host;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensPairChats;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
@@ -25,8 +23,6 @@ final class NotifyDriverTurnTest extends TestCase
     use CommitsHookRows;
     use OpensLedgerRuntimes;
     use OpensPairChats;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
     use WritesInboxMessages;
 
     private const array TABLES = [
@@ -49,13 +45,22 @@ final class NotifyDriverTurnTest extends TestCase
     {
         [$host, $opened] = $this->openRuntime();
 
-        $this->asSystem(
+        $this->journal->asSystem(
             new NotifyDriverTurnCommand($host->hostId, $opened->runtimeId, 1, 'prompt-1', false, 'opus', 'high', null),
         );
         $this->assertSame(RuntimeActivity::Running, AgentRuntime::query()->findOrFail($opened->runtimeId)->activity);
 
-        $this->asSystem(
-            new NotifyDriverTurnCommand($host->hostId, $opened->runtimeId, 1, 'prompt-1', true, 'opus', 'high', 'finished'),
+        $this->journal->asSystem(
+            new NotifyDriverTurnCommand(
+                $host->hostId,
+                $opened->runtimeId,
+                1,
+                'prompt-1',
+                true,
+                'opus',
+                'high',
+                'finished',
+            ),
         );
 
         $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);

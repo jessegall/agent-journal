@@ -5,15 +5,19 @@ declare(strict_types=1);
 namespace Tests\Support\Seeding;
 
 use App\Contracts\Actors\CurrentActorSetter;
+use App\Support\AgentClientSettings;
 use App\Support\AgentContext;
 use App\Support\EnrolledHost;
 use App\Support\SignedCall;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Contracts\Auth\Factory as AuthFactory;
+use Illuminate\Http\Client\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
+use Tests\Fixtures\Agents\TestStart;
 
 /**
  * How the journal fixture reaches the journal over HTTP: a named web route as the signed-in user or a guest, a call an
@@ -69,14 +73,15 @@ trait SendsRequests
     }
 
     /**
-     * A call the named start signs with the credential it was issued, over exactly this method, target and body.
+     * A call the start signs with the credential it was issued, the named one or a TestStart the test made, over
+     * exactly this method, target and body.
      *
      * @param  array<string, mixed>|string|null  $body  an array is sent as JSON, a string as it is
      * @param  array<string, string>  $headers  more request headers, by their server key, over the signed ones
      * @return TestResponse<Response>
      */
     public function agentCall(
-        string $start,
+        TestStart|string $start,
         string $method,
         string $target,
         array|string|null $body = null,
@@ -85,7 +90,7 @@ trait SendsRequests
         array $headers = [],
     ): TestResponse {
         $content = self::contentOf($body);
-        $signed = $this->testStartCalled($start)->serverHeaders(
+        $signed = $this->signerOf($start)->serverHeaders(
             $content,
             $callId ?? 'call-'.bin2hex(random_bytes(4)),
             ($issuedAt ?? CarbonImmutable::now())->getTimestamp(),
@@ -106,7 +111,7 @@ trait SendsRequests
      * @return TestResponse<Response>
      */
     public function mcpTool(
-        string $start,
+        TestStart|string $start,
         string $tool,
         array $arguments = [],
         int|string $rpcId = 1,
@@ -131,13 +136,62 @@ trait SendsRequests
      * @return TestResponse<Response>
      */
     public function mcpFrame(
-        string $start,
+        TestStart|string $start,
         string $frame,
         array $headers = [],
         CarbonImmutable|null $issuedAt = null,
         string|null $callId = null,
     ): TestResponse {
         return $this->agentCall($start, 'POST', self::MCP_ROUTE, $frame, $callId, $issuedAt, $headers);
+    }
+
+    /**
+     * A JSON-RPC request of the method to the MCP route, signed by the start, under id 1.
+     *
+     * @param  array<string, mixed>  $params
+     * @param  array<string, string>  $headers
+     * @return TestResponse<Response>
+     */
+    public function mcpRequest(
+        TestStart|string $start,
+        string $method,
+        array $params = [],
+        array $headers = [],
+        CarbonImmutable|null $issuedAt = null,
+    ): TestResponse {
+        $frame = json_encode(
+            ['jsonrpc' => '2.0', 'id' => 1, 'method' => $method, 'params' => (object) $params],
+            JSON_THROW_ON_ERROR,
+        );
+
+        return $this->mcpFrame($start, $frame, $headers, $issuedAt);
+    }
+
+    /**
+     * Sends the agent's console commands as the start, through the application's own HTTP kernel, signing with its
+     * pin; a token names another credential to sign with.
+     */
+    public function relayAgentCommands(TestStart|string $start, string|null $token = null): self
+    {
+        $signer = $this->signerOf($start);
+        $settings = new AgentClientSettings('http://journal.test', $token ?? $signer->token, $signer->pin());
+        $this->app->instance(AgentClientSettings::class, $settings);
+        Http::fake(function (Request $request) {
+            $server = ['CONTENT_TYPE' => 'application/json'];
+
+            foreach ($request->headers() as $name => $values) {
+                $server[self::serverKey($name)] = $values[0];
+            }
+
+            $path = (string) parse_url($request->url(), PHP_URL_PATH);
+            $response = $this->sendSigned(
+                fn () => $this->test->call('POST', $path, server: $server, content: $request->body()),
+            );
+
+            return Http::response((string) $response->getContent(), $response->getStatusCode());
+        });
+
+        return $this;
     }
 
     /**
@@ -172,6 +226,11 @@ trait SendsRequests
         ];
 
         return $this->sendSigned(fn () => $this->test->call($method, $target, server: $server, content: $content));
+    }
+
+    private function signerOf(TestStart|string $start): TestStart
+    {
+        return $start instanceof TestStart ? $start : $this->testStartCalled($start);
     }
 
     /**

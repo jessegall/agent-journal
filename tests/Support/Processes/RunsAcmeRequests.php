@@ -34,7 +34,6 @@ use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\ActsAsActors;
-use Tests\Support\RunsCommandsAsStart;
 use Tests\Support\TestRunAdmissions;
 
 /**
@@ -44,7 +43,6 @@ use Tests\Support\TestRunAdmissions;
 trait RunsAcmeRequests
 {
     use ActsAsActors;
-    use RunsCommandsAsStart;
 
     private const string PASSED_OUTPUT = <<<'TEXT'
     {"test":"a","status":"ok"}
@@ -66,14 +64,20 @@ trait RunsAcmeRequests
     {
         ProcessOutputDisk::fake();
         $this->start = TestStart::start();
-        $this->requestId = $this->runAsAgent(new OpenCommandRequestCommand(
+        $this->requestId = $this->journal->actAsAgentIds(
+            $this->start->agent->id,
+            $this->start->session->id,
+        )->runUnkeyed(new OpenCommandRequestCommand(
             'acme verify',
             str_repeat('a', 64),
             'acme verify',
             sys_get_temp_dir(),
             RequestHoldReason::UnknownCommand,
         ));
-        $this->runAsAgent(new ProposeCommandRuleCommand($this->requestId, 'request-1', AcmeDeclarations::proposedVerify()));
+        $this->journal->runAsStart(
+            $this->start,
+            new ProposeCommandRuleCommand($this->requestId, 'request-1', AcmeDeclarations::proposedVerify()),
+        );
     }
 
     /**
@@ -87,7 +91,10 @@ trait RunsAcmeRequests
             RecordRule::of(RecordRole::Summary, 'passed={passed:int} failed={failed:int}'),
         ], failureField: 'failed');
 
-        return $this->runAsAgent(new ProposeReaderCommand($this->requestId, 1, $definition));
+        return $this->journal->runAsStart(
+            $this->start,
+            new ProposeReaderCommand($this->requestId, 1, $definition),
+        );
     }
 
     /**
@@ -96,7 +103,10 @@ trait RunsAcmeRequests
     private function sample(int $status, string $output, bool $isRead): string
     {
         $permit = $this->asUser(new ApproveSampleCommand($this->requestId, 1, $this->request()->source_digest));
-        $runId = $this->runAsAgent(new StartSampleCommand($this->requestId, $permit, "sample-{$status}"));
+        $runId = $this->journal->runAsStart(
+            $this->start,
+            new StartSampleCommand($this->requestId, $permit, "sample-{$status}"),
+        );
         $part = PartRun::create(
             ProcessRun::query()->withoutGlobalScopes()->findOrFail($runId),
             new PartKey(1, 1, 'acme verify'),
@@ -109,12 +119,25 @@ trait RunsAcmeRequests
         $recorder->finish($part, PartEnd::exited($status));
 
         if ($isRead) {
-            $this->signed($this->start, "/agent/processes/runs/{$runId}/output/summary", [])->assertOk();
+            $this->journal->agentCall(
+                $this->start,
+                'POST',
+                "/agent/processes/runs/{$runId}/output/summary",
+                [],
+            )->assertOk();
             $tail = ['part' => 1, 'stream' => 'stdout', 'lines' => 50];
-            $this->signed($this->start, "/agent/processes/runs/{$runId}/output/tail", $tail)->assertOk();
+            $this->journal->agentCall(
+                $this->start,
+                'POST',
+                "/agent/processes/runs/{$runId}/output/tail",
+                $tail,
+            )->assertOk();
         }
 
-        $this->runAsAgent(new SettleSampleCommand($this->requestId));
+        $this->journal->actAsAgentIds(
+            $this->start->agent->id,
+            $this->start->session->id,
+        )->runUnkeyed(new SettleSampleCommand($this->requestId));
 
         return $runId;
     }
@@ -129,7 +152,10 @@ trait RunsAcmeRequests
         $passed = $this->sample(0, self::PASSED_OUTPUT, isRead: true);
         $findings = $this->sample(1, self::FINDINGS_OUTPUT, isRead: true);
         $reader = $this->reader();
-        $proof = $this->runAsAgent(new ProveReaderCommand($this->requestId, $reader, [$passed, $findings]));
+        $proof = $this->journal->runAsStart(
+            $this->start,
+            new ProveReaderCommand($this->requestId, $reader, [$passed, $findings]),
+        );
         $approval = new OwnerApproval(1, 0, [new ReaderApproval($reader, $proof)], 'proven');
 
         $this->asUser(new ApproveRuleProposalCommand(RuleProposal::query()->sole()->id, $approval));

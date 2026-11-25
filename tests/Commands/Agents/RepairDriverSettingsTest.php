@@ -16,8 +16,6 @@ use App\Values\BrowserInputCapabilities;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensPairChats;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
@@ -29,8 +27,6 @@ final class RepairDriverSettingsTest extends TestCase
     use CommitsHookRows;
     use OpensLedgerRuntimes;
     use OpensPairChats;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
     use WritesInboxMessages;
 
     private const array TABLES = [
@@ -54,10 +50,10 @@ final class RepairDriverSettingsTest extends TestCase
         [$host, $opened] = $this->openRuntime();
         $agentId = $this->agentIdOf($opened);
         $effort = $this->asOwner(new ChangeAgentEffortCommand($agentId, $opened->sessionId, 'effort-1', 'high'));
-        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
         $request = DriverRequest::query()->findOrFail($effort->requestId);
         $attempt = $request->attempt_version;
-        $this->asSystem(new NotifyRequestProgressCommand(
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
             $host->hostId,
             $request->id,
             $attempt,
@@ -68,7 +64,9 @@ final class RepairDriverSettingsTest extends TestCase
         $request->refresh();
         $sequence = $request->sequence;
 
-        $this->asOwner(new RepairDriverSettingsCommand($request->id, $request->row_version, 'low', 'high is not offered'));
+        $this->asOwner(
+            new RepairDriverSettingsCommand($request->id, $request->row_version, 'low', 'high is not offered'),
+        );
 
         $request->refresh();
         $this->assertSame([RequestProgress::Accepted, 'low'], [$request->progress, $request->effort]);

@@ -28,7 +28,11 @@ final class JournalNamesTest extends TestCase
     {
         $this->journal->owner()->user('Sam');
 
-        $this->assertThrows(fn () => $this->journal->agent('Sam'), FixtureRefused::class, 'The name Sam already belongs to a user');
+        $this->assertThrows(
+            fn () => $this->journal->agent('Sam'),
+            FixtureRefused::class,
+            'The name Sam already belongs to a user',
+        );
 
         $this->assertSame(0, Agent::query()->count());
         $this->assertSame(1, User::query()->where('name', 'Sam')->count());

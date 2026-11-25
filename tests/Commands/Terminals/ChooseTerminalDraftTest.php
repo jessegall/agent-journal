@@ -11,8 +11,6 @@ use App\Exceptions\TerminalControlRefused;
 use App\Models\Projects\Host;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensTerminalRuntimes;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\Terminals\TakesTerminalControl;
 use Tests\TestCase;
 
@@ -24,8 +22,6 @@ final class ChooseTerminalDraftTest extends TestCase
 {
     use CommitsHookRows;
     use OpensTerminalRuntimes;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
     use TakesTerminalControl;
 
     private const array TABLES = [
@@ -49,7 +45,9 @@ final class ChooseTerminalDraftTest extends TestCase
         $this->asOwner(new ChooseTerminalDraftCommand($agentId, self::GRANT, TerminalDraftChoice::Send, 1));
 
         $this->assertThrows(
-            fn () => $this->asOwner(new ChooseTerminalDraftCommand($agentId, self::GRANT, TerminalDraftChoice::Send, 5)),
+            fn () => $this->asOwner(
+                new ChooseTerminalDraftCommand($agentId, self::GRANT, TerminalDraftChoice::Send, 5),
+            ),
             TerminalControlRefused::class,
         );
         $this->assertSame(1, $this->sentCount(DriverOperation::DraftChoice));

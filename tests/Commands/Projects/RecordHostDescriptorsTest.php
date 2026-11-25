@@ -9,8 +9,6 @@ use App\Support\EnrolledHost;
 use App\Support\HostDescriptorEnrollment;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\TestCase;
 
 /**
@@ -19,8 +17,6 @@ use Tests\TestCase;
 final class RecordHostDescriptorsTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
 
     private const array TABLES = ['hosts', 'agent_runtimes', 'session_requests', 'hook_calls'];
 
@@ -28,8 +24,8 @@ final class RecordHostDescriptorsTest extends TestCase
 
     public function test_a_host_enrolls_the_four_default_drivers_it_advertises(): void
     {
-        $host = $this->enrolledHost();
-        $this->hostCall($host, self::CLAIM)->assertOk();
+        $host = $this->journal->enrolledHost();
+        $this->journal->hostCall($host, 'POST', self::CLAIM)->assertOk();
         $keys = ['claude-code', 'claude-code-headless', 'codex', 'codex-headless'];
 
         $this->notify($host, array_map(fn (string $key) => $this->descriptor($key), $keys))->assertNoContent();
@@ -41,8 +37,8 @@ final class RecordHostDescriptorsTest extends TestCase
 
     public function test_an_unknown_key_is_unavailable_while_the_others_stay_selectable(): void
     {
-        $host = $this->enrolledHost();
-        $this->hostCall($host, self::CLAIM)->assertOk();
+        $host = $this->journal->enrolledHost();
+        $this->journal->hostCall($host, 'POST', self::CLAIM)->assertOk();
 
         $this->notify($host, [
             $this->descriptor('claude-code'),
@@ -57,8 +53,8 @@ final class RecordHostDescriptorsTest extends TestCase
 
     public function test_a_driver_advertised_twice_refuses_the_report(): void
     {
-        $host = $this->enrolledHost();
-        $this->hostCall($host, self::CLAIM)->assertOk();
+        $host = $this->journal->enrolledHost();
+        $this->journal->hostCall($host, 'POST', self::CLAIM)->assertOk();
 
         $this->notify($host, [$this->descriptor('claude-code'), $this->descriptor('claude-code')])
             ->assertStatus(409);
@@ -71,7 +67,7 @@ final class RecordHostDescriptorsTest extends TestCase
      */
     private function notify(EnrolledHost $host, array $descriptors): TestResponse
     {
-        return $this->hostCall($host, '/host/reports/descriptors', ['descriptors' => $descriptors]);
+        return $this->journal->hostCall($host, 'POST', '/host/reports/descriptors', ['descriptors' => $descriptors]);
     }
 
     /**

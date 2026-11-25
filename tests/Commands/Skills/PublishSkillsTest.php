@@ -11,7 +11,6 @@ use App\Support\SkillPublishingService;
 use Illuminate\Support\Facades\File;
 use Tests\Fixtures\Skills\FullDiskPublisher;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
 use Tests\Support\Skills\HasSkillTargets;
 use Tests\Support\Skills\IntendsSkillPublications;
 use Tests\TestCase;
@@ -25,7 +24,6 @@ final class PublishSkillsTest extends TestCase
     use CommitsHookRows;
     use HasSkillTargets;
     use IntendsSkillPublications;
-    use RunsTrustedCommands;
 
     private const string FIRST_TEXT = <<<'TEXT'
         # Journal
@@ -67,7 +65,10 @@ final class PublishSkillsTest extends TestCase
     {
         $this->publishing()->publish($this->intend('First text.')->id, 'worker-1');
         $before = (string) readlink($this->target());
-        $this->app->instance(SkillPublisherContract::class, new FullDiskPublisher($this->app->make(SkillPublisher::class)));
+        $this->app->instance(
+            SkillPublisherContract::class,
+            new FullDiskPublisher($this->app->make(SkillPublisher::class)),
+        );
         $second = $this->intend('Second text.');
 
         $this->assertSame(PublicationStatus::Failed, $this->publishing()->publish($second->id, 'worker-1'));

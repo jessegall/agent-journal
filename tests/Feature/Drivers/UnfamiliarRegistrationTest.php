@@ -23,8 +23,6 @@ use App\Values\ProviderKey;
 use Tests\Fixtures\Drivers\AcmeReaderCapabilities;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\TestCase;
 
 /**
@@ -36,8 +34,6 @@ final class UnfamiliarRegistrationTest extends TestCase
 {
     use CommitsHookRows;
     use OpensLedgerRuntimes;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
 
     private const array TABLES = [
         'agents',
@@ -76,9 +72,15 @@ final class UnfamiliarRegistrationTest extends TestCase
             'echo-small',
         ));
         $receipt = $this->asOwner(DeliverAgentCommand::text($agent->id, $opened->sessionId, 'echo-1', 'Say hello'));
-        $claimed = collect($this->hostCall($host, '/host/claim?limit=10&wait=0&watched_version=0')->assertOk()->json('requests'))
+        $claimed = collect(
+            $this->journal->hostCall(
+                $host,
+                'POST',
+                '/host/claim?limit=10&wait=0&watched_version=0',
+            )->assertOk()->json('requests'),
+        )
             ->firstOrFail(fn (array $request) => $request['requestId'] === $receipt->requestId);
-        $this->hostCall($host, '/host/reports/request', [
+        $this->journal->hostCall($host, 'POST', '/host/reports/request', [
             'request_id' => $receipt->requestId,
             'attempt' => $claimed['attempt'],
             'progress' => 'applied',
@@ -106,7 +108,14 @@ final class UnfamiliarRegistrationTest extends TestCase
         $headless = $registry->forKey(DriverKey::from('claude-code-headless'))->descriptor();
         $claude = $registry->family(DefaultDrivers::CLAUDE_CODE);
         $registry->registerFamily(
-            new DriverFamily('example', 'Example', ProviderKey::from('example'), 'echo', $claude->isolatesHooksPerSession, []),
+            new DriverFamily(
+                'example',
+                'Example',
+                ProviderKey::from('example'),
+                'echo',
+                $claude->isolatesHooksPerSession,
+                [],
+            ),
         );
         $registry->register(new DriverRegistration(
             DriverKey::from($key),

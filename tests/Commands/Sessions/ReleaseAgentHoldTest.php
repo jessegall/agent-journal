@@ -20,8 +20,6 @@ use App\Values\DriverReceipt;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensPairChats;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
@@ -34,8 +32,6 @@ final class ReleaseAgentHoldTest extends TestCase
     use CommitsHookRows;
     use OpensLedgerRuntimes;
     use OpensPairChats;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
     use WritesInboxMessages;
 
     private const array TABLES = [
@@ -63,12 +59,16 @@ final class ReleaseAgentHoldTest extends TestCase
         [$host, $opened] = $this->openRuntime();
         $agentId = $this->agentIdOf($opened);
         $this->asOwner(new InterruptAgentCommand($agentId, $opened->sessionId, 'interrupt-1'));
-        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
         $delivery = $this->deliver($opened, 'after-interrupt', 'Go on later');
 
-        $held = $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $held = $this->journal->asSystem(
+            new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()),
+        );
         $this->asOwner(new ReleaseAgentHoldCommand($agentId, $opened->sessionId, HoldReason::Interrupted, 'go on'));
-        $released = $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $released = $this->journal->asSystem(
+            new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()),
+        );
 
         $this->assertNotContains(
             $delivery->requestId,
@@ -92,7 +92,7 @@ final class ReleaseAgentHoldTest extends TestCase
         $this->asOwner(new ReleaseAgentHoldCommand($agentId, $opened->sessionId, HoldReason::Interrupted, 'go on'));
         $this->assertSame(HoldReason::None, $runtime()->hold_reason);
 
-        $this->asSystem(new NotifyRuntimeActivityCommand(
+        $this->journal->asSystem(new NotifyRuntimeActivityCommand(
             $host->hostId,
             $opened->runtimeId,
             RuntimeActivity::Running,

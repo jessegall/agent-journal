@@ -15,8 +15,6 @@ use App\Values\BrowserInputCapabilities;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensPairChats;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
@@ -29,8 +27,6 @@ final class ChangeAgentModelTest extends TestCase
     use CommitsHookRows;
     use OpensLedgerRuntimes;
     use OpensPairChats;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
     use WritesInboxMessages;
 
     private const array TABLES = [
@@ -57,9 +53,11 @@ final class ChangeAgentModelTest extends TestCase
     {
         [$host, $opened] = $this->openRuntime();
         $agentId = $this->agentIdOf($opened);
-        $model = $this->asOwner(new ChangeAgentModelCommand($agentId, $opened->sessionId, 'model-1', 'claude-sonnet-5-5'));
+        $model = $this->asOwner(
+            new ChangeAgentModelCommand($agentId, $opened->sessionId, 'model-1', 'claude-sonnet-5-5'),
+        );
         $effort = $this->asOwner(new ChangeAgentEffortCommand($agentId, $opened->sessionId, 'effort-1', 'high'));
-        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
 
         foreach ([$model, $effort] as $setting) {
             $this->notifyTurnEnd($host, $setting->requestId, null);
@@ -90,8 +88,9 @@ final class ChangeAgentModelTest extends TestCase
         $request = DriverRequest::query()->findOrFail($requestId);
         $report = ['request_id' => $request->id, 'attempt' => $request->attempt_version, 'actual_binding' => null];
 
-        $this->hostCall(
+        $this->journal->hostCall(
             $host,
+            'POST',
             '/host/reports/request',
             $turnEnd === null ? [...$report, 'progress' => 'staged'] : [...$report, 'turn_end' => $turnEnd],
         )->assertSuccessful();

@@ -22,7 +22,6 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -33,7 +32,6 @@ final class SaveCommandRuleTest extends TestCase
 {
     use RefreshHookDatabase;
     use RunsAcmeRequests;
-    use SendsSignedPayloads;
 
     private const string AT_REVISION = 'is at revision 1';
 
@@ -69,7 +67,10 @@ final class SaveCommandRuleTest extends TestCase
             ModelNotFoundException::class,
         );
         $this->assertThrows(
-            fn () => $this->runAsAgent(new RejectRuleProposalCommand($this->proposalId(), 'agents cannot')),
+            fn () => $this->journal->runAsStart(
+                $this->start,
+                new RejectRuleProposalCommand($this->proposalId(), 'agents cannot'),
+            ),
             CommandAdmissionRefused::class,
         );
         $this->assertSame(ProposalStatus::Pending, RuleProposal::query()->sole()->status);

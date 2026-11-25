@@ -20,8 +20,6 @@ use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\TestCase;
 
 /**
@@ -31,8 +29,6 @@ final class ClaimProjectReadsTest extends TestCase
 {
     use ActsAsActors;
     use CommitsHookRows;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
 
     private const array TABLES = [
         'project_reads', 'project_bindings', 'project_environments', 'projects', 'agent_runtimes', 'agents', 'hosts',
@@ -51,16 +47,16 @@ final class ClaimProjectReadsTest extends TestCase
     {
         parent::setUp();
 
-        $this->host = $this->enrolledHost();
+        $this->host = $this->journal->enrolledHost();
         $this->binding = $this->bindingOn($this->host);
     }
 
     public function test_a_claim_hands_a_read_to_its_own_host_once_and_a_report_answers_it(): void
     {
         $read = $this->read(ProjectReadType::File, 'src/main.go');
-        $other = $this->enrolledHost();
+        $other = $this->journal->enrolledHost();
 
-        $this->assertSame([], $this->hostCall($other, self::CLAIM)->assertOk()->json('project_reads'));
+        $this->assertSame([], $this->journal->hostCall($other, 'POST', self::CLAIM)->assertOk()->json('project_reads'));
         $this->assertSame([$read->id], array_column($this->claim()->json('project_reads'), 'id'));
         $this->assertSame([], $this->claim()->json('project_reads'));
 
@@ -84,7 +80,7 @@ final class ClaimProjectReadsTest extends TestCase
 
     private function claim(): TestResponse
     {
-        return $this->hostCall($this->host, self::CLAIM)->assertOk();
+        return $this->journal->hostCall($this->host, 'POST', self::CLAIM)->assertOk();
     }
 
     private function reportText(ProjectRead $read): TestResponse
@@ -105,7 +101,7 @@ final class ClaimProjectReadsTest extends TestCase
      */
     private function notify(ProjectRead $read, array $answer): TestResponse
     {
-        return $this->hostCall($this->host, "/host/reports/project-reads/{$read->id}", $answer);
+        return $this->journal->hostCall($this->host, 'POST', "/host/reports/project-reads/{$read->id}", $answer);
     }
 
     private function bindingOn(EnrolledHost $host): ProjectBinding

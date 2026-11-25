@@ -23,8 +23,6 @@ use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\TestCase;
 
 /**
@@ -35,8 +33,6 @@ final class NotifyProjectReadTest extends TestCase
 {
     use ActsAsActors;
     use CommitsHookRows;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
 
     private const array TABLES = [
         'project_reads', 'project_bindings', 'project_environments', 'projects', 'agent_runtimes', 'agents', 'hosts',
@@ -53,7 +49,7 @@ final class NotifyProjectReadTest extends TestCase
     {
         parent::setUp();
 
-        $this->host = $this->enrolledHost();
+        $this->host = $this->journal->enrolledHost();
         $this->binding = $this->bindingOn($this->host);
     }
 
@@ -75,7 +71,12 @@ final class NotifyProjectReadTest extends TestCase
         $read = $this->read(ProjectReadType::File, 'src/main.go');
         $folder = $this->read(ProjectReadType::Directory, 'src');
 
-        $this->hostCall($this->enrolledHost(), "/host/reports/project-reads/{$read->id}", $this->textAnswer())
+        $this->journal->hostCall(
+            $this->journal->enrolledHost(),
+            'POST',
+            "/host/reports/project-reads/{$read->id}",
+            $this->textAnswer(),
+        )
             ->assertClientError();
         $this->notify($folder, ['entries' => [['name' => '../x', 'is_folder' => false, 'size' => 1]]])
             ->assertClientError();
@@ -100,12 +101,16 @@ final class NotifyProjectReadTest extends TestCase
     public function test_a_late_answer_to_an_expired_read_changes_nothing_and_pruning_removes_it_later(): void
     {
         $read = $this->read(ProjectReadType::File, 'src/main.go');
-        $this->app->make(ProjectReadRetentionService::class)->prune(CarbonImmutable::now()->addSeconds(ProjectRead::PENDING_SECONDS_LIMIT + 1));
+        $this->app->make(ProjectReadRetentionService::class)->prune(
+            CarbonImmutable::now()->addSeconds(ProjectRead::PENDING_SECONDS_LIMIT + 1),
+        );
 
         $this->reportText($read)->assertNoContent();
         $this->assertSame(ProjectReadStatus::Expired, ProjectRead::query()->findOrFail($read->id)->status);
 
-        $this->app->make(ProjectReadRetentionService::class)->prune(CarbonImmutable::now()->addMinutes(ProjectRead::KEEP_MINUTES_LIMIT + 1));
+        $this->app->make(ProjectReadRetentionService::class)->prune(
+            CarbonImmutable::now()->addMinutes(ProjectRead::KEEP_MINUTES_LIMIT + 1),
+        );
         $this->assertFalse(ProjectRead::query()->whereKey($read->id)->exists());
     }
 
@@ -137,7 +142,7 @@ final class NotifyProjectReadTest extends TestCase
      */
     private function notify(ProjectRead $read, array $answer): TestResponse
     {
-        return $this->hostCall($this->host, "/host/reports/project-reads/{$read->id}", $answer);
+        return $this->journal->hostCall($this->host, 'POST', "/host/reports/project-reads/{$read->id}", $answer);
     }
 
     private function bindingOn(EnrolledHost $host): ProjectBinding

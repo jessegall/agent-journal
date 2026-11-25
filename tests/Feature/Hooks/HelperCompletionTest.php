@@ -47,8 +47,6 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\AsksTheStopGate;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -64,8 +62,6 @@ final class HelperCompletionTest extends TestCase
     use AsksTheStopGate;
     use OpensLedgerRuntimes;
     use RefreshHookDatabase;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
 
     public function test_a_passed_stop_certifies_the_work_once(): void
     {
@@ -144,7 +140,10 @@ final class HelperCompletionTest extends TestCase
         $this->asOwner(new CancelSessionStartCommand($session->agent_id, $session->id, 'cancel-1'));
 
         $this->assertSame(1, DriverRequest::query()->where('operation', DriverOperation::Stop)->count());
-        Event::assertDispatched(SessionStartCancelled::class, fn (SessionStartCancelled $event) => $event->work->id === $work->id);
+        Event::assertDispatched(
+            SessionStartCancelled::class,
+            fn (SessionStartCancelled $event) => $event->work->id === $work->id,
+        );
     }
 
     private function helperWithConditions(): TestStart
@@ -177,7 +176,13 @@ final class HelperCompletionTest extends TestCase
         $request = new StartRequest(
             TestSelections::requestId(),
             $session->agent_id,
-            SelectedDriver::resolve('claude-code', ModelSelection::named('claude-opus-5-5'), null, null, $this->app->make(DriverCatalogue::class)),
+            SelectedDriver::resolve(
+                'claude-code',
+                ModelSelection::named('claude-opus-5-5'),
+                null,
+                null,
+                $this->app->make(DriverCatalogue::class),
+            ),
             StartOriginType::OwnerRequest,
             $work,
             null,
@@ -186,7 +191,12 @@ final class HelperCompletionTest extends TestCase
             StartPolicy::withoutProfile(TestSelections::onHost()),
             driverType: DriverType::Headless,
         );
-        SessionRequest::create($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create())->startedAs($session);
+        SessionRequest::create(
+            $request,
+            TestSelections::pinOf($request),
+            ActorIdentity::system(),
+            None::create(),
+        )->startedAs($session);
 
         return $work;
     }
@@ -196,20 +206,26 @@ final class HelperCompletionTest extends TestCase
         $attempt = StopCheck::query()->withoutGlobalScopes()->where('stop_id', $stopId)->sole();
         $condition = StopCondition::cleanWorktree();
 
-        $this->asSystem(new RecordStopConditionResultsCommand('host-1', $attempt->id, $attempt->policy_digest, 0, [
-            new StopConditionResultReport(
-                $condition->key,
-                $condition->definitionHash(),
-                $status,
-                '2026-11-20T01:00:00Z',
-                '2026-11-20T01:00:01Z',
-                $status === StopConditionResultType::Passed ? 0 : 1,
-                null,
-                $summary,
-                null,
-                false,
-            ),
-        ]));
+        $this->journal->asSystem(new RecordStopConditionResultsCommand(
+            'host-1',
+            $attempt->id,
+            $attempt->policy_digest,
+            0,
+            [
+                new StopConditionResultReport(
+                    $condition->key,
+                    $condition->definitionHash(),
+                    $status,
+                    '2026-11-20T01:00:00Z',
+                    '2026-11-20T01:00:01Z',
+                    $status === StopConditionResultType::Passed ? 0 : 1,
+                    null,
+                    $summary,
+                    null,
+                    false,
+                ),
+            ]
+        ));
     }
 
     /**

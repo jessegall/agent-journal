@@ -25,7 +25,7 @@ trait TakesTerminalControl
 
     private function controllableRuntime(): AgentRuntime
     {
-        $host = $this->enrolledHost();
+        $host = $this->journal->enrolledHost();
         $everyInput = new BrowserInputCapabilities(true, true, true, true, true);
         Host::query()->whereKey($host->hostId)->sole()->advertiseBrowserInput($everyInput);
 
@@ -34,12 +34,16 @@ trait TakesTerminalControl
 
     private function openInterest(AgentRuntime $runtime): string
     {
-        return $this->asOwner(new OpenTerminalViewCommand($runtime->session->agent_id, (string) Str::ulid()))->readInterestId;
+        return $this->asOwner(
+            new OpenTerminalViewCommand($runtime->session->agent_id, (string) Str::ulid()),
+        )->readInterestId;
     }
 
     private function take(AgentRuntime $runtime, string $interest): TerminalControlData
     {
-        return $this->asOwner(new TakeTerminalControlCommand($runtime->session->agent_id, $interest, (string) Str::ulid()));
+        return $this->asOwner(
+            new TakeTerminalControlCommand($runtime->session->agent_id, $interest, (string) Str::ulid()),
+        );
     }
 
     private function grantedRuntime(): AgentRuntime

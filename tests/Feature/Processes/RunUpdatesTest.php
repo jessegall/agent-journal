@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Event;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -22,7 +21,6 @@ final class RunUpdatesTest extends TestCase
 {
     use RefreshHookDatabase;
     use RunsAcmeRequests;
-    use SendsSignedPayloads;
 
     protected function setUp(): void
     {

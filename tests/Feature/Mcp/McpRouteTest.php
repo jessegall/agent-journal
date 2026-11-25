@@ -16,7 +16,6 @@ use Illuminate\Support\Str;
 use Laravel\Mcp\Server\Registrar;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\SendsMcpFrames;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -27,7 +26,6 @@ use Tests\TestCase;
 final class McpRouteTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsMcpFrames;
 
     private TestStart $start;
 
@@ -47,15 +45,11 @@ final class McpRouteTest extends TestCase
 
     public function test_a_signed_initialize_answers_with_the_journal_server_and_only_tools_and_resources(): void
     {
-        $result = $this->sendMcp(
-            $this->start,
-            'initialize',
-            [
-                'protocolVersion' => '2025-11-25',
-                'capabilities' => (object) [],
-                'clientInfo' => ['name' => 'test', 'version' => '1'],
-            ],
-        )
+        $result = $this->journal->mcpRequest($this->start, 'initialize', [
+            'protocolVersion' => '2025-11-25',
+            'capabilities' => (object) [],
+            'clientInfo' => ['name' => 'test', 'version' => '1'],
+        ])
             ->assertOk()
             ->json('result');
 
@@ -75,7 +69,7 @@ final class McpRouteTest extends TestCase
             'POST',
             self::ROUTE,
             server: ['CONTENT_TYPE' => 'application/json', 'HTTP_ACCEPT' => 'application/json'],
-            content: $this->mcpFrame('initialize'),
+            content: '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}',
         )
             ->assertUnauthorized();
     }
@@ -84,18 +78,15 @@ final class McpRouteTest extends TestCase
     {
         $this->assertSame(
             413,
-            $this->sendMcpBody(
-                $this->start,
-                json_encode(
-                    [
-                        'jsonrpc' => '2.0',
-                        'id' => 1,
-                        'method' => 'ping',
-                        'params' => ['filler' => str_repeat('a', 300 * 1024)],
-                    ],
-                    JSON_THROW_ON_ERROR,
-                ),
-            )->status(),
+            $this->journal->mcpFrame($this->start, json_encode(
+                [
+                    'jsonrpc' => '2.0',
+                    'id' => 1,
+                    'method' => 'ping',
+                    'params' => ['filler' => str_repeat('a', 300 * 1024)],
+                ],
+                JSON_THROW_ON_ERROR,
+            ))->status(),
         );
     }
 
@@ -105,7 +96,7 @@ final class McpRouteTest extends TestCase
 
         $this->assertSame(
             400,
-            $this->sendMcpBody(
+            $this->journal->mcpFrame(
                 $this->start,
                 '{"jsonrpc":"2.0","id":1,"method":"ping","params":{"deep":'.$deep.'}}',
             )->status(),
@@ -114,7 +105,7 @@ final class McpRouteTest extends TestCase
 
     public function test_a_message_at_the_limits_is_served(): void
     {
-        $this->sendMcp($this->start, 'ping')->assertOk();
+        $this->journal->mcpRequest($this->start, 'ping')->assertOk();
     }
 
     public function test_the_server_is_a_web_route_and_has_no_stdio_handle(): void
@@ -146,7 +137,7 @@ final class McpRouteTest extends TestCase
 
     public function test_prompts_list_is_empty(): void
     {
-        $this->sendMcp($this->start, 'prompts/list')->assertOk()->assertJsonPath('result.prompts', []);
+        $this->journal->mcpRequest($this->start, 'prompts/list')->assertOk()->assertJsonPath('result.prompts', []);
     }
 
     public function test_tools_and_resources_list_core_orientation_first(): void
@@ -154,12 +145,15 @@ final class McpRouteTest extends TestCase
         $this->assertSame(
             ['overview_read', 'capabilities_read'],
             array_slice(
-                array_column($this->sendMcp($this->start, 'tools/list')->assertOk()->json('result.tools'), 'name'),
+                array_column(
+                    $this->journal->mcpRequest($this->start, 'tools/list')->assertOk()->json('result.tools'),
+                    'name',
+                ),
                 0,
                 2,
             ),
         );
-        $this->sendMcp($this->start, 'resources/list')->assertOk()->assertJsonPath(
+        $this->journal->mcpRequest($this->start, 'resources/list')->assertOk()->assertJsonPath(
             'result.resources.0.uri',
             'journal://v1/overview',
         );
@@ -173,7 +167,12 @@ final class McpRouteTest extends TestCase
         ];
         $headers = ['HTTP_MCP_PROTOCOL_VERSION' => '2026-07-28', 'HTTP_MCP_METHOD' => 'server/discover'];
 
-        $response = $this->sendMcp($this->start, 'server/discover', ['_meta' => $meta], $headers)->assertOk();
+        $response = $this->journal->mcpRequest(
+            $this->start,
+            'server/discover',
+            ['_meta' => $meta],
+            headers: $headers,
+        )->assertOk();
 
         $this->assertSame(['2026-07-28'], $response->json('result.supportedVersions'));
         $this->assertSame(['tools', 'resources'], array_keys($response->json('result.capabilities')));
@@ -186,17 +185,19 @@ final class McpRouteTest extends TestCase
             'io.modelcontextprotocol/clientCapabilities' => (object) [],
         ];
 
-        $this->sendMcp($this->start, 'server/discover', ['_meta' => $meta])->assertStatus(400);
+        $this->journal->mcpRequest($this->start, 'server/discover', ['_meta' => $meta])->assertStatus(400);
     }
 
     #[TimeLimit(seconds: 10, reason: 'It sends 121 signed calls through the whole MCP route to reach the limit.')]
     public function test_the_121st_call_of_a_session_in_a_minute_gets_429_with_retry_after_seconds(): void
     {
         for ($call = 0; $call < 120; $call++) {
-            $this->sendMcp($this->start, 'ping')->assertOk();
+            $this->journal->mcpRequest($this->start, 'ping')->assertOk();
         }
 
-        $this->sendMcp($this->start, 'ping')->assertStatus(429)->assertJsonStructure(['retry_after_seconds']);
+        $this->journal->mcpRequest($this->start, 'ping')->assertStatus(429)->assertJsonStructure(
+            ['retry_after_seconds'],
+        );
     }
 
     public function test_the_rate_limit_reads_the_agent_from_the_container_of_the_request_in_hand(): void

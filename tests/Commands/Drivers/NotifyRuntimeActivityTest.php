@@ -30,8 +30,6 @@ use Tests\Fixtures\Agents\CountedPendingWork;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensPairChats;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
@@ -45,8 +43,6 @@ final class NotifyRuntimeActivityTest extends TestCase
     use CommitsHookRows;
     use OpensLedgerRuntimes;
     use OpensPairChats;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
     use WritesInboxMessages;
 
     private const array TABLES = [
@@ -68,11 +64,17 @@ final class NotifyRuntimeActivityTest extends TestCase
     public function test_session_activity_acknowledges_only_the_claimed_wake_and_a_later_one_stays_pending(): void
     {
         [$host, $opened] = $this->openRuntime();
-        $this->asSystem(
-            new NotifyRuntimeActivityCommand($host->hostId, $opened->runtimeId, RuntimeActivity::Running, HoldReason::None, 1),
+        $this->journal->asSystem(
+            new NotifyRuntimeActivityCommand(
+                $host->hostId,
+                $opened->runtimeId,
+                RuntimeActivity::Running,
+                HoldReason::None,
+                1,
+            ),
         );
         $this->asOwner(new WakeAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'wake-1'));
-        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
         $this->asOwner(new WakeAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'wake-2'));
         $turns = $this->app->make(NativeTurnRecords::class);
 
@@ -84,7 +86,7 @@ final class NotifyRuntimeActivityTest extends TestCase
             [$wake->wake_acknowledged, $wake->wake_requested, $wake->progress],
         );
 
-        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
         $turns->acknowledgeWake($opened->sessionId, CarbonImmutable::now()->addSecond());
 
         $wake->refresh();
@@ -95,13 +97,22 @@ final class NotifyRuntimeActivityTest extends TestCase
     public function test_activity_from_before_the_wake_was_taken_acknowledges_nothing(): void
     {
         [$host, $opened] = $this->openRuntime();
-        $this->asSystem(
-            new NotifyRuntimeActivityCommand($host->hostId, $opened->runtimeId, RuntimeActivity::Running, HoldReason::None, 1),
+        $this->journal->asSystem(
+            new NotifyRuntimeActivityCommand(
+                $host->hostId,
+                $opened->runtimeId,
+                RuntimeActivity::Running,
+                HoldReason::None,
+                1,
+            ),
         );
         $this->asOwner(new WakeAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'wake-1'));
-        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
 
-        $this->app->make(NativeTurnRecords::class)->acknowledgeWake($opened->sessionId, CarbonImmutable::now()->subMinute());
+        $this->app->make(NativeTurnRecords::class)->acknowledgeWake(
+            $opened->sessionId,
+            CarbonImmutable::now()->subMinute(),
+        );
 
         $wake = DriverRequest::query()->where('operation', DriverOperation::Wake)->sole();
         $this->assertSame([0, RequestProgress::Staged], [$wake->wake_acknowledged, $wake->progress]);
@@ -112,12 +123,20 @@ final class NotifyRuntimeActivityTest extends TestCase
         $this->app->make(PendingWorkSources::class)->register(CountedPendingWork::class);
         CountedPendingWork::$count = 0;
         [$host, $opened] = $this->openRuntime();
-        $this->asSystem(
-            new NotifyRuntimeActivityCommand($host->hostId, $opened->runtimeId, RuntimeActivity::Idle, HoldReason::None, 1),
+        $this->journal->asSystem(
+            new NotifyRuntimeActivityCommand(
+                $host->hostId,
+                $opened->runtimeId,
+                RuntimeActivity::Idle,
+                HoldReason::None,
+                1,
+            ),
         );
         $this->asOwner(new WakeAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'wake-1'));
 
-        $claimed = $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $claimed = $this->journal->asSystem(
+            new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()),
+        );
 
         $wake = DriverRequest::query()->where('operation', DriverOperation::Wake)->sole();
         $this->assertSame([], $claimed->requests);
@@ -129,12 +148,20 @@ final class NotifyRuntimeActivityTest extends TestCase
         $this->app->make(PendingWorkSources::class)->register(CountedPendingWork::class);
         CountedPendingWork::$count = 1;
         [$host, $opened] = $this->openRuntime();
-        $this->asSystem(
-            new NotifyRuntimeActivityCommand($host->hostId, $opened->runtimeId, RuntimeActivity::Idle, HoldReason::None, 1),
+        $this->journal->asSystem(
+            new NotifyRuntimeActivityCommand(
+                $host->hostId,
+                $opened->runtimeId,
+                RuntimeActivity::Idle,
+                HoldReason::None,
+                1,
+            ),
         );
         $this->asOwner(new WakeAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'wake-1'));
 
-        $claimed = $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $claimed = $this->journal->asSystem(
+            new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()),
+        );
 
         $this->assertCount(1, $claimed->requests);
         $this->assertSame(
@@ -151,8 +178,14 @@ final class NotifyRuntimeActivityTest extends TestCase
         [$host, $opened] = $this->openRuntime();
         $asked = $this->wakesAskedOf($opened);
 
-        $this->asSystem(
-            new NotifyRuntimeActivityCommand($host->hostId, $opened->runtimeId, RuntimeActivity::Idle, HoldReason::None, 2),
+        $this->journal->asSystem(
+            new NotifyRuntimeActivityCommand(
+                $host->hostId,
+                $opened->runtimeId,
+                RuntimeActivity::Idle,
+                HoldReason::None,
+                2,
+            ),
         );
 
         $this->assertSame($asked, $this->wakesAskedOf($opened));
@@ -161,20 +194,24 @@ final class NotifyRuntimeActivityTest extends TestCase
     public function test_a_report_of_an_older_generation_is_refused_and_leaves_newer_facts(): void
     {
         [$host, $opened] = $this->openRuntime();
-        $this->asSystem(
-            new NotifyRuntimeActivityCommand($host->hostId, $opened->runtimeId, RuntimeActivity::Running, HoldReason::None, 2),
+        $this->journal->asSystem(
+            new NotifyRuntimeActivityCommand(
+                $host->hostId,
+                $opened->runtimeId,
+                RuntimeActivity::Running,
+                HoldReason::None,
+                2,
+            ),
         );
 
         try {
-            $this->asSystem(
-                new NotifyRuntimeActivityCommand(
-                    $host->hostId,
-                    $opened->runtimeId,
-                    RuntimeActivity::Idle,
-                    HoldReason::None,
-                    1,
-                ),
-            );
+            $this->journal->asSystem(new NotifyRuntimeActivityCommand(
+                $host->hostId,
+                $opened->runtimeId,
+                RuntimeActivity::Idle,
+                HoldReason::None,
+                1,
+            ));
             $this->fail('A stale report was applied.');
         } catch (HostReportRefused) {
             $this->assertSame(
@@ -192,27 +229,23 @@ final class NotifyRuntimeActivityTest extends TestCase
     {
         [$host, $opened] = $this->openRuntime();
         $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
-        $this->asSystem(
-            new NotifyRuntimeActivityCommand(
-                $host->hostId,
-                $opened->runtimeId,
-                RuntimeActivity::Idle,
-                HoldReason::None,
-                $runtime->process_generation,
-            ),
-        );
+        $this->journal->asSystem(new NotifyRuntimeActivityCommand(
+            $host->hostId,
+            $opened->runtimeId,
+            RuntimeActivity::Idle,
+            HoldReason::None,
+            $runtime->process_generation,
+        ));
 
         $this->travel(AgentRuntime::FRESH_SECONDS + 1)->seconds();
         $this->assertTrue($runtime->refresh()->isStale(CarbonImmutable::now()));
 
-        $this->asSystem(
-            new NotifyRuntimeHeartbeatCommand(
-                $host->hostId,
-                $opened->runtimeId,
-                $runtime->process_generation,
-                'owned process alive',
-            ),
-        );
+        $this->journal->asSystem(new NotifyRuntimeHeartbeatCommand(
+            $host->hostId,
+            $opened->runtimeId,
+            $runtime->process_generation,
+            'owned process alive',
+        ));
 
         $this->assertFalse($runtime->refresh()->isStale(CarbonImmutable::now()));
         $this->assertSame(RuntimeActivity::Idle, $runtime->activity);
@@ -233,19 +266,24 @@ final class NotifyRuntimeActivityTest extends TestCase
             HoldReason::None,
             $generation,
         );
-        $beat = new NotifyRuntimeHeartbeatCommand($host->hostId, $opened->runtimeId, $generation, 'owned process alive');
+        $beat = new NotifyRuntimeHeartbeatCommand(
+            $host->hostId,
+            $opened->runtimeId,
+            $generation,
+            'owned process alive',
+        );
         $told = fn (SessionStateChanged $change) => $change->sessionId === $opened->sessionId;
         Event::fake([SessionStateChanged::class]);
 
-        $this->asSystem($idle);
+        $this->journal->asSystem($idle);
         Event::assertDispatchedTimes(SessionStateChanged::class, 1);
         Event::assertDispatched(SessionStateChanged::class, $told);
 
-        $this->asSystem($beat);
+        $this->journal->asSystem($beat);
         Event::assertDispatchedTimes(SessionStateChanged::class, 1);
 
         $this->travel(AgentRuntime::FRESH_SECONDS + 1)->seconds();
-        $this->asSystem($beat);
+        $this->journal->asSystem($beat);
         Event::assertDispatchedTimes(SessionStateChanged::class, 2);
     }
 

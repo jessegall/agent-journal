@@ -23,7 +23,6 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsKeyedCommands;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
@@ -37,7 +36,6 @@ use Tests\TestCase;
 final class ReleaseSignInAgainTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsKeyedCommands;
     use WithActiveAccount;
 
     private const array TABLES = [
@@ -84,7 +82,7 @@ final class ReleaseSignInAgainTest extends TestCase
     {
         $this->actAsOwner();
 
-        return $this->runOnBus(new BeginSignInAgainCommand($this->account->id), $requestKey)
+        return $this->journal->run(new BeginSignInAgainCommand($this->account->id), $requestKey)
             ->attemptId;
     }
 

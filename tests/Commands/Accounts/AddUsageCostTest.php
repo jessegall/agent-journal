@@ -20,8 +20,6 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -34,8 +32,6 @@ use Tests\TestCase;
 final class AddUsageCostTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
     use WithActiveAccount;
 
     private const array TABLES = [
@@ -59,7 +55,7 @@ final class AddUsageCostTest extends TestCase
         parent::setUp();
 
         $this->account = $this->chooseActiveAccounts()['claude-code'];
-        $this->host = $this->enrolledHost();
+        $this->host = $this->journal->enrolledHost();
     }
 
     public function test_reports_on_two_accounts_of_one_program_land_under_each_start_account(): void
@@ -85,7 +81,7 @@ final class AddUsageCostTest extends TestCase
     public function test_an_unrelated_host_is_refused_and_nothing_is_written(): void
     {
         $key = $this->claimedStart($this->account);
-        $stranger = $this->enrolledHost();
+        $stranger = $this->journal->enrolledHost();
 
         $answer = $this->notify($key, 'result-1', ['type' => 'result_cost', 'usd' => '1'], $stranger);
 
@@ -171,7 +167,7 @@ final class AddUsageCostTest extends TestCase
         EnrolledHost|null $host = null,
         string $observedAt = '2026-11-21T10:00:00Z',
     ): TestResponse {
-        return $this->hostCall($host ?? $this->host, '/host/reports/usage', [
+        return $this->journal->hostCall($host ?? $this->host, 'POST', '/host/reports/usage', [
             'start_key' => $key,
             'generation' => 1,
             'source_id' => $source,

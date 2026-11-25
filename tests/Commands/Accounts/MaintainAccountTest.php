@@ -18,7 +18,6 @@ use App\Support\Compatibility\DriverCompatibility;
 use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -35,7 +34,6 @@ use Tests\TestCase;
 final class MaintainAccountTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsTrustedCommands;
     use WithActiveAccount;
 
     private const array TABLES = [

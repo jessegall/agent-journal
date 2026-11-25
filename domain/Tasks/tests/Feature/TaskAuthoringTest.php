@@ -5,19 +5,14 @@ declare(strict_types=1);
 namespace Domain\Tasks\Tests\Feature;
 
 use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Bus\CommandBus;
 use App\Models\Agents\Agent;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Values\OwnerAuthority;
-use Domain\Tasks\Commands\EditTask\EditTaskCommand;
 use Domain\Tasks\Enums\TaskStatus;
-use Domain\Tasks\Exceptions\TaskRevisionChanged;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
-use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TestIds;
 
 /**
@@ -27,7 +22,6 @@ use Tests\Support\TestIds;
 final class TaskAuthoringTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsSignedPayloads;
 
     private const string TITLE_TOO_LONG = 'title: The title field must not be greater than 240 characters.';
 

@@ -24,7 +24,6 @@ use PhpOption\None;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\RunsTrustedCommands;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -36,7 +35,6 @@ use Tests\TestCase;
 final class EnforceSessionStartLimitsTest extends TestCase
 {
     use RefreshHookDatabase;
-    use RunsTrustedCommands;
 
     public function test_a_start_past_its_wall_budget_is_stopped_and_a_younger_one_runs_on(): void
     {
@@ -79,7 +77,13 @@ final class EnforceSessionStartLimitsTest extends TestCase
         $request = new StartRequest(
             $start->session->start_request_id,
             $start->agent->id,
-            SelectedDriver::resolve('claude-code', ModelSelection::named('claude-opus-5-5'), null, null, $this->app->make(DriverCatalogue::class)),
+            SelectedDriver::resolve(
+                'claude-code',
+                ModelSelection::named('claude-opus-5-5'),
+                null,
+                null,
+                $this->app->make(DriverCatalogue::class),
+            ),
             StartOriginType::OwnerRequest,
             new RecordIdentity('helpers.helper-job', '01m7wgahp0n7766x1e1ta8ehew'),
             null,
@@ -88,7 +92,12 @@ final class EnforceSessionStartLimitsTest extends TestCase
             StartPolicy::withoutProfile(TestSelections::onHost()),
             driverType: DriverType::Headless,
         );
-        SessionRequest::create($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create())->startedAs($start->session);
+        SessionRequest::create(
+            $request,
+            TestSelections::pinOf($request),
+            ActorIdentity::system(),
+            None::create(),
+        )->startedAs($start->session);
         SessionPolicy::create($start->session, $request->policy);
 
         return $start;

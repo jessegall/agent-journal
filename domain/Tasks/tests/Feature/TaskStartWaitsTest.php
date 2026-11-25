@@ -17,7 +17,6 @@ use Domain\Tasks\Support\TaskType;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsKeyedCommands;
 
 /**
  * A task with a wait not met cannot be started by anyone and is not in the pool; finishing the prerequisite or
@@ -28,7 +27,6 @@ final class TaskStartWaitsTest extends TestCase
 {
     use ActsAsOwner;
     use CommitsHookRows;
-    use RunsKeyedCommands;
 
     private const array TABLES = [
         'users',
@@ -116,6 +114,6 @@ final class TaskStartWaitsTest extends TestCase
 
     private function runCommand(object $command): mixed
     {
-        return $this->runOnBus($command);
+        return $this->journal->run($command);
     }
 }

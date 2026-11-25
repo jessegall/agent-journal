@@ -17,7 +17,6 @@ use Domain\Tasks\Tests\TestCase;
 use Domain\Tasks\Values\TaskWaitPair;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsKeyedCommands;
 
 /**
  * Several waits change at once only against the graph version they were read at, and any change
@@ -27,7 +26,6 @@ final class ApplyTaskWaitsTest extends TestCase
 {
     use ActsAsOwner;
     use CommitsHookRows;
-    use RunsKeyedCommands;
 
     private const array TABLES = [
         'users',
@@ -64,13 +62,13 @@ final class ApplyTaskWaitsTest extends TestCase
         );
 
         $this->journal->actAsUserId($this->owner->id);
-        $this->runOnBus(new AddTaskWaitCommand($this->tasks[1]->id, $this->tasks[0]->id));
-        $this->runOnBus(new AddTaskWaitCommand($this->tasks[2]->id, $this->tasks[0]->id));
+        $this->journal->run(new AddTaskWaitCommand($this->tasks[1]->id, $this->tasks[0]->id));
+        $this->journal->run(new AddTaskWaitCommand($this->tasks[2]->id, $this->tasks[0]->id));
     }
 
     public function test_one_apply_changes_exactly_its_waits_under_one_batch(): void
     {
-        $version = $this->runOnBus(new ApplyTaskWaitsCommand(
+        $version = $this->journal->run(new ApplyTaskWaitsCommand(
             $this->ids(),
             $this->version(),
             [$this->pair(3, 2)],
@@ -93,10 +91,10 @@ final class ApplyTaskWaitsTest extends TestCase
     public function test_a_graph_changed_since_it_was_read_refuses_the_whole_batch(): void
     {
         $read = $this->version();
-        $this->runOnBus(new AddTaskWaitCommand($this->tasks[3]->id, $this->tasks[0]->id));
+        $this->journal->run(new AddTaskWaitCommand($this->tasks[3]->id, $this->tasks[0]->id));
 
         $this->assertThrows(
-            fn () => $this->runOnBus(new ApplyTaskWaitsCommand($this->ids(), $read, [], [$this->pair(1, 0)])),
+            fn () => $this->journal->run(new ApplyTaskWaitsCommand($this->ids(), $read, [], [$this->pair(1, 0)])),
             TaskGraphChanged::class,
         );
 
@@ -106,7 +104,7 @@ final class ApplyTaskWaitsTest extends TestCase
     public function test_a_wait_that_would_close_a_cycle_refuses_the_whole_batch(): void
     {
         $this->assertThrows(
-            fn () => $this->runOnBus(new ApplyTaskWaitsCommand(
+            fn () => $this->journal->run(new ApplyTaskWaitsCommand(
                 $this->ids(),
                 $this->version(),
                 [$this->pair(0, 1)],
@@ -120,10 +118,10 @@ final class ApplyTaskWaitsTest extends TestCase
 
     public function test_a_wait_on_an_ended_task_refuses_the_whole_batch(): void
     {
-        $this->runOnBus(new CancelTaskCommand($this->tasks[3]->id, 'Not needed.'));
+        $this->journal->run(new CancelTaskCommand($this->tasks[3]->id, 'Not needed.'));
 
         $this->assertThrows(
-            fn () => $this->runOnBus(new ApplyTaskWaitsCommand(
+            fn () => $this->journal->run(new ApplyTaskWaitsCommand(
                 $this->ids(),
                 $this->version(),
                 [$this->pair(3, 2)],

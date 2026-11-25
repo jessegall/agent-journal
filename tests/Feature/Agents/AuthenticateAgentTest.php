@@ -11,7 +11,6 @@ use App\Support\SessionTokens;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -20,7 +19,6 @@ use Tests\TestCase;
 final class AuthenticateAgentTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsSignedPayloads;
 
     private const array TABLES = ['agents', 'agent_sessions', 'session_tokens'];
 
@@ -49,8 +47,9 @@ final class AuthenticateAgentTest extends TestCase
         $start = TestStart::start();
         new SessionTokens()->revoke($start->session);
 
-        $this->signed(
+        $this->journal->agentCall(
             $start,
+            'POST',
             '/agent/heartbeat',
             ['request_key' => bin2hex(random_bytes(8))],
         )->assertUnauthorized()->assertExactJson(self::UNAUTHENTICATED);
@@ -61,8 +60,9 @@ final class AuthenticateAgentTest extends TestCase
         $start = TestStart::start();
         $this->app->make(AgentSessions::class)->end($start->session);
 
-        $this->signed(
+        $this->journal->agentCall(
             $start,
+            'POST',
             '/agent/heartbeat',
             ['request_key' => bin2hex(random_bytes(8))],
         )->assertUnauthorized()->assertExactJson(self::UNAUTHENTICATED);
@@ -73,8 +73,9 @@ final class AuthenticateAgentTest extends TestCase
         $start = TestStart::start();
         $start->agent->retireAt(CarbonImmutable::now());
 
-        $this->signed(
+        $this->journal->agentCall(
             $start,
+            'POST',
             '/agent/heartbeat',
             ['request_key' => bin2hex(random_bytes(8))],
         )->assertUnauthorized()->assertExactJson(self::UNAUTHENTICATED)->assertDontSee($start->token);
@@ -84,7 +85,12 @@ final class AuthenticateAgentTest extends TestCase
     {
         $start = TestStart::start();
 
-        $this->signed($start, '/agent/heartbeat', ['request_key' => bin2hex(random_bytes(8))])->assertSuccessful();
+        $this->journal->agentCall(
+            $start,
+            'POST',
+            '/agent/heartbeat',
+            ['request_key' => bin2hex(random_bytes(8))],
+        )->assertSuccessful();
 
         $this->assertThrows(fn () => $this->app->make(AgentContext::class), AgentContextMissing::class);
     }

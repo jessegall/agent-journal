@@ -46,7 +46,6 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\RunsKeyedCommands;
 use Tests\Support\Settings\SwitchesDomainsOff;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -62,7 +61,6 @@ final class BaselineTimelinesTest extends TestCase
 {
     use ActsAsOwner;
     use CommitsHookRows;
-    use RunsKeyedCommands;
     use SwitchesDomainsOff;
     use WithActiveAccount;
 
@@ -489,7 +487,7 @@ final class BaselineTimelinesTest extends TestCase
             new OwnerAuthority('test'),
         );
         $begin = new BeginSignInAgainCommand($account->id);
-        $attemptId = $this->runOnBus($begin, "again-{$account->id}")->attemptId;
+        $attemptId = $this->journal->run($begin, "again-{$account->id}")->attemptId;
 
         return SignInAttempt::query()->withoutGlobalScopes()->findOrFail($attemptId);
     }

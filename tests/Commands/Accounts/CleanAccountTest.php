@@ -37,7 +37,6 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsKeyedCommands;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
@@ -50,7 +49,6 @@ use Tests\TestCase;
 final class CleanAccountTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsKeyedCommands;
     use WithActiveAccount;
 
     private const string ACCOUNT_LABEL = 'Test account';
@@ -139,7 +137,7 @@ final class CleanAccountTest extends TestCase
             new OwnerAuthority('test'),
         );
 
-        return $this->runOnBus($command);
+        return $this->journal->run($command);
     }
 
     private function asHost(Command $command): mixed

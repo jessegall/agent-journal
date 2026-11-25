@@ -8,7 +8,6 @@ use Domain\Helpers\Tests\Support\DispatchesHelpers;
 use Domain\Helpers\Tests\TestCase;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsMcpFrames;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -20,7 +19,6 @@ final class HelperToolsTest extends TestCase
 {
     use DispatchesHelpers;
     use RefreshHookDatabase;
-    use SendsMcpFrames;
 
     private const array HELPER_TOOLS = [
         'helpers_start',
@@ -47,7 +45,7 @@ final class HelperToolsTest extends TestCase
 
         $this->assertSame([], array_intersect(self::HELPER_TOOLS, array_column($this->catalogue($helper), 'name')));
 
-        $this->sendMcp($helper, 'tools/call', [
+        $this->journal->mcpRequest($helper, 'tools/call', [
             'name' => 'helpers_start',
             'arguments' => [
                 'profile_key' => 'plan-reviewer',
@@ -59,7 +57,7 @@ final class HelperToolsTest extends TestCase
 
     public function test_a_start_without_a_model_is_refused_before_any_command_runs(): void
     {
-        $this->sendMcp($this->parent, 'tools/call', [
+        $this->journal->mcpRequest($this->parent, 'tools/call', [
             'name' => 'helpers_start',
             'arguments' => [
                 'profile_key' => 'plan-reviewer',
@@ -80,7 +78,7 @@ final class HelperToolsTest extends TestCase
         $arguments = [];
 
         do {
-            $page = $this->sendMcp($caller, 'tools/list', $arguments)->assertOk()->json('result');
+            $page = $this->journal->mcpRequest($caller, 'tools/list', $arguments)->assertOk()->json('result');
             $tools = [...$tools, ...$page['tools']];
             $arguments = isset($page['nextCursor']) ? ['cursor' => $page['nextCursor']] : [];
         } while ($arguments !== []);

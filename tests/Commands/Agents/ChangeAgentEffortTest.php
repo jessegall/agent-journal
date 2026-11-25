@@ -12,8 +12,6 @@ use App\Models\Drivers\DriverRequest;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensPairChats;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
@@ -26,8 +24,6 @@ final class ChangeAgentEffortTest extends TestCase
     use CommitsHookRows;
     use OpensLedgerRuntimes;
     use OpensPairChats;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
     use WritesInboxMessages;
 
     private const array TABLES = [
@@ -63,7 +59,9 @@ final class ChangeAgentEffortTest extends TestCase
         [, $opened] = $this->openRuntime();
 
         try {
-            $this->asOwner(new ChangeAgentEffortCommand($this->agentIdOf($opened), $opened->sessionId, 'effort-1', 'extreme'));
+            $this->asOwner(
+                new ChangeAgentEffortCommand($this->agentIdOf($opened), $opened->sessionId, 'effort-1', 'extreme'),
+            );
             $this->fail('An unknown effort was accepted.');
         } catch (DriverRequestRefused) {
             $this->assertSame(0, DriverRequest::query()->where('operation', DriverOperation::ChangeEffort)->count());

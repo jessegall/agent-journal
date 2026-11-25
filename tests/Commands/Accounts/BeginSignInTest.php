@@ -17,7 +17,6 @@ use App\Values\OwnerAuthority;
 use App\Values\SignInStarted;
 use Illuminate\Support\Facades\Bus;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsKeyedCommands;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
@@ -31,7 +30,6 @@ use Tests\TestCase;
 final class BeginSignInTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsKeyedCommands;
     use WithActiveAccount;
 
     private const array TABLES = [
@@ -69,7 +67,9 @@ final class BeginSignInTest extends TestCase
     public function test_an_attempt_no_sign_in_service_took_up_says_so_after_a_while(): void
     {
         $started = $this->begin('request-1');
-        $read = fn () => SignInAttemptData::fromAttempt(SignInAttempt::query()->whereKey($started->attemptId)->with('resultAccount')->sole());
+        $read = fn () => SignInAttemptData::fromAttempt(
+            SignInAttempt::query()->whereKey($started->attemptId)->with('resultAccount')->sole(),
+        );
 
         $this->assertFalse($read()->isUnclaimed);
 
@@ -80,7 +80,7 @@ final class BeginSignInTest extends TestCase
 
     private function begin(string $requestKey): SignInStarted
     {
-        return $this->runOnBus(new BeginSignInCommand('claude-code', SignInMethod::OAuth), $requestKey);
+        return $this->journal->run(new BeginSignInCommand('claude-code', SignInMethod::OAuth), $requestKey);
     }
 
     private function actAsOwner(): void

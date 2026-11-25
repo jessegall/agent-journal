@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TestTimeServerClock;
 use Tests\TestCase;
 
@@ -24,7 +23,6 @@ use Tests\TestCase;
 final class AgentHeartbeatRouteTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsSignedPayloads;
 
     private const array TABLES = ['agents', 'agent_sessions', 'session_tokens'];
 
@@ -63,22 +61,27 @@ final class AgentHeartbeatRouteTest extends TestCase
 
     public function test_the_heartbeat_route_records_a_beat_and_answers_accepted(): void
     {
-        $this->signed($this->start, '/agent/heartbeat', ['request_key' => bin2hex(random_bytes(8))])->assertOk();
+        $this->journal->agentCall(
+            $this->start,
+            'POST',
+            '/agent/heartbeat',
+            ['request_key' => bin2hex(random_bytes(8))],
+        )->assertOk();
 
         $this->assertInstanceOf(CarbonImmutable::class, $this->storedSession()->last_heartbeat_at);
     }
 
     public function test_a_signed_call_refreshes_a_stale_beat_once_and_not_again_inside_the_window(): void
     {
-        $this->signed($this->start, self::PING, [])->assertNoContent();
+        $this->journal->agentCall($this->start, 'POST', self::PING, [])->assertNoContent();
         $this->assertInstanceOf(CarbonImmutable::class, $this->storedSession()->last_heartbeat_at);
 
         CarbonImmutable::setTestNow(CarbonImmutable::now()->addSeconds(5));
-        $this->signed($this->start, self::PING, [])->assertNoContent();
+        $this->journal->agentCall($this->start, 'POST', self::PING, [])->assertNoContent();
         $this->assertSame(1, $this->beatWrites);
 
         CarbonImmutable::setTestNow(CarbonImmutable::now()->addSeconds(20));
-        $this->signed($this->start, self::PING, [])->assertNoContent();
+        $this->journal->agentCall($this->start, 'POST', self::PING, [])->assertNoContent();
         $this->assertSame(2, $this->beatWrites);
     }
 

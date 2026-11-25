@@ -9,8 +9,6 @@ use App\Enums\Navigation\NavigationStatus;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Engine\RunsEnginePasses;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\TestCase;
 
 /**
@@ -21,8 +19,6 @@ final class CancelKeyScriptTest extends TestCase
     use CommitsHookRows;
     use RaisesNavigationRequests;
     use RunsEnginePasses;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
 
     private const array TABLES = [
         'agents',

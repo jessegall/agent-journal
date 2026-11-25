@@ -15,7 +15,6 @@ use Domain\Sharing\Models\ShareAudit;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\RunsTrustedCommands;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\TestShares;
 use Tests\Support\TestActors;
@@ -28,7 +27,6 @@ use Tests\Support\TestActors;
 final class PruneShareAuditTest extends TestCase
 {
     use RefreshHookDatabase;
-    use RunsTrustedCommands;
 
     public function test_rows_past_retention_go_counted_on_their_share_and_a_second_run_writes_nothing(): void
     {
@@ -92,7 +90,7 @@ final class PruneShareAuditTest extends TestCase
     {
         $this->app->forgetScopedInstances();
 
-        return $this->throughEntry(new PruneShareAuditCommand());
+        return $this->journal->throughEntry(new PruneShareAuditCommand());
     }
 
     /**

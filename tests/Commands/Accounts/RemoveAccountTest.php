@@ -21,7 +21,6 @@ use App\Values\AccountLabel;
 use App\Values\OwnerAuthority;
 use Illuminate\Support\Facades\Bus;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsKeyedCommands;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
@@ -34,7 +33,6 @@ use Tests\TestCase;
 final class RemoveAccountTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsKeyedCommands;
     use WithActiveAccount;
 
     private const string NO_DEFAULT_ACCOUNT = 'codex cannot be started now: no default account is chosen for it; '
@@ -97,6 +95,6 @@ final class RemoveAccountTest extends TestCase
             new OwnerAuthority('test'),
         );
 
-        return $this->runOnBus($command);
+        return $this->journal->run($command);
     }
 }

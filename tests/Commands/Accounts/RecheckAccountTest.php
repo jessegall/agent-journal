@@ -23,7 +23,6 @@ use App\Support\JournalCommands;
 use App\Values\OwnerAuthority;
 use Illuminate\Support\Facades\Bus;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsKeyedCommands;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
@@ -36,7 +35,6 @@ use Tests\TestCase;
 final class RecheckAccountTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsKeyedCommands;
     use WithActiveAccount;
 
     private const array TABLES = [
@@ -90,7 +88,7 @@ final class RecheckAccountTest extends TestCase
     {
         $this->actAsOwner();
 
-        return $this->runOnBus(new BeginSignInAgainCommand($this->account->id), $requestKey)
+        return $this->journal->run(new BeginSignInAgainCommand($this->account->id), $requestKey)
             ->attemptId;
     }
 

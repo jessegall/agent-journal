@@ -24,8 +24,6 @@ use Carbon\CarbonImmutable;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensPairChats;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
@@ -37,8 +35,6 @@ final class InterruptStuckTurnsTest extends TestCase
     use CommitsHookRows;
     use OpensLedgerRuntimes;
     use OpensPairChats;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
     use WritesInboxMessages;
 
     private const array TABLES = [
@@ -63,9 +59,9 @@ final class InterruptStuckTurnsTest extends TestCase
     public function test_a_turn_running_past_the_limit_is_interrupted_once(): void
     {
         [$host, $opened] = $this->openRuntime(firstMessage: 'Never ends');
-        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
         $request = DriverRequest::query()->findOrFail($opened->firstRequestId);
-        $this->asSystem(new NotifyRequestProgressCommand(
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
             $host->hostId,
             $request->id,
             $request->attempt_version,

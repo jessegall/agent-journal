@@ -15,14 +15,12 @@ use App\Support\ProfileProposal;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
 final class AskSupervisorTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsSignedPayloads;
 
     private const array TABLES = [
         'ask_hops', 'asks', 'ask_requesters', 'supervisor_changes', 'supervisor_links',

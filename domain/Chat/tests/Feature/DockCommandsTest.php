@@ -18,7 +18,6 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\OpensPairChats;
-use Tests\Support\SendsSignedPayloads;
 use Tests\Support\WritesInboxMessages;
 
 /**
@@ -30,7 +29,6 @@ final class DockCommandsTest extends TestCase
 {
     use CommitsHookRows;
     use OpensPairChats;
-    use SendsSignedPayloads;
     use WritesInboxMessages;
 
     private const array TABLES = [
@@ -79,7 +77,7 @@ final class DockCommandsTest extends TestCase
 
     public function test_an_agent_docks_lists_and_removes_a_record_and_a_retried_add_answers_its_first_receipt(): void
     {
-        $this->runCommandsAs($this->start);
+        $this->journal->relayAgentCommands($this->start);
         $add = ['type' => 'tasks.task', 'id' => $this->task->id, '--request-key' => self::KEY, '--json' => true];
 
         $this->artisan('dock:add', $add)->expectsOutputToContain('"outcome":"added"')->assertExitCode(0);
@@ -111,7 +109,7 @@ final class DockCommandsTest extends TestCase
     {
         $this->pairChat(ActorIdentity::of($this->start->agent), ActorIdentity::ofClass(Agent::class, 'another-agent'));
 
-        $this->runCommandsAs($this->start);
+        $this->journal->relayAgentCommands($this->start);
 
         $this->artisan('dock:add', [
             'type' => 'tasks.task',

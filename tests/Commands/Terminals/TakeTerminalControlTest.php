@@ -15,8 +15,6 @@ use App\Models\Projects\Host;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InspectOnlyAuthorizer;
 use Tests\Support\OpensTerminalRuntimes;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\Terminals\TakesTerminalControl;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -30,8 +28,6 @@ final class TakeTerminalControlTest extends TestCase
 {
     use CommitsHookRows;
     use OpensTerminalRuntimes;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
     use TakesTerminalControl;
 
     private const array TABLES = [
@@ -76,7 +72,7 @@ final class TakeTerminalControlTest extends TestCase
 
     public function test_a_host_that_does_not_carry_out_browser_input_is_watch_only(): void
     {
-        $runtime = $this->runtimeOn($this->enrolledHost()->hostId);
+        $runtime = $this->runtimeOn($this->journal->enrolledHost()->hostId);
         $interest = $this->openInterest($runtime);
 
         $this->assertRefusedWith(TerminalControlRefusal::WatchOnly, fn () => $this->take($runtime, $interest));

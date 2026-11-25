@@ -69,8 +69,6 @@ use Tests\Support\Agents\HostContract;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensPairChats;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\TestStartAuthority;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
@@ -87,8 +85,6 @@ final class AgentDriverLedgerTest extends TestCase
     use CommitsHookRows;
     use OpensLedgerRuntimes;
     use OpensPairChats;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
     use WritesInboxMessages;
 
     private const string NO_CONTAINER = 'The host cannot provide a container.';
@@ -121,7 +117,7 @@ final class AgentDriverLedgerTest extends TestCase
 
         // What the host's scenario reports once the turn ran in its container: the journal keeps the conversation whole.
         $applied = HostContract::of('host-start/protected-headless-claude/request-report.json')->readFor($fixedValues);
-        $this->hostCall($host, '/host/reports/request', $applied)->assertSuccessful();
+        $this->journal->hostCall($host, 'POST', '/host/reports/request', $applied)->assertSuccessful();
 
         $request = DriverRequest::query()->findOrFail($applied['request_id']);
         $this->assertSame(RequestProgress::Applied, $request->progress);
@@ -134,7 +130,7 @@ final class AgentDriverLedgerTest extends TestCase
 
         // What the host's scenario reports when it cannot carry the start out: the session ends, saying why.
         $refused = HostContract::of('host-start/protected-headless-claude/request-report-refused.json')->readFor($fixedValues);
-        $this->hostCall($host, '/host/reports/request', $refused)->assertSuccessful();
+        $this->journal->hostCall($host, 'POST', '/host/reports/request', $refused)->assertSuccessful();
 
         $request = DriverRequest::query()->findOrFail($refused['request_id']);
         $session = AgentSession::query()->findOrFail(array_search('01contractsession000000000', $fixedValues, true));
@@ -151,7 +147,11 @@ final class AgentDriverLedgerTest extends TestCase
     private function claimedProtectedStart(): array
     {
         config(['agents.protected_account_trial' => DefaultDrivers::CLAUDE_CODE]);
-        $account = Account::create(DefaultDrivers::CLAUDE_CODE, AccountLabel::from('Plain'), '/journal/accounts/01plain');
+        $account = Account::create(
+            DefaultDrivers::CLAUDE_CODE,
+            AccountLabel::from('Plain'),
+            '/journal/accounts/01plain',
+        );
         ActiveAccount::findLockedFor(DefaultDrivers::CLAUDE_CODE)->select($account);
         [$host, $opened] = $this->openRuntime('Say hello');
         // The host is a contained one, as the installation's arrangement below says.
@@ -172,24 +172,35 @@ final class AgentDriverLedgerTest extends TestCase
         SessionPolicy::query()->where('session_id', $opened->sessionId)->delete();
         SessionPolicy::create(
             AgentSession::query()->findOrFail($opened->sessionId),
-            new StartPolicy(ProfileBase::mainAgent()->defaultAccess(), new StopConditions([]), $execution, null, null, null),
+            new StartPolicy(
+                ProfileBase::mainAgent()->defaultAccess(),
+                new StopConditions([]),
+                $execution,
+                null,
+                null,
+                null,
+            ),
         );
 
         $fixedValues = [
             $opened->sessionId => '01contractsession000000000',
             $opened->runtimeId => '01contractruntime000000000',
         ];
-        $claimed = $this->hostCall(
+        $claimed = $this->journal->hostCall(
             $host,
+            'POST',
             '/host/claim?limit=10&wait=0&watched_version=0&arrangement=contained',
             [],
         )->assertSuccessful();
         $fixedValues[(string) $claimed->json('requests.0.requestId')] = '01contractrequest000000000';
         $fixedValues[(string) $claimed->json('requests.0.sessionProcessId')] = '01contractstart00000000000';
 
-        HostContract::of('host-start/protected-headless-claude/requests.json')->assertHolds((array) $claimed->json(), $fixedValues);
+        HostContract::of('host-start/protected-headless-claude/requests.json')->assertHolds(
+            (array) $claimed->json(),
+            $fixedValues,
+        );
 
-        $grant = $this->asSystem(new ClaimStartGrantCommand($host->hostId, $opened->runtimeId));
+        $grant = $this->journal->asSystem(new ClaimStartGrantCommand($host->hostId, $opened->runtimeId));
 
         HostContract::of('host-start/protected-headless-claude/grant.json')->assertHolds($grant->toArray(), [
             $grant->toArray()['token'] => 'contract-token',
@@ -199,8 +210,13 @@ final class AgentDriverLedgerTest extends TestCase
 
         // What the host's own scenario sends about the agent image: every item has its mechanism and awaits its run.
         $report = HostContract::of('host-start/protected-headless-claude/protection-report.json')->read();
-        $this->hostCall($host, '/host/reports/protection', $report)->assertSuccessful();
-        $claim = $this->hostCall($host, '/host/starts/claim', ['session_id' => $opened->sessionId])->assertSuccessful();
+        $this->journal->hostCall($host, 'POST', '/host/reports/protection', $report)->assertSuccessful();
+        $claim = $this->journal->hostCall(
+            $host,
+            'POST',
+            '/host/starts/claim',
+            ['session_id' => $opened->sessionId],
+        )->assertSuccessful();
 
         HostContract::of('host-start/protected-headless-claude/claim.json')->assertHolds((array) $claim->json(), [
             (string) $claim->json('start_key') => 'contract-start-key',
@@ -280,9 +296,9 @@ final class AgentDriverLedgerTest extends TestCase
         $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
         $unavailable = $this->deliver($opened, 'entry-gone', 'Pick GPT-6');
         $unconfirmed = $this->deliver($opened, 'only-highlighted', 'Pick GPT-6 again');
-        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
 
-        $this->hostCall($host, '/host/reports/activity', [
+        $this->journal->hostCall($host, 'POST', '/host/reports/activity', [
             'runtime_id' => $runtime->id,
             'activity' => RuntimeActivity::Running->value,
             'hold' => HoldReason::NavigationNeeded->value,
@@ -295,7 +311,7 @@ final class AgentDriverLedgerTest extends TestCase
             ->pluck('attempt_version', 'id');
 
         foreach ($ends as [$receipt, $progress, $outcome]) {
-            $this->hostCall($host, '/host/reports/request', [
+            $this->journal->hostCall($host, 'POST', '/host/reports/request', [
                 'request_id' => $receipt->requestId,
                 'attempt' => $attempts[$receipt->requestId],
                 'progress' => $progress,
@@ -333,10 +349,14 @@ final class AgentDriverLedgerTest extends TestCase
             ->whereKey([$refused->requestId, $unnamed->requestId, $missing->requestId])
             ->limit(3)
             ->pluck('attempt_version', 'id');
-        $reports = [[$refused, 'container-unavailable'], [$unnamed, 'disk-on-fire'], [$missing, 'pinned-build-missing']];
+        $reports = [
+            [$refused, 'container-unavailable'],
+            [$unnamed, 'disk-on-fire'],
+            [$missing, 'pinned-build-missing'],
+        ];
 
         foreach ($reports as [$receipt, $reason]) {
-            $this->hostCall($host, '/host/reports/request', [
+            $this->journal->hostCall($host, 'POST', '/host/reports/request', [
                 'request_id' => $receipt->requestId,
                 'attempt' => $attempts[$receipt->requestId],
                 'progress' => 'failed',
@@ -365,8 +385,14 @@ final class AgentDriverLedgerTest extends TestCase
     public function test_a_hook_call_of_an_older_generation_is_refused(): void
     {
         [$host, $opened] = $this->openRuntime();
-        $this->asSystem(
-            new NotifyRuntimeActivityCommand($host->hostId, $opened->runtimeId, RuntimeActivity::Running, HoldReason::None, 3),
+        $this->journal->asSystem(
+            new NotifyRuntimeActivityCommand(
+                $host->hostId,
+                $opened->runtimeId,
+                RuntimeActivity::Running,
+                HoldReason::None,
+                3,
+            ),
         );
 
         $this->expectException(StaleProcessGeneration::class);
@@ -392,7 +418,7 @@ final class AgentDriverLedgerTest extends TestCase
     public function test_a_signed_host_poll_returns_its_pending_requests(): void
     {
         [$host, $opened] = $this->openRuntime(firstMessage: 'Over the wire');
-        $response = $this->hostCall($host, '/host/claim?limit=5&wait=0&watched_version=0');
+        $response = $this->journal->hostCall($host, 'POST', '/host/claim?limit=5&wait=0&watched_version=0');
 
         $response->assertOk();
         $this->assertSame($opened->firstRequestId, $response->json('requests.0.requestId'));
@@ -418,8 +444,9 @@ final class AgentDriverLedgerTest extends TestCase
      */
     private function claimedScript(EnrolledHost $host, string $requestId): array
     {
-        $requests = $this->hostCall(
+        $requests = $this->journal->hostCall(
             $host,
+            'POST',
             '/host/claim?limit=10&wait=0&watched_version=0',
         )->assertOk()->json('requests');
 
@@ -437,7 +464,7 @@ final class AgentDriverLedgerTest extends TestCase
         string|null $reason,
         bool $hasCreatedNoProcess,
     ): void {
-        $this->hostCall($host, '/host/reports/request', [
+        $this->journal->hostCall($host, 'POST', '/host/reports/request', [
             'request_id' => $claimed['requestId'],
             'attempt' => $claimed['attempt'],
             'progress' => 'failed',
@@ -462,14 +489,16 @@ final class AgentDriverLedgerTest extends TestCase
     {
         $generation = AgentRuntime::query()->findOrFail($opened->runtimeId)->process_generation;
 
-        $this->asSystem(new NotifyRuntimeExitCommand($host->hostId, $opened->runtimeId, $generation, 'exit code 0'));
+        $this->journal->asSystem(
+            new NotifyRuntimeExitCommand($host->hostId, $opened->runtimeId, $generation, 'exit code 0'),
+        );
     }
 
     public function test_a_numbered_report_sent_again_is_taken_once(): void
     {
         [$host, $opened] = $this->openRuntime();
         $receipt = $this->deliver($opened, 'replayed', 'Read the notes');
-        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
 
         $this->numberedReport($host->hostId, $receipt->requestId, RequestProgress::Applying, 1);
         $this->numberedReport($host->hostId, $receipt->requestId, RequestProgress::Applied, 2);
@@ -484,10 +513,10 @@ final class AgentDriverLedgerTest extends TestCase
         [$host, $opened] = $this->openRuntime();
         $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
         $receipt = $this->deliver($opened, 'gap', 'Read the notes');
-        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
         $this->numberedReport($host->hostId, $receipt->requestId, RequestProgress::Applying, 1);
 
-        $this->asSystem(new NotifyRuntimeActivityCommand(
+        $this->journal->asSystem(new NotifyRuntimeActivityCommand(
             $host->hostId,
             $runtime->id,
             RuntimeActivity::Idle,
@@ -506,7 +535,7 @@ final class AgentDriverLedgerTest extends TestCase
     {
         [$host, $opened] = $this->openRuntime();
         $receipt = $this->deliver($opened, 'two-tabs', 'Hello');
-        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
         $this->notifyProgress($host->hostId, $receipt->requestId, RequestProgress::Failed);
         $read = DriverRequest::query()->findOrFail($receipt->requestId);
 
@@ -521,9 +550,9 @@ final class AgentDriverLedgerTest extends TestCase
     {
         [$host, $opened] = $this->openRuntime();
         $receipt = $this->deliver($opened, 'unproven', 'Hello');
-        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
         $request = DriverRequest::query()->findOrFail($receipt->requestId);
-        $this->asSystem(new NotifyRequestProgressCommand(
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
             $host->hostId,
             $request->id,
             $request->attempt_version,
@@ -557,7 +586,7 @@ final class AgentDriverLedgerTest extends TestCase
         $request = DriverRequest::query()->findOrFail($requestId);
         $runtime = AgentRuntime::query()->findOrFail($request->agent_runtime_id);
 
-        $this->asSystem(new NotifyRequestProgressCommand(
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
             $hostId,
             $request->id,
             $request->attempt_version,
@@ -636,8 +665,9 @@ final class AgentDriverLedgerTest extends TestCase
         $request = DriverRequest::query()->findOrFail($requestId);
         $report = ['request_id' => $request->id, 'attempt' => $request->attempt_version, 'actual_binding' => null];
 
-        $this->hostCall(
+        $this->journal->hostCall(
             $host,
+            'POST',
             '/host/reports/request',
             $turnEnd === null ? [...$report, 'progress' => 'staged'] : [...$report, 'turn_end' => $turnEnd],
         )->assertSuccessful();
@@ -647,7 +677,7 @@ final class AgentDriverLedgerTest extends TestCase
     {
         $request = DriverRequest::query()->findOrFail($requestId);
 
-        $this->asSystem(new NotifyRequestProgressCommand(
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
             $hostId,
             $request->id,
             $request->attempt_version,

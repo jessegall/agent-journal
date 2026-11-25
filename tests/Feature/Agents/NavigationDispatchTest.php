@@ -24,7 +24,6 @@ use Closure;
 use Tests\Fixtures\Agents\RecordedAttention;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
 use Tests\TestCase;
 
 /**
@@ -35,7 +34,6 @@ final class NavigationDispatchTest extends TestCase
 {
     use CommitsHookRows;
     use RaisesNavigationRequests;
-    use RunsTrustedCommands;
 
     private const array TABLES = [
         'users',

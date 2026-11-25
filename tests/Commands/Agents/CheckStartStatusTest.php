@@ -32,7 +32,6 @@ use PhpOption\None;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
 use Tests\TestCase;
 
 /**
@@ -44,7 +43,6 @@ final class CheckStartStatusTest extends TestCase
 {
     use CommitsHookRows;
     use OpensLedgerRuntimes;
-    use RunsTrustedCommands;
 
     private const array TABLES = [
         'agents',
@@ -76,7 +74,10 @@ final class CheckStartStatusTest extends TestCase
         $this->notifyApplied($host, $wake, self::CONVERSATION);
         $this->answerCheck($host, $check[0]->requestId, RequestProgress::Applied);
 
-        $this->assertSame([DriverOperation::ResendReadiness->value], array_map(fn (ClaimedRequest $request) => $request->operation, $check));
+        $this->assertSame(
+            [DriverOperation::ResendReadiness->value],
+            array_map(fn (ClaimedRequest $request) => $request->operation, $check),
+        );
         $this->assertSame(StartReadiness::Ready, $record->refresh()->readiness);
         $this->assertSame([$opened->firstRequestId], $this->claimedIds($host));
         $this->assertSame([], $this->claimedIds($host));
@@ -123,7 +124,10 @@ final class CheckStartStatusTest extends TestCase
         $this->travel(ReadinessCheckSweep::ANSWER_SECONDS_LIMIT + 1)->seconds();
         $this->app->make(ReadinessCheckSweep::class)->sweep(CarbonImmutable::now());
 
-        $this->assertSame(RequestProgress::Unavailable, DriverRequest::query()->findOrFail($check->requestId)->progress);
+        $this->assertSame(
+            RequestProgress::Unavailable,
+            DriverRequest::query()->findOrFail($check->requestId)->progress,
+        );
         $this->assertSame(StartReadiness::Uncertain, $record->refresh()->readiness);
     }
 
@@ -140,7 +144,7 @@ final class CheckStartStatusTest extends TestCase
         RequestProgress $progress,
         HostWakeRefusal|null $refusal = null,
     ): void {
-        $this->asSystem(new NotifyRequestProgressCommand(
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
             $host->hostId,
             $requestId,
             DriverRequest::query()->findOrFail($requestId)->attempt_version,
@@ -167,7 +171,12 @@ final class CheckStartStatusTest extends TestCase
             StartPolicy::withoutProfile(TestSelections::onHost()),
             driverType: DriverType::Headless,
         );
-        $record = SessionRequest::create($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create());
+        $record = SessionRequest::create(
+            $request,
+            TestSelections::pinOf($request),
+            ActorIdentity::system(),
+            None::create(),
+        );
         $record->startedAs($session);
         $receipt = $this->app->make(AgentWakes::class)->wake(
             new StackTarget($session->agent_id, $session->id),
@@ -190,13 +199,15 @@ final class CheckStartStatusTest extends TestCase
      */
     private function claimed(EnrolledHost $host): array
     {
-        return $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()))->requests;
+        return $this->journal->asSystem(
+            new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()),
+        )->requests;
     }
 
     private function notifyApplied(EnrolledHost $host, DriverRequest $wake, string $conversation): void
     {
         $wake->refresh();
-        $this->asSystem(new NotifyRequestProgressCommand(
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
             $host->hostId,
             $wake->id,
             $wake->attempt_version,
@@ -204,7 +215,7 @@ final class CheckStartStatusTest extends TestCase
             null,
             null,
         ));
-        $this->asSystem(new NotifyRequestProgressCommand(
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
             $host->hostId,
             $wake->id,
             $wake->attempt_version,

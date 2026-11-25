@@ -17,7 +17,6 @@ use App\Values\OutputProblem;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\Processes\StartsWithApprovedAcmePair;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -27,14 +26,16 @@ use Tests\TestCase;
 final class AssessPartOutputTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SendsSignedPayloads;
     use StartsWithApprovedAcmePair;
 
     public function test_a_valid_passing_run_gets_a_receipt_bound_to_its_revisions(): void
     {
         $part = $this->normalRun(0, self::PASSED_OUTPUT);
 
-        $receiptId = $this->runAsAgent(new AssessPartOutputCommand($part->id));
+        $receiptId = $this->journal->actAsAgentIds(
+            $this->start->agent->id,
+            $this->start->session->id,
+        )->runUnkeyed(new AssessPartOutputCommand($part->id));
 
         $receipt = ResultReceipt::query()->findOrFail($receiptId);
         $this->assertSame(AssessmentOutcome::Passed, $receipt->outcome);
@@ -47,7 +48,10 @@ final class AssessPartOutputTest extends TestCase
         Event::fake([EvidenceFoundInvalid::class]);
         $part = $this->normalRun(0, "error: disk full\n".self::PASSED_OUTPUT);
 
-        $this->assertSame('', $this->runAsAgent(new AssessPartOutputCommand($part->id)));
+        $this->assertSame(
+            '',
+            $this->journal->runAsStart($this->start, new AssessPartOutputCommand($part->id)),
+        );
 
         $this->assertContains(ProblemCode::OutputUnrecognized, $this->codesOf($part));
         $this->assertSame(0, ResultReceipt::query()->count());
@@ -58,7 +62,10 @@ final class AssessPartOutputTest extends TestCase
     {
         $part = $this->normalRun(0, self::FINDINGS_OUTPUT);
 
-        $this->runAsAgent(new AssessPartOutputCommand($part->id));
+        $this->journal->actAsAgentIds(
+            $this->start->agent->id,
+            $this->start->session->id,
+        )->runUnkeyed(new AssessPartOutputCommand($part->id));
 
         $this->assertContains(ProblemCode::OutcomeConflict, $this->codesOf($part));
     }
@@ -67,7 +74,10 @@ final class AssessPartOutputTest extends TestCase
     {
         $part = $this->normalRun(3, self::FINDINGS_OUTPUT);
 
-        $this->runAsAgent(new AssessPartOutputCommand($part->id));
+        $this->journal->actAsAgentIds(
+            $this->start->agent->id,
+            $this->start->session->id,
+        )->runUnkeyed(new AssessPartOutputCommand($part->id));
 
         $this->assertContains(ProblemCode::ExecutionError, $this->codesOf($part));
         $assessment = OutputAssessment::query()->where('part_run_id', $part->id)->sole();
@@ -78,7 +88,10 @@ final class AssessPartOutputTest extends TestCase
     {
         $part = $this->normalRun(0, self::PASSED_OUTPUT, RunMode::Evidence);
 
-        $this->runAsAgent(new AssessPartOutputCommand($part->id));
+        $this->journal->actAsAgentIds(
+            $this->start->agent->id,
+            $this->start->session->id,
+        )->runUnkeyed(new AssessPartOutputCommand($part->id));
 
         $this->assertContains(ProblemCode::NotNormalRun, $this->codesOf($part));
         $this->assertSame(0, ResultReceipt::query()->count());
@@ -87,9 +100,15 @@ final class AssessPartOutputTest extends TestCase
     public function test_a_replay_appends_an_assessment_and_supersedes_the_earlier_receipt(): void
     {
         $part = $this->normalRun(0, self::PASSED_OUTPUT);
-        $first = $this->runAsAgent(new AssessPartOutputCommand($part->id));
+        $first = $this->journal->actAsAgentIds(
+            $this->start->agent->id,
+            $this->start->session->id,
+        )->runUnkeyed(new AssessPartOutputCommand($part->id));
 
-        $second = $this->runAsAgent(new AssessPartOutputCommand($part->id));
+        $second = $this->journal->actAsAgentIds(
+            $this->start->agent->id,
+            $this->start->session->id,
+        )->runUnkeyed(new AssessPartOutputCommand($part->id));
 
         $assessments = OutputAssessment::query()
             ->where('part_run_id', $part->id)

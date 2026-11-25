@@ -22,7 +22,6 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -33,7 +32,6 @@ use Tests\TestCase;
 final class AssignedListCommandsTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsSignedPayloads;
 
     private const array TABLES = [
         'users',
@@ -75,7 +73,7 @@ final class AssignedListCommandsTest extends TestCase
             AssigneeIdentity::of($this->caller->agent),
         )->outcomes[0]->current;
         $writer->assign($plan->assignmentIdentity(), AssigneeIdentity::of($this->caller->agent));
-        $this->runCommandsAs($this->caller);
+        $this->journal->relayAgentCommands($this->caller);
 
         $this->artisan('task:assigned')
             ->expectsTable(['Id', 'Title', 'State', 'Holder', 'Reference'], [
@@ -100,20 +98,20 @@ final class AssignedListCommandsTest extends TestCase
 
     public function test_an_agent_holding_nothing_succeeds_with_an_empty_list(): void
     {
-        $this->runCommandsAs($this->caller);
+        $this->journal->relayAgentCommands($this->caller);
 
         $this->artisan('task:assigned')->expectsOutputToContain('Page 1: 0 of 0')->assertExitCode(0);
     }
 
     public function test_a_refusal_or_an_unreachable_journal_fails_without_showing_the_token(): void
     {
-        $this->runCommandsAs($this->caller, 'not-a-start-token');
+        $this->journal->relayAgentCommands($this->caller, 'not-a-start-token');
         $this->artisan('task:assigned')
             ->expectsOutputToContain('The journal refused the call (unauthenticated)')
             ->doesntExpectOutputToContain('not-a-start-token')
             ->assertExitCode(1);
 
-        $this->runCommandsAs($this->caller);
+        $this->journal->relayAgentCommands($this->caller);
         $this->artisan(
             'plan:assigned',
             ['--per-page' => 101],

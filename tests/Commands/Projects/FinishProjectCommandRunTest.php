@@ -18,7 +18,6 @@ use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -27,7 +26,6 @@ use Tests\TestCase;
 final class FinishProjectCommandRunTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsSignedPayloads;
 
     private const array TABLES = [
         'project_command_runs', 'device_grants', 'connection_audits', 'command_receipts', 'project_bindings',
@@ -79,7 +77,12 @@ final class FinishProjectCommandRunTest extends TestCase
             $project,
             Environment::create($project, 'Binding '.bin2hex(random_bytes(3))),
             $start->agent,
-            new BindingFolder('root-'.bin2hex(random_bytes(4)), '/Users/owner/shop', 'Owner laptop', bin2hex(random_bytes(8))),
+            new BindingFolder(
+                'root-'.bin2hex(random_bytes(4)),
+                '/Users/owner/shop',
+                'Owner laptop',
+                bin2hex(random_bytes(8)),
+            ),
         );
         $binding->recordPresence(new PresenceReport(
             'boot-1',
@@ -127,7 +130,7 @@ final class FinishProjectCommandRunTest extends TestCase
         array $argv,
         string $stdin = '',
     ): TestResponse {
-        return $this->signed($start, '/api/project-commands', [
+        return $this->journal->agentCall($start, 'POST', '/api/project-commands', [
             'request_key' => $requestKey,
             'binding' => $bindingId,
             'argv' => $argv,

@@ -25,8 +25,6 @@ use App\Values\OwnerAuthority;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\CountingImageVerifier;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -37,8 +35,6 @@ use Tests\TestCase;
 final class HostArrangementTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
     use WithActiveAccount;
 
     private const string FOLDER = '/work/project';
@@ -119,16 +115,19 @@ final class HostArrangementTest extends TestCase
 
     public function test_a_claim_reports_the_host_arrangement_and_one_unlike_its_enrolment_is_refused(): void
     {
-        $host = $this->enrolledHost();
+        $host = $this->journal->enrolledHost();
         $claim = '/host/claim?limit=1&wait=0&watched_version=0';
 
-        $this->hostCall($host, $claim)->assertOk();
-        $this->hostCall($host, $claim.'&arrangement=local')->assertOk();
-        $this->hostCall($host, $claim.'&arrangement=contained')
+        $this->journal->hostCall($host, 'POST', $claim)->assertOk();
+        $this->journal->hostCall($host, 'POST', $claim.'&arrangement=local')->assertOk();
+        $this->journal->hostCall($host, 'POST', $claim.'&arrangement=contained')
             ->assertStatus(409)
             ->assertJsonPath(
                 'message',
-                HostArrangementRefused::unlikeEnrollment(ArrangementType::Contained, ArrangementType::Local)->getMessage(),
+                HostArrangementRefused::unlikeEnrollment(
+                    ArrangementType::Contained,
+                    ArrangementType::Local,
+                )->getMessage(),
             );
     }
 
@@ -154,12 +153,17 @@ final class HostArrangementTest extends TestCase
 
     private function useArrangement(ArrangementType $arrangement): void
     {
-        $this->app->instance(ArrangementSetting::class, ArrangementSetting::fromConfig($arrangement->value, 'journal', '{}'));
+        $this->app->instance(
+            ArrangementSetting::class,
+            ArrangementSetting::fromConfig($arrangement->value, 'journal', '{}'),
+        );
     }
 
     private function openOn(ArrangementType $arrangement, string $driver = 'claude-code'): OpenedRuntime
     {
-        $host = $this->asSystem(new EnrollHostCommand('test host '.Str::random(6), [self::FOLDER], $arrangement));
+        $host = $this->journal->asSystem(
+            new EnrollHostCommand('test host '.Str::random(6), [self::FOLDER], $arrangement),
+        );
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
         $agent = Agent::create('Started agent '.Str::random(6), 'main-agent', $this->localProject());
         [$build, $profile, $model] = $driver === 'codex'

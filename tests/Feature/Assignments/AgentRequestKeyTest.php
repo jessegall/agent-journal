@@ -13,7 +13,6 @@ use Illuminate\Database\ConnectionInterface;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -23,7 +22,6 @@ use Tests\TestCase;
 final class AgentRequestKeyTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsSignedPayloads;
 
     private const array TABLES = [
         'users',
@@ -64,7 +62,7 @@ final class AgentRequestKeyTest extends TestCase
 
     public function test_a_failed_cli_write_prints_its_request_key_to_retry_with(): void
     {
-        $this->runCommandsAs($this->helper);
+        $this->journal->relayAgentCommands($this->helper);
 
         $this->artisan(
             'assignment:assign',
@@ -84,28 +82,20 @@ final class AgentRequestKeyTest extends TestCase
         $second = TestStart::start('main-agent');
         $other = Task::factory()->create(['title' => 'Other work']);
 
-        $this->signed(
-            $this->main,
-            '/agent/assignments/assign',
-            [
-                'record_type' => 'tasks.task',
-                'record_id' => $this->task->id,
-                'recipient_type' => 'agent',
-                'recipient_id' => $this->helper->agent->id,
-                'request_key' => self::KEY,
-            ],
-        )->assertOk();
-        $this->signed(
-            $second,
-            '/agent/assignments/assign',
-            [
-                'record_type' => 'tasks.task',
-                'record_id' => $other->id,
-                'recipient_type' => 'agent',
-                'recipient_id' => $this->helper->agent->id,
-                'request_key' => self::KEY,
-            ],
-        )->assertOk();
+        $this->journal->agentCall($this->main, 'POST', '/agent/assignments/assign', [
+            'record_type' => 'tasks.task',
+            'record_id' => $this->task->id,
+            'recipient_type' => 'agent',
+            'recipient_id' => $this->helper->agent->id,
+            'request_key' => self::KEY,
+        ])->assertOk();
+        $this->journal->agentCall($second, 'POST', '/agent/assignments/assign', [
+            'record_type' => 'tasks.task',
+            'record_id' => $other->id,
+            'recipient_type' => 'agent',
+            'recipient_id' => $this->helper->agent->id,
+            'request_key' => self::KEY,
+        ])->assertOk();
 
         $authors = $this->app->make(
             ConnectionInterface::class,
@@ -116,17 +106,13 @@ final class AgentRequestKeyTest extends TestCase
 
     public function test_a_malformed_request_key_is_refused(): void
     {
-        $this->signed(
-            $this->main,
-            '/agent/assignments/assign',
-            [
-                'record_type' => 'tasks.task',
-                'record_id' => $this->task->id,
-                'recipient_type' => 'agent',
-                'recipient_id' => $this->helper->agent->id,
-                'request_key' => 'not a key!',
-            ],
-        )
+        $this->journal->agentCall($this->main, 'POST', '/agent/assignments/assign', [
+            'record_type' => 'tasks.task',
+            'record_id' => $this->task->id,
+            'recipient_type' => 'agent',
+            'recipient_id' => $this->helper->agent->id,
+            'request_key' => 'not a key!',
+        ])
             ->assertUnprocessable();
     }
 }

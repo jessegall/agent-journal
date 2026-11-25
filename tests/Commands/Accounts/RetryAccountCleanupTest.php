@@ -21,7 +21,6 @@ use App\Values\CleanupProgress;
 use App\Values\OwnerAuthority;
 use Illuminate\Support\Facades\Bus;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsKeyedCommands;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
@@ -34,7 +33,6 @@ use Tests\TestCase;
 final class RetryAccountCleanupTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsKeyedCommands;
     use WithActiveAccount;
 
     private const array TABLES = [
@@ -95,7 +93,7 @@ final class RetryAccountCleanupTest extends TestCase
             new OwnerAuthority('test'),
         );
 
-        return $this->runOnBus($command);
+        return $this->journal->run($command);
     }
 
     private function asHost(Command $command): mixed

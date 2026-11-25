@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Route;
 use Tests\Fixtures\AgentRequests\WriteNoteController;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -20,7 +19,6 @@ use Tests\TestCase;
 final class ApiRoutesTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SendsSignedPayloads;
 
     private const string NOT_A_FIELD = 'is not a field of this call';
 
@@ -49,11 +47,11 @@ final class ApiRoutesTest extends TestCase
     {
         $unknown = ['text' => 'Hi.', 'request_key' => 'key-1', 'notebookId' => 'other'];
 
-        $this->signed($this->start, '/agent/notes/book-1/write', $unknown)
+        $this->journal->agentCall($this->start, 'POST', '/agent/notes/book-1/write', $unknown)
             ->assertStatus(422)
             ->assertJsonPath('code', 'invalid_input')
             ->assertJsonPath('details.fields.notebookId.0', self::NOT_A_FIELD);
-        $this->signed($this->start, '/agent/notes/book-1/write', ['text' => 'Hi.'])
+        $this->journal->agentCall($this->start, 'POST', '/agent/notes/book-1/write', ['text' => 'Hi.'])
             ->assertStatus(422)
             ->assertJsonPath('details.fields.request_key.0', self::KEY_REQUIRED);
     }
@@ -63,6 +61,11 @@ final class ApiRoutesTest extends TestCase
         $this->withoutExceptionHandling();
         $this->expectException(KeyedWriteWithoutReceipt::class);
 
-        $this->signed($this->start, '/agent/notes/book-1/write', ['text' => 'Hi.', 'request_key' => 'key-1']);
+        $this->journal->agentCall(
+            $this->start,
+            'POST',
+            '/agent/notes/book-1/write',
+            ['text' => 'Hi.', 'request_key' => 'key-1'],
+        );
     }
 }

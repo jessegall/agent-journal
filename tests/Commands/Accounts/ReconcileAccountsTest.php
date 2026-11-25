@@ -18,7 +18,6 @@ use App\Support\JournalCommands;
 use App\Values\OwnerAuthority;
 use Illuminate\Support\Facades\Bus;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsKeyedCommands;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
@@ -31,7 +30,6 @@ use Tests\TestCase;
 final class ReconcileAccountsTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsKeyedCommands;
     use WithActiveAccount;
 
     private const array TABLES = [
@@ -58,8 +56,8 @@ final class ReconcileAccountsTest extends TestCase
     {
         $account = $this->chooseActiveAccounts()['codex'];
         $this->actAsOwner();
-        $again = $this->runOnBus(new BeginSignInAgainCommand($account->id), 'request-again');
-        $rejoined = $this->runOnBus(new BeginSignInAgainCommand($account->id), 'request-other');
+        $again = $this->journal->run(new BeginSignInAgainCommand($account->id), 'request-again');
+        $rejoined = $this->journal->run(new BeginSignInAgainCommand($account->id), 'request-other');
 
         $this->assertSame($again->attemptId, $rejoined->attemptId);
         $this->assertSame($again->attemptId, $account->refresh()->live_writer_attempt_id);

@@ -12,8 +12,6 @@ use App\Support\EnrolledHost;
 use App\Values\MenuStep;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\TestCase;
 
 /**
@@ -24,8 +22,6 @@ final class MarkMenuEntryStaleTest extends TestCase
 {
     use CommitsHookRows;
     use RaisesNavigationRequests;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
 
     private const array TABLES = [
         'agents',
@@ -50,7 +46,9 @@ final class MarkMenuEntryStaleTest extends TestCase
     {
         $this->journal->installInboxes()->owner();
         [$host, $opened] = $this->openRuntime();
-        $stalled = DriverRequest::query()->with('runtime')->findOrFail($this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'GPT-6']))->requestId);
+        $stalled = DriverRequest::query()->with('runtime')->findOrFail(
+            $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'GPT-6']))->requestId,
+        );
         $entry = $this->entryFrom($stalled);
 
         $this->stale($host, $entry->id, $stalled->agent_runtime_id, ['Model: GPT-5']);
@@ -67,7 +65,7 @@ final class MarkMenuEntryStaleTest extends TestCase
         $this->journal->installInboxes()->owner();
         [$host, $opened] = $this->openRuntime();
 
-        $this->hostCall($host, '/host/menu-entries/01jd8x0g9m3qz6v4k2t7r00000/stale', [
+        $this->journal->hostCall($host, 'POST', '/host/menu-entries/01jd8x0g9m3qz6v4k2t7r00000/stale', [
             'runtime_id' => $opened->runtimeId,
             'operation_key' => 'stale-1',
             'reason' => NavigationReason::LabelMissing->value,
@@ -82,7 +80,7 @@ final class MarkMenuEntryStaleTest extends TestCase
      */
     private function stale(EnrolledHost $host, string $entryId, string $runtimeId, array $rows): void
     {
-        $this->hostCall($host, "/host/menu-entries/{$entryId}/stale", [
+        $this->journal->hostCall($host, 'POST', "/host/menu-entries/{$entryId}/stale", [
             'runtime_id' => $runtimeId,
             'operation_key' => 'stale-1',
             'reason' => NavigationReason::LabelMissing->value,

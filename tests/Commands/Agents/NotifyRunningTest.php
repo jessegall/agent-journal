@@ -23,8 +23,6 @@ use App\Values\OwnerAuthority;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -37,8 +35,6 @@ use Tests\TestCase;
 final class NotifyRunningTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
     use WithActiveAccount;
 
     private const array TABLES = [
@@ -130,7 +126,7 @@ final class NotifyRunningTest extends TestCase
      */
     private function signed(EnrolledHost $host, string $method, string $target, array $body = []): TestResponse
     {
-        return $this->signedHostCall($host, $method, $target, $body === [] ? '' : (string) json_encode($body));
+        return $this->journal->hostCall($host, $method, $target, $body === [] ? '' : (string) json_encode($body));
     }
 
     /**
@@ -161,6 +157,6 @@ final class NotifyRunningTest extends TestCase
 
     private function enrollHost(): EnrolledHost
     {
-        return $this->asSystem(new EnrollHostCommand('test host '.Str::random(6), [self::FOLDER]));
+        return $this->journal->asSystem(new EnrollHostCommand('test host '.Str::random(6), [self::FOLDER]));
     }
 }

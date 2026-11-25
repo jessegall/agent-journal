@@ -20,8 +20,6 @@ use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\RecordedAttention;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -32,8 +30,6 @@ final class NotifyEntryReplayedTest extends TestCase
 {
     use CommitsHookRows;
     use OpensLedgerRuntimes;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
 
     private const array TABLES = [
         'users',
@@ -75,8 +71,18 @@ final class NotifyEntryReplayedTest extends TestCase
         [$host, $opened] = $this->openRuntime();
         $replayed = ['runtime_id' => $opened->runtimeId, 'operation_key' => 'replay-1'];
 
-        $this->hostCall($host, "/host/menu-entries/{$entry->id}/replayed", $replayed)->assertNoContent();
-        $this->hostCall($host, "/host/menu-entries/{$entry->id}/replayed", $replayed)->assertNoContent();
+        $this->journal->hostCall(
+            $host,
+            'POST',
+            "/host/menu-entries/{$entry->id}/replayed",
+            $replayed,
+        )->assertNoContent();
+        $this->journal->hostCall(
+            $host,
+            'POST',
+            "/host/menu-entries/{$entry->id}/replayed",
+            $replayed,
+        )->assertNoContent();
 
         $entry = MenuEntry::query()->acrossActors()->findOrFail($entry->id);
         $this->assertSame(1, $entry->uses);

@@ -35,7 +35,6 @@ use Domain\Sharing\Tests\TestCase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -51,7 +50,6 @@ use Throwable;
 final class ReadShareTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsTrustedCommands;
     use SelectsShareTargets;
 
     private const array TABLES = [
@@ -301,7 +299,7 @@ final class ReadShareTest extends TestCase
     ): SharedPage {
         $permit = $this->app->make(ReadPermits::class)->issue($token);
 
-        return $this->throughEntry(new ReadShareCommand($permit->reference, $path, $cursor, $isHead));
+        return $this->journal->throughEntry(new ReadShareCommand($permit->reference, $path, $cursor, $isHead));
     }
 
     /**

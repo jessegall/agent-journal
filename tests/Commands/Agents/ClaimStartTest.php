@@ -28,7 +28,6 @@ use App\Values\AccountLabel;
 use App\Values\OwnerAuthority;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -41,7 +40,6 @@ use Tests\TestCase;
 final class ClaimStartTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsTrustedCommands;
     use WithActiveAccount;
 
     private const string REPORT_MISSING = 'cannot start in a container: its protection report is missing';
@@ -86,8 +84,12 @@ final class ClaimStartTest extends TestCase
     {
         $host = $this->enrollHost();
         $running = $this->open($host);
-        $this->asSystem(new ClaimStartCommand($host->hostId, $running->sessionId));
-        $second = Account::create(DefaultDrivers::CLAUDE_CODE, AccountLabel::from('Second'), '/journal/accounts/second');
+        $this->journal->asSystem(new ClaimStartCommand($host->hostId, $running->sessionId));
+        $second = Account::create(
+            DefaultDrivers::CLAUDE_CODE,
+            AccountLabel::from('Second'),
+            '/journal/accounts/second',
+        );
         $this->actAsOwner();
         $this->app->make(CommandBus::class)->run(new SwitchAccountCommand($second->id));
 
@@ -102,8 +104,8 @@ final class ClaimStartTest extends TestCase
         $host = $this->enrollHost();
         $start = $this->open($host);
 
-        $claimed = $this->asSystem(new ClaimStartCommand($host->hostId, $start->sessionId));
-        $again = $this->asSystem(new ClaimStartCommand($host->hostId, $start->sessionId));
+        $claimed = $this->journal->asSystem(new ClaimStartCommand($host->hostId, $start->sessionId));
+        $again = $this->journal->asSystem(new ClaimStartCommand($host->hostId, $start->sessionId));
 
         $this->assertNotNull($claimed);
         $this->assertNull($again);
@@ -121,7 +123,7 @@ final class ClaimStartTest extends TestCase
         $host = $this->enrollHost();
         $start = $this->open($host);
 
-        $this->assertNull($this->asSystem(new ClaimStartCommand($host->hostId, $start->sessionId)));
+        $this->assertNull($this->journal->asSystem(new ClaimStartCommand($host->hostId, $start->sessionId)));
 
         $start = $this->startOf($start);
         $this->assertSame(SessionProcessStatus::Stopped, $start->status);
@@ -129,7 +131,7 @@ final class ClaimStartTest extends TestCase
             self::REPORT_MISSING,
             (string) $start->refusal,
         );
-        $this->assertNull($this->asSystem(new ClaimStartCommand($host->hostId, $start->session_id)));
+        $this->assertNull($this->journal->asSystem(new ClaimStartCommand($host->hostId, $start->session_id)));
         $this->actAsOwner();
         $agent = $this->app->make(AgentDirectory::class)->visibleAgent($start->agent_id);
         $this->assertSame(AgentPresence::Failed, $agent->presence);
@@ -161,7 +163,7 @@ final class ClaimStartTest extends TestCase
 
     private function enrollHost(): EnrolledHost
     {
-        $host = $this->asSystem(new EnrollHostCommand('test host '.Str::random(6), [self::FOLDER]));
+        $host = $this->journal->asSystem(new EnrollHostCommand('test host '.Str::random(6), [self::FOLDER]));
         $this->actAsOwner();
 
         return $host;

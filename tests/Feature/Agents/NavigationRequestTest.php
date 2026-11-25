@@ -14,7 +14,6 @@ use App\Values\OwnerAuthority;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
 use Tests\TestCase;
 
 /**
@@ -25,7 +24,6 @@ final class NavigationRequestTest extends TestCase
 {
     use CommitsHookRows;
     use RaisesNavigationRequests;
-    use RunsTrustedCommands;
 
     private const array TABLES = [
         'agents',
@@ -73,7 +71,10 @@ final class NavigationRequestTest extends TestCase
         $navigation->markProven();
 
         $proven = NavigationRequest::query()->findOrFail($navigation->id);
-        $this->assertSame([NavigationStatus::Proven, NavigationCompletion::Goal], [$proven->status, $proven->completes]);
+        $this->assertSame(
+            [NavigationStatus::Proven, NavigationCompletion::Goal],
+            [$proven->status, $proven->completes],
+        );
         $this->assertSame(['Set model to GPT-6', 7], [$proven->proof, $proven->row_version]);
     }
 

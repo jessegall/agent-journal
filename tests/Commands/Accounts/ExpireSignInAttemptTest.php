@@ -22,7 +22,6 @@ use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Bus;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsKeyedCommands;
 use Tests\Support\TestIds;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -33,7 +32,6 @@ use Tests\TestCase;
 final class ExpireSignInAttemptTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsKeyedCommands;
     use WithActiveAccount;
 
     private const array TABLES = [
@@ -63,7 +61,7 @@ final class ExpireSignInAttemptTest extends TestCase
     {
         $this->actAsOwner();
         $begin = new BeginSignInCommand('codex', SignInMethod::OAuth);
-        $attemptId = $this->runOnBus($begin, 'new')->attemptId;
+        $attemptId = $this->journal->run($begin, 'new')->attemptId;
         $attempts = SignInAttempt::query()->withoutGlobalScopes();
         $attempts->whereKey($attemptId)->update(['expires_at' => now()->subMinute()]);
         $accountReads = [];

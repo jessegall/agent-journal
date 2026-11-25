@@ -24,15 +24,11 @@ use Tests\Fixtures\Modules\Notes\CommandMiddleware\RefusesAll;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\InstallsBuiltInProfiles;
-use Tests\Support\SendsMcpFrames;
-use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TestIds;
 
 final class WriteToolTest extends CommandBusTestCase
 {
     use InstallsBuiltInProfiles;
-    use SendsMcpFrames;
-    use SendsSignedPayloads;
 
     private const string QUOTA_REFUSAL = 'The note quota is full.';
 
@@ -69,19 +65,22 @@ final class WriteToolTest extends CommandBusTestCase
         );
 
         $note = ['text' => 'A note from either transport.', 'request_key' => 'mcp-note-1'];
-        $mcpId = $this->callMcpTool($start, 'write_note', $note)
+        $mcpId = $this->journal->mcpTool($start, 'write_note', $note)->assertOk()
             ->assertJsonPath('result.isError', false)
             ->json('result.structuredContent.note_id');
         $this->assertSame(1, $this->rowCount());
         $this->assertSame($note['text'], $this->rowText($mcpId));
 
-        $routeId = $this->signed($start, self::PATH, [...$note, 'request_key' => 'route-note-1'])
+        $routeId = $this->journal->agentCall($start, 'POST', self::PATH, [...$note, 'request_key' => 'route-note-1'])
             ->assertOk()->json('note_id');
         $this->assertSame(2, $this->rowCount());
         $this->assertSame($this->rowText($mcpId), $this->rowText($routeId));
 
-        $this->callMcpTool($start, 'write_note', $note)->assertJsonPath('result.structuredContent.note_id', $mcpId);
-        $this->signed($start, self::PATH, $note)->assertOk()->assertJsonPath('note_id', $mcpId);
+        $this->journal->mcpTool($start, 'write_note', $note)->assertOk()->assertJsonPath(
+            'result.structuredContent.note_id',
+            $mcpId,
+        );
+        $this->journal->agentCall($start, 'POST', self::PATH, $note)->assertOk()->assertJsonPath('note_id', $mcpId);
         $this->assertSame(2, $this->rowCount());
     }
 
@@ -103,7 +102,7 @@ final class WriteToolTest extends CommandBusTestCase
             MiddlewareDeclaration::around(RefuseNoteAtQuota::class, CommandScope::command(WriteNoteCommand::class)),
         );
 
-        $this->callMcpTool($start, 'write_note', ['text' => 'Over quota.', 'request_key' => 'quota-1'])
+        $this->journal->mcpTool($start, 'write_note', ['text' => 'Over quota.', 'request_key' => 'quota-1'])->assertOk()
             ->assertJsonPath('result.isError', true)
             ->assertJsonPath('result.structuredContent.code', 'conflict')
             ->assertJsonPath('result.structuredContent.message', self::QUOTA_REFUSAL);
@@ -116,7 +115,7 @@ final class WriteToolTest extends CommandBusTestCase
             MiddlewareDeclaration::around(RefusesAll::class, CommandScope::command(WriteNoteCommand::class)),
         );
 
-        $this->callMcpTool($start, 'write_note', ['text' => 'Refused.', 'request_key' => 'refusal-1'])
+        $this->journal->mcpTool($start, 'write_note', ['text' => 'Refused.', 'request_key' => 'refusal-1'])->assertOk()
             ->assertJsonPath('result.isError', true)
             ->assertJsonPath('result.structuredContent.code', 'forbidden')
             ->assertJsonPath('result.structuredContent.message', self::MIDDLEWARE_REFUSAL);
@@ -132,12 +131,12 @@ final class WriteToolTest extends CommandBusTestCase
         $this->assertFalse($tool['annotations']['destructiveHint']);
         $this->assertTrue($tool['annotations']['idempotentHint']);
 
-        $this->callMcpTool($start, 'write_note', ['text' => 'No key.'])
+        $this->journal->mcpTool($start, 'write_note', ['text' => 'No key.'])->assertOk()
             ->assertJsonPath('result.structuredContent.code', 'invalid_input');
-        $this->callMcpTool($start, 'write_note', [
+        $this->journal->mcpTool($start, 'write_note', [
             'text' => 'Long key.',
             'request_key' => str_repeat('a', RequestKey::LONGEST + 1),
-        ])->assertJsonPath('result.structuredContent.code', 'invalid_input');
+        ])->assertOk()->assertJsonPath('result.structuredContent.code', 'invalid_input');
         $this->assertSame(0, $this->rowCount());
     }
 
@@ -148,7 +147,11 @@ final class WriteToolTest extends CommandBusTestCase
         $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(TestProposals::of(
             TestProposals::profile(self::PROFILE, ProfileBase::mainAgent()),
         )));
-        $catalogue = new McpCatalogue($this->app->make(CommandRegistry::class), new CatalogueReflectorFactory(), $this->app);
+        $catalogue = new McpCatalogue(
+            $this->app->make(CommandRegistry::class),
+            new CatalogueReflectorFactory(),
+            $this->app,
+        );
         $catalogue->registerTool(WriteNoteTool::class);
         $this->app->instance(McpCatalogue::class, $catalogue);
 

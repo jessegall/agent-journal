@@ -21,8 +21,6 @@ use App\Values\DriverReceipt;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensPairChats;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
@@ -37,8 +35,6 @@ final class ClaimDriverRequestsTest extends TestCase
     use CommitsHookRows;
     use OpensLedgerRuntimes;
     use OpensPairChats;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
     use WritesInboxMessages;
 
     private const array TABLES = [
@@ -64,7 +60,9 @@ final class ClaimDriverRequestsTest extends TestCase
         [$host, $opened] = $this->openRuntime(firstMessage: 'Mine');
         [, $foreign] = $this->openRuntime(firstMessage: 'Not mine');
 
-        $claimed = $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $claimed = $this->journal->asSystem(
+            new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()),
+        );
 
         $this->assertInstanceOf(ClaimedRequests::class, $claimed);
         $this->assertSame(
@@ -103,7 +101,9 @@ final class ClaimDriverRequestsTest extends TestCase
             ));
         }
 
-        $claimed = $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $claimed = $this->journal->asSystem(
+            new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()),
+        );
 
         $this->assertCount(10, $claimed->requests);
     }
@@ -119,7 +119,9 @@ final class ClaimDriverRequestsTest extends TestCase
         $this->asOwner(new InterruptAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'interrupt-1'));
         $this->asOwner(new StopAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'stop-1'));
 
-        $claimed = $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 5, BrowserInputCapabilities::none()));
+        $claimed = $this->journal->asSystem(
+            new ClaimDriverRequestsCommand($host->hostId, 5, BrowserInputCapabilities::none()),
+        );
 
         $operations = array_map(fn ($request) => $request->operation, $claimed->requests);
         $this->assertContains(DriverOperation::Interrupt->value, $operations);

@@ -13,7 +13,6 @@ use Domain\Sharing\Models\ShareGatewayOperation;
 use Domain\Sharing\Support\ClaimedGatewayOperation;
 use Domain\Sharing\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\RunsTrustedCommands;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\TestShares;
 use Tests\Support\TestActors;
@@ -24,7 +23,6 @@ use Tests\Support\TestActors;
 final class ClaimGatewayOperationTest extends TestCase
 {
     use RefreshHookDatabase;
-    use RunsTrustedCommands;
 
     private const string HELD_OPERATION = 'A held operation is not claimed again.';
 
@@ -61,6 +59,6 @@ final class ClaimGatewayOperationTest extends TestCase
 
     private function claim(string $runId): ClaimedGatewayOperation|null
     {
-        return $this->asSystem(new ClaimGatewayOperationCommand($runId));
+        return $this->journal->asSystem(new ClaimGatewayOperationCommand($runId));
     }
 }

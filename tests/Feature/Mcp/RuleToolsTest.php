@@ -9,7 +9,6 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\HoldingRules;
-use Tests\Support\SendsMcpFrames;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -17,7 +16,6 @@ use Tests\TestCase;
 final class RuleToolsTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsMcpFrames;
 
     private const string RULE_REASON = 'A retry should return the first receipt.';
 
@@ -40,24 +38,24 @@ final class RuleToolsTest extends TestCase
         $caller = TestStart::start();
         $active = HoldingRules::create('Use a named request key.');
 
-        $proposal = $this->callMcpTool($caller, 'rules_propose', [
+        $proposal = $this->journal->mcpTool($caller, 'rules_propose', [
             'text' => 'Use the same request key on retry.',
             'reason' => 'A retry should return the first receipt.',
             'replaces_rule_id' => $active->id,
             'request_key' => 'rule-proposal',
-        ])->assertJsonPath('result.isError', false)->json('result.structuredContent.rule_id');
+        ])->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent.rule_id');
 
-        $activePage = $this->callMcpTool($caller, 'rules_list', ['state' => 'active', 'page' => 1])
+        $activePage = $this->journal->mcpTool($caller, 'rules_list', ['state' => 'active', 'page' => 1])->assertOk()
             ->assertJsonPath('result.structuredContent.cards.0.rule_id', $active->id)
             ->json('result.structuredContent');
-        $resource = $this->sendMcp($caller, 'resources/read', ['uri' => 'journal://v1/rules'])
+        $resource = $this->journal->mcpRequest($caller, 'resources/read', ['uri' => 'journal://v1/rules'])
             ->assertOk()->json('result.contents.0.text');
         $this->assertSame($activePage, json_decode($resource, true, flags: JSON_THROW_ON_ERROR));
 
-        $this->callMcpTool($caller, 'rules_list', ['state' => 'proposed'])
+        $this->journal->mcpTool($caller, 'rules_list', ['state' => 'proposed'])->assertOk()
             ->assertJsonPath('result.structuredContent.cards.0.rule_id', $proposal)
             ->assertJsonPath('result.structuredContent.cards.0.state', 'proposed');
-        $this->callMcpTool($caller, 'rules_read', ['rule_id' => $proposal])
+        $this->journal->mcpTool($caller, 'rules_read', ['rule_id' => $proposal])->assertOk()
             ->assertJsonPath('result.structuredContent.text', self::RULE_TEXT)
             ->assertJsonPath('result.structuredContent.reason', self::RULE_REASON)
             ->assertJsonPath('result.structuredContent.replaces_rule_number', $active->number);
@@ -70,14 +68,14 @@ final class RuleToolsTest extends TestCase
         $names = [];
 
         do {
-            $page = $this->sendMcp($caller, 'tools/list', $arguments)->assertOk()->json('result');
+            $page = $this->journal->mcpRequest($caller, 'tools/list', $arguments)->assertOk()->json('result');
             $names = [...$names, ...array_column($page['tools'], 'name')];
             $arguments = isset($page['nextCursor']) ? ['cursor' => $page['nextCursor']] : [];
         } while ($arguments !== []);
 
         $ruleTools = array_values(array_filter($names, fn (string $name): bool => str_starts_with($name, 'rules_')));
         $this->assertEqualsCanonicalizing(['rules_list', 'rules_read', 'rules_propose'], $ruleTools);
-        $this->sendMcp($caller, 'tools/call', [
+        $this->journal->mcpRequest($caller, 'tools/call', [
             'name' => 'rules_approve',
             'arguments' => ['rule_id' => HoldingRules::create('A rule.')->id],
         ])->assertBadRequest()->assertJsonPath('error.code', -32602);

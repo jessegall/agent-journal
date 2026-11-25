@@ -11,8 +11,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Route;
 use RuntimeException;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\TestCase;
 
 /**
@@ -23,8 +21,6 @@ use Tests\TestCase;
 final class RecordHostCallAnsweredTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
 
     private const array TABLES = ['hosts'];
 
@@ -47,13 +43,15 @@ final class RecordHostCallAnsweredTest extends TestCase
 
         Route::post(self::FAILING_ROUTE, fn () => $this->isFailing ? throw new RuntimeException(self::REASON) : [])
             ->middleware('journal.host:'.HostRouteRole::Shared->value);
-        Route::post(self::FAILING_ROUTE_ANSWERED, fn () => [])->middleware('journal.host:'.HostRouteRole::Shared->value);
+        Route::post(self::FAILING_ROUTE_ANSWERED, fn () => [])->middleware(
+            'journal.host:'.HostRouteRole::Shared->value,
+        );
     }
 
     public function test_a_host_failing_past_a_minute_shows_the_reason_and_an_answer_on_that_route_clears_it(): void
     {
-        $host = $this->enrolledHost();
-        $this->hostCall($host, self::FAILING_ROUTE)->assertServerError();
+        $host = $this->journal->enrolledHost();
+        $this->journal->hostCall($host, 'POST', self::FAILING_ROUTE)->assertServerError();
         $this->travel(2)->minutes();
 
         $alarms = $this->app->make(HostLinkAlarms::class)->current();
@@ -63,38 +61,44 @@ final class RecordHostCallAnsweredTest extends TestCase
         $this->assertStringContainsString(self::REASON, $alarms[0]);
 
         $this->isFailing = false;
-        $this->hostCall($host, self::FAILING_ROUTE)->assertSuccessful();
+        $this->journal->hostCall($host, 'POST', self::FAILING_ROUTE)->assertSuccessful();
 
         $this->assertSame([], $this->app->make(HostLinkAlarms::class)->current());
     }
 
     public function test_an_answer_on_another_route_leaves_the_failing_route_alarmed(): void
     {
-        $host = $this->enrolledHost();
-        $this->hostCall($host, self::FAILING_ROUTE)->assertServerError();
+        $host = $this->journal->enrolledHost();
+        $this->journal->hostCall($host, 'POST', self::FAILING_ROUTE)->assertServerError();
         $this->travel(2)->minutes();
 
-        $this->hostCall($host, self::ANSWERED_ROUTE)->assertSuccessful();
+        $this->journal->hostCall($host, 'POST', self::ANSWERED_ROUTE)->assertSuccessful();
 
         $this->assertCount(1, $this->app->make(HostLinkAlarms::class)->current());
     }
 
     public function test_a_failure_shorter_than_a_minute_raises_no_alarm(): void
     {
-        $host = $this->enrolledHost();
+        $host = $this->journal->enrolledHost();
 
-        $this->hostCall($host, self::FAILING_ROUTE)->assertServerError();
+        $this->journal->hostCall($host, 'POST', self::FAILING_ROUTE)->assertServerError();
 
         $this->assertSame([], $this->app->make(HostLinkAlarms::class)->current());
     }
 
     public function test_a_claim_the_journal_stopped_before_answering_raises_the_alarm_when_the_host_reports_it(): void
     {
-        $host = $this->enrolledHost();
+        $host = $this->journal->enrolledHost();
         $since = CarbonImmutable::now()->toIso8601String();
         $reported = [['route' => '/host/claim', 'status' => 500, 'reason' => self::REASON, 'since' => $since]];
 
-        $this->hostCallReporting($host, self::FAILING_ROUTE_ANSWERED, $reported)->assertSuccessful();
+        $this->journal->hostCall(
+            $host,
+            'POST',
+            self::FAILING_ROUTE_ANSWERED,
+            '{}',
+            headers: ['HTTP_X_JOURNAL_FAILED_CALLS' => json_encode($reported, JSON_THROW_ON_ERROR)],
+        )->assertSuccessful();
         $this->travel(2)->minutes();
 
         $alarms = $this->app->make(HostLinkAlarms::class)->current();
@@ -105,10 +109,23 @@ final class RecordHostCallAnsweredTest extends TestCase
 
     public function test_the_calls_a_host_reports_failed_on_its_side_are_kept_with_it(): void
     {
-        $host = $this->enrolledHost();
-        $reported = [['route' => '/host/claim', 'status' => 0, 'reason' => 'connection refused', 'since' => '2026-11-24T10:00:00Z']];
+        $host = $this->journal->enrolledHost();
+        $reported = [
+            [
+                'route' => '/host/claim',
+                'status' => 0,
+                'reason' => 'connection refused',
+                'since' => '2026-11-24T10:00:00Z',
+            ],
+        ];
 
-        $this->hostCallReporting($host, self::ANSWERED_ROUTE, $reported)->assertSuccessful();
+        $this->journal->hostCall(
+            $host,
+            'POST',
+            self::ANSWERED_ROUTE,
+            '{}',
+            headers: ['HTTP_X_JOURNAL_FAILED_CALLS' => json_encode($reported, JSON_THROW_ON_ERROR)],
+        )->assertSuccessful();
 
         $this->assertEquals($reported, Host::query()->findOrFail($host->hostId)->reported_failures?->toArray());
     }

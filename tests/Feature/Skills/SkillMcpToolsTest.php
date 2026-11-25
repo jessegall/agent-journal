@@ -19,7 +19,6 @@ use App\Values\SkillKey;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\SendsMcpFrames;
 use Tests\Support\TestActors;
 use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
@@ -31,7 +30,6 @@ final class SkillMcpToolsTest extends TestCase
 {
     use ActsAsActors;
     use CommitsHookRows;
-    use SendsMcpFrames;
 
     private const array TABLES = [
         'skill_publications',
@@ -62,10 +60,10 @@ final class SkillMcpToolsTest extends TestCase
         $this->caller->startRequest($this->app);
         $skill = $this->app->make(SkillResolver::class)->find(SkillKey::from('journal-skills'));
         $this->assertNotEmpty($skill->rendered->markdown);
-        $this->sendMcp($this->caller, 'tools/call', [
+        $this->journal->mcpRequest($this->caller, 'tools/call', [
             'name' => 'skills_show', 'arguments' => ['key' => 'journal-skills'],
         ])->assertBadRequest()->assertJsonPath('error.code', -32602);
-        $this->sendMcp($this->caller, 'tools/call', [
+        $this->journal->mcpRequest($this->caller, 'tools/call', [
             'name' => 'skills_list', 'arguments' => (object) [],
         ])->assertBadRequest()->assertJsonPath('error.code', -32602);
     }
@@ -100,7 +98,7 @@ final class SkillMcpToolsTest extends TestCase
             $this->assertNotEmpty($refusal->getMessage());
         }
 
-        $this->sendMcp($this->caller, 'tools/call', [
+        $this->journal->mcpRequest($this->caller, 'tools/call', [
             'name' => 'skills_edit',
             'arguments' => ['skill' => 'user-review-notes', 'expected_revision' => 1, 'body' => 'Other.'],
         ])->assertBadRequest()->assertJsonPath('error.code', -32602);

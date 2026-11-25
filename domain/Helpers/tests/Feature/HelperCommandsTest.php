@@ -9,9 +9,7 @@ use Domain\Helpers\Enums\JobStatus;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Tests\Support\DispatchesHelpers;
 use Domain\Helpers\Tests\TestCase;
-use Illuminate\Support\Str;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -24,11 +22,10 @@ final class HelperCommandsTest extends TestCase
 {
     use DispatchesHelpers;
     use RefreshHookDatabase;
-    use SendsSignedPayloads;
 
     public function test_a_start_without_a_model_is_refused_before_any_call(): void
     {
-        $this->runCommandsAs($this->parent);
+        $this->journal->relayAgentCommands($this->parent);
 
         $this->artisan('helper:start', [
             'profile' => 'plan-reviewer',
@@ -42,7 +39,7 @@ final class HelperCommandsTest extends TestCase
 
     public function test_a_start_prints_the_identity_job_conversation_and_models(): void
     {
-        $this->runCommandsAs($this->parent);
+        $this->journal->relayAgentCommands($this->parent);
 
         $this->artisan('helper:start', [
             'profile' => 'plan-reviewer',

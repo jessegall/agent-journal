@@ -22,7 +22,6 @@ use App\Support\ActorContext;
 use App\Values\OwnerAuthority;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\RunsTrustedCommands;
 use Tests\Support\Settings\SwitchesDomainsOff;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -34,7 +33,6 @@ use Tests\TestCase;
 final class RuntimesPageTest extends TestCase
 {
     use RefreshHookDatabase;
-    use RunsTrustedCommands;
     use SwitchesDomainsOff;
     use WithActiveAccount;
 
@@ -116,7 +114,10 @@ final class RuntimesPageTest extends TestCase
             ->assertRedirect();
 
         $again = DriverRequest::query()->where('possible_duplicate_of_id', $request->id)->sole();
-        $this->assertSame([RequestProgress::DeliveryUncertain, $request->message], [$request->fresh()?->progress, $again->message]);
+        $this->assertSame(
+            [RequestProgress::DeliveryUncertain, $request->message],
+            [$request->fresh()?->progress, $again->message],
+        );
     }
 
     public function test_a_refused_recovery_is_shown_on_the_page(): void
@@ -161,7 +162,7 @@ final class RuntimesPageTest extends TestCase
 
     private function openRuntime(): void
     {
-        $host = $this->throughEntry(new EnrollHostCommand('test host', ['/work/project']));
+        $host = $this->journal->throughEntry(new EnrollHostCommand('test host', ['/work/project']));
         $agent = Agent::create('Driven agent', 'main-agent', $this->localProject());
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
         $this->app->make(CommandBus::class)->run(new OpenAgentRuntimeCommand(

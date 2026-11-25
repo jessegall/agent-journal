@@ -23,7 +23,6 @@ use App\Values\NavigationAnswer;
 use App\Values\OwnerAuthority;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
 use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
@@ -34,7 +33,6 @@ final class AbandonNavigationTest extends TestCase
 {
     use CommitsHookRows;
     use RaisesNavigationRequests;
-    use RunsTrustedCommands;
 
     private const array TABLES = [
         'users',
@@ -74,7 +72,10 @@ final class AbandonNavigationTest extends TestCase
     {
         $navigation = $this->answered();
 
-        $this->asAgent($this->main, new AbandonNavigationCommand($navigation->id, $navigation->row_version, 'no such model'));
+        $this->asAgent(
+            $this->main,
+            new AbandonNavigationCommand($navigation->id, $navigation->row_version, 'no such model'),
+        );
 
         $navigation->refresh();
         $this->assertSame(

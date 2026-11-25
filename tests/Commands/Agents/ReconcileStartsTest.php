@@ -26,7 +26,6 @@ use App\Support\OpenedRuntime;
 use App\Values\OwnerAuthority;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -38,7 +37,6 @@ use Tests\TestCase;
 final class ReconcileStartsTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsTrustedCommands;
     use WithActiveAccount;
 
     private const array TABLES = [
@@ -81,14 +79,14 @@ final class ReconcileStartsTest extends TestCase
     {
         $host = $this->enrollHost();
         $start = $this->open($host);
-        $this->asSystem(new ClaimStartCommand($host->hostId, $start->sessionId));
+        $this->journal->asSystem(new ClaimStartCommand($host->hostId, $start->sessionId));
         $key = $this->startOf($start)->start_key;
 
-        $this->asSystem(new ReconcileStartsCommand($host->hostId, []));
+        $this->journal->asSystem(new ReconcileStartsCommand($host->hostId, []));
 
         $this->assertSame([$key], SessionProcess::resolveUnresolvedKeysOf($host->hostId));
 
-        $this->asSystem(new ReconcileStartsCommand($host->hostId, [$key]));
+        $this->journal->asSystem(new ReconcileStartsCommand($host->hostId, [$key]));
 
         $this->assertSame([], SessionProcess::resolveUnresolvedKeysOf($host->hostId));
         $this->assertFalse(AgentSession::query()->findOrFail($start->sessionId)->isActive());
@@ -123,7 +121,7 @@ final class ReconcileStartsTest extends TestCase
 
     private function enrollHost(): EnrolledHost
     {
-        $host = $this->asSystem(new EnrollHostCommand('test host '.Str::random(6), [self::FOLDER]));
+        $host = $this->journal->asSystem(new EnrollHostCommand('test host '.Str::random(6), [self::FOLDER]));
         $this->actAsOwner();
 
         return $host;

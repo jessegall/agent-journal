@@ -10,8 +10,6 @@ use App\Models\Drivers\DriverRequest;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Engine\RunsEnginePasses;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\TestCase;
 
 /**
@@ -22,8 +20,6 @@ final class InterruptNavigationTest extends TestCase
     use CommitsHookRows;
     use RaisesNavigationRequests;
     use RunsEnginePasses;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
 
     private const array TABLES = [
         'agents',
@@ -47,8 +43,8 @@ final class InterruptNavigationTest extends TestCase
         $stalled = DriverRequest::query()->with('runtime')->findOrFail($receipt->requestId);
         $navigation = $this->raise($stalled, 'raise-1');
 
-        $this->hostCall($host, "/host/navigation/{$navigation->id}/interrupt")->assertNoContent();
-        $this->hostCall($host, "/host/navigation/{$navigation->id}/interrupt")->assertNoContent();
+        $this->journal->hostCall($host, 'POST', "/host/navigation/{$navigation->id}/interrupt")->assertNoContent();
+        $this->journal->hostCall($host, 'POST', "/host/navigation/{$navigation->id}/interrupt")->assertNoContent();
 
         $this->assertSame(NavigationStatus::Interrupted, $navigation->fresh()?->status);
         $this->assertSame(HoldReason::NeedsAttention, $stalled->fresh()?->hold_reason);

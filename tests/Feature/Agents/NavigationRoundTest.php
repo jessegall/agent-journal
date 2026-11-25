@@ -24,8 +24,6 @@ use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\RecordedAttention;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\TestCase;
 
 /**
@@ -36,8 +34,6 @@ final class NavigationRoundTest extends TestCase
 {
     use CommitsHookRows;
     use RaisesNavigationRequests;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
 
     private const string SAVED_EVIDENCE = 'proven, saved as menu entry %s';
 
@@ -78,7 +74,11 @@ final class NavigationRoundTest extends TestCase
 
         $this->assertSame($first->id, $again->id);
         $claimed = collect(
-            $this->hostCall($host, '/host/claim?limit=10&wait=0&watched_version=0')->assertOk()->json('requests'),
+            $this->journal->hostCall(
+                $host,
+                'POST',
+                '/host/claim?limit=10&wait=0&watched_version=0',
+            )->assertOk()->json('requests'),
         )
             ->firstWhere('requestId', $first->id);
         $this->assertSame(['navigate', $navigation->id, ['down']], [
@@ -148,7 +148,7 @@ final class NavigationRoundTest extends TestCase
     {
         [$host, $navigation] = $this->stalled();
         $reported = $this->append($navigation, NavigationRound::keys($navigation->id, 2, 7, [NavigationKey::Esc]));
-        $this->hostCall($host, '/host/claim?limit=10&wait=0&watched_version=0')->assertOk();
+        $this->journal->hostCall($host, 'POST', '/host/claim?limit=10&wait=0&watched_version=0')->assertOk();
         $queued = $this->append($navigation, NavigationRound::keys($navigation->id, 3, 7, [NavigationKey::Esc]));
 
         $this->app->make(DriverRequestEndings::class)->cancelNavigation($navigation);
@@ -248,9 +248,13 @@ final class NavigationRoundTest extends TestCase
     /**
      * @param  list<array<string, mixed>>  $steps
      */
-    private function notify(EnrolledHost $host, DriverRequest $round, bool $isProofSeen, array $steps = []): TestResponse
-    {
-        return $this->hostCall($host, '/host/reports/request', [
+    private function notify(
+        EnrolledHost $host,
+        DriverRequest $round,
+        bool $isProofSeen,
+        array $steps = [],
+    ): TestResponse {
+        return $this->journal->hostCall($host, 'POST', '/host/reports/request', [
             'request_id' => $round->id,
             'attempt' => $round->fresh()?->attempt_version,
             'progress' => 'applied',

@@ -33,8 +33,6 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -48,8 +46,6 @@ use Tests\TestCase;
 final class HostStartsTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
     use WithActiveAccount;
 
     private const array TABLES = [
@@ -96,7 +92,10 @@ final class HostStartsTest extends TestCase
 
         $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])->assertStatus(409);
 
-        $this->assertSame(SessionProcessStatus::Pending, SessionProcess::query()->withoutGlobalScopes()->sole()->status);
+        $this->assertSame(
+            SessionProcessStatus::Pending,
+            SessionProcess::query()->withoutGlobalScopes()->sole()->status,
+        );
     }
 
     public function test_the_claim_carries_the_checked_recipe_for_the_account_folder(): void
@@ -223,7 +222,10 @@ final class HostStartsTest extends TestCase
 
         $this->signed($host, 'POST', '/host/starts/reconcile', ['stopped' => [$key]])
             ->assertJson(['accounts_changed' => 1]);
-        $this->assertSame(SessionProcessStatus::Stopped, SessionProcess::query()->withoutGlobalScopes()->sole()->status);
+        $this->assertSame(
+            SessionProcessStatus::Stopped,
+            SessionProcess::query()->withoutGlobalScopes()->sole()->status,
+        );
     }
 
     // A session its restarted host no longer serves is stopped by itself, and the pages hear it.
@@ -252,7 +254,10 @@ final class HostStartsTest extends TestCase
         $this->call('POST', '/host/starts/claim', content: $body)->assertUnauthorized();
         $bearerOnly = ['HTTP_AUTHORIZATION' => "Bearer {$host->secret}"];
         $this->call('POST', '/host/starts/claim', server: $bearerOnly, content: $body)->assertUnauthorized();
-        $this->assertSame(SessionProcessStatus::Pending, SessionProcess::query()->withoutGlobalScopes()->sole()->status);
+        $this->assertSame(
+            SessionProcessStatus::Pending,
+            SessionProcess::query()->withoutGlobalScopes()->sole()->status,
+        );
     }
 
     /**
@@ -260,7 +265,7 @@ final class HostStartsTest extends TestCase
      */
     private function signed(EnrolledHost $host, string $method, string $target, array $body = []): TestResponse
     {
-        return $this->signedHostCall($host, $method, $target, $body === [] ? '' : (string) json_encode($body));
+        return $this->journal->hostCall($host, $method, $target, $body === [] ? '' : (string) json_encode($body));
     }
 
     /**
@@ -291,6 +296,6 @@ final class HostStartsTest extends TestCase
 
     private function enrollHost(): EnrolledHost
     {
-        return $this->asSystem(new EnrollHostCommand('test host '.Str::random(6), [self::FOLDER]));
+        return $this->journal->asSystem(new EnrollHostCommand('test host '.Str::random(6), [self::FOLDER]));
     }
 }

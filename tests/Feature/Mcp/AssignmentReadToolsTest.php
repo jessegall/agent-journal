@@ -20,7 +20,6 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\SendsMcpFrames;
 use Tests\TestCase;
 
 /**
@@ -29,7 +28,6 @@ use Tests\TestCase;
 final class AssignmentReadToolsTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsMcpFrames;
 
     private const array TABLES = [
         'users',
@@ -69,11 +67,11 @@ final class AssignmentReadToolsTest extends TestCase
             AssigneeIdentity::of($this->caller->agent),
         )->outcomes[0]->current;
 
-        $result = $this->callMcpTool(
+        $result = $this->journal->mcpTool(
             $this->caller,
             'assignments_read',
             ['record_type' => 'tasks.task', 'record_id' => $task->id],
-        )
+        )->assertOk()
             ->assertJsonPath('result.isError', false)
             ->json('result.structuredContent');
 
@@ -85,7 +83,11 @@ final class AssignmentReadToolsTest extends TestCase
     {
         $task = Task::factory()->create(['title' => 'Nobody holds this']);
 
-        $this->callMcpTool($this->caller, 'assignments_read', ['record_type' => 'tasks.task', 'record_id' => $task->id])
+        $this->journal->mcpTool(
+            $this->caller,
+            'assignments_read',
+            ['record_type' => 'tasks.task', 'record_id' => $task->id],
+        )->assertOk()
             ->assertJsonPath('result.isError', false)
             ->assertJsonPath('result.structuredContent.holder', null);
     }
@@ -93,11 +95,11 @@ final class AssignmentReadToolsTest extends TestCase
     public function test_an_absent_record_and_an_unregistered_type_answer_record_unavailable(): void
     {
         foreach (['tasks.task', 'nothing.here'] as $type) {
-            $this->callMcpTool(
+            $this->journal->mcpTool(
                 $this->caller,
                 'assignments_read',
                 ['record_type' => $type, 'record_id' => (string) Str::ulid()],
-            )
+            )->assertOk()
                 ->assertJsonPath('result.isError', true)
                 ->assertJsonPath('result.structuredContent.code', 'record_unavailable');
         }
@@ -131,26 +133,26 @@ final class AssignmentReadToolsTest extends TestCase
             ->andReturn(new AssigneeList([], null));
         $this->app->scoped(AssigneeResolver::class, fn (): AssigneeResolver => $resolver);
 
-        $first = $this->callMcpTool(
+        $first = $this->journal->mcpTool(
             $this->caller,
             'assignees_list',
             ['type' => 'agent', 'after_id' => $afterId, 'limit' => 20],
-        )->json('result.structuredContent');
+        )->assertOk()->json('result.structuredContent');
         $this->assertSame([['type' => 'agent', 'id' => $nextAfterId, 'name' => 'Worker']], $first['assignees']);
         $this->assertSame(['type', 'continuation'], array_keys($first['next_actions'][0]['arguments']));
 
-        $last = $this->callMcpTool(
+        $last = $this->journal->mcpTool(
             $this->caller,
             'assignees_list',
             $first['next_actions'][0]['arguments'],
-        )->json('result.structuredContent');
+        )->assertOk()->json('result.structuredContent');
         $this->assertSame([], $last['assignees']);
         $this->assertSame([], $last['next_actions']);
     }
 
     public function test_a_page_argument_is_invalid_input(): void
     {
-        $this->callMcpTool($this->caller, 'assignees_list', ['type' => 'agent', 'page' => 2])
+        $this->journal->mcpTool($this->caller, 'assignees_list', ['type' => 'agent', 'page' => 2])->assertOk()
             ->assertJsonPath('result.isError', true)
             ->assertJsonPath('result.structuredContent.code', 'invalid_input');
     }

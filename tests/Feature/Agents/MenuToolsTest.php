@@ -13,8 +13,6 @@ use App\Values\MenuStep;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsMcpFrames;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -26,8 +24,6 @@ final class MenuToolsTest extends TestCase
 {
     use CommitsHookRows;
     use RaisesNavigationRequests;
-    use RunsTrustedCommands;
-    use SendsMcpFrames;
 
     private const array TABLES = [
         'agents',
@@ -60,10 +56,10 @@ final class MenuToolsTest extends TestCase
         $entry = $this->entryOf('owner');
         $entry->markStaleOn('2.1.323', 'label-missing', ['Model: <redacted>']);
 
-        $listed = $this->callMcpTool($this->caller, 'menu_list')
+        $listed = $this->journal->mcpTool($this->caller, 'menu_list')->assertOk()
             ->assertJsonPath('result.isError', false)
             ->json('result.structuredContent.cards');
-        $shown = $this->callMcpTool($this->caller, 'menu_show', ['entry' => $entry->id])
+        $shown = $this->journal->mcpTool($this->caller, 'menu_show', ['entry' => $entry->id])->assertOk()
             ->assertJsonPath('result.isError', false)
             ->json('result.structuredContent');
 
@@ -79,17 +75,17 @@ final class MenuToolsTest extends TestCase
     {
         $ids = array_map(fn (int $count) => $this->entryOf('owner')->id, range(1, 51));
 
-        $answer = $this->callMcpTool($this->caller, 'menu_list')->json('result.structuredContent');
+        $answer = $this->journal->mcpTool($this->caller, 'menu_list')->assertOk()->json('result.structuredContent');
         $total = $answer['total'];
         $listed = array_column($answer['cards'], 'id');
 
         for ($read = 1; ($answer['next_actions'] ?? []) !== [] && $read < 10; $read++) {
             $next = $answer['next_actions'][0];
-            $answer = $this->callMcpTool(
+            $answer = $this->journal->mcpTool(
                 $this->caller,
                 $next['tool'],
                 $next['arguments'],
-            )->json('result.structuredContent');
+            )->assertOk()->json('result.structuredContent');
             $listed = [...$listed, ...array_column($answer['cards'], 'id')];
         }
 
@@ -103,9 +99,12 @@ final class MenuToolsTest extends TestCase
     {
         $entry = $this->entryOf('someone-else');
 
-        $this->callMcpTool($this->caller, 'menu_show', ['entry' => $entry->id])
+        $this->journal->mcpTool($this->caller, 'menu_show', ['entry' => $entry->id])->assertOk()
             ->assertJsonPath('result.isError', true);
-        $listed = $this->callMcpTool($this->caller, 'menu_list')->json('result.structuredContent.cards');
+        $listed = $this->journal->mcpTool(
+            $this->caller,
+            'menu_list',
+        )->assertOk()->json('result.structuredContent.cards');
         $this->assertSame([], $listed);
     }
 

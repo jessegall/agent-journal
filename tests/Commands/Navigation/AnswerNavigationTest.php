@@ -22,7 +22,6 @@ use App\Values\NavigationAnswer;
 use App\Values\OwnerAuthority;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
 use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
@@ -35,7 +34,6 @@ final class AnswerNavigationTest extends TestCase
 {
     use CommitsHookRows;
     use RaisesNavigationRequests;
-    use RunsTrustedCommands;
 
     private const array TABLES = [
         'users',

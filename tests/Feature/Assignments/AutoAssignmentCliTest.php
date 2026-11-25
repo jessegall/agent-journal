@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Artisan;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -24,7 +23,6 @@ use Tests\TestCase;
 final class AutoAssignmentCliTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsSignedPayloads;
 
     private const array TABLES = [
         'users',
@@ -57,7 +55,7 @@ final class AutoAssignmentCliTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->main = TestStart::start('main-agent');
         $this->worker = TestStart::start('writing-helper');
-        $this->runCommandsAs($this->main);
+        $this->journal->relayAgentCommands($this->main);
     }
 
     public function test_a_main_agent_enables_named_tasks_by_number_and_shows_the_status(): void

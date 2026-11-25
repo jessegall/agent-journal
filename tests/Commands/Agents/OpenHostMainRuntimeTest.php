@@ -14,8 +14,6 @@ use Illuminate\Testing\TestResponse;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensPairChats;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
@@ -28,8 +26,6 @@ final class OpenHostMainRuntimeTest extends TestCase
     use CommitsHookRows;
     use OpensLedgerRuntimes;
     use OpensPairChats;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
     use WritesInboxMessages;
 
     private const array TABLES = [
@@ -67,7 +63,10 @@ final class OpenHostMainRuntimeTest extends TestCase
         $opened = $this->open($host, $after)->assertCreated();
 
         $runtime = AgentRuntime::query()->findOrFail($opened->json('runtime_id'));
-        $this->assertSame([$host->hostId, $opened->json('session_id')], [$runtime->host_id, $runtime->agent_session_id]);
+        $this->assertSame(
+            [$host->hostId, $opened->json('session_id')],
+            [$runtime->host_id, $runtime->agent_session_id],
+        );
         $main = Inbox::findMain()->id;
         $this->assertNotNull(InboxMember::findActive($main, ActorIdentity::of($after)));
         $this->assertNull(InboxMember::findActive($main, ActorIdentity::of($before)));
@@ -75,7 +74,7 @@ final class OpenHostMainRuntimeTest extends TestCase
 
     private function open(EnrolledHost $host, Agent $agent): TestResponse
     {
-        return $this->hostCall($host, '/host/runtimes', [
+        return $this->journal->hostCall($host, 'POST', '/host/runtimes', [
             'agent_id' => $agent->id,
             'folder' => self::FOLDER,
             'driver' => 'claude-code',

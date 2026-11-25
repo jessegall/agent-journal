@@ -32,7 +32,6 @@ use PhpOption\None;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
 use Tests\TestCase;
 
 /**
@@ -44,7 +43,6 @@ final class StartIdentityTest extends TestCase
 {
     use CommitsHookRows;
     use OpensLedgerRuntimes;
-    use RunsTrustedCommands;
 
     private const array TABLES = [
         'agents',
@@ -76,7 +74,10 @@ final class StartIdentityTest extends TestCase
 
         $this->assertSame([$opened->firstRequestId], $this->claimedIds($host));
         $this->assertSame([], $this->claimedIds($host));
-        $this->assertSame([StartReadiness::Ready, self::CONVERSATION], [$record->refresh()->readiness, $record->native_id]);
+        $this->assertSame(
+            [StartReadiness::Ready, self::CONVERSATION],
+            [$record->refresh()->readiness, $record->native_id],
+        );
     }
 
     public function test_only_the_initial_wake_of_a_preparing_start_is_claimed_as_its_bootstrap(): void
@@ -88,8 +89,17 @@ final class StartIdentityTest extends TestCase
         $after = $this->claimed($host);
 
         $pendingWork = $this->app->make(AgentTexts::class)->render(AgentText::of('core.drivers.pending_work'));
-        $this->assertSame([[$wake->id, true, $pendingWork]], array_map(fn (ClaimedRequest $request) => [$request->requestId, $request->shouldBootstrap, $request->message], $bootstrap));
-        $this->assertSame([[$opened->firstRequestId, false]], array_map(fn (ClaimedRequest $request) => [$request->requestId, $request->shouldBootstrap], $after));
+        $this->assertSame(
+            [[$wake->id, true, $pendingWork]],
+            array_map(
+                fn (ClaimedRequest $request) => [$request->requestId, $request->shouldBootstrap, $request->message],
+                $bootstrap,
+            ),
+        );
+        $this->assertSame(
+            [[$opened->firstRequestId, false]],
+            array_map(fn (ClaimedRequest $request) => [$request->requestId, $request->shouldBootstrap], $after),
+        );
     }
 
     public function test_a_failed_bootstrap_leaves_the_start_holding_its_message(): void
@@ -98,7 +108,7 @@ final class StartIdentityTest extends TestCase
         $this->claimedIds($host);
         $wake->refresh();
 
-        $this->asSystem(new NotifyRequestProgressCommand(
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
             $host->hostId,
             $wake->id,
             $wake->attempt_version,
@@ -160,7 +170,7 @@ final class StartIdentityTest extends TestCase
         RequestProgress $progress,
         HostWakeRefusal|null $refusal = null,
     ): void {
-        $this->asSystem(new NotifyRequestProgressCommand(
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
             $host->hostId,
             $requestId,
             DriverRequest::query()->findOrFail($requestId)->attempt_version,
@@ -187,7 +197,12 @@ final class StartIdentityTest extends TestCase
             StartPolicy::withoutProfile(TestSelections::onHost()),
             driverType: DriverType::Headless,
         );
-        $record = SessionRequest::create($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create());
+        $record = SessionRequest::create(
+            $request,
+            TestSelections::pinOf($request),
+            ActorIdentity::system(),
+            None::create(),
+        );
         $record->startedAs($session);
         $receipt = $this->app->make(AgentWakes::class)->wake(
             new StackTarget($session->agent_id, $session->id),
@@ -210,13 +225,15 @@ final class StartIdentityTest extends TestCase
      */
     private function claimed(EnrolledHost $host): array
     {
-        return $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()))->requests;
+        return $this->journal->asSystem(
+            new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()),
+        )->requests;
     }
 
     private function notifyApplied(EnrolledHost $host, DriverRequest $wake, string $conversation): void
     {
         $wake->refresh();
-        $this->asSystem(new NotifyRequestProgressCommand(
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
             $host->hostId,
             $wake->id,
             $wake->attempt_version,
@@ -224,7 +241,7 @@ final class StartIdentityTest extends TestCase
             null,
             null,
         ));
-        $this->asSystem(new NotifyRequestProgressCommand(
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
             $host->hostId,
             $wake->id,
             $wake->attempt_version,

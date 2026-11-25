@@ -14,8 +14,6 @@ use Domain\Rules\RulesDomain;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\SendsMcpFrames;
-use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -28,8 +26,6 @@ use Tests\TestCase;
 final class DeclaredPlansAndRulesSearchTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsMcpFrames;
-    use SendsSignedPayloads;
 
     private const array TABLES = [
         'users', 'plans', 'rules', 'agents', 'agent_sessions', 'session_tokens', 'agent_stacks', 'hook_calls',
@@ -72,12 +68,12 @@ final class DeclaredPlansAndRulesSearchTest extends TestCase
     {
         $plan = Plan::factory()->create(['title' => 'One search across domain declarations']);
 
-        $search = $this->callMcpTool($this->caller, 'search', ['query' => "plan {$plan->number}"])
+        $search = $this->journal->mcpTool($this->caller, 'search', ['query' => "plan {$plan->number}"])->assertOk()
             ->assertJsonPath('result.structuredContent.direct_open.reference.id', $plan->id)
             ->assertJsonPath('result.structuredContent.direct_open.open.tool', 'plans_read');
         $open = $search->json('result.structuredContent.direct_open.open');
 
-        $this->callMcpTool($this->caller, $open['tool'], $open['arguments'])
+        $this->journal->mcpTool($this->caller, $open['tool'], $open['arguments'])->assertOk()
             ->assertJsonPath('result.isError', false)
             ->assertJsonPath('result.structuredContent.plan_id', $plan->id);
     }
@@ -88,7 +84,7 @@ final class DeclaredPlansAndRulesSearchTest extends TestCase
      */
     private function idsOf(string $path, array $arguments): array
     {
-        $hits = $this->callMcpTool($this->caller, 'search', $arguments)->json($path);
+        $hits = $this->journal->mcpTool($this->caller, 'search', $arguments)->assertOk()->json($path);
 
         return array_map(fn (array $hit): string => $hit['reference']['id'], $hits);
     }

@@ -28,7 +28,6 @@ use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\ActsAsActors;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\RunsCommandsAsStart;
 use Tests\TestCase;
 
 /**
@@ -39,7 +38,6 @@ final class SettleSampleTest extends TestCase
 {
     use ActsAsActors;
     use RefreshHookDatabase;
-    use RunsCommandsAsStart;
 
     private TestStart $start;
 
@@ -51,14 +49,20 @@ final class SettleSampleTest extends TestCase
 
         ProcessOutputDisk::fake();
         $this->start = TestStart::start();
-        $this->requestId = $this->runAsAgent(new OpenCommandRequestCommand(
+        $this->requestId = $this->journal->actAsAgentIds(
+            $this->start->agent->id,
+            $this->start->session->id,
+        )->runUnkeyed(new OpenCommandRequestCommand(
             'acme verify',
             str_repeat('a', 64),
             'acme verify',
             sys_get_temp_dir(),
             RequestHoldReason::UnknownCommand,
         ));
-        $this->runAsAgent(new ProposeCommandRuleCommand($this->requestId, 'request-1', AcmeDeclarations::proposedVerify()));
+        $this->journal->runAsStart(
+            $this->start,
+            new ProposeCommandRuleCommand($this->requestId, 'request-1', AcmeDeclarations::proposedVerify()),
+        );
     }
 
     public function test_the_approved_sample_runs_once_and_the_request_awaits_proof_with_the_run(): void
@@ -66,11 +70,20 @@ final class SettleSampleTest extends TestCase
         $permitId = $this->asUser($this->approval());
         $this->assertSame(RequestStatus::ReadyForSample, $this->request()->status);
 
-        $runId = $this->runAsAgent(new StartSampleCommand($this->requestId, $permitId, 'first'));
-        $this->assertSame($runId, $this->runAsAgent(new StartSampleCommand($this->requestId, $permitId, 'first')));
+        $runId = $this->journal->runAsStart(
+            $this->start,
+            new StartSampleCommand($this->requestId, $permitId, 'first'),
+        );
+        $this->assertSame(
+            $runId,
+            $this->journal->runAsStart($this->start, new StartSampleCommand($this->requestId, $permitId, 'first')),
+        );
         $this->assertSame(RequestStatus::CapturingSample, $this->request()->status);
         $this->assertThrows(
-            fn () => $this->runAsAgent(new StartSampleCommand($this->requestId, $permitId, 'second')),
+            fn () => $this->journal->runAsStart(
+                $this->start,
+                new StartSampleCommand($this->requestId, $permitId, 'second'),
+            ),
             SampleRefused::class,
         );
 
@@ -86,7 +99,10 @@ final class SettleSampleTest extends TestCase
     public function test_a_failed_capture_returns_the_request_to_the_owner(): void
     {
         $permitId = $this->asUser($this->approval());
-        $runId = $this->runAsAgent(new StartSampleCommand($this->requestId, $permitId, 'first'));
+        $runId = $this->journal->runAsStart(
+            $this->start,
+            new StartSampleCommand($this->requestId, $permitId, 'first'),
+        );
 
         $part = $this->part($runId);
         $part->start('host', 1);
@@ -103,7 +119,10 @@ final class SettleSampleTest extends TestCase
 
     private function settle(): SampleOutcome
     {
-        return $this->runAsAgent(new SettleSampleCommand($this->requestId));
+        return $this->journal->actAsAgentIds(
+            $this->start->agent->id,
+            $this->start->session->id,
+        )->runUnkeyed(new SettleSampleCommand($this->requestId));
     }
 
     private function endRun(string $runId, int $status): void

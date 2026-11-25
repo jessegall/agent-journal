@@ -32,7 +32,6 @@ use PhpOption\None;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\RunsTrustedCommands;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -45,7 +44,6 @@ use Tests\TestCase;
 final class SessionCleanupTest extends TestCase
 {
     use RefreshHookDatabase;
-    use RunsTrustedCommands;
 
     private const array ALL_STEPS = [CleanupStep::Container, CleanupStep::Network, CleanupStep::Runtime];
 
@@ -118,7 +116,13 @@ final class SessionCleanupTest extends TestCase
         $request = new StartRequest(
             $start->session->start_request_id,
             $start->agent->id,
-            SelectedDriver::resolve('claude-code', ModelSelection::named('claude-opus-5-5'), null, null, $this->app->make(DriverCatalogue::class)),
+            SelectedDriver::resolve(
+                'claude-code',
+                ModelSelection::named('claude-opus-5-5'),
+                null,
+                null,
+                $this->app->make(DriverCatalogue::class),
+            ),
             StartOriginType::OwnerRequest,
             new RecordIdentity('helpers.helper-job', '01m7wgahp0n7766x1e1ta8ehew'),
             null,
@@ -127,7 +131,12 @@ final class SessionCleanupTest extends TestCase
             StartPolicy::withoutProfile(TestSelections::onHost()),
             driverType: DriverType::Headless,
         );
-        SessionRequest::create($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create())->startedAs($start->session);
+        SessionRequest::create(
+            $request,
+            TestSelections::pinOf($request),
+            ActorIdentity::system(),
+            None::create(),
+        )->startedAs($start->session);
         SessionPolicy::create($start->session, $request->policy);
 
         return $start;
@@ -141,7 +150,7 @@ final class SessionCleanupTest extends TestCase
 
     private function notify(TestStart $start, CleanupReport $report): CleanupStatus
     {
-        return $this->asSystem(new NotifyCleanupCommand('host-1', $start->session->id, $report));
+        return $this->journal->asSystem(new NotifyCleanupCommand('host-1', $start->session->id, $report));
     }
 
     private function cleanupOf(TestStart $start): SessionCleanup

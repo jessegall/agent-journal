@@ -10,8 +10,6 @@ use App\Enums\Drivers\DriverOperation;
 use App\Models\Projects\Host;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensTerminalRuntimes;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\Terminals\TakesTerminalControl;
 use Tests\TestCase;
 
@@ -22,8 +20,6 @@ final class CancelPrivateEntryTest extends TestCase
 {
     use CommitsHookRows;
     use OpensTerminalRuntimes;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
     use TakesTerminalControl;
 
     private const array TABLES = [

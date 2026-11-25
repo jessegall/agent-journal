@@ -28,8 +28,6 @@ use App\Values\StopConditions;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensPairChats;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
@@ -43,8 +41,6 @@ final class ClaimStartGrantTest extends TestCase
     use CommitsHookRows;
     use OpensLedgerRuntimes;
     use OpensPairChats;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
     use WritesInboxMessages;
 
     private const array TABLES = [
@@ -67,8 +63,8 @@ final class ClaimStartGrantTest extends TestCase
     {
         [$host, $opened] = $this->openRuntime();
 
-        $first = $this->asSystem(new ClaimStartGrantCommand($host->hostId, $opened->runtimeId));
-        $second = $this->asSystem(new ClaimStartGrantCommand($host->hostId, $opened->runtimeId));
+        $first = $this->journal->asSystem(new ClaimStartGrantCommand($host->hostId, $opened->runtimeId));
+        $second = $this->journal->asSystem(new ClaimStartGrantCommand($host->hostId, $opened->runtimeId));
 
         $this->assertInstanceOf(StartGrant::class, $first);
         $this->assertNotSame('', $first->token);
@@ -80,19 +76,22 @@ final class ClaimStartGrantTest extends TestCase
         [$host, $opened] = $this->openRuntime();
         $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
 
-        $grant = $this->asSystem(new ClaimStartGrantCommand($host->hostId, $opened->runtimeId));
+        $grant = $this->journal->asSystem(new ClaimStartGrantCommand($host->hostId, $opened->runtimeId));
 
         $key = $this->app->make(DriverCatalogue::class)->keyFor($runtime->family, $runtime->driver_type);
         $label = $this->app->make(DriverCatalogue::class)->forKey($key)->descriptor()->label;
 
-        $this->assertSame([(string) $key, (string) $key, $label], [$grant->runtime->driverKey, $runtime->driver_key, $runtime->driver_label]);
+        $this->assertSame(
+            [(string) $key, (string) $key, $label],
+            [$grant->runtime->driverKey, $runtime->driver_key, $runtime->driver_label],
+        );
     }
 
     public function test_a_start_grant_of_a_session_on_the_protected_host_carries_no_container(): void
     {
         [$host, $opened] = $this->openRuntime();
 
-        $grant = $this->asSystem(new ClaimStartGrantCommand($host->hostId, $opened->runtimeId));
+        $grant = $this->journal->asSystem(new ClaimStartGrantCommand($host->hostId, $opened->runtimeId));
 
         $this->assertNull($grant->container);
         $this->assertNull($grant->toArray()['container']);
@@ -100,7 +99,11 @@ final class ClaimStartGrantTest extends TestCase
 
     public function test_a_contained_main_sessions_grant_carries_its_attachable_container(): void
     {
-        $account = Account::create(DefaultDrivers::CLAUDE_CODE, AccountLabel::from('Plain'), '/journal/accounts/01plain');
+        $account = Account::create(
+            DefaultDrivers::CLAUDE_CODE,
+            AccountLabel::from('Plain'),
+            '/journal/accounts/01plain',
+        );
         ActiveAccount::findLockedFor(DefaultDrivers::CLAUDE_CODE)->select($account);
         [$host, $opened] = $this->openRuntime();
         // The driver runs in a terminal of its own, which is what makes a main session's container attachable.
@@ -121,10 +124,17 @@ final class ClaimStartGrantTest extends TestCase
         SessionPolicy::query()->where('session_id', $opened->sessionId)->delete();
         SessionPolicy::create(
             AgentSession::query()->findOrFail($opened->sessionId),
-            new StartPolicy(ProfileBase::mainAgent()->defaultAccess(), new StopConditions([]), $execution, null, null, null),
+            new StartPolicy(
+                ProfileBase::mainAgent()->defaultAccess(),
+                new StopConditions([]),
+                $execution,
+                null,
+                null,
+                null,
+            ),
         );
 
-        $grant = $this->asSystem(new ClaimStartGrantCommand($host->hostId, $opened->runtimeId));
+        $grant = $this->journal->asSystem(new ClaimStartGrantCommand($host->hostId, $opened->runtimeId));
         $manifest = $grant->container;
 
         $this->assertNotNull($manifest);
@@ -165,11 +175,18 @@ final class ClaimStartGrantTest extends TestCase
         SessionPolicy::query()->where('session_id', $opened->sessionId)->delete();
         SessionPolicy::create(
             AgentSession::query()->findOrFail($opened->sessionId),
-            new StartPolicy(ProfileBase::mainAgent()->defaultAccess(), new StopConditions([]), $execution, null, null, null),
+            new StartPolicy(
+                ProfileBase::mainAgent()->defaultAccess(),
+                new StopConditions([]),
+                $execution,
+                null,
+                null,
+                null,
+            ),
         );
 
         $this->assertThrows(
-            fn () => $this->asSystem(new ClaimStartGrantCommand($host->hostId, $opened->runtimeId)),
+            fn () => $this->journal->asSystem(new ClaimStartGrantCommand($host->hostId, $opened->runtimeId)),
             AccountFolderInvalid::class,
         );
     }
@@ -181,6 +198,6 @@ final class ClaimStartGrantTest extends TestCase
 
         $this->expectException(HostReportRefused::class);
 
-        $this->asSystem(new ClaimStartGrantCommand($other->hostId, $opened->runtimeId));
+        $this->journal->asSystem(new ClaimStartGrantCommand($other->hostId, $opened->runtimeId));
     }
 }

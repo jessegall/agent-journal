@@ -18,9 +18,6 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsKeyedCommands;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -32,9 +29,6 @@ use Tests\TestCase;
 final class PublishSignInChallengeTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsKeyedCommands;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
 
     private const array TABLES = [
         'accounts',
@@ -76,7 +70,10 @@ final class PublishSignInChallengeTest extends TestCase
         $this->actingAs($owner)->withHeader('Idempotency-Key', 'answer-1')
             ->post("/accounts/sign-ins/{$attemptId}/code", ['code' => ' 1234 '])->assertStatus(303);
 
-        $this->assertSame($attemptId, $page->viewData('page')['props']['page']['data']['root']['children'][1]['children'][1]['native']['props']['attempts'][0]['id']);
+        $this->assertSame(
+            $attemptId,
+            $page->viewData('page')['props']['page']['data']['root']['children'][1]['children'][1]['native']['props']['attempts'][0]['id'],
+        );
         $this->assertStringNotContainsString('secret-state', (string) $page->getContent());
         $this->assertSame('https://claude.ai/oauth/authorize?secret-state', $read->json('address'));
         $this->assertStringContainsString('no-store', (string) $read->headers->get('Cache-Control'));
@@ -96,7 +93,11 @@ final class PublishSignInChallengeTest extends TestCase
         $attemptId = $this->begin();
         $this->signed($host, '/host/sign-ins/claim');
 
-        foreach (['https://claude.ai.evil.test/oauth', 'http://claude.ai/oauth', 'https://evil.test/claude.ai'] as $address) {
+        foreach ([
+            'https://claude.ai.evil.test/oauth',
+            'http://claude.ai/oauth',
+            'https://evil.test/claude.ai',
+        ] as $address) {
             $this->signed($host, "/host/sign-ins/{$attemptId}/challenge", ['address' => $address, 'code' => null])
                 ->assertStatus(422)
                 ->assertDontSee($address, false);
@@ -127,7 +128,7 @@ final class PublishSignInChallengeTest extends TestCase
         $this->app->make(CurrentActorSetter::class)->set($owner, new OwnerAuthority('test'));
 
         $begin = new BeginSignInCommand('claude-code', SignInMethod::OAuth);
-        $started = $this->runOnBus($begin, (string) Str::ulid());
+        $started = $this->journal->run($begin, (string) Str::ulid());
 
         return $started->attemptId;
     }
@@ -151,11 +152,11 @@ final class PublishSignInChallengeTest extends TestCase
      */
     private function signed(EnrolledHost $host, string $target, array $body = []): TestResponse
     {
-        return $this->signedHostCall($host, 'POST', $target, $body === [] ? '' : (string) json_encode($body));
+        return $this->journal->hostCall($host, 'POST', $target, $body === [] ? '' : (string) json_encode($body));
     }
 
     private function enrollHost(): EnrolledHost
     {
-        return $this->asSystem(new EnrollHostCommand('test host '.Str::random(6), ['/work']));
+        return $this->journal->asSystem(new EnrollHostCommand('test host '.Str::random(6), ['/work']));
     }
 }

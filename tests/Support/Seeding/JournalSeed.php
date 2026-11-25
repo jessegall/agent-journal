@@ -30,7 +30,6 @@ use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\FakeServerClock;
-use Tests\Support\OpensDriverRuntimes;
 use Tests\Support\TestProjects;
 
 /**
@@ -42,10 +41,12 @@ final class JournalSeed
 {
     private const string OWNER = 'The journal';
 
+    use AssertsLinks;
+    use AssertsMessages;
     use AssertsReceipts;
     use AssertsResults;
     use ObservesEvents;
-    use OpensDriverRuntimes;
+    use OpensRuntimes;
     use RunsCommands;
     use SendsRequests;
 
@@ -156,7 +157,7 @@ final class JournalSeed
     {
         $this->idleAgent($name, $profile);
         $this->startSession($name, trim($name));
-        $this->openDriverRuntime($this->sessionOf($name));
+        $this->syntheticRuntime($name);
 
         return $this;
     }

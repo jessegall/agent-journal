@@ -15,8 +15,6 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\OpensPairChats;
-use Tests\Support\SendsMcpFrames;
-use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
@@ -30,8 +28,6 @@ final class DockToolsTest extends TestCase
 {
     use CommitsHookRows;
     use OpensPairChats;
-    use SendsMcpFrames;
-    use SendsSignedPayloads;
     use WritesInboxMessages;
 
     private const string PLACEMENT_TITLE = 'Ship the dock';
@@ -78,26 +74,26 @@ final class DockToolsTest extends TestCase
         $caller = $this->startInConversation('main-agent');
         $add = ['type' => 'tasks.task', 'id' => $this->task->id, 'request_key' => 'dock-add'];
 
-        $placementId = $this->callMcpTool($caller, 'dock_add', $add)
+        $placementId = $this->journal->mcpTool($caller, 'dock_add', $add)->assertOk()
             ->assertJsonPath('result.structuredContent.outcome', 'added')
             ->json('result.structuredContent.placementId');
-        $listed = $this->callMcpTool($caller, 'dock_list')
+        $listed = $this->journal->mcpTool($caller, 'dock_list')->assertOk()
             ->assertJsonPath('result.structuredContent.placements.0.placementId', $placementId)
             ->assertJsonPath('result.structuredContent.placements.0.title', self::PLACEMENT_TITLE)
             ->assertJsonPath('result.structuredContent.placements.0.state', 'shown')
             ->json('result.structuredContent.placements.0');
-        $this->runCommandsAs($caller);
+        $this->journal->relayAgentCommands($caller);
         $this->artisan('dock:list', ['--json' => true])
             ->expectsOutputToContain((string) json_encode($listed, JSON_UNESCAPED_SLASHES))
             ->assertExitCode(0);
 
-        $this->callMcpTool($caller, 'dock_remove', [
+        $this->journal->mcpTool($caller, 'dock_remove', [
             'placement_id' => $placementId,
             'type' => 'tasks.task',
             'source_id' => $this->task->id,
             'request_key' => 'dock-remove',
-        ])->assertJsonPath('result.structuredContent.outcome', 'removed');
-        $this->callMcpTool($caller, 'dock_add', $add)
+        ])->assertOk()->assertJsonPath('result.structuredContent.outcome', 'removed');
+        $this->journal->mcpTool($caller, 'dock_add', $add)->assertOk()
             ->assertJsonPath('result.structuredContent.outcome', 'added')
             ->assertJsonPath('result.structuredContent.placementId', $placementId);
 
@@ -108,11 +104,11 @@ final class DockToolsTest extends TestCase
     {
         $helper = $this->startInConversation('read-only-helper');
 
-        $this->sendMcp($helper, 'tools/call', [
+        $this->journal->mcpRequest($helper, 'tools/call', [
             'name' => 'dock_add',
             'arguments' => ['type' => 'tasks.task', 'id' => $this->task->id, 'request_key' => 'forged-dock'],
         ])->assertBadRequest()->assertJsonPath('error.code', -32602);
-        $this->runCommandsAs($helper);
+        $this->journal->relayAgentCommands($helper);
         $this->artisan('dock:add', ['type' => 'tasks.task', 'id' => $this->task->id])->assertFailed();
 
         $this->assertSame(0, DockPlacement::query()->count());

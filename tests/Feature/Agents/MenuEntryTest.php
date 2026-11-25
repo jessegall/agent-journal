@@ -17,7 +17,6 @@ use App\Values\ScriptGoal;
 use Illuminate\Support\Facades\Schema;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
 use Tests\TestCase;
 
 /**
@@ -28,7 +27,6 @@ final class MenuEntryTest extends TestCase
 {
     use CommitsHookRows;
     use RaisesNavigationRequests;
-    use RunsTrustedCommands;
 
     private const array TABLES = [
         'agents',

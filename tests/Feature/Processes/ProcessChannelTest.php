@@ -25,7 +25,6 @@ use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RecordedPayloads;
 use Tests\Support\RecordingLogger;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TestRunAdmissions;
 use Tests\TestCase;
 use Throwable;
@@ -37,7 +36,6 @@ use Throwable;
 final class ProcessChannelTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SendsSignedPayloads;
 
     private TestStart $start;
 
@@ -50,7 +48,7 @@ final class ProcessChannelTest extends TestCase
         ProcessOutputDisk::fake();
         config(['processes.runner' => true]);
         $this->start = TestStart::start();
-        $this->runCommandsAs($this->start);
+        $this->journal->relayAgentCommands($this->start);
         $this->folder = sys_get_temp_dir().'/channel-'.bin2hex(random_bytes(4));
         mkdir($this->folder);
     }
@@ -83,8 +81,9 @@ final class ProcessChannelTest extends TestCase
     public function test_replaying_the_spool_changes_nothing_and_a_lost_connection_is_made_up(): void
     {
         $run = $this->admit('echo hi');
-        $eventKey = (string) $this->signed(
+        $eventKey = (string) $this->journal->agentCall(
             $this->start,
+            'POST',
             "/agent/processes/admissions/{$run->id}",
             ['request_key' => 'channel-1'],
         )->json('event_key');

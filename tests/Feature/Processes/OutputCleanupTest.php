@@ -13,7 +13,6 @@ use App\Values\AdmissionRefusal;
 use App\Values\ExecutionContext;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -23,7 +22,6 @@ final class OutputCleanupTest extends TestCase
 {
     use RefreshHookDatabase;
     use RunsAcmeRequests;
-    use SendsSignedPayloads;
 
     private PartRun $part;
 

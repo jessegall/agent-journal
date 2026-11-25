@@ -16,7 +16,6 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -26,7 +25,6 @@ use Tests\TestCase;
 final class ProposeReaderTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SendsSignedPayloads;
 
     private TestStart $start;
 
@@ -79,7 +77,7 @@ final class ProposeReaderTest extends TestCase
 
     public function test_a_reader_for_a_missing_declaration_revision_is_refused(): void
     {
-        $this->signed($this->start, "/agent/processes/requests/{$this->request->id}/readers", [
+        $this->journal->agentCall($this->start, 'POST', $this->readersRoute(), [
             'declaration_revision' => 2,
             'definition' => $this->definition(hasSummary: true),
         ])->assertStatus(409);
@@ -90,7 +88,7 @@ final class ProposeReaderTest extends TestCase
      */
     private function proposeReader(array $definition): TestResponse
     {
-        return $this->signed($this->start, "/agent/processes/requests/{$this->request->id}/readers", [
+        return $this->journal->agentCall($this->start, 'POST', $this->readersRoute(), [
             'declaration_revision' => 1,
             'definition' => $definition,
         ]);
@@ -115,5 +113,10 @@ final class ProposeReaderTest extends TestCase
             'max_record_bytes' => 65_536,
             'millisecond_budget' => 2_000,
         ];
+    }
+
+    private function readersRoute(): string
+    {
+        return "/agent/processes/requests/{$this->request->id}/readers";
     }
 }

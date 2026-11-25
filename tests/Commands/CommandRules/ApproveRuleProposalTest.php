@@ -20,7 +20,6 @@ use App\Values\ReaderApproval;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -31,7 +30,6 @@ final class ApproveRuleProposalTest extends TestCase
 {
     use RefreshHookDatabase;
     use RunsAcmeRequests;
-    use SendsSignedPayloads;
 
     protected function setUp(): void
     {
@@ -45,7 +43,9 @@ final class ApproveRuleProposalTest extends TestCase
         Event::fake([RuleActivated::class]);
         [$reader, $proof] = $this->provenReader();
 
-        $receipt = $this->asUser(new ApproveRuleProposalCommand($this->proposalId(), $this->approval($reader, $proof, 0)));
+        $receipt = $this->asUser(
+            new ApproveRuleProposalCommand($this->proposalId(), $this->approval($reader, $proof, 0)),
+        );
 
         $this->assertSame('project.acme.verify', $receipt->ruleId);
         $this->assertSame(1, $receipt->revision);
@@ -64,7 +64,10 @@ final class ApproveRuleProposalTest extends TestCase
 
         $approve = new ApproveRuleProposalCommand($this->proposalId(), $this->approval($reader, $proof, 0));
 
-        $this->assertThrows(fn () => $this->runAsAgent($approve), CommandAdmissionRefused::class);
+        $this->assertThrows(
+            fn () => $this->journal->runAsStart($this->start, $approve),
+            CommandAdmissionRefused::class,
+        );
         $this->assertSame(0, ClassificationRule::query()->count());
     }
 
@@ -89,7 +92,13 @@ final class ApproveRuleProposalTest extends TestCase
         $findings = $this->sample(1, self::FINDINGS_OUTPUT, isRead: true);
         $reader = $this->reader();
 
-        return [$reader, $this->runAsAgent(new ProveReaderCommand($this->requestId, $reader, [$passed, $findings]))];
+        return [
+            $reader,
+            $this->journal->runAsStart(
+                $this->start,
+                new ProveReaderCommand($this->requestId, $reader, [$passed, $findings]),
+            ),
+        ];
     }
 
     private function approval(string $reader, string $proof, int $expectedActive): OwnerApproval

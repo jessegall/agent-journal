@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Commands;
 
-use Tests\Support\TestIds;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
 use App\Support\Access\AccessSettings;
@@ -33,11 +32,11 @@ use Illuminate\Support\Str;
 use Tests\Fixtures\Domains\Binders\BinderPublications;
 use Tests\Fixtures\Domains\Binders\BindersDomain;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\RunsTrustedCommands;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\RegistersShareDomains;
 use Tests\Support\Sharing\TestShares;
 use Tests\Support\TestActors;
+use Tests\Support\TestIds;
 
 /**
  * Disabling a gateway revokes its shares before one close, a preview without a gateway is refused once the default
@@ -47,7 +46,6 @@ final class DisableShareGatewayTest extends TestCase
 {
     use RefreshHookDatabase;
     use RegistersShareDomains;
-    use RunsTrustedCommands;
 
     private const string RUN = '01JD8X0G9M3QZ6V4K2RUN0000A';
 
@@ -117,11 +115,11 @@ final class DisableShareGatewayTest extends TestCase
         $configuration = ShareGatewayConfiguration::query()->findOrFail($this->configure()->configurationId);
         $share = TestShares::grantForADay($this->root, $configuration);
         ShareGatewayOperation::create($configuration, GatewayOperationType::Open);
-        $this->asSystem(new ClaimGatewayOperationCommand(self::RUN));
+        $this->journal->asSystem(new ClaimGatewayOperationCommand(self::RUN));
         $share->activate();
 
         $this->asOwner(new DisableShareGatewayCommand($configuration->id, (string) Str::ulid()));
-        $this->asSystem(new ClaimGatewayOperationCommand(self::RUN));
+        $this->journal->asSystem(new ClaimGatewayOperationCommand(self::RUN));
         $this->assertSame(GatewayEndpointStatus::Closing, ShareGatewayEndpoint::query()->sole()->status);
 
         $configuration->disabled_at = null;
@@ -129,7 +127,10 @@ final class DisableShareGatewayTest extends TestCase
         TestShares::grantForADay(TestActors::record('binders.binder', 2), $configuration);
         ShareGatewayOperation::create($configuration, GatewayOperationType::Open);
 
-        $this->assertSame(2, $this->asSystem(new ClaimGatewayOperationCommand(self::RUN))?->operation->endpointVersion);
+        $this->assertSame(
+            2,
+            $this->journal->asSystem(new ClaimGatewayOperationCommand(self::RUN))?->operation->endpointVersion,
+        );
     }
 
     private function configure(): GatewayConfiguration

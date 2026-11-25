@@ -11,8 +11,6 @@ use App\Support\EnrolledHost;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensPairChats;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
@@ -25,8 +23,6 @@ final class RunKeyScriptTest extends TestCase
     use CommitsHookRows;
     use OpensLedgerRuntimes;
     use OpensPairChats;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
     use WritesInboxMessages;
 
     private const array TABLES = [
@@ -67,8 +63,9 @@ final class RunKeyScriptTest extends TestCase
      */
     private function claimedScript(EnrolledHost $host, string $requestId): array
     {
-        $requests = $this->hostCall(
+        $requests = $this->journal->hostCall(
             $host,
+            'POST',
             '/host/claim?limit=10&wait=0&watched_version=0',
         )->assertOk()->json('requests');
 

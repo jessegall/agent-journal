@@ -16,7 +16,6 @@ use App\Values\ExecutionBudgets;
 use App\Values\HostCapacity;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\RunsTrustedCommands;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -28,7 +27,6 @@ use Tests\TestCase;
 final class NotifyCleanupTest extends TestCase
 {
     use RefreshHookDatabase;
-    use RunsTrustedCommands;
 
     private const array ALL_STEPS = [CleanupStep::Container, CleanupStep::Network, CleanupStep::Runtime];
 
@@ -92,7 +90,7 @@ final class NotifyCleanupTest extends TestCase
 
     private function notify(TestStart $start, CleanupReport $report): CleanupStatus
     {
-        return $this->asSystem(new NotifyCleanupCommand('host-1', $start->session->id, $report));
+        return $this->journal->asSystem(new NotifyCleanupCommand('host-1', $start->session->id, $report));
     }
 
     private function cleanupOf(TestStart $start): SessionCleanup

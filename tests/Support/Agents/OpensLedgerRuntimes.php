@@ -65,7 +65,7 @@ trait OpensLedgerRuntimes
 
     private function enrollHost(): EnrolledHost
     {
-        return $this->asSystem(new EnrollHostCommand('test host '.Str::random(6), [self::FOLDER]));
+        return $this->journal->asSystem(new EnrollHostCommand('test host '.Str::random(6), [self::FOLDER]));
     }
 
     private function agent(): Agent

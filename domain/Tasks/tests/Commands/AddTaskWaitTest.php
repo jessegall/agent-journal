@@ -11,7 +11,6 @@ use Domain\Tasks\Models\TaskWait;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsKeyedCommands;
 
 /**
  * A task is made to wait on another; a wait that would close a cycle and a task waiting on itself are refused and
@@ -21,7 +20,6 @@ final class AddTaskWaitTest extends TestCase
 {
     use ActsAsOwner;
     use CommitsHookRows;
-    use RunsKeyedCommands;
 
     private const array TABLES = [
         'users',
@@ -70,6 +68,6 @@ final class AddTaskWaitTest extends TestCase
 
     private function runCommand(object $command): void
     {
-        $this->runOnBus($command);
+        $this->journal->run($command);
     }
 }

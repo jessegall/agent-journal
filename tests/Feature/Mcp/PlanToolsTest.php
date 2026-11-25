@@ -17,8 +17,6 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\SendsMcpFrames;
-use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -27,8 +25,6 @@ final class PlanToolsTest extends TestCase
 {
     use ActsAsActors;
     use CommitsHookRows;
-    use SendsMcpFrames;
-    use SendsSignedPayloads;
 
     private const string RELEASE_NOTE = 'Release complete.';
 
@@ -69,9 +65,14 @@ final class PlanToolsTest extends TestCase
         $create = [
             'title' => 'Release', 'brief' => 'Ship the release.', 'type' => 'build', 'request_key' => 'make-plan',
         ];
-        $id = $this->callMcpTool($this->caller, 'plans_create', $create)
+        $id = $this->journal->mcpTool($this->caller, 'plans_create', $create)->assertOk()
             ->assertJsonPath('result.isError', false)->json('result.structuredContent.plan_id');
-        $this->signed($this->caller, '/agent/plans/create', $create)->assertOk()->assertJsonPath('plan_id', $id);
+        $this->journal->agentCall(
+            $this->caller,
+            'POST',
+            '/agent/plans/create',
+            $create,
+        )->assertOk()->assertJsonPath('plan_id', $id);
         $first = $this->phase($id, 'Build', 'make-build-phase');
         $second = $this->phase($id, 'Check', 'make-check-phase');
         $build = Task::factory()->create();
@@ -79,17 +80,25 @@ final class PlanToolsTest extends TestCase
         $this->addTask($first, $build, 'add-build-task');
         $this->addTask($second, $check, 'add-check-task');
 
-        $started = $this->callMcpTool($this->caller, 'plans_start', ['plan_id' => $id, 'request_key' => 'start-plan']);
+        $started = $this->journal->mcpTool(
+            $this->caller,
+            'plans_start',
+            ['plan_id' => $id, 'request_key' => 'start-plan'],
+        )->assertOk();
         $this->assertFalse($started->json('result.isError'), $started->getContent());
         $started->assertJsonPath('result.structuredContent.state', 'started');
-        $this->callMcpTool($this->caller, 'phases_read', ['phase_id' => $first])
+        $this->journal->mcpTool($this->caller, 'phases_read', ['phase_id' => $first])->assertOk()
             ->assertJsonPath('result.structuredContent.task_ids', [$build->id]);
         $this->actAs(ActorContext::forUser($this->ownerId));
         $bus = $this->app->make(CommandBus::class);
         $bus->run(new FinishTaskCommand($build->id, 0, 'Done.'));
         $bus->run(new FinishTaskCommand($check->id, 0, 'Done.'));
 
-        $read = $this->callMcpTool($this->caller, 'plans_read', ['plan_id' => $id, 'view' => 'context'])
+        $read = $this->journal->mcpTool(
+            $this->caller,
+            'plans_read',
+            ['plan_id' => $id, 'view' => 'context'],
+        )->assertOk()
             ->assertJsonPath('result.structuredContent.progress.finished', 2)
             ->assertJsonPath('result.structuredContent.progress.total', 2)
             ->assertJsonPath('result.structuredContent.phases.0.phase_id', $first)
@@ -103,31 +112,36 @@ final class PlanToolsTest extends TestCase
             'note' => 'Release complete.',
             'request_key' => 'finish-plan',
         ];
-        $this->callMcpTool($this->caller, 'plans_finish', $finish)
+        $this->journal->mcpTool($this->caller, 'plans_finish', $finish)->assertOk()
             ->assertJsonPath('result.isError', false)->assertJsonPath('result.structuredContent.state', 'done');
-        $this->signed($this->caller, '/agent/plans/finish', $finish)->assertOk()->assertJsonPath('plan_id', $id);
-        $this->callMcpTool($this->caller, 'plans_read', ['plan_id' => $id, 'view' => 'context'])
+        $this->journal->agentCall(
+            $this->caller,
+            'POST',
+            '/agent/plans/finish',
+            $finish,
+        )->assertOk()->assertJsonPath('plan_id', $id);
+        $this->journal->mcpTool($this->caller, 'plans_read', ['plan_id' => $id, 'view' => 'context'])->assertOk()
             ->assertJsonPath('result.structuredContent.finish_note', self::RELEASE_NOTE);
     }
 
     public function test_plan_edits_and_cancellation_respect_the_read_revision(): void
     {
         $plan = Plan::factory()->create();
-        $this->callMcpTool($this->caller, 'plans_edit', [
+        $this->journal->mcpTool($this->caller, 'plans_edit', [
             'plan_id' => $plan->id,
             'expected_revision' => 1,
             'title' => 'New title',
             'type' => 'fix',
             'request_key' => 'edit-plan',
-        ])->assertJsonPath('result.structuredContent.revision', 2);
-        $this->signed($this->caller, '/agent/plans/cancel', [
+        ])->assertOk()->assertJsonPath('result.structuredContent.revision', 2);
+        $this->journal->agentCall($this->caller, 'POST', '/agent/plans/cancel', [
             'plan_id' => $plan->id,
             'expected_revision' => 2,
             'reason' => 'Work moved elsewhere.',
             'request_key' => 'cancel-plan',
         ])->assertOk();
 
-        $this->callMcpTool($this->caller, 'plans_read', ['plan_id' => $plan->id, 'view' => 'context'])
+        $this->journal->mcpTool($this->caller, 'plans_read', ['plan_id' => $plan->id, 'view' => 'context'])->assertOk()
             ->assertJsonPath('result.structuredContent.title', self::PLAN_TITLE)
             ->assertJsonPath('result.structuredContent.type', 'fix')
             ->assertJsonPath('result.structuredContent.cancel_reason', self::CANCEL_REASON);
@@ -137,32 +151,32 @@ final class PlanToolsTest extends TestCase
     {
         $helper = TestStart::start('writing-helper');
         $plan = Plan::factory()->create();
-        $this->sendMcp($helper, 'tools/call', [
+        $this->journal->mcpRequest($helper, 'tools/call', [
             'name' => 'plans_create',
             'arguments' => [
                 'title' => 'Hidden write', 'brief' => 'No plan', 'type' => 'build', 'request_key' => 'helper-plan',
             ],
         ])->assertBadRequest()->assertJsonPath('error.code', -32602);
-        $this->callMcpTool($helper, 'plans_read', ['plan_id' => $plan->id])
+        $this->journal->mcpTool($helper, 'plans_read', ['plan_id' => $plan->id])->assertOk()
             ->assertJsonPath('result.structuredContent.plan_id', $plan->id);
         $this->assertSame(1, Plan::query()->count());
     }
 
     private function phase(string $planId, string $title, string $key): string
     {
-        return $this->callMcpTool($this->caller, 'phases_create', [
+        return $this->journal->mcpTool($this->caller, 'phases_create', [
             'plan_id' => $planId, 'title' => $title, 'request_key' => $key,
-        ])->assertJsonPath('result.isError', false)->json('result.structuredContent.phase_id');
+        ])->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent.phase_id');
     }
 
     private function addTask(string $phaseId, Task $task, string $key): void
     {
-        $this->callMcpTool($this->caller, 'phases_add_tasks', [
+        $this->journal->mcpTool($this->caller, 'phases_add_tasks', [
             'phase_id' => $phaseId,
             'expected_revision' => 1,
             'task_ids' => [$task->id],
             'request_key' => $key,
-        ])->assertJsonPath('result.isError', false);
+        ])->assertOk()->assertJsonPath('result.isError', false);
     }
 
     /**
@@ -171,7 +185,7 @@ final class PlanToolsTest extends TestCase
     private function resource(string $uri): array
     {
         return json_decode(
-            $this->sendMcp($this->caller, 'resources/read', ['uri' => $uri])->assertOk()
+            $this->journal->mcpRequest($this->caller, 'resources/read', ['uri' => $uri])->assertOk()
                 ->json('result.contents.0.text'),
             true,
             flags: JSON_THROW_ON_ERROR,

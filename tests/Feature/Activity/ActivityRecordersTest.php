@@ -59,9 +59,16 @@ final class ActivityRecordersTest extends MessagingTestCase
     public function test_a_helper_start_and_its_report_are_entries_of_the_agent_that_started_it(): void
     {
         $events = $this->app->make(Dispatcher::class);
-        $events->dispatch(new StartAccepted('request', $this->reviewer->agent_id, $this->reviewer->id, $this->builder->agent_id));
+        $events->dispatch(
+            new StartAccepted('request', $this->reviewer->agent_id, $this->reviewer->id, $this->builder->agent_id),
+        );
         $events->dispatch(new StartAccepted('request', $this->builder->agent_id, $this->builder->id));
-        $events->dispatch(new HelperReportedOnRecord(new RecordIdentity('tasks.task-run', (string) Str::ulid()), $this->reviewer->agent_id));
+        $events->dispatch(
+            new HelperReportedOnRecord(
+                new RecordIdentity('tasks.task-run', (string) Str::ulid()),
+                $this->reviewer->agent_id,
+            ),
+        );
 
         $this->assertSame([['helper_started', 'Reviewer', 2], ['helper_finished', 'Reviewer', 2]], $this->entries());
         $this->assertSame(
@@ -77,7 +84,7 @@ final class ActivityRecordersTest extends MessagingTestCase
         InboxMember::create($inboxId, $builder, CarbonImmutable::now());
         $this->asAgent($this->builder);
 
-        $this->runOnBus(new SendMessageCommand($inboxId, 'The build is green.'));
+        $this->journal->run(new SendMessageCommand($inboxId, 'The build is green.'));
 
         $entry = ActivityEntry::query()->sole();
         $this->assertSame(ActivityType::Posted, $entry->type);
@@ -88,10 +95,14 @@ final class ActivityRecordersTest extends MessagingTestCase
     {
         $reviewer = ActorIdentity::ofClass(Agent::class, $this->reviewer->agent_id);
         $inboxId = $this->inboxOf($reviewer)->id;
-        InboxMember::create($inboxId, ActorIdentity::ofClass(Agent::class, $this->builder->agent_id), CarbonImmutable::now());
+        InboxMember::create(
+            $inboxId,
+            ActorIdentity::ofClass(Agent::class, $this->builder->agent_id),
+            CarbonImmutable::now(),
+        );
         $this->asAgent($this->builder);
 
-        $this->runOnBus(new SendMessageCommand($inboxId, 'Over to you.'));
+        $this->journal->run(new SendMessageCommand($inboxId, 'Over to you.'));
 
         $this->assertSame(0, ActivityEntry::query()->count());
     }

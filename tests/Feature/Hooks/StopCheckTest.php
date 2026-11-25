@@ -20,8 +20,6 @@ use App\Values\StopConditionResultReport;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -33,8 +31,6 @@ use Tests\TestCase;
 final class StopCheckTest extends TestCase
 {
     use RefreshHookDatabase;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
 
     private const string SUMMARY = 'passed in summary';
 
@@ -48,10 +44,13 @@ final class StopCheckTest extends TestCase
         $statuses = StopConditionResultType::cases();
         $attempt = $this->open($start, 'stop-1', $this->keysOf($statuses));
 
-        $state = $this->asSystem($this->results($attempt, $statuses));
+        $state = $this->journal->asSystem($this->results($attempt, $statuses));
 
         $this->assertSame(StopCheckStatus::Failed, $state);
-        $this->assertSame(count($statuses), StopConditionResult::query()->where('stop_check_id', $attempt->id)->count());
+        $this->assertSame(
+            count($statuses),
+            StopConditionResult::query()->where('stop_check_id', $attempt->id)->count(),
+        );
         $this->assertNull(StopConditionResult::query()->where('condition_key', 'unknown')->sole()->exit_code);
     }
 
@@ -61,10 +60,12 @@ final class StopCheckTest extends TestCase
         $attempt = $this->open($start, 'stop-1', ['passed']);
         $passing = $this->results($attempt, [StopConditionResultType::Passed]);
 
-        $this->assertSame(StopCheckStatus::Passed, $this->asSystem($passing));
-        $this->assertSame(StopCheckStatus::Passed, $this->asSystem($passing));
+        $this->assertSame(StopCheckStatus::Passed, $this->journal->asSystem($passing));
+        $this->assertSame(StopCheckStatus::Passed, $this->journal->asSystem($passing));
         $this->assertThrows(
-            fn () => $this->asSystem($this->results($attempt, [StopConditionResultType::Failed], ['failed' => 'passed'])),
+            fn () => $this->journal->asSystem(
+                $this->results($attempt, [StopConditionResultType::Failed], ['failed' => 'passed']),
+            ),
             StopConditionResultsRefused::class,
         );
     }
@@ -82,7 +83,7 @@ final class StopCheckTest extends TestCase
             new RecordStopConditionResultsCommand('host-1', $attempt->id, self::DIGEST, 1, [$report, $report]),
             new RecordStopConditionResultsCommand('host-1', $attempt->id, self::DIGEST, 1, [$other]),
         ] as $command) {
-            $this->assertThrows(fn () => $this->asSystem($command), StopConditionResultsRefused::class);
+            $this->assertThrows(fn () => $this->journal->asSystem($command), StopConditionResultsRefused::class);
         }
 
         $this->assertSame(0, StopConditionResult::query()->count());
@@ -95,7 +96,9 @@ final class StopCheckTest extends TestCase
         $start->startRequest($this->app);
 
         $this->assertThrows(
-            fn () => $this->app->make(CommandBus::class)->run($this->results($attempt, [StopConditionResultType::Passed])),
+            fn () => $this->app->make(CommandBus::class)->run(
+                $this->results($attempt, [StopConditionResultType::Passed]),
+            ),
             CommandNotRegistered::class,
         );
     }
@@ -104,7 +107,7 @@ final class StopCheckTest extends TestCase
     {
         $start = TestStart::start('writing-helper');
         $attempt = $this->open($start, 'stop-1', ['failed']);
-        $this->asSystem($this->results($attempt, [StopConditionResultType::Failed]));
+        $this->journal->asSystem($this->results($attempt, [StopConditionResultType::Failed]));
         $start->startRequest($this->app);
 
         $result = $this->app->make(StopEvidence::class)->result(new StopCheckReference($attempt->id));
@@ -119,7 +122,7 @@ final class StopCheckTest extends TestCase
         $start = TestStart::start('writing-helper');
         $attempt = $this->open($start, 'stop-1', ['passed']);
         $this->travelTo(CarbonImmutable::now()->subDays(8));
-        $this->asSystem($this->results($attempt, [StopConditionResultType::Passed]));
+        $this->journal->asSystem($this->results($attempt, [StopConditionResultType::Passed]));
         $this->travelBack();
 
         $pruned = $this->app->make(PruneHookHistory::class)->prune();
@@ -136,7 +139,7 @@ final class StopCheckTest extends TestCase
         $attempt = $this->open($start, 'stop-1', ['passed']);
         $target = sprintf('/host/stop-attempts/%s/results', $attempt->id);
 
-        $response = $this->hostCall($this->enrolledHost(), $target, [
+        $response = $this->journal->hostCall($this->journal->enrolledHost(), 'POST', $target, [
             'policy_digest' => self::DIGEST,
             'workspace_generation' => 1,
             'results' => [[
@@ -171,8 +174,11 @@ final class StopCheckTest extends TestCase
      * @param  list<StopConditionResultType>  $statuses
      * @param  array<string, string>  $renamed  status value => condition key it is reported under
      */
-    private function results(StopCheck $attempt, array $statuses, array $renamed = []): RecordStopConditionResultsCommand
-    {
+    private function results(
+        StopCheck $attempt,
+        array $statuses,
+        array $renamed = [],
+    ): RecordStopConditionResultsCommand {
         return new RecordStopConditionResultsCommand('host-1', $attempt->id, self::DIGEST, 1, array_map(
             fn (StopConditionResultType $status) => $this->notify($renamed[$status->value] ?? $status->value, $status),
             $statuses,

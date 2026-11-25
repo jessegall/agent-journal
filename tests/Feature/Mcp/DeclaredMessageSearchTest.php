@@ -9,7 +9,6 @@ use Domain\Chat\ChatDomain;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\SendsMcpFrames;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
@@ -22,7 +21,6 @@ use Tests\TestCase;
 final class DeclaredMessageSearchTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsMcpFrames;
     use WritesInboxMessages;
 
     private const array TABLES = [
@@ -53,7 +51,11 @@ final class DeclaredMessageSearchTest extends TestCase
             'Private violet harbor coordinates.',
         );
 
-        $hits = $this->callMcpTool($caller, 'search', ['query' => 'violet harbor', 'within' => 'chat.message'])
+        $hits = $this->journal->mcpTool(
+            $caller,
+            'search',
+            ['query' => 'violet harbor', 'within' => 'chat.message'],
+        )->assertOk()
             ->assertJsonPath('result.isError', false)
             ->json('result.structuredContent.hits');
         $ids = array_map(fn (array $hit): string => $hit['reference']['id'], $hits);
@@ -62,7 +64,15 @@ final class DeclaredMessageSearchTest extends TestCase
         $this->assertNotContains($hidden->id, $ids);
 
         $open = $hits[0]['open'];
-        $this->callMcpTool($caller, $open['tool'], $open['arguments'])->assertJsonPath('result.isError', false);
-        $this->callMcpTool($other, $open['tool'], $open['arguments'])->assertJsonPath('result.isError', true);
+        $this->journal->mcpTool(
+            $caller,
+            $open['tool'],
+            $open['arguments'],
+        )->assertOk()->assertJsonPath('result.isError', false);
+        $this->journal->mcpTool(
+            $other,
+            $open['tool'],
+            $open['arguments'],
+        )->assertOk()->assertJsonPath('result.isError', true);
     }
 }

@@ -12,8 +12,6 @@ use App\Values\RuleExample;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsMcpFrames;
-use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -22,8 +20,6 @@ use Tests\TestCase;
 final class ProposeRuleDeclarationTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SendsMcpFrames;
-    use SendsSignedPayloads;
 
     private TestStart $start;
 
@@ -39,17 +35,21 @@ final class ProposeRuleDeclarationTest extends TestCase
     {
         $requestId = $this->explainAcme();
 
-        $proposal = $this->callMcpTool($this->start, CommandTypeProposeTool::NAME, [
+        $proposal = $this->journal->mcpTool($this->start, CommandTypeProposeTool::NAME, [
             'request' => $requestId,
             'declaration_file' => json_encode(
                 ['declarations' => [[...$this->declaration()->toArray(), 'request_id' => 'propose-tool-1']]],
                 JSON_THROW_ON_ERROR,
             ),
             'request_key' => 'propose-tool-1',
-        ])->assertJsonPath('result.isError', false)->json('result.structuredContent');
+        ])->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent');
 
         $this->app->forgetScopedInstances();
-        $shown = $this->callMcpTool($this->start, CommandRequestShowTool::NAME, ['request' => $requestId])
+        $shown = $this->journal->mcpTool(
+            $this->start,
+            CommandRequestShowTool::NAME,
+            ['request' => $requestId],
+        )->assertOk()
             ->assertJsonPath('result.isError', false)
             ->json('result.structuredContent');
         $this->assertSame(RequestStatus::AwaitingSampleApproval->value, $shown['state']);
@@ -58,7 +58,12 @@ final class ProposeRuleDeclarationTest extends TestCase
 
     private function explainAcme(): string
     {
-        return (string) $this->signed($this->start, '/agent/processes/explain', ['line' => 'acme verify'])
+        return (string) $this->journal->agentCall(
+            $this->start,
+            'POST',
+            '/agent/processes/explain',
+            ['line' => 'acme verify'],
+        )
             ->json('held.0.requestId');
     }
 

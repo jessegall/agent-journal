@@ -39,7 +39,6 @@ use Tests\Support\DomainBoot;
 use Tests\Support\FakeMonotonicClock;
 use Tests\Support\FakeServerClock;
 use Tests\Support\InstallsCommandModules;
-use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -52,7 +51,6 @@ final class DueWorkOnTickTest extends TestCase
     use BuildsTickingStacks;
     use CommitsHookRows;
     use InstallsCommandModules;
-    use SendsSignedPayloads;
 
     private const array TABLES = [
         'agents',
@@ -142,7 +140,12 @@ final class DueWorkOnTickTest extends TestCase
     public function test_an_answer_before_the_reminder_sends_none_and_removes_the_frame_in_that_command(): void
     {
         $question = Question::ask('Which database?');
-        $stack = $this->tickingStack(AwaitAnswerState::TYPE_KEY, [$question->id], $this->asked, subjectValue: 'questionId');
+        $stack = $this->tickingStack(
+            AwaitAnswerState::TYPE_KEY,
+            [$question->id],
+            $this->asked,
+            subjectValue: 'questionId',
+        );
         $target = new StackTarget($stack->agent_id, $stack->session_id);
         $question->answer();
         $this->app->make(Dispatcher::class)->dispatch(new QuestionAnswered($question->id));
@@ -171,8 +174,9 @@ final class DueWorkOnTickTest extends TestCase
         $this->app->forgetInstance(MonotonicClock::class);
         $start = TestStart::start();
         $source = new RouteHeartbeatSource(
-            fn (string $path) => $this->signed(
+            fn (string $path) => $this->journal->agentCall(
                 $start,
+                'POST',
                 $path,
                 ['request_key' => bin2hex(random_bytes(8))],
             )->getStatusCode(),

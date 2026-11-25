@@ -24,9 +24,6 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsKeyedCommands;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -38,9 +35,6 @@ use Tests\TestCase;
 final class NotifySignInTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsKeyedCommands;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
 
     private const array TABLES = [
         'accounts',
@@ -131,7 +125,7 @@ final class NotifySignInTest extends TestCase
         $this->app->make(CurrentActorSetter::class)->set($owner, new OwnerAuthority('test'));
 
         $begin = new BeginSignInCommand('claude-code', SignInMethod::OAuth);
-        $started = $this->runOnBus($begin, (string) Str::ulid());
+        $started = $this->journal->run($begin, (string) Str::ulid());
 
         return $started->attemptId;
     }
@@ -160,11 +154,11 @@ final class NotifySignInTest extends TestCase
      */
     private function signed(EnrolledHost $host, string $target, array $body = []): TestResponse
     {
-        return $this->signedHostCall($host, 'POST', $target, $body === [] ? '' : (string) json_encode($body));
+        return $this->journal->hostCall($host, 'POST', $target, $body === [] ? '' : (string) json_encode($body));
     }
 
     private function enrollHost(): EnrolledHost
     {
-        return $this->asSystem(new EnrollHostCommand('test host '.Str::random(6), ['/work']));
+        return $this->journal->asSystem(new EnrollHostCommand('test host '.Str::random(6), ['/work']));
     }
 }

@@ -10,7 +10,6 @@ use App\Exceptions\SkillPublicationStale;
 use App\Models\Skills\SkillPublication;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
 use Tests\Support\Skills\HasSkillTargets;
 use Tests\Support\Skills\IntendsSkillPublications;
 use Tests\TestCase;
@@ -24,16 +23,15 @@ final class PrepareSkillPublicationTest extends TestCase
     use CommitsHookRows;
     use HasSkillTargets;
     use IntendsSkillPublications;
-    use RunsTrustedCommands;
 
     private const array TABLES = ['skill_publications', 'skill_generations', 'command_receipts'];
 
     public function test_the_holder_stages_every_file_and_is_told_how_far_it_got(): void
     {
         $publication = $this->intend('First text.');
-        $claim = $this->asSystem(new PublishSkillsCommand($publication->id, 'worker-1'));
+        $claim = $this->journal->asSystem(new PublishSkillsCommand($publication->id, 'worker-1'));
 
-        $progress = $this->asSystem(new PrepareSkillPublicationCommand($publication->id, $claim->fence));
+        $progress = $this->journal->asSystem(new PrepareSkillPublicationCommand($publication->id, $claim->fence));
 
         $this->assertSame($claim->files, $progress->staged);
         $this->assertSame($claim->files, $publication->refresh()->progress);
@@ -42,7 +40,7 @@ final class PrepareSkillPublicationTest extends TestCase
     public function test_a_worker_with_an_older_fence_is_stopped(): void
     {
         $publication = $this->intend('First text.');
-        $first = $this->asSystem(new PublishSkillsCommand($publication->id, 'worker-1'));
+        $first = $this->journal->asSystem(new PublishSkillsCommand($publication->id, 'worker-1'));
         SkillPublication::query()->whereKey($publication->id)->firstOrFail()->claim(
             'worker-2',
             CarbonImmutable::now()->addMinute(),
@@ -50,6 +48,6 @@ final class PrepareSkillPublicationTest extends TestCase
 
         $this->expectException(SkillPublicationStale::class);
 
-        $this->asSystem(new PrepareSkillPublicationCommand($publication->id, $first->fence));
+        $this->journal->asSystem(new PrepareSkillPublicationCommand($publication->id, $first->fence));
     }
 }

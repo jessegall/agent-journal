@@ -18,14 +18,12 @@ use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\SendsMcpFrames;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 final class PlanCascadeToolsTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsMcpFrames;
 
     private const array TABLES = [
         'users', 'agents', 'agent_sessions', 'agent_stacks', 'session_tokens',
@@ -64,7 +62,11 @@ final class PlanCascadeToolsTest extends TestCase
         $finished->finish('Done.');
         $this->planStructure()->addTasks($phase, [...$tasks->modelKeys(), $finished->id]);
 
-        $summary = $this->callMcpTool($this->caller, 'plans_assign_work', $this->assignArguments($plan))
+        $summary = $this->journal->mcpTool(
+            $this->caller,
+            'plans_assign_work',
+            $this->assignArguments($plan),
+        )->assertOk()
             ->assertJsonPath('result.isError', false)
             ->assertJsonPath('result.structuredContent.changed', 22)
             ->assertJsonPath('result.structuredContent.unchanged', 0)
@@ -75,7 +77,7 @@ final class PlanCascadeToolsTest extends TestCase
         $actions = $summary['next_actions'];
 
         for ($page = 0; $page < 23 && $actions !== []; $page++) {
-            $reply = $this->callMcpTool($this->caller, $actions[0]['tool'], $actions[0]['arguments']);
+            $reply = $this->journal->mcpTool($this->caller, $actions[0]['tool'], $actions[0]['arguments'])->assertOk();
             $this->assertFalse($reply->json('result.isError'), $reply->getContent());
             $receipt = $reply->assertJsonPath('result.structuredContent.outcome_count', 23)
                 ->assertJsonPath('result.structuredContent.outcome_offset', count($outcomes))
@@ -99,24 +101,24 @@ final class PlanCascadeToolsTest extends TestCase
         $plan = Plan::factory()->create();
         $other = TestStart::start('writing-helper');
         $arguments = $this->assignArguments($plan);
-        $this->callMcpTool($this->caller, 'plans_assign_work', $arguments)
+        $this->journal->mcpTool($this->caller, 'plans_assign_work', $arguments)->assertOk()
             ->assertJsonPath('result.structuredContent.changed', 1);
         $first = $this->reference($plan);
 
-        $this->callMcpTool($this->caller, 'plans_reassign_work', [
+        $this->journal->mcpTool($this->caller, 'plans_reassign_work', [
             'root' => $arguments['root'],
             'expected_assignment' => $first,
             'recipient' => ['type' => 'agent', 'id' => $other->agent->id],
             'request_key' => 'move-plan',
-        ])->assertJsonPath('result.structuredContent.changed', 1);
+        ])->assertOk()->assertJsonPath('result.structuredContent.changed', 1);
         $second = $this->reference($plan);
         $this->assertSame($other->agent->id, $second['holder']['id']);
 
-        $this->callMcpTool($this->caller, 'plans_unassign_work', [
+        $this->journal->mcpTool($this->caller, 'plans_unassign_work', [
             'root' => $arguments['root'],
             'expected_assignment' => $second,
             'request_key' => 'release-plan',
-        ])->assertJsonPath('result.structuredContent.changed', 1);
+        ])->assertOk()->assertJsonPath('result.structuredContent.changed', 1);
         $this->assertSame(0, AssignmentRecord::query()->count());
     }
 
@@ -124,7 +126,7 @@ final class PlanCascadeToolsTest extends TestCase
     {
         $plan = Plan::factory()->create(['status' => PlanStatus::Done]);
 
-        $this->callMcpTool($this->caller, 'plans_assign_work', $this->assignArguments($plan))
+        $this->journal->mcpTool($this->caller, 'plans_assign_work', $this->assignArguments($plan))->assertOk()
             ->assertJsonPath('result.isError', true)
             ->assertJsonPath('result.structuredContent.next_action.tool', 'plans_read')
             ->assertJsonPath('result.structuredContent.next_action.arguments.plan_id', $plan->id)
@@ -153,11 +155,11 @@ final class PlanCascadeToolsTest extends TestCase
      */
     private function reference(Plan $plan): array
     {
-        $holder = $this->callMcpTool(
+        $holder = $this->journal->mcpTool(
             $this->caller,
             'assignments_read',
             ['record_type' => 'plans.plan', 'record_id' => $plan->id],
-        )->json('result.structuredContent.holder');
+        )->assertOk()->json('result.structuredContent.holder');
 
         return ['id' => $holder['reference'], 'holder' => ['type' => $holder['type'], 'id' => $holder['id']]];
     }

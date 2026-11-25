@@ -16,7 +16,6 @@ use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -28,7 +27,6 @@ use Tests\TestCase;
 final class SingleRecordCommandsTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsSignedPayloads;
 
     private const array TABLES = ['users', 'agents', 'agent_sessions', 'session_tokens', 'tasks', 'assignments'];
 
@@ -179,13 +177,15 @@ final class SingleRecordCommandsTest extends TestCase
             ],
         )->assertOk();
 
-        $this->signed(
+        $this->journal->agentCall(
             $this->main,
+            'POST',
             '/agent/agents/retire',
             ['agentId' => $this->main->agent->id, 'request_key' => 'retire-1'],
         )->assertForbidden();
-        $this->signed(
+        $this->journal->agentCall(
             $this->main,
+            'POST',
             '/agent/agents/retire',
             ['agentId' => $this->helper->agent->id, 'request_key' => 'retire-2'],
         )->assertOk()->assertJson(['changed' => 1]);
@@ -200,7 +200,7 @@ final class SingleRecordCommandsTest extends TestCase
 
     public function test_the_commands_send_the_same_calls_and_fail_on_a_refusal(): void
     {
-        $this->runCommandsAs($this->main);
+        $this->journal->relayAgentCommands($this->main);
 
         $this->artisan(
             'assignment:assign',
@@ -235,6 +235,6 @@ final class SingleRecordCommandsTest extends TestCase
     {
         $key = $command === 'show' ? [] : ['request_key' => (string) Str::ulid()];
 
-        return $this->signed($start, "/agent/assignments/{$command}", [...$body, ...$key]);
+        return $this->journal->agentCall($start, 'POST', "/agent/assignments/{$command}", [...$body, ...$key]);
     }
 }

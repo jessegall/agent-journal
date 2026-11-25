@@ -17,7 +17,6 @@ use Domain\Sharing\Models\ShareGatewayOperation;
 use Domain\Sharing\Support\ClaimedGatewayOperation;
 use Domain\Sharing\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\RunsTrustedCommands;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\TestShares;
 use Tests\Support\TestActors;
@@ -28,7 +27,6 @@ use Tests\Support\TestActors;
 final class RecordGatewayHealthTest extends TestCase
 {
     use RefreshHookDatabase;
-    use RunsTrustedCommands;
 
     private const string FIRST_RUN = '01JD8X0G9M3QZ6V4K2RUN0000A';
 
@@ -60,25 +58,25 @@ final class RecordGatewayHealthTest extends TestCase
 
     private function claim(string $runId): ClaimedGatewayOperation|null
     {
-        return $this->asSystem(new ClaimGatewayOperationCommand($runId));
+        return $this->journal->asSystem(new ClaimGatewayOperationCommand($runId));
     }
 
     private function outcome(string $runId, ClaimedGatewayOperation|null $claim, GatewayOutcome $outcome): void
     {
         $this->assertNotNull($claim);
-        $this->asSystem(
-            new RecordGatewayOutcomeCommand(
-                $runId,
-                $claim->operation->operationId,
-                $claim->operation->endpointVersion,
-                $claim->operation->leaseToken,
-                $outcome,
-            ),
-        );
+        $this->journal->asSystem(new RecordGatewayOutcomeCommand(
+            $runId,
+            $claim->operation->operationId,
+            $claim->operation->endpointVersion,
+            $claim->operation->leaseToken,
+            $outcome,
+        ));
     }
 
     private function health(string $runId, int $endpointVersion): void
     {
-        $this->asSystem(new RecordGatewayHealthCommand($runId, $this->configuration->id, $endpointVersion, true));
+        $this->journal->asSystem(
+            new RecordGatewayHealthCommand($runId, $this->configuration->id, $endpointVersion, true),
+        );
     }
 }

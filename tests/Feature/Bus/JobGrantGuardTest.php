@@ -24,16 +24,12 @@ use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\SendsMcpFrames;
-use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TestActors;
 use Tests\TestCase;
 
 final class JobGrantGuardTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsMcpFrames;
-    use SendsSignedPayloads;
 
     private const string KEY = 'assignment-job-guard';
 
@@ -74,11 +70,11 @@ final class JobGrantGuardTest extends TestCase
     public function test_a_reviewer_cannot_discover_or_call_hidden_writes_and_cannot_dispatch_work(): void
     {
         $start = TestStart::start('read-only-helper');
-        $tools = $this->sendMcp($start, 'tools/list')->assertOk()->json('result.tools');
+        $tools = $this->journal->mcpRequest($start, 'tools/list')->assertOk()->json('result.tools');
 
         $this->assertContains('overview_read', array_column($tools, 'name'));
         $this->assertNotContains('skills_edit', array_column($tools, 'name'));
-        $this->sendMcp($start, 'tools/call', ['name' => 'skills_edit', 'arguments' => (object) []])
+        $this->journal->mcpRequest($start, 'tools/call', ['name' => 'skills_edit', 'arguments' => (object) []])
             ->assertBadRequest()
             ->assertJsonPath('error.code', -32602);
         $this->assign($start, TestStart::start(), Task::factory()->create())
@@ -90,7 +86,12 @@ final class JobGrantGuardTest extends TestCase
     public function test_a_read_the_admission_refuses_is_refused_even_when_it_is_an_orientation_read(): void
     {
         $admission = $this->createStub(ReadAdmission::class);
-        $admission->method('assess')->willReturn(AccessDecision::refused(AccessRuleType::NotGranted, AgentText::of('core.access.profile_does_not_grant_pair')));
+        $admission->method('assess')->willReturn(
+            AccessDecision::refused(
+                AccessRuleType::NotGranted,
+                AgentText::of('core.access.profile_does_not_grant_pair'),
+            ),
+        );
         $this->app->instance(ReadAdmission::class, $admission);
         $reads = $this->app->make(ReadGrant::class);
 
@@ -99,12 +100,12 @@ final class JobGrantGuardTest extends TestCase
         }
 
         $this->assertFalse($reads->allows(new ReadRequest('plans_list')));
-        $this->signed(TestStart::start(), '/agent/tasks/assigned', [])->assertForbidden();
+        $this->journal->agentCall(TestStart::start(), 'POST', '/agent/tasks/assigned', [])->assertForbidden();
     }
 
     private function assign(TestStart $start, TestStart $recipient, Task $task): TestResponse
     {
-        return $this->signed($start, '/agent/assignments/assign', [
+        return $this->journal->agentCall($start, 'POST', '/agent/assignments/assign', [
             'record_type' => 'tasks.task',
             'record_id' => $task->id,
             'recipient_type' => 'agent',

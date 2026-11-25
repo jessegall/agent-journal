@@ -18,7 +18,6 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\SendsMcpFrames;
 use Tests\TestCase;
 
 /**
@@ -27,7 +26,6 @@ use Tests\TestCase;
 final class OrientationToolsTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsMcpFrames;
 
     private const array TABLES = [
         'users',
@@ -106,7 +104,7 @@ final class OrientationToolsTest extends TestCase
 
     public function test_a_profile_that_edits_documents_reads_their_drafts_and_a_read_only_helper_does_not(): void
     {
-        $tools = fn (TestStart $start) => $this->callMcpTool($start, 'capabilities_read', [])
+        $tools = fn (TestStart $start) => $this->journal->mcpTool($start, 'capabilities_read', [])->assertOk()
             ->json('result.structuredContent.tools');
 
         $this->assertContains('docs_drafts_read', $tools($this->caller));
@@ -116,7 +114,7 @@ final class OrientationToolsTest extends TestCase
     public function test_the_overview_resource_gives_the_same_content(): void
     {
         $tool = $this->callTool('overview_read')->json('result.structuredContent');
-        $resource = $this->sendMcp(
+        $resource = $this->journal->mcpRequest(
             $this->caller,
             'resources/read',
             ['uri' => 'journal://v1/overview'],
@@ -129,7 +127,7 @@ final class OrientationToolsTest extends TestCase
     public function test_both_descriptors_carry_always_load_and_an_output_schema(): void
     {
         $tools = array_column(
-            $this->sendMcp($this->caller, 'tools/list')->assertOk()->json('result.tools'),
+            $this->journal->mcpRequest($this->caller, 'tools/list')->assertOk()->json('result.tools'),
             null,
             'name',
         );
@@ -147,6 +145,11 @@ final class OrientationToolsTest extends TestCase
      */
     private function callTool(string $name, array $headers = []): TestResponse
     {
-        return $this->callMcpTool($this->caller, $name, [], $headers)->assertJsonPath('result.isError', false);
+        return $this->journal->mcpTool(
+            $this->caller,
+            $name,
+            [],
+            headers: $headers,
+        )->assertOk()->assertJsonPath('result.isError', false);
     }
 }

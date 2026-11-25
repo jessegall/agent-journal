@@ -31,7 +31,6 @@ use App\Values\SignInStarted;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsKeyedCommands;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
@@ -47,7 +46,6 @@ use Tests\TestCase;
 final class CompleteSignInTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsKeyedCommands;
     use WithActiveAccount;
 
     private const array TABLES = [
@@ -117,14 +115,18 @@ final class CompleteSignInTest extends TestCase
         $added = $this->completeNew('request-1', new SignInIdentity('a@example.test', 'subject-1', null));
         $account = Account::query()->sole();
         $matched = $this->completeNew('request-2', new SignInIdentity('a@example.test', 'subject-1', null));
-        $again = $this->runOnBus(new BeginSignInAgainCommand($account->id), 'request-3');
+        $again = $this->journal->run(new BeginSignInAgainCommand($account->id), 'request-3');
         $renewal = SignInAttempt::query()->whereKey($again->attemptId)->sole();
         $renewal->waitForUser();
 
         $this->app->make(JournalCommands::class)->runAsJournal(
             CommandEntry::HostControl,
             'test host',
-            new CompleteSignInCommand($again->attemptId, $renewal->generation, new SignInIdentity('a@example.test', 'subject-1', null)),
+            new CompleteSignInCommand(
+                $again->attemptId,
+                $renewal->generation,
+                new SignInIdentity('a@example.test', 'subject-1', null),
+            ),
         );
 
         $this->actAsOwner();
@@ -174,7 +176,7 @@ final class CompleteSignInTest extends TestCase
 
     private function begin(string $requestKey): SignInStarted
     {
-        return $this->runOnBus(new BeginSignInCommand('claude-code', SignInMethod::OAuth), $requestKey);
+        return $this->journal->run(new BeginSignInCommand('claude-code', SignInMethod::OAuth), $requestKey);
     }
 
     /**

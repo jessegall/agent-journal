@@ -35,8 +35,6 @@ use Domain\Comments\Models\Comment;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\TestCase;
 
 /**
@@ -46,8 +44,6 @@ use Tests\TestCase;
 final class ProjectFileTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
 
     private const array TABLES = [
         'comments', 'project_file_versions', 'project_files', 'number_groups', 'project_reads', 'project_bindings',
@@ -74,7 +70,7 @@ final class ProjectFileTest extends TestCase
     {
         parent::setUp();
 
-        $this->host = $this->enrolledHost();
+        $this->host = $this->journal->enrolledHost();
         $project = Project::create('shop', 'Shop');
         $this->binding = ProjectBinding::create(
             Host::query()->findOrFail($this->host->hostId),
@@ -103,12 +99,16 @@ final class ProjectFileTest extends TestCase
         $target = $this->target();
         $digest = hash('sha256', self::SOURCE);
 
-        $this->bus()->run(new PostTextCommentCommand($target, 'Why empty?', TextRange::lines($digest, 3, 3), (string) Str::uuid()));
+        $this->bus()->run(
+            new PostTextCommentCommand($target, 'Why empty?', TextRange::lines($digest, 3, 3), (string) Str::uuid()),
+        );
 
         $this->assertSame([$digest], Comment::query()->pluck('version_id')->all());
 
         $this->expectException(InvalidTextRange::class);
-        $this->bus()->run(new PostTextCommentCommand($target, 'Past the end', TextRange::lines($digest, 9, 9), (string) Str::uuid()));
+        $this->bus()->run(
+            new PostTextCommentCommand($target, 'Past the end', TextRange::lines($digest, 9, 9), (string) Str::uuid()),
+        );
     }
 
     public function test_a_version_a_comment_names_is_kept_while_the_oldest_unnamed_ones_go(): void
@@ -157,7 +157,10 @@ final class ProjectFileTest extends TestCase
 
     private function target(): RecordIdentity
     {
-        return new RecordIdentity(ProjectFile::linkType(), ProjectFile::query()->where('path', self::PATH)->firstOrFail()->id);
+        return new RecordIdentity(
+            ProjectFile::linkType(),
+            ProjectFile::query()->where('path', self::PATH)->firstOrFail()->id,
+        );
     }
 
     private function bus(): CommandBus
@@ -179,7 +182,7 @@ final class ProjectFileTest extends TestCase
             ActorIdentity::ofClass(User::class, '01jqzr0000000000000000user'),
         );
 
-        $this->hostCall($this->host, "/host/reports/project-reads/{$read->id}", [
+        $this->journal->hostCall($this->host, 'POST', "/host/reports/project-reads/{$read->id}", [
             'text' => $text,
             'digest' => hash('sha256', $text),
             'size' => strlen($text),

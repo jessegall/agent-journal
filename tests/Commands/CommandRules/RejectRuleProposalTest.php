@@ -13,7 +13,6 @@ use App\Models\CommandRules\RuleProposal;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -23,7 +22,6 @@ final class RejectRuleProposalTest extends TestCase
 {
     use RefreshHookDatabase;
     use RunsAcmeRequests;
-    use SendsSignedPayloads;
 
     protected function setUp(): void
     {

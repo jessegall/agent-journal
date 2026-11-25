@@ -23,7 +23,6 @@ use App\Values\RuleScope;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -33,7 +32,6 @@ final class RestoreCommandRuleTest extends TestCase
 {
     use RefreshHookDatabase;
     use RunsAcmeRequests;
-    use SendsSignedPayloads;
 
     protected function setUp(): void
     {

@@ -23,7 +23,6 @@ trait MessagingFixtures
     use CommitsHookRows;
     use OpensDriverRuntimes;
     use OpensPairChats;
-    use RunsKeyedCommands;
     use WritesInboxMessages;
 
     public const array MESSAGING_TABLES = [
@@ -112,7 +111,7 @@ trait MessagingFixtures
      */
     protected function ownerSends(string $inboxId, string $body): string
     {
-        return $this->runOnBus(new SendMessageCommand($inboxId, $body));
+        return $this->journal->run(new SendMessageCommand($inboxId, $body));
     }
 
     private function start(string $name): AgentSession

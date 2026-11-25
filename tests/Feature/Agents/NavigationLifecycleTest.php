@@ -10,8 +10,6 @@ use App\Support\DriverRequestEndings;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Engine\RunsEnginePasses;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\TestCase;
 
 /**
@@ -23,8 +21,6 @@ final class NavigationLifecycleTest extends TestCase
     use CommitsHookRows;
     use RaisesNavigationRequests;
     use RunsEnginePasses;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
 
     private const array TABLES = [
         'agents',
@@ -46,7 +42,9 @@ final class NavigationLifecycleTest extends TestCase
         $stalled = $this->stalledScript();
         $navigation = $this->raise($stalled, 'raise-1');
 
-        $this->app->make(DriverRequestEndings::class)->closeAfterExit(AgentRuntime::query()->findOrFail($stalled->agent_runtime_id));
+        $this->app->make(DriverRequestEndings::class)->closeAfterExit(
+            AgentRuntime::query()->findOrFail($stalled->agent_runtime_id),
+        );
 
         $this->assertSame(NavigationStatus::Cancelled, $navigation->fresh()?->status);
     }

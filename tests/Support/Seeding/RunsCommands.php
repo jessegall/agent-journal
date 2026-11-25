@@ -13,6 +13,7 @@ use App\Support\CommandRegistry;
 use App\Support\JournalCommands;
 use App\Support\RequestKey;
 use Illuminate\Support\Str;
+use Tests\Fixtures\Agents\TestStart;
 
 /**
  * How the journal fixture sends a command: on the bus as the actor in place, keyed or not, or as the journal itself
@@ -52,6 +53,21 @@ trait RunsCommands
     public function runUnkeyed(Command $command): mixed
     {
         return $this->app->make(CommandBus::class)->run($command);
+    }
+
+    /**
+     * Runs the command unkeyed as the agent and session of a start the test made itself.
+     *
+     * @template TResult
+     *
+     * @param  Command<TResult>  $command
+     * @return TResult
+     */
+    public function runAsStart(TestStart $start, Command $command): mixed
+    {
+        $this->requests->asAgent($start->agent->id, $start->session->id);
+
+        return $this->runUnkeyed($command);
     }
 
     /**

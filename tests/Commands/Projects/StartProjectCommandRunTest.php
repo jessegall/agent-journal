@@ -25,7 +25,6 @@ use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -36,7 +35,6 @@ use Tests\TestCase;
 final class StartProjectCommandRunTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsSignedPayloads;
 
     private const string SECRET_TASKS = 'Secret tasks';
 
@@ -64,7 +62,10 @@ final class StartProjectCommandRunTest extends TestCase
 
         $frames = $reply->json('frames');
         $this->assertSame("Tasks\n", $frames[0]['text']);
-        $this->assertSame(['sequence' => 2, 'stream' => 'exit', 'text' => '', 'isBase64' => false, 'exitCode' => 3], $frames[1]);
+        $this->assertSame(
+            ['sequence' => 2, 'stream' => 'exit', 'text' => '', 'isBase64' => false, 'exitCode' => 3],
+            $frames[1],
+        );
         $this->assertSame(1, ProjectCommandRun::query()->count());
     }
 
@@ -74,7 +75,13 @@ final class StartProjectCommandRunTest extends TestCase
         $run = $this->recordedRun('request-1', $start, $binding, 'live-worker');
         $run->finish([ProjectCommandFrame::output(1, 'stdout', "Secret tasks\n"), ProjectCommandFrame::exit(2, 0)], 0);
 
-        $reply = $this->command($start, 'request-1', $binding->id, ['comment', 'list'], 'other input')->assertConflict();
+        $reply = $this->command(
+            $start,
+            'request-1',
+            $binding->id,
+            ['comment', 'list'],
+            'other input',
+        )->assertConflict();
 
         $this->assertStringNotContainsString(self::SECRET_TASKS, (string) $reply->getContent());
         $this->assertNull($reply->json('frames'));
@@ -146,7 +153,12 @@ final class StartProjectCommandRunTest extends TestCase
             $project,
             Environment::create($project, 'Binding '.bin2hex(random_bytes(3))),
             $start->agent,
-            new BindingFolder('root-'.bin2hex(random_bytes(4)), '/Users/owner/shop', 'Owner laptop', bin2hex(random_bytes(8))),
+            new BindingFolder(
+                'root-'.bin2hex(random_bytes(4)),
+                '/Users/owner/shop',
+                'Owner laptop',
+                bin2hex(random_bytes(8)),
+            ),
         );
         $binding->recordPresence(new PresenceReport(
             'boot-1',
@@ -194,7 +206,7 @@ final class StartProjectCommandRunTest extends TestCase
         array $argv,
         string $stdin = '',
     ): TestResponse {
-        return $this->signed($start, '/api/project-commands', [
+        return $this->journal->agentCall($start, 'POST', '/api/project-commands', [
             'request_key' => $requestKey,
             'binding' => $bindingId,
             'argv' => $argv,

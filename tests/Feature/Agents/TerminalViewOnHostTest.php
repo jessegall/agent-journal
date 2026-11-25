@@ -17,8 +17,6 @@ use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Engine\RunsEnginePasses;
 use Tests\Support\OpensTerminalRuntimes;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\TestActors;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -33,8 +31,6 @@ final class TerminalViewOnHostTest extends TestCase
     use CommitsHookRows;
     use OpensTerminalRuntimes;
     use RunsEnginePasses;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
 
     private const string LAPSED_VIEW = 'a view ended before the engine ran';
 
@@ -53,12 +49,12 @@ final class TerminalViewOnHostTest extends TestCase
 
     public function test_a_claim_with_an_old_watched_version_answers_at_once_with_the_watched_runtime(): void
     {
-        $host = $this->enrolledHost();
+        $host = $this->journal->enrolledHost();
         $runtime = $this->runtimeOn($host->hostId);
         TerminalView::create(TestActors::userIdentity(1), $runtime, 500, CarbonImmutable::now(), (string) Str::ulid());
         $watched = $this->app->make(WatchedRuntimes::class);
 
-        $response = $this->hostCall($host, '/host/claim?limit=5&wait=10&watched_version=0');
+        $response = $this->journal->hostCall($host, 'POST', '/host/claim?limit=5&wait=10&watched_version=0');
 
         $response->assertOk();
         $this->assertSame([['runtime_id' => $runtime->id, 'interval_ms' => 500]], $response->json('watched'));
@@ -68,10 +64,10 @@ final class TerminalViewOnHostTest extends TestCase
     #[TimeLimit(seconds: 4, reason: 'It waits out a one second long poll.')]
     public function test_a_claim_with_the_current_version_waits_and_returns_the_same_version(): void
     {
-        $host = $this->enrolledHost();
+        $host = $this->journal->enrolledHost();
         $version = $this->app->make(WatchedRuntimes::class)->version($host->hostId);
 
-        $response = $this->hostCall($host, "/host/claim?limit=5&wait=1&watched_version={$version}");
+        $response = $this->journal->hostCall($host, 'POST', "/host/claim?limit=5&wait=1&watched_version={$version}");
 
         $response->assertOk();
         $this->assertSame([], $response->json('watched'));
@@ -80,9 +76,9 @@ final class TerminalViewOnHostTest extends TestCase
 
     public function test_a_claim_without_a_watched_version_is_refused(): void
     {
-        $host = $this->enrolledHost();
+        $host = $this->journal->enrolledHost();
 
-        $this->hostCall($host, '/host/claim?limit=5&wait=0')->assertUnprocessable();
+        $this->journal->hostCall($host, 'POST', '/host/claim?limit=5&wait=0')->assertUnprocessable();
     }
 
     public function test_the_engine_registers_the_view_sweep(): void

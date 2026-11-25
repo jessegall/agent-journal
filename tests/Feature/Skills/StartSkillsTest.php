@@ -34,7 +34,6 @@ use Tests\Fixtures\Skills\FullDiskPublisher;
 use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsBuiltInProfiles;
-use Tests\Support\RunsTrustedCommands;
 use Tests\Support\Skills\PublishesSkills;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
@@ -51,7 +50,6 @@ final class StartSkillsTest extends TestCase
     use HasContainerSupport;
     use InstallsBuiltInProfiles;
     use PublishesSkills;
-    use RunsTrustedCommands;
     use WithActiveAccount;
 
     private const string NO_SPACE = 'no space left';
@@ -103,7 +101,7 @@ final class StartSkillsTest extends TestCase
         $this->assertSame(PublicationStatus::Delivered, $publication->status);
         $this->assertFileExists("{$this->root}/targets/{$opened->sessionId}/codex/journal/SKILL.md");
 
-        $grant = $this->asSystem(new ClaimStartGrantCommand($host, $opened->runtimeId));
+        $grant = $this->journal->asSystem(new ClaimStartGrantCommand($host, $opened->runtimeId));
 
         $this->assertInstanceOf(StartGrant::class, $grant);
         $this->assertCount(1, $grant->folders);
@@ -115,18 +113,25 @@ final class StartSkillsTest extends TestCase
 
     public function test_a_failed_set_refuses_the_grant_so_nothing_spawns(): void
     {
-        $this->app->instance(SkillPublisherContract::class, new FullDiskPublisher($this->app->make(SkillPublisher::class)));
+        $this->app->instance(
+            SkillPublisherContract::class,
+            new FullDiskPublisher($this->app->make(SkillPublisher::class)),
+        );
         [$host, $opened] = $this->openCodexRuntime();
 
         $this->expectException(StartRefused::class);
         $this->expectExceptionMessage(self::NO_SPACE);
 
-        $this->asSystem(new ClaimStartGrantCommand($host, $opened->runtimeId));
+        $this->journal->asSystem(new ClaimStartGrantCommand($host, $opened->runtimeId));
     }
 
     public function test_a_program_without_a_skill_adapter_is_refused_by_name(): void
     {
-        $session = $this->sessionRow(Agent::create('Other driver', 'main-agent', $this->localProject()), 'gemini-cli', null);
+        $session = $this->sessionRow(
+            Agent::create('Other driver', 'main-agent', $this->localProject()),
+            'gemini-cli',
+            null,
+        );
 
         $this->expectException(StartRefused::class);
         $this->expectExceptionMessage('gemini-cli');
@@ -137,7 +142,11 @@ final class StartSkillsTest extends TestCase
     public function test_a_required_skill_outside_the_selection_refuses_the_start_with_its_key(): void
     {
         $this->activateReviewer(['journal-plans']);
-        $session = $this->sessionRow(Agent::create('Reviewer', 'read-only-helper', $this->localProject()), 'claude-code', 1);
+        $session = $this->sessionRow(
+            Agent::create('Reviewer', 'read-only-helper', $this->localProject()),
+            'claude-code',
+            1,
+        );
 
         $this->expectException(SkillSelectionConflict::class);
         $this->expectExceptionMessage('journal-plans');
@@ -150,7 +159,11 @@ final class StartSkillsTest extends TestCase
     {
         $this->activateReviewer([]);
         $main = $this->sessionRow(Agent::create('Main', 'main-agent', $this->localProject()), 'claude-code', null);
-        $reviewer = $this->sessionRow(Agent::create('Reviewer', 'read-only-helper', $this->localProject()), 'claude-code', 1);
+        $reviewer = $this->sessionRow(
+            Agent::create('Reviewer', 'read-only-helper', $this->localProject()),
+            'claude-code',
+            1,
+        );
 
         $this->started($main);
         $this->started($reviewer);
@@ -188,7 +201,7 @@ final class StartSkillsTest extends TestCase
      */
     private function openCodexRuntime(): array
     {
-        $host = $this->asSystem(new EnrollHostCommand('test host', [self::FOLDER]));
+        $host = $this->journal->asSystem(new EnrollHostCommand('test host', [self::FOLDER]));
         $agent = Agent::create('Codex agent', 'main-agent', $this->localProject());
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
         $opened = $this->app->make(CommandBus::class)->run(new OpenAgentRuntimeCommand(

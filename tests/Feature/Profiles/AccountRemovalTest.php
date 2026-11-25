@@ -42,7 +42,6 @@ use LogicException;
 use Tests\Fixtures\Profiles\FinishingProtocol;
 use Tests\Fixtures\Profiles\RecordingSignInHost;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsKeyedCommands;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
@@ -57,7 +56,6 @@ use Tests\TestCase;
 final class AccountRemovalTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsKeyedCommands;
     use WithActiveAccount;
 
     private const string NO_DEFAULT_ACCOUNT = 'codex cannot be started now: no default account is chosen for it; '
@@ -108,7 +106,13 @@ final class AccountRemovalTest extends TestCase
             false,
             'account',
         );
-        $runner = new PrivateSignInProcesses($host, $protocols, static fn () => null, $this->app->make(Files::class), new LocalAccountFolders($this->app->make(Files::class)));
+        $runner = new PrivateSignInProcesses(
+            $host,
+            $protocols,
+            static fn () => null,
+            $this->app->make(Files::class),
+            new LocalAccountFolders($this->app->make(Files::class)),
+        );
 
         $this->assertTrue($runner->cleanNext());
         $host->nextCleanup = new ClaimedCleanup(
@@ -161,7 +165,14 @@ final class AccountRemovalTest extends TestCase
                 throw new LogicException('a folder that is gone is used by no session');
             }
         };
-        $runner = new PrivateSignInProcesses($host, $protocols, static fn () => null, $this->app->make(Files::class), new LocalAccountFolders($this->app->make(Files::class)), $nobodyMayDrain);
+        $runner = new PrivateSignInProcesses(
+            $host,
+            $protocols,
+            static fn () => null,
+            $this->app->make(Files::class),
+            new LocalAccountFolders($this->app->make(Files::class)),
+            $nobodyMayDrain,
+        );
 
         $this->assertTrue($runner->cleanNext());
         $this->assertFalse($runner->cleanNext());
@@ -199,7 +210,14 @@ final class AccountRemovalTest extends TestCase
             }
         };
 
-        new PrivateSignInProcesses($host, $protocols, static fn () => null, $this->app->make(Files::class), new LocalAccountFolders($this->app->make(Files::class)), $stillRunning)->cleanNext();
+        new PrivateSignInProcesses(
+            $host,
+            $protocols,
+            static fn () => null,
+            $this->app->make(Files::class),
+            new LocalAccountFolders($this->app->make(Files::class)),
+            $stillRunning,
+        )->cleanNext();
 
         $this->assertEquals([new CleanupProgress(false, false)], $host->cleanups);
         $this->assertDirectoryExists($directory);
@@ -237,7 +255,14 @@ final class AccountRemovalTest extends TestCase
                 return ! $this->isRunning;
             }
         };
-        $runner = new PrivateSignInProcesses($host, $protocols, static fn () => null, $this->app->make(Files::class), new LocalAccountFolders($this->app->make(Files::class)), $session);
+        $runner = new PrivateSignInProcesses(
+            $host,
+            $protocols,
+            static fn () => null,
+            $this->app->make(Files::class),
+            new LocalAccountFolders($this->app->make(Files::class)),
+            $session,
+        );
 
         $host->nextCleanup = $displaced;
         $runner->cleanNext();
@@ -277,7 +302,7 @@ final class AccountRemovalTest extends TestCase
             new OwnerAuthority('test'),
         );
 
-        return $this->runOnBus($command);
+        return $this->journal->run($command);
     }
 
     private function asHost(Command $command): mixed

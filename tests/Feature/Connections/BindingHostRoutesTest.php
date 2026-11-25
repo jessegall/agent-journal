@@ -10,8 +10,6 @@ use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\ConnectsProjects;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\TestCase;
 
 /**
@@ -23,8 +21,6 @@ final class BindingHostRoutesTest extends TestCase
 {
     use CommitsHookRows;
     use ConnectsProjects;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
 
     private const array TABLES = [
         'command_receipts', 'connection_audits', 'project_invitations', 'install_attempts', 'project_bindings',
@@ -50,10 +46,10 @@ final class BindingHostRoutesTest extends TestCase
 
     public function test_an_enrolled_host_claims_on_a_shared_route_and_is_refused_a_relays_route(): void
     {
-        $host = $this->enrolledHost();
+        $host = $this->journal->enrolledHost();
 
-        $this->signedHostCall($host, 'POST', '/host/claim?limit=1&wait=0&watched_version=0', '{}')->assertOk();
-        $this->signedHostCall($host, 'POST', '/host/bindings/'.strtolower((string) Str::ulid()).'/presence', '{}')
+        $this->journal->hostCall($host, 'POST', '/host/claim?limit=1&wait=0&watched_version=0', '{}')->assertOk();
+        $this->journal->hostCall($host, 'POST', '/host/bindings/'.strtolower((string) Str::ulid()).'/presence', '{}')
             ->assertForbidden()
             ->assertJsonPath('message', HostRoleRefused::forRelayOnly($host->hostId)->getMessage());
     }

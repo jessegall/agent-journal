@@ -14,7 +14,6 @@ use Domain\Tasks\Models\TaskWaitHistory;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsKeyedCommands;
 
 /**
  * A wait whose prerequisite was cancelled still holds its task until it is removed; the removal frees the task and
@@ -24,7 +23,6 @@ final class RemoveTaskWaitTest extends TestCase
 {
     use ActsAsOwner;
     use CommitsHookRows;
-    use RunsKeyedCommands;
 
     private const array TABLES = [
         'users',
@@ -84,6 +82,6 @@ final class RemoveTaskWaitTest extends TestCase
 
     private function runCommand(object $command): void
     {
-        $this->runOnBus($command);
+        $this->journal->run($command);
     }
 }

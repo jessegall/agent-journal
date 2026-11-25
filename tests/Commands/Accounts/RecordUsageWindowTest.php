@@ -13,8 +13,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -26,8 +24,6 @@ use Tests\TestCase;
 final class RecordUsageWindowTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
     use WithActiveAccount;
 
     private const array TABLES = [
@@ -51,7 +47,7 @@ final class RecordUsageWindowTest extends TestCase
         parent::setUp();
 
         $this->account = $this->chooseActiveAccounts()['claude-code'];
-        $this->host = $this->enrolledHost();
+        $this->host = $this->journal->enrolledHost();
     }
 
     public function test_a_window_lands_on_the_starts_account(): void
@@ -80,7 +76,7 @@ final class RecordUsageWindowTest extends TestCase
         EnrolledHost|null $host = null,
         string $observedAt = '2026-11-21T10:00:00Z',
     ): TestResponse {
-        return $this->hostCall($host ?? $this->host, '/host/reports/usage', [
+        return $this->journal->hostCall($host ?? $this->host, 'POST', '/host/reports/usage', [
             'start_key' => $key,
             'generation' => 1,
             'source_id' => $source,

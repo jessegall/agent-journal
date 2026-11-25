@@ -20,7 +20,6 @@ use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsKeyedCommands;
 use Tests\Support\TestIds;
 
 /**
@@ -30,7 +29,6 @@ use Tests\Support\TestIds;
 final class TaskPageTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsKeyedCommands;
 
     private const array TABLES = [
         'users',
@@ -110,7 +108,7 @@ final class TaskPageTest extends TestCase
         $first = Task::factory()->create(['title' => 'Prepare records']);
         $second = Task::factory()->create(['title' => 'Publish records']);
         $this->journal->actAsUserId($this->owner->id);
-        $this->runOnBus(new AddTaskWaitCommand($second->id, $first->id));
+        $this->journal->run(new AddTaskWaitCommand($second->id, $first->id));
 
         $waiting = $this->actingAs($this->owner)->get("/tasks/{$second->number}")->assertOk();
 
@@ -130,7 +128,7 @@ final class TaskPageTest extends TestCase
         $first = Task::factory()->create(['title' => 'Prepare records']);
         $second = Task::factory()->create(['title' => 'Publish records']);
         $this->journal->actAsUserId($this->owner->id);
-        $this->runOnBus(new AddTaskWaitCommand($second->id, $first->id));
+        $this->journal->run(new AddTaskWaitCommand($second->id, $first->id));
 
         $waiting = $this->actingAs($this->owner)->get("/tasks/{$second->number}?section=waits")->assertOk();
 

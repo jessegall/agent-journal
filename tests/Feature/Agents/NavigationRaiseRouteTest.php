@@ -33,8 +33,6 @@ use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\RecordedAttention;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -47,8 +45,6 @@ final class NavigationRaiseRouteTest extends TestCase
 {
     use CommitsHookRows;
     use OpensLedgerRuntimes;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
 
     private const string STALE_REASON = 'label-missing at step 1';
 
@@ -357,7 +353,7 @@ final class NavigationRaiseRouteTest extends TestCase
         array $declined = [],
         array $stale = [],
     ): TestResponse {
-        return $this->hostCall($host, "/host/runtimes/{$opened->runtimeId}/navigation", [
+        return $this->journal->hostCall($host, 'POST', "/host/runtimes/{$opened->runtimeId}/navigation", [
             'operation_key' => "{$request->id}:{$request->attempt_version}:2",
             'request_id' => $request->id,
             'attempt' => $request->attempt_version,

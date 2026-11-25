@@ -16,8 +16,6 @@ use App\Support\EnrolledHost;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\TestCase;
 
 /**
@@ -28,8 +26,6 @@ use Tests\TestCase;
 final class RecordHostProtectionTest extends TestCase
 {
     use RefreshHookDatabase;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
 
     private const string UNENFORCED = "the agent image's protection report leaves "
         .'account-secrets, process-inspection unenforced (%s)';
@@ -103,14 +99,17 @@ final class RecordHostProtectionTest extends TestCase
 
     private function useArrangement(ArrangementType $arrangement): void
     {
-        $this->app->instance(ArrangementSetting::class, ArrangementSetting::fromConfig($arrangement->value, 'journal', '{}'));
+        $this->app->instance(
+            ArrangementSetting::class,
+            ArrangementSetting::fromConfig($arrangement->value, 'journal', '{}'),
+        );
     }
 
     private function containedHost(): EnrolledHost
     {
         $name = 'contained host '.Str::random(6);
 
-        return $this->asSystem(new EnrollHostCommand($name, ['/workspace'], ArrangementType::Contained));
+        return $this->journal->asSystem(new EnrollHostCommand($name, ['/workspace'], ArrangementType::Contained));
     }
 
     /**
@@ -123,7 +122,7 @@ final class RecordHostProtectionTest extends TestCase
         array $items,
         string $platform = 'linux-container',
     ): TestResponse {
-        return $this->hostCall($host, '/host/reports/protection', [
+        return $this->journal->hostCall($host, 'POST', '/host/reports/protection', [
             'driver' => $driver,
             'build' => $build,
             'platform' => $platform,

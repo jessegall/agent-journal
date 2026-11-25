@@ -33,8 +33,6 @@ use App\Values\ScriptProgress;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensPairChats;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
@@ -48,8 +46,6 @@ final class NotifyRequestProgressTest extends TestCase
     use CommitsHookRows;
     use OpensLedgerRuntimes;
     use OpensPairChats;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
     use WritesInboxMessages;
 
     private const array TABLES = [
@@ -75,16 +71,23 @@ final class NotifyRequestProgressTest extends TestCase
     public function test_a_staged_report_gives_the_request_back_to_be_offered_again_after_a_wait(): void
     {
         [$host, $opened] = $this->openRuntime(firstMessage: 'Behind a menu');
-        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
 
         $this->notifyProgress($host->hostId, $opened->firstRequestId, RequestProgress::Staged);
 
-        $this->assertSame(RequestProgress::Accepted, DriverRequest::query()->findOrFail($opened->firstRequestId)->progress);
-        $tooSoon = $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->assertSame(
+            RequestProgress::Accepted,
+            DriverRequest::query()->findOrFail($opened->firstRequestId)->progress,
+        );
+        $tooSoon = $this->journal->asSystem(
+            new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()),
+        );
         $this->assertSame([], $tooSoon->requests);
 
         $this->travel(3)->seconds();
-        $again = $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $again = $this->journal->asSystem(
+            new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()),
+        );
 
         $this->assertSame(
             [$opened->firstRequestId],
@@ -99,9 +102,9 @@ final class NotifyRequestProgressTest extends TestCase
     public function test_the_journal_holds_a_runtime_for_attention_from_the_hosts_facts(): void
     {
         [$host, $signedOut] = $this->openRuntime(firstMessage: 'Signed out');
-        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
         $wake = DriverRequest::query()->findOrFail($signedOut->firstRequestId);
-        $this->asSystem(new NotifyRequestProgressCommand(
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
             $host->hostId,
             $wake->id,
             $wake->attempt_version,
@@ -114,8 +117,10 @@ final class NotifyRequestProgressTest extends TestCase
 
         [$stopHost, $stopped] = $this->openRuntime();
         $stop = $this->asOwner(new StopAgentCommand($this->agentIdOf($stopped), $stopped->sessionId, 'stop-1'));
-        $this->asSystem(new ClaimDriverRequestsCommand($stopHost->hostId, 10, BrowserInputCapabilities::none()));
-        $this->asSystem(new NotifyRequestProgressCommand(
+        $this->journal->asSystem(
+            new ClaimDriverRequestsCommand($stopHost->hostId, 10, BrowserInputCapabilities::none()),
+        );
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
             $stopHost->hostId,
             $stop->requestId,
             DriverRequest::query()->findOrFail($stop->requestId)->attempt_version,
@@ -138,15 +143,22 @@ final class NotifyRequestProgressTest extends TestCase
         [$host, $opened] = $this->openRuntime();
         $agentId = $this->agentIdOf($opened);
         $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
-        $stop = $this->asOwner(new StopAgentCommand($agentId, $opened->sessionId, 'stop-1', $runtime->process_generation));
-        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $stop = $this->asOwner(
+            new StopAgentCommand($agentId, $opened->sessionId, 'stop-1', $runtime->process_generation),
+        );
+        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
         $this->notifyProgress($host->hostId, $stop->requestId, RequestProgress::Applied);
 
         $this->assertSame('Stopping', $this->statusOf($agentId)->label);
 
         $this->assertThrows(
-            fn () => $this->asSystem(
-                new NotifyRuntimeExitCommand($host->hostId, $opened->runtimeId, $runtime->process_generation - 1, 'old exit'),
+            fn () => $this->journal->asSystem(
+                new NotifyRuntimeExitCommand(
+                    $host->hostId,
+                    $opened->runtimeId,
+                    $runtime->process_generation - 1,
+                    'old exit',
+                ),
             ),
             HostReportRefused::class,
         );
@@ -168,7 +180,7 @@ final class NotifyRequestProgressTest extends TestCase
         );
 
         foreach ([$resumed, $cancelled] as $request) {
-            $this->asSystem(new NotifyRequestProgressCommand(
+            $this->journal->asSystem(new NotifyRequestProgressCommand(
                 $host->hostId,
                 $request->id,
                 $request->attempt_version,
@@ -202,14 +214,16 @@ final class NotifyRequestProgressTest extends TestCase
     {
         $generation = AgentRuntime::query()->findOrFail($opened->runtimeId)->process_generation;
 
-        $this->asSystem(new NotifyRuntimeExitCommand($host->hostId, $opened->runtimeId, $generation, 'exit code 0'));
+        $this->journal->asSystem(
+            new NotifyRuntimeExitCommand($host->hostId, $opened->runtimeId, $generation, 'exit code 0'),
+        );
     }
 
     private function notifyProgress(string $hostId, string $requestId, RequestProgress $progress): void
     {
         $request = DriverRequest::query()->findOrFail($requestId);
 
-        $this->asSystem(new NotifyRequestProgressCommand(
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
             $hostId,
             $request->id,
             $request->attempt_version,

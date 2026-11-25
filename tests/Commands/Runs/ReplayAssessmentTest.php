@@ -15,7 +15,6 @@ use App\Models\Runs\ResultReceipt;
 use App\Values\PartKey;
 use Tests\Support\Processes\StartsWithApprovedAcmePair;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -25,13 +24,15 @@ use Tests\TestCase;
 final class ReplayAssessmentTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SendsSignedPayloads;
     use StartsWithApprovedAcmePair;
 
     public function test_a_replay_appends_a_linked_assessment_and_runs_nothing_again(): void
     {
         $part = $this->normalRun(0, self::PASSED_OUTPUT);
-        $first = $this->runAsAgent(new AssessPartOutputCommand($part->id));
+        $first = $this->journal->actAsAgentIds(
+            $this->start->agent->id,
+            $this->start->session->id,
+        )->runUnkeyed(new AssessPartOutputCommand($part->id));
         $runs = ProcessRun::query()->withoutGlobalScopes()->count();
 
         $second = $this->asUser(new ReplayAssessmentCommand($part->id));

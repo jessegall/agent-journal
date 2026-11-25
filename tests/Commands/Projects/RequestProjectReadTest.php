@@ -27,8 +27,6 @@ use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -41,8 +39,6 @@ final class RequestProjectReadTest extends TestCase
 {
     use ActsAsActors;
     use CommitsHookRows;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
 
     private const array TABLES = [
         'project_reads', 'project_bindings', 'project_environments', 'projects', 'agent_runtimes', 'agents', 'hosts',
@@ -59,7 +55,7 @@ final class RequestProjectReadTest extends TestCase
     {
         parent::setUp();
 
-        $this->host = $this->enrolledHost();
+        $this->host = $this->journal->enrolledHost();
         $this->binding = $this->bindingOn($this->host);
     }
 
@@ -100,7 +96,10 @@ final class RequestProjectReadTest extends TestCase
     public function test_a_signed_in_member_who_is_not_the_owner_may_not_read_the_project(): void
     {
         $this->ownedBy(8);
-        $this->app->make(CurrentActorSetter::class)->set(TestActors::user(7), new InboxMemberAuthority('the web sign-in'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            TestActors::user(7),
+            new InboxMemberAuthority('the web sign-in'),
+        );
 
         $this->expectException(CommandNotRegistered::class);
 
@@ -114,7 +113,10 @@ final class RequestProjectReadTest extends TestCase
 
         $this->expectException(ProjectReadRefused::class);
 
-        $this->app->make(ProjectFiles::class)->file($this->binding, str_repeat('a', ProjectRead::PATH_CHARACTER_LIMIT + 1));
+        $this->app->make(ProjectFiles::class)->file(
+            $this->binding,
+            str_repeat('a', ProjectRead::PATH_CHARACTER_LIMIT + 1),
+        );
     }
 
     private function ownedBy(int $userNumber): void
@@ -150,7 +152,7 @@ final class RequestProjectReadTest extends TestCase
      */
     private function notify(ProjectRead $read, array $answer): TestResponse
     {
-        return $this->hostCall($this->host, "/host/reports/project-reads/{$read->id}", $answer);
+        return $this->journal->hostCall($this->host, 'POST', "/host/reports/project-reads/{$read->id}", $answer);
     }
 
     private function bindingOn(EnrolledHost $host): ProjectBinding

@@ -8,7 +8,6 @@ use App\Contracts\Drivers\ToolDiscovery;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\SendsMcpFrames;
 use Tests\TestCase;
 
 /**
@@ -17,7 +16,6 @@ use Tests\TestCase;
 final class ToolDiscoveryTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsMcpFrames;
 
     private TestStart $start;
 
@@ -35,23 +33,23 @@ final class ToolDiscoveryTest extends TestCase
     {
         $signedAt = CarbonImmutable::now()->subSeconds(5)->startOfSecond();
 
-        $this->sendMcp($this->start, 'tools/list', issuedAt: $signedAt->getTimestamp())->assertOk();
+        $this->journal->mcpRequest(
+            $this->start,
+            'tools/list',
+            issuedAt: CarbonImmutable::createFromTimestamp($signedAt->getTimestamp()),
+        )->assertOk();
 
         $this->assertTrue($signedAt->equalTo($this->start->session->fresh()?->discovered_at));
     }
 
     public function test_an_initialize_alone_records_nothing(): void
     {
-        $this->sendMcp(
-            $this->start,
-            'initialize',
-            [
-                'protocolVersion' => '2025-11-25',
-                'capabilities' => (object) [],
-                'clientInfo' => ['name' => 'test', 'version' => '1'],
-            ],
-        )->assertOk();
-        $this->sendMcp($this->start, 'ping')->assertOk();
+        $this->journal->mcpRequest($this->start, 'initialize', [
+            'protocolVersion' => '2025-11-25',
+            'capabilities' => (object) [],
+            'clientInfo' => ['name' => 'test', 'version' => '1'],
+        ])->assertOk();
+        $this->journal->mcpRequest($this->start, 'ping')->assertOk();
 
         $this->assertNull($this->start->session->fresh()?->discovered_at);
     }

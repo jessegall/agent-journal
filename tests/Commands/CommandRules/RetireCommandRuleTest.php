@@ -20,7 +20,6 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\ActsAsActors;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TestRunAdmissions;
 use Tests\TestCase;
 
@@ -31,7 +30,6 @@ final class RetireCommandRuleTest extends TestCase
 {
     use ActsAsActors;
     use RefreshHookDatabase;
-    use SendsSignedPayloads;
 
     private const string EXPLAIN_AGAIN = 'explain the line again';
 
@@ -40,13 +38,16 @@ final class RetireCommandRuleTest extends TestCase
         config(['processes.runner' => true]);
         $start = TestStart::start();
         $queued = $this->admit(ActorIdentity::ofClass(Agent::class, $start->agent->id), 'printf queued');
-        $this->asUser(new SaveCommandRuleCommand('save-1', AcmeDeclarations::proposed($this->tidyRule()), 0, 'reviewed'));
+        $this->asUser(
+            new SaveCommandRuleCommand('save-1', AcmeDeclarations::proposed($this->tidyRule()), 0, 'reviewed'),
+        );
 
         $this->asUser(new RetireCommandRuleCommand(ClassificationRule::query()->sole()->id, 1, 'not needed'));
 
         $this->assertStringStartsWith('rule-revision-changed', $queued->refresh()->stale_reason);
-        $reply = $this->signed(
+        $reply = $this->journal->agentCall(
             $start,
+            'POST',
             "/agent/processes/admissions/{$queued->id}",
             ['request_key' => 'stale-1'],
         )->assertStatus(409);

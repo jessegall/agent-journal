@@ -31,10 +31,9 @@ use App\Values\StopPreparationRequest;
 use App\Values\WorkReference;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
+use Tests\Support\TestIds;
 use Tests\Support\TestText;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -47,7 +46,6 @@ use Tests\TestCase;
 final class StopPreparationTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsTrustedCommands;
 
     private const string FAILED_TESTS = '2 tests failed.';
 
@@ -86,7 +84,10 @@ final class StopPreparationTest extends TestCase
         $outcome = $this->stopDirty(StepStatus::Completed, 'passed', 'All tests passed.');
 
         $this->assertSame(StopPreparationStatus::ReturnToActor, $outcome->state);
-        $this->assertEquals(AgentText::of('core.stop.script_returned', ['evidence' => self::GUIDANCE]), $outcome->message);
+        $this->assertEquals(
+            AgentText::of('core.stop.script_returned', ['evidence' => self::GUIDANCE]),
+            $outcome->message,
+        );
         $this->assertGreaterThan(0, PendingAgentMessage::countFor($this->writer));
     }
 
@@ -95,7 +96,10 @@ final class StopPreparationTest extends TestCase
         $outcome = $this->stopDirty(StepStatus::Failed, 'failure', self::FAILED_TESTS);
 
         $this->assertSame(StopPreparationStatus::ReturnToActor, $outcome->state);
-        $this->assertEquals(AgentText::of('core.stop.script_returned', ['evidence' => self::FAILED_TESTS]), $outcome->message);
+        $this->assertEquals(
+            AgentText::of('core.stop.script_returned', ['evidence' => self::FAILED_TESTS]),
+            $outcome->message,
+        );
     }
 
     public function test_three_returns_on_an_unchanged_workspace_hold_the_work_and_tell_the_owner_once(): void
@@ -139,7 +143,10 @@ final class StopPreparationTest extends TestCase
 
         $this->assertSame([StopPreparationStatus::Held, true], [$held->state, $held->tellsOwner]);
         $reason = TestText::words(AgentText::of('core.stop.definitions_changed'));
-        $this->assertSame(TestText::words(AgentText::of('core.stop.script_held', ['reason' => $reason])), TestText::words($held->message));
+        $this->assertSame(
+            TestText::words(AgentText::of('core.stop.script_held', ['reason' => $reason])),
+            TestText::words($held->message),
+        );
         $this->assertFalse($stillHeld->tellsOwner);
         $this->assertSame(0, WorkspaceRead::query()->count());
     }
@@ -156,7 +163,9 @@ final class StopPreparationTest extends TestCase
         $this->stopAgain();
         $run = ProfileRun::query()->acrossActors()->orderByDesc('sequence')->firstOrFail();
         $step = (string) $run->awaited_step;
-        $this->asSystem(new RecordScriptStepResultCommand('host-1', $run->id, $step, $tests, $port, $evidence));
+        $this->journal->asSystem(
+            new RecordScriptStepResultCommand('host-1', $run->id, $step, $tests, $port, $evidence),
+        );
 
         return $this->stopAgain();
     }
@@ -179,7 +188,17 @@ final class StopPreparationTest extends TestCase
     private function answerReads(bool $isDirty): void
     {
         foreach (WorkspaceRead::query()->whereNull('sampled_at')->limit(10)->get() as $read) {
-            $this->asSystem(new NotifyWorkspaceReadCommand('host-1', $read->reference, true, $isDirty, ! $isDirty, 7, CommitObservation::notRecorded()));
+            $this->journal->asSystem(
+                new NotifyWorkspaceReadCommand(
+                    'host-1',
+                    $read->reference,
+                    true,
+                    $isDirty,
+                    ! $isDirty,
+                    7,
+                    CommitObservation::notRecorded(),
+                ),
+            );
         }
     }
 

@@ -27,7 +27,6 @@ use Domain\Sharing\Support\ClaimedGatewayOperation;
 use Domain\Sharing\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\TestShares;
 use Tests\Support\TestActors;
@@ -43,7 +42,6 @@ use Tests\Support\TimeLimits\TimeLimit;
 final class SharingPageRefreshTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsTrustedCommands;
 
     private const array TABLES = [
         'command_receipts',
@@ -88,19 +86,17 @@ final class SharingPageRefreshTest extends TestCase
         $configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
         TestShares::grantForADay(TestActors::record('binders.binder', 1), $configuration);
         ShareGatewayOperation::create($configuration, GatewayOperationType::Open);
-        $claim = $this->asSystem(new ClaimGatewayOperationCommand(self::RUN));
+        $claim = $this->journal->asSystem(new ClaimGatewayOperationCommand(self::RUN));
         $this->assertInstanceOf(ClaimedGatewayOperation::class, $claim);
         Event::fake([PageChanged::class]);
 
-        $this->asSystem(
-            new RecordGatewayOutcomeCommand(
-                self::RUN,
-                $claim->operation->operationId,
-                $claim->operation->endpointVersion,
-                $claim->operation->leaseToken,
-                GatewayOutcome::Succeeded,
-            ),
-        );
+        $this->journal->asSystem(new RecordGatewayOutcomeCommand(
+            self::RUN,
+            $claim->operation->operationId,
+            $claim->operation->endpointVersion,
+            $claim->operation->leaseToken,
+            GatewayOutcome::Succeeded,
+        ));
 
         Event::assertDispatched(
             PageChanged::class,

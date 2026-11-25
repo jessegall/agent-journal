@@ -12,12 +12,10 @@ use Domain\Documents\Contracts\Drafts\DraftResolver;
 use Domain\Documents\Tests\TestCase;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\SendsSignedPayloads;
 
 final class DocumentRoutesTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsSignedPayloads;
 
     private const string REPLACEMENT = 'Replacement text.';
 
@@ -44,7 +42,7 @@ final class DocumentRoutesTest extends TestCase
     {
         $reviewer = TestStart::start('read-only-helper');
 
-        $this->signed($reviewer, '/agent/docs/make', [
+        $this->journal->agentCall($reviewer, 'POST', '/agent/docs/make', [
             'title' => 'Design',
             'abstract' => 'The next design.',
             'body' => 'Public text.',
@@ -61,7 +59,7 @@ final class DocumentRoutesTest extends TestCase
         $document = $commands->run(new CreateDocumentCommand('Design', 'Current design.', 'Original text.'));
         $draft = $commands->run(new OpenDocumentCommand($document->id, 1));
 
-        $this->signed($author, '/agent/docs/edit', [
+        $this->journal->agentCall($author, 'POST', '/agent/docs/edit', [
             'number' => (string) $document->number,
             'token' => $draft->token,
             'version' => 1,
@@ -92,7 +90,7 @@ final class DocumentRoutesTest extends TestCase
             new CreateDocumentCommand('Design', 'Current design.', 'Published text.'),
         );
 
-        $this->signed($author, '/agent/docs/comment', [
+        $this->journal->agentCall($author, 'POST', '/agent/docs/comment', [
             'doc_id' => $document->id,
             'body' => self::SECTION_COMMENT,
             'request_key' => 'comment-on-design',

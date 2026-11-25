@@ -13,7 +13,6 @@ use App\Exceptions\SkillPublicationStale;
 use App\Models\Skills\SkillPublication;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
 use Tests\Support\Skills\HasSkillTargets;
 use Tests\Support\Skills\IntendsSkillPublications;
 use Tests\TestCase;
@@ -27,22 +26,21 @@ final class ActivateSkillPublicationTest extends TestCase
     use CommitsHookRows;
     use HasSkillTargets;
     use IntendsSkillPublications;
-    use RunsTrustedCommands;
 
     private const array TABLES = ['skill_publications', 'skill_generations', 'command_receipts'];
 
     public function test_a_fully_staged_publication_is_delivered_and_a_partial_one_is_refused(): void
     {
         $publication = $this->intend('First text.');
-        $claim = $this->asSystem(new PublishSkillsCommand($publication->id, 'worker-1'));
+        $claim = $this->journal->asSystem(new PublishSkillsCommand($publication->id, 'worker-1'));
 
         $this->assertThrows(
-            fn () => $this->asSystem(new ActivateSkillPublicationCommand($publication->id, $claim->fence)),
+            fn () => $this->journal->asSystem(new ActivateSkillPublicationCommand($publication->id, $claim->fence)),
             SkillPublicationFailed::class,
         );
 
-        $this->asSystem(new PrepareSkillPublicationCommand($publication->id, $claim->fence));
-        $this->asSystem(new ActivateSkillPublicationCommand($publication->id, $claim->fence));
+        $this->journal->asSystem(new PrepareSkillPublicationCommand($publication->id, $claim->fence));
+        $this->journal->asSystem(new ActivateSkillPublicationCommand($publication->id, $claim->fence));
 
         $this->assertSame(PublicationStatus::Delivered, $publication->refresh()->status);
     }
@@ -50,7 +48,7 @@ final class ActivateSkillPublicationTest extends TestCase
     public function test_a_worker_with_an_older_fence_is_stopped(): void
     {
         $publication = $this->intend('First text.');
-        $first = $this->asSystem(new PublishSkillsCommand($publication->id, 'worker-1'));
+        $first = $this->journal->asSystem(new PublishSkillsCommand($publication->id, 'worker-1'));
         SkillPublication::query()->whereKey($publication->id)->firstOrFail()->claim(
             'worker-2',
             CarbonImmutable::now()->addMinute(),
@@ -58,6 +56,6 @@ final class ActivateSkillPublicationTest extends TestCase
 
         $this->expectException(SkillPublicationStale::class);
 
-        $this->asSystem(new PrepareSkillPublicationCommand($publication->id, $first->fence));
+        $this->journal->asSystem(new PrepareSkillPublicationCommand($publication->id, $first->fence));
     }
 }

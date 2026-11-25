@@ -20,14 +20,12 @@ use App\Support\ProfileProposal;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
 final class WithdrawAskTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsSignedPayloads;
 
     private const string INPUT_ADVICE = 'Check the input file.';
 

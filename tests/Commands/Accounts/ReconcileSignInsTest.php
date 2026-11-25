@@ -18,7 +18,6 @@ use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Bus;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsKeyedCommands;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -30,7 +29,6 @@ use Tests\TestCase;
 final class ReconcileSignInsTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsKeyedCommands;
 
     private const array TABLES = ['accounts', 'active_accounts', 'sign_in_attempts', 'command_receipts'];
 
@@ -66,7 +64,7 @@ final class ReconcileSignInsTest extends TestCase
             new OwnerAuthority('test'),
         );
         $begin = new BeginSignInCommand($driver, SignInMethod::OAuth);
-        $attemptId = $this->runOnBus($begin, "key-{$driver}")
+        $attemptId = $this->journal->run($begin, "key-{$driver}")
             ->attemptId;
         $this->assertSame($attemptId, $this->claimSignIn($hostId, CarbonImmutable::now())?->id);
 

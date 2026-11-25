@@ -20,8 +20,6 @@ use App\Values\DriverReceipt;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensPairChats;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
@@ -33,8 +31,6 @@ final class SendDriverRequestAgainTest extends TestCase
     use CommitsHookRows;
     use OpensLedgerRuntimes;
     use OpensPairChats;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
     use WritesInboxMessages;
 
     private const array TABLES = [
@@ -57,7 +53,7 @@ final class SendDriverRequestAgainTest extends TestCase
     {
         [$host, $opened] = $this->openRuntime();
         $receipt = $this->deliver($opened, 'uncertain', 'Hello');
-        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
         $this->notifyProgress($host->hostId, $receipt->requestId, RequestProgress::DeliveryUncertain);
         $original = DriverRequest::query()->findOrFail($receipt->requestId);
 
@@ -89,7 +85,7 @@ final class SendDriverRequestAgainTest extends TestCase
     {
         $request = DriverRequest::query()->findOrFail($requestId);
 
-        $this->asSystem(new NotifyRequestProgressCommand(
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
             $hostId,
             $request->id,
             $request->attempt_version,

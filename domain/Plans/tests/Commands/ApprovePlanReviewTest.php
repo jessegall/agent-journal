@@ -21,7 +21,6 @@ use Domain\Tasks\Models\Task;
 use Illuminate\Support\Str;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsKeyedCommands;
 
 /**
  * A reviewer approves the open review of a plan: one decision is kept that a replay under its key returns, and the
@@ -31,7 +30,6 @@ final class ApprovePlanReviewTest extends TestCase
 {
     use ActsAsOwner;
     use CommitsHookRows;
-    use RunsKeyedCommands;
 
     private const array TABLES = [
         'users',
@@ -69,8 +67,8 @@ final class ApprovePlanReviewTest extends TestCase
 
         $key = (string) Str::uuid();
 
-        $first = $this->runOnBus(new ApprovePlanReviewCommand($this->plan->id, 1, $key), $key);
-        $again = $this->runOnBus(new ApprovePlanReviewCommand($this->plan->id, 1, $key), $key);
+        $first = $this->journal->run(new ApprovePlanReviewCommand($this->plan->id, 1, $key), $key);
+        $again = $this->journal->run(new ApprovePlanReviewCommand($this->plan->id, 1, $key), $key);
 
         $this->assertSame($first, $again);
         $review = PlanReviewEdition::query()->whereKey($first)->sole();
@@ -99,6 +97,6 @@ final class ApprovePlanReviewTest extends TestCase
 
     private function runCommand(object $command): mixed
     {
-        return $this->runOnBus($command);
+        return $this->journal->run($command);
     }
 }

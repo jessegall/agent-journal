@@ -22,7 +22,6 @@ use App\Values\StopConditionResultReport;
 use App\Values\StopConditions;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\RunsTrustedCommands;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -34,7 +33,6 @@ use Tests\TestCase;
 final class SessionInspectionTest extends TestCase
 {
     use RefreshHookDatabase;
-    use RunsTrustedCommands;
 
     private const string CONFIGURATION_HASH = 'c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00';
 
@@ -90,19 +88,25 @@ final class SessionInspectionTest extends TestCase
         $attempt = StopCheck::query()->withoutGlobalScopes()->where('stop_id', 'stop-1')->sole();
         $condition = StopCondition::cleanWorktree();
 
-        $this->asSystem(new RecordStopConditionResultsCommand('host-1', $attempt->id, $attempt->policy_digest, 0, [
-            new StopConditionResultReport(
-                $condition->key,
-                $condition->definitionHash(),
-                StopConditionResultType::Failed,
-                '2026-11-20T01:00:00Z',
-                '2026-11-20T01:00:01Z',
-                1,
-                null,
-                'Commit or remove the changed files.',
-                'secret raw output',
-                false,
-            ),
-        ]));
+        $this->journal->asSystem(new RecordStopConditionResultsCommand(
+            'host-1',
+            $attempt->id,
+            $attempt->policy_digest,
+            0,
+            [
+                new StopConditionResultReport(
+                    $condition->key,
+                    $condition->definitionHash(),
+                    StopConditionResultType::Failed,
+                    '2026-11-20T01:00:00Z',
+                    '2026-11-20T01:00:01Z',
+                    1,
+                    null,
+                    'Commit or remove the changed files.',
+                    'secret raw output',
+                    false,
+                ),
+            ]
+        ));
     }
 }

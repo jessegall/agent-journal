@@ -27,7 +27,6 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\DomainBoot;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -38,7 +37,6 @@ use Tests\TestCase;
 final class CallRecoveryTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SendsSignedPayloads;
 
     private const string RECORD_ADVICE = 'Check the record';
 
@@ -59,7 +57,7 @@ final class CallRecoveryTest extends TestCase
         ProcessOutputDisk::fake();
         config(['processes.runner' => true]);
         $this->start = TestStart::start();
-        $this->runCommandsAs($this->start);
+        $this->journal->relayAgentCommands($this->start);
     }
 
     public function test_a_keyed_write_sent_again_answers_its_first_result_and_writes_once(): void

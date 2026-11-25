@@ -15,8 +15,6 @@ use App\Values\PrivateSubmission;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensTerminalRuntimes;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\Terminals\TakesTerminalControl;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -29,8 +27,6 @@ final class SubmitPrivateInputTest extends TestCase
 {
     use CommitsHookRows;
     use OpensTerminalRuntimes;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
     use TakesTerminalControl;
 
     private const array TABLES = [

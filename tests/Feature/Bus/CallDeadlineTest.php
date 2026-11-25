@@ -16,7 +16,6 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\SendsMcpFrames;
 use Tests\TestCase;
 
 /**
@@ -26,7 +25,6 @@ use Tests\TestCase;
 final class CallDeadlineTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsMcpFrames;
 
     private const array TABLES = ['agents', 'agent_sessions', 'session_tokens'];
 
@@ -75,7 +73,11 @@ final class CallDeadlineTest extends TestCase
     {
         $start = TestStart::start();
 
-        $this->sendMcp($start, 'tools/list', issuedAt: CarbonImmutable::now()->subSeconds(25)->getTimestamp())
+        $this->journal->mcpRequest(
+            $start,
+            'tools/list',
+            issuedAt: CarbonImmutable::createFromTimestamp(CarbonImmutable::now()->subSeconds(25)->getTimestamp()),
+        )
             ->assertStatus(408)
             ->assertJsonPath('id', 1)
             ->assertJsonPath('error.data.code', 'deadline_expired');

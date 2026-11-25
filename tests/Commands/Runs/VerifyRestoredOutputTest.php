@@ -12,7 +12,6 @@ use App\Support\OutputRecorder;
 use Illuminate\Support\Facades\Storage;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -22,7 +21,6 @@ final class VerifyRestoredOutputTest extends TestCase
 {
     use RefreshHookDatabase;
     use RunsAcmeRequests;
-    use SendsSignedPayloads;
 
     private PartRun $part;
 

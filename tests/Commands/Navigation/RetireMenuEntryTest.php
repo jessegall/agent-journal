@@ -15,8 +15,6 @@ use App\Values\MenuStep;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsMcpFrames;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -27,8 +25,6 @@ final class RetireMenuEntryTest extends TestCase
 {
     use CommitsHookRows;
     use RaisesNavigationRequests;
-    use RunsTrustedCommands;
-    use SendsMcpFrames;
 
     private const array TABLES = [
         'agents',
@@ -61,7 +57,7 @@ final class RetireMenuEntryTest extends TestCase
     {
         $entry = $this->entryOf('owner');
 
-        $this->sendMcp($this->caller, 'tools/call', [
+        $this->journal->mcpRequest($this->caller, 'tools/call', [
             'name' => 'menu_retire',
             'arguments' => ['entry' => $entry->id, 'expected_state' => 'current', 'request_key' => 'retire'],
         ])->assertBadRequest()->assertJsonPath('error.code', -32602);

@@ -16,7 +16,6 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -26,7 +25,6 @@ use Tests\TestCase;
 final class RunnerCapabilityTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SendsSignedPayloads;
 
     private TestStart $start;
 
@@ -38,7 +36,7 @@ final class RunnerCapabilityTest extends TestCase
 
         ProcessOutputDisk::fake();
         $this->start = TestStart::start();
-        $this->runCommandsAs($this->start);
+        $this->journal->relayAgentCommands($this->start);
         $this->folder = sys_get_temp_dir().'/runner-'.bin2hex(random_bytes(4));
         mkdir($this->folder);
         file_put_contents($this->folder.'/data.txt', <<<'TEXT'

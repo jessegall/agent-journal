@@ -13,7 +13,6 @@ use App\Exceptions\SkillPublicationStale;
 use App\Models\Skills\SkillPublication;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
 use Tests\Support\Skills\HasSkillTargets;
 use Tests\Support\Skills\IntendsSkillPublications;
 use Tests\TestCase;
@@ -26,17 +25,16 @@ final class RetrySkillPublicationTest extends TestCase
     use CommitsHookRows;
     use HasSkillTargets;
     use IntendsSkillPublications;
-    use RunsTrustedCommands;
 
     private const array TABLES = ['skill_publications', 'skill_generations', 'command_receipts'];
 
     public function test_a_failed_publication_is_pending_again_without_its_error(): void
     {
         $publication = $this->intend('First text.');
-        $this->asSystem(new PublishSkillsCommand($publication->id, 'worker-1'));
-        $this->asSystem(new FailSkillPublicationCommand($publication->id, 'no space left'));
+        $this->journal->asSystem(new PublishSkillsCommand($publication->id, 'worker-1'));
+        $this->journal->asSystem(new FailSkillPublicationCommand($publication->id, 'no space left'));
 
-        $this->asSystem(new RetrySkillPublicationCommand($publication->id));
+        $this->journal->asSystem(new RetrySkillPublicationCommand($publication->id));
 
         $this->assertSame([PublicationStatus::Pending, null], [$publication->refresh()->status, $publication->error]);
     }
@@ -44,7 +42,7 @@ final class RetrySkillPublicationTest extends TestCase
     public function test_a_worker_with_an_older_fence_is_stopped(): void
     {
         $publication = $this->intend('First text.');
-        $first = $this->asSystem(new PublishSkillsCommand($publication->id, 'worker-1'));
+        $first = $this->journal->asSystem(new PublishSkillsCommand($publication->id, 'worker-1'));
         SkillPublication::query()->whereKey($publication->id)->firstOrFail()->claim(
             'worker-2',
             CarbonImmutable::now()->addMinute(),
@@ -52,6 +50,6 @@ final class RetrySkillPublicationTest extends TestCase
 
         $this->expectException(SkillPublicationStale::class);
 
-        $this->asSystem(new PrepareSkillPublicationCommand($publication->id, $first->fence));
+        $this->journal->asSystem(new PrepareSkillPublicationCommand($publication->id, $first->fence));
     }
 }

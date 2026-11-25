@@ -20,7 +20,6 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Mcp\CascadeResult;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\SendsMcpFrames;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -31,7 +30,6 @@ use Tests\TestCase;
 final class OperationsReadTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsMcpFrames;
 
     private TestStart $start;
 
@@ -72,11 +70,11 @@ final class OperationsReadTest extends TestCase
             new AssignRecordCommand($task->assignmentIdentity(), AssigneeIdentity::of($this->start->agent)),
         );
 
-        $result = $this->callMcpTool(
+        $result = $this->journal->mcpTool(
             $this->start,
             'operations_read',
             ['request_key' => self::KEY],
-        )->assertJsonPath('result.isError', false)->json('result.structuredContent');
+        )->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent');
 
         $this->assertSame('completed', $result['state']);
         $this->assertSame('AssignRecord', $result['command']);
@@ -99,11 +97,11 @@ final class OperationsReadTest extends TestCase
         $arguments = ['request_key' => self::KEY];
 
         do {
-            $page = $this->callMcpTool(
+            $page = $this->journal->mcpTool(
                 $this->start,
                 'operations_read',
                 $arguments,
-            )->assertJsonPath('result.isError', false)->json('result.structuredContent');
+            )->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent');
             $records = [...$records, ...array_column($page['outcomes'], 'record')];
             $arguments = $page['next_actions'][0]['arguments'] ?? null;
         } while ($arguments !== null);
@@ -122,14 +120,14 @@ final class OperationsReadTest extends TestCase
                 array_map(fn (int $number) => ['record' => "tasks.task {$number}", 'changed' => true], range(1, 30)),
             ),
         );
-        $tool = $this->callMcpTool(
+        $tool = $this->journal->mcpTool(
             $this->start,
             'operations_read',
             ['request_key' => self::KEY],
-        )->json('result.structuredContent');
+        )->assertOk()->json('result.structuredContent');
         $continuation = $tool['next_actions'][0]['arguments']['continuation'];
 
-        $resource = $this->sendMcp(
+        $resource = $this->journal->mcpRequest(
             $this->start,
             'resources/read',
             ['uri' => 'journal://v1/operations/'.self::KEY.'?continuation='.urlencode($continuation)],
@@ -144,7 +142,7 @@ final class OperationsReadTest extends TestCase
         $other = TestStart::start();
         $this->receipt($other->session->id, new CascadeResult('plans.plan 1', []));
 
-        $this->callMcpTool($this->start, 'operations_read', ['request_key' => self::KEY])
+        $this->journal->mcpTool($this->start, 'operations_read', ['request_key' => self::KEY])->assertOk()
             ->assertJsonPath('result.isError', false)
             ->assertJsonPath('result.structuredContent.state', 'unknown');
     }

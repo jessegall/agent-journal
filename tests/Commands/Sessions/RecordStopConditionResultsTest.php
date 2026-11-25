@@ -22,8 +22,6 @@ use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\AsksTheStopGate;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\TestText;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -39,8 +37,6 @@ final class RecordStopConditionResultsTest extends TestCase
 {
     use AsksTheStopGate;
     use RefreshHookDatabase;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
 
     private const string DIRTY_WORKTREE = 'clean-worktree (failed): NOTE is not committed';
 
@@ -65,10 +61,10 @@ final class RecordStopConditionResultsTest extends TestCase
     {
         $start = $this->helperWithConditions();
         $this->stop($start, 'stop-1');
-        $host = $this->enrolledHost();
+        $host = $this->journal->enrolledHost();
         $this->claimOn($start, $host->hostId);
 
-        $response = $this->hostRead($host, '/host/stop-attempts');
+        $response = $this->journal->hostCall($host, 'GET', '/host/stop-attempts');
 
         $condition = StopCondition::cleanWorktree();
         $response->assertOk()
@@ -78,7 +74,11 @@ final class RecordStopConditionResultsTest extends TestCase
             ->assertJsonPath('attempts.0.conditions.0.executable', $condition->executable)
             ->assertJsonPath('attempts.0.conditions.0.arguments', $condition->arguments)
             ->assertJsonPath('attempts.0.conditions.0.definition_hash', $condition->definitionHash());
-        $this->hostRead($this->enrolledHost(), '/host/stop-attempts')->assertOk()->assertExactJson(['attempts' => []]);
+        $this->journal->hostCall(
+            $this->journal->enrolledHost(),
+            'GET',
+            '/host/stop-attempts',
+        )->assertOk()->assertExactJson(['attempts' => []]);
     }
 
     public function test_a_failed_result_refuses_the_stop_with_its_summary_and_a_passed_one_allows_it(): void
@@ -133,20 +133,26 @@ final class RecordStopConditionResultsTest extends TestCase
         $attempt = StopCheck::query()->withoutGlobalScopes()->where('stop_id', $stopId)->sole();
         $condition = StopCondition::cleanWorktree();
 
-        $this->asSystem(new RecordStopConditionResultsCommand('host-1', $attempt->id, $attempt->policy_digest, 0, [
-            new StopConditionResultReport(
-                $condition->key,
-                $condition->definitionHash(),
-                $status,
-                '2026-11-20T01:00:00Z',
-                '2026-11-20T01:00:01Z',
-                $status === StopConditionResultType::Passed ? 0 : 1,
-                null,
-                $summary,
-                null,
-                false,
-            ),
-        ]));
+        $this->journal->asSystem(new RecordStopConditionResultsCommand(
+            'host-1',
+            $attempt->id,
+            $attempt->policy_digest,
+            0,
+            [
+                new StopConditionResultReport(
+                    $condition->key,
+                    $condition->definitionHash(),
+                    $status,
+                    '2026-11-20T01:00:00Z',
+                    '2026-11-20T01:00:01Z',
+                    $status === StopConditionResultType::Passed ? 0 : 1,
+                    null,
+                    $summary,
+                    null,
+                    false,
+                ),
+            ]
+        ));
     }
 
     private function claimOn(TestStart $start, string $hostId): void

@@ -13,7 +13,6 @@ use App\Support\ActorIdentity;
 use App\Values\WorkReference;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\RunsTrustedCommands;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -24,7 +23,6 @@ use Tests\TestCase;
 final class RecordScriptStepResultTest extends TestCase
 {
     use RefreshHookDatabase;
-    use RunsTrustedCommands;
 
     public function test_a_step_outcome_is_recorded_once_and_resumes_the_waiting_run(): void
     {
@@ -51,6 +49,6 @@ final class RecordScriptStepResultTest extends TestCase
 
     private function notify(ProfileRun $run, string $step, StepStatus $status): void
     {
-        $this->asSystem(new RecordScriptStepResultCommand('host-1', $run->id, $step, $status, 'next', null));
+        $this->journal->asSystem(new RecordScriptStepResultCommand('host-1', $run->id, $step, $status, 'next', null));
     }
 }

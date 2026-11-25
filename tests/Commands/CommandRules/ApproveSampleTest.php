@@ -18,7 +18,6 @@ use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\ActsAsActors;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\RunsCommandsAsStart;
 use Tests\TestCase;
 
 /**
@@ -29,7 +28,6 @@ final class ApproveSampleTest extends TestCase
 {
     use ActsAsActors;
     use RefreshHookDatabase;
-    use RunsCommandsAsStart;
 
     private TestStart $start;
 
@@ -41,25 +39,37 @@ final class ApproveSampleTest extends TestCase
 
         ProcessOutputDisk::fake();
         $this->start = TestStart::start();
-        $this->requestId = $this->runAsAgent(new OpenCommandRequestCommand(
+        $this->requestId = $this->journal->actAsAgentIds(
+            $this->start->agent->id,
+            $this->start->session->id,
+        )->runUnkeyed(new OpenCommandRequestCommand(
             'acme verify',
             str_repeat('a', 64),
             'acme verify',
             sys_get_temp_dir(),
             RequestHoldReason::UnknownCommand,
         ));
-        $this->runAsAgent(new ProposeCommandRuleCommand($this->requestId, 'request-1', AcmeDeclarations::proposedVerify()));
+        $this->journal->runAsStart(
+            $this->start,
+            new ProposeCommandRuleCommand($this->requestId, 'request-1', AcmeDeclarations::proposedVerify()),
+        );
     }
 
     public function test_an_agent_cannot_approve_a_sample(): void
     {
-        $this->assertThrows(fn () => $this->runAsAgent($this->approval()), CommandAdmissionRefused::class);
+        $this->assertThrows(
+            fn () => $this->journal->runAsStart($this->start, $this->approval()),
+            CommandAdmissionRefused::class,
+        );
         $this->assertSame(0, EvidencePermit::query()->count());
     }
 
     public function test_a_declaration_without_effects_cannot_be_approved_for_a_sample(): void
     {
-        $other = $this->runAsAgent(new OpenCommandRequestCommand(
+        $other = $this->journal->actAsAgentIds(
+            $this->start->agent->id,
+            $this->start->session->id,
+        )->runUnkeyed(new OpenCommandRequestCommand(
             'acme verify',
             str_repeat('c', 64),
             'acme verify --all',
@@ -69,7 +79,10 @@ final class ApproveSampleTest extends TestCase
         $rule = AcmeDeclarations::verify()->toArray();
         $rule['classes'] = ['classes' => []];
         $noEffects = AcmeDeclarations::proposed(CommandRule::from($rule));
-        $this->runAsAgent(new ProposeCommandRuleCommand($other, 'request-2', $noEffects));
+        $this->journal->runAsStart(
+            $this->start,
+            new ProposeCommandRuleCommand($other, 'request-2', $noEffects),
+        );
         $digest = CommandRequest::query()->findOrFail($other)->source_digest;
 
         $this->assertThrows(fn () => $this->asUser(new ApproveSampleCommand($other, 1, $digest)), SampleRefused::class);

@@ -11,8 +11,6 @@ use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\SendsMcpFrames;
-use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -24,8 +22,6 @@ use Tests\TestCase;
 final class DeclaredSearchToolTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsMcpFrames;
-    use SendsSignedPayloads;
 
     private const array TABLES = [
         'users', 'tasks', 'agents', 'agent_sessions', 'session_tokens', 'agent_stacks', 'hook_calls', 'command_receipts',
@@ -55,7 +51,7 @@ final class DeclaredSearchToolTest extends TestCase
         $task = Task::factory()->create(['title' => 'Driver handbook']);
 
         foreach ([['query' => 'driver'], ['query' => 'driver', 'within' => 'tasks.task']] as $arguments) {
-            $this->callMcpTool($this->caller, 'search', $arguments)
+            $this->journal->mcpTool($this->caller, 'search', $arguments)->assertOk()
                 ->assertJsonPath('result.isError', false)
                 ->assertJsonPath('result.structuredContent.hits.0.searchable', 'tasks.task')
                 ->assertJsonPath('result.structuredContent.hits.0.reference.id', $task->id)
@@ -66,7 +62,7 @@ final class DeclaredSearchToolTest extends TestCase
 
     public function test_discovery_lists_tasks_by_prefix(): void
     {
-        $sources = $this->callMcpTool($this->caller, 'search', ['discover' => true, 'prefix' => 'ta'])
+        $sources = $this->journal->mcpTool($this->caller, 'search', ['discover' => true, 'prefix' => 'ta'])->assertOk()
             ->assertJsonPath('result.isError', false)
             ->json('result.structuredContent.sources');
 
@@ -80,12 +76,12 @@ final class DeclaredSearchToolTest extends TestCase
         $second = Task::factory()->create(['id' => '01arz3ndektsv4rrffq69g0002', 'title' => 'Driver']);
 
         $arguments = ['query' => 'driver', 'within' => 'tasks.task', 'limit' => 1];
-        $page = $this->callMcpTool($this->caller, 'search', $arguments)
+        $page = $this->journal->mcpTool($this->caller, 'search', $arguments)->assertOk()
             ->assertJsonPath('result.structuredContent.hits.0.reference.id', $first->id);
         $continuation = $page->json('result.structuredContent.next_actions.0.arguments.continuation');
 
         $this->assertIsString($continuation);
-        $this->callMcpTool($this->caller, 'search', ['continuation' => $continuation])
+        $this->journal->mcpTool($this->caller, 'search', ['continuation' => $continuation])->assertOk()
             ->assertJsonPath('result.structuredContent.hits.0.reference.id', $second->id);
     }
 }

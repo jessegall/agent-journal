@@ -9,7 +9,6 @@ use App\Models\Agents\Agent;
 use App\Models\Agents\MainAgentDesignation;
 use App\Values\ProfileBase;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsInboxInstall;
 use Tests\TestCase;
 
 /**
@@ -19,7 +18,6 @@ use Tests\TestCase;
 final class InstallMainAgentTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsInboxInstall;
 
     private const array TABLES = [
         'main_agent_designations',
@@ -38,7 +36,7 @@ final class InstallMainAgentTest extends TestCase
 
     public function test_the_install_designates_one_main_agent_and_a_second_run_changes_nothing(): void
     {
-        $this->installInboxes();
+        $this->journal->installInboxes();
         $this->localProject();
 
         $this->artisan('agents:install')->assertSuccessful();

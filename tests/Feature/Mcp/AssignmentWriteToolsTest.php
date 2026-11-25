@@ -13,15 +13,11 @@ use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\SendsMcpFrames;
-use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 final class AssignmentWriteToolsTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsMcpFrames;
-    use SendsSignedPayloads;
 
     private const array TABLES = [
         'users',
@@ -67,11 +63,11 @@ final class AssignmentWriteToolsTest extends TestCase
         Event::fake([AssignmentsChanged::class]);
         $reference = $this->assignFirst();
 
-        $this->callMcpTool($this->caller, 'assignments_assign', [
+        $this->journal->mcpTool($this->caller, 'assignments_assign', [
             ...$this->record(),
             'recipient' => $this->recipient($this->first),
             'request_key' => 'repeat-assignment',
-        ])->assertJsonPath('result.structuredContent.outcome', 'unchanged')
+        ])->assertOk()->assertJsonPath('result.structuredContent.outcome', 'unchanged')
             ->assertJsonPath('result.structuredContent.changed', 0)
             ->assertJsonPath('result.structuredContent.assignment', $reference);
 
@@ -81,30 +77,33 @@ final class AssignmentWriteToolsTest extends TestCase
     public function test_conflicts_offer_reading_the_current_assignment_and_cannot_replace_it(): void
     {
         $first = $this->assignFirst();
-        $this->callMcpTool($this->caller, 'assignments_assign', [
+        $this->journal->mcpTool($this->caller, 'assignments_assign', [
             ...$this->record(),
             'recipient' => $this->recipient($this->second),
             'request_key' => 'already-held',
-        ])->assertJsonPath('result.isError', true)
+        ])->assertOk()->assertJsonPath('result.isError', true)
             ->assertJsonPath('result.structuredContent.code', 'conflict')
             ->assertJsonPath('result.structuredContent.next_action.tool', 'assignments_read')
             ->assertJsonPath('result.structuredContent.next_action.arguments', $this->record());
 
         $second = $this->reassign($first);
-        $this->callMcpTool($this->caller, 'assignments_unassign', [
+        $this->journal->mcpTool($this->caller, 'assignments_unassign', [
             ...$this->record(),
             'expected_assignment' => $first,
             'request_key' => 'stale-reference',
-        ])->assertJsonPath('result.isError', true)->assertJsonPath('result.structuredContent.code', 'conflict');
+        ])->assertOk()->assertJsonPath('result.isError', true)->assertJsonPath(
+            'result.structuredContent.code',
+            'conflict',
+        );
 
-        $this->callMcpTool($this->caller, 'assignments_read', $this->record())
+        $this->journal->mcpTool($this->caller, 'assignments_read', $this->record())->assertOk()
             ->assertJsonPath('result.structuredContent.holder.reference', $second['id'])
             ->assertJsonPath('result.structuredContent.holder.id', $this->second->agent->id);
     }
 
     public function test_an_executor_cannot_dispatch_a_record_to_someone_else(): void
     {
-        $this->sendMcp($this->first, 'tools/call', [
+        $this->journal->mcpRequest($this->first, 'tools/call', [
             'name' => 'assignments_assign',
             'arguments' => [
                 ...$this->record(),
@@ -112,14 +111,14 @@ final class AssignmentWriteToolsTest extends TestCase
                 'request_key' => 'executor-assignment',
             ],
         ])->assertBadRequest();
-        $this->signed($this->first, '/agent/assignments/assign', [
+        $this->journal->agentCall($this->first, 'POST', '/agent/assignments/assign', [
             ...$this->record(),
             'recipient_type' => 'agent',
             'recipient_id' => $this->second->agent->id,
             'request_key' => 'executor-assignment',
         ])->assertForbidden();
 
-        $this->callMcpTool($this->caller, 'assignments_read', $this->record())
+        $this->journal->mcpTool($this->caller, 'assignments_read', $this->record())->assertOk()
             ->assertJsonPath('result.structuredContent.holder', null);
     }
 
@@ -127,14 +126,14 @@ final class AssignmentWriteToolsTest extends TestCase
     {
         $first = $this->assignFirst();
         $second = $this->reassign($first);
-        $this->callMcpTool($this->caller, 'assignments_unassign', [
+        $this->journal->mcpTool($this->caller, 'assignments_unassign', [
             ...$this->record(),
             'expected_assignment' => $second,
             'request_key' => 'unassign',
-        ])->assertJsonPath('result.structuredContent.outcome', 'changed')
+        ])->assertOk()->assertJsonPath('result.structuredContent.outcome', 'changed')
             ->assertJsonPath('result.structuredContent.assignment', null);
 
-        $this->runCommandsAs($this->caller);
+        $this->journal->relayAgentCommands($this->caller);
         $record = ['type' => 'tasks.task', 'id' => $this->task->id, '--json' => true];
         $this->artisan('assignment:assign', [
             ...$record,
@@ -155,7 +154,7 @@ final class AssignmentWriteToolsTest extends TestCase
             '--request-key' => 'unassign',
         ])->expectsOutputToContain('"changed":1')->assertExitCode(0);
 
-        $this->callMcpTool($this->caller, 'assignments_read', $this->record())
+        $this->journal->mcpTool($this->caller, 'assignments_read', $this->record())->assertOk()
             ->assertJsonPath('result.structuredContent.holder', null);
     }
 
@@ -164,11 +163,11 @@ final class AssignmentWriteToolsTest extends TestCase
      */
     private function assignFirst(): array
     {
-        return $this->callMcpTool($this->caller, 'assignments_assign', [
+        return $this->journal->mcpTool($this->caller, 'assignments_assign', [
             ...$this->record(),
             'recipient' => $this->recipient($this->first),
             'request_key' => 'assign',
-        ])->assertJsonPath('result.structuredContent.outcome', 'changed')
+        ])->assertOk()->assertJsonPath('result.structuredContent.outcome', 'changed')
             ->assertJsonPath('result.structuredContent.assignment.holder', $this->recipient($this->first))
             ->json('result.structuredContent.assignment');
     }
@@ -179,12 +178,12 @@ final class AssignmentWriteToolsTest extends TestCase
      */
     private function reassign(array $first): array
     {
-        return $this->callMcpTool($this->caller, 'assignments_reassign', [
+        return $this->journal->mcpTool($this->caller, 'assignments_reassign', [
             ...$this->record(),
             'expected_assignment' => $first,
             'recipient' => $this->recipient($this->second),
             'request_key' => 'reassign',
-        ])->assertJsonPath('result.structuredContent.outcome', 'changed')
+        ])->assertOk()->assertJsonPath('result.structuredContent.outcome', 'changed')
             ->assertJsonPath('result.structuredContent.assignment.holder', $this->recipient($this->second))
             ->json('result.structuredContent.assignment');
     }

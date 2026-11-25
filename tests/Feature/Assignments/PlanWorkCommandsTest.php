@@ -17,7 +17,6 @@ use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -29,7 +28,6 @@ use Tests\TestCase;
 final class PlanWorkCommandsTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsSignedPayloads;
 
     private const array TABLES = [
         'users',
@@ -77,73 +75,53 @@ final class PlanWorkCommandsTest extends TestCase
     {
         $root = ['root_type' => Plan::linkType(), 'root_id' => $this->plan->id];
 
-        $given = $this->signed(
-            $this->main,
-            '/agent/plans/work/assign',
-            [
-                ...$root,
-                'recipient_type' => 'agent',
-                'recipient_id' => $this->helper->agent->id,
-                'request_key' => (string) Str::ulid(),
-            ],
-        )
+        $given = $this->journal->agentCall($this->main, 'POST', '/agent/plans/work/assign', [
+            ...$root,
+            'recipient_type' => 'agent',
+            'recipient_id' => $this->helper->agent->id,
+            'request_key' => (string) Str::ulid(),
+        ])
             ->assertOk()->assertJson(
                 ['isCascade' => true, 'changed' => 3, 'unchanged' => 0, 'skipped' => 2],
             )->assertJsonMissingPath('outcomes');
         $reference = (string) $given->json('root.holder.reference');
         $this->assertSame(3, AssignmentRecord::query()->withoutGlobalScopes()->count());
 
-        $this->signed(
-            $this->main,
-            '/agent/plans/work/reassign',
-            [
-                ...$root,
-                'assignment_id' => TestIds::of(999999),
-                'holder_type' => 'agent',
-                'holder_id' => $this->helper->agent->id,
-                'recipient_type' => 'agent',
-                'recipient_id' => $this->main->agent->id,
-                'request_key' => (string) Str::ulid(),
-            ],
-        )
+        $this->journal->agentCall($this->main, 'POST', '/agent/plans/work/reassign', [
+            ...$root,
+            'assignment_id' => TestIds::of(999999),
+            'holder_type' => 'agent',
+            'holder_id' => $this->helper->agent->id,
+            'recipient_type' => 'agent',
+            'recipient_id' => $this->main->agent->id,
+            'request_key' => (string) Str::ulid(),
+        ])
             ->assertConflict();
-        $this->signed(
-            $this->helper,
-            '/agent/plans/work/unassign',
-            [
-                ...$root,
-                'assignment_id' => $reference,
-                'holder_type' => 'agent',
-                'holder_id' => $this->helper->agent->id,
-                'request_key' => (string) Str::ulid(),
-            ],
-        )
+        $this->journal->agentCall($this->helper, 'POST', '/agent/plans/work/unassign', [
+            ...$root,
+            'assignment_id' => $reference,
+            'holder_type' => 'agent',
+            'holder_id' => $this->helper->agent->id,
+            'request_key' => (string) Str::ulid(),
+        ])
             ->assertForbidden();
-        $moved = $this->signed(
-            $this->main,
-            '/agent/plans/work/reassign',
-            [
-                ...$root,
-                'assignment_id' => $reference,
-                'holder_type' => 'agent',
-                'holder_id' => $this->helper->agent->id,
-                'recipient_type' => 'agent',
-                'recipient_id' => $this->main->agent->id,
-                'request_key' => (string) Str::ulid(),
-            ],
-        )
+        $moved = $this->journal->agentCall($this->main, 'POST', '/agent/plans/work/reassign', [
+            ...$root,
+            'assignment_id' => $reference,
+            'holder_type' => 'agent',
+            'holder_id' => $this->helper->agent->id,
+            'recipient_type' => 'agent',
+            'recipient_id' => $this->main->agent->id,
+            'request_key' => (string) Str::ulid(),
+        ])
             ->assertOk()->assertJson(['changed' => 3, 'skipped' => 2]);
-        $this->signed(
-            $this->main,
-            '/agent/plans/work/unassign',
-            [
-                ...$root,
-                'assignment_id' => (string) $moved->json('root.holder.reference'),
-                'holder_type' => 'agent',
-                'holder_id' => $this->main->agent->id,
-                'request_key' => (string) Str::ulid(),
-            ],
-        )
+        $this->journal->agentCall($this->main, 'POST', '/agent/plans/work/unassign', [
+            ...$root,
+            'assignment_id' => (string) $moved->json('root.holder.reference'),
+            'holder_type' => 'agent',
+            'holder_id' => $this->main->agent->id,
+            'request_key' => (string) Str::ulid(),
+        ])
             ->assertOk()->assertJson(['changed' => 3]);
 
         $this->assertSame(0, AssignmentRecord::query()->withoutGlobalScopes()->count());
@@ -151,7 +129,7 @@ final class PlanWorkCommandsTest extends TestCase
 
     public function test_a_plan_and_a_phase_are_named_by_number_and_a_bad_number_is_refused(): void
     {
-        $assign = fn (array $root) => $this->signed($this->main, '/agent/plans/work/assign', [
+        $assign = fn (array $root) => $this->journal->agentCall($this->main, 'POST', '/agent/plans/work/assign', [
             ...$root,
             'recipient_type' => 'agent',
             'recipient_id' => $this->helper->agent->id,
@@ -172,7 +150,7 @@ final class PlanWorkCommandsTest extends TestCase
 
     public function test_the_commands_say_they_covered_the_whole_plan(): void
     {
-        $this->runCommandsAs($this->main);
+        $this->journal->relayAgentCommands($this->main);
 
         $this->artisan(
             'plan:assign-work',

@@ -16,7 +16,6 @@ use App\Values\PermitLimits;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -26,7 +25,6 @@ use Tests\TestCase;
 final class EvidencePermitTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SendsSignedPayloads;
 
     private TestStart $start;
 
@@ -39,7 +37,7 @@ final class EvidencePermitTest extends TestCase
         ProcessOutputDisk::fake();
         config(['processes.runner' => true]);
         $this->start = TestStart::start();
-        $this->runCommandsAs($this->start);
+        $this->journal->relayAgentCommands($this->start);
         $this->folder = sys_get_temp_dir().'/evidence-'.bin2hex(random_bytes(4));
         mkdir($this->folder.'/project', recursive: true);
         touch($this->folder.'/project/notes.txt');

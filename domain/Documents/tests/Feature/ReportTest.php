@@ -19,12 +19,10 @@ use Domain\Documents\Models\TextUpload;
 use Domain\Documents\Tests\TestCase;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\SendsSignedPayloads;
 
 final class ReportTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsSignedPayloads;
 
     private const string SETTLEMENT_REASON = 'The findings were addressed.';
 
@@ -67,7 +65,7 @@ final class ReportTest extends TestCase
 
         $bus->run(new CommitUploadCommand($upload));
 
-        $id = $this->signed($reviewer, '/agent/reports/make', [
+        $id = $this->journal->agentCall($reviewer, 'POST', '/agent/reports/make', [
             'title' => 'Review',
             'abstract' => 'Evidence and observations.',
             'upload_id' => $upload,
@@ -81,11 +79,14 @@ final class ReportTest extends TestCase
             'request_key' => 'clarify-first-finding',
         ];
 
-        $first = $this->signed($reviewer, '/agent/reports/comment', $comment)->assertOk()->json();
-        $this->assertSame($first, $this->signed($reviewer, '/agent/reports/comment', $comment)->assertOk()->json());
+        $first = $this->journal->agentCall($reviewer, 'POST', '/agent/reports/comment', $comment)->assertOk()->json();
+        $this->assertSame(
+            $first,
+            $this->journal->agentCall($reviewer, 'POST', '/agent/reports/comment', $comment)->assertOk()->json(),
+        );
         $this->assertSame($comment['body'], Comment::query()->sole()->body);
 
-        $this->signed($reviewer, '/agent/reports/close', [
+        $this->journal->agentCall($reviewer, 'POST', '/agent/reports/close', [
             'number' => $id,
             'reason' => self::SETTLEMENT_REASON,
             'request_key' => 'close-review',

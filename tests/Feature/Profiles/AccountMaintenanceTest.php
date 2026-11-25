@@ -27,7 +27,6 @@ use App\Support\OpenedRuntime;
 use App\Values\OwnerAuthority;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -44,7 +43,6 @@ use Tests\TestCase;
 final class AccountMaintenanceTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsTrustedCommands;
     use WithActiveAccount;
 
     private const array TABLES = [
@@ -94,8 +92,11 @@ final class AccountMaintenanceTest extends TestCase
 
         $this->app->make(CommandBus::class)->run(new RetireAgentCommand($agentId));
 
-        $this->assertSame(SessionProcessStatus::Cancelled, SessionProcess::query()->withoutGlobalScopes()->sole()->status);
-        $this->assertNull($this->asSystem(new ClaimStartCommand($host->hostId, $opened->sessionId)));
+        $this->assertSame(
+            SessionProcessStatus::Cancelled,
+            SessionProcess::query()->withoutGlobalScopes()->sole()->status,
+        );
+        $this->assertNull($this->journal->asSystem(new ClaimStartCommand($host->hostId, $opened->sessionId)));
     }
 
     private function assertRefusedWhileHeld(EnrolledHost $host): void
@@ -128,7 +129,7 @@ final class AccountMaintenanceTest extends TestCase
 
     private function enrollHost(): EnrolledHost
     {
-        $host = $this->asSystem(new EnrollHostCommand('test host '.Str::random(6), [self::FOLDER]));
+        $host = $this->journal->asSystem(new EnrollHostCommand('test host '.Str::random(6), [self::FOLDER]));
         $this->actAsOwner();
 
         return $host;

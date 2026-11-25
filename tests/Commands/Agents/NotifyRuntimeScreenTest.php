@@ -20,8 +20,6 @@ use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\FakeServerClock;
 use Tests\Support\OpensTerminalRuntimes;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\Support\TestActors;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -36,8 +34,6 @@ final class NotifyRuntimeScreenTest extends TestCase
 {
     use CommitsHookRows;
     use OpensTerminalRuntimes;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
 
     private const array TABLES = [
         'agents',
@@ -54,7 +50,7 @@ final class NotifyRuntimeScreenTest extends TestCase
 
     public function test_a_frame_of_a_watched_runtime_of_the_host_is_stored(): void
     {
-        $host = $this->enrolledHost();
+        $host = $this->journal->enrolledHost();
         $runtime = $this->watchedRuntimeOn($host);
 
         $this->notify($host, $runtime, 1)->assertOk()->assertExactJson(['status' => 'stored']);
@@ -65,15 +61,15 @@ final class NotifyRuntimeScreenTest extends TestCase
 
     public function test_a_runtime_another_host_runs_is_refused(): void
     {
-        $host = $this->enrolledHost();
-        $runtime = $this->watchedRuntimeOn($this->enrolledHost());
+        $host = $this->journal->enrolledHost();
+        $runtime = $this->watchedRuntimeOn($this->journal->enrolledHost());
 
         $this->assertRefused($this->notify($host, $runtime, 1), 'not_your_runtime', $runtime);
     }
 
     public function test_a_runtime_nobody_watches_is_refused(): void
     {
-        $host = $this->enrolledHost();
+        $host = $this->journal->enrolledHost();
         $runtime = $this->runtimeOn($host->hostId);
 
         $this->assertRefused($this->notify($host, $runtime, 1), 'not_watched', $runtime);
@@ -81,7 +77,7 @@ final class NotifyRuntimeScreenTest extends TestCase
 
     public function test_a_frame_over_the_size_bound_is_refused(): void
     {
-        $host = $this->enrolledHost();
+        $host = $this->journal->enrolledHost();
         $runtime = $this->watchedRuntimeOn($host);
 
         $this->assertRefused($this->notify($host, $runtime, 1, str_repeat('x', 256 * 1024)), 'too_large', $runtime);
@@ -89,7 +85,7 @@ final class NotifyRuntimeScreenTest extends TestCase
 
     public function test_frames_past_four_a_second_are_refused(): void
     {
-        $host = $this->enrolledHost();
+        $host = $this->journal->enrolledHost();
         $runtime = $this->watchedRuntimeOn($host);
         $this->app->instance(ServerClock::class, new FakeServerClock(CarbonImmutable::parse('2026-11-19 12:00:00')));
 
@@ -105,7 +101,7 @@ final class NotifyRuntimeScreenTest extends TestCase
 
     public function test_a_delayed_report_from_before_the_host_restarted_is_refused_for_every_view(): void
     {
-        $host = $this->enrolledHost();
+        $host = $this->journal->enrolledHost();
         $runtime = $this->watchedRuntimeOn($host);
         $this->notify($host, $runtime, 7, frame: ['epoch' => 'epoch-1', 'stream' => 'stream-1']);
         $this->notify($host, $runtime, 1, 'after restart', ['epoch' => 'epoch-2', 'stream' => 'stream-1']);
@@ -118,7 +114,7 @@ final class NotifyRuntimeScreenTest extends TestCase
 
     public function test_a_delayed_public_report_from_before_a_shield_is_refused_and_a_newer_one_shows(): void
     {
-        $host = $this->enrolledHost();
+        $host = $this->journal->enrolledHost();
         $runtime = $this->watchedRuntimeOn($host);
         $this->notify($host, $runtime, 2, 'secret', ['is_shielded' => true, 'rows' => [], 'privacy_revision' => 1]);
 
@@ -149,8 +145,12 @@ final class NotifyRuntimeScreenTest extends TestCase
         $opened = $views->answerFor(TestActors::userIdentity(2), $openedId, $now)->readInterestId;
 
         return [
-            $this->firstRowText($views->frame($agentId, TestActors::userIdentity(1), new HeldFrame($watcher, '', '', 0), $now)),
-            $this->firstRowText($views->frame($agentId, TestActors::userIdentity(2), new HeldFrame($opened, '', '', 0), $now)),
+            $this->firstRowText(
+                $views->frame($agentId, TestActors::userIdentity(1), new HeldFrame($watcher, '', '', 0), $now),
+            ),
+            $this->firstRowText(
+                $views->frame($agentId, TestActors::userIdentity(2), new HeldFrame($opened, '', '', 0), $now),
+            ),
         ];
     }
 
@@ -183,7 +183,7 @@ final class NotifyRuntimeScreenTest extends TestCase
         string $text = 'hello',
         array $frame = [],
     ): TestResponse {
-        return $this->hostCall($host, '/host/reports/screen', [
+        return $this->journal->hostCall($host, 'POST', '/host/reports/screen', [
             'runtime_id' => $runtime->id,
             'frame' => [...[
                 'epoch' => 'epoch-1',

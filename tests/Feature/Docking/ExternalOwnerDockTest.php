@@ -23,8 +23,6 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\InstallsNotesModule;
 use Tests\Support\OpensPairChats;
-use Tests\Support\SendsMcpFrames;
-use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
@@ -40,8 +38,6 @@ final class ExternalOwnerDockTest extends TestCase
     use CommitsHookRows;
     use InstallsNotesModule;
     use OpensPairChats;
-    use SendsMcpFrames;
-    use SendsSignedPayloads;
     use WritesInboxMessages;
 
     private const string TASK_TITLE = 'Feed the cat';
@@ -91,7 +87,10 @@ final class ExternalOwnerDockTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->agent = TestStart::start();
-        $this->chatInboxId = $this->pairChat(ActorIdentity::of($this->owner), ActorIdentity::of($this->agent->agent))->id;
+        $this->chatInboxId = $this->pairChat(
+            ActorIdentity::of($this->owner),
+            ActorIdentity::of($this->agent->agent),
+        )->id;
     }
 
     protected function tearDown(): void
@@ -110,25 +109,28 @@ final class ExternalOwnerDockTest extends TestCase
         $agentsNote->saveFor($this->agent->agent->id);
 
         $this->actingAs($this->owner)
-            ->postJson('/chat/dock', ['inboxId' => $this->chatInboxId, 'type' => Note::linkType(), 'id' => $ownersNote->id])
+            ->postJson(
+                '/chat/dock',
+                ['inboxId' => $this->chatInboxId, 'type' => Note::linkType(), 'id' => $ownersNote->id],
+            )
             ->assertJson(['outcome' => 'added']);
-        $this->runCommandsAs($this->agent);
+        $this->journal->relayAgentCommands($this->agent);
         $this->artisan('dock:add', ['type' => Note::linkType(), 'id' => $agentsNote->id, '--json' => true])
             ->expectsOutputToContain('"outcome":"added"')
             ->assertExitCode(0);
-        $this->callMcpTool($this->agent, 'dock_list')
+        $this->journal->mcpTool($this->agent, 'dock_list')->assertOk()
             ->assertJsonPath('result.structuredContent.placements.0.state', 'unavailable')
             ->assertJsonPath('result.structuredContent.placements.0.title', '')
             ->assertJsonPath('result.structuredContent.placements.1.title', self::TASK_TITLE)
             ->assertJsonPath('result.structuredContent.placements.1.state', 'shown');
 
         $placement = DockPlacement::query()->where('dockable_id', $agentsNote->id)->sole();
-        $this->callMcpTool($this->agent, 'dock_remove', [
+        $this->journal->mcpTool($this->agent, 'dock_remove', [
             'placement_id' => $placement->id,
             'type' => Note::linkType(),
             'source_id' => $agentsNote->id,
             'request_key' => 'undock-note',
-        ])->assertJsonPath('result.structuredContent.outcome', 'removed');
+        ])->assertOk()->assertJsonPath('result.structuredContent.outcome', 'removed');
 
         $this->assertSame(1, DockPlacement::query()->count());
     }
@@ -137,17 +139,17 @@ final class ExternalOwnerDockTest extends TestCase
     {
         $note = new Note(['text' => 'One note']);
         $note->saveFor($this->agent->agent->id);
-        $this->callMcpTool($this->agent, 'dock_add', [
+        $this->journal->mcpTool($this->agent, 'dock_add', [
             'type' => NotesServiceProvider::TALLY_TYPE,
             'id' => NotesTally::KEY,
             'request_key' => 'dock-tally',
-        ])->assertJsonPath('result.structuredContent.outcome', 'added');
+        ])->assertOk()->assertJsonPath('result.structuredContent.outcome', 'added');
 
         $this->app->forgetScopedInstances();
         $this->app->forgetInstance(DockRegistration::class);
         $this->app->call([new NotesServiceProvider($this->app), 'boot']);
 
-        $this->callMcpTool($this->agent, 'dock_list')
+        $this->journal->mcpTool($this->agent, 'dock_list')->assertOk()
             ->assertJsonPath('result.structuredContent.placements.0.sourceId', NotesTally::KEY)
             ->assertJsonPath('result.structuredContent.placements.0.title', self::NOTE_COUNT);
     }
@@ -155,7 +157,9 @@ final class ExternalOwnerDockTest extends TestCase
     public function test_a_report_page_offers_add_to_chat_with_the_agents_the_viewer_may_see(): void
     {
         $this->agent->startRequest($this->app);
-        $report = $this->app->make(CommandBus::class)->run(new CreateReportCommand('Evidence', 'First run.', 'Filed text.'));
+        $report = $this->app->make(CommandBus::class)->run(
+            new CreateReportCommand('Evidence', 'First run.', 'Filed text.'),
+        );
 
         $this->actingAs($this->owner)
             ->get("/documents/reports/{$report->number}")
@@ -168,7 +172,9 @@ final class ExternalOwnerDockTest extends TestCase
     public function test_a_report_page_is_a_publication_whose_details_settle_with_revision_one(): void
     {
         $this->agent->startRequest($this->app);
-        $report = $this->app->make(CommandBus::class)->run(new CreateReportCommand('Evidence', 'First run.', 'Filed text.'));
+        $report = $this->app->make(CommandBus::class)->run(
+            new CreateReportCommand('Evidence', 'First run.', 'Filed text.'),
+        );
 
         $this->actingAs($this->owner)
             ->get("/documents/reports/{$report->number}?tab=details")
@@ -178,7 +184,10 @@ final class ExternalOwnerDockTest extends TestCase
                 ->where('page.data.root.children.0.children.0.text', 'Evidence')
                 ->where('page.data.root.children.1.tabs.2.isChosen', true)
                 ->where('page.data.root.children.1.children.0.key', 'details')
-                ->where('page.data.root.children.1.children.0.children.1.form.href', "/documents/reports/{$report->number}/settle")
+                ->where(
+                    'page.data.root.children.1.children.0.children.1.form.href',
+                    "/documents/reports/{$report->number}/settle",
+                )
                 ->where('page.data.root.children.1.children.0.children.1.form.fixed', ['revision' => 1])
                 ->where('page.dockOffer.type', 'documents.report')
                 ->missing('page.data.sourceId'));
@@ -187,7 +196,9 @@ final class ExternalOwnerDockTest extends TestCase
     public function test_the_links_tab_of_a_report_reads_neither_its_text_nor_its_comments(): void
     {
         $this->agent->startRequest($this->app);
-        $report = $this->app->make(CommandBus::class)->run(new CreateReportCommand('Evidence', 'First run.', 'Filed text.'));
+        $report = $this->app->make(CommandBus::class)->run(
+            new CreateReportCommand('Evidence', 'First run.', 'Filed text.'),
+        );
 
         $this->actingAs($this->owner)
             ->get("/documents/reports/{$report->number}?tab=links")

@@ -23,8 +23,6 @@ use Tests\Fixtures\Drivers\AcmeReaderCapabilities;
 use Tests\Fixtures\Drivers\RunsAloneCapabilities;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
-use Tests\Support\SendsHostCalls;
 use Tests\TestCase;
 
 /**
@@ -35,8 +33,6 @@ final class AccountSharingTest extends TestCase
 {
     use CommitsHookRows;
     use OpensLedgerRuntimes;
-    use RunsTrustedCommands;
-    use SendsHostCalls;
 
     private const array TABLES = [
         'agents',
@@ -118,7 +114,14 @@ final class AccountSharingTest extends TestCase
         $headless = $registry->forKey(DriverKey::from('claude-code-headless'))->descriptor();
         $claude = $registry->family(DefaultDrivers::CLAUDE_CODE);
         $registry->registerFamily(
-            new DriverFamily('example', 'Example', ProviderKey::from('example'), 'echo', $claude->isolatesHooksPerSession, []),
+            new DriverFamily(
+                'example',
+                'Example',
+                ProviderKey::from('example'),
+                'echo',
+                $claude->isolatesHooksPerSession,
+                [],
+            ),
         );
 
         foreach ([

@@ -23,7 +23,10 @@ final class JournalSessionsTest extends TestCase
         $this->journal->owner()->idleAgent('Writer')->startSession('Writer', 'First')->startSession('Writer', 'Second');
 
         $this->assertNotSame($this->journal->sessionCalled('First')->id, $this->journal->sessionCalled('Second')->id);
-        $this->assertSame(2, AgentSession::query()->where('agent_id', $this->journal->agentCalled('Writer')->id)->count());
+        $this->assertSame(
+            2,
+            AgentSession::query()->where('agent_id', $this->journal->agentCalled('Writer')->id)->count(),
+        );
         $this->expectExceptionObject(FixtureRefused::notOneStart('Writer', 2));
         $this->journal->sessionOf('Writer');
     }
@@ -50,10 +53,19 @@ final class JournalSessionsTest extends TestCase
 
     public function test_an_environment_of_a_project_is_granted_to_a_user(): void
     {
-        $this->journal->owner()->user('Sam')->project('Shop')->environment('Staging', 'Shop')->grantEnvironment('Staging', 'Sam');
+        $this->journal->owner()->user('Sam')->project('Shop')->environment(
+            'Staging',
+            'Shop',
+        )->grantEnvironment('Staging', 'Sam');
 
-        $this->assertSame($this->journal->projectCalled('Shop')->id, $this->journal->environmentCalled('Staging')->project_id);
+        $this->assertSame(
+            $this->journal->projectCalled('Shop')->id,
+            $this->journal->environmentCalled('Staging')->project_id,
+        );
         $this->assertTrue(EnvironmentUserGrant::query()
-            ->activeFor($this->journal->userCalled('Sam')->id, $this->journal->environmentCalled('Staging')->id)->exists());
+            ->activeFor(
+                $this->journal->userCalled('Sam')->id,
+                $this->journal->environmentCalled('Staging')->id,
+            )->exists());
     }
 }

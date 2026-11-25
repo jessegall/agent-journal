@@ -25,7 +25,6 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\RunsTrustedCommands;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\TestShares;
 use Tests\Support\TestActors;
@@ -38,7 +37,6 @@ use Tests\Support\TimeLimits\TimeLimit;
 final class RevokeShareTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsTrustedCommands;
 
     private const string TRIGGER_REFUSAL = 'refused for the test';
 
