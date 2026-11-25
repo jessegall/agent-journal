@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Mcp;
 
+use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 use Domain\Tasks\Mcp\Tools\FinishTaskTool;
 use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
+use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of the tool FinishTaskTool, as the generator wrote it.
+ * An agent finishes its run of a task with a closing note.
  */
-#[Generated]
 #[TestsMcpTool(FinishTaskTool::class)]
 final class FinishTaskToolTest extends McpToolEntryTestCase
 {
@@ -28,13 +28,12 @@ final class FinishTaskToolTest extends McpToolEntryTestCase
 
     protected function arrange(TestJournal $journal): ToolCall
     {
-        throw EntryTestNeedsArrangement::for('FinishTaskTool', [
-            'the argument task_id',
-            'the argument run_number',
-            'the argument note',
-            'the argument request_key',
-            'the expected commands',
-            'the sink replies',
-        ]);
+        $start = $journal->owner()->signedStart('Builder');
+        $tasks = $journal->fixtures(TaskFixtures::class)->task('Ship the dock')->startRun('Ship the dock', 'Builder');
+        $task = $tasks->taskCalled('Ship the dock');
+
+        return ToolCall::by($start)
+            ->arguments(['task_id' => $task->id, 'run_number' => 1, 'note' => 'Docked.', 'request_key' => 'tasks-1'])
+            ->expects(ExpectedCommand::of(FinishTaskCommand::class, ['taskId' => $task->id, 'runNumber' => 1, 'note' => 'Docked.']));
     }
 }

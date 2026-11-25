@@ -6,18 +6,16 @@ namespace Domain\Tasks\Tests\Mcp;
 
 use Domain\Tasks\Mcp\Tools\TaskReadTool;
 use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of the tool TaskReadTool, as the generator wrote it.
+ * An agent reads a task: its brief, state and runs.
  */
-#[Generated]
 #[TestsMcpTool(TaskReadTool::class)]
 final class TaskReadToolTest extends McpToolEntryTestCase
 {
@@ -28,8 +26,9 @@ final class TaskReadToolTest extends McpToolEntryTestCase
 
     protected function arrange(TestJournal $journal): ToolCall
     {
-        throw EntryTestNeedsArrangement::for('TaskReadTool', [
-            'the argument task_id',
-        ]);
+        $start = $journal->owner()->signedStart('Builder');
+        $task = $journal->fixtures(TaskFixtures::class)->createTask('Ship the dock');
+
+        return ToolCall::by($start)->arguments(['task_id' => $task->id]);
     }
 }

@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Mcp;
 
+use Domain\Tasks\Commands\RunTaskCheck\RunTaskCheckCommand;
 use Domain\Tasks\Mcp\Tools\RunTaskCheckTool;
 use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
+use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of the tool RunTaskCheckTool, as the generator wrote it.
+ * An agent records a check of its task run against a process run it started, and is given the check.
  */
-#[Generated]
 #[TestsMcpTool(RunTaskCheckTool::class)]
 final class RunTaskCheckToolTest extends McpToolEntryTestCase
 {
@@ -28,14 +28,24 @@ final class RunTaskCheckToolTest extends McpToolEntryTestCase
 
     protected function arrange(TestJournal $journal): ToolCall
     {
-        throw EntryTestNeedsArrangement::for('RunTaskCheckTool', [
-            'the argument task_id',
-            'the argument run_number',
-            'the argument process_run_id',
-            'the argument operation',
-            'the argument request_key',
-            'the expected commands',
-            'the sink replies',
-        ]);
+        $start = $journal->owner()->signedStart('Builder');
+        $tasks = $journal->fixtures(TaskFixtures::class)->task('Ship the dock')->startRun('Ship the dock', 'Builder');
+        $task = $tasks->taskCalled('Ship the dock');
+        $check = $journal->actAs('Builder')->processRun('Check', 'cat composer.json')->processRunCalled('Check');
+
+        return ToolCall::by($start)
+            ->arguments([
+                'task_id' => $task->id,
+                'run_number' => 1,
+                'process_run_id' => $check->id,
+                'operation' => 'Run the tests.',
+                'request_key' => 'tasks-1',
+            ])
+            ->reply(RunTaskCheckCommand::class, '01kd0000000000000000000002')
+            ->expects(ExpectedCommand::of(RunTaskCheckCommand::class, [
+                'taskId' => $task->id,
+                'runNumber' => 1,
+                'processRunId' => $check->id,
+            ]));
     }
 }

@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Mcp;
 
+use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
 use Domain\Tasks\Mcp\Tools\BlockTaskTool;
 use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
+use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of the tool BlockTaskTool, as the generator wrote it.
+ * An agent blocks its run of a task with what it waits on.
  */
-#[Generated]
 #[TestsMcpTool(BlockTaskTool::class)]
 final class BlockTaskToolTest extends McpToolEntryTestCase
 {
@@ -28,13 +28,12 @@ final class BlockTaskToolTest extends McpToolEntryTestCase
 
     protected function arrange(TestJournal $journal): ToolCall
     {
-        throw EntryTestNeedsArrangement::for('BlockTaskTool', [
-            'the argument task_id',
-            'the argument run_number',
-            'the argument reason',
-            'the argument request_key',
-            'the expected commands',
-            'the sink replies',
-        ]);
+        $start = $journal->owner()->signedStart('Builder');
+        $tasks = $journal->fixtures(TaskFixtures::class)->task('Ship the dock')->startRun('Ship the dock', 'Builder');
+        $task = $tasks->taskCalled('Ship the dock');
+
+        return ToolCall::by($start)
+            ->arguments(['task_id' => $task->id, 'run_number' => 1, 'reason' => 'Waits on the dock route.', 'request_key' => 'tasks-1'])
+            ->expects(ExpectedCommand::of(BlockTaskCommand::class, ['taskId' => $task->id, 'runNumber' => 1]));
     }
 }

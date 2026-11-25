@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Mcp;
 
+use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
 use Domain\Tasks\Mcp\Tools\CancelTaskTool;
 use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
+use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of the tool CancelTaskTool, as the generator wrote it.
+ * An agent cancels the task whose run it holds, with the reason it is no longer needed.
  */
-#[Generated]
 #[TestsMcpTool(CancelTaskTool::class)]
 final class CancelTaskToolTest extends McpToolEntryTestCase
 {
@@ -28,12 +28,12 @@ final class CancelTaskToolTest extends McpToolEntryTestCase
 
     protected function arrange(TestJournal $journal): ToolCall
     {
-        throw EntryTestNeedsArrangement::for('CancelTaskTool', [
-            'the argument task_id',
-            'the argument reason',
-            'the argument request_key',
-            'the expected commands',
-            'the sink replies',
-        ]);
+        $start = $journal->owner()->signedStart('Builder');
+        $tasks = $journal->fixtures(TaskFixtures::class)->task('Ship the dock')->startRun('Ship the dock', 'Builder');
+        $task = $tasks->taskCalled('Ship the dock');
+
+        return ToolCall::by($start)
+            ->arguments(['task_id' => $task->id, 'reason' => 'Not needed.', 'request_key' => 'tasks-1'])
+            ->expects(ExpectedCommand::of(CancelTaskCommand::class, ['taskId' => $task->id, 'reason' => 'Not needed.']));
     }
 }
