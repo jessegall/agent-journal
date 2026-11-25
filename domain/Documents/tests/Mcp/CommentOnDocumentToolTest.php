@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Mcp;
 
+use Domain\Documents\Commands\CommentOnDocument\CommentOnDocumentCommand;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\DocumentsDomain;
 use Domain\Documents\Mcp\Tools\CommentOnDocumentTool;
+use Illuminate\Support\Str;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of the tool CommentOnDocumentTool, as the generator wrote it.
+ * An agent comments on a document and is given the comment.
  */
-#[Generated]
 #[TestsMcpTool(CommentOnDocumentTool::class)]
 final class CommentOnDocumentToolTest extends McpToolEntryTestCase
 {
@@ -28,12 +28,19 @@ final class CommentOnDocumentToolTest extends McpToolEntryTestCase
 
     protected function arrange(TestJournal $journal): ToolCall
     {
-        throw EntryTestNeedsArrangement::for('CommentOnDocumentTool', [
-            'the argument doc_id',
-            'the argument body',
-            'the argument request_key',
-            'the expected commands',
-            'the sink replies',
-        ]);
+        $start = $journal->owner()->signedStart('Writer');
+        $document = $journal->runAs('Writer', new CreateDocumentCommand('Design', 'The plan.', "# Design\nText."));
+
+        return ToolCall::by($start)
+            ->arguments([
+                'doc_id' => $document->number,
+                'body' => 'Section two is unclear.',
+                'request_key' => 'documents-1',
+            ])
+            ->reply(CommentOnDocumentCommand::class, Str::ulid())
+            ->expects(CommentOnDocumentCommand::class, [
+                'documentId' => (string) $document->number,
+                'body' => 'Section two is unclear.',
+            ]);
     }
 }
