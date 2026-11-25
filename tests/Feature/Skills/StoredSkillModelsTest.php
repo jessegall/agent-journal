@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
+use App\Data\Skills\Conditions\StoredConditionData;
 use App\Exceptions\SkillRevisionImmutable;
 use App\Models\Skills\Skill;
 use App\Models\Skills\SkillRequest;
@@ -116,7 +117,7 @@ final class StoredSkillModelsTest extends TestCase
             'Review notes',
             'Read before reviewing.',
             [new SectionDraft('notes', 'Notes', $text)],
-            '{"type":"everyone","version":1}',
+            StoredConditionData::from(Conditions::everyone()->toArray())->toJson(),
         );
     }
 

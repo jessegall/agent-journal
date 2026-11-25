@@ -38,7 +38,9 @@ final class SkillPublicationModelsTest extends TestCase
 
         $generation = $this->generation();
         $this->assertSame(GenerationState::Ready, SkillGeneration::latestReady()?->state);
-        $this->assertSame('journal', $generation->entry('journal')['key'] ?? null);
+        $entry = $generation->entry('journal');
+        $this->assertNotNull($entry);
+        $this->assertSame('journal', $entry->key);
 
         $generation->entries = [];
         $this->expectException(SkillGenerationImmutable::class);

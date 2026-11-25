@@ -45,10 +45,10 @@ final class CoreSkillsTest extends TestCase
         $core = array_values(array_filter($listed, fn (array $skill) => $skill['owner'] === 'Core'));
 
         $this->assertSame(
-            ['journal', 'journal-profiles', 'journal-skills', 'journal-shell'],
+            ['journal', 'journal-access', 'journal-profiles', 'journal-skills', 'journal-shell'],
             array_column($core, 'key'),
         );
-        $this->assertSame(['shipped', 'shipped', 'shipped', 'shipped'], array_column($core, 'source'));
+        $this->assertSame(array_fill(0, 5, 'shipped'), array_column($core, 'source'));
     }
 
     public function test_the_shell_skill_publishes_every_heading_of_its_file_in_the_file_order(): void

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Support\DomainRegistry;
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Sessions\SessionStatus;
@@ -13,6 +12,7 @@ use App\Models\Agents\AgentSession;
 use App\Models\Profiles\Profile;
 use App\Models\Profiles\ProfileRevision;
 use App\Support\Access\AccessSettings;
+use App\Support\DomainRegistry;
 use App\Values\ProfileBase;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Fixtures\Agents\TestSelections;
@@ -87,7 +87,7 @@ final class SkillPreviewTest extends TestCase
         Artisan::call('skill:preview', ['key' => 'journal-plans', '--agent' => $this->reviewer->id, '--json' => true]);
         $answer = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
 
-        $this->assertFalse($answer['selected']);
+        $this->assertFalse($answer['isSelected']);
         $this->assertSame('no_match:none-matched', $answer['reason']);
         $this->assertContains('journal-skills', $answer['selection']);
     }

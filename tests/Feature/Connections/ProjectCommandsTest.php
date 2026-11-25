@@ -21,9 +21,11 @@ use App\Values\BindingFolder;
 use App\Values\CommandFingerprint;
 use App\Values\InstallTicket;
 use App\Values\PresenceReport;
+use Domain\Comments\CommentsDomain;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\SendsSignedCalls;
 use Tests\TestCase;
 
@@ -44,6 +46,14 @@ final class ProjectCommandsTest extends TestCase
         'project_environments', 'projects', 'agent_runtimes', 'agent_sessions', 'session_tokens', 'agents', 'hosts',
         'settings_records', 'users',
     ];
+
+    /**
+     * Comments, whose verbs the connected machine runs.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(CommentsDomain::class);
+    }
 
     /**
      * A process id no process holds: above what the systems this runs on hand out.

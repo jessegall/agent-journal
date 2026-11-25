@@ -53,7 +53,7 @@ final class BindingHostRoutesTest extends TestCase
         $host = $this->enrolledHost();
 
         $this->signedHostCall($host, 'POST', '/host/claim?limit=1&wait=0&watched_version=0', '{}')->assertOk();
-        $this->signedHostCall($host, 'POST', '/host/deliveries', '{}')
+        $this->signedHostCall($host, 'POST', '/host/bindings/'.strtolower((string) Str::ulid()).'/presence', '{}')
             ->assertForbidden()
             ->assertJsonPath('message', HostRoleRefused::forRelayOnly($host->hostId)->getMessage());
     }

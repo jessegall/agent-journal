@@ -77,13 +77,13 @@ final class InstallScriptTest extends TestCase
         $this->assertSame(1, substr_count($this->rendered(), self::TICKET));
     }
 
-    public function test_journal_install_is_called_only_on_the_last_line(): void
+    public function test_main_is_called_only_on_the_last_line(): void
     {
         $lines = explode("\n", rtrim($this->rendered(), "\n"));
 
-        $this->assertSame('journal_install', end($lines));
-        $calls = array_filter($lines, fn (string $line) => str_contains($line, 'journal_install'));
-        $this->assertSame(['journal_install() {', 'journal_install'], array_values($calls));
+        $this->assertSame('main "$@"', end($lines));
+        $calls = array_filter($lines, fn (string $line) => str_starts_with($line, 'main'));
+        $this->assertSame(['main() {', 'main "$@"'], array_values($calls));
     }
 
     public function test_a_copy_cut_anywhere_before_the_last_line_runs_nothing(): void

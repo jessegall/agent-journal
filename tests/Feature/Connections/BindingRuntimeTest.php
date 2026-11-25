@@ -6,6 +6,7 @@ namespace Tests\Feature\Connections;
 
 use App\Commands\Inboxes\InstallInboxes\InstallInboxesCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
+use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Sessions\ProfileResolver;
 use App\Enums\Accounts\CommandEntry;
 use App\Models\Agents\Agent;
@@ -15,6 +16,7 @@ use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Projects\ProjectBinding;
 use App\Support\ActorIdentity;
+use App\Support\DefaultDrivers;
 use App\Support\EntryDispatchers;
 use App\Support\MainInboxHandover;
 use App\Values\ProfileKey;
@@ -91,7 +93,9 @@ final class BindingRuntimeTest extends TestCase
         $started = $this->start($binding, ['model' => 'default'])->assertCreated();
 
         $profile = $this->app->make(ProfileResolver::class)->snapshotFor(ProfileKey::from('main-agent'));
-        $this->assertSame($profile->model, AgentSession::query()->findOrFail($started->json('session_id'))->model);
+        $family = $this->app->make(DriverCatalogue::class)->family(DefaultDrivers::CLAUDE_CODE);
+        $session = AgentSession::query()->findOrFail($started->json('session_id'));
+        $this->assertSame($family->modelAt($profile->preferredTier), $session->model);
     }
 
     public function test_a_binding_runtime_leaves_the_servers_main_agent_attached_to_main(): void

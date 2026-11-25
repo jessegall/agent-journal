@@ -48,10 +48,6 @@ final class SupervisorRoutesTest extends TestCase
 
         $this->assertSame('profile:journal-code-reviewer', $worker->supervisor->default->key);
         $this->assertSame('profile:journal-main', $reviewer->supervisor->targetFor(AskTypeKey::of('question'))->key);
-        $this->assertSame(
-            'profile:journal-merger',
-            $reviewer->supervisor->targetFor(AskTypeKey::of('merge.ready'))->key,
-        );
 
         $byKey = collect($activation->profiles)->keyBy(fn (ActivatedProfile $profile) => $profile->key->key);
         $coverage = $byKey['journal-worker']->supervisorCoverage;

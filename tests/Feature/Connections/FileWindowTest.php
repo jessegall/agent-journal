@@ -156,8 +156,8 @@ final class FileWindowTest extends TestCase
             'comment' => 'Why two?',
         ];
 
-        $this->actingAs($this->owner)->post('/project-connections/file-comments/tell', $message, $key)->assertSessionHasNoErrors()->assertRedirect();
-        $this->actingAs($this->owner)->post('/project-connections/file-comments/tell', $message, $key)->assertRedirect();
+        $this->actingAs($this->owner)->post('/comments/file-tell', $message, $key)->assertSessionHasNoErrors()->assertRedirect();
+        $this->actingAs($this->owner)->post('/comments/file-tell', $message, $key)->assertRedirect();
 
         $this->assertSame(
             ['About README.md, lines 2 to 3: Why two?'],
