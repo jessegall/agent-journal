@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Records;
 
+use App\Casts\LayoutShapeCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -24,7 +25,7 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property string $user_id
  * @property string $name
- * @property array<string, mixed> $shape
+ * @property LayoutShape $shape
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -45,7 +46,7 @@ final class Layout extends Model implements EventSource, ReadableModel
      */
     protected function casts(): array
     {
-        return ['shape' => 'array'];
+        return ['shape' => LayoutShapeCast::class];
     }
 
     // ----------[ Constructors ]----------
@@ -58,7 +59,7 @@ final class Layout extends Model implements EventSource, ReadableModel
         return self::query()->create([
             'user_id' => $userId,
             'name' => $name,
-            'shape' => $shape->toArray(),
+            'shape' => $shape,
         ]);
     }
 
@@ -71,7 +72,7 @@ final class Layout extends Model implements EventSource, ReadableModel
     {
         $this->update([
             'name' => $name,
-            'shape' => $shape->toArray(),
+            'shape' => $shape,
         ]);
         $this->raise(new LayoutSaved($this->id));
     }
