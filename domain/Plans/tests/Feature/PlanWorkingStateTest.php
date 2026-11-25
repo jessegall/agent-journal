@@ -4,31 +4,19 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature;
 
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Work\CurrentState;
-use App\Models\Agents\AgentStackRow;
-use App\Support\ActorContext;
-use App\Support\Stack\Frames\Frame;
-use App\Support\Stack\StackRestorer;
-use App\Support\Storage\FrameRecord;
+use App\Models\Agents\AgentSession;
 use App\Values\AgentText;
-use App\Values\OwnerAuthority;
 use Domain\Plans\Commands\AddPhaseTasks\AddPhaseTasksCommand;
 use Domain\Plans\Commands\CancelPlan\CancelPlanCommand;
 use Domain\Plans\Commands\StartPlan\StartPlanCommand;
-use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Events\PlanProgressChanged;
-use Domain\Plans\Models\Plan;
-use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Support\States\Support\WorkOnPlanStateReference;
 use Domain\Plans\Support\States\WorkOnPlanState;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
-use Domain\Tasks\Models\Task;
-use Illuminate\Support\Facades\Event;
-use Tests\Support\CommittedHookStack;
-use Tests\Support\TestIds;
-use Tests\Support\TestStartAuthority;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
+use Tests\Support\CommitsHookRows;
+use Tests\Support\Seeding\StateObservation;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -37,76 +25,51 @@ use Tests\Support\TimeLimits\TimeLimit;
  */
 final class PlanWorkingStateTest extends TestCase
 {
-    use CommittedHookStack;
+    use CommitsHookRows;
 
-    protected function tearDown(): void
+    /**
+     * The bus commits these commands for real, so these tables are emptied around each test.
+     */
+    private const array TABLES = ['plans', 'phases', 'phase_tasks', 'tasks', 'agent_stacks', 'command_receipts'];
+
+    private const string PLAN = 'Build the release page';
+
+    private PlanFixtures $plans;
+
+    protected function setUp(): void
     {
-        $this->emptyTables('phase_tasks', 'phases', 'plans');
+        parent::setUp();
 
-        parent::tearDown();
+        $this->journal->owner()->agent('Planner');
+        $this->plans = $this->journal->fixtures(PlanFixtures::class)->plan(self::PLAN);
     }
 
     #[TimeLimit(seconds: 3, reason: 'It starts a plan through the bus twice, each with its stack transaction.')]
     public function test_an_agent_starting_a_plan_gets_its_working_frame_once(): void
     {
-        $plan = $this->plan();
+        $this->journal->actAs('Planner')->run(new StartPlanCommand($this->planId()));
+        $this->journal->run(new StartPlanCommand($this->planId()));
 
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forAgent(TestIds::of(1)),
-            TestStartAuthority::forAgent(TestIds::of(1)),
-        );
-
-        $this->app->make(CommandBus::class)->run(new StartPlanCommand($plan->id));
-        $this->app->make(CommandBus::class)->run(new StartPlanCommand($plan->id));
-
-        $this->assertSame([WorkOnPlanStateReference::TYPE_KEY], $this->frameTypes());
-
-        $this->assertSame(
-            $plan->id,
-            $this->app->make(CurrentState::class)->of(
-                $this->target,
-                WorkOnPlanStateReference::TYPE_KEY,
-            )->get()->subject->id,
-        );
+        $this->journal->stateOn($this->planner(), WorkOnPlanStateReference::forPlan($this->planId()))
+            ->given([], fn (StateObservation $state) => $state->assertOnTop());
     }
 
     public function test_a_user_starting_a_plan_changes_no_stack(): void
     {
-        $plan = $this->plan();
+        $this->journal->actAs('Owner')->run(new StartPlanCommand($this->planId()));
 
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(7)),
-            new OwnerAuthority('test'),
-        );
-
-        $this->app->make(CommandBus::class)->run(new StartPlanCommand($plan->id));
-
-        $this->assertSame([], $this->frameTypes());
+        $this->journal->assertNoFrame($this->planner(), WorkOnPlanStateReference::forPlan($this->planId()));
     }
 
     public function test_a_plan_frame_is_finished_once_the_plan_is_done_or_cancelled(): void
     {
-        $plan = $this->plan();
-        $this->pushState(WorkOnPlanStateReference::forPlan($plan->id));
-        $row = AgentStackRow::query()->forTarget($this->target)->sole();
-        $restorer = $this->app->make(StackRestorer::class);
+        $working = $this->journal->pushState($this->planner(), WorkOnPlanStateReference::forPlan($this->planId()))
+            ->given([], fn (StateObservation $state) => $state->assertOnTop());
 
-        $this->assertFalse($this->planFrame($restorer, $row)->isFinished());
-        $this->assertInstanceOf(WorkOnPlanState::class, $this->planFrame($restorer, $row)->state);
+        $plan = $this->plans->planCalled(self::PLAN);
+        $this->journal->actAs('Owner')->run(new CancelPlanCommand($plan->id, $plan->revision, 'No longer needed'));
 
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(7)),
-            new OwnerAuthority('test'),
-        );
-
-        $this->app->make(CommandBus::class)->run(
-            new CancelPlanCommand($plan->id, $plan->refresh()->revision, 'No longer needed'),
-        );
-
-        $row = AgentStackRow::query()->forTarget($this->target)->sole();
-
-        $this->assertTrue($this->planFrame($restorer, $row)->isFinished());
-        $this->assertTrue($restorer->restore($row->frames, $row->target)->top()->isBottom());
+        $working->given([], fn (StateObservation $state) => $state->assertFinished());
     }
 
     public function test_the_frame_shows_the_newest_counts_it_heard_and_ignores_an_older_count_arriving_late(): void
@@ -129,61 +92,25 @@ final class PlanWorkingStateTest extends TestCase
 
     public function test_placing_a_task_tells_the_plans_new_counts(): void
     {
-        $plan = $this->plan();
-        $heard = [];
+        $phase = $this->plans->phase(self::PLAN, 'Work')->phaseCalled('Work');
+        $task = $this->journal->fixtures(TaskFixtures::class)->task('Write it')->taskCalled('Write it');
+        $this->journal->observeEvents(PlanProgressChanged::class);
 
-        Event::listen(PlanProgressChanged::class, function (PlanProgressChanged $changed) use (&$heard): void {
-            $heard[] = [
-                $changed->hasFinished,
-                $changed->total,
-            ];
-        });
+        $this->journal->actAs('Owner')->run(new AddPhaseTasksCommand($phase->id, $phase->revision, [$task->id]));
 
-        $phase = $this->app->make(PlanStructure::class)->addPhase($plan, 'Work');
-
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(7)),
-            new OwnerAuthority('test'),
+        $this->journal->assertEventCount(PlanProgressChanged::class, 1)->assertEvent(
+            PlanProgressChanged::class,
+            fn (PlanProgressChanged $changed) => [$changed->hasFinished, $changed->total] === [0, 1],
         );
-
-        $this->app->make(CommandBus::class)->run(
-            new AddPhaseTasksCommand($phase->id, $phase->refresh()->revision, [Task::factory()->create()->id]),
-        );
-
-        $this->assertSame([[
-            0,
-            1,
-        ]], $heard);
     }
 
-    /**
-     * The plan's frame as stored, finished or not: the walk passes over it once it is finished, the stack keeps it.
-     */
-    private function planFrame(StackRestorer $restorer, AgentStackRow $row): Frame
+    private function planId(): string
     {
-        $frames = $restorer->restore($row->frames, $row->target)->frames();
-
-        return $frames[array_key_last($frames)];
+        return $this->plans->planCalled(self::PLAN)->id;
     }
 
-    private function plan(): Plan
+    private function planner(): AgentSession
     {
-        return Plan::factory()->create([
-            'title' => 'Build the release page',
-            'type' => PlanType::Build,
-        ]);
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function frameTypes(): array
-    {
-        $frames = array_filter(
-            AgentStackRow::query()->forTarget($this->target)->sole()->frames->all(),
-            fn (FrameRecord $frame) => ! $frame->isBottom,
-        );
-
-        return array_values(array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $frames));
+        return $this->journal->sessionOf('Planner');
     }
 }

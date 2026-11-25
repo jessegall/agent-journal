@@ -11,8 +11,10 @@ use App\Support\AgentStacks;
 use App\Support\Drivers\DriverCapabilities;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\References\StateReference;
+use App\Support\Stack\Frames\Frame;
 use App\Support\Stack\HookAnswer;
 use App\Values\StackTarget;
+use PHPUnit\Framework\Assert;
 
 /**
  * A state of a test on the real stack of an agent's session: pushed through the stack machinery inside the real
@@ -46,6 +48,22 @@ trait PushesStates
         $target = $on instanceof AgentSession ? $on->target : $on;
 
         return $this->stateHandle(new StateStack($this->app, $target), $reference);
+    }
+
+    /**
+     * The session's stack holds no frame of the reference, live or finished.
+     */
+    public function assertNoFrame(AgentSession|StackTarget $on, StateReference $reference): self
+    {
+        $target = $on instanceof AgentSession ? $on->target : $on;
+        $frames = array_filter(
+            new StateStack($this->app, $target)->stack()->frames(),
+            fn (Frame $frame) => $frame->isFor($reference),
+        );
+
+        Assert::assertSame([], array_values($frames), "The stack holds a {$reference->typeKey} frame.");
+
+        return $this;
     }
 
     /**

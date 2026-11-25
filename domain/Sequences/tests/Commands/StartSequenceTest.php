@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Tests\Commands;
 
-use App\Contracts\Bus\CommandBus;
 use App\Exceptions\StackAlreadyClosed;
 use App\Models\Agents\AgentStackRow;
 use Carbon\CarbonImmutable;
-use Domain\Sequences\Commands\StartSequence\StartSequenceCommand;
 use Domain\Sequences\Enums\SequenceRunStatus;
+use Domain\Sequences\Support\States\Support\FollowSequenceStateReference;
 use Domain\Sequences\Tests\Fixtures\SequenceFixtures;
 use Domain\Sequences\Tests\TestCase;
-use Tests\Support\CommittedHookStack;
-use Tests\Support\TestIds;
+use Tests\Support\CommitsHookRows;
+use Tests\Support\Seeding\StateObservation;
 
 /**
  * An agent starts a run in its session: the run runs at its first step, follows the agent and puts its state on the
@@ -21,39 +20,44 @@ use Tests\Support\TestIds;
  */
 final class StartSequenceTest extends TestCase
 {
-    use CommittedHookStack;
+    use CommitsHookRows;
+
+    /**
+     * The bus commits these commands for real, so these tables are emptied around each test.
+     */
+    private const array TABLES = ['sequence_runs', 'agent_stacks', 'command_receipts'];
+
+    private const string RUN = 'Close a task';
+
+    private SequenceFixtures $runs;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner()->agent('Writer')->actAs('Writer');
+        $this->runs = $this->journal->fixtures(SequenceFixtures::class)->run(self::RUN, ['Read the brief.', 'Run the phase tests.']);
+    }
 
     public function test_a_started_run_follows_the_agent_at_its_first_step_with_its_state_on_the_stack(): void
     {
-        $run = $this->journal->fixtures(SequenceFixtures::class)->run(
-            'Close a task',
-            ['Read the brief.', 'Run the phase tests.'],
-        )->runCalled('Close a task');
+        $this->runs->startRun(self::RUN, 'Writer')->assertStep(self::RUN, 1, 'Writer');
 
-        $this->app->make(CommandBus::class)->run(new StartSequenceCommand($run->id, $this->target->sessionId));
-
-        $run->refresh();
-        $this->assertSame(
-            [SequenceRunStatus::Running, 1, 'agent', TestIds::of(1)],
-            [$run->status, $run->current_step, $run->actor_type, $run->actor_id],
-        );
-        $this->assertSame(['core.ready', 'sequences.follow'], $this->storedTypeKeys());
+        $this->journal->stateOn(
+            $this->journal->sessionOf('Writer'),
+            FollowSequenceStateReference::forRun($this->runs->runCalled(self::RUN)),
+        )->given([], fn (StateObservation $state) => $state->assertOnTop());
     }
 
     public function test_a_failed_push_rolls_the_start_back(): void
     {
-        $run = $this->journal->fixtures(SequenceFixtures::class)->run(
-            'Close a task',
-            ['Read the brief.'],
-        )->runCalled('Close a task');
-        AgentStackRow::query()->sole()->closeAt(CarbonImmutable::now());
+        AgentStackRow::query()->withoutGlobalScopes()
+            ->forTarget($this->journal->sessionOf('Writer')->target)
+            ->sole()
+            ->closeAt(CarbonImmutable::now());
 
-        $this->assertThrows(
-            fn () => $this->app->make(CommandBus::class)->run(
-                new StartSequenceCommand($run->id, $this->target->sessionId),
-            ),
-            StackAlreadyClosed::class,
-        );
-        $this->assertNull($run->refresh()->actor_id);
+        $this->journal->assertRefused(StackAlreadyClosed::class, fn () => $this->runs->startRun(self::RUN, 'Writer'));
+
+        $this->runs->assertUnassigned(self::RUN, 1, SequenceRunStatus::Running);
     }
 }

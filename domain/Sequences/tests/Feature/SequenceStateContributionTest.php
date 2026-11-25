@@ -4,71 +4,75 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Tests\Feature;
 
-use App\Contracts\Bus\CommandBus;
+use App\Contracts\Actors\AgentTexts;
 use App\Enums\Drivers\RewriteSupport;
 use App\Support\Drivers\DriverCapabilities;
-use App\Support\Drivers\DriverReply;
+use App\Support\Drivers\DriverReplies;
 use App\Support\Inputs\ContextCompacted;
+use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\Values\CompactionDetails;
 use App\Support\Inputs\Values\HookIdentity;
-use App\Support\OperationDeadline;
 use App\Support\Stack\HookAnswer;
 use App\Support\StateLoading\RegisteredStateType;
 use App\Support\StateLoading\StateBuilder;
 use Domain\Sequences\Commands\AdvanceSequence\AdvanceSequenceCommand;
-use Domain\Sequences\Commands\CancelSequence\CancelSequenceCommand;
-use Domain\Sequences\Commands\StartSequence\StartSequenceCommand;
-use Domain\Sequences\Enums\SequenceRunStatus;
-use Domain\Sequences\Models\SequenceRun;
 use Domain\Sequences\Support\States\FollowSequenceState;
+use Domain\Sequences\Tests\Fixtures\SequenceFixtures;
 use Domain\Sequences\Tests\TestCase;
-use Tests\Support\CommittedHookStack;
-use Tests\Support\TestIds;
+use Tests\Support\CommitsHookRows;
 use Tests\Support\TestText;
 
 final class SequenceStateContributionTest extends TestCase
 {
-    use CommittedHookStack;
+    use CommitsHookRows;
 
-    private const string FIRST_STEP = 'Read the brief.';
+    /**
+     * The bus and the hooks commit for real, so these tables are emptied around each test.
+     */
+    private const array TABLES = ['sequence_runs', 'agent_stacks', 'hook_calls', 'command_receipts'];
 
-    private const string SECOND_STEP = 'Run the phase tests.';
+    private const string RUN = 'Close a task';
+
+    private SequenceFixtures $runs;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner()->agent('Writer')->actAs('Writer');
+        $this->runs = $this->journal->fixtures(SequenceFixtures::class)
+            ->run(self::RUN, ['Read the brief.', 'Run the phase tests.'])
+            ->startRun(self::RUN, 'Writer');
+    }
 
     public function test_each_hook_reads_the_current_step_fresh(): void
     {
-        $run = $this->newRun();
-        $this->app->make(CommandBus::class)->run(new StartSequenceCommand($run->id, $this->target->sessionId));
+        $onFirstStep = $this->stopReply();
+        $this->journal->run(new AdvanceSequenceCommand($this->runs->runCalled(self::RUN)->id));
+        $onSecondStep = $this->stopReply();
 
-        $onFirstStep = $this->answerStop('call-1');
-        $this->app->make(CommandBus::class)->run(new AdvanceSequenceCommand($run->id));
-        $onSecondStep = $this->answerStop('call-2');
-
-        $this->assertStringContainsString($this->stepText($run, 1), $onFirstStep);
-
-        $this->assertStringContainsString($this->stepText($run, 2), $onSecondStep);
+        $this->assertStringContainsString($this->stepText(1), $onFirstStep);
+        $this->assertStringContainsString($this->stepText(2), $onSecondStep);
     }
 
     public function test_a_compaction_repeats_the_step_without_advancing_the_run(): void
     {
-        $run = $this->newRun();
-        $this->app->make(CommandBus::class)->run(new StartSequenceCommand($run->id, $this->target->sessionId));
+        $session = $this->journal->sessionOf('Writer');
+        $compaction = new ContextCompacted(
+            new HookIdentity($session->agent_id, $session->id, 'compaction', hash('sha256', 'compaction')),
+            new CompactionDetails('compaction-1'),
+        );
 
-        $context = json_decode($this->answerCompaction('call-1'), true, flags: JSON_THROW_ON_ERROR);
+        $answer = $this->answer($compaction, 'onCompaction');
+        $shown = implode("\n", $answer->shownContext($this->journal->service(AgentTexts::class)));
 
-        $this->assertContains($this->stepText($run, 1), $context);
-        $this->assertSame(1, $run->fresh()?->current_step);
+        $this->assertStringContainsString($this->stepText(1), $shown);
+        $this->runs->assertStep(self::RUN, 1, 'Writer');
     }
 
-    private function newRun(): SequenceRun
+    private function stepText(int $step): string
     {
-        return SequenceRun::create('Close a task', [
-            self::FIRST_STEP,
-            self::SECOND_STEP,
-        ]);
-    }
-
-    private function stepText(SequenceRun $run, int $step): string
-    {
+        $run = $this->runs->runCalled(self::RUN);
         $values = ['runId' => $run->id, 'runNumber' => $run->number, 'steps' => $run->steps, 'currentStep' => $step];
 
         return TestText::words($this->app->make(StateBuilder::class)
@@ -78,31 +82,24 @@ final class SequenceStateContributionTest extends TestCase
     }
 
     /**
-     * The reply to a compaction, which carries the answer's context as JSON.
+     * What the program is told when the agent asks to stop.
      */
-    private function answerCompaction(string $callId): string
+    private function stopReply(): string
     {
-        $this->callAs($callId);
+        $answer = $this->answer($this->journal->hooksFor($this->journal->sessionOf('Writer'))->stop(), 'onStop');
 
-        $capabilities = new DriverCapabilities(
+        return DriverReplies::stop($answer, $this->journal->service(AgentTexts::class))->stdout;
+    }
+
+    private function answer(HookInput $input, string $method): HookAnswer
+    {
+        $driver = new DriverCapabilities(
             'Test program',
-            'compaction context',
-            ['onCompaction'],
+            'stop and compaction replies',
+            [$method],
             RewriteSupport::WithoutApproval,
         );
 
-        $compaction = new ContextCompacted(
-            new HookIdentity(TestIds::of(1), TestIds::of(10), $callId, self::inputDigest()),
-            new CompactionDetails('compaction-1'),
-        );
-
-        $reply = $this->machine()->answer(
-            $compaction,
-            $capabilities,
-            new OperationDeadline(3000),
-            fn (HookAnswer $answer) => new DriverReply(json_encode($answer->context) ?: '[]', '', 0),
-        );
-
-        return $reply->stdout;
+        return $this->journal->answerHook($this->journal->sessionOf('Writer'), $input, $driver);
     }
 }
