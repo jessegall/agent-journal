@@ -116,9 +116,9 @@ final class ClaudeCodeTest extends TestCase
         $reply = $this->render('shell command', Decision::allow());
 
         $this->assertSame(
-'{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow"}}',
- $reply->stdout,
-);
+            '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow"}}',
+            $reply->stdout,
+        );
     }
 
     public function test_a_denied_shell_command_carries_its_reason(): void
@@ -217,9 +217,9 @@ final class ClaudeCodeTest extends TestCase
         $this->assertInstanceOf(JudgedCall::class, $call);
 
         return ($call->render)(
-new HookAnswer($decision, $context, [], new AgentStack([], new InMemoryStateFactory(), new StackTarget('agent-1', 'session-1'))),
- TestText::renderer(),
-);
+            new HookAnswer($decision, $context, [], new AgentStack([], new InMemoryStateFactory(), new StackTarget('agent-1', 'session-1'))),
+            TestText::renderer(),
+        );
     }
 
     private function adapter(): ClaudeCodeAdapter

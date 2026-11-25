@@ -18,7 +18,6 @@ use App\Values\StackTarget;
  */
 trait FinishesToolCalls
 {
-
     /**
      * @param  array<string, mixed>  $arguments
      */

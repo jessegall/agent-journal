@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use Tests\Support\TestIds;
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\CommandNestingTooDeep;
 use App\Exceptions\CommandNotRegistered;
@@ -17,6 +16,7 @@ use Tests\Fixtures\Bus\Shop\Enums\ItemSize;
 use Tests\Fixtures\Modules\Cards\Commands\DrawCard\DrawCardCommand;
 use Tests\Fixtures\Modules\Notes\Commands\ClearNotes\ClearNotesCommand;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
+use Tests\Support\TestIds;
 
 /**
  * Dispatching on the command bus: every registered command reaches its handler and its result comes

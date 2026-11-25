@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use Tests\Support\TestIds;
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\CommandRefused;
 use App\Exceptions\CommandTransactionMismatch;
@@ -18,6 +17,7 @@ use Tests\Fixtures\Modules\Notes\Commands\OpenTransactionNote\OpenTransactionNot
 use Tests\Fixtures\Modules\Notes\Commands\PinNote\PinNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\RefuseNote\RefuseNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
+use Tests\Support\TestIds;
 
 /**
  * One transaction per command: it commits in the command's isolation, a nested command joins it, a

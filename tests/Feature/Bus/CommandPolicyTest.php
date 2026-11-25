@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use Tests\Support\TestIds;
 use App\Contracts\Bus\CommandAdmission;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Engine\CommandAdmissionStage;
@@ -21,6 +20,7 @@ use Illuminate\Database\ConnectionInterface;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\UppercasesText;
 use Tests\Fixtures\Modules\Notes\Commands\CopyNote\CopyNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
+use Tests\Support\TestIds;
 
 final class CommandPolicyTest extends CommandBusTestCase
 {

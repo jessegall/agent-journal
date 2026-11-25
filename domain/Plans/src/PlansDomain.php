@@ -142,7 +142,7 @@ final class PlansDomain extends Domain implements
     public function requires(): array
     {
         return [
-            TasksDomain::class
+            TasksDomain::class,
         ];
     }
 

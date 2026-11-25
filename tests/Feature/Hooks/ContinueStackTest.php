@@ -121,12 +121,12 @@ final class ContinueStackTest extends TestCase
             TestSelections::requestId(),
             $old->agent->id,
             SelectedDriver::resolve(
-'claude-code',
- ModelSelection::named('claude-opus-5-5'),
- null,
- null,
- $this->app->make(DriverCatalogue::class),
-),
+                'claude-code',
+                ModelSelection::named('claude-opus-5-5'),
+                null,
+                null,
+                $this->app->make(DriverCatalogue::class),
+            ),
             StartOriginType::OwnerRequest,
             new RecordIdentity('helpers.helper-job', '01m7wgahp0n7766x1e1ta8ehew'),
             null,
@@ -136,11 +136,11 @@ final class ContinueStackTest extends TestCase
             driverType: DriverType::Headless,
         );
         SessionRequest::create(
-$request,
- TestSelections::pinOf($request),
- ActorIdentity::system(),
- None::create(),
-)->startedAs($session);
+            $request,
+            TestSelections::pinOf($request),
+            ActorIdentity::system(),
+            None::create(),
+        )->startedAs($session);
         $target = new StackTarget($old->agent->id, $session->id);
         $this->app->make(StartTransaction::class)->runForSession(
             $session->id,

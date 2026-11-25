@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use Tests\Support\TestIds;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\CommandRules\ReceiptStatus;
 use App\Exceptions\RequestKeyConflict;
@@ -20,6 +19,7 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Modules\Notes\Commands\KeepNote\KeepNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 use Tests\Support\ClearsStartRows;
+use Tests\Support\TestIds;
 
 /**
  * A user's keyed write is receipted like an agent's, in the user's own key space: it runs once, a changed payload

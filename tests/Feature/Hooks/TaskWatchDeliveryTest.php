@@ -57,17 +57,17 @@ final class TaskWatchDeliveryTest extends TestCase
         $taskId = TestIds::of(42);
         $this->journal->pushState($this->target, $this->task(42));
         $this->journal->pushState(
-$this->target,
- new StateReference('tasks.task_watch', new SubjectReference($taskId, 1), ['taskId' => $taskId, 'runNumber' => 1]),
-);
+            $this->target,
+            new StateReference('tasks.task_watch', new SubjectReference($taskId, 1), ['taskId' => $taskId, 'runNumber' => 1]),
+        );
         $this->journal->pushState(
-$this->target,
- new StateReference('tasks.ordinary_task_watch', new SubjectReference($taskId, 2), ['taskId' => $taskId, 'runNumber' => 2]),
-);
+            $this->target,
+            new StateReference('tasks.ordinary_task_watch', new SubjectReference($taskId, 2), ['taskId' => $taskId, 'runNumber' => 2]),
+        );
         $this->journal->pushState(
-$this->target,
- new StateReference('tasks.task_watch', new SubjectReference($taskId, 3), ['taskId' => $taskId, 'runNumber' => 3]),
-);
+            $this->target,
+            new StateReference('tasks.task_watch', new SubjectReference($taskId, 3), ['taskId' => $taskId, 'runNumber' => 3]),
+        );
 
         $attention = new RecordedAttention();
         $this->app->instance(ActorAttention::class, $attention);
@@ -103,13 +103,13 @@ $this->target,
         $this->assertSame([], $attention->wakes);
         $this->assertSame(
             [
-TaskFinished::class,
- TaskFinished::class,
- TaskFinished::class,
- TaskCancelled::class,
- TaskCancelled::class,
- TaskCancelled::class,
-],
+                TaskFinished::class,
+                TaskFinished::class,
+                TaskFinished::class,
+                TaskCancelled::class,
+                TaskCancelled::class,
+                TaskCancelled::class,
+            ],
             array_column($trace, 0),
         );
         $this->assertSame(array_slice(array_column($trace, 1), 0, 3), array_slice(array_column($trace, 1), 3));

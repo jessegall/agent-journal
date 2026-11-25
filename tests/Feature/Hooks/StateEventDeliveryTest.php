@@ -79,9 +79,9 @@ final class StateEventDeliveryTest extends TestCase
     {
         $this->journal->pushState($this->target, new StateReference('notes.writing', NoSubject::None));
         $this->journal->pushState(
-$this->target,
- new StateReference('notes.watching', new SubjectReference('lower', 1)),
-);
+            $this->target,
+            new StateReference('notes.watching', new SubjectReference('lower', 1)),
+        );
         $this->journal->pushState($this->target, new StateReference('notes.watching', NoSubject::None));
 
         $this->dispatch(new NoteWritten(
@@ -107,8 +107,8 @@ $this->target,
 
         try {
             $this->dispatch(
-new NoteWritten(doesListenerFail: true, ordinary: [new RecordNoteEffectCommand('partial')]),
-);
+                new NoteWritten(doesListenerFail: true, ordinary: [new RecordNoteEffectCommand('partial')]),
+            );
             $this->fail('The failing state returned successfully.');
         } catch (NoteWorkFailed) {
             $this->assertCount(1, $ordinary);
@@ -116,8 +116,8 @@ new NoteWritten(doesListenerFail: true, ordinary: [new RecordNoteEffectCommand('
         }
 
         $this->dispatch(
-new NoteWritten(ordinary: [new RecordNoteEffectCommand('watching')], marked: [new RecordNoteEffectCommand('writing')]),
-);
+            new NoteWritten(ordinary: [new RecordNoteEffectCommand('watching')], marked: [new RecordNoteEffectCommand('writing')]),
+        );
         $this->assertSame(['watching', 'writing'], $effects->labels);
     }
 
@@ -164,9 +164,9 @@ new NoteWritten(ordinary: [new RecordNoteEffectCommand('watching')], marked: [ne
     {
         $this->journal->pushState($this->target, new StateReference('notes.writing', NoSubject::None));
         $this->journal->pushState(
-$this->target,
- new StateReference('notes.watching', new SubjectReference('original', 1)),
-);
+            $this->target,
+            new StateReference('notes.watching', new SubjectReference('original', 1)),
+        );
         $this->journal->pushState($this->target, new StateReference('guide', NoSubject::None));
 
         $effects = $this->app->make(NoteEffects::class);
@@ -203,8 +203,8 @@ $this->target,
         });
 
         $this->dispatch(
-new NoteWritten(ordinary: [new RecordNoteEffectCommand('replace'), new RecordNoteEffectCommand('stale')]),
-);
+            new NoteWritten(ordinary: [new RecordNoteEffectCommand('replace'), new RecordNoteEffectCommand('stale')]),
+        );
 
         $this->assertSame(['replace'], $effects->labels);
     }

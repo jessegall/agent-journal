@@ -171,11 +171,11 @@ final class AccountProtectionTest extends TestCase
     private static function permissionOf(DriverCall $call): string
     {
         $allowed = new HookAnswer(
-Decision::allow(),
- [],
- [],
- new AgentStack([], new InMemoryStateFactory(), new StackTarget('agent-1', 'session-1')),
-);
+            Decision::allow(),
+            [],
+            [],
+            new AgentStack([], new InMemoryStateFactory(), new StackTarget('agent-1', 'session-1')),
+        );
         $reply = $call->replyWith(fn (HookInput $input, Closure $render) => $render($allowed, TestText::renderer()));
 
         return json_decode($reply->stdout, true)['hookSpecificOutput']['permissionDecision'] ?? 'allow';

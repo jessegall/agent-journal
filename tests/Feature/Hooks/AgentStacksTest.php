@@ -92,9 +92,9 @@ final class AgentStacksTest extends TestCase
             ),
         );
         $this->app->instance(
-InMemoryTasks::class,
- new InMemoryTasks([42 => TaskStatus::Started, 43 => TaskStatus::Started]),
-);
+            InMemoryTasks::class,
+            new InMemoryTasks([42 => TaskStatus::Started, 43 => TaskStatus::Started]),
+        );
         Event::listen(
             StateTypesRequested::class,
             fn (StateTypesRequested $event) => $event->registry->register(
@@ -243,9 +243,9 @@ InMemoryTasks::class,
 
         $this->transaction()->run(
             fn () => $this->stacks()->push(
-$this->target,
- new StateReference('test.switched_off', NoSubject::None, ['isEnabled' => false]),
-),
+                $this->target,
+                new StateReference('test.switched_off', NoSubject::None, ['isEnabled' => false]),
+            ),
         );
         $this->assertSame(
             ['core.ready'],
@@ -254,9 +254,9 @@ $this->target,
 
         $this->transaction()->run(
             fn () => $this->stacks()->push(
-$this->target,
- new StateReference('test.switched_on', NoSubject::None, ['isEnabled' => true]),
-),
+                $this->target,
+                new StateReference('test.switched_on', NoSubject::None, ['isEnabled' => true]),
+            ),
         );
         $this->assertSame(
             ['core.ready', 'test.switched_on'],
@@ -279,9 +279,9 @@ $this->target,
         $this->createStack();
         $this->transaction()->run(
             fn () => $this->stacks()->push(
-$this->target,
- new StateReference('test.switchable', NoSubject::None, ['isEnabled' => true]),
-),
+                $this->target,
+                new StateReference('test.switchable', NoSubject::None, ['isEnabled' => true]),
+            ),
         );
 
         $enabled = false;
@@ -409,10 +409,10 @@ $this->target,
     private function task(int $number): StateReference
     {
         return new StateReference(
-'test.tasks',
- new SubjectReference((string) $number, 1),
- ['number' => $number, 'runNumber' => 1],
-);
+            'test.tasks',
+            new SubjectReference((string) $number, 1),
+            ['number' => $number, 'runNumber' => 1],
+        );
     }
 
     private function reloadedStack(): AgentStack
