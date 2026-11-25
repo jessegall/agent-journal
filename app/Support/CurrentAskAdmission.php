@@ -51,6 +51,6 @@ final readonly class CurrentAskAdmission implements AskAdmission
             throw AskRefused::operationDenied($this->texts->render($decision->reason));
         }
 
-        return new AdmittedAsk($ask, $actor, $record->workReference(), $record->version, $record->head);
+        return new AdmittedAsk($ask, $actor, $record->workReference, $record->version, $record->head);
     }
 }

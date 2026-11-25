@@ -26,6 +26,6 @@ final readonly class CommandAliases implements AliasResolver
             return AliasLookup::missing($name);
         }
 
-        return $alias->lookup();
+        return $alias->lookup;
     }
 }

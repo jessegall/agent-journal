@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Records;
 
-use App\Models\Support\Accessor;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -19,6 +18,7 @@ use App\Events\Comments\CommentPosted;
 use App\Exceptions\CommentAnchorCorrupt;
 use App\Exceptions\CommentImmutable;
 use App\Exceptions\IncompleteTextAnchor;
+use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use App\Support\CommentDetailsFactory;
 use App\Support\RecordIdentity;
@@ -128,7 +128,7 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
         }
 
         $comment->assertSaved($comment->save());
-        $comment->raise(new CommentPosted($comment->id, $comment->target()));
+        $comment->raise(new CommentPosted($comment->id, $comment->target));
 
         return $comment;
     }
@@ -166,23 +166,27 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
         return $this->anchor();
     }
 
+    // ----------[ Accessors ]----------
+
     /**
      * The record the comment is on.
+     *
+     * @return Attribute<RecordIdentity, never>
      */
-    public function target(): RecordIdentity
+    protected function target(): Attribute
     {
-        return new RecordIdentity($this->target_type, $this->target_id);
+        return Accessor::get(fn () => new RecordIdentity($this->target_type, $this->target_id));
     }
 
     /**
      * The comment as it is shown, its text also as safe HTML.
+     *
+     * @return Attribute<CommentDetails, never>
      */
-    public function details(): CommentDetails
+    protected function details(): Attribute
     {
-        return CommentDetailsFactory::details($this);
+        return Accessor::get(fn () => CommentDetailsFactory::details($this));
     }
-
-    // ----------[ Accessors ]----------
 
     /**
      * What the comment is about, in a few words: the whole record, or the version and lines of its text.

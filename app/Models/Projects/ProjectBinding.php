@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
-use App\Models\Support\Accessor;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
@@ -23,6 +22,7 @@ use App\Exceptions\BindingStartRefused;
 use App\Exceptions\BindingUnrecoverable;
 use App\Exceptions\PresenceRefused;
 use App\Models\Agents\Agent;
+use App\Models\Support\Accessor;
 use App\Values\BindingFolder;
 use App\Values\DriverFamily;
 use App\Values\PresenceReceipt;
@@ -169,12 +169,12 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         $isSameBoot = $this->boot_id === $report->bootId;
 
         if ($isSameBoot && $report->sequence <= $this->report_sequence) {
-            return $this->presenceReceipt();
+            return $this->presenceReceipt;
         }
 
         // A relay of a setup older than the one acknowledged changes nothing, as a stale sequence does.
         if ($report->setupGeneration < $this->setup_generation) {
-            return $this->presenceReceipt();
+            return $this->presenceReceipt;
         }
 
         $this->assertNoOtherLiveBoot($isSameBoot, $now, $report);
@@ -202,7 +202,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
             $this->raise(new ProjectBindingReadinessChanged($this->id, $readiness, $now));
         }
 
-        return $this->presenceReceipt();
+        return $this->presenceReceipt;
     }
 
     /**
@@ -358,26 +358,30 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         return ProviderEligibility::eligible($family);
     }
 
+    // ----------[ Accessors ]----------
+
     /**
      * What the journal holds of the binding's presence now, with its effective readiness and last confirmed contact.
+     *
+     * @return Attribute<PresenceReceipt, never>
      */
-    public function presenceReceipt(): PresenceReceipt
+    protected function presenceReceipt(): Attribute
     {
-        $now = CarbonImmutable::now();
+        return Accessor::get(function () {
+            $now = CarbonImmutable::now();
 
-        return new PresenceReceipt(
-            $this->id,
-            $this->boot_generation,
-            $this->setup_generation,
-            $now->toIso8601String(),
-            (string) $this->presence_expires_at?->toIso8601String(),
-            $this->authority_generation,
-            $this->readinessAt($now)->value,
-            $this->last_contact_at?->toIso8601String(),
-        );
+            return new PresenceReceipt(
+                $this->id,
+                $this->boot_generation,
+                $this->setup_generation,
+                $now->toIso8601String(),
+                (string) $this->presence_expires_at?->toIso8601String(),
+                $this->authority_generation,
+                $this->readinessAt($now)->value,
+                $this->last_contact_at?->toIso8601String(),
+            );
+        });
     }
-
-    // ----------[ Accessors ]----------
 
     /**
      * When the server took the binding's revocation, in ISO 8601; empty for a binding not revoked.

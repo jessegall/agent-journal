@@ -8,10 +8,12 @@ use App\Concerns\BoundedReads;
 use App\Concerns\InsertsRowSets;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
+use App\Models\Support\Accessor;
 use App\Values\SessionOutputPaths;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -90,11 +92,14 @@ final class SessionOutputGrant extends Model implements ReadableModel
         return self::insertRows($grants);
     }
 
-    // ----------[ Transformers ]----------
+    // ----------[ Accessors ]----------
 
-    public function paths(): SessionOutputPaths
+    /**
+     * @return Attribute<SessionOutputPaths, never>
+     */
+    protected function paths(): Attribute
     {
-        return new SessionOutputPaths($this->transcript_path, $this->output_directory);
+        return Accessor::get(fn () => new SessionOutputPaths($this->transcript_path, $this->output_directory));
     }
 
     // ----------[ Queries ]----------
@@ -108,7 +113,7 @@ final class SessionOutputGrant extends Model implements ReadableModel
     {
         $grants = self::query()->ofSession($sessionId)->readLimit(self::MOST_GRANTS)->get();
 
-        return $grants->mapWithKeys(fn (self $grant) => [$grant->conversation_id => $grant->paths()])->all();
+        return $grants->mapWithKeys(fn (self $grant) => [$grant->conversation_id => $grant->paths])->all();
     }
 
     /**
@@ -123,7 +128,7 @@ final class SessionOutputGrant extends Model implements ReadableModel
             ->readLimit(self::MOST_GRANTS)
             ->get();
 
-        return array_values($grants->map(fn (self $grant) => $grant->paths())->all());
+        return array_values($grants->map(fn (self $grant) => $grant->paths)->all());
     }
 
     // ----------[ Scopes ]----------

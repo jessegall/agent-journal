@@ -17,6 +17,7 @@ use App\Events\Reviews\CodeReviewOpened;
 use App\Events\Reviews\CodeReviewSettled;
 use App\Exceptions\CodeReviewRefused;
 use App\Models\Asks\Ask;
+use App\Models\Support\Accessor;
 use App\Models\Support\HasWorkColumns;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
@@ -26,6 +27,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -95,6 +97,32 @@ final class CodeReview extends Model implements EventSource, ReadableModel
         ];
     }
 
+    // ----------[ Constructors ]----------
+
+    /**
+     * The review of reserved work, retained once per certificate.
+     */
+    public static function create(WorkReservation $reservation): self
+    {
+        $work = $reservation->certifiedWork->work();
+        $worker = $reservation->actor();
+
+        $review = new self([
+            'certificate' => $reservation->certificate,
+            'work_type' => $work->type,
+            'work_id' => $work->id,
+            'worker_type' => $worker->type->value,
+            'worker_id' => $worker->id,
+            'state' => CodeReviewState::AwaitingImport,
+            'import_attempts' => 0,
+        ]);
+
+        $review->setAttribute($review->getKeyName(), $review->newUniqueId());
+        $review->insertIfAbsent();
+
+        return self::query()->withCertificate($reservation->certificate)->sole();
+    }
+
     // ----------[ Mutations ]----------
 
     public function failImport(string $reason): void
@@ -141,11 +169,14 @@ final class CodeReview extends Model implements EventSource, ReadableModel
         return $this->import_attempts < self::IMPORT_ATTEMPT_LIMIT;
     }
 
-    // ----------[ Transformers ]----------
+    // ----------[ Accessors ]----------
 
-    public function worker(): ActorIdentity
+    /**
+     * @return Attribute<ActorIdentity, never>
+     */
+    protected function worker(): Attribute
     {
-        return new ActorIdentity(ActorType::from($this->worker_type), $this->worker_id);
+        return Accessor::get(fn () => new ActorIdentity(ActorType::from($this->worker_type), $this->worker_id));
     }
 
     // ----------[ Relations ]----------
@@ -158,33 +189,7 @@ final class CodeReview extends Model implements EventSource, ReadableModel
         return $this->hasOne(ReviewDecision::class);
     }
 
-    // ----------[ Asserts ]----------
-
     // ----------[ Queries ]----------
-
-    /**
-     * The review of reserved work, retained once per certificate.
-     */
-    public static function retain(WorkReservation $reservation): self
-    {
-        $work = $reservation->certifiedWork->work();
-        $worker = $reservation->actor();
-
-        $review = new self([
-            'certificate' => $reservation->certificate,
-            'work_type' => $work->type,
-            'work_id' => $work->id,
-            'worker_type' => $worker->type->value,
-            'worker_id' => $worker->id,
-            'state' => CodeReviewState::AwaitingImport,
-            'import_attempts' => 0,
-        ]);
-
-        $review->setAttribute($review->getKeyName(), $review->newUniqueId());
-        $review->insertIfAbsent();
-
-        return self::query()->withCertificate($reservation->certificate)->sole();
-    }
 
     /**
      * @throws CodeReviewRefused

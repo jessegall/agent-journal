@@ -88,6 +88,6 @@ final class ClaimAuthorizationTest extends TestCase
         return AssignmentRecord::createForRecord(
             new RecordIdentity($type, TestIds::of($number)),
             $holder,
-        )->toAssignment()->reference;
+        )->toAssignment->reference;
     }
 }

@@ -11,6 +11,7 @@ use App\Concerns\Linkable;
 use App\Contracts\Actors\ActorVisibility;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Records\ReadableModel;
+use App\Models\Support\Accessor;
 use App\Models\Support\SignedInScope;
 use App\Support\AssigneeIdentity;
 use App\Support\Assignment;
@@ -100,14 +101,17 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
         ]);
     }
 
-    // ----------[ Transformers ]----------
+    // ----------[ Accessors ]----------
 
-    public function toAssignment(): Assignment
+    /**
+     * @return Attribute<Assignment, never>
+     */
+    protected function toAssignment(): Attribute
     {
-        return new Assignment(
+        return Accessor::get(fn () => new Assignment(
             new RecordIdentity($this->record_type, $this->record_id),
             new AssignmentReference($this->id, new AssigneeIdentity($this->holder_type, $this->holder_id)),
-        );
+        ));
     }
 
     // ----------[ Queries ]----------
@@ -148,7 +152,7 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
             ->withoutGlobalScope(SignedInScope::class)
             ->whereKey($ids)
             ->get()
-            ->mapWithKeys(fn (self $row) => [$row->id => $row->toAssignment()->holder()])
+            ->mapWithKeys(fn (self $row) => [$row->id => $row->toAssignment->holder()])
             ->all();
     }
 
@@ -164,7 +168,7 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
             ->withoutGlobalScope(SignedInScope::class)
             ->whereKey($ids)
             ->get()
-            ->mapWithKeys(fn (self $row) => [$row->id => $row->toAssignment()])
+            ->mapWithKeys(fn (self $row) => [$row->id => $row->toAssignment])
             ->all();
     }
 

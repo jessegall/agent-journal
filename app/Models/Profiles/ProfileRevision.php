@@ -17,6 +17,7 @@ use App\Enums\InstancePolicy;
 use App\Enums\ModelTier;
 use App\Exceptions\ProfileMissing;
 use App\Models\Concerns\PreventsRevisionUpdates;
+use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use App\Support\ProfileSnapshots;
 use App\Values\CompiledScript;
@@ -34,6 +35,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use PhpOption\None;
@@ -156,19 +158,23 @@ final class ProfileRevision extends Model implements ReadableModel
         return ProfileSnapshots::of($this, $key);
     }
 
+    // ----------[ Accessors ]----------
+
     /**
      * The script this revision runs; a revision without one runs the empty script, which handles nothing.
+     *
+     * @return Attribute<ProfileScript, never>
      */
-    public function script(): ProfileScript
+    protected function script(): Attribute
     {
-        if ($this->compiled_script === null || $this->script_definition_digest === null) {
-            return ProfileScript::empty();
-        }
+        return Accessor::get(function () {
+            if ($this->compiled_script === null || $this->script_definition_digest === null) {
+                return ProfileScript::empty();
+            }
 
-        return new ProfileScript($this->script_source, new CompiledScript($this->compiled_script, $this->script_definition_digest));
+            return new ProfileScript($this->script_source, new CompiledScript($this->compiled_script, $this->script_definition_digest));
+        });
     }
-
-    // ----------[ Asserts ]----------
 
     // ----------[ Queries ]----------
 

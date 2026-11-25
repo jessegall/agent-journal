@@ -24,7 +24,7 @@ final readonly class DeliverQuestionAnswer implements Listener
     public function handle(QuestionAnswered $event): void
     {
         $question = Question::query()->findOrFail($event->questionId);
-        $sender = $question->sender();
+        $sender = $question->sender;
 
         if (! $sender->isAgent()) {
             return;

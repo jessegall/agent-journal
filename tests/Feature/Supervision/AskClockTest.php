@@ -113,7 +113,7 @@ final class AskClockTest extends TestCase
 
         $this->advanceAt($ask, CarbonImmutable::now()->addHours(Ask::LIFETIME_HOURS));
         $this->startUserRequestAs($this->owner->id);
-        $this->app->make(CommandBus::class)->run(new ReplyToAskCommand($ask->reference(), self::LATE_ANSWER));
+        $this->app->make(CommandBus::class)->run(new ReplyToAskCommand($ask->reference, self::LATE_ANSWER));
 
         $closed = $ask->refresh();
         $this->assertSame(UnansweredReason::TotalExpiry, $closed->outcome);

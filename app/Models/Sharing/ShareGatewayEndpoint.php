@@ -14,11 +14,13 @@ use App\Enums\GatewayEndpointState;
 use App\Events\Sharing\ShareGatewayEndpointFoundHealthy;
 use App\Events\Sharing\ShareGatewayEndpointMoved;
 use App\Exceptions\GatewayLeaseRefused;
+use App\Models\Support\Accessor;
 use App\Support\GatewayEndpoint;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -124,21 +126,6 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
         return $this->endpoint_version === $version;
     }
 
-    // ----------[ Transformers ]----------
-
-    /**
-     * The endpoint as its gateway knows it: run, version, public origin and the reference its program is kept under.
-     */
-    public function toGatewayEndpoint(): GatewayEndpoint
-    {
-        return new GatewayEndpoint(
-            $this->run_id,
-            $this->endpoint_version,
-            $this->public_origin,
-            GatewayEndpoint::referenceOf($this->run_id, $this->endpoint_version),
-        );
-    }
-
     // ----------[ Calculations ]----------
 
     /**
@@ -149,7 +136,22 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
         return ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id)->gateway_key;
     }
 
-    // ----------[ Asserts ]----------
+    // ----------[ Accessors ]----------
+
+    /**
+     * The endpoint as its gateway knows it: run, version, public origin and the reference its program is kept under.
+     *
+     * @return Attribute<GatewayEndpoint, never>
+     */
+    protected function toGatewayEndpoint(): Attribute
+    {
+        return Accessor::get(fn () => new GatewayEndpoint(
+            $this->run_id,
+            $this->endpoint_version,
+            $this->public_origin,
+            GatewayEndpoint::referenceOf($this->run_id, $this->endpoint_version),
+        ));
+    }
 
     // ----------[ Queries ]----------
 

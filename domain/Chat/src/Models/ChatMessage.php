@@ -11,6 +11,7 @@ use App\Enums\ActorType;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Messages\Message;
 use App\Models\Questions\Question;
+use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Enums\ChatMessageType;
@@ -19,6 +20,7 @@ use Domain\Chat\Support\ChatGrouping;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -117,14 +119,16 @@ final class ChatMessage extends Model implements EventSource
         $this->raise(new ChatMessageChanged($this->inbox_id, $this->id));
     }
 
-    // ----------[ Transformers ]----------
+    // ----------[ Accessors ]----------
 
     /**
      * The actor who made the entry's source.
+     *
+     * @return Attribute<ActorIdentity, never>
      */
-    public function author(): ActorIdentity
+    protected function author(): Attribute
     {
-        return new ActorIdentity(ActorType::from($this->author_type), $this->author_id);
+        return Accessor::get(fn () => new ActorIdentity(ActorType::from($this->author_type), $this->author_id));
     }
 
     // ----------[ Relations ]----------

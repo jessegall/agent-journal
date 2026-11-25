@@ -11,6 +11,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Events\Connections\WorkspaceReadAnswered;
 use App\Models\Agents\AgentSession;
+use App\Models\Support\Accessor;
 use App\Models\Support\HasActorColumns;
 use App\Support\ActorIdentity;
 use App\Values\CommitObservation;
@@ -22,11 +23,11 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use PhpOption\None;
-use PhpOption\Option;
 use PhpOption\Some;
 
 /**
@@ -122,32 +123,37 @@ final class WorkspaceRead extends Model implements EventSource, ReadableModel
         return CommitObservation::ofHead($this->binding_id, $this->checkout_id, $this->head_oid);
     }
 
-    // ----------[ Transformers ]----------
+    // ----------[ Accessors ]----------
 
     /**
      * What the host found, once it answered.
      *
-     * @return None|Some<WorkspaceFacts>
+     * @return Attribute<None|Some<WorkspaceFacts>, never>
      */
-    public function facts(): Option
+    protected function facts(): Attribute
     {
-        if ($this->sampled_at === null) {
-            return None::create();
-        }
+        return Accessor::get(function () {
+            if ($this->sampled_at === null) {
+                return None::create();
+            }
 
-        return new Some(new WorkspaceFacts(
-            (bool) $this->available,
-            (bool) $this->dirty,
-            (bool) $this->clean,
-            (int) $this->generation,
-            $this->sampled_at,
-            $this->commitObservation(),
-        ));
+            return new Some(new WorkspaceFacts(
+                (bool) $this->available,
+                (bool) $this->dirty,
+                (bool) $this->clean,
+                (int) $this->generation,
+                $this->sampled_at,
+                $this->commitObservation(),
+            ));
+        });
     }
 
-    public function reference(): WorkspaceReadReference
+    /**
+     * @return Attribute<WorkspaceReadReference, never>
+     */
+    protected function reference(): Attribute
     {
-        return new WorkspaceReadReference($this->read_reference);
+        return Accessor::get(fn () => new WorkspaceReadReference($this->read_reference));
     }
 
     // ----------[ Queries ]----------
@@ -199,7 +205,7 @@ final class WorkspaceRead extends Model implements EventSource, ReadableModel
         $facts = [];
 
         foreach ($read as $row) {
-            foreach ($row->facts() as $sample) {
+            foreach ($row->facts as $sample) {
                 $facts[] = $sample;
             }
         }

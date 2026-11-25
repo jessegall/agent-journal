@@ -14,6 +14,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Exceptions\RecordUnavailable;
+use App\Models\Support\Accessor;
 use App\Support\RecordIdentity;
 use Domain\Plans\Events\PhaseProgressRecorded;
 use Domain\Plans\Events\PhaseRevisionAdvanced;
@@ -25,6 +26,7 @@ use Domain\Plans\Values\PlanProgress;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -188,18 +190,22 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
         );
     }
 
+    // ----------[ Accessors ]----------
+
     /**
      * How far the tasks placed in it have got, from the tallies kept on the row; no task is read.
+     *
+     * @return Attribute<PlanProgress, never>
      */
-    public function progress(): PlanProgress
+    protected function progress(): Attribute
     {
-        return new PlanProgress(
+        return Accessor::get(fn () => new PlanProgress(
             $this->finished_tasks,
             $this->cancelled_tasks,
             $this->blocked_tasks,
             $this->started_tasks,
             $this->total_tasks,
-        );
+        ));
     }
 
     // ----------[ Relations ]----------

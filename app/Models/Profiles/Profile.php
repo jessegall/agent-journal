@@ -76,8 +76,6 @@ final class Profile extends Model implements EventSource, ReadableModel
         return $this->retired_at !== null;
     }
 
-    // ----------[ Asserts ]----------
-
     // ----------[ Queries ]----------
 
     /**
@@ -112,7 +110,7 @@ final class Profile extends Model implements EventSource, ReadableModel
      */
     public static function listed(int $limit): array
     {
-        return self::query()->inKeyOrder()->readExactly($limit)->get()->all()->values();
+        return array_values(self::query()->inKeyOrder()->readExactly($limit)->get()->all());
     }
 
     // ----------[ Scopes ]----------

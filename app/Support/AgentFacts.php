@@ -52,7 +52,7 @@ final readonly class AgentFacts
             $this->runtime === null ? null : RuntimeEvidence::of($this->runtime, $now),
             $session !== null && ! $isOwnerStart,
             $this->switch === null ? null : SwitchEvidence::of($this->switch),
-            $this->request?->status(),
+            $this->request?->status,
             $this->launch,
             $isResumable,
             $session !== null && (($isOwnerStart && $launchInProgress) || $this->readiness?->isUnverified() === true),

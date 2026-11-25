@@ -28,6 +28,7 @@ use App\Exceptions\ShareGatewayUnavailable;
 use App\Exceptions\ShareProposalUnavailable;
 use App\Exceptions\ShareRetryRefused;
 use App\Models\Concerns\FindsForUpdate;
+use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneRoot;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
@@ -43,6 +44,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -161,7 +163,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
             $share->requester_type = $origin->requester->type;
             $share->requester_id = $origin->requester->id;
             $share->assertSaved($share->save());
-            $share->raise(new ShareRequested($share->fact()));
+            $share->raise(new ShareRequested($share->fact));
 
             return $share;
         }
@@ -174,7 +176,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
         $share->token_digest = $origin->token->digest;
         $share->token_ciphertext = $origin->token->token;
         $share->assertSaved($share->save());
-        $share->raise(new ShareCreated($share->fact()));
+        $share->raise(new ShareCreated($share->fact));
 
         return $share;
     }
@@ -200,7 +202,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
         $this->token_digest = $token->digest;
         $this->token_ciphertext = $token->token;
         $this->assertSaved($this->save());
-        $this->raise(new ShareCreated($this->fact()));
+        $this->raise(new ShareCreated($this->fact));
     }
 
     /**
@@ -238,7 +240,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     {
         $this->scope_version++;
         $this->assertSaved($this->save());
-        $this->raise(new ShareScopeChanged($this->fact()));
+        $this->raise(new ShareScopeChanged($this->fact));
     }
 
     /**
@@ -276,7 +278,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     {
         $this->state = ShareState::Active;
         $this->assertSaved($this->save());
-        $this->raise(new ShareActivated($this->fact()));
+        $this->raise(new ShareActivated($this->fact));
     }
 
     /**
@@ -286,7 +288,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     {
         $this->state = ShareState::Failed;
         $this->assertSaved($this->save());
-        $this->raise(new ShareFailed($this->fact()));
+        $this->raise(new ShareFailed($this->fact));
     }
 
     // ----------[ Predicates ]----------
@@ -361,35 +363,6 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
         );
     }
 
-    /**
-     * What a lifecycle event tells about the share as it stands now.
-     */
-    public function fact(): ShareFact
-    {
-        return $this->factAt(CarbonImmutable::now());
-    }
-
-    /**
-     * What the owner learns of the share: its id, number and state, never its token.
-     */
-    public function summary(): ShareSummary
-    {
-        return new ShareSummary($this->id, $this->number, $this->state);
-    }
-
-    /**
-     * What the requesting agent learns of its proposal: its number and state, nothing more.
-     */
-    public function proposalStatus(): ShareProposalStatus
-    {
-        return new ShareProposalStatus($this->number, $this->state);
-    }
-
-    public function root(): RecordIdentity
-    {
-        return new RecordIdentity($this->root_type, $this->root_id);
-    }
-
     // ----------[ Calculations ]----------
 
     /**
@@ -415,6 +388,46 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
         $this->assertHasGateway();
 
         return $this->share_gateway_configuration_id;
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * What a lifecycle event tells about the share as it stands now.
+     *
+     * @return Attribute<ShareFact, never>
+     */
+    protected function fact(): Attribute
+    {
+        return Accessor::get(fn () => $this->factAt(CarbonImmutable::now()));
+    }
+
+    /**
+     * What the owner learns of the share: its id, number and state, never its token.
+     *
+     * @return Attribute<ShareSummary, never>
+     */
+    protected function summary(): Attribute
+    {
+        return Accessor::get(fn () => new ShareSummary($this->id, $this->number, $this->state));
+    }
+
+    /**
+     * What the requesting agent learns of its proposal: its number and state, nothing more.
+     *
+     * @return Attribute<ShareProposalStatus, never>
+     */
+    protected function proposalStatus(): Attribute
+    {
+        return Accessor::get(fn () => new ShareProposalStatus($this->number, $this->state));
+    }
+
+    /**
+     * @return Attribute<RecordIdentity, never>
+     */
+    protected function root(): Attribute
+    {
+        return Accessor::get(fn () => new RecordIdentity($this->root_type, $this->root_id));
     }
 
     // ----------[ Asserts ]----------

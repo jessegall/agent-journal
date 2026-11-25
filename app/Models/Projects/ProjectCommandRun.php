@@ -97,7 +97,7 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
         $run->fingerprint = $fingerprint;
         $run->worker = $worker;
         $run->state = CommandRunState::Running;
-        $run->frames = [];
+        $run->frames = ProjectCommandFrame::collect([], DataCollection::class);
         $run->save();
 
         return $run;
@@ -117,7 +117,7 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
      */
     public function finish(array $frames, int $exitCode): void
     {
-        $this->frames = $frames;
+        $this->frames = ProjectCommandFrame::collect($frames, DataCollection::class);
         $this->exit_code = $exitCode;
         $this->state = $this->state->settledBy($exitCode);
         $this->assertSaved($this->save());
@@ -208,7 +208,7 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
      */
     public function recordedFrames(): array
     {
-        return array_values($this->frames->all());
+        return array_values($this->frames->items());
     }
 
     // ----------[ Queries ]----------

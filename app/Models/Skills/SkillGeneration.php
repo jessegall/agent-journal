@@ -14,10 +14,12 @@ use App\Data\Skills\GeneratedSkillData;
 use App\Enums\GenerationState;
 use App\Events\Skills\SkillGenerationRetired;
 use App\Exceptions\SkillGenerationImmutable;
+use App\Models\Support\Accessor;
 use App\Values\GenerationStatus;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -116,11 +118,14 @@ final class SkillGeneration extends Model implements EventSource, ReadableModel
         return null;
     }
 
-    // ----------[ Transformers ]----------
+    // ----------[ Accessors ]----------
 
-    public function status(): GenerationStatus
+    /**
+     * @return Attribute<GenerationStatus, never>
+     */
+    protected function status(): Attribute
     {
-        return new GenerationStatus($this->id, $this->state, $this->catalogue_digest, $this->error_reason);
+        return Accessor::get(fn () => new GenerationStatus($this->id, $this->state, $this->catalogue_digest, $this->error_reason));
     }
 
     // ----------[ Asserts ]----------

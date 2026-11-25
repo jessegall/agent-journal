@@ -121,7 +121,7 @@ final readonly class ChatPages
      */
     private function entriesOf(Collection $rows): array
     {
-        $authors = array_values($rows->map(fn (ChatMessage $row) => $row->author())->all());
+        $authors = array_values($rows->map(fn (ChatMessage $row) => $row->author)->all());
         $names = $this->labels->labelsFor($authors);
         $events = $this->dock->cardsOf($rows
             ->filter(fn (ChatMessage $row) => $row->type === ChatMessageType::Event)
@@ -131,7 +131,7 @@ final readonly class ChatPages
         $readIds = $this->readIdsAmong($rows);
 
         return array_values($rows->map(function (ChatMessage $row) use ($names, $events, $viewer, $readIds): ChatEntryData {
-            $author = $row->author();
+            $author = $row->author;
 
             return ChatEntryData::from([
                 'id' => $row->id,

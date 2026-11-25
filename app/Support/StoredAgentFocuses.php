@@ -36,7 +36,7 @@ final readonly class StoredAgentFocuses implements AgentFocuses
             return None::create();
         }
 
-        return new Some($focus->record());
+        return new Some($focus->record);
     }
 
     public function focusersOf(array $records): array
@@ -48,7 +48,7 @@ final readonly class StoredAgentFocuses implements AgentFocuses
         $focusers = [];
 
         foreach (AgentFocus::query()->onRecords($records)->limit(count($records))->get() as $focus) {
-            $focusers[$focus->record()->reference()] = new ActorIdentity(ActorType::Agent, $focus->agent_id);
+            $focusers[$focus->record->reference()] = new ActorIdentity(ActorType::Agent, $focus->agent_id);
         }
 
         return $focusers;

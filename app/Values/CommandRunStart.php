@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Calls\Connections\ProjectCommandFrame;
 use App\Enums\CommandRunState;
 
 /**
@@ -13,7 +14,7 @@ use App\Enums\CommandRunState;
 final readonly class CommandRunStart
 {
     /**
-     * @param  list<CommandFrame>  $recordedFrames
+     * @param  list<ProjectCommandFrame>  $recordedFrames
      */
     public function __construct(public bool $isNew, public CommandRunState $state, public array $recordedFrames) {}
 }

@@ -70,7 +70,7 @@ final readonly class ReconcileStartsHandler implements CommandHandler
 
             $this->facts->publishAfterCommit(new SessionStateChanged($start->session_id));
 
-            $account = $start->accountIdentity();
+            $account = $start->accountIdentity;
             $accounts["{$account->type} {$account->id}"] = $account;
         }
 

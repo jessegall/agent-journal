@@ -68,7 +68,7 @@ final readonly class LaunchLimits
     private function stop(AgentSession $session, string $idempotencyKey): void
     {
         if (AgentRuntime::isRunningForSession($session->id)) {
-            $this->requests->stop($session->target(), $idempotencyKey);
+            $this->requests->stop($session->target, $idempotencyKey);
         }
     }
 }

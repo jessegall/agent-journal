@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Models;
 
-use Spatie\LaravelData\DataCollection;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -20,6 +19,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Spatie\LaravelData\DataCollection;
 
 /**
  * A stored sequence: its name, a one-line summary and its steps, each with its title, when it runs and when it is
@@ -102,16 +102,18 @@ final class Sequence extends Model implements EventSource, ReadableModel
 
     /**
      * @param  list<SequenceStep>  $steps
-     * @return list<SequenceStepData>
+     * @return DataCollection<int, SequenceStepData>
      */
-    private static function stored(array $steps): array
+    private static function stored(array $steps): DataCollection
     {
-        return array_map(fn (SequenceStep $step) => SequenceStepData::from([
+        $stored = array_map(fn (SequenceStep $step) => SequenceStepData::from([
             'id' => $step->id,
             'title' => $step->title,
             'runsWhen' => $step->runsWhen,
             'doneWhen' => $step->doneWhen,
         ]), $steps);
+
+        return SequenceStepData::collect($stored, DataCollection::class);
     }
 
     // ----------[ Transformers ]----------
@@ -121,10 +123,8 @@ final class Sequence extends Model implements EventSource, ReadableModel
      */
     public function stepList(): array
     {
-        return array_values($this->steps->all());
+        return array_values($this->steps->items());
     }
-
-    // ----------[ Asserts ]----------
 
     // ----------[ Queries ]----------
 

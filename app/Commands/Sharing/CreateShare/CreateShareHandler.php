@@ -21,6 +21,6 @@ final readonly class CreateShareHandler implements CommandHandler
 
         return $this->grants
             ->create($command->dispatchedBy(), $command->previewId, $command->previewChecksum, $duration)
-            ->summary();
+            ->summary;
     }
 }

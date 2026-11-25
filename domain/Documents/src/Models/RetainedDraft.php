@@ -10,6 +10,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
+use App\Models\Support\Accessor;
 use App\Support\ActorContext;
 use App\Support\MarkdownText;
 use Domain\Documents\Events\DraftKept;
@@ -18,6 +19,7 @@ use Domain\Documents\Support\DraftText;
 use Domain\Documents\Values\RetainedDraftView;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -82,22 +84,28 @@ final class RetainedDraft extends Model implements EventSource, ReadableModel
         return $kept;
     }
 
-    // ----------[ Transformers ]----------
+    // ----------[ Accessors ]----------
 
-    public function view(): RetainedDraftView
+    /**
+     * @return Attribute<RetainedDraftView, never>
+     */
+    protected function view(): Attribute
     {
-        return new RetainedDraftView(
+        return Accessor::get(fn () => new RetainedDraftView(
             $this->id,
             $this->document_id,
             $this->base_revision_number,
             $this->body,
             $this->reason,
-        );
+        ));
     }
 
-    public function workingText(): DraftText
+    /**
+     * @return Attribute<DraftText, never>
+     */
+    protected function workingText(): Attribute
     {
-        return new DraftText($this->title, $this->abstract, MarkdownText::workingBody($this->body));
+        return Accessor::get(fn () => new DraftText($this->title, $this->abstract, MarkdownText::workingBody($this->body)));
     }
 
     // ----------[ Asserts ]----------

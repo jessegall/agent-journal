@@ -114,7 +114,7 @@ final readonly class DriverRequests
     public function stop(StackTarget $target, string $idempotencyKey): DriverRequest
     {
         foreach (AgentRuntime::runningHelpersOf($target->sessionId) as $helper) {
-            $this->stop($helper->session->target(), "{$idempotencyKey}:helper:{$helper->agent_session_id}");
+            $this->stop($helper->session->target, "{$idempotencyKey}:helper:{$helper->agent_session_id}");
         }
 
         $request = $this->append($target, DriverOperation::Stop, $idempotencyKey, DriverRequestPayload::nothing());

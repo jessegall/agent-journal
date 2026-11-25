@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Skills;
 
-use App\Models\Support\Accessor;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
@@ -18,6 +17,7 @@ use App\Events\Skills\SkillPublicationProgressed;
 use App\Exceptions\SkillPublicationFailed;
 use App\Exceptions\SkillPublicationMissing;
 use App\Exceptions\SkillPublicationStale;
+use App\Models\Support\Accessor;
 use App\Values\PublicationIntent;
 use App\Values\PublicationManifest;
 use App\Values\PublicationStatus;
@@ -238,11 +238,14 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
         return $this->updated_at !== null && $this->updated_at->lessThan($moment);
     }
 
-    // ----------[ Transformers ]----------
+    // ----------[ Accessors ]----------
 
-    public function status(): PublicationStatus
+    /**
+     * @return Attribute<PublicationStatus, never>
+     */
+    protected function status(): Attribute
     {
-        return new PublicationStatus(
+        return Accessor::get(fn () => new PublicationStatus(
             $this->id,
             $this->session_id,
             $this->state,
@@ -250,10 +253,8 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
             $this->selection_digest,
             $this->target,
             $this->error,
-        );
+        ));
     }
-
-    // ----------[ Accessors ]----------
 
     /**
      * The one name of its session's target, so publications of one target are counted together.

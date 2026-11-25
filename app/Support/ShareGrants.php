@@ -72,7 +72,7 @@ final readonly class ShareGrants
         $this->assertLiveSlotFree();
         $proposal = Share::lockProposal($proposalId);
 
-        if (! $proposal->root()->isSameAs($consumed->root())) {
+        if (! $proposal->root->isSameAs($consumed->root)) {
             throw ShareProposalUnavailable::forOtherRoot($proposalId);
         }
 
@@ -105,7 +105,7 @@ final readonly class ShareGrants
             throw ShareRefreshRefused::notLive($shareId, $share->state);
         }
 
-        if (! $share->root()->isSameAs($consumed->root())) {
+        if (! $share->root->isSameAs($consumed->root)) {
             throw ShareRefreshRefused::otherRoot($shareId);
         }
 
@@ -128,10 +128,10 @@ final readonly class ShareGrants
         ShareInstallation::create();
         $configuration = ShareGatewayConfiguration::lockUsable($configurationId);
         $preview = SharePreview::lockFor($previewId);
-        $candidates = $this->scope->discover($preview->root(), MeteredShareBudget::forPreview($this->meter));
+        $candidates = $this->scope->discover($preview->root, MeteredShareBudget::forPreview($this->meter));
         $selection = $preview->consumeFor($owner->actorId(), $previewChecksum, $candidates);
 
-        return new ConsumedPreview($configuration, $preview->root(), $selection, $candidates);
+        return new ConsumedPreview($configuration, $preview->root, $selection, $candidates);
     }
 
     /**

@@ -31,7 +31,7 @@ final readonly class StatePush
      */
     public function push(StackTarget $target, AgentStackRow $row, StateReference $reference): AgentStack
     {
-        $before = $this->restorer->restore($row->frames, $row->target());
+        $before = $this->restorer->restore($row->frames, $row->target);
         $after = $before->withoutExposedInactive()->withStateOnTop($reference);
         $this->save($target, $row, $before, $after);
 
@@ -45,7 +45,7 @@ final readonly class StatePush
      */
     public function lift(StackTarget $target, AgentStackRow $row, StateReference $reference): AgentStack
     {
-        $before = $this->restorer->restore($row->frames, $row->target());
+        $before = $this->restorer->restore($row->frames, $row->target);
 
         if (! $before->holdsLive($reference)) {
             throw FrameNotHeld::for($reference, $target);

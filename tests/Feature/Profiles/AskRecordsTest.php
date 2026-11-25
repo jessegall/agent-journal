@@ -92,7 +92,7 @@ final class AskRecordsTest extends TestCase
         );
         $keys->forget();
         $this->assertSame(AskRouteStatus::Assigned, $bus->run(new RouteAskCommand(new AskReference($ask->id), 0)));
-        $assignment = AssignmentRecord::query()->forRecord($record)->firstOrFail()->toAssignment();
+        $assignment = AssignmentRecord::query()->forRecord($record)->firstOrFail()->toAssignment;
         $this->assertTrue($assignment->holder()->isSameAs($holder->assigneeIdentity()));
         $this->assertSame(1, AskHop::query()->count());
         $keys->set('public-reassign-ask');
@@ -164,7 +164,7 @@ final class AskRecordsTest extends TestCase
         $this->assertStringStartsWith('free:', $ask->work);
         $this->assertTrue(
             AssignmentRecord::query()->forRecord($ask->assignmentIdentity())->firstOrFail()
-                ->toAssignment()->holder()->isSameAs($recipient->agent->assigneeIdentity()),
+                ->toAssignment->holder()->isSameAs($recipient->agent->assigneeIdentity()),
         );
 
         $this->signed($recipient, '/agent/asks/reply', [
@@ -244,8 +244,8 @@ final class AskRecordsTest extends TestCase
         $review = $commands->run(new AskSupervisorCommand('Review this task', 'review', AskTypeKey::from('review.ready')));
 
         $expected = WorkReference::forRecord($task->assignmentIdentity());
-        $this->assertEquals($expected, Ask::query()->findOrFail($question->id)->workReference());
-        $this->assertEquals($expected, Ask::query()->findOrFail($review->id)->workReference());
+        $this->assertEquals($expected, Ask::query()->findOrFail($question->id)->workReference);
+        $this->assertEquals($expected, Ask::query()->findOrFail($review->id)->workReference);
         $this->assertSame('review.ready', Ask::query()->findOrFail($review->id)->type_key->key);
     }
 

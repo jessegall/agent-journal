@@ -180,7 +180,7 @@ final class StopPreparationTest extends TestCase
     private function answerReads(bool $isDirty): void
     {
         foreach (WorkspaceRead::query()->whereNull('sampled_at')->limit(10)->get() as $read) {
-            $this->asSystem(new NotifyWorkspaceReadCommand('host-1', $read->reference(), true, $isDirty, ! $isDirty, 7, CommitObservation::notRecorded()));
+            $this->asSystem(new NotifyWorkspaceReadCommand('host-1', $read->reference, true, $isDirty, ! $isDirty, 7, CommitObservation::notRecorded()));
         }
     }
 

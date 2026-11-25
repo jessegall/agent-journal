@@ -38,7 +38,7 @@ final readonly class TaskExecutions
             array_values(array_map(fn (TaskRun $run) => $run->assignmentIdentity(), $runs)),
         );
 
-        $runners = array_map(fn (TaskRun $run) => $holders[$run->id] ?? $run->starter(), $runs);
+        $runners = array_map(fn (TaskRun $run) => $holders[$run->id] ?? $run->starter, $runs);
 
         $focusers = $this->focuses->focusersOf(
             array_values($tasks->map(fn (Task $task) => $task->focusIdentity())->all()),

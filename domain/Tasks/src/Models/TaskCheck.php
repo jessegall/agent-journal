@@ -11,6 +11,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
+use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use App\Values\PublishedResult;
 use App\Values\ReadOrder;
@@ -20,6 +21,7 @@ use Domain\Tasks\Values\TaskProof;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -135,12 +137,16 @@ final class TaskCheck extends Model implements EventSource, ReadableModel
         return ReadOrder::by(['task_checks.task_id'], 'task_checks.id');
     }
 
+    // ----------[ Accessors ]----------
+
     /**
      * The check as Tasks' proofs read gives it, no model leaving the domain.
+     *
+     * @return Attribute<TaskProof, never>
      */
-    public function proof(): TaskProof
+    protected function proof(): Attribute
     {
-        return new TaskProof(
+        return Accessor::get(fn () => new TaskProof(
             $this->id,
             $this->operation,
             $this->run_number,
@@ -151,7 +157,7 @@ final class TaskCheck extends Model implements EventSource, ReadableModel
             $this->outcome,
             CarbonImmutable::parse($this->created_at),
             $this->bound_at === null ? null : CarbonImmutable::parse($this->bound_at),
-        );
+        ));
     }
 
     // ----------[ Queries ]----------

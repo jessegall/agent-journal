@@ -36,6 +36,6 @@ final readonly class RecoverDraftHandler extends DocumentCommandHandler
         $opened = $this->commands->run(new OpenDocumentCommand($document->id, $command->expectedRevision));
         $target = new DraftTarget($document->id, $opened->token, $opened->version);
 
-        return $this->edits->saveEdit($target, fn () => $draft->workingText());
+        return $this->edits->saveEdit($target, fn () => $draft->workingText);
     }
 }

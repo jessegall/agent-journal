@@ -70,7 +70,7 @@ final readonly class RepairService
             }
         }
 
-        $repair = new WorkRepairRequest($request->work(), $request->worker(), $findings, $request->source, $targetRef);
+        $repair = new WorkRepairRequest($request->work(), $request->worker, $findings, $request->source, $targetRef);
 
         if ($this->repair->reopen($repair) === WorkRepairOutcome::Reopened) {
             $request->settle(RepairRequestState::Reopened);

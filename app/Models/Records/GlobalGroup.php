@@ -34,8 +34,6 @@ final class GlobalGroup extends Model implements ReadableModel
 
     public const string JOURNAL = 'journal';
 
-    // ----------[ Asserts ]----------
-
     // ----------[ Queries ]----------
 
     /**

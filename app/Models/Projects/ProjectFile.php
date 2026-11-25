@@ -110,8 +110,6 @@ final class ProjectFile extends Model implements Commentable, Numbered, Readable
         return $this->hasMany(ProjectFileVersion::class);
     }
 
-    // ----------[ Asserts ]----------
-
     // ----------[ Queries ]----------
 
     /**

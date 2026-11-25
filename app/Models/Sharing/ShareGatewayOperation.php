@@ -180,9 +180,7 @@ final class ShareGatewayOperation extends Model implements EventSource, Readable
         return $this->outcome_code !== null;
     }
 
-    // ----------[ Asserts ]----------
-
-    // ----------[ Queries ]----------
+    // ----------[ Internals ]----------
 
     /**
      * The operation of one configuration, not yet written.
@@ -196,6 +194,8 @@ final class ShareGatewayOperation extends Model implements EventSource, Readable
 
         return $operation;
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * The id of the oldest operation no run holds now: never claimed, or claimed under a lease that ran out without an

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
-use App\Models\Support\Accessor;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -26,6 +25,7 @@ use App\Events\Connections\HostRevoked;
 use App\Exceptions\HostArrangementRefused;
 use App\Exceptions\HostCredentialRejected;
 use App\Exceptions\HostUnavailable;
+use App\Models\Support\Accessor;
 use App\Values\BrowserInputCapabilities;
 use App\Values\ProtectionReport;
 use App\Values\StartProposal;
@@ -123,9 +123,9 @@ final class Host extends Model implements EventSource, ReadableModel
 
     public function recordProtection(ProtectionReport $report): void
     {
-        $reports = $this->protection->all();
+        $reports = $this->protection->items();
         $reports[$report->key()] = $report->data();
-        $this->protection = $reports;
+        $this->protection = ProtectionReportData::collect($reports, DataCollection::class);
         $this->assertSaved($this->save());
         $this->raise(new HostProtectionRecorded($this->id));
     }
@@ -137,7 +137,7 @@ final class Host extends Model implements EventSource, ReadableModel
      */
     public function recordDescriptors(array $descriptors): void
     {
-        $this->descriptors = $descriptors;
+        $this->descriptors = EnrolledDescriptorData::collect($descriptors, DataCollection::class);
         $this->assertSaved($this->save());
         $this->raise(new HostDescriptorsRecorded($this->id));
     }
@@ -205,7 +205,7 @@ final class Host extends Model implements EventSource, ReadableModel
         }
 
         if ($reported !== []) {
-            $this->reported_failures = $reported;
+            $this->reported_failures = FailedHostCallData::collect($reported, DataCollection::class);
         }
 
         $this->assertSaved($this->save());
@@ -348,7 +348,7 @@ final class Host extends Model implements EventSource, ReadableModel
     {
         $key = $unreported->key();
 
-        $reports = $this->protection->all();
+        $reports = $this->protection->items();
 
         if (! array_key_exists($key, $reports)) {
             return $unreported;
@@ -447,8 +447,6 @@ final class Host extends Model implements EventSource, ReadableModel
 
     // ----------[ Internals ]----------
 
-    // ----------[ Queries ]----------
-
     /**
      * The stored form of a host secret: its hash, so the secret itself is never kept.
      */
@@ -456,6 +454,8 @@ final class Host extends Model implements EventSource, ReadableModel
     {
         return hash('sha256', $secret);
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * The host a secret belongs to, if it is enrolled and not revoked.

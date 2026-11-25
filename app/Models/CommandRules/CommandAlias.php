@@ -7,10 +7,12 @@ namespace App\Models\CommandRules;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
+use App\Models\Support\Accessor;
 use App\Values\AliasLookup;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -69,21 +71,23 @@ final class CommandAlias extends Model implements ReadableModel
         ])->save();
     }
 
-    // ----------[ Transformers ]----------
+    // ----------[ Accessors ]----------
 
     /**
      * The alias as the classifier reads it: found, with its body, revision, digest and declared arguments.
+     *
+     * @return Attribute<AliasLookup, never>
      */
-    public function lookup(): AliasLookup
+    protected function lookup(): Attribute
     {
-        return AliasLookup::found(
+        return Accessor::get(fn () => AliasLookup::found(
             $this->id,
             $this->name,
             $this->line,
             $this->revision,
             $this->body_digest,
             $this->argument_grammar,
-        );
+        ));
     }
 
     // ----------[ Queries ]----------

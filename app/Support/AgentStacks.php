@@ -71,7 +71,7 @@ final readonly class AgentStacks implements AgentStack
     public function pushFor(ActorIdentity $actor, StateReference $state): void
     {
         foreach ($this->targets->lockedRowsOf($actor) as $row) {
-            $this->addressed->push($row->target(), $state);
+            $this->addressed->push($row->target, $state);
         }
     }
 

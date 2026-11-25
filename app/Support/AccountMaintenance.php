@@ -26,7 +26,7 @@ final readonly class AccountMaintenance
     {
         $this->commands->run(new MaintainAccountCommand($accountId));
         $account = Account::query()->findOrFail($accountId);
-        $identity = $account->recordIdentity();
+        $identity = $account->recordIdentity;
         $held = $this->commands->run(new HoldAccountUsesCommand($identity));
         $cancelled = $this->commands->run(new CancelAccountUsesCommand($identity));
 

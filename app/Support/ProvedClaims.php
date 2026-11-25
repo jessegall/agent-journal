@@ -39,7 +39,7 @@ final readonly class ProvedClaims
         $valid = [];
 
         foreach ($claims as $claim) {
-            $assignment = $claim->toAssignment();
+            $assignment = $claim->toAssignment;
             $proof = $proofs[$claim->id] ?? null;
 
             if ($proof?->isValidAgainst($assignment->holder(), $liveHolders, $activeMemberIds) === true) {

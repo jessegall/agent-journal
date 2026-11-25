@@ -25,6 +25,6 @@ final readonly class ApproveShareRequestHandler implements CommandHandler
             $command->previewId,
             $command->previewChecksum,
             $duration,
-        )->summary();
+        )->summary;
     }
 }

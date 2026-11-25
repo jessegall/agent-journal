@@ -32,6 +32,7 @@ use App\Events\Sessions\DriverRequestWakeAcknowledged;
 use App\Events\Sessions\DriverRequestWakeClaimed;
 use App\Exceptions\NavigationRaiseRefused;
 use App\Models\Agents\AgentRuntime;
+use App\Models\Support\Accessor;
 use App\Support\InitialWakeSettlement;
 use App\Support\RuntimeStatuses;
 use App\Values\ClaimedRequest;
@@ -45,6 +46,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -599,21 +601,6 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * What the caller who asked for this request is told: where it stands and the timing to expect.
-     */
-    public function receipt(): DriverReceipt
-    {
-        return new DriverReceipt(
-            $this->id,
-            $this->sequence,
-            $this->operation,
-            $this->progress,
-            $this->expected_timing,
-            $this->expected_observed_at?->toIso8601String(),
-        );
-    }
-
-    /**
      * The delivery's parts in their order; none for any other request.
      *
      * @return list<MessagePart>
@@ -626,12 +613,33 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
         );
     }
 
+    // ----------[ Accessors ]----------
+
+    /**
+     * What the caller who asked for this request is told: where it stands and the timing to expect.
+     *
+     * @return Attribute<DriverReceipt, never>
+     */
+    protected function receipt(): Attribute
+    {
+        return Accessor::get(fn () => new DriverReceipt(
+            $this->id,
+            $this->sequence,
+            $this->operation,
+            $this->progress,
+            $this->expected_timing,
+            $this->expected_observed_at?->toIso8601String(),
+        ));
+    }
+
     /**
      * The request as stored, for readers.
+     *
+     * @return Attribute<DriverRequestStatus, never>
      */
-    public function status(): DriverRequestStatus
+    protected function status(): Attribute
     {
-        return RuntimeStatuses::ofRequest($this);
+        return Accessor::get(fn () => RuntimeStatuses::ofRequest($this));
     }
 
     // ----------[ Relations ]----------

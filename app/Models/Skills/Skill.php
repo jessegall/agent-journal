@@ -16,12 +16,14 @@ use App\Events\Skills\SkillsChanged;
 use App\Exceptions\SkillOwnerRequired;
 use App\Exceptions\SkillRetired;
 use App\Exceptions\SkillRevisionConflict;
+use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use App\Values\SkillKey;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -124,11 +126,14 @@ final class Skill extends Model implements EventSource, Numbered, ReadableModel
         return $this->retired_at !== null;
     }
 
-    // ----------[ Transformers ]----------
+    // ----------[ Accessors ]----------
 
-    public function skillKey(): SkillKey
+    /**
+     * @return Attribute<SkillKey, never>
+     */
+    protected function skillKey(): Attribute
     {
-        return SkillKey::from($this->key);
+        return Accessor::get(fn () => SkillKey::from($this->key));
     }
 
     // ----------[ Asserts ]----------

@@ -222,8 +222,6 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
         ));
     }
 
-    // ----------[ Asserts ]----------
-
     // ----------[ Internals ]----------
 
     /**

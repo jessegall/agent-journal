@@ -26,6 +26,7 @@ use App\Models\Drivers\ConversationVisit;
 use App\Models\Drivers\DriverConversation;
 use App\Models\Starts\StartRecord;
 use App\Models\Starts\StartToken;
+use App\Models\Support\Accessor;
 use App\Support\PresenceWindow;
 use App\Support\RecordIdentity;
 use App\Values\AccessPolicy;
@@ -38,6 +39,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -223,7 +225,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
             $account,
             $this->id,
             $this->agent_id,
-            $this->selection()->driver,
+            $this->selection->driver,
             AccountProcessRole::Execution,
             CarbonImmutable::instance($this->created_at),
             $this->ended_at,
@@ -248,26 +250,35 @@ final class AgentSession extends Model implements EventSource, ReadableModel
         return WorkspaceUse::OwnCheckout;
     }
 
+    // ----------[ Accessors ]----------
+
     /**
      * The selection this session was started with, rebuilt from its row.
+     *
+     * @return Attribute<SelectedDriver, never>
      */
-    public function selection(): SelectedDriver
+    protected function selection(): Attribute
     {
-        $requested = $this->requested_model_type === ModelSelectionType::Named
-            ? ModelSelection::named((string) $this->requested_model)
-            : ModelSelection::profileDefault();
+        return Accessor::get(function () {
+            $requested = $this->requested_model_type === ModelSelectionType::Named
+                ? ModelSelection::named((string) $this->requested_model)
+                : ModelSelection::profileDefault();
 
-        return new SelectedDriver(
-            (string) $this->driver_key,
-            $this->model,
-            $requested,
-            new SelectionSource($this->driver_source, $this->profile_key, $this->profile_revision),
-        );
+            return new SelectedDriver(
+                (string) $this->driver_key,
+                $this->model,
+                $requested,
+                new SelectionSource($this->driver_source, $this->profile_key, $this->profile_revision),
+            );
+        });
     }
 
-    public function target(): StackTarget
+    /**
+     * @return Attribute<StackTarget, never>
+     */
+    protected function target(): Attribute
     {
-        return new StackTarget($this->agent_id, $this->id);
+        return Accessor::get(fn () => new StackTarget($this->agent_id, $this->id));
     }
 
     // ----------[ Relations ]----------

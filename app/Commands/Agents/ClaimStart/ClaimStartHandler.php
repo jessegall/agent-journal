@@ -50,9 +50,9 @@ final readonly class ClaimStartHandler implements CommandHandler
         }
 
         $session = AgentSession::query()->findOrFail($start->session_id);
-        $driver = $session->selection()->driver;
+        $driver = $session->selection->driver;
         $settings = new AccountStartSettings();
-        $requested = new AccountSettingsRequested($driver, $start->accountIdentity(), $start->directory, $settings);
+        $requested = new AccountSettingsRequested($driver, $start->accountIdentity, $start->directory, $settings);
 
         try {
             $this->extensions->accountSettings($requested);

@@ -15,6 +15,7 @@ use App\Enums\StopAttemptState;
 use App\Events\Sessions\StopAttemptCertified;
 use App\Events\Sessions\StopAttemptSettled;
 use App\Models\Agents\AgentSession;
+use App\Models\Support\Accessor;
 use App\Models\Support\AgentSessionScope;
 use App\Support\ActorIdentity;
 use App\Support\Inputs\Values\HookIdentity;
@@ -22,6 +23,7 @@ use App\Values\StopAttemptReference;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -142,13 +144,6 @@ final class StopAttempt extends Model implements EventSource, ReadableModel
         return $this->certified_at !== null;
     }
 
-    // ----------[ Transformers ]----------
-
-    public function reference(): StopAttemptReference
-    {
-        return new StopAttemptReference($this->id);
-    }
-
     // ----------[ Calculations ]----------
 
     /**
@@ -163,6 +158,16 @@ final class StopAttempt extends Model implements EventSource, ReadableModel
             (string) $this->workspace_generation,
             $failureSummary,
         ]));
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<StopAttemptReference, never>
+     */
+    protected function reference(): Attribute
+    {
+        return Accessor::get(fn () => new StopAttemptReference($this->id));
     }
 
     // ----------[ Relations ]----------

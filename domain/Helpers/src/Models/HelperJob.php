@@ -13,6 +13,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Enums\ConversationModeType;
+use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use App\Support\OwnerStartReceipt;
@@ -34,6 +35,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -226,7 +228,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
             $isNewJob,
             $profileType,
             $this->state,
-            $this->launch(),
+            $this->launch,
             $start,
         );
     }
@@ -254,21 +256,6 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
         return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
     }
 
-    // ----------[ Transformers ]----------
-
-    public function launch(): JobLaunch
-    {
-        return new JobLaunch(
-            $this->request_id,
-            $this->payload_digest,
-            $this->profile_revision,
-            $this->identity_new,
-            $this->independent,
-            $this->conversation_mode,
-            $this->conversation_reason,
-        );
-    }
-
     /**
      * The records the job was given as its source, written as type:id.
      *
@@ -277,6 +264,24 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
     public function sourceSubjects(): array
     {
         return $this->source_subjects;
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<JobLaunch, never>
+     */
+    protected function launch(): Attribute
+    {
+        return Accessor::get(fn () => new JobLaunch(
+            $this->request_id,
+            $this->payload_digest,
+            $this->profile_revision,
+            $this->identity_new,
+            $this->independent,
+            $this->conversation_mode,
+            $this->conversation_reason,
+        ));
     }
 
     // ----------[ Asserts ]----------

@@ -18,6 +18,6 @@ final readonly class RestoreStack implements Pipe
 
     public function handle(PreparedCall $prepared): RestoredCall
     {
-        return $prepared->restored($this->restorer->restore($prepared->row->frames, $prepared->row->target()));
+        return $prepared->restored($this->restorer->restore($prepared->row->frames, $prepared->row->target));
     }
 }

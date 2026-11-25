@@ -11,12 +11,14 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\ChildRole;
 use App\Exceptions\ChildClaimRefused;
 use App\Models\Projects\ProjectBinding;
+use App\Models\Support\Accessor;
 use App\Values\ChildCheckout;
 use App\Values\CommitObservation;
 use App\Values\WorkspaceFacts;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -100,20 +102,22 @@ final class ChildClaim extends Model implements ReadableModel
         return self::issue($binding, $parent->id, $agentId, $role, $read, $parent->id, $parent->root_runtime_id);
     }
 
-    // ----------[ Transformers ]----------
+    // ----------[ Accessors ]----------
 
     /**
      * The checkout the relay prepares the child's worktree for: this claim, its generation, whether the child writes
      * and the commit it starts from.
+     *
+     * @return Attribute<ChildCheckout, never>
      */
-    public function checkout(): ChildCheckout
+    protected function checkout(): Attribute
     {
-        return new ChildCheckout(
+        return Accessor::get(fn () => new ChildCheckout(
             $this->id,
             $this->parent_generation,
             $this->role === ChildRole::Writer,
             $this->base_oid,
-        );
+        ));
     }
 
     // ----------[ Asserts ]----------

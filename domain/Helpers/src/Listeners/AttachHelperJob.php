@@ -39,7 +39,7 @@ final readonly class AttachHelperJob implements Listener
         $job->attachTo($event->sessionId);
 
         $this->stacks->pushFor(
-            $identity->helperActor(),
+            $identity->helperActor,
             HelperJobStateReference::forJob($job, $identity, $purpose->label),
         );
     }

@@ -12,6 +12,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Models\Concerns\FindsForUpdate;
+use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
 use Domain\Tasks\Enums\TaskRunState;
@@ -21,6 +22,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -114,12 +116,16 @@ final class TaskRun extends Model implements Assignable, EventSource, ReadableMo
         return new RecordIdentity(self::linkType(), $this->id);
     }
 
+    // ----------[ Accessors ]----------
+
     /**
      * The actor that started the run.
+     *
+     * @return Attribute<ActorIdentity, never>
      */
-    public function starter(): ActorIdentity
+    protected function starter(): Attribute
     {
-        return new ActorIdentity(ActorType::from($this->started_by_type), $this->started_by_id);
+        return Accessor::get(fn () => new ActorIdentity(ActorType::from($this->started_by_type), $this->started_by_id));
     }
 
     // ----------[ Asserts ]----------

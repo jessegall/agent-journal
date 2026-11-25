@@ -39,7 +39,7 @@ final readonly class PlanShareProvider implements ShareRecordProvider
      */
     public function preview(ShareSelection $selection, ShareBudget $budget): ShareRecordCard
     {
-        return $this->summaryOf($selection->root, $budget)->shareCard();
+        return $this->summaryOf($selection->root, $budget)->shareCard;
     }
 
     public function readTargets(ShareTargetRead $read, ShareBudget $budget): ShareRecords
@@ -53,7 +53,7 @@ final readonly class PlanShareProvider implements ShareRecordProvider
 
         $cards = array_values(
             Plan::query()->whereKey($ids)->readExactly(count($ids))->get(self::SUMMARY_COLUMNS)->map(
-                fn (Plan $plan) => $plan->shareCard(),
+                fn (Plan $plan) => $plan->shareCard,
             )->all(),
         );
 
@@ -89,7 +89,7 @@ final readonly class PlanShareProvider implements ShareRecordProvider
         $summary = $plan->shareSummary;
         $budget->chargeText(strlen($summary));
 
-        return new SharedContent($plan->shareCard(), $summary);
+        return new SharedContent($plan->shareCard, $summary);
     }
 
     /**

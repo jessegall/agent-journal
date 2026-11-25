@@ -23,12 +23,14 @@ use App\Events\Processes\PartRunSpawnFailed;
 use App\Events\Processes\PartRunStarted;
 use App\Events\Processes\PartRunStopped;
 use App\Exceptions\PartTransitionRefused;
+use App\Models\Support\Accessor;
 use App\Values\PartEnd;
 use App\Values\PartKey;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -246,18 +248,6 @@ final class PartRun extends Model implements EventSource, ReadableModel
         return array_map(fn (array $sums): string => hash('sha256', implode("\n", $sums)), $checksums);
     }
 
-    // ----------[ Transformers ]----------
-
-    public function end(): PartEnd
-    {
-        return match ($this->end_type) {
-            PartEndType::NotYet => PartEnd::notYet(),
-            PartEndType::Exited => PartEnd::exited($this->end_code),
-            PartEndType::Signalled => PartEnd::signalled($this->end_code),
-            PartEndType::Unavailable => PartEnd::unavailable($this->end_reason),
-        };
-    }
-
     /**
      * The streams this part wrote at least one byte to.
      *
@@ -268,6 +258,21 @@ final class PartRun extends Model implements EventSource, ReadableModel
         $written = array_keys(array_filter($this->stream_offsets, fn (int $end) => $end > 0));
 
         return array_map(fn (string $stream) => OutputStream::from($stream), $written);
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<PartEnd, never>
+     */
+    protected function end(): Attribute
+    {
+        return Accessor::get(fn () => match ($this->end_type) {
+            PartEndType::NotYet => PartEnd::notYet(),
+            PartEndType::Exited => PartEnd::exited($this->end_code),
+            PartEndType::Signalled => PartEnd::signalled($this->end_code),
+            PartEndType::Unavailable => PartEnd::unavailable($this->end_reason),
+        });
     }
 
     // ----------[ Relations ]----------
@@ -305,7 +310,7 @@ final class PartRun extends Model implements EventSource, ReadableModel
      */
     private function assertDrained(): void
     {
-        if (! $this->end()->hasEnded()) {
+        if (! $this->end->hasEnded()) {
             throw PartTransitionRefused::notDrained();
         }
     }

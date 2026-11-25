@@ -63,8 +63,8 @@ final readonly class ReportJobLinkService
         $helper = HelperIdentity::query()->acrossActors()->whereKey($job->helper_identity_id)->first();
 
         return $helper !== null
-            && $helper->helperActor()->type === $filer->type
-            && $helper->helperActor()->id === $filer->id
+            && $helper->helperActor->type === $filer->type
+            && $helper->helperActor->id === $filer->id
             && $start->agentId === $filer->id;
     }
 }

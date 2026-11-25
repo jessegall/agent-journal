@@ -234,7 +234,7 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
             return None::create();
         }
 
-        return new Some($result->outcome());
+        return new Some($result->outcome);
     }
 
     // ----------[ Relations ]----------

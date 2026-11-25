@@ -27,11 +27,11 @@ final class ModelAccessorsTest extends TestCase
         $this->assertSame('', trim($output), self::HOW_TO_FIX.$output);
     }
 
-    public function test_an_answer_that_belongs_in_an_accessor_and_accessors_that_write_or_give_objects_are_flagged(): void
+    public function test_answers_that_belong_in_an_accessor_and_accessors_with_side_effects_or_laravels_attribute_are_flagged(): void
     {
         preg_match_all('/\t(?:answer|accessor) (\w+)/', $this->checkOutput(self::FIXTURE), $flagged);
 
-        $this->assertSame(['heading', 'savedTitle', 'words', 'checkedTitle', 'shoutedTitle'], $flagged[1]);
+        $this->assertSame(['heading', 'titleWords', 'savedTitle', 'checkedTitle', 'shoutedTitle', 'plainTitle'], $flagged[1]);
     }
 
     private function checkOutput(string ...$paths): string

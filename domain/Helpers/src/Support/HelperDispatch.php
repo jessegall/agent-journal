@@ -164,7 +164,7 @@ final readonly class HelperDispatch
 
         $start = $this->commands->run(new StartOwnedAgentCommand(new OwnerStartRequest(
             $requestId,
-            $identity->helperActor(),
+            $identity->helperActor,
             $job->assignmentIdentity(),
             $job->helper_purpose_id,
             $profile->selection,
@@ -305,7 +305,7 @@ final readonly class HelperDispatch
      */
     private function hasRetired(HelperIdentity $identity): bool
     {
-        return $this->reservations->hasRetired($identity->helperActor());
+        return $this->reservations->hasRetired($identity->helperActor);
     }
 
     /**
@@ -357,7 +357,7 @@ final readonly class HelperDispatch
         HelperIdentity $identity,
         ConversationChoice $conversation,
     ): HelperReceipt {
-        $helper = $identity->helperActor();
+        $helper = $identity->helperActor;
         $this->reserve($identity);
         $this->assertNoOpenJob($identity);
 
@@ -401,7 +401,7 @@ final readonly class HelperDispatch
     private function reserve(HelperIdentity $identity): void
     {
         try {
-            $this->reservations->reserve($identity->helperActor());
+            $this->reservations->reserve($identity->helperActor);
         } catch (AgentBusy $busyAgent) {
             throw HelperBusy::running($identity->id, $busyAgent);
         } catch (AgentNotAvailable|StartRefused $retired) {

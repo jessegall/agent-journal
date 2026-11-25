@@ -17,6 +17,7 @@ use App\Events\Engine\AgentStackHeldForInvestigation;
 use App\Events\Engine\AgentStackStarted;
 use App\Exceptions\StackAlreadyClosed;
 use App\Exceptions\StackMissing;
+use App\Models\Support\Accessor;
 use App\Models\Support\AgentSessionScope;
 use App\Support\ActorIdentity;
 use App\Support\Storage\FrameRecords;
@@ -28,6 +29,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -150,14 +152,16 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
         return $this->status === StackStatus::Active;
     }
 
-    // ----------[ Transformers ]----------
+    // ----------[ Accessors ]----------
 
     /**
      * The agent and session whose stack this is.
+     *
+     * @return Attribute<StackTarget, never>
      */
-    public function target(): StackTarget
+    protected function target(): Attribute
     {
-        return new StackTarget($this->agent_id, $this->session_id);
+        return Accessor::get(fn () => new StackTarget($this->agent_id, $this->session_id));
     }
 
     // ----------[ Asserts ]----------
@@ -326,7 +330,7 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
         self::query()->runningOpen()->readInChunks(100, function ($rows) use ($typeKeys, &$targets): void {
             foreach ($rows as $row) {
                 if ($row->frames->holdAnyOf($typeKeys)) {
-                    $targets[] = $row->target();
+                    $targets[] = $row->target;
                 }
             }
         });

@@ -13,6 +13,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Events\Sharing\SharePreviewConsumed;
 use App\Exceptions\SharePreviewRefused;
+use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneRoot;
 use App\Support\RecordIdentity;
 use App\Support\ShareCandidates;
@@ -21,6 +22,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -134,11 +136,14 @@ final class SharePreview extends Model implements EventSource, ReadableModel
         return $selection;
     }
 
-    // ----------[ Transformers ]----------
+    // ----------[ Accessors ]----------
 
-    public function root(): RecordIdentity
+    /**
+     * @return Attribute<RecordIdentity, never>
+     */
+    protected function root(): Attribute
     {
-        return new RecordIdentity($this->root_type, $this->root_id);
+        return Accessor::get(fn () => new RecordIdentity($this->root_type, $this->root_id));
     }
 
     // ----------[ Asserts ]----------
@@ -175,7 +180,7 @@ final class SharePreview extends Model implements EventSource, ReadableModel
         $configuration = ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id);
 
         if ($checksum !== $this->checksum
-            || self::checksumOf($ownerUserId, $this->root(), $selection, $configuration) !== $this->checksum) {
+            || self::checksumOf($ownerUserId, $this->root, $selection, $configuration) !== $this->checksum) {
             throw SharePreviewRefused::changed($this->id);
         }
     }

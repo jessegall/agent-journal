@@ -31,7 +31,7 @@ final readonly class StateEventStacks
         }
 
         return AgentStackRow::lockActiveAuthorizedFor($target)->map(
-            fn (AgentStackRow $row) => $this->restorer->restore($row->frames, $row->target()),
+            fn (AgentStackRow $row) => $this->restorer->restore($row->frames, $row->target),
         );
     }
 }

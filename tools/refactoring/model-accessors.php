@@ -120,7 +120,7 @@ function importedName(string $source, string $name): string
 {
     $short = explode('\\', $name)[0];
 
-    if (preg_match('/^use ([\w\\\\]+\\\\'.preg_quote($short, '/').');/m', $source, $imported) === 1) {
+    if (preg_match('/^use ((?:[\w\\\\]+\\\\)?'.preg_quote($short, '/').');/m', $source, $imported) === 1) {
         return $imported[1].substr($name, strlen($short));
     }
 
@@ -253,8 +253,8 @@ function accessorFaultsOf(string $source, string $class, Class_ $model): array
         }
 
         if (isAccessor($method) && str_contains($body, 'withoutObjectCaching')) {
-            $faults[] = "{$method->getStartLine()}\taccessor {$name} turns off object caching, which an accessor of a "
-                .'scalar never needs';
+            $faults[] = "{$method->getStartLine()}\taccessor {$name} calls withoutObjectCaching, which "
+                .'App\\Models\\Support\\Accessor already does';
         }
 
         if (isAccessor($method) && readsRows($source, $class, $model, $method, [])) {

@@ -76,8 +76,6 @@ final class Environment extends Model implements EventSource, ReadableModel
         return $environment;
     }
 
-    // ----------[ Asserts ]----------
-
     // ----------[ Queries ]----------
 
     /**

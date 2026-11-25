@@ -10,10 +10,12 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Events\Sessions\AgentFocusCleared;
 use App\Events\Sessions\AgentFocusMoved;
+use App\Models\Support\Accessor;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -82,11 +84,14 @@ final class AgentFocus extends Model implements EventSource, ReadableModel
         return $this->focused_type === $record->type && $this->focused_id === $record->id;
     }
 
-    // ----------[ Transformers ]----------
+    // ----------[ Accessors ]----------
 
-    public function record(): RecordIdentity
+    /**
+     * @return Attribute<RecordIdentity, never>
+     */
+    protected function record(): Attribute
     {
-        return new RecordIdentity($this->focused_type, $this->focused_id);
+        return Accessor::get(fn () => new RecordIdentity($this->focused_type, $this->focused_id));
     }
 
     // ----------[ Queries ]----------

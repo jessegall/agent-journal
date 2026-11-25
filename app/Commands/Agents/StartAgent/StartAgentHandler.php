@@ -198,7 +198,7 @@ final readonly class StartAgentHandler implements CommandHandler
 
     private function receiptOf(StartRequest $request, AgentSession $session, bool $isNewSession): StartReceipt
     {
-        $selection = $session->selection();
+        $selection = $session->selection;
 
         return new StartReceipt(
             $request->requestId,

@@ -12,6 +12,7 @@ use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Exceptions\TextVersionUnavailable;
+use App\Models\Support\Accessor;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Data\RevisionCard;
 use Domain\Documents\Data\RevisionView;
@@ -23,6 +24,7 @@ use Domain\Documents\Support\RecordViews;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -121,11 +123,14 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
         return $this->document()->sole();
     }
 
-    // ----------[ Transformers ]----------
+    // ----------[ Accessors ]----------
 
-    public function card(): RevisionCard
+    /**
+     * @return Attribute<RevisionCard, never>
+     */
+    protected function card(): Attribute
     {
-        return RecordViews::revisionCard($this);
+        return Accessor::get(fn () => RecordViews::revisionCard($this));
     }
 
     // ----------[ Relations ]----------

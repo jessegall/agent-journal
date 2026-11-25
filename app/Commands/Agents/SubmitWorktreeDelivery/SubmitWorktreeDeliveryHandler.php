@@ -25,6 +25,6 @@ final readonly class SubmitWorktreeDeliveryHandler implements CommandHandler
             throw DeliveryRefused::notYourClaim($claim->id);
         }
 
-        return WorktreeDelivery::create($claim, $command->submission)->receipt();
+        return WorktreeDelivery::create($claim, $command->submission)->receipt;
     }
 }

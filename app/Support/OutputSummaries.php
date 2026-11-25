@@ -46,7 +46,7 @@ final readonly class OutputSummaries
             'operation' => $part->operation,
             'lifecycle' => $part->lifecycle->value,
             'end' => $part->end_type->value,
-            'code' => $part->end()->hasStatus() ? $part->end_code : null,
+            'code' => $part->end->hasStatus() ? $part->end_code : null,
             'capture' => $part->capture_state->value,
             'bytes' => $part->stream_offsets,
             'result' => $this->resultOf($run, $part)->toArray(),

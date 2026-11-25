@@ -159,7 +159,8 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
      */
     public function answerWithEntries(array $entries, bool $isTruncated): void
     {
-        $this->entries = array_slice($entries, 0, self::DIRECTORY_ENTRY_LIMIT);
+        $kept = array_slice($entries, 0, self::DIRECTORY_ENTRY_LIMIT);
+        $this->entries = ProjectEntryData::collect($kept, DataCollection::class);
 
         $this->is_truncated = $isTruncated || count($entries) > self::DIRECTORY_ENTRY_LIMIT;
         $this->settle(ProjectReadState::Answered);
@@ -215,10 +216,8 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
      */
     public function listedEntries(): array
     {
-        return $this->entries?->all() ?? [];
+        return array_values($this->entries?->items() ?? []);
     }
-
-    // ----------[ Asserts ]----------
 
     // ----------[ Internals ]----------
 

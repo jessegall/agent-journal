@@ -16,11 +16,13 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Events\Messages\MessageSent;
 use App\Models\Inboxes\Inbox;
+use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -83,19 +85,21 @@ final class Message extends Model implements AuthoredModel, EventSource, Readabl
         return $message;
     }
 
-    // ----------[ Transformers ]----------
+    public function author(): ActorIdentity
+    {
+        return $this->sender;
+    }
+
+    // ----------[ Accessors ]----------
 
     /**
      * Who sent the message.
+     *
+     * @return Attribute<ActorIdentity, never>
      */
-    public function sender(): ActorIdentity
+    protected function sender(): Attribute
     {
-        return new ActorIdentity(ActorType::from($this->sender_type), $this->sender_id);
-    }
-
-    public function author(): ActorIdentity
-    {
-        return $this->sender();
+        return Accessor::get(fn () => new ActorIdentity(ActorType::from($this->sender_type), $this->sender_id));
     }
 
     // ----------[ Relations ]----------

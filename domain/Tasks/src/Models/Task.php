@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Models;
 
-use App\Models\Support\Accessor;
 use App\Concerns\BoundedReads;
 use App\Concerns\HasComments;
 use App\Concerns\HasNumber;
@@ -20,6 +19,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Contracts\Work\Focusable;
 use App\Enums\ActorType;
 use App\Enums\PoolMembersType;
+use App\Models\Support\Accessor;
 use App\Models\Support\AssignableListing;
 use App\Support\ActorIdentity;
 use App\Support\ActorLabelSet;
@@ -321,17 +321,21 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
         return TaskRun::ofTask($this, $this->run_number);
     }
 
+    // ----------[ Accessors ]----------
+
     /**
      * The task as a list shows it: its number and title.
+     *
+     * @return Attribute<TaskSummary, never>
      */
-    public function summary(): TaskSummary
+    protected function summary(): Attribute
     {
-        $changedAt = CarbonImmutable::parse((string) ($this->updated_at ?? $this->created_at));
+        return Accessor::get(function () {
+            $changedAt = CarbonImmutable::parse((string) ($this->updated_at ?? $this->created_at));
 
-        return new TaskSummary($this->number, $this->title, $this->state, $changedAt);
+            return new TaskSummary($this->number, $this->title, $this->state, $changedAt);
+        });
     }
-
-    // ----------[ Accessors ]----------
 
     /**
      * The words the task's current state was entered with: the finish note, the block reason or the cancel reason;
@@ -404,7 +408,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
             return None::create();
         }
 
-        return new Some($task->summary());
+        return new Some($task->summary);
     }
 
     /**

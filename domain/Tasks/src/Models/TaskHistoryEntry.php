@@ -9,6 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
+use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use App\Values\ReadOrder;
 use Carbon\CarbonImmutable;
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -120,12 +122,16 @@ final class TaskHistoryEntry extends Model implements ReadableModel
         ], 'task_history.id');
     }
 
+    // ----------[ Accessors ]----------
+
     /**
      * The entry as Tasks' history read gives it, no model leaving the domain.
+     *
+     * @return Attribute<TaskTransition, never>
      */
-    public function transition(): TaskTransition
+    protected function transition(): Attribute
     {
-        return new TaskTransition(
+        return Accessor::get(fn () => new TaskTransition(
             $this->id,
             $this->run_number,
             $this->actor_type,
@@ -135,7 +141,7 @@ final class TaskHistoryEntry extends Model implements ReadableModel
             $this->text,
             $this->sequence,
             CarbonImmutable::parse($this->created_at),
-        );
+        ));
     }
 
     // ----------[ Internals ]----------

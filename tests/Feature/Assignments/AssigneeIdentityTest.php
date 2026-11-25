@@ -58,6 +58,6 @@ final class AssigneeIdentityTest extends TestCase
 
         $row = AssignmentRecord::query()->sole();
         $this->assertSame('user', $row->holder_type);
-        $this->assertTrue($row->toAssignment()->holder()->isSameAs($owner->assigneeIdentity()));
+        $this->assertTrue($row->toAssignment->holder()->isSameAs($owner->assigneeIdentity()));
     }
 }

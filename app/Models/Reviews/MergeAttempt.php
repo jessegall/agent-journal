@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Reviews;
 
-use App\Models\Support\Accessor;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -18,6 +17,7 @@ use App\Events\Reviews\MergeAttemptMerged;
 use App\Events\Reviews\MergeAttemptRefused;
 use App\Events\Reviews\MergeAttemptResolvedByOwner;
 use App\Events\Reviews\MergeAttemptStarted;
+use App\Models\Support\Accessor;
 use App\Models\Support\HasActorColumns;
 use App\Models\Support\HasWorkColumns;
 use App\Values\ApprovedHead;
@@ -167,11 +167,14 @@ final class MergeAttempt extends Model implements EventSource, ReadableModel
         $this->raise(new MergeAttemptBecameUncertain($this->id));
     }
 
-    // ----------[ Transformers ]----------
+    // ----------[ Accessors ]----------
 
-    public function outcome(): MergeOutcome
+    /**
+     * @return Attribute<MergeOutcome, never>
+     */
+    protected function outcome(): Attribute
     {
-        return new MergeOutcome(
+        return Accessor::get(fn () => new MergeOutcome(
             $this->id,
             $this->state,
             $this->head,
@@ -179,10 +182,8 @@ final class MergeAttempt extends Model implements EventSource, ReadableModel
             $this->result,
             $this->refusal,
             $this->evidence,
-        );
+        ));
     }
-
-    // ----------[ Accessors ]----------
 
     /**
      * The ref the prospective result is kept under before it is published.

@@ -117,7 +117,7 @@ final class AccountChecksTest extends TestCase
 
     private function failWith(DriverFailure $failure, int $generation): void
     {
-        event(new DriverFailed('agent', 'session', 'codex', $failure, $this->account->recordIdentity(), $generation));
+        event(new DriverFailed('agent', 'session', 'codex', $failure, $this->account->recordIdentity, $generation));
     }
 
     private function check(int $generation, AccountCheckResult $result): void

@@ -11,6 +11,7 @@ use App\Contracts\Actors\Actor;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
+use App\Models\Support\Accessor;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Data\CloseCard;
 use Domain\Documents\Enums\CloseCause;
@@ -21,6 +22,7 @@ use Domain\Documents\Values\CloseResult;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -108,16 +110,22 @@ final class DocumentClose extends Model implements EventSource, ReadableModel
         return $close;
     }
 
-    // ----------[ Transformers ]----------
+    // ----------[ Accessors ]----------
 
-    public function result(): CloseResult
+    /**
+     * @return Attribute<CloseResult, never>
+     */
+    protected function result(): Attribute
     {
-        return new CloseResult($this->result_revision_number, $this->published);
+        return Accessor::get(fn () => new CloseResult($this->result_revision_number, $this->published));
     }
 
-    public function card(): CloseCard
+    /**
+     * @return Attribute<CloseCard, never>
+     */
+    protected function card(): Attribute
     {
-        return RecordViews::closeCard($this);
+        return Accessor::get(fn () => RecordViews::closeCard($this));
     }
 
     // ----------[ Asserts ]----------

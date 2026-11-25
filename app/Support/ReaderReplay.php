@@ -27,6 +27,6 @@ final readonly class ReaderReplay
             $checkpoint = $replay->read($checkpoint, ...$this->output->frames($part, $stream, 0));
         }
 
-        return new ReplayedOutput($checkpoint, $replay->finish($checkpoint, $part->end()));
+        return new ReplayedOutput($checkpoint, $replay->finish($checkpoint, $part->end));
     }
 }

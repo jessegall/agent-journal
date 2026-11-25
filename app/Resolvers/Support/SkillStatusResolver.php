@@ -167,8 +167,8 @@ final readonly class SkillStatusResolver
     private function statusOf(array $publications): SkillStatus
     {
         return new SkillStatus(
-            SkillGeneration::latest()?->status(),
-            array_map(fn (SkillPublication $publication) => $publication->status(), $publications),
+            SkillGeneration::latest()?->status,
+            array_map(fn (SkillPublication $publication) => $publication->status, $publications),
         );
     }
 

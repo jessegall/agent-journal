@@ -11,6 +11,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
+use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use App\Values\ReadOrder;
 use Carbon\CarbonImmutable;
@@ -19,6 +20,7 @@ use Domain\Tasks\Values\TaskLogLine;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -106,12 +108,16 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
         ], 'task_log_entries.id');
     }
 
+    // ----------[ Accessors ]----------
+
     /**
      * The line as Tasks' log read gives it, no model leaving the domain.
+     *
+     * @return Attribute<TaskLogLine, never>
      */
-    public function line(): TaskLogLine
+    protected function line(): Attribute
     {
-        return new TaskLogLine(
+        return Accessor::get(fn () => new TaskLogLine(
             $this->id,
             $this->run_number,
             $this->actor_type,
@@ -119,7 +125,7 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
             $this->text,
             $this->sequence,
             CarbonImmutable::parse($this->created_at),
-        );
+        ));
     }
 
     // ----------[ Queries ]----------

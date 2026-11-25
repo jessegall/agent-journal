@@ -19,6 +19,6 @@ final readonly class ChangeAgentEffortHandler implements CommandHandler
             $command->idempotencyKey,
             null,
             $command->effort,
-        )[0]->receipt();
+        )[0]->receipt;
     }
 }

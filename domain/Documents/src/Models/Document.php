@@ -17,6 +17,7 @@ use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Sharing\Shareable;
 use App\Enums\ActorType;
+use App\Models\Support\Accessor;
 use App\Support\ActorContext;
 use App\Support\Cards\DockCard;
 use App\Support\Cards\DockIdentity;
@@ -42,6 +43,7 @@ use Domain\Documents\Support\RecordViews;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -163,7 +165,7 @@ final class Document extends Model implements Commentable, Dockable, EventSource
             ->ofDocument($this->id)
             ->lastClosedFirst()
             ->get()
-            ->map(fn (DocumentClose $close) => $close->card())
+            ->map(fn (DocumentClose $close) => $close->card)
             ->all());
     }
 
@@ -176,7 +178,7 @@ final class Document extends Model implements Commentable, Dockable, EventSource
         $matchingRevision = $this->foundRevision($relation);
 
         return PublicationCard::from([
-            ...$this->card()->all(),
+            ...$this->card->all(),
             'snippet' => $matchingRevision->snippetFor($words),
             'foundIn' => "revision {$matchingRevision->number}",
         ]);
@@ -213,11 +215,6 @@ final class Document extends Model implements Commentable, Dockable, EventSource
         return new DocumentDockCard($this, $context)->card;
     }
 
-    public function card(): PublicationCard
-    {
-        return RecordViews::documentCard($this);
-    }
-
     /**
      * The document's safe card for a share: its current closed revision's title, and that revision's number as the
      * published version.
@@ -229,14 +226,30 @@ final class Document extends Model implements Commentable, Dockable, EventSource
         return new ShareRecordCard($this->shareIdentity(), $revision->title, (string) $revision->number);
     }
 
-    public function dockCard(): DockSuggestion
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<PublicationCard, never>
+     */
+    protected function card(): Attribute
     {
-        return RecordViews::documentSuggestion($this);
+        return Accessor::get(fn () => RecordViews::documentCard($this));
     }
 
-    public function view(): DocumentView
+    /**
+     * @return Attribute<DockSuggestion, never>
+     */
+    protected function dockCard(): Attribute
     {
-        return RecordViews::documentView($this);
+        return Accessor::get(fn () => RecordViews::documentSuggestion($this));
+    }
+
+    /**
+     * @return Attribute<DocumentView, never>
+     */
+    protected function view(): Attribute
+    {
+        return Accessor::get(fn () => RecordViews::documentView($this));
     }
 
     // ----------[ Relations ]----------

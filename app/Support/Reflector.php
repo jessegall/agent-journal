@@ -433,6 +433,19 @@ final class Reflector implements ReflectedType
     }
 
     /**
+     * Whether nothing of it changes once built: a readonly class, or a class whose own properties are all readonly, as
+     * a Laravel Data class declares them over a base class that is not readonly.
+     */
+    public function isImmutable(): bool
+    {
+        if ($this->type->isReadOnly()) {
+            return true;
+        }
+
+        return array_all($this->ownProperties(), fn (ReflectedProperty $property) => $property->isReadOnly());
+    }
+
+    /**
      * Whether new can build it: a class that is not abstract, an interface, a trait or an enum, with a public
      * constructor or none.
      */
@@ -484,6 +497,21 @@ final class Reflector implements ReflectedType
             fn (ReflectionProperty $property) => new ReflectedProperty($property, self::of(...)),
             $this->type->getProperties(),
         );
+    }
+
+    /**
+     * The properties the class declares itself, without those of the classes it extends.
+     *
+     * @return list<ReflectedProperty>
+     */
+    public function ownProperties(): array
+    {
+        $own = array_filter(
+            $this->properties(),
+            fn (ReflectedProperty $property) => $property->declaringClass()->name() === $this->type->getName(),
+        );
+
+        return array_values($own);
     }
 
     public function hasProperty(string $name): bool

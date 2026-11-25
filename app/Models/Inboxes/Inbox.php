@@ -114,8 +114,6 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
         return $this->last_message_number;
     }
 
-    // ----------[ Asserts ]----------
-
     // ----------[ Queries ]----------
 
     /**

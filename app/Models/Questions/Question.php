@@ -15,9 +15,11 @@ use App\Enums\QuestionType;
 use App\Events\Questions\QuestionAnswered;
 use App\Events\Questions\QuestionAsked;
 use App\Exceptions\QuestionRefused;
+use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -124,19 +126,27 @@ final class Question extends Model implements AuthoredModel, EventSource, Readab
 
     // ----------[ Transformers ]----------
 
-    public function sender(): ActorIdentity
-    {
-        return new ActorIdentity(ActorType::from($this->sender_type), $this->sender_id);
-    }
-
     public function author(): ActorIdentity
     {
-        return $this->sender();
+        return $this->sender;
     }
 
-    public function target(): ActorIdentity
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<ActorIdentity, never>
+     */
+    protected function sender(): Attribute
     {
-        return new ActorIdentity(ActorType::from($this->target_type), $this->target_id);
+        return Accessor::get(fn () => new ActorIdentity(ActorType::from($this->sender_type), $this->sender_id));
+    }
+
+    /**
+     * @return Attribute<ActorIdentity, never>
+     */
+    protected function target(): Attribute
+    {
+        return Accessor::get(fn () => new ActorIdentity(ActorType::from($this->target_type), $this->target_id));
     }
 
     // ----------[ Asserts ]----------
@@ -148,7 +158,7 @@ final class Question extends Model implements AuthoredModel, EventSource, Readab
      */
     private function assertAnswerable(ActorIdentity $answerer, string $answer): void
     {
-        if (! $this->target()->isSameAs($answerer)) {
+        if (! $this->target->isSameAs($answerer)) {
             throw QuestionRefused::notTheTarget($this->id);
         }
 

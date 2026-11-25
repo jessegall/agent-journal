@@ -8,6 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
+use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -59,16 +61,16 @@ final class HelperPurpose extends Model implements ReadableModel
         return ['purpose_type' => PurposeType::class];
     }
 
-    // ----------[ Transformers ]----------
+    // ----------[ Accessors ]----------
 
     /**
      * The record the purpose is about, such as a plan to review; none for a free purpose.
      *
-     * @return Option<RecordIdentity>
+     * @return Attribute<Option<RecordIdentity>, never>
      */
-    public function subjectRecord(): Option
+    protected function subjectRecord(): Attribute
     {
-        return $this->subjectRecordOf($this->subject_type, $this->subject_id);
+        return Accessor::get(fn () => $this->subjectRecordOf($this->subject_type, $this->subject_id));
     }
 
     // ----------[ Internals ]----------

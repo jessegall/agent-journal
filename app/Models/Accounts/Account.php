@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Accounts;
 
-use App\Models\Support\Accessor;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -33,6 +32,7 @@ use App\Exceptions\AccountMissing;
 use App\Exceptions\AccountNameChanged;
 use App\Exceptions\AccountRecheckRefused;
 use App\Exceptions\AccountUnavailable;
+use App\Models\Support\Accessor;
 use App\Models\Support\AccountOwnerScope;
 use App\Models\Support\KeepsCleanupTries;
 use App\Support\RecordIdentity;
@@ -485,26 +485,6 @@ final class Account extends Model implements EventSource, ReadableModel
         ], true);
     }
 
-    // ----------[ Transformers ]----------
-
-    /**
-     * The account as the start it is chosen for runs with it.
-     */
-    public function selectedForStart(): SelectedAccount
-    {
-        return new SelectedAccount(
-            $this->recordIdentity(),
-            $this->account_protocol,
-            $this->directoryForStart(),
-            $this->sign_in_generation,
-        );
-    }
-
-    public function recordIdentity(): RecordIdentity
-    {
-        return new RecordIdentity(self::linkType(), $this->id);
-    }
-
     // ----------[ Calculations ]----------
 
     /**
@@ -520,6 +500,29 @@ final class Account extends Model implements EventSource, ReadableModel
     }
 
     // ----------[ Accessors ]----------
+
+    /**
+     * The account as the start it is chosen for runs with it.
+     *
+     * @return Attribute<SelectedAccount, never>
+     */
+    protected function selectedForStart(): Attribute
+    {
+        return Accessor::get(fn () => new SelectedAccount(
+            $this->recordIdentity,
+            $this->account_protocol,
+            $this->directoryForStart(),
+            $this->sign_in_generation,
+        ));
+    }
+
+    /**
+     * @return Attribute<RecordIdentity, never>
+     */
+    protected function recordIdentity(): Attribute
+    {
+        return Accessor::get(fn () => new RecordIdentity(self::linkType(), $this->id));
+    }
 
     /**
      * Why a start cannot use the account now, none while it is signed in and not held for maintenance.
@@ -567,8 +570,6 @@ final class Account extends Model implements EventSource, ReadableModel
 
     /**
      * Refuses an account that is not there or was removed.
-     *
-     * @phpstan-assert self $account
      *
      * @throws AccountMissing
      */

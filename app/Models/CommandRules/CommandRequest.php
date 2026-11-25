@@ -16,6 +16,7 @@ use App\Enums\RequestState;
 use App\Exceptions\RequestTransitionRefused;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
+use App\Models\Support\Accessor;
 use App\Models\Support\HasActorColumns;
 use App\Support\ActorIdentity;
 use App\Values\ExitBranch;
@@ -24,6 +25,7 @@ use App\Values\NextStep;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -105,11 +107,14 @@ final class CommandRequest extends Model implements ReadableModel
         ]);
     }
 
-    // ----------[ Transformers ]----------
+    // ----------[ Accessors ]----------
 
-    public function nextStep(): NextStep
+    /**
+     * @return Attribute<NextStep, never>
+     */
+    protected function nextStep(): Attribute
     {
-        return $this->state->nextStep($this->id, $this->operation);
+        return Accessor::get(fn () => $this->state->nextStep($this->id, $this->operation));
     }
 
     // ----------[ Asserts ]----------
@@ -149,7 +154,7 @@ final class CommandRequest extends Model implements ReadableModel
 
     private function refusal(RequestState $next): RequestTransitionRefused
     {
-        return RequestTransitionRefused::from($this->state, $next, implode('; ', $this->nextStep()->steps));
+        return RequestTransitionRefused::from($this->state, $next, implode('; ', $this->nextStep->steps));
     }
 
     // ----------[ Queries ]----------
@@ -213,7 +218,7 @@ final class CommandRequest extends Model implements ReadableModel
             ->ofOperation($this->operation)
             ->readLimit(500)
             ->get()
-            ->filter(fn (PartRun $part): bool => $part->end()->hasStatus())
+            ->filter(fn (PartRun $part): bool => $part->end->hasStatus())
             ->map(fn (PartRun $part): int => $part->end_code)
             ->all();
 

@@ -55,7 +55,7 @@ trait Settles
         return array_values(RecordSettlement::query()
             ->onRecord(static::linkType(), $this->id)
             ->get()
-            ->map(fn (RecordSettlement $settlement) => $settlement->card())
+            ->map(fn (RecordSettlement $settlement) => $settlement->card)
             ->all());
     }
 }

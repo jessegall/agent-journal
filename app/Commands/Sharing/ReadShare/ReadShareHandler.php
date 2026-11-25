@@ -63,7 +63,7 @@ final readonly class ReadShareHandler implements CommandHandler
 
         $permit = $this->permits->take($command->permitReference);
         $share = Share::lockForRead($permit->shareId);
-        $root = $share->root();
+        $root = $share->root;
 
         if (! $share->isReadableNow()
             || ! $this->policy->grantHolds($share)

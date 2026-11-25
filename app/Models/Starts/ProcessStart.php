@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Starts;
 
-use App\Models\Support\Accessor;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
@@ -22,6 +21,7 @@ use App\Events\Sessions\ProcessStartStopped;
 use App\Events\Sessions\StartRefused;
 use App\Exceptions\ProcessStartUnknown;
 use App\Models\Agents\AgentSession;
+use App\Models\Support\Accessor;
 use App\Models\Support\ProcessStartScope;
 use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;
@@ -219,14 +219,15 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
         $this->raise(new ProcessStartCancelled($this->id));
     }
 
-    // ----------[ Transformers ]----------
-
-    public function accountIdentity(): RecordIdentity
-    {
-        return new RecordIdentity($this->account_type, $this->account_id);
-    }
-
     // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<RecordIdentity, never>
+     */
+    protected function accountIdentity(): Attribute
+    {
+        return Accessor::get(fn () => new RecordIdentity($this->account_type, $this->account_id));
+    }
 
     /**
      * The settings store the start's driver keeps its conversations in: its account's folder, named by identity.
@@ -237,8 +238,6 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
     {
         return Accessor::get(fn () => $this->account_type.':'.$this->account_id);
     }
-
-    // ----------[ Asserts ]----------
 
     // ----------[ Queries ]----------
 

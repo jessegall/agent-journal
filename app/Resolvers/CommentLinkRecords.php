@@ -47,7 +47,7 @@ final readonly class CommentLinkRecords implements RecordProvider
             RecordUnavailable::throwing()->forActor($record),
         );
 
-        $this->records->requireReadable($comment->target());
+        $this->records->requireReadable($comment->target);
 
         return $comment;
     }
@@ -72,7 +72,7 @@ final readonly class CommentLinkRecords implements RecordProvider
         foreach ($this->records->visibleCards(
             array_values(
                 $targets
-                    ->map(fn (Comment $comment) => $comment->target())
+                    ->map(fn (Comment $comment) => $comment->target)
                     ->unique(fn (RecordIdentity $target) => $target->type.' '.$target->id)
                     ->all(),
             ),

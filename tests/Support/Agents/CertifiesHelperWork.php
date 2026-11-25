@@ -98,7 +98,7 @@ trait CertifiesHelperWork
         $start->startedAs($launch->session);
         SessionPolicy::create($launch->session, $request->policy);
 
-        return CertifiedWork::record($start->refresh(), $certificate);
+        return CertifiedWork::create($start->refresh(), $certificate);
     }
 
     private function commit(string $repository, string $message): void

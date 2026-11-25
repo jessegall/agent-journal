@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Reviews;
 
-use App\Models\Support\Accessor;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
@@ -12,6 +11,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Exceptions\HelperWorkUncertified;
 use App\Models\Starts\SessionPolicy;
 use App\Models\Starts\StartRecord;
+use App\Models\Support\Accessor;
 use App\Models\Support\HasWorkColumns;
 use App\Support\RecordIdentity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -52,29 +52,15 @@ final class CertifiedWork extends Model implements ReadableModel
     use InsertsAbsentRows;
     use Linkable;
 
-    // ----------[ Accessors ]----------
-
-    /**
-     * The parent repository's ref the commits are imported under: one per certificate, never a branch.
-     *
-     * @return Attribute<non-falsy-string, never>
-     */
-    protected function importRef(): Attribute
-    {
-        return Accessor::get(fn () => "refs/helpers/{$this->work_type}/{$this->work_id}/{$this->certificate}");
-    }
-
-    // ----------[ Asserts ]----------
-
-    // ----------[ Queries ]----------
+    // ----------[ Constructors ]----------
 
     /**
      * Records the certificate of the start's work, with the checkout frozen in its session's policy; recording the
      * same certificate again finds the first.
      */
-    public static function record(StartRecord $start, string $certificate): self
+    public static function create(StartRecord $start, string $certificate): self
     {
-        $work = $start->ownerWork();
+        $work = $start->ownerWork;
         $policy = SessionPolicy::query()->ofSessions([$start->session_id])->sole();
 
         $certified = new self([
@@ -90,6 +76,20 @@ final class CertifiedWork extends Model implements ReadableModel
 
         return self::query()->withCertificate($certificate)->sole();
     }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * The parent repository's ref the commits are imported under: one per certificate, never a branch.
+     *
+     * @return Attribute<non-falsy-string, never>
+     */
+    protected function importRef(): Attribute
+    {
+        return Accessor::get(fn () => "refs/helpers/{$this->work_type}/{$this->work_id}/{$this->certificate}");
+    }
+
+    // ----------[ Queries ]----------
 
     /**
      * @throws HelperWorkUncertified

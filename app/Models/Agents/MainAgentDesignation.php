@@ -48,8 +48,6 @@ final class MainAgentDesignation extends Model implements ReadableModel
         return $this->belongsTo(Agent::class);
     }
 
-    // ----------[ Asserts ]----------
-
     // ----------[ Queries ]----------
 
     /**

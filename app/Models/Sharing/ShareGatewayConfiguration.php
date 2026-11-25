@@ -14,6 +14,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Events\Sharing\ShareGatewayChanged;
 use App\Events\Sharing\ShareGatewayMadeDefault;
 use App\Exceptions\ShareGatewayUnavailable;
+use App\Models\Support\Accessor;
 use App\Support\GatewayConfiguration;
 use App\Support\GatewaySettings;
 use App\Support\SourceAddressRule;
@@ -21,6 +22,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -140,20 +142,6 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
         return Share::unendedOf($this->id);
     }
 
-    /**
-     * How this gateway's forwarded requests name the visitor: none until a gateway's fixture proves the header it
-     * overwrites.
-     */
-    public function sourceAddressRule(): SourceAddressRule
-    {
-        return SourceAddressRule::none();
-    }
-
-    public function toConfiguration(): GatewayConfiguration
-    {
-        return new GatewayConfiguration($this->id, $this->configuration_version, $this->settings);
-    }
-
     // ----------[ Calculations ]----------
 
     /**
@@ -164,7 +152,26 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
         return rtrim($this->settings->publicOrigin, '/').'/s/'.$token;
     }
 
-    // ----------[ Asserts ]----------
+    // ----------[ Accessors ]----------
+
+    /**
+     * How this gateway's forwarded requests name the visitor: none until a gateway's fixture proves the header it
+     * overwrites.
+     *
+     * @return Attribute<SourceAddressRule, never>
+     */
+    protected function sourceAddressRule(): Attribute
+    {
+        return Accessor::get(fn () => SourceAddressRule::none());
+    }
+
+    /**
+     * @return Attribute<GatewayConfiguration, never>
+     */
+    protected function toConfiguration(): Attribute
+    {
+        return Accessor::get(fn () => new GatewayConfiguration($this->id, $this->configuration_version, $this->settings));
+    }
 
     // ----------[ Queries ]----------
 

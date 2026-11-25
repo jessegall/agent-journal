@@ -17,6 +17,7 @@ use App\Events\Engine\CommandReceiptCompleted;
 use App\Events\Engine\CommandReceiptRefused;
 use App\Exceptions\RefusalReplayed;
 use App\Exceptions\RequestKeyExpired;
+use App\Models\Support\Accessor;
 use App\Support\CommandName;
 use App\Support\Operation;
 use App\Support\PlainValue;
@@ -28,6 +29,7 @@ use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -206,9 +208,14 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
         return $this->result->reply();
     }
 
-    public function toOperation(): Operation
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<Operation, never>
+     */
+    protected function toOperation(): Attribute
     {
-        return new Operation(
+        return Accessor::get(fn () => new Operation(
             $this->request_key,
             CommandName::of($this->command),
             $this->state,
@@ -216,7 +223,7 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
             $this->refusal_code === null ? null : RefusalCode::from($this->refusal_code),
             $this->refusal_message,
             CarbonImmutable::instance($this->created_at ?? CarbonImmutable::now()),
-        );
+        ));
     }
 
     // ----------[ Asserts ]----------

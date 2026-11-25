@@ -9,6 +9,7 @@ use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Exceptions\SessionPolicyFrozen;
 use App\Models\Agents\AgentSession;
+use App\Models\Support\Accessor;
 use App\Support\Stored\StoredAccessPolicy;
 use App\Support\Stored\StoredExecutionPolicy;
 use App\Support\Stored\StoredStopConditions;
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -94,21 +96,6 @@ final class SessionPolicy extends Model implements ReadableModel
         return $frozen;
     }
 
-    // ----------[ Transformers ]----------
-
-    public function policy(): StartPolicy
-    {
-        return new StartPolicy(
-            $this->access_policy->toAccessPolicy(),
-            $this->stop_conditions->toStopConditions(),
-            $this->execution_policy->toExecutionPolicy(),
-            $this->profile_key,
-            $this->profile_revision,
-            $this->configuration_hash,
-            $this->requires_review,
-        );
-    }
-
     /**
      * The label of each stop condition the session must pass, by condition key.
      *
@@ -123,6 +110,24 @@ final class SessionPolicy extends Model implements ReadableModel
         }
 
         return $labels;
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<StartPolicy, never>
+     */
+    protected function policy(): Attribute
+    {
+        return Accessor::get(fn () => new StartPolicy(
+            $this->access_policy->toAccessPolicy(),
+            $this->stop_conditions->toStopConditions(),
+            $this->execution_policy->toExecutionPolicy(),
+            $this->profile_key,
+            $this->profile_revision,
+            $this->configuration_hash,
+            $this->requires_review,
+        ));
     }
 
     // ----------[ Asserts ]----------

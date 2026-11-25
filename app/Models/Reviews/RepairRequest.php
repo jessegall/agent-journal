@@ -12,12 +12,14 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Enums\RepairRequestState;
 use App\Events\Reviews\RepairRequestSettled;
+use App\Models\Support\Accessor;
 use App\Models\Support\HasWorkColumns;
 use App\Support\ActorIdentity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -76,13 +78,6 @@ final class RepairRequest extends Model implements EventSource, ReadableModel
         $this->raise(new RepairRequestSettled($this->id, $state));
     }
 
-    // ----------[ Transformers ]----------
-
-    public function worker(): ActorIdentity
-    {
-        return new ActorIdentity(ActorType::from($this->worker_type), $this->worker_id);
-    }
-
     // ----------[ Calculations ]----------
 
     /**
@@ -94,6 +89,16 @@ final class RepairRequest extends Model implements EventSource, ReadableModel
             ->ofWork($this->work_type, $this->work_id)
             ->whereKeyNot($this->id)
             ->count();
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<ActorIdentity, never>
+     */
+    protected function worker(): Attribute
+    {
+        return Accessor::get(fn () => new ActorIdentity(ActorType::from($this->worker_type), $this->worker_id));
     }
 
     // ----------[ Queries ]----------

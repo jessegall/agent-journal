@@ -9,6 +9,7 @@ use App\Concerns\Linkable;
 use App\Contracts\Actors\Actor;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
+use App\Models\Support\Accessor;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Data\SettlementCard;
 use Domain\Documents\Exceptions\RecordImmutable;
@@ -16,6 +17,7 @@ use Domain\Documents\Support\RecordViews;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -79,11 +81,14 @@ final class RecordSettlement extends Model implements ReadableModel
         ]);
     }
 
-    // ----------[ Transformers ]----------
+    // ----------[ Accessors ]----------
 
-    public function card(): SettlementCard
+    /**
+     * @return Attribute<SettlementCard, never>
+     */
+    protected function card(): Attribute
     {
-        return RecordViews::settlementCard($this);
+        return Accessor::get(fn () => RecordViews::settlementCard($this));
     }
 
     // ----------[ Asserts ]----------

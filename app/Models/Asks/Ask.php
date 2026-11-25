@@ -18,6 +18,7 @@ use App\Events\Asks\AskAnsweredLate;
 use App\Events\Asks\AskClosed;
 use App\Events\Asks\AskEscalated;
 use App\Exceptions\AskRefused;
+use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneActor;
 use App\Models\Support\HasActorColumns;
 use App\Support\ActorIdentity;
@@ -33,6 +34,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -150,7 +152,7 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
     {
         $this->assertSameSubmission($type, $body);
 
-        return $this->reference();
+        return $this->reference;
     }
 
     public function assignmentIdentity(): RecordIdentity
@@ -165,14 +167,22 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
         return SupervisorTarget::parse($this->pending_target);
     }
 
-    public function reference(): AskReference
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<AskReference, never>
+     */
+    protected function reference(): Attribute
     {
-        return new AskReference($this->id);
+        return Accessor::get(fn () => new AskReference($this->id));
     }
 
-    public function workReference(): WorkReference
+    /**
+     * @return Attribute<WorkReference, never>
+     */
+    protected function workReference(): Attribute
     {
-        return new WorkReference($this->work);
+        return Accessor::get(fn () => new WorkReference($this->work));
     }
 
     // ----------[ Asserts ]----------

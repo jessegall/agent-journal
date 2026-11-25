@@ -10,6 +10,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Exceptions\RevisionImmutable;
+use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use App\Values\CommandRule;
 use App\Values\ProposedRule;
@@ -17,6 +18,7 @@ use App\Values\RuleExample;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -88,11 +90,14 @@ final class RuleProposalRevision extends Model implements ReadableModel
         ]);
     }
 
-    // ----------[ Transformers ]----------
+    // ----------[ Accessors ]----------
 
-    public function proposedRule(): ProposedRule
+    /**
+     * @return Attribute<ProposedRule, never>
+     */
+    protected function proposedRule(): Attribute
     {
-        return new ProposedRule($this->payload, $this->evidence, $this->examples);
+        return Accessor::get(fn () => new ProposedRule($this->payload, $this->evidence, $this->examples));
     }
 
     // ----------[ Relations ]----------

@@ -34,7 +34,7 @@ final readonly class HandOffCodeReviewHandler implements CommandHandler
     {
         $this->access->assertMaintenanceGranted(HandOffCodeReviewCommand::MAINTENANCE_SCOPE);
         $reservation = WorkReservation::lockedFor($command->certificate);
-        $review = CodeReview::retain($reservation);
+        $review = CodeReview::create($reservation);
 
         if (! $review->isAwaitingImport() || ! $review->hasImportAttemptsLeft()) {
             return;
@@ -50,7 +50,7 @@ final readonly class HandOffCodeReviewHandler implements CommandHandler
         }
 
         $ask = $this->opening->open(
-            $review->worker(),
+            $review->worker,
             $this->types->get(CoreAskType::ReviewReady->key()),
             "code-review:{$review->certificate}",
             "Review the certified work imported under {$import->ref}: {$import->base}..{$import->head}.",

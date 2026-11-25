@@ -34,6 +34,7 @@ use App\Events\Sessions\StartVerificationCancelled;
 use App\Exceptions\StartRefusalReplayed;
 use App\Exceptions\StartRequestConflict;
 use App\Models\Agents\AgentSession;
+use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
 use App\Values\PinnedDriver;
@@ -42,6 +43,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -275,7 +277,7 @@ final class StartRecord extends Model implements EventSource, ReadableModel
         $this->session_id = $session->id;
         $this->disposition = StartDisposition::Started;
         $this->assertSaved($this->save());
-        $ownerWork = $this->owner_reference === null ? null : $this->ownerWork();
+        $ownerWork = $this->owner_reference === null ? null : $this->ownerWork;
         $this->raise(new StartSessionOpened($this->id, $this->agent_id, $session->id, $ownerWork));
     }
 
@@ -322,16 +324,20 @@ final class StartRecord extends Model implements EventSource, ReadableModel
         return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id)->isSameAs($actor);
     }
 
-    // ----------[ Transformers ]----------
+    // ----------[ Accessors ]----------
 
     /**
      * The work this start was made for, as its owner names it.
+     *
+     * @return Attribute<RecordIdentity, never>
      */
-    public function ownerWork(): RecordIdentity
+    protected function ownerWork(): Attribute
     {
-        [$type, $id] = explode(':', (string) $this->owner_reference, 2);
+        return Accessor::get(function () {
+            [$type, $id] = explode(':', (string) $this->owner_reference, 2);
 
-        return new RecordIdentity($type, $id);
+            return new RecordIdentity($type, $id);
+        });
     }
 
     // ----------[ Asserts ]----------

@@ -38,12 +38,12 @@ final readonly class StopCertification
 
     private function certifyFor(StartRecord $start, StopAttempt $attempt, StartPolicy $policy): void
     {
-        $work = CertifiedWork::record($start, $attempt->id);
+        $work = CertifiedWork::create($start, $attempt->id);
 
         if ($policy->requiresReview) {
-            WorkReservation::retain($work, StopAttempt::agentOf($attempt->reference()), $attempt->workspace_generation);
+            WorkReservation::retain($work, StopAttempt::agentOf($attempt->reference), $attempt->workspace_generation);
         }
 
-        $this->facts->publishAfterCommit(new HelperCompletionCertified($start->ownerWork(), $attempt->reference()));
+        $this->facts->publishAfterCommit(new HelperCompletionCertified($start->ownerWork, $attempt->reference));
     }
 }

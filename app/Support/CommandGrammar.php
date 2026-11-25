@@ -37,7 +37,7 @@ final readonly class CommandGrammar
      */
     public function problemWithProperties(string $class, array $seen = []): string|null
     {
-        foreach (Reflector::of($class)->properties() as $property) {
+        foreach (Reflector::of($class)->ownProperties() as $property) {
             if (! $property->isPublic() || ! $property->isPromoted()) {
                 return "{$property->name()} is not a public constructor property";
             }
@@ -241,7 +241,7 @@ final readonly class CommandGrammar
 
         $declaration = $found->get();
 
-        if (! $declaration->isFinal() || ! $declaration->isReadOnly()) {
+        if (! $declaration->isFinal() || ! $declaration->isImmutable()) {
             return "holds {$name}, which is not a final readonly value";
         }
 

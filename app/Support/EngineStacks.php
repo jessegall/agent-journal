@@ -57,7 +57,7 @@ final readonly class EngineStacks
             return;
         }
 
-        $before = $this->restorer->restore($row->frames, $row->target());
+        $before = $this->restorer->restore($row->frames, $row->target);
         $after = $before->withoutExposedInactive();
 
         if ($after->frameIds() === $before->frameIds()) {

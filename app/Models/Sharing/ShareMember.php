@@ -10,12 +10,14 @@ use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Records\Link;
+use App\Models\Support\Accessor;
 use App\Support\ConsumedPreview;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -92,11 +94,14 @@ final class ShareMember extends Model implements ReadableModel
         return self::insertRows($members);
     }
 
-    // ----------[ Transformers ]----------
+    // ----------[ Accessors ]----------
 
-    public function target(): RecordIdentity
+    /**
+     * @return Attribute<RecordIdentity, never>
+     */
+    protected function target(): Attribute
     {
-        return new RecordIdentity($this->target_type, $this->target_id);
+        return Accessor::get(fn () => new RecordIdentity($this->target_type, $this->target_id));
     }
 
     // ----------[ Queries ]----------
@@ -194,7 +199,7 @@ final class ShareMember extends Model implements ReadableModel
             ]);
 
         foreach ($members as $member) {
-            $grouped[$member->target_type][] = $member->target();
+            $grouped[$member->target_type][] = $member->target;
         }
 
         return $grouped;
