@@ -136,7 +136,6 @@
         ],
         "ide:helpers": [
             "@php -d memory_limit=1G artisan ide-helper:generate",
-            "@php -d memory_limit=1G artisan ide-helper:models --nowrite --no-interaction",
             "@php artisan ide-helper:meta",
             "@php -d memory_limit=1G tools/model-docs/scope-stubs.php"
         ],
