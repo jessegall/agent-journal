@@ -9,6 +9,7 @@ use Domain\Tasks\Commands\FocusTask\FocusTaskCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Commands\UnfocusTask\UnfocusTaskCommand;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
 
@@ -24,8 +25,8 @@ final class UnfocusTaskTest extends TestCase
     public function test_the_focused_task_leaves_the_focus_and_another_task_leaves_it_alone(): void
     {
         $this->journal->owner()->agent('First');
-        $first = Task::create('First', 'One.', $this->journal->ownerUser());
-        $second = Task::create('Second', 'Two.', $this->journal->ownerUser());
+        $first = $this->tasks()->task('First', 'One.')->taskCalled('First');
+        $second = $this->tasks()->task('Second', 'Two.')->taskCalled('Second');
         $this->journal->actAs('First')->run(new StartTaskCommand($first->id));
         $this->journal->run(new StartTaskCommand($second->id));
         $this->journal->run(new FocusTaskCommand($first->id));
@@ -36,5 +37,10 @@ final class UnfocusTaskTest extends TestCase
 
         $this->journal->run(new UnfocusTaskCommand($first->id));
         $this->assertTrue($focuses->focusOf($this->journal->actorCalled('First'))->isEmpty());
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

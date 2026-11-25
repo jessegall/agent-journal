@@ -10,6 +10,7 @@ use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Exceptions\TaskRunOfAnotherActor;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
 
@@ -32,7 +33,7 @@ final class BlockTaskTest extends TestCase
         parent::setUp();
 
         $this->journal->owner()->agent('First');
-        $this->task = Task::create('Owned work', 'Build it.', $this->journal->ownerUser());
+        $this->task = $this->tasks()->task('Owned work', 'Build it.')->taskCalled('Owned work');
         $this->run = $this->journal->actAs('First')->run(new StartTaskCommand($this->task->id));
     }
 
@@ -62,5 +63,10 @@ final class BlockTaskTest extends TestCase
         }
 
         $this->assertSame(TaskStatus::Started, $this->task->refresh()->status);
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

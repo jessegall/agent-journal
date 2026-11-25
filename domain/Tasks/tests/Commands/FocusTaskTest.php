@@ -7,7 +7,7 @@ namespace Domain\Tasks\Tests\Commands;
 use App\Contracts\Work\AgentFocuses;
 use Domain\Tasks\Commands\FocusTask\FocusTaskCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
-use Domain\Tasks\Models\Task;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
 
@@ -23,8 +23,8 @@ final class FocusTaskTest extends TestCase
     public function test_the_focus_moves_to_the_task_and_stays_on_a_second_focus(): void
     {
         $this->journal->owner()->agent('First');
-        $first = Task::create('First', 'One.', $this->journal->ownerUser());
-        $second = Task::create('Second', 'Two.', $this->journal->ownerUser());
+        $first = $this->tasks()->task('First', 'One.')->taskCalled('First');
+        $second = $this->tasks()->task('Second', 'Two.')->taskCalled('Second');
         $this->journal->actAs('First')->run(new StartTaskCommand($first->id));
         $this->journal->run(new StartTaskCommand($second->id));
 
@@ -33,5 +33,10 @@ final class FocusTaskTest extends TestCase
 
         $focus = $this->app->make(AgentFocuses::class)->focusOf($this->journal->actorCalled('First'))->get();
         $this->assertSame($first->id, $focus->id);
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

@@ -11,8 +11,8 @@ use Domain\Tasks\Contracts\TaskWaitResolver;
 use Domain\Tasks\Enums\TaskWaitChange;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskWaitHistory;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
-use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 
 /**
@@ -21,7 +21,6 @@ use Tests\Support\CommitsHookRows;
  */
 final class RemoveTaskWaitTest extends TestCase
 {
-    use ActsAsOwner;
     use CommitsHookRows;
 
     private const array TABLES = [
@@ -37,6 +36,9 @@ final class RemoveTaskWaitTest extends TestCase
         'assignments',
         'claim_authorizations',
         'command_receipts',
+        'number_groups',
+        'inboxes',
+        'inbox_members',
     ];
 
     private Task $first;
@@ -47,9 +49,11 @@ final class RemoveTaskWaitTest extends TestCase
     {
         parent::setUp();
 
-        $this->first = Task::factory()->create(['title' => 'Prepare records']);
-        $this->second = Task::factory()->create(['title' => 'Publish records']);
-        $this->journal->actAsUserId($this->owner->id);
+        $this->journal->owner();
+
+        $this->first = $this->tasks()->task('Prepare records')->taskCalled('Prepare records');
+        $this->second = $this->tasks()->task('Publish records')->taskCalled('Publish records');
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
     }
 
     public function test_a_cancelled_prerequisite_leaves_the_wait_outstanding_and_history_keeps_every_change(): void
@@ -83,5 +87,10 @@ final class RemoveTaskWaitTest extends TestCase
     private function runCommand(object $command): void
     {
         $this->journal->run($command);
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

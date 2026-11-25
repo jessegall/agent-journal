@@ -20,10 +20,10 @@ use Domain\Tasks\Exceptions\TaskResumeCovered;
 use Domain\Tasks\Exceptions\TaskRunStale;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
-use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 
 /**
@@ -32,7 +32,6 @@ use Tests\Support\CommitsHookRows;
  */
 final class ResumeTaskRunTest extends TestCase
 {
-    use ActsAsOwner;
     use CommitsHookRows;
 
     private const array TABLES = [
@@ -50,12 +49,20 @@ final class ResumeTaskRunTest extends TestCase
         'assignments',
         'claim_authorizations',
         'command_receipts',
+        'number_groups',
     ];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
 
     public function test_a_direct_holder_that_regained_the_task_resumes_afresh(): void
     {
         $worker = $this->started('Third');
-        $task = Task::factory()->create();
+        $task = $this->tasks()->task('task')->taskCalled('task');
 
         $holding = AssignmentRecord::create(
             $task->assignmentIdentity(),
@@ -77,8 +84,8 @@ final class ResumeTaskRunTest extends TestCase
     {
         $worker = $this->started('Fourth');
         $holder = AssigneeIdentity::of($worker->agent()->firstOrFail());
-        $first = Task::factory()->create();
-        $second = Task::factory()->create();
+        $first = $this->tasks()->task('first')->taskCalled('first');
+        $second = $this->tasks()->task('second')->taskCalled('second');
         AssignmentRecord::create($first->assignmentIdentity(), $holder);
         AssignmentRecord::create($second->assignmentIdentity(), $holder);
         $this->runAs($worker, new StartTaskCommand($first->id));
@@ -96,7 +103,7 @@ final class ResumeTaskRunTest extends TestCase
     public function test_a_resume_of_a_run_left_behind_by_a_restart_is_refused_as_stale(): void
     {
         $worker = $this->started('Fifth');
-        $task = Task::factory()->create();
+        $task = $this->tasks()->task('task')->taskCalled('task');
         AssignmentRecord::create($task->assignmentIdentity(), AssigneeIdentity::of($worker->agent()->firstOrFail()));
         $this->runAs($worker, new StartTaskCommand($task->id));
         $first = TaskRun::query()->where('task_id', $task->id)->sole();
@@ -122,7 +129,16 @@ final class ResumeTaskRunTest extends TestCase
     private function started(string $name): AgentSession
     {
         return $this->app->make(StartSessions::class)
-            ->start(Agent::create($name, 'main-agent', $this->localProject()), TestSelections::of('claude-code'), TestSelections::requestId())
+            ->start(
+                Agent::create($name, 'main-agent', $this->localProject()),
+                TestSelections::of('claude-code'),
+                TestSelections::requestId(),
+            )
             ->session;
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

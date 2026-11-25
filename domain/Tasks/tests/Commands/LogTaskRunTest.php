@@ -10,9 +10,9 @@ use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Contracts\TaskLogResolver;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskLogEntry;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Domain\Tasks\Values\TaskLogLine;
-use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 
 /**
@@ -21,7 +21,6 @@ use Tests\Support\CommitsHookRows;
  */
 final class LogTaskRunTest extends TestCase
 {
-    use ActsAsOwner;
     use CommitsHookRows;
 
     private const array TABLES = [
@@ -36,12 +35,22 @@ final class LogTaskRunTest extends TestCase
         'assignments',
         'claim_authorizations',
         'command_receipts',
+        'number_groups',
+        'inboxes',
+        'inbox_members',
     ];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
 
     public function test_lines_keep_their_run_and_order_and_page_in_both_directions(): void
     {
-        $task = Task::factory()->create();
-        $this->journal->actAsUserId($this->owner->id);
+        $task = $this->tasks()->task('task')->taskCalled('task');
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
         $this->runCommand(new StartTaskCommand($task->id));
 
         foreach (range(1, 5) as $line) {
@@ -81,8 +90,8 @@ final class LogTaskRunTest extends TestCase
 
     public function test_a_caller_without_the_current_run_cannot_log(): void
     {
-        $task = Task::factory()->create();
-        $this->journal->actAsUserId($this->owner->id);
+        $task = $this->tasks()->task('task')->taskCalled('task');
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
 
         $this->assertThrows(fn () => $this->runCommand(new LogTaskRunCommand($task->id, 1, 'No run yet.')));
         $this->assertSame(0, TaskLogEntry::query()->where('task_id', $task->id)->count());
@@ -100,5 +109,10 @@ final class LogTaskRunTest extends TestCase
     private function runCommand(object $command): void
     {
         $this->app->make(CommandBus::class)->run($command);
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

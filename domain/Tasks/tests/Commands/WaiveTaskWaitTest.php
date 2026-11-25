@@ -9,8 +9,8 @@ use Domain\Tasks\Commands\WaiveTaskWait\WaiveTaskWaitCommand;
 use Domain\Tasks\Contracts\TaskWaitResolver;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskWait;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
-use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 
 /**
@@ -18,7 +18,6 @@ use Tests\Support\CommitsHookRows;
  */
 final class WaiveTaskWaitTest extends TestCase
 {
-    use ActsAsOwner;
     use CommitsHookRows;
 
     private const array TABLES = [
@@ -34,6 +33,9 @@ final class WaiveTaskWaitTest extends TestCase
         'assignments',
         'claim_authorizations',
         'command_receipts',
+        'number_groups',
+        'inboxes',
+        'inbox_members',
     ];
 
     private Task $first;
@@ -44,9 +46,11 @@ final class WaiveTaskWaitTest extends TestCase
     {
         parent::setUp();
 
-        $this->first = Task::factory()->create(['title' => 'Prepare records']);
-        $this->second = Task::factory()->create(['title' => 'Publish records']);
-        $this->journal->actAsUserId($this->owner->id);
+        $this->journal->owner();
+
+        $this->first = $this->tasks()->task('Prepare records')->taskCalled('Prepare records');
+        $this->second = $this->tasks()->task('Publish records')->taskCalled('Publish records');
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
     }
 
     public function test_a_waiver_needs_a_reason_and_keeps_who_and_when(): void
@@ -62,7 +66,7 @@ final class WaiveTaskWaitTest extends TestCase
         $wait = TaskWait::findBetween($this->second->id, $this->first->id);
         $this->assertNotNull($wait?->waived_at);
         $this->assertSame([
-            $this->owner->id,
+            $this->journal->ownerUser()->id,
             'Done by hand.',
         ], [
             $wait->waived_by_id,
@@ -79,5 +83,10 @@ final class WaiveTaskWaitTest extends TestCase
     private function runCommand(object $command): void
     {
         $this->journal->run($command);
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

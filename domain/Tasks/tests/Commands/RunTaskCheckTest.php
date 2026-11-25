@@ -14,13 +14,13 @@ use Domain\Tasks\Events\TaskCheckRecorded;
 use Domain\Tasks\Exceptions\TaskCheckRefused;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskCheck;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
-use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 
@@ -30,7 +30,6 @@ use Tests\Support\TestIds;
  */
 final class RunTaskCheckTest extends TestCase
 {
-    use ActsAsOwner;
     use CommitsHookRows;
 
     private const array TABLES = [
@@ -45,21 +44,31 @@ final class RunTaskCheckTest extends TestCase
         'assignments',
         'claim_authorizations',
         'command_receipts',
+        'number_groups',
+        'inboxes',
+        'inbox_members',
     ];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
 
     public function test_a_check_runs_for_the_current_run_once_and_another_callers_run_is_refused(): void
     {
         Event::fake([TaskCheckRecorded::class]);
-        $task = Task::factory()->create();
+        $task = $this->tasks()->task('task')->taskCalled('task');
         $own = (string) Str::ulid();
         $other = (string) Str::ulid();
 
         $this->callersAre([
-            $own => ActorIdentity::of($this->owner),
+            $own => ActorIdentity::of($this->journal->ownerUser()),
             $other => ActorIdentity::ofClass(User::class, TestIds::of(9)),
         ]);
 
-        $this->journal->actAsUserId($this->owner->id);
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
         $this->runCommand(new StartTaskCommand($task->id));
 
         $this->runCommand(new RunTaskCheckCommand($task->id, 1, $own, 'acme verify'));
@@ -104,5 +113,10 @@ final class RunTaskCheckTest extends TestCase
     private function runCommand(object $command): void
     {
         $this->app->make(CommandBus::class)->run($command);
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

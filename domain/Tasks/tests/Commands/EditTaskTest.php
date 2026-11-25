@@ -8,6 +8,7 @@ use App\Exceptions\CommandInputInvalid;
 use Domain\Tasks\Commands\EditTask\EditTaskCommand;
 use Domain\Tasks\Exceptions\TaskRevisionChanged;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
 
@@ -26,7 +27,7 @@ final class EditTaskTest extends TestCase
         parent::setUp();
 
         $this->journal->owner();
-        $this->task = Task::create('First', 'First brief', $this->journal->ownerUser());
+        $this->task = $this->tasks()->task('First', 'First brief')->taskCalled('First');
     }
 
     public function test_an_edit_changes_what_it_names_and_moves_the_revision_on(): void
@@ -50,5 +51,10 @@ final class EditTaskTest extends TestCase
             'title:',
         );
         $this->assertSame(['Second', 2], [$this->task->refresh()->title, $this->task->revision]);
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

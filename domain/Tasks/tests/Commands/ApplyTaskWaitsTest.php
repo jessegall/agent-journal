@@ -13,9 +13,9 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskWait;
 use Domain\Tasks\Models\TaskWaitHistory;
 use Domain\Tasks\Support\TaskGraphVersion;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Domain\Tasks\Values\TaskWaitPair;
-use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 
 /**
@@ -24,7 +24,6 @@ use Tests\Support\CommitsHookRows;
  */
 final class ApplyTaskWaitsTest extends TestCase
 {
-    use ActsAsOwner;
     use CommitsHookRows;
 
     private const array TABLES = [
@@ -40,6 +39,9 @@ final class ApplyTaskWaitsTest extends TestCase
         'assignments',
         'claim_authorizations',
         'command_receipts',
+        'number_groups',
+        'inboxes',
+        'inbox_members',
     ];
 
     /**
@@ -51,8 +53,10 @@ final class ApplyTaskWaitsTest extends TestCase
     {
         parent::setUp();
 
+        $this->journal->owner();
+
         $this->tasks = array_map(
-            fn (int $place) => Task::factory()->create(['title' => "Step {$place}"]),
+            fn (int $place) => $this->tasks()->task("Step {$place}")->taskCalled("Step {$place}"),
             [
                 1,
                 2,
@@ -61,7 +65,7 @@ final class ApplyTaskWaitsTest extends TestCase
             ],
         );
 
-        $this->journal->actAsUserId($this->owner->id);
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
         $this->journal->run(new AddTaskWaitCommand($this->tasks[1]->id, $this->tasks[0]->id));
         $this->journal->run(new AddTaskWaitCommand($this->tasks[2]->id, $this->tasks[0]->id));
     }
@@ -161,5 +165,10 @@ final class ApplyTaskWaitsTest extends TestCase
                 $wait->dependent_task_id,
                 $wait->prerequisite_task_id,
             ])->all();
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }
