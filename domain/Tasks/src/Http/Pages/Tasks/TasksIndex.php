@@ -18,6 +18,7 @@ use App\Support\Layout\ListEmpty;
 use App\Support\Layout\ListPage;
 use App\Support\Layout\ListPaging;
 use App\Support\Layout\ProjectField;
+use App\Support\Layout\ProjectRowLabel;
 use Domain\Tasks\Contracts\TaskListResolver;
 use Domain\Tasks\Data\TaskFiltersData;
 use Domain\Tasks\Enums\TaskHolderFilter;
@@ -36,6 +37,7 @@ final readonly class TasksIndex extends TasksPage
         private TaskListResolver $tasks,
         private DraftProducers $producers,
         private ProjectField $projectField,
+        private ProjectRowLabel $projectLabel,
     ) {}
 
     /**
@@ -79,6 +81,7 @@ final readonly class TasksIndex extends TasksPage
                 'leading' => [LayoutPartData::text('number', (string) $card->number, 'muted')],
                 'trailing' => [
                     ...$this->focusBadgeOf($card),
+                    ...$this->projectLabel->partsFor($card->owner),
                     LayoutPartData::badge('state', $word, $tone),
                 ],
             ],

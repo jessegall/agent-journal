@@ -10,6 +10,7 @@ use App\Http\Middleware\MeasureReads;
 use App\Http\Middleware\ResolveConnectedProject;
 use App\Http\Middleware\Web\HandleInertiaRequests;
 use App\Http\Middleware\Web\ReadIdempotencyKey;
+use App\Http\Middleware\Web\SelectProject;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -38,6 +39,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // An agent call is authenticated before it is throttled: the MCP rate limit counts per agent session.
         $middleware->prependToPriorityList(before: ThrottleRequests::class, prepend: AuthenticateAgent::class);
         $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: AuthenticateUser::class);
+        // A browser's project choice is read once its user is known, so a guest's choice is refused.
+        $middleware->appendToPriorityList(after: AuthenticateUser::class, append: SelectProject::class);
         $middleware->alias(['journal.user' => AuthenticateUser::class, 'journal.host' => AuthenticateHost::class]);
         // A signed agent call is authenticated first; its body's request_key then keys the write it carries.
         // A connected project's agent serves its own project, named by its binding (ResolveConnectedProject).
@@ -50,6 +53,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // A user's write is receipted under the Idempotency-Key header it carries.
         $middleware->web(append: [
             ReadIdempotencyKey::class,
+            SelectProject::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);

@@ -305,7 +305,15 @@ final class Task extends Model implements
      */
     public function card(Option $holder, TaskExecution|null $execution): TaskCard
     {
-        return new TaskCard($this->id, $this->number, $this->title, $this->status, $holder, $execution);
+        return new TaskCard(
+            $this->id,
+            $this->number,
+            $this->title,
+            $this->status,
+            $holder,
+            $execution,
+            $this->projectOwner(),
+        );
     }
 
     /**

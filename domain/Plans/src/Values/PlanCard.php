@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Values;
 
 use App\Support\AssignmentHolder;
+use App\Values\ProjectOwner;
 use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Enums\PlanType;
 use PhpOption\Option;
@@ -29,5 +30,6 @@ final readonly class PlanCard
         public PlanProgress $progress,
         public int|null $currentPhase,
         public Option $holder,
+        public ProjectOwner $owner,
     ) {}
 }

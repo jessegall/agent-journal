@@ -377,6 +377,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Pro
             $progress,
             $currentPhase,
             $holder,
+            $this->projectOwner(),
         );
     }
 

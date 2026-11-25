@@ -150,10 +150,10 @@ final class Question extends Model implements AuthoredModel, EventSource, Projec
             $firstLine = strtok($this->text, "\n");
 
             if ($firstLine === false) {
-                return new QuestionSummary($this->id, $this->text, $this->inbox_id);
+                return new QuestionSummary($this->id, $this->text, $this->inbox_id, $this->project_id);
             }
 
-            return new QuestionSummary($this->id, $firstLine, $this->inbox_id);
+            return new QuestionSummary($this->id, $firstLine, $this->inbox_id, $this->project_id);
         });
     }
 

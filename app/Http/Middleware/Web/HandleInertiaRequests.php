@@ -9,10 +9,14 @@ use App\Contracts\Actors\CurrentUserResolver;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Drivers\InstalledVersion;
 use App\Contracts\Navigation\NavigationRecords;
+use App\Contracts\Projects\CurrentProject;
+use App\Contracts\Projects\ProjectDirectory;
 use App\Contracts\Settings\SettingsResolver;
 use App\Contracts\Sharing\SharePolicy;
 use App\Data\Pages\CurrentUserData;
+use App\Data\Projects\ProjectData;
 use App\Data\Sharing\SharedData;
+use App\Enums\Projects\ProjectSelectionType;
 use App\Http\Responses\NotificationProps;
 use App\Http\Responses\PageReadProps;
 use App\Http\Responses\SearchProps;
@@ -53,6 +57,8 @@ class HandleInertiaRequests extends Middleware
         private readonly NotificationProps $notifications,
         private readonly PageReadProps $pageReads,
         private readonly SearchProps $search,
+        private readonly ProjectDirectory $projects,
+        private readonly CurrentProject $selection,
     ) {}
 
     /**
@@ -102,6 +108,7 @@ class HandleInertiaRequests extends Middleware
                         ...$this->hostLinkAlarms->current(),
                     ],
                     ...$this->refusalCodeOf($request),
+                    ...$this->projectChoice(),
                 ],
             )->toArray(),
             // The navigation the signed-in user may see, and its counts after the page, so a slow count never holds it
@@ -117,6 +124,25 @@ class HandleInertiaRequests extends Middleware
             ...($this->isInboxMember() ? [] : $this->search->of($request)),
             // The reads pages declare beside their own result, each read only by a partial reload that names it.
             ...$this->pageReads->of($request),
+        ];
+    }
+
+    /**
+     * The projects the owner may choose and the one chosen, null for All projects; an inbox member chooses none.
+     *
+     * @return array{projects?: list<ProjectData>, selectedProject?: string|null}
+     */
+    private function projectChoice(): array
+    {
+        if ($this->isInboxMember()) {
+            return [];
+        }
+
+        $selection = $this->selection->selection();
+
+        return [
+            'projects' => $this->projects->listed(),
+            'selectedProject' => $selection->type === ProjectSelectionType::Project ? $selection->projectId() : null,
         ];
     }
 

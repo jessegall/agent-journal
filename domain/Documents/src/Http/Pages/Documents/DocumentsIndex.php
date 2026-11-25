@@ -19,6 +19,8 @@ use App\Support\Layout\ListEmpty;
 use App\Support\Layout\ListPage;
 use App\Support\Layout\ListPaging;
 use App\Support\Layout\ProjectField;
+use App\Support\Layout\ProjectRowLabel;
+use App\Values\ProjectOwner;
 use Domain\Documents\Data\DocumentFilters;
 use Domain\Documents\Data\PublicationCard;
 use Domain\Documents\Data\PublicationList;
@@ -39,6 +41,7 @@ final readonly class DocumentsIndex extends DocumentsPage
         private RecordMenus $menus,
         private DraftProducers $producers,
         private ProjectField $projectField,
+        private ProjectRowLabel $projectLabel,
     ) {}
 
     public function of(
@@ -85,6 +88,7 @@ final readonly class DocumentsIndex extends DocumentsPage
             'value' => $card->attention->value,
             'detail' => $card->summaryLine(),
             'href' => "/documents/{$path}/{$card->number}",
+            'trailing' => $this->projectLabel->partsFor(ProjectOwner::fromKey($card->ownerKey)),
             'menu' => $hasMenu
                 ? $this->menus->onRecord(DocumentsDomain::DOCUMENT_ACTIONS, $card->number)
                 : Optional::create(),

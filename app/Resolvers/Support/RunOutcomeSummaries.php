@@ -56,6 +56,7 @@ final readonly class RunOutcomeSummaries
         return new RunOutcomeSummaryData(
             $run->id,
             $outcome->result->summaryFor($run->plan),
+            $run->project_id,
             substr($outcome->attempt_id, -8),
             $outcome->result->value,
             $outcome->updated_at->toIso8601String(),

@@ -16,6 +16,11 @@ use PhpOption\Some;
 final readonly class ProjectSelection
 {
     /**
+     * The query parameter an address names its record's project by, so opening it shows that project.
+     */
+    public const string ADDRESS_PARAMETER = 'project';
+
+    /**
      * @param  Option<string>  $project
      */
     private function __construct(

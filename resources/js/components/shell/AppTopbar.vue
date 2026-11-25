@@ -11,11 +11,11 @@ import { useAppearance } from '@/composables/useAppearance';
 import { useShellOverlays } from '@/composables/useShellOverlays';
 import { useSidebar } from '@/composables/useSidebar';
 import { logout } from '@/routes';
-import EnvironmentMenu from './EnvironmentMenu.vue';
 import NotificationBell from './NotificationBell.vue';
+import ProjectMenu from './ProjectMenu.vue';
 
 /**
- * The 40 px topbar: the journal and page breadcrumb; on the right the environment menu, the notification bell with its
+ * The 40 px topbar: the journal and page breadcrumb; on the right the project menu, the notification bell with its
  * unread count, the button that folds the sidebar to its rail (on a phone, opens the navigation sheet), the theme menu,
  * full screen, and the signed-in user with sign out, which hands off to the authentication sign-out.
  */
@@ -59,7 +59,7 @@ function toggleFullScreen(): void {
         </nav>
         <span class="flex-1"></span>
         <div class="flex items-center gap-2" role="group" aria-label="Shell actions">
-            <EnvironmentMenu />
+            <ProjectMenu />
             <label class="relative flex w-56 items-center">
                 <Icon name="search" :size="13" class="pointer-events-none absolute left-2.5 text-text-3" />
                 <Input

@@ -21,6 +21,8 @@ final class PublicationCard extends Data
         public readonly string $title,
         public readonly string $abstract,
         public readonly AttentionStatus $attention,
+        // The project the record belongs to, or the Global key.
+        public readonly string $ownerKey,
         public readonly string|Optional $snippet = new Optional(),
         public readonly string|Optional $foundIn = new Optional(),
     ) {}

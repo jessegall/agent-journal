@@ -4,6 +4,7 @@ import { hostedPage } from '@/framework/hostedPage';
 import { pressedButtons } from '@/framework/pressedButtons';
 import { components, declaredPages } from '@/generated/ui-manifest';
 import AppSidebarLayout from '@/components/layout/AppSidebarLayout.vue';
+import { followProjectChoice } from '@/composables/useProject';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Journal';
 
@@ -13,6 +14,7 @@ const appName = import.meta.env.VITE_APP_NAME || 'Journal';
 const pagesWithoutShell = new Set(['Login']);
 
 pressedButtons.watch();
+followProjectChoice();
 
 void createInertiaApp({
     // Pages come from the generated manifest, so two domains' components of one name never collide. The manifest

@@ -9,6 +9,7 @@ use App\Contracts\Navigation\DeclaredPages;
 use App\Contracts\Notifications\NotificationTargetResolver;
 use App\Data\Notifications\NotificationLink;
 use App\Models\Inboxes\InboxMember;
+use App\Values\ProjectSelection;
 use Domain\Questions\Contracts\QuestionSummaryReader;
 use Domain\Questions\Values\QuestionSummary;
 
@@ -52,7 +53,10 @@ final readonly class QuestionNotificationTarget implements NotificationTargetRes
 
             $links[$question->id] = new NotificationLink(
                 $question->firstLine,
-                $this->pages->addressOf(self::CHAT_PAGE, ['inbox' => $question->inboxId]),
+                $this->pages->addressOf(self::CHAT_PAGE, [
+                    'inbox' => $question->inboxId,
+                    ProjectSelection::ADDRESS_PARAMETER => $question->projectId,
+                ]),
             );
         }
 

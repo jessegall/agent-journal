@@ -75,20 +75,29 @@ final readonly class ProjectField
     }
 
     /**
-     * Each project's label, with its key beside a label another project shares.
+     * The project's label as a choice and a row show it, with its key beside a label another listed project shares.
+     *
+     * @param  list<ProjectData>  $listed
+     */
+    public static function labelOf(ProjectData $project, array $listed): string
+    {
+        foreach ($listed as $other) {
+            if ($other->id !== $project->id && $other->label === $project->label) {
+                return "{$project->label} · {$project->key}";
+            }
+        }
+
+        return $project->label;
+    }
+
+    /**
+     * Each project's label as labelOf writes it.
      *
      * @param  list<ProjectData>  $listed
      * @return list<string>
      */
     private function labelsOf(array $listed): array
     {
-        $counts = array_count_values(array_map(fn (ProjectData $project): string => $project->label, $listed));
-
-        return array_map(
-            fn (ProjectData $project): string => $counts[$project->label] > 1
-                ? "{$project->label} ({$project->key})"
-                : $project->label,
-            $listed,
-        );
+        return array_map(fn (ProjectData $project): string => self::labelOf($project, $listed), $listed);
     }
 }
