@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Domain\Helpers\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Enums\Drivers\DriverType;
 use App\Support\CallKey;
-use Domain\Helpers\Calls\HelperCalls;
-use Domain\Helpers\Calls\StartHelperCall;
+use Domain\Helpers\Api\HelperApi;
+use Domain\Helpers\Api\StartHelperPayload;
 use Domain\Helpers\Console\Concerns\PrintsHelperReceipts;
 use Illuminate\Console\Command;
 
@@ -18,13 +18,13 @@ use Illuminate\Console\Command;
 final class HelperStartCommand extends Command
 {
     use PrintsHelperReceipts;
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'helper:start {profile} {--brief= : The work} {--subject= : The record the work is about, as type:id} {--purpose= : An existing purpose id} {--purpose-text= : A purpose in words} {--source=* : Records given as the source, as type:id} {--independent : Independent of everything the helper saw} {--driver= : The driver, when the profile allows several} {--headless : Run it headless} {--no-headless : Run it in a terminal} {--model= : The model, or default} {--key= : The request key, to retry the same request} {--json : Print the receipt as JSON}';
 
     protected $description = 'Start a helper for work';
 
-    public function handle(HelperCalls $helpers): int
+    public function handle(HelperApi $helpers): int
     {
         $model = $this->namedModel();
 
@@ -34,7 +34,7 @@ final class HelperStartCommand extends Command
             return self::FAILURE;
         }
 
-        $call = StartHelperCall::from([
+        $call = StartHelperPayload::from([
             'profileKey' => (string) $this->argument('profile'),
             'model' => $model,
             'driverKey' => $this->textOption('driver'),

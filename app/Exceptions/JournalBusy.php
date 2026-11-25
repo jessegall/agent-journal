@@ -7,7 +7,7 @@ namespace App\Exceptions;
 /**
  * The journal is busy: the journal answered busy.
  */
-final class JournalBusy extends CallRefused
+final class JournalBusy extends ApiRefused
 {
     public const string CODE = 'busy';
 }

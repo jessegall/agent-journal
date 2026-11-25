@@ -14,14 +14,14 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\SendsMcpFrames;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 final class AssignmentWriteToolsTest extends TestCase
 {
     use CommitsHookRows;
     use SendsMcpFrames;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
 
     private const array TABLES = [
         'users',

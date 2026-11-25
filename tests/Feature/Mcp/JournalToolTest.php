@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
-use App\Exceptions\CallFailedUnexpectedly;
+use App\Exceptions\ApiFailedUnexpectedly;
 use App\Mcp\Exceptions\ResultTooLarge;
 use App\Support\AgentContext;
 use App\Support\SignedCall;
@@ -94,7 +94,7 @@ final class JournalToolTest extends TestCase
             ->assertStructuredContentPath('code', 'unavailable');
 
         Exceptions::assertReported(
-            fn (CallFailedUnexpectedly $failure): bool => str_contains($failure->getMessage(), self::CALL_ID),
+            fn (ApiFailedUnexpectedly $failure): bool => str_contains($failure->getMessage(), self::CALL_ID),
         );
     }
 
@@ -108,7 +108,7 @@ final class JournalToolTest extends TestCase
             ->assertStructuredContentPath('code', 'unavailable');
 
         Exceptions::assertReported(
-            fn (CallFailedUnexpectedly $failure): bool => $failure->getPrevious() instanceof ResultTooLarge,
+            fn (ApiFailedUnexpectedly $failure): bool => $failure->getPrevious() instanceof ResultTooLarge,
         );
     }
 }

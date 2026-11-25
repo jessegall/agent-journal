@@ -12,8 +12,8 @@ use App\Http\Controllers\Agents\RetireAgentController;
 use App\Http\Controllers\Agents\RetryDriverSwitchController;
 use App\Http\Controllers\Agents\StartAgentController;
 use App\Http\Controllers\Agents\StopAgentController;
-use App\Http\Controllers\Calls\RecordHeartbeatController;
-use App\Support\CallRegistrar;
+use App\Http\Controllers\Api\RecordHeartbeatController;
+use App\Support\ApiRegistrar;
 use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Route;
 
@@ -67,7 +67,7 @@ Route::middleware('journal.agent')
     ->prefix('agent')
     ->name('agents.agent.')
     ->group(function (): void {
-        $calls = Container::getInstance()->make(CallRegistrar::class);
-        $calls->register(App\Http\Controllers\Calls\RetireAgentController::class)->name('retire');
+        $calls = Container::getInstance()->make(ApiRegistrar::class);
+        $calls->register(App\Http\Controllers\Api\RetireAgentController::class)->name('retire');
         $calls->register(RecordHeartbeatController::class)->name('heartbeat');
     });

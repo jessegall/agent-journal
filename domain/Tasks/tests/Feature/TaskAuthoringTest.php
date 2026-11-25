@@ -21,7 +21,7 @@ use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TestIds;
 
 /**
@@ -31,7 +31,7 @@ use Tests\Support\TestIds;
 final class TaskAuthoringTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
 
     private const string TITLE_TOO_LONG = 'title: The title field must not be greater than 240 characters.';
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Calls\Processes\ProcessCalls;
+use App\Api\Processes\ProcessApi;
 use App\Contracts\Bus\CommandClassifier;
 use App\Contracts\Files\Files;
 use App\Enums\Processes\ShellDialect;
@@ -22,10 +22,10 @@ use App\Values\PartKey;
 use Psr\Log\LoggerInterface;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Processes\ProcessOutputDisk;
-use Tests\Support\RecordedCalls;
+use Tests\Support\RecordedPayloads;
 use Tests\Support\RecordingLogger;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TestRunAdmissions;
 use Tests\TestCase;
 use Throwable;
@@ -37,7 +37,7 @@ use Throwable;
 final class ProcessChannelTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
 
     private TestStart $start;
 
@@ -88,10 +88,10 @@ final class ProcessChannelTest extends TestCase
             "/agent/processes/admissions/{$run->id}",
             ['request_key' => 'channel-1'],
         )->json('event_key');
-        $calls = new RecordedCalls();
+        $calls = new RecordedPayloads();
         $files = $this->app->make(Files::class);
         $events = new ChannelRunEvents(
-            new ProcessCalls($calls),
+            new ProcessApi($calls),
             $run->id,
             $eventKey,
             $files->filePathOf($this->folder.'/spool'),
@@ -116,11 +116,11 @@ final class ProcessChannelTest extends TestCase
     public function test_a_send_that_fails_leaves_the_events_spooled_and_logs_why(): void
     {
         $run = $this->admit('echo hi');
-        $calls = new RecordedCalls();
+        $calls = new RecordedPayloads();
         $files = $this->app->make(Files::class);
         $logger = new RecordingLogger();
         $events = new ChannelRunEvents(
-            new ProcessCalls($calls),
+            new ProcessApi($calls),
             $run->id,
             'key',
             $files->filePathOf($this->folder.'/spool-failing'),

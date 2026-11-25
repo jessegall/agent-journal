@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\AgentRequests;
 
-use App\Exceptions\CallDeadlinePassed;
+use App\Exceptions\ApiDeadlinePassed;
 use App\Exceptions\JournalUnreachable;
 use App\Exceptions\SessionTokenRefused;
 use App\Exceptions\StartSettingMissing;
@@ -95,7 +95,7 @@ final class PreparedCallTest extends TestCase
         );
         $this->assertThrows(
             fn () => $client->sendPrepared($call, [], CarbonImmutable::now()->subSecond()),
-            CallDeadlinePassed::class,
+            ApiDeadlinePassed::class,
             'deadline',
         );
     }

@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Supervision\MakeAskPayload;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Supervision\MakeAskCall;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use Illuminate\Console\Command;
 
 #[JournalRoute(JournalRouteType::Write)]
 final class MakeAskCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'ask:make {text} {--type=} {--request-key=} {--json}';
 
@@ -21,7 +21,7 @@ final class MakeAskCommand extends Command
 
     public function handle(): int
     {
-        return $this->runCall(MakeAskCall::from([
+        return $this->runCall(MakeAskPayload::from([
             'body' => (string) $this->argument('text'),
             'type' => $this->option('type'),
             'requestKey' => $this->requestKey(),

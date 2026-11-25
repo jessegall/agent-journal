@@ -16,7 +16,7 @@ use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TestIds;
 
 /**
@@ -26,7 +26,7 @@ use Tests\Support\TestIds;
 final class PlanAuthoringTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
 
     private const array TABLES = [
         'plans',

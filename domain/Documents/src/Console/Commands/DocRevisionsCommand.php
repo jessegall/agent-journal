@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace Domain\Documents\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Values\CommandReport;
-use Domain\Documents\Calls\DocumentCalls;
+use Domain\Documents\Api\DocumentApi;
 use Illuminate\Console\Command;
 
 #[JournalRoute(JournalRouteType::Read)]
 final class DocRevisionsCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'doc:revisions {number} {--page=1}';
 
@@ -22,7 +22,7 @@ final class DocRevisionsCommand extends Command
 
     protected $help = 'Example: php artisan doc:revisions 4';
 
-    public function handle(DocumentCalls $documents): int
+    public function handle(DocumentApi $documents): int
     {
         return $this->runReport(function () use ($documents): CommandReport {
             $page = $documents->listDocumentRevisions((string) $this->argument('number'), (int) $this->option('page'));

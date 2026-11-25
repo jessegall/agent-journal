@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Calls\Scripts\ReadProfileLanguageCall;
+use App\Api\Scripts\ReadProfileLanguagePayload;
 use App\Contracts\Sessions\ProfileLanguage;
 use App\Data\Profiles\ProfileLanguageData;
 
@@ -13,7 +13,7 @@ use App\Data\Profiles\ProfileLanguageData;
  */
 final readonly class ReadProfileLanguageController
 {
-    public function __invoke(ReadProfileLanguageCall $call, ProfileLanguage $language): ProfileLanguageData
+    public function __invoke(ReadProfileLanguagePayload $call, ProfileLanguage $language): ProfileLanguageData
     {
         return $language->language();
     }

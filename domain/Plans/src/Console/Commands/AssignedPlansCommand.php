@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Domain\Plans\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
-use Domain\Plans\Calls\ListAssignedPlansCall;
-use Domain\Plans\Calls\PlanCalls;
+use Domain\Plans\Api\ListAssignedPlansPayload;
+use Domain\Plans\Api\PlanApi;
 use Domain\Plans\Data\AssignedPlanCardData;
 use Illuminate\Console\Command;
 
@@ -19,17 +19,17 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Read)]
 final class AssignedPlansCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'plan:assigned {--search= : Words in the title} {--state=* : Only these states} {--page=1} {--per-page=20} {--json : Print the answer as JSON}';
 
     protected $description = 'List the plans the calling agent holds';
 
-    public function handle(PlanCalls $plans): int
+    public function handle(PlanApi $plans): int
     {
         $search = (string) $this->option('search');
 
-        $call = ListAssignedPlansCall::from([
+        $call = ListAssignedPlansPayload::from([
             'search' => $search === '' ? null : $search,
             'states' => array_values(array_map(strval(...), (array) $this->option('state'))),
             'page' => (int) $this->option('page'),

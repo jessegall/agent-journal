@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Processes\ProveReaderPayload;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Processes\ProveReaderCall;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use Illuminate\Console\Command;
 
@@ -16,7 +16,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class ReaderProveCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'reader:prove {request : The command request id} {--reader-revision= : The draft reader revision} {--output=* : A sample run to replay the reader over} {--request-key= : The key that makes a retry get the same answer} {--json}';
 
@@ -24,7 +24,7 @@ final class ReaderProveCommand extends Command
 
     public function handle(): int
     {
-        return $this->runCall(ProveReaderCall::from([
+        return $this->runCall(ProveReaderPayload::from([
             'commandRequest' => (string) $this->argument('request'),
             'readerRevision' => (string) $this->option('reader-revision'),
             'runs' => array_values(array_map(strval(...), (array) $this->option('output'))),

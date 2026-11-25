@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\Calls\Processes\AdmissionRefusalDetails;
+use App\Api\Processes\AdmissionRefusalDetails;
 use App\Concerns\RendersRefusal;
 use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Refusals\CodedRefusal;

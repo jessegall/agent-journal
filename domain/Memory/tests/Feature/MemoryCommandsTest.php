@@ -17,7 +17,7 @@ use Domain\Memory\Models\Memory;
 use Domain\Memory\Tests\TestCase;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\Support\StartsAgentRequests;
 
 /**
@@ -27,7 +27,7 @@ use Tests\Support\StartsAgentRequests;
 final class MemoryCommandsTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
     use StartsAgentRequests;
 
     private const string MEMORY_TEXT = 'Mine alone.';

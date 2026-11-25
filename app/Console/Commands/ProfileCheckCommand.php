@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Scripts\CheckProfileScriptPayload;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Scripts\CheckProfileScriptCall;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use Illuminate\Console\Command;
 
 #[JournalRoute(JournalRouteType::Read)]
 final class ProfileCheckCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'profile:check {profile} {--source=- : The script text, - for standard input} {--json}';
 
@@ -23,7 +23,7 @@ final class ProfileCheckCommand extends Command
     {
         $source = (string) $this->option('source');
 
-        return $this->runCall(CheckProfileScriptCall::from([
+        return $this->runCall(CheckProfileScriptPayload::from([
             'profile' => (string) $this->argument('profile'),
             'source' => $source === '-' ? (string) stream_get_contents(STDIN) : $source,
         ]));

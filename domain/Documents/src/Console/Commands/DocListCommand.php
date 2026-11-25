@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Domain\Documents\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Values\CommandReport;
-use Domain\Documents\Calls\DocumentCalls;
+use Domain\Documents\Api\DocumentApi;
 use Domain\Documents\Console\Concerns\ReportsRecordCards;
 use Domain\Documents\Enums\AttentionFilter;
 use Illuminate\Console\Command;
@@ -17,7 +17,7 @@ use Illuminate\Console\Command;
 final class DocListCommand extends Command
 {
     use ReportsRecordCards;
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'doc:list {--state=active : active, settled or all} {--page=1} {--query= : Only those whose text holds these words} {--revisions : Search past revisions too} {--after= : Continue after this cursor}';
 
@@ -25,7 +25,7 @@ final class DocListCommand extends Command
 
     protected $help = 'Example: php artisan doc:list --query "retention" ; continue a long list with --after <cursor>';
 
-    public function handle(DocumentCalls $documents): int
+    public function handle(DocumentApi $documents): int
     {
         return $this->runReport(function () use ($documents): CommandReport {
             $listing = $documents->listDocuments(

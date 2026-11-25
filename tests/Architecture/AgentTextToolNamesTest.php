@@ -28,7 +28,7 @@ final class AgentTextToolNamesTest extends TestCase
      */
     private const array FOR_THE_USER = [
         'app/Values/DeviceOverview.php',
-        'app/Calls/Connections/RunProjectCommandCall.php',
+        'app/Api/Connections/RunProjectCommandPayload.php',
     ];
 
     public function test_no_agent_text_names_a_journal_command_line(): void

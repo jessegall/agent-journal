@@ -14,7 +14,7 @@ use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Support\Processes\OpensAcmeRequestAsOwner;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -26,7 +26,7 @@ final class RequestReviewPageTest extends TestCase
 {
     use OpensAcmeRequestAsOwner;
     use RefreshHookDatabase;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
 
     public function test_the_list_shows_the_projects_requests_and_nothing_of_another_project(): void
     {

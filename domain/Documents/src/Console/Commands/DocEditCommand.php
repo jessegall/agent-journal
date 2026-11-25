@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Domain\Documents\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Contracts\Files\Files;
 use App\Enums\CommandRules\CommandClass;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Values\CommandReport;
-use Domain\Documents\Calls\DocumentCalls;
+use Domain\Documents\Api\DocumentApi;
 use Domain\Documents\Console\Commands\Support\DraftTokens;
 use Domain\Documents\Console\Concerns\ReadsRecordBody;
 use Illuminate\Console\Command;
@@ -19,7 +19,7 @@ use Illuminate\Console\Command;
 final class DocEditCommand extends Command
 {
     use ReadsRecordBody;
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'doc:edit {number} {--body= : The new text, or - for standard input} {--file= : A local file holding the new text} {--section= : Replace this section, by number or exact heading, with the body} {--replace= : Text to replace} {--with= : Its replacement} {--title=} {--abstract=}';
 
@@ -27,7 +27,7 @@ final class DocEditCommand extends Command
 
     protected $help = 'Example: php artisan doc:edit 4 --section "Risks" --body - < risks.md ; or --replace "old words" --with "new words" ; or --title "New title"';
 
-    public function handle(DocumentCalls $documents, DraftTokens $drafts, Files $files): int
+    public function handle(DocumentApi $documents, DraftTokens $drafts, Files $files): int
     {
         $number = (int) $this->argument('number');
         $held = $drafts->of($number);

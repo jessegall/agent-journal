@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Calls\Connections\ProjectCommandFrame;
+use App\Api\Connections\ProjectCommandFrame;
 use App\Enums\Connections\BindingReadiness;
 use App\Enums\Connections\CommandRunState;
 use App\Enums\Projects\ArrangementType;
@@ -25,7 +25,7 @@ use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -36,7 +36,7 @@ use Tests\TestCase;
 final class ProjectCommandsTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
 
     private const string SECRET_TASKS = 'Secret tasks';
 

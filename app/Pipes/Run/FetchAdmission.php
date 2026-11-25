@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Pipes\Run;
 
-use App\Calls\Processes\ProcessCalls;
+use App\Api\Processes\ProcessApi;
 use App\Contracts\Bus\Pipe;
 use App\Exceptions\EvidencePermitRequired;
 use App\Support\Run\FetchedAdmission;
@@ -15,7 +15,7 @@ use App\Support\Run\PendingAdmission;
  */
 final readonly class FetchAdmission implements Pipe
 {
-    public function __construct(private ProcessCalls $processes) {}
+    public function __construct(private ProcessApi $processes) {}
 
     /**
      * @throws EvidencePermitRequired

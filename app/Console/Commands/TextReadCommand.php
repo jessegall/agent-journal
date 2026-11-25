@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Text\ReadTextPayload;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Text\ReadTextCall;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use Illuminate\Console\Command;
 
 #[JournalRoute(JournalRouteType::Read)]
 final class TextReadCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'text:read {target : Such as "doc 12"} {--at-revision=} {--lines=} {--section=} {--json}';
 
@@ -26,7 +26,7 @@ final class TextReadCommand extends Command
         $section = (string) $this->option('section');
         $span = preg_match('/^(\d+)-(\d*)$/', (string) $this->option('lines'), $lines) === 1 ? $lines : [];
 
-        return $this->runCall(ReadTextCall::from([
+        return $this->runCall(ReadTextPayload::from([
             'target' => (string) $this->argument('target'),
             'version' => (string) $this->option('at-revision'),
             'section' => $section === '' ? null : $section,

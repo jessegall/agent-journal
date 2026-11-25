@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Domain\Comments\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
-use Domain\Comments\Calls\LocateCommentCall;
+use Domain\Comments\Api\LocateCommentPayload;
 use Illuminate\Console\Command;
 
 #[JournalRoute(JournalRouteType::Read)]
 final class CommentLocationCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'comment:location {target : Such as "doc 12"} {comment : The comment id} {--lines=} {--json}';
 
@@ -25,7 +25,7 @@ final class CommentLocationCommand extends Command
     {
         $span = $this->lineSpan();
 
-        return $this->runCall(LocateCommentCall::from([
+        return $this->runCall(LocateCommentPayload::from([
             'target' => (string) $this->argument('target'),
             'comment' => (string) $this->argument('comment'),
             'firstLine' => $span[0] ?? null,

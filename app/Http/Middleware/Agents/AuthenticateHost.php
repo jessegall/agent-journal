@@ -12,7 +12,7 @@ use App\Contracts\Hosts\LocalProjectHosts;
 use App\Data\Hosts\FailedHostCallData;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Projects\HostRouteRole;
-use App\Exceptions\CallSignatureInvalid;
+use App\Exceptions\ApiSignatureInvalid;
 use App\Exceptions\HostCredentialRejected;
 use App\Exceptions\HostRoleRefused;
 use App\Models\Projects\Host;
@@ -65,7 +65,7 @@ final readonly class AuthenticateHost
     {
         try {
             $context = $this->servingContext($this->calls->verify($request), HostRouteRole::from($role));
-        } catch (HostCredentialRejected|CallSignatureInvalid $rejection) {
+        } catch (HostCredentialRejected|ApiSignatureInvalid $rejection) {
             return new JsonResponse(['message' => $rejection->getMessage()], Response::HTTP_UNAUTHORIZED);
         } catch (HostRoleRefused $refusal) {
             return new JsonResponse(['message' => $refusal->getMessage()], Response::HTTP_FORBIDDEN);

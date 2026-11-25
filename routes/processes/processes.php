@@ -2,35 +2,35 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Calls\AdmitLineController;
-use App\Http\Controllers\Calls\ApproveProposalController;
-use App\Http\Controllers\Calls\ApproveSampleController;
-use App\Http\Controllers\Calls\CheckRestoredOutputController;
-use App\Http\Controllers\Calls\CheckRunStalenessController;
-use App\Http\Controllers\Calls\CleanOutputController;
-use App\Http\Controllers\Calls\ExplainCommandController;
-use App\Http\Controllers\Calls\FetchAdmissionController;
-use App\Http\Controllers\Calls\ImportProposalsController;
-use App\Http\Controllers\Calls\ListProposalsController;
-use App\Http\Controllers\Calls\ProposeReaderController;
-use App\Http\Controllers\Calls\ProposeRuleController;
-use App\Http\Controllers\Calls\ProveReaderController;
-use App\Http\Controllers\Calls\ReadOutputBytesController;
-use App\Http\Controllers\Calls\ReadOutputSummaryController;
-use App\Http\Controllers\Calls\ReadOutputTailController;
-use App\Http\Controllers\Calls\RecordRunChunkController;
-use App\Http\Controllers\Calls\RecordRunEventsController;
-use App\Http\Controllers\Calls\RejectProposalController;
-use App\Http\Controllers\Calls\RestoreRuleController;
-use App\Http\Controllers\Calls\RetireRuleController;
-use App\Http\Controllers\Calls\ReviseProposalController;
-use App\Http\Controllers\Calls\SearchOutputController;
-use App\Http\Controllers\Calls\SettleSampleController;
-use App\Http\Controllers\Calls\ShowCommandRequestController;
-use App\Http\Controllers\Calls\StartEvidenceRunController;
-use App\Http\Controllers\Calls\StartSampleController;
-use App\Http\Controllers\Calls\WithdrawProposalController;
-use App\Support\CallRegistrar;
+use App\Http\Controllers\Api\AdmitLineController;
+use App\Http\Controllers\Api\ApproveProposalController;
+use App\Http\Controllers\Api\ApproveSampleController;
+use App\Http\Controllers\Api\CheckRestoredOutputController;
+use App\Http\Controllers\Api\CheckRunStalenessController;
+use App\Http\Controllers\Api\CleanOutputController;
+use App\Http\Controllers\Api\ExplainCommandController;
+use App\Http\Controllers\Api\FetchAdmissionController;
+use App\Http\Controllers\Api\ImportProposalsController;
+use App\Http\Controllers\Api\ListProposalsController;
+use App\Http\Controllers\Api\ProposeReaderController;
+use App\Http\Controllers\Api\ProposeRuleController;
+use App\Http\Controllers\Api\ProveReaderController;
+use App\Http\Controllers\Api\ReadOutputBytesController;
+use App\Http\Controllers\Api\ReadOutputSummaryController;
+use App\Http\Controllers\Api\ReadOutputTailController;
+use App\Http\Controllers\Api\RecordRunChunkController;
+use App\Http\Controllers\Api\RecordRunEventsController;
+use App\Http\Controllers\Api\RejectProposalController;
+use App\Http\Controllers\Api\RestoreRuleController;
+use App\Http\Controllers\Api\RetireRuleController;
+use App\Http\Controllers\Api\ReviseProposalController;
+use App\Http\Controllers\Api\SearchOutputController;
+use App\Http\Controllers\Api\SettleSampleController;
+use App\Http\Controllers\Api\ShowCommandRequestController;
+use App\Http\Controllers\Api\StartEvidenceRunController;
+use App\Http\Controllers\Api\StartSampleController;
+use App\Http\Controllers\Api\WithdrawProposalController;
+use App\Support\ApiRegistrar;
 use Illuminate\Container\Container;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
@@ -39,7 +39,7 @@ Route::middleware(['journal.agent', SubstituteBindings::class])
     ->prefix('agent')
     ->name('processes.agent.')
     ->group(function (): void {
-        $calls = Container::getInstance()->make(CallRegistrar::class);
+        $calls = Container::getInstance()->make(ApiRegistrar::class);
         $calls->register(AdmitLineController::class)->name('admit');
         $calls->register(FetchAdmissionController::class)->name('admission');
         $calls->register(StartEvidenceRunController::class)->name('evidence');
@@ -72,7 +72,7 @@ Route::middleware(['journal.agent', SubstituteBindings::class])
 Route::middleware('journal.agent')
     ->prefix('agent')
     ->group(function (): void {
-        Container::getInstance()->make(CallRegistrar::class)
+        Container::getInstance()->make(ApiRegistrar::class)
             ->register(ExplainCommandController::class)
             ->name('processes.explain');
     });

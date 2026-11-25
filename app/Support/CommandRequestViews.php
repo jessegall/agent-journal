@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Calls\Processes\CommandRequestShown;
+use App\Api\Processes\CommandRequestShown;
 use App\Models\CommandRules\CommandRequest;
 use App\Models\CommandRules\RuleProposal;
 use App\Models\Runs\ReaderRevision;

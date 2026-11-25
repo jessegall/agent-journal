@@ -10,7 +10,7 @@ use Throwable;
  * The journal answered, but the answer does not read as the call's declared answer. The message names the call and
  * the field, never the token, the signature or the body.
  */
-final class AnswerUnreadable extends CallFailed
+final class AnswerUnreadable extends ApiFailed
 {
     /**
      * @param  class-string  $call

@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Supervision\ReplyToAskPayload;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Supervision\ReplyToAskCall;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use Illuminate\Console\Command;
 
 #[JournalRoute(JournalRouteType::Write)]
 final class ReplyToAskCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'ask:reply {ask} {text} {--request-key=} {--json}';
 
@@ -21,7 +21,7 @@ final class ReplyToAskCommand extends Command
 
     public function handle(): int
     {
-        return $this->runCall(ReplyToAskCall::from([
+        return $this->runCall(ReplyToAskPayload::from([
             'id' => (string) $this->argument('ask'),
             'body' => (string) $this->argument('text'),
             'requestKey' => $this->requestKey(),

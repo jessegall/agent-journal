@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Console\Commands;
 
-use App\Console\Concerns\RunsCallPipelines;
-use Domain\Sharing\Calls\ShareStatusCall;
+use App\Console\Concerns\RunsApiPipelines;
+use Domain\Sharing\Api\ShareStatusPayload;
 use Illuminate\Console\Command;
 
 /**
@@ -13,7 +13,7 @@ use Illuminate\Console\Command;
  */
 final class ShareStatusCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'share:status {--json}';
 
@@ -21,6 +21,6 @@ final class ShareStatusCommand extends Command
 
     public function handle(): int
     {
-        return $this->runCall(new ShareStatusCall());
+        return $this->runCall(new ShareStatusPayload());
     }
 }

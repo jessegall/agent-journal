@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Processes\ListProposalsPayload;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Processes\ListProposalsCall;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use Illuminate\Console\Command;
 
@@ -16,7 +16,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Read)]
 final class CommandTypeListCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'command-type:list {--state= : draft, pending, approved, rejected, withdrawn or superseded} {--json}';
 
@@ -26,6 +26,6 @@ final class CommandTypeListCommand extends Command
     {
         $state = (string) $this->option('state');
 
-        return $this->runCall(ListProposalsCall::from(['states' => $state === '' ? [] : [$state]]));
+        return $this->runCall(ListProposalsPayload::from(['states' => $state === '' ? [] : [$state]]));
     }
 }

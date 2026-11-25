@@ -5,26 +5,26 @@ declare(strict_types=1);
 namespace Domain\Helpers\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Support\CallKey;
 use App\Values\CommandReport;
-use Domain\Helpers\Calls\HelperCalls;
-use Domain\Helpers\Calls\SteerHelperCall;
+use Domain\Helpers\Api\HelperApi;
+use Domain\Helpers\Api\SteerHelperPayload;
 use Illuminate\Console\Command;
 
 #[JournalRoute(JournalRouteType::Write)]
 final class HelperSteerCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'helper:steer {identity} {text} {--json : Print the answer as JSON}';
 
     protected $description = "Steer a helper's live job, or keep the steering when none is live";
 
-    public function handle(HelperCalls $helpers): int
+    public function handle(HelperApi $helpers): int
     {
-        $call = SteerHelperCall::from([
+        $call = SteerHelperPayload::from([
             'identityId' => (string) $this->argument('identity'),
             'text' => (string) $this->argument('text'),
             'requestKey' => new CallKey(),

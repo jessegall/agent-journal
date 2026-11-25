@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Calls\Scripts\SaveProfileDraftCall;
+use App\Api\Scripts\SaveProfileDraftPayload;
 use App\Commands\Profiles\SaveProfileDraft\SaveProfileDraftCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Profiles\ProfileDraftData;
@@ -16,7 +16,7 @@ use App\Support\Readers\ProfileDraftReader;
 final readonly class SaveProfileDraftController
 {
     public function __invoke(
-        SaveProfileDraftCall $call,
+        SaveProfileDraftPayload $call,
         CommandBus $commands,
         ProfileDraftReader $drafts,
     ): ProfileDraftData {

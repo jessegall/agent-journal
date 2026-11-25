@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use Domain\Documents\Console\Concerns\PrintsComments;
 use Illuminate\Console\Command;
@@ -14,7 +14,7 @@ use Illuminate\Console\Command;
 final class DocCommentsCommand extends Command
 {
     use PrintsComments;
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'doc:comments {number} {--after=}';
 

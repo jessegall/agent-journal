@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Console\Concerns;
 
-use App\Calls\Assignments\ConfigureAutoAssignmentCall;
-use App\Calls\Assignments\EnableAutoAssignmentCall;
+use App\Api\Assignments\ConfigureAutoAssignmentPayload;
+use App\Api\Assignments\EnableAutoAssignmentPayload;
 use App\Exceptions\InvalidActorText;
 use Closure;
 
@@ -16,13 +16,13 @@ use Closure;
 trait ReadsAutoAssignmentChange
 {
     use ReadsAutoAssignmentKey;
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     /**
      * Runs the enable or configure call the command builds from its options; actor text that does not read fails
      * before anything is sent.
      *
-     * @param  Closure(array<string, mixed>): (EnableAutoAssignmentCall|ConfigureAutoAssignmentCall)  $call
+     * @param  Closure(array<string, mixed>): (EnableAutoAssignmentPayload|ConfigureAutoAssignmentPayload)  $call
      */
     protected function runChange(Closure $call): int
     {

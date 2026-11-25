@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Assignments\ListAutoAssignmentsPayload;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Assignments\ListAutoAssignmentsCall;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Exceptions\InvalidActorText;
 use App\Support\ActorIdentity;
@@ -18,7 +18,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Read)]
 final class ListAutoAssignmentsCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'assignment:auto-list {actor : The actor as type:id}
         {--after= : The id the page starts after} {--json}';
@@ -30,7 +30,7 @@ final class ListAutoAssignmentsCommand extends Command
         $after = (string) $this->option('after');
 
         try {
-            $call = ListAutoAssignmentsCall::from([
+            $call = ListAutoAssignmentsPayload::from([
                 ...ActorIdentity::fromText((string) $this->argument('actor'))->asFields('actor'),
                 'after' => $after === '' ? null : $after,
             ]);

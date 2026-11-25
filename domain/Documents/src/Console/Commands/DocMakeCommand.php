@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Domain\Documents\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Contracts\Files\Files;
 use App\Enums\CommandRules\CommandClass;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Values\CommandReport;
-use Domain\Documents\Calls\DocumentCalls;
+use Domain\Documents\Api\DocumentApi;
 use Domain\Documents\Console\Concerns\ReadsRecordBody;
 use Illuminate\Console\Command;
 
@@ -18,7 +18,7 @@ use Illuminate\Console\Command;
 final class DocMakeCommand extends Command
 {
     use ReadsRecordBody;
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'doc:make {title} {--abstract= : One line saying what it is} {--body= : The text, or - to read it from standard input} {--file= : A local file holding the text} {--about=* : A record it is about, such as "task 12"; up to 50}';
 
@@ -26,7 +26,7 @@ final class DocMakeCommand extends Command
 
     protected $help = 'Example: php artisan doc:make "Release plan" --abstract "What ships in 6.0" --file plan.md --about "task 12"';
 
-    public function handle(DocumentCalls $documents, Files $files): int
+    public function handle(DocumentApi $documents, Files $files): int
     {
         $body = $this->bodyText($files);
 

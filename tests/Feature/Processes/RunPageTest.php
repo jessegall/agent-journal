@@ -10,7 +10,7 @@ use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\Processes\OpensAcmeRequestAsOwner;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -21,7 +21,7 @@ final class RunPageTest extends TestCase
 {
     use OpensAcmeRequestAsOwner;
     use RefreshHookDatabase;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
 
     public function test_the_run_page_shows_each_part_with_its_output_and_no_result_without_a_receipt(): void
     {

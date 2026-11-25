@@ -19,7 +19,7 @@ use App\Resolvers\Support\ActivityProjection;
 use App\Values\PartKey;
 use Tests\Support\Processes\StartsWithApprovedAcmePair;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -29,7 +29,7 @@ use Tests\TestCase;
 final class ReaderReplayTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
     use StartsWithApprovedAcmePair;
 
     public function test_a_part_is_read_live_into_a_provisional_position(): void

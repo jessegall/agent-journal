@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Sessions;
 
-use App\Exceptions\CallDeadlinePassed;
+use App\Exceptions\ApiDeadlinePassed;
 use App\Exceptions\JournalUnreachable;
 use App\Support\AgentCallReply;
 use App\Support\AgentClientSettings;
@@ -39,7 +39,7 @@ interface AgentRequestClient
      *
      * @param  array<string, string>  $headers
      *
-     * @throws CallDeadlinePassed
+     * @throws ApiDeadlinePassed
      * @throws JournalUnreachable
      */
     public function sendPrepared(PreparedAgentCall $call, array $headers, CarbonImmutable $deadline): AgentCallReply;

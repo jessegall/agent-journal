@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace Domain\Documents\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Values\CommandReport;
-use Domain\Documents\Calls\DocumentCalls;
+use Domain\Documents\Api\DocumentApi;
 use Illuminate\Console\Command;
 
 #[JournalRoute(JournalRouteType::Write)]
 final class DocSettleCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'doc:settle {number} {--why= : Why the document needs no more attention} {--revision= : The revision you read; the current one when left out}';
 
@@ -22,7 +22,7 @@ final class DocSettleCommand extends Command
 
     protected $help = 'Example: php artisan doc:settle 4 --why "Shipped in 6.0"; a document with an open draft must be closed first';
 
-    public function handle(DocumentCalls $documents): int
+    public function handle(DocumentApi $documents): int
     {
         $number = (string) $this->argument('number');
 

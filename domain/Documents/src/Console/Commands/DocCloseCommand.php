@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace Domain\Documents\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Values\CommandReport;
-use Domain\Documents\Calls\DocumentCalls;
+use Domain\Documents\Api\DocumentApi;
 use Domain\Documents\Console\Commands\Support\DraftTokens;
 use Illuminate\Console\Command;
 
 #[JournalRoute(JournalRouteType::Write)]
 final class DocCloseCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'doc:close {number}';
 
@@ -23,7 +23,7 @@ final class DocCloseCommand extends Command
 
     protected $help = 'Example: php artisan doc:close 4 publishes your changes as the next revision; an unchanged draft adds none';
 
-    public function handle(DocumentCalls $documents, DraftTokens $drafts): int
+    public function handle(DocumentApi $documents, DraftTokens $drafts): int
     {
         $number = (int) $this->argument('number');
         $held = $drafts->of($number);

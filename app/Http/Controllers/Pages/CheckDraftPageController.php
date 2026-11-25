@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Pages;
 
-use App\Calls\Scripts\CheckProfileScriptCall;
+use App\Api\Scripts\CheckProfileScriptPayload;
 use App\Http\Responses\PageActionAnswers;
 use App\Models\Profiles\ProfileDraft;
 use App\Support\Readers\ProfileDraftReader;
@@ -23,7 +23,7 @@ final readonly class CheckDraftPageController
     public const string CHECKED_DRAFT = 'checkedDraft';
 
     public function __invoke(
-        CheckProfileScriptCall $call,
+        CheckProfileScriptPayload $call,
         ProfileDraftReader $drafts,
         PageActionAnswers $answers,
     ): RedirectResponse {

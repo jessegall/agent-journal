@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\Projects\FinishProjectCommandRun;
 
+use App\Api\Connections\ProjectCommandFrame;
 use App\Attributes\Commands\Entry;
-use App\Calls\Connections\ProjectCommandFrame;
 use App\Enums\Accounts\CommandEntry;
 use App\Support\Command;
 

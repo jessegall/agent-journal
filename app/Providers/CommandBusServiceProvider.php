@@ -41,7 +41,7 @@ use App\Support\RefusalMapper;
 use App\Support\RequestKey;
 use App\Support\RowCapture;
 use App\Support\RunningCommand;
-use App\Support\SignedCallRefusal;
+use App\Support\SignedApiRefusal;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Debug\ExceptionHandler;
@@ -135,7 +135,7 @@ final class CommandBusServiceProvider extends ServiceProvider
     {
         if ($handler instanceof Handler) {
             $handler->renderable(
-                fn (Throwable $failure, Request $request) => SignedCallRefusal::render($failure, $request),
+                fn (Throwable $failure, Request $request) => SignedApiRefusal::render($failure, $request),
             );
         }
     }

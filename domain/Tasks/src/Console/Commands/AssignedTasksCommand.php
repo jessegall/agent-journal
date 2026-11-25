@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Domain\Tasks\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
-use Domain\Tasks\Calls\ListAssignedTasksCall;
-use Domain\Tasks\Calls\TaskCalls;
+use Domain\Tasks\Api\ListAssignedTasksPayload;
+use Domain\Tasks\Api\TaskApi;
 use Domain\Tasks\Data\AssignedTaskCardData;
 use Illuminate\Console\Command;
 
@@ -19,17 +19,17 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Read)]
 final class AssignedTasksCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'task:assigned {--search= : Words in the title} {--state=* : Only these states} {--page=1} {--per-page=20} {--json : Print the answer as JSON}';
 
     protected $description = 'List the tasks the calling agent holds';
 
-    public function handle(TaskCalls $tasks): int
+    public function handle(TaskApi $tasks): int
     {
         $search = (string) $this->option('search');
 
-        $call = ListAssignedTasksCall::from([
+        $call = ListAssignedTasksPayload::from([
             'search' => $search === '' ? null : $search,
             'states' => array_values(array_map(strval(...), (array) $this->option('state'))),
             'page' => (int) $this->option('page'),

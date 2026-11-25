@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Documents\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
-use Domain\Documents\Calls\DocumentCalls;
+use Domain\Documents\Api\DocumentApi;
 use Domain\Documents\Console\Concerns\PrintsRecordText;
 use Illuminate\Console\Command;
 
@@ -15,7 +15,7 @@ use Illuminate\Console\Command;
 final class ReportShowCommand extends Command
 {
     use PrintsRecordText;
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'report:show {number} {--section= : A section by number or exact heading} {--lines= : A line range, a-b} {--bullets : Only the bullet lines} {--grep= : Only the lines holding these words} {--all : The whole text, past the usual bound}';
 
@@ -23,7 +23,7 @@ final class ReportShowCommand extends Command
 
     protected $help = 'Example: php artisan report:show 7 prints the outline; report:show 7 --section 2 prints a part';
 
-    public function handle(DocumentCalls $documents): int
+    public function handle(DocumentApi $documents): int
     {
         $number = (string) $this->argument('number');
 

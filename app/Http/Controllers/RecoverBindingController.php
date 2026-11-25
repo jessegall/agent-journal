@@ -7,8 +7,8 @@ namespace App\Http\Controllers;
 use App\Commands\Projects\RecoverProjectBinding\RecoverProjectBindingCommand;
 use App\Contracts\Hosts\HostCalls;
 use App\Enums\Accounts\CommandEntry;
+use App\Exceptions\ApiSignatureInvalid;
 use App\Exceptions\BindingUnrecoverable;
-use App\Exceptions\CallSignatureInvalid;
 use App\Exceptions\HostCredentialRejected;
 use App\Http\Requests\Connections\RecoverBindingRequest;
 use App\Support\JournalCommands;
@@ -27,7 +27,7 @@ final readonly class RecoverBindingController
     ): JsonResponse {
         try {
             $host = $calls->verifyRelay($request);
-        } catch (HostCredentialRejected|CallSignatureInvalid $refusal) {
+        } catch (HostCredentialRejected|ApiSignatureInvalid $refusal) {
             throw BindingUnrecoverable::generic($refusal);
         }
 

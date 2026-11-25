@@ -12,7 +12,7 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\SendsMcpFrames;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -25,7 +25,7 @@ final class DeclaredSearchToolTest extends TestCase
 {
     use CommitsHookRows;
     use SendsMcpFrames;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
 
     private const array TABLES = [
         'users', 'tasks', 'agents', 'agent_sessions', 'session_tokens', 'agent_stacks', 'hook_calls', 'command_receipts',

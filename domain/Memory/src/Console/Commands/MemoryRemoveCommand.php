@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Memory\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
-use Domain\Memory\Calls\RemoveMemoryCall;
+use Domain\Memory\Api\RemoveMemoryPayload;
 use Illuminate\Console\Command;
 
 /**
@@ -17,7 +17,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class MemoryRemoveCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'memory:remove {memory : The memory id} {--request-key= : Send again under the key a failed attempt printed} {--json}';
 
@@ -25,7 +25,7 @@ final class MemoryRemoveCommand extends Command
 
     public function handle(): int
     {
-        return $this->runCall(RemoveMemoryCall::from([
+        return $this->runCall(RemoveMemoryPayload::from([
             'memoryId' => (string) $this->argument('memory'),
             'requestKey' => $this->requestKey(),
         ]));

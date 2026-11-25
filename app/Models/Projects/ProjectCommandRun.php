@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
-use App\Calls\Connections\ProjectCommandFrame;
+use App\Api\Connections\ProjectCommandFrame;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;

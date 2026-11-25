@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Memory\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
-use Domain\Memory\Calls\SaveMemoryCall;
+use Domain\Memory\Api\SaveMemoryPayload;
 use Illuminate\Console\Command;
 
 /**
@@ -17,7 +17,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class MemorySaveCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'memory:save {text : What to do and when} {--weight=5 : 1 to 10} {--request-key= : Send again under the key a failed attempt printed} {--json}';
 
@@ -25,7 +25,7 @@ final class MemorySaveCommand extends Command
 
     public function handle(): int
     {
-        return $this->runCall(SaveMemoryCall::from([
+        return $this->runCall(SaveMemoryPayload::from([
             'text' => (string) $this->argument('text'),
             'weight' => (int) $this->option('weight'),
             'requestKey' => $this->requestKey(),

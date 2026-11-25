@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Hooks;
 
-use App\Calls\Hooks\AgentStateMachine;
+use App\Api\Hooks\AgentStateMachine;
 use App\Contracts\Actors\AgentTexts;
 use App\Exceptions\ConversationIncompatible;
 use App\Exceptions\HookDigestChanged;

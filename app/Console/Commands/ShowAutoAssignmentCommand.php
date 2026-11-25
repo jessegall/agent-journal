@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Assignments\ShowAutoAssignmentPayload;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Assignments\ShowAutoAssignmentCall;
 use App\Console\Concerns\ReadsAutoAssignmentKey;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Exceptions\InvalidActorText;
 use Illuminate\Console\Command;
@@ -19,7 +19,7 @@ use Illuminate\Console\Command;
 final class ShowAutoAssignmentCommand extends Command
 {
     use ReadsAutoAssignmentKey;
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'assignment:auto-show {actor : The actor as type:id} {type : The record type} {--json}';
 
@@ -28,7 +28,7 @@ final class ShowAutoAssignmentCommand extends Command
     public function handle(): int
     {
         try {
-            $call = ShowAutoAssignmentCall::from([...$this->keyFields(),
+            $call = ShowAutoAssignmentPayload::from([...$this->keyFields(),
             ]);
         } catch (InvalidActorText $invalid) {
             $this->error($invalid->getMessage());

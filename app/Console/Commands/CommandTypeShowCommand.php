@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Processes\ShowCommandRequestPayload;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Processes\ShowCommandRequestCall;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use Illuminate\Console\Command;
 
@@ -16,7 +16,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Read)]
 final class CommandTypeShowCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'command-type:show {request : The command request id} {--json}';
 
@@ -24,6 +24,6 @@ final class CommandTypeShowCommand extends Command
 
     public function handle(): int
     {
-        return $this->runCall(ShowCommandRequestCall::from(['commandRequest' => (string) $this->argument('request')]));
+        return $this->runCall(ShowCommandRequestPayload::from(['commandRequest' => (string) $this->argument('request')]));
     }
 }

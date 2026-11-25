@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\AgentRequests;
 
-use App\Contracts\Refusals\CallRefusal;
+use App\Contracts\Refusals\ApiRefusal;
 use App\Enums\Engine\RefusalCode;
+use App\Exceptions\ApiRefused;
 use App\Exceptions\CallKeyExpired;
-use App\Exceptions\CallRefused;
 use App\Exceptions\StateBlocked;
 use App\Support\CallKey;
 use App\Support\RefusalExceptions;
@@ -39,7 +39,7 @@ final class RefusalExceptionsTest extends TestCase
 
     public function test_a_declared_refusal_of_the_same_code_wins(): void
     {
-        $declared = new class('state_blocked', 'Blocked.', 'call-1', null) extends CallRefused implements CallRefusal
+        $declared = new class('state_blocked', 'Blocked.', 'call-1', null) extends ApiRefused implements ApiRefusal
         {
             public const string CODE = 'state_blocked';
 

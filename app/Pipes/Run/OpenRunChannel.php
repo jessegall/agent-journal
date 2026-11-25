@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Pipes\Run;
 
-use App\Calls\Processes\ProcessCalls;
+use App\Api\Processes\ProcessApi;
 use App\Contracts\Bus\Pipe;
 use App\Contracts\Files\Files;
 use App\Support\Execution\ChannelRunEvents;
@@ -17,7 +17,7 @@ use Psr\Log\LoggerInterface;
  */
 final readonly class OpenRunChannel implements Pipe
 {
-    public function __construct(private ProcessCalls $processes, private Files $files, private LoggerInterface $logger) {}
+    public function __construct(private ProcessApi $processes, private Files $files, private LoggerInterface $logger) {}
 
     public function handle(FetchedAdmission $admission): RunChannel
     {

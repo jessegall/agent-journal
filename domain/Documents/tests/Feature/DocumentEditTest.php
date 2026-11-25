@@ -24,12 +24,12 @@ use Domain\Documents\Tests\TestCase;
 use Domain\Documents\Values\DraftTarget;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 
 final class DocumentEditTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
 
     private const string REPLACEMENT = 'Replacement text.';
 

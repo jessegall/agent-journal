@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Chat\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
-use Domain\Chat\Calls\DockListCall;
+use Domain\Chat\Api\DockListPayload;
 use Domain\Chat\Console\Concerns\ChoosesChat;
 use Illuminate\Console\Command;
 
@@ -15,7 +15,7 @@ use Illuminate\Console\Command;
 final class DockListCommand extends Command
 {
     use ChoosesChat;
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'dock:list'
         .' {--limit=100 : How many placements to list, at most 100}'
@@ -28,7 +28,7 @@ final class DockListCommand extends Command
 
     public function handle(): int
     {
-        return $this->runCall(DockListCall::from([
+        return $this->runCall(DockListPayload::from([
             'limit' => (int) $this->option('limit'),
             'chat' => $this->chosenChat(),
         ]));

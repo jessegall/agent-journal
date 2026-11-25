@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Agents\RetireAgentPayload;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Agents\RetireAgentCall;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use Illuminate\Console\Command;
 
@@ -16,7 +16,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class RetireAgentCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'agent:retire {agent : The id of the agent to retire} {--request-key= : Send again under the key a failed attempt printed} {--json}';
 
@@ -24,7 +24,7 @@ final class RetireAgentCommand extends Command
 
     public function handle(): int
     {
-        return $this->runCall(RetireAgentCall::from([
+        return $this->runCall(RetireAgentPayload::from([
             'agentId' => (string) $this->argument('agent'),
             'requestKey' => $this->requestKey(),
         ]));

@@ -124,8 +124,8 @@
             "npm run types:check",
             "@test"
         ],
-        "calls:generate": "@php artisan journal:calls",
-        "calls:check": "@php artisan journal:calls --check",
+        "api:generate": "@php artisan journal:api",
+        "api:check": "@php artisan journal:api --check",
         "types:generate": [
             "@php -d memory_limit=512M artisan typescript:transform"
         ],

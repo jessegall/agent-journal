@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace Domain\Documents\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Values\CommandReport;
-use Domain\Documents\Calls\DocumentCalls;
+use Domain\Documents\Api\DocumentApi;
 use Illuminate\Console\Command;
 
 #[JournalRoute(JournalRouteType::Write)]
 final class ReportSettleCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'report:settle {number} {--why= : Why the report needs no more attention}';
 
@@ -22,7 +22,7 @@ final class ReportSettleCommand extends Command
 
     protected $help = 'Example: php artisan report:settle 7 --why "Handled in task 12"';
 
-    public function handle(DocumentCalls $documents): int
+    public function handle(DocumentApi $documents): int
     {
         $number = (string) $this->argument('number');
 

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Processes\ProposeReaderPayload;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Processes\ProposeReaderCall;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use Illuminate\Console\Command;
 
@@ -16,7 +16,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class ReaderProposeCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'reader:propose {request : The command request id} {--declaration-revision= : The declaration revision the reader reads} {--definition= : The reader definition as JSON} {--json}';
 
@@ -30,7 +30,7 @@ final class ReaderProposeCommand extends Command
             return self::FAILURE;
         }
 
-        return $this->runCall(ProposeReaderCall::from([
+        return $this->runCall(ProposeReaderPayload::from([
             'commandRequest' => (string) $this->argument('request'),
             'declarationRevision' => (int) $this->option('declaration-revision'),
             'definition' => $definition,

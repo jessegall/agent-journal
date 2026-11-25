@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Sessions\AgentRequestClient as AgentRequestClientContract;
-use App\Exceptions\CallDeadlinePassed;
+use App\Exceptions\ApiDeadlinePassed;
 use App\Exceptions\JournalUnreachable;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\ConnectionException;
@@ -66,7 +66,7 @@ final readonly class AgentRequestClient implements AgentRequestClientContract
      *
      * @param  array<string, string>  $headers
      *
-     * @throws CallDeadlinePassed
+     * @throws ApiDeadlinePassed
      * @throws JournalUnreachable
      */
     public function sendPrepared(PreparedAgentCall $call, array $headers, CarbonImmutable $deadline): AgentCallReply
@@ -74,7 +74,7 @@ final readonly class AgentRequestClient implements AgentRequestClientContract
         $secondsLeft = CarbonImmutable::now()->diffInMilliseconds($deadline, false) / 1000;
 
         if ($secondsLeft <= 0) {
-            throw CallDeadlinePassed::for($call->callId);
+            throw ApiDeadlinePassed::for($call->callId);
         }
 
         try {

@@ -17,7 +17,7 @@ use App\Values\OutputProblem;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\Processes\StartsWithApprovedAcmePair;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -27,7 +27,7 @@ use Tests\TestCase;
 final class ResultReceiptTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
     use StartsWithApprovedAcmePair;
 
     public function test_a_valid_passing_run_gets_a_receipt_bound_to_its_revisions(): void

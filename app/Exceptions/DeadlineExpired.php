@@ -7,7 +7,7 @@ namespace App\Exceptions;
 /**
  * The call reached the journal after its deadline: the journal answered deadline_expired.
  */
-final class DeadlineExpired extends CallRefused
+final class DeadlineExpired extends ApiRefused
 {
     public const string CODE = 'deadline_expired';
 }

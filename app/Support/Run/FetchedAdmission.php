@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\Run;
 
-use App\Calls\Processes\AdmissionAlreadyStarted;
-use App\Calls\Processes\AdmissionFetched;
-use App\Calls\Processes\StartableAdmission;
+use App\Api\Processes\AdmissionAlreadyStarted;
+use App\Api\Processes\AdmissionFetched;
+use App\Api\Processes\StartableAdmission;
 use App\Enums\Files\Place;
 use App\Enums\Processes\ShellDialect;
 use App\Exceptions\AdmissionAnswerUnknown;

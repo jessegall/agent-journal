@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Scripts\SaveProfileDraftPayload;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Scripts\SaveProfileDraftCall;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use Illuminate\Console\Command;
 
 #[JournalRoute(JournalRouteType::Write)]
 final class ProfileDraftSaveCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'profile:draft {profile} {--source=- : The script text, - for standard input}'
         .' {--commands={} : The command definitions as JSON} {--expected-revision=0} {--request-key=} {--json}';
@@ -29,7 +29,7 @@ final class ProfileDraftSaveCommand extends Command
             return self::FAILURE;
         }
 
-        return $this->runCall(SaveProfileDraftCall::from([
+        return $this->runCall(SaveProfileDraftPayload::from([
             'requestKey' => $this->requestKey(),
             'profile' => (string) $this->argument('profile'),
             'expectedRevision' => (int) $this->option('expected-revision'),

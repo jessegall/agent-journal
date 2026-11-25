@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Supervision\ListAsksPayload;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Supervision\ListAsksCall;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use Illuminate\Console\Command;
 
 #[JournalRoute(JournalRouteType::Read)]
 final class ListAsksCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'ask:list {--before=} {--json}';
 
@@ -21,7 +21,7 @@ final class ListAsksCommand extends Command
 
     public function handle(): int
     {
-        return $this->runCall(ListAsksCall::from([
+        return $this->runCall(ListAsksPayload::from([
             'before' => $this->option('before'),
         ]));
     }

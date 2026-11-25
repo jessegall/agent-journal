@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Supervision\ShowAskPayload;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Supervision\ShowAskCall;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use Illuminate\Console\Command;
 
 #[JournalRoute(JournalRouteType::Read)]
 final class ShowAskCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'ask:show {ask} {--json}';
 
@@ -21,7 +21,7 @@ final class ShowAskCommand extends Command
 
     public function handle(): int
     {
-        return $this->runCall(ShowAskCall::from([
+        return $this->runCall(ShowAskPayload::from([
             'id' => (string) $this->argument('ask'),
         ]));
     }

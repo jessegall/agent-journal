@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Processes\ProcessApi;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Processes\ProcessCalls;
 use App\Data\Processes\ExplainedNodeData;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Enums\Processes\ShellDialect;
@@ -22,7 +22,7 @@ final class ExplainCommandTypeCommand extends Command
 
     protected $description = 'Explain how a shell line is read, without running it';
 
-    public function handle(ProcessCalls $processes): int
+    public function handle(ProcessApi $processes): int
     {
         $dialect = ShellDialect::from((string) $this->option('dialect'));
 

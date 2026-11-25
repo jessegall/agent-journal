@@ -19,7 +19,7 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsMcpFrames;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TestRunAdmissions;
 use Tests\TestCase;
 
@@ -31,7 +31,7 @@ final class StoredOutputReadTest extends TestCase
 {
     use RefreshHookDatabase;
     use SendsMcpFrames;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
 
     private const string TAIL_TEXT = "line 100\n\\x00\\xFF end";
 

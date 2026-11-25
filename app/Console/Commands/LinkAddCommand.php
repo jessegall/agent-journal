@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Records\AddLinkPayload;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Records\AddLinkCall;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use Illuminate\Console\Command;
 
 #[JournalRoute(JournalRouteType::Write)]
 final class LinkAddCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'link:add {source : Such as "doc 12"} {target : Such as "task 7"} {--request-key= : Send again under the key a failed attempt printed} {--json}';
 
@@ -23,7 +23,7 @@ final class LinkAddCommand extends Command
 
     public function handle(): int
     {
-        return $this->runCall(AddLinkCall::from([
+        return $this->runCall(AddLinkPayload::from([
             'source' => (string) $this->argument('source'),
             'target' => (string) $this->argument('target'),
             'requestKey' => $this->requestKey(),

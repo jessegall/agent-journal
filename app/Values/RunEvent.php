@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Calls\Processes\RunPart;
+use App\Api\Processes\RunPart;
 use App\Contracts\Events\RunEvents;
 use App\Enums\Runs\PartEndType;
 use App\Enums\Runs\RunEventType;

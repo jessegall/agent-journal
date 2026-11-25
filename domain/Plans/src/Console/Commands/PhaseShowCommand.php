@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Plans\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
-use Domain\Plans\Calls\ListPhaseChecksCall;
+use Domain\Plans\Api\ListPhaseChecksPayload;
 use Illuminate\Console\Command;
 
 /**
@@ -16,7 +16,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Read)]
 final class PhaseShowCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'phase:show {plan : The plan number} {phase : The phase number} {--json}';
 
@@ -24,7 +24,7 @@ final class PhaseShowCommand extends Command
 
     public function handle(): int
     {
-        return $this->runCall(ListPhaseChecksCall::from([
+        return $this->runCall(ListPhaseChecksPayload::from([
             'plan' => (int) $this->argument('plan'),
             'phase' => (int) $this->argument('phase'),
         ]));

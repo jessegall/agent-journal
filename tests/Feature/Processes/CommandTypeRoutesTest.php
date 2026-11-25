@@ -16,7 +16,7 @@ use App\Values\RuleExample;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsMcpFrames;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\Support\StartsTestAgent;
 use Tests\Support\TestText;
 use Tests\TestCase;
@@ -29,7 +29,7 @@ final class CommandTypeRoutesTest extends TestCase
 {
     use RefreshHookDatabase;
     use SendsMcpFrames;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
     use StartsTestAgent;
 
     private const string PROPOSE_STEP = 'the command_types_propose tool with request ';

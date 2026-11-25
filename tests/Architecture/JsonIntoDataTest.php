@@ -36,7 +36,7 @@ final class JsonIntoDataTest extends TestCase
         'App\\Support\\Storage\\EncodedValue::jsonSerialize',
         'App\\Casts\\SettingsDocumentCast::get',
         'App\\Support\\DeclarativeReader::lineOf',
-        'App\\Console\\Concerns\\RunsCallPipelines::jsonOption',
+        'App\\Console\\Concerns\\RunsApiPipelines::jsonOption',
         'App\\Console\\Commands\\ImportProfileDraftCommand::readCommands',
         'App\\Support\\ConditionTree::fromJson',
         'App\\Support\\WorkspaceSources::fromJson',

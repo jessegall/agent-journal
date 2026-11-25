@@ -25,14 +25,14 @@ use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\SendsMcpFrames;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TestIds;
 
 final class WriteToolTest extends CommandBusTestCase
 {
     use InstallsBuiltInProfiles;
     use SendsMcpFrames;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
 
     private const string QUOTA_REFUSAL = 'The note quota is full.';
 

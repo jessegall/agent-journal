@@ -12,7 +12,7 @@ use App\Models\Runs\ReaderProof;
 use App\Models\Runs\ReaderRevision;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -23,7 +23,7 @@ final class ReaderProofTest extends TestCase
 {
     use RefreshHookDatabase;
     use RunsAcmeRequests;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
 
     private const string UNRECOGNIZED_OUTPUT = 'output_unrecognized at stdout bytes 0-16';
 

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Refusals\CallRefusal;
-use App\Exceptions\CallCancelled;
-use App\Exceptions\CallConflict;
+use App\Contracts\Refusals\ApiRefusal;
+use App\Exceptions\ApiCancelled;
+use App\Exceptions\ApiConflict;
+use App\Exceptions\ApiRefused;
+use App\Exceptions\ApiTooLarge;
 use App\Exceptions\CallKeyConflict;
 use App\Exceptions\CallKeyExpired;
-use App\Exceptions\CallRefused;
-use App\Exceptions\CallTooLarge;
 use App\Exceptions\ClientOutOfDate;
 use App\Exceptions\DeadlineExpired;
 use App\Exceptions\InputRefused;
@@ -33,7 +33,7 @@ final class RefusalExceptions
     /**
      * The shared refusal class of each code.
      *
-     * @var array<string, class-string<CallRefused>>
+     * @var array<string, class-string<ApiRefused>>
      */
     private const array SHARED = [
         'invalid_input' => InputRefused::class,
@@ -41,29 +41,29 @@ final class RefusalExceptions
         'forbidden' => NotAllowed::class,
         'record_unavailable' => RecordNotFound::class,
         'state_blocked' => StateBlocked::class,
-        'conflict' => CallConflict::class,
+        'conflict' => ApiConflict::class,
         'request_key_conflict' => CallKeyConflict::class,
         'request_key_expired' => CallKeyExpired::class,
         'stale_continuation' => StaleContinuation::class,
         'busy' => JournalBusy::class,
         'unavailable' => JournalUnavailable::class,
-        'cancelled' => CallCancelled::class,
+        'cancelled' => ApiCancelled::class,
         'unsupported_version' => ClientOutOfDate::class,
         'profiles_unavailable' => ProfilesUnavailable::class,
-        'too_large' => CallTooLarge::class,
+        'too_large' => ApiTooLarge::class,
         'deadline_expired' => DeadlineExpired::class,
         'outcome_unknown' => OutcomeUnknown::class,
     ];
 
     /**
      * @param  list<class-string>  $declared  the refusals the call's endpoint declares
-     * @return class-string<CallRefused>
+     * @return class-string<ApiRefused>
      */
     public static function classOf(string $code, array $declared): string
     {
         foreach ($declared as $refusal) {
-            if (ReflectedType::factory()->isSubclassOf($refusal, CallRefusal::class)
-                && ReflectedType::factory()->isSubclassOf($refusal, CallRefused::class)
+            if (ReflectedType::factory()->isSubclassOf($refusal, ApiRefusal::class)
+                && ReflectedType::factory()->isSubclassOf($refusal, ApiRefused::class)
                 && $refusal::code() === $code) {
                 return $refusal;
             }

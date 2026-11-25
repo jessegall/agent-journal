@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Processes\ProcessApi;
 use App\Attributes\Console\JournalRoute;
 use App\Attributes\Rules\OutsideThePlaces;
-use App\Calls\Processes\ProcessCalls;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\CommandClass;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Enums\Files\PlaceExemption;
@@ -21,14 +21,14 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write, [CommandClass::Write])]
 final class ProcessExportCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'process:export {run : The run id} {--part=0 : The syntax node of the part} {--stream=stdout} {--to= : The file to write}';
 
     protected $description = 'Write a part\'s stored output to a file';
 
     #[OutsideThePlaces(PlaceExemption::UserNamedFile)]
-    public function handle(ProcessCalls $processes): int
+    public function handle(ProcessApi $processes): int
     {
         $run = (string) $this->argument('run');
         $file = (string) $this->option('to');

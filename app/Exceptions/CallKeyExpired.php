@@ -7,7 +7,7 @@ namespace App\Exceptions;
 /**
  * The request key is too old to answer: the journal answered request_key_expired.
  */
-final class CallKeyExpired extends CallRefused
+final class CallKeyExpired extends ApiRefused
 {
     public const string CODE = 'request_key_expired';
 

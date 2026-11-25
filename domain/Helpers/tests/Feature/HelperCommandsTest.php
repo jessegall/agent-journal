@@ -11,7 +11,7 @@ use Domain\Helpers\Tests\Support\DispatchesHelpers;
 use Domain\Helpers\Tests\TestCase;
 use Illuminate\Support\Str;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -24,7 +24,7 @@ final class HelperCommandsTest extends TestCase
 {
     use DispatchesHelpers;
     use RefreshHookDatabase;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
 
     public function test_a_start_without_a_model_is_refused_before_any_call(): void
     {

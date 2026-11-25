@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Support\Execution;
 
-use App\Calls\Processes\ProcessCalls;
-use App\Calls\Processes\RunChunk;
-use App\Calls\Processes\RunPart;
+use App\Api\Processes\ProcessApi;
+use App\Api\Processes\RunChunk;
+use App\Api\Processes\RunPart;
 use App\Contracts\Events\RunEvents;
 use App\Contracts\Files\Files;
 use App\Enums\Files\Permissions;
 use App\Enums\Processes\OutputStream;
 use App\Enums\Runs\RunEventType;
-use App\Exceptions\CallFailed;
+use App\Exceptions\ApiFailed;
 use App\Values\FilePath;
 use App\Values\PartEnd;
 use App\Values\PartKey;
@@ -42,7 +42,7 @@ final class ChannelRunEvents implements RunEvents
     private array $offsets = [];
 
     public function __construct(
-        private readonly ProcessCalls $processes,
+        private readonly ProcessApi $processes,
         private readonly string $runId,
         private readonly string $eventKey,
         private readonly FilePath $spoolFolder,
@@ -102,7 +102,7 @@ final class ChannelRunEvents implements RunEvents
     {
         try {
             return $this->processes->checkRunStaleness($this->runId, $this->eventKey)->staleReason;
-        } catch (CallFailed $failure) {
+        } catch (ApiFailed $failure) {
             return sprintf(
                 'registry-unavailable: the journal could not confirm the rules this part was admitted under (%s: %s)',
                 $failure::class,
@@ -149,7 +149,7 @@ final class ChannelRunEvents implements RunEvents
         try {
             $this->sendSpooled();
             $this->isWaitingToSend = false;
-        } catch (CallFailed $failure) {
+        } catch (ApiFailed $failure) {
             $this->isWaitingToSend = true;
 
             $this->logger->warning('processes.run_events_not_sent', [
@@ -227,7 +227,7 @@ final class ChannelRunEvents implements RunEvents
     }
 
     /**
-     * @throws CallFailed
+     * @throws ApiFailed
      */
     private function sendSpooled(): void
     {

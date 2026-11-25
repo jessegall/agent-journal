@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Chat\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
-use Domain\Chat\Calls\DockAddCall;
+use Domain\Chat\Api\DockAddPayload;
 use Domain\Chat\Console\Concerns\ChoosesChat;
 use Illuminate\Console\Command;
 
@@ -15,7 +15,7 @@ use Illuminate\Console\Command;
 final class DockAddCommand extends Command
 {
     use ChoosesChat;
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'dock:add {type : The record type, such as tasks.task or core.messages.message} {id : The id of the record} {--chat= : The inbox id of the chat to dock in, when you are in several} {--request-key= : Send again under the key a failed attempt printed} {--json}';
 
@@ -25,7 +25,7 @@ final class DockAddCommand extends Command
 
     public function handle(): int
     {
-        return $this->runCall(DockAddCall::from([
+        return $this->runCall(DockAddPayload::from([
             'type' => (string) $this->argument('type'),
             'id' => (string) $this->argument('id'),
             'chat' => $this->chosenChat(),

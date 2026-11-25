@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Hosts\HostCalls as HostCallsContract;
-use App\Exceptions\CallSignatureInvalid;
+use App\Exceptions\ApiSignatureInvalid;
 use App\Exceptions\HostCredentialRejected;
 use App\Exceptions\HostRoleRefused;
 use App\Models\Projects\Host;
@@ -29,7 +29,7 @@ final readonly class HostCalls implements HostCallsContract
      * The host and envelope of a signed call.
      *
      * @throws HostCredentialRejected
-     * @throws CallSignatureInvalid
+     * @throws ApiSignatureInvalid
      */
     public function verify(Request $request): HostContext
     {
@@ -41,7 +41,7 @@ final readonly class HostCalls implements HostCallsContract
         $expected = SignedCall::signatureOfRequest($secret, $request, $callId, $issuedAt);
 
         if (! hash_equals($expected, $signature)) {
-            throw CallSignatureInvalid::mismatched($callId);
+            throw ApiSignatureInvalid::mismatched($callId);
         }
 
         if (abs(CarbonImmutable::now()->getTimestamp() - $issuedAt) > self::WINDOW_SECONDS) {
@@ -68,7 +68,7 @@ final readonly class HostCalls implements HostCallsContract
      * The host and envelope of a signed call from the relay of a connected folder.
      *
      * @throws HostCredentialRejected
-     * @throws CallSignatureInvalid
+     * @throws ApiSignatureInvalid
      * @throws HostRoleRefused
      */
     public function verifyRelay(Request $request): HostContext
@@ -84,6 +84,6 @@ final readonly class HostCalls implements HostCallsContract
 
     private function header(Request $request, string $name): string
     {
-        return $request->headers->get($name) ?? throw CallSignatureInvalid::missing($name);
+        return $request->headers->get($name) ?? throw ApiSignatureInvalid::missing($name);
     }
 }

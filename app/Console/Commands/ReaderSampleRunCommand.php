@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Processes\ProcessApi;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Processes\ProcessCalls;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Pipelines\RunAdmissionPipeline;
 use App\Support\PipelineRunner;
@@ -22,13 +22,13 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class ReaderSampleRunCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'reader:sample-run {request : The command request id} {--permit= : The evidence permit the owner issued} {--request-key= : The key this use of the permit goes under} {--json}';
 
     protected $description = 'Run the approved evidence sample of a command request once';
 
-    public function handle(ProcessCalls $processes, PipelineRunner $pipelines): int
+    public function handle(ProcessApi $processes, PipelineRunner $pipelines): int
     {
         $commandRequest = (string) $this->argument('request');
         $key = $this->requestKey();

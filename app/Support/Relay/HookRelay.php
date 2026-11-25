@@ -9,7 +9,7 @@ use App\Contracts\Sessions\AgentRequestClient;
 use App\Enums\Files\Place;
 use App\Enums\Hooks\CallFailure;
 use App\Enums\Hooks\HookEvent;
-use App\Exceptions\CallDeadlinePassed;
+use App\Exceptions\ApiDeadlinePassed;
 use App\Exceptions\DriverReplyMalformed;
 use App\Exceptions\JournalUnreachable;
 use App\Exceptions\OutputGrantsInvalid;
@@ -75,7 +75,7 @@ final readonly class HookRelay
         try {
             $this->uploadBypasses($settings, $log);
             $reply = $this->send($envelope, $settings);
-        } catch (ConnectionException|JournalUnreachable|CallDeadlinePassed) {
+        } catch (ConnectionException|JournalUnreachable|ApiDeadlinePassed) {
             return $this->answerWithoutJournal(CallFailure::Unreachable, $json, $settings, $log);
         }
 
@@ -103,7 +103,7 @@ final readonly class HookRelay
      * stays the first one.
      *
      * @throws JournalUnreachable
-     * @throws CallDeadlinePassed
+     * @throws ApiDeadlinePassed
      */
     private function send(CallbackEnvelope $envelope, RelaySettings $settings): AgentCallReply
     {

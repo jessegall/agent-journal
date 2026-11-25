@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Calls\Connections\ProjectCommandFrame;
-use App\Calls\Connections\RunProjectCommandCall;
+use App\Api\Connections\ProjectCommandFrame;
+use App\Api\Connections\RunProjectCommandPayload;
 use App\Commands\Projects\FinishProjectCommandRun\FinishProjectCommandRunCommand;
 use App\Commands\Projects\RecordProjectCommandProcess\RecordProjectCommandProcessCommand;
 use App\Commands\Projects\StartProjectCommandRun\StartProjectCommandRunCommand;
@@ -42,7 +42,7 @@ final readonly class ProjectCommands
      *
      * @throws VerbNotServed
      */
-    public function run(RunProjectCommandCall $call, string $agentId, array $startEnvironment): array
+    public function run(RunProjectCommandPayload $call, string $agentId, array $startEnvironment): array
     {
         $this->assertServed($call, $agentId);
         $requestKey = $call->requestKey->value;
@@ -95,7 +95,7 @@ final readonly class ProjectCommands
     /**
      * @throws VerbNotServed
      */
-    private function assertServed(RunProjectCommandCall $call, string $agentId): void
+    private function assertServed(RunProjectCommandPayload $call, string $agentId): void
     {
         $routes = $this->routes->routeOf($call->verbName());
 
@@ -127,7 +127,7 @@ final readonly class ProjectCommands
      * @param  array<string, string>  $environment
      * @return list<ProjectCommandFrame>
      */
-    private function execute(RunProjectCommandCall $call, array $environment): array
+    private function execute(RunProjectCommandPayload $call, array $environment): array
     {
         $process = new Process(
             [

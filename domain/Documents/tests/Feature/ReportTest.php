@@ -19,12 +19,12 @@ use Domain\Documents\Models\TextUpload;
 use Domain\Documents\Tests\TestCase;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 
 final class ReportTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
 
     private const string SETTLEMENT_REASON = 'The findings were addressed.';
 

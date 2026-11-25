@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Agents;
 
-use App\Enums\Processes\CallEffect;
+use App\Enums\Processes\ApiEffect;
 use App\Enums\Processes\ReceiptOwner;
 use App\Exceptions\KeyedWriteWithoutReceipt;
-use App\Support\CallDeclaration;
-use App\Support\CallRegistrar;
+use App\Support\ApiDeclaration;
+use App\Support\ApiRegistrar;
 use App\Support\ReadGrant;
 use App\Support\ReflectedType;
 use App\Support\RequestKey;
@@ -47,13 +47,13 @@ final readonly class ReadRequestKey
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $call = $request->route()?->defaults[CallRegistrar::CALL_DEFAULT] ?? null;
-        $declaration = is_string($call) && ReflectedType::exists($call) ? CallDeclaration::of($call) : null;
+        $call = $request->route()?->defaults[ApiRegistrar::CALL_DEFAULT] ?? null;
+        $declaration = is_string($call) && ReflectedType::exists($call) ? ApiDeclaration::of($call) : null;
 
         if ($declaration !== null) {
             self::requireDeclaredFields($request, $declaration);
 
-            if ($declaration->endpoint->effect === CallEffect::Read) {
+            if ($declaration->endpoint->effect === ApiEffect::Read) {
                 $this->reads->assertAllowed(self::readRequest($declaration, $request));
             }
         }
@@ -77,7 +77,7 @@ final readonly class ReadRequestKey
         }
     }
 
-    private static function readRequest(CallDeclaration $declaration, Request $request): ReadRequest
+    private static function readRequest(ApiDeclaration $declaration, Request $request): ReadRequest
     {
         $path = $declaration->endpoint->path;
 
@@ -101,7 +101,7 @@ final readonly class ReadRequestKey
     /**
      * @throws ValidationException
      */
-    private static function requireDeclaredFields(Request $request, CallDeclaration $declaration): void
+    private static function requireDeclaredFields(Request $request, ApiDeclaration $declaration): void
     {
         $undeclared = $declaration->undeclared(array_values(array_map(strval(...), $request->keys())));
 
@@ -118,7 +118,7 @@ final readonly class ReadRequestKey
      * A write the bus keeps the receipt of that took none could apply twice on a retry: tests fail on it, production
      * reports it.
      */
-    private function guardReceipt(CallDeclaration|null $declaration): void
+    private function guardReceipt(ApiDeclaration|null $declaration): void
     {
         if ($declaration === null || $declaration->endpoint->receipt !== ReceiptOwner::CommandBus) {
             return;
@@ -141,7 +141,7 @@ final readonly class ReadRequestKey
      * A signed call answers 200 on success, read or write: its answer is the call's result, not a created resource,
      * though Data answers a POST with 201.
      */
-    private static function answeredOk(Response $response, CallDeclaration|null $declaration): Response
+    private static function answeredOk(Response $response, ApiDeclaration|null $declaration): Response
     {
         if ($declaration !== null && $response->getStatusCode() === Response::HTTP_CREATED) {
             $response->setStatusCode(Response::HTTP_OK);

@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Domain\Comments\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
-use Domain\Comments\Calls\ListCommentsCall;
+use Domain\Comments\Api\ListCommentsPayload;
 use Illuminate\Console\Command;
 
 #[JournalRoute(JournalRouteType::Read)]
 final class CommentListCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'comment:list {target : Such as "doc 12"} {--after=} {--per-page=50} {--json}';
 
@@ -25,7 +25,7 @@ final class CommentListCommand extends Command
     {
         $after = (string) $this->option('after');
 
-        return $this->runCall(ListCommentsCall::from([
+        return $this->runCall(ListCommentsPayload::from([
             'target' => (string) $this->argument('target'),
             'after' => $after === '' ? null : $after,
             'perPage' => (int) $this->option('per-page'),

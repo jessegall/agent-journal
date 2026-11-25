@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Assignments\ListAssignmentPoolsPayload;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Assignments\ListAssignmentPoolsCall;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use Illuminate\Console\Command;
 
@@ -16,7 +16,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Read)]
 final class AutoAssignmentPoolsCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'assignment:auto-pools {type : The record type, such as tasks.task} {--json}';
 
@@ -24,6 +24,6 @@ final class AutoAssignmentPoolsCommand extends Command
 
     public function handle(): int
     {
-        return $this->runCall(ListAssignmentPoolsCall::from(['assignableType' => (string) $this->argument('type')]));
+        return $this->runCall(ListAssignmentPoolsPayload::from(['assignableType' => (string) $this->argument('type')]));
     }
 }

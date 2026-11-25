@@ -25,7 +25,7 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\SendsMcpFrames;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TestActors;
 use Tests\TestCase;
 
@@ -33,7 +33,7 @@ final class JobGrantGuardTest extends TestCase
 {
     use CommitsHookRows;
     use SendsMcpFrames;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
 
     private const string KEY = 'assignment-job-guard';
 

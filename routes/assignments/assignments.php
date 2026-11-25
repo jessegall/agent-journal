@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\ListAssignmentPoolsController;
 use App\Http\Controllers\Assignments\AssignRecordController;
 use App\Http\Controllers\Assignments\AutoAssignmentPoolsController;
 use App\Http\Controllers\Assignments\ConfigureAutoAssignmentController;
@@ -12,8 +13,7 @@ use App\Http\Controllers\Assignments\ReassignRecordController;
 use App\Http\Controllers\Assignments\ShowAssignmentController;
 use App\Http\Controllers\Assignments\ShowAutoAssignmentController;
 use App\Http\Controllers\Assignments\UnassignRecordController;
-use App\Http\Controllers\Calls\ListAssignmentPoolsController;
-use App\Support\CallRegistrar;
+use App\Support\ApiRegistrar;
 use Illuminate\Container\Container;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
@@ -22,16 +22,16 @@ Route::middleware(['journal.agent', SubstituteBindings::class])
     ->prefix('agent')
     ->name('assignments.agent.')
     ->group(function (): void {
-        $calls = Container::getInstance()->make(CallRegistrar::class);
-        $calls->register(App\Http\Controllers\Calls\ShowAssignmentController::class)->name('show');
-        $calls->register(App\Http\Controllers\Calls\AssignRecordController::class)->name('assign');
-        $calls->register(App\Http\Controllers\Calls\ReassignRecordController::class)->name('reassign');
-        $calls->register(App\Http\Controllers\Calls\UnassignRecordController::class)->name('unassign');
-        $calls->register(App\Http\Controllers\Calls\EnableAutoAssignmentController::class)->name('auto.enable');
-        $calls->register(App\Http\Controllers\Calls\ConfigureAutoAssignmentController::class)->name('auto.configure');
-        $calls->register(App\Http\Controllers\Calls\DisableAutoAssignmentController::class)->name('auto.disable');
-        $calls->register(App\Http\Controllers\Calls\ShowAutoAssignmentController::class)->name('auto.show');
-        $calls->register(App\Http\Controllers\Calls\ListAutoAssignmentsController::class)->name('auto.list');
+        $calls = Container::getInstance()->make(ApiRegistrar::class);
+        $calls->register(App\Http\Controllers\Api\ShowAssignmentController::class)->name('show');
+        $calls->register(App\Http\Controllers\Api\AssignRecordController::class)->name('assign');
+        $calls->register(App\Http\Controllers\Api\ReassignRecordController::class)->name('reassign');
+        $calls->register(App\Http\Controllers\Api\UnassignRecordController::class)->name('unassign');
+        $calls->register(App\Http\Controllers\Api\EnableAutoAssignmentController::class)->name('auto.enable');
+        $calls->register(App\Http\Controllers\Api\ConfigureAutoAssignmentController::class)->name('auto.configure');
+        $calls->register(App\Http\Controllers\Api\DisableAutoAssignmentController::class)->name('auto.disable');
+        $calls->register(App\Http\Controllers\Api\ShowAutoAssignmentController::class)->name('auto.show');
+        $calls->register(App\Http\Controllers\Api\ListAutoAssignmentsController::class)->name('auto.list');
         $calls->register(ListAssignmentPoolsController::class)->name('auto.pools');
     });
 

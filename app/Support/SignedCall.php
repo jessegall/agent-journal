@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Exceptions\CallFieldInvalid;
+use App\Exceptions\ApiFieldInvalid;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 
@@ -34,7 +34,7 @@ final readonly class SignedCall
      * The signature over the envelope, one field per line: method, request target of the url, call id, issue time and
      * digest of the body. A field holding a line break could forge another envelope, so it is refused.
      *
-     * @throws CallFieldInvalid
+     * @throws ApiFieldInvalid
      */
     public static function signatureFor(
         string $token,
@@ -67,7 +67,7 @@ final readonly class SignedCall
      * An agent call's signature: the envelope with the start's pinned profile key and revision after it, so a call
      * cannot claim another profile than the one it was started with.
      *
-     * @throws CallFieldInvalid
+     * @throws ApiFieldInvalid
      */
     public static function agentSignatureFor(
         string $token,
@@ -127,13 +127,13 @@ final readonly class SignedCall
     /**
      * @param  list<string>  $fields
      *
-     * @throws CallFieldInvalid
+     * @throws ApiFieldInvalid
      */
     private static function sign(string $token, array $fields): string
     {
         foreach ($fields as $field) {
             if (str_contains($field, "\n") || str_contains($field, "\r")) {
-                throw CallFieldInvalid::lineBreak();
+                throw ApiFieldInvalid::lineBreak();
             }
         }
 

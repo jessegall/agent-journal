@@ -15,7 +15,7 @@ use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 
 /**
  * A phase relies only on a current validated result receipt published after its tasks last changed; an evidence
@@ -25,7 +25,7 @@ final class PhaseCheckTest extends TestCase
 {
     use RefreshHookDatabase;
     use RunsAcmeRequests;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
 
     private const string OPERATION = 'acme verify';
 

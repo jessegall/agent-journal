@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Admission\StartProfileAdmission;
-use App\Exceptions\CallSignatureInvalid;
+use App\Exceptions\ApiSignatureInvalid;
 use App\Exceptions\CredentialRejected;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
@@ -23,7 +23,7 @@ final readonly class AgentContextFactory
      * revision its start was pinned to; any failure is the same rejected credential.
      *
      * @throws CredentialRejected
-     * @throws CallSignatureInvalid
+     * @throws ApiSignatureInvalid
      */
     public function admit(Request $request): AdmittedAgent
     {
@@ -64,7 +64,7 @@ final readonly class AgentContextFactory
         );
 
         if (! hash_equals($expected, $signature)) {
-            throw CallSignatureInvalid::mismatched($callId);
+            throw ApiSignatureInvalid::mismatched($callId);
         }
 
         return new SignedCall($callId, CarbonImmutable::createFromTimestamp($issuedAt), $bodyDigest);
@@ -72,6 +72,6 @@ final readonly class AgentContextFactory
 
     private function header(Request $request, string $name): string
     {
-        return $request->headers->get($name) ?? throw CallSignatureInvalid::missing($name);
+        return $request->headers->get($name) ?? throw ApiSignatureInvalid::missing($name);
     }
 }

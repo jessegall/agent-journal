@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Api\Assignments;
+
+use App\Api\Assignments\Concerns\NamesAutoAssignment;
+use App\Attributes\Api\Endpoint;
+use App\Contracts\Domains\ApiPayload;
+use App\Data\Assignments\AutoAssignmentStatusData;
+use App\Enums\Processes\ApiEffect;
+use Spatie\LaravelData\Attributes\MapName;
+use Spatie\LaravelData\Attributes\Validation\Max;
+use Spatie\LaravelData\Attributes\Validation\Ulid;
+use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
+
+/**
+ * Reads an actor's auto-assignment of one kind of record.
+ *
+ * @implements ApiPayload<AutoAssignmentStatusData>
+ */
+#[MapName(SnakeCaseMapper::class)]
+#[Endpoint('assignments/auto/show', 'POST', AutoAssignmentStatusData::class, ApiEffect::Read)]
+final class ShowAutoAssignmentPayload extends Data implements ApiPayload
+{
+    use NamesAutoAssignment;
+
+    public function __construct(
+        public string $actorType,
+        #[Ulid]
+        public string $actorId,
+        #[Max(100)]
+        public string $assignableType,
+    ) {}
+}

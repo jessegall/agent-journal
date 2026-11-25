@@ -39,7 +39,7 @@ use Tests\Support\DomainBoot;
 use Tests\Support\FakeMonotonicClock;
 use Tests\Support\FakeServerClock;
 use Tests\Support\InstallsCommandModules;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -52,7 +52,7 @@ final class DueWorkOnTickTest extends TestCase
     use BuildsTickingStacks;
     use CommitsHookRows;
     use InstallsCommandModules;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
 
     private const array TABLES = [
         'agents',

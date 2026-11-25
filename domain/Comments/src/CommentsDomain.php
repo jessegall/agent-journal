@@ -17,7 +17,7 @@ use App\Support\FolderClasses;
 use App\Support\ShareRecordDefinition;
 use App\Values\PolicyDefinition;
 use Domain\Chat\ChatDomain;
-use Domain\Comments\Calls\ListCommentsCall;
+use Domain\Comments\Api\ListCommentsPayload;
 use Domain\Comments\Commands\PostComment\PostCommentCommand;
 use Domain\Comments\Commands\PostTextComment\PostTextCommentCommand;
 use Domain\Comments\Contracts\CommentResolver;
@@ -79,7 +79,7 @@ final class CommentsDomain extends Domain implements
                 PublicCommentPage::class,
                 CommentType::class,
                 CommentPolicy::class,
-                ListCommentsCall::class,
+                ListCommentsPayload::class,
             )
             ->build();
     }

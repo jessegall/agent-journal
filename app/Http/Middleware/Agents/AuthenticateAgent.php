@@ -7,7 +7,7 @@ namespace App\Http\Middleware\Agents;
 use App\Commands\Agents\RecordHeartbeat\RecordHeartbeatCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Exceptions\CallSignatureInvalid;
+use App\Exceptions\ApiSignatureInvalid;
 use App\Exceptions\CredentialRejected;
 use App\Support\AgentContext;
 use App\Support\AgentContextFactory;
@@ -46,7 +46,7 @@ final readonly class AuthenticateAgent
     {
         try {
             $admitted = $this->contexts->admit($request);
-        } catch (CredentialRejected|CallSignatureInvalid) {
+        } catch (CredentialRejected|ApiSignatureInvalid) {
             return new JsonResponse(
                 [
                     'code' => 'unauthenticated',

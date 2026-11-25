@@ -16,7 +16,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -26,7 +26,7 @@ use Tests\TestCase;
 final class RunnerCapabilityTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
 
     private TestStart $start;
 

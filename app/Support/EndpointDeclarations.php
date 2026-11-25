@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Attributes\Api\Endpoint;
-use App\Contracts\Domains\JournalCall;
+use App\Contracts\Domains\ApiPayload;
 use App\Exceptions\EndpointDeclarationInvalid;
 
 /**
- * Checks each signed call's declaration: it is a JournalCall with one #[Endpoint], and a keyed write, and only a keyed
+ * Checks each signed call's declaration: it is a ApiPayload with one #[Endpoint], and a keyed write, and only a keyed
  * write, names who keeps its receipt.
  */
 final class EndpointDeclarations
@@ -35,8 +35,8 @@ final class EndpointDeclarations
     {
         $declaration = ReflectedType::of($call);
 
-        if (! $declaration->implements(JournalCall::class)) {
-            throw EndpointDeclarationInvalid::for($call, 'it does not implement JournalCall');
+        if (! $declaration->implements(ApiPayload::class)) {
+            throw EndpointDeclarationInvalid::for($call, 'it does not implement ApiPayload');
         }
 
         $declared = $declaration->attributes(Endpoint::class);

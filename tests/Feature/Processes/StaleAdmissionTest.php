@@ -34,7 +34,7 @@ use Tests\Fixtures\Processes\CollectedOutput;
 use Tests\Fixtures\Processes\StaleAfterFirstEnd;
 use Tests\Support\ActsAsActors;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TestRunAdmissions;
 use Tests\TestCase;
 
@@ -46,7 +46,7 @@ final class StaleAdmissionTest extends TestCase
 {
     use ActsAsActors;
     use RefreshHookDatabase;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
 
     private const string EXPLAIN_AGAIN = 'explain the line again';
 

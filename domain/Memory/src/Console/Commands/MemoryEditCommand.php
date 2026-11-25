@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Memory\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
-use Domain\Memory\Calls\EditMemoryCall;
+use Domain\Memory\Api\EditMemoryPayload;
 use Illuminate\Console\Command;
 
 /**
@@ -17,7 +17,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class MemoryEditCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'memory:edit {memory : The memory id} {--revision= : The revision you read, from memory:list} {--text= : The new text} {--weight= : The new weight, 1 to 10} {--request-key= : Send again under the key a failed attempt printed} {--json}';
 
@@ -27,7 +27,7 @@ final class MemoryEditCommand extends Command
     {
         $weight = $this->option('weight');
 
-        return $this->runCall(EditMemoryCall::from([
+        return $this->runCall(EditMemoryPayload::from([
             'memoryId' => (string) $this->argument('memory'),
             'revision' => (int) $this->option('revision'),
             'text' => is_string($this->option('text')) ? $this->option('text') : null,

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Attributes\Api;
 
-use App\Enums\Processes\CallEffect;
+use App\Enums\Processes\ApiEffect;
 use App\Enums\Processes\ReceiptOwner;
 use Attribute;
 use Spatie\LaravelData\Data;
@@ -25,7 +25,7 @@ final readonly class Endpoint
         public string $path,
         public string $method,
         public string $answer,
-        public CallEffect $effect,
+        public ApiEffect $effect,
         public ReceiptOwner|null $receipt = null,
         public array $refusals = [],
         public int $answerLimit = 10_000_000,

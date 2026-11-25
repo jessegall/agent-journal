@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Domain\Helpers\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Support\CallKey;
-use Domain\Helpers\Calls\HelperCalls;
-use Domain\Helpers\Calls\SendHelperCall;
+use Domain\Helpers\Api\HelperApi;
+use Domain\Helpers\Api\SendHelperPayload;
 use Domain\Helpers\Console\Concerns\PrintsHelperReceipts;
 use Illuminate\Console\Command;
 
@@ -17,13 +17,13 @@ use Illuminate\Console\Command;
 final class HelperSendCommand extends Command
 {
     use PrintsHelperReceipts;
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'helper:send {identity} {brief} {--profile= : The profile of the helper} {--subject= : The record the work is about, as type:id} {--purpose= : An existing purpose id} {--purpose-text= : A purpose in words} {--source=* : Records given as the source, as type:id} {--independent : Independent of everything the helper saw} {--driver= : The driver, when the profile allows several} {--model= : The model, or default} {--key= : The request key, to retry the same request} {--json : Print the receipt as JSON}';
 
     protected $description = 'Give the named helper new work';
 
-    public function handle(HelperCalls $helpers): int
+    public function handle(HelperApi $helpers): int
     {
         $model = $this->namedModel();
 
@@ -33,7 +33,7 @@ final class HelperSendCommand extends Command
             return self::FAILURE;
         }
 
-        $call = SendHelperCall::from([
+        $call = SendHelperPayload::from([
             'identityId' => (string) $this->argument('identity'),
             'profileKey' => (string) $this->option('profile'),
             'model' => $model,

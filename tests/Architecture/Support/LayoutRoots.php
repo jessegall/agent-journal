@@ -16,7 +16,7 @@ final readonly class LayoutRoots
      * The role folders a root may hold; Actions is Access's alone, which FolderLayoutTest checks on its own.
      */
     private const array ROLE_FOLDERS = [
-        'Actions', 'Attributes', 'Calls', 'Casts', 'CommandMiddleware', 'Commands', 'Concerns', 'Console', 'Contracts',
+        'Actions', 'Api', 'Attributes', 'Casts', 'CommandMiddleware', 'Commands', 'Concerns', 'Console', 'Contracts',
         'Data', 'Declarations', 'Enums', 'Events', 'Exceptions', 'Http', 'Jobs', 'Listeners', 'Mcp', 'Models',
         'Observers', 'Pages', 'Pipelines', 'Pipes', 'Policies', 'Providers', 'Resolvers', 'Support', 'Values',
     ];

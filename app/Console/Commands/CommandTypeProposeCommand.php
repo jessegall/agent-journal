@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Processes\ProposeRulePayload;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Processes\ProposeRuleCall;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use Illuminate\Console\Command;
 
@@ -16,7 +16,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class CommandTypeProposeCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'command-type:propose {request : The command request id} {--declaration= : The rule and its examples as JSON} {--evidence= : Why the declared effects are right} {--request-key= : The key that makes a retry the same proposal} {--json}';
 
@@ -30,7 +30,7 @@ final class CommandTypeProposeCommand extends Command
             return self::FAILURE;
         }
 
-        return $this->runCall(ProposeRuleCall::from([
+        return $this->runCall(ProposeRulePayload::from([
             'commandRequest' => (string) $this->argument('request'),
             'declaration' => [
                 ...$declaration,

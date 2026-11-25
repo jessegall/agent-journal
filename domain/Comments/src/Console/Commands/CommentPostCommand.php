@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace Domain\Comments\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
-use Domain\Comments\Calls\CommentPlace;
-use Domain\Comments\Calls\PostCommentCall;
+use Domain\Comments\Api\CommentPlace;
+use Domain\Comments\Api\PostCommentPayload;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
 #[JournalRoute(JournalRouteType::Write)]
 final class CommentPostCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'comment:post {target : Such as "doc 12"} {--body=} {--submission-key=} {--at-revision=} {--section=} {--lines=} {--quote=} {--start-offset=} {--end-offset=} {--request-key= : Send again under the key a failed attempt printed} {--json}';
 
@@ -29,7 +29,7 @@ final class CommentPostCommand extends Command
         $key = $given !== '' ? $given : (string) Str::uuid();
         $this->line("Submission key: {$key} (reuse it with --submission-key to retry this comment)");
 
-        return $this->runCall(PostCommentCall::from([
+        return $this->runCall(PostCommentPayload::from([
             'target' => (string) $this->argument('target'),
             'body' => (string) $this->option('body'),
             'submissionKey' => $key,

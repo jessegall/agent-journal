@@ -18,7 +18,7 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\OpensPairChats;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\WritesInboxMessages;
 
@@ -31,7 +31,7 @@ final class DockCommandsTest extends TestCase
 {
     use CommitsHookRows;
     use OpensPairChats;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
     use StartsAgentRequests;
     use WritesInboxMessages;
 

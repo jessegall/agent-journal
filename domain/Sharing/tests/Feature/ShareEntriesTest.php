@@ -21,7 +21,7 @@ use Domain\Sharing\Tests\TestCase;
 use Illuminate\Database\ConnectionInterface;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\Support\Sharing\FakeShareGateway;
 
 /**
@@ -35,7 +35,7 @@ use Tests\Support\Sharing\FakeShareGateway;
 final class ShareEntriesTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
 
     private const array TABLES = [
         'command_receipts',

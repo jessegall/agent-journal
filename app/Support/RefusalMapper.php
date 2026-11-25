@@ -9,7 +9,7 @@ use App\Contracts\Refusals\CodedRefusal;
 use App\Contracts\Refusals\RefusalMapper as RefusalMapperContract;
 use App\Contracts\Refusals\RefusalRecovery;
 use App\Enums\Engine\RefusalCode;
-use App\Exceptions\CallFailedUnexpectedly;
+use App\Exceptions\ApiFailedUnexpectedly;
 use App\Values\MappedRefusal;
 use App\Values\RecoveryCall;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -82,7 +82,7 @@ final readonly class RefusalMapper implements RefusalMapperContract
 
     private function unexpected(Throwable $failure, string $subject, string $correlationId): MappedRefusal
     {
-        $this->exceptions->report(CallFailedUnexpectedly::for($subject, $correlationId, $failure));
+        $this->exceptions->report(ApiFailedUnexpectedly::for($subject, $correlationId, $failure));
 
         return new MappedRefusal(
             RefusalCode::Unavailable,

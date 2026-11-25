@@ -25,7 +25,7 @@ use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\Support\StartsTestAgent;
 use Tests\Support\TestRunAdmissions;
 use Tests\TestCase;
@@ -37,7 +37,7 @@ use Tests\TestCase;
 final class ReaderProposalTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
     use StartsTestAgent;
 
     private const string OPERATION = 'acme verify';

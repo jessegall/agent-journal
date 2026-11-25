@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Calls\ReadMessageController;
-use App\Http\Controllers\Calls\ReadUnreadMessagesController;
+use App\Http\Controllers\Api\ReadMessageController;
+use App\Http\Controllers\Api\ReadUnreadMessagesController;
 use App\Http\Controllers\Communication\MarkAllNotificationsReadController;
 use App\Http\Controllers\Communication\MarkNotificationReadController;
 use App\Http\Controllers\Communication\MarkTargetNotificationReadController;
 use App\Http\Controllers\Communication\SendMessageController;
-use App\Support\CallRegistrar;
+use App\Support\ApiRegistrar;
 use Illuminate\Container\Container;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
@@ -17,8 +17,8 @@ Route::middleware(['journal.agent', SubstituteBindings::class])
     ->prefix('agent')
     ->name('communication.agent.')
     ->group(function (): void {
-        $calls = Container::getInstance()->make(CallRegistrar::class);
-        $calls->register(App\Http\Controllers\Calls\SendMessageController::class)->name('send');
+        $calls = Container::getInstance()->make(ApiRegistrar::class);
+        $calls->register(App\Http\Controllers\Api\SendMessageController::class)->name('send');
         $calls->register(ReadMessageController::class)->name('read');
         $calls->register(ReadUnreadMessagesController::class)->name('read-unread');
     });

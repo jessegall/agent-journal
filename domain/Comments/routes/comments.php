@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Support\CallRegistrar;
-use Domain\Comments\Http\Controllers\Calls;
-use Domain\Comments\Http\Controllers\Calls\LocateCommentController;
+use App\Support\ApiRegistrar;
+use Domain\Comments\Http\Controllers\Api;
+use Domain\Comments\Http\Controllers\Api\LocateCommentController;
 use Domain\Comments\Http\Controllers\CommentLocationController;
 use Domain\Comments\Http\Controllers\ListCommentsController;
 use Domain\Comments\Http\Controllers\PostCommentController;
@@ -13,9 +13,9 @@ use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('journal.agent')->prefix('agent')->name('comments.agent.')->group(function (): void {
-    $calls = Container::getInstance()->make(CallRegistrar::class);
-    $calls->register(Calls\PostCommentController::class)->name('post');
-    $calls->register(Calls\ListCommentsController::class)->name('list');
+    $calls = Container::getInstance()->make(ApiRegistrar::class);
+    $calls->register(Api\PostCommentController::class)->name('post');
+    $calls->register(Api\ListCommentsController::class)->name('list');
     $calls->register(LocateCommentController::class)->name('location');
 });
 

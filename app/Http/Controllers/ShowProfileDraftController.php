@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Calls\Scripts\ShowProfileDraftCall;
+use App\Api\Scripts\ShowProfileDraftPayload;
 use App\Data\Profiles\ProfileDraftData;
 use App\Support\Readers\ProfileDraftReader;
 
@@ -13,7 +13,7 @@ use App\Support\Readers\ProfileDraftReader;
  */
 final readonly class ShowProfileDraftController
 {
-    public function __invoke(ShowProfileDraftCall $call, ProfileDraftReader $drafts): ProfileDraftData
+    public function __invoke(ShowProfileDraftPayload $call, ProfileDraftReader $drafts): ProfileDraftData
     {
         return $drafts->draft($call->profileKey());
     }

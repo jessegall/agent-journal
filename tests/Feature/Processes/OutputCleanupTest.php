@@ -21,7 +21,7 @@ use App\Values\ExecutionContext;
 use Illuminate\Support\Facades\Storage;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -32,7 +32,7 @@ final class OutputCleanupTest extends TestCase
 {
     use RefreshHookDatabase;
     use RunsAcmeRequests;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
 
     private PartRun $part;
 

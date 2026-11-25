@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace Domain\Documents\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Values\CommandReport;
-use Domain\Documents\Calls\DocumentCalls;
+use Domain\Documents\Api\DocumentApi;
 use Domain\Documents\Console\Commands\Support\DraftTokens;
 use Illuminate\Console\Command;
 
 #[JournalRoute(JournalRouteType::Write)]
 final class DocOpenCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'doc:open {number}';
 
@@ -23,7 +23,7 @@ final class DocOpenCommand extends Command
 
     protected $help = 'Example: php artisan doc:open 4, then edit with doc:edit 4 and finish with doc:close 4';
 
-    public function handle(DocumentCalls $documents, DraftTokens $drafts): int
+    public function handle(DocumentApi $documents, DraftTokens $drafts): int
     {
         return $this->runReport(function () use ($documents, $drafts): CommandReport {
             $draft = $documents->openDocument((string) $this->argument('number'));

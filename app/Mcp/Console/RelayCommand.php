@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Mcp\Console;
 
 use App\Contracts\Sessions\SessionTokenSource;
-use App\Exceptions\CallDeadlinePassed;
+use App\Exceptions\ApiDeadlinePassed;
 use App\Exceptions\JournalUnreachable;
 use App\Exceptions\SessionTokenRefused;
 use App\Exceptions\StartSettingMissing;
@@ -39,7 +39,7 @@ final class RelayCommand extends Command
 
             try {
                 $frames->answer($frame, $client->sendPrepared($call, $frames->mcpHeaders($frame), $frame->deadline()));
-            } catch (JournalUnreachable|CallDeadlinePassed $unsent) {
+            } catch (JournalUnreachable|ApiDeadlinePassed $unsent) {
                 $frames->fail($frame, $unsent);
             }
         }

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Processes\RestoreRulePayload;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Processes\RestoreRuleCall;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use Illuminate\Console\Command;
 
@@ -16,7 +16,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class CommandTypeRestoreCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'command-type:restore {rule : The classification rule id} {--from-revision= : The earlier revision} {--expected-revision= : The active revision read} {--request-key= : The key that makes a retry the same proposal} {--json}';
 
@@ -24,7 +24,7 @@ final class CommandTypeRestoreCommand extends Command
 
     public function handle(): int
     {
-        return $this->runCall(RestoreRuleCall::from([
+        return $this->runCall(RestoreRulePayload::from([
             'rule' => (string) $this->argument('rule'),
             'fromRevision' => (int) $this->option('from-revision'),
             'expectedRevision' => (int) $this->option('expected-revision'),

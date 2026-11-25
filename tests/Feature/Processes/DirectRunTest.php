@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Calls\Processes\AdmitLineCall;
+use App\Api\Processes\AdmitLinePayload;
 use App\Enums\Processes\ShellDialect;
 use App\Models\CommandRules\CommandRequest;
 use App\Models\Runs\ProcessRun;
@@ -12,7 +12,7 @@ use App\Values\AgentText;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\Processes\RunsDirectLines;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TestText;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -25,7 +25,7 @@ final class DirectRunTest extends TestCase
 {
     use RefreshHookDatabase;
     use RunsDirectLines;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
 
     public function test_an_unknown_line_is_refused_with_its_request_and_nothing_starts(): void
     {
@@ -77,7 +77,7 @@ final class DirectRunTest extends TestCase
 
     private function admit(string $line): TestResponse
     {
-        $call = AdmitLineCall::from([
+        $call = AdmitLinePayload::from([
             'line' => $line,
             'dialect' => ShellDialect::Bash,
             'workingFolder' => base_path(),

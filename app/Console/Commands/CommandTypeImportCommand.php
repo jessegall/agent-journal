@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Processes\ImportProposalsPayload;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Processes\ImportProposalsCall;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Contracts\Files\Files;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Exceptions\FileMissing;
@@ -18,7 +18,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class CommandTypeImportCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'command-type:import {file : The declaration file} {--request-key= : The key that makes a retry get the same answer} {--json}';
 
@@ -36,7 +36,7 @@ final class CommandTypeImportCommand extends Command
             return self::FAILURE;
         }
 
-        return $this->runCall(ImportProposalsCall::from([
+        return $this->runCall(ImportProposalsPayload::from([
             'declarations' => $declarations,
             'requestKey' => $this->requestKey(),
         ]));

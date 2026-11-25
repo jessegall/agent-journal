@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Calls\Scripts\ShowProfileRunCall;
+use App\Api\Scripts\ShowProfileRunPayload;
 use App\Data\Profiles\ProfileRunData;
 use App\Models\Profiles\ProfileRun;
 
@@ -13,7 +13,7 @@ use App\Models\Profiles\ProfileRun;
  */
 final readonly class ShowProfileRunController
 {
-    public function __invoke(ShowProfileRunCall $call): ProfileRunData
+    public function __invoke(ShowProfileRunPayload $call): ProfileRunData
     {
         $profileRun = ProfileRun::query()->withResults()->findOrFail(strtolower($call->id));
 

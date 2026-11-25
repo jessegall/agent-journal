@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Processes\WithdrawProposalPayload;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Processes\WithdrawProposalCall;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use Illuminate\Console\Command;
 
@@ -16,7 +16,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class CommandTypeWithdrawCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'command-type:withdraw {proposal : The proposal id} {--request-key= : The key that makes a retry get the same answer} {--json}';
 
@@ -24,7 +24,7 @@ final class CommandTypeWithdrawCommand extends Command
 
     public function handle(): int
     {
-        return $this->runCall(WithdrawProposalCall::from([
+        return $this->runCall(WithdrawProposalPayload::from([
             'proposal' => (string) $this->argument('proposal'),
             'requestKey' => $this->requestKey(),
         ]));

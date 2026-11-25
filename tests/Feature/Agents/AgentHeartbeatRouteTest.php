@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TestTimeServerClock;
 use Tests\TestCase;
 
@@ -25,7 +25,7 @@ use Tests\TestCase;
 final class AgentHeartbeatRouteTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
 
     private const array TABLES = ['agents', 'agent_sessions', 'session_tokens'];
 

@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace Domain\Documents\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Values\CommandReport;
-use Domain\Documents\Calls\DocumentCalls;
+use Domain\Documents\Api\DocumentApi;
 use Illuminate\Console\Command;
 
 #[JournalRoute(JournalRouteType::Read)]
 final class DocRevisionCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'doc:revision {number} {revision}';
 
@@ -22,7 +22,7 @@ final class DocRevisionCommand extends Command
 
     protected $help = 'Example: php artisan doc:revision 4 1 prints revision 1 of doc 4 in full';
 
-    public function handle(DocumentCalls $documents): int
+    public function handle(DocumentApi $documents): int
     {
         return $this->runReport(function () use ($documents): CommandReport {
             $revision = $documents->showDocumentRevision(

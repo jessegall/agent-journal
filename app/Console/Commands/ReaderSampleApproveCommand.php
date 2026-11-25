@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Processes\ApproveSamplePayload;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Processes\ApproveSampleCall;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use Illuminate\Console\Command;
 
@@ -16,7 +16,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class ReaderSampleApproveCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'reader:sample-approve {request : The command request id} {--expected-revision= : The declaration revision reviewed} {--command-digest= : The digest of the exact line} {--request-key= : The key that makes a retry get the same answer} {--json}';
 
@@ -24,7 +24,7 @@ final class ReaderSampleApproveCommand extends Command
 
     public function handle(): int
     {
-        return $this->runCall(ApproveSampleCall::from([
+        return $this->runCall(ApproveSamplePayload::from([
             'commandRequest' => (string) $this->argument('request'),
             'expectedRevision' => (int) $this->option('expected-revision'),
             'commandDigest' => (string) $this->option('command-digest'),

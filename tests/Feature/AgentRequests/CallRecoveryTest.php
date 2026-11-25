@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\AgentRequests;
 
-use App\Calls\Processes\AdmissionAlreadyStarted;
-use App\Calls\Processes\ProcessCalls;
-use App\Calls\Processes\RunChunk;
-use App\Calls\Processes\RunPart;
-use App\Calls\Processes\StartableAdmission;
+use App\Api\Processes\AdmissionAlreadyStarted;
+use App\Api\Processes\ProcessApi;
+use App\Api\Processes\RunChunk;
+use App\Api\Processes\RunPart;
+use App\Api\Processes\StartableAdmission;
 use App\Contracts\Admission\ShellAdmission;
 use App\Enums\Processes\OutputStream;
 use App\Enums\Processes\ShellDialect;
@@ -20,14 +20,14 @@ use App\Support\ExpiredReceipts;
 use App\Values\ExecutionContext;
 use App\Values\RunEvent;
 use Carbon\CarbonImmutable;
-use Domain\Memory\Calls\MemoryCalls;
+use Domain\Memory\Api\MemoryApi;
 use Domain\Memory\MemoryDomain;
 use Domain\Memory\Models\Memory;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\DomainBoot;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\TestCase;
 
 /**
@@ -38,7 +38,7 @@ use Tests\TestCase;
 final class CallRecoveryTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
 
     private const string RECORD_ADVICE = 'Check the record';
 
@@ -64,7 +64,7 @@ final class CallRecoveryTest extends TestCase
 
     public function test_a_keyed_write_sent_again_answers_its_first_result_and_writes_once(): void
     {
-        $memories = $this->app->make(MemoryCalls::class);
+        $memories = $this->app->make(MemoryApi::class);
         $key = new CallKey('save-once');
 
         $first = $memories->saveMemory('Ship the client.', 5, $key);
@@ -76,7 +76,7 @@ final class CallRecoveryTest extends TestCase
 
     public function test_one_key_for_another_write_is_a_conflict(): void
     {
-        $memories = $this->app->make(MemoryCalls::class);
+        $memories = $this->app->make(MemoryApi::class);
         $memories->saveMemory('First.', 5, new CallKey('one-key'));
 
         $this->expectException(CallKeyConflict::class);
@@ -86,7 +86,7 @@ final class CallRecoveryTest extends TestCase
 
     public function test_a_key_past_its_time_is_refused_with_advice_to_check_the_record(): void
     {
-        $memories = $this->app->make(MemoryCalls::class);
+        $memories = $this->app->make(MemoryApi::class);
         $memories->saveMemory('Kept a while.', 5, new CallKey('old-key'));
         $this->app->make(ExpiredReceipts::class)->expirePastRetention(CarbonImmutable::now()->addYears(2));
 
@@ -102,7 +102,7 @@ final class CallRecoveryTest extends TestCase
 
     public function test_a_lost_admission_answer_asked_again_starts_the_run_once_and_a_new_key_finds_it_started(): void
     {
-        $processes = $this->app->make(ProcessCalls::class);
+        $processes = $this->app->make(ProcessApi::class);
         $runId = $this->admitted('printf recovered');
 
         $first = $processes->fetchAdmission($runId, new CallKey('fetch-1'));
@@ -117,7 +117,7 @@ final class CallRecoveryTest extends TestCase
 
     public function test_a_piece_of_output_sent_twice_is_stored_once(): void
     {
-        $processes = $this->app->make(ProcessCalls::class);
+        $processes = $this->app->make(ProcessApi::class);
         $runId = $this->admitted('printf piece');
         $admission = $processes->fetchAdmission($runId, new CallKey('fetch-piece'));
         $this->assertInstanceOf(StartableAdmission::class, $admission);

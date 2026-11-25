@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Domain\Helpers\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Support\CallKey;
-use Domain\Helpers\Calls\ContinueHelperCall;
-use Domain\Helpers\Calls\HelperCalls;
+use Domain\Helpers\Api\ContinueHelperPayload;
+use Domain\Helpers\Api\HelperApi;
 use Domain\Helpers\Console\Concerns\PrintsHelperReceipts;
 use Illuminate\Console\Command;
 
@@ -17,13 +17,13 @@ use Illuminate\Console\Command;
 final class HelperContinueCommand extends Command
 {
     use PrintsHelperReceipts;
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'helper:continue {identity} {--job= : The unfinished job} {--model= : The model, or default} {--driver= : The driver, when the profile allows several} {--key= : The request key, to retry the same request} {--json : Print the receipt as JSON}';
 
     protected $description = 'Continue the unfinished job of a helper';
 
-    public function handle(HelperCalls $helpers): int
+    public function handle(HelperApi $helpers): int
     {
         $model = $this->namedModel();
 
@@ -33,7 +33,7 @@ final class HelperContinueCommand extends Command
             return self::FAILURE;
         }
 
-        $call = ContinueHelperCall::from([
+        $call = ContinueHelperPayload::from([
             'identityId' => (string) $this->argument('identity'),
             'jobId' => (string) $this->option('job'),
             'model' => $model,

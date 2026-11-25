@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Text\ReadTextVersionPayload;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Text\ReadTextVersionCall;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use Illuminate\Console\Command;
 
 #[JournalRoute(JournalRouteType::Read)]
 final class TextVersionCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'text:version {target : Such as "doc 12"} {--at-revision=} {--json}';
 
@@ -25,7 +25,7 @@ final class TextVersionCommand extends Command
     {
         $version = (string) $this->option('at-revision');
 
-        return $this->runCall(ReadTextVersionCall::from([
+        return $this->runCall(ReadTextVersionPayload::from([
             'target' => (string) $this->argument('target'),
             'version' => $version === '' ? null : $version,
         ]));

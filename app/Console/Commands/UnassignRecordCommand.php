@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Assignments\UnassignRecordPayload;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Assignments\UnassignRecordCall;
 use App\Console\Concerns\ReadsAssignmentArguments;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Exceptions\InvalidActorText;
 use Illuminate\Console\Command;
@@ -19,7 +19,7 @@ use Illuminate\Console\Command;
 final class UnassignRecordCommand extends Command
 {
     use ReadsAssignmentArguments;
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'assignment:unassign {type} {id} {--assignment= : The assignment row id it has now} {--holder= : Its holder now as type:id} {--request-key= : Send again under the key a failed attempt printed} {--json}';
 
@@ -28,7 +28,7 @@ final class UnassignRecordCommand extends Command
     public function handle(): int
     {
         try {
-            $call = UnassignRecordCall::from([
+            $call = UnassignRecordPayload::from([
                 ...$this->recordFields(),
                 ...$this->heldFields(),
                 'requestKey' => $this->requestKey(),

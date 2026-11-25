@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Assignments\DisableAutoAssignmentPayload;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Assignments\DisableAutoAssignmentCall;
 use App\Console\Concerns\ReadsAutoAssignmentKey;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Exceptions\InvalidActorText;
 use Illuminate\Console\Command;
@@ -19,7 +19,7 @@ use Illuminate\Console\Command;
 final class DisableAutoAssignmentCommand extends Command
 {
     use ReadsAutoAssignmentKey;
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'assignment:auto-disable {actor : The actor as type:id} {type : The record type}
         {--revision= : The revision read last}
@@ -30,7 +30,7 @@ final class DisableAutoAssignmentCommand extends Command
     public function handle(): int
     {
         try {
-            $call = DisableAutoAssignmentCall::from([
+            $call = DisableAutoAssignmentPayload::from([
                 ...$this->keyFields(),
                 'expectedRevision' => (int) $this->option('revision'),
                 'requestKey' => $this->requestKey(),

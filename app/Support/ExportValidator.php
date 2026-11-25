@@ -59,9 +59,9 @@ final class ExportValidator
         'App\Mcp\Resources\JournalResource',
         'App\Mcp\Tools\Concerns\ReadsAssignmentArguments',
         'App\Concerns\RendersRefusal',
-        'App\Console\Concerns\RunsCallPipelines',
-        'App\Calls\Assignments\Concerns\NamesRecipient',
-        'App\Calls\Assignments\Concerns\NamesExpectedAssignment',
+        'App\Console\Concerns\RunsApiPipelines',
+        'App\Api\Assignments\Concerns\NamesRecipient',
+        'App\Api\Assignments\Concerns\NamesExpectedAssignment',
         'App\Support\Command',
         'App\Support\ReflectedType',
     ];

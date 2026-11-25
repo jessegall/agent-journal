@@ -24,7 +24,7 @@ use Tests\Support\DomainBoot;
 use Tests\Support\InstallsNotesModule;
 use Tests\Support\OpensPairChats;
 use Tests\Support\SendsMcpFrames;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
@@ -41,7 +41,7 @@ final class ExternalOwnerDockTest extends TestCase
     use InstallsNotesModule;
     use OpensPairChats;
     use SendsMcpFrames;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
     use WritesInboxMessages;
 
     private const string TASK_TITLE = 'Feed the cat';

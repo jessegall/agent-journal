@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Assignments\EnableAutoAssignmentPayload;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Assignments\EnableAutoAssignmentCall;
 use App\Console\Concerns\ReadsAutoAssignmentChange;
 use App\Enums\CommandRules\JournalRouteType;
 use Illuminate\Console\Command;
@@ -29,6 +29,6 @@ final class EnableAutoAssignmentCommand extends Command
 
     public function handle(): int
     {
-        return $this->runChange(EnableAutoAssignmentCall::from(...));
+        return $this->runChange(EnableAutoAssignmentPayload::from(...));
     }
 }

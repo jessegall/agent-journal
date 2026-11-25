@@ -7,7 +7,7 @@ namespace App\Exceptions;
 /**
  * The journal cannot answer now: the journal answered unavailable.
  */
-final class JournalUnavailable extends CallRefused
+final class JournalUnavailable extends ApiRefused
 {
     public const string CODE = 'unavailable';
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Pipes;
 
 use App\Contracts\Bus\Pipe;
-use App\Values\CallAnswer;
+use App\Values\ApiAnswer;
 use App\Values\CommandReport;
 
 /**
@@ -13,7 +13,7 @@ use App\Values\CommandReport;
  */
 final readonly class NotifyAnswer implements Pipe
 {
-    public function handle(CallAnswer $answer): CommandReport
+    public function handle(ApiAnswer $answer): CommandReport
     {
         $flags = JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | ($answer->isOneLine ? 0 : JSON_PRETTY_PRINT);
 

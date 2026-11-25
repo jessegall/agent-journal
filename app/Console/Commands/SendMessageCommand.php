@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Calls\Communication\SendMessageCall;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Api\Communication\SendMessagePayload;
+use App\Console\Concerns\RunsApiPipelines;
 use Illuminate\Console\Command;
 
 final class SendMessageCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'message:send
         {inbox : The inbox id}
@@ -25,7 +25,7 @@ final class SendMessageCommand extends Command
     {
         $target = $this->option('target');
 
-        return $this->runCall(SendMessageCall::from([
+        return $this->runCall(SendMessagePayload::from([
             'message' => [
                 'inboxId' => (string) $this->argument('inbox'),
                 'body' => (string) $this->argument('body'),

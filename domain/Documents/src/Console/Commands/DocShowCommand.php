@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Domain\Documents\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Values\CommandReport;
-use Domain\Documents\Calls\DocumentCalls;
+use Domain\Documents\Api\DocumentApi;
 use Domain\Documents\Console\Concerns\PrintsRecordText;
 use Domain\Documents\Data\DraftView;
 use Illuminate\Console\Command;
@@ -17,7 +17,7 @@ use Illuminate\Console\Command;
 final class DocShowCommand extends Command
 {
     use PrintsRecordText;
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'doc:show {number} {--section= : A section by number or exact heading} {--lines= : A line range, a-b} {--bullets : Only the bullet lines} {--grep= : Only the lines holding these words} {--all : The whole text, past the usual bound} {--revision= : An earlier revision} {--at-revision= : Continue a read begun on this revision} {--draft : Show your own open draft instead of the published text}';
 
@@ -25,7 +25,7 @@ final class DocShowCommand extends Command
 
     protected $help = 'Example: php artisan doc:show 4 prints the outline; doc:show 4 --section 3 or --lines 10-40 prints a part; --draft shows your own open draft';
 
-    public function handle(DocumentCalls $documents): int
+    public function handle(DocumentApi $documents): int
     {
         $number = (string) $this->argument('number');
 

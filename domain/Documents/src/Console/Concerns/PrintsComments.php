@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Console\Concerns;
 
 use App\Values\CommandReport;
-use Domain\Comments\Calls\ListCommentsCall;
+use Domain\Comments\Api\ListCommentsPayload;
 use Domain\Comments\Data\CommentDetails;
 use Domain\Comments\Data\RecordCommentView;
 use Domain\Comments\Data\TextCommentView;
@@ -20,7 +20,7 @@ trait PrintsComments
     {
         $after = $this->option('after');
 
-        $call = ListCommentsCall::from([
+        $call = ListCommentsPayload::from([
             'target' => "{$type} {$this->argument('number')}",
             'after' => is_string($after) ? $after : null,
         ]);

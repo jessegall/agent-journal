@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Calls\Communication\ReadMessageCall;
-use App\Calls\Communication\ReadUnreadMessagesCall;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Api\Communication\ReadMessagePayload;
+use App\Api\Communication\ReadUnreadMessagesPayload;
+use App\Console\Concerns\RunsApiPipelines;
 use Illuminate\Console\Command;
 
 final class ReadMessageCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'message:read
         {message? : The id of the message to read; without one, every unread message is read}
@@ -25,8 +25,8 @@ final class ReadMessageCommand extends Command
         $messageId = $this->argument('message');
 
         return $this->runCall($messageId === null
-            ? ReadUnreadMessagesCall::from(['requestKey' => $this->requestKey()])
-            : ReadMessageCall::from([
+            ? ReadUnreadMessagesPayload::from(['requestKey' => $this->requestKey()])
+            : ReadMessagePayload::from([
                 'messageId' => (string) $messageId,
                 'requestKey' => $this->requestKey(),
             ]));

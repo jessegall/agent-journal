@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Processes\ApproveProposalPayload;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Processes\ApproveProposalCall;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use Illuminate\Console\Command;
 
@@ -16,7 +16,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class CommandTypeApproveCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'command-type:approve {proposal : The proposal id} {--expected-revision= : The proposal revision reviewed} {--expected-active-revision=0 : The active rule revision} {--reader-revision= : The proven reader} {--proof= : The reader proof} {--reason=} {--request-key= : The key that makes a retry get the same answer} {--json}';
 
@@ -24,7 +24,7 @@ final class CommandTypeApproveCommand extends Command
 
     public function handle(): int
     {
-        return $this->runCall(ApproveProposalCall::from([
+        return $this->runCall(ApproveProposalPayload::from([
             'proposal' => (string) $this->argument('proposal'),
             'expectedRevision' => (int) $this->option('expected-revision'),
             'expectedActiveRevision' => (int) $this->option('expected-active-revision'),

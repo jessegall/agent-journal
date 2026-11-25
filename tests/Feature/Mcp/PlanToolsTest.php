@@ -20,7 +20,7 @@ use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\SendsMcpFrames;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -30,7 +30,7 @@ final class PlanToolsTest extends TestCase
     use ActsAsActors;
     use CommitsHookRows;
     use SendsMcpFrames;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
 
     private const string RELEASE_NOTE = 'Release complete.';
 

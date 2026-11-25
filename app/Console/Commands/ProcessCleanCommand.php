@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Processes\CleanOutputPayload;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Processes\CleanOutputCall;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use Illuminate\Console\Command;
 
@@ -16,7 +16,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class ProcessCleanCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'process:clean {run* : The ended runs} {--preview : Only list what would be removed} {--request-key= : The key that makes a retry get the same answer} {--json}';
 
@@ -24,7 +24,7 @@ final class ProcessCleanCommand extends Command
 
     public function handle(): int
     {
-        return $this->runCall(CleanOutputCall::from([
+        return $this->runCall(CleanOutputPayload::from([
             'runs' => array_values(array_map(strval(...), (array) $this->argument('run'))),
             'isPreview' => (bool) $this->option('preview'),
             'requestKey' => $this->requestKey(),

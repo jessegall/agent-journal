@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Domain\Plans\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Exceptions\InvalidActorText;
 use App\Support\ActorIdentity;
-use Domain\Plans\Calls\AssignPlanWorkCall;
+use Domain\Plans\Api\AssignPlanWorkPayload;
 use Domain\Plans\Console\Concerns\ReportsPlanWork;
 use Illuminate\Console\Command;
 
@@ -20,7 +20,7 @@ use Illuminate\Console\Command;
 final class AssignPlanWorkCommand extends Command
 {
     use ReportsPlanWork;
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'plan:assign-work
         {type : plans.plan or plans.phase}
@@ -35,7 +35,7 @@ final class AssignPlanWorkCommand extends Command
     public function handle(): int
     {
         try {
-            $call = AssignPlanWorkCall::from([
+            $call = AssignPlanWorkPayload::from([
                 'rootType' => (string) $this->argument('type'),
                 'rootId' => (string) $this->argument('id'),
                 'rootPlan' => $this->option('plan') === null ? null : (string) $this->option('plan'),

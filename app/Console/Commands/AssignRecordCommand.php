@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Assignments\AssignRecordPayload;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Assignments\AssignRecordCall;
 use App\Console\Concerns\ReadsAssignmentArguments;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Exceptions\InvalidActorText;
 use App\Support\ActorIdentity;
@@ -20,7 +20,7 @@ use Illuminate\Console\Command;
 final class AssignRecordCommand extends Command
 {
     use ReadsAssignmentArguments;
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'assignment:assign {type} {id} {--to= : The new holder as type:id} {--request-key= : Send again under the key a failed attempt printed} {--json}';
 
@@ -29,7 +29,7 @@ final class AssignRecordCommand extends Command
     public function handle(): int
     {
         try {
-            $call = AssignRecordCall::from([
+            $call = AssignRecordPayload::from([
                 ...$this->recordFields(),
                 ...ActorIdentity::fromText((string) $this->option('to'))->asFields('recipient'),
                 'requestKey' => $this->requestKey(),

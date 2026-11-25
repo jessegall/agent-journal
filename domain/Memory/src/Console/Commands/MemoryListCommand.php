@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Memory\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
-use Domain\Memory\Calls\ListMemoriesCall;
+use Domain\Memory\Api\ListMemoriesPayload;
 use Illuminate\Console\Command;
 
 /**
@@ -17,7 +17,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Read)]
 final class MemoryListCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'memory:list {--page=1} {--json}';
 
@@ -25,6 +25,6 @@ final class MemoryListCommand extends Command
 
     public function handle(): int
     {
-        return $this->runCall(ListMemoriesCall::from(['page' => (int) $this->option('page')]));
+        return $this->runCall(ListMemoriesPayload::from(['page' => (int) $this->option('page')]));
     }
 }

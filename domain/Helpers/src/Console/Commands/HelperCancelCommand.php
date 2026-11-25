@@ -5,26 +5,26 @@ declare(strict_types=1);
 namespace Domain\Helpers\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Support\CallKey;
 use App\Values\CommandReport;
-use Domain\Helpers\Calls\CancelHelperJobCall;
-use Domain\Helpers\Calls\HelperCalls;
+use Domain\Helpers\Api\CancelHelperJobPayload;
+use Domain\Helpers\Api\HelperApi;
 use Illuminate\Console\Command;
 
 #[JournalRoute(JournalRouteType::Write)]
 final class HelperCancelCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'helper:cancel {identity} {--job= : The job to cancel} {--json : Print the answer as JSON}';
 
     protected $description = "Cancel a helper's job; its workspace stays";
 
-    public function handle(HelperCalls $helpers): int
+    public function handle(HelperApi $helpers): int
     {
-        $call = CancelHelperJobCall::from([
+        $call = CancelHelperJobPayload::from([
             'jobId' => (string) $this->option('job'),
             'requestKey' => new CallKey(),
         ]);

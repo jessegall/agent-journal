@@ -22,7 +22,7 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\SendsSignedCalls;
+use Tests\Support\SendsSignedPayloads;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
@@ -34,7 +34,7 @@ use Tests\TestCase;
 final class AssignedListCommandsTest extends TestCase
 {
     use CommitsHookRows;
-    use SendsSignedCalls;
+    use SendsSignedPayloads;
     use StartsAgentRequests;
 
     private const array TABLES = [

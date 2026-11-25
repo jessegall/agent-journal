@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Processes\ReadOutputSummaryPayload;
+use App\Api\Processes\ReadOutputTailPayload;
+use App\Api\Processes\SearchOutputPayload;
 use App\Attributes\Console\JournalRoute;
-use App\Calls\Processes\ReadOutputSummaryCall;
-use App\Calls\Processes\ReadOutputTailCall;
-use App\Calls\Processes\SearchOutputCall;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use Illuminate\Console\Command;
 
@@ -19,7 +19,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Read)]
 final class OutputReadCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     protected $signature = 'output:read {run : The run id} {--part=0 : The syntax node of the part} {--stream=stdout} {--summary} {--search=} {--tail=20} {--json}';
 
@@ -38,12 +38,12 @@ final class OutputReadCommand extends Command
         $text = (string) $this->option('search');
 
         return $this->runCall(match (true) {
-            $this->option('summary') === true => ReadOutputSummaryCall::from(['processRun' => $run]),
-            $this->option('search') !== null => SearchOutputCall::from([
+            $this->option('summary') === true => ReadOutputSummaryPayload::from(['processRun' => $run]),
+            $this->option('search') !== null => SearchOutputPayload::from([
                 ...$place,
                 'text' => $text,
             ]),
-            default => ReadOutputTailCall::from([
+            default => ReadOutputTailPayload::from([
                 ...$place,
                 'lines' => (int) $this->option('tail'),
             ]),

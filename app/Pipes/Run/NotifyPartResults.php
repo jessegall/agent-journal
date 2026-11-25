@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Pipes\Run;
 
-use App\Calls\Processes\ProcessCalls;
+use App\Api\Processes\ProcessApi;
 use App\Contracts\Bus\Pipe;
 use App\Mcp\Tools\OutputsReadTool;
 use App\Support\Run\PartResult;
@@ -18,7 +18,7 @@ final readonly class NotifyPartResults implements Pipe
 {
     private const string READ_OUTPUT_LINE = 'Output %1$s: read it with the %2$s tool, run %1$s.';
 
-    public function __construct(private ProcessCalls $processes) {}
+    public function __construct(private ProcessApi $processes) {}
 
     public function handle(SupervisedRun $run): CommandReport
     {

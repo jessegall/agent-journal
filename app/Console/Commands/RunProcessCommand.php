@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use App\Console\Concerns\RunsCallPipelines;
+use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Pipelines\RunProcessPipeline;
 use App\Support\Run\ChildEnvironment;
@@ -20,7 +20,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class RunProcessCommand extends Command
 {
-    use RunsCallPipelines;
+    use RunsApiPipelines;
 
     /**
      * Variables a child never inherits: the journal's start token and the run's event key.

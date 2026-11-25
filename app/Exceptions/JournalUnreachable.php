@@ -11,7 +11,7 @@ use Throwable;
 /**
  * A prepared call the journal did not answer. The message names the address, never the start token or the body.
  */
-final class JournalUnreachable extends CallFailed implements CodedRefusal
+final class JournalUnreachable extends ApiFailed implements CodedRefusal
 {
     public static function at(string $url, Throwable $previous): self
     {

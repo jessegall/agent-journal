@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Calls\Processes\OutputSummary;
-use App\Calls\Processes\PartSummary;
+use App\Api\Processes\OutputSummary;
+use App\Api\Processes\PartSummary;
 use App\Commands\CommandRules\RecordEvidenceReads\RecordEvidenceReadsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\ResultReceipts;

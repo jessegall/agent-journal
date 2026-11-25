@@ -10,7 +10,7 @@ namespace Tests\Fixtures\AgentRequests;
  */
 final readonly class WriteNoteController
 {
-    public function __invoke(WriteNoteCall $call): NoteAnswer
+    public function __invoke(WriteNotePayload $call): NoteAnswer
     {
         return new NoteAnswer("{$call->notebookId}:{$call->text}");
     }

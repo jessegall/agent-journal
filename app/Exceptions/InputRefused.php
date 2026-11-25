@@ -7,7 +7,7 @@ namespace App\Exceptions;
 /**
  * The journal refused the input: the journal answered invalid_input.
  */
-final class InputRefused extends CallRefused
+final class InputRefused extends ApiRefused
 {
     public const string CODE = 'invalid_input';
 
