@@ -9,6 +9,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Exceptions\CommandAdmissionRefused;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
@@ -84,6 +85,8 @@ final class RequestShareTest extends TestCase
     private ShareGatewayConfiguration $configuration;
 
     private TestStart $start;
+
+    private Document $document;
 
     protected function setUp(): void
     {
@@ -187,6 +190,28 @@ final class RequestShareTest extends TestCase
         $oldest->save();
 
         $this->assertSame(ShareStatus::Proposed, $this->request('01JD8X0G9M3QZ6V4K2PROPOSE3')->state);
+    }
+
+    public function test_the_agent_cli_requests_a_share_and_prints_number_and_state_only(): void
+    {
+        $this->owner = User::factory()->create();
+        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+        $this->document = Document::query()->where('number', 1)->sole();
+
+        $start = TestStart::start();
+        $this->journal->relayAgentCommands($start);
+
+        $this->artisan('share:request', [
+            'alias' => 'doc',
+            'number' => '1',
+            '--json' => true,
+        ])
+            ->expectsOutputToContain('"state":"proposed"')
+            ->doesntExpectOutputToContain('http')
+            ->assertExitCode(0);
+        $this->artisan('share:status', ['--json' => true])->expectsOutputToContain('"proposals"')->assertExitCode(0);
+
+        $this->assertSame(ShareStatus::Proposed, Share::query()->sole()->status);
     }
 
     private function request(string $key): ShareProposalStatus

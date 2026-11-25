@@ -9,6 +9,7 @@ use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
+use App\Contracts\Drivers\DriverCatalogue as DriverCatalogueContract;
 use App\Contracts\Hosts\DockerImageVerifier;
 use App\Enums\Drivers\DriverCapability;
 use App\Enums\Drivers\DriverOperation;
@@ -16,11 +17,14 @@ use App\Enums\Drivers\DriverType;
 use App\Enums\Projects\ArrangementType;
 use App\Enums\Sessions\SessionStatus;
 use App\Events\Sessions\SessionOpened;
+use App\Exceptions\AccountWriterTaken;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Exceptions\DriverNotContainable;
 use App\Exceptions\HostArrangementRefused;
 use App\Exceptions\SkillSelectionConflict;
 use App\Listeners\AdmitStartSkills;
+use App\Models\Accounts\Account;
+use App\Models\Accounts\ActiveAccount;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
@@ -32,13 +36,23 @@ use App\Support\ActorContext;
 use App\Support\ArrangementSetting;
 use App\Support\Capabilities\CodexHeadlessCapabilities;
 use App\Support\Capabilities\CodexTerminalCapabilities;
+use App\Support\DefaultDrivers;
 use App\Support\DomainRegistry;
+use App\Support\DriverCatalogue;
+use App\Support\EnrolledHost;
 use App\Support\OpenedRuntime;
+use App\Values\AccountLabel;
+use App\Values\DriverFamily;
+use App\Values\DriverKey;
+use App\Values\DriverRegistration;
 use App\Values\OwnerAuthority;
 use App\Values\ProfileBase;
+use App\Values\ProviderKey;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\CountingImageVerifier;
 use Tests\Fixtures\Agents\TestSelections;
+use Tests\Fixtures\Drivers\AcmeReaderCapabilities;
+use Tests\Fixtures\Drivers\RunsAloneCapabilities;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\Agents\OpensLedgerRuntimes;
@@ -245,6 +259,36 @@ final class OpenAgentRuntimeTest extends TestCase
         $this->started($session);
     }
 
+    public function test_a_driver_that_runs_alone_is_refused_on_an_account_in_use(): void
+    {
+        $this->registerFamily();
+        ActiveAccount::findLockedFor('example')->select(
+            Account::create('example', AccountLabel::from('Shared account'), '/journal/accounts/example'),
+        );
+
+        $host = $this->enrollHost();
+        $writer = $this->open($host, DriverType::Headless);
+
+        $refused = $this->assertThrowsAccountWriterTaken(fn () => $this->open($host, DriverType::Terminal));
+
+        $this->assertSame($writer->sessionId, $refused->ownerSessionId);
+    }
+
+    public function test_nothing_starts_on_an_account_a_driver_runs_alone_on(): void
+    {
+        $this->registerFamily();
+        ActiveAccount::findLockedFor('example')->select(
+            Account::create('example', AccountLabel::from('Shared account'), '/journal/accounts/example'),
+        );
+
+        $host = $this->enrollHost();
+        $alone = $this->open($host, DriverType::Terminal);
+
+        $refused = $this->assertThrowsAccountWriterTaken(fn () => $this->open($host, DriverType::Headless));
+
+        $this->assertSame($alone->sessionId, $refused->ownerSessionId);
+    }
+
     private function openOn(ArrangementType $arrangement, string $driver = 'claude-code'): OpenedRuntime
     {
         $host = $this->journal->asSystem(
@@ -320,5 +364,69 @@ final class OpenAgentRuntimeTest extends TestCase
     protected static function bootedDomains(): array
     {
         return DomainRegistry::installedClasses(dirname(__DIR__, 3));
+    }
+
+    private function registerFamily(): void
+    {
+        $registry = $this->app->make(DriverCatalogueContract::class);
+        $this->assertInstanceOf(DriverCatalogue::class, $registry);
+        $headless = $registry->forKey(DriverKey::from('claude-code-headless'))->descriptor();
+        $claude = $registry->family(DefaultDrivers::CLAUDE_CODE);
+        $registry->registerFamily(
+            new DriverFamily(
+                'example',
+                'Example',
+                ProviderKey::from('example'),
+                'echo',
+                $claude->isolatesHooksPerSession,
+                [],
+            ),
+        );
+
+        foreach ([
+            ['example/echo-headless', DriverType::Headless, AcmeReaderCapabilities::class],
+            ['example/echo-terminal', DriverType::Terminal, RunsAloneCapabilities::class],
+        ] as [$key, $driverType, $capabilities]) {
+            $registry->register(new DriverRegistration(
+                DriverKey::from($key),
+                'example',
+                $driverType,
+                'Echo',
+                [],
+                $headless->hookProtocol,
+                $headless->accountProtocol,
+                $headless->skillProtocol,
+                $capabilities,
+                [],
+            ));
+        }
+    }
+
+    private function open(EnrolledHost $host, DriverType $driverType): OpenedRuntime
+    {
+        return $this->asOwner(new OpenAgentRuntimeCommand(
+            $this->agent()->id,
+            $host->hostId,
+            self::FOLDER,
+            'example',
+            '1.0.0',
+            'echo',
+            $driverType,
+            'echo-small',
+        ));
+    }
+
+    /**
+     * @param  callable(): mixed  $start
+     */
+    private function assertThrowsAccountWriterTaken(callable $start): AccountWriterTaken
+    {
+        try {
+            $start();
+        } catch (AccountWriterTaken $refused) {
+            return $refused;
+        }
+
+        $this->fail('The second writer on the account was not refused.');
     }
 }

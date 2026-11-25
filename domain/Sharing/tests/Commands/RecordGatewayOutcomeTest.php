@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Commands;
 
+use App\Events\Web\PageChanged;
 use App\Support\RecordIdentity;
 use Domain\Sharing\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
 use Domain\Sharing\Commands\RecordGatewayHealth\RecordGatewayHealthCommand;
@@ -13,6 +14,8 @@ use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\GatewayOutcome;
 use Domain\Sharing\Enums\ShareAuditType;
 use Domain\Sharing\Enums\ShareStatus;
+use Domain\Sharing\Events\ShareActivated;
+use Domain\Sharing\Events\ShareRevoked;
 use Domain\Sharing\Exceptions\GatewayLeaseRefused;
 use Domain\Sharing\Exceptions\GatewayRunStale;
 use Domain\Sharing\Models\Share;
@@ -23,7 +26,8 @@ use Domain\Sharing\Models\ShareGatewayOperation;
 use Domain\Sharing\Support\ClaimedGatewayOperation;
 use Domain\Sharing\Tests\Fixtures\ShareFixtures;
 use Domain\Sharing\Tests\TestCase;
-use Tests\Support\RefreshHookDatabase;
+use Illuminate\Support\Facades\Event;
+use Tests\Support\CommitsHookRows;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\TestActors;
 
@@ -34,7 +38,7 @@ use Tests\Support\TestActors;
  */
 final class RecordGatewayOutcomeTest extends TestCase
 {
-    use RefreshHookDatabase;
+    use CommitsHookRows;
 
     private const string FIRST_RUN = '01JD8X0G9M3QZ6V4K2RUN0000A';
 
@@ -43,6 +47,25 @@ final class RecordGatewayOutcomeTest extends TestCase
     private ShareGatewayConfiguration $configuration;
 
     private Share $share;
+
+    private const array TABLES = [
+        'command_receipts',
+        'share_audits',
+        'share_members',
+        'share_gateway_operations',
+        'shares',
+        'share_gateway_endpoints',
+        'share_gateway_configurations',
+        'share_installations',
+        'number_groups',
+    ];
+
+    private const string RUN = '01JD8X0G9M3QZ6V4K2RUN0000A';
+
+    /**
+     * @var list<object>
+     */
+    private array $received = [];
 
     protected function setUp(): void
     {
@@ -137,6 +160,72 @@ final class RecordGatewayOutcomeTest extends TestCase
 
         $this->outcome(self::FIRST_RUN, $close, GatewayOutcome::Succeeded);
         $this->assertSame(GatewayEndpointStatus::Closed, ShareGatewayEndpoint::query()->sole()->status);
+    }
+
+    public function test_share_activated_reaches_a_listener_after_commit_once_and_not_on_a_replay(): void
+    {
+        Event::listen([
+            ShareActivated::class,
+            ShareRevoked::class,
+        ], function (object $event): void {
+            $this->received[] = $event;
+        });
+
+        $claim = $this->journal->asSystem(new ClaimGatewayOperationCommand(self::RUN));
+        $this->assertInstanceOf(ClaimedGatewayOperation::class, $claim);
+        $outcome = new RecordGatewayOutcomeCommand(
+            self::RUN,
+            $claim->operation->operationId,
+            $claim->operation->endpointVersion,
+            $claim->operation->leaseToken,
+            GatewayOutcome::Succeeded,
+        );
+
+        $this->journal->asSystem($outcome);
+        $this->journal->asSystem($outcome);
+
+        $this->assertCount(1, $this->received);
+        $this->assertInstanceOf(ShareActivated::class, $this->received[0]);
+        $this->assertSame(
+            [
+                $this->share->id,
+                $this->configuration->id,
+                ShareStatus::Active,
+                Share::FIRST_SCOPE_VERSION,
+            ],
+            [
+                $this->received[0]->share->shareId,
+                $this->received[0]->share->configurationId,
+                $this->received[0]->share->state,
+                $this->received[0]->share->scopeVersion,
+            ],
+        );
+        $this->assertStringNotContainsString(
+            (string) $this->share->fresh()?->token_ciphertext,
+            serialize($this->received[0]),
+        );
+    }
+
+    public function test_activating_a_share_sends_the_owner_a_page_change_with_nothing_in_it(): void
+    {
+        $claim = $this->journal->asSystem(new ClaimGatewayOperationCommand(self::RUN));
+        $this->assertInstanceOf(ClaimedGatewayOperation::class, $claim);
+        Event::fake([PageChanged::class]);
+
+        $this->journal->asSystem(new RecordGatewayOutcomeCommand(
+            self::RUN,
+            $claim->operation->operationId,
+            $claim->operation->endpointVersion,
+            $claim->operation->leaseToken,
+            GatewayOutcome::Succeeded,
+        ));
+
+        Event::assertDispatched(
+            PageChanged::class,
+            fn (PageChanged $change) => $change->userIds === [
+                $this->journal->ownerUser()->id,
+            ] && $change->broadcastWith() === [],
+        );
     }
 
     private function claim(string $runId): ClaimedGatewayOperation|null

@@ -4,13 +4,21 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Commands;
 
+use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Reads\ReadMeter;
 use App\Exceptions\SharingNotAllowed;
 use App\Models\Records\Link;
 use App\Support\GatewaySettings;
 use App\Support\RecordIdentity;
+use App\Support\ShareContentRead;
 use App\Support\ShareRecordRegistry;
+use App\Values\OwnerAuthority;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
+use Domain\Documents\Models\Document;
+use Domain\Plans\Enums\PlanType;
+use Domain\Plans\Models\Plan;
+use Domain\Plans\Support\PlanStructure;
 use Domain\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
 use Domain\Sharing\Exceptions\ShareGatewayUnavailable;
 use Domain\Sharing\Exceptions\SharePreviewRefused;
@@ -19,12 +27,13 @@ use Domain\Sharing\Models\SharePreview;
 use Domain\Sharing\Support\SavedSharePreview;
 use Domain\Sharing\Support\ShareBudget;
 use Domain\Sharing\Support\ShareCandidates;
+use Domain\Sharing\Support\ShareLinkedCandidate;
 use Domain\Sharing\Support\ShareScope;
 use Domain\Sharing\Support\ShareSelectedTarget;
 use Domain\Sharing\Tests\TestCase;
 use Tests\Fixtures\Domains\Binders\BinderPublications;
 use Tests\Fixtures\Domains\Binders\BindersDomain;
-use Tests\Support\RefreshHookDatabase;
+use Tests\Support\CommitsHookRows;
 use Tests\Support\Sharing\RegistersShareDomains;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
@@ -35,7 +44,7 @@ use Tests\Support\TestIds;
  */
 final class SaveSharePreviewTest extends TestCase
 {
-    use RefreshHookDatabase;
+    use CommitsHookRows;
     use RegistersShareDomains;
 
     private RecordIdentity $root;
@@ -43,6 +52,25 @@ final class SaveSharePreviewTest extends TestCase
     private ShareGatewayConfiguration $configuration;
 
     private BinderPublications $publications;
+
+    private const array TABLES = [
+        'links',
+        'comments',
+        'document_closes',
+        'document_drafts',
+        'reports',
+        'document_revisions',
+        'documents',
+        'phase_tasks',
+        'phases',
+        'plans',
+        'tasks',
+        'number_groups',
+    ];
+
+    private const string PLAN_TITLE = 'Version 6';
+
+    private const string SECRET_PHASE = 'Secret phase';
 
     protected function setUp(): void
     {
@@ -151,6 +179,39 @@ final class SaveSharePreviewTest extends TestCase
         );
     }
 
+    public function test_a_plan_previews_as_a_summary_root_with_its_linked_document_as_a_candidate(): void
+    {
+        $this->app->make(CurrentActorSetter::class)->set(TestActors::user(1), new OwnerAuthority('test'));
+        $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
+        # Goal
+        Ship it.
+
+        TEXT));
+        $document = Document::query()->where('number', 1)->sole();
+        $plan = Plan::factory()->create([
+            'title' => self::PLAN_TITLE,
+            'type' => PlanType::Build,
+        ]);
+        $this->planStructure()->addPhase($plan, self::SECRET_PHASE);
+        Link::createForModels($plan, $document);
+
+        $candidates = $this->app->make(ShareScope::class)->discover($plan->shareIdentity(), $this->budget());
+        $content = $this->app->make(ShareRecordRegistry::class)->provider(Plan::linkType())->content(
+            new ShareContentRead($plan->shareIdentity()),
+            $this->budget(),
+        );
+
+        $this->assertSame(self::PLAN_TITLE, $candidates->root->title);
+        $this->assertSame(
+            [$document->id],
+            array_map(fn (ShareLinkedCandidate $candidate) => $candidate->recordId(), $candidates->linked),
+        );
+        $this->assertSame('Design', $candidates->linked[0]->card->title);
+        $this->assertStringContainsString(self::PLAN_TITLE, $content->body);
+        $this->assertStringNotContainsString(self::SECRET_PHASE, $content->body);
+        $this->assertStringNotContainsString(self::SECRET_PHASE, (string) json_encode($candidates));
+    }
+
     /**
      * @param  list<string>  $selectedIds
      */
@@ -169,5 +230,15 @@ final class SaveSharePreviewTest extends TestCase
             $this->root,
             ShareBudget::forPreview($this->app->make(ReadMeter::class)),
         );
+    }
+
+    private function planStructure(): PlanStructure
+    {
+        return $this->app->make(PlanStructure::class);
+    }
+
+    private function budget(): ShareBudget
+    {
+        return ShareBudget::forPreview($this->app->make(ReadMeter::class));
     }
 }

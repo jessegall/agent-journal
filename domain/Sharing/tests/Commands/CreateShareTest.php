@@ -4,16 +4,24 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Commands;
 
+use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\RequestKeyConflict;
 use App\Exceptions\RequestKeyMissing;
+use App\Exceptions\StackLockTimedOut;
+use App\Models\Access\User;
 use App\Models\CommandRules\CommandReceipt;
 use App\Models\Records\Link;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
+use App\Support\OperationDeadline;
 use App\Support\RecordIdentity;
 use App\Support\RequestKey;
 use App\Support\ShareRecordRegistry;
+use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
+use Domain\Documents\Models\Document;
 use Domain\Sharing\Commands\CreateShare\CreateShareCommand;
 use Domain\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
 use Domain\Sharing\Enums\GatewayOperationType;
@@ -26,6 +34,7 @@ use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareAudit;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\ShareGatewayOperation;
+use Domain\Sharing\Models\ShareInstallation;
 use Domain\Sharing\Models\ShareMember;
 use Domain\Sharing\Models\SharePreview;
 use Domain\Sharing\Support\SavedSharePreview;
@@ -36,9 +45,12 @@ use Domain\Sharing\Support\ShareSummary;
 use Domain\Sharing\Support\ShareToken;
 use Domain\Sharing\Tests\Fixtures\ShareFixtures;
 use Domain\Sharing\Tests\TestCase;
+use Illuminate\Database\ConnectionInterface;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Tests\Fixtures\Domains\Binders\BinderPublications;
 use Tests\Fixtures\Domains\Binders\BindersDomain;
-use Tests\Support\RefreshHookDatabase;
+use Tests\Support\CommitsHookRows;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\RegistersShareDomains;
 use Tests\Support\TestActors;
@@ -52,7 +64,7 @@ use Tests\Support\TimeLimits\TimeLimit;
  */
 final class CreateShareTest extends TestCase
 {
-    use RefreshHookDatabase;
+    use CommitsHookRows;
     use RegistersShareDomains;
 
     private const string PENDING_HAS_NO_ADDRESS = 'A pending share has no address yet.';
@@ -64,6 +76,34 @@ final class CreateShareTest extends TestCase
     private RecordIdentity $root;
 
     private ShareGatewayConfiguration $configuration;
+
+    private const array TABLES = [
+        'command_receipts',
+        'share_audits',
+        'share_members',
+        'share_gateway_operations',
+        'shares',
+        'share_previews',
+        'share_gateway_configurations',
+        'share_installations',
+        'users',
+        'links',
+        'comments',
+        'document_closes',
+        'document_drafts',
+        'reports',
+        'document_revisions',
+        'documents',
+        'number_groups',
+        'session_tokens',
+        'agent_sessions',
+        'agents',
+        'share_gateway_endpoints',
+    ];
+
+    private Document $document;
+
+    private User $owner;
 
     protected function setUp(): void
     {
@@ -250,6 +290,112 @@ final class CreateShareTest extends TestCase
         $this->assertSame(ShareStatus::Pending, $this->create($this->preview([]))->state);
     }
 
+    public function test_the_owner_lists_creates_revokes_and_prints_an_address_from_the_cli(): void
+    {
+        $this->owner = User::factory()->create();
+        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser($this->owner->id),
+            new OwnerAuthority('test'),
+        );
+        $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
+        # Goal
+        Ship it.
+        TEXT));
+        $this->app->make(CurrentActorSetter::class)->clear();
+        $this->document = Document::query()->where('number', 1)->sole();
+
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser($this->owner->id),
+            new OwnerAuthority('test'),
+        );
+        $this->app->make(CommandBus::class)->run(
+            new SaveSharePreviewCommand(
+                $this->document->shareIdentity()->type,
+                $this->document->id,
+                [],
+                $this->configuration->id,
+            ),
+        );
+        $this->app->make(CurrentActorSetter::class)->clear();
+        $preview = SharePreview::query()->sole();
+
+        $this->artisan(
+            'share:create',
+            [
+                'preview' => $preview->id,
+                '--minutes' => '60',
+            ],
+        )->expectsOutputToContain('is pending')->assertExitCode(0);
+        $share = Share::query()->sole();
+        $this->artisan('share:list')->expectsOutputToContain($share->id)->doesntExpectOutputToContain(
+            FakeShareGateway::PUBLIC_ORIGIN,
+        )->assertExitCode(0);
+        $this->artisan('share:url', ['share' => $share->id])->assertExitCode(1);
+
+        $share->status = ShareStatus::Active;
+        $share->save();
+        $this->artisan('share:url', ['share' => $share->id])->expectsOutputToContain(
+            FakeShareGateway::PUBLIC_ORIGIN.'/s/',
+        )->assertExitCode(0);
+
+        $this->artisan(
+            'share:revoke',
+            ['share' => $share->id],
+        )->expectsOutputToContain('is revoked')->assertExitCode(0);
+        $this->artisan('share:url', ['share' => $share->id])->assertExitCode(1);
+        $this->assertStringNotContainsString(
+            FakeShareGateway::PUBLIC_ORIGIN,
+            (string) json_encode($this->app->make(ConnectionInterface::class)->table('command_receipts')->get()->all()),
+        );
+    }
+
+    public function test_two_creations_for_the_last_slot_on_two_configurations_admit_one(): void
+    {
+        $first = ShareGatewayConfiguration::create(FakeShareGateway::settings());
+        $second = ShareGatewayConfiguration::create(FakeShareGateway::settings());
+
+        for ($index = 1; $index < Share::LIVE_LIMIT; $index++) {
+            $this->grantForADay(TestActors::record('binders.binder', 1000 + $index), $first);
+        }
+
+        DB::transaction(fn () => ShareInstallation::create());
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
+        $saved = $this->app->make(CommandBus::class)->run(
+            new SaveSharePreviewCommand('binders.binder', TestIds::of(1), [], $second->id),
+        );
+
+        config(['database.connections.second_creator' => config('database.connections.'.config('database.default'))]);
+        $secondCreator = DB::connection('second_creator');
+        $secondCreator->beginTransaction();
+
+        try {
+            $secondCreator->table('share_installations')->lockForUpdate()->sole();
+            $secondCreator->table('shares')->insert($this->lastSlotRow($first));
+
+            $this->app->instance(OperationDeadline::class, new OperationDeadline(500));
+            $this->assertThrows(
+                fn () => $this->createRacing($saved, '01JD8X0G9M3QZ6V4K2RACE0001'),
+                StackLockTimedOut::class,
+            );
+
+            $secondCreator->commit();
+        } finally {
+            if ($secondCreator->transactionLevel() > 0) {
+                $secondCreator->rollBack();
+            }
+
+            DB::purge('second_creator');
+        }
+
+        $this->assertThrows(
+            fn () => $this->createRacing($saved, '01JD8X0G9M3QZ6V4K2RACE0002'),
+            ShareQuotaReached::class,
+        );
+        $this->assertSame(Share::LIVE_LIMIT, Share::query()->count());
+        $this->assertSame(0, Share::query()->where('share_gateway_configuration_id', $second->id)->count());
+    }
+
     /**
      * @param  list<string>  $selectedIds
      */
@@ -284,5 +430,43 @@ final class CreateShareTest extends TestCase
             $root,
             $configuration,
         )->shareCalled($name);
+    }
+
+    /**
+     * The 100th live share, written by the other creator in its own transaction under the installation lock.
+     *
+     * @return array<string, mixed>
+     */
+    private function lastSlotRow(ShareGatewayConfiguration $configuration): array
+    {
+        $now = CarbonImmutable::now();
+
+        return [
+            'id' => strtolower((string) Str::ulid()),
+            'number_group_id' => Share::query()->value('number_group_id'),
+            'number' => 1_000_000,
+            'status' => ShareStatus::Pending->value,
+            'root_type' => 'binders.binder',
+            'root_id' => TestIds::of(1),
+            'owner_user_id' => $this->journal->ownerUser()->id,
+            'share_gateway_configuration_id' => $configuration->id,
+            'configuration_version' => $configuration->configuration_version,
+            'scope_version' => Share::FIRST_SCOPE_VERSION,
+            'expires_at' => $now->addDay(),
+            'created_at' => $now,
+            'updated_at' => $now,
+        ];
+    }
+
+    private function createRacing(SavedSharePreview $saved, string $key): Share
+    {
+        $this->app->forgetScopedInstances();
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
+        $this->app->make(RequestKey::class)->set($key);
+        $summary = $this->app->make(CommandBus::class)->run(
+            new CreateShareCommand($saved->previewId, $saved->checksum, ShareDuration::STANDARD_MINUTES, $key),
+        );
+
+        return Share::query()->findOrFail($summary->shareId);
     }
 }
