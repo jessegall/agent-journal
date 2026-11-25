@@ -74,6 +74,7 @@
             "Domain\\Chat\\Tests\\": "domain/Chat/tests/",
             "Domain\\Comments\\Tests\\": "domain/Comments/tests/",
             "Domain\\Questions\\Tests\\": "domain/Questions/tests/",
+            "Domain\\Reminders\\Tests\\": "domain/Reminders/tests/",
             "Domain\\Documents\\Tests\\": "domain/Documents/tests/",
             "Domain\\Plans\\Tests\\": "domain/Plans/tests/",
             "Domain\\Rules\\Tests\\": "domain/Rules/tests/",

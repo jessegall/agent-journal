@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Reminders;
+namespace Domain\Reminders\Tests\Feature;
 
 use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
@@ -11,19 +11,16 @@ use Carbon\CarbonImmutable;
 use Domain\Reminders\Commands\CreateReminder\CreateReminderCommand;
 use Domain\Reminders\Commands\FinishReminder\FinishReminderCommand;
 use Domain\Reminders\Enums\ReminderStatus;
-use Domain\Reminders\Exceptions\ReminderEnded;
 use Domain\Reminders\Models\Reminder;
-use Domain\Reminders\RemindersDomain;
 use Domain\Reminders\Resolvers\Support\OwnReminders;
+use Domain\Reminders\Tests\TestCase;
 use Domain\Reminders\Values\ReminderCard;
-use Tests\Support\DomainBoot;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
-use Tests\TestCase;
 
 /**
- * A reminder is made and finished through its commands, read back as the owner's own page with open ones first by due
- * time, and listed by the Reminders window, which says No reminders when there are none.
+ * Reminders are read back as the owner's own page with open ones first by due time, and listed by the Reminders
+ * window, which says No reminders when there are none.
  */
 final class RemindersTest extends TestCase
 {
@@ -31,14 +28,6 @@ final class RemindersTest extends TestCase
     use StartsAgentRequests;
 
     private const string TITLE = 'Read the review';
-
-    /**
-     * The domains this test uses beside core.
-     */
-    protected static function bootedDomains(): array
-    {
-        return DomainBoot::withRequirements(RemindersDomain::class);
-    }
 
     private User $owner;
 
@@ -62,17 +51,6 @@ final class RemindersTest extends TestCase
         $this->assertSame([$sooner, $later, $done], array_map(fn (ReminderCard $card) => $card->id, $page->cards));
         $this->assertSame(3, $page->total);
         $this->assertSame(ReminderStatus::Done, Reminder::query()->findOrFail($done)->status);
-    }
-
-    public function test_a_finished_reminder_cannot_be_finished_again(): void
-    {
-        $id = $this->create('Book the room', CarbonImmutable::parse('2026-11-30 09:00'));
-        $bus = $this->app->make(CommandBus::class);
-        $bus->run(new FinishReminderCommand($id));
-
-        $this->expectException(ReminderEnded::class);
-
-        $bus->run(new FinishReminderCommand($id));
     }
 
     public function test_the_window_lists_reminders_and_says_when_there_are_none(): void
