@@ -5,18 +5,26 @@ declare(strict_types=1);
 namespace Tests\Commands\Accounts;
 
 use App\Commands\Accounts\BeginSignInAgain\BeginSignInAgainCommand;
+use App\Commands\Accounts\CancelSignIn\CancelSignInCommand;
 use App\Commands\Accounts\ReconcileAccounts\ReconcileAccountsCommand;
+use App\Contracts\Bus\CommandBus;
 use App\Enums\Accounts\AccountProcessRole;
 use App\Enums\Accounts\CommandEntry;
+use App\Enums\Accounts\SignInStatus;
 use App\Enums\Agents\SessionProcessStatus;
+use App\Events\Accounts\SignInAttemptFinished;
 use App\Jobs\SignInDeadline;
+use App\Listeners\ReleaseSignInWriter;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\SignInAttempt;
 use App\Support\JournalCommands;
+use App\Support\ListenerRegistry;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use RuntimeException;
+use Tests\Fixtures\Profiles\FailsAfterRelease;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
@@ -71,6 +79,20 @@ final class ReleaseSignInAgainTest extends TestCase
         $this->assertSame($attemptId, $this->claimSignIn('host', CarbonImmutable::now())?->id);
     }
 
+    public function test_a_failure_after_the_release_rolls_back_the_attempt_and_the_account(): void
+    {
+        $attemptId = $this->again('tab-1');
+        $this->app->instance(ListenerRegistry::class, new ListenerRegistry([
+            SignInAttemptFinished::class => [ReleaseSignInWriter::class.'@handle', FailsAfterRelease::class.'@handle'],
+        ]));
+
+        $this->assertThrows(fn () => $this->asOwner(new CancelSignInCommand($attemptId)), RuntimeException::class);
+
+        $attempt = SignInAttempt::query()->withoutGlobalScopes()->findOrFail($attemptId);
+        $this->assertNotSame(SignInStatus::Cancelled, $attempt->status);
+        $this->assertSame($attemptId, $this->account->refresh()->live_writer_attempt_id);
+    }
+
     private function again(string $requestKey): string
     {
         $this->journal->actAs('Owner');
@@ -109,5 +131,11 @@ final class ReleaseSignInAgainTest extends TestCase
         $attempt?->claimOn($hostId);
 
         return $attempt;
+    }
+
+    private function asOwner(object $command): void
+    {
+        $this->journal->actAs('Owner');
+        $this->app->make(CommandBus::class)->run($command);
     }
 }

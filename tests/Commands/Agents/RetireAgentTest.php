@@ -4,22 +4,37 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
+use App\Commands\Agents\ClaimStart\ClaimStartCommand;
+use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\Agents\RetireAgent\RetireAgentCommand;
+use App\Commands\Projects\EnrollHost\EnrollHostCommand;
+use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
+use App\Contracts\Drivers\DriverCompatibilities;
 use App\Contracts\Sessions\StartTransaction;
+use App\Enums\Agents\SessionProcessStatus;
+use App\Enums\Drivers\DriverEvidence;
+use App\Enums\Drivers\DriverType;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\AgentRetirementDenied;
 use App\Exceptions\CommandTransactionMismatch;
 use App\Exceptions\CredentialRejected;
 use App\Exceptions\StartRefused;
+use App\Models\Accounts\Account;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Records\AssignmentRecord;
+use App\Models\Sessions\SessionProcess;
+use App\Support\ActorContext;
 use App\Support\AgentSessions;
 use App\Support\AssigneeIdentity;
+use App\Support\Compatibility\DriverCompatibility;
 use App\Support\CredentialLookup;
+use App\Support\EnrolledHost;
+use App\Support\OpenedRuntime;
 use App\Support\SessionTokens;
 use App\Support\StartSessions;
+use App\Values\OwnerAuthority;
 use Closure;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
@@ -31,6 +46,7 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
+use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 use Throwable;
 
@@ -43,10 +59,15 @@ use Throwable;
 final class RetireAgentTest extends TestCase
 {
     use CommitsHookRows;
+    use WithActiveAccount;
 
     /**
      * The domains this test uses beside core.
      */
+    private Account $account;
+
+    private const string FOLDER = '/work/project';
+
     protected static function bootedDomains(): array
     {
         return DomainBoot::withRequirements(TasksDomain::class);
@@ -66,6 +87,16 @@ final class RetireAgentTest extends TestCase
         'hook_calls',
         'tasks',
         'assignments',
+        'hosts',
+        'agent_runtimes',
+        'driver_requests',
+        'driver_turns',
+        'accounts',
+        'active_accounts',
+        'sign_in_attempts',
+        'session_processes',
+        'links',
+        'command_receipts',
     ];
 
     private Agent $main;
@@ -220,6 +251,32 @@ final class RetireAgentTest extends TestCase
         $this->assertNotNull($session->sessionToken?->revoked_at);
     }
 
+    public function test_a_retired_agents_unclaimed_start_never_runs(): void
+    {
+        $this->account = $this->chooseActiveAccounts()['claude-code'];
+        $this->app->instance(DriverCompatibilities::class, new class implements DriverCompatibilities
+        {
+            public function for(string $driver): DriverCompatibility
+            {
+                $pinned = DriverCompatibility::pinned($driver);
+
+                return $pinned->withEvidence(DriverEvidence::NativeShown, 'this test');
+            }
+        });
+
+        $host = $this->enrollHost();
+        $opened = $this->open($host);
+        $agentId = SessionProcess::query()->withoutGlobalScopes()->sole()->agent_id;
+
+        $this->app->make(CommandBus::class)->run(new RetireAgentCommand($agentId));
+
+        $this->assertSame(
+            SessionProcessStatus::Cancelled,
+            SessionProcess::query()->withoutGlobalScopes()->sole()->status,
+        );
+        $this->assertNull($this->journal->asSystem(new ClaimStartCommand($host->hostId, $opened->sessionId)));
+    }
+
     /**
      * The forked process: it writes what a start writes, a session under the shared lifecycle lock and its
      * credential, tells the parent it holds the lock, waits until the retirement is seen waiting for it, commits and
@@ -327,5 +384,36 @@ final class RetireAgentTest extends TestCase
         }
 
         return [$ends[0], $ends[1]];
+    }
+
+    private function enrollHost(): EnrolledHost
+    {
+        $host = $this->journal->asSystem(new EnrollHostCommand('test host '.Str::random(6), [self::FOLDER]));
+        $this->actAsOwner();
+
+        return $host;
+    }
+
+    private function open(EnrolledHost $host): OpenedRuntime
+    {
+        $this->actAsOwner();
+        $agent = Agent::create('Held agent '.Str::random(6), 'main-agent', $this->localProject());
+        $command = new OpenAgentRuntimeCommand(
+            $agent->id,
+            $host->hostId,
+            self::FOLDER,
+            'claude-code',
+            '2.1.323',
+            'claude',
+            DriverType::Headless,
+            'claude-opus-5-5',
+        );
+
+        return $this->app->make(CommandBus::class)->run($command);
+    }
+
+    private function actAsOwner(): void
+    {
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
     }
 }

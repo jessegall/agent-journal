@@ -8,6 +8,7 @@ use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
 use App\Commands\Accounts\BeginSignInAgain\BeginSignInAgainCommand;
 use App\Commands\Accounts\CancelSignIn\CancelSignInCommand;
 use App\Commands\Accounts\CompleteSignIn\CompleteSignInCommand;
+use App\Commands\Accounts\SubmitSignInCode\SubmitSignInCodeCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Accounts\SignInAttemptData;
@@ -22,9 +23,13 @@ use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Accounts\SignInAttempt;
 use App\Support\Access\AccessSettings;
+use App\Support\ActorContext;
+use App\Support\ActorIdentity;
+use App\Support\DefaultDrivers;
 use App\Support\JournalCommands;
 use App\Values\SignInIdentity;
 use App\Values\SignInStarted;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
@@ -170,6 +175,19 @@ final class CompleteSignInTest extends TestCase
         $this->complete($started->attemptId, 0, null);
     }
 
+    public function test_key_accounts_are_named_for_their_method_and_the_same_key_is_already_added(): void
+    {
+
+        $first = $this->verifiedKey('request-1', 'key-1');
+        $again = $this->verifiedKey('request-2', 'key-1');
+        $this->verifiedKey('request-3', 'key-2');
+
+        $labels = Account::query()->orderBy('created_at')->orderBy('id')->pluck('label')->all();
+        $this->assertSame(['Claude Code API key', 'Claude Code API key (2)'], $labels);
+        $this->assertSame(SignInStatus::AlreadyAdded, $again->refresh()->status);
+        $this->assertSame(SignInStatus::Complete, $first->refresh()->status);
+    }
+
     private function begin(string $requestKey): SignInStarted
     {
         return $this->journal->run(new BeginSignInCommand('claude-code', SignInMethod::OAuth), $requestKey);
@@ -222,5 +240,36 @@ final class CompleteSignInTest extends TestCase
     private function bus(): CommandBus
     {
         return $this->app->make(CommandBus::class);
+    }
+
+    /**
+     * A key attempt for Claude Code, given its key and verified by the host.
+     */
+    private function verifiedKey(string $requestKey, string $key): SignInAttempt
+    {
+        $attempt = SignInAttempt::create(
+            ActorIdentity::of(ActorContext::forUser($this->journal->ownerUser()->id)),
+            DefaultDrivers::CLAUDE_CODE,
+            SignInMethod::ApiKey,
+            '/journal/accounts/'.$requestKey,
+            CarbonImmutable::now()->addMinutes(10),
+        );
+        $this->submit($attempt, $key);
+        $attempt->waitForUser();
+        $this->app->make(JournalCommands::class)->runAsJournal(
+            CommandEntry::HostControl,
+            'test host',
+            new CompleteSignInCommand($attempt->id, $attempt->refresh()->generation, SignInIdentity::unproved()),
+        );
+
+        return $attempt;
+    }
+
+    private function submit(SignInAttempt $attempt, string $text): void
+    {
+        $attempt->waitForUser();
+        $this->app->make(CommandBus::class)->run(
+            new SubmitSignInCodeCommand($attempt->id, $text, 'answer-'.bin2hex(random_bytes(4))),
+        );
     }
 }

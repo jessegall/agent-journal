@@ -6,7 +6,6 @@ namespace Tests\Commands\Agents;
 
 use App\Commands\Agents\RetireAgent\RetireAgentCommand;
 use App\Commands\Agents\StartAgent\StartAgentCommand;
-use App\Commands\Projects\RecordHostCallFailure\RecordHostCallFailureCommand;
 use App\Contracts\Accounts\ActiveAccountReader;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCatalogue;
@@ -16,7 +15,6 @@ use App\Contracts\Sessions\SessionRequestResolver;
 use App\Contracts\Sessions\StartExecutor;
 use App\Contracts\Sessions\StartHeartbeats;
 use App\Contracts\Time\ServerClock;
-use App\Enums\Accounts\CommandEntry;
 use App\Enums\Agents\ConversationModeType;
 use App\Enums\Agents\ExecutionModeType;
 use App\Enums\Agents\SessionProcessStatus;
@@ -56,8 +54,6 @@ use App\Resolvers\Support\PendingStartSecrets;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
-use App\Support\ActorStore;
-use App\Support\CommandEntrance;
 use App\Support\DefaultDrivers;
 use App\Support\HostCapability;
 use App\Support\HostCapabilityQuery;
@@ -112,6 +108,7 @@ final class StartAgentTest extends TestCase
         'links',
         'command_receipts',
         'settings_records',
+        'account_notices',
     ];
 
     private const string IMAGE = 'registry.example/journal-helper@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
@@ -549,22 +546,6 @@ final class StartAgentTest extends TestCase
             StartPolicy::withoutProfile(TestSelections::onHost()),
             driverType: DriverType::Headless,
             previewRevision: $previewRevision,
-        );
-    }
-
-    /**
-     * The journal answers the host's claim with a server error, as the host's own calls record it.
-     */
-    private function failCallsOf(string $hostId): void
-    {
-        $failure = new RecordHostCallFailureCommand($hostId, '/host/claim', 500, 'Maximum execution time exceeded');
-
-        $this->app->make(CommandEntrance::class)->through(
-            CommandEntry::HostControl,
-            fn () => $this->app->make(ActorStore::class)->actAsSystem(
-                'host request',
-                fn () => $this->app->make(CommandBus::class)->run($failure),
-            ),
         );
     }
 
