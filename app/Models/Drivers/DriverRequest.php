@@ -7,17 +7,16 @@ namespace App\Models\Drivers;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
-use App\Contracts\Drivers\MessagePart;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Data\Agents\DriverRequestStatus;
+use App\Data\Messages\MessagePartData;
 use App\Enums\Drivers\DriverOperation;
 use App\Enums\Drivers\ExpectedTiming;
 use App\Enums\Drivers\HoldReason;
 use App\Enums\Drivers\HostWakeRefusal;
 use App\Enums\Drivers\RequestOutcome;
 use App\Enums\Drivers\RequestProgress;
-use App\Enums\Messages\MessagePartType;
 use App\Events\Sessions\DriverRequestAccepted;
 use App\Events\Sessions\DriverRequestApplied;
 use App\Events\Sessions\DriverRequestAttemptStarted;
@@ -50,6 +49,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Spatie\LaravelData\DataCollection;
 
 /**
  * @property string $id
@@ -59,7 +59,7 @@ use Illuminate\Support\Carbon;
  * @property string $idempotency_key
  * @property string $payload_digest
  * @property ?string $message
- * @property ?array $parts
+ * @property MessagePartData[]|DataCollection<array-key, MessagePartData>|null $parts
  * @property ?string $model
  * @property ?string $effort
  * @property RequestProgress $progress
@@ -102,11 +102,13 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
 
     /**
      * @return array<string, string>
+     *
+     * @column script_parameters array<string,string>
      */
     protected function casts(): array
     {
         return [
-            'parts' => 'array',
+            'parts' => DataCollection::class.':'.MessagePartData::class,
             'script_parameters' => 'array',
             'navigation_round' => NavigationRound::class,
             'operation' => DriverOperation::class,
@@ -370,9 +372,7 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
     {
         $this->message = $envelope->message;
 
-        $this->parts = $envelope->parts === []
-            ? null
-            : array_map(fn (MessagePart $part): array => $part->toArray(), $envelope->parts);
+        $this->parts = MessagePartData::collect($envelope->parts, DataCollection::class);
 
         $this->model = $envelope->model;
         $this->effort = $envelope->effort;
@@ -586,14 +586,15 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
     /**
      * The delivery's parts in their order; none for any other request.
      *
-     * @return list<MessagePart>
+     * @return list<MessagePartData>
      */
     public function partList(): array
     {
-        return array_map(
-            fn (array $stored) => MessagePartType::from($stored['type'])->partFrom($stored),
-            $this->parts ?? [],
-        );
+        if ($this->parts === null) {
+            return [];
+        }
+
+        return array_values($this->parts->all());
     }
 
     // ----------[ Accessors ]----------

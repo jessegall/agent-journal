@@ -85,6 +85,8 @@ final class PartRun extends Model implements EventSource, ReadableModel
 
     /**
      * @return array<string, string>
+     *
+     * @column stream_offsets array<string,int>
      */
     protected function casts(): array
     {

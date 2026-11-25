@@ -74,6 +74,9 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
 
     /**
      * @return array<string, string>
+     *
+     * @column source_subjects list<string>
+     * @column steering list<string>
      */
     protected function casts(): array
     {

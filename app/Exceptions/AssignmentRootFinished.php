@@ -7,13 +7,13 @@ namespace App\Exceptions;
 use App\Concerns\RendersRefusal;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
-use App\Contracts\Refusals\RefusalDetails;
+use App\Contracts\Refusals\RefusalRecovery;
 use App\Enums\Engine\RefusalCode;
 use App\Support\RecordIdentity;
 use App\Values\RecoveryCall;
 use RuntimeException;
 
-final class AssignmentRootFinished extends RuntimeException implements CodedRefusal, CommandRefusal, RefusalDetails
+final class AssignmentRootFinished extends RuntimeException implements CodedRefusal, CommandRefusal, RefusalRecovery
 {
     use RendersRefusal;
 
@@ -44,13 +44,9 @@ final class AssignmentRootFinished extends RuntimeException implements CodedRefu
         return RefusalCode::InvalidInput;
     }
 
-    public function refusalDetails(): array
+    public function recovery(): RecoveryCall|null
     {
-        if ($this->recovery === null) {
-            return [];
-        }
-
-        return ['next_action' => $this->recovery->toArray()];
+        return $this->recovery;
     }
 
     /**
@@ -58,6 +54,6 @@ final class AssignmentRootFinished extends RuntimeException implements CodedRefu
      */
     protected function details(): array
     {
-        return $this->refusalDetails();
+        return RecoveryCall::detailsOf($this->recovery);
     }
 }

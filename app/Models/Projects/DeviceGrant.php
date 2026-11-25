@@ -74,6 +74,8 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
 
     /**
      * @return array<string, string>
+     *
+     * @column scopes list<string>
      */
     protected function casts(): array
     {

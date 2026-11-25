@@ -55,6 +55,8 @@ final class EvidencePermit extends Model implements EventSource, ReadableModel
 
     /**
      * @return array<string, string>
+     *
+     * @column approved_classes list<string>
      */
     protected function casts(): array
     {

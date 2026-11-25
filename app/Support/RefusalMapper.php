@@ -6,8 +6,8 @@ namespace App\Support;
 
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
-use App\Contracts\Refusals\RefusalDetails;
 use App\Contracts\Refusals\RefusalMapper as RefusalMapperContract;
+use App\Contracts\Refusals\RefusalRecovery;
 use App\Enums\Engine\RefusalCode;
 use App\Exceptions\CallFailedUnexpectedly;
 use App\Values\MappedRefusal;
@@ -34,11 +34,13 @@ final readonly class RefusalMapper implements RefusalMapperContract
      */
     public function refusal(Throwable $failure, string $subject, string $correlationId): MappedRefusal
     {
+        $recovery = $failure instanceof RefusalRecovery ? $failure->recovery() : null;
+
         return match (true) {
             $failure instanceof CodedRefusal => new MappedRefusal(
                 $failure->refusalCode(),
                 $failure->getMessage(),
-                $failure instanceof RefusalDetails ? $failure->refusalDetails() : [],
+                RecoveryCall::detailsOf($recovery),
             ),
             $failure instanceof CommandRefusal => new MappedRefusal(RefusalCode::Forbidden, $failure->getMessage()),
             $failure instanceof ValidationException => new MappedRefusal(

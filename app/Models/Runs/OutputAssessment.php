@@ -46,6 +46,9 @@ final class OutputAssessment extends Model implements ReadableModel
 
     /**
      * @return array<string, string>
+     *
+     * @column counts array<string,int>
+     * @column final_offsets array<string,int>
      */
     protected function casts(): array
     {

@@ -4,24 +4,29 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use JsonSerializable;
+use Spatie\LaravelData\Attributes\MapName;
+use Spatie\LaravelData\Data;
 
 /**
  * What a delivered skill publication wrote: its generation, publication, session and driver, the selection it was
  * made from, and the digest of each file it wrote.
  */
-final readonly class PublicationManifest implements JsonSerializable
+final class PublicationManifest extends Data
 {
     /**
      * @param  array<string, string>  $files  file digest by relative path
      */
     public function __construct(
-        public string $generationId,
-        public string $publicationId,
-        public string $sessionId,
-        public string $driver,
-        public string $selectionDigest,
-        public array $files,
+        #[MapName('generation')]
+        public readonly string $generationId,
+        #[MapName('publication')]
+        public readonly string $publicationId,
+        #[MapName('session')]
+        public readonly string $sessionId,
+        public readonly string $driver,
+        #[MapName('selection_digest')]
+        public readonly string $selectionDigest,
+        public readonly array $files,
     ) {}
 
     /**
@@ -29,28 +34,6 @@ final readonly class PublicationManifest implements JsonSerializable
      */
     public function text(): string
     {
-        return json_encode($this, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n";
-    }
-
-    /**
-     * @return array{
-     *     generation: string,
-     *     publication: string,
-     *     session: string,
-     *     driver: string,
-     *     selection_digest: string,
-     *     files: array<string, string>,
-     * }
-     */
-    public function jsonSerialize(): array
-    {
-        return [
-            'generation' => $this->generationId,
-            'publication' => $this->publicationId,
-            'session' => $this->sessionId,
-            'driver' => $this->driver,
-            'selection_digest' => $this->selectionDigest,
-            'files' => $this->files,
-        ];
+        return json_encode($this->toArray(), JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n";
     }
 }

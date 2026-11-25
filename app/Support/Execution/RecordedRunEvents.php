@@ -183,7 +183,7 @@ final class RecordedRunEvents implements RunEvents
      */
     private function note(ProcessEventFacts $facts): bool
     {
-        $event = ProcessEvent::create($this->run, ++$this->sequence, $facts->type, $facts->facts);
+        $event = ProcessEvent::create($this->run, ++$this->sequence, $facts);
 
         return $event->wasRecentlyCreated && $event->sequence === $this->sequence;
     }

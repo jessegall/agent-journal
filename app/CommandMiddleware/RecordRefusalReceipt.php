@@ -7,7 +7,7 @@ namespace App\CommandMiddleware;
 use App\Contracts\Bus\CommandMiddleware;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Bus\ReceiptRefusal;
-use App\Contracts\Refusals\RefusalDetails;
+use App\Contracts\Refusals\RefusalRecovery;
 use App\Contracts\Work\StackTransactionRunner;
 use App\Enums\Engine\RefusalCode;
 use App\Models\CommandRules\CommandReceipt;
@@ -58,17 +58,17 @@ final readonly class RecordRefusalReceipt implements CommandMiddleware
     {
         $code = RefusalCode::of($failure);
         $caller = $this->callers->forCommand($call->name(), $call->actor());
-        $details = $failure instanceof RefusalDetails ? $failure->refusalDetails() : [];
+        $recovery = $failure instanceof RefusalRecovery ? $failure->recovery() : null;
         $taken = CommandReceipt::lockedFor($caller, $call->command()::class, $key);
 
         if ($taken !== null) {
-            $taken->refuse($code, $failure->getMessage(), $details);
+            $taken->refuse($code, $failure->getMessage(), $recovery);
 
             return;
         }
 
         CommandReceipt::create($caller, $key, $call->command(), $this->registry->retentionOf($call->name()))
-            ->refuse($code, $failure->getMessage(), $details);
+            ->refuse($code, $failure->getMessage(), $recovery);
     }
 
     /**

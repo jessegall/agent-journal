@@ -61,6 +61,8 @@ final class StopCheck extends Model implements EventSource, ReadableModel
 
     /**
      * @return array<string, string>
+     *
+     * @column condition_hashes array<string,string>
      */
     protected function casts(): array
     {

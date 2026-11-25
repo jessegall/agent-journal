@@ -44,6 +44,8 @@ final class PermissionRevocation extends Model implements ReadableModel
 
     /**
      * @return array<string, string>
+     *
+     * @column revoked_classes list<string>
      */
     protected function casts(): array
     {

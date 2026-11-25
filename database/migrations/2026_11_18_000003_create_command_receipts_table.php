@@ -23,7 +23,7 @@ return new class extends Migration
             $table->json('result')->nullable();
             $table->string('refusal_code', 32)->nullable();
             $table->text('refusal_message')->nullable();
-            $table->json('refusal_details')->nullable();
+            $table->json('refusal_recovery')->nullable();
             $table->timestampTz('answers_until');
             $table->timestampTz('refuses_until')->nullable();
             $table->timestampsTz();

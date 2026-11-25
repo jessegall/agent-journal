@@ -34,11 +34,6 @@ final class ReaderDefinitionInvalid extends InvalidArgumentException implements 
         return new self('A reader definition field is missing: rules needs the summary rule its contract requires.');
     }
 
-    public static function field(string $field): self
-    {
-        return new self("A reader definition field is missing or of the wrong type: {$field}.");
-    }
-
     protected function status(): int
     {
         return 422;

@@ -75,6 +75,8 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
 
     /**
      * @return array<string, string>
+     *
+     * @column goal_parameters array<string,string>
      */
     protected function casts(): array
     {

@@ -80,6 +80,10 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
 
     /**
      * @return array<string, string>
+     *
+     * @column goal_parameters array<string,string>
+     * @column raise_rows list<string>
+     * @column sent_steps list<string>
      */
     protected function casts(): array
     {

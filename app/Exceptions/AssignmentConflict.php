@@ -7,13 +7,13 @@ namespace App\Exceptions;
 use App\Concerns\RendersRefusal;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
-use App\Contracts\Refusals\RefusalDetails;
+use App\Contracts\Refusals\RefusalRecovery;
 use App\Enums\Engine\RefusalCode;
 use App\Support\RecordIdentity;
 use App\Values\RecoveryCall;
 use RuntimeException;
 
-final class AssignmentConflict extends RuntimeException implements CodedRefusal, CommandRefusal, RefusalDetails
+final class AssignmentConflict extends RuntimeException implements CodedRefusal, CommandRefusal, RefusalRecovery
 {
     use RendersRefusal;
 
@@ -48,12 +48,12 @@ final class AssignmentConflict extends RuntimeException implements CodedRefusal,
         return RefusalCode::Conflict;
     }
 
-    public function refusalDetails(): array
+    public function recovery(): RecoveryCall
     {
-        return ['next_action' => new RecoveryCall('assignments_read', [
+        return new RecoveryCall('assignments_read', [
             'record_type' => $this->record->type,
             'record_id' => $this->record->id,
-        ])->toArray()];
+        ]);
     }
 
     /**
@@ -61,6 +61,6 @@ final class AssignmentConflict extends RuntimeException implements CodedRefusal,
      */
     protected function details(): array
     {
-        return $this->refusalDetails();
+        return RecoveryCall::detailsOf($this->recovery());
     }
 }

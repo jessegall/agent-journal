@@ -68,6 +68,8 @@ final class ActivityEntry extends Model implements ReadableModel
 
     /**
      * @return array<string, string>
+     *
+     * @column found list<string>|null
      */
     protected function casts(): array
     {

@@ -8,6 +8,7 @@ use App\Attributes\Api\Endpoint;
 use App\Attributes\Api\InPath;
 use App\Contracts\Domains\JournalCall;
 use App\Enums\Processes\CallEffect;
+use App\Values\ReaderDefinition;
 use Spatie\LaravelData\Attributes\FromRouteParameter;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Min;
@@ -21,14 +22,11 @@ use Spatie\LaravelData\Data;
 #[Endpoint('processes/requests/{commandRequest}/readers', 'POST', ReaderProposed::class, CallEffect::Read)]
 final class ProposeReaderCall extends Data implements JournalCall
 {
-    /**
-     * @param  array<string, mixed>  $definition
-     */
     public function __construct(
         #[InPath, FromRouteParameter('commandRequest')]
         public string $commandRequest,
         #[MapName('declaration_revision'), Min(1)]
         public int $declarationRevision,
-        public array $definition,
+        public ReaderDefinition $definition,
     ) {}
 }

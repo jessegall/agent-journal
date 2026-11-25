@@ -7,6 +7,7 @@ namespace App\Models\Runs;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
+use App\Values\ProcessEventFacts;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -18,7 +19,7 @@ use Illuminate\Support\Carbon;
  * @property string $process_run_id
  * @property int $sequence
  * @property string $type
- * @property array $payload
+ * @property ProcessEventFacts $payload
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
@@ -37,45 +38,38 @@ final class ProcessEvent extends Model implements ReadableModel
     {
         return [
             'sequence' => 'integer',
-            'payload' => 'array',
+            'payload' => ProcessEventFacts::class,
         ];
     }
 
     // ----------[ Constructors ]----------
 
-    /**
-     * @param  array<string, mixed>  $fields
-     */
-    public static function create(ProcessRun $run, int $sequence, string $type, array $fields): self
+    public static function create(ProcessRun $run, int $sequence, ProcessEventFacts $facts): self
     {
         $existing = self::query()->ofRun($run)->atSequence($sequence)->first();
 
         if ($existing === null) {
-            $processEvent = new self();
-            $processEvent->process_run_id = $run->id;
-            $processEvent->sequence = $sequence;
-            $processEvent->type = $type;
-            $processEvent->payload = $fields;
-            $processEvent->save();
-
-            return $processEvent;
+            return self::createAt($run, $sequence, $facts);
         }
 
-        if ($existing->type === $type && $existing->payload === $fields) {
+        if ($existing->payload->toArray() === $facts->toArray()) {
             return $existing;
         }
 
         $next = (int) self::query()->ofRun($run)->max('sequence') + 1;
 
+        return self::createAt($run, $next, ProcessEventFacts::conflict($sequence, $facts));
+    }
+
+    // ----------[ Internals ]----------
+
+    private static function createAt(ProcessRun $run, int $sequence, ProcessEventFacts $facts): self
+    {
         $processEvent = new self();
         $processEvent->process_run_id = $run->id;
-        $processEvent->sequence = $next;
-        $processEvent->type = self::OPERATIONAL_ERROR;
-        $processEvent->payload = [
-            'conflicts_with' => $sequence,
-            'type' => $type,
-            'payload' => $fields,
-        ];
+        $processEvent->sequence = $sequence;
+        $processEvent->type = $facts->type;
+        $processEvent->payload = $facts;
         $processEvent->save();
 
         return $processEvent;

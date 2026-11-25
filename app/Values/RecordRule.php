@@ -6,13 +6,14 @@ namespace App\Values;
 
 use App\Enums\Records\RecordRole;
 use App\Exceptions\ReaderDefinitionInvalid;
+use Spatie\LaravelData\Data;
 
 /**
  * One rule of a reader: a role and a pattern of literal text with named placeholders ({failed:int}, {name:word},
  * {message:rest}); a word stops at a space or a quote. The pattern compiles to an anchored expression of possessive
  * matches, so it never backtracks.
  */
-final readonly class RecordRule
+final class RecordRule extends Data
 {
     /**
      * What each placeholder matches: digits, a word with no space or quote, the rest of the line, or the shortest text
@@ -25,25 +26,27 @@ final readonly class RecordRule
         'text' => '.+?',
     ];
 
-    private function __construct(
-        public RecordRole $role,
-        public string $pattern,
-        public string $expression,
-    ) {}
+    /**
+     * @throws ReaderDefinitionInvalid
+     */
+    public function __construct(public readonly RecordRole $role, public readonly string $pattern)
+    {
+        self::compile($pattern);
+    }
 
     /**
-     * The rule of a role and a pattern, compiled to its anchored expression.
+     * The rule of a role and a pattern.
      *
      * @throws ReaderDefinitionInvalid
      */
     public static function of(RecordRole $role, string $pattern): self
     {
-        return new self($role, $pattern, '/^'.self::compile($pattern).'$/u');
+        return new self($role, $pattern);
     }
 
     public function matches(string $line): bool
     {
-        return preg_match($this->expression, $line) === 1;
+        return preg_match($this->expression(), $line) === 1;
     }
 
     /**
@@ -53,9 +56,17 @@ final readonly class RecordRule
      */
     public function captures(string $line): array
     {
-        preg_match($this->expression, $line, $match);
+        preg_match($this->expression(), $line, $match);
 
         return array_filter($match, fn (int|string $key): bool => is_string($key), ARRAY_FILTER_USE_KEY);
+    }
+
+    /**
+     * The pattern compiled to its anchored expression; PCRE keeps the compiled form, so a repeat costs little.
+     */
+    private function expression(): string
+    {
+        return '/^'.self::compile($this->pattern).'$/u';
     }
 
     /**

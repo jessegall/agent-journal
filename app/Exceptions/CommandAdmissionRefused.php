@@ -6,12 +6,12 @@ namespace App\Exceptions;
 
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
-use App\Contracts\Refusals\RefusalDetails;
+use App\Contracts\Refusals\RefusalRecovery;
 use App\Enums\Engine\RefusalCode;
 use App\Values\RecoveryCall;
 use RuntimeException;
 
-final class CommandAdmissionRefused extends RuntimeException implements CodedRefusal, CommandRefusal, RefusalDetails
+final class CommandAdmissionRefused extends RuntimeException implements CodedRefusal, CommandRefusal, RefusalRecovery
 {
     private function __construct(
         private readonly RefusalCode $refusal,
@@ -31,12 +31,8 @@ final class CommandAdmissionRefused extends RuntimeException implements CodedRef
         return $this->refusal;
     }
 
-    public function refusalDetails(): array
+    public function recovery(): RecoveryCall|null
     {
-        if ($this->recovery === null) {
-            return [];
-        }
-
-        return ['next_action' => $this->recovery->toArray()];
+        return $this->recovery;
     }
 }

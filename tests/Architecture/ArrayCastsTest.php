@@ -28,7 +28,10 @@ final class ArrayCastsTest extends TestCase
     {
         $output = $this->checkOutput(self::FIXTURE);
 
-        $this->assertStringContainsString('column entries is cast to an array of list<array{name: string, size: int}>', $output);
+        $entries = 'column entries is cast to an array of list<array{name:string,size:int}>';
+
+        $this->assertStringContainsString($entries, $output);
+        $this->assertStringContainsString('column notes is cast to an array of no stated type', $output);
         $this->assertStringNotContainsString('column tags', $output);
         $this->assertStringNotContainsString('column counts', $output);
     }

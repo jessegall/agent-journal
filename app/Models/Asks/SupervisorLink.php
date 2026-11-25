@@ -35,6 +35,11 @@ final class SupervisorLink extends Model implements EventSource, ReadableModel
     use Linkable;
     use RaisesEvents;
 
+    /**
+     * @return array<string, string>
+     *
+     * @column versions array<string,int>
+     */
     protected function casts(): array
     {
         return [

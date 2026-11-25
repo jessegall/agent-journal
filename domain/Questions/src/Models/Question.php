@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Domain\Questions\Models;
 
-use Domain\Questions\Values\QuestionSummary;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\AuthoredModel;
 use App\Contracts\Records\ReadableModel;
+use App\Models\Support\Accessor;
+use App\Support\ActorIdentity;
+use Carbon\CarbonImmutable;
 use Domain\Questions\Enums\QuestionType;
 use Domain\Questions\Events\QuestionAnswered;
 use Domain\Questions\Events\QuestionAsked;
 use Domain\Questions\Exceptions\QuestionRefused;
-use App\Models\Support\Accessor;
-use App\Support\ActorIdentity;
-use Carbon\CarbonImmutable;
+use Domain\Questions\Values\QuestionSummary;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -51,6 +51,8 @@ final class Question extends Model implements AuthoredModel, EventSource, Readab
 
     /**
      * @return array<string, string>
+     *
+     * @column options list<string>
      */
     protected function casts(): array
     {

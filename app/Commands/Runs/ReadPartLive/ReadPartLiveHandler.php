@@ -43,7 +43,7 @@ final readonly class ReadPartLiveHandler implements CommandHandler
             return $position->interpretation->value;
         }
 
-        $definition = $pairs[0]->reader->readerDefinition();
+        $definition = $pairs[0]->reader->definition;
         $reader = new DeclarativeReader($definition, $pairs[0]->contract->output, $position->reader_revision_id);
         $checkpoint = $position->checkpoint;
 

@@ -8,8 +8,9 @@ use App\Concerns\RendersRefusal;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Bus\ReceiptRefusal;
 use App\Contracts\Refusals\CodedRefusal;
-use App\Contracts\Refusals\RefusalDetails;
+use App\Contracts\Refusals\RefusalRecovery;
 use App\Enums\Engine\RefusalCode;
+use App\Values\RecoveryCall;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -20,27 +21,21 @@ final class RefusalReplayed extends RuntimeException implements
     CodedRefusal,
     CommandRefusal,
     ReceiptRefusal,
-    RefusalDetails
+    RefusalRecovery
 {
     use RendersRefusal;
 
-    /**
-     * @param  array<string, mixed>  $storedDetails
-     */
     private function __construct(
         private readonly RefusalCode $storedCode,
         string $message,
-        private readonly array $storedDetails,
+        private readonly RecoveryCall|null $storedRecovery,
     ) {
         parent::__construct($message);
     }
 
-    /**
-     * @param  array<string, mixed>  $details
-     */
-    public static function of(RefusalCode $code, string $message, array $details): self
+    public static function of(RefusalCode $code, string $message, RecoveryCall|null $recovery): self
     {
-        return new self($code, $message, $details);
+        return new self($code, $message, $recovery);
     }
 
     public function refusalCode(): RefusalCode
@@ -48,15 +43,9 @@ final class RefusalReplayed extends RuntimeException implements
         return $this->storedCode;
     }
 
-    public function refusalDetails(): array
+    public function recovery(): RecoveryCall|null
     {
-        $details = $this->storedDetails;
-
-        if (isset($details['next_action']['arguments'])) {
-            $details['next_action']['arguments'] = (object) $details['next_action']['arguments'];
-        }
-
-        return $details;
+        return $this->storedRecovery;
     }
 
     /**
@@ -64,7 +53,7 @@ final class RefusalReplayed extends RuntimeException implements
      */
     protected function details(): array
     {
-        return $this->refusalDetails();
+        return RecoveryCall::detailsOf($this->storedRecovery);
     }
 
     protected function status(): int

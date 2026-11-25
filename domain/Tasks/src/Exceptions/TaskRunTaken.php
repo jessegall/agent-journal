@@ -7,7 +7,7 @@ namespace Domain\Tasks\Exceptions;
 use App\Concerns\RendersRefusal;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
-use App\Contracts\Refusals\RefusalDetails;
+use App\Contracts\Refusals\RefusalRecovery;
 use App\Enums\Engine\RefusalCode;
 use App\Values\RecoveryCall;
 use Domain\Tasks\Models\Task;
@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * A task run another session owns, which a start may not take.
  */
-final class TaskRunTaken extends RuntimeException implements CodedRefusal, CommandRefusal, RefusalDetails
+final class TaskRunTaken extends RuntimeException implements CodedRefusal, CommandRefusal, RefusalRecovery
 {
     use RendersRefusal;
 
@@ -44,9 +44,9 @@ final class TaskRunTaken extends RuntimeException implements CodedRefusal, Comma
         return Response::HTTP_CONFLICT;
     }
 
-    public function refusalDetails(): array
+    public function recovery(): RecoveryCall
     {
-        return ['next_action' => new RecoveryCall('tasks_read', ['task_id' => $this->taskId])->toArray()];
+        return new RecoveryCall('tasks_read', ['task_id' => $this->taskId]);
     }
 
     /**
@@ -54,6 +54,6 @@ final class TaskRunTaken extends RuntimeException implements CodedRefusal, Comma
      */
     protected function details(): array
     {
-        return $this->refusalDetails();
+        return RecoveryCall::detailsOf($this->recovery());
     }
 }

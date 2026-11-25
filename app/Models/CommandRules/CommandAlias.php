@@ -34,6 +34,11 @@ final class CommandAlias extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
+    /**
+     * @return array<string, string>
+     *
+     * @column argument_grammar list<string>
+     */
     protected function casts(): array
     {
         return [

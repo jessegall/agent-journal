@@ -20,7 +20,7 @@ final readonly class ReaderReplay
 
     public function replay(ReaderRevision $reader, VerificationContract $contract, PartRun $part): ReplayedOutput
     {
-        $replay = new DeclarativeReader($reader->readerDefinition(), $contract->output, $reader->id);
+        $replay = new DeclarativeReader($reader->definition, $contract->output, $reader->id);
         $checkpoint = new ReaderCheckpoint();
 
         foreach ($part->recordedStreams() as $stream) {

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Enums\Messages;
 
-use App\Contracts\Drivers\MessagePart;
 use App\Data\Messages\MessageAttachmentData;
+use App\Data\Messages\MessagePartData;
 use App\Data\Messages\MessageTextData;
 
 /**
@@ -17,15 +17,15 @@ enum MessagePartType: string
     case Attachment = 'attachment';
 
     /**
-     * The part of this type from its stored array.
+     * The Data class of a part of this type.
      *
-     * @param  array<string, mixed>  $stored
+     * @return class-string<MessagePartData>
      */
-    public function partFrom(array $stored): MessagePart
+    public function dataClass(): string
     {
         return match ($this) {
-            self::Text => MessageTextData::from($stored),
-            self::Attachment => MessageAttachmentData::from($stored),
+            self::Text => MessageTextData::class,
+            self::Attachment => MessageAttachmentData::class,
         };
     }
 }

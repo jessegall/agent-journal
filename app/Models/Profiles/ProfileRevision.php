@@ -65,6 +65,9 @@ final class ProfileRevision extends Model implements ReadableModel
 
     /**
      * @return array<string, string>
+     *
+     * @column skill_allowlist list<string>|null
+     * @column required_skills list<string>
      */
     protected function casts(): array
     {

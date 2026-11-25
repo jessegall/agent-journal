@@ -33,6 +33,8 @@ final class DriverApproval extends Model implements EventSource, ReadableModel
 
     /**
      * @return array<string, string>
+     *
+     * @column build_pins list<string>
      */
     protected function casts(): array
     {

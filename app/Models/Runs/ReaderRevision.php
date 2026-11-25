@@ -7,7 +7,6 @@ namespace App\Models\Runs;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
-use App\Exceptions\ReaderDefinitionInvalid;
 use App\Exceptions\RevisionImmutable;
 use App\Models\CommandRules\CommandRequest;
 use App\Support\ActorIdentity;
@@ -28,7 +27,7 @@ use Illuminate\Support\Carbon;
  * @property int $declaration_revision
  * @property string $operation
  * @property string $contract_label
- * @property array $definition
+ * @property ReaderDefinition $definition
  * @property string $actor_type
  * @property string $actor_id
  * @property Carbon $created_at
@@ -49,7 +48,7 @@ final class ReaderRevision extends Model implements ReadableModel
     protected function casts(): array
     {
         return [
-            'definition' => 'array',
+            'definition' => ReaderDefinition::class,
             'declaration_revision' => 'integer',
         ];
     }
@@ -77,7 +76,7 @@ final class ReaderRevision extends Model implements ReadableModel
         $readerRevision->declaration_revision = $declarationRevision;
         $readerRevision->operation = $request->operation;
         $readerRevision->contract_label = $contractLabel;
-        $readerRevision->definition = $definition->toArray();
+        $readerRevision->definition = $definition;
         $readerRevision->actor_type = $author->type;
         $readerRevision->actor_id = $author->id;
         $readerRevision->save();
@@ -91,14 +90,6 @@ final class ReaderRevision extends Model implements ReadableModel
     }
 
     // ----------[ Transformers ]----------
-
-    /**
-     * @throws ReaderDefinitionInvalid
-     */
-    public function readerDefinition(): ReaderDefinition
-    {
-        return ReaderDefinition::fromArray($this->definition);
-    }
 
     // ----------[ Relations ]----------
 

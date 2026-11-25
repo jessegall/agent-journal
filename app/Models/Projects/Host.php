@@ -71,6 +71,8 @@ final class Host extends Model implements EventSource, ReadableModel
 
     /**
      * @return array<string, string>
+     *
+     * @column start_roots list<string>
      */
     protected function casts(): array
     {

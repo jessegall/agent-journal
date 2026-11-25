@@ -45,7 +45,7 @@ use Illuminate\Support\Carbon;
  * @property int $progress
  * @property PublicationState $state
  * @property ?string $open_key
- * @property ?array $manifest
+ * @property ?PublicationManifest $manifest
  * @property ?string $error
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
@@ -63,6 +63,8 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
 
     /**
      * @return array<string, string>
+     *
+     * @column skill_keys list<string>
      */
     protected function casts(): array
     {
@@ -72,7 +74,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
             'progress' => 'integer',
             'skill_keys' => 'array',
             'state' => PublicationState::class,
-            'manifest' => 'array',
+            'manifest' => PublicationManifest::class,
         ];
     }
 
@@ -136,7 +138,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     {
         $this->assertHeldBy($fence);
         $this->moveTo(PublicationState::Delivered);
-        $this->manifest = $manifest->jsonSerialize();
+        $this->manifest = $manifest;
         $this->open_key = null;
         $this->lease_holder = null;
         $this->lease_until = null;

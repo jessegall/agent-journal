@@ -24,6 +24,7 @@ use App\Support\PlainValue;
 use App\Support\ReceiptCaller;
 use App\Support\ReceiptCallers;
 use App\Support\ReceiptRetention;
+use App\Values\RecoveryCall;
 use Carbon\CarbonImmutable;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -46,7 +47,7 @@ use Illuminate\Support\Carbon;
  * @property ?ReceiptResultData $result
  * @property ?string $refusal_code
  * @property ?string $refusal_message
- * @property ?array $refusal_details
+ * @property ?RecoveryCall $refusal_recovery
  * @property CarbonImmutable $answers_until
  * @property ?CarbonImmutable $refuses_until
  * @property ?Carbon $created_at
@@ -74,7 +75,7 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
         return [
             'state' => ReceiptState::class,
             'result' => ReceiptResultData::class,
-            'refusal_details' => 'array',
+            'refusal_recovery' => RecoveryCall::class,
             'contract_major' => 'integer',
             'answers_until' => 'immutable_datetime',
             'refuses_until' => 'immutable_datetime',
@@ -134,10 +135,8 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
     /**
      * The key this write took in a transaction it joined is marked refused, unless it already holds a completed
      * result: a refusal now, such as revoked rights on a replay, never replaces that.
-     *
-     * @param  array<string, mixed>  $details
      */
-    public function refuse(RefusalCode $code, string $message, array $details = []): void
+    public function refuse(RefusalCode $code, string $message, RecoveryCall|null $recovery): void
     {
         if ($this->state === ReceiptState::Completed) {
             return;
@@ -146,7 +145,7 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
         $this->state = ReceiptState::Refused;
         $this->refusal_code = $code->value;
         $this->refusal_message = $message;
-        $this->refusal_details = $details;
+        $this->refusal_recovery = $recovery;
         $this->assertSaved($this->save());
         $this->raise(new CommandReceiptRefused($this->id, $code));
     }
@@ -230,7 +229,7 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
             throw RefusalReplayed::of(
                 RefusalCode::from((string) $this->refusal_code),
                 (string) $this->refusal_message,
-                $this->refusal_details ?? [],
+                $this->refusal_recovery,
             );
         }
     }

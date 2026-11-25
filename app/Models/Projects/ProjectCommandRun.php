@@ -48,6 +48,8 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
 
     /**
      * @return array<string, string>
+     *
+     * @column argv list<string>
      */
     protected function casts(): array
     {

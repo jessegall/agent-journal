@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 /**
- * Lists the model columns cast to a plain array whose documented type holds more than scalars: an array shape, a
- * nested list or a mixed value. Such a column is cast to Laravel Data, the Data class for one object or
- * DataCollection::class.':'.ItemData::class for a list of them, so the model hands back typed objects (user message
- * 22125). A list or map of strings, ints, floats or bools keeps its array cast.
+ * Lists the model columns cast to a plain array whose type, stated in casts()'s doc comment as "@column <name>
+ * <type>", holds more than scalars or is not stated: an array shape, a nested list or a mixed value. Such a column is
+ * cast to Laravel Data, the Data class for one object or DataCollection::class.':'.ItemData::class for a list of them,
+ * so the model hands back typed objects (user message 22125). A list or map of scalars keeps its array cast.
  *
  *   php tools/refactoring/array-casts.php app domain
  *       prints "file:line<TAB>column <name> ..." for each such column, and fails while there is one.
@@ -35,9 +35,7 @@ foreach (array_slice($argv, 1) as $path) {
         preg_match_all(ARRAY_CASTS, $source, $casts, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
 
         foreach ($casts as [$line, $column]) {
-            $documented = preg_match('/@property(?:-read)? (\S+(?: \S+)*?) \$'.$column[0].'\b/', $source, $type) === 1
-                ? $type[1]
-                : 'no documented type';
+            $documented = columnType($source, $column[0]);
 
             if (preg_match(SCALAR_ARRAY, $documented) === 1) {
                 continue;
@@ -52,3 +50,16 @@ foreach (array_slice($argv, 1) as $path) {
 }
 
 exit($faultCount === 0 ? 0 : 1);
+
+/**
+ * The type the casts() doc comment states for a column, as "@column <name> <type>"; the IDE regenerates @property
+ * lines as a bare array, so the casts() comment is where an array column's items are named.
+ */
+function columnType(string $source, string $column): string
+{
+    if (preg_match('/@column '.$column.' (\S+)/', $source, $type) !== 1) {
+        return 'no stated type';
+    }
+
+    return $type[1];
+}

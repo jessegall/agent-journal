@@ -39,6 +39,8 @@ final class RetainedPage extends Model implements ReadableModel
 
     /**
      * @return array<string, string>
+     *
+     * @column references list<string>
      */
     protected function casts(): array
     {

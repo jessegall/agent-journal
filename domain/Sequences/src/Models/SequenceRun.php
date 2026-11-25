@@ -82,6 +82,8 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
 
     /**
      * @return array<string, string>
+     *
+     * @column steps list<string>
      */
     protected function casts(): array
     {

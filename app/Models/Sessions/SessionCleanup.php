@@ -49,6 +49,8 @@ final class SessionCleanup extends Model implements EventSource, ReadableModel
 
     /**
      * @return array<string, string>
+     *
+     * @column removed_steps list<string>
      */
     protected function casts(): array
     {

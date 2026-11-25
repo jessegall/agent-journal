@@ -14,6 +14,7 @@ use App\Models\Runs\ProcessRun;
 use App\Support\ActorIdentity;
 use App\Values\PartEnd;
 use App\Values\PartKey;
+use App\Values\ProcessEventFacts;
 use Tests\Support\ChecksSchemaTables;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestRunAdmissions;
@@ -72,13 +73,16 @@ final class ProcessRecordsTest extends TestCase
     {
         $run = $this->admittedRun();
 
-        ProcessEvent::create($run, 1, 'part_started', ['part' => 'a']);
-        ProcessEvent::create($run, 1, 'part_started', ['part' => 'a']);
-        $conflict = ProcessEvent::create($run, 1, 'part_ended', ['part' => 'a']);
+        $part = new PartKey(1, 1, 'a');
+
+        ProcessEvent::create($run, 1, ProcessEventFacts::partStartedInside($part));
+        ProcessEvent::create($run, 1, ProcessEventFacts::partStartedInside($part));
+        $conflict = ProcessEvent::create($run, 1, ProcessEventFacts::partLost($part));
 
         $this->assertSame(2, $run->events()->count());
         $this->assertSame(ProcessEvent::OPERATIONAL_ERROR, $conflict->type);
-        $this->assertSame(1, $conflict->payload['conflicts_with']);
+        $this->assertSame(1, $conflict->payload->conflictsWith);
+        $this->assertSame('part_lost', $conflict->payload->conflicting?->type);
     }
 
     public function test_an_evidence_run_never_answers(): void
