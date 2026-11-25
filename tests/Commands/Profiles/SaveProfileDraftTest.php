@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Profiles;
+namespace Tests\Commands\Profiles;
 
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Commands\Profiles\SaveProfileDraft\SaveProfileDraftCommand;
@@ -24,7 +24,7 @@ use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
-final class ProfileDraftTest extends TestCase
+final class SaveProfileDraftTest extends TestCase
 {
     use CommitsHookRows;
     use StartsAgentRequests;
