@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sharing\Tests\Feature;
 
 use App\Exceptions\SupervisorInsideTransaction;
-use App\Support\Access\AccessSettings;
+use App\Support\ActorContext;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Enums\GatewayOperationType;
@@ -19,11 +19,11 @@ use Domain\Sharing\Support\ShareGatewayRegistry;
 use Domain\Sharing\Support\ShareLinkResolver;
 use Domain\Sharing\Support\ShareProposal;
 use Domain\Sharing\Support\SharingSupervisor;
+use Domain\Sharing\Tests\Fixtures\ShareFixtures;
 use Domain\Sharing\Tests\TestCase;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Sharing\FakeShareGateway;
-use Tests\Support\Sharing\TestShares;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -61,7 +61,7 @@ final class SharingSupervisorTest extends TestCase
         $this->gateway = new FakeShareGateway();
         $this->app->instance(FakeShareGateway::class, $this->gateway);
         $this->app->make(ShareGatewayRegistry::class)->register(FakeShareGateway::KEY, FakeShareGateway::class);
-        $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
+        $this->journal->owner();
         $this->configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
     }
 
@@ -100,7 +100,7 @@ final class SharingSupervisorTest extends TestCase
         $first->begin();
         $first->work();
         $digest = Share::query()->findOrFail($share->id)->token_digest;
-        $link = $this->app->make(ShareLinkResolver::class)->linkFor(TestActors::user(9), $share->id)->get();
+        $link = $this->app->make(ShareLinkResolver::class)->linkFor(ActorContext::of($this->journal->ownerUser()), $share->id)->get();
 
         $restarted = $this->supervisor();
 
@@ -112,7 +112,7 @@ final class SharingSupervisorTest extends TestCase
         $this->assertSame($digest, Share::query()->findOrFail($share->id)->token_digest);
         $this->assertSame(
             $link,
-            $this->app->make(ShareLinkResolver::class)->linkFor(TestActors::user(9), $share->id)->get(),
+            $this->app->make(ShareLinkResolver::class)->linkFor(ActorContext::of($this->journal->ownerUser()), $share->id)->get(),
         );
         $this->assertCount(2, $this->gateway->opened);
         $reopened = ShareGatewayEndpoint::query()->where('run_id', $restarted->runId)->sole();
@@ -127,7 +127,7 @@ final class SharingSupervisorTest extends TestCase
             CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS),
             new ShareProposal(TestActors::agentIdentity(5)),
         );
-        $revoked = TestShares::grantForADay(TestActors::record('binders.binder', 2), $this->configuration);
+        $revoked = $this->grantForADay(TestActors::record('binders.binder', 2), $this->configuration);
         $revoked->end(ShareStatus::Revoked);
 
         $this->assertSame(0, $this->supervisor()->begin());
@@ -153,7 +153,7 @@ final class SharingSupervisorTest extends TestCase
     private function pendingShare(int $rootIdNumber): Share
     {
         $rootId = TestIds::of($rootIdNumber);
-        $share = TestShares::grantForADay(new RecordIdentity('binders.binder', $rootId), $this->configuration);
+        $share = $this->grantForADay(new RecordIdentity('binders.binder', $rootId), $this->configuration);
         ShareGatewayOperation::create($this->configuration, GatewayOperationType::Open);
 
         return $share;
@@ -162,5 +162,19 @@ final class SharingSupervisorTest extends TestCase
     private function supervisor(): SharingSupervisor
     {
         return $this->app->make(SharingSupervisor::class);
+    }
+
+    /**
+     * A share the journal's owner granted on the root for a day, kept under the root's reference.
+     */
+    private function grantForADay(RecordIdentity $root, ShareGatewayConfiguration $configuration): Share
+    {
+        $name = $root->reference();
+
+        return $this->journal->fixtures(ShareFixtures::class)->grantForADay(
+            $name,
+            $root,
+            $configuration,
+        )->shareCalled($name);
     }
 }

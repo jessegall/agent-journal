@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Commands;
 
+use App\Support\RecordIdentity;
 use Domain\Sharing\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
 use Domain\Sharing\Commands\RecordGatewayHealth\RecordGatewayHealthCommand;
 use Domain\Sharing\Commands\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
@@ -15,10 +16,10 @@ use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\ShareGatewayEndpoint;
 use Domain\Sharing\Models\ShareGatewayOperation;
 use Domain\Sharing\Support\ClaimedGatewayOperation;
+use Domain\Sharing\Tests\Fixtures\ShareFixtures;
 use Domain\Sharing\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\FakeShareGateway;
-use Tests\Support\Sharing\TestShares;
 use Tests\Support\TestActors;
 
 /**
@@ -38,8 +39,10 @@ final class RecordGatewayHealthTest extends TestCase
     {
         parent::setUp();
 
+        $this->journal->owner();
+
         $this->configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
-        $this->share = TestShares::grantForADay(TestActors::record('binders.binder', 1), $this->configuration);
+        $this->share = $this->grantForADay(TestActors::record('binders.binder', 1), $this->configuration);
         ShareGatewayOperation::create($this->configuration, GatewayOperationType::Open);
     }
 
@@ -78,5 +81,19 @@ final class RecordGatewayHealthTest extends TestCase
         $this->journal->asSystem(
             new RecordGatewayHealthCommand($runId, $this->configuration->id, $endpointVersion, true),
         );
+    }
+
+    /**
+     * A share the journal's owner granted on the root for a day, kept under the root's reference.
+     */
+    private function grantForADay(RecordIdentity $root, ShareGatewayConfiguration $configuration): Share
+    {
+        $name = $root->reference();
+
+        return $this->journal->fixtures(ShareFixtures::class)->grantForADay(
+            $name,
+            $root,
+            $configuration,
+        )->shareCalled($name);
     }
 }

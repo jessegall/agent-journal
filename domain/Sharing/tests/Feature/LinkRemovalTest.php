@@ -49,6 +49,8 @@ final class LinkRemovalTest extends TestCase
     {
         parent::setUp();
 
+        $this->journal->owner();
+
         $this->source = Agent::create('Source', 'read-only-helper', $this->localProject());
         $this->target = Agent::create('Target', 'read-only-helper', $this->localProject());
         Link::createForModels($this->source, $this->target);
@@ -60,7 +62,7 @@ final class LinkRemovalTest extends TestCase
             $this->identityOf($this->source),
             CarbonImmutable::now()->addDays(7),
             new ShareGrant(
-                TestIds::of(9),
+                $this->journal->ownerUser()->id,
                 $configuration->id,
                 $configuration->configuration_version,
                 ShareToken::generate(),

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Fixtures;
 
-use App\Contracts\Time\ServerClock;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Enums\ShareStatus;
@@ -49,13 +48,11 @@ final class ShareFixtures
     }
 
     /**
-     * A grant that ends a day after the server clock's now.
+     * A grant that ends a day after the application's now, which a test moves with travelTo.
      */
     public function grantForADay(string $name, RecordIdentity $root, ShareGatewayConfiguration $configuration): self
     {
-        $end = $this->journal->service(ServerClock::class)->now()->addDay();
-
-        return $this->grantUntil($name, $root, $configuration, $end);
+        return $this->grantUntil($name, $root, $configuration, CarbonImmutable::now()->addDay());
     }
 
     public function shareCalled(string $name): Share

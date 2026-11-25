@@ -9,7 +9,7 @@ use App\Exceptions\RequestKeyConflict;
 use App\Exceptions\RequestKeyMissing;
 use App\Models\CommandRules\CommandReceipt;
 use App\Models\Records\Link;
-use App\Support\Access\AccessSettings;
+use App\Support\ActorContext;
 use App\Support\RecordIdentity;
 use App\Support\RequestKey;
 use App\Support\ShareRecordRegistry;
@@ -34,13 +34,13 @@ use Domain\Sharing\Support\ShareGrant;
 use Domain\Sharing\Support\ShareLinkResolver;
 use Domain\Sharing\Support\ShareSummary;
 use Domain\Sharing\Support\ShareToken;
+use Domain\Sharing\Tests\Fixtures\ShareFixtures;
 use Domain\Sharing\Tests\TestCase;
 use Tests\Fixtures\Domains\Binders\BinderPublications;
 use Tests\Fixtures\Domains\Binders\BindersDomain;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\RegistersShareDomains;
-use Tests\Support\Sharing\TestShares;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -71,7 +71,7 @@ final class CreateShareTest extends TestCase
 
         $this->registerShareDomain(BindersDomain::class);
         $this->app->make(ShareRecordRegistry::class)->checkRelations();
-        $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
+        $this->journal->owner();
         $this->app->instance(BinderPublications::class, new BinderPublications());
         $this->configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
         $this->root = TestActors::record('binders.binder', 1);
@@ -83,7 +83,7 @@ final class CreateShareTest extends TestCase
             Link::create($this->root->type, $this->root->id, 'binders.sheet', TestIds::of($number));
         }
 
-        $this->journal->actAsUserId(TestIds::of(9));
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
     }
 
     public function test_the_owner_creates_a_share_from_a_fresh_preview_and_reads_its_url(): void
@@ -110,7 +110,7 @@ final class CreateShareTest extends TestCase
 
         $links = $this->app->make(ShareLinkResolver::class);
         $this->assertTrue(
-            $links->linkFor(TestActors::user(9), $share->id)->isEmpty(),
+            $links->linkFor(ActorContext::of($this->journal->ownerUser()), $share->id)->isEmpty(),
             self::PENDING_HAS_NO_ADDRESS,
         );
 
@@ -119,7 +119,7 @@ final class CreateShareTest extends TestCase
 
         $this->assertSame(
             FakeShareGateway::PUBLIC_ORIGIN.'/s/'.$share->token_ciphertext,
-            $links->linkFor(TestActors::user(9), $share->id)->get(),
+            $links->linkFor(ActorContext::of($this->journal->ownerUser()), $share->id)->get(),
         );
         $this->assertTrue(
             $links->linkFor(TestActors::user(8), $share->id)->isEmpty(),
@@ -222,7 +222,7 @@ final class CreateShareTest extends TestCase
     public function test_the_hundred_and_first_live_share_is_refused(): void
     {
         for ($index = 0; $index < Share::LIVE_LIMIT; $index++) {
-            TestShares::grantForADay(TestActors::record('binders.binder', 1000 + $index), $this->configuration);
+            $this->grantForADay(TestActors::record('binders.binder', 1000 + $index), $this->configuration);
         }
 
         $saved = $this->preview([]);
@@ -239,7 +239,7 @@ final class CreateShareTest extends TestCase
                 TestActors::record('binders.binder', 1000 + $index),
                 CarbonImmutable::now()->subMinute(),
                 new ShareGrant(
-                    TestIds::of(9),
+                    $this->journal->ownerUser()->id,
                     $this->configuration->id,
                     $this->configuration->configuration_version,
                     ShareToken::generate(),
@@ -270,5 +270,19 @@ final class CreateShareTest extends TestCase
         return $this->app->make(CommandBus::class)->run(
             new CreateShareCommand($saved->previewId, $saved->checksum, $minutes, $key),
         );
+    }
+
+    /**
+     * A share the journal's owner granted on the root for a day, kept under the root's reference.
+     */
+    private function grantForADay(RecordIdentity $root, ShareGatewayConfiguration $configuration): Share
+    {
+        $name = $root->reference();
+
+        return $this->journal->fixtures(ShareFixtures::class)->grantForADay(
+            $name,
+            $root,
+            $configuration,
+        )->shareCalled($name);
     }
 }

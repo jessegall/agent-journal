@@ -4,28 +4,29 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Commands;
 
-use Tests\Support\TestIds;
 use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
 use App\Models\CommandRules\CommandReceipt;
 use App\Support\Access\AccessSettings;
 use App\Support\GatewayConfiguration;
+use App\Support\RecordIdentity;
 use App\Support\RequestKey;
 use Domain\Sharing\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand;
 use Domain\Sharing\Enums\ShareAuditType;
 use Domain\Sharing\Exceptions\GatewayNotSetUp;
 use Domain\Sharing\Exceptions\GatewaySecretRefused;
 use Domain\Sharing\Exceptions\UnknownShareGateway;
+use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareAudit;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Support\ShareGatewayRegistry;
+use Domain\Sharing\Tests\Fixtures\ShareFixtures;
 use Domain\Sharing\Tests\TestCase;
 use Illuminate\Log\Events\MessageLogged;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\FakeShareGateway;
-use Tests\Support\Sharing\TestShares;
 use Tests\Support\Sharing\UnconfiguredShareGateway;
 use Tests\Support\Sharing\UsesSecretsFolder;
 use Tests\Support\TestActors;
@@ -51,13 +52,13 @@ final class ConfigureShareGatewayTest extends TestCase
         $this->app->make(ShareGatewayRegistry::class)->register(FakeShareGateway::KEY, FakeShareGateway::class);
         $gateways = $this->app->make(ShareGatewayRegistry::class);
         $gateways->register(UnconfiguredShareGateway::KEY, UnconfiguredShareGateway::class);
-        $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
+        $this->journal->owner();
     }
 
     public function test_configuring_twice_makes_versions_one_and_two_and_a_share_keeps_the_first(): void
     {
         $first = $this->configure(FakeShareGateway::KEY, false);
-        $share = TestShares::grantForADay(
+        $share = $this->grantForADay(
             TestActors::record('binders.binder', 1),
             ShareGatewayConfiguration::query()->findOrFail($first->configurationId),
         );
@@ -153,7 +154,7 @@ final class ConfigureShareGatewayTest extends TestCase
     ): GatewayConfiguration {
         $key = (string) Str::ulid();
         $this->app->forgetScopedInstances();
-        $this->journal->actAsUserId(TestIds::of(9));
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
         $this->app->make(RequestKey::class)->set($key);
 
         return $this->app->make(CommandBus::class)->run(
@@ -168,5 +169,19 @@ final class ConfigureShareGatewayTest extends TestCase
                 $key,
             ),
         );
+    }
+
+    /**
+     * A share the journal's owner granted on the root for a day, kept under the root's reference.
+     */
+    private function grantForADay(RecordIdentity $root, ShareGatewayConfiguration $configuration): Share
+    {
+        $name = $root->reference();
+
+        return $this->journal->fixtures(ShareFixtures::class)->grantForADay(
+            $name,
+            $root,
+            $configuration,
+        )->shareCalled($name);
     }
 }

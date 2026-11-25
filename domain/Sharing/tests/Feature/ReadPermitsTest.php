@@ -18,7 +18,6 @@ use Domain\Sharing\Support\ShareToken;
 use Domain\Sharing\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
-use Tests\Support\TestIds;
 
 /**
  * Read permits: a valid token yields a permit taken once by its reference, an expired share still yields one so its
@@ -36,6 +35,8 @@ final class ReadPermitsTest extends TestCase
     {
         parent::setUp();
 
+        $this->journal->owner();
+
         $this->token = ShareToken::generate();
         $configuration = ShareGatewayConfiguration::create(
             new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []),
@@ -43,7 +44,12 @@ final class ReadPermitsTest extends TestCase
         $this->share = Share::create(
             TestActors::record('documents.document', 1),
             CarbonImmutable::now()->subMinute(),
-            new ShareGrant(TestIds::of(9), $configuration->id, $configuration->configuration_version, $this->token),
+            new ShareGrant(
+                $this->journal->ownerUser()->id,
+                $configuration->id,
+                $configuration->configuration_version,
+                $this->token,
+            ),
         );
     }
 

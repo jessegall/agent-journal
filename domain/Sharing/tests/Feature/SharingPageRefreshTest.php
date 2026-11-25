@@ -7,7 +7,7 @@ namespace Domain\Sharing\Tests\Feature;
 use App\Events\Web\PageChanged;
 use App\Listeners\BroadcastPageChange;
 use App\Providers\DomainEventServiceProvider;
-use App\Support\Access\AccessSettings;
+use App\Support\RecordIdentity;
 use Domain\Sharing\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
 use Domain\Sharing\Commands\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
 use Domain\Sharing\Enums\GatewayOperationType;
@@ -24,13 +24,12 @@ use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\ShareGatewayOperation;
 use Domain\Sharing\Support\ClaimedGatewayOperation;
+use Domain\Sharing\Tests\Fixtures\ShareFixtures;
 use Domain\Sharing\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Sharing\FakeShareGateway;
-use Tests\Support\Sharing\TestShares;
 use Tests\Support\TestActors;
-use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -82,9 +81,9 @@ final class SharingPageRefreshTest extends TestCase
 
     public function test_activating_a_share_sends_the_owner_a_page_change_with_nothing_in_it(): void
     {
-        $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
+        $this->journal->owner();
         $configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
-        TestShares::grantForADay(TestActors::record('binders.binder', 1), $configuration);
+        $this->grantForADay(TestActors::record('binders.binder', 1), $configuration);
         ShareGatewayOperation::create($configuration, GatewayOperationType::Open);
         $claim = $this->journal->asSystem(new ClaimGatewayOperationCommand(self::RUN));
         $this->assertInstanceOf(ClaimedGatewayOperation::class, $claim);
@@ -100,7 +99,23 @@ final class SharingPageRefreshTest extends TestCase
 
         Event::assertDispatched(
             PageChanged::class,
-            fn (PageChanged $change) => $change->userIds === [TestIds::of(9)] && $change->broadcastWith() === [],
+            fn (PageChanged $change) => $change->userIds === [
+                $this->journal->ownerUser()->id,
+            ] && $change->broadcastWith() === [],
         );
+    }
+
+    /**
+     * A share the journal's owner granted on the root for a day, kept under the root's reference.
+     */
+    private function grantForADay(RecordIdentity $root, ShareGatewayConfiguration $configuration): Share
+    {
+        $name = $root->reference();
+
+        return $this->journal->fixtures(ShareFixtures::class)->grantForADay(
+            $name,
+            $root,
+            $configuration,
+        )->shareCalled($name);
     }
 }

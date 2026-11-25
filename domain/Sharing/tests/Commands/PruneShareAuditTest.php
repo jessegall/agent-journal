@@ -6,6 +6,7 @@ namespace Domain\Sharing\Tests\Commands;
 
 use App\Support\ActorIdentity;
 use App\Support\AuditPruning;
+use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Commands\PruneShareAudit\PruneShareAuditCommand;
 use Domain\Sharing\Enums\ShareAuditType;
@@ -13,10 +14,10 @@ use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareAudit;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
+use Domain\Sharing\Tests\Fixtures\ShareFixtures;
 use Domain\Sharing\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\FakeShareGateway;
-use Tests\Support\Sharing\TestShares;
 use Tests\Support\TestActors;
 
 /**
@@ -28,11 +29,18 @@ final class PruneShareAuditTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
+
     public function test_rows_past_retention_go_counted_on_their_share_and_a_second_run_writes_nothing(): void
     {
         $configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
-        $live = TestShares::grantForADay(TestActors::record('binders.binder', 1), $configuration);
-        $ended = TestShares::grantForADay(TestActors::record('binders.binder', 2), $configuration);
+        $live = $this->grantForADay(TestActors::record('binders.binder', 1), $configuration);
+        $ended = $this->grantForADay(TestActors::record('binders.binder', 2), $configuration);
 
         $this->travelTo(CarbonImmutable::now()->subDays(400));
         $this->audit($ended, ShareAuditType::Created);
@@ -105,5 +113,19 @@ final class PruneShareAuditTest extends TestCase
             $fresh->pruned_denied_reads,
             $fresh->pruned_lifecycle_rows,
         ];
+    }
+
+    /**
+     * A share the journal's owner granted on the root for a day, kept under the root's reference.
+     */
+    private function grantForADay(RecordIdentity $root, ShareGatewayConfiguration $configuration): Share
+    {
+        $name = $root->reference();
+
+        return $this->journal->fixtures(ShareFixtures::class)->grantForADay(
+            $name,
+            $root,
+            $configuration,
+        )->shareCalled($name);
     }
 }

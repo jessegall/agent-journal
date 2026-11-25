@@ -6,7 +6,6 @@ namespace Domain\Sharing\Tests\Commands;
 
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
-use App\Support\Access\AccessSettings;
 use App\Support\GatewayConfiguration;
 use App\Support\RecordIdentity;
 use App\Support\RequestKey;
@@ -27,6 +26,7 @@ use Domain\Sharing\Models\ShareGatewayEndpoint;
 use Domain\Sharing\Models\ShareGatewayOperation;
 use Domain\Sharing\Support\SavedSharePreview;
 use Domain\Sharing\Support\ShareGatewayRegistry;
+use Domain\Sharing\Tests\Fixtures\ShareFixtures;
 use Domain\Sharing\Tests\TestCase;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Domains\Binders\BinderPublications;
@@ -34,9 +34,7 @@ use Tests\Fixtures\Domains\Binders\BindersDomain;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\RegistersShareDomains;
-use Tests\Support\Sharing\TestShares;
 use Tests\Support\TestActors;
-use Tests\Support\TestIds;
 
 /**
  * Disabling a gateway revokes its shares before one close, a preview without a gateway is refused once the default
@@ -58,7 +56,7 @@ final class DisableShareGatewayTest extends TestCase
         $this->registerShareDomain(BindersDomain::class);
         $this->app->make(ShareRecordRegistry::class)->checkRelations();
         $this->app->make(ShareGatewayRegistry::class)->register(FakeShareGateway::KEY, FakeShareGateway::class);
-        $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
+        $this->journal->owner();
         $this->app->instance(BinderPublications::class, new BinderPublications());
         $this->root = TestActors::record('binders.binder', 1);
     }
@@ -73,7 +71,7 @@ final class DisableShareGatewayTest extends TestCase
             2,
             3,
         ] as $number) {
-            $share = TestShares::grantForADay(TestActors::record('binders.binder', $number), $configuration);
+            $share = $this->grantForADay(TestActors::record('binders.binder', $number), $configuration);
             $share->activate();
         }
 
@@ -113,7 +111,7 @@ final class DisableShareGatewayTest extends TestCase
     public function test_a_closing_endpoint_version_is_never_opened_again(): void
     {
         $configuration = ShareGatewayConfiguration::query()->findOrFail($this->configure()->configurationId);
-        $share = TestShares::grantForADay($this->root, $configuration);
+        $share = $this->grantForADay($this->root, $configuration);
         ShareGatewayOperation::create($configuration, GatewayOperationType::Open);
         $this->journal->asSystem(new ClaimGatewayOperationCommand(self::RUN));
         $share->activate();
@@ -124,7 +122,7 @@ final class DisableShareGatewayTest extends TestCase
 
         $configuration->disabled_at = null;
         $configuration->save();
-        TestShares::grantForADay(TestActors::record('binders.binder', 2), $configuration);
+        $this->grantForADay(TestActors::record('binders.binder', 2), $configuration);
         ShareGatewayOperation::create($configuration, GatewayOperationType::Open);
 
         $this->assertSame(
@@ -166,10 +164,24 @@ final class DisableShareGatewayTest extends TestCase
     private function asOwner(Command $command, string|null $key = null): mixed
     {
         $this->app->forgetScopedInstances();
-        $this->journal->actAsUserId(TestIds::of(9));
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
         $requestKey = $this->app->make(RequestKey::class);
         $requestKey->set($key ?? (string) Str::ulid());
 
         return $this->app->make(CommandBus::class)->run($command);
+    }
+
+    /**
+     * A share the journal's owner granted on the root for a day, kept under the root's reference.
+     */
+    private function grantForADay(RecordIdentity $root, ShareGatewayConfiguration $configuration): Share
+    {
+        $name = $root->reference();
+
+        return $this->journal->fixtures(ShareFixtures::class)->grantForADay(
+            $name,
+            $root,
+            $configuration,
+        )->shareCalled($name);
     }
 }

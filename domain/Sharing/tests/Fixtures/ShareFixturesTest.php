@@ -21,7 +21,7 @@ final class ShareFixturesTest extends TestCase
 
     public function test_a_grant_follows_its_root_owner_configuration_and_end(): void
     {
-        $this->journal->owner()->useServerClockAt(CarbonImmutable::parse('2026-11-25 12:00:00'));
+        $this->journal->owner()->travelTo(CarbonImmutable::parse('2026-11-25 12:00:00'));
         $configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
         $root = TestActors::record('binders.binder', 1);
 

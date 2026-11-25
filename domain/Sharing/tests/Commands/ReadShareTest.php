@@ -9,6 +9,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Exceptions\StackLockTimedOut;
 use App\Models\Records\Link;
 use App\Support\Access\AccessSettings;
+use App\Support\ActorContext;
 use App\Support\GatewaySettings;
 use App\Support\OperationDeadline;
 use App\Support\RecordIdentity;
@@ -36,7 +37,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestActors;
-use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Throwable;
 
@@ -79,8 +79,8 @@ final class ReadShareTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
-        $this->app->make(CurrentActorSetter::class)->set(TestActors::user(9), new OwnerAuthority('test'));
+        $this->journal->owner();
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of($this->journal->ownerUser()), new OwnerAuthority('test'));
         $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
         # Goal
         Ship it.
@@ -192,7 +192,7 @@ final class ReadShareTest extends TestCase
 
     public function test_a_linked_record_whose_disclosure_is_withdrawn_is_denied_while_its_sibling_still_reads(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(TestActors::user(9), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of($this->journal->ownerUser()), new OwnerAuthority('test'));
         $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Notes', 'What we learned', <<<'TEXT'
         # Notes
         Keep it.
@@ -279,7 +279,7 @@ final class ReadShareTest extends TestCase
             $root,
             $expiresAt,
             new ShareGrant(
-                TestIds::of(9),
+                $this->journal->ownerUser()->id,
                 $this->configuration->id,
                 $this->configuration->configuration_version,
                 $token,
@@ -325,7 +325,7 @@ final class ReadShareTest extends TestCase
                 'target_type' => Document::linkType(),
                 'target_id' => $this->document->id,
                 'author_type' => 'user',
-                'author_id' => TestIds::of(9),
+                'author_id' => $this->journal->ownerUser()->id,
                 'body' => "Comment {$position}",
                 'submission_key' => "key-{$position}",
                 'submission_hash' => str_repeat('a', 64),

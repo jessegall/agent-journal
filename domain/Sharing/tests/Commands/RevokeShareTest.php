@@ -7,7 +7,8 @@ namespace Domain\Sharing\Tests\Commands;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
-use App\Support\Access\AccessSettings;
+use App\Support\ActorContext;
+use App\Support\RecordIdentity;
 use App\Support\RequestKey;
 use App\Values\OwnerAuthority;
 use Domain\Sharing\Commands\DisableShareGateway\DisableShareGatewayCommand;
@@ -19,6 +20,7 @@ use Domain\Sharing\Events\ShareRevoked;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\ShareGatewayOperation;
+use Domain\Sharing\Tests\Fixtures\ShareFixtures;
 use Domain\Sharing\Tests\TestCase;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\QueryException;
@@ -26,7 +28,6 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Sharing\FakeShareGateway;
-use Tests\Support\Sharing\TestShares;
 use Tests\Support\TestActors;
 use Tests\Support\TimeLimits\TimeLimit;
 
@@ -81,9 +82,9 @@ final class RevokeShareTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
+        $this->journal->owner();
         $this->configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
-        $this->share = TestShares::grantForADay(TestActors::record('binders.binder', 1), $this->configuration);
+        $this->share = $this->grantForADay(TestActors::record('binders.binder', 1), $this->configuration);
         ShareGatewayOperation::create($this->configuration, GatewayOperationType::Open);
         Event::listen([
             ShareActivated::class,
@@ -126,9 +127,23 @@ final class RevokeShareTest extends TestCase
     private function asOwner(Command $command): mixed
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(TestActors::user(9), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of($this->journal->ownerUser()), new OwnerAuthority('test'));
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
 
         return $this->app->make(CommandBus::class)->run($command);
+    }
+
+    /**
+     * A share the journal's owner granted on the root for a day, kept under the root's reference.
+     */
+    private function grantForADay(RecordIdentity $root, ShareGatewayConfiguration $configuration): Share
+    {
+        $name = $root->reference();
+
+        return $this->journal->fixtures(ShareFixtures::class)->grantForADay(
+            $name,
+            $root,
+            $configuration,
+        )->shareCalled($name);
     }
 }

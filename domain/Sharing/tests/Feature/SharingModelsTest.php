@@ -7,29 +7,17 @@ namespace Domain\Sharing\Tests\Feature;
 use App\Support\GatewaySettings;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
-use Domain\Sharing\Enums\GatewayEndpointStatus;
-use Domain\Sharing\Enums\GatewayOperationType;
-use Domain\Sharing\Enums\ShareAuditType;
 use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Models\Share;
-use Domain\Sharing\Models\ShareAudit;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
-use Domain\Sharing\Models\ShareGatewayEndpoint;
-use Domain\Sharing\Models\ShareGatewayOperation;
 use Domain\Sharing\Models\ShareInstallation;
-use Domain\Sharing\Models\ShareMember;
-use Domain\Sharing\Models\SharePreview;
 use Domain\Sharing\Support\ShareGrant;
-use Domain\Sharing\Support\ShareProposal;
-use Domain\Sharing\Support\ShareSelectedTarget;
 use Domain\Sharing\Support\ShareToken;
 use Domain\Sharing\Tests\Support\SelectsShareTargets;
 use Domain\Sharing\Tests\TestCase;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
-use Tests\Support\TestIds;
 
 /**
  * The sharing tables and models: the create migrations make all eight tables, each model is made through its own
@@ -39,6 +27,13 @@ final class SharingModelsTest extends TestCase
 {
     use RefreshHookDatabase;
     use SelectsShareTargets;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
 
     public function test_the_installation_row_is_made_once_and_locked_for_admission(): void
     {
@@ -56,7 +51,7 @@ final class SharingModelsTest extends TestCase
             $this->root(),
             CarbonImmutable::now()->addDays(7),
             new ShareGrant(
-                TestIds::of(9),
+                $this->journal->ownerUser()->id,
                 $this->configuration()->id,
                 $this->configuration()->configuration_version,
                 $token,

@@ -8,7 +8,6 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Reads\ReadMeter;
 use App\Exceptions\SharingNotAllowed;
 use App\Models\Records\Link;
-use App\Support\Access\AccessSettings;
 use App\Support\GatewaySettings;
 use App\Support\RecordIdentity;
 use App\Support\ShareRecordRegistry;
@@ -51,7 +50,7 @@ final class SaveSharePreviewTest extends TestCase
 
         $this->registerShareDomain(BindersDomain::class);
         $this->app->make(ShareRecordRegistry::class)->checkRelations();
-        $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
+        $this->journal->owner();
         $this->publications = new BinderPublications();
         $this->app->instance(BinderPublications::class, $this->publications);
         $this->configuration = ShareGatewayConfiguration::create(
@@ -91,7 +90,6 @@ final class SaveSharePreviewTest extends TestCase
     public function test_a_user_who_is_not_the_owner_is_refused(): void
     {
         $this->journal->actAsUserId(TestIds::of(8));
-        $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
 
         $this->expectException(SharingNotAllowed::class);
 
@@ -102,7 +100,7 @@ final class SaveSharePreviewTest extends TestCase
 
     public function test_without_a_default_gateway_a_preview_names_one(): void
     {
-        $this->journal->actAsUserId(TestIds::of(9));
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
 
         $this->expectExceptionObject(ShareGatewayUnavailable::noDefault());
 
@@ -114,9 +112,12 @@ final class SaveSharePreviewTest extends TestCase
         $saved = $this->save([TestIds::of(101)]);
         $preview = SharePreview::query()->findOrFail($saved->previewId);
 
-        $this->assertCount(1, $preview->consumeFor(TestIds::of(9), $saved->checksum, $this->current()));
+        $this->assertCount(
+            1,
+            $preview->consumeFor($this->journal->ownerUser()->id, $saved->checksum, $this->current()),
+        );
         $this->assertThrows(
-            fn () => $preview->consumeFor(TestIds::of(9), $saved->checksum, $this->current()),
+            fn () => $preview->consumeFor($this->journal->ownerUser()->id, $saved->checksum, $this->current()),
             SharePreviewRefused::class,
             SharePreviewRefused::consumed($saved->previewId)->getMessage(),
         );
@@ -136,7 +137,7 @@ final class SaveSharePreviewTest extends TestCase
             SharePreviewRefused::foreign($saved->previewId)->getMessage(),
         );
         $this->assertThrows(
-            fn () => $preview->consumeFor(TestIds::of(9), str_repeat('0', 64), $this->current()),
+            fn () => $preview->consumeFor($this->journal->ownerUser()->id, str_repeat('0', 64), $this->current()),
             SharePreviewRefused::class,
             SharePreviewRefused::changed($saved->previewId)->getMessage(),
         );
@@ -144,7 +145,7 @@ final class SaveSharePreviewTest extends TestCase
         $this->publications->publish(TestIds::of(102), '2');
 
         $this->assertThrows(
-            fn () => $preview->consumeFor(TestIds::of(9), $saved->checksum, $this->current()),
+            fn () => $preview->consumeFor($this->journal->ownerUser()->id, $saved->checksum, $this->current()),
             SharePreviewRefused::class,
             SharePreviewRefused::changed($saved->previewId)->getMessage(),
         );
@@ -155,7 +156,7 @@ final class SaveSharePreviewTest extends TestCase
      */
     private function save(array $selectedIds): SavedSharePreview
     {
-        $this->journal->actAsUserId(TestIds::of(9));
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
 
         return $this->app->make(CommandBus::class)->run(
             new SaveSharePreviewCommand($this->root->type, $this->root->id, $selectedIds, $this->configuration->id),

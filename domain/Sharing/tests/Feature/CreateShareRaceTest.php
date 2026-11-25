@@ -6,8 +6,8 @@ namespace Domain\Sharing\Tests\Feature;
 
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\StackLockTimedOut;
-use App\Support\Access\AccessSettings;
 use App\Support\OperationDeadline;
+use App\Support\RecordIdentity;
 use App\Support\RequestKey;
 use App\Support\ShareRecordRegistry;
 use Carbon\CarbonImmutable;
@@ -20,6 +20,7 @@ use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\ShareInstallation;
 use Domain\Sharing\Support\SavedSharePreview;
 use Domain\Sharing\Support\ShareDuration;
+use Domain\Sharing\Tests\Fixtures\ShareFixtures;
 use Domain\Sharing\Tests\TestCase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -28,7 +29,6 @@ use Tests\Fixtures\Domains\Binders\BindersDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\RegistersShareDomains;
-use Tests\Support\Sharing\TestShares;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -59,17 +59,17 @@ final class CreateShareRaceTest extends TestCase
     {
         $this->registerShareDomain(BindersDomain::class);
         $this->app->make(ShareRecordRegistry::class)->checkRelations();
-        $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
+        $this->journal->owner();
         $this->app->instance(BinderPublications::class, new BinderPublications());
         $first = ShareGatewayConfiguration::create(FakeShareGateway::settings());
         $second = ShareGatewayConfiguration::create(FakeShareGateway::settings());
 
         for ($index = 1; $index < Share::LIVE_LIMIT; $index++) {
-            TestShares::grantForADay(TestActors::record('binders.binder', 1000 + $index), $first);
+            $this->grantForADay(TestActors::record('binders.binder', 1000 + $index), $first);
         }
 
         DB::transaction(fn () => ShareInstallation::create());
-        $this->journal->actAsUserId(TestIds::of(9));
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
         $saved = $this->app->make(CommandBus::class)->run(
             new SaveSharePreviewCommand('binders.binder', TestIds::of(1), [], $second->id),
         );
@@ -102,7 +102,7 @@ final class CreateShareRaceTest extends TestCase
     private function create(SavedSharePreview $saved, string $key): Share
     {
         $this->app->forgetScopedInstances();
-        $this->journal->actAsUserId(TestIds::of(9));
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
         $this->app->make(RequestKey::class)->set($key);
         $summary = $this->app->make(CommandBus::class)->run(
             new CreateShareCommand($saved->previewId, $saved->checksum, ShareDuration::STANDARD_MINUTES, $key),
@@ -127,7 +127,7 @@ final class CreateShareRaceTest extends TestCase
             'status' => ShareStatus::Pending->value,
             'root_type' => 'binders.binder',
             'root_id' => TestIds::of(1),
-            'owner_user_id' => TestIds::of(9),
+            'owner_user_id' => $this->journal->ownerUser()->id,
             'share_gateway_configuration_id' => $configuration->id,
             'configuration_version' => $configuration->configuration_version,
             'scope_version' => Share::FIRST_SCOPE_VERSION,
@@ -135,5 +135,19 @@ final class CreateShareRaceTest extends TestCase
             'created_at' => $now,
             'updated_at' => $now,
         ];
+    }
+
+    /**
+     * A share the journal's owner granted on the root for a day, kept under the root's reference.
+     */
+    private function grantForADay(RecordIdentity $root, ShareGatewayConfiguration $configuration): Share
+    {
+        $name = $root->reference();
+
+        return $this->journal->fixtures(ShareFixtures::class)->grantForADay(
+            $name,
+            $root,
+            $configuration,
+        )->shareCalled($name);
     }
 }

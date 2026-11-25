@@ -6,7 +6,6 @@ namespace Domain\Sharing\Tests\Commands;
 
 use App\Contracts\Bus\CommandBus;
 use App\Models\Records\Link;
-use App\Support\Access\AccessSettings;
 use App\Support\RecordIdentity;
 use App\Support\RequestKey;
 use App\Support\ShareRecordRegistry;
@@ -53,7 +52,7 @@ final class RefreshShareScopeTest extends TestCase
 
         $this->registerShareDomain(BindersDomain::class);
         $this->app->make(ShareRecordRegistry::class)->checkRelations();
-        $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
+        $this->journal->owner();
         $this->app->instance(BinderPublications::class, new BinderPublications());
         $this->configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
         $this->root = TestActors::record('binders.binder', 1);
@@ -139,7 +138,7 @@ final class RefreshShareScopeTest extends TestCase
     private function preview(RecordIdentity $root, array $selectedIds): SavedSharePreview
     {
         $this->app->forgetScopedInstances();
-        $this->journal->actAsUserId(TestIds::of(9));
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
 
         return $this->app->make(CommandBus::class)->run(
             new SaveSharePreviewCommand($root->type, $root->id, $selectedIds, $this->configuration->id),
@@ -155,7 +154,7 @@ final class RefreshShareScopeTest extends TestCase
     {
         $key = sprintf('01JD8X0G9M3QZ6V4K2KEY%05d', ++$this->keys);
         $this->app->forgetScopedInstances();
-        $this->journal->actAsUserId(TestIds::of(9));
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
         $this->app->make(RequestKey::class)->set($key);
 
         return $this->app->make(CommandBus::class)->run($command($key));

@@ -7,7 +7,7 @@ namespace Domain\Sharing\Tests\Feature;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
-use App\Support\Access\AccessSettings;
+use App\Support\ActorContext;
 use App\Support\GatewaySettings;
 use App\Support\RecordIdentity;
 use App\Values\OwnerAuthority;
@@ -26,8 +26,6 @@ use Illuminate\Database\ConnectionInterface;
 use Illuminate\Foundation\Application;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Exceptions\SimulatedFailure;
-use Tests\Support\TestActors;
-use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -90,8 +88,8 @@ final class SharingListenerTest extends TestCase
 
         config(['sharing.rate_limit_store' => 'array']);
 
-        $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
-        $this->app->make(CurrentActorSetter::class)->set(TestActors::user(9), new OwnerAuthority('test'));
+        $this->journal->owner();
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of($this->journal->ownerUser()), new OwnerAuthority('test'));
         $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
         # Goal
         Ship it.
@@ -172,7 +170,7 @@ final class SharingListenerTest extends TestCase
 
     public function test_a_script_and_a_javascript_link_render_inert_and_only_manifest_files_are_served(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(TestActors::user(9), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of($this->journal->ownerUser()), new OwnerAuthority('test'));
         $this->app->make(CommandBus::class)->run(
             new CreateDocumentCommand(
                 'Tricks',
@@ -255,7 +253,7 @@ final class SharingListenerTest extends TestCase
             $root,
             CarbonImmutable::now()->addDay(),
             new ShareGrant(
-                TestIds::of(9),
+                $this->journal->ownerUser()->id,
                 $this->configuration->id,
                 $this->configuration->configuration_version,
                 $token,
