@@ -11,6 +11,7 @@ use App\Values\AdmittedConstraints;
 use App\Values\RefreshCandidates;
 use App\Values\SearchBatch;
 use App\Values\SearchQuery;
+use App\Values\SearchReader;
 use App\Values\SearchResult;
 use App\Values\TieredSearchSource;
 
@@ -35,7 +36,7 @@ final readonly class MessageSearchProvider implements MessageSearch
         }
 
         return $this->tiers->search($query, new TieredSearchSource(
-            admitted: fn () => self::admitted($constraints),
+            admitted: fn () => self::admitted($constraints, $query->reader),
             idColumn: 'id',
             titleColumn: 'body',
             columns: [
@@ -53,9 +54,10 @@ final readonly class MessageSearchProvider implements MessageSearch
     /**
      * @return ReadBuilder<Message>
      */
-    private static function admitted(AdmittedConstraints $constraints): ReadBuilder
+    private static function admitted(AdmittedConstraints $constraints, SearchReader $reader): ReadBuilder
     {
-        $query = Message::query();
+        $actor = ActorIdentity::fromStored($reader->actor->actorType(), $reader->actor->actorId());
+        $query = Message::query()->inInboxesOf($actor);
 
         if ($constraints->recordIds->isRestricted()) {
             $query->whereKey($constraints->recordIds->names());

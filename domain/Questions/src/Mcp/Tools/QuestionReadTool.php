@@ -4,20 +4,18 @@ declare(strict_types=1);
 
 namespace Domain\Questions\Mcp\Tools;
 
-use Domain\Questions\Commands\ReadQuestion\ReadQuestionCommand;
 use App\Contracts\Bus\Command;
 use App\Mcp\Attributes\Dispatches;
-use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Support\ToolArguments;
+use App\Mcp\Tools\MessageWriteTool;
+use Domain\Questions\Commands\ReadQuestion\ReadQuestionCommand;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
-use App\Mcp\Tools\MessageWriteTool;
 
 #[IsIdempotent]
-#[VisibleToProfiles]
 #[IsDestructive(false)]
 #[Name('questions_read')]
 #[Dispatches(ReadQuestionCommand::class)]

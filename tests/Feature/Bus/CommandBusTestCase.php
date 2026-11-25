@@ -23,7 +23,11 @@ abstract class CommandBusTestCase extends TestCase
     use InstallsCommandModules;
     use StartsAgentRequests;
 
-    protected const array TABLES = ['module_command_rows'];
+    /**
+     * None at the start: the test modules' table is made as a test sets up, and what a test writes to it is emptied
+     * when it ends.
+     */
+    protected const array TABLES = [];
 
     /**
      * Rules, which the Notes test module requires.

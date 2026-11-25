@@ -45,6 +45,7 @@ use Domain\Chat\Http\Controllers\SendMessageController;
 use Domain\Chat\Http\Controllers\UndockController;
 use Domain\Chat\Http\Pages\Resolvers\ChatWindowResolver;
 use Domain\Chat\Http\Pages\Resolvers\ChosenAgentSection;
+use Domain\Chat\Policies\DockPlacementPolicy;
 use Domain\Chat\Policies\MessagePinPolicy;
 use Domain\Chat\Support\Skills\ChatSkill;
 use Domain\Questions\QuestionsDomain;
@@ -98,6 +99,10 @@ final class ChatDomain extends Domain implements
         return [
             new PolicyDefinition(
                 MessagePinPolicy::class,
+                [AccessType::Edit],
+            ),
+            new PolicyDefinition(
+                DockPlacementPolicy::class,
                 [AccessType::Edit],
             ),
         ];

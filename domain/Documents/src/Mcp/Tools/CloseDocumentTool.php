@@ -42,7 +42,7 @@ final class CloseDocumentTool extends JournalWriteTool
     {
         return ToolResult::ok([
             'revision' => $publication->revisionNumber,
-            'published' => $publication->published,
+            'published' => $publication->isPublished,
         ]);
     }
 }

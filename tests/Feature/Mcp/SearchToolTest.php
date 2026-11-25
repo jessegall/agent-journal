@@ -56,7 +56,11 @@ final class SearchToolTest extends TestCase
             'tasks.task' => Task::factory()->create(['title' => 'Check the violet harbor'])->id,
             'plans.plan' => Plan::factory()->create(['title' => 'Violet harbor rollout'])->id,
             'rules.rule' => Rule::create('Mind the violet harbor.', 'It matters.', null, $proposer)->id,
-            'chat.message' => $this->askInboxOf(ActorIdentity::of($caller->agent), 'Use the violet harbor.')->id,
+            'chat.message' => $this->postTo(
+                $this->inboxOf(ActorIdentity::of($caller->agent)),
+                $caller->agent,
+                'Use the violet harbor.',
+            )->id,
             'documents.document' => $this->callMcpTool($caller, 'docs_create', [
                 'title' => 'Dispatch guide',
                 'abstract' => 'Safe dispatch.',

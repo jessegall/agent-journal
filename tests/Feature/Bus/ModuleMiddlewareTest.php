@@ -15,6 +15,7 @@ use App\Exceptions\ContinuationCalledTwice;
 use App\Exceptions\InboxUnavailable;
 use App\Exceptions\MiddlewareSkippedCommand;
 use App\Exceptions\MiddlewareSwallowedFailure;
+use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\CommandRules\CommandReceipt;
@@ -23,6 +24,7 @@ use App\Models\Inboxes\InboxMember;
 use App\Models\Messages\Message;
 use App\Models\Records\AssignmentRecord;
 use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
 use App\Support\CommandScope;
 use App\Support\MiddlewareDeclaration;
@@ -61,7 +63,6 @@ use Tests\Fixtures\Modules\Notes\Commands\RefuseNote\RefuseNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\HoldingRules;
-use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\WritesInboxMessages;
 
@@ -255,12 +256,13 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
             ['Chat'],
             MiddlewareDeclaration::around(TrimMessages::class, CommandScope::command(SendMessageCommand::class)),
         );
-        $this->startTestUserRequest(1);
+        $user = User::factory()->create();
+        $this->startUserRequestAs($user->id);
 
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
 
         $messageId = $this->app->make(CommandBus::class)->run(new SendMessageCommand(
-            $this->inboxOf(TestActors::userIdentity(1))->id,
+            $this->inboxOf(ActorIdentity::of($user))->id,
             "  Trim me  \n",
         ));
 
@@ -273,9 +275,10 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
             ['Chat'],
             MiddlewareDeclaration::around(SendsToUnknownInbox::class, CommandScope::command(SendMessageCommand::class)),
         );
-        $this->startTestUserRequest(1);
+        $user = User::factory()->create();
+        $this->startUserRequestAs($user->id);
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
-        $command = new SendMessageCommand($this->inboxOf(TestActors::userIdentity(1))->id, 'Hello');
+        $command = new SendMessageCommand($this->inboxOf(ActorIdentity::of($user))->id, 'Hello');
 
         try {
             $this->app->make(CommandBus::class)->run($command);

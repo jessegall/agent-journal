@@ -183,6 +183,17 @@ final class Message extends Model implements AuthoredModel, EventSource, Readabl
     }
 
     /**
+     * Messages of every inbox the actor is attached to now, its whole history included.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inInboxesOf(Builder $query, ActorIdentity $actor): void
+    {
+        $query->whereHas('inbox.members', fn (Builder $member) => $member->active()->ofActor($actor));
+    }
+
+    /**
      * Messages stored in an inbox the participant is attached to now, sent at or after it joined.
      *
      * @param  Builder<self>  $query

@@ -42,8 +42,16 @@ final class DeclaredMessageSearchTest extends TestCase
     {
         $caller = TestStart::start();
         $other = TestStart::start();
-        $visible = $this->askInboxOf(ActorIdentity::of($caller->agent), "A note.\nUse the violet harbor.");
-        $hidden = $this->askInboxOf(ActorIdentity::of($other->agent), 'Private violet harbor coordinates.');
+        $visible = $this->postTo(
+            $this->inboxOf(ActorIdentity::of($caller->agent)),
+            $caller->agent,
+            "A note.\nUse the violet harbor.",
+        );
+        $hidden = $this->postTo(
+            $this->inboxOf(ActorIdentity::of($other->agent)),
+            $other->agent,
+            'Private violet harbor coordinates.',
+        );
 
         $hits = $this->callMcpTool($caller, 'search', ['query' => 'violet harbor', 'within' => 'chat.message'])
             ->assertJsonPath('result.isError', false)

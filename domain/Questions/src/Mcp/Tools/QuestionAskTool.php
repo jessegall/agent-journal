@@ -7,7 +7,6 @@ namespace Domain\Questions\Mcp\Tools;
 use App\Contracts\Actors\ActorTypes;
 use App\Contracts\Bus\Command;
 use App\Mcp\Attributes\Dispatches;
-use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\MessageWriteTool;
 use App\Support\ActorIdentity;
@@ -20,7 +19,6 @@ use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
 #[IsIdempotent]
-#[VisibleToProfiles]
 #[IsDestructive(false)]
 #[Name('questions_ask')]
 #[Dispatches(AskQuestionCommand::class)]

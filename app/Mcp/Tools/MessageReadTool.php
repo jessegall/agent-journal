@@ -7,7 +7,6 @@ namespace App\Mcp\Tools;
 use App\Commands\Messages\ReadMessage\ReadMessageCommand;
 use App\Contracts\Bus\Command;
 use App\Mcp\Attributes\Dispatches;
-use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Support\ToolArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -16,7 +15,6 @@ use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
 #[IsIdempotent]
-#[VisibleToProfiles]
 #[IsDestructive(false)]
 #[Name('messages_read')]
 #[Dispatches(ReadMessageCommand::class)]
