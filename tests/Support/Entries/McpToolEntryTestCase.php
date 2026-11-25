@@ -51,16 +51,24 @@ abstract class McpToolEntryTestCase extends TestCase
     public function test_an_unsigned_frame_and_a_profile_without_the_tool_are_refused(): void
     {
         $call = $this->arrange($this->journal);
-        $this->journal->heartbeatOf($call->start)->sinkCommands()->sinkReplies($call->replies);
+        $hidden = $call->hiddenFromProfile === null
+            ? null
+            : $this->journal->signedStart('Profile without the tool', $call->hiddenFromProfile);
+        $this->journal->heartbeatOf($call->start);
+
+        if ($hidden !== null) {
+            $this->journal->heartbeatOf($hidden);
+        }
+
+        $this->journal->sinkCommands()->sinkReplies($call->replies);
 
         $this->postJson(self::MCP_ADDRESS, $this->frame($call->arguments))->assertUnauthorized();
         $this->journal->assertNothingDispatched();
 
-        if ($call->hiddenFromProfile === null) {
+        if ($hidden === null) {
             $this->markTestSkipped("Every profile sees {$this->toolName()}.");
         }
 
-        $hidden = $this->journal->signedStart('Profile without the tool', $call->hiddenFromProfile);
         $answer = $this->journal->mcpTool($hidden, $this->toolName(), $call->arguments);
 
         $this->assertTrue(

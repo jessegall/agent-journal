@@ -33,7 +33,8 @@ final readonly class SunkCommand
     }
 
     /**
-     * Whether the command is of the class and each named public property holds exactly the given value.
+     * Whether the command is of the class and each named public property holds the given value: the same scalar or
+     * array, or a value object with equal fields.
      *
      * @param  array<string, mixed>  $arguments
      */
@@ -44,11 +45,20 @@ final readonly class SunkCommand
         }
 
         foreach ($arguments as $property => $value) {
-            if (! ReflectedType::of($this->command)->hasProperty($property) || $this->command->{$property} !== $value) {
+            if (! ReflectedType::of($this->command)->hasProperty($property)
+                || ! self::isSameValue($this->command->{$property}, $value)) {
                 return false;
             }
         }
 
         return true;
+    }
+
+    /**
+     * A scalar or array is the same only when identical; a value object is the same when its fields are equal.
+     */
+    private static function isSameValue(mixed $sent, mixed $expected): bool
+    {
+        return is_object($expected) ? $sent == $expected : $sent === $expected;
     }
 }

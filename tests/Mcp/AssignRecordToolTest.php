@@ -4,30 +4,56 @@ declare(strict_types=1);
 
 namespace Tests\Mcp;
 
+use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
+use App\Enums\Assignments\AssignmentOutcomeType;
 use App\Mcp\Tools\AssignRecordTool;
-use Tests\Support\Entries\Attributes\Generated;
+use App\Support\ActorReference;
+use App\Support\AssigneeIdentity;
+use App\Support\AssignmentOutcome;
+use App\Support\AssignmentResult;
+use App\Support\RecordIdentity;
+use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
+use Tests\Support\Bus\ExpectedCommand;
+use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of the tool AssignRecordTool, as the generator wrote it.
+ * An unheld task is given to an agent: the tool sends the one assign command and presents its outcome.
  */
-#[Generated]
 #[TestsMcpTool(AssignRecordTool::class)]
 final class AssignRecordToolTest extends McpToolEntryTestCase
 {
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
+
     protected function arrange(TestJournal $journal): ToolCall
     {
-        throw EntryTestNeedsArrangement::for('AssignRecordTool', [
-            'the argument record_type',
-            'the argument record_id',
-            'the argument recipient',
-            'the argument request_key',
-            'the expected commands',
-            'the sink replies',
-        ]);
+        $journal->owner();
+        $task = $journal->fixtures(TaskFixtures::class)->task('Ship the dock')->taskCalled('Ship the dock');
+        $start = $journal->signedStart('Planner');
+        $builder = $journal->signedStart('Builder');
+        $record = new RecordIdentity('tasks.task', $task->id);
+
+        return ToolCall::by($start)
+            ->arguments([
+                'record_type' => 'tasks.task',
+                'record_id' => $task->id,
+                'recipient' => ['type' => 'agent', 'id' => $builder->agent->id],
+                'request_key' => 'assign-1',
+            ])
+            ->reply(AssignRecordCommand::class, new AssignmentResult(
+                [new AssignmentOutcome($record, null, AssignmentOutcomeType::Changed)],
+                [],
+            ))
+            ->expects(ExpectedCommand::of(AssignRecordCommand::class, [
+                'record' => $record,
+                'recipient' => AssigneeIdentity::ofActorReference(ActorReference::of($builder->agent)),
+            ]));
     }
 }

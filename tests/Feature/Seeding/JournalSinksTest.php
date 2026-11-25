@@ -146,6 +146,21 @@ final class JournalSinksTest extends TestCase
         $this->assertNotNull($start->session->refresh()->last_heartbeat_at);
     }
 
+    public function test_a_value_object_argument_matches_an_equal_one_and_fails_a_different_one(): void
+    {
+        $this->journal->owner()->sinkCommands();
+        $this->journal->runUnkeyed(new SaveLayoutCommand('Writing', LayoutShape::from(SaveLayoutTest::shape('chat'))));
+
+        $this->journal->assertDispatched(SaveLayoutCommand::class, ['shape' => LayoutShape::from(SaveLayoutTest::shape('chat'))]);
+        $this->assertThrows(
+            fn () => $this->journal->assertDispatched(
+                SaveLayoutCommand::class,
+                ['shape' => LayoutShape::from(SaveLayoutTest::shape('tasks'))],
+            ),
+            AssertionFailedError::class,
+        );
+    }
+
     public function test_an_argument_of_another_type_fails_the_assert(): void
     {
         $this->journal->owner()->agent('Ada')->sharedInbox('Owner', 'Ada')->sinkCommands();

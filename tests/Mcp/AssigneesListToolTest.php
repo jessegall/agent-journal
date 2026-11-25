@@ -5,24 +5,28 @@ declare(strict_types=1);
 namespace Tests\Mcp;
 
 use App\Mcp\Tools\AssigneesListTool;
-use Tests\Support\Entries\Attributes\Generated;
+use Domain\Tasks\TasksDomain;
+use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of the tool AssigneesListTool, as the generator wrote it.
+ * The agents work may be given to are listed for a main agent; a helper does not see the tool.
  */
-#[Generated]
 #[TestsMcpTool(AssigneesListTool::class)]
 final class AssigneesListToolTest extends McpToolEntryTestCase
 {
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
+
     protected function arrange(TestJournal $journal): ToolCall
     {
-        throw EntryTestNeedsArrangement::for('AssigneesListTool', [
-            'the argument type',
-        ]);
+        return ToolCall::by($journal->owner()->signedStart('Planner'))
+            ->arguments(['type' => 'agent'])
+            ->hiddenFromProfile('read-only-helper');
     }
 }
