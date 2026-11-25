@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
+use App\Support\DomainRegistry;
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
@@ -77,6 +78,14 @@ final class StartSkillsTest extends TestCase
     ];
 
     private const string FOLDER = '/work/project';
+
+    /**
+     * Every installed domain, since the skills this test names come from them.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
+    }
 
     protected function setUp(): void
     {

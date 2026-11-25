@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
+use App\Support\DomainRegistry;
 use App\Enums\Hooks\ContextStartType;
 use App\Enums\Skills\ReadEvidence;
 use App\Events\Hooks\ContextStarted;
@@ -44,6 +45,14 @@ final class SkillReceiptsTest extends TestCase
         'agents',
         'agent_sessions',
     ];
+
+    /**
+     * Every installed domain, since the skills this test names come from them.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
+    }
 
     public function test_a_skill_tool_read_records_one_receipt_with_the_delivered_digest(): void
     {

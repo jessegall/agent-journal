@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
+use App\Support\DomainRegistry;
 use App\Models\Skills\Skill;
 use App\Policies\AssignmentRecipientPolicy;
 use App\Support\Access\AccessSettings;
@@ -35,6 +36,14 @@ final class SkillAuthoringConsoleTest extends TestCase
     ];
 
     private const string REVIEWERS = '{"type":"profiles","version":1,"keys":["journal-reviewer"]}';
+
+    /**
+     * Every installed domain, since the skills this test names come from them.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
+    }
 
     protected function setUp(): void
     {

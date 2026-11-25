@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
+use App\Support\DomainRegistry;
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Sessions\SessionStatus;
@@ -35,6 +36,14 @@ final class SkillPreviewTest extends TestCase
     use InstallsBuiltInProfiles;
 
     private const array TABLES = ['agent_sessions', 'agents', 'profile_revisions', 'profiles'];
+
+    /**
+     * Every installed domain, since the skills this test names come from them.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
+    }
 
     private Agent $main;
 

@@ -157,9 +157,9 @@ trait ConnectsProjects
                 'release' => '1.0.0',
                 'descriptors' => $descriptors,
                 'provisioning' => 'succeeded',
-                'takeover' => false,
+                'isTakeover' => false,
                 'setupGeneration' => 1,
-                'reconciled' => true,
+                'isReconciled' => true,
             ],
             (string) Str::uuid(),
         )->assertOk();

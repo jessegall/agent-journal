@@ -162,7 +162,7 @@ final class BindingPresenceTest extends TestCase
                 'release' => '1.0.0',
                 'descriptors' => [],
                 'provisioning' => 'succeeded',
-                'takeover' => $isTakeover,
+                'isTakeover' => $isTakeover,
                 'setupGeneration' => $setupGeneration,
             ],
             (string) Str::uuid(),

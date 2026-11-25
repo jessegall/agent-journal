@@ -93,15 +93,15 @@ final class SignInHostTest extends TestCase
         $claim = $this->signed($host, '/host/sign-ins/claim')->assertOk();
         $this->assertSame($attemptId, $claim->json('attempt_id'));
         $this->assertSame('oauth', $claim->json('method'));
-        $this->assertSame(SignInMethod::OAuth, $this->attempt($attemptId)->method);
+        $this->assertSame(SignInMethod::OAuth, $this->signInAttempt($attemptId)->method);
         $this->signed($host, '/host/sign-ins/claim')->assertNoContent();
 
         $this->notify($host, $attemptId, 'waiting')->assertNoContent();
-        $this->assertSame(SignInState::Waiting, $this->attempt($attemptId)->state);
+        $this->assertSame(SignInState::Waiting, $this->signInAttempt($attemptId)->state);
         $proof = ['display' => 'work@example.test', 'subject' => 'subject-1', 'workspace' => 'workspace-1'];
         $this->notify($host, $attemptId, 'verified', $proof)->assertNoContent();
 
-        $this->assertSame(SignInState::Complete, $this->attempt($attemptId)->state);
+        $this->assertSame(SignInState::Complete, $this->signInAttempt($attemptId)->state);
         $account = Account::query()->withoutGlobalScopes()->sole();
         $this->assertSame(
             ['work@example.test', 'subject-1', 'workspace-1'],
@@ -155,7 +155,7 @@ final class SignInHostTest extends TestCase
         $this->notify($host, $attemptId, 'failed', ['refusal' => 'Invalid API key · Fix external API key'])
             ->assertNoContent();
 
-        $attempt = $this->attempt($attemptId);
+        $attempt = $this->signInAttempt($attemptId);
         $this->assertSame(SignInState::Failed, $attempt->state);
         $this->assertSame(
             SignInRefusal::RejectedCredential->text(),
@@ -173,7 +173,7 @@ final class SignInHostTest extends TestCase
         $this->notify($other, $attemptId, 'failed')->assertNotFound();
         $this->call('POST', '/host/sign-ins/claim')->assertUnauthorized();
 
-        $this->assertSame(SignInState::Starting, $this->attempt($attemptId)->state);
+        $this->assertSame(SignInState::Starting, $this->signInAttempt($attemptId)->state);
     }
 
     public function test_the_challenge_reaches_only_the_owner_no_store_and_a_typed_code_reaches_the_host_once(): void
@@ -220,7 +220,7 @@ final class SignInHostTest extends TestCase
 
         $this->signed($host, "/host/sign-ins/{$attemptId}/code", ['generation' => 0])
             ->assertExactJson(['live' => false, 'code' => null]);
-        $this->assertSame(SignInState::Cancelled, $this->attempt($attemptId)->state);
+        $this->assertSame(SignInState::Cancelled, $this->signInAttempt($attemptId)->state);
         $read = $this->actingAs($owner)->post("/accounts/sign-ins/{$attemptId}/challenge");
         $this->assertNull($read->json('address'));
     }
@@ -255,7 +255,7 @@ final class SignInHostTest extends TestCase
 
         $this->notify($host, $attemptId, 'interrupted')->assertNoContent();
 
-        $attempt = $this->attempt($attemptId);
+        $attempt = $this->signInAttempt($attemptId);
         $this->assertSame(SignInState::Interrupted, $attempt->state);
         $this->assertNull($attempt->refusal);
         $this->assertNull($this->app->make(SignInChallenges::class)->takeCode($attempt));
@@ -284,7 +284,7 @@ final class SignInHostTest extends TestCase
         $this->notify($host, $attemptId, 'failed', ['refusal' => 'stack trace at /home/user/.claude/secret line 3'])
             ->assertNoContent();
 
-        $this->assertSame(SignInRefusal::Unknown->text(), $this->attempt($attemptId)->refusal);
+        $this->assertSame(SignInRefusal::Unknown->text(), $this->signInAttempt($attemptId)->refusal);
     }
 
     public function test_a_challenge_outside_the_providers_pages_publishes_no_link_and_a_stranger_reads_nothing(): void
@@ -331,13 +331,13 @@ final class SignInHostTest extends TestCase
         $challenge = ['address' => 'https://claude.ai/oauth/authorize?state', 'code' => null];
         $this->signed($host, "/host/sign-ins/{$attemptId}/challenge", $challenge)->assertNoContent();
         $this->notify($host, $attemptId, 'waiting')->assertNoContent();
-        $this->travelTo($this->attempt($attemptId)->expires_at->addSecond());
+        $this->travelTo($this->signInAttempt($attemptId)->expires_at->addSecond());
 
         $proof = ['display' => 'work@example.test', 'subject' => 'subject-1', 'workspace' => 'workspace-1'];
         $this->notify($host, $attemptId, 'verified', $proof);
         $this->notify($host, $attemptId, 'failed', ['refusal' => 'Too late'])->assertNoContent();
 
-        $attempt = $this->attempt($attemptId);
+        $attempt = $this->signInAttempt($attemptId);
         $this->assertSame(SignInState::Expired, $attempt->state);
         $this->assertNull($attempt->refusal);
         $this->assertSame(0, Account::query()->withoutGlobalScopes()->count());
@@ -449,7 +449,7 @@ final class SignInHostTest extends TestCase
         return new ClaimedSignIn('attempt-1', $driver, $method, $directory, 0, '2099-01-01T00:00:00+00:00', null);
     }
 
-    private function attempt(string $attemptId): SignInAttempt
+    private function signInAttempt(string $attemptId): SignInAttempt
     {
         return SignInAttempt::query()->withoutGlobalScopes()->findOrFail($attemptId);
     }

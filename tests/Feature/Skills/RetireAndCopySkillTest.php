@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
+use App\Support\DomainRegistry;
 use App\Commands\Skills\CopySkill\CopySkillCommand;
 use App\Commands\Skills\CreateSkill\CreateSkillCommand;
 use App\Commands\Skills\RetireSkill\RetireSkillCommand;
@@ -43,6 +44,14 @@ final class RetireAndCopySkillTest extends TestCase
         'number_groups',
         'command_receipts',
     ];
+
+    /**
+     * Every installed domain, since the skills this test names come from them.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
+    }
 
     public function test_retire_removes_the_skill_from_the_list_and_keeps_its_revisions(): void
     {

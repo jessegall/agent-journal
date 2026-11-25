@@ -152,7 +152,7 @@ final class BindingRuntimeTest extends TestCase
                 'release' => '1.0.0',
                 'descriptors' => [],
                 'provisioning' => 'succeeded',
-                'takeover' => true,
+                'isTakeover' => true,
                 'setupGeneration' => 1,
             ],
             (string) Str::uuid(),

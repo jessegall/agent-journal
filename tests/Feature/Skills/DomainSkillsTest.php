@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
+use App\Support\DomainRegistry;
 use App\Contracts\Skills\SkillResolver;
 use App\Values\SkillKey;
 use Illuminate\Support\Facades\Artisan;
@@ -25,6 +26,14 @@ final class DomainSkillsTest extends TestCase
 
 
         TEXT;
+
+    /**
+     * Every installed domain, since each brings the skill this test reads.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
+    }
 
     /**
      * @return iterable<string, array{string, string, string}>

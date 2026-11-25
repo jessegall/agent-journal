@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
+use App\Enums\Profiles\ModelTier;
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Commands\Profiles\RevokeProfiles\RevokeProfilesCommand;
 use App\Contracts\Bus\CommandBus;
@@ -115,7 +116,7 @@ final class ProfileStorageTest extends TestCase
     {
         $this->activate($this->reviewer('Review the change.', null));
         $this->activate(
-            TestProposals::profile('journal-quiet', ProfileBase::writingHelper(), 'Write.', 'sonnet', [], ['journal']),
+            TestProposals::profile('journal-quiet', ProfileBase::writingHelper(), 'Write.', ModelTier::General, [], ['journal']),
         );
 
         $this->artisan('profile:list')
@@ -142,7 +143,7 @@ final class ProfileStorageTest extends TestCase
             'journal-reviewer',
             ProfileBase::readOnlyHelper(),
             $instructions,
-            'opus',
+            ModelTier::Inventive,
             $allowlist,
         );
     }
