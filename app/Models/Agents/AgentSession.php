@@ -547,4 +547,15 @@ final class AgentSession extends Model implements EventSource, ReadableModel
             ->whereHas('startToken', fn (Builder $startToken) => $startToken->whereNull('revoked_at'))
             ->whereHas('agent', fn (Builder $agent) => $agent->whereNull('retired_at'));
     }
+
+    /**
+     * The sessions whose runtime is on the host.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function runningOnHost(Builder $query, string $hostId): void
+    {
+        $query->whereIn('id', AgentRuntime::query()->onHost($hostId)->select('agent_session_id'));
+    }
 }

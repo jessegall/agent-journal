@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Events\Connections\WorkspaceReadAnswered;
-use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Support\HasActorColumns;
 use App\Support\ActorIdentity;
@@ -171,7 +172,7 @@ final class WorkspaceRead extends Model implements EventSource, ReadableModel
         $read->setAttribute($read->getKeyName(), $read->newUniqueId());
         $read->insertIfAbsent();
 
-        return self::query()->where('read_reference', $reference->key)->sole();
+        return self::query()->underReference($reference)->sole();
     }
 
     /**
@@ -181,15 +182,10 @@ final class WorkspaceRead extends Model implements EventSource, ReadableModel
      */
     public static function pendingOn(string $hostId, int $limit): array
     {
-        $agentsOnHost = AgentSession::query()
-            ->whereIn('id', AgentRuntime::query()->where('host_id', $hostId)->select('agent_session_id'))
-            ->select('agent_id');
-
         $pending = self::query()
-            ->whereNull('sampled_at')
-            ->where('actor_type', 'agent')
-            ->whereIn('actor_id', $agentsOnHost)
-            ->orderBy('created_at')
+            ->unsampled()
+            ->byAgentsOnHost($hostId)
+            ->oldestFirst()
             ->readExactly($limit)
             ->get();
 
@@ -204,9 +200,7 @@ final class WorkspaceRead extends Model implements EventSource, ReadableModel
      */
     public static function latestCommitReadOf(string $agentId): array
     {
-        $read = self::query()->where('actor_type', 'agent')->where('actor_id', $agentId)
-            ->where('binding_id', '!=', '')->where('head_oid', '!=', '')->whereNotNull('sampled_at')
-            ->latest('sampled_at')->limit(1)->get();
+        $read = self::query()->byAgent($agentId)->sampledAtCommit()->lastSampledFirst()->limit(1)->get();
 
         $facts = [];
 
@@ -221,6 +215,87 @@ final class WorkspaceRead extends Model implements EventSource, ReadableModel
 
     public static function byReference(WorkspaceReadReference $reference): self
     {
-        return self::query()->where('read_reference', $reference->key)->firstOrFail();
+        return self::query()->underReference($reference)->firstOrFail();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The read of that reference.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function underReference(Builder $query, WorkspaceReadReference $reference): void
+    {
+        $query->where('read_reference', $reference->key);
+    }
+
+    /**
+     * The reads not sampled yet.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unsampled(Builder $query): void
+    {
+        $query->whereNull('sampled_at');
+    }
+
+    /**
+     * The agent's reads.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function byAgent(Builder $query, string $agentId): void
+    {
+        $query->where('actor_type', 'agent')->where('actor_id', $agentId);
+    }
+
+    /**
+     * The reads of the agents whose sessions run on the host.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function byAgentsOnHost(Builder $query, string $hostId): void
+    {
+        $agents = AgentSession::query()->runningOnHost($hostId)->select('agent_id');
+
+        $query->where('actor_type', 'agent')->whereIn('actor_id', $agents);
+    }
+
+    /**
+     * The sampled reads of a binding at a known commit.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function sampledAtCommit(Builder $query): void
+    {
+        $query->where('binding_id', '!=', '')->where('head_oid', '!=', '')->whereNotNull('sampled_at');
+    }
+
+    /**
+     * The reads sampled last first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function lastSampledFirst(Builder $query): void
+    {
+        $query->orderByDesc('sampled_at');
+    }
+
+    /**
+     * The reads oldest first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function oldestFirst(Builder $query): void
+    {
+        $query->orderBy('created_at');
     }
 }

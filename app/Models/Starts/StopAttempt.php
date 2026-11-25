@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Starts;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
@@ -209,8 +211,7 @@ final class StopAttempt extends Model implements EventSource, ReadableModel
 
         return self::query()
             ->withoutGlobalScope(AgentSessionScope::class)
-            ->where('session_id', $stop->sessionId)
-            ->where('stop_id', $stop->hookId)
+            ->ofStop($stop)
             ->sole();
     }
 
@@ -224,9 +225,9 @@ final class StopAttempt extends Model implements EventSource, ReadableModel
     {
         return array_values(self::query()
             ->withoutGlobalScope(AgentSessionScope::class)
-            ->whereIn('session_id', $sessionIds)
-            ->where('state', StopAttemptState::Pending->value)
-            ->orderBy('created_at')
+            ->ofSessions($sessionIds)
+            ->inState(StopAttemptState::Pending)
+            ->oldestFirst()
             ->limit(50)
             ->get()
             ->all());
@@ -242,9 +243,9 @@ final class StopAttempt extends Model implements EventSource, ReadableModel
     {
         return array_values(self::query()
             ->withoutGlobalScope(AgentSessionScope::class)
-            ->where('state', StopAttemptState::Passed->value)
-            ->whereNull('certified_at')
-            ->orderBy('created_at')
+            ->inState(StopAttemptState::Passed)
+            ->uncertified()
+            ->oldestFirst()
             ->readExactly($limit)
             ->get()
             ->all());
@@ -259,12 +260,69 @@ final class StopAttempt extends Model implements EventSource, ReadableModel
     {
         return array_values(self::query()
             ->withoutGlobalScope(AgentSessionScope::class)
-            ->where('session_id', $sessionId)
-            ->where('state', '!=', StopAttemptState::Pending->value)
-            ->orderByDesc('created_at')
+            ->ofSessions([$sessionId])
+            ->settled()
             ->newestFirst()
             ->readExactly($count)
             ->get()
             ->all());
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The attempt of the stop hook.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofStop(Builder $query, HookIdentity $stop): void
+    {
+        $query->where('session_id', $stop->sessionId)->where('stop_id', $stop->hookId);
+    }
+
+    /**
+     * The attempts of the sessions.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $sessionIds
+     */
+    #[Scope]
+    protected function ofSessions(Builder $query, array $sessionIds): void
+    {
+        $query->whereIn('session_id', $sessionIds);
+    }
+
+    /**
+     * The attempts in that state.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inState(Builder $query, StopAttemptState $state): void
+    {
+        $query->where('state', $state->value);
+    }
+
+    /**
+     * The attempts no longer pending.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function settled(Builder $query): void
+    {
+        $query->where('state', '!=', StopAttemptState::Pending->value);
+    }
+
+    /**
+     * The attempts not certified yet.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function uncertified(Builder $query): void
+    {
+        $query->whereNull('certified_at');
     }
 }

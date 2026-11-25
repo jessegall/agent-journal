@@ -625,4 +625,15 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
     {
         $query->where('state', TaskState::Open);
     }
+
+    /**
+     * The finished tasks.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function finished(Builder $query): void
+    {
+        $query->where('state', TaskState::Finished);
+    }
 }

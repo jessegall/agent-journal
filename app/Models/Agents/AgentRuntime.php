@@ -602,4 +602,15 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
     {
         $query->withCount(['terminalViews as watchers' => self::liveViews(...)]);
     }
+
+    /**
+     * The runtimes on the host.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function onHost(Builder $query, string $hostId): void
+    {
+        $query->where('host_id', $hostId);
+    }
 }
