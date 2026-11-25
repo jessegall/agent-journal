@@ -6,8 +6,8 @@ namespace Tests\Feature\Assignments;
 
 use App\Contracts\Assignments\AssignableProvider;
 use App\Contracts\Assignments\AssigneeProvider;
-use App\Enums\ActorType;
-use App\Enums\AssignmentPurpose;
+use App\Enums\Assignments\ActorType;
+use App\Enums\Assignments\AssignmentPurpose;
 use App\Exceptions\AssigneeTypeRepeated;
 use App\Exceptions\AssignmentProviderInvalid;
 use App\Exceptions\AssignmentTypeRepeated;

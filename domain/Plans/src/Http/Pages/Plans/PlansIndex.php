@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Plans\Http\Pages\Plans;
 
 use App\Contracts\Navigation\DraftProducers;
-use App\Enums\ActionMethod;
-use App\Enums\ReaderWidth;
+use App\Enums\Settings\ActionMethod;
+use App\Enums\Web\ReaderWidth;
 use App\Http\Pages\CreationDialog;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutActionData;

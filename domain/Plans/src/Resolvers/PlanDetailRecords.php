@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Resolvers;
 
 use App\Contracts\Actors\CurrentActor;
-use App\Enums\ReadView;
+use App\Enums\CommandRules\ReadView;
 use Domain\Plans\Contracts\PlanDetailsResolver;
 use Domain\Plans\Exceptions\PhaseMissing;
 use Domain\Plans\Exceptions\PlanMissing;

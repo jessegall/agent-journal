@@ -12,7 +12,7 @@ use App\Contracts\Search\SearchSources;
 use App\Data\Palette\PaletteHitData;
 use App\Data\Palette\PaletteSearchData;
 use App\Data\Palette\PaletteSourcesData;
-use App\Enums\SearchSurface;
+use App\Enums\Search\SearchSurface;
 use App\Exceptions\SearchWordsInvalid;
 use App\Mcp\Support\DeclaredSearch;
 use App\Support\ActorContext;

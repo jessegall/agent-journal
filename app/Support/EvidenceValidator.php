@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Declarations\VerificationContract;
-use App\Enums\AssessmentOutcome;
-use App\Enums\LifecycleState;
-use App\Enums\Outcome;
-use App\Enums\PartEndType;
-use App\Enums\ProblemCode;
-use App\Enums\RunMode;
+use App\Enums\CommandRules\Outcome;
+use App\Enums\Runs\AssessmentOutcome;
+use App\Enums\Runs\LifecycleState;
+use App\Enums\Runs\PartEndType;
+use App\Enums\Runs\ProblemCode;
+use App\Enums\Runs\RunMode;
 use App\Exceptions\EvidenceRejected;
 use App\Models\CommandRules\RuleRevision;
 use App\Models\Runs\OutputAssessment;

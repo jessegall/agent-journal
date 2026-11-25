@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Comments;
 
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

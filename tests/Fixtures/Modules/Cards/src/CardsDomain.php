@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Cards;
 
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Contracts\Authorization\PolicyProvider;
 use App\Values\PolicyDefinition;
 use App\Contracts\Bus\CommandMiddlewareProvider;

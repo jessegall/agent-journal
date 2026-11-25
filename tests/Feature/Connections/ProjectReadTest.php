@@ -6,10 +6,10 @@ namespace Tests\Feature\Connections;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Hosts\ProjectFiles;
-use App\Enums\ActorType;
-use App\Enums\ProjectReadFailure;
-use App\Enums\ProjectReadState;
-use App\Enums\ProjectReadType;
+use App\Enums\Assignments\ActorType;
+use App\Enums\Projects\ProjectReadFailure;
+use App\Enums\Projects\ProjectReadState;
+use App\Enums\Projects\ProjectReadType;
 use App\Exceptions\CommandNotRegistered;
 use App\Exceptions\ProjectReadRefused;
 use App\Models\Agents\Agent;

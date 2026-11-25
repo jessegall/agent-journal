@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Processes\StatementDeadlines;
 use App\Contracts\Records\ReferenceRecognizer;
 use App\Contracts\Search\TieredSearch;
-use App\Enums\ScoreTier;
+use App\Enums\Search\ScoreTier;
 use App\Exceptions\StatementTimedOut;
 use App\Exceptions\WorkBudgetSpent;
 use App\Values\BodyMatch;

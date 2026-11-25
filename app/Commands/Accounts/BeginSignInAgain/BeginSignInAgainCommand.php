@@ -7,7 +7,7 @@ namespace App\Commands\Accounts\BeginSignInAgain;
 use App\Attributes\Authorize;
 use App\Attributes\RetainedActorRequestKey;
 use App\Contracts\Bus\TargetedCommand;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Policies\AccountPolicy;
 use App\Support\Command;
 use App\Values\SignInStarted;

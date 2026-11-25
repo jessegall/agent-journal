@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Enums\BindingReadiness;
-use App\Enums\ConnectionAuditType;
+use App\Enums\Connections\BindingReadiness;
+use App\Enums\Connections\ConnectionAuditType;
 use App\Models\Projects\ConnectionAudit;
 use App\Models\Projects\Environment;
 use App\Models\Projects\InstallAttempt;

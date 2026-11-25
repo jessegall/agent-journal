@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\ProfileRunState;
+use App\Enums\Profiles\ProfileRunState;
 use App\Events\Accounts\ProfileRunFinished;
 use App\Events\Accounts\ProfileRunResumed;
 use App\Events\Accounts\ProfileRunStarted;

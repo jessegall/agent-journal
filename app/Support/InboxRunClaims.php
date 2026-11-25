@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Assignments\AssignmentStorage;
 use App\Contracts\Assignments\ResponsibilityWriter;
 use App\Contracts\Processes\RunClaims;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Exceptions\RunClaimRefused;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;

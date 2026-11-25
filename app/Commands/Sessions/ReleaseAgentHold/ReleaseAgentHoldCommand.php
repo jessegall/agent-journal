@@ -6,8 +6,8 @@ namespace App\Commands\Sessions\ReleaseAgentHold;
 
 use App\Attributes\Authorize;
 use App\Contracts\Bus\AgentStackCommand;
-use App\Enums\AccessType;
-use App\Enums\HoldReason;
+use App\Enums\Agents\AccessType;
+use App\Enums\Drivers\HoldReason;
 use App\Policies\AgentMaintenancePolicy;
 use App\Support\Command;
 use App\Values\StackTarget;

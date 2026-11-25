@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Pipes;
 
 use App\Contracts\Bus\Pipe;
-use App\Enums\MiddlewareStage;
+use App\Enums\Engine\MiddlewareStage;
 use App\Support\CommandDeclarations;
 use App\Support\CommandRegistry;
 use App\Support\DeclaredCommand;

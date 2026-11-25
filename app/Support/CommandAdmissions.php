@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Attributes\Authorize;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Bus\Command;
-use App\Enums\AccessRuleType;
+use App\Enums\Profiles\AccessRuleType;
 use App\Values\AccessDecision;
 use App\Values\AgentText;
 use App\Values\StartProfileAuthority;

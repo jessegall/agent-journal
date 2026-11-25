@@ -7,7 +7,7 @@ namespace Domain\Documents\Tests\Feature;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Reads\ReadMeter;
-use App\Enums\ShareRelationType;
+use App\Enums\Sharing\ShareRelationType;
 use App\Exceptions\ContentTooLarge;
 use App\Exceptions\RecordUnavailable;
 use App\Support\ActorContext;

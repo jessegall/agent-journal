@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
 use App\Commands\Agents\RetireAgent\RetireAgentCommand;
+use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
 use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Exceptions\CommandRefused;
 use App\Exceptions\CommandReplacementRefused;
 use App\Exceptions\CommandResultChanged;
@@ -18,11 +18,11 @@ use App\Exceptions\MiddlewareSkippedCommand;
 use App\Exceptions\MiddlewareSwallowedFailure;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
-use App\Models\Inboxes\Inbox;
 use App\Models\CommandRules\CommandReceipt;
 use App\Models\Desks\DeskPreference;
 use App\Models\Desks\DeskRecord;
 use App\Models\Desks\DeskSeat;
+use App\Models\Inboxes\Inbox;
 use App\Models\Messages\Message;
 use App\Models\Messages\MessageAttention;
 use App\Models\Records\AssignmentRecord;

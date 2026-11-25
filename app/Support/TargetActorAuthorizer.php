@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Actors\ActorResolver;
 use App\Contracts\Authorization\TargetAuthorizer;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 
 /**
  * Asks the target actor's own provider, chosen by the target's type through the registry; each evaluation stands

@@ -7,7 +7,7 @@ namespace Domain\Tasks\Models;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Support\ActorIdentity;
 use Domain\Tasks\Enums\TaskWaitChange;
 use Illuminate\Database\Eloquent\Attributes\Table;

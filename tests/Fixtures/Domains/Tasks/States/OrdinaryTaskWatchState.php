@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Domains\Tasks\States;
 
 use App\Support\Decisions\Decision;
 use App\Attributes\StateType;
-use App\Enums\SessionTransferType;
+use App\Enums\Sessions\SessionTransferType;
 use Domain\Tasks\Events\TaskCancelled;
 use Tests\Fixtures\Domains\Tasks\States\Commands\RecordTaskCancelled\RecordTaskCancelledCommand;
 

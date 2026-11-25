@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Agents\CheckStartStatus;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\DriverOperation;
+use App\Enums\Drivers\DriverOperation;
 use App\Models\Agents\AgentRuntime;
 use App\Support\DriverRequests;
 use App\Values\DriverRequestPayload;

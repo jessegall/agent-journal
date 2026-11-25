@@ -7,7 +7,7 @@ namespace App\Calls\Processes;
 use App\Attributes\Endpoint;
 use App\Attributes\InPath;
 use App\Contracts\Domains\JournalCall;
-use App\Enums\CallEffect;
+use App\Enums\Processes\CallEffect;
 use Spatie\LaravelData\Attributes\FromRouteParameterProperty;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Size;

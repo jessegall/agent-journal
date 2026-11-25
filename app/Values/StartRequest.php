@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\ConversationModeType;
-use App\Enums\DriverCapability;
-use App\Enums\DriverType;
-use App\Enums\StartOriginType;
+use App\Enums\Agents\ConversationModeType;
+use App\Enums\Drivers\DriverCapability;
+use App\Enums\Drivers\DriverType;
+use App\Enums\Starts\StartOriginType;
 use App\Support\RecordIdentity;
 
 /**

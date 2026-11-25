@@ -7,7 +7,7 @@ namespace App\Commands\Runs\RevokeRunOutcomeAccess;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Notifications\Notifications;
 use App\Data\Notifications\NotificationTarget;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Exceptions\RunOutcomeAccessRefused;
 use App\Models\Runs\ProcessRun;
 use App\Resolvers\RunNotificationTarget;

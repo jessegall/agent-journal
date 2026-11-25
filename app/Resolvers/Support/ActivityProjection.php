@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Resolvers\Support;
 
-use App\Enums\LifecycleState;
+use App\Enums\Runs\LifecycleState;
 use App\Models\Runs\OutputChunk;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;

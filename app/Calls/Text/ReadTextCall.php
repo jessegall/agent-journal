@@ -6,7 +6,7 @@ namespace App\Calls\Text;
 
 use App\Attributes\Endpoint;
 use App\Contracts\Domains\JournalCall;
-use App\Enums\CallEffect;
+use App\Enums\Processes\CallEffect;
 use App\Support\TextPart;
 use App\Support\TextSelection;
 use Spatie\LaravelData\Attributes\MapName;

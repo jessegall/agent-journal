@@ -6,8 +6,8 @@ namespace Domain\Chat\Tests\Feature;
 
 use App\Commands\Messages\AskMessage\AskMessageCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\ActorType;
-use App\Enums\DismissalType;
+use App\Enums\Assignments\ActorType;
+use App\Enums\Messages\DismissalType;
 use App\Models\Messages\Message;
 use App\Support\ActorIdentity;
 use App\Support\RequestKey;

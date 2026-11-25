@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Data\Accounts;
 
-use App\Enums\AccountProcessRole;
-use App\Enums\AccountState;
+use App\Enums\Accounts\AccountProcessRole;
+use App\Enums\Accounts\AccountState;
 use App\Models\Accounts\Account;
 use App\Values\AccountUse;
 use Spatie\LaravelData\Data;

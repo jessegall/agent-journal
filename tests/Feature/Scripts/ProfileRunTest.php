@@ -6,8 +6,8 @@ namespace Tests\Feature\Scripts;
 
 use App\Commands\Projects\NotifyWorkspaceRead\NotifyWorkspaceReadCommand;
 use App\Commands\Terminals\RecordScriptStepResult\RecordScriptStepResultCommand;
-use App\Enums\ProfileRunState;
-use App\Enums\StepStatus;
+use App\Enums\Profiles\ProfileRunState;
+use App\Enums\Terminals\StepStatus;
 use App\Exceptions\ProfileRunRefused;
 use App\Models\Profiles\ProfileRun;
 use App\Support\ActorIdentity;

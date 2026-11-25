@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Syntax;
 
-use App\Enums\RedirectType;
-use App\Enums\TokenType;
+use App\Enums\CommandRules\RedirectType;
+use App\Enums\CommandRules\TokenType;
 use App\Values\HereDocument;
 use App\Values\SourceRange;
 use App\Values\Word;

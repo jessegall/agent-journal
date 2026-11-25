@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Sharing\ReopenSharedGateways;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\GatewayOperationType;
+use App\Enums\Sharing\GatewayOperationType;
 use App\Models\Sharing\Share;
 use App\Models\Sharing\ShareGatewayConfiguration;
 use App\Models\Sharing\ShareGatewayOperation;

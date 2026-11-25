@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\DriverOutcome;
+use App\Enums\Drivers\DriverOutcome;
 
 /**
  * The typed outcome of a driver operation, with the reason the user reads for any outcome but applied.

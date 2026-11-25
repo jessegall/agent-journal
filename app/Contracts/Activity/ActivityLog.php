@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Activity;
 
-use App\Enums\ActivityType;
+use App\Enums\Agents\ActivityType;
 use App\Support\ActorIdentity;
 
 /**

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Pipes\Lexing;
 
 use App\Contracts\Bus\Pipe;
-use App\Enums\TokenType;
-use App\Enums\WordSegmentType;
+use App\Enums\CommandRules\TokenType;
+use App\Enums\CommandRules\WordSegmentType;
 use App\Exceptions\ShellLineUnreadable;
 use App\Support\Syntax\LexerCursor;
 use App\Support\Syntax\ShellExpansionScanner;

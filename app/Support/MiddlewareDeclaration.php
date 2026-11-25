@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\MiddlewareStage;
+use App\Enums\Engine\MiddlewareStage;
 
 /**
  * A middleware a module adds to the bus: its class, the commands it acts on and the stage it runs in.

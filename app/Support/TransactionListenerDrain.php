@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Events\Event;
-use App\Enums\ListenerLane;
+use App\Enums\Engine\ListenerLane;
 use App\Exceptions\CausalDepthExceeded;
 use Illuminate\Contracts\Container\Container;
 

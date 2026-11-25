@@ -8,7 +8,7 @@ use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Sessions\ProfileResolver;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\GrantNotWithheld;
 use App\Models\Agents\Agent;

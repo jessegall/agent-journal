@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Helpers\Tests\Feature;
 
 use App\Contracts\Actors\AgentTexts;
-use App\Enums\ContextStartType;
+use App\Enums\Hooks\ContextStartType;
 use App\Events\Hooks\ContextStarted;
 use App\Events\Sessions\LaunchEnded;
 use App\Support\ContextReminders;

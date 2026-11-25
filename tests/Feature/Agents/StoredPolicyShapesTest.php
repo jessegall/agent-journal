@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Enums\AccessType;
-use App\Enums\ExecutionModeType;
+use App\Enums\Agents\AccessType;
+use App\Enums\Agents\ExecutionModeType;
 use App\Values\AccessPolicy;
 use App\Values\ExecutionBudgets;
 use App\Values\ExecutionPolicy;

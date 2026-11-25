@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Authorization\CurrentAuthorizer;
-use App\Enums\AccessType;
-use App\Enums\CapacityResource;
-use App\Enums\ExecutionModeType;
+use App\Enums\Agents\AccessType;
+use App\Enums\Agents\ExecutionModeType;
+use App\Enums\Starts\CapacityResource;
 use App\Models\Agents\Agent;
 use App\Models\Starts\CapacityReservation;
 use App\Policies\AgentPolicy;

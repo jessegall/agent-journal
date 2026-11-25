@@ -7,7 +7,7 @@ namespace Domain\Helpers\Support;
 use App\Contracts\Admission\JournalAdmission;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Processes\SupervisorDispatch;
-use App\Enums\SupervisorDispatchOutcome;
+use App\Enums\Asks\SupervisorDispatchOutcome;
 use App\Exceptions\ConsoleOwnerMissing;
 use App\Values\SupervisorRequest;
 use Domain\Helpers\Commands\StartHelper\StartHelperCommand;

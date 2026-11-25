@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Pipes\Supervision;
 
 use App\Contracts\Bus\Pipe;
-use App\Enums\OutputStream;
+use App\Enums\Processes\OutputStream;
 use App\Support\Execution\PipedCommands;
 use App\Support\Execution\PipelinePump;
 use App\Support\Execution\PumpedCommands;

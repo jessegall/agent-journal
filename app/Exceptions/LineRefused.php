@@ -8,7 +8,7 @@ use App\Calls\Processes\AdmissionRefusalDetails;
 use App\Concerns\RendersRefusal;
 use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Refusals\CodedRefusal;
-use App\Enums\RefusalCode;
+use App\Enums\Engine\RefusalCode;
 use App\Values\AdmissionRefusal;
 use RuntimeException;
 

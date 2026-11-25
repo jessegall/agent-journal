@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Profiles;
 
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Values\StopCondition;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;

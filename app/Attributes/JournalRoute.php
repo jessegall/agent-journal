@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Attributes;
 
-use App\Enums\CommandClass;
-use App\Enums\JournalRouteType;
+use App\Enums\CommandRules\CommandClass;
+use App\Enums\CommandRules\JournalRouteType;
 use Attribute;
 
 /**

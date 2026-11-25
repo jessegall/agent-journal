@@ -6,10 +6,10 @@ namespace Tests\Unit\Processes;
 
 use App\Contracts\Bus\PipelineRunner as PipelineRunnerContract;
 use App\Contracts\Reflection\ReflectorFactory;
-use App\Enums\CommandClass;
-use App\Enums\OperandType;
-use App\Enums\ShellDialect;
-use App\Enums\UnresolvedType;
+use App\Enums\CommandRules\CommandClass;
+use App\Enums\CommandRules\OperandType;
+use App\Enums\CommandRules\UnresolvedType;
+use App\Enums\Processes\ShellDialect;
 use App\Exceptions\CommandRuleConflict;
 use App\Support\CatalogueReflectorFactory;
 use App\Support\CommandRuleRegistry;

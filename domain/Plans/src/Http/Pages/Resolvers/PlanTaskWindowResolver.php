@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Http\Pages\Resolvers;
 
 use App\Contracts\Navigation\PageResolver;
-use App\Enums\ReadView;
+use App\Enums\CommandRules\ReadView;
 use App\Support\Layout\DeclaredLayoutData;
 use Domain\Plans\Data\PlanFiltersData;
 use Domain\Plans\Http\Pages\Plans\PlansTasksShow;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Agents;
 
-use App\Enums\NavigationReason;
+use App\Enums\Navigation\NavigationReason;
 use App\Values\NavigationScreen;
 use App\Values\NavigationUncertainty;
 use Spatie\LaravelData\Attributes\MapInputName;

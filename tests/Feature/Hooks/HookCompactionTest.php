@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Contracts\Bus\CommandBus;
-use App\Enums\RewriteSupport;
+use App\Enums\Drivers\RewriteSupport;
 use App\Events\Hooks\ContextStarted;
 use App\Models\Drivers\HookCall;
 use App\Support\Drivers\DriverCapabilities;

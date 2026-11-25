@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Contracts\Bus\CommandRefusal;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use InvalidArgumentException;
 
 /**

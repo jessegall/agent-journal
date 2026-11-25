@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Processes;
 
-use App\Enums\ShellDialect;
+use App\Enums\Processes\ShellDialect;
 use App\Values\ShellCommand;
 
 /**

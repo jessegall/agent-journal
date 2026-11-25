@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Pipes\Grammar;
 
 use App\Contracts\Bus\Pipe;
-use App\Enums\AnalysisLimit;
+use App\Enums\CommandRules\AnalysisLimit;
 use App\Exceptions\ShellGrammarStopped;
 use App\Support\Grammar\CompoundParts;
 use App\Support\Grammar\UnparsedCompound;

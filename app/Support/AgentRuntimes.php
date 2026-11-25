@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\DriverOperation;
+use App\Enums\Drivers\DriverOperation;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;

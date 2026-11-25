@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Autoload;
 
-use App\Enums\Place;
+use App\Enums\Files\Place;
 use App\Support\CodeFiles;
 use App\Support\FolderClasses;
 use App\Support\Psr4ClassNames;

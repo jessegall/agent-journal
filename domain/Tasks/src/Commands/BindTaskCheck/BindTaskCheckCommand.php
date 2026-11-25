@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Commands\BindTaskCheck;
 
 use App\Attributes\Authorize;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use Domain\Tasks\Policies\TaskPolicy;
 

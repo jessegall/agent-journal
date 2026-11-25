@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Contracts\Notifications;
 
 use App\Data\Notifications\NotificationTarget;
-use App\Enums\NotificationSourceType;
+use App\Enums\Notifications\NotificationSourceType;
 use App\Support\ActorIdentity;
 
 /**

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Profiles;
 
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\SignInMethod;
+use App\Enums\Accounts\SignInMethod;
 use App\Support\SignInProtocols;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;

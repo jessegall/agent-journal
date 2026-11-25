@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Syntax;
 
-use App\Enums\TokenType;
+use App\Enums\CommandRules\TokenType;
 use App\Exceptions\ShellGrammarStopped;
 use App\Values\AgentText;
 use App\Values\Word;

@@ -8,7 +8,7 @@ use App\Commands\Runs\AssessPartOutput\AssessPartOutputCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Reads\OutputRecorder;
-use App\Enums\RunEventType;
+use App\Enums\Runs\RunEventType;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Support\Execution\RecordedRunEvents;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Enums\AccountProcessRole;
-use App\Enums\ProcessStartState;
+use App\Enums\Accounts\AccountProcessRole;
+use App\Enums\Agents\ProcessStartState;
 use App\Events\Accounts\AccountsChanged;
 use App\Events\Accounts\AccountUsageChanged;
 use App\Models\Accounts\Account;

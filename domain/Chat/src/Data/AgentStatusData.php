@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Data;
 
-use App\Enums\SessionState;
+use App\Enums\Sessions\SessionState;
 use App\Support\AgentStatus;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;

@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models\Skills;
 
-use Spatie\LaravelData\DataCollection;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Skills\SkillCondition;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Exceptions\SkillRevisionImmutable;
 use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
@@ -23,6 +22,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Spatie\LaravelData\DataCollection;
 
 /**
  * @property string $id

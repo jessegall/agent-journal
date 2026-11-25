@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\AccessType;
-use App\Enums\ResourceType;
+use App\Enums\Agents\AccessType;
+use App\Enums\Profiles\ResourceType;
 use App\Exceptions\ProfileProposalRefused;
 use App\Values\AccessPolicy;
 use App\Values\ResourceRequest;

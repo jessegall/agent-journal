@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Enums\AccessRuleType;
-use App\Enums\AccessType;
-use App\Enums\ExecutionModeType;
+use App\Enums\Agents\AccessType;
+use App\Enums\Agents\ExecutionModeType;
+use App\Enums\Profiles\AccessRuleType;
 use App\Exceptions\ExecutionBudgetInvalid;
 use App\Exceptions\ExecutionPolicyInvalid;
 use App\Exceptions\StopConditionsInvalid;

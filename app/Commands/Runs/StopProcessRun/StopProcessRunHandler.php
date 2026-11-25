@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\Runs\StopProcessRun;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\RunLogicalResult;
-use App\Enums\RunResultSource;
+use App\Enums\Runs\RunLogicalResult;
+use App\Enums\Runs\RunResultSource;
 use App\Exceptions\StopRefused;
 use App\Models\Runs\ProcessRun;
 use App\Support\ActorIdentity;

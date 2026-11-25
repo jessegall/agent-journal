@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Assignments;
 
-use App\Enums\AssignmentPurpose;
+use App\Enums\Assignments\AssignmentPurpose;
 use App\Exceptions\AssigneeTypeRepeated;
 use App\Exceptions\AssignmentProviderInvalid;
 use App\Support\ActivityDefinition;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\RunMode;
-use App\Enums\RunRequestIntent;
-use App\Enums\ShellDialect;
+use App\Enums\Processes\ShellDialect;
+use App\Enums\Runs\RunMode;
+use App\Enums\Runs\RunRequestIntent;
 
 /**
  * What a run is admitted with: its key, mode, project, the line's digest and dialect, the rule and policy revisions it

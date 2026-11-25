@@ -9,7 +9,7 @@ use App\Contracts\Assignments\AssignedWorkResolver;
 use App\Contracts\Assignments\AssignmentProviders;
 use App\Contracts\Assignments\AutoAssignmentAccess;
 use App\Contracts\Domains\DomainAvailability;
-use App\Enums\AutoAssignmentState;
+use App\Enums\Assignments\AutoAssignmentState;
 use App\Exceptions\AssignmentPoolTooLarge;
 use App\Exceptions\AssignmentPoolUnavailable;
 use App\Exceptions\AssignmentTypeUnavailable;

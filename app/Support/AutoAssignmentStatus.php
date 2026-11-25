@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\AutoAssignmentState;
+use App\Enums\Assignments\AutoAssignmentState;
 use Carbon\CarbonImmutable;
 use PhpOption\None;
 use PhpOption\Option;

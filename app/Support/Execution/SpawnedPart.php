@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Execution;
 
-use App\Enums\ExitStatus;
-use App\Enums\OutputStream;
+use App\Enums\Processes\OutputStream;
+use App\Enums\Runs\ExitStatus;
 
 /**
  * A part whose process started; ending it stops it when the run was stopped, otherwise waits for it and records its

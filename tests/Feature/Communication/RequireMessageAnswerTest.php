@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Commands\Messages\RequireMessageAnswer\RequireMessageAnswerCommand;
-use App\Enums\MessageState;
+use App\Enums\Messages\MessageState;
 use App\Exceptions\AnswerImpossible;
 use App\Exceptions\MessageMissing;
 use App\Models\Messages\Message;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Agents\ClaimStart;
 
 use App\Attributes\Entry;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use App\Support\ClaimedStart;
 use App\Support\Command;
 

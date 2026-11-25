@@ -6,7 +6,7 @@ namespace Domain\Plans\Console\Commands;
 
 use App\Attributes\JournalRoute;
 use App\Console\Concerns\RunsCallPipelines;
-use App\Enums\JournalRouteType;
+use App\Enums\CommandRules\JournalRouteType;
 use Domain\Plans\Calls\RecordPhaseCheckCall;
 use Illuminate\Console\Command;
 

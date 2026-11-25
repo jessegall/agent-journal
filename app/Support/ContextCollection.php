@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Actors\AgentTexts;
-use App\Enums\ContextStartType;
+use App\Enums\Hooks\ContextStartType;
 use App\Events\Hooks\ContextStarted;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Values\StackTarget;

@@ -7,7 +7,7 @@ namespace Domain\Helpers\Support;
 use App\Contracts\Actors\ActorGuidance;
 use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Work\WorkRepair;
-use App\Enums\WorkRepairOutcome;
+use App\Enums\Agents\WorkRepairOutcome;
 use App\Values\AgentText;
 use App\Values\WorkRepairRequest;
 use Domain\Helpers\Models\HelperJob;

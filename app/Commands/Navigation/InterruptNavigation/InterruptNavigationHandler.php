@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\Navigation\InterruptNavigation;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\HoldReason;
-use App\Enums\NavigationState;
+use App\Enums\Drivers\HoldReason;
+use App\Enums\Navigation\NavigationState;
 use App\Exceptions\HostReportRefused;
 use App\Exceptions\NavigationRaiseRefused;
 use App\Models\Drivers\NavigationRequest;

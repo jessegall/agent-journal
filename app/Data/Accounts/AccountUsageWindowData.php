@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Accounts;
 
-use App\Enums\UsageWindowSlot;
+use App\Enums\Accounts\UsageWindowSlot;
 use App\Models\Accounts\AccountUsageWindow;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;

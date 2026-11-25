@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\ExecutionModeType;
+use App\Enums\Agents\ExecutionModeType;
 use App\Exceptions\ExecutionPolicyInvalid;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;

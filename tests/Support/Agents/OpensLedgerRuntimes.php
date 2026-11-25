@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Support\Agents;
 
-use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
+use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Commands\Terminals\RunKeyScript\RunKeyScriptCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\DriverType;
+use App\Enums\Drivers\DriverType;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Support\ActorContext;

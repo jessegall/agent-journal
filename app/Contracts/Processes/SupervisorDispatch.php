@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Processes;
 
-use App\Enums\SupervisorDispatchOutcome;
+use App\Enums\Asks\SupervisorDispatchOutcome;
 use App\Values\SupervisorRequest;
 
 /**

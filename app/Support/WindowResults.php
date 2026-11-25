@@ -15,7 +15,7 @@ use App\Data\Pages\FailedWindow;
 use App\Data\Pages\ReadyWindow;
 use App\Data\Pages\UnavailableWindow;
 use App\Declarations\ResolverDefinition;
-use App\Enums\RefusalCode;
+use App\Enums\Engine\RefusalCode;
 use App\Exceptions\PrivateRecordMissing;
 use App\Exceptions\ReaderDataMismatch;
 use App\Support\Sources\Contracts\DockableWindow;

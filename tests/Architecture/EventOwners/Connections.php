@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Enums\BindingReadiness;
-use App\Enums\CommandRunState;
-use App\Enums\ProjectReadFailure;
+use App\Enums\Connections\BindingReadiness;
+use App\Enums\Connections\CommandRunState;
+use App\Enums\Projects\ProjectReadFailure;
 use App\Events\Connections\BindingStartRecorded;
 use App\Events\Connections\DeviceGrantApproved;
 use App\Events\Connections\DeviceGrantIssued;

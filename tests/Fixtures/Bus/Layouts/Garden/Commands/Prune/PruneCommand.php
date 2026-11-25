@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Bus\Layouts\Garden\Commands\Prune;
 
 use App\Attributes\Authorize;
 use App\Support\Command;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use Tests\Fixtures\Bus\Policies\FixturePolicy;
 
 /**

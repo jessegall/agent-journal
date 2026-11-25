@@ -8,7 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\InsertsRowSets;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\StopResultType;
+use App\Enums\Starts\StopResultType;
 use App\Values\StopResultLine;
 use App\Values\StopResultReport;
 use Carbon\CarbonImmutable;

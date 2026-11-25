@@ -7,7 +7,7 @@ namespace Tests\Fixtures\Domains\Reviews\States;
 use App\Attributes\StateType;
 use App\Contracts\Settings\EnabledSettingsGroup;
 use App\Contracts\Work\ConditionalState;
-use App\Enums\SessionTransferType;
+use App\Enums\Sessions\SessionTransferType;
 use App\Support\CurrentSettingsResolver;
 use App\Support\DisabledSettingsGroup;
 use App\Support\States\AgentState;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Ui;
 
-use App\Enums\LayoutTag;
-use App\Enums\NarrowView;
-use App\Enums\ReaderWidth;
+use App\Enums\Layouts\LayoutTag;
+use App\Enums\Web\NarrowView;
+use App\Enums\Web\ReaderWidth;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutBackData;
 use App\Support\Layout\LayoutFieldData;

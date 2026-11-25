@@ -7,7 +7,7 @@ namespace App\Models\Profiles;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\StepStatus;
+use App\Enums\Terminals\StepStatus;
 use App\Models\Support\Accessor;
 use App\Values\StepOutcome;
 use Illuminate\Database\Eloquent\Attributes\Scope;

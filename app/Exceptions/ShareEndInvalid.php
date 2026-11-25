@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\Enums\ShareState;
+use App\Enums\Sharing\ShareState;
 use LogicException;
 
 /**

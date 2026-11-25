@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Resolvers;
 
 use App\Contracts\Drivers\DriverCompatibilities;
-use App\Enums\ArrangementType;
-use App\Enums\DriverEvidence;
+use App\Enums\Drivers\DriverEvidence;
+use App\Enums\Projects\ArrangementType;
 use App\Models\Projects\Host;
 use App\Support\ArrangementSetting;
 use App\Support\Compatibility\DriverCompatibility;

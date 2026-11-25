@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Search\MessageSearch;
-use App\Enums\ScoreTier;
+use App\Enums\Search\ScoreTier;
 use App\Models\Messages\Message;
 use App\Values\AdmittedConstraints;
 use App\Values\RefreshCandidates;

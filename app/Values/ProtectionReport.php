@@ -6,7 +6,7 @@ namespace App\Values;
 
 use App\Data\Profiles\ProtectedItemData;
 use App\Data\Profiles\ProtectionReportData;
-use App\Enums\LaunchProfileType;
+use App\Enums\Drivers\LaunchProfileType;
 
 /**
  * What a contained host found of a driver's protected arrangement in the agent image (journal-agent protection),

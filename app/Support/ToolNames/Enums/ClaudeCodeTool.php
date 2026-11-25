@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\ToolNames\Enums;
 
-use App\Enums\AccessType;
-use App\Enums\FileOperation;
-use App\Enums\ResourceType;
+use App\Enums\Agents\AccessType;
+use App\Enums\Files\FileOperation;
+use App\Enums\Profiles\ResourceType;
 use App\Exceptions\UnsupportedHook;
 use App\Support\Inputs\Values\DriverToolInput;
 use App\Values\Operation;

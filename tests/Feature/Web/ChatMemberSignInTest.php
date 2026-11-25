@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Enums\InboxPermission;
+use App\Enums\Messages\InboxPermission;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\EnvironmentUserGrant;

@@ -6,7 +6,7 @@ namespace Tests\Feature\Actors;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Actors\CurrentActorSetter;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Exceptions\ActorContextMissing;
 use App\Support\ActorContext;
 use App\Support\AgentContext;

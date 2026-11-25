@@ -7,7 +7,7 @@ namespace App\Models\Inboxes;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Messages\MessageParticipant;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Events\Inboxes\InboxJoined;
 use App\Events\Inboxes\InboxLeft;
 use App\Support\ActorIdentity;

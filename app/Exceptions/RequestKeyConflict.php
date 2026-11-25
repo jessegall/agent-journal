@@ -8,7 +8,7 @@ use App\Concerns\RendersRefusal;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Bus\ReceiptRefusal;
 use App\Contracts\Refusals\CodedRefusal;
-use App\Enums\RefusalCode;
+use App\Enums\Engine\RefusalCode;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Reminders\Commands\CreateReminder;
 
 use App\Attributes\Authorize;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use Domain\Reminders\Models\Reminder;
 use Domain\Reminders\Policies\ReminderPolicy;

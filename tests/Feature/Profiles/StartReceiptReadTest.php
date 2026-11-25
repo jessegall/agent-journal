@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Enums\CapacityResource;
-use App\Enums\ConversationModeType;
-use App\Enums\DriverType;
-use App\Enums\StartOriginType;
+use App\Enums\Agents\ConversationModeType;
+use App\Enums\Drivers\DriverType;
+use App\Enums\Starts\CapacityResource;
+use App\Enums\Starts\StartOriginType;
 use App\Exceptions\CapacityUnavailable;
 use App\Models\Agents\Agent;
 use App\Models\Starts\StartRecord;

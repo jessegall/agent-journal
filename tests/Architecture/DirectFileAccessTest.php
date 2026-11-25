@@ -22,7 +22,7 @@ final class DirectFileAccessTest extends TestCase
      * The Files area's code that touches the disk, behind the Files contract.
      */
     private const array FILES_PRIMITIVES = [
-        'app/Enums/EntryType.php',
+        'app/Enums/Files/EntryType.php',
         'app/Providers/FilesServiceProvider.php',
         'app/Support/ClosedFolders.php',
         'app/Support/CodeFiles.php',

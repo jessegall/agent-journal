@@ -6,7 +6,7 @@ namespace App\Commands\Agents\StartOwnedAgent;
 
 use App\Attributes\Authorize;
 use App\Contracts\Bus\AgentStartCommand;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Policies\AgentPolicy;
 use App\Support\Command;
 use App\Support\OwnerStartReceipt;

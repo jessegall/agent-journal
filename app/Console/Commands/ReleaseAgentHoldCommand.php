@@ -6,7 +6,7 @@ namespace App\Console\Commands;
 
 use App\Commands\Sessions\ReleaseAgentHold\ReleaseAgentHoldCommand as ReleaseAgentHold;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\HoldReason;
+use App\Enums\Drivers\HoldReason;
 use App\Exceptions\ConsoleOwnerMissing;
 use App\Support\ConsoleOwner;
 use Illuminate\Console\Command;

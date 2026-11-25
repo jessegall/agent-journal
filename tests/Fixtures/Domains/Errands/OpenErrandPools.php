@@ -7,7 +7,7 @@ namespace Tests\Fixtures\Domains\Errands;
 use App\Support\ActorIdentity;
 use App\Contracts\Assignments\AssignmentPool;
 use App\Contracts\Assignments\AssignmentPoolFactory;
-use App\Enums\PoolInputType;
+use App\Enums\Assignments\PoolInputType;
 use App\Support\PoolDescription;
 use App\Support\PoolMembers;
 use App\Support\PoolReference;

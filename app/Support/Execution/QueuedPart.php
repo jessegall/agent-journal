@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Execution;
 
-use App\Enums\RedirectType;
+use App\Enums\CommandRules\RedirectType;
 use App\Exceptions\SupervisorRefused;
 use App\Values\ExecutionContext;
 use App\Values\PartKey;

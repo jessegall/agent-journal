@@ -7,7 +7,7 @@ namespace App\Console\Commands;
 use App\Attributes\JournalRoute;
 use App\Calls\Assignments\ListAutoAssignmentsCall;
 use App\Console\Concerns\RunsCallPipelines;
-use App\Enums\JournalRouteType;
+use App\Enums\CommandRules\JournalRouteType;
 use App\Exceptions\InvalidActorText;
 use App\Support\ActorIdentity;
 use Illuminate\Console\Command;

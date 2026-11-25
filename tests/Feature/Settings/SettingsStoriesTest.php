@@ -12,7 +12,7 @@ use App\Contracts\Settings\SettingsResolver;
 use App\Declarations\IntegerSetting;
 use App\Declarations\SettingGroup;
 use App\Declarations\StringSetting;
-use App\Enums\SettingsOutcome;
+use App\Enums\Settings\SettingsOutcome;
 use App\Exceptions\SettingDeclarationInvalid;
 use App\Exceptions\SettingsConflict;
 use App\Exceptions\SettingStorageInvalid;

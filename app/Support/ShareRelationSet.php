@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\ShareRelationType;
+use App\Enums\Sharing\ShareRelationType;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;

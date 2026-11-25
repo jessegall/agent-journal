@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Mcp;
 
 use App\Contracts\Assignments\AssigneeResolver;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Support\AssigneeIdentity;
 use App\Support\AssigneeList;
 use App\Support\AssigneeName;

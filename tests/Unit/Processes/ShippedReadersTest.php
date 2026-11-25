@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
-use App\Enums\Outcome;
-use App\Enums\OutputStream;
+use App\Enums\CommandRules\Outcome;
+use App\Enums\Processes\OutputStream;
 use App\Support\DeclarativeReader;
 use App\Support\Rules\ShippedReaders;
 use App\Values\OutputFrame;

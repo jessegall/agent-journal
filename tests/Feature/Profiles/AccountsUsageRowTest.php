@@ -8,7 +8,7 @@ use App\Data\Accounts\AccountMonthCostData;
 use App\Data\Accounts\AccountRowData;
 use App\Data\Accounts\AccountThreadTokensData;
 use App\Data\Accounts\AccountUsageData;
-use App\Enums\UsageWindowSlot;
+use App\Enums\Accounts\UsageWindowSlot;
 use App\Http\Pages\Resolvers\AccountsWindowResolver;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\AccountUsageCost;

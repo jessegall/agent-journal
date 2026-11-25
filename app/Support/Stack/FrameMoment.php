@@ -6,7 +6,7 @@ namespace App\Support\Stack;
 
 use App\Contracts\Bus\Command;
 use App\Contracts\Events\Event;
-use App\Enums\StackMoment;
+use App\Enums\Engine\StackMoment;
 use App\Support\Stack\Frames\Frame;
 
 /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\ReceiptState;
+use App\Enums\CommandRules\ReceiptState;
 
 /**
  * What the caller's receipt of one command under one request key says: its state, the result a completed command

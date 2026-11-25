@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Http\Pages\Tasks;
 
-use App\Enums\ActionMethod;
+use App\Enums\Settings\ActionMethod;
 use App\Support\Layout\DetailPage;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutFactValueData;

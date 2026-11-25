@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Actors\Actor;
 use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Contracts\Authorization\VisibilityCheck;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Models\Agents\ActivityEntry;
 use App\Policies\ActivityPolicy;
 

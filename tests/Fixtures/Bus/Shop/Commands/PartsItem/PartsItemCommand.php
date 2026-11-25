@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Bus\Shop\Commands\PartsItem;
 
 use App\Attributes\Authorize;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use Tests\Fixtures\Bus\Policies\FixturePolicy;
 use Tests\Fixtures\Bus\Shop\Contracts\Part;

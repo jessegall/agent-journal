@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Access\Commands\GrantEnvironmentAccess;
 
 use App\Attributes\Authorize;
-use App\Enums\AccessType;
-use App\Enums\InboxPermission;
+use App\Enums\Agents\AccessType;
+use App\Enums\Messages\InboxPermission;
 use App\Support\Command;
 use Domain\Access\Policies\EnvironmentAccessPolicy;
 

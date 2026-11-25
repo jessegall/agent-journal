@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Attributes;
 
-use App\Enums\PlaceExemption;
+use App\Enums\Files\PlaceExemption;
 use Attribute;
 
 /**

@@ -8,7 +8,7 @@ use App\Attributes\Authorize;
 use App\Attributes\RepeatableRead;
 use App\Attributes\RetainedActorRequestKey;
 use App\Contracts\Bus\RecordCommand;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;

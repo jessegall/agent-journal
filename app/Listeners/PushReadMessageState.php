@@ -7,7 +7,7 @@ namespace App\Listeners;
 use App\Attributes\InCommandTransaction;
 use App\Contracts\Events\Listener;
 use App\Contracts\Work\AgentStack;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Events\Messages\MessageSent;
 use App\Models\Inboxes\InboxMember;
 use App\Support\States\Support\ReadMessageStateReference;

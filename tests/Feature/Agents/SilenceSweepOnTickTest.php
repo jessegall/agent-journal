@@ -6,8 +6,8 @@ namespace Tests\Feature\Agents;
 
 use App\Commands\Sessions\MarkSilentSessions\MarkSilentSessionsCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\SessionStatus;
-use App\Enums\StackStatus;
+use App\Enums\Agents\StackStatus;
+use App\Enums\Sessions\SessionStatus;
 use App\Events\Engine\EngineTicked;
 use App\Exceptions\EngineAccessRefused;
 use App\Models\Agents\Agent;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Wire;
 
-use App\Enums\PartType;
+use App\Enums\Runs\PartType;
 use App\Support\Cards\Contracts\DockPart;
 use App\Support\Wire\Contracts\PartField;
 

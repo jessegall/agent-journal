@@ -6,7 +6,7 @@ namespace App\Commands\Projects\AssertBindingStart;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\ArrangementType;
+use App\Enums\Projects\ArrangementType;
 use App\Exceptions\BindingStartRefused;
 use App\Models\Projects\ProjectBinding;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature;
 
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Models\Records\AssignmentRecord;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;

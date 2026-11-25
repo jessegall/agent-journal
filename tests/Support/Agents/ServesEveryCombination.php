@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Support\Agents;
 
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\ArrangementType;
-use App\Enums\DriverType;
-use App\Enums\ExecutionModeType;
+use App\Enums\Agents\ExecutionModeType;
+use App\Enums\Drivers\DriverType;
+use App\Enums\Projects\ArrangementType;
 use App\Models\Projects\Host;
 use App\Support\Compatibility\DriverCompatibility;
 use App\Support\DefaultDrivers;

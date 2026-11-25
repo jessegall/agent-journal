@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Contracts\Actors\AgentTexts;
-use App\Enums\ContextStartType;
-use App\Enums\HookEvent;
-use App\Enums\RewriteSupport;
+use App\Enums\Drivers\RewriteSupport;
+use App\Enums\Hooks\ContextStartType;
+use App\Enums\Hooks\HookEvent;
 use App\Events\Hooks\ContextStarted;
 use App\Support\ContextBudget;
 use App\Support\Drivers\DriverCapabilities;

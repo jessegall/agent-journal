@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Enums\FrameReuse;
+use App\Enums\Engine\FrameReuse;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
 use App\Support\States\AgentState;

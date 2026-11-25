@@ -6,7 +6,7 @@ namespace Tests\Feature\Communication;
 
 use App\Commands\Desks\InstallDesks\InstallDesksCommand;
 use App\Contracts\Chat\InboxNotices;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use App\Enums\MessageType;
 use App\Models\Messages\Message;
 use App\Support\EntryDispatchers;

@@ -9,7 +9,7 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Assignments\AssignmentStorage;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Chat\MainSeatTakeover;
-use App\Enums\NavigationAnswerer;
+use App\Enums\Navigation\NavigationAnswerer;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Desks\DeskRecord;

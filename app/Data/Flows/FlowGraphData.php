@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Flows;
 
-use App\Enums\FlowNodeType;
+use App\Enums\Profiles\FlowNodeType;
 use App\Values\CompiledScript;
 use App\Values\Instruction;
 use App\Values\TriggerPolicy;

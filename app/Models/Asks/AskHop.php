@@ -10,7 +10,7 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\CoreAskType;
+use App\Enums\Asks\CoreAskType;
 use App\Events\Asks\AskHopAnswered;
 use App\Events\Asks\AskHopAssigned;
 use App\Events\Asks\AskHopAttentionRecorded;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Layouts\ChangeLayout;
 
 use App\Attributes\Authorize;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Policies\LayoutPolicy;
 use App\Support\Command;
 use App\Values\LayoutShape;

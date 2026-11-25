@@ -11,7 +11,7 @@ use App\Contracts\Scripts\ScriptCompilation;
 use App\Contracts\Scripts\ScriptKeywordRegistration;
 use App\Contracts\Scripts\ScriptObjectRegistration;
 use App\Contracts\Sessions\ProfileLanguage;
-use App\Enums\SyntaxForm;
+use App\Enums\CommandRules\SyntaxForm;
 use App\Support\KeywordRegistry;
 use App\Support\Keywords\CheckKeyword;
 use App\Support\Keywords\ConditionalKeyword;

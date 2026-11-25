@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Contracts\Actors;
 
 use App\Contracts\Work\ActorStackSessionProvider;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Exceptions\ActorProviderRepeated;
 
 /**

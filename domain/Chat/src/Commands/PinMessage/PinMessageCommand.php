@@ -6,7 +6,7 @@ namespace Domain\Chat\Commands\PinMessage;
 
 use App\Attributes\Authorize;
 use App\Attributes\RetainedActorRequestKey;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use Domain\Chat\Policies\MessagePinPolicy;
 

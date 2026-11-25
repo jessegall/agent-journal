@@ -7,7 +7,7 @@ namespace Domain\Access\Support;
 use App\Contracts\Actors\Actor;
 use App\Contracts\Authorization\Authorizer;
 use App\Contracts\Inboxes\InboxMemberPolicies;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use Illuminate\Auth\Access\Response;
 
 /**

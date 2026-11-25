@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Support;
 
-use App\Enums\DriverType;
+use App\Enums\Drivers\DriverType;
 use App\Support\ActorIdentity;
 use Domain\Helpers\Values\HelperWork;
 

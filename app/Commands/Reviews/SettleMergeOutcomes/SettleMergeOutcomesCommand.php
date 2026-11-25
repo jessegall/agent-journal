@@ -6,7 +6,7 @@ namespace App\Commands\Reviews\SettleMergeOutcomes;
 
 use App\Attributes\Entry;
 use App\Attributes\RepeatableRead;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use App\Support\Command;
 
 /**

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\OutputStream;
-use App\Enums\Tone;
+use App\Enums\Processes\OutputStream;
+use App\Enums\Runs\Tone;
 use App\Support\Cards\ConsoleOutput;
 use App\Support\Cards\DockCard;
 use App\Support\Cards\DockIdentity;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Contracts\Actors\AgentTexts;
-use App\Enums\AnswerType;
-use App\Enums\RewriteSupport;
+use App\Enums\Drivers\RewriteSupport;
+use App\Enums\Hooks\AnswerType;
 use App\Exceptions\HookDeadlineExpired;
 use App\Exceptions\HookDigestChanged;
 use App\Exceptions\UnsupportedHook;

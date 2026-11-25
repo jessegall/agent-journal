@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Pipes\Supervision;
 
 use App\Contracts\Bus\Pipe;
-use App\Enums\StepType;
+use App\Enums\CommandRules\StepType;
 use App\Exceptions\SupervisorRefused;
 use App\Support\Execution\PendingPart;
 use App\Support\Execution\PendingStep;

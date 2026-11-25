@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Contracts;
 
-use App\Enums\ReadView;
+use App\Enums\CommandRules\ReadView;
 use Domain\Tasks\Data\TaskDetails;
 use Domain\Tasks\Exceptions\TaskMissing;
 

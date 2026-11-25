@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Execution;
 
 use App\Contracts\Bus\Pipable;
-use App\Enums\StepType;
+use App\Enums\CommandRules\StepType;
 use App\Pipelines\RunBuiltinPipeline;
 use App\Pipelines\RunExternalPartPipeline;
 use App\Pipes\Supervision\AssignVariables;

@@ -7,7 +7,7 @@ namespace App\Calls\Comments;
 use App\Attributes\Endpoint;
 use App\Contracts\Domains\JournalCall;
 use App\Data\Comments\CommentList;
-use App\Enums\CallEffect;
+use App\Enums\Processes\CallEffect;
 use App\Support\IdListPage;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Max;

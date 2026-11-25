@@ -6,7 +6,7 @@ namespace App\Resolvers\Support;
 
 use App\Data\Notifications\NotificationChangeItem;
 use App\Data\Notifications\NotificationChangePage;
-use App\Enums\NotificationMutationType;
+use App\Enums\Notifications\NotificationMutationType;
 use App\Exceptions\NotificationCursorInvalid;
 use App\Models\Notifications\NotificationChange;
 use App\Models\Notifications\NotificationReceipt;

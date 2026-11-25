@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Support\Readers;
 
 use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Assignments\AssignmentResolver;
 use App\Contracts\Asks\AskReader;
+use App\Contracts\Assignments\AssignmentResolver;
 use App\Data\Asks\AskCard;
 use App\Data\Asks\AskDetail;
 use App\Data\Asks\AskInbox;
-use App\Enums\AskResult;
-use App\Enums\CoreAskType;
+use App\Enums\Asks\AskResult;
+use App\Enums\Asks\CoreAskType;
 use App\Models\Asks\Ask;
 use App\Models\Asks\AskHop;
 use App\Models\Reviews\ReviewDecision;

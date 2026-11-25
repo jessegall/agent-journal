@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Enums\ArrangementType;
-use App\Enums\ChildRole;
+use App\Enums\Agents\ChildRole;
+use App\Enums\Projects\ArrangementType;
 use App\Events\Sessions\ChildCheckoutRequested;
 use App\Listeners\IssueChildClaim;
 use App\Models\Agents\Agent;

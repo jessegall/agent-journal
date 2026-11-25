@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\PublicationState;
-use App\Enums\ReadEvidence;
+use App\Enums\Skills\PublicationState;
+use App\Enums\Skills\ReadEvidence;
 use App\Models\Skills\SkillContextEpoch;
 use App\Models\Skills\SkillGeneration;
 use App\Models\Skills\SkillPublication;

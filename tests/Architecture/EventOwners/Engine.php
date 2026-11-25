@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\RefusalCode;
+use App\Enums\Engine\RefusalCode;
 use App\Events\Engine\AgentStackClosed;
 use App\Events\Engine\AgentStackFramesSaved;
 use App\Events\Engine\AgentStackHeldForInvestigation;

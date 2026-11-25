@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Helpers\Support\Readers;
 
 use App\Contracts\Sessions\LaunchCandidates;
-use App\Enums\LaunchCandidateRank;
+use App\Enums\Starts\LaunchCandidateRank;
 use App\Support\LaunchCandidateFacts;
 use App\Support\LaunchCandidateQuery;
 use App\Support\LaunchProfileKey;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\ProfileChangeType;
+use App\Enums\Profiles\ProfileChangeType;
 
 /**
  * A profile an activation reached, with the revision number it appended and how it differs from the revision that was

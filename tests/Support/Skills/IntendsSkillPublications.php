@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support\Skills;
 
 use App\Data\Skills\GeneratedSkillData;
-use App\Enums\GenerationState;
+use App\Enums\Skills\GenerationState;
 use App\Models\Skills\SkillGeneration;
 use App\Models\Skills\SkillPublication;
 use App\Support\SkillPublications;

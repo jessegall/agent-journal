@@ -9,7 +9,7 @@ use App\Commands\Messages\DismissMessage\DismissMessageCommand;
 use App\Commands\Messages\ReplyToMessage\ReplyToMessageCommand;
 use App\Commands\Messages\SelectMessage\SelectMessageCommand;
 use App\Contracts\Inboxes\InboxResolver;
-use App\Enums\MessageState;
+use App\Enums\Messages\MessageState;
 use App\Events\Messages\MessageAnswered;
 use App\Exceptions\MessageMissing;
 use App\Models\Agents\AgentSession;

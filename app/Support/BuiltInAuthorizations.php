@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Data\Profiles\PolicyGrant;
 use App\Data\Profiles\ProfileAuthorization;
 use App\Data\Profiles\ScopedRead;
-use App\Enums\AuthorizationType;
+use App\Enums\Profiles\AuthorizationType;
 use App\Values\PolicyDefinition;
 use App\Values\ProfileBase;
 

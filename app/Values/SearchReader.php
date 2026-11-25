@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\SearchSurface;
+use App\Enums\Search\SearchSurface;
 use App\Support\ActorContext;
 
 /**

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Assignments\AutoAssignmentActivity;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 
 /**
  * Which activity says whether an actor of one type may take automatically assigned work now.

@@ -7,7 +7,7 @@ namespace Tests\Feature\Agents;
 use App\Commands\Agents\RecordHeartbeat\RecordHeartbeatCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\SessionStatus;
+use App\Enums\Sessions\SessionStatus;
 use App\Exceptions\CredentialRejected;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;

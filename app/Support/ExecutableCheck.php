@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Attributes\OutsideThePlaces;
-use App\Enums\PlaceExemption;
+use App\Enums\Files\PlaceExemption;
 use App\Values\ExecutableBinding;
 use App\Values\ExecutableVerdict;
 use App\Values\ExecutionContext;

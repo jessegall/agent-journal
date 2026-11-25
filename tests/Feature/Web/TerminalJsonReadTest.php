@@ -6,8 +6,8 @@ namespace Tests\Feature\Web;
 
 use App\Contracts\Time\ServerClock;
 use App\Data\Terminals\ScreenFrameData;
-use App\Enums\RefusalCode;
-use App\Enums\TerminalFrameState;
+use App\Enums\Engine\RefusalCode;
+use App\Enums\Terminals\TerminalFrameState;
 use App\Models\Agents\AgentRuntime;
 use App\Support\RuntimeScreen;
 use App\Support\ScreenRegistration;

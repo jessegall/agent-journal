@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\WordSegmentType;
+use App\Enums\CommandRules\WordSegmentType;
 
 /**
  * One piece of a word with how it was written; text holds what the piece means, without its quotes or backslash.

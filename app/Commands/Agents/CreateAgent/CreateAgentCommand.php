@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Agents\CreateAgent;
 
 use App\Attributes\Authorize;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Policies\AgentPolicy;
 use App\Support\ActorIdentity;
 use App\Support\Command;

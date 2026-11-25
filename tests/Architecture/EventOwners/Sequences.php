@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Support\ActorIdentity;
 use App\Values\StackTarget;
 use Domain\Sequences\Enums\SequenceRunState;

@@ -8,7 +8,7 @@ use App\Contracts\Skills\SkillResolver;
 use App\Data\Skills\SkillRevisionRow;
 use App\Data\Skills\SkillRevisionView;
 use App\Data\Skills\SkillWriteReceipt;
-use App\Enums\SkillOrigin;
+use App\Enums\Skills\SkillOrigin;
 use App\Exceptions\ConsoleOwnerMissing;
 use App\Exceptions\ShippedSkillReadOnly;
 use App\Exceptions\SkillConditionInvalid;

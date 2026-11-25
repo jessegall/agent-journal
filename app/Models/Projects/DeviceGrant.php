@@ -10,7 +10,7 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\DeviceGrantState;
+use App\Enums\Projects\DeviceGrantState;
 use App\Events\Connections\DeviceGrantApproved;
 use App\Events\Connections\DeviceGrantIssued;
 use App\Events\Connections\DeviceGrantPolled;

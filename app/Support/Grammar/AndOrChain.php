@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Grammar;
 
-use App\Enums\NodeType;
-use App\Enums\TokenType;
+use App\Enums\CommandRules\NodeType;
+use App\Enums\CommandRules\TokenType;
 
 /**
  * An and-or chain part-way through: the node of what was read so far.

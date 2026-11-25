@@ -6,7 +6,7 @@ namespace Domain\Documents\Exceptions;
 
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
-use App\Enums\RefusalCode;
+use App\Enums\Engine\RefusalCode;
 use RuntimeException;
 
 final class UploadLimitReached extends RuntimeException implements CodedRefusal, CommandRefusal

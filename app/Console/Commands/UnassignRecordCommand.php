@@ -8,7 +8,7 @@ use App\Attributes\JournalRoute;
 use App\Calls\Assignments\UnassignRecordCall;
 use App\Console\Concerns\ReadsAssignmentArguments;
 use App\Console\Concerns\RunsCallPipelines;
-use App\Enums\JournalRouteType;
+use App\Enums\CommandRules\JournalRouteType;
 use App\Exceptions\InvalidActorText;
 use Illuminate\Console\Command;
 

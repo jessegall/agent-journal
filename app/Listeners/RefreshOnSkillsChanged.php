@@ -6,7 +6,7 @@ namespace App\Listeners;
 
 use App\Commands\Skills\RefreshSkills\RefreshSkillsCommand;
 use App\Contracts\Events\Listener;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use App\Events\Skills\SkillsChanged;
 use App\Support\EntryDispatchers;
 

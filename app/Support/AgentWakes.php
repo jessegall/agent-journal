@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\DriverOperation;
+use App\Enums\Drivers\DriverOperation;
 use App\Values\DriverReceipt;
 use App\Values\DriverRequestPayload;
 use App\Values\StackTarget;

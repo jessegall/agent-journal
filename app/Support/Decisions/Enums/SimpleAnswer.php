@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Decisions\Enums;
 
 use App\Contracts\Asks\Answer;
-use App\Enums\AnswerType;
+use App\Enums\Hooks\AnswerType;
 
 enum SimpleAnswer: string implements Answer
 {

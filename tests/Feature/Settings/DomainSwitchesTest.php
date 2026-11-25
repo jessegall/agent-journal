@@ -9,7 +9,7 @@ use App\Commands\Settings\SetStringSetting\SetStringSettingCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Settings\SettingsResolver;
 use App\Declarations\ToggleGroup;
-use App\Enums\SettingsOutcome;
+use App\Enums\Settings\SettingsOutcome;
 use App\Exceptions\SettingUnavailable;
 use App\Support\CoreSettings;
 use App\Support\DisabledSettingsGroup;

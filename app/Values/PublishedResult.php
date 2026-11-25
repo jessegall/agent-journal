@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\AssessmentOutcome;
+use App\Enums\Runs\AssessmentOutcome;
 use Carbon\CarbonImmutable;
 
 /**

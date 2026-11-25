@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\Projects\RevokeDeviceGrant;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\ConnectionAuditActor;
-use App\Enums\ConnectionAuditType;
+use App\Enums\Connections\ConnectionAuditActor;
+use App\Enums\Connections\ConnectionAuditType;
 use App\Models\Projects\ConnectionAudit;
 use App\Models\Projects\DeviceGrant;
 

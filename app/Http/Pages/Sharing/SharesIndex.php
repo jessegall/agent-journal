@@ -6,7 +6,7 @@ namespace App\Http\Pages\Sharing;
 
 use App\Data\Sharing\ShareFiltersData;
 use App\Data\Sharing\ShareRowData;
-use App\Enums\ShareState;
+use App\Enums\Sharing\ShareState;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutBackData;
 use App\Support\Layout\LayoutFieldData;

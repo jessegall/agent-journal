@@ -6,7 +6,7 @@ namespace App\Commands\Projects\NotifyProjectRead;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Data\Connections\ProjectEntryData;
-use App\Enums\ProjectReadType;
+use App\Enums\Projects\ProjectReadType;
 use App\Exceptions\ProjectReadRefused;
 use App\Models\Projects\ProjectFile;
 use App\Models\Projects\ProjectFileVersion;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Accounts\RetryAccountCleanup;
 
 use App\Attributes\Authorize;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Policies\AccountPolicy;
 use App\Support\Command;
 

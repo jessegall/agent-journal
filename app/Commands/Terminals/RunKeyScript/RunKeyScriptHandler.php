@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Terminals\RunKeyScript;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\DriverOperation;
+use App\Enums\Drivers\DriverOperation;
 use App\Exceptions\KeyScriptRefused;
 use App\Support\DriverRequests;
 use App\Values\DriverReceipt;

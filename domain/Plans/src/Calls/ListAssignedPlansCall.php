@@ -7,7 +7,7 @@ namespace Domain\Plans\Calls;
 use App\Attributes\Endpoint;
 use App\Attributes\PresentList;
 use App\Contracts\Domains\JournalCall;
-use App\Enums\CallEffect;
+use App\Enums\Processes\CallEffect;
 use App\Support\NumberedPage;
 use Domain\Plans\Data\AssignedPlanListData;
 use Spatie\LaravelData\Attributes\MapName;

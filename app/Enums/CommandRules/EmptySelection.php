@@ -1,0 +1,14 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Enums\CommandRules;
+
+/**
+ * What zero eligible items means: an allowed empty run, or a configuration problem.
+ */
+enum EmptySelection: string
+{
+    case AllowedEmpty = 'allowed_empty';
+    case ConfigurationProblem = 'configuration_problem';
+}

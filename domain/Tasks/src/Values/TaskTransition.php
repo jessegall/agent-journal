@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Values;
 
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskState;
 

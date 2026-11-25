@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\Enums\LayoutTag;
+use App\Enums\Layouts\LayoutTag;
 use RuntimeException;
 
 /**

@@ -6,7 +6,7 @@ namespace App\Http\Pages\Resolvers;
 
 use App\Contracts\Navigation\PageResolver;
 use App\Data\Connections\DeviceApprovalData;
-use App\Enums\BindingReadiness;
+use App\Enums\Connections\BindingReadiness;
 use App\Exceptions\PrivateRecordMissing;
 use App\Http\Requests\Connections\DeviceApprovalPageRequest;
 use App\Models\Projects\DeviceGrant;

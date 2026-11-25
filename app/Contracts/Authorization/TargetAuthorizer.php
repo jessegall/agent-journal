@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Authorization;
 
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Exceptions\ActorNotAllowed;
 use App\Support\ActorIdentity;
 

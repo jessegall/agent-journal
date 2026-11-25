@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Support\Rules;
 
-use App\Enums\EmptySelection;
-use App\Enums\FramingType;
-use App\Enums\Outcome;
-use App\Enums\OutputEncoding;
-use App\Enums\RecordRole;
-use App\Enums\StreamUse;
-use App\Enums\SummaryRule;
+use App\Enums\CommandRules\EmptySelection;
+use App\Enums\CommandRules\FramingType;
+use App\Enums\CommandRules\Outcome;
+use App\Enums\CommandRules\OutputEncoding;
+use App\Enums\CommandRules\StreamUse;
+use App\Enums\CommandRules\SummaryRule;
+use App\Enums\Records\RecordRole;
 use App\Values\EmptyRunPolicy;
 use App\Values\ExitBranch;
 use App\Values\ExitPolicy;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Resolvers;
 
 use App\Contracts\Authorization\CurrentAuthorizer;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use Domain\Documents\Contracts\Drafts\DraftResolver;
 use Domain\Documents\Data\DraftState;
 use Domain\Documents\Data\DraftView;

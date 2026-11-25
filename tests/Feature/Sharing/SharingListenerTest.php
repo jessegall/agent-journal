@@ -7,7 +7,7 @@ namespace Tests\Feature\Sharing;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\ShareState;
+use App\Enums\Sharing\ShareState;
 use App\Models\Sharing\Share;
 use App\Models\Sharing\ShareGatewayConfiguration;
 use App\Support\GatewaySettings;

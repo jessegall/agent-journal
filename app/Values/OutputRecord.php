@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\ClaimedOutcome;
-use App\Enums\OutputStream;
-use App\Enums\RecordRole;
+use App\Enums\Processes\OutputStream;
+use App\Enums\Records\RecordRole;
+use App\Enums\Runs\ClaimedOutcome;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;

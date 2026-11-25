@@ -14,7 +14,7 @@ use App\Data\Comments\RecordCommentView;
 use App\Data\Comments\TextCommentLocation;
 use App\Data\Comments\TextCommentView;
 use App\Data\Pages\RecordCard;
-use App\Enums\WholeRecord;
+use App\Enums\Comments\WholeRecord;
 use App\Exceptions\CommentUnavailable;
 use App\Exceptions\TargetHasNoText;
 use App\Exceptions\TargetNotCommentable;

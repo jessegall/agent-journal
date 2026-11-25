@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Helpers\Support\States;
 
 use App\Attributes\StateType;
-use App\Enums\FrameReuse;
-use App\Enums\SessionTransferType;
+use App\Enums\Engine\FrameReuse;
+use App\Enums\Sessions\SessionTransferType;
 use App\Support\Decisions\ContextLine;
 use App\Support\Inputs\ContextCompacted;
 use App\Support\Inputs\SessionStarted;

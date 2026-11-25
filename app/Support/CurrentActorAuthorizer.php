@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Authorization\CurrentAuthorizer;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 
 /**
  * Authorization for the actor of this request: the authorizer its type's provider gives it, asked with the policy the

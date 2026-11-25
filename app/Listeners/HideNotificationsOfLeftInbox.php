@@ -7,7 +7,7 @@ namespace App\Listeners;
 use App\Commands\Notifications\HideLeftInboxNotifications\HideLeftInboxNotificationsCommand;
 use App\Contracts\Bus\JournalCommands;
 use App\Contracts\Events\Listener;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use App\Events\Inboxes\InboxLeft;
 
 /**

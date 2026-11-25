@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Profiles;
 
-use App\Enums\ArrangementType;
+use App\Enums\Projects\ArrangementType;
 use App\Support\HostAccountDrain;
 use PHPUnit\Framework\TestCase;
 

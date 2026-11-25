@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Commands\AppendUpload;
 
 use App\Attributes\Authorize;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use Domain\Documents\Models\TextUpload;
 use Domain\Documents\Policies\UploadPolicy;

@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Notifications\Notifications;
 use App\Data\Notifications\NotificationTarget;
-use App\Enums\NotificationSourceType;
+use App\Enums\Notifications\NotificationSourceType;
 use App\Events\Messages\NotificationsWithdrawn;
 use App\Models\Notifications\NotificationReceipt;
 use App\Models\Notifications\NotificationScope;

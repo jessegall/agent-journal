@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Calls\Comments;
 
 use App\Data\Pages\RecordCard;
-use App\Enums\CommentType;
+use App\Enums\Comments\CommentType;
 use Spatie\LaravelData\Data;
 
 /**

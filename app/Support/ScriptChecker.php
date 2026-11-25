@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Scripts\ScriptChecks;
-use App\Enums\DiagnosticCode;
+use App\Enums\Profiles\DiagnosticCode;
 use App\Exceptions\ScriptSyntaxError;
 use App\Values\ObjectDefinition;
 use App\Values\RegisteredKeyword;

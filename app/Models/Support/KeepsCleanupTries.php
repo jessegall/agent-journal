@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Support;
 
-use App\Enums\CleanupProblem;
+use App\Enums\Accounts\CleanupProblem;
 use App\Values\CleanupProgress;
 
 /**

@@ -7,7 +7,7 @@ namespace Domain\Documents\Http\Controllers;
 use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Sessions\AgentDirectory;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Support\ActorIdentity;
 use Domain\Chat\Contracts\PairChats;
 use Domain\Documents\Http\Requests\DocumentFeedbackRequest;

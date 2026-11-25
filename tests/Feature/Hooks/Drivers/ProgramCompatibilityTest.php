@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks\Drivers;
 
-use App\Enums\AuthenticationArrangement;
-use App\Enums\DriverEvidence;
+use App\Enums\Accounts\AuthenticationArrangement;
+use App\Enums\Drivers\DriverEvidence;
 use App\Support\Compatibility\DriverCompatibility;
 use App\Support\Compatibility\Exceptions\DriverArrangementUnproven;
 use App\Support\DefaultDrivers;

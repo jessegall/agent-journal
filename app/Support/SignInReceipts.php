@@ -6,8 +6,8 @@ namespace App\Support;
 
 use App\Contracts\Bus\CallerReceipts;
 use App\Data\Accounts\SignInReceiptData;
-use App\Enums\ReceiptState;
-use App\Enums\SignInReceiptStatus;
+use App\Enums\Accounts\SignInReceiptStatus;
+use App\Enums\CommandRules\ReceiptState;
 use App\Http\Requests\Profiles\SignInReceiptRequest;
 use App\Models\Accounts\SignInAttempt;
 

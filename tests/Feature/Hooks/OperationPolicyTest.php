@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Contracts\Authorization\OperationPolicy;
-use App\Enums\AccessType;
-use App\Enums\AnswerType;
-use App\Enums\FileOperation;
+use App\Enums\Agents\AccessType;
+use App\Enums\Files\FileOperation;
+use App\Enums\Hooks\AnswerType;
 use App\Support\Inputs\FileEditRequested;
 use App\Support\Inputs\ToolRequested;
 use App\Support\Inputs\Values\DriverToolInput;

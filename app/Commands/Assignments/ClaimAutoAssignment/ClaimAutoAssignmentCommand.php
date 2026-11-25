@@ -6,7 +6,7 @@ namespace App\Commands\Assignments\ClaimAutoAssignment;
 
 use App\Attributes\Entry;
 use App\Attributes\RepeatableRead;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use App\Support\AutoAssignmentKey;
 use App\Support\AutoAssignmentOutcome;
 use App\Support\Command;

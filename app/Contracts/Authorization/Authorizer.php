@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Contracts\Authorization;
 
 use App\Contracts\Actors\Actor;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Exceptions\GrantNotRegistered;
 use Illuminate\Auth\Access\Response;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature;
 
-use App\Enums\ReadView;
+use App\Enums\CommandRules\ReadView;
 use Domain\Plans\Contracts\PlanDetailsResolver;
 use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Models\Plan;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\StopPreparationState;
+use App\Enums\Agents\StopPreparationState;
 
 /**
  * How preparing a stop came out: its state, what the actor is told, and whether the owner is told the work is held

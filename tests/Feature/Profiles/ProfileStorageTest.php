@@ -8,7 +8,7 @@ use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Commands\Profiles\RevokeProfiles\RevokeProfilesCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Sessions\ProfileResolver;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Exceptions\ProfileMissing;
 use App\Exceptions\ProfileRetired;
 use App\Exceptions\ProfileRevisionImmutable;

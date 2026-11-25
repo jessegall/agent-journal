@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\CommandScopeType;
+use App\Enums\Engine\CommandScopeType;
 
 /**
  * The commands a middleware acts on.

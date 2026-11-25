@@ -7,7 +7,7 @@ namespace Tests\Feature\Engine;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Time\MonotonicClock;
 use App\Contracts\Time\ServerClock;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use App\Events\Hooks\StateTypesRequested;
 use App\Models\Agents\AgentStackRow;
 use App\Providers\DomainEventServiceProvider;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\ProjectReadState;
+use App\Enums\Projects\ProjectReadState;
 use App\Models\Projects\ProjectFileVersion;
 use App\Models\Projects\ProjectRead;
 use Carbon\CarbonImmutable;

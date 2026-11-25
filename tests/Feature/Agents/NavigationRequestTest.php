@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Contracts\Actors\CurrentActorSetter;
-use App\Enums\NavigationCompletion;
-use App\Enums\NavigationState;
+use App\Enums\Navigation\NavigationCompletion;
+use App\Enums\Navigation\NavigationState;
 use App\Exceptions\NavigationTransitionRefused;
 use App\Models\Drivers\NavigationRequest;
 use App\Support\ActorContext;

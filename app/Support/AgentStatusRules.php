@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Data\Agents\DriverRequestStatus;
-use App\Enums\DriverOperation;
-use App\Enums\DriverSwitchStage;
-use App\Enums\HoldReason;
-use App\Enums\ProcessStartState;
-use App\Enums\RequestProgress;
-use App\Enums\RuntimeActivity;
-use App\Enums\SessionState;
-use App\Enums\SessionStatus;
-use App\Enums\StartDisposition;
-use App\Enums\StartRefusalType;
-use App\Enums\StartRemedyType;
-use App\Enums\StartUnavailableReason;
-use App\Enums\StatusActionType;
+use App\Enums\Agents\ProcessStartState;
+use App\Enums\Agents\StatusActionType;
+use App\Enums\Drivers\DriverOperation;
+use App\Enums\Drivers\DriverSwitchStage;
+use App\Enums\Drivers\HoldReason;
+use App\Enums\Drivers\RequestProgress;
+use App\Enums\Runs\RuntimeActivity;
+use App\Enums\Sessions\SessionState;
+use App\Enums\Sessions\SessionStatus;
+use App\Enums\Starts\StartDisposition;
+use App\Enums\Starts\StartRefusalType;
+use App\Enums\Starts\StartRemedyType;
+use App\Enums\Starts\StartUnavailableReason;
 
 /**
  * Decides an agent's status from its evidence: the state, the words that name it and the actions it offers. Core's

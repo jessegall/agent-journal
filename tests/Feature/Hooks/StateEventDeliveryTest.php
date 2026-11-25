@@ -6,7 +6,7 @@ namespace Tests\Feature\Hooks;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Events\Event;
-use App\Enums\NoSubject;
+use App\Enums\Engine\NoSubject;
 use App\Exceptions\CommandAdmissionRefused;
 use App\Exceptions\StateEventReentry;
 use App\Models\Agents\AgentStackRow;

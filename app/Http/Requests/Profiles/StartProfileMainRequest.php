@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Profiles;
 
 use App\Commands\Agents\StartProfileMain\StartProfileMainCommand;
-use App\Enums\DriverType;
+use App\Enums\Drivers\DriverType;
 use App\Values\ChosenAccount;
 use App\Values\ModelSelection;
 use App\Values\ProfileKey;

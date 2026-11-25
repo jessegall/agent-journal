@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Tests\Feature;
 
 use App\Contracts\Bus\CommandBus;
-use App\Enums\SearchSurface;
+use App\Enums\Search\SearchSurface;
 use App\Support\ActorContext;
 use App\Support\SearchCoordinator;
 use App\Values\EmittedHit;

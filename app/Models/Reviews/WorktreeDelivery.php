@@ -7,7 +7,7 @@ namespace App\Models\Reviews;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\DeliveryOutcome;
+use App\Enums\Reviews\DeliveryOutcome;
 use App\Exceptions\DeliveryRefused;
 use App\Models\Agents\ChildClaim;
 use App\Models\Support\Accessor;

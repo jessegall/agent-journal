@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Reflection;
 
-use App\Enums\TypeShape;
+use App\Enums\Engine\TypeShape;
 use App\Exceptions\MethodMissing;
 use App\Exceptions\TypeNotNamed;
 use App\Support\ReflectedProperty;

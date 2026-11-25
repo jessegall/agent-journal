@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Data\Accounts;
 
-use App\Enums\SignInMethod;
-use App\Enums\SignInReceiptStatus;
-use App\Enums\SignInState;
-use App\Enums\SignInType;
+use App\Enums\Accounts\SignInMethod;
+use App\Enums\Accounts\SignInReceiptStatus;
+use App\Enums\Accounts\SignInState;
+use App\Enums\Accounts\SignInType;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

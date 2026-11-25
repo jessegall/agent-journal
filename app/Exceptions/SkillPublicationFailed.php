@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Contracts\Refusals\CodedRefusal;
-use App\Enums\PublicationState;
-use App\Enums\RefusalCode;
+use App\Enums\Engine\RefusalCode;
+use App\Enums\Skills\PublicationState;
 use RuntimeException;
 use Throwable;
 

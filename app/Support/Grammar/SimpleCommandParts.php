@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Grammar;
 
-use App\Enums\WordPlace;
+use App\Enums\CommandRules\WordPlace;
 use App\Values\Redirect;
 use App\Values\SourceRange;
 use App\Values\Word;

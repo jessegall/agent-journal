@@ -13,8 +13,8 @@ declare(strict_types=1);
  */
 
 use App\Contracts\Bus\CommandClassifier;
-use App\Enums\ParseOutcome;
-use App\Enums\ShellDialect;
+use App\Enums\CommandRules\ParseOutcome;
+use App\Enums\Processes\ShellDialect;
 use App\Processes\Contracts\AliasReader;
 use App\Support\Syntax\TreeParser;
 use App\Values\ExecutionContext;

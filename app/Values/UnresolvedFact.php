@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\UnresolvedType;
+use App\Enums\CommandRules\UnresolvedType;
 
 /**
  * Something about a node the classifier could not place, which keeps the command unknown.

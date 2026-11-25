@@ -6,7 +6,7 @@ namespace App\Commands\Accounts\CancelAccountUses;
 
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\ProcessStartState;
+use App\Enums\Agents\ProcessStartState;
 use App\Events\Sessions\AccountUseChanged;
 use App\Models\Starts\ProcessStart;
 use App\Support\RecordIdentity;

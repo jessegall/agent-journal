@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\OutputStream;
+use App\Enums\Processes\OutputStream;
 
 /**
  * Committed bytes of one stream at their offset, as a reader receives them.

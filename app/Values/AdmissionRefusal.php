@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\AdmissionRefusalCode;
+use App\Enums\CommandRules\AdmissionRefusalCode;
 
 /**
  * Why a line was refused, at which node and source text, how to correct it, and the command request that holds the

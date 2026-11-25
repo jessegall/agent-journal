@@ -6,7 +6,7 @@ namespace App\Support\Syntax\CommandReaders;
 
 use App\Contracts\Bus\CommandReader;
 use App\Contracts\Bus\Pipe;
-use App\Enums\UnsupportedKeyword;
+use App\Enums\CommandRules\UnsupportedKeyword;
 use App\Exceptions\ShellGrammarStopped;
 use App\Support\Grammar\NodeRead;
 use App\Support\Grammar\UnparsedCommand;

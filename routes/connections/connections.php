@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\HostRouteRole;
+use App\Enums\Projects\HostRouteRole;
 use App\Http\Controllers\ApproveDeviceGrantController;
 use App\Http\Controllers\AssignBindingEnvironmentController;
 use App\Http\Controllers\BindingPresenceController;

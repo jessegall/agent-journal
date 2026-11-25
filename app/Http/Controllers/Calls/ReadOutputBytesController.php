@@ -8,7 +8,7 @@ use App\Calls\Processes\OutputBytes;
 use App\Calls\Processes\ReadOutputBytesCall;
 use App\Commands\CommandRules\RecordEvidenceReads\RecordEvidenceReadsCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\EvidenceSource;
+use App\Enums\CommandRules\EvidenceSource;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Support\StoredOutput;

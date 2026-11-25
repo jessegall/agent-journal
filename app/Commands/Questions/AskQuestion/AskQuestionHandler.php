@@ -7,7 +7,7 @@ namespace App\Commands\Questions\AskQuestion;
 use App\Contracts\Actors\ActorResolver;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Questions\AnswersQuestions;
-use App\Enums\QuestionType;
+use App\Enums\Questions\QuestionType;
 use App\Exceptions\InboxUnavailable;
 use App\Exceptions\QuestionRefused;
 use App\Models\Inboxes\InboxMember;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Contracts\Bus\CommandClassifier;
-use App\Enums\ShellDialect;
-use App\Enums\StepType;
+use App\Enums\CommandRules\StepType;
+use App\Enums\Processes\ShellDialect;
 use App\Exceptions\ExecutionPlanRefused;
 use App\Support\ExecutionPlanner;
 use App\Support\Syntax\TreeParser;

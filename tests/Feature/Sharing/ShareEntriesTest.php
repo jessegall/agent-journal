@@ -15,7 +15,7 @@ use App\Commands\Sharing\RevokeShare\RevokeShareCommand;
 use App\Commands\Sharing\SaveSharePreview\SaveSharePreviewCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\ShareState;
+use App\Enums\Sharing\ShareState;
 use App\Models\Sharing\Share;
 use App\Models\Sharing\ShareGatewayConfiguration;
 use App\Models\Sharing\SharePreview;

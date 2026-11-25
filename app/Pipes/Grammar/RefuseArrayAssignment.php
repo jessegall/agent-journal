@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Pipes\Grammar;
 
 use App\Contracts\Bus\Pipe;
-use App\Enums\TokenType;
-use App\Enums\WordPlace;
+use App\Enums\CommandRules\TokenType;
+use App\Enums\CommandRules\WordPlace;
 use App\Support\Grammar\UnparsedWord;
 
 /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Enums\MessageState;
+use App\Enums\Messages\MessageState;
 use App\Exceptions\AnswerImpossible;
 use App\Models\Messages\Message;
 use App\Support\DeskService;

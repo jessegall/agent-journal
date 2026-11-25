@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Contracts;
 
-use App\Enums\ReadView;
+use App\Enums\CommandRules\ReadView;
 use Domain\Plans\Exceptions\PhaseMissing;
 use Domain\Plans\Exceptions\PlanMissing;
 use Domain\Plans\Values\PhaseDetails;

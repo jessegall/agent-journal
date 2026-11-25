@@ -8,7 +8,7 @@ use App\Concerns\ProvidesModelRecords;
 use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Contracts\Records\RecordProvider;
 use App\Data\Pages\RecordCard;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Models\Projects\ProjectFile;
 use App\Policies\ProjectFilesPolicy;
 use App\Support\ReadBuilder;

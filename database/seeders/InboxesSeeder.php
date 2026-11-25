@@ -6,7 +6,7 @@ namespace Database\Seeders;
 
 use App\Commands\Inboxes\InstallInboxes\InstallInboxesCommand;
 use App\Contracts\Bus\JournalCommands;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use Illuminate\Database\Seeder;
 
 final class InboxesSeeder extends Seeder

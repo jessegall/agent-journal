@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Pipes\Supervision;
 
 use App\Contracts\Bus\Pipe;
-use App\Enums\ExitStatus;
+use App\Enums\Runs\ExitStatus;
 use App\Support\Execution\SpawnedPart;
 use App\Support\Execution\StepOutcome;
 

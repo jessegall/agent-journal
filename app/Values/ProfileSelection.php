@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Data\Profiles\ProfileAuthorization;
-use App\Enums\DriverType;
-use App\Enums\InstancePolicy;
+use App\Enums\Drivers\DriverType;
+use App\Enums\Profiles\InstancePolicy;
 use App\Support\Compatibility\DriverCompatibility;
 
 /**

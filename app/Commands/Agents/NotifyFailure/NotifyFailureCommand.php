@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\Agents\NotifyFailure;
 
 use App\Attributes\Entry;
-use App\Enums\CommandEntry;
-use App\Enums\DriverFailure;
+use App\Enums\Accounts\CommandEntry;
+use App\Enums\Drivers\DriverFailure;
 use App\Support\Command;
 
 /**

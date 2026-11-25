@@ -6,7 +6,7 @@ namespace Domain\Access\Database\Seeders;
 
 use App\Commands\Inboxes\ProvisionActorInbox\ProvisionActorInboxCommand;
 use App\Contracts\Bus\JournalCommands;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use App\Support\ActorIdentity;
 use Domain\Access\Models\User;
 use Illuminate\Database\Seeder;

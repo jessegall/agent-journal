@@ -10,7 +10,7 @@ use App\Contracts\Reads\ReaderRequests;
 use App\Data\Pages\UnavailableWindow;
 use App\Declarations\RegisteredPage;
 use App\Declarations\RegisteredSection;
-use App\Enums\PageDestination;
+use App\Enums\Web\PageDestination;
 use App\Http\Requests\Web\DeclaredPageRequest;
 use App\Support\UiDeclarations;
 use Illuminate\Http\Request;

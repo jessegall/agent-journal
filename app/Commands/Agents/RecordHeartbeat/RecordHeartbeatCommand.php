@@ -6,8 +6,8 @@ namespace App\Commands\Agents\RecordHeartbeat;
 
 use App\Attributes\Authorize;
 use App\Attributes\Effect;
-use App\Enums\AccessType;
-use App\Enums\CommandEffectType;
+use App\Enums\Agents\AccessType;
+use App\Enums\Reviews\CommandEffectType;
 use App\Policies\AgentPolicy;
 use App\Support\Command;
 

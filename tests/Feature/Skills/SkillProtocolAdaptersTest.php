@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Skills;
 
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\DriverType;
+use App\Enums\Drivers\DriverType;
 use App\Support\DefaultDrivers;
 use App\Support\Drivers\DriverSkillAdapters;
 use App\Values\DriverKey;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Actors;
 
 use App\Contracts\Actors\ActiveActorCounter;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use Carbon\CarbonImmutable;
 
 /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Decisions;
 
-use App\Enums\NoSubject;
+use App\Enums\Engine\NoSubject;
 use App\Exceptions\StateTypeMissing;
 use App\Support\References\StateReference;
 use App\Support\References\SubjectReference;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
-use App\Enums\SlotContextType;
+use App\Enums\Profiles\SlotContextType;
 use App\Exceptions\InvalidPageDeclaration;
 
 /**

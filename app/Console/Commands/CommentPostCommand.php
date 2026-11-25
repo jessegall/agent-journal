@@ -8,7 +8,7 @@ use App\Attributes\JournalRoute;
 use App\Calls\Comments\CommentPlace;
 use App\Calls\Comments\PostCommentCall;
 use App\Console\Concerns\RunsCallPipelines;
-use App\Enums\JournalRouteType;
+use App\Enums\CommandRules\JournalRouteType;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 

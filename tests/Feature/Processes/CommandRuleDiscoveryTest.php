@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Enums\ScopeType;
+use App\Enums\CommandRules\ScopeType;
 use App\Support\CommandRuleRegistry;
 use App\Support\DomainEntry;
 use App\Values\CommandRule;

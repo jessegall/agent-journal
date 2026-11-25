@@ -6,7 +6,7 @@ namespace Domain\Memory\Console\Commands;
 
 use App\Attributes\JournalRoute;
 use App\Console\Concerns\RunsCallPipelines;
-use App\Enums\JournalRouteType;
+use App\Enums\CommandRules\JournalRouteType;
 use Domain\Memory\Calls\ListMemoriesCall;
 use Illuminate\Console\Command;
 

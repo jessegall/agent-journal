@@ -17,7 +17,7 @@ use App\Contracts\Records\Commentable;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Sharing\Shareable;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Models\Records\Comment;
 use App\Models\Support\Accessor;
 use App\Support\ActorContext;

@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Profiles;
 
-use App\Contracts\Sessions\ProfileResolver;
-use App\Enums\ModelTier;
-use App\Exceptions\ProfileKeyInvalid;
-use App\Exceptions\ProfileMissing;
+use App\Enums\Profiles\ModelTier;
 use App\Support\BuiltInAuthorizations;
 use App\Support\DomainRegistry;
 use App\Values\ProfileBase;

@@ -6,7 +6,7 @@ namespace Domain\Documents\Console\Commands;
 
 use App\Attributes\JournalRoute;
 use App\Console\Concerns\RunsCallPipelines;
-use App\Enums\JournalRouteType;
+use App\Enums\CommandRules\JournalRouteType;
 use Domain\Documents\Console\Concerns\PrintsComments;
 use Illuminate\Console\Command;
 

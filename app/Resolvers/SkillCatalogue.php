@@ -6,7 +6,7 @@ namespace App\Resolvers;
 
 use App\Contracts\Skills\Skill;
 use App\Contracts\Skills\SkillResolver;
-use App\Enums\SkillOrigin;
+use App\Enums\Skills\SkillOrigin;
 use App\Exceptions\SkillConditionInvalid;
 use App\Exceptions\SkillConflict;
 use App\Exceptions\SkillDeclarationInvalid;

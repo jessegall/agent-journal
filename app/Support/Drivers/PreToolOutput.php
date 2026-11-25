@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Drivers;
 
-use App\Enums\DriverPermission;
-use App\Enums\HookEvent;
+use App\Enums\Drivers\DriverPermission;
+use App\Enums\Hooks\HookEvent;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 

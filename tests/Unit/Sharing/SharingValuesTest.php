@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Sharing;
 
-use App\Enums\ShareAuditType;
-use App\Enums\ShareRelationType;
-use App\Enums\ShareState;
+use App\Enums\Sharing\ShareAuditType;
+use App\Enums\Sharing\ShareRelationType;
+use App\Enums\Sharing\ShareState;
 use App\Support\CommandGrammar;
 use App\Support\GatewayConfiguration;
 use App\Support\GatewayEndpoint;

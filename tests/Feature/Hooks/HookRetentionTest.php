@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Enums\AnswerType;
-use App\Enums\NoSubject;
+use App\Enums\Engine\NoSubject;
+use App\Enums\Hooks\AnswerType;
 use App\Exceptions\HookIdentityExpired;
 use App\Exceptions\RetentionTooShort;
 use App\Models\Agents\AgentStackRow;

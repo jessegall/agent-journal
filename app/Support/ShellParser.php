@@ -6,11 +6,11 @@ namespace App\Support;
 
 use App\Contracts\Bus\CommandClassifier;
 use App\Contracts\Processes\ShellCommandParser;
-use App\Enums\CommandEffect;
-use App\Enums\CommandType;
-use App\Enums\ParseOutcome;
-use App\Enums\PartJoin;
-use App\Enums\ShellDialect;
+use App\Enums\CommandRules\CommandEffect;
+use App\Enums\CommandRules\CommandType;
+use App\Enums\CommandRules\ParseOutcome;
+use App\Enums\Processes\ShellDialect;
+use App\Enums\Runs\PartJoin;
 use App\Support\Syntax\TreeParser;
 use App\Values\ClassFact;
 use App\Values\Classification;

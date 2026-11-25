@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Assignments;
 
-use App\Enums\AssignmentOutcomeType;
+use App\Enums\Assignments\AssignmentOutcomeType;
 use Spatie\LaravelData\Data;
 
 /**

@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Contracts\Sessions\StartTransaction;
-use App\Enums\HostWakeRefusal;
+use App\Enums\Drivers\HostWakeRefusal;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;

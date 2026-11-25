@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Data;
 
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskWaitTargetType;
 use Domain\Tasks\Values\TaskWaitLink;

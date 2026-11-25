@@ -42,7 +42,7 @@ final class RawReflectionRule implements Rule
      * The files that implement the wrapper on native reflection, relative to the project root.
      */
     public const array WRAPPER_FILES = [
-        'app/Enums/AttributeMatch.php',
+        'app/Enums/Engine/AttributeMatch.php',
         'app/Support/AttributeEntry.php',
         'app/Support/DeclarationAttributes.php',
         'app/Support/DeclaredType.php',

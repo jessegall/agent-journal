@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Enums\ChildRole;
+use App\Enums\Agents\ChildRole;
 use App\Exceptions\ChildClaimRefused;
 use App\Models\Agents\ChildClaim;
 use App\Models\Projects\ProjectBinding;

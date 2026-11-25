@@ -8,7 +8,7 @@ use App\Commands\Accounts\BeginSignInAgain\BeginSignInAgainCommand;
 use App\Commands\Accounts\ReconcileSignIns\ReconcileSignInsCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use App\Events\Accounts\AccountsChanged;
 use App\Events\Assignments\AssignmentsChanged;
 use App\Jobs\SignInDeadline;

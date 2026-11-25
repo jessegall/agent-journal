@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Memory\Commands\EditMemory;
 
 use App\Attributes\Authorize;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use Domain\Memory\Models\Memory;
 use Domain\Memory\Policies\MemoryPolicy;

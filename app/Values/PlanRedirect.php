@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\RedirectType;
+use App\Enums\CommandRules\RedirectType;
 use Spatie\LaravelData\Data;
 
 /**

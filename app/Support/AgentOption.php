@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\AgentAction;
-use App\Enums\AgentPresence;
-use App\Enums\DriverSwitchStage;
-use App\Enums\HoldReason;
+use App\Enums\Agents\AgentAction;
+use App\Enums\Agents\AgentPresence;
+use App\Enums\Drivers\DriverSwitchStage;
+use App\Enums\Drivers\HoldReason;
 use App\Exceptions\SessionOutdated;
 
 /**

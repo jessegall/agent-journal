@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\Enums\DriverSwitchStage;
+use App\Enums\Drivers\DriverSwitchStage;
 use LogicException;
 
 /**

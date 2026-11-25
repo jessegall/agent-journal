@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Execution;
 
-use App\Enums\ExitStatus;
-use App\Enums\PartEndType;
+use App\Enums\Runs\ExitStatus;
+use App\Enums\Runs\PartEndType;
 use App\Values\PartEnd;
 
 /**

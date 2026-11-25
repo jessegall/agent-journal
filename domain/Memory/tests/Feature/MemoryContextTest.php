@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Domain\Memory\Tests\Feature;
 
 use App\Contracts\Actors\AgentTexts;
-use App\Enums\ActorType;
-use App\Enums\ContextStartType;
-use App\Enums\HookEvent;
-use App\Enums\RewriteSupport;
+use App\Enums\Assignments\ActorType;
+use App\Enums\Drivers\RewriteSupport;
+use App\Enums\Hooks\ContextStartType;
+use App\Enums\Hooks\HookEvent;
 use App\Support\ActorIdentity;
 use App\Support\Drivers\DriverCapabilities;
 use App\Support\Drivers\DriverReplies;

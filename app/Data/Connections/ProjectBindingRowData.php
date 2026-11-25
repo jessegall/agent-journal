@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Connections;
 
-use App\Enums\BindingReadiness;
+use App\Enums\Connections\BindingReadiness;
 use App\Models\Projects\ProjectBinding;
 use App\Values\DriverFamily;
 use Carbon\CarbonImmutable;

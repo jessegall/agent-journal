@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Accounts;
 
-use App\Enums\StartUnavailableReason;
+use App\Enums\Starts\StartUnavailableReason;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

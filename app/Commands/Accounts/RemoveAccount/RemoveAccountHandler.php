@@ -6,7 +6,7 @@ namespace App\Commands\Accounts\RemoveAccount;
 
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\SignInState;
+use App\Enums\Accounts\SignInState;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Accounts\SignInAttempt;

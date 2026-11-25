@@ -6,7 +6,7 @@ namespace App\Pipes;
 
 use App\Contracts\Bus\Pipe;
 use App\Contracts\Events\Event;
-use App\Enums\TypeShape;
+use App\Enums\Engine\TypeShape;
 use App\Exceptions\InvalidListener;
 use App\Support\DeclaredType;
 use App\Support\ListenerDeclarations;

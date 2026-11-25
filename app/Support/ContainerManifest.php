@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\LaunchProfileType;
-use App\Enums\WorkspaceUse;
+use App\Enums\Agents\WorkspaceUse;
+use App\Enums\Drivers\LaunchProfileType;
 use App\Exceptions\ManifestRefused;
 use App\Values\ExecutionBudgets;
 use App\Values\ExecutionPolicy;

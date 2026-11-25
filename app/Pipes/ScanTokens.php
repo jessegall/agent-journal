@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Pipes;
 
 use App\Contracts\Bus\Pipe;
-use App\Enums\ParseOutcome;
+use App\Enums\CommandRules\ParseOutcome;
 use App\Exceptions\ShellGrammarStopped;
 use App\Support\Lines\ScannedSource;
 use App\Support\Lines\ShellSource;

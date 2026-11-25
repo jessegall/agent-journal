@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Stack;
 
-use App\Enums\StackMoment;
+use App\Enums\Engine\StackMoment;
 use App\Support\Stack\Frames\Frame;
 
 /**

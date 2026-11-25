@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Settings\SetIntegerChoice;
 
 use App\Attributes\Authorize;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Policies\SettingPolicy;
 use App\Support\Command;
 use App\Values\SettingReference;

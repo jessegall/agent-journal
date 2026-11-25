@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use LogicException;
 
 final class ActiveActorCounterMissing extends LogicException

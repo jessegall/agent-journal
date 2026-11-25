@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests;
 
 use App\Contracts\Files\Files;
-use App\Enums\Place;
+use App\Enums\Files\Place;
 use App\Support\OuterTransactionOwner;
 use App\Support\OutsideCommandAllowance;
 use Illuminate\Contracts\Events\Dispatcher;

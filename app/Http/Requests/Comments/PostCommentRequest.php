@@ -7,7 +7,7 @@ namespace App\Http\Requests\Comments;
 use App\Commands\Comments\PostComment\PostCommentCommand;
 use App\Commands\Comments\PostTextComment\PostTextCommentCommand;
 use App\Contracts\Records\RecordResolver;
-use App\Enums\TextAnchorType;
+use App\Enums\Records\TextAnchorType;
 use App\Http\Requests\RecordTargetRequest;
 use App\Values\TextRange;
 use Illuminate\Validation\Validator;

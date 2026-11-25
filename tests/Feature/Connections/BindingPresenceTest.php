@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Enums\BindingReadiness;
+use App\Enums\Connections\BindingReadiness;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Projects\ProjectBinding;
 use Carbon\CarbonImmutable;

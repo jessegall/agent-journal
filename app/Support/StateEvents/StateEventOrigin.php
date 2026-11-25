@@ -6,7 +6,7 @@ namespace App\Support\StateEvents;
 
 use App\Contracts\Bus\Command;
 use App\Contracts\Events\Event;
-use App\Enums\CommandOriginStatus;
+use App\Enums\Engine\CommandOriginStatus;
 use App\Values\StackTarget;
 use Psr\Log\LoggerInterface;
 

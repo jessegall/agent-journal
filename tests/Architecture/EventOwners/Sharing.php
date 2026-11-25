@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Enums\GatewayEndpointState;
-use App\Enums\GatewayOutcome;
-use App\Enums\ShareState;
+use App\Enums\Sharing\GatewayEndpointState;
+use App\Enums\Sharing\GatewayOutcome;
+use App\Enums\Sharing\ShareState;
 use App\Events\Sharing\ShareActivated;
 use App\Events\Sharing\ShareCreated;
 use App\Events\Sharing\ShareExpired;

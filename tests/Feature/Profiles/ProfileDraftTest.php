@@ -7,7 +7,7 @@ namespace Tests\Feature\Profiles;
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Commands\Profiles\SaveProfileDraft\SaveProfileDraftCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\CommandDirectory;
+use App\Enums\Profiles\CommandDirectory;
 use App\Exceptions\CommandAdmissionRefused;
 use App\Exceptions\InvalidScript;
 use App\Exceptions\ProfileDraftRefused;

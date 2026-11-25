@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Authorization\OperationPolicy;
-use App\Enums\AccessRuleType;
+use App\Enums\Profiles\AccessRuleType;
 use App\Values\AccessDecision;
 use App\Values\AgentText;
 use App\Values\Operation;

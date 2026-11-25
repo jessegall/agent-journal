@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Work\AgentFocuses;
 use App\Contracts\Work\Focusable;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Models\Agents\AgentFocus;
 use PhpOption\None;
 use PhpOption\Option;

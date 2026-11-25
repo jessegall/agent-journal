@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\TerminalInputType;
+use App\Enums\Terminals\TerminalInputType;
 
 /**
  * Which browser input a host's claim says it carries out on its terminals: text and Enter, named keys, pastes,

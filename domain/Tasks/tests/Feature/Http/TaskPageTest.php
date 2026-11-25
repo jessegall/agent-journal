@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Tests\Feature\Http;
 
 use App\Contracts\Work\AgentFocuses;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;

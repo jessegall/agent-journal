@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sequences\Tests\Feature;
 
 use App\Contracts\Bus\CommandBus;
-use App\Enums\RewriteSupport;
+use App\Enums\Drivers\RewriteSupport;
 use App\Exceptions\StackAlreadyClosed;
 use App\Models\Agents\AgentStackRow;
 use App\Support\Drivers\DriverCapabilities;

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Pipes\Grammar;
 
 use App\Contracts\Bus\Pipe;
-use App\Enums\NodeType;
-use App\Enums\ParseOutcome;
-use App\Enums\WordSegmentType;
+use App\Enums\CommandRules\NodeType;
+use App\Enums\CommandRules\ParseOutcome;
+use App\Enums\CommandRules\WordSegmentType;
 use App\Exceptions\ShellGrammarStopped;
 use App\Support\Grammar\PendingSegment;
 use App\Support\Grammar\SubstitutionQueue;

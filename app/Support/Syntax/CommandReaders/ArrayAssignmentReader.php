@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Syntax\CommandReaders;
 
-use App\Enums\TokenType;
+use App\Enums\CommandRules\TokenType;
 use App\Support\Syntax\TokenCursor;
 use App\Values\AgentText;
 

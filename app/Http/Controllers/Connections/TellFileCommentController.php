@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Connections;
 
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Inboxes\InboxDestinationResolver;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Http\Requests\Connections\TellFileCommentRequest;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;

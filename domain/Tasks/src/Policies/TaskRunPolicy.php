@@ -7,7 +7,7 @@ namespace Domain\Tasks\Policies;
 use App\Contracts\Actors\Actor;
 use App\Contracts\Authorization\RecordPolicy;
 use App\Contracts\Processes\RunClaims;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Support\ActorIdentity;
 use Domain\Tasks\Models\Task;
 use Illuminate\Auth\Access\Response;

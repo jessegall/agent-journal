@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Reviews;
 
-use App\Enums\RepairRequestState;
+use App\Enums\Reviews\RepairRequestState;
 
 /**
  * A repair request was settled in the state given.

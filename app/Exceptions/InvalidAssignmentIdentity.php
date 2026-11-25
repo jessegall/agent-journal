@@ -7,7 +7,7 @@ namespace App\Exceptions;
 use App\Concerns\RendersRefusal;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
-use App\Enums\RefusalCode;
+use App\Enums\Engine\RefusalCode;
 use InvalidArgumentException;
 
 final class InvalidAssignmentIdentity extends InvalidArgumentException implements CodedRefusal, CommandRefusal

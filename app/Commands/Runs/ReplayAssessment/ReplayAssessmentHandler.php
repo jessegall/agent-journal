@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\Runs\ReplayAssessment;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\LifecycleState;
-use App\Enums\RunMode;
+use App\Enums\Runs\LifecycleState;
+use App\Enums\Runs\RunMode;
 use App\Exceptions\ReplayRefused;
 use App\Models\CommandRules\RuleRevision;
 use App\Models\Runs\OutputAssessment;

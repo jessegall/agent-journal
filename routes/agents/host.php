@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\HostRouteRole;
+use App\Enums\Projects\HostRouteRole;
 use App\Http\Controllers\Agents\Host\ActivityReportController;
 use App\Http\Controllers\Agents\Host\ClaimRequestsController;
 use App\Http\Controllers\Agents\Host\ClaimStartController;

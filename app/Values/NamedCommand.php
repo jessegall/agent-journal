@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\AccessType;
-use App\Enums\CommandDirectory;
+use App\Enums\Agents\AccessType;
+use App\Enums\Profiles\CommandDirectory;
 use App\Exceptions\ProfileDraftRefused;
 use Spatie\LaravelData\Data;
 

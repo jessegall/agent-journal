@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Accounts\FirstRunSettlement;
 use App\Contracts\Accounts\SignInProtocol;
 use App\Contracts\Files\Files;
-use App\Enums\Place;
+use App\Enums\Files\Place;
 use App\Exceptions\SignInCodeInvalid;
 use App\Support\Drivers\ClaudeFirstRun;
 use App\Values\SignInCard;

@@ -6,8 +6,8 @@ namespace App\Commands\Asks\AskSupervisor;
 
 use App\Attributes\Authorize;
 use App\Attributes\RepeatableRead;
-use App\Enums\AccessType;
-use App\Enums\CoreAskType;
+use App\Enums\Agents\AccessType;
+use App\Enums\Asks\CoreAskType;
 use App\Policies\AskPolicy;
 use App\Support\Command;
 use App\Values\AskReference;

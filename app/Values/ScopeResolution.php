@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\ScopeAnswer;
+use App\Enums\Search\ScopeAnswer;
 use App\Exceptions\SearchableMissing;
 
 /**

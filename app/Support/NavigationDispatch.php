@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Inboxes\MainInbox;
-use App\Enums\NavigationAnswerer;
+use App\Enums\Navigation\NavigationAnswerer;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\NavigationRequest;
 

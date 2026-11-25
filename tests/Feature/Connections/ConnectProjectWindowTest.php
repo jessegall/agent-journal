@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Enums\ArrangementType;
+use App\Enums\Projects\ArrangementType;
 use App\Models\Agents\Agent;
 use App\Models\Projects\Environment;
 use App\Models\Projects\Host;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Enums\ArrangementType;
+use App\Enums\Projects\ArrangementType;
 use App\Exceptions\RunnerArrangementRefused;
 use App\Support\ArrangementSetting;
 use Tests\Support\RefreshHookDatabase;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Activity\ActivityLog;
-use App\Enums\ActivityType;
-use App\Enums\ActorType;
+use App\Enums\Agents\ActivityType;
+use App\Enums\Assignments\ActorType;
 use App\Models\Agents\Agent;
 
 /**

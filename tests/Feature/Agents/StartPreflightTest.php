@@ -6,11 +6,11 @@ namespace Tests\Feature\Agents;
 
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Sessions\StartPreflight;
-use App\Enums\ArrangementType;
-use App\Enums\DriverType;
-use App\Enums\ExecutionModeType;
-use App\Enums\ModelTier;
-use App\Enums\StartPreflightRefusal;
+use App\Enums\Agents\ExecutionModeType;
+use App\Enums\Drivers\DriverType;
+use App\Enums\Profiles\ModelTier;
+use App\Enums\Projects\ArrangementType;
+use App\Enums\Starts\StartPreflightRefusal;
 use App\Exceptions\StartPreflightRefused;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Projects\Host;

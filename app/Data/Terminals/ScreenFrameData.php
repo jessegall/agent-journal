@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Terminals;
 
-use App\Enums\ScreenBuffer;
+use App\Enums\Terminals\ScreenBuffer;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Data;

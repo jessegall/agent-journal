@@ -6,8 +6,8 @@ namespace App\Support\States;
 
 use App\Attributes\StateType;
 use App\Commands\Asks\OfferNextAsk\OfferNextAskCommand;
-use App\Enums\FrameReuse;
-use App\Enums\SessionTransferType;
+use App\Enums\Engine\FrameReuse;
+use App\Enums\Sessions\SessionTransferType;
 use App\Events\Asks\AskClosed;
 use App\Events\Asks\AskHopAssigned;
 use App\Support\Decisions\Decision;

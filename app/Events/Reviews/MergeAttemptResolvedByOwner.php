@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Events\Reviews;
 
 use App\Contracts\Work\MergeAttemptEvent;
-use App\Enums\MergeAttemptState;
+use App\Enums\Reviews\MergeAttemptState;
 
 /**
  * The owner resolved a merge attempt in the state given.

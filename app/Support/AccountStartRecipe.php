@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\TransportProfileType;
+use App\Enums\Starts\TransportProfileType;
 
 /**
  * What the host does to run a claimed start on its account, as the driver's adapter checked it for the pinned build:

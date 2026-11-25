@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\Enums\LifecycleState;
+use App\Enums\Runs\LifecycleState;
 use LogicException;
 
 /**

@@ -6,8 +6,8 @@ namespace App\Support;
 
 use App\Contracts\Admission\AskAdmission;
 use App\Contracts\Admission\MergeAdmission;
-use App\Enums\CoreAskType;
-use App\Enums\ReviewDecisionType;
+use App\Enums\Asks\CoreAskType;
+use App\Enums\Reviews\ReviewDecisionType;
 use App\Exceptions\MergeRefused;
 use App\Models\Reviews\ReviewDecision;
 use App\Values\ApprovedHead;

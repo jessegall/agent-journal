@@ -7,7 +7,7 @@ namespace Tests\Support;
 use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Bus\PipelineRunner;
 use App\CoreCommands;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Support\CommandOwner;
 use App\Support\CommandRegistry;
 use App\Support\DomainEntry;

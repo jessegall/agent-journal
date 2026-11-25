@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Unit\States;
 
-use App\Enums\AnswerType;
+use App\Enums\Hooks\AnswerType;
 use Domain\Tasks\Events\TaskLogged;
 use Domain\Tasks\Support\States\LogDueState;
 use Tests\Fixtures\Hooks\HookInputs;

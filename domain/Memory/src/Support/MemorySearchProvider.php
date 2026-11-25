@@ -6,7 +6,7 @@ namespace Domain\Memory\Support;
 
 use App\Contracts\Search\SearchProvider;
 use App\Contracts\Search\TieredSearch;
-use App\Enums\ScoreTier;
+use App\Enums\Search\ScoreTier;
 use App\Support\ActorIdentity;
 use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;

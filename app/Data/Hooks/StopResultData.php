@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Hooks;
 
-use App\Enums\StopResultType;
+use App\Enums\Starts\StopResultType;
 use App\Values\StopResultReport;
 use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Attributes\MapName;

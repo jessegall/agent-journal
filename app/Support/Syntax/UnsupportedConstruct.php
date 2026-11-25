@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Syntax;
 
-use App\Enums\UnsupportedKeyword;
+use App\Enums\CommandRules\UnsupportedKeyword;
 
 /**
  * Follows the tokens of a construct the grammar does not support, such as if or a loop, to find where it ends: at the

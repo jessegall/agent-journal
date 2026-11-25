@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Concerns\ComparesTypeAndId;
 use App\Contracts\Actors\Actor;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Exceptions\InvalidActorText;
 
 /**

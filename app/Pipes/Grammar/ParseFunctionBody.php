@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Pipes\Grammar;
 
-use App\Enums\NodeType;
+use App\Enums\CommandRules\NodeType;
 use App\Pipelines\ReadCompoundPipeline;
 use App\Support\Grammar\NodeRead;
 use App\Support\Grammar\UnparsedCompound;

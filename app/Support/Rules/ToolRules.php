@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support\Rules;
 
-use App\Enums\CommandClass;
-use App\Enums\CommandType;
-use App\Enums\OperandType;
-use App\Enums\ToolType;
+use App\Enums\CommandRules\CommandClass;
+use App\Enums\CommandRules\CommandType;
+use App\Enums\CommandRules\OperandType;
+use App\Enums\CommandRules\ToolType;
 use App\Values\ArgumentGrammar;
 use App\Values\CommandClassSet;
 use App\Values\CommandRule;

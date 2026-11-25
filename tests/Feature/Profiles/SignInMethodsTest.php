@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Profiles;
 
 use App\Data\Accounts\DriverMethodsData;
-use App\Enums\SignInMethod;
+use App\Enums\Accounts\SignInMethod;
 use App\Exceptions\SignInMethodMissing;
 use App\Support\ClaudeSignIn;
 use App\Support\CodexSignIn;

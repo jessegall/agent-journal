@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Commands\CancelPlan;
 
 use App\Attributes\Authorize;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Models\Plan;

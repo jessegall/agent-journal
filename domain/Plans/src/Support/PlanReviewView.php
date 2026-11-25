@@ -6,7 +6,7 @@ namespace Domain\Plans\Support;
 
 use App\Contracts\Assignments\AssigneeResolver;
 use App\Contracts\Authorization\CurrentAuthorizer;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Support\AssigneeName;
 use App\Support\AssignmentGroup;
 use App\Support\IdListPage;

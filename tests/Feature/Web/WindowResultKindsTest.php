@@ -7,7 +7,7 @@ namespace Tests\Feature\Web;
 use App\Contracts\Navigation\PageResolver;
 use App\Data\Pages\FailedWindow;
 use App\Declarations\ResolverDefinition;
-use App\Enums\LayoutTag;
+use App\Enums\Layouts\LayoutTag;
 use App\Exceptions\LayoutRefused;
 use App\Exceptions\PrivateRecordMissing;
 use App\Support\ActorStore;

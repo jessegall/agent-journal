@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Docking;
 
-use App\Enums\PartType;
+use App\Enums\Runs\PartType;
 use App\Exceptions\PartMapInvalid;
 use App\Support\Cards\DockCard;
 use App\Support\Cards\DockIdentity;

@@ -6,8 +6,8 @@ namespace Tests\Feature\Bus;
 
 use App\Contracts\Bus\CommandAdmission;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\CommandAdmissionStage;
-use App\Enums\RefusalCode;
+use App\Enums\Engine\CommandAdmissionStage;
+use App\Enums\Engine\RefusalCode;
 use App\Exceptions\CommandAdmissionRefused;
 use App\Exceptions\RefusalReplayed;
 use App\Models\CommandRules\CommandReceipt;

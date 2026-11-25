@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use App\Enums\CleanupState;
-use App\Enums\DriverType;
-use App\Enums\HoldReason;
-use App\Enums\RuntimeActivity;
-use App\Enums\StopAttemptState;
+use App\Enums\Drivers\DriverType;
+use App\Enums\Drivers\HoldReason;
+use App\Enums\Runs\RuntimeActivity;
+use App\Enums\Starts\CleanupState;
+use App\Enums\Starts\StopAttemptState;
 use App\Events\Sessions\AccountSettingsRequested;
 use App\Events\Sessions\AccountUseChanged;
 use App\Events\Sessions\ActivityRecorded;

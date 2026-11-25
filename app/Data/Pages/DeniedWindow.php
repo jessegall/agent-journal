@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Pages;
 
-use App\Enums\WindowState;
+use App\Enums\Web\WindowState;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

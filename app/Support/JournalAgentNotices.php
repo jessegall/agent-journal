@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Commands\Agents\DeliverAgent\DeliverAgentCommand;
 use App\Contracts\Agents\AgentNotices;
 use App\Contracts\Bus\JournalCommands;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use App\Models\Agents\AgentSession;
 
 /**

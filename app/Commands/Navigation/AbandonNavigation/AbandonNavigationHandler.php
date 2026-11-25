@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Navigation\AbandonNavigation;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\RequestOutcome;
+use App\Enums\Drivers\RequestOutcome;
 use App\Exceptions\NavigationAnswerRefused;
 use App\Exceptions\NavigationRaiseRefused;
 use App\Exceptions\NavigationTransitionRefused;

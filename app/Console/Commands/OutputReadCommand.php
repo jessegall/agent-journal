@@ -9,7 +9,7 @@ use App\Calls\Processes\ReadOutputSummaryCall;
 use App\Calls\Processes\ReadOutputTailCall;
 use App\Calls\Processes\SearchOutputCall;
 use App\Console\Concerns\RunsCallPipelines;
-use App\Enums\JournalRouteType;
+use App\Enums\CommandRules\JournalRouteType;
 use Illuminate\Console\Command;
 
 /**

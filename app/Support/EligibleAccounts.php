@@ -9,7 +9,7 @@ use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Sessions\ProfileResolver;
 use App\Data\Accounts\EligibleAccountsData;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Profiles\Profile;

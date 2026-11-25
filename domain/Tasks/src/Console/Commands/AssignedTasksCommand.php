@@ -6,7 +6,7 @@ namespace Domain\Tasks\Console\Commands;
 
 use App\Attributes\JournalRoute;
 use App\Console\Concerns\RunsCallPipelines;
-use App\Enums\JournalRouteType;
+use App\Enums\CommandRules\JournalRouteType;
 use Domain\Tasks\Calls\ListAssignedTasksCall;
 use Domain\Tasks\Calls\TaskCalls;
 use Domain\Tasks\Data\AssignedTaskCardData;

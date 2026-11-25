@@ -7,7 +7,7 @@ namespace Tests\Feature\Communication;
 use App\Commands\Runs\RecordRunEvents\RecordRunEventsCommand;
 use App\Contracts\Admission\ShellAdmission;
 use App\Contracts\Chat\ChatLines;
-use App\Enums\ShellDialect;
+use App\Enums\Processes\ShellDialect;
 use App\Models\Runs\ProcessRun;
 use App\Support\ActorIdentity;
 use App\Values\ChatLine;

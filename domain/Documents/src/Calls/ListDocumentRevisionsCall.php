@@ -6,7 +6,7 @@ namespace Domain\Documents\Calls;
 
 use App\Attributes\Endpoint;
 use App\Contracts\Domains\JournalCall;
-use App\Enums\CallEffect;
+use App\Enums\Processes\CallEffect;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Min;
 use Spatie\LaravelData\Data;

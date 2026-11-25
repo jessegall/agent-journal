@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use App\Exceptions\CommandNotRegistered;
 
 /**

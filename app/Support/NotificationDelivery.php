@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Data\Notifications\NotificationTarget;
-use App\Enums\NotificationMutationType;
-use App\Enums\NotificationSourceType;
+use App\Enums\Notifications\NotificationMutationType;
+use App\Enums\Notifications\NotificationSourceType;
 use App\Models\Notifications\NotificationChange;
 use App\Models\Notifications\NotificationOccurrence;
 use App\Models\Notifications\NotificationReceipt;

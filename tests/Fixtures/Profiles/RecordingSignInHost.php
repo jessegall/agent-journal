@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Profiles;
 
 use App\Contracts\Accounts\SignInHost;
-use App\Enums\AccountCheckResult;
-use App\Enums\SignInOutcome;
+use App\Enums\Accounts\AccountCheckResult;
+use App\Enums\Accounts\SignInOutcome;
 use App\Values\ClaimedAccountCheck;
 use App\Values\ClaimedCleanup;
 use App\Values\ClaimedSignIn;

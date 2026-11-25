@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Assignments\JournalAssignmentWriter;
 use App\Contracts\Processes\RuntimeStops;
-use App\Enums\WorkChainEnding;
+use App\Enums\Reviews\WorkChainEnding;
 use App\Models\Asks\Ask;
 use App\Models\Asks\AskHop;
 use App\Models\Reviews\CodeReview;

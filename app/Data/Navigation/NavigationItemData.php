@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Navigation;
 
-use App\Enums\Icon;
+use App\Enums\Navigation\Icon;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;

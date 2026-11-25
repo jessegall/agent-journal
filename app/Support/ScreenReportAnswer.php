@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\ScreenReportRefusal;
+use App\Enums\Agents\ScreenReportRefusal;
 use JsonSerializable;
 
 /**

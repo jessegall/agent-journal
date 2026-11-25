@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Terminals;
 
-use App\Enums\TerminalReceiptOutcome;
+use App\Enums\Terminals\TerminalReceiptOutcome;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

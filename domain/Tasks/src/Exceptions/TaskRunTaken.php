@@ -8,7 +8,7 @@ use App\Concerns\RendersRefusal;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Contracts\Refusals\RefusalDetails;
-use App\Enums\RefusalCode;
+use App\Enums\Engine\RefusalCode;
 use App\Values\RecoveryCall;
 use Domain\Tasks\Models\Task;
 use RuntimeException;

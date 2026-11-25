@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Commands\RetainNote;
 
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Attributes\Authorize;
 use App\Attributes\RetainedActorRequestKey;
 use App\Support\Command;

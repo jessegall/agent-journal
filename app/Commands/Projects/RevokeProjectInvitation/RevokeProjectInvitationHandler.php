@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Projects\RevokeProjectInvitation;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\ConnectionAuditType;
+use App\Enums\Connections\ConnectionAuditType;
 use App\Models\Projects\ConnectionAudit;
 use App\Models\Projects\InstallAttempt;
 use App\Models\Projects\ProjectInvitation;

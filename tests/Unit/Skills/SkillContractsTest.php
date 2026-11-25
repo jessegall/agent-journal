@@ -4,25 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
-use App\Contracts\Skills\DriverSkills;
-use App\Contracts\Skills\Skill;
-use App\Contracts\Skills\SkillCondition;
-use App\Contracts\Skills\SkillConditionProvider;
-use App\Contracts\Skills\SkillProvider;
-use App\Contracts\Skills\SkillPublisher;
-use App\Contracts\Skills\SkillResolver;
-use App\Enums\ConditionOutcome;
+use App\Enums\Skills\ConditionOutcome;
 use App\Exceptions\SkillKeyInvalid;
-use App\Support\CanonicalRenderer;
 use App\Support\Conditions\Conditions;
-use App\Support\StoredSkillSource;
 use App\Values\DriverKey;
 use App\Values\MarkdownPart;
 use App\Values\ProviderKey;
 use App\Values\SkillContext;
 use App\Values\SkillKey;
 use App\Values\SkillSection;
-use App\Values\SkillSections;
 use App\Values\StartProfile;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;

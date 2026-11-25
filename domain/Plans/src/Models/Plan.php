@@ -15,7 +15,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Sharing\Shareable;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Exceptions\AssignmentPoolTooLarge;
 use App\Exceptions\AssignmentPoolUnavailable;
 use App\Models\Support\Accessor;

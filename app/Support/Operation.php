@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\ReceiptState;
-use App\Enums\RefusalCode;
+use App\Enums\CommandRules\ReceiptState;
+use App\Enums\Engine\RefusalCode;
 use Carbon\CarbonImmutable;
 
 /**

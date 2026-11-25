@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Commands\RecordPhaseCheck;
 
 use App\Contracts\Bus\ResultReceipts;
-use App\Enums\AssessmentOutcome;
+use App\Enums\Runs\AssessmentOutcome;
 use App\Support\ActorIdentity;
 use Domain\Plans\Commands\Support\PlanCommandHandler;
 use Domain\Plans\Exceptions\PhaseCheckRefused;

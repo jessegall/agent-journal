@@ -6,8 +6,8 @@ namespace App\Calls\Processes;
 
 use App\Contracts\Domains\CallSender;
 use App\Data\Processes\ExplanationData;
-use App\Enums\OutputStream;
-use App\Enums\ShellDialect;
+use App\Enums\Processes\OutputStream;
+use App\Enums\Processes\ShellDialect;
 use App\Support\CallKey;
 use App\Values\RunEvent;
 

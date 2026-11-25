@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Events\Connections;
 
 use App\Contracts\Connections\ProjectCommandEvent;
-use App\Enums\CommandRunState;
+use App\Enums\Connections\CommandRunState;
 
 /**
  * A project command run's state was settled from what its host reported.

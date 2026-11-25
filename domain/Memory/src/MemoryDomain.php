@@ -7,7 +7,7 @@ namespace Domain\Memory;
 use App\Contracts\Authorization\PolicyProvider;
 use App\Contracts\Bus\CommandProvider;
 use App\Contracts\Skills\SkillProvider;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Mcp\Contracts\McpToolProvider;
 use App\Support\Domain;
 use App\Support\Exports;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Enums\ExecutionModeType;
+use App\Enums\Agents\ExecutionModeType;
 use App\Models\Agents\Agent;
 use App\Models\Starts\CapacityReservation;
 use App\Values\ExecutionBudgets;

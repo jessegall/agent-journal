@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Support;
 
-use App\Enums\Emphasis;
+use App\Enums\Web\Emphasis;
 use App\Support\Cards\Button;
 use App\Support\Cards\CountedProgress;
 use App\Support\Cards\DestinationArgument;

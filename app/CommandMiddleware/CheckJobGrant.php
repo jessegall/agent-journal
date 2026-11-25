@@ -6,8 +6,8 @@ namespace App\CommandMiddleware;
 
 use App\Contracts\Bus\CommandAdmission;
 use App\Contracts\Bus\CommandMiddleware;
-use App\Enums\CommandAdmissionStage;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
+use App\Enums\Engine\CommandAdmissionStage;
 use App\Support\CommandCall;
 use App\Support\CommandNesting;
 use App\Support\CommandRegistry;

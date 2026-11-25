@@ -6,7 +6,7 @@ namespace Tests\Feature\Actors;
 
 use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Domains\DomainAvailability;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\GrantNotRegistered;
 use App\Exceptions\PolicyDefinitionConflict;

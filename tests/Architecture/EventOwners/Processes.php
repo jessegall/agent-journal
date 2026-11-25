@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Enums\ActorType;
-use App\Enums\CaptureState;
-use App\Enums\RunLogicalResult;
+use App\Enums\Assignments\ActorType;
+use App\Enums\Runs\CaptureState;
+use App\Enums\Runs\RunLogicalResult;
 use App\Events\Processes\BundleActivated;
 use App\Events\Processes\ClassificationRuleRetired;
 use App\Events\Processes\EvidenceFoundInvalid;

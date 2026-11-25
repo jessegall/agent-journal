@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\ScopeAnswer;
-use App\Enums\SearchStatus;
+use App\Enums\Search\ScopeAnswer;
+use App\Enums\Search\SearchStatus;
 
 /**
  * What one search call answers: its status, the hits in the one global order, a direct open for a complete

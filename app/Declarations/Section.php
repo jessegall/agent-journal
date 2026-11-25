@@ -6,7 +6,7 @@ namespace App\Declarations;
 
 use App\Contracts\Authorization\VisibilityCheck;
 use App\Contracts\Navigation\SectionResolver;
-use App\Enums\SlotContextType;
+use App\Enums\Profiles\SlotContextType;
 use App\Exceptions\InvalidSectionDeclaration;
 use App\Support\Layout\DeclaredLayoutData;
 use Spatie\LaravelData\Data;

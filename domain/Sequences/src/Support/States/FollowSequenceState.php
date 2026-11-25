@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sequences\Support\States;
 
 use App\Attributes\StateType;
-use App\Enums\SessionTransferType;
+use App\Enums\Sessions\SessionTransferType;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
 use App\Support\States\AgentState;

@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Actors\Actor;
 use App\Contracts\Authorization\Authorizer;
 use App\Contracts\Authorization\Policy;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Exceptions\ActorNotAllowed;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\Access\Response;

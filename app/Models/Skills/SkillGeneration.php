@@ -11,7 +11,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Data\Skills\GeneratedSkillData;
-use App\Enums\GenerationState;
+use App\Enums\Skills\GenerationState;
 use App\Events\Skills\SkillGenerationRetired;
 use App\Exceptions\SkillGenerationImmutable;
 use App\Models\Support\Accessor;

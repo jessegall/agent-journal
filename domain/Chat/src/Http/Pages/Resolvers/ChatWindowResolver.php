@@ -10,7 +10,7 @@ use App\Contracts\Navigation\PageResolver;
 use App\Contracts\Navigation\SlotSections;
 use App\Contracts\Sessions\AgentDirectory;
 use App\Data\Accounts\EligibleAccountsData;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Exceptions\InboxUnavailable;
 use App\Exceptions\PrivateRecordMissing;
 use App\Exceptions\StackTargetRefused;

@@ -6,7 +6,7 @@ namespace App\Support\Stack;
 
 use App\Contracts\Bus\Command;
 use App\Contracts\Events\Event;
-use App\Enums\AnswerType;
+use App\Enums\Hooks\AnswerType;
 use App\Exceptions\HookAnswerRefused;
 use App\Exceptions\StateAnswerRefused;
 use App\Support\Decisions\ContextLine;

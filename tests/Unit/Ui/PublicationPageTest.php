@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Ui;
 
-use App\Enums\LayoutTag;
+use App\Enums\Layouts\LayoutTag;
 use App\Support\Layout\LayoutBodyData;
 use App\Support\Layout\LayoutNativeData;
 use App\Support\Layout\LayoutPartData;

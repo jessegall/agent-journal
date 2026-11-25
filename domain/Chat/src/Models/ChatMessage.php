@@ -7,7 +7,7 @@ namespace Domain\Chat\Models;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\AuthoredModel;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Messages\Message;
 use App\Models\Questions\Question;

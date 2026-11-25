@@ -9,7 +9,7 @@ use App\Contracts\Assignments\AssignmentStorage;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Chat\MainSeatTakeover;
 use App\Contracts\Sessions\ProfileResolver;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;

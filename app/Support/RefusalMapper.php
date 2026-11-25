@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Contracts\Refusals\RefusalDetails;
 use App\Contracts\Refusals\RefusalMapper as RefusalMapperContract;
-use App\Enums\RefusalCode;
+use App\Enums\Engine\RefusalCode;
 use App\Exceptions\CallFailedUnexpectedly;
 use App\Values\MappedRefusal;
 use Illuminate\Auth\Access\AuthorizationException;

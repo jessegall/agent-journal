@@ -6,9 +6,9 @@ namespace App\Commands\Accounts\NotifySignIn;
 
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\SignInOutcome;
-use App\Enums\SignInRefusal;
-use App\Enums\SignInState;
+use App\Enums\Accounts\SignInOutcome;
+use App\Enums\Accounts\SignInRefusal;
+use App\Enums\Accounts\SignInState;
 use App\Models\Accounts\SignInAttempt;
 use App\Support\SignInChallenges;
 use App\Support\SignInCompletion;

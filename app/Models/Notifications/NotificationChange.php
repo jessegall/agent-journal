@@ -7,7 +7,7 @@ namespace App\Models\Notifications;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\NotificationMutationType;
+use App\Enums\Notifications\NotificationMutationType;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Database\Eloquent\Attributes\Scope;

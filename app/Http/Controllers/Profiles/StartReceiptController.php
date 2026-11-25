@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Profiles;
 
 use App\Contracts\Sessions\StartRecordResolver;
-use App\Enums\StartDisposition;
+use App\Enums\Starts\StartDisposition;
 use App\Exceptions\StartRecordMissing;
 use App\Models\Agents\AgentRuntime;
 use App\Support\StartRecordDetails;

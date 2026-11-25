@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Accounts;
 
-use App\Enums\SignInMethod;
+use App\Enums\Accounts\SignInMethod;
 use App\Support\SignInProtocols;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;

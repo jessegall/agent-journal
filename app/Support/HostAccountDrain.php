@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Accounts\AccountOwnerDrain;
 use App\Data\Hosts\DrainReplyData;
 use App\Data\Hosts\FolderUseReplyData;
-use App\Enums\ArrangementType;
+use App\Enums\Projects\ArrangementType;
 
 /**
  * Asks the protected host, over its start socket, to end the account's shared owner and every execution on it, naming

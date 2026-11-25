@@ -7,7 +7,7 @@ namespace App\Console\Commands;
 use App\Attributes\JournalRoute;
 use App\Calls\Processes\ProcessCalls;
 use App\Console\Concerns\RunsCallPipelines;
-use App\Enums\JournalRouteType;
+use App\Enums\CommandRules\JournalRouteType;
 use App\Pipelines\RunAdmissionPipeline;
 use App\Support\PipelineRunner;
 use App\Support\Run\ChildEnvironment;

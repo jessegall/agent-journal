@@ -6,7 +6,7 @@ namespace App\Http\Requests\Profiles;
 
 use App\Commands\Agents\SwitchAgentDriver\SwitchAgentDriverCommand;
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\DriverType;
+use App\Enums\Drivers\DriverType;
 use App\Values\ChosenAccount;
 use App\Values\DriverSwitchTarget;
 use App\Values\ModelSelection;

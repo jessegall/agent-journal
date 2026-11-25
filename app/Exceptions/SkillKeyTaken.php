@@ -6,7 +6,7 @@ namespace App\Exceptions;
 
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
-use App\Enums\RefusalCode;
+use App\Enums\Engine\RefusalCode;
 use RuntimeException;
 
 final class SkillKeyTaken extends RuntimeException implements CodedRefusal, CommandRefusal

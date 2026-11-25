@@ -6,8 +6,8 @@ namespace Tests\Fixtures\Modules\Notes;
 
 use App\Attributes\StateType;
 use App\Contracts\Bus\Command;
-use App\Enums\NoSubject;
-use App\Enums\SessionTransferType;
+use App\Enums\Engine\NoSubject;
+use App\Enums\Sessions\SessionTransferType;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
 use App\Support\References\StateReference;

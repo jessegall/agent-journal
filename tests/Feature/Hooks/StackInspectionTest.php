@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Enums\NoSubject;
+use App\Enums\Engine\NoSubject;
 use App\Support\References\StateReference;
 use Domain\Access\Models\User;
 use Tests\Fixtures\Agents\TestStart;

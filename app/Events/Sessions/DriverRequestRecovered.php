@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Events\Sessions;
 
 use App\Contracts\Drivers\DriverRequestEvent;
-use App\Enums\RecoveryAction;
+use App\Enums\Drivers\RecoveryAction;
 use App\Support\ActorIdentity;
 
 /**

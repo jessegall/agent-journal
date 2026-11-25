@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\JournalCommands;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 
 /**
  * Gives each trusted entry its own dispatcher; Core's transports and jobs ask it for theirs by name, and no payload

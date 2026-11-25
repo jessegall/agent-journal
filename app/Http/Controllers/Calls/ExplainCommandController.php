@@ -9,7 +9,7 @@ use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Processes\ExplanationData;
 use App\Data\Processes\HeldPartData;
-use App\Enums\RequestHoldReason;
+use App\Enums\CommandRules\RequestHoldReason;
 use App\Models\CommandRules\CommandRequest;
 use App\Support\Explanations;
 

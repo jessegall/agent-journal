@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\HostRefusal;
-use App\Enums\ResumeRefusal;
-use App\Enums\StartPreflightRefusal;
-use App\Enums\StartRefusalType;
-use App\Enums\StartUnavailableReason;
+use App\Enums\Starts\HostRefusal;
+use App\Enums\Starts\ResumeRefusal;
+use App\Enums\Starts\StartPreflightRefusal;
+use App\Enums\Starts\StartRefusalType;
+use App\Enums\Starts\StartUnavailableReason;
 
 /**
  * Reads a refusal code a start record kept back as its reason; a code no reason names reads as the host's unknown

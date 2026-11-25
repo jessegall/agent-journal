@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Sessions\ConversationVisits;
-use App\Enums\ConversationModeType;
+use App\Enums\Agents\ConversationModeType;
 use App\Exceptions\ConversationIncompatible;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\ConversationVisit;

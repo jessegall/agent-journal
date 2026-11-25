@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Skills;
 
 use App\Contracts\Skills\SkillPublisher;
-use App\Enums\PublicationState;
+use App\Enums\Skills\PublicationState;
 use App\Models\Skills\SkillGeneration;
 use App\Models\Skills\SkillPublication;
 use App\Support\Drivers\DriverSkillAdapters;

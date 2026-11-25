@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Events\Reviews;
 
 use App\Contracts\Work\MergeAttemptEvent;
-use App\Enums\MergeRefusalReason;
+use App\Enums\Reviews\MergeRefusalReason;
 
 /**
  * A merge attempt was refused for the reason given.

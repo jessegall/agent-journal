@@ -6,7 +6,7 @@ namespace App\Pipes;
 
 use App\Contracts\Bus\CommandMiddleware;
 use App\Contracts\Bus\Pipe;
-use App\Enums\CommandScopeType;
+use App\Enums\Engine\CommandScopeType;
 use App\Exceptions\MiddlewareDeclarationInvalid;
 use App\Exceptions\MiddlewareListedTwice;
 use App\Support\CommandDeclarations;

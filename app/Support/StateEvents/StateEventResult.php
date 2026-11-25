@@ -7,7 +7,7 @@ namespace App\Support\StateEvents;
 use App\Contracts\Bus\Command;
 use App\Contracts\Events\Event;
 use App\Declarations\StateMethod;
-use App\Enums\StackMoment;
+use App\Enums\Engine\StackMoment;
 use App\Support\References\StateReference;
 use App\Support\Stack\FrameMoment;
 use App\Support\Stack\SelectedStateMethod;

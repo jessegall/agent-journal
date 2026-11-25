@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Contracts\Files;
 
-use App\Enums\Permissions;
-use App\Enums\Place;
+use App\Enums\Files\Permissions;
+use App\Enums\Files\Place;
 use App\Values\Depth;
 use App\Values\FilePath;
 use App\Values\Fingerprint;

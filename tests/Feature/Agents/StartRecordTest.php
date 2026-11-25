@@ -6,12 +6,12 @@ namespace Tests\Feature\Agents;
 
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Sessions\StartRecordResolver;
-use App\Enums\ConversationModeType;
-use App\Enums\DriverType;
-use App\Enums\ModelSelectionType;
-use App\Enums\ModelTier;
-use App\Enums\StartDisposition;
-use App\Enums\StartOriginType;
+use App\Enums\Agents\ConversationModeType;
+use App\Enums\Drivers\DriverType;
+use App\Enums\Profiles\ModelTier;
+use App\Enums\Starts\ModelSelectionType;
+use App\Enums\Starts\StartDisposition;
+use App\Enums\Starts\StartOriginType;
 use App\Exceptions\SessionSelectionFixed;
 use App\Exceptions\StartRecordMissing;
 use App\Exceptions\StartRequestConflict;

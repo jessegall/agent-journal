@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\AccountModeType;
-use App\Enums\ExecutionModeType;
-use App\Enums\HostCapabilityType;
+use App\Enums\Accounts\AccountModeType;
+use App\Enums\Agents\ExecutionModeType;
+use App\Enums\Projects\HostCapabilityType;
 
 /**
  * One capability a start would need, for a driver, how its account signs in and where it runs.

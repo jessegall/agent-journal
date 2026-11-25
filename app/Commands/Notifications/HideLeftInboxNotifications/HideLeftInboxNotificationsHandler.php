@@ -6,7 +6,7 @@ namespace App\Commands\Notifications\HideLeftInboxNotifications;
 
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Events\Messages\NotificationsWithdrawn;
 use App\Models\Notifications\NotificationReceipt;
 use App\Models\Notifications\NotificationScope;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\SearchRequestType;
+use App\Enums\Search\SearchRequestType;
 use App\Exceptions\SearchRequestInvalid;
 use App\Exceptions\SearchWordsInvalid;
 

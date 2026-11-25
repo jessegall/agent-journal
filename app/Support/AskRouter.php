@@ -6,8 +6,8 @@ namespace App\Support;
 
 use App\Contracts\Assignments\JournalAssignmentWriter;
 use App\Contracts\Processes\SupervisorDispatch;
-use App\Enums\AskRouteStatus;
-use App\Enums\SupervisorDispatchOutcome;
+use App\Enums\Asks\AskRouteStatus;
+use App\Enums\Asks\SupervisorDispatchOutcome;
 use App\Models\Asks\Ask;
 use App\Models\Asks\AskHop;
 use App\Values\SupervisorRequest;

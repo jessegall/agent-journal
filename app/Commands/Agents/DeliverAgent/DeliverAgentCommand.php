@@ -8,7 +8,7 @@ use App\Attributes\Authorize;
 use App\Contracts\Bus\AgentStackCommand;
 use App\Contracts\Drivers\MessagePart;
 use App\Data\Messages\MessageTextData;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Policies\AgentPolicy;
 use App\Support\Command;
 use App\Values\DriverReceipt;

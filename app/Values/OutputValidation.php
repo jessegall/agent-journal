@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\AssessmentOutcome;
+use App\Enums\Runs\AssessmentOutcome;
 
 /**
  * What the validator found in one part's output: every problem with its code, and the outcome, which is unavailable

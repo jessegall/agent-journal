@@ -10,7 +10,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Actors\Actor;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Models\Support\Accessor;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Data\CloseCard;

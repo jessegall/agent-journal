@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Agents;
 
-use App\Enums\NavigationReason;
+use App\Enums\Navigation\NavigationReason;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Settings\SettingsResolver;
-use App\Enums\InstallLineHold;
+use App\Enums\Projects\InstallLineHold;
 
 /**
  * Whether this server may issue install lines that connect a project on another machine: the owner switched remote

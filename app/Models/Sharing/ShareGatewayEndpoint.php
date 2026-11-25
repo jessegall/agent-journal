@@ -10,7 +10,7 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\GatewayEndpointState;
+use App\Enums\Sharing\GatewayEndpointState;
 use App\Events\Sharing\ShareGatewayEndpointFoundHealthy;
 use App\Events\Sharing\ShareGatewayEndpointMoved;
 use App\Exceptions\GatewayLeaseRefused;

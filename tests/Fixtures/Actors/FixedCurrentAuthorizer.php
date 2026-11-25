@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Actors;
 
 use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Exceptions\ActorNotAllowed;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 
 /**
  * The caller's authorizer fixed for a test: the caller is granted the listed accesses and nothing else.

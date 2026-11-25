@@ -8,7 +8,7 @@ use App\Commands\Asks\RouteAsk\RouteAskCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Work\AgentFocuses;
-use App\Enums\AskOriginType;
+use App\Enums\Asks\AskOriginType;
 use App\Exceptions\AskRefused;
 use App\Models\Asks\Ask;
 use App\Models\Asks\AskRequester;

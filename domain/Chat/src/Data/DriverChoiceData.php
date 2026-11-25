@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Chat\Data;
 
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\DriverCapability;
-use App\Enums\DriverType;
+use App\Enums\Drivers\DriverCapability;
+use App\Enums\Drivers\DriverType;
 use App\Values\BoundTarget;
 use App\Values\DriverRegistration;
 use Spatie\LaravelData\Data;

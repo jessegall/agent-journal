@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Contracts\Files\Files;
-use App\Enums\Place;
+use App\Enums\Files\Place;
 use App\Support\CallGroups;
 use App\Values\FilePath;
 use Illuminate\Console\Command;

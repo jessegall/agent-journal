@@ -6,8 +6,8 @@ namespace App\Resolvers;
 
 use App\Contracts\Authorization\AgentAuthority;
 use App\Contracts\Authorization\TargetAuthorizer;
-use App\Enums\AccessType;
-use App\Enums\ActorType;
+use App\Enums\Agents\AccessType;
+use App\Enums\Assignments\ActorType;
 use App\Exceptions\AgentNotAvailable;
 use App\Exceptions\AssignmentDenied;
 use App\Models\Records\AssignmentRecord;

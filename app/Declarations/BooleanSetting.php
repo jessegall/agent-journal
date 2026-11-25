@@ -8,7 +8,7 @@ use App\Contracts\Settings\CatalogueConstraints;
 use App\Contracts\Settings\CatalogueValue;
 use App\Contracts\Settings\Setting;
 use App\Data\Settings\BooleanValueData;
-use App\Enums\SettingType;
+use App\Enums\Settings\SettingType;
 use App\Exceptions\SettingDeclarationInvalid;
 use App\Support\SettingKey;
 use App\Values\Decimal;

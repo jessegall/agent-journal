@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Files;
 
 use App\Contracts\Files\Files;
-use App\Enums\Place;
+use App\Enums\Files\Place;
 use App\Exceptions\FileMissing;
 use App\Exceptions\FolderClosed;
 use App\Exceptions\LinkLeavesPlace;

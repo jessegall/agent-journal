@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Files\Files;
-use App\Enums\Place;
+use App\Enums\Files\Place;
 use App\Exceptions\ReleaseMissing;
 use App\Exceptions\ServerOriginInvalid;
 use App\Exceptions\TicketMalformed;

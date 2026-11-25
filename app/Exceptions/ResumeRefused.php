@@ -7,8 +7,8 @@ namespace App\Exceptions;
 use App\Concerns\RendersRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Contracts\Refusals\StartRefusal;
-use App\Enums\RefusalCode;
-use App\Enums\ResumeRefusal;
+use App\Enums\Engine\RefusalCode;
+use App\Enums\Starts\ResumeRefusal;
 use App\Exceptions\Concerns\ThrowsLater;
 use RuntimeException;
 

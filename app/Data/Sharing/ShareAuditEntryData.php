@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Data\Sharing;
 
-use App\Enums\ShareAuditActor;
-use App\Enums\ShareAuditType;
+use App\Enums\Sharing\ShareAuditActor;
+use App\Enums\Sharing\ShareAuditType;
 use App\Support\ShareAuditEntry;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;

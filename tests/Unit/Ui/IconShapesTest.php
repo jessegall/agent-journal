@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Ui;
 
-use App\Enums\Icon;
+use App\Enums\Navigation\Icon;
 use PHPUnit\Framework\TestCase;
 
 /**

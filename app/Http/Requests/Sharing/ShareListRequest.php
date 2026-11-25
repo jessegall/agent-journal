@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Sharing;
 
 use App\Data\Sharing\ShareFiltersData;
-use App\Enums\ShareState;
+use App\Enums\Sharing\ShareState;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

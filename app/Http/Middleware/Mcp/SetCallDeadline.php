@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware\Mcp;
 
 use App\Contracts\Sessions\AgentCallContext;
-use App\Enums\RefusalCode;
+use App\Enums\Engine\RefusalCode;
 use App\Exceptions\AgentContextMissing;
 use App\Mcp\Data\JsonRpcIdData;
 use App\Support\OperationDeadline;

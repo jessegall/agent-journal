@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Data;
 
 use App\Data\Assignments\RecordHolderData;
-use App\Enums\AssignmentOutcomeType;
+use App\Enums\Assignments\AssignmentOutcomeType;
 use App\Support\AssignmentHolders;
 use App\Support\AssignmentResult;
 use App\Support\RecordIdentity;

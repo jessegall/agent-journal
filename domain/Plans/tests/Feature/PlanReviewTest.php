@@ -6,7 +6,7 @@ namespace Domain\Plans\Tests\Feature;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Support\ActorIdentity;
 use Closure;
 use Domain\Plans\Commands\CancelPlan\CancelPlanCommand;

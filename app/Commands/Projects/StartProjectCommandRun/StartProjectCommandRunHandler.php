@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Projects\StartProjectCommandRun;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\CommandRunState;
+use App\Enums\Connections\CommandRunState;
 use App\Exceptions\VerbNotServed;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectCommandRun;

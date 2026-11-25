@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Access\Database\Factories;
 
 use App\Commands\Inboxes\ProvisionActorInbox\ProvisionActorInboxCommand;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use App\Support\ActorIdentity;
 use App\Support\EntryDispatchers;
 use Domain\Access\Models\User;

@@ -7,7 +7,7 @@ namespace Domain\Chat\Tests\Support;
 use App\Commands\Desks\CreateDesk\CreateDeskCommand;
 use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Models\Desks\DeskRecord;
 use App\Models\Desks\DeskSeat;
 use App\Support\ActorIdentity;

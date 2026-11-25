@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Enums\AnswerType;
+use App\Enums\Hooks\AnswerType;
 use App\Events\Sessions\StopAttemptSettled;
 use App\Support\Decisions\ContextLine;
 use App\Support\Decisions\MessageLine;

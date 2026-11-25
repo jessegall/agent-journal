@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Profiles;
 
 use App\Contracts\Drivers\DriverCompatibilities;
-use App\Enums\DriverEvidence;
-use App\Enums\SignInMethod;
-use App\Enums\TransportProfileType;
+use App\Enums\Accounts\SignInMethod;
+use App\Enums\Drivers\DriverEvidence;
+use App\Enums\Starts\TransportProfileType;
 use App\Events\Sessions\AccountSettingsRequested;
 use App\Models\Accounts\Account;
 use App\Support\AccountStartRecipe;

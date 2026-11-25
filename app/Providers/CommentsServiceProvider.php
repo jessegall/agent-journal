@@ -12,7 +12,7 @@ use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Records\CommentResolver;
 use App\Contracts\Records\PublicCommentResolver;
 use App\Contracts\Records\RecordProviderRegistration;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Models\Records\Comment;
 use App\Policies\CommentPolicy;
 use App\Resolvers\CommentLinkRecords;

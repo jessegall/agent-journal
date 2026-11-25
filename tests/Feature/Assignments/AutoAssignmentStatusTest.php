@@ -7,7 +7,7 @@ namespace Tests\Feature\Assignments;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Assignments\AutoAssignmentResolver;
 use App\Contracts\Domains\DomainAvailability;
-use App\Enums\AutoAssignmentState;
+use App\Enums\Assignments\AutoAssignmentState;
 use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
 use App\Support\ActorIdentity;

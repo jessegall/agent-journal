@@ -6,7 +6,7 @@ namespace Domain\Plans\Commands\EditPlan;
 
 use App\Attributes\Authorize;
 use App\Attributes\OneLine;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;

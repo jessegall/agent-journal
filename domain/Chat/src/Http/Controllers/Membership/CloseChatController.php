@@ -7,7 +7,7 @@ namespace Domain\Chat\Http\Controllers\Membership;
 use App\Commands\Inboxes\LeaveInbox\LeaveInboxCommand;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Models\Inboxes\InboxMember;
 use Domain\Chat\Data\ChatInput;
 use Domain\Chat\Support\ChatInboxes;

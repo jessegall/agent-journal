@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Contracts\Bus\CommandClassifier;
-use App\Enums\CommandClass;
-use App\Enums\CommandType;
-use App\Enums\ShellDialect;
-use App\Enums\UnresolvedType;
+use App\Enums\CommandRules\CommandClass;
+use App\Enums\CommandRules\CommandType;
+use App\Enums\CommandRules\UnresolvedType;
+use App\Enums\Processes\ShellDialect;
 use App\Models\CommandRules\CommandAlias;
 use App\Support\Syntax\TreeParser;
 use App\Values\Classification;

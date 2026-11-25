@@ -6,8 +6,8 @@ namespace App\Values;
 
 use App\Attributes\Authorize;
 use App\Contracts\Bus\Command;
-use App\Enums\CommandAdmissionStage;
-use App\Enums\CommandEffectType;
+use App\Enums\Engine\CommandAdmissionStage;
+use App\Enums\Reviews\CommandEffectType;
 
 final readonly class EffectiveCommand
 {

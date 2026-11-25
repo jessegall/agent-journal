@@ -6,7 +6,7 @@ namespace App\Commands\Agents\ContinueStart;
 
 use App\Attributes\Authorize;
 use App\Contracts\Bus\AgentStartCommand;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Policies\AgentMaintenancePolicy;
 use App\Support\Command;
 use App\Support\StartReceipt;

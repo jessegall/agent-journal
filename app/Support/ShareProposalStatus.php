@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\ShareState;
+use App\Enums\Sharing\ShareState;
 
 /**
  * What an agent learns of its own share proposal: its number and state, never a token, address or configuration.

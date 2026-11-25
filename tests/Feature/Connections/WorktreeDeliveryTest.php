@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Enums\ChildRole;
-use App\Enums\DeliveryOutcome;
+use App\Enums\Agents\ChildRole;
+use App\Enums\Reviews\DeliveryOutcome;
 use App\Models\Agents\ChildClaim;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Reviews\WorktreeDelivery;

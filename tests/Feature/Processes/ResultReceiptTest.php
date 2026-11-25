@@ -6,9 +6,9 @@ namespace Tests\Feature\Processes;
 
 use App\Commands\Runs\AssessPartOutput\AssessPartOutputCommand;
 use App\Contracts\Bus\ResultReceipts;
-use App\Enums\AssessmentOutcome;
-use App\Enums\ProblemCode;
-use App\Enums\RunMode;
+use App\Enums\Runs\AssessmentOutcome;
+use App\Enums\Runs\ProblemCode;
+use App\Enums\Runs\RunMode;
 use App\Events\Processes\EvidenceFoundInvalid;
 use App\Models\Runs\OutputAssessment;
 use App\Models\Runs\PartRun;

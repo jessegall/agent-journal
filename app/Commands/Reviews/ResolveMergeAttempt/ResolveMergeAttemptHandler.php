@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Reviews\ResolveMergeAttempt;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\MergeAttemptState;
+use App\Enums\Reviews\MergeAttemptState;
 use App\Exceptions\AskRefused;
 use App\Models\Reviews\MergeAttempt;
 use App\Support\ActorIdentity;

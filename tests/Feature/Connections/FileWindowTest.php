@@ -6,9 +6,9 @@ namespace Tests\Feature\Connections;
 
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Chat\ActorDesks;
-use App\Enums\ActorType;
-use App\Enums\FileWindowState;
-use App\Enums\ProjectReadFailure;
+use App\Enums\Assignments\ActorType;
+use App\Enums\Connections\FileWindowState;
+use App\Enums\Projects\ProjectReadFailure;
 use App\Http\Pages\Resolvers\FileWindowResolver;
 use App\Models\Messages\Message;
 use App\Models\Projects\ProjectBinding;

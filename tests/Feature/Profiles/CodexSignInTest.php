@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Profiles;
 
 use App\Contracts\Files\Files;
-use App\Enums\SignInMethod;
-use App\Enums\SignInOutcome;
+use App\Enums\Accounts\SignInMethod;
+use App\Enums\Accounts\SignInOutcome;
 use App\Exceptions\SignInChallengeUnreadable;
 use App\Support\CodexSignIn;
 use App\Support\LocalAccountFolders;

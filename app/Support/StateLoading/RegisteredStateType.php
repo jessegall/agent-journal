@@ -7,7 +7,7 @@ namespace App\Support\StateLoading;
 use App\Attributes\StateType;
 use App\Attributes\Ticks;
 use App\Contracts\Work\WorkOccurrenceGuard;
-use App\Enums\SessionTransferType;
+use App\Enums\Sessions\SessionTransferType;
 use App\Exceptions\StateTypeUnknown;
 use App\Support\Reflector;
 use App\Support\States\AgentState;

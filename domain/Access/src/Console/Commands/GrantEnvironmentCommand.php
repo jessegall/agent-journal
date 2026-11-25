@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Access\Console\Commands;
 
 use App\Contracts\Bus\OwnerCommands;
-use App\Enums\InboxPermission;
+use App\Enums\Messages\InboxPermission;
 use Domain\Access\Commands\GrantEnvironmentAccess\GrantEnvironmentAccessCommand;
 use Domain\Access\Commands\RevokeEnvironmentAccess\RevokeEnvironmentAccessCommand;
 use Domain\Access\Models\User;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Skills\RestoreSkill;
 
 use App\Attributes\Authorize;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Policies\SkillAuthoringPolicy;
 use App\Support\Command;
 use App\Values\SkillRevisionResult;

@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Drivers\InstalledVersion as InstalledVersionContract;
 use App\Contracts\Files\Files;
-use App\Enums\Place;
+use App\Enums\Files\Place;
 use Illuminate\Contracts\Cache\Repository as Cache;
 use Illuminate\Process\Factory as ProcessFactory;
 

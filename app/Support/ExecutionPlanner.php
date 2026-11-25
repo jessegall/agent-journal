@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\ParseOutcome;
+use App\Enums\CommandRules\ParseOutcome;
 use App\Exceptions\ExecutionPlanRefused;
 use App\Support\Syntax\TreeParser;
 use App\Values\Classification;

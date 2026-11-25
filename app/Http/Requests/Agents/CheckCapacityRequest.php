@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Agents;
 
-use App\Enums\ExecutionModeType;
+use App\Enums\Agents\ExecutionModeType;
 use App\Values\ExecutionBudgets;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;

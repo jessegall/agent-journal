@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Mcp\Support;
 
 use App\Contracts\Refusals\CodedRefusal;
-use App\Enums\RefusalCode;
+use App\Enums\Engine\RefusalCode;
 use App\Http\Middleware\Mcp\LimitMcpMessage;
 use App\Mcp\Data\BusyReplyData;
 use App\Mcp\Data\InitializeResultData;

@@ -11,7 +11,7 @@ use App\Declarations\DomainUi;
 use App\Declarations\NavigationItem;
 use App\Declarations\Page;
 use App\Declarations\SidebarGroup;
-use App\Enums\Icon;
+use App\Enums\Navigation\Icon;
 use App\Support\DeclaredRoutes;
 use App\Support\DomainEntry;
 use App\Support\UiDeclarations;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Enums\ContextStartType;
-use App\Enums\ReadEvidence;
+use App\Enums\Hooks\ContextStartType;
+use App\Enums\Skills\ReadEvidence;
 use App\Events\Hooks\ContextStarted;
 use App\Listeners\AdvanceSkillContext;
 use App\Models\Agents\AgentSession;

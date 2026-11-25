@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\CommandEffect;
-use App\Enums\CommandType;
-use App\Enums\PartJoin;
+use App\Enums\CommandRules\CommandEffect;
+use App\Enums\CommandRules\CommandType;
+use App\Enums\Runs\PartJoin;
 
 /**
  * One simple command of a shell line: the program, its arguments, its effect on files, what type of command it is and

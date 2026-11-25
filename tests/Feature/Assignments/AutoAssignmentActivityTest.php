@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Contracts\Assignments\AssignmentProviders;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Exceptions\AssignmentTypeUnavailable;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;

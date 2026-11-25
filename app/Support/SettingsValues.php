@@ -10,7 +10,7 @@ use App\Data\Settings\InvalidValueData;
 use App\Data\Settings\SettingData;
 use App\Data\Settings\StringChoiceValueData;
 use App\Data\Settings\StringValueData;
-use App\Enums\SettingType;
+use App\Enums\Settings\SettingType;
 use Spatie\LaravelData\Optional;
 
 /**

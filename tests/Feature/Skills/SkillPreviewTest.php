@@ -6,7 +6,7 @@ namespace Tests\Feature\Skills;
 
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\SessionStatus;
+use App\Enums\Sessions\SessionStatus;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Profiles\Profile;

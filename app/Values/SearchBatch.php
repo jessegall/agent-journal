@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Contracts\Bus\BatchOutcome;
-use App\Enums\FailureReason;
+use App\Enums\Search\FailureReason;
 use App\Exceptions\SearchBatchInvalid;
 
 /**

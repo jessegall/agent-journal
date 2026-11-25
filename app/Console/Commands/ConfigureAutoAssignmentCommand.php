@@ -7,7 +7,7 @@ namespace App\Console\Commands;
 use App\Attributes\JournalRoute;
 use App\Calls\Assignments\ConfigureAutoAssignmentCall;
 use App\Console\Concerns\ReadsAutoAssignmentChange;
-use App\Enums\JournalRouteType;
+use App\Enums\CommandRules\JournalRouteType;
 use Illuminate\Console\Command;
 
 /**

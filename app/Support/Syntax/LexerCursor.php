@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support\Syntax;
 
-use App\Enums\AnalysisLimit;
-use App\Enums\RedirectType;
-use App\Enums\ShellDialect;
-use App\Enums\TokenType;
-use App\Enums\WordSegmentType;
+use App\Enums\CommandRules\AnalysisLimit;
+use App\Enums\CommandRules\RedirectType;
+use App\Enums\CommandRules\TokenType;
+use App\Enums\CommandRules\WordSegmentType;
+use App\Enums\Processes\ShellDialect;
 use App\Exceptions\ShellLineUnreadable;
 use App\Values\SourceRange;
 use App\Values\Word;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Enums\RequestState;
+use App\Enums\CommandRules\RequestState;
 use App\Models\CommandRules\ModuleRuleBundle;
 use App\Models\CommandRules\RuleProposal;
 use App\Support\CommandRuleRegistry;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\CommandScopeType;
-use App\Enums\MiddlewareStage;
+use App\Enums\Engine\CommandScopeType;
+use App\Enums\Engine\MiddlewareStage;
 
 /**
  * A middleware as the registry ordered it for one command, with the owner that declared it.

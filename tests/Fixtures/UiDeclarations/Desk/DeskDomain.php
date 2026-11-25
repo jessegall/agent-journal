@@ -8,7 +8,7 @@ use App\Support\Domain;
 use App\Support\Exports;
 use App\Contracts\Navigation\SectionProvider;
 use App\Declarations\Section;
-use App\Enums\SlotContextType;
+use App\Enums\Profiles\SlotContextType;
 
 /**
  * A fixture domain that declares no page and fills the slots of the Library fixture's pages.

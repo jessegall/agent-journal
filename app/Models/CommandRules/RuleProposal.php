@@ -10,7 +10,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\ProposalState;
+use App\Enums\CommandRules\ProposalState;
 use App\Events\Processes\RuleProposalAdopted;
 use App\Events\Processes\RuleProposalWithdrawn;
 use App\Exceptions\RuleProposalRefused;

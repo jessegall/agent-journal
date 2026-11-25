@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\OutputStream;
-use App\Enums\RecordRole;
+use App\Enums\Processes\OutputStream;
+use App\Enums\Records\RecordRole;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;

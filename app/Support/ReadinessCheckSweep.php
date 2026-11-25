@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Work\StackTransactionRunner;
-use App\Enums\RequestOutcome;
+use App\Enums\Drivers\RequestOutcome;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Starts\StartRecord;
 use Carbon\CarbonImmutable;

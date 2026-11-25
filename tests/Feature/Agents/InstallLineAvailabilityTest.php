@@ -8,7 +8,7 @@ use App\Commands\Settings\SetBooleanSetting\SetBooleanSettingCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Settings\SettingsResolver;
 use App\Data\Connections\ReleaseOfferData;
-use App\Enums\InstallLineHold;
+use App\Enums\Projects\InstallLineHold;
 use App\Support\CoreSettings;
 use App\Support\InstallLineAvailability;
 use App\Support\PublishedReleases;

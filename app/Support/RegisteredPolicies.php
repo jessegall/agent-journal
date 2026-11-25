@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Domains\DomainAvailability;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Exceptions\GrantNotRegistered;
 use App\Exceptions\PolicyDefinitionConflict;
 use App\Values\PolicyDefinition;

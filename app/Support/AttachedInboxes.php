@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Sharing\SharedHolders;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 

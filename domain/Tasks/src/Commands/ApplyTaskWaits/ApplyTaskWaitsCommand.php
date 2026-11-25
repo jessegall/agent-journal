@@ -6,7 +6,7 @@ namespace Domain\Tasks\Commands\ApplyTaskWaits;
 
 use App\Attributes\Authorize;
 use App\Attributes\RequiresRequestKey;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use Domain\Tasks\Policies\TaskPolicy;
 use Domain\Tasks\Values\TaskWaitPair;

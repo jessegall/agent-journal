@@ -6,7 +6,7 @@ namespace Domain\Documents\Commands\CreateReport;
 
 use App\Attributes\Authorize;
 use App\Attributes\OneLine;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use App\Support\RecordIdentity;
 use Domain\Documents\Models\Document;

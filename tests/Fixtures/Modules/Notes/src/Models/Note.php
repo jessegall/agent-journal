@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Models;
 
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use App\Contracts\Assignments\Assignable;

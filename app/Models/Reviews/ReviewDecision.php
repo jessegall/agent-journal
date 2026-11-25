@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\ReviewDecisionType;
+use App\Enums\Reviews\ReviewDecisionType;
 use App\Events\Reviews\ReviewDecisionMergeLinked;
 use App\Models\Asks\Ask;
 use App\Support\ActorIdentity;

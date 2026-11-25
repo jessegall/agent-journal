@@ -6,11 +6,11 @@ namespace App\Commands\Drivers\NotifyRequestProgress;
 
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\DriverOperation;
-use App\Enums\HoldReason;
-use App\Enums\RequestOutcome;
-use App\Enums\RequestProgress;
-use App\Enums\RuntimeEventType;
+use App\Enums\Drivers\DriverOperation;
+use App\Enums\Drivers\HoldReason;
+use App\Enums\Drivers\RequestOutcome;
+use App\Enums\Drivers\RequestProgress;
+use App\Enums\Runs\RuntimeEventType;
 use App\Events\Sessions\SessionStateChanged;
 use App\Exceptions\HostReportRefused;
 use App\Models\Agents\AgentRuntime;

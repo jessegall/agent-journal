@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\Starts\RecordStopResults;
 
 use App\Attributes\Entry;
-use App\Enums\CommandEntry;
-use App\Enums\StopAttemptState;
+use App\Enums\Accounts\CommandEntry;
+use App\Enums\Starts\StopAttemptState;
 use App\Support\Command;
 use App\Values\StopResultReport;
 

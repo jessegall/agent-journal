@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Models\Agents\AgentSession;
 
 /**

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Samples;
 
 use App\Attributes\OutsideThePlaces;
-use App\Enums\PlaceExemption;
+use App\Enums\Files\PlaceExemption;
 
 /**
  * Planted direct file calls the direct-file-access rule must find, beside the look-alikes it must pass: methods and

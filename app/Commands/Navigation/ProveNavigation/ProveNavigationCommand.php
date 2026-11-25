@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\Navigation\ProveNavigation;
 
 use App\Attributes\Authorize;
-use App\Enums\AccessType;
-use App\Enums\NavigationCompletion;
+use App\Enums\Agents\AccessType;
+use App\Enums\Navigation\NavigationCompletion;
 use App\Policies\AgentPolicy;
 use App\Support\Command;
 use App\Values\DriverReceipt;

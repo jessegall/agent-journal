@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Skills;
 
-use App\Enums\ToolOutcome;
+use App\Enums\Hooks\ToolOutcome;
 use App\Events\Hooks\ToolCallFinished;
 use App\Listeners\RecordProvenSkillReads;
 use App\Models\Agents\AgentSession;

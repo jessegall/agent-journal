@@ -6,7 +6,7 @@ namespace Tests\Feature\Agents;
 
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Contracts\Drivers\DriverCompatibilities;
-use App\Enums\ArrangementType;
+use App\Enums\Projects\ArrangementType;
 use App\Support\ArrangementSetting;
 use App\Support\Compatibility\DriverCompatibility;
 use App\Support\Compatibility\Exceptions\DriverArrangementUnproven;

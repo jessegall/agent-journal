@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\NodeType;
-use App\Enums\ParseOutcome;
-use App\Enums\ShellDialect;
-use App\Enums\StepType;
-use App\Enums\WordSegmentType;
+use App\Enums\CommandRules\NodeType;
+use App\Enums\CommandRules\ParseOutcome;
+use App\Enums\CommandRules\StepType;
+use App\Enums\CommandRules\WordSegmentType;
+use App\Enums\Processes\ShellDialect;
 use App\Exceptions\ExecutionPlanRefused;
 use App\Support\Syntax\TreeParser;
 use App\Values\HereDocument;

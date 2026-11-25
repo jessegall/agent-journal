@@ -6,8 +6,8 @@ namespace Tests\Feature\Skills;
 
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\ConditionOutcome;
-use App\Enums\SessionStatus;
+use App\Enums\Sessions\SessionStatus;
+use App\Enums\Skills\ConditionOutcome;
 use App\Exceptions\SkillAgentHidden;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;

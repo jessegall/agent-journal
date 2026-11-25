@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\OutputStream;
+use App\Enums\Processes\OutputStream;
 use App\Models\Runs\OutputChunk;
 use App\Models\Runs\PartRun;
 use App\Values\OutputFrame;

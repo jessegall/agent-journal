@@ -7,7 +7,7 @@ namespace App\Support\Admission;
 use App\Contracts\Admission\ShellAdmission;
 use App\Contracts\Sessions\RuntimeResolver;
 use App\Contracts\Sessions\SessionPolicyReader;
-use App\Enums\AdmissionRefusalCode;
+use App\Enums\CommandRules\AdmissionRefusalCode;
 use App\Exceptions\StackTargetRefused;
 use App\Support\Decisions\Decision;
 use App\Support\Drivers\DriverCapabilities;

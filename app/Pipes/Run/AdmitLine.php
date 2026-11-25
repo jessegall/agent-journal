@@ -6,7 +6,7 @@ namespace App\Pipes\Run;
 
 use App\Calls\Processes\ProcessCalls;
 use App\Contracts\Bus\Pipe;
-use App\Enums\ShellDialect;
+use App\Enums\Processes\ShellDialect;
 use App\Support\Run\PendingAdmission;
 use App\Support\Run\RunStart;
 

@@ -6,7 +6,7 @@ namespace App\Commands\Sharing\RequestShare;
 
 use App\Attributes\Authorize;
 use App\Attributes\RequiresRequestKey;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Policies\ShareRequestPolicy;
 use App\Support\Command;
 use App\Support\ShareProposalStatus;

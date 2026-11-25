@@ -8,7 +8,7 @@ use App\Support\Domain;
 use App\Support\Exports;
 use App\Contracts\Navigation\PageProvider;
 use App\Declarations\Page;
-use App\Enums\Icon;
+use App\Enums\Navigation\Icon;
 use Tests\Fixtures\Modules\Handbook\Policies\ReadHandbook;
 use Tests\Fixtures\Modules\Handbook\Resolvers\EntryLayoutResolver;
 

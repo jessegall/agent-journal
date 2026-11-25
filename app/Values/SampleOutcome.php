@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\RequestState;
+use App\Enums\CommandRules\RequestState;
 
 /**
  * Where a request stands after its sample run ended: awaiting proof with the run, or back to the owner's approval,

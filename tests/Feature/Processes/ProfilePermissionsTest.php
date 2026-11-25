@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Contracts\Bus\CommandPermissionResolver;
-use App\Enums\CommandClass;
+use App\Enums\CommandRules\CommandClass;
 use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 use App\Support\StartSessions;

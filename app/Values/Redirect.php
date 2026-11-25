@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\RedirectType;
+use App\Enums\CommandRules\RedirectType;
 
 /**
  * One redirect of a command, in the order written: its descriptor, what it does, and its target word or here-document.

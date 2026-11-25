@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Chat;
 
-use Domain\Sequences\SequencesDomain;
-use Domain\Chat\Contracts\PairChats;
-use Domain\Chat\Events\ChatMessageChanged;
-use Domain\Chat\Http\Controllers\AnswerQuestionController;
 use App\Contracts\Authorization\PolicyProvider;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandProvider;
@@ -20,9 +16,9 @@ use App\Declarations\ActionRoute;
 use App\Declarations\Page;
 use App\Declarations\Section;
 use App\Declarations\Slot;
-use App\Enums\AccessType;
-use App\Enums\Icon;
-use App\Enums\SlotContextType;
+use App\Enums\Agents\AccessType;
+use App\Enums\Navigation\Icon;
+use App\Enums\Profiles\SlotContextType;
 use App\Mcp\Contracts\McpToolProvider;
 use App\Support\Domain;
 use App\Support\Exports;
@@ -30,7 +26,10 @@ use App\Support\FolderClasses;
 use App\Support\MessageSearchAccess;
 use App\Support\Searchable;
 use App\Values\PolicyDefinition;
+use Domain\Chat\Contracts\PairChats;
+use Domain\Chat\Events\ChatMessageChanged;
 use Domain\Chat\Events\DockChanged;
+use Domain\Chat\Http\Controllers\AnswerQuestionController;
 use Domain\Chat\Http\Controllers\ChatRowsController;
 use Domain\Chat\Http\Controllers\DockController;
 use Domain\Chat\Http\Controllers\Membership\AddParticipantController;
@@ -48,6 +47,7 @@ use Domain\Chat\Http\Pages\Resolvers\ChatWindowResolver;
 use Domain\Chat\Http\Pages\Resolvers\ChosenAgentSection;
 use Domain\Chat\Policies\MessagePinPolicy;
 use Domain\Chat\Support\Skills\ChatSkill;
+use Domain\Sequences\SequencesDomain;
 
 final class ChatDomain extends Domain implements
     CommandProvider,
@@ -124,7 +124,6 @@ final class ChatDomain extends Domain implements
                 ),
         ];
     }
-
 
     public function sections(): array
     {

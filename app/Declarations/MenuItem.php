@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Declarations;
 
 use App\Contracts\Authorization\VisibilityCheck;
-use App\Enums\Icon;
+use App\Enums\Navigation\Icon;
 
 /**
  * An item a domain puts in a menu, keyed within that domain: it opens a page of its own domain or sends one of its own

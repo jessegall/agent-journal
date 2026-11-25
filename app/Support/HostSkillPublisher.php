@@ -6,8 +6,8 @@ namespace App\Support;
 
 use App\Contracts\Files\Files;
 use App\Contracts\Skills\SkillPublisher;
-use App\Enums\Permissions;
-use App\Enums\Place;
+use App\Enums\Files\Permissions;
+use App\Enums\Files\Place;
 use App\Exceptions\FileOutsidePlaces;
 use App\Exceptions\FilePathInvalid;
 use App\Exceptions\FileUnwritable;

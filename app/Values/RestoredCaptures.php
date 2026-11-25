@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\CaptureState;
+use App\Enums\Runs\CaptureState;
 
 /**
  * What checking a run's restored output answers: the capture state of each of its parts.

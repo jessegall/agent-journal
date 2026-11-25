@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Data\Processes\ExplanationData;
-use App\Enums\AnalysisLimit;
-use App\Enums\ShellDialect;
+use App\Enums\CommandRules\AnalysisLimit;
+use App\Enums\Processes\ShellDialect;
 use App\Support\Explanations;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

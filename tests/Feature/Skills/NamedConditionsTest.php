@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Skills;
 
 use App\Contracts\Actors\CurrentActorSetter;
-use App\Enums\ConditionOutcome;
+use App\Enums\Skills\ConditionOutcome;
 use App\Exceptions\ConditionWriteRefused;
 use App\Exceptions\SkillConditionInvalid;
 use App\Models\Records\NumberGroup;

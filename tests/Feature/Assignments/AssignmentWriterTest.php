@@ -6,7 +6,7 @@ namespace Tests\Feature\Assignments;
 
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Assignments\AssignmentWriter;
-use App\Enums\AssignmentOutcomeType;
+use App\Enums\Assignments\AssignmentOutcomeType;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\AssigneeUnavailable;
 use App\Exceptions\AssignmentConflict;

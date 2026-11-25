@@ -6,7 +6,7 @@ namespace Domain\Documents\Support;
 
 use App\Contracts\Search\SearchProvider;
 use App\Contracts\Search\TieredSearch;
-use App\Enums\ScoreTier;
+use App\Enums\Search\ScoreTier;
 use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;
 use App\Values\AdmittedConstraints;

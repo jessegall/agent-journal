@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\GuardedCommandBus;
-use App\Enums\CommandOriginStatus;
+use App\Enums\Engine\CommandOriginStatus;
 use App\Exceptions\CommandNotRegistered;
 use Closure;
 use Illuminate\Bus\Dispatcher;

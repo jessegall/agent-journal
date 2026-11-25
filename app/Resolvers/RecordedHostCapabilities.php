@@ -6,10 +6,10 @@ namespace App\Resolvers;
 
 use App\Contracts\Files\Files;
 use App\Contracts\Hosts\HostCapabilities;
-use App\Enums\AccountModeType;
-use App\Enums\CapabilityStatusType;
-use App\Enums\ExecutionModeType;
-use App\Enums\HostCapabilityType;
+use App\Enums\Accounts\AccountModeType;
+use App\Enums\Agents\ExecutionModeType;
+use App\Enums\Projects\CapabilityStatusType;
+use App\Enums\Projects\HostCapabilityType;
 use App\Exceptions\CapabilityMatrixInvalid;
 use App\Exceptions\FileJsonInvalid;
 use App\Exceptions\FileMissing;

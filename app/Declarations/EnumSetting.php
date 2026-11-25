@@ -8,7 +8,7 @@ use App\Contracts\Actors\ChoiceLabel;
 use App\Contracts\Settings\CatalogueConstraints;
 use App\Contracts\Settings\CatalogueValue;
 use App\Contracts\Settings\OptionSetting;
-use App\Enums\SettingType;
+use App\Enums\Settings\SettingType;
 use App\Exceptions\SettingDeclarationInvalid;
 use App\Support\ChoiceOptions;
 use App\Support\Reflector;

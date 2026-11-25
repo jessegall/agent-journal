@@ -6,7 +6,7 @@ namespace App\Values;
 
 use App\Contracts\Authorization\Policy;
 use App\Data\Profiles\PolicyGrant;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 
 /**
  * One grant a profile withholds from what its base would grant: a policy and an access. A profile only narrows its

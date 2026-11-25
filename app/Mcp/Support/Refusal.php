@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
-use App\Enums\RefusalCode;
+use App\Enums\Engine\RefusalCode;
 use App\Support\TextPreview;
 use App\Values\MappedRefusal;
 use Laravel\Mcp\Response;

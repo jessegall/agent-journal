@@ -6,7 +6,7 @@ namespace App\Values;
 
 use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Contracts\Authorization\Policy;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 
 /**
  * One grant a skill or a guidance line needs: an access on a policy, decided on the policy's model class.

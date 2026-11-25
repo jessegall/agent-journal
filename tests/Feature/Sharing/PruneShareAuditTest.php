@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Sharing;
 
 use App\Commands\Sharing\PruneShareAudit\PruneShareAuditCommand;
-use App\Enums\ShareAuditType;
-use App\Enums\ShareState;
+use App\Enums\Sharing\ShareAuditType;
+use App\Enums\Sharing\ShareState;
 use App\Models\Sharing\Share;
 use App\Models\Sharing\ShareAudit;
 use App\Models\Sharing\ShareGatewayConfiguration;

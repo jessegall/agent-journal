@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\ShareRelationType;
+use App\Enums\Sharing\ShareRelationType;
 
 /**
  * One relation a shareable record type declares: its stable name, owned or linked, and the capability a record must

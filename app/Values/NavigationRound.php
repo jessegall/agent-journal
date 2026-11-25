@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\NavigationCompletion;
-use App\Enums\NavigationKey;
+use App\Enums\Navigation\NavigationCompletion;
+use App\Enums\Navigation\NavigationKey;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;

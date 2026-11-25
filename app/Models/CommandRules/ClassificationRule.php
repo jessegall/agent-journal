@@ -10,7 +10,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\ClassificationState;
+use App\Enums\CommandRules\ClassificationState;
 use App\Events\Processes\ClassificationRuleRetired;
 use App\Exceptions\ClassificationRuleRefused;
 use App\Models\Support\NamedByRuleScope;

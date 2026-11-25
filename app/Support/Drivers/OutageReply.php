@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Support\Drivers;
 
 use App\Contracts\Actors\AgentTexts;
-use App\Enums\CallFailure;
-use App\Enums\DriverStopDecision;
-use App\Enums\HookEvent;
+use App\Enums\Drivers\DriverStopDecision;
+use App\Enums\Hooks\CallFailure;
+use App\Enums\Hooks\HookEvent;
 use App\Values\AgentText;
 
 /**

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Attributes;
 
-use App\Enums\CallEffect;
-use App\Enums\ReceiptOwner;
+use App\Enums\Processes\CallEffect;
+use App\Enums\Processes\ReceiptOwner;
 use Attribute;
 use Spatie\LaravelData\Data;
 use Throwable;

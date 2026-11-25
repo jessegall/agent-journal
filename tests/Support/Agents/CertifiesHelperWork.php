@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Support\Agents;
 
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\ConversationModeType;
-use App\Enums\DriverType;
-use App\Enums\ExecutionModeType;
-use App\Enums\StartOriginType;
+use App\Enums\Agents\ConversationModeType;
+use App\Enums\Agents\ExecutionModeType;
+use App\Enums\Drivers\DriverType;
+use App\Enums\Starts\StartOriginType;
 use App\Models\Reviews\CertifiedWork;
 use App\Models\Starts\SessionPolicy;
 use App\Models\Starts\StartRecord;

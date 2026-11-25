@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Ui;
 
-use App\Enums\Icon;
+use App\Enums\Navigation\Icon;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\RecordCard;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\Drivers\NotifyDriverTurn;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\HoldReason;
-use App\Enums\RuntimeActivity;
+use App\Enums\Drivers\HoldReason;
+use App\Enums\Runs\RuntimeActivity;
 use App\Exceptions\HostReportRefused;
 use App\Models\Drivers\DriverTurn;
 use App\Support\HostRuntimes;

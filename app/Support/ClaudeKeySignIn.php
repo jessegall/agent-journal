@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\Permissions;
-use App\Enums\Place;
+use App\Enums\Files\Permissions;
+use App\Enums\Files\Place;
 use App\Values\FilePath;
 use App\Values\SignInCard;
 use stdClass;

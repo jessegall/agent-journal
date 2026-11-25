@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\ScoreTier;
+use App\Enums\Search\ScoreTier;
 use App\Exceptions\SearchWordsInvalid;
 use Normalizer;
 

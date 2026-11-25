@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Comments;
 
 use App\Data\Pages\RecordCard;
-use App\Enums\CommentType;
+use App\Enums\Comments\CommentType;
 use App\Values\TextAnchor;
 use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Data;

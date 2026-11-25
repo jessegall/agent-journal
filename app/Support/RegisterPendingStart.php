@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Actors\IdentityLinks;
 use App\Contracts\Bus\CommandFacts;
-use App\Enums\TransportProfileType;
+use App\Enums\Starts\TransportProfileType;
 use App\Events\Sessions\AccountUseChanged;
 use App\Models\Agents\AgentSession;
 use App\Models\Starts\ProcessStart;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Calls\Processes\AdmitLineCall;
-use App\Enums\ShellDialect;
+use App\Enums\Processes\ShellDialect;
 use App\Models\CommandRules\CommandRequest;
 use App\Models\Runs\ProcessRun;
 use App\Values\AgentText;

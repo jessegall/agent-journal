@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\PoolMembersType;
+use App\Enums\Assignments\PoolMembersType;
 use App\Exceptions\InvalidRecordIds;
 
 /**

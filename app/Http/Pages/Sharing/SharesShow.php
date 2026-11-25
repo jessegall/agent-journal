@@ -8,7 +8,7 @@ use App\Data\Sharing\ShareAuditData;
 use App\Data\Sharing\ShareControlsPartData;
 use App\Data\Sharing\ShareMemberData;
 use App\Data\Sharing\ShareRuntimeData;
-use App\Enums\ShareState;
+use App\Enums\Sharing\ShareState;
 use App\Models\Sharing\Share;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutBodyData;

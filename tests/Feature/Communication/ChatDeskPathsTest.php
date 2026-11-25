@@ -10,7 +10,7 @@ use App\Commands\Messages\ReplyToMessage\ReplyToMessageCommand;
 use App\Commands\Messages\RequireMessageAnswer\RequireMessageAnswerCommand;
 use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Commands\Messages\TakeNextMessages\TakeNextMessagesCommand;
-use App\Enums\MessageState;
+use App\Enums\Messages\MessageState;
 use App\Exceptions\ChatInboxRefused;
 use App\Exceptions\ChatMessageRefused;
 use App\Models\Messages\Message;

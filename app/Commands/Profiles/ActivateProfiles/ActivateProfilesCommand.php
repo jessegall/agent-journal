@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Profiles\ActivateProfiles;
 
 use App\Attributes\Authorize;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Policies\ProfileAdministrationPolicy;
 use App\Support\Command;
 use App\Support\ProfileProposal;

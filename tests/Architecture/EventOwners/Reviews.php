@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use App\Enums\CodeReviewState;
-use App\Enums\MergeAttemptState;
-use App\Enums\MergeRefusalReason;
-use App\Enums\RepairRequestState;
+use App\Enums\Reviews\CodeReviewState;
+use App\Enums\Reviews\MergeAttemptState;
+use App\Enums\Reviews\MergeRefusalReason;
+use App\Enums\Reviews\RepairRequestState;
 use App\Events\Reviews\CodeReviewImportFailed;
 use App\Events\Reviews\CodeReviewOpened;
 use App\Events\Reviews\CodeReviewSettled;

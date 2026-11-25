@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Profiles;
 
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\DriverType;
+use App\Enums\Drivers\DriverType;
 use App\Models\Accounts\Account;
 use App\Support\DefaultDrivers;
 use App\Values\AccountLabel;

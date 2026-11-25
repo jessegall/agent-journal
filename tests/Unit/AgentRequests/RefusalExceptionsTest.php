@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\AgentRequests;
 
 use App\Contracts\Refusals\CallRefusal;
-use App\Enums\RefusalCode;
+use App\Enums\Engine\RefusalCode;
 use App\Exceptions\CallKeyExpired;
 use App\Exceptions\CallRefused;
 use App\Exceptions\StateBlocked;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\AccountProcessRole;
+use App\Enums\Accounts\AccountProcessRole;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
 

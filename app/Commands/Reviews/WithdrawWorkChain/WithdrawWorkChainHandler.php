@@ -6,7 +6,7 @@ namespace App\Commands\Reviews\WithdrawWorkChain;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Records\RecordResolver;
-use App\Enums\WorkChainEnding;
+use App\Enums\Reviews\WorkChainEnding;
 use App\Models\Reviews\CodeReview;
 use App\Support\WorkChainEnd;
 

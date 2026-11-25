@@ -13,7 +13,7 @@ use App\Contracts\Messages\MessageReceiver;
 use App\Contracts\Messages\MessageSender;
 use App\Contracts\Questions\AnswersQuestions;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Models\Inboxes\InboxMember;
 use App\Support\AssigneeIdentity;
 use Carbon\CarbonImmutable;

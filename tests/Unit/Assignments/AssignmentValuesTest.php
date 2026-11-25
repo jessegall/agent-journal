@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Assignments;
 
-use App\Enums\ActorType;
-use App\Enums\AssignmentOutcomeType;
+use App\Enums\Assignments\ActorType;
+use App\Enums\Assignments\AssignmentOutcomeType;
 use App\Exceptions\AssignmentGroupTooLarge;
 use App\Exceptions\InvalidAssignmentPage;
 use App\Exceptions\InvalidRecordIdentity;

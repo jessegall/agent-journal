@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\GatewayEndpointState;
+use App\Enums\Sharing\GatewayEndpointState;
 use App\Exceptions\GatewayRunStale;
 use App\Models\Sharing\ShareGatewayEndpoint;
 use App\Models\Sharing\ShareGatewayOperation;

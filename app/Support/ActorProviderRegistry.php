@@ -15,7 +15,7 @@ use App\Contracts\Actors\ActorVisibilityProvider;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Work\ActorStackSessionProvider;
 use App\Contracts\Work\ActorStackSessions;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Exceptions\ActorProviderMissing;
 use App\Exceptions\ActorProviderRepeated;
 use App\Exceptions\ActorUnavailable;

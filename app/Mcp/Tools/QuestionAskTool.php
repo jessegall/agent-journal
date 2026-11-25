@@ -6,8 +6,8 @@ namespace App\Mcp\Tools;
 
 use App\Commands\Questions\AskQuestion\AskQuestionCommand;
 use App\Contracts\Bus\Command;
-use App\Enums\ActorType;
-use App\Enums\QuestionType;
+use App\Enums\Assignments\ActorType;
+use App\Enums\Questions\QuestionType;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Support\ToolArguments;

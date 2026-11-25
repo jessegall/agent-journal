@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Data\Settings;
 
-use App\Enums\SettingAvailability;
-use App\Enums\SettingSource;
-use App\Enums\SettingType;
+use App\Enums\Settings\SettingAvailability;
+use App\Enums\Settings\SettingSource;
+use App\Enums\Settings\SettingType;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;

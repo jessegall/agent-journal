@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\Skills\RecordSkillRead;
 
 use App\Attributes\Authorize;
-use App\Enums\AccessType;
-use App\Enums\ReadEvidence;
+use App\Enums\Agents\AccessType;
+use App\Enums\Skills\ReadEvidence;
 use App\Policies\SkillPolicy;
 use App\Support\Command;
 

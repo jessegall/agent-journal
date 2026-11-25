@@ -6,7 +6,7 @@ namespace Tests\Feature\Communication;
 
 use App\Commands\Messages\ReadMessages\ReadMessagesCommand;
 use App\Commands\Messages\ReleaseMessageClaim\ReleaseMessageClaimCommand;
-use App\Enums\MessageState;
+use App\Enums\Messages\MessageState;
 use App\Exceptions\AssignmentConflict;
 use App\Exceptions\CommandAdmissionRefused;
 use App\Models\Messages\Message;

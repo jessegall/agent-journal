@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\ParseOutcome;
-use App\Enums\ShellDialect;
+use App\Enums\CommandRules\ParseOutcome;
+use App\Enums\Processes\ShellDialect;
 use App\Exceptions\ShellNodeMissing;
 
 /**

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Contracts\Actors\AgentTexts;
-use App\Enums\ContextStartType;
-use App\Enums\RewriteSupport;
+use App\Enums\Drivers\RewriteSupport;
+use App\Enums\Hooks\ContextStartType;
 use App\Exceptions\StackLockTimedOut;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\HookCall;

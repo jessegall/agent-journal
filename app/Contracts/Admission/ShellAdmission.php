@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Admission;
 
-use App\Enums\ShellDialect;
+use App\Enums\Processes\ShellDialect;
 use App\Values\Admission;
 use App\Values\AdmissionRefusal;
 use App\Values\ExecutionContext;

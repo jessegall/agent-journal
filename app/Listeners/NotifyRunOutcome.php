@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Attributes\InCommandTransaction;
-use App\Contracts\Notifications\Notifications;
 use App\Contracts\Events\Listener;
+use App\Contracts\Notifications\Notifications;
 use App\Data\Notifications\NotificationTarget;
-use App\Enums\NotificationSourceType;
+use App\Enums\Notifications\NotificationSourceType;
 use App\Events\Processes\RunOutcomeRecorded;
 use App\Models\Runs\ProcessRun;
 use App\Resolvers\RunNotificationTarget;

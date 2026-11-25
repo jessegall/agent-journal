@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Enums;
 
-use App\Enums\Tone;
+use App\Enums\Runs\Tone;
 use App\Support\Cards\StateLabel;
 
 /**

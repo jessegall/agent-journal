@@ -8,7 +8,7 @@ use App\Contracts\Navigation\PageResolver;
 use App\Data\Sharing\GatewayConfigurePartData;
 use App\Data\Sharing\GatewayRevisionData;
 use App\Data\Sharing\RootShareData;
-use App\Enums\ActionMethod;
+use App\Enums\Settings\ActionMethod;
 use App\Models\Sharing\ShareGatewayConfiguration;
 use App\Models\Sharing\ShareInstallation;
 use App\Support\Layout\DeclaredLayoutData;

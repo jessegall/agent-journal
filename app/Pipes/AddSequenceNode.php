@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Pipes;
 
 use App\Contracts\Bus\Pipe;
-use App\Enums\NodeType;
+use App\Enums\CommandRules\NodeType;
 use App\Support\Grammar\GrammarContext;
 use App\Support\Grammar\UnparsedList;
 use App\Support\Lines\ScannedSource;

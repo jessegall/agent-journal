@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Profiles;
 
 use App\Contracts\Actors\CurrentActorSetter;
-use App\Enums\UsageWindowSlot;
+use App\Enums\Accounts\UsageWindowSlot;
 use App\Exceptions\UsageCostConflict;
 use App\Exceptions\UsdAmountInvalid;
 use App\Models\Accounts\Account;

@@ -6,10 +6,10 @@ namespace App\Support\Execution;
 
 use App\Contracts\Events\RunEvents;
 use App\Contracts\Reads\OutputRecorder;
-use App\Enums\CaptureState;
-use App\Enums\OutputStream;
-use App\Enums\RunLogicalResult;
-use App\Enums\RunResultSource;
+use App\Enums\Processes\OutputStream;
+use App\Enums\Runs\CaptureState;
+use App\Enums\Runs\RunLogicalResult;
+use App\Enums\Runs\RunResultSource;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessEvent;
 use App\Models\Runs\ProcessRun;

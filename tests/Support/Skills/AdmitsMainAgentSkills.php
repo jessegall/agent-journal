@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Skills;
 
-use App\Enums\SessionStatus;
+use App\Enums\Sessions\SessionStatus;
 use App\Events\Sessions\SessionOpened;
 use App\Listeners\AdmitStartSkills;
 use App\Models\Agents\Agent;

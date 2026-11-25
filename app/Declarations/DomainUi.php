@@ -11,7 +11,7 @@ use App\Contracts\Navigation\PageProvider;
 use App\Contracts\Navigation\SectionProvider;
 use App\Contracts\Navigation\SidebarGroupProvider;
 use App\Contracts\Records\TypeProvider;
-use App\Enums\Place;
+use App\Enums\Files\Place;
 use App\Exceptions\FileMissing;
 use App\Exceptions\FileOutsidePlaces;
 use App\Exceptions\FilePathInvalid;

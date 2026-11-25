@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\Starts\DismissLaunchOutcome;
 
 use App\Attributes\Authorize;
-use App\Enums\AccessType;
-use App\Enums\StartDisposition;
+use App\Enums\Agents\AccessType;
+use App\Enums\Starts\StartDisposition;
 use App\Policies\AgentPolicy;
 use App\Support\Command;
 

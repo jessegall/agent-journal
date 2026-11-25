@@ -11,7 +11,7 @@ use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Time\ServerClock;
 use App\Data\Terminals\TerminalControlData;
 use App\Data\Terminals\TerminalInterestData;
-use App\Enums\RefusalCode;
+use App\Enums\Engine\RefusalCode;
 use App\Support\ActorIdentity;
 use App\Support\TerminalControls;
 use App\Support\TerminalViews;

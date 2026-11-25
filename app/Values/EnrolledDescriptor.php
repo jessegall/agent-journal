@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Data\Hosts\EnrolledDescriptorData;
-use App\Enums\DriverType;
+use App\Enums\Drivers\DriverType;
 
 /**
  * A host's advertised driver as the journal enrolled it: the registration it matched, or the reason it is unavailable.

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Relay;
 
 use App\Contracts\Files\Files;
-use App\Enums\Permissions;
+use App\Enums\Files\Permissions;
 use App\Values\FilePath;
 
 /**

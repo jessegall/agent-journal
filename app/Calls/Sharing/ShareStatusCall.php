@@ -6,7 +6,7 @@ namespace App\Calls\Sharing;
 
 use App\Attributes\Endpoint;
 use App\Contracts\Domains\JournalCall;
-use App\Enums\CallEffect;
+use App\Enums\Processes\CallEffect;
 use Spatie\LaravelData\Data;
 
 /**

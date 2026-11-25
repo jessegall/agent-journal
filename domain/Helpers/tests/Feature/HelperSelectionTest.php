@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Helpers\Tests\Feature;
 
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\LaunchCandidateRank;
+use App\Enums\Starts\LaunchCandidateRank;
 use App\Models\Agents\Agent;
 use App\Models\Drivers\ConversationVisit;
 use App\Models\Drivers\DriverConversation;

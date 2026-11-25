@@ -8,7 +8,7 @@ use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Bus\Command;
 use App\Contracts\Events\Event;
 use App\Declarations\StateMethods;
-use App\Enums\AnswerType;
+use App\Enums\Hooks\AnswerType;
 use App\Exceptions\BottomStateCannotFinish;
 use App\Exceptions\InvalidHookAnswer;
 use App\Exceptions\MissingBottomState;

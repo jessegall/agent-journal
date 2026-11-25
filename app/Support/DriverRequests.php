@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\DriverOperation;
-use App\Enums\HoldReason;
-use App\Enums\RequestProgress;
+use App\Enums\Drivers\DriverOperation;
+use App\Enums\Drivers\HoldReason;
+use App\Enums\Drivers\RequestProgress;
 use App\Exceptions\DriverRequestRefused;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;

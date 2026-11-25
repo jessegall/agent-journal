@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Bus\CommandAdmission;
 use App\Contracts\Sessions\CurrentSession;
-use App\Enums\RefusalCode;
+use App\Enums\Engine\RefusalCode;
 use App\Values\CommandDecision;
 use App\Values\EffectiveCommand;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Values;
 
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use Domain\Rules\Enums\RuleState;
 
 /**

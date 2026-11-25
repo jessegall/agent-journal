@@ -7,9 +7,9 @@ namespace App\Support\Compatibility\Exceptions;
 use App\Concerns\RendersRefusal;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
-use App\Enums\AuthenticationArrangement;
-use App\Enums\DriverEvidence;
-use App\Enums\RefusalCode;
+use App\Enums\Accounts\AuthenticationArrangement;
+use App\Enums\Drivers\DriverEvidence;
+use App\Enums\Engine\RefusalCode;
 use RuntimeException;
 
 /**

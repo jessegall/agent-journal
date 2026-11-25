@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Data\Connections\ProjectEntryData;
-use App\Enums\ProjectReadFailure;
-use App\Enums\ProjectReadState;
+use App\Enums\Projects\ProjectReadFailure;
+use App\Enums\Projects\ProjectReadState;
 use App\Models\Projects\ProjectRead;
 
 /**

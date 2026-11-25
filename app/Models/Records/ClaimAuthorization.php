@@ -7,7 +7,7 @@ namespace App\Models\Records;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\ClaimBasis;
+use App\Enums\Records\ClaimBasis;
 use App\Models\Inboxes\InboxMember;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentReference;

@@ -6,11 +6,11 @@ namespace App\Commands\Sharing\RecordGatewayOutcome;
 
 use App\Concerns\RefusesStaleGatewayRuns;
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\GatewayEndpointState;
-use App\Enums\GatewayOperationType;
-use App\Enums\GatewayOutcome;
-use App\Enums\ShareAuditType;
-use App\Enums\ShareState;
+use App\Enums\Sharing\GatewayEndpointState;
+use App\Enums\Sharing\GatewayOperationType;
+use App\Enums\Sharing\GatewayOutcome;
+use App\Enums\Sharing\ShareAuditType;
+use App\Enums\Sharing\ShareState;
 use App\Exceptions\GatewayLeaseRefused;
 use App\Models\Sharing\Share;
 use App\Models\Sharing\ShareAudit;

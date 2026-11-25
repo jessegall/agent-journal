@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Chat\Support;
 
 use App\Contracts\Sessions\AgentDirectory;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Exceptions\DockDefinitionInvalid;
 use App\Exceptions\DockSourceUnavailable;
 use App\Exceptions\StackTargetRefused;

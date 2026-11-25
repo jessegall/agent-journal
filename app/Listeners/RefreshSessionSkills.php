@@ -9,7 +9,7 @@ use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Events\Listener;
 use App\Contracts\Skills\SkillResolver;
 use App\Contracts\Work\AgentStack;
-use App\Enums\SkillReload;
+use App\Enums\Skills\SkillReload;
 use App\Events\Hooks\ContextStarted;
 use App\Events\Skills\SessionSkillsIntended;
 use App\Exceptions\SkillSelectionConflict;

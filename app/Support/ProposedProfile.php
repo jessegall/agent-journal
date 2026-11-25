@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\ExecutionModeType;
-use App\Enums\InstancePolicy;
-use App\Enums\ModelTier;
+use App\Enums\Agents\ExecutionModeType;
+use App\Enums\Profiles\InstancePolicy;
+use App\Enums\Profiles\ModelTier;
 use App\Values\ProfileBase;
 use App\Values\ProfileKey;
 use App\Values\StopCondition;

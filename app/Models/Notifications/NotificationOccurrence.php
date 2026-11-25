@@ -9,7 +9,7 @@ use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Data\Notifications\NotificationTarget;
-use App\Enums\NotificationSourceType;
+use App\Enums\Notifications\NotificationSourceType;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;

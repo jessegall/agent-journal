@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\AttributeMatch;
+use App\Enums\Engine\AttributeMatch;
 use App\Exceptions\AttributeMissing;
 use Closure;
 use ReflectionAttribute;

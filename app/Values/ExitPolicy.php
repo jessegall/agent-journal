@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Outcome;
+use App\Enums\CommandRules\Outcome;
 use App\Exceptions\VerificationContractInvalid;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;

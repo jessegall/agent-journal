@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\ArrangementType;
-use App\Enums\ExecutionModeType;
+use App\Enums\Agents\ExecutionModeType;
+use App\Enums\Projects\ArrangementType;
 
 /**
  * One driver registration a host advertises it runs, before it is matched against the journal's catalogue.

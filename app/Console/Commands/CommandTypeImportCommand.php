@@ -8,7 +8,7 @@ use App\Attributes\JournalRoute;
 use App\Calls\Processes\ImportProposalsCall;
 use App\Console\Concerns\RunsCallPipelines;
 use App\Contracts\Files\Files;
-use App\Enums\JournalRouteType;
+use App\Enums\CommandRules\JournalRouteType;
 use App\Exceptions\FileMissing;
 use Illuminate\Console\Command;
 

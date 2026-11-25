@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Processes\ListProposalsCall;
 use App\Calls\Processes\ProposalList;
-use App\Enums\ProposalState;
+use App\Enums\CommandRules\ProposalState;
 use App\Models\CommandRules\RuleProposal;
 use App\Support\ProjectKey;
 

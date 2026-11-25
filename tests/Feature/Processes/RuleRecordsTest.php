@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Enums\ActorType;
-use App\Enums\ClassificationState;
-use App\Enums\CommandClass;
-use App\Enums\CommandType;
-use App\Enums\ProposalState;
-use App\Enums\ToolType;
+use App\Enums\Assignments\ActorType;
+use App\Enums\CommandRules\ClassificationState;
+use App\Enums\CommandRules\CommandClass;
+use App\Enums\CommandRules\CommandType;
+use App\Enums\CommandRules\ProposalState;
+use App\Enums\CommandRules\ToolType;
 use App\Exceptions\ClassificationRuleRefused;
 use App\Exceptions\RevisionImmutable;
 use App\Exceptions\RuleProposalRefused;

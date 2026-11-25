@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Enums\SignInMethod;
+use App\Enums\Accounts\SignInMethod;
 use App\Http\Responses\PageReadProps;
 use App\Support\AccountDraftProducer;
 use App\Support\DraftProducerRegistry;

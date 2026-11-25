@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\DriverSourceType;
-use App\Enums\DriverType;
-use App\Enums\DriverTypeSource;
-use App\Enums\ModelTier;
+use App\Enums\Drivers\DriverSourceType;
+use App\Enums\Drivers\DriverType;
+use App\Enums\Drivers\DriverTypeSource;
+use App\Enums\Profiles\ModelTier;
 use App\Models\Agents\Agent;
 use App\Support\Capabilities\CodexTerminalCapabilities;
 use App\Support\DefaultDrivers;

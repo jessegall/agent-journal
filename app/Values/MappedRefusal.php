@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\RefusalCode;
+use App\Enums\Engine\RefusalCode;
 
 /**
  * A failure as a caller is shown it: its refusal code, its safe message and the details that help it act, such as the

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\Projects\RequestProjectRead;
 
 use App\Attributes\Authorize;
-use App\Enums\AccessType;
-use App\Enums\ProjectReadType;
+use App\Enums\Agents\AccessType;
+use App\Enums\Projects\ProjectReadType;
 use App\Policies\ConnectionsPolicy;
 use App\Support\Command;
 use App\Values\ProjectFileAnswers;

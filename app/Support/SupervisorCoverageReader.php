@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Asks\AskType;
-use App\Enums\SupervisorCoverageType;
+use App\Enums\Asks\SupervisorCoverageType;
 use App\Values\SupervisorCoverage;
 use App\Values\SupervisorProfile;
 use App\Values\SupervisorRoutes;

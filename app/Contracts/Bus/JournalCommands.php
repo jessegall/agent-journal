@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Bus;
 
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 
 /**
  * Runs a command as the journal itself, through its entry under a named trusted entry, for work no actor asked for,

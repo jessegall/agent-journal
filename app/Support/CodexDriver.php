@@ -6,8 +6,8 @@ namespace App\Support;
 
 use App\Contracts\Files\Files;
 use App\Data\Accounts\CodexEventData;
-use App\Enums\Permissions;
-use App\Enums\Place;
+use App\Enums\Files\Permissions;
+use App\Enums\Files\Place;
 use App\Values\CodexStatus;
 use App\Values\FilePath;
 use Illuminate\Contracts\Config\Repository;

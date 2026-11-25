@@ -7,7 +7,7 @@ namespace App\Commands\Asks\ReplyToAsk;
 use App\Contracts\Admission\AskAdmission;
 use App\Contracts\Assignments\JournalAssignmentWriter;
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\CoreAskType;
+use App\Enums\Asks\CoreAskType;
 use App\Exceptions\AskRefused;
 use App\Models\Asks\Ask;
 use App\Models\Asks\AskHop;

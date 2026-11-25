@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
-use App\Enums\CommandClass;
-use App\Enums\CommandType;
-use App\Enums\OutputRequirement;
-use App\Enums\UnresolvedType;
+use App\Enums\CommandRules\CommandClass;
+use App\Enums\CommandRules\CommandType;
+use App\Enums\CommandRules\OutputRequirement;
+use App\Enums\CommandRules\UnresolvedType;
 use App\Values\AgentText;
 use App\Values\ClassFact;
 use App\Values\Classification;

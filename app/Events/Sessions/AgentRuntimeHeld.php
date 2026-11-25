@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Events\Sessions;
 
 use App\Contracts\Sessions\AgentRuntimeEvent;
-use App\Enums\HoldReason;
+use App\Enums\Drivers\HoldReason;
 
 /**
  * A runtime's hold changed: it is held for the reason given, or released when the reason is none.

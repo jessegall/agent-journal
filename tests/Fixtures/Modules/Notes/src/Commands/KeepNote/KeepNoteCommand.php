@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Commands\KeepNote;
 
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Attributes\Authorize;
 use App\Attributes\RequiresRequestKey;
 use App\Support\Command;

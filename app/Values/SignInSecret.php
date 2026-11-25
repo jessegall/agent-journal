@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\SignInMethod;
+use App\Enums\Accounts\SignInMethod;
 use App\Exceptions\SignInCodeInvalid;
 
 /**

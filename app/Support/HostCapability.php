@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\CapabilityStatusType;
+use App\Enums\Projects\CapabilityStatusType;
 use App\Exceptions\AccountContainerUnsupported;
 use App\Exceptions\ContainerUnavailable;
 use App\Exceptions\HostCapabilityUnsupported;

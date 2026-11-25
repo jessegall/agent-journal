@@ -11,7 +11,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Events\Skills\SkillsChanged;
 use App\Exceptions\SkillOwnerRequired;
 use App\Exceptions\SkillRetired;

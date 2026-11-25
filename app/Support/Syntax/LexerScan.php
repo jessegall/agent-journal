@@ -6,7 +6,7 @@ namespace App\Support\Syntax;
 
 use App\Contracts\Bus\Pipe;
 use App\Contracts\Bus\PipelineRunner;
-use App\Enums\ShellDialect;
+use App\Enums\Processes\ShellDialect;
 use App\Pipes\Lexing\CheckLexerBudget;
 use App\Pipes\Lexing\ReadHereDocumentBodies;
 use App\Pipes\Lexing\ReadLexerComment;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\StartDisposition;
+use App\Enums\Starts\StartDisposition;
 
 /**
  * An agent's latest launch: the start request it answers, where it stands, the session it started and the reason a

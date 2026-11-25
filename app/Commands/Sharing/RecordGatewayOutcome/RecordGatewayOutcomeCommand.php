@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\Sharing\RecordGatewayOutcome;
 
 use App\Attributes\Entry;
-use App\Enums\CommandEntry;
-use App\Enums\GatewayOutcome;
+use App\Enums\Accounts\CommandEntry;
+use App\Enums\Sharing\GatewayOutcome;
 use App\Support\Command;
 use App\Support\GatewayOperation;
 

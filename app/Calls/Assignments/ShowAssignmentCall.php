@@ -8,7 +8,7 @@ use App\Attributes\Endpoint;
 use App\Calls\Assignments\Concerns\NamesAssignedRecord;
 use App\Contracts\Domains\JournalCall;
 use App\Data\Assignments\RecordHolderData;
-use App\Enums\CallEffect;
+use App\Enums\Processes\CallEffect;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Ulid;

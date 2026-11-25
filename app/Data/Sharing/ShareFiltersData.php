@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Sharing;
 
-use App\Enums\ShareState;
+use App\Enums\Sharing\ShareState;
 use App\Support\ShareListFilters;
 use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Data;

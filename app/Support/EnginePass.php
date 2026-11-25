@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Reads\ReadLog;
 use App\Contracts\Time\MonotonicClock;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use App\Values\TrustedEntryAuthority;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\DatabaseManager;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Enums\ContextStartType;
-use App\Enums\ToolOutcome;
+use App\Enums\Hooks\ContextStartType;
+use App\Enums\Hooks\ToolOutcome;
 use App\Events\Hooks\ContextStarted;
 use App\Events\Hooks\ToolCallFinished;
 use App\Listeners\RecordProvenSkillReads;

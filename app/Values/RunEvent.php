@@ -6,8 +6,8 @@ namespace App\Values;
 
 use App\Calls\Processes\RunPart;
 use App\Contracts\Events\RunEvents;
-use App\Enums\PartEndType;
-use App\Enums\RunEventType;
+use App\Enums\Runs\PartEndType;
+use App\Enums\Runs\RunEventType;
 use Spatie\LaravelData\Data;
 
 /**

@@ -13,7 +13,7 @@ use App\Contracts\Notifications\NotificationTargets;
 use App\Contracts\Processes\SupervisorDefinitions;
 use App\Contracts\Processes\SupervisorDispatch;
 use App\Contracts\Work\WorkRepair;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Policies\AskPolicy;
 use App\Policies\SupervisorPolicy;
 use App\Resolvers\MergeAskNotificationTarget;

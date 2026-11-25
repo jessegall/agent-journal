@@ -6,7 +6,7 @@ namespace App\Pipelines;
 
 use App\Contracts\Bus\CommandReader;
 use App\Contracts\Bus\PipelineDefinition;
-use App\Enums\TokenType;
+use App\Enums\CommandRules\TokenType;
 use App\Pipes\Grammar\ParseFunctionBody;
 use App\Pipes\Grammar\SkipNamedFunctionHeader;
 use App\Support\Grammar\NodeRead;

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
-use App\Enums\ClaimedOutcome;
-use App\Enums\EmptySelection;
-use App\Enums\FramingType;
-use App\Enums\OutputEncoding;
-use App\Enums\OutputStream;
-use App\Enums\ProblemCode;
-use App\Enums\RecordRole;
-use App\Enums\StreamUse;
-use App\Enums\SummaryRule;
+use App\Enums\CommandRules\EmptySelection;
+use App\Enums\CommandRules\FramingType;
+use App\Enums\CommandRules\OutputEncoding;
+use App\Enums\CommandRules\StreamUse;
+use App\Enums\CommandRules\SummaryRule;
+use App\Enums\Processes\OutputStream;
+use App\Enums\Records\RecordRole;
+use App\Enums\Runs\ClaimedOutcome;
+use App\Enums\Runs\ProblemCode;
 use App\Support\DeclarativeReader;
 use App\Values\EmptyRunPolicy;
 use App\Values\OutputContract;

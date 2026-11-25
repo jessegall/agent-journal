@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Enums\MountType;
-use App\Enums\WorkspaceUse;
+use App\Enums\Agents\WorkspaceUse;
+use App\Enums\Projects\MountType;
 use App\Exceptions\WorkspaceSourceMissing;
 use App\Exceptions\WorkspaceSourcesInvalid;
 use App\Support\ArrangementSetting;

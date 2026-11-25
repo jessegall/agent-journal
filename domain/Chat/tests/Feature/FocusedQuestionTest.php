@@ -7,7 +7,7 @@ namespace Domain\Chat\Tests\Feature;
 use App\Commands\Desks\CreateDesk\CreateDeskCommand;
 use App\Commands\Messages\AskMessage\AskMessageCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Models\Desks\DeskRecord;
 use App\Models\Messages\Message;
 use App\Models\Notifications\NotificationReceipt;

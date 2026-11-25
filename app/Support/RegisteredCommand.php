@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Attributes\Authorize;
-use App\Enums\CommandEffectType;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
+use App\Enums\Reviews\CommandEffectType;
 
 /**
  * One registered command as the bus runs it: its handler, owner, whether it is exported, its isolation, the actor

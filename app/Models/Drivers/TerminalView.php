@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\RuntimeActivity;
+use App\Enums\Runs\RuntimeActivity;
 use App\Events\Sessions\TerminalViewClosed;
 use App\Events\Sessions\TerminalViewFollowed;
 use App\Models\Agents\AgentRuntime;

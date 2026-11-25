@@ -6,8 +6,8 @@ namespace App\Values;
 
 use App\Data\Processes\ClassificationSummaryData;
 use App\Data\Processes\PartSummaryData;
-use App\Enums\CommandClass;
-use App\Enums\CommandType;
+use App\Enums\CommandRules\CommandClass;
+use App\Enums\CommandRules\CommandType;
 
 /**
  * The classification of one shell tree: every executable part with its facts, and the

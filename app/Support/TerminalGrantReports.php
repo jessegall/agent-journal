@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
-use App\Enums\RequestProgress;
+use App\Enums\Drivers\RequestProgress;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\TerminalGrant;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Actors;
 
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Exceptions\InvalidActorText;
 use App\Support\ActorIdentity;
 use App\Support\ActorStore;

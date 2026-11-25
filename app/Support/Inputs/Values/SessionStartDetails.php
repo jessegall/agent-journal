@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Inputs\Values;
 
-use App\Enums\ContextStartType;
+use App\Enums\Hooks\ContextStartType;
 
 final readonly class SessionStartDetails
 {

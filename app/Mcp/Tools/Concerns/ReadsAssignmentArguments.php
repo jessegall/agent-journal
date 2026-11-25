@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools\Concerns;
 
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Mcp\Exceptions\ToolArgumentInvalid;
 use App\Mcp\Support\ToolArguments;
 use App\Support\AssigneeIdentity;

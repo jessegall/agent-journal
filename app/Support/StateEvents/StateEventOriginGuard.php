@@ -6,7 +6,7 @@ namespace App\Support\StateEvents;
 
 use App\Declarations\StateMethod;
 use App\Declarations\StateMethods;
-use App\Enums\CommandOriginStatus;
+use App\Enums\Engine\CommandOriginStatus;
 use App\Support\Stack\AgentStack;
 use App\Support\Stack\Frames\Frame;
 use App\Support\Stack\SelectedStateMethod;

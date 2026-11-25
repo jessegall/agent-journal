@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
+use App\Events\Messages\MessageReactionAdded;
+use App\Events\Messages\MessageReactionWithdrawn;
 use App\Support\ActorIdentity;
 use Domain\Chat\Events\ChatReconciled;
 use Domain\Chat\Events\ChatReconcileMarked;
@@ -10,8 +12,6 @@ use Domain\Chat\Events\ConversationClosed;
 use Domain\Chat\Events\ConversationTransferred;
 use Domain\Chat\Events\DirectChatRemoved;
 use Domain\Chat\Events\DockChanged;
-use App\Events\Messages\MessageReactionAdded;
-use App\Events\Messages\MessageReactionWithdrawn;
 use Tests\Architecture\Support\EventRole;
 
 /**

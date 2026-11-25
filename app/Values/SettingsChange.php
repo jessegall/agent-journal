@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\SettingsOutcome;
+use App\Enums\Settings\SettingsOutcome;
 
 /**
  * The result of a settings command: the owner's revision after it, and whether it changed anything.

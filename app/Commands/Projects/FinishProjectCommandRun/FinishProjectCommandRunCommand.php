@@ -6,7 +6,7 @@ namespace App\Commands\Projects\FinishProjectCommandRun;
 
 use App\Attributes\Entry;
 use App\Calls\Connections\ProjectCommandFrame;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use App\Support\Command;
 
 /**

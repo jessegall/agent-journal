@@ -6,7 +6,7 @@ namespace App\Commands\Reviews\InspectMergeAttempts;
 
 use App\Attributes\Entry;
 use App\Attributes\RepeatableRead;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use App\Support\Command;
 
 /**

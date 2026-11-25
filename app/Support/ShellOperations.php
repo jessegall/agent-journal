@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\AccessType;
-use App\Enums\RedirectType;
+use App\Enums\Agents\AccessType;
+use App\Enums\CommandRules\RedirectType;
 use App\Values\ClassFact;
 use App\Values\Classification;
 use App\Values\Operation;

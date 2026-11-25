@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\AccountNoticeReason;
+use App\Enums\Accounts\AccountNoticeReason;
 use App\Models\Accounts\AccountNotice;
 use App\Models\Accounts\ActiveAccount;
 use Carbon\CarbonImmutable;

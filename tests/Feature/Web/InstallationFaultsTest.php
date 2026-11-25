@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Web;
 
 use App\Contracts\Files\Files;
-use App\Enums\Place;
+use App\Enums\Files\Place;
 use App\Http\Middleware\Web\HandleInertiaRequests;
 use App\Support\InstallationFaults;
 use App\Values\FilePath;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Skills;
 
 use App\Contracts\Work\AgentStack;
-use App\Enums\ContextStartType;
-use App\Enums\Place;
+use App\Enums\Files\Place;
+use App\Enums\Hooks\ContextStartType;
 use App\Events\Hooks\ContextStarted;
 use App\Listeners\RefreshSessionSkills;
 use App\Models\Agents\AgentSession;

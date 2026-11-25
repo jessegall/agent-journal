@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
-use App\Enums\AnalysisLimit;
-use App\Enums\ParseOutcome;
-use App\Enums\RedirectType;
-use App\Enums\ShellDialect;
-use App\Enums\TokenType;
-use App\Enums\WordSegmentType;
+use App\Enums\CommandRules\AnalysisLimit;
+use App\Enums\CommandRules\ParseOutcome;
+use App\Enums\CommandRules\RedirectType;
+use App\Enums\CommandRules\TokenType;
+use App\Enums\CommandRules\WordSegmentType;
+use App\Enums\Processes\ShellDialect;
 use App\Support\CatalogueReflectorFactory;
 use App\Support\PipelineRunner;
 use App\Support\Syntax\LexedLine;

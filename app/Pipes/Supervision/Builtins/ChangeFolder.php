@@ -6,8 +6,8 @@ namespace App\Pipes\Supervision\Builtins;
 
 use App\Attributes\OutsideThePlaces;
 use App\Contracts\Bus\Pipe;
-use App\Enums\ExitStatus;
-use App\Enums\PlaceExemption;
+use App\Enums\Files\PlaceExemption;
+use App\Enums\Runs\ExitStatus;
 use App\Support\Execution\BuiltinCall;
 use App\Support\Execution\BuiltinEnded;
 

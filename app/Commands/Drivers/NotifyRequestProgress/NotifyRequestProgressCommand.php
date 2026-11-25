@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Commands\Drivers\NotifyRequestProgress;
 
 use App\Attributes\Entry;
-use App\Enums\CommandEntry;
-use App\Enums\HostWakeRefusal;
-use App\Enums\RequestOutcome;
-use App\Enums\RequestProgress;
+use App\Enums\Accounts\CommandEntry;
+use App\Enums\Drivers\HostWakeRefusal;
+use App\Enums\Drivers\RequestOutcome;
+use App\Enums\Drivers\RequestProgress;
 use App\Models\Drivers\DriverRequest;
 use App\Support\Command;
 use App\Values\NavigationRoundReport;

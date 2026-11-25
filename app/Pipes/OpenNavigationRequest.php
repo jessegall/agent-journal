@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Pipes;
 
 use App\Contracts\Bus\Pipe;
-use App\Enums\HoldReason;
+use App\Enums\Drivers\HoldReason;
 use App\Models\Drivers\NavigationRequest;
 use App\Support\NavigationRaiseAnswer;
 use App\Values\NavigationAdmission;

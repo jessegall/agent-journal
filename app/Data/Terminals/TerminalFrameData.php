@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Terminals;
 
-use App\Enums\TerminalFrameState;
+use App\Enums\Terminals\TerminalFrameState;
 use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;

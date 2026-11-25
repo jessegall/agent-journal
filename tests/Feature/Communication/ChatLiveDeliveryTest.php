@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Enums\InboxPermission;
 use App\Enums\LeaveReason;
-use App\Events\Web\InboxAccessEnded;
+use App\Enums\Messages\InboxPermission;
 use App\Events\Messages\ChatMemberLeft;
 use App\Events\Messages\ChatMessageAccepted;
+use App\Events\Web\InboxAccessEnded;
 use App\Events\Web\PageChanged;
 use App\Listeners\BroadcastPageChange;
 use App\Support\ActorIdentity;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks\Drivers;
 
-use App\Enums\CommandType;
-use App\Enums\DriverPermission;
-use App\Enums\FileOperation;
+use App\Enums\CommandRules\CommandType;
+use App\Enums\Drivers\DriverPermission;
+use App\Enums\Files\FileOperation;
 use App\Exceptions\UnsupportedHook;
 use App\Support\Decisions\Decision;
 use App\Support\Drivers\Adapters\ClaudeCodeAdapter;

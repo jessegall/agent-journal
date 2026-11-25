@@ -7,7 +7,7 @@ namespace App\Commands\Agents\StartSwitchReplacement;
 use App\Commands\Agents\StartProfileMain\StartProfileMainCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\DriverSwitchStage;
+use App\Enums\Drivers\DriverSwitchStage;
 use App\Models\Agents\Agent;
 use App\Models\Drivers\DriverSwitch;
 use App\Values\ProfileKey;

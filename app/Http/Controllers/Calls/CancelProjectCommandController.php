@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Connections\CancelProjectCommandCall;
 use App\Commands\Projects\CancelProjectCommandRun\CancelProjectCommandRunCommand;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use App\Support\AgentContext;
 use App\Support\EntryDispatchers;
 use App\Values\CallAccepted;

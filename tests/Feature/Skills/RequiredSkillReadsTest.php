@@ -6,8 +6,8 @@ namespace Tests\Feature\Skills;
 
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\ContextStartType;
-use App\Enums\SessionStatus;
+use App\Enums\Hooks\ContextStartType;
+use App\Enums\Sessions\SessionStatus;
 use App\Events\Hooks\ContextStarted;
 use App\Events\Sessions\SessionOpened;
 use App\Listeners\AdmitStartSkills;

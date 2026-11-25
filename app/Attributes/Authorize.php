@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Attributes;
 
 use App\Contracts\Authorization\Policy;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use Attribute;
 
 /**

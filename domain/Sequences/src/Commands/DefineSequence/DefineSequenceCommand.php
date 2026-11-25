@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sequences\Commands\DefineSequence;
 
 use App\Attributes\Authorize;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use Domain\Sequences\Policies\StoredSequencePolicy;
 use Domain\Sequences\Values\SequenceStep;

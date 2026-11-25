@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Contracts\Bus\CommandRefusal;
-use App\Enums\MenuEntryState;
+use App\Enums\Navigation\MenuEntryState;
 use App\Exceptions\Concerns\ThrowsLater;
 use RuntimeException;
 

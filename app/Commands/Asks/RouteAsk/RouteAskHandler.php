@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Asks\RouteAsk;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\AskRouteStatus;
+use App\Enums\Asks\AskRouteStatus;
 use App\Support\AskRecords;
 use App\Support\AskRouter;
 

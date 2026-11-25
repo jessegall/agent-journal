@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Documents\Tests\Feature;
 
 use App\Contracts\Bus\CommandBus;
-use App\Enums\ScoreTier;
-use App\Enums\SearchSurface;
+use App\Enums\Search\ScoreTier;
+use App\Enums\Search\SearchSurface;
 use App\Mcp\Support\ToolArguments;
 use App\Support\ActorContext;
 use App\Values\SearchBatch;

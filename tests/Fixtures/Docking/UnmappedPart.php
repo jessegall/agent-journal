@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Docking;
 
 use App\Support\Cards\Contracts\DockPart;
-use App\Enums\PartType;
+use App\Enums\Runs\PartType;
 
 /**
  * A part the part map does not know, standing for a card whose tree cannot be written.

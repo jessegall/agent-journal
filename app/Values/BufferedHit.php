@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\ScoreTier;
+use App\Enums\Search\ScoreTier;
 
 /**
  * A certified hit a source returned that the search has not shown yet: its identity and tier only, never its

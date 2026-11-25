@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Declarations\RuleDeclaration;
-use App\Enums\RequestState;
+use App\Enums\CommandRules\RequestState;
 use App\Mcp\Tools\CommandRequestShowTool;
 use App\Mcp\Tools\CommandTypeProposeTool;
 use App\Models\CommandRules\ClassificationRule;

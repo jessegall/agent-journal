@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Domains\QuestionReminders\States;
 
 use App\Attributes\StateType;
 use App\Attributes\Ticks;
-use App\Enums\SessionTransferType;
+use App\Enums\Sessions\SessionTransferType;
 use App\Contracts\Work\TickableState;
 use App\Support\States\AgentState;
 use App\Support\Ticks\TickCommands;

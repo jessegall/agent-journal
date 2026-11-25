@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Hooks;
 
 use App\Declarations\StateMethods;
-use App\Enums\NoSubject;
+use App\Enums\Engine\NoSubject;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\Values\StopDetails;

@@ -49,7 +49,7 @@ final class PrivatePlaceOwnerTest extends TestCase
 
             namespace App\Probe;
 
-            use App\Enums\Place;
+            use App\Enums\Files\Place;
 
             function place(): Place
             {

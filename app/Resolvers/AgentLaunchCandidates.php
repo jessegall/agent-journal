@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Resolvers;
 
 use App\Contracts\Sessions\LaunchCandidates;
-use App\Enums\LaunchCandidateRank;
+use App\Enums\Starts\LaunchCandidateRank;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\ConversationVisit;

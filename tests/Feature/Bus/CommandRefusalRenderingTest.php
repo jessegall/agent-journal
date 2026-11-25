@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Enums\RefusalCode;
+use App\Enums\Engine\RefusalCode;
 use App\Exceptions\CommandInputInvalid;
 use App\Exceptions\CommandRefused;
 use App\Exceptions\InputRefused;

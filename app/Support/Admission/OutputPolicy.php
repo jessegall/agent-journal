@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support\Admission;
 
-use App\Enums\NodeType;
-use App\Enums\OutputRequirement;
-use App\Enums\RedirectType;
-use App\Enums\StreamUse;
+use App\Enums\CommandRules\NodeType;
+use App\Enums\CommandRules\OutputRequirement;
+use App\Enums\CommandRules\RedirectType;
+use App\Enums\CommandRules\StreamUse;
 use App\Values\Classification;
 use App\Values\HiddenOutput;
 use App\Values\OutputVerdict;

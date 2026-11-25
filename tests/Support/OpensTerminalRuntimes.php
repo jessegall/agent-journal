@@ -12,7 +12,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Time\ServerClock;
 use App\Data\Terminals\TerminalControlData;
 use App\Data\Terminals\TerminalInterestData;
-use App\Enums\DriverType;
+use App\Enums\Drivers\DriverType;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Support\ActorContext;

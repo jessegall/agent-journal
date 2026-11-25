@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Feature;
 
-use App\Enums\ActorType;
-use App\Enums\ConversationModeType;
-use App\Enums\DriverSourceType;
-use App\Enums\ModelSelectionType;
-use App\Enums\StartDisposition;
-use App\Enums\StartOriginType;
+use App\Enums\Agents\ConversationModeType;
+use App\Enums\Assignments\ActorType;
+use App\Enums\Drivers\DriverSourceType;
+use App\Enums\Starts\ModelSelectionType;
+use App\Enums\Starts\StartDisposition;
+use App\Enums\Starts\StartOriginType;
 use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 use App\Support\StartRecordDetails;

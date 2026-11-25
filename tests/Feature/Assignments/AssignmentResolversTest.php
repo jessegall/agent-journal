@@ -6,7 +6,7 @@ namespace Tests\Feature\Assignments;
 
 use App\Contracts\Assignments\AssigneeResolver;
 use App\Contracts\Assignments\AssignmentResolver;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Exceptions\ActorContextMissing;
 use App\Exceptions\AssignmentTypeUnavailable;
 use App\Exceptions\InvalidAssignmentPage;

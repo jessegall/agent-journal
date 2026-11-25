@@ -10,7 +10,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\CommandRunState;
+use App\Enums\Connections\CommandRunState;
 use App\Events\Connections\ProjectCommandCancellationRequested;
 use App\Events\Connections\ProjectCommandCancelled;
 use App\Events\Connections\ProjectCommandFinished;

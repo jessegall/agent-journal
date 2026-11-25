@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use App\Contracts\Authorization\PolicyCatalogue;
-use App\Enums\ModelTier;
+use App\Enums\Profiles\ModelTier;
 use App\Models\Agents\Agent;
 use App\Support\BuiltInAuthorizations;
 use App\Values\PolicyDefinition;

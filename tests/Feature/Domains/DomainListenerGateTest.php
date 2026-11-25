@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Domains;
 
 use App\Contracts\Domains\DomainAvailability;
-use App\Enums\ListenerLane;
+use App\Enums\Engine\ListenerLane;
 use App\Providers\DomainEventServiceProvider;
 use App\Support\AvailableListener;
 use App\Support\ListenerRegistry;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\NotificationMutationType;
+use App\Enums\Notifications\NotificationMutationType;
 use App\Exceptions\NotificationUnavailable;
 use App\Models\Notifications\NotificationChange;
 use App\Models\Notifications\NotificationReceipt;

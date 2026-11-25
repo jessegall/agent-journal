@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\ReadEvidence;
-use App\Enums\ToolOutcome;
+use App\Enums\Hooks\ToolOutcome;
+use App\Enums\Skills\ReadEvidence;
 use App\Support\Drivers\ClaudeCodeSkills;
 use App\Support\Inputs\Values\ToolResult;
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature;
 
-use App\Enums\ScoreTier;
-use App\Enums\SearchSurface;
+use App\Enums\Search\ScoreTier;
+use App\Enums\Search\SearchSurface;
 use App\Support\ActorContext;
 use App\Values\SearchBatch;
 use App\Values\SearchQuery;

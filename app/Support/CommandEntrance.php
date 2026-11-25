@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use Closure;
 use Illuminate\Container\Attributes\Scoped;
 

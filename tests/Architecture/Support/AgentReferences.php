@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Enums\TypeShape;
+use App\Enums\Engine\TypeShape;
 use App\Support\AgentContext;
 use App\Support\DeclaredType;
 use App\Support\ReflectedMethod;

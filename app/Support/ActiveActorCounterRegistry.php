@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Actors\ActiveActorCounter;
 use App\Contracts\Actors\ActiveActorRegistration;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Exceptions\ActiveActorCounterMissing;
 use App\Exceptions\ActiveActorCounterRepeated;
 use Illuminate\Container\Container;

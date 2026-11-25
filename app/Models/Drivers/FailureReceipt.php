@@ -8,7 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\DriverFailure;
+use App\Enums\Drivers\DriverFailure;
 use App\Support\Inputs\Values\HookIdentity;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;

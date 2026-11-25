@@ -6,9 +6,9 @@ namespace App\Support;
 
 use App\Contracts\Hosts\DockerImageVerifier;
 use App\Contracts\Hosts\HostCapabilities;
-use App\Enums\AccountModeType;
-use App\Enums\ExecutionModeType;
-use App\Enums\HostCapabilityType;
+use App\Enums\Accounts\AccountModeType;
+use App\Enums\Agents\ExecutionModeType;
+use App\Enums\Projects\HostCapabilityType;
 use App\Exceptions\ImageUnverified;
 use App\Models\Starts\CapacityReservation;
 use App\Values\ExecutionPolicy;

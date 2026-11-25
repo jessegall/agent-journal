@@ -7,7 +7,7 @@ namespace Tests\Feature\Bus;
 use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
 use App\Contracts\Authorization\OperationResolver;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\ReceiptState;
+use App\Enums\CommandRules\ReceiptState;
 use App\Exceptions\CommandRefused;
 use App\Exceptions\NestedCommandFailureIgnored;
 use App\Exceptions\OperationUnavailable;

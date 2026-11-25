@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\NavigationReason;
+use App\Enums\Navigation\NavigationReason;
 use App\Exceptions\NavigationRaiseRefused;
 
 /**

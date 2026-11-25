@@ -7,7 +7,7 @@ namespace App\Mcp\Support;
 use App\Contracts\Hosts\ServedEnvironment;
 use App\Contracts\Search\RecordSearch;
 use App\Contracts\Search\SearchSources;
-use App\Enums\SearchSurface;
+use App\Enums\Search\SearchSurface;
 use App\Mcp\Contracts\Continuations as ContinuationsContract;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\ToolResult;

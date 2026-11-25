@@ -6,7 +6,7 @@ namespace App\Commands\Skills\RefreshSkills;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Data\Skills\GeneratedSkillData;
-use App\Enums\GenerationState;
+use App\Enums\Skills\GenerationState;
 use App\Exceptions\SkillConflict;
 use App\Exceptions\SkillDeclarationInvalid;
 use App\Exceptions\SkillSelectionConflict;

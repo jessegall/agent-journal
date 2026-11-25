@@ -7,7 +7,7 @@ namespace App\Commands\Agents\DeliverAgent;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Drivers\AttachmentReferences;
 use App\Data\Messages\MessageAttachmentData;
-use App\Enums\DriverOperation;
+use App\Enums\Drivers\DriverOperation;
 use App\Exceptions\DriverRequestRefused;
 use App\Support\DriverBudgets;
 use App\Support\DriverRequests;

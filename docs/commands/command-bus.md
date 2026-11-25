@@ -26,7 +26,7 @@ namespace Domain\Rules\Commands\ProposeRule;
 
 use App\Attributes\Authorize;
 use App\Support\Command;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use Domain\Rules\Policies\RulePolicy;
 
 /**

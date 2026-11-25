@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Enums\WindowPlace;
+use App\Enums\Web\WindowPlace;
 use Illuminate\Support\Collection;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\ActsAsOwner;

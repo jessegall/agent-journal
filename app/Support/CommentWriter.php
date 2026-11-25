@@ -8,7 +8,7 @@ use App\Contracts\Reads\TextContent;
 use App\Contracts\Records\Commentable;
 use App\Contracts\Records\RecordResolver;
 use App\Contracts\Work\ActorStackSessions;
-use App\Enums\WholeRecord;
+use App\Enums\Comments\WholeRecord;
 use App\Exceptions\SubmissionKeyConflict;
 use App\Exceptions\TargetHasNoText;
 use App\Exceptions\TargetNotCommentable;

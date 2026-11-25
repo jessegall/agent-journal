@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Helpers\Tests\Feature;
 
 use App\Contracts\Processes\SupervisorDispatch;
-use App\Enums\SupervisorDispatchOutcome;
+use App\Enums\Asks\SupervisorDispatchOutcome;
 use App\Support\ActorIdentity;
 use App\Support\UnavailableSupervisorDispatch;
 use App\Values\SupervisorRequest;

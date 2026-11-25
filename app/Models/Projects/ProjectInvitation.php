@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\InvitationMode;
+use App\Enums\Projects\InvitationMode;
 use App\Events\Connections\ProjectInvitationIssued;
 use App\Events\Connections\ProjectInvitationRevoked;
 use App\Events\Connections\ProjectInvitationSpent;

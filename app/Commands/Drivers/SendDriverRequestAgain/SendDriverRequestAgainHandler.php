@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Drivers\SendDriverRequestAgain;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\DriverOperation;
+use App\Enums\Drivers\DriverOperation;
 use App\Exceptions\DriverRequestRefused;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;

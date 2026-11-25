@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Tests\Feature;
 
-use App\Enums\ActorType;
-use App\Enums\SearchSurface;
+use App\Enums\Assignments\ActorType;
+use App\Enums\Search\SearchSurface;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Values\SearchQuery;

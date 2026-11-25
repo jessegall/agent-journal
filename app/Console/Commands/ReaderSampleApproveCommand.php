@@ -7,7 +7,7 @@ namespace App\Console\Commands;
 use App\Attributes\JournalRoute;
 use App\Calls\Processes\ApproveSampleCall;
 use App\Console\Concerns\RunsCallPipelines;
-use App\Enums\JournalRouteType;
+use App\Enums\CommandRules\JournalRouteType;
 use Illuminate\Console\Command;
 
 /**

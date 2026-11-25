@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Bus\Layouts\Commands\Plant;
 
 use App\Attributes\Authorize;
 use App\Support\Command;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use Tests\Fixtures\Bus\Policies\FixturePolicy;
 
 /**

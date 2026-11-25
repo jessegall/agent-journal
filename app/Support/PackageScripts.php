@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Attributes\OutsideThePlaces;
 use App\Data\Images\PackageFileData;
-use App\Enums\PlaceExemption;
+use App\Enums\Files\PlaceExemption;
 use App\Values\ScriptBinding;
 use App\Values\ScriptBody;
 use App\Values\Word;

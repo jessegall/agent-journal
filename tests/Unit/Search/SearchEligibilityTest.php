@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Search;
 
-use App\Enums\ScopeAnswer;
-use App\Enums\SearchSurface;
+use App\Enums\Search\ScopeAnswer;
+use App\Enums\Search\SearchSurface;
 use App\Exceptions\SearchableMissing;
 use App\Support\ActorContext;
 use App\Support\DomainRegistry;

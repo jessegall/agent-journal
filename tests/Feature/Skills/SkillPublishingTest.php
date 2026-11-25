@@ -7,7 +7,7 @@ namespace Tests\Feature\Skills;
 use App\Commands\Skills\PrepareSkillPublication\PrepareSkillPublicationCommand;
 use App\Commands\Skills\PublishSkills\PublishSkillsCommand;
 use App\Contracts\Skills\SkillPublisher;
-use App\Enums\PublicationState;
+use App\Enums\Skills\PublicationState;
 use App\Exceptions\SkillPublicationStale;
 use App\Models\Skills\SkillPublication;
 use App\Support\HostSkillPublisher;

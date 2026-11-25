@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Drivers\CancelDriverRequest;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\RecoveryAction;
+use App\Enums\Drivers\RecoveryAction;
 use App\Exceptions\DriverRequestRefused;
 use App\Models\Agents\AgentRuntime;
 use App\Support\DriverRequestEndings;

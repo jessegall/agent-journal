@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Agents\Host;
 
 use App\Commands\Starts\NotifyCleanup\NotifyCleanupCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\CleanupStep;
+use App\Enums\Starts\CleanupStep;
 use App\Http\Requests\Agents\CleanupReportRequest;
 use App\Models\Starts\CleanupOperation;
 use App\Values\HostContext;

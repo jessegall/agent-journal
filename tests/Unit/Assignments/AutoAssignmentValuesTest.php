@@ -4,20 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Assignments;
 
-use App\Contracts\Assignments\AssignedWorkProvider;
-use App\Contracts\Assignments\AssignedWorkResolver;
-use App\Contracts\Assignments\AssignmentPool;
-use App\Contracts\Assignments\AssignmentPoolFactory;
-use App\Contracts\Assignments\AssignmentQuery;
-use App\Contracts\Assignments\AutoAssigner;
-use App\Contracts\Assignments\AutoAssignmentProvider;
-use App\Enums\PoolInputType;
-use App\Enums\PoolMembersType;
+use App\Enums\Assignments\PoolMembersType;
 use App\Exceptions\InvalidRecordIds;
-use App\Support\AutoAssignerDefinition;
 use App\Support\OrderedRecordIds;
-use App\Support\PoolDefinition;
-use App\Support\PoolDescription;
 use App\Support\PoolMembers;
 use App\Support\PoolReference;
 use PHPUnit\Framework\TestCase;

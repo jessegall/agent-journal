@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Enums\PlaceExemption;
+use App\Enums\Files\PlaceExemption;
 use Tests\Support\ScanCache\ScanCache;
 
 /**

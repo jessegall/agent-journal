@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Http\Pages\Reports;
 
 use App\Data\Pages\RecordCard;
-use App\Enums\ActionMethod;
+use App\Enums\Settings\ActionMethod;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutBodyData;

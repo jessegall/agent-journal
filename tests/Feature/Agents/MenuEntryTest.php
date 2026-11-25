@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Contracts\Actors\CurrentActorSetter;
-use App\Enums\ActorType;
-use App\Enums\MenuEntryState;
-use App\Enums\NavigationCompletion;
+use App\Enums\Assignments\ActorType;
+use App\Enums\Navigation\MenuEntryState;
+use App\Enums\Navigation\NavigationCompletion;
 use App\Models\Drivers\MenuEntry;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;

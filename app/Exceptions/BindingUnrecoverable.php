@@ -6,7 +6,7 @@ namespace App\Exceptions;
 
 use App\Concerns\RendersRefusal;
 use App\Contracts\Refusals\CodedRefusal;
-use App\Enums\RefusalCode;
+use App\Enums\Engine\RefusalCode;
 use App\Exceptions\Concerns\ThrowsLater;
 use RuntimeException;
 use Throwable;

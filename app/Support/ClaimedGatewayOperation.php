@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\GatewayOperationType;
+use App\Enums\Sharing\GatewayOperationType;
 
 /**
  * An operation a supervisor run claimed: whether to open or close, and the run, endpoint version, lease and

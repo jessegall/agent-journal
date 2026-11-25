@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\ProcessStartState;
-use App\Enums\StartDisposition;
-use App\Enums\StartReadiness;
+use App\Enums\Agents\ProcessStartState;
+use App\Enums\Starts\StartDisposition;
+use App\Enums\Starts\StartReadiness;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;

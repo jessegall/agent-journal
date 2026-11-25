@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Events\Reviews;
 
 use App\Contracts\Work\CodeReviewEvent;
-use App\Enums\CodeReviewState;
+use App\Enums\Reviews\CodeReviewState;
 
 /**
  * A code review was settled in the state given.

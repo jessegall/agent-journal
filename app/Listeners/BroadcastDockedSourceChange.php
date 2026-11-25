@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Enums\ActorType;
-use App\Models\Inboxes\InboxMember;
-use App\Support\ActorIdentity;
 use App\Contracts\Events\Listener;
 use App\Contracts\Navigation\UserInterfaceUpdater;
+use App\Enums\Assignments\ActorType;
 use App\Events\Web\PageChanged;
+use App\Models\Inboxes\InboxMember;
+use App\Support\ActorIdentity;
 use App\Support\Cards\DockIdentity;
 use App\Support\Sources\Contracts\DockedSources;
 use App\Support\Sources\Contracts\DockSourceChanged;
@@ -44,5 +44,4 @@ final readonly class BroadcastDockedSourceChange implements Listener
 
         $this->events->dispatch(new PageChanged($userIds));
     }
-
 }

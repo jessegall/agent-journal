@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Enums\GatewayOperationType;
-use App\Enums\ShareState;
+use App\Enums\Sharing\GatewayOperationType;
+use App\Enums\Sharing\ShareState;
 use App\Exceptions\GatewayRunStale;
 use App\Exceptions\SupervisorInsideTransaction;
 use App\Models\Sharing\Share;

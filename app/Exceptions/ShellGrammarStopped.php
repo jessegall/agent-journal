@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\Enums\AnalysisLimit;
-use App\Enums\ParseOutcome;
+use App\Enums\CommandRules\AnalysisLimit;
+use App\Enums\CommandRules\ParseOutcome;
 use App\Support\Syntax\LexedLine;
 use App\Values\AgentText;
 use App\Values\TreeDiagnostic;

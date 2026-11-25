@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
-use App\Enums\ToolType;
+use App\Enums\CommandRules\ToolType;
 use App\Values\ExecutableBinding;
 use App\Values\ExitBranch;
 use App\Values\ExitPolicy;

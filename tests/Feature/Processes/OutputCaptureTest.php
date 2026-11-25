@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Enums\CaptureState;
-use App\Enums\OutputStream;
+use App\Enums\Processes\OutputStream;
+use App\Enums\Runs\CaptureState;
 use App\Exceptions\OutputStorageFailed;
 use App\Models\Runs\OutputChunk;
 use App\Models\Runs\PartRun;

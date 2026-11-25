@@ -7,17 +7,17 @@ namespace App\Commands\Drivers\NotifyRuntimeActivity;
 use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\RuntimeActivity;
-use App\Enums\RuntimeEventType;
+use App\Enums\Runs\RuntimeActivity;
+use App\Enums\Runs\RuntimeEventType;
 use App\Events\Sessions\SessionStateChanged;
 use App\Exceptions\HostReportRefused;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\RuntimeEvent;
+use App\Models\Messages\Message;
 use App\Support\ActorIdentity;
 use App\Support\AttentionOrigin;
 use App\Support\HostRuntimes;
-use App\Models\Messages\Message;
 use Carbon\CarbonImmutable;
 
 final readonly class NotifyRuntimeActivityHandler implements CommandHandler

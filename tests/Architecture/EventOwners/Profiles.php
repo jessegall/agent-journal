@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Enums\ProfileRunState;
-use App\Enums\SignInState;
+use App\Enums\Accounts\SignInState;
+use App\Enums\Profiles\ProfileRunState;
 use App\Events\Accounts\AccountCheckRequested;
 use App\Events\Accounts\AccountCleaned;
 use App\Events\Accounts\AccountCleanupReleased;

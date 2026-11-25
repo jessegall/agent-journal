@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\Syntax;
 
-use App\Enums\AnalysisLimit;
-use App\Enums\ParseOutcome;
-use App\Enums\ShellDialect;
+use App\Enums\CommandRules\AnalysisLimit;
+use App\Enums\CommandRules\ParseOutcome;
+use App\Enums\Processes\ShellDialect;
 use App\Exceptions\ShellLineUnreadable;
 use App\Values\TreeDiagnostic;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Support;
 
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Support\ActorIdentity;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;

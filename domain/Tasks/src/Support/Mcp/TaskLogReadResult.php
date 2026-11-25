@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support\Mcp;
 
-use App\Enums\ReadView;
+use App\Enums\CommandRules\ReadView;
 use App\Mcp\Data\ToolResult;
 use Domain\Tasks\Contracts\TaskDetailsResolver;
 use Domain\Tasks\Contracts\TaskLogResolver;

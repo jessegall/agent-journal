@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\WordSegmentType;
+use App\Enums\CommandRules\WordSegmentType;
 
 /**
  * One shell word as its segments in order, so an empty quoted argument or "a"b adjacency is kept.

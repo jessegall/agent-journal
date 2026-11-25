@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Hooks;
 
 use App\Data\Hooks\StopResultData;
-use App\Enums\StopResultType;
+use App\Enums\Starts\StopResultType;
 use App\Values\StopResultReport;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;

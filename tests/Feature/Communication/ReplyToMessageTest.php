@@ -6,7 +6,7 @@ namespace Tests\Feature\Communication;
 
 use App\Commands\Messages\ReadMessages\ReadMessagesCommand;
 use App\Commands\Messages\ReplyToMessage\ReplyToMessageCommand;
-use App\Enums\MessageState;
+use App\Enums\Messages\MessageState;
 use App\Events\Messages\MessageAnswered;
 use App\Exceptions\MessageStateConflict;
 use App\Models\Messages\Message;

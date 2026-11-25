@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Pipes;
 
 use App\Contracts\Bus\Pipe;
-use App\Enums\AnalysisLimit;
+use App\Enums\CommandRules\AnalysisLimit;
 use App\Exceptions\ShellGrammarStopped;
 use App\Support\Lines\ShellSource;
 

@@ -8,7 +8,7 @@ use App\Contracts\Events\InboxScopedFact;
 use App\Contracts\Events\Listener;
 use App\Contracts\Messages\AdmittedRecipients;
 use App\Contracts\Navigation\UserInterfaceUpdater;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Events\Web\PageChanged;
 use App\Models\Inboxes\InboxMember;
 use App\Support\ActorIdentity;

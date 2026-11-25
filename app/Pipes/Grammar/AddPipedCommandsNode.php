@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Pipes\Grammar;
 
 use App\Contracts\Bus\Pipe;
-use App\Enums\NodeType;
+use App\Enums\CommandRules\NodeType;
 use App\Support\Grammar\NodeRead;
 use App\Support\Grammar\PipedCommands;
 use App\Support\Syntax\TreeDraft;

@@ -10,7 +10,7 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use App\Values\PublishedResult;

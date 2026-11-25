@@ -9,7 +9,7 @@ use App\Declarations\ChoiceSetting;
 use App\Declarations\DecimalSetting;
 use App\Declarations\EnumSetting;
 use App\Declarations\IntegerSetting;
-use App\Enums\SettingType;
+use App\Enums\Settings\SettingType;
 use App\Exceptions\SettingDeclarationInvalid;
 use App\Support\ChoiceOptions;
 use App\Values\Choice;

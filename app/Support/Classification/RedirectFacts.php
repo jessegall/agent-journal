@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\Classification;
 
-use App\Enums\CommandClass;
-use App\Enums\RedirectType;
-use App\Enums\UnresolvedType;
+use App\Enums\CommandRules\CommandClass;
+use App\Enums\CommandRules\RedirectType;
+use App\Enums\CommandRules\UnresolvedType;
 use App\Values\AgentText;
 use App\Values\ClassFact;
 use App\Values\HereDocument;

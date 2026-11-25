@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Bus\Shop\Commands\UnbuildableLookupItem;
 
 use App\Attributes\Authorize;
 use App\Support\Command;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use Spatie\LaravelData\Attributes\Validation\Exists;
 use Tests\Fixtures\Bus\Policies\FixturePolicy;
 

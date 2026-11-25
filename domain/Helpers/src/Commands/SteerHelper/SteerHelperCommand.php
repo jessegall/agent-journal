@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Helpers\Commands\SteerHelper;
 
 use App\Attributes\Authorize;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use Domain\Helpers\Policies\HelperPolicy;
 use Domain\Helpers\Values\SteerReceipt;

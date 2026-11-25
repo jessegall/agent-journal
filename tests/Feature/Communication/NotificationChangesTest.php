@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Data\Notifications\NotificationTarget;
-use App\Enums\NotificationMutationType;
-use App\Enums\NotificationSourceType;
+use App\Enums\Notifications\NotificationMutationType;
+use App\Enums\Notifications\NotificationSourceType;
 use App\Models\Messages\Message;
 use App\Models\Notifications\NotificationChange;
 use App\Models\Notifications\NotificationReceipt;

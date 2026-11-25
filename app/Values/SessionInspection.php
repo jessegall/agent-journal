@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\ExecutionModeType;
+use App\Enums\Agents\ExecutionModeType;
 use App\Models\Starts\SessionPolicy;
 
 /**

@@ -6,8 +6,8 @@ namespace App\Support\Execution;
 
 use App\Contracts\Events\RunEvents;
 use App\Contracts\Processes\StopSignal;
-use App\Enums\BuiltinCommand;
-use App\Enums\StepType;
+use App\Enums\CommandRules\BuiltinCommand;
+use App\Enums\CommandRules\StepType;
 use App\Values\ExecutionContext;
 use App\Values\ExecutionPlan;
 use App\Values\PlanWord;

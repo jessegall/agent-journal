@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Starts\RecordStopResults;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\StopAttemptState;
+use App\Enums\Starts\StopAttemptState;
 use App\Exceptions\StopResultsRefused;
 use App\Models\Starts\StopAttempt;
 use App\Models\Starts\StopResult;

@@ -7,7 +7,7 @@ namespace Domain\Chat\Tests\Feature;
 use App\Commands\Messages\AskMessage\AskMessageCommand;
 use App\Commands\Settings\DisableSettingGroup\DisableSettingGroupCommand;
 use App\Commands\Settings\EnableSettingGroup\EnableSettingGroupCommand;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Models\Agents\Agent;
 use App\Models\Messages\MessageAttention;
 use App\Support\ActorIdentity;

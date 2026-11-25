@@ -6,11 +6,11 @@ namespace Tests\Feature\Agents;
 
 use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Assignments\AssignmentTransaction;
-use App\Enums\HoldReason;
-use App\Enums\NavigationCompletion;
-use App\Enums\NavigationKey;
-use App\Enums\NavigationState;
-use App\Enums\RequestProgress;
+use App\Enums\Drivers\HoldReason;
+use App\Enums\Drivers\RequestProgress;
+use App\Enums\Navigation\NavigationCompletion;
+use App\Enums\Navigation\NavigationKey;
+use App\Enums\Navigation\NavigationState;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\MenuEntry;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Inputs\Values;
 
-use App\Enums\SessionEndReason;
+use App\Enums\Sessions\SessionEndReason;
 
 final readonly class SessionEndDetails
 {

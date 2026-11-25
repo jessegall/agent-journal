@@ -6,7 +6,7 @@ namespace Tests\Feature\Actors;
 
 use App\Contracts\Actors\ActorProviderRegistration;
 use App\Contracts\Actors\ActorResolver;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Exceptions\ActorProviderRepeated;
 use App\Exceptions\ActorUnavailable;
 use App\Models\Agents\Agent;

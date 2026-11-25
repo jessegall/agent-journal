@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Terminals\CancelKeyScript;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\RecoveryAction;
+use App\Enums\Drivers\RecoveryAction;
 use App\Exceptions\DriverRequestRefused;
 use App\Support\DriverRequestEndings;
 use App\Support\DriverRequestRecovery;

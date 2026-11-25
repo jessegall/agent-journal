@@ -8,7 +8,7 @@ use App\Commands\Accounts\RecordAccountNotice\RecordAccountNoticeCommand;
 use App\Contracts\Accounts\AccountNoticeCause;
 use App\Contracts\Bus\JournalCommands;
 use App\Contracts\Events\Listener;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 
 /**
  * Turns a refused start or a failure the owner can act on into a notice on the driver's accounts, from the safe

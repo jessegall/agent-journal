@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Authorization;
 
-use App\Enums\FileAccess;
+use App\Enums\Files\FileAccess;
 use App\Values\AgentText;
 use PhpOption\Option;
 

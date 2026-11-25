@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\SignInMethod;
+use App\Enums\Accounts\SignInMethod;
 
 /**
  * An account check a host took: the account, its driver and method, its folder on the host and the generation to report in.

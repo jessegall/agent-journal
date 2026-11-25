@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Connections;
 
-use App\Enums\FileWindowState;
+use App\Enums\Connections\FileWindowState;
 use App\Support\Layout\LayoutBodyData;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;

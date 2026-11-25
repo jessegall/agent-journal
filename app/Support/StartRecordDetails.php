@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\ConversationModeType;
-use App\Enums\DriverSourceType;
-use App\Enums\ModelSelectionType;
-use App\Enums\StartDisposition;
-use App\Enums\StartOriginType;
+use App\Enums\Agents\ConversationModeType;
+use App\Enums\Drivers\DriverSourceType;
+use App\Enums\Starts\ModelSelectionType;
+use App\Enums\Starts\StartDisposition;
+use App\Enums\Starts\StartOriginType;
 use Carbon\CarbonImmutable;
 
 /**

@@ -6,8 +6,8 @@ namespace App\Support;
 
 use App\Contracts\Records\RecordResolver;
 use App\Contracts\Search\RecordSearch;
-use App\Enums\ScoreTier;
-use App\Enums\SearchStatus;
+use App\Enums\Search\ScoreTier;
+use App\Enums\Search\SearchStatus;
 use App\Exceptions\SearchBatchInvalid;
 use App\Exceptions\SearchHandleRefused;
 use App\Exceptions\SearchRequestInvalid;

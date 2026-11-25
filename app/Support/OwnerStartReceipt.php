@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\ConversationModeType;
-use App\Enums\ExecutionModeType;
+use App\Enums\Agents\ConversationModeType;
+use App\Enums\Agents\ExecutionModeType;
 use App\Values\SelectedDriver;
 
 /**

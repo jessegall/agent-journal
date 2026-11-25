@@ -7,7 +7,7 @@ namespace App\Commands\Assignments\UnassignRecord;
 use App\Attributes\Authorize;
 use App\Attributes\RepeatableRead;
 use App\Attributes\RetainedActorRequestKey;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Policies\AssignmentPolicy;
 use App\Support\AssignmentReference;
 use App\Support\AssignmentResult;

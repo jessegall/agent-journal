@@ -10,7 +10,7 @@ use App\Contracts\Sharing\ShareGatewayProvider;
 use App\Contracts\Sharing\SharePolicy;
 use App\Contracts\Sharing\ShareRecordContributor;
 use App\Contracts\Sharing\ShareStatusResolver;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Policies\ShareRequestPolicy;
 use App\Policies\SharingPolicy;
 use App\Support\Gateways\Ngrok\NgrokGateway;

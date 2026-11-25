@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Contracts\Actors\IdentityLinks;
-use App\Enums\TransportProfileType;
+use App\Enums\Starts\TransportProfileType;
 use App\Support\RecordIdentity;
 use App\Support\RegisterPendingStart;
 use App\Values\SelectedAccount;

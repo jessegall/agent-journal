@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\CallEffect;
+use App\Enums\Processes\CallEffect;
 use App\Exceptions\CallDeadlinePassed;
 use App\Exceptions\DeadlineExpired;
 use App\Exceptions\JournalBusy;

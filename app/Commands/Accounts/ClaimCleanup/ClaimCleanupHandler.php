@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Accounts\ClaimCleanup;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\CleanupTarget;
+use App\Enums\Accounts\CleanupTarget;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\SignInAttempt;
 use App\Values\ClaimedCleanup;

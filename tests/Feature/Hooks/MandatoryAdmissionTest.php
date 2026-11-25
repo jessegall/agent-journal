@@ -6,10 +6,10 @@ namespace Tests\Feature\Hooks;
 
 use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Admission\ShellAdmission;
-use App\Enums\AnswerType;
-use App\Enums\ExecutionModeType;
-use App\Enums\NoSubject;
-use App\Enums\RewriteSupport;
+use App\Enums\Agents\ExecutionModeType;
+use App\Enums\Drivers\RewriteSupport;
+use App\Enums\Engine\NoSubject;
+use App\Enums\Hooks\AnswerType;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Runs\ProcessRun;

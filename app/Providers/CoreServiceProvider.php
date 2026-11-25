@@ -11,7 +11,7 @@ use App\Contracts\Search\MessageSearch;
 use App\Contracts\Search\RecordSearch;
 use App\Contracts\Search\SearchSources;
 use App\Contracts\Search\TieredSearch;
-use App\Enums\AssignmentPurpose;
+use App\Enums\Assignments\AssignmentPurpose;
 use App\Models\Asks\Ask;
 use App\Support\AskAssignments;
 use App\Support\FolderClasses;

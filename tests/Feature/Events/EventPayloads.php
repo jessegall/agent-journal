@@ -5,29 +5,21 @@ declare(strict_types=1);
 namespace Tests\Feature\Events;
 
 use App\Events\Accounts\AccountsChanged;
-use App\Events\Sessions\AccountSettingsRequested;
-use App\Events\Sessions\AccountUseChanged;
-use App\Events\Sessions\AgentHoldReleased;
-use App\Events\Sessions\AgentRuntimeReassigned;
+use App\Events\Accounts\ProfileRevisionRevoked;
 use App\Events\Assignments\AssignmentsChanged;
-use App\Events\Processes\BundleActivated;
+use App\Events\Comments\CommentPosted;
+use App\Events\Engine\EngineTicked;
+use App\Events\Hooks\ContextStarted;
+use App\Events\Hooks\HelperCompletionCertified;
+use App\Events\Hooks\HelperStopHeld;
+use App\Events\Hooks\StateTypesRequested;
+use App\Events\Hooks\ToolCallFinished;
+use App\Events\Links\LinksRemoved;
 use App\Events\Messages\ChatMemberJoined;
 use App\Events\Messages\ChatMemberLeft;
 use App\Events\Messages\ChatMessageAccepted;
 use App\Events\Messages\ChatReceiptPresented;
 use App\Events\Messages\ChatRoleChanged;
-use App\Events\Comments\CommentPosted;
-use App\Events\Hooks\ContextStarted;
-use App\Events\Sessions\DriverFailed;
-use App\Events\Sessions\DriverRequestRecovered;
-use App\Events\Engine\EngineTicked;
-use App\Events\Processes\EvidenceFoundInvalid;
-use App\Events\Hooks\HelperCompletionCertified;
-use App\Events\Hooks\HelperStopHeld;
-use App\Events\Sessions\LaunchCancelled;
-use App\Events\Sessions\LaunchEnded;
-use App\Events\Links\LinksRemoved;
-use App\Events\Sessions\MergeOutcomeRecorded;
 use App\Events\Messages\MessageAnswered;
 use App\Events\Messages\MessageAnswerRequired;
 use App\Events\Messages\MessageClaimed;
@@ -35,18 +27,31 @@ use App\Events\Messages\MessageClaimReleased;
 use App\Events\Messages\MessageDismissed;
 use App\Events\Messages\MessageRead;
 use App\Events\Messages\MessageSent;
-use App\Events\Processes\OutputChunkCommitted;
-use App\Events\Web\PageChanged;
-use App\Events\Accounts\ProfileRevisionRevoked;
 use App\Events\Messages\ReceiptDeliveriesScheduled;
 use App\Events\Messages\ReceiptDeliveryChanged;
+use App\Events\Messages\SpeechOpportunitySettled;
+use App\Events\Processes\BundleActivated;
+use App\Events\Processes\EvidenceFoundInvalid;
+use App\Events\Processes\OutputChunkCommitted;
 use App\Events\Processes\RuleActivated;
 use App\Events\Processes\RuleRejected;
 use App\Events\Processes\RuleRetired;
 use App\Events\Processes\RunChanged;
+use App\Events\Sessions\AccountSettingsRequested;
+use App\Events\Sessions\AccountUseChanged;
+use App\Events\Sessions\AgentHoldReleased;
+use App\Events\Sessions\AgentRuntimeReassigned;
+use App\Events\Sessions\DriverFailed;
+use App\Events\Sessions\DriverRequestRecovered;
+use App\Events\Sessions\LaunchCancelled;
+use App\Events\Sessions\LaunchEnded;
+use App\Events\Sessions\MergeOutcomeRecorded;
 use App\Events\Sessions\SessionClosed;
 use App\Events\Sessions\SessionOpened;
-use App\Events\Skills\SessionSkillsIntended;
+use App\Events\Sessions\StartAccepted;
+use App\Events\Sessions\StartGrantRequested;
+use App\Events\Sessions\StartRefusedWithoutAccount;
+use App\Events\Sessions\StartSettingsRequested;
 use App\Events\Settings\SettingsChanged;
 use App\Events\Sharing\ShareActivated;
 use App\Events\Sharing\ShareCreated;
@@ -56,14 +61,9 @@ use App\Events\Sharing\ShareGatewayChanged;
 use App\Events\Sharing\ShareRequested;
 use App\Events\Sharing\ShareRevoked;
 use App\Events\Sharing\ShareScopeChanged;
+use App\Events\Skills\SessionSkillsIntended;
 use App\Events\Skills\SkillsChanged;
-use App\Events\Messages\SpeechOpportunitySettled;
-use App\Events\Sessions\StartAccepted;
-use App\Events\Sessions\StartGrantRequested;
-use App\Events\Sessions\StartRefusedWithoutAccount;
-use App\Events\Sessions\StartSettingsRequested;
-use App\Events\Hooks\StateTypesRequested;
-use App\Events\Hooks\ToolCallFinished;
+use App\Events\Web\PageChanged;
 use Domain\Documents\Events\DocumentClosed;
 use Domain\Documents\Events\DocumentCreated;
 use Domain\Documents\Events\DocumentDraftSaved;
@@ -109,7 +109,7 @@ final class EventPayloads
             AgentHoldReleased::class => [
                 'fields' => [
                     'runtimeId' => 'string',
-                    'hold' => 'App\Enums\HoldReason',
+                    'hold' => 'App\Enums\Drivers\HoldReason',
                     'actor' => 'App\Support\ActorIdentity',
                     'reason' => 'string',
                 ],
@@ -128,7 +128,7 @@ final class EventPayloads
             DriverRequestRecovered::class => [
                 'fields' => [
                     'requestId' => 'string',
-                    'action' => 'App\Enums\RecoveryAction',
+                    'action' => 'App\Enums\Drivers\RecoveryAction',
                     'actor' => 'App\Support\ActorIdentity',
                     'reason' => 'string',
                 ],
@@ -148,7 +148,7 @@ final class EventPayloads
                     'agentId' => 'string',
                     'sessionId' => 'string',
                     'driver' => 'string',
-                    'failure' => 'App\Enums\DriverFailure',
+                    'failure' => 'App\Enums\Drivers\DriverFailure',
                     'account' => '?App\Support\RecordIdentity',
                     'accountGeneration' => '?int',
                 ],
@@ -179,14 +179,14 @@ final class EventPayloads
                 'fields' => [
                     'agentId' => 'string',
                     'driver' => 'string',
-                    'reason' => 'App\Enums\StartUnavailableReason',
+                    'reason' => 'App\Enums\Starts\StartUnavailableReason',
                 ],
             ],
             AssignmentsChanged::class => [
                 'fields' => [
                     'operationId' => 'string',
                     'actor' => 'App\Support\ActorIdentity',
-                    'reason' => 'App\Enums\AssignmentReason',
+                    'reason' => 'App\Enums\Assignments\AssignmentReason',
                     'changes' => 'array',
                     'occurredAt' => 'DateTimeImmutable',
                 ],
@@ -220,7 +220,7 @@ final class EventPayloads
                 'fields' => [
                     'messageId' => 'string',
                     'dismissedBy' => 'App\Support\ActorIdentity',
-                    'type' => 'App\Enums\DismissalType',
+                    'type' => 'App\Enums\Messages\DismissalType',
                 ],
             ],
             MessageRead::class => [
@@ -291,7 +291,7 @@ final class EventPayloads
                 'fields' => [
                     'deliveryId' => 'string',
                     'receiptId' => 'string',
-                    'state' => 'App\Enums\WakeState',
+                    'state' => 'App\Enums\Messages\WakeState',
                 ],
             ],
             SpeechOpportunitySettled::class => [
@@ -384,7 +384,7 @@ final class EventPayloads
             SettingsChanged::class => [
                 'fields' => [
                     'owner' => 'string',
-                    'target' => 'App\Enums\SettingTarget',
+                    'target' => 'App\Enums\Settings\SettingTarget',
                     'key' => 'string',
                     'revision' => 'int',
                 ],

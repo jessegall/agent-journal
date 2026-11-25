@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Enums\ActorType;
-use App\Enums\GatewayEndpointState;
-use App\Enums\ShareAuditActor;
-use App\Enums\ShareAuditType;
+use App\Enums\Assignments\ActorType;
+use App\Enums\Sharing\GatewayEndpointState;
+use App\Enums\Sharing\ShareAuditActor;
+use App\Enums\Sharing\ShareAuditType;
 use App\Models\Sharing\Share;
 use App\Models\Sharing\ShareAudit;
 use App\Models\Sharing\ShareGatewayConfiguration;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Attributes\OutsideThePlaces;
-use App\Enums\PlaceExemption;
-use App\Enums\ShellDialect;
+use App\Enums\Files\PlaceExemption;
+use App\Enums\Processes\ShellDialect;
 
 /**
  * Where a command would run, as far as classification may trust it: the dialect, the working folder, the trusted

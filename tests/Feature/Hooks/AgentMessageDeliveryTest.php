@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Contracts\Actors\AgentTexts;
-use App\Enums\DriverOperation;
-use App\Enums\FileOperation;
-use App\Enums\NoSubject;
-use App\Enums\RewriteSupport;
+use App\Enums\Drivers\DriverOperation;
+use App\Enums\Drivers\RewriteSupport;
+use App\Enums\Engine\NoSubject;
+use App\Enums\Files\FileOperation;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Agents\PendingAgentMessage;

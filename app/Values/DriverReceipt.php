@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\DriverOperation;
-use App\Enums\ExpectedTiming;
-use App\Enums\RequestProgress;
+use App\Enums\Drivers\DriverOperation;
+use App\Enums\Drivers\ExpectedTiming;
+use App\Enums\Drivers\RequestProgress;
 
 /**
  * What an accepted driver request answers its caller: which request, its place in order, where it stands and when it

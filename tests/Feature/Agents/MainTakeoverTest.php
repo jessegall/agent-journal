@@ -7,7 +7,7 @@ namespace Tests\Feature\Agents;
 use App\Commands\Desks\InstallDesks\InstallDesksCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Chat\MainSeatTakeover;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Desks\DeskRecord;

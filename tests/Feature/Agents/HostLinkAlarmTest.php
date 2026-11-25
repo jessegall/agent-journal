@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Enums\HostRouteRole;
+use App\Enums\Projects\HostRouteRole;
 use App\Models\Projects\Host;
 use App\Support\HostLinkAlarms;
 use Carbon\CarbonImmutable;

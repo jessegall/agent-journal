@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Support\States;
 
 use App\Attributes\StateType;
-use App\Enums\FrameReuse;
-use App\Enums\PublicationState;
-use App\Enums\SessionTransferType;
+use App\Enums\Engine\FrameReuse;
+use App\Enums\Sessions\SessionTransferType;
+use App\Enums\Skills\PublicationState;
 use App\Events\Skills\SkillPublicationMoved;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\FileEditRequested;

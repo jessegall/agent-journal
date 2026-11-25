@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Agents\Host;
 use App\Commands\Drivers\ClaimDriverRequests\ClaimDriverRequestsCommand;
 use App\Commands\Projects\ClaimProjectReads\ClaimProjectReadsCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\ArrangementType;
+use App\Enums\Projects\ArrangementType;
 use App\Models\Projects\Host;
 use App\Support\ClaimAnswer;
 use App\Support\DriverBudgets;

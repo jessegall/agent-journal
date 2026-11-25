@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Profiles\Http;
 
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\SignInMethod;
-use App\Enums\UsageWindowSlot;
+use App\Enums\Accounts\SignInMethod;
+use App\Enums\Accounts\UsageWindowSlot;
 use App\Http\Pages\Accounts\AccountsIndex;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;

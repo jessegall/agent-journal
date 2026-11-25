@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Comments\PostComment;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\WholeRecord;
+use App\Enums\Comments\WholeRecord;
 use App\Support\CommentWriter;
 
 final readonly class PostCommentHandler implements CommandHandler

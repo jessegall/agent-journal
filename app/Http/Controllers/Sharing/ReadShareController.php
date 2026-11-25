@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Sharing;
 
 use App\Commands\Sharing\ReadShare\ReadShareCommand;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use App\Exceptions\ShareLinkRefused;
 use App\Exceptions\ShareReadLimited;
 use App\Http\Requests\Sharing\ReadShareRequest;

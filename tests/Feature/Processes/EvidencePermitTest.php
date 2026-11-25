@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Enums\ActorType;
-use App\Enums\RunMode;
+use App\Enums\Assignments\ActorType;
+use App\Enums\Runs\RunMode;
 use App\Exceptions\EvidencePermitRefused;
 use App\Models\CommandRules\EvidencePermit;
 use App\Models\Runs\PartRun;

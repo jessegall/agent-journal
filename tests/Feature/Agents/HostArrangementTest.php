@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
+use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\ArrangementType;
-use App\Enums\DriverType;
+use App\Enums\Drivers\DriverType;
+use App\Enums\Projects\ArrangementType;
 use App\Exceptions\ArrangementUnknown;
 use App\Exceptions\DriverNotContainable;
 use App\Exceptions\HostArrangementRefused;

@@ -6,9 +6,9 @@ namespace Tests\Feature\Activity;
 
 use App\Commands\Messages\AskChatQuestion\AskChatQuestionCommand;
 use App\Commands\Messages\ReplyToMessage\ReplyToMessageCommand;
-use App\Enums\ActivityLevel;
-use App\Enums\ActivityType;
-use App\Enums\ToolOutcome;
+use App\Enums\Agents\ActivityLevel;
+use App\Enums\Agents\ActivityType;
+use App\Enums\Hooks\ToolOutcome;
 use App\Events\Hooks\HelperReportedOnRecord;
 use App\Events\Hooks\ToolCallFinished;
 use App\Events\Messages\ChatMessageAccepted;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\Accounts\CheckAccount;
 
 use App\Attributes\Entry;
-use App\Enums\AccountCheckResult;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\AccountCheckResult;
+use App\Enums\Accounts\CommandEntry;
 use App\Support\Command;
 
 /**

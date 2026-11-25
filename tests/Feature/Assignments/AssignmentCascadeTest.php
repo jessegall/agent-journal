@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Contracts\Assignments\AssignmentWriter;
-use App\Enums\AssignmentOutcomeType;
+use App\Enums\Assignments\AssignmentOutcomeType;
 use App\Exceptions\AssignmentConflict;
 use App\Exceptions\AssignmentGroupTooLarge;
 use App\Exceptions\AssignmentRootFinished;

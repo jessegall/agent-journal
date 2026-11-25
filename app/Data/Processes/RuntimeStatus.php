@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Data\Processes;
 
 use App\Data\Settings\RuntimeSetting;
-use App\Enums\HoldReason;
-use App\Enums\RuntimeActivity;
+use App\Enums\Drivers\HoldReason;
+use App\Enums\Runs\RuntimeActivity;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

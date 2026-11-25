@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Declarations\VerificationContract;
-use App\Enums\CommandType;
-use App\Enums\OutputRequirement;
-use App\Enums\ScopeType;
-use App\Enums\ToolType;
+use App\Enums\CommandRules\CommandType;
+use App\Enums\CommandRules\OutputRequirement;
+use App\Enums\CommandRules\ScopeType;
+use App\Enums\CommandRules\ToolType;
 use App\Exceptions\CommandRuleInvalid;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\MapName;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Calls\Processes;
 
-use App\Enums\OutputStream;
+use App\Enums\Processes\OutputStream;
 use Spatie\LaravelData\Data;
 
 /**

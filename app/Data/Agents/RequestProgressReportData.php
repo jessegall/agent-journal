@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Data\Agents;
 
-use App\Enums\HostWakeRefusal;
-use App\Enums\RequestOutcome;
-use App\Enums\RequestProgress;
+use App\Enums\Drivers\HostWakeRefusal;
+use App\Enums\Drivers\RequestOutcome;
+use App\Enums\Drivers\RequestProgress;
 use App\Exceptions\HostReportRefused;
 use App\Values\NavigationRoundReport;
 use App\Values\RequestReportBinding;

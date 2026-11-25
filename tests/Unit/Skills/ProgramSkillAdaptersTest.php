@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
-use App\Enums\SkillReload;
+use App\Enums\Skills\SkillReload;
 use App\Exceptions\DriverSkillsUnsupported;
 use App\Support\Drivers\ClaudeCodeSkills;
 use App\Support\Drivers\CodexSkills;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Ui;
 
-use App\Enums\ActionMethod;
+use App\Enums\Settings\ActionMethod;
 use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutPartData;

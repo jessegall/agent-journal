@@ -6,7 +6,7 @@ namespace App\Commands\Projects\RecordHostCallAnswered;
 
 use App\Attributes\Entry;
 use App\Data\Hosts\FailedHostCallData;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use App\Support\Command;
 
 /**

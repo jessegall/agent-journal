@@ -6,7 +6,7 @@ namespace Tests\Feature\Hooks;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\DriverFailure;
+use App\Enums\Drivers\DriverFailure;
 use App\Events\Sessions\DriverFailed;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\FailureReceipt;

@@ -7,8 +7,8 @@ namespace App\Console\Commands;
 use App\Attributes\JournalRoute;
 use App\Calls\Processes\ProcessCalls;
 use App\Data\Processes\ExplainedNodeData;
-use App\Enums\JournalRouteType;
-use App\Enums\ShellDialect;
+use App\Enums\CommandRules\JournalRouteType;
+use App\Enums\Processes\ShellDialect;
 use App\Exceptions\CommandStopped;
 use Illuminate\Console\Command;
 

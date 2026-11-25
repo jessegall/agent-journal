@@ -6,9 +6,9 @@ namespace Tests\Feature\Web;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Data\Terminals\ScreenFrameData;
-use App\Enums\DriverType;
-use App\Enums\TerminalFrameState;
-use App\Enums\TerminalViewRefusal;
+use App\Enums\Drivers\DriverType;
+use App\Enums\Terminals\TerminalFrameState;
+use App\Enums\Terminals\TerminalViewRefusal;
 use App\Exceptions\ActorNotAllowed;
 use App\Http\Middleware\Web\HandleInertiaRequests;
 use App\Models\Agents\Agent;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support\Syntax;
 
 use App\Contracts\Bus\PipelineRunner;
-use App\Enums\NodeType;
-use App\Enums\ShellDialect;
+use App\Enums\CommandRules\NodeType;
+use App\Enums\Processes\ShellDialect;
 use App\Exceptions\ShellGrammarStopped;
 use App\Pipelines\BuildShellTreePipeline;
 use App\Support\Lines\ShellLine;

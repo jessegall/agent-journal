@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Data\Accounts;
 
-use App\Enums\SignInMethod;
-use App\Enums\SignInState;
-use App\Enums\SignInType;
+use App\Enums\Accounts\SignInMethod;
+use App\Enums\Accounts\SignInState;
+use App\Enums\Accounts\SignInType;
 use App\Models\Accounts\SignInAttempt;
 use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Data;

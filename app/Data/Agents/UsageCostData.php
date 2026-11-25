@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Agents;
 
 use App\Commands\Accounts\AddUsageCost\AddUsageCostCommand;
-use App\Enums\UsageMeasurementType;
+use App\Enums\Agents\UsageMeasurementType;
 use App\Support\Command;
 use App\Values\ReportedStart;
 use App\Values\UsageCost;

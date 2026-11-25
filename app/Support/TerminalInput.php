@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\TerminalInputType;
-use App\Enums\TerminalNamedKey;
+use App\Enums\Terminals\TerminalInputType;
+use App\Enums\Terminals\TerminalNamedKey;
 
 /**
  * One input a browser writer sends through their grant: text with or without Enter, one named key, a paste, or a

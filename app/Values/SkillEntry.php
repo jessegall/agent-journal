@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Contracts\Skills\SkillCondition;
-use App\Enums\SkillOrigin;
+use App\Enums\Skills\SkillOrigin;
 
 /**
  * One skill of the catalogue as readers see it: key, name, owner, whether it is shipped or stored, description, its

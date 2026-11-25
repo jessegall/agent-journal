@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\ScopeType;
+use App\Enums\CommandRules\ScopeType;
 use App\Exceptions\RuleProposalRefused;
 use App\Values\CommandRule;
 

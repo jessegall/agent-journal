@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Contracts\Admission\ShellAdmission;
-use App\Enums\AdmissionRefusalCode;
-use App\Enums\ShellDialect;
+use App\Enums\CommandRules\AdmissionRefusalCode;
+use App\Enums\Processes\ShellDialect;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Values\Admission;

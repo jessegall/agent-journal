@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\TextAnchorType;
+use App\Enums\Records\TextAnchorType;
 use App\Exceptions\AnchorMismatch;
 use App\Exceptions\InvalidTextRange;
 

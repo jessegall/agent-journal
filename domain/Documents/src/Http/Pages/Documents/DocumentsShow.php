@@ -8,7 +8,7 @@ use App\Contracts\Navigation\RecordMenus;
 use App\Contracts\Sessions\AgentDirectory;
 use App\Data\Comments\CommentList;
 use App\Data\Pages\RecordCard;
-use App\Enums\ActionMethod;
+use App\Enums\Settings\ActionMethod;
 use App\Support\AgentOption;
 use App\Support\Layout\DetailPage;
 use App\Support\Layout\LayoutActionData;

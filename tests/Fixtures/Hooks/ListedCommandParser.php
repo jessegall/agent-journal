@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Hooks;
 
 use App\Contracts\Processes\ShellCommandParser;
-use App\Enums\CommandEffect;
-use App\Enums\CommandType;
-use App\Enums\ParseOutcome;
-use App\Enums\ShellDialect;
+use App\Enums\CommandRules\CommandEffect;
+use App\Enums\CommandRules\CommandType;
+use App\Enums\CommandRules\ParseOutcome;
+use App\Enums\Processes\ShellDialect;
 use App\Values\CommandPart;
 use App\Values\ShellCommand;
 

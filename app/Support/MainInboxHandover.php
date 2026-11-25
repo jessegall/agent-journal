@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Inboxes\MainInboxTakeover;
 use App\Contracts\Time\ServerClock;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Models\Agents\Agent;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;

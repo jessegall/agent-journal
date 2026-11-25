@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Contracts\Authorization\Policy;
-use App\Enums\AccessType;
-use App\Enums\ReadEntitlementType;
+use App\Enums\Agents\AccessType;
+use App\Enums\Profiles\ReadEntitlementType;
 use Closure;
 
 /**

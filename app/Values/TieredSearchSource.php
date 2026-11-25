@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\ScoreTier;
+use App\Enums\Search\ScoreTier;
 use App\Support\ReadBuilder;
 use Closure;
 use Illuminate\Database\Eloquent\Model;

@@ -6,11 +6,11 @@ namespace App\Support\Drivers\Adapters;
 
 use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Processes\ShellCommandParser;
-use App\Enums\CodexTool;
-use App\Enums\FileAccess;
-use App\Enums\HookEvent;
-use App\Enums\RewriteSupport;
-use App\Enums\ShellDialect;
+use App\Enums\Drivers\CodexTool;
+use App\Enums\Drivers\RewriteSupport;
+use App\Enums\Files\FileAccess;
+use App\Enums\Hooks\HookEvent;
+use App\Enums\Processes\ShellDialect;
 use App\Exceptions\UnsupportedHook;
 use App\Support\CheckProtectedResources;
 use App\Support\Compatibility\DriverCompatibility;

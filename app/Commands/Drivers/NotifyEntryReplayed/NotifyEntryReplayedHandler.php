@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Drivers\NotifyEntryReplayed;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\HoldReason;
+use App\Enums\Drivers\HoldReason;
 use App\Exceptions\HostReportRefused;
 use App\Exceptions\NavigationRaiseRefused;
 use App\Models\Drivers\MenuEntry;

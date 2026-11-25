@@ -7,7 +7,7 @@ namespace App\Exceptions;
 use App\Concerns\RendersRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Contracts\Refusals\StaleRefusal;
-use App\Enums\RefusalCode;
+use App\Enums\Engine\RefusalCode;
 use RuntimeException;
 
 /**

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Unit\Hooks\States;
 
 use App\Commands\Messages\ReplyInChat\ReplyInChatCommand;
-use App\Enums\AnswerType;
-use App\Enums\DismissalType;
+use App\Enums\Hooks\AnswerType;
+use App\Enums\Messages\DismissalType;
 use App\Events\Messages\ChatMessageAccepted;
 use App\Events\Messages\ChatMessageOffered;
 use App\Events\Messages\MessageAnswered;

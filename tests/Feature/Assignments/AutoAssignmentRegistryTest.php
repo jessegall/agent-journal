@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Contracts\Assignments\AssignedWorkProvider;
-use App\Enums\AssignmentPurpose;
+use App\Enums\Assignments\AssignmentPurpose;
 use App\Exceptions\AssignmentProviderInvalid;
 use App\Exceptions\AssignmentTypeUnavailable;
 use App\Exceptions\AutoAssignmentDeclarationRefused;

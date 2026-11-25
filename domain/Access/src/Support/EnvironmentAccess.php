@@ -6,7 +6,7 @@ namespace Domain\Access\Support;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Inboxes\InboxParticipationEnding;
-use App\Enums\InboxPermission;
+use App\Enums\Messages\InboxPermission;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\EnvironmentUserGrant;

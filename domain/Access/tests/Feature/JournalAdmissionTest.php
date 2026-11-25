@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Access\Tests\Feature;
 
 use App\Contracts\Admission\JournalAdmission;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Models\Agents\Agent;
 use App\Support\ActorContext;
 use Domain\Access\Database\Factories\UserFactory;

@@ -8,7 +8,7 @@ use App\Contracts\Navigation\RecordMenus as RecordMenusContract;
 use App\Declarations\RegisteredAction;
 use App\Declarations\RegisteredMenu;
 use App\Declarations\RegisteredMenuItem;
-use App\Enums\ActionMethod;
+use App\Enums\Settings\ActionMethod;
 use App\Support\Layout\LayoutMenuData;
 use App\Support\Layout\LayoutMenuGroupData;
 use App\Support\Layout\LayoutMenuItemData;

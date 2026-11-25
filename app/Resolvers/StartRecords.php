@@ -8,7 +8,7 @@ use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Contracts\Sessions\CurrentSession;
 use App\Contracts\Sessions\StartRecordResolver;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Exceptions\StartRecordMissing;
 use App\Models\Agents\Agent;
 use App\Models\Starts\StartRecord;

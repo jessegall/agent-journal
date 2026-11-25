@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\DriverType;
-use App\Enums\DriverTypeSource;
+use App\Enums\Drivers\DriverType;
+use App\Enums\Drivers\DriverTypeSource;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Models\Agents\Agent;
 use App\Values\DriverRegistration;

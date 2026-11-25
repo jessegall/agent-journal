@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Navigation\NavigationReader;
-use App\Enums\MenuEntryState;
+use App\Enums\Navigation\MenuEntryState;
 use App\Exceptions\MenuEntryRefused;
 use App\Exceptions\NavigationRaiseRefused;
 use App\Models\Agents\AgentRuntime;

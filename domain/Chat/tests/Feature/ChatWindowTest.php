@@ -9,7 +9,7 @@ use App\Contracts\Actors\Actor;
 use App\Contracts\Actors\ActorInboxResolver;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Inboxes\LabeledInbox;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;

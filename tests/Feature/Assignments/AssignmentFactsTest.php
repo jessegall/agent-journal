@@ -6,7 +6,7 @@ namespace Tests\Feature\Assignments;
 
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Assignments\AssignmentWriter;
-use App\Enums\AssignmentReason;
+use App\Enums\Assignments\AssignmentReason;
 use App\Events\Assignments\AssignmentsChanged;
 use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;

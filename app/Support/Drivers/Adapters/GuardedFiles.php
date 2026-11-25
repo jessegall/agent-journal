@@ -6,7 +6,7 @@ namespace App\Support\Drivers\Adapters;
 
 use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Authorization\FileAccessPolicy;
-use App\Enums\FileAccess;
+use App\Enums\Files\FileAccess;
 use App\Support\Drivers\Contracts\DriverCall;
 use App\Support\Drivers\DriverReplies;
 use App\Support\Inputs\Values\HookIdentity;

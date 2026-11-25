@@ -44,7 +44,7 @@ const (
 )
 
 // refusal is one of the journal's refusal codes, with whether the same call may be sent again
-// (App\Enums\RefusalCode).
+// (App\Enums\Engine\RefusalCode).
 type refusal struct {
 	code      string
 	retryable bool

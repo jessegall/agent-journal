@@ -8,7 +8,7 @@ use App\Contracts\Bus\Command;
 use App\Contracts\Events\Event;
 use App\Contracts\Work\ConditionalState;
 use App\Declarations\StateMethod;
-use App\Enums\StackMoment;
+use App\Enums\Engine\StackMoment;
 use App\Exceptions\StateAnswerRefused;
 use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\Inputs\Contracts\HookInput;

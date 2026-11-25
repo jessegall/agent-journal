@@ -38,7 +38,7 @@ use App\Contracts\Processes\ProcessRunCallers;
 use App\Contracts\Processes\ShellCommandParser;
 use App\Contracts\Reads\OutputRecorder;
 use App\Contracts\Time\VerificationTiming;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Models\Runs\ProcessRun;
 use App\Policies\ProcessAdministrationPolicy;
 use App\Policies\ProcessPolicy;

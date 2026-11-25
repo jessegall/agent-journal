@@ -9,7 +9,7 @@ use App\Contracts\Actors\ActorResolver;
 use App\Contracts\Assignments\AssignmentProviders;
 use App\Contracts\Records\DestinationProvider;
 use App\Contracts\Records\Destinations;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Models\Inboxes\Inbox;
 
 /**

@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Contracts\Hosts\HostOperatorAccess;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Models\Projects\ProjectInvitation;
 use App\Policies\ConnectionsPolicy;
 

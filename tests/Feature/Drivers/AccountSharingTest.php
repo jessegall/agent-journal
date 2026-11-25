@@ -6,7 +6,7 @@ namespace Tests\Feature\Drivers;
 
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\DriverType;
+use App\Enums\Drivers\DriverType;
 use App\Exceptions\AccountWriterTaken;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;

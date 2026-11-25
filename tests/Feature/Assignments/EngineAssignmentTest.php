@@ -9,7 +9,7 @@ use App\Commands\Assignments\ReassignRecord\ReassignRecordCommand;
 use App\Commands\Assignments\UnassignRecord\UnassignRecordCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use App\Exceptions\CommandNotRegistered;
 use App\Exceptions\EngineAccessRefused;
 use App\Models\Agents\Agent;

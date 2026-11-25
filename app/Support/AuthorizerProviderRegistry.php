@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Authorization\AuthorizerProvider;
 use App\Contracts\Authorization\AuthorizerProviderRegistration;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Exceptions\AuthorizerProviderMissing;
 use App\Exceptions\AuthorizerProviderRepeated;
 use Illuminate\Container\Container;

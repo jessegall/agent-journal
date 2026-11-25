@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Search;
 
-use App\Enums\FailureReason;
-use App\Enums\ScoreTier;
-use App\Enums\SearchSurface;
+use App\Enums\Search\FailureReason;
+use App\Enums\Search\ScoreTier;
+use App\Enums\Search\SearchSurface;
 use App\Exceptions\SearchBatchInvalid;
 use App\Support\ActorContext;
 use App\Support\RecordIdentity;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\Projects\EnrollHost;
 
 use App\Attributes\Entry;
-use App\Enums\ArrangementType;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
+use App\Enums\Projects\ArrangementType;
 use App\Support\Command;
 use App\Support\EnrolledHost;
 

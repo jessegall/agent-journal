@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Scripts;
 
 use App\Contracts\Scripts\ScriptStatement;
-use App\Enums\ScriptEffect;
-use App\Enums\SyntaxForm;
+use App\Enums\Profiles\ScriptEffect;
+use App\Enums\CommandRules\SyntaxForm;
 use App\Support\CompileContext;
 use App\Values\FlowShape;
 use App\Values\Instruction;

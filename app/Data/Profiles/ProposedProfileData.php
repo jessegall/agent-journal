@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Profiles;
 
-use App\Enums\InstancePolicy;
+use App\Enums\Profiles\InstancePolicy;
 use App\Exceptions\ProfileProposalRefused;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\MapName;

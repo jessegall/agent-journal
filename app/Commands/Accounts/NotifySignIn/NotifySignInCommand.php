@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\Accounts\NotifySignIn;
 
 use App\Attributes\Entry;
-use App\Enums\CommandEntry;
-use App\Enums\SignInOutcome;
+use App\Enums\Accounts\CommandEntry;
+use App\Enums\Accounts\SignInOutcome;
 use App\Support\Command;
 use App\Values\SignInIdentity;
 

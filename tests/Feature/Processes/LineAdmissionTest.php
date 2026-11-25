@@ -6,8 +6,8 @@ namespace Tests\Feature\Processes;
 
 use App\Contracts\Admission\ShellAdmission;
 use App\Contracts\Time\VerificationTiming;
-use App\Enums\AdmissionRefusalCode;
-use App\Enums\ShellDialect;
+use App\Enums\CommandRules\AdmissionRefusalCode;
+use App\Enums\Processes\ShellDialect;
 use App\Models\CommandRules\CommandRequest;
 use App\Models\Runs\ProcessRun;
 use App\Values\Admission;

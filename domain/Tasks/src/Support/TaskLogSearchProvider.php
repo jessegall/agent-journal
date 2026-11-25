@@ -7,7 +7,7 @@ namespace Domain\Tasks\Support;
 use App\Contracts\Hosts\ServedEnvironment;
 use App\Contracts\Processes\StatementDeadlines;
 use App\Contracts\Search\SearchProvider;
-use App\Enums\ScoreTier;
+use App\Enums\Search\ScoreTier;
 use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;
 use App\Support\TextSearch;

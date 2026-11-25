@@ -8,7 +8,7 @@ use App\Commands\Messages\AskChatQuestion\AskChatQuestionCommand;
 use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
 use App\Commands\Messages\ReplyInChat\ReplyInChatCommand;
 use App\Data\Messages\ReplyOriginal;
-use App\Enums\InboxPermission;
+use App\Enums\Messages\InboxPermission;
 use App\Exceptions\RespondentRequired;
 use App\Exceptions\StaleAddressee;
 use App\Models\Messages\Message;

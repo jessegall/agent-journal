@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Sessions;
 
-use App\Enums\StartPreflightRefusal;
+use App\Enums\Starts\StartPreflightRefusal;
 use App\Exceptions\StartPreflightRefused;
 use App\Values\StartProposal;
 

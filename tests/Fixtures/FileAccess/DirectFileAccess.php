@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\FileAccess;
 
 use App\Attributes\OutsideThePlaces;
-use App\Enums\PlaceExemption;
+use App\Enums\Files\PlaceExemption;
 use FilesystemIterator;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\File;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Activity;
 
-use App\Enums\ActivityLevel;
-use App\Enums\ActivityType;
-use App\Enums\ActorType;
+use App\Enums\Agents\ActivityLevel;
+use App\Enums\Agents\ActivityType;
+use App\Enums\Assignments\ActorType;
 use App\Models\Agents\ActivityEntry;
 use App\Support\ActivityRetentionService;
 use App\Support\ActorIdentity;

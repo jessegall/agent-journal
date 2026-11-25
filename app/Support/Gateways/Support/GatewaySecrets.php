@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support\Gateways\Support;
 
 use App\Contracts\Files\Files;
-use App\Enums\Permissions;
-use App\Enums\Place;
+use App\Enums\Files\Permissions;
+use App\Enums\Files\Place;
 use App\Exceptions\GatewaySecretRefused;
 use App\Values\FilePath;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Run;
 
-use App\Enums\PartResultType;
+use App\Enums\Runs\PartResultType;
 
 /**
  * One part's result as the journal answers it: receipted with its outcome and receipt, evidence only, or unavailable

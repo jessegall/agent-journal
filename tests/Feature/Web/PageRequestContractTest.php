@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Web;
 
 use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
-use App\Enums\InboxPermission;
-use App\Enums\SignInMethod;
+use App\Enums\Accounts\SignInMethod;
+use App\Enums\Messages\InboxPermission;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\SignInAttempt;
 use App\Support\ActorIdentity;

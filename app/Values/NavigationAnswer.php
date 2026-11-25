@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\NavigationKey;
+use App\Enums\Navigation\NavigationKey;
 use App\Exceptions\NavigationAnswerRefused;
 
 /**

@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Bus\CommandFacts;
-use App\Enums\RecoveryAction;
+use App\Enums\Drivers\RecoveryAction;
 use App\Events\Sessions\DriverRequestRecovered;
 use App\Exceptions\DriverRequestRefused;
 use App\Models\Drivers\DriverRequest;

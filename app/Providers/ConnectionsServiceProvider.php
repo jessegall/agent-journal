@@ -10,7 +10,7 @@ use App\Contracts\Hosts\HostOperatorAccess;
 use App\Contracts\Hosts\LocalProjectHosts;
 use App\Contracts\Hosts\ProjectFiles;
 use App\Contracts\Records\RecordProviderRegistration;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Models\Projects\ProjectFile;
 use App\Policies\ConnectionsPolicy;
 use App\Policies\ProjectFilesPolicy;

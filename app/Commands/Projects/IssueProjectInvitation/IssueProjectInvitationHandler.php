@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Projects\IssueProjectInvitation;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\ConnectionAuditType;
+use App\Enums\Connections\ConnectionAuditType;
 use App\Exceptions\InstallLinesUnavailable;
 use App\Models\Projects\ConnectionAudit;
 use App\Models\Projects\Environment;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support\Execution;
 
 use App\Contracts\Bus\Pipable;
-use App\Enums\ExitStatus;
-use App\Enums\StepType;
+use App\Enums\CommandRules\StepType;
+use App\Enums\Runs\ExitStatus;
 use App\Pipelines\RunConditionalPipeline;
 use App\Pipelines\RunInBackgroundPipeline;
 use App\Pipelines\RunInOrderPipeline;

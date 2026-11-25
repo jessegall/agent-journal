@@ -6,7 +6,7 @@ namespace App\Console\Commands;
 
 use App\Commands\Inboxes\InstallInboxes\InstallInboxesCommand as InstallInboxes;
 use App\Contracts\Bus\JournalCommands;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use Illuminate\Console\Command;
 
 final class InstallInboxesCommand extends Command

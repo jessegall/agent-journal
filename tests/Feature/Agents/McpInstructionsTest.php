@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Contracts\Authorization\CurrentAuthorizer;
-use App\Enums\AccessType;
-use App\Enums\ContextStartType;
-use App\Enums\RewriteSupport;
+use App\Enums\Agents\AccessType;
+use App\Enums\Drivers\RewriteSupport;
+use App\Enums\Hooks\ContextStartType;
 use App\Mcp\Support\McpInstructions;
 use App\Support\AgentContext;
 use App\Support\Drivers\DriverCapabilities;

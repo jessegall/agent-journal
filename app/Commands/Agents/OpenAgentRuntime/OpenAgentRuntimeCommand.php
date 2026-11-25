@@ -6,8 +6,8 @@ namespace App\Commands\Agents\OpenAgentRuntime;
 
 use App\Attributes\Authorize;
 use App\Contracts\Bus\AgentStartCommand;
-use App\Enums\AccessType;
-use App\Enums\DriverType;
+use App\Enums\Agents\AccessType;
+use App\Enums\Drivers\DriverType;
 use App\Policies\AgentPolicy;
 use App\Support\Command;
 use App\Support\OpenedRuntime;

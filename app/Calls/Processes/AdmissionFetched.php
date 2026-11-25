@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Calls\Processes;
 
-use App\Enums\AdmissionState;
+use App\Enums\Processes\AdmissionState;
 use Spatie\LaravelData\Attributes\PropertyForMorph;
 use Spatie\LaravelData\Contracts\PropertyMorphableData;
 use Spatie\LaravelData\Data;

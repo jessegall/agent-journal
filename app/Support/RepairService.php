@@ -6,10 +6,10 @@ namespace App\Support;
 
 use App\Contracts\Work\HelperCommitImport;
 use App\Contracts\Work\WorkRepair;
-use App\Enums\AskOriginType;
-use App\Enums\CoreAskType;
-use App\Enums\RepairRequestState;
-use App\Enums\WorkRepairOutcome;
+use App\Enums\Agents\WorkRepairOutcome;
+use App\Enums\Asks\AskOriginType;
+use App\Enums\Asks\CoreAskType;
+use App\Enums\Reviews\RepairRequestState;
 use App\Exceptions\HelperImportFailed;
 use App\Models\Reviews\CodeReview;
 use App\Models\Reviews\RepairRequest;

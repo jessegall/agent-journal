@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\StartRemedyType;
+use App\Enums\Starts\StartRemedyType;
 
 /**
  * The one next step of a refused start: what it leads to and its words. A step only a host operator can take reads

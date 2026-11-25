@@ -11,7 +11,7 @@ use App\Contracts\Authorization\RecordPolicy;
 use App\Contracts\Bus\Pipe;
 use App\Contracts\Bus\RecordCommand;
 use App\Contracts\Reflection\ReflectorFactory;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Exceptions\CommandAuthorizationInvalid;
 use App\Exceptions\CommandDeclarationInvalid;
 use App\Exceptions\GrantNotRegistered;

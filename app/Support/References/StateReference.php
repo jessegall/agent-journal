@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\References;
 
-use App\Enums\NoSubject;
+use App\Enums\Engine\NoSubject;
 use App\Values\WorkReference;
 
 /**

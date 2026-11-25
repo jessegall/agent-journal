@@ -7,7 +7,7 @@ namespace Domain\Documents\Resolvers;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Contracts\Sessions\SessionProvenance;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Values\Operation;
 use App\Values\ResourceRequest;
 use Domain\Documents\Contracts\Drafts\DraftReader;

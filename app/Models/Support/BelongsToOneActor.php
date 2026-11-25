@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Models\Support;
 
 use App\Contracts\Actors\CurrentActor;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Support\ActorIdentity;
 use Closure;
 use Illuminate\Container\Container;

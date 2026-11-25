@@ -6,7 +6,7 @@ namespace Domain\Chat\Console\Commands;
 
 use App\Attributes\JournalRoute;
 use App\Console\Concerns\RunsCallPipelines;
-use App\Enums\JournalRouteType;
+use App\Enums\CommandRules\JournalRouteType;
 use Domain\Chat\Calls\DockRemoveCall;
 use Domain\Chat\Console\Concerns\ChoosesChat;
 use Illuminate\Console\Command;

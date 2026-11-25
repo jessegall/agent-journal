@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Commands\Projects\RequestProjectRead\RequestProjectReadCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Hosts\ProjectFiles;
-use App\Enums\ProjectReadType;
+use App\Enums\Projects\ProjectReadType;
 use App\Models\Projects\ProjectBinding;
 use App\Values\ProjectFileAnswer;
 use App\Values\ProjectFileAnswers;

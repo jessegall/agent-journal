@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Time\ServerClock;
-use App\Enums\NoSubject;
-use App\Enums\SessionTransferType;
+use App\Enums\Engine\NoSubject;
+use App\Enums\Sessions\SessionTransferType;
 use App\Exceptions\StateSchemaUnknown;
 use App\Exceptions\StateTransferUnknown;
 use App\Models\Agents\AgentStackRow;

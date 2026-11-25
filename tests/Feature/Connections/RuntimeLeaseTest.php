@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Enums\DriverType;
+use App\Enums\Drivers\DriverType;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Projects\ProjectBinding;

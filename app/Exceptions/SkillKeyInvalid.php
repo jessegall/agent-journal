@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Contracts\Refusals\CodedRefusal;
-use App\Enums\RefusalCode;
+use App\Enums\Engine\RefusalCode;
 use InvalidArgumentException;
 
 final class SkillKeyInvalid extends InvalidArgumentException implements CodedRefusal

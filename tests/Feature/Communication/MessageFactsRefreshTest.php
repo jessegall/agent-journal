@@ -10,7 +10,7 @@ use App\Commands\Messages\ReleaseMessageClaim\ReleaseMessageClaimCommand;
 use App\Commands\Messages\ReplyToMessage\ReplyToMessageCommand;
 use App\Commands\Messages\RequireMessageAnswer\RequireMessageAnswerCommand;
 use App\Contracts\Chat\ConversationResolver;
-use App\Enums\MessageState;
+use App\Enums\Messages\MessageState;
 use App\Events\Messages\MessageAnswered;
 use App\Events\Messages\MessageAnswerRequired;
 use App\Events\Messages\MessageClaimed;

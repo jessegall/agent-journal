@@ -10,7 +10,7 @@ use App\Contracts\Scripts\ScriptKeywordDefinition;
 use App\Contracts\Scripts\ScriptKeywordRegistration;
 use App\Contracts\Scripts\ScriptStatement;
 use App\Contracts\Scripts\ScriptTrigger;
-use App\Enums\KeywordCategory;
+use App\Enums\Profiles\KeywordCategory;
 use App\Exceptions\ScriptDefinitionRefused;
 use App\Values\KeywordDefinition;
 use App\Values\RegisteredKeyword;

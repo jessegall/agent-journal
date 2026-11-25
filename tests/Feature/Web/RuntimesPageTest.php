@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
+use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\DriverType;
-use App\Enums\HoldReason;
-use App\Enums\HostWakeRefusal;
-use App\Enums\RequestOutcome;
-use App\Enums\RequestProgress;
+use App\Enums\Drivers\DriverType;
+use App\Enums\Drivers\HoldReason;
+use App\Enums\Drivers\HostWakeRefusal;
+use App\Enums\Drivers\RequestOutcome;
+use App\Enums\Drivers\RequestProgress;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;

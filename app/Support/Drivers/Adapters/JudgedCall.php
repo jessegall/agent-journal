@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Drivers\Adapters;
 
 use App\Contracts\Actors\AgentTexts;
-use App\Enums\HookEvent;
+use App\Enums\Hooks\HookEvent;
 use App\Support\Drivers\Contracts\DriverCall;
 use App\Support\Drivers\DriverReplies;
 use App\Support\Drivers\DriverReply;

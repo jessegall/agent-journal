@@ -6,8 +6,8 @@ namespace App\Commands\Projects\NotifyProjectRead;
 
 use App\Attributes\Entry;
 use App\Data\Connections\ProjectEntryData;
-use App\Enums\CommandEntry;
-use App\Enums\ProjectReadFailure;
+use App\Enums\Accounts\CommandEntry;
+use App\Enums\Projects\ProjectReadFailure;
 use App\Support\Command;
 use App\Values\ProjectFileText;
 

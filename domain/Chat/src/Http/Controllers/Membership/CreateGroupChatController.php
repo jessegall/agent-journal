@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers\Membership;
 
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Support\ActorIdentity;
 use Domain\Chat\Data\CreateGroupInput;
 use Domain\Chat\Support\ChatInboxes;

@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Attributes\DecodesAnyJson;
 use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Skills\SkillCondition;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Exceptions\SkillConditionInvalid;
 use App\Support\Conditions\AllOf;
 use App\Support\Conditions\AnyOf;

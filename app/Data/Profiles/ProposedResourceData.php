@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Profiles;
 
-use App\Enums\ResourceType;
+use App\Enums\Profiles\ResourceType;
 use App\Values\ResourceRequest;
 use Spatie\LaravelData\Data;
 

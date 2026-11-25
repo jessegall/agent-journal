@@ -9,7 +9,7 @@ use App\Contracts\Authorization\Policy;
 use App\Contracts\Authorization\RecordPolicy;
 use App\Contracts\Authorization\RestrictedPolicy;
 use App\Contracts\Authorization\WorkspacePolicy;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Support\Reflector;
 
 /**

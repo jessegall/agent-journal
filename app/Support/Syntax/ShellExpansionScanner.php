@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Syntax;
 
-use App\Enums\ShellDialect;
-use App\Enums\WordSegmentType;
+use App\Enums\CommandRules\WordSegmentType;
+use App\Enums\Processes\ShellDialect;
 use App\Exceptions\ShellLineUnreadable;
 use App\Values\SourceRange;
 use App\Values\WordSegment;

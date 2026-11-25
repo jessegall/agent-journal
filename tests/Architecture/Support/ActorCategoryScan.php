@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use PhpParser\Node;
 use PhpParser\Node\Expr\BinaryOp;
 use PhpParser\Node\Expr\ClassConstFetch;

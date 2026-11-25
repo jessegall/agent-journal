@@ -8,7 +8,7 @@ use App\Commands\Messages\AcknowledgeMessageBatch\AcknowledgeMessageBatchCommand
 use App\Commands\Messages\ClaimSpeech\ClaimSpeechCommand;
 use App\Contracts\Sessions\CurrentSession;
 use App\Data\Messages\MessageBatchItemData;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Models\Agents\AgentSession;
 use App\Support\ActorIdentity;
 use App\Support\MessageBatchService;

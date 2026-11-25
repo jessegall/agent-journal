@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Syntax;
 
-use App\Enums\ParseOutcome;
+use App\Enums\CommandRules\ParseOutcome;
 use App\Values\TreeDiagnostic;
 
 /**

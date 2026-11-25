@@ -7,7 +7,7 @@ namespace App\Commands\Runs\RetryProcessRun;
 use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Admission\ShellAdmission;
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\LifecycleState;
+use App\Enums\Runs\LifecycleState;
 use App\Exceptions\RetryRefused;
 use App\Models\Runs\ProcessRun;
 use App\Support\ActorIdentity;

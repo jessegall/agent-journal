@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\CaptureState;
+use App\Enums\Runs\CaptureState;
 
 /**
  * The capture state one part's output was found in when it was checked against its checksums.

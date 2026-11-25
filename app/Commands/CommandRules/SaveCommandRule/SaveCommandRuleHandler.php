@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\CommandRules\SaveCommandRule;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\ProposalState;
+use App\Enums\CommandRules\ProposalState;
 use App\Exceptions\ApprovalRefused;
 use App\Models\CommandRules\RuleRevision;
 use App\Support\ActorIdentity;

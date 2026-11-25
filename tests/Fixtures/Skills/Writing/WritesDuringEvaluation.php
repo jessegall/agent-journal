@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Skills\Writing;
 
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use App\Support\EntryDispatchers;
 use App\Commands\Records\InstallNumbers\InstallNumbersCommand;
 use App\Contracts\Skills\SkillConditionEvaluator;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\LaunchCandidateRank;
+use App\Enums\Starts\LaunchCandidateRank;
 
 /**
  * One helper that may take the launch, with its rank, and whether any of its conversations, on any driver, was kept

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Decisions;
 
 use App\Contracts\Asks\Answer;
-use App\Enums\AnswerType;
+use App\Enums\Hooks\AnswerType;
 use App\Exceptions\NoRefusalReason;
 use App\Exceptions\NoReplacementLine;
 use App\Support\Decisions\Contracts\AnswerPart;

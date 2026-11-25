@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Inputs\Values;
 
-use App\Enums\ToolOutcome;
+use App\Enums\Hooks\ToolOutcome;
 
 final readonly class ToolResult
 {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\MergeRefusalReason;
+use App\Enums\Reviews\MergeRefusalReason;
 use App\Models\Reviews\MergeAttempt;
 use Illuminate\Contracts\Process\ProcessResult;
 use Illuminate\Process\Factory;

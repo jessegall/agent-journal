@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Events\Skills;
 
 use App\Contracts\Skills\SkillPublicationEvent;
-use App\Enums\PublicationState;
+use App\Enums\Skills\PublicationState;
 
 /**
  * A session's skill publication moved to another state: delivered, failed, waiting again, superseded or retired.

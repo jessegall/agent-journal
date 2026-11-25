@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\CleanupTarget;
-use App\Enums\SignInMethod;
+use App\Enums\Accounts\CleanupTarget;
+use App\Enums\Accounts\SignInMethod;
 
 /**
  * A cleanup a host took: what it cleans, by id, its driver and method, its folder on the host, the generation to report in and

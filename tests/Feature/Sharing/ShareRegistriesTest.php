@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Enums\ShareRelationType;
+use App\Enums\Sharing\ShareRelationType;
 use App\Exceptions\InvalidRecordIdentity;
 use App\Exceptions\ShareGatewayInvalid;
 use App\Exceptions\ShareRecordInvalid;

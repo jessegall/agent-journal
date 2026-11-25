@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\HoldReason;
-use App\Enums\NavigationCompletion;
+use App\Enums\Drivers\HoldReason;
+use App\Enums\Navigation\NavigationCompletion;
 use App\Exceptions\NavigationRaiseRefused;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;

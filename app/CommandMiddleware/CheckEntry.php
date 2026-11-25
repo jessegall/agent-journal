@@ -6,7 +6,7 @@ namespace App\CommandMiddleware;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Bus\CommandMiddleware;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use App\Exceptions\CommandNotRegistered;
 use App\Support\CommandCall;
 use App\Support\CommandEntrance;

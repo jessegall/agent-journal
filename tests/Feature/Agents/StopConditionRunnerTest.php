@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Commands\Starts\RecordStopResults\RecordStopResultsCommand;
-use App\Enums\AnswerType;
-use App\Enums\StopAttemptState;
-use App\Enums\StopResultType;
+use App\Enums\Hooks\AnswerType;
+use App\Enums\Starts\StopAttemptState;
+use App\Enums\Starts\StopResultType;
 use App\Models\Starts\ProcessStart;
 use App\Models\Starts\SessionPolicy;
 use App\Models\Starts\StopAttempt;

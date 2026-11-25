@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Support;
 
-use App\Enums\ConversationModeType;
+use App\Enums\Agents\ConversationModeType;
 use Domain\Helpers\Support\Readers\HelperCandidate;
 
 /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Support\ActorIdentity;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestStart;

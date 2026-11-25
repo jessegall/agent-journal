@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Contracts\Drivers;
 
-use App\Enums\DriverCapability;
-use App\Enums\DriverType;
+use App\Enums\Drivers\DriverCapability;
+use App\Enums\Drivers\DriverType;
 use App\Exceptions\DriverFamilyUnknown;
 use App\Values\DriverFamily;
 use App\Values\DriverKey;

@@ -6,7 +6,7 @@ namespace Tests\Unit\Settings;
 
 use App\Declarations\SettingGroup;
 use App\Declarations\StringSetting;
-use App\Enums\SettingType;
+use App\Enums\Settings\SettingType;
 use App\Exceptions\SettingDeclarationInvalid;
 use App\Support\SettingKey;
 use PHPUnit\Framework\Attributes\DataProvider;

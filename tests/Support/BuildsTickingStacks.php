@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Enums\NoSubject;
+use App\Enums\Engine\NoSubject;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentStackRow;
 use App\Support\AgentSessions;

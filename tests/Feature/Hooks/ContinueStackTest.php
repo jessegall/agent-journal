@@ -6,10 +6,10 @@ namespace Tests\Feature\Hooks;
 
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Sessions\StartTransaction;
-use App\Enums\ConversationModeType;
-use App\Enums\DriverType;
-use App\Enums\NoSubject;
-use App\Enums\StartOriginType;
+use App\Enums\Agents\ConversationModeType;
+use App\Enums\Drivers\DriverType;
+use App\Enums\Engine\NoSubject;
+use App\Enums\Starts\StartOriginType;
 use App\Exceptions\StateTransferUnknown;
 use App\Models\Agents\AgentSession;
 use App\Models\Agents\AgentStackRow;

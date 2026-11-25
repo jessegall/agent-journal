@@ -7,7 +7,7 @@ namespace App\Declarations;
 use App\Contracts\Authorization\VisibilityCheck;
 use App\Contracts\Navigation\NavigationChildren;
 use App\Contracts\Records\CountResolver;
-use App\Enums\Icon;
+use App\Enums\Navigation\Icon;
 use App\Exceptions\InvalidNavigationDeclaration;
 
 /**

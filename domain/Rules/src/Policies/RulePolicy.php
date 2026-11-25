@@ -6,8 +6,8 @@ namespace Domain\Rules\Policies;
 
 use App\Contracts\Authorization\Policy;
 use App\Contracts\Authorization\RestrictedPolicy;
-use App\Enums\AccessType;
-use App\Enums\ProfileAudience;
+use App\Enums\Agents\AccessType;
+use App\Enums\Profiles\ProfileAudience;
 use Domain\Rules\Models\Rule;
 
 /**

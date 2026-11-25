@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
+use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCompatibilities;
-use App\Enums\DriverCapability;
-use App\Enums\DriverEvidence;
-use App\Enums\DriverType;
-use App\Enums\ProcessStartState;
+use App\Enums\Agents\ProcessStartState;
+use App\Enums\Drivers\DriverCapability;
+use App\Enums\Drivers\DriverEvidence;
+use App\Enums\Drivers\DriverType;
 use App\Events\Sessions\SessionStateChanged;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Models\Agents\Agent;

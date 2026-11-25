@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Reflection\ReflectorFactory;
 use App\Contracts\Settings\Setting;
 use App\Declarations\ToggleGroup;
-use App\Enums\SettingType;
+use App\Enums\Settings\SettingType;
 use App\Exceptions\SettingsAccessDenied;
 use App\Exceptions\SettingUnavailable;
 use App\Exceptions\SettingValueInvalid;

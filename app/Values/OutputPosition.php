@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\OutputStream;
+use App\Enums\Processes\OutputStream;
 
 /**
  * How far a part's stream is stored: the byte offset after its last committed chunk.

@@ -10,7 +10,7 @@ use App\Data\Assignments\AutoAssignmentChangeData;
 use App\Data\Assignments\AutoAssignmentPageData;
 use App\Data\Assignments\AutoAssignmentStatusData;
 use App\Data\Assignments\RecordHolderData;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Support\CallKey;
 
 /**

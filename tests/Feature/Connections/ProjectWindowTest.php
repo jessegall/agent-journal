@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Connections;
 
 use App\Data\Connections\ProjectEntryData;
-use App\Enums\ProjectReadType;
-use App\Enums\ProjectWindowState;
+use App\Enums\Projects\ProjectReadType;
+use App\Enums\Projects\ProjectWindowState;
 use App\Models\Projects\ProjectRead;
 use Carbon\CarbonImmutable;
 use Closure;

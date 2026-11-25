@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\StepStatus;
+use App\Enums\Terminals\StepStatus;
 
 final readonly class StepOutcome
 {

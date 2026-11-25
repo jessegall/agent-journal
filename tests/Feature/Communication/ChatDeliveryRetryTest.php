@@ -6,10 +6,10 @@ namespace Tests\Feature\Communication;
 
 use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
 use App\Commands\Messages\RetryDelivery\RetryDeliveryCommand;
-use App\Enums\InboxPermission;
+use App\Enums\Messages\InboxPermission;
+use App\Enums\Messages\WakeState;
 use App\Enums\OutstandingMessageRangeState;
 use App\Enums\ReceiptDeliveryState;
-use App\Enums\WakeState;
 use App\Models\Messages\MessageAttention;
 use App\Models\Messages\MessageReceipt;
 use App\Models\Messages\OutstandingMessageRange;

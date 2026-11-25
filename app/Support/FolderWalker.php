@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\EntryType;
+use App\Enums\Files\EntryType;
 use App\Exceptions\FilePathInvalid;
 use App\Exceptions\FileUnreadable;
 use App\Exceptions\FolderLoop;

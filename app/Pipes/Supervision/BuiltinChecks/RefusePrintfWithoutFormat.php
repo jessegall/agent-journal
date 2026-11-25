@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Pipes\Supervision\BuiltinChecks;
 
 use App\Contracts\Bus\Pipe;
-use App\Enums\BuiltinCommand;
+use App\Enums\CommandRules\BuiltinCommand;
 use App\Exceptions\SupervisorRefused;
 use App\Support\Execution\PlannedRun;
 

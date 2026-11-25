@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Actors\Actor;
 use App\Contracts\Authorization\Authorizer;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use Illuminate\Auth\Access\Response;
 
 /**

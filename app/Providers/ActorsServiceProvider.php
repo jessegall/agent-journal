@@ -23,7 +23,7 @@ use App\Contracts\Inboxes\InboxMemberPolicies;
 use App\Contracts\Presence\UserPresences;
 use App\Contracts\Time\ServerClock;
 use App\Contracts\Work\ActorStackSessions;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Support\ActiveActorCounterRegistry;
 use App\Support\ActorContext;
 use App\Support\ActorProviderRegistry;

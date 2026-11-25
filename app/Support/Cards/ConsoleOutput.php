@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Cards;
 
-use App\Enums\ConsoleStream;
-use App\Enums\PartType;
+use App\Enums\Runs\ConsoleStream;
+use App\Enums\Runs\PartType;
 use App\Exceptions\DockCardInvalid;
 use App\Support\Cards\Contracts\DockPart;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Classification;
 
-use App\Enums\CommandType;
+use App\Enums\CommandRules\CommandType;
 use App\Values\ClassFact;
 use App\Values\PartClassification;
 use App\Values\ProgramIdentity;

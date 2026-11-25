@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\MergeAttemptState;
-use App\Enums\MergeRefusalReason;
+use App\Enums\Reviews\MergeAttemptState;
+use App\Enums\Reviews\MergeRefusalReason;
 
 /**
  * How a merge of approved work ended: merged with the resulting commit, refused with its reason and evidence, or

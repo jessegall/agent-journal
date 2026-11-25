@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\CoreAskType;
+use App\Enums\Asks\CoreAskType;
 use App\Models\Asks\Ask;
 use App\Models\Asks\AskHop;
 use Carbon\CarbonImmutable;

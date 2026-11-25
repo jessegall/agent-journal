@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Enums\ShareState;
+use App\Enums\Sharing\ShareState;
 use App\Events\Sharing\ShareExpired;
 use App\Events\Sharing\ShareRevoked;
 use App\Exceptions\ShareEndInvalid;

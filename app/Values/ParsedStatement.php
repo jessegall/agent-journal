@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\DiagnosticCode;
+use App\Enums\Profiles\DiagnosticCode;
 use App\Exceptions\ScriptSyntaxError;
 
 final readonly class ParsedStatement

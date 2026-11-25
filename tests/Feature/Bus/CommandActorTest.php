@@ -6,7 +6,7 @@ namespace Tests\Feature\Bus;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use App\Exceptions\ActorContextMissing;
 use App\Exceptions\CommandNotRegistered;
 use App\Support\ActorContext;

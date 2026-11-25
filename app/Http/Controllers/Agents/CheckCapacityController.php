@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
-use App\Enums\StartRefusalType;
+use App\Enums\Starts\StartRefusalType;
 use App\Http\Requests\Agents\CheckCapacityRequest;
 use App\Models\Agents\Agent;
 use App\Support\CapacityCheck;

@@ -8,7 +8,7 @@ use App\Contracts\Files\Files;
 use App\Contracts\Reflection\ReflectorFactory;
 use App\Declarations\DomainUi;
 use App\Declarations\Page;
-use App\Enums\Icon;
+use App\Enums\Navigation\Icon;
 use App\Support\DomainEntry;
 use App\Support\DomainRegistry;
 use App\Support\Types\PagePropTypes;

@@ -6,9 +6,9 @@ namespace Tests\Feature\Sharing;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\ActorType;
-use App\Enums\GatewayOperationType;
-use App\Enums\ShareState;
+use App\Enums\Assignments\ActorType;
+use App\Enums\Sharing\GatewayOperationType;
+use App\Enums\Sharing\ShareState;
 use App\Http\Controllers\RevealShareLinkController;
 use App\Models\Records\Link;
 use App\Models\Sharing\Share;

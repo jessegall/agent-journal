@@ -8,7 +8,7 @@ use App\Commands\Agents\SettleFrameTimes\SettleFrameTimesCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Time\MonotonicClock;
 use App\Contracts\Time\ServerClock;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use App\Models\Agents\EngineFrameTime;
 use App\Support\References\Exceptions\WorkOccurrenceStale;
 use App\Support\Ticks\ElapsedTime;

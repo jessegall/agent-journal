@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Events\Asks\AskAccepted;
 use App\Events\Asks\AskAnsweredLate;
 use App\Events\Asks\AskClosed;

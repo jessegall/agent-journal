@@ -10,7 +10,7 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\AccountNoticeReason;
+use App\Enums\Accounts\AccountNoticeReason;
 use App\Events\Accounts\AccountNoticeRecorded;
 use App\Events\Accounts\AccountNoticeResolved;
 use App\Models\Support\AccountOwnerScope;

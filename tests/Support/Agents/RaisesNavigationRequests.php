@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support\Agents;
 
-use App\Enums\ActorType;
-use App\Enums\NavigationReason;
+use App\Enums\Assignments\ActorType;
+use App\Enums\Navigation\NavigationReason;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\NavigationRequest;
 use App\Support\ActorIdentity;

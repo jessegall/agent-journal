@@ -6,7 +6,7 @@ namespace App\Mcp\Tools;
 
 use App\Contracts\Admission\JournalAdmission;
 use App\Contracts\Navigation\NavigationReader;
-use App\Enums\MenuEntryState;
+use App\Enums\Navigation\MenuEntryState;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Contracts\NumberedPages;
 use App\Mcp\Data\ToolResult;

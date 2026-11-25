@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Data\Terminals\ScreenFrameData;
-use App\Enums\ScreenBuffer;
+use App\Enums\Terminals\ScreenBuffer;
 use App\Support\RuntimeScreen;
 use App\Support\ScreenRegistration;
 use Carbon\CarbonImmutable;

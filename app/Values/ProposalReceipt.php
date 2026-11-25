@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\ProposalState;
+use App\Enums\CommandRules\ProposalState;
 use App\Models\CommandRules\RuleProposal;
 
 /**

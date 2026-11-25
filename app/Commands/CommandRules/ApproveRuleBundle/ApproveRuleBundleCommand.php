@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\CommandRules\ApproveRuleBundle;
 
 use App\Attributes\Authorize;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Policies\ProcessAdministrationPolicy;
 use App\Support\Command;
 

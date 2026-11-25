@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Support\Drivers;
 
 use App\Contracts\Actors\AgentTexts;
-use App\Enums\AnswerType;
-use App\Enums\DriverPermission;
-use App\Enums\DriverStopDecision;
-use App\Enums\HookEvent;
-use App\Enums\RewriteSupport;
+use App\Enums\Drivers\DriverPermission;
+use App\Enums\Drivers\DriverStopDecision;
+use App\Enums\Drivers\RewriteSupport;
+use App\Enums\Hooks\AnswerType;
+use App\Enums\Hooks\HookEvent;
 use App\Exceptions\InvalidObservationAnswer;
 use App\Exceptions\InvalidShellAnswer;
 use App\Exceptions\InvalidStopAnswer;

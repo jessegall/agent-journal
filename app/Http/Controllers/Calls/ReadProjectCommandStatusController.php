@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Connections\ProjectCommandStatus;
 use App\Calls\Connections\ReadProjectCommandStatusCall;
-use App\Enums\CommandRunState;
+use App\Enums\Connections\CommandRunState;
 use App\Exceptions\VerbNotServed;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectCommandRun;

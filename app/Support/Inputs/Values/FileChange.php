@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Inputs\Values;
 
-use App\Enums\FileOperation;
+use App\Enums\Files\FileOperation;
 use App\Values\Operation;
 use App\Values\ResourceRequest;
 

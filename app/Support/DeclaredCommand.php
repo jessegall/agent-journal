@@ -11,8 +11,8 @@ use App\Attributes\RepeatableRead;
 use App\Attributes\RequiresRequestKey;
 use App\Attributes\RetainedActorRequestKey;
 use App\Concerns\Reflects;
-use App\Enums\CommandEffectType;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
+use App\Enums\Reviews\CommandEffectType;
 use App\Exceptions\CommandDeclarationInvalid;
 
 /**

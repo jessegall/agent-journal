@@ -6,8 +6,8 @@ namespace Tests\Feature\Processes;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Admission\ShellAdmission;
-use App\Enums\AdmissionRefusalCode;
-use App\Enums\ShellDialect;
+use App\Enums\CommandRules\AdmissionRefusalCode;
+use App\Enums\Processes\ShellDialect;
 use App\Support\Rules\ShippedReaders;
 use App\Support\ShippedReaderInstaller;
 use App\Values\Admission;

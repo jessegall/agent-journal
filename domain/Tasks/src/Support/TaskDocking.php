@@ -6,7 +6,7 @@ namespace Domain\Tasks\Support;
 
 use App\Contracts\Assignments\AssigneeResolver;
 use App\Contracts\Authorization\CurrentAuthorizer;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Exceptions\DockSourceUnavailable;
 use App\Support\AssignmentHolder;
 use App\Support\Cards\ComposedCard;

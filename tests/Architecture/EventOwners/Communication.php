@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-use App\Enums\ActorType;
-use App\Enums\DismissalType;
+use App\Enums\Assignments\ActorType;
 use App\Enums\IntervalRole;
 use App\Enums\LeaveReason;
 use App\Enums\MessageBatchState;
+use App\Enums\Messages\DismissalType;
+use App\Enums\Messages\WakeState;
 use App\Enums\SpeechOpportunityState;
-use App\Enums\WakeState;
+use App\Events\Inboxes\InboxMessageNumberTaken;
 use App\Events\Messages\AgentChatPermissionWithdrawn;
 use App\Events\Messages\ChatLinePosted;
 use App\Events\Messages\ChatMemberJoined;
@@ -17,7 +18,6 @@ use App\Events\Messages\ChatMessageAccepted;
 use App\Events\Messages\ChatMessageOffered;
 use App\Events\Messages\ChatReceiptPresented;
 use App\Events\Messages\ChatRoleChanged;
-use App\Events\Inboxes\InboxMessageNumberTaken;
 use App\Events\Messages\MessageAnswered;
 use App\Events\Messages\MessageAnswerRequired;
 use App\Events\Messages\MessageBatchClaimsGranted;

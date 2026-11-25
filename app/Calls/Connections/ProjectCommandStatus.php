@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Calls\Connections;
 
-use App\Enums\CommandRunState;
+use App\Enums\Connections\CommandRunState;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 

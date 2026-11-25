@@ -7,7 +7,7 @@ namespace App\Support\Stack;
 use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Events\Event;
 use App\Declarations\StateMethod;
-use App\Enums\AnswerType;
+use App\Enums\Hooks\AnswerType;
 use App\Support\Decisions\Decision;
 use App\Support\Stack\Frames\Frame;
 use App\Support\Storage\WalkStep;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\StepType;
+use App\Enums\CommandRules\StepType;
 use App\Exceptions\ExecutionPlanRefused;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;

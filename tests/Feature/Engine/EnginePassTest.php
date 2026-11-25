@@ -6,7 +6,7 @@ namespace Tests\Feature\Engine;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Time\MonotonicClock;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Exceptions\RepeatedReadRefused;
 use App\Support\DatabaseClock;
 use App\Support\EnginePass;

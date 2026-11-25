@@ -6,8 +6,8 @@ namespace Tests\Feature\Agents;
 
 use App\Commands\Starts\RecordStopResults\RecordStopResultsCommand;
 use App\Contracts\Sessions\ProfileResolver;
-use App\Enums\ExecutionModeType;
-use App\Enums\StopResultType;
+use App\Enums\Agents\ExecutionModeType;
+use App\Enums\Starts\StopResultType;
 use App\Models\Starts\SessionPolicy;
 use App\Models\Starts\StopAttempt;
 use App\Support\Inputs\Values\HookIdentity;

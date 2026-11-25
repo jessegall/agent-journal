@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Events;
 
-use App\Enums\OutputStream;
+use App\Enums\Processes\OutputStream;
 use App\Values\PartEnd;
 use App\Values\PartKey;
 

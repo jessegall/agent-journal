@@ -7,8 +7,8 @@ namespace App\Exceptions;
 use App\Concerns\RendersRefusal;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
-use App\Enums\DriverCapability;
-use App\Enums\RefusalCode;
+use App\Enums\Drivers\DriverCapability;
+use App\Enums\Engine\RefusalCode;
 use RuntimeException;
 
 /**

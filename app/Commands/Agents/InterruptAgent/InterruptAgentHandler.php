@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\Agents\InterruptAgent;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\DriverOperation;
-use App\Enums\HoldReason;
+use App\Enums\Drivers\DriverOperation;
+use App\Enums\Drivers\HoldReason;
 use App\Support\DriverRequests;
 use App\Values\DriverReceipt;
 use App\Values\DriverRequestPayload;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Actors\Actor;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 
 /**
  * Who acts in this request, filled by the middleware that authenticated them and kept for this request only. A user

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\SignInState;
+use App\Enums\Accounts\SignInState;
 use App\Models\Accounts\SignInAttempt;
 use App\Values\SignInChallenge;
 use Carbon\CarbonImmutable;

@@ -7,7 +7,7 @@ namespace App\Calls\Connections;
 use App\Attributes\Endpoint;
 use App\Attributes\InPath;
 use App\Contracts\Domains\JournalCall;
-use App\Enums\CallEffect;
+use App\Enums\Processes\CallEffect;
 use App\Values\CallAccepted;
 use Spatie\LaravelData\Attributes\FromRouteParameter;
 use Spatie\LaravelData\Attributes\Validation\Max;

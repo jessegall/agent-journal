@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Data\Agents;
 
-use App\Enums\DriverSourceType;
-use App\Enums\DriverType;
-use App\Enums\DriverTypeSource;
+use App\Enums\Drivers\DriverSourceType;
+use App\Enums\Drivers\DriverType;
+use App\Enums\Drivers\DriverTypeSource;
 use App\Values\StartPreview;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;

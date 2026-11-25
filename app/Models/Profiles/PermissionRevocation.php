@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
 use App\Contracts\Records\ReadableModel;
 use App\Data\Profiles\RevokedPatternData;
-use App\Enums\CommandClass;
+use App\Enums\CommandRules\CommandClass;
 use App\Support\ActorIdentity;
 use App\Values\CommandClassSet;
 use App\Values\CommandPattern;

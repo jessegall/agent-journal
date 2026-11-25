@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\Accounts\RecordAccountNotice;
 
 use App\Attributes\Entry;
-use App\Enums\AccountNoticeReason;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\AccountNoticeReason;
+use App\Enums\Accounts\CommandEntry;
 use App\Support\Command;
 
 /**

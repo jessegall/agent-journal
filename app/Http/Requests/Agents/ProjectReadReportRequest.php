@@ -6,7 +6,7 @@ namespace App\Http\Requests\Agents;
 
 use App\Commands\Projects\NotifyProjectRead\NotifyProjectReadCommand;
 use App\Data\Connections\ProjectEntryData;
-use App\Enums\ProjectReadFailure;
+use App\Enums\Projects\ProjectReadFailure;
 use App\Values\ProjectFileText;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;

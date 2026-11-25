@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\PublicationState;
+use App\Enums\Skills\PublicationState;
 use App\Events\Skills\SessionSkillsIntended;
 use App\Events\Skills\SkillContextEpochAdvanced;
 use App\Events\Skills\SkillGenerationRetired;

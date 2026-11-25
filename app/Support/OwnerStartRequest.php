@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\ConversationModeType;
-use App\Enums\DriverType;
-use App\Enums\ExecutionModeType;
-use App\Enums\StartOriginType;
+use App\Enums\Agents\ConversationModeType;
+use App\Enums\Agents\ExecutionModeType;
+use App\Enums\Drivers\DriverType;
+use App\Enums\Starts\StartOriginType;
 use App\Models\Drivers\DriverConversation;
 use App\Values\SelectedDriver;
 use App\Values\StartPolicy;

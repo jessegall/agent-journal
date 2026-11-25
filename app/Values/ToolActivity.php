@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\ActivityType;
-use App\Enums\CodexTool;
+use App\Enums\Agents\ActivityType;
+use App\Enums\Drivers\CodexTool;
 use App\Support\Inputs\Values\FileChanges;
 use App\Support\Inputs\Values\ToolResult;
 use App\Support\ToolNames\Enums\ClaudeCodeTool;

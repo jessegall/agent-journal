@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Enums\TransportProfileType;
+use App\Enums\Starts\TransportProfileType;
 use App\Exceptions\JournalServerUnresolved;
 use App\Support\Drivers\AccountConfigurationWrite;
 use App\Support\Drivers\CodexFolderTrust;

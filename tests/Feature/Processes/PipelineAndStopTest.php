@@ -6,9 +6,9 @@ namespace Tests\Feature\Processes;
 
 use App\Contracts\Bus\CommandClassifier;
 use App\Contracts\Processes\StopSignal;
-use App\Enums\LifecycleState;
-use App\Enums\PartEndType;
-use App\Enums\ShellDialect;
+use App\Enums\Processes\ShellDialect;
+use App\Enums\Runs\LifecycleState;
+use App\Enums\Runs\PartEndType;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Pipelines\SuperviseRunPipeline;

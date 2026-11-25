@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\CleanupStep;
+use App\Enums\Starts\CleanupStep;
 
 /**
  * What a host reports of one cleanup pass: the resources it removed or found already gone, the dirty workspace it

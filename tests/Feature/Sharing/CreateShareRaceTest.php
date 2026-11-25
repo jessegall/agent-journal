@@ -7,7 +7,7 @@ namespace Tests\Feature\Sharing;
 use App\Commands\Sharing\CreateShare\CreateShareCommand;
 use App\Commands\Sharing\SaveSharePreview\SaveSharePreviewCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\ShareState;
+use App\Enums\Sharing\ShareState;
 use App\Exceptions\ShareQuotaReached;
 use App\Exceptions\StackLockTimedOut;
 use App\Models\Sharing\Share;

@@ -6,9 +6,9 @@ namespace App\Support\Relay;
 
 use App\Contracts\Files\Files;
 use App\Contracts\Sessions\AgentRequestClient;
-use App\Enums\CallFailure;
-use App\Enums\HookEvent;
-use App\Enums\Place;
+use App\Enums\Files\Place;
+use App\Enums\Hooks\CallFailure;
+use App\Enums\Hooks\HookEvent;
 use App\Exceptions\CallDeadlinePassed;
 use App\Exceptions\DriverReplyMalformed;
 use App\Exceptions\JournalUnreachable;

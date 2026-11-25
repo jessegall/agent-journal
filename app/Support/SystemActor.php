@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Actors\Actor;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 
 /**
  * The journal itself as an actor: a service principal with no row and no inbox, which sends no messages. Trusted

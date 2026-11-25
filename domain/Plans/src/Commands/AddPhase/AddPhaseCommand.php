@@ -6,7 +6,7 @@ namespace Domain\Plans\Commands\AddPhase;
 
 use App\Attributes\Authorize;
 use App\Attributes\OneLine;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Policies\PlanPolicy;

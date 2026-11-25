@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Events\Sessions;
 
 use App\Contracts\Sessions\StopAttemptEvent;
-use App\Enums\StopAttemptState;
+use App\Enums\Starts\StopAttemptState;
 
 /**
  * A stop attempt was settled in the state given; its outcome is the same for two attempts that settled alike, with

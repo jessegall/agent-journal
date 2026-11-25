@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Files\Files;
-use App\Enums\CaptureState;
-use App\Enums\Place;
+use App\Enums\Files\Place;
+use App\Enums\Runs\CaptureState;
 use App\Models\Runs\OutputChunk;
 use App\Models\Runs\PartRun;
 use App\Values\FilePath;

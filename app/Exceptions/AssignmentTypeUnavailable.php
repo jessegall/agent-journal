@@ -7,8 +7,8 @@ namespace App\Exceptions;
 use App\Concerns\RendersRefusal;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
-use App\Enums\ActorType;
-use App\Enums\RefusalCode;
+use App\Enums\Assignments\ActorType;
+use App\Enums\Engine\RefusalCode;
 use RuntimeException;
 
 final class AssignmentTypeUnavailable extends RuntimeException implements CodedRefusal, CommandRefusal

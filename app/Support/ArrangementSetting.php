@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\ArrangementType;
+use App\Enums\Projects\ArrangementType;
 use App\Exceptions\AccountFolderInvalid;
 use App\Exceptions\ArrangementUnknown;
 use App\Exceptions\DriverNotContainable;

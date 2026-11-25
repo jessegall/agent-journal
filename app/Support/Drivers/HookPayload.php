@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support\Drivers;
 
-use App\Enums\ContextStartType;
-use App\Enums\DriverFailure;
-use App\Enums\HookEvent;
-use App\Enums\SessionEndReason;
-use App\Enums\ToolOutcome;
+use App\Enums\Drivers\DriverFailure;
+use App\Enums\Hooks\ContextStartType;
+use App\Enums\Hooks\HookEvent;
+use App\Enums\Hooks\ToolOutcome;
+use App\Enums\Sessions\SessionEndReason;
 use App\Exceptions\UnreadablePayload;
 use App\Support\Inputs\ProtectedFileRead;
 use App\Support\Inputs\Values\DriverToolInput;

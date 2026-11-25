@@ -6,9 +6,9 @@ namespace Tests\Unit\Hooks;
 
 use App\Commands\Links\UnlinkRecords\UnlinkRecordsCommand;
 use App\Contracts\Authorization\OperationPolicy;
-use App\Enums\AccessRuleType;
-use App\Enums\AnswerType;
-use App\Enums\NoSubject;
+use App\Enums\Engine\NoSubject;
+use App\Enums\Hooks\AnswerType;
+use App\Enums\Profiles\AccessRuleType;
 use App\Exceptions\BottomStateCannotFinish;
 use App\Exceptions\HookAnswerRefused;
 use App\Exceptions\InvalidHookAnswer;

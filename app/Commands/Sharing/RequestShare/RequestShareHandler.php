@@ -6,7 +6,7 @@ namespace App\Commands\Sharing\RequestShare;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Records\RecordResolver;
-use App\Enums\ShareAuditType;
+use App\Enums\Sharing\ShareAuditType;
 use App\Exceptions\ShareQuotaReached;
 use App\Models\Sharing\Share;
 use App\Models\Sharing\ShareAudit;

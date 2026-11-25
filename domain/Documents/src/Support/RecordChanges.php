@@ -7,7 +7,7 @@ namespace Domain\Documents\Support;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Contracts\Reflection\TypeReflections;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Exceptions\ActorNotAllowed;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;

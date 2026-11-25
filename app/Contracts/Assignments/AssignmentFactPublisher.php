@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Assignments;
 
-use App\Enums\AssignmentReason;
+use App\Enums\Assignments\AssignmentReason;
 use App\Support\ActorIdentity;
 use App\Support\AssignmentResult;
 

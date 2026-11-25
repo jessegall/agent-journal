@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Data;
 
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;

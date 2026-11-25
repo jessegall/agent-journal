@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\Enums\RequestState;
+use App\Enums\CommandRules\RequestState;
 use RuntimeException;
 
 /**

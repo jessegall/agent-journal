@@ -6,7 +6,7 @@ namespace App\Events\Messages;
 
 use App\Contracts\Events\ListenerFailureLog;
 use App\Contracts\Navigation\UserInterfaceUpdater;
-use App\Enums\DismissalType;
+use App\Enums\Messages\DismissalType;
 use App\Support\ActorIdentity;
 
 /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Drivers;
 
-use App\Enums\RewriteSupport;
+use App\Enums\Drivers\RewriteSupport;
 use App\Exceptions\UnsupportedHook;
 use App\Support\Decisions\Decision;
 use App\Support\Stack\AgentStack;

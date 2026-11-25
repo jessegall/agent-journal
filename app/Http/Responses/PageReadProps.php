@@ -7,7 +7,7 @@ namespace App\Http\Responses;
 use App\Contracts\Navigation\UiOwnerAvailability;
 use App\Contracts\Reflection\ReflectorFactory;
 use App\Declarations\RegisteredAction;
-use App\Enums\ActionMethod;
+use App\Enums\Settings\ActionMethod;
 use App\Exceptions\PageReadParameterMissing;
 use App\Support\ReflectedParameter;
 use App\Support\Reflector;

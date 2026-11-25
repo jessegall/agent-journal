@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Pipes\Lexing;
 
 use App\Contracts\Bus\Pipe;
-use App\Enums\TokenType;
+use App\Enums\CommandRules\TokenType;
 use App\Support\Syntax\LexerCursor;
 
 /**

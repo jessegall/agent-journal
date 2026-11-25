@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\RunLogicalResult;
-use App\Enums\RunResultSource;
+use App\Enums\Runs\RunLogicalResult;
+use App\Enums\Runs\RunResultSource;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use Carbon\CarbonImmutable;

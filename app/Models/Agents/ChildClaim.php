@@ -8,7 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\ChildRole;
+use App\Enums\Agents\ChildRole;
 use App\Exceptions\ChildClaimRefused;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Support\Accessor;

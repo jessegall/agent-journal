@@ -7,9 +7,9 @@ namespace App\Values;
 use App\Contracts\Scripts\ScriptKeywordDefinition;
 use App\Contracts\Scripts\ScriptStatement;
 use App\Contracts\Scripts\ScriptTrigger;
-use App\Enums\KeywordCategory;
-use App\Enums\ScriptEffect;
-use App\Enums\SyntaxForm;
+use App\Enums\CommandRules\SyntaxForm;
+use App\Enums\Profiles\KeywordCategory;
+use App\Enums\Profiles\ScriptEffect;
 
 final readonly class KeywordDefinition implements ScriptKeywordDefinition
 {

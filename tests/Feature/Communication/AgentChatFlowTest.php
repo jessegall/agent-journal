@@ -7,7 +7,7 @@ namespace Tests\Feature\Communication;
 use App\Commands\Messages\AskChatQuestion\AskChatQuestionCommand;
 use App\Commands\Messages\ReplyToMessage\ReplyToMessageCommand;
 use App\Contracts\Chat\AgentMessageReader;
-use App\Enums\ReadView;
+use App\Enums\CommandRules\ReadView;
 use App\Support\ActorIdentity;
 use App\Support\PendingInboxWork;
 use Domain\Chat\Models\Conversation;

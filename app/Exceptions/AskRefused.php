@@ -6,7 +6,7 @@ namespace App\Exceptions;
 
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
-use App\Enums\RefusalCode;
+use App\Enums\Engine\RefusalCode;
 use App\Values\SubjectType;
 use RuntimeException;
 

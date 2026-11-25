@@ -7,7 +7,7 @@ namespace Domain\Plans\Commands\ReassignPlanWork;
 use App\Attributes\Authorize;
 use App\Attributes\RepeatableRead;
 use App\Attributes\RetainedActorRequestKey;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentReference;
 use App\Support\AssignmentResult;

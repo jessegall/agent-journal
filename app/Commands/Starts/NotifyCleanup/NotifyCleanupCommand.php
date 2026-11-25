@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\Starts\NotifyCleanup;
 
 use App\Attributes\Entry;
-use App\Enums\CleanupState;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
+use App\Enums\Starts\CleanupState;
 use App\Support\Command;
 use App\Values\CleanupReport;
 

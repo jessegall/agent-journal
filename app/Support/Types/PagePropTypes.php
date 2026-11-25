@@ -7,7 +7,7 @@ namespace App\Support\Types;
 use App\Contracts\Navigation\PresentsLayout;
 use App\Contracts\Reflection\ReflectorFactory;
 use App\Declarations\RegisteredPage;
-use App\Enums\PageDestination;
+use App\Enums\Web\PageDestination;
 use App\Support\UiDeclarations;
 use Illuminate\Support\Str;
 

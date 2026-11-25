@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\DriverSourceType;
-use App\Enums\DriverType;
-use App\Enums\DriverTypeSource;
+use App\Enums\Drivers\DriverSourceType;
+use App\Enums\Drivers\DriverType;
+use App\Enums\Drivers\DriverTypeSource;
 
 /**
  * What a start would run before it is committed: the driver it resolves to and where its family and driver type came from,

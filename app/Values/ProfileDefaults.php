@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\DriverType;
-use App\Enums\ModelTier;
+use App\Enums\Drivers\DriverType;
+use App\Enums\Profiles\ModelTier;
 
 /**
  * What a profile prefers for a start, as plain values from its owner: the driver it preselects, the tier of work that

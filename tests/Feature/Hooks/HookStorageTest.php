@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Enums\AnswerType;
-use App\Enums\NoSubject;
-use App\Enums\StackStatus;
+use App\Enums\Agents\StackStatus;
+use App\Enums\Engine\NoSubject;
+use App\Enums\Hooks\AnswerType;
 use App\Exceptions\StoredValueInvalid;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Drivers\HookCall;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\NodeType;
+use App\Enums\CommandRules\NodeType;
 
 /**
  * One node of a shell syntax tree: its id within the tree, what it is, where it sits in the source, its parent and its

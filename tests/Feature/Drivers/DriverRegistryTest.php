@@ -6,9 +6,9 @@ namespace Tests\Feature\Drivers;
 
 use App\Contracts\Drivers\Driver;
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\DriverCapability;
-use App\Enums\DriverType;
-use App\Enums\SupportState;
+use App\Enums\Drivers\DriverCapability;
+use App\Enums\Drivers\DriverType;
+use App\Enums\Drivers\SupportState;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Exceptions\DriverKeyInvalid;
 use App\Exceptions\DriverRegisteredTwice;

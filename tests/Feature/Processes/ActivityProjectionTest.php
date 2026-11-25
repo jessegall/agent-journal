@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Enums\OutputStream;
+use App\Enums\Processes\OutputStream;
 use App\Events\Processes\RunChanged;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;

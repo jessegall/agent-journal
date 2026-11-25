@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\ListenerLane;
+use App\Enums\Engine\ListenerLane;
 
 /**
  * Every event listener, by event and by lane, each a Class@method name or an invokable that gates it by its domain's

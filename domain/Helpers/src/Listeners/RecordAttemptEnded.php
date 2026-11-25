@@ -6,7 +6,7 @@ namespace Domain\Helpers\Listeners;
 
 use App\Contracts\Bus\JournalCommands;
 use App\Contracts\Events\Listener;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use App\Events\Sessions\LaunchEnded;
 use Domain\Helpers\Commands\MarkHelperJobUnfinished\MarkHelperJobUnfinishedCommand;
 use Domain\Helpers\Models\HelperJob;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\Agents\RepairDriverSettings;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\DriverOperation;
-use App\Enums\RecoveryAction;
+use App\Enums\Drivers\DriverOperation;
+use App\Enums\Drivers\RecoveryAction;
 use App\Exceptions\DriverRequestRefused;
 use App\Models\Agents\AgentRuntime;
 use App\Support\DriverRequestRecovery;

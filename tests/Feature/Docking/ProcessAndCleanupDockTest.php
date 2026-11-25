@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Docking;
 
-use App\Enums\ActorType;
-use App\Enums\OutputStream;
+use App\Enums\Assignments\ActorType;
+use App\Enums\Processes\OutputStream;
 use App\Models\CommandRules\EvidenceRead;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;

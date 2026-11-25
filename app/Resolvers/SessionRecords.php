@@ -6,7 +6,7 @@ namespace App\Resolvers;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Sessions\SessionResolver;
-use App\Enums\SessionStatus;
+use App\Enums\Sessions\SessionStatus;
 use App\Exceptions\StackTargetRefused;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;

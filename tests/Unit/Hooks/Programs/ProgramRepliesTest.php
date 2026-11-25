@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\Drivers;
 
-use App\Enums\DriverPermission;
-use App\Enums\HookEvent;
-use App\Enums\RewriteSupport;
+use App\Enums\Drivers\DriverPermission;
+use App\Enums\Drivers\RewriteSupport;
+use App\Enums\Hooks\HookEvent;
 use App\Exceptions\InvalidStopAnswer;
 use App\Support\Decisions\Decision;
 use App\Support\Drivers\DriverReplies;

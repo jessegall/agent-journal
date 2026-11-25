@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Files\WorkspaceSource;
-use App\Enums\MountType;
-use App\Enums\WorkspaceUse;
+use App\Enums\Agents\WorkspaceUse;
+use App\Enums\Projects\MountType;
 use App\Exceptions\ManifestRefused;
 use App\Values\WorkspacePreparation;
 

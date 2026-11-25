@@ -6,8 +6,8 @@ namespace Tests\Fixtures\AgentRequests\Invalid;
 
 use App\Attributes\Endpoint;
 use App\Contracts\Domains\JournalCall;
-use App\Enums\CallEffect;
-use App\Enums\ReceiptOwner;
+use App\Enums\Processes\CallEffect;
+use App\Enums\Processes\ReceiptOwner;
 use Spatie\LaravelData\Data;
 use Tests\Fixtures\AgentRequests\NoteAnswer;
 

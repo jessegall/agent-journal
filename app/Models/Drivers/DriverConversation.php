@@ -8,7 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\ResumeRefusal;
+use App\Enums\Starts\ResumeRefusal;
 use App\Exceptions\ResumeRefused;
 use App\Models\Agents\AgentSession;
 use Closure;

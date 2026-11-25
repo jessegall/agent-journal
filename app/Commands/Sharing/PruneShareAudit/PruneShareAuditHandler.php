@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Sharing\PruneShareAudit;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\ShareAuditType;
+use App\Enums\Sharing\ShareAuditType;
 use App\Models\Sharing\Share;
 use App\Models\Sharing\ShareAudit;
 use App\Support\ActorIdentity;

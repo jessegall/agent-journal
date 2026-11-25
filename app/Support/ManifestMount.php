@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\MountType;
+use App\Enums\Projects\MountType;
 
 /**
  * One folder a helper container sees: what it comes from, where it appears and whether it may be written.

@@ -8,7 +8,7 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Assignments\AssignedWorkProvider;
 use App\Contracts\Assignments\AssignedWorkResolver;
 use App\Contracts\Assignments\AssignmentQuery;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Exceptions\AssignmentTypeUnavailable;
 use App\Models\Records\AssignmentRecord;
 use App\Resolvers\RegisteredAssignedWork;

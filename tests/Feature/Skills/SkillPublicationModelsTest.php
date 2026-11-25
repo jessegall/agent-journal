@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Skills;
 
 use App\Data\Skills\GeneratedSkillData;
-use App\Enums\GenerationState;
-use App\Enums\PublicationState;
+use App\Enums\Skills\GenerationState;
+use App\Enums\Skills\PublicationState;
 use App\Exceptions\SkillGenerationImmutable;
 use App\Exceptions\SkillPublicationFailed;
 use App\Exceptions\SkillPublicationStale;

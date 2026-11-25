@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Contracts\Accounts;
 
 use App\Contracts\Events\Event;
-use App\Enums\AccountNoticeReason;
+use App\Enums\Accounts\AccountNoticeReason;
 
 /**
  * Something that went wrong for a driver that may leave a notice on its account: a start refused, or a failure.

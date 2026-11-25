@@ -8,9 +8,9 @@ use App\Attributes\Authorize;
 use App\Contracts\Authorization\Policy;
 use App\Contracts\Bus\Command;
 use App\Data\Profiles\ProfileAuthorization;
-use App\Enums\AccessType;
-use App\Enums\InstancePolicy;
-use App\Enums\ModelTier;
+use App\Enums\Agents\AccessType;
+use App\Enums\Profiles\InstancePolicy;
+use App\Enums\Profiles\ModelTier;
 use Spatie\LaravelData\Data;
 
 /**

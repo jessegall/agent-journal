@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Skills;
 
-use App\Enums\SkillReload;
+use App\Enums\Skills\SkillReload;
 use App\Values\SkillDelivery;
 use App\Values\SkillKey;
 

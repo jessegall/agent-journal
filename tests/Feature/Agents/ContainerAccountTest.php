@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
+use App\Commands\Accounts\SwitchAccount\SwitchAccountCommand;
 use App\Commands\Agents\ClaimStart\ClaimStartCommand;
-use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\Agents\ReconcileStarts\ReconcileStartsCommand;
-use App\Commands\Accounts\SwitchAccount\SwitchAccountCommand;
+use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCompatibilities;
 use App\Contracts\Sessions\AgentDirectory;
-use App\Enums\AgentPresence;
-use App\Enums\DriverEvidence;
-use App\Enums\DriverType;
-use App\Enums\ProcessStartState;
-use App\Enums\RuntimeActivity;
+use App\Enums\Agents\AgentPresence;
+use App\Enums\Agents\ProcessStartState;
+use App\Enums\Drivers\DriverEvidence;
+use App\Enums\Drivers\DriverType;
+use App\Enums\Runs\RuntimeActivity;
 use App\Models\Accounts\Account;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;

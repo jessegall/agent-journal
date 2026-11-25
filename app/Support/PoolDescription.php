@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\PoolInputType;
+use App\Enums\Assignments\PoolInputType;
 
 /**
  * What a user reads about a pool: its label, a line of help, and what a reference to it must carry.

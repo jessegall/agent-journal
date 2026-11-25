@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Runs\CleanProcessOutput;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\CaptureState;
+use App\Enums\Runs\CaptureState;
 use App\Exceptions\CleanRefused;
 use App\Models\Runs\OutputChunk;
 use App\Models\Runs\PartRun;

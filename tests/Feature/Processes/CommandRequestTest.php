@@ -6,8 +6,8 @@ namespace Tests\Feature\Processes;
 
 use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
 use App\Commands\CommandRules\WithdrawCommandRequest\WithdrawCommandRequestCommand;
-use App\Enums\RequestHoldReason;
-use App\Enums\RequestState;
+use App\Enums\CommandRules\RequestHoldReason;
+use App\Enums\CommandRules\RequestState;
 use App\Exceptions\RequestTransitionRefused;
 use App\Models\CommandRules\CommandRequest;
 use Tests\Support\ActsAsActors;

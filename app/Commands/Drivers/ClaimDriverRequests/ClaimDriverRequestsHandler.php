@@ -6,9 +6,9 @@ namespace App\Commands\Drivers\ClaimDriverRequests;
 
 use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\DriverOperation;
-use App\Enums\RequestProgress;
-use App\Enums\RuntimeActivity;
+use App\Enums\Drivers\DriverOperation;
+use App\Enums\Drivers\RequestProgress;
+use App\Enums\Runs\RuntimeActivity;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Projects\Host;

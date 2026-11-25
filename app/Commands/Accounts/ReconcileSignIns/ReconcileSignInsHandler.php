@@ -6,7 +6,7 @@ namespace App\Commands\Accounts\ReconcileSignIns;
 
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\SignInState;
+use App\Enums\Accounts\SignInState;
 use App\Models\Accounts\SignInAttempt;
 use Carbon\CarbonImmutable;
 

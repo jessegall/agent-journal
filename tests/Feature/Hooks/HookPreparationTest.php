@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Contracts\Files\Files;
-use App\Enums\CallFailure;
-use App\Enums\Place;
+use App\Enums\Files\Place;
+use App\Enums\Hooks\CallFailure;
 use App\Support\DefaultDrivers;
 use App\Support\Drivers\DriverReply;
 use App\Support\Relay\HookRelay;

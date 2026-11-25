@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Commands\Agents\StartAgent\StartAgentCommand;
+use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Hosts\DockerImageVerifier;
 use App\Contracts\Hosts\HostCapabilities;
 use App\Contracts\Sessions\ProfileResolver;
-use App\Enums\CapabilityStatusType;
-use App\Enums\ConversationModeType;
-use App\Enums\DriverType;
-use App\Enums\HostCapabilityType;
-use App\Enums\StartOriginType;
+use App\Enums\Agents\ConversationModeType;
+use App\Enums\Drivers\DriverType;
+use App\Enums\Projects\CapabilityStatusType;
+use App\Enums\Projects\HostCapabilityType;
+use App\Enums\Starts\StartOriginType;
 use App\Exceptions\AccountContainerUnsupported;
 use App\Exceptions\ContainerUnavailable;
 use App\Models\Agents\Agent;

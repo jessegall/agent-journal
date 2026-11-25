@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\AccessType;
-use App\Enums\DriverType;
-use App\Enums\ExecutionModeType;
-use App\Enums\ModelTier;
-use App\Enums\OfflineReplyMode;
+use App\Enums\Agents\AccessType;
+use App\Enums\Agents\ExecutionModeType;
+use App\Enums\Drivers\DriverType;
+use App\Enums\Profiles\ModelTier;
+use App\Enums\Starts\OfflineReplyMode;
 use App\Exceptions\BuiltInProfileMissing;
 
 /**

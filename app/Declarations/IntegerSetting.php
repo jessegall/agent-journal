@@ -9,7 +9,7 @@ use App\Contracts\Settings\CatalogueValue;
 use App\Contracts\Settings\Setting;
 use App\Data\Settings\IntegerConstraintsData;
 use App\Data\Settings\IntegerValueData;
-use App\Enums\SettingType;
+use App\Enums\Settings\SettingType;
 use App\Exceptions\SettingDeclarationInvalid;
 use App\Support\SettingKey;
 use App\Values\Decimal;

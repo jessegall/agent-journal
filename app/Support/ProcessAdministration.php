@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Authorization\CurrentAuthorizer;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Models\CommandRules\CommandRequest;
 use App\Policies\ProcessAdministrationPolicy;
 

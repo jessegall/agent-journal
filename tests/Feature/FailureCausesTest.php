@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Contracts\Refusals\RefusalMapper;
-use App\Enums\RefusalCode;
+use App\Enums\Engine\RefusalCode;
 use App\Mcp\Data\JsonRpcMessageData;
 use App\Mcp\Support\Frame;
 use App\Mcp\Support\LoggedMcpCall;

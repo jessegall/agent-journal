@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Pages;
 
 use App\Data\Docks\DockOfferData;
-use App\Enums\WindowState;
+use App\Enums\Web\WindowState;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;

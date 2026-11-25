@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\Terminals\RecordScriptStepResult;
 
 use App\Attributes\Entry;
-use App\Enums\CommandEntry;
-use App\Enums\StepStatus;
+use App\Enums\Accounts\CommandEntry;
+use App\Enums\Terminals\StepStatus;
 use App\Support\Command;
 
 /**

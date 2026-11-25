@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Grammar;
 
-use App\Enums\NodeType;
+use App\Enums\CommandRules\NodeType;
 use App\Values\SourceRange;
 
 /**

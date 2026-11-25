@@ -6,7 +6,7 @@ namespace Domain\Helpers\Console\Commands;
 
 use App\Attributes\JournalRoute;
 use App\Console\Concerns\RunsCallPipelines;
-use App\Enums\JournalRouteType;
+use App\Enums\CommandRules\JournalRouteType;
 use App\Support\CallKey;
 use App\Values\CommandReport;
 use Domain\Helpers\Calls\HelperCalls;
@@ -43,8 +43,8 @@ final class HelperSteerCommand extends Command
             }
 
             return $successReport
-                    ->line("No live job; kept as message {$steerReceipt->messageId}.")
-                    ->line("Run this to carry it: {$steerReceipt->suggestedCommand}");
+                ->line("No live job; kept as message {$steerReceipt->messageId}.")
+                ->line("Run this to carry it: {$steerReceipt->suggestedCommand}");
         });
     }
 }

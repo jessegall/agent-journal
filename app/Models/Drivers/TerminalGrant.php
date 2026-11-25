@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\TerminalGrantState;
+use App\Enums\Terminals\TerminalGrantState;
 use App\Events\Sessions\TerminalGrantGivenBack;
 use App\Events\Sessions\TerminalGrantIssued;
 use App\Events\Sessions\TerminalGrantRefused;

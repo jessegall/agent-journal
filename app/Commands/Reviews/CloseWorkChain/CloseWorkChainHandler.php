@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Reviews\CloseWorkChain;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\WorkChainEnding;
+use App\Enums\Reviews\WorkChainEnding;
 use App\Exceptions\AskRefused;
 use App\Models\Reviews\CodeReview;
 use App\Support\ActorIdentity;

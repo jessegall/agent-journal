@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Events\Reviews\WorkReservationHandedOff;
 use App\Events\Reviews\WorkReservationReleased;
 use App\Models\Support\HasActorColumns;

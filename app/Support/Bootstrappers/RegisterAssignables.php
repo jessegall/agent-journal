@@ -6,7 +6,7 @@ namespace App\Support\Bootstrappers;
 
 use App\Contracts\Assignments\AssignmentRegistration;
 use App\Contracts\Domains\DomainBootstrapper;
-use App\Enums\AssignmentPurpose;
+use App\Enums\Assignments\AssignmentPurpose;
 use App\Support\DomainEntry;
 
 /**

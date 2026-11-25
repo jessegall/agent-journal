@@ -9,7 +9,7 @@ use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Contracts\Time\ServerClock;
 use App\Data\Terminals\TerminalControlData;
 use App\Data\Terminals\TerminalFrameData;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\TerminalControlRefused;
 use App\Exceptions\TerminalViewRefused;

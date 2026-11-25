@@ -6,7 +6,7 @@ namespace App\Events\Connections;
 
 use App\Contracts\Connections\ProjectBindingEvent;
 use App\Contracts\Navigation\UserInterfaceUpdater;
-use App\Enums\BindingReadiness;
+use App\Enums\Connections\BindingReadiness;
 use DateTimeImmutable;
 
 /**

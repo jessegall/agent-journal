@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Asks;
 
-use App\Enums\AnswerType;
+use App\Enums\Hooks\AnswerType;
 
 /**
  * What a state answers to a hook: delegate, allow, deny, prevent the stop or rewrite.

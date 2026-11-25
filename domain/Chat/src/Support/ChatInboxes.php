@@ -9,7 +9,7 @@ use App\Contracts\Actors\ActorLabels;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Inboxes\InboxEligibility;
-use App\Enums\InboxPermission;
+use App\Enums\Messages\InboxPermission;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Support\ActorIdentity;

@@ -6,8 +6,8 @@ namespace App\Support;
 
 use App\Contracts\Drivers\NativeTurnRecords;
 use App\Contracts\Work\StackTransactionRunner;
-use App\Enums\DriverOperation;
-use App\Enums\RequestProgress;
+use App\Enums\Drivers\DriverOperation;
+use App\Enums\Drivers\RequestProgress;
 use App\Exceptions\StaleProcessGeneration;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\Enums\StepType;
+use App\Enums\CommandRules\StepType;
 use RuntimeException;
 
 /**

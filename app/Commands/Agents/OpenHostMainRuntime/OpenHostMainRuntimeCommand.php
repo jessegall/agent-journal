@@ -6,8 +6,8 @@ namespace App\Commands\Agents\OpenHostMainRuntime;
 
 use App\Attributes\Entry;
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
-use App\Enums\CommandEntry;
-use App\Enums\DriverType;
+use App\Enums\Accounts\CommandEntry;
+use App\Enums\Drivers\DriverType;
 use App\Support\Command;
 use App\Support\OpenedRuntime;
 

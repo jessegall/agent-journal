@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Settings;
 
-use App\Enums\GroupAvailability;
+use App\Enums\Settings\GroupAvailability;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Navigation;
 
-use App\Enums\MenuEntryState;
+use App\Enums\Navigation\MenuEntryState;
 use App\Support\ActorIdentity;
 
 /**

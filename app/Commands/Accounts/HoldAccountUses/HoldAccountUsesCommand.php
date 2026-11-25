@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Accounts\HoldAccountUses;
 
 use App\Attributes\Authorize;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Policies\AgentMaintenancePolicy;
 use App\Support\Command;
 use App\Support\HeldAccountUses;

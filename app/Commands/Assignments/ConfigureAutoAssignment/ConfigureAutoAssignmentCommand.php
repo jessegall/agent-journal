@@ -6,7 +6,7 @@ namespace App\Commands\Assignments\ConfigureAutoAssignment;
 
 use App\Attributes\Authorize;
 use App\Attributes\RepeatableRead;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Policies\AssignmentPolicy;
 use App\Support\AutoAssignmentChange;
 use App\Support\AutoAssignmentInput;

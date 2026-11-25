@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\DriverType;
+use App\Enums\Drivers\DriverType;
 
 /**
  * What a new runtime is opened with: the host and folder it runs in, the driver build and profile, the driver,

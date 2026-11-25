@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Notifications\MarkTargetNotificationRead;
 
 use App\Attributes\Authorize;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Policies\MessagePolicy;
 use App\Support\Command;
 

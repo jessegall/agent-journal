@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\StopAttemptState;
-use App\Enums\StopResultType;
+use App\Enums\Starts\StopAttemptState;
+use App\Enums\Starts\StopResultType;
 
 /**
  * Where a stop attempt stands and how each of its conditions ended, by condition key, with the summaries a helper

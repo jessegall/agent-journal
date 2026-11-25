@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
-use App\Enums\CommandEffect;
-use App\Enums\CommandType;
-use App\Enums\ParseOutcome;
-use App\Enums\PartJoin;
-use App\Enums\ShellDialect;
+use App\Enums\CommandRules\CommandEffect;
+use App\Enums\CommandRules\CommandType;
+use App\Enums\CommandRules\ParseOutcome;
+use App\Enums\Processes\ShellDialect;
+use App\Enums\Runs\PartJoin;
 use App\Values\CommandPart;
 use App\Values\ShellCommand;
 use PHPUnit\Framework\Attributes\DataProvider;

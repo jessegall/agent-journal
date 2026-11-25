@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\AgentRequests;
 
-use App\Enums\CallEffect;
-use App\Enums\ReceiptOwner;
+use App\Enums\Processes\CallEffect;
+use App\Enums\Processes\ReceiptOwner;
 use App\Exceptions\CallKeyInvalid;
 use App\Exceptions\EndpointDeclarationInvalid;
 use App\Support\CallKey;

@@ -8,7 +8,7 @@ use App\Commands\Messages\AnswerChatQuestion\AnswerChatQuestionCommand;
 use App\Commands\Messages\AskChatQuestion\AskChatQuestionCommand;
 use App\Commands\Messages\ClaimSpeech\ClaimSpeechCommand;
 use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
-use App\Enums\MessageState;
+use App\Enums\Messages\MessageState;
 use App\Enums\SpeechOpportunityState;
 use App\Exceptions\SpeechRefused;
 use App\Models\Chats\SpeechOpportunity;

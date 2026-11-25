@@ -6,7 +6,7 @@ namespace Domain\Tasks\Support\Assignments;
 
 use App\Contracts\Assignments\AssignmentPool;
 use App\Contracts\Assignments\AssignmentPoolFactory;
-use App\Enums\PoolInputType;
+use App\Enums\Assignments\PoolInputType;
 use App\Support\ActorIdentity;
 use App\Support\PoolDescription;
 use App\Support\PoolMembers;

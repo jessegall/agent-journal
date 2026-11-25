@@ -6,9 +6,9 @@ namespace Tests\Feature\Processes;
 
 use App\Commands\Runs\AssessPartOutput\AssessPartOutputCommand;
 use App\Commands\Runs\ReplayAssessment\ReplayAssessmentCommand;
-use App\Enums\InterpretationState;
-use App\Enums\PositionPurpose;
-use App\Enums\RunMode;
+use App\Enums\Runs\InterpretationState;
+use App\Enums\Runs\PositionPurpose;
+use App\Enums\Runs\RunMode;
 use App\Exceptions\ReplayRefused;
 use App\Models\Runs\OutputAssessment;
 use App\Models\Runs\PartRun;

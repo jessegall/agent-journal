@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Stored;
 
-use App\Enums\SearchStatus;
+use App\Enums\Search\SearchStatus;
 use App\Values\BufferedHit;
 use App\Values\EmittedHit;
 use App\Values\SearchAnswer;

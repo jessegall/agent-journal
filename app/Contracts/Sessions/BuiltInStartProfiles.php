@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Sessions;
 
-use App\Enums\DriverType;
+use App\Enums\Drivers\DriverType;
 use App\Values\SelectedDriver;
 use App\Values\StartPolicy;
 

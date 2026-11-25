@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Accounts\SignInHost;
-use App\Enums\AccountCheckResult;
-use App\Enums\ArrangementType;
-use App\Enums\CleanupTarget;
-use App\Enums\SignInMethod;
-use App\Enums\SignInOutcome;
+use App\Enums\Accounts\AccountCheckResult;
+use App\Enums\Accounts\CleanupTarget;
+use App\Enums\Accounts\SignInMethod;
+use App\Enums\Accounts\SignInOutcome;
+use App\Enums\Projects\ArrangementType;
 use App\Exceptions\SignInRunnerRefused;
 use App\Values\ClaimedAccountCheck;
 use App\Values\ClaimedCleanup;

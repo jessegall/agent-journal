@@ -6,7 +6,7 @@ namespace App\Support\Drivers;
 
 use App\Attributes\DecodesAnyJson;
 use App\Contracts\Files\Files;
-use App\Enums\Permissions;
+use App\Enums\Files\Permissions;
 use App\Support\ContainerManifest;
 use App\Values\FilePath;
 use stdClass;

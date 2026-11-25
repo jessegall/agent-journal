@@ -13,7 +13,7 @@ use App\Contracts\Messages\MessageReceiver;
 use App\Contracts\Messages\MessageSender;
 use App\Contracts\Records\AuthoredModel;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Events\Messages\MessageSent;
 use App\Models\Inboxes\Inbox;
 use App\Models\Support\Accessor;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\Runs\RecordRunChunk;
 
 use App\Attributes\Authorize;
-use App\Enums\AccessType;
-use App\Enums\OutputStream;
+use App\Enums\Agents\AccessType;
+use App\Enums\Processes\OutputStream;
 use App\Policies\ProcessPolicy;
 use App\Support\Command;
 

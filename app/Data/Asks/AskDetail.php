@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Asks;
 
-use App\Enums\AskResult;
+use App\Enums\Asks\AskResult;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

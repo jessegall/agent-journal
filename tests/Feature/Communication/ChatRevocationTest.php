@@ -7,7 +7,7 @@ namespace Tests\Feature\Communication;
 use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
 use App\Contracts\Inboxes\InboxParticipationEnding;
 use App\Contracts\Inboxes\InboxResolver;
-use App\Enums\InboxPermission;
+use App\Enums\Messages\InboxPermission;
 use App\Events\Engine\EngineTicked;
 use App\Exceptions\InboxUnavailable;
 use App\Support\ActorIdentity;

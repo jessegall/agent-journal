@@ -9,7 +9,7 @@ use App\Contracts\Settings\SettingCommands;
 use App\Contracts\Settings\SettingsAccessPolicy;
 use App\Contracts\Settings\SettingsCatalogue;
 use App\Contracts\Settings\SettingsResolver;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Policies\SettingPolicy;
 use App\Support\ClosedSettingsAccess;
 use App\Support\DatabaseSettingsCatalogue;

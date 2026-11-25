@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Syntax;
 
-use App\Enums\AnalysisLimit;
+use App\Enums\CommandRules\AnalysisLimit;
 use App\Exceptions\ProcessorTimeUnreadable;
 
 /**

@@ -10,7 +10,7 @@ use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Authorization\RecordPolicy;
 use App\Contracts\Reflection\ReflectorFactory;
 use App\Data\Profiles\ProfileAuthorization;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Contracts\Auth\Access\Gate;
 

@@ -6,9 +6,9 @@ namespace Tests\Unit\Skills;
 
 use App\Data\Profiles\PolicyGrant;
 use App\Data\Profiles\ProfileAuthorization;
-use App\Enums\AccessType;
-use App\Enums\AuthorizationType;
-use App\Enums\ConditionOutcome;
+use App\Enums\Agents\AccessType;
+use App\Enums\Profiles\AuthorizationType;
+use App\Enums\Skills\ConditionOutcome;
 use App\Exceptions\SkillConditionInvalid;
 use App\Policies\AssignmentRecipientPolicy;
 use App\Support\BuiltInAuthorizations;

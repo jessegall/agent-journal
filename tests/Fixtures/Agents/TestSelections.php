@@ -8,7 +8,7 @@ use Illuminate\Container\Container;
 use App\Values\PinnedDriver;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Values\StartRequest;
-use App\Enums\ExecutionModeType;
+use App\Enums\Agents\ExecutionModeType;
 use App\Values\ExecutionBudgets;
 use App\Values\ExecutionPolicy;
 use App\Values\ModelSelection;

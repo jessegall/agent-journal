@@ -6,9 +6,9 @@ namespace App\Support;
 
 use App\Attributes\Authorize;
 use App\Contracts\Bus\PipelineRunner;
-use App\Enums\CommandAdmissionStage;
-use App\Enums\CommandEffectType;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
+use App\Enums\Engine\CommandAdmissionStage;
+use App\Enums\Reviews\CommandEffectType;
 use App\Pipes\CheckCommandHandlers;
 use App\Pipes\CheckCommandMiddleware;
 use App\Pipes\CheckExportedCommands;

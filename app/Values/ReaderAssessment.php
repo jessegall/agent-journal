@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\ClaimedOutcome;
-use App\Enums\ProblemCode;
+use App\Enums\Runs\ClaimedOutcome;
+use App\Enums\Runs\ProblemCode;
 
 /**
  * A reader's judgement of a finished part's output: its records, every problem found

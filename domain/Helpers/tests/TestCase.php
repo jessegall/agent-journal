@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Helpers\Tests;
 
 use App\Contracts\Actors\CurrentActorSetter;
-use App\Enums\ConversationModeType;
+use App\Enums\Agents\ConversationModeType;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Values\OwnerAuthority;

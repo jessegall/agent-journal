@@ -6,10 +6,10 @@ namespace App\Resolvers;
 
 use App\Concerns\LinksTargetsOneByOne;
 use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Notifications\NotificationTargetResolver;
 use App\Contracts\Navigation\DeclaredPages;
+use App\Contracts\Notifications\NotificationTargetResolver;
 use App\Data\Notifications\NotificationLink;
-use App\Enums\AskResult;
+use App\Enums\Asks\AskResult;
 use App\Models\Asks\Ask;
 use App\Models\Asks\AskHop;
 use App\Support\ActorIdentity;

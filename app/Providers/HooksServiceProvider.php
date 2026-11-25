@@ -27,7 +27,7 @@ use App\Contracts\Work\StackTransactionRunner;
 use App\Contracts\Work\UserStack;
 use App\Contracts\Work\WorkProgress;
 use App\Declarations\StateMethods;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Drivers\FailureReceipt;
 use App\Models\Drivers\HookCall;

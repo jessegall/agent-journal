@@ -7,9 +7,9 @@ namespace App\Commands\Reviews\ResolveMergeAttempt;
 use App\Attributes\Authorize;
 use App\Attributes\Effect;
 use App\Attributes\RepeatableRead;
-use App\Enums\AccessType;
-use App\Enums\CommandEffectType;
-use App\Enums\MergeAttemptState;
+use App\Enums\Agents\AccessType;
+use App\Enums\Reviews\CommandEffectType;
+use App\Enums\Reviews\MergeAttemptState;
 use App\Policies\AskPolicy;
 use App\Support\Command;
 

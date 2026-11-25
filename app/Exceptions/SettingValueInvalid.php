@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\Enums\SettingType;
+use App\Enums\Settings\SettingType;
 use RuntimeException;
 use Throwable;
 

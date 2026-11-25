@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Layout;
 
-use App\Enums\Icon;
+use App\Enums\Navigation\Icon;
 
 /**
  * The shared recipe of a record shown as a card in a list: its icon, title and state badge on one line, the moment it

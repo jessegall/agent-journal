@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Drivers\DriverCapabilities;
-use App\Enums\DriverCapability;
-use App\Enums\DriverType;
+use App\Enums\Drivers\DriverCapability;
+use App\Enums\Drivers\DriverType;
 use App\Support\Capabilities\CodexHeadlessCapabilities;
 use App\Support\Capabilities\CodexTerminalCapabilities;
 use App\Support\Capabilities\HeadlessCapabilities;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Agents;
 
 use App\Commands\Starts\DismissLaunchOutcome\DismissLaunchOutcomeCommand;
-use App\Enums\StartDisposition;
+use App\Enums\Starts\StartDisposition;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

@@ -6,10 +6,10 @@ namespace App\Support;
 
 use App\Contracts\Admission\AskAdmission;
 use App\Contracts\Assignments\JournalAssignmentWriter;
-use App\Enums\AskOriginType;
-use App\Enums\CodeReviewState;
-use App\Enums\CoreAskType;
-use App\Enums\ReviewDecisionType;
+use App\Enums\Asks\AskOriginType;
+use App\Enums\Asks\CoreAskType;
+use App\Enums\Reviews\CodeReviewState;
+use App\Enums\Reviews\ReviewDecisionType;
 use App\Models\Asks\AskHop;
 use App\Models\Reviews\CodeReview;
 use App\Models\Reviews\ReviewDecision;

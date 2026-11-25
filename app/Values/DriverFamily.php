@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\ModelTier;
+use App\Enums\Profiles\ModelTier;
 
 /**
  * One family of drivers, such as Claude Code, which a terminal and a headless driver share: its name as users read

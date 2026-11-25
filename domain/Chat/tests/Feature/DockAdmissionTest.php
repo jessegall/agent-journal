@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Chat\Tests\Feature;
 
 use App\Contracts\Bus\CommandBus;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Support\ActorIdentity;
 use App\Support\Command;
 use App\Support\RequestKey;

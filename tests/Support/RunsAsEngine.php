@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use App\Support\CommandEntrance;
 use App\Support\EngineAccess;
 use App\Support\EnginePass;

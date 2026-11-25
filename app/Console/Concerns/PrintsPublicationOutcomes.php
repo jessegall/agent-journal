@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Concerns;
 
-use App\Enums\PublicationState;
+use App\Enums\Skills\PublicationState;
 use Illuminate\Console\Command;
 
 /**

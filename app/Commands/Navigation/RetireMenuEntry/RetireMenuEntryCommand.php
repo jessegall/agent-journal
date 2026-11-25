@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\Navigation\RetireMenuEntry;
 
 use App\Attributes\Authorize;
-use App\Enums\AccessType;
-use App\Enums\MenuEntryState;
+use App\Enums\Agents\AccessType;
+use App\Enums\Navigation\MenuEntryState;
 use App\Policies\AgentMaintenancePolicy;
 use App\Support\Command;
 

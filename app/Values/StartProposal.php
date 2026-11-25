@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\DriverType;
-use App\Enums\ExecutionModeType;
+use App\Enums\Agents\ExecutionModeType;
+use App\Enums\Drivers\DriverType;
 
 /**
  * A start as proposed before it is admitted: the profile's decisions, the driver, build, driver type and model asked

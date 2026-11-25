@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Docking;
 
-use App\Enums\ConsoleStream;
-use App\Enums\DisclosureState;
+use App\Enums\Runs\ConsoleStream;
+use App\Enums\Runs\DisclosureState;
 use App\Exceptions\DockCardInvalid;
 use App\Support\Cards\ConsoleOutput;
 use App\Support\Cards\Contracts\DockPart;

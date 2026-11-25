@@ -6,7 +6,7 @@ namespace Tests\Support\Processes;
 
 use App\Contracts\Bus\PipelineRunner as PipelineRunnerContract;
 use App\Contracts\Reflection\ReflectorFactory;
-use App\Enums\ShellDialect;
+use App\Enums\Processes\ShellDialect;
 use App\Support\CatalogueReflectorFactory;
 use App\Support\PipelineRunner;
 use App\Support\Syntax\TreeParser;

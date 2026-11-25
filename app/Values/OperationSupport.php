@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\SupportState;
+use App\Enums\Drivers\SupportState;
 
 /**
  * Whether one operation is allowed, with the reason the user reads when it is not.

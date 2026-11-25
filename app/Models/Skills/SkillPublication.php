@@ -10,7 +10,7 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\PublicationState;
+use App\Enums\Skills\PublicationState;
 use App\Events\Skills\SkillPublicationClaimed;
 use App\Events\Skills\SkillPublicationMoved;
 use App\Events\Skills\SkillPublicationProgressed;

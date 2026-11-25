@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
-use App\Enums\HostRefusal;
-use App\Enums\RequestProgress;
+use App\Enums\Drivers\RequestProgress;
+use App\Enums\Starts\HostRefusal;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Starts\StartRecord;

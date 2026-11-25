@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\EmptyPolicy;
-use App\Enums\EmptySelection;
-use App\Enums\FramingType;
-use App\Enums\OutputEncoding;
-use App\Enums\StreamUse;
-use App\Enums\SummaryRule;
+use App\Enums\CommandRules\EmptyPolicy;
+use App\Enums\CommandRules\EmptySelection;
+use App\Enums\CommandRules\FramingType;
+use App\Enums\CommandRules\OutputEncoding;
+use App\Enums\CommandRules\StreamUse;
+use App\Enums\CommandRules\SummaryRule;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;

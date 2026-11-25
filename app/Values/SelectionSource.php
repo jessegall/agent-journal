@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\DriverSourceType;
+use App\Enums\Drivers\DriverSourceType;
 
 /**
  * Where a start's driver came from, and the profile and its revision when one took part; a main agent with an

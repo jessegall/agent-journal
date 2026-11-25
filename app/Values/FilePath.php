@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Place;
+use App\Enums\Files\Place;
 use App\Exceptions\FilePathInvalid;
 
 /**

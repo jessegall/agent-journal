@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\DriverOperation;
+use App\Enums\Drivers\DriverOperation;
 use App\Exceptions\DriverRequestRefused;
 use App\Models\Drivers\DriverRequest;
 use App\Values\DriverRequestPayload;

@@ -6,7 +6,7 @@ namespace Tests\Feature\Sharing;
 
 use App\Commands\Sharing\ConfigureShareGateway\ConfigureShareGatewayCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\ShareAuditType;
+use App\Enums\Sharing\ShareAuditType;
 use App\Exceptions\GatewayNotSetUp;
 use App\Exceptions\GatewaySecretRefused;
 use App\Exceptions\UnknownShareGateway;

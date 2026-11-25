@@ -8,7 +8,7 @@ use App\Contracts\Navigation\TerminalViewCloser;
 use App\Data\Terminals\TerminalFrameData;
 use App\Data\Terminals\TerminalInterestData;
 use App\Data\Terminals\TerminalScreenIdentityData;
-use App\Enums\TerminalFrameState;
+use App\Enums\Terminals\TerminalFrameState;
 use App\Exceptions\TerminalViewRefused;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\TerminalView;

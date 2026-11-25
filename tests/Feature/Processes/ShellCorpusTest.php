@@ -6,8 +6,8 @@ namespace Tests\Feature\Processes;
 
 use App\Contracts\Actors\AliasResolver;
 use App\Contracts\Bus\CommandClassifier;
-use App\Enums\ParseOutcome;
-use App\Enums\ShellDialect;
+use App\Enums\CommandRules\ParseOutcome;
+use App\Enums\Processes\ShellDialect;
 use App\Support\Syntax\TreeParser;
 use App\Values\ExecutionContext;
 use App\Values\ShellNode;

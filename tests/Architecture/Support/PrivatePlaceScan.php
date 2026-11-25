@@ -21,7 +21,7 @@ final readonly class PrivatePlaceScan implements FileScan
      */
     private const array PRIVATE_PLACES = ['Accounts', 'SharingSecrets', 'SharingTunnels', 'HookRuntime'];
 
-    private const string PLACE = 'App\Enums\Place';
+    private const string PLACE = 'App\Enums\Files\Place';
 
     public function key(): string
     {

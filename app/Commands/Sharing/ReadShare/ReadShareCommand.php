@@ -6,7 +6,7 @@ namespace App\Commands\Sharing\ReadShare;
 
 use App\Attributes\Entry;
 use App\Attributes\RepeatableRead;
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use App\Support\Command;
 use App\Support\SharedPage;
 

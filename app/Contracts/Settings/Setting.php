@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Settings;
 
-use App\Enums\SettingType;
+use App\Enums\Settings\SettingType;
 use App\Values\Decimal;
 use BackedEnum;
 use Spatie\LaravelData\Optional;

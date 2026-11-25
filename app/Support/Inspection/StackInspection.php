@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Inspection;
 
-use App\Enums\StackStatus;
+use App\Enums\Agents\StackStatus;
 use App\Models\Agents\AgentStackRow;
 use App\Support\Stack\AgentStack;
 use App\Support\Stack\Frames\Frame;

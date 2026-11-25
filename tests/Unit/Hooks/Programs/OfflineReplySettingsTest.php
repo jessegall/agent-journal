@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\Drivers;
 
-use App\Enums\OfflineReplyMode;
+use App\Enums\Starts\OfflineReplyMode;
 use App\Exceptions\OfflineReplyModeInvalid;
 use App\Exceptions\OfflineReplySealInvalid;
 use App\Support\AgentClientSettings;

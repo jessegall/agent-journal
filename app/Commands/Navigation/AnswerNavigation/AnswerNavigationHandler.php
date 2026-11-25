@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Navigation\AnswerNavigation;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\NavigationState;
+use App\Enums\Navigation\NavigationState;
 use App\Exceptions\NavigationAnswerRefused;
 use App\Exceptions\NavigationRaiseRefused;
 use App\Models\Drivers\DriverRequest;

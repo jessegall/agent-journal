@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Events\Sharing;
 
 use App\Contracts\Sharing\ShareGatewayEvent;
-use App\Enums\GatewayEndpointState;
+use App\Enums\Sharing\GatewayEndpointState;
 
 /**
  * A share gateway endpoint moved to the state given.

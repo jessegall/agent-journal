@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Measurements;
 
-use App\Enums\SearchStatus;
-use App\Enums\SearchSurface;
+use App\Enums\Search\SearchStatus;
+use App\Enums\Search\SearchSurface;
 use App\Mcp\Support\ToolArguments;
 use App\Support\ActorContext;
 use App\Support\SearchCoordinator;

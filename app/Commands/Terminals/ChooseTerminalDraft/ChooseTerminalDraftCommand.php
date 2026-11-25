@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\Terminals\ChooseTerminalDraft;
 
 use App\Attributes\Authorize;
-use App\Enums\AccessType;
-use App\Enums\TerminalDraftChoice;
+use App\Enums\Agents\AccessType;
+use App\Enums\Terminals\TerminalDraftChoice;
 use App\Policies\AgentMaintenancePolicy;
 use App\Support\Command;
 

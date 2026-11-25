@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Web;
 
 use App\Contracts\Authorization\CurrentAuthorizer;
-use App\Enums\RefusalCode;
-use App\Enums\TerminalControlRefusal;
-use App\Enums\TerminalGrantState;
-use App\Enums\TerminalReceiptOutcome;
+use App\Enums\Engine\RefusalCode;
+use App\Enums\Terminals\TerminalControlRefusal;
+use App\Enums\Terminals\TerminalGrantState;
+use App\Enums\Terminals\TerminalReceiptOutcome;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\TerminalGrant;
 use App\Models\Projects\Host;

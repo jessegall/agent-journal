@@ -6,10 +6,10 @@ namespace Tests\Feature\Agents;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\DriverSwitchStage;
-use App\Enums\DriverType;
-use App\Enums\ProcessStartState;
-use App\Enums\RuntimeActivity;
+use App\Enums\Agents\ProcessStartState;
+use App\Enums\Drivers\DriverSwitchStage;
+use App\Enums\Drivers\DriverType;
+use App\Enums\Runs\RuntimeActivity;
 use App\Exceptions\DriverSwitchStageRefused;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;

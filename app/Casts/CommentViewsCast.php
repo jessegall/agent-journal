@@ -6,7 +6,7 @@ namespace App\Casts;
 
 use App\Data\Comments\RecordCommentView;
 use App\Data\Comments\TextCommentView;
-use App\Enums\CommentType;
+use App\Enums\Comments\CommentType;
 use Spatie\LaravelData\Casts\Cast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Creation\CreationContext;

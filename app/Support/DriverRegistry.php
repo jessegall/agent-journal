@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\Driver;
 use App\Contracts\Drivers\DriverCapabilities;
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\DriverType;
+use App\Enums\Drivers\DriverType;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Exceptions\DriverFamilyRegisteredTwice;
 use App\Exceptions\DriverFamilyUnknown;

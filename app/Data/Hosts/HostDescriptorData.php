@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Data\Hosts;
 
-use App\Enums\ArrangementType;
-use App\Enums\ExecutionModeType;
+use App\Enums\Agents\ExecutionModeType;
+use App\Enums\Projects\ArrangementType;
 use App\Values\DriverKey;
 use App\Values\HostDescriptor;
 use Spatie\LaravelData\Data;

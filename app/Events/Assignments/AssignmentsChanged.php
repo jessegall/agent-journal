@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Events\Assignments;
 
 use App\Contracts\Navigation\UserInterfaceUpdater;
-use App\Enums\AssignmentReason;
+use App\Enums\Assignments\AssignmentReason;
 use App\Support\ActorIdentity;
 use App\Support\AssignmentChange;
 use DateTimeImmutable;

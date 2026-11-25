@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Connections;
 
 use App\Calls\Connections\ProjectCommandFrame;
-use App\Enums\ArrangementType;
-use App\Enums\BindingReadiness;
-use App\Enums\CommandRunState;
+use App\Enums\Connections\BindingReadiness;
+use App\Enums\Connections\CommandRunState;
+use App\Enums\Projects\ArrangementType;
 use App\Exceptions\DeviceGrantRefused;
 use App\Models\Projects\DeviceGrant;
 use App\Models\Projects\Environment;

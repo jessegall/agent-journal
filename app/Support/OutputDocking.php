@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\OutputStream;
+use App\Enums\Processes\OutputStream;
 use App\Exceptions\DockSourceUnavailable;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;

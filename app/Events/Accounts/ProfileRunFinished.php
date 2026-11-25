@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Events\Accounts;
 
 use App\Contracts\Sessions\ProfileRunEvent;
-use App\Enums\ProfileRunState;
+use App\Enums\Profiles\ProfileRunState;
 
 /**
  * A profile's script run finished in the state given.

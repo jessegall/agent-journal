@@ -7,8 +7,8 @@ namespace App\Events\Sessions;
 use App\Contracts\Accounts\AccountNoticeCause;
 use App\Contracts\Events\ListenerFailureLog;
 use App\Contracts\Navigation\UserInterfaceUpdater;
-use App\Enums\AccountNoticeReason;
-use App\Enums\DriverFailure;
+use App\Enums\Accounts\AccountNoticeReason;
+use App\Enums\Drivers\DriverFailure;
 use App\Support\RecordIdentity;
 
 /**

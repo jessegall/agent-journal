@@ -10,7 +10,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Assignments\Assignable;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Models\Concerns\FindsForUpdate;
 use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;

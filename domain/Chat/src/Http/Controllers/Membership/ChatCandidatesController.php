@@ -6,7 +6,7 @@ namespace Domain\Chat\Http\Controllers\Membership;
 
 use App\Contracts\Actors\ActorLabels;
 use App\Contracts\Inboxes\InboxEligibility;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Models\Inboxes\InboxMember;
 use App\Support\ActorIdentity;
 use Domain\Chat\Data\ChatInput;

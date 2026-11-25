@@ -14,7 +14,7 @@ use App\Contracts\Settings\SettingsCatalogue;
 use App\Data\Settings\SettingData;
 use App\Data\Settings\SettingGroupData;
 use App\Data\Settings\StringChoiceValueData;
-use App\Enums\SettingType;
+use App\Enums\Settings\SettingType;
 use App\Http\Requests\Settings\SaveSettingsRequest;
 use App\Http\Responses\PageActionAnswers;
 use App\Support\SettingsValues;

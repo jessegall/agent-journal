@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Assignments\AssignmentStorage;
 use App\Contracts\Assignments\ResponsibilityWriter;
 use App\Contracts\Inboxes\MainInbox;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Models\Drivers\NavigationRequest;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;

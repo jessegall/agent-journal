@@ -6,8 +6,8 @@ namespace App\Support\States;
 
 use App\Attributes\StateType;
 use App\Contracts\Authorization\OperationPolicy;
-use App\Enums\FrameReuse;
-use App\Enums\SessionTransferType;
+use App\Enums\Engine\FrameReuse;
+use App\Enums\Sessions\SessionTransferType;
 use App\Events\Sessions\StopAttemptSettled;
 use App\Support\Decisions\Decision;
 use App\Support\Decisions\MessageLine;

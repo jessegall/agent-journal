@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Attributes;
 
-use App\Enums\SessionTransferType;
+use App\Enums\Sessions\SessionTransferType;
 use Attribute;
 
 /**

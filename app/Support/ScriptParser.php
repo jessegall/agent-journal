@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\DiagnosticCode;
-use App\Enums\KeywordCategory;
-use App\Enums\SyntaxForm;
+use App\Enums\CommandRules\SyntaxForm;
+use App\Enums\Profiles\DiagnosticCode;
+use App\Enums\Profiles\KeywordCategory;
 use App\Exceptions\ScriptSyntaxError;
 use App\Values\BlockOperand;
 use App\Values\BooleanOperand;

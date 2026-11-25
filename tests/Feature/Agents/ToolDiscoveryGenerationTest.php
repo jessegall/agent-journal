@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Contracts\Drivers\ToolDiscovery;
-use App\Enums\DriverType;
-use App\Enums\HoldReason;
-use App\Enums\RuntimeActivity;
+use App\Enums\Drivers\DriverType;
+use App\Enums\Drivers\HoldReason;
+use App\Enums\Runs\RuntimeActivity;
 use App\Models\Agents\AgentRuntime;
 use App\Support\AgentRuntimes;
 use App\Values\RuntimeIntent;

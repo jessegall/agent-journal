@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Inputs;
 
-use App\Enums\DriverFailure;
+use App\Enums\Drivers\DriverFailure;
 
 /**
  * What a driver's failure notification says, in safe terms: the driver and why its request failed.

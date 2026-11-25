@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Assignments\JournalAssignmentWriter;
-use App\Enums\UnansweredReason;
+use App\Enums\Asks\UnansweredReason;
 use App\Exceptions\SupervisorRouteRefused;
 use App\Models\Asks\Ask;
 use App\Models\Asks\AskHop;

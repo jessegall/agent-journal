@@ -7,8 +7,8 @@ namespace Domain\Plans\Exceptions;
 use App\Concerns\RendersRefusal;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
-use App\Enums\CoreToolName;
-use App\Enums\RefusalCode;
+use App\Enums\Engine\CoreToolName;
+use App\Enums\Engine\RefusalCode;
 use RuntimeException;
 
 /**

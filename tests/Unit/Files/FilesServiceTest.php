@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace Tests\Unit\Files;
 
 use App\Contracts\Files\Files;
-use App\Enums\Place;
+use App\Enums\Files\Place;
 use App\Exceptions\PlaceUnavailable;
 use App\Support\CodeFiles;
 use App\Support\LocalFiles;
-use App\Values\Depth;
 use App\Values\FilePath;
 use Tests\Support\Files\UsesTemporaryPlaces;
 use Tests\TestCase;

@@ -12,7 +12,7 @@ use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Reflection\ReflectorFactory;
 use App\Contracts\Sessions\ProfileResolver;
 use App\Data\Profiles\ProfileAuthorization;
-use App\Enums\AuthorizationType;
+use App\Enums\Profiles\AuthorizationType;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\AgentProfileMissing;
 use App\Exceptions\ProfileMissing;

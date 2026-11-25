@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\AccessRuleType;
-use App\Enums\ResourceType;
+use App\Enums\Profiles\AccessRuleType;
+use App\Enums\Profiles\ResourceType;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;

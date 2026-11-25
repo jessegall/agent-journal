@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\SignInMethod;
+use App\Enums\Accounts\SignInMethod;
 
 /**
  * A sign-in a host took to run: the attempt, its driver and method, the private folder its driver signs in to on the host,

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Calls\Processes;
 
-use App\Enums\AdmissionState;
-use App\Enums\ShellDialect;
+use App\Enums\Processes\AdmissionState;
+use App\Enums\Processes\ShellDialect;
 use App\Values\ExecutionPlan;
 use Spatie\LaravelData\Attributes\MapName;
 

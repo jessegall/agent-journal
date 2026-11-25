@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Contracts\Hosts\HostCapabilities;
-use App\Enums\CapabilityStatusType;
-use App\Enums\LaunchProfileType;
+use App\Enums\Drivers\LaunchProfileType;
+use App\Enums\Projects\CapabilityStatusType;
 use App\Models\Accounts\Account;
 use App\Support\ArrangementSetting;
 use App\Support\DefaultDrivers;

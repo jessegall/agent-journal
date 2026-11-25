@@ -8,7 +8,7 @@ use App\Contracts\Bus\Command;
 use App\Contracts\Drivers\NativeTurnRecords;
 use App\Contracts\Events\Event;
 use App\Contracts\Sessions\ConversationVisits;
-use App\Enums\AnswerType;
+use App\Enums\Hooks\AnswerType;
 use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\Inputs\Contracts\HookAnswerer;
 use App\Support\Inputs\Contracts\HookInput;

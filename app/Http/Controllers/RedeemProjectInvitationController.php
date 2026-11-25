@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Enums\CommandEntry;
+use App\Enums\Accounts\CommandEntry;
 use App\Http\Requests\Connections\RedeemProjectInvitationRequest;
 use App\Support\EntryDispatchers;
 use App\Support\ServerOrigin;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Conditions;
 
 use App\Contracts\Skills\SkillCondition;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Policies\AssignmentRecipientPolicy;
 use App\Values\AccessRequirement;
 use App\Values\DriverKey;

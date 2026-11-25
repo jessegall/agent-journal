@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Drivers;
 
-use App\Enums\TransportProfileType;
+use App\Enums\Starts\TransportProfileType;
 use App\Exceptions\JournalServerUnresolved;
 
 /**

@@ -6,7 +6,7 @@ namespace Tests\Feature\Settings;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\NoSubject;
+use App\Enums\Engine\NoSubject;
 use App\Exceptions\SettingsUnavailable;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Records\SettingsRecord;

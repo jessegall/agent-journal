@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Activity;
 
-use App\Enums\ActivityType;
-use App\Enums\ActorType;
+use App\Enums\Agents\ActivityType;
+use App\Enums\Assignments\ActorType;
 use App\Models\Agents\ActivityEntry;
 use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;

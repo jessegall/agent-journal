@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Events\Sharing;
 
 use App\Contracts\Sharing\ShareGatewayEvent;
-use App\Enums\GatewayOutcome;
+use App\Enums\Sharing\GatewayOutcome;
 
 /**
  * A share gateway operation finished with the outcome given.

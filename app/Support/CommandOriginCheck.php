@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Bus\Command;
-use App\Enums\CommandOriginStatus;
+use App\Enums\Engine\CommandOriginStatus;
 use Closure;
 
 /**

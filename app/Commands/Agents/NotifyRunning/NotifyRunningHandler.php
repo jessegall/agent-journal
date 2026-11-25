@@ -6,7 +6,7 @@ namespace App\Commands\Agents\NotifyRunning;
 
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\DriverType;
+use App\Enums\Drivers\DriverType;
 use App\Events\Sessions\SessionStateChanged;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;

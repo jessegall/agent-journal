@@ -8,7 +8,7 @@ use App\Commands\Agents\StartAgent\StartAgentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\Driver;
 use App\Contracts\Drivers\DriverCapabilities;
-use App\Enums\ConversationModeType;
+use App\Enums\Agents\ConversationModeType;
 use App\Exceptions\DriverRequestMismatch;
 use App\Values\BoundTarget;
 use App\Values\DriverRegistration;

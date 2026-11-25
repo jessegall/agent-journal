@@ -7,7 +7,7 @@ namespace App\Commands\Agents\NotifyRuntimeScreen;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Time\ServerClock;
 use App\Data\Terminals\ScreenReportData;
-use App\Enums\ScreenReportRefusal;
+use App\Enums\Agents\ScreenReportRefusal;
 use App\Models\Agents\AgentRuntime;
 use App\Support\RuntimeScreen;
 use App\Support\ScreenRegistration;

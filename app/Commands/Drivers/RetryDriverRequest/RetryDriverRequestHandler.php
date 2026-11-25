@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Drivers\RetryDriverRequest;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\RecoveryAction;
+use App\Enums\Drivers\RecoveryAction;
 use App\Exceptions\DriverRequestRefused;
 use App\Models\Drivers\DriverRequest;
 use App\Support\DriverRequestRecovery;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Records\ReadableModel;
-use App\Enums\ReadMode;
+use App\Enums\Engine\ReadMode;
 use App\Exceptions\ReadLimitExceeded;
 use App\Exceptions\ReadLimitInvalid;
 use App\Exceptions\ReadLimitTooLarge;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Sessions;
 
-use App\Enums\HoldReason;
+use App\Enums\Drivers\HoldReason;
 use App\Support\ActorIdentity;
 
 /**

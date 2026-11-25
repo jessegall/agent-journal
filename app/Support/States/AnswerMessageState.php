@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support\States;
 
 use App\Attributes\StateType;
-use App\Enums\FrameReuse;
-use App\Enums\SessionTransferType;
+use App\Enums\Engine\FrameReuse;
+use App\Enums\Sessions\SessionTransferType;
 use App\Events\Inboxes\InboxLeft;
 use App\Events\Messages\MessageSent;
 use App\Support\ActorIdentity;

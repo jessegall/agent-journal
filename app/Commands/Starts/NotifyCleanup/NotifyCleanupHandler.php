@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Starts\NotifyCleanup;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\CleanupState;
+use App\Enums\Starts\CleanupState;
 use App\Models\Starts\CleanupOperation;
 use App\Support\CapacityRelease;
 

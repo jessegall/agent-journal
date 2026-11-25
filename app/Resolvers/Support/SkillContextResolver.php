@@ -8,7 +8,7 @@ use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Sessions\AgentResolver;
 use App\Contracts\Sessions\CurrentSession;
 use App\Contracts\Sessions\ProfileResolver;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Exceptions\SkillAgentHidden;
 use App\Exceptions\SkillContextUnavailable;
 use App\Models\Agents\Agent;

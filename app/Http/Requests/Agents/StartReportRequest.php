@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Agents;
 
-use App\Enums\DriverFailure;
+use App\Enums\Drivers\DriverFailure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

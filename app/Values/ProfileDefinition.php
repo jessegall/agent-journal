@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Data\Profiles\ProfileAuthorization;
-use App\Enums\InstancePolicy;
-use App\Enums\ModelTier;
+use App\Enums\Profiles\InstancePolicy;
+use App\Enums\Profiles\ModelTier;
 use App\Support\Reflector;
 
 /**

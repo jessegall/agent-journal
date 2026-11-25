@@ -6,7 +6,7 @@ namespace Tests\Support;
 
 use App\Commands\Messages\AskMessage\AskMessageCommand;
 use App\Commands\Messages\SendMessage\SendMessageCommand;
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Messages\Message;

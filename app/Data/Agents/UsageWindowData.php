@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Data\Agents;
 
 use App\Commands\Accounts\RecordUsageWindow\RecordUsageWindowCommand;
-use App\Enums\UsageMeasurementType;
-use App\Enums\UsageWindowSlot;
+use App\Enums\Accounts\UsageWindowSlot;
+use App\Enums\Agents\UsageMeasurementType;
 use App\Support\Command;
 use App\Values\ReportedStart;
 use App\Values\UsageSource;

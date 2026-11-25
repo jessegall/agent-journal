@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Assignments;
 
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Support\ActorIdentity;
 use App\Support\IdListPage;
 use Illuminate\Foundation\Http\FormRequest;

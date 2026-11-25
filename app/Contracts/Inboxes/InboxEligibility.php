@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Inboxes;
 
-use App\Enums\InboxPermission;
+use App\Enums\Messages\InboxPermission;
 use App\Support\ActorIdentity;
 
 /**

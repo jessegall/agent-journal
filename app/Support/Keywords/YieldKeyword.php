@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Keywords;
 
 use App\Contracts\Scripts\ScriptStatement;
-use App\Enums\SyntaxForm;
+use App\Enums\CommandRules\SyntaxForm;
 use App\Support\CompileContext;
 use App\Values\FlowShape;
 use App\Values\Instruction;

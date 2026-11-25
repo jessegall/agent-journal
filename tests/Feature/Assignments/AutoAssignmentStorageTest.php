@@ -8,7 +8,7 @@ use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Assignments\AutoAssignmentResolver;
 use App\Contracts\Assignments\AutoAssignmentWriter;
 use App\Contracts\Time\ServerClock;
-use App\Enums\AutoAssignmentClaimType;
+use App\Enums\Assignments\AutoAssignmentClaimType;
 use App\Exceptions\AssignmentTransactionRequired;
 use App\Exceptions\AutoAssignmentMissing;
 use App\Exceptions\AutoAssignmentRevisionChanged;

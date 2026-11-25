@@ -6,7 +6,7 @@ namespace App\Support\States;
 
 use App\Contracts\Bus\Command;
 use App\Contracts\Events\Event;
-use App\Enums\FrameReuse;
+use App\Enums\Engine\FrameReuse;
 use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\ContextCompacted;

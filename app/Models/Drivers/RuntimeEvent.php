@@ -8,7 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\RuntimeEventType;
+use App\Enums\Runs\RuntimeEventType;
 use App\Models\Agents\AgentRuntime;
 use App\Values\RecordedEvent;
 use Illuminate\Database\Eloquent\Attributes\Scope;

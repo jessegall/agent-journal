@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Resolvers\Support;
 
-use App\Enums\OutputStream;
-use App\Enums\ProblemCode;
+use App\Enums\Processes\OutputStream;
+use App\Enums\Runs\ProblemCode;
 use App\Values\OutputProblem;
 use App\Values\OutputRecord;
 use App\Values\ReaderCheckpoint;

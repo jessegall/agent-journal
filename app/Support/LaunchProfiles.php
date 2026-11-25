@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Hosts\HostCapabilities;
-use App\Enums\AccountModeType;
-use App\Enums\ExecutionModeType;
-use App\Enums\HostCapabilityType;
-use App\Enums\LaunchProfileType;
+use App\Enums\Accounts\AccountModeType;
+use App\Enums\Agents\ExecutionModeType;
+use App\Enums\Drivers\LaunchProfileType;
+use App\Enums\Projects\HostCapabilityType;
 use App\Values\SelectedAccount;
 
 /**

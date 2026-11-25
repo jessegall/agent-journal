@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Contracts\Work\HelperCommitImport;
-use App\Enums\MergeAttemptState;
-use App\Enums\MergeRefusalReason;
+use App\Enums\Reviews\MergeAttemptState;
+use App\Enums\Reviews\MergeRefusalReason;
 use App\Models\Reviews\MergeAttempt;
 use App\Support\ActorIdentity;
 use App\Support\ProtectedMerge;

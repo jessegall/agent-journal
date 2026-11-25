@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Layout;
 
-use App\Enums\LayoutTag;
+use App\Enums\Layouts\LayoutTag;
 use App\Exceptions\LayoutRefused;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;

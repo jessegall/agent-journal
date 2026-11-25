@@ -6,7 +6,7 @@ namespace Domain\Plans\Commands\ApprovePlanReview;
 
 use App\Attributes\Authorize;
 use App\Attributes\RequiresRequestKey;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use Domain\Plans\Policies\PlanPolicy;
 

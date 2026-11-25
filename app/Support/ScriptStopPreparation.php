@@ -8,7 +8,7 @@ use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Processes\StopPreparer;
 use App\Contracts\Scripts\ProfileScripts;
 use App\Contracts\Scripts\ScriptChecks;
-use App\Enums\ProfileRunState;
+use App\Enums\Profiles\ProfileRunState;
 use App\Models\Profiles\ProfileRun;
 use App\Models\Profiles\ProfileStepResult;
 use App\Values\AgentText;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Tests\Feature;
 
 use App\Contracts\Assignments\AssignmentProviders;
-use App\Enums\PoolMembersType;
+use App\Enums\Assignments\PoolMembersType;
 use App\Exceptions\InvalidRecordIds;
 use App\Support\PoolDefinition;
 use App\Support\PoolReference;

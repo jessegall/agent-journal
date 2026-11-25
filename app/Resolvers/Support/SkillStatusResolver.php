@@ -6,8 +6,8 @@ namespace App\Resolvers\Support;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Skills\SkillResolver;
-use App\Enums\PublicationState;
-use App\Enums\SkillReload;
+use App\Enums\Skills\PublicationState;
+use App\Enums\Skills\SkillReload;
 use App\Exceptions\SkillContextUnavailable;
 use App\Exceptions\SkillSelectionConflict;
 use App\Exceptions\SkillSessionHidden;

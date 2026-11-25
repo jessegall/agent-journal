@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Bus;
 
 use App\Contracts\Bus\CommandBus;
-use App\Enums\ReceiptState;
+use App\Enums\CommandRules\ReceiptState;
 use App\Exceptions\RequestKeyConflict;
 use App\Exceptions\RequestKeyExpired;
 use App\Exceptions\RequestKeyMissing;

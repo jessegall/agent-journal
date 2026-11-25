@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Stacks;
 
-use App\Enums\FrameReuse;
+use App\Enums\Engine\FrameReuse;
 use App\Support\States\AgentState;
 
 /**

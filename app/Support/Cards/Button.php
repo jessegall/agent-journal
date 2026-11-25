@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Cards;
 
-use App\Enums\Emphasis;
-use App\Enums\PartType;
+use App\Enums\Runs\PartType;
+use App\Enums\Web\Emphasis;
 use App\Support\Cards\Contracts\DockPart;
 
 /**

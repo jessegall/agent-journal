@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Files;
 
-use App\Enums\EntryType;
-use App\Enums\Place;
+use App\Enums\Files\EntryType;
+use App\Enums\Files\Place;
 use App\Exceptions\FilePathInvalid;
 use App\Exceptions\FolderMissing;
 use App\Support\FolderWalker;

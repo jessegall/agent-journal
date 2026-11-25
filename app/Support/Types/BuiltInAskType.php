@@ -6,7 +6,7 @@ namespace App\Support\Types;
 
 use App\Contracts\Asks\AskSubjectResolver;
 use App\Contracts\Asks\AskType;
-use App\Enums\CoreAskType;
+use App\Enums\Asks\CoreAskType;
 use App\Support\VisibleAskSubjects;
 use App\Values\AskTypeKey;
 use App\Values\SubjectType;

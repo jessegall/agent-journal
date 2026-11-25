@@ -9,7 +9,7 @@ use App\Contracts\Drivers\AttachmentReferences;
 use App\Contracts\Notifications\NotificationTargets;
 use App\Contracts\Sessions\CurrentSession;
 use App\Contracts\Sessions\SessionProvenance;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Support\FolderClasses;
 use App\Support\Sources\Contracts\DockRegistration;
 use App\Values\ReadEntitlement;

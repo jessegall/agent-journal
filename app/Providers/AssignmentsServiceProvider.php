@@ -27,7 +27,7 @@ use App\Contracts\Assignments\ResponsibilityWriter;
 use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Authorization\ReadEntitlements;
 use App\Contracts\Records\RecordVisibility;
-use App\Enums\AccessType;
+use App\Enums\Agents\AccessType;
 use App\Policies\AssignmentPolicy;
 use App\Policies\AssignmentRecipientPolicy;
 use App\Resolvers\AssigneeRecords;

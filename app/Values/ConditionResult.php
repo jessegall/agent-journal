@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\ConditionOutcome;
+use App\Enums\Skills\ConditionOutcome;
 
 /**
  * A condition's answer for one context, with a reason code safe to show anyone who may preview the skill.

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Pipes\Supervision\Builtins;
 
 use App\Contracts\Bus\Pipe;
-use App\Enums\ExitStatus;
+use App\Enums\Runs\ExitStatus;
 use App\Support\Execution\BuiltinCall;
 use App\Support\Execution\BuiltinEnded;
 

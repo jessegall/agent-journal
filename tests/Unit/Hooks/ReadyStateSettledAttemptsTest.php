@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use App\Enums\StopAttemptState;
+use App\Enums\Starts\StopAttemptState;
 use App\Events\Sessions\StopAttemptSettled;
 use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\Values\HookIdentity;

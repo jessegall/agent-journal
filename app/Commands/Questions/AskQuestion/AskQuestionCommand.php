@@ -6,7 +6,7 @@ namespace App\Commands\Questions\AskQuestion;
 
 use App\Attributes\RepeatableRead;
 use App\Attributes\RetainedActorRequestKey;
-use App\Enums\QuestionType;
+use App\Enums\Questions\QuestionType;
 use App\Support\ActorIdentity;
 use App\Support\Command;
 use Spatie\LaravelData\Attributes\Validation\Required;

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\States;
 
-use App\Enums\AnswerType;
-use App\Enums\CommandEffect;
-use App\Enums\CommandType;
-use App\Enums\FileOperation;
-use App\Enums\ParseOutcome;
-use App\Enums\PartJoin;
-use App\Enums\ShellDialect;
+use App\Enums\CommandRules\CommandEffect;
+use App\Enums\CommandRules\CommandType;
+use App\Enums\CommandRules\ParseOutcome;
+use App\Enums\Files\FileOperation;
+use App\Enums\Hooks\AnswerType;
+use App\Enums\Processes\ShellDialect;
+use App\Enums\Runs\PartJoin;
 use App\Support\Decisions\Denied;
 use App\Support\Inputs\FileEditRequested;
 use App\Support\Inputs\ShellCommandRequested;

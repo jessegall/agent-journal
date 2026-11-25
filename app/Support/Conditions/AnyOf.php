@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Conditions;
 
 use App\Contracts\Skills\SkillCondition;
-use App\Enums\ConditionOutcome;
+use App\Enums\Skills\ConditionOutcome;
 use App\Values\ConditionResult;
 use App\Values\SkillContext;
 

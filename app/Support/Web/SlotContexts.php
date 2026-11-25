@@ -7,7 +7,7 @@ namespace App\Support\Web;
 use App\Contracts\Records\RecordResolver;
 use App\Declarations\Slot;
 use App\Declarations\SlotContext;
-use App\Enums\SlotContextType;
+use App\Enums\Profiles\SlotContextType;
 use App\Exceptions\RecordUnavailable;
 use App\Http\Requests\Web\DeclaredPageRequest;
 use App\Support\RecordReference;

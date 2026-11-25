@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Enums\LifecycleState;
-use App\Enums\PartEndType;
-use App\Enums\RunMode;
+use App\Enums\Runs\LifecycleState;
+use App\Enums\Runs\PartEndType;
+use App\Enums\Runs\RunMode;
 use App\Exceptions\PartTransitionRefused;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessEvent;

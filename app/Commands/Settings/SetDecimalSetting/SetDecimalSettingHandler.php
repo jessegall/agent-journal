@@ -6,7 +6,7 @@ namespace App\Commands\Settings\SetDecimalSetting;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Declarations\DecimalSetting;
-use App\Enums\SettingType;
+use App\Enums\Settings\SettingType;
 use App\Support\SettingCodec;
 use App\Support\SettingsWriter;
 use App\Support\SettingTargets;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\ShareState;
+use App\Enums\Sharing\ShareState;
 
 /**
  * What a share command answers with and its receipt keeps: the share's id, number and state, never its token or

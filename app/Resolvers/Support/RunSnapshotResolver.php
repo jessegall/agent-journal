@@ -7,7 +7,7 @@ namespace App\Resolvers\Support;
 use App\Contracts\Bus\ResultReceipts;
 use App\Data\Processes\PartSnapshotData;
 use App\Data\Processes\RunSnapshotData;
-use App\Enums\PositionPurpose;
+use App\Enums\Runs\PositionPurpose;
 use App\Models\Runs\OutputAssessment;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;

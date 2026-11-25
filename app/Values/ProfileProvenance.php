@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\PolicyOriginType;
+use App\Enums\Profiles\PolicyOriginType;
 use App\Exceptions\ProfileFieldUnknown;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\MapName;

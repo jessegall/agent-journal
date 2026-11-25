@@ -7,7 +7,7 @@ namespace Tests\Feature\Communication;
 use App\Commands\Messages\PostChatMessage\PostChatMessageCommand;
 use App\Contracts\Chat\ChatLines;
 use App\Contracts\Chat\ChatTimeline;
-use App\Enums\InboxPermission;
+use App\Enums\Messages\InboxPermission;
 use App\Exceptions\ChatCursorRefused;
 use App\Http\Responses\PageReadProps;
 use App\Support\ActorIdentity;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Enums\ActorType;
-use App\Enums\CommandClass;
+use App\Enums\Assignments\ActorType;
+use App\Enums\CommandRules\CommandClass;
 use App\Models\Profiles\PermissionRevocation;
 use App\Support\ActorIdentity;
 use App\Values\CommandClassSet;

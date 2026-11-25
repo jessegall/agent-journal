@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Navigation\DraftProducer;
 use App\Data\Messages\DraftQuestionData;
 use App\Data\Pages\DraftedRecordData;
-use App\Enums\SignInMethod;
+use App\Enums\Accounts\SignInMethod;
 use App\Values\AccountLabel;
 
 /**

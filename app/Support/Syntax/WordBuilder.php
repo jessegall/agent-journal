@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Syntax;
 
-use App\Enums\WordSegmentType;
+use App\Enums\CommandRules\WordSegmentType;
 use App\Values\SourceRange;
 use App\Values\Word;
 use App\Values\WordSegment;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Enums\MessageState;
+use App\Enums\Messages\MessageState;
 use App\Enums\MessageType;
 use App\Models\CommandRules\CommandReceipt;
 use App\Models\Messages\Message;

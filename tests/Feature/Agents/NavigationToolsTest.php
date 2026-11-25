@@ -7,7 +7,7 @@ namespace Tests\Feature\Agents;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Chat\MainSeatTakeover;
-use App\Enums\NavigationState;
+use App\Enums\Navigation\NavigationState;
 use App\Models\Drivers\NavigationRequest;
 use App\Support\ActorContext;
 use App\Values\OwnerAuthority;

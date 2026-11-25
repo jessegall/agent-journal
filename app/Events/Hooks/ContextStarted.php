@@ -6,7 +6,7 @@ namespace App\Events\Hooks;
 
 use App\Contracts\Asks\AnsweredAtOnce;
 use App\Contracts\Work\ReminderContribution;
-use App\Enums\ContextStartType;
+use App\Enums\Hooks\ContextStartType;
 use App\Values\StackTarget;
 
 /**

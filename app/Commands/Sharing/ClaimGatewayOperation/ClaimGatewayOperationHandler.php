@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Commands\Sharing\ClaimGatewayOperation;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\GatewayEndpointState;
-use App\Enums\GatewayOperationType;
-use App\Enums\GatewayOutcome;
+use App\Enums\Sharing\GatewayEndpointState;
+use App\Enums\Sharing\GatewayOperationType;
+use App\Enums\Sharing\GatewayOutcome;
 use App\Models\Sharing\ShareGatewayConfiguration;
 use App\Models\Sharing\ShareGatewayEndpoint;
 use App\Models\Sharing\ShareGatewayOperation;

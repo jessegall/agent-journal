@@ -8,7 +8,7 @@ use App\Concerns\RendersRefusal;
 use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
-use App\Enums\RefusalCode;
+use App\Enums\Engine\RefusalCode;
 use RuntimeException;
 
 /**

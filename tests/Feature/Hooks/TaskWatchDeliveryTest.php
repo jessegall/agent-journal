@@ -6,7 +6,7 @@ namespace Tests\Feature\Hooks;
 
 use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Events\Event;
-use App\Enums\AnswerType;
+use App\Enums\Hooks\AnswerType;
 use App\Models\Drivers\HookCall;
 use App\Providers\DomainEventServiceProvider;
 use App\Support\OperationDeadline;

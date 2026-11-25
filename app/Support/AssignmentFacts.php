@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Assignments\AssignmentFactPublisher;
 use App\Contracts\Bus\CommandFacts;
-use App\Enums\AssignmentReason;
+use App\Enums\Assignments\AssignmentReason;
 use App\Events\Assignments\AssignmentsChanged;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;

@@ -14,8 +14,8 @@ use App\Declarations\NavigationItem;
 use App\Declarations\Page;
 use App\Declarations\SidebarGroup;
 use App\Declarations\Slot;
-use App\Enums\Icon;
-use App\Enums\SlotContextType;
+use App\Enums\Navigation\Icon;
+use App\Enums\Profiles\SlotContextType;
 
 /**
  * A fixture domain with a list page, a record page offering a slot, an action, nested navigation and its own sidebar

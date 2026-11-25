@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Data\Accounts;
 
-use App\Enums\AccountState;
-use App\Enums\CleanupProblem;
+use App\Enums\Accounts\AccountState;
+use App\Enums\Accounts\CleanupProblem;
 use App\Models\Accounts\Account;
 use App\Support\SignInProtocols;
 use App\Values\AccountUse;

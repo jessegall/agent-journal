@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Execution;
 
-use App\Enums\BuiltinCommand;
+use App\Enums\CommandRules\BuiltinCommand;
 use App\Values\ExecutionContext;
 
 /**

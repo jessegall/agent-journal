@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\ActorType;
+use App\Enums\Assignments\ActorType;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Agents\MainAgentDesignation;

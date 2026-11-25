@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\ExecutionModeType;
+use App\Enums\Agents\ExecutionModeType;
 
 /**
  * The policy a start runs under, frozen with the session it starts: what the agent may reach, when it may stop, how

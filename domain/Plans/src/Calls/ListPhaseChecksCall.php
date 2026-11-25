@@ -6,7 +6,7 @@ namespace Domain\Plans\Calls;
 
 use App\Attributes\Endpoint;
 use App\Contracts\Domains\JournalCall;
-use App\Enums\CallEffect;
+use App\Enums\Processes\CallEffect;
 use Domain\Plans\Calls\Concerns\NamesPlanPhase;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Min;

@@ -6,8 +6,8 @@ namespace App\Commands\Drivers\RecordRuntime;
 
 use App\Attributes\Authorize;
 use App\Contracts\Bus\AgentStackCommand;
-use App\Enums\AccessType;
-use App\Enums\DriverOperation;
+use App\Enums\Agents\AccessType;
+use App\Enums\Drivers\DriverOperation;
 use App\Policies\AgentMaintenancePolicy;
 use App\Support\Command;
 use App\Values\DriverReceipt;

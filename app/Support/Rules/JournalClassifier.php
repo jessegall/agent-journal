@@ -6,10 +6,10 @@ namespace App\Support\Rules;
 
 use App\Attributes\OutsideThePlaces;
 use App\Contracts\Processes\ProgramClassifier;
-use App\Enums\CommandClass;
-use App\Enums\CommandType;
-use App\Enums\PlaceExemption;
-use App\Enums\UnresolvedType;
+use App\Enums\CommandRules\CommandClass;
+use App\Enums\CommandRules\CommandType;
+use App\Enums\CommandRules\UnresolvedType;
+use App\Enums\Files\PlaceExemption;
 use App\Support\JournalRoutes;
 use App\Values\AgentText;
 use App\Values\ClassFact;

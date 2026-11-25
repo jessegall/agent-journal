@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Agents;
 
-use App\Enums\CallEffect;
-use App\Enums\ReceiptOwner;
+use App\Enums\Processes\CallEffect;
+use App\Enums\Processes\ReceiptOwner;
 use App\Exceptions\KeyedWriteWithoutReceipt;
 use App\Support\CallDeclaration;
 use App\Support\CallRoutes;

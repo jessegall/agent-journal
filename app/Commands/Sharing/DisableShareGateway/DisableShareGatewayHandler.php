@@ -6,9 +6,9 @@ namespace App\Commands\Sharing\DisableShareGateway;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Sharing\SharePolicy;
-use App\Enums\GatewayOperationType;
-use App\Enums\GatewayOutcome;
-use App\Enums\ShareAuditType;
+use App\Enums\Sharing\GatewayOperationType;
+use App\Enums\Sharing\GatewayOutcome;
+use App\Enums\Sharing\ShareAuditType;
 use App\Models\Sharing\Share;
 use App\Models\Sharing\ShareAudit;
 use App\Models\Sharing\ShareGatewayConfiguration;

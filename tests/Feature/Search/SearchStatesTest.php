@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Search;
 
-use App\Enums\SearchSurface;
+use App\Enums\Search\SearchSurface;
 use App\Exceptions\SearchHandleRefused;
 use App\Exceptions\SearchRestartRequired;
 use App\Exceptions\SearchStateFull;
