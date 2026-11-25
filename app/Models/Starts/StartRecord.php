@@ -535,4 +535,15 @@ final class StartRecord extends Model implements EventSource, ReadableModel
     {
         $query->where('actor_type', $requester->type->value)->where('actor_id', $requester->id);
     }
+
+    /**
+     * The start records that name their owner.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withOwner(Builder $query): void
+    {
+        $query->whereNotNull('owner_reference');
+    }
 }

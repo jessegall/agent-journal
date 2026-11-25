@@ -352,10 +352,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
      */
     public static function isRunningFor(string $sessionId, string $agentId): bool
     {
-        return self::query()->whereKey($sessionId)->running()
-            ->where(fn (Builder $session) => $session->where('agent_id', $agentId)
-                ->orWhereIn('parent_session_id', self::query()->select('id')->where('agent_id', $agentId)))
-            ->exists();
+        return self::query()->whereKey($sessionId)->running()->ofAgentOrItsHelpers($agentId)->exists();
     }
 
     /**
@@ -371,7 +368,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
      */
     public static function liveOf(string $agentId): self|null
     {
-        return self::query()->runningFor($agentId)->orderByDesc('created_at')->newestFirst()->first();
+        return self::query()->runningFor($agentId)->newestFirst()->first();
     }
 
     /**
@@ -383,9 +380,8 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     public static function runningDriversOf(array $ids): array
     {
         return self::query()
-            ->whereIn('agent_id', $ids)
+            ->ofAgents($ids)
             ->running()
-            ->orderBy('created_at')
             ->oldestFirst()
             ->get(['agent_id', 'driver_key'])
             ->pluck('driver_key', 'agent_id')
@@ -397,7 +393,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
      */
     public static function latestOf(string $agentId): self|null
     {
-        return self::query()->where('agent_id', $agentId)->orderByDesc('created_at')->newestFirst()->first();
+        return self::query()->ofAgents([$agentId])->newestFirst()->first();
     }
 
     /**
@@ -408,8 +404,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     public static function idsOfAgent(string $agentId, int $limit): array
     {
         $ids = self::query()
-            ->where('agent_id', $agentId)
-            ->orderByDesc('created_at')
+            ->ofAgents([$agentId])
             ->newestFirst()
             ->readExactly($limit)
             ->pluck('id');
@@ -426,7 +421,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     {
         $running = self::query()
             ->running()
-            ->orderBy('created_at')
+            ->oldestFirst()
             ->readExactly($limit)
             ->get();
 
@@ -442,8 +437,8 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     {
         $launches = self::query()
             ->running()
-            ->whereIn('id', StartRecord::query()->whereNotNull('owner_reference')->select('session_id'))
-            ->orderBy('created_at')
+            ->launched()
+            ->oldestFirst()
             ->readExactly($limit)
             ->get();
 
@@ -459,8 +454,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     {
         $sessions = self::query()
             ->running()
-            ->where('profile_key', $key)
-            ->where('profile_revision', $revision)
+            ->fromProfileRevision($key, $revision)
             ->readExactly($limit)
             ->get();
 
@@ -486,7 +480,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
      */
     public static function isDiscoveredInOrAfterSecondOf(string $sessionId, CarbonImmutable $moment): bool
     {
-        return self::query()->whereKey($sessionId)->where('discovered_at', '>=', $moment->startOfSecond())->exists();
+        return self::query()->whereKey($sessionId)->discoveredSince($moment->startOfSecond())->exists();
     }
 
     /**
@@ -494,7 +488,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
      */
     public static function isDiscoveredAfter(string $sessionId, CarbonImmutable $moment): bool
     {
-        return self::query()->whereKey($sessionId)->where('discovered_at', '>', $moment)->exists();
+        return self::query()->whereKey($sessionId)->discoveredAfter($moment)->exists();
     }
 
     /**
@@ -557,5 +551,75 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     protected function runningOnHost(Builder $query, string $hostId): void
     {
         $query->whereIn('id', AgentRuntime::query()->onHost($hostId)->select('agent_session_id'));
+    }
+
+    /**
+     * The sessions of the agents.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $agentIds
+     */
+    #[Scope]
+    protected function ofAgents(Builder $query, array $agentIds): void
+    {
+        $query->whereIn('agent_id', $agentIds);
+    }
+
+    /**
+     * The agent's sessions and the sessions started under one of them.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofAgentOrItsHelpers(Builder $query, string $agentId): void
+    {
+        $agentSessions = self::query()->select('id')->ofAgents([$agentId]);
+
+        $query->where(fn (Builder $session) => $session->where('agent_id', $agentId)
+            ->orWhereIn('parent_session_id', $agentSessions));
+    }
+
+    /**
+     * The sessions a launch started, whose start record names its owner.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function launched(Builder $query): void
+    {
+        $query->whereIn('id', StartRecord::query()->withOwner()->select('session_id'));
+    }
+
+    /**
+     * The sessions started from that revision of the profile.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function fromProfileRevision(Builder $query, string $key, int $revision): void
+    {
+        $query->where('profile_key', $key)->where('profile_revision', $revision);
+    }
+
+    /**
+     * The sessions discovered at or after that moment.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function discoveredSince(Builder $query, CarbonImmutable $moment): void
+    {
+        $query->where('discovered_at', '>=', $moment);
+    }
+
+    /**
+     * The sessions discovered after that moment.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function discoveredAfter(Builder $query, CarbonImmutable $moment): void
+    {
+        $query->where('discovered_at', '>', $moment);
     }
 }
