@@ -24,10 +24,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
- * A question one actor asked another in an inbox: open, or a choice between its options, answered once by its target.
- *
  * @property string $id
  * @property string $inbox_id
  * @property string $sender_type
@@ -36,10 +35,13 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $target_id
  * @property string $text
  * @property QuestionType $type
- * @property list<string> $options
- * @property string|null $answer
- * @property CarbonImmutable|null $answered_at
- * @property CarbonImmutable $created_at
+ * @property array $options
+ * @property ?string $answer
+ * @property ?CarbonImmutable $answered_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $sender attribute
+ * @property mixed $target attribute
  */
 #[Fillable([
     'inbox_id',

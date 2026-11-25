@@ -20,13 +20,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One row per user with the user's last heartbeat; every tab and device of the user refreshes the same row.
- *
  * @property string $id
  * @property string $user_id
  * @property CarbonImmutable $last_heartbeat_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'user_id',

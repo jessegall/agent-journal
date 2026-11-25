@@ -18,22 +18,20 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
- * One thing an agent did in an environment: a file it read or edited, a command it ran, a helper it started or that
- * finished, or a line it posted, with how much it matters and up to five short things it found.
- *
  * @property string $id
  * @property string $actor_type
  * @property string $actor_id
- * @property string|null $environment_id
+ * @property ?string $environment_id
  * @property ActivityLevel $level
  * @property ActivityType $type
  * @property string $subject
- * @property list<string>|null $found
+ * @property ?array $found
  * @property CarbonImmutable $occurred_at
- * @property CarbonImmutable|null $created_at
- * @property CarbonImmutable|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable(['subject'])]
 #[Table('activity_entries')]

@@ -25,22 +25,19 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
- * One viewer's lease on watching a runtime's terminal, one per explicit open: its opaque read interest id is what the
- * opening view renews, reads and closes, so two views of one viewer never touch each other. It is live until it is
- * closed or lapses unrenewed, an ended one never reopens, and it is never a request to the driver.
- *
  * @property string $id
- * @property string $read_interest_id
- * @property string $open_request_id
  * @property string $actor_type
  * @property string $actor_id
+ * @property string $read_interest_id
+ * @property string $open_request_id
  * @property string $agent_runtime_id
  * @property int $process_generation
  * @property int $interval_ms
  * @property CarbonImmutable $expires_at
- * @property CarbonImmutable|null $closed_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?CarbonImmutable $closed_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property AgentRuntime $runtime
  */
 #[Fillable([
     'agent_runtime_id',

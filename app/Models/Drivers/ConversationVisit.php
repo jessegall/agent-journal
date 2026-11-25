@@ -17,16 +17,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One time a journal session was seen in a native conversation, in the order the session's starts came.
- *
  * @property string $id
  * @property string $session_id
  * @property string $conversation_id
  * @property int $sequence_number
  * @property string $event_id
  * @property CarbonImmutable $observed_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'session_id',

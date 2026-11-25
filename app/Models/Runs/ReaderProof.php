@@ -20,15 +20,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * The journal's proof that one reader revision reads one declaration revision's output: the real sample runs it replayed the reader over, one per exit branch, with their manifests. It is never
- * updated; another reader or declaration revision needs a proof of its own (story 188).
- *
  * @property string $id
  * @property string $project_key
  * @property string $command_request_id
  * @property string $reader_revision_id
  * @property string $rule_proposal_revision_id
- * @property list<ProvenBranch> $proven_branches
+ * @property StoredValuesCast<array-key, ProvenBranch>|ProvenBranch[] $proven_branches
  * @property string $actor_type
  * @property string $actor_id
  * @property Carbon $created_at

@@ -35,30 +35,25 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One receipted write of a caller under its request key: the command and its fingerprint, and the result it returned
- * or the refusal it got, so a retry with the same key gets the same answer without running it again. Keys are kept
- * per caller and command (an agent's per session); past its retention a receipt is expired, its answer cleared and
- * its key refused until the receipt is pruned. Every query sees only the caller's receipts; the prune reads wider
- * through its named queries.
- *
  * @property string $id
  * @property string $author_type
  * @property string $author_id
- * @property string|null $session_id
+ * @property ?string $session_id
  * @property int $contract_major
  * @property string $request_key
  * @property string $command
  * @property string $fingerprint
- * @property string|null $target
  * @property ReceiptState $state
- * @property ReceiptResultData|null $result
- * @property string|null $refusal_code
- * @property string|null $refusal_message
- * @property array<string, mixed>|null $refusal_details
+ * @property ?ReceiptResultData $result
+ * @property ?string $refusal_code
+ * @property ?string $refusal_message
+ * @property ?array $refusal_details
  * @property CarbonImmutable $answers_until
- * @property CarbonImmutable|null $refuses_until
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?CarbonImmutable $refuses_until
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property ?string $target
+ * @property mixed $to_operation attribute
  */
 #[Fillable(
     [

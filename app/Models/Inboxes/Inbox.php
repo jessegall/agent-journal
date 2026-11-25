@@ -20,23 +20,24 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
- * A place messages are sent into and work is held at: its provider owns it, its members take part in it, and an
- * inbox that forwards its members receives what is addressed to them. Core's own inboxes are named ones such as main,
- * and each actor's personal inbox.
- *
  * @property string $id
  * @property string $provider_key
  * @property string $provider_id
- * @property string|null $name
+ * @property ?string $name
  * @property string $label
  * @property bool $forwards_members
  * @property int $last_message_number
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property Collection<int, InboxMember>|InboxMember[] $members
  */
 #[Table('inboxes')]
 #[Fillable([

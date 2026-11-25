@@ -20,16 +20,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One start's share of the host's CPU, memory and disk, held from admission until its exit is confirmed.
- *
  * @property string $id
  * @property string $start_request_id
  * @property int $cpu_cores
  * @property int $memory_bytes
  * @property int $disk_bytes
  * @property ReservationState $state
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'start_request_id',

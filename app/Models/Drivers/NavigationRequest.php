@@ -30,12 +30,9 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
- * A key script run that could not be certain, put to the main agent: the stalled driver request and its runtime,
- * the goal, why it stalled, the screen it is on and where the conversation stands. It belongs to
- * the user whose agent runs the script; the main agent's rounds are driver requests of their own.
- *
  * @property string $id
  * @property string $driver_request_id
  * @property string $agent_runtime_id
@@ -47,22 +44,27 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $fingerprint
  * @property string $goal_script
  * @property int $goal_version
- * @property array<string, string> $goal_parameters
+ * @property array $goal_parameters
  * @property string $goal_key
  * @property int $stalled_step
  * @property NavigationReason $reason
  * @property NavigationScreen $screen
- * @property list<string> $raise_rows
- * @property list<string> $sent_steps
+ * @property array $raise_rows
  * @property NavigationState $state
- * @property NavigationCompletion|null $completes
- * @property int|null $next_step
- * @property string|null $proof
- * @property string|null $abandon_reason
- * @property string|null $stale_entry_id
- * @property string|null $library_entry_id
+ * @property ?NavigationCompletion $completes
+ * @property ?int $next_step
+ * @property ?string $proof
+ * @property ?string $abandon_reason
+ * @property ?string $stale_entry_id
+ * @property array $sent_steps
+ * @property ?string $library_entry_id
  * @property CarbonImmutable $expires_at
  * @property int $row_version
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $goal attribute
+ * @property DriverRequest $driverRequest
+ * @property AgentRuntime $runtime
  */
 #[Fillable([
     'agent_runtime_id',

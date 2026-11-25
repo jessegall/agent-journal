@@ -23,24 +23,28 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
- * One message in one inbox: who sent it, its text, and the message it replies to when it is a reply. A message knows
- * nothing of how it is shown.
- *
  * @property string $id
  * @property string $inbox_id
  * @property string $sender_type
  * @property string $sender_id
  * @property string $body
  * @property int $number
- * @property string|null $target_message_id
- * @property CarbonImmutable $created_at
- * @property CarbonImmutable|null $updated_at
+ * @property ?string $target_message_id
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $sender attribute
+ * @property Inbox $inbox
+ * @property Collection<int, MessageReadEntry>|MessageReadEntry[] $reads
+ * @property Collection<int, Message>|Message[] $replies
+ * @property ?Message $target
  */
 #[Fillable([
     'inbox_id',

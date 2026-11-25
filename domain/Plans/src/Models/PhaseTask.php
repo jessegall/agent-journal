@@ -17,8 +17,6 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 /**
- * A task's place in a phase. It keeps the task id only; the task itself stays in Tasks.
- *
  * @property string $id
  * @property string $phase_id
  * @property string $task_id

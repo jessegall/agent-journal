@@ -52,6 +52,7 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -60,27 +61,30 @@ use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
- * A goal with phases in order and the tasks in each phase. Every agent and the owner read every plan, so it has no
- * agent limit.
- *
  * @property string $id
+ * @property int $task_id
+ * @property string $number_group_id
+ * @property int $number
  * @property string $title
  * @property string $brief
  * @property ActorType $creator_type
  * @property string $creator_id
  * @property int $revision
  * @property PlanType $type
- * @property string|null $finish_note
- * @property string|null $cancel_reason
  * @property PlanState $state
+ * @property ?string $finish_note
+ * @property ?string $cancel_reason
  * @property int $total_tasks
  * @property int $finished_tasks
  * @property int $cancelled_tasks
  * @property int $blocked_tasks
  * @property int $started_tasks
- * @property-read PlanProgress $progress
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $progress attribute
+ * @property mixed $share_card attribute
+ * @property mixed $share_summary attribute
+ * @property Collection<int, Phase>|Phase[] $phases
  */
 #[UseFactory(PlanFactory::class)]
 #[Fillable([

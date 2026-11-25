@@ -35,6 +35,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -43,9 +44,6 @@ use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
- * The running driver behind one agent session on one host: its driver, activity and hold, the requested, staged
- * and observed model and effort, and its process generation. AgentSession stays the only presence timestamp.
- *
  * @property string $id
  * @property string $agent_session_id
  * @property string $host_id
@@ -60,20 +58,25 @@ use PhpOption\Option;
  * @property string $canonical_folder
  * @property RuntimeActivity $activity
  * @property HoldReason $hold_reason
- * @property string|null $requested_model
- * @property string|null $staged_model
- * @property string|null $observed_model
- * @property string|null $requested_effort
- * @property string|null $staged_effort
- * @property string|null $observed_effort
- * @property CarbonImmutable|null $settings_observed_at
- * @property string|null $start_grant
+ * @property ?string $requested_model
+ * @property ?string $staged_model
+ * @property ?string $observed_model
+ * @property ?string $requested_effort
+ * @property ?string $staged_effort
+ * @property ?string $observed_effort
+ * @property ?CarbonImmutable $settings_observed_at
+ * @property ?mixed $start_grant
  * @property int $process_generation
- * @property CarbonImmutable|null $generation_started_at
- * @property CarbonImmutable|null $last_observed_at
+ * @property ?CarbonImmutable $generation_started_at
+ * @property ?CarbonImmutable $last_observed_at
  * @property int $observation_sequence
- * @property Carbon $updated_at
  * @property int $row_version
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property Host $host
+ * @property Collection<int, DriverRequest>|DriverRequest[] $requests
+ * @property AgentSession $session
+ * @property Collection<int, TerminalView>|TerminalView[] $terminalViews
  */
 #[Fillable([
     'agent_session_id',

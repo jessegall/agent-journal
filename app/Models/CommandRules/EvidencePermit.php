@@ -27,28 +27,25 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * A project owner's one-use permission to run one exact command line as an evidence-only sample: the line and its digests, the effects approved, the actor who may run it, capture limits and
- * expiry. It is used once; the same request id returns the run it already started.
- *
  * @property string $id
  * @property string $project_key
  * @property string $working_folder
  * @property string $source_line
  * @property string $source_digest
  * @property string $classification_digest
- * @property list<string> $approved_classes
+ * @property array $approved_classes
  * @property string $runner_type
  * @property string $runner_id
  * @property int $byte_cap
  * @property int $seconds_cap
  * @property CarbonImmutable $expires_at
- * @property string|null $request_id
- * @property CarbonImmutable|null $consumed_at
- * @property string|null $process_run_id
- * @property string|null $command_request_id
- * @property list<CommandRule> $candidate_rules the proposed rules the line is classified with, for a request's sample
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?string $request_id
+ * @property ?CarbonImmutable $consumed_at
+ * @property ?string $process_run_id
+ * @property ?string $command_request_id
+ * @property StoredValuesCast<array-key, CommandRule>|CommandRule[] $candidate_rules
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'project_key',

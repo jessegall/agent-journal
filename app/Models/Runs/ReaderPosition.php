@@ -24,17 +24,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * Where one reader revision stands in one part's output: its checkpoint after the last committed chunk it read, so
- * it resumes there instead of reading from the start.
- *
  * @property string $id
  * @property string $part_run_id
  * @property string $reader_revision_id
  * @property PositionPurpose $purpose
- * @property ReaderCheckpoint $checkpoint
- * @property InterpretationState $interpretation Provisional while reading, ReaderFailed once the reader broke
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property StoredValueCast<array-key, ReaderCheckpoint>|ReaderCheckpoint[] $checkpoint
+ * @property InterpretationState $interpretation
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'part_run_id',

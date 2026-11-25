@@ -19,17 +19,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One native conversation of a driver in one settings store, owned by the agent whose start first entered it and
- * bound to that start's context reference.
- *
  * @property string $id
  * @property string $resume_protocol
+ * @property ?string $originating_driver_key
+ * @property ?int $account_generation
+ * @property ?string $workspace_identity
  * @property string $settings_identity
  * @property string $native_id
  * @property string $agent_id
- * @property string|null $context_reference
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?string $context_reference
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'resume_protocol',

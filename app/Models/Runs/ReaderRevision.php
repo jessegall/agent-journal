@@ -15,6 +15,7 @@ use App\Values\ReaderDefinition;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -22,20 +23,18 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
- * One immutable revision of a reader for an operation: the command request and declaration revision it was proposed
- * for, its declarative definition, the output contract it reads under, and who wrote it. It is a draft until a
- * ReaderProof proves it; it is never updated, so a change is a new revision that needs its own proof (story 188).
- *
  * @property string $id
  * @property string $project_key
  * @property string $command_request_id
  * @property int $declaration_revision
  * @property string $operation
  * @property string $contract_label
- * @property array<string, mixed> $definition
+ * @property array $definition
  * @property string $actor_type
  * @property string $actor_id
  * @property Carbon $created_at
+ * @property CommandRequest $commandRequest
+ * @property Collection<int, ReaderProof>|ReaderProof[] $proofs
  */
 #[Fillable([
     'project_key',

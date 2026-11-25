@@ -22,21 +22,22 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
- * The policy one session was started under, written once with the start and never changed: a later profile
- * revision reaches only the next start.
- *
  * @property string $id
  * @property string $session_id
- * @property string|null $profile_key
- * @property int|null $profile_revision
- * @property string|null $configuration_hash
+ * @property ?string $profile_key
+ * @property ?int $profile_revision
+ * @property ?string $configuration_hash
  * @property StoredAccessPolicy $access_policy
  * @property StoredStopConditions $stop_conditions
  * @property StoredExecutionPolicy $execution_policy
  * @property string $policy_digest
  * @property bool $requires_review
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $policy attribute
  */
 #[Table('session_policies')]
 #[Fillable([

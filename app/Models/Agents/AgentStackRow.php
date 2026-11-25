@@ -38,19 +38,18 @@ use PhpOption\Option;
 use PhpOption\Some;
 
 /**
- * The stored stack of one agent in one journal session; its agent and session are set only through startFor.
- *
  * @property string $id
  * @property string $agent_id
  * @property string $session_id
  * @property int $version
  * @property FrameRecords $frames
  * @property StackStatus $status
- * @property bool $has_ticking_frames derived from the frames on every save
- * @property CarbonImmutable|null $closed_at
- * @property CarbonImmutable|null $held_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property bool $has_ticking_frames
+ * @property ?CarbonImmutable $closed_at
+ * @property ?CarbonImmutable $held_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $target attribute
  */
 #[Fillable([
     'version',

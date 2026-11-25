@@ -26,20 +26,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One approved, immutable revision of a command rule: the rule with its
- * grammar, classes, purpose, contract and executable binding, the script bindings it was approved for, who wrote and
- * who approved it, and its digest. A test, check or build revision names the one reader revision and proof it was
- * approved with; any other purpose names none. It is never updated.
- *
  * @property string $id
  * @property string $project_key
- * @property RuleScope $scope
+ * @property string $scope_type
+ * @property string $scope_owner
+ * @property string $scope_version
  * @property string $rule_id
  * @property int $revision
  * @property string $rule_proposal_revision_id
- * @property CommandRule $payload
- * @property list<ScriptBinding> $script_bindings
- * @property list<ReaderApproval> $reader_approvals
+ * @property StoredValueCast<array-key, CommandRule>|CommandRule[] $payload
+ * @property StoredValuesCast<array-key, ScriptBinding>|ScriptBinding[] $script_bindings
+ * @property StoredValuesCast<array-key, ReaderApproval>|ReaderApproval[] $reader_approvals
  * @property string $digest
  * @property string $author_type
  * @property string $author_id

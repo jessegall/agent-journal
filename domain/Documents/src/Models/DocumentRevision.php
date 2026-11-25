@@ -31,17 +31,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * One revision of a document, numbered within it: revision 1, 2, 3. A closed revision never changes.
- *
  * @property string $id
  * @property string $document_id
+ * @property string $number_group_id
  * @property int $number
  * @property string $title
  * @property string $abstract
  * @property string $body
  * @property ActorType $author_type
  * @property string $author_id
- * @property Carbon|null $closed_at
+ * @property ?CarbonImmutable $closed_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $card attribute
+ * @property Document $document
  */
 #[Fillable([
     'document_id',

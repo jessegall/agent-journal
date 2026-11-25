@@ -22,6 +22,7 @@ use App\Values\RuleScope;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,14 +30,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
- * One proposed command declaration under review: its owner scope in one project, the
- * request it answers, the canonical program and operation, its state, its author, the exact rule revision it replaces
- * and its current revision. A request id is used once per author and project, bound to the payload it first sent.
- *
  * @property string $id
  * @property string $project_key
- * @property RuleScope $scope
- * @property string|null $command_request_id
+ * @property string $scope_type
+ * @property string $scope_owner
+ * @property string $scope_version
+ * @property ?string $command_request_id
  * @property string $program
  * @property string $operation
  * @property ProposalState $state
@@ -44,10 +43,12 @@ use Illuminate\Support\Carbon;
  * @property string $author_id
  * @property string $request_id
  * @property string $payload_digest
- * @property list<RuleReference> $replaces
+ * @property StoredValuesCast<array-key, RuleReference>|RuleReference[] $replaces
  * @property int $current_revision
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property ?CommandRequest $commandRequest
+ * @property Collection<int, RuleProposalRevision>|RuleProposalRevision[] $revisions
  */
 #[Fillable([
     'project_key',

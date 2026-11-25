@@ -20,22 +20,24 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
 
 /**
- * What a parent keeps a helper of one profile for: one record, or free work. A parent has at most one purpose per
- * profile and record.
- *
  * @property string $id
+ * @property string $actor_type
+ * @property string $actor_id
  * @property string $profile_key
  * @property PurposeType $purpose_type
- * @property string|null $subject_type
- * @property string|null $subject_id
- * @property-read Option<RecordIdentity> $subject_record
+ * @property ?string $subject_type
+ * @property ?string $subject_id
  * @property string $label
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $subject_record attribute
  */
 #[Table('helper_purposes')]
 #[Fillable([

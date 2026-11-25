@@ -36,9 +36,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One switch of an agent from its running driver session to another: the request, the session and process
- * generation it expects to replace, its target and the stage it stands at. An agent has one open switch at most.
- *
  * @property string $id
  * @property string $request_id
  * @property string $agent_id
@@ -46,18 +43,20 @@ use Illuminate\Support\Carbon;
  * @property int $expected_generation
  * @property string $target_driver_key
  * @property string $target_family
+ * @property ?string $target_build
  * @property DriverType $driver_type
  * @property string $account_id
  * @property int $account_revision
- * @property string|null $conversation_id
+ * @property ?string $conversation_id
  * @property bool $remember
  * @property string $requested_by
- * @property string|null $replacement_session_id
+ * @property ?string $replacement_session_id
  * @property DriverSwitchStage $stage
- * @property string|null $failure_reason
- * @property int|null $stop_boundary_sequence
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?int $stop_boundary_sequence
+ * @property ?string $failure_reason
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $target attribute
  */
 #[Fillable([
     'request_id',

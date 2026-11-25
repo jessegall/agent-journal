@@ -34,10 +34,6 @@ use PhpOption\Option;
 use Spatie\LaravelData\DataCollection;
 
 /**
- * One read of a connected project's folder or file, asked by the server and answered once by the project's host: its
- * entries or its text, or why it failed. A read nobody answers in time expires; a settled read is kept for a while so
- * the same question asked again is answered from it.
- *
  * @property string $id
  * @property string $binding_id
  * @property ProjectReadType $type
@@ -45,17 +41,17 @@ use Spatie\LaravelData\DataCollection;
  * @property string $actor_type
  * @property string $actor_id
  * @property ProjectReadState $state
- * @property ProjectReadFailure|null $failure
- * @property DataCollection<int, ProjectEntryData>|null $entries
- * @property string|null $text
- * @property string|null $digest
- * @property int|null $size
+ * @property ?ProjectReadFailure $failure
+ * @property ?ProjectEntryData[]|?DataCollection<array-key, ProjectEntryData> $entries
+ * @property ?string $text
+ * @property ?string $digest
+ * @property ?int $size
  * @property bool $is_truncated
- * @property CarbonImmutable|null $claimed_at
- * @property CarbonImmutable|null $answered_at
+ * @property ?CarbonImmutable $claimed_at
+ * @property ?CarbonImmutable $answered_at
  * @property CarbonImmutable $expires_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Table('project_reads')]
 #[Fillable([

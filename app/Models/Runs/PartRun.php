@@ -31,6 +31,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -39,22 +40,18 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
- * One attempt of one executable part of a run: its syntax node, part and
- * attempt, the operation it runs, its lifecycle, its process end and how far its output was kept. It ends only once
- * its process ended and its streams are drained.
- *
  * @property string $id
  * @property string $process_run_id
  * @property int $syntax_node
  * @property string $part_id
  * @property int $attempt
- * @property string|null $parent_part_run_id
+ * @property ?string $parent_part_run_id
  * @property string $operation
  * @property LifecycleState $lifecycle
- * @property CarbonImmutable|null $started_at
- * @property CarbonImmutable|null $ended_at
- * @property int|null $pid
- * @property string|null $host
+ * @property ?CarbonImmutable $started_at
+ * @property ?CarbonImmutable $ended_at
+ * @property ?int $pid
+ * @property ?string $host
  * @property PartEndType $end_type
  * @property int $end_code
  * @property string $end_reason
@@ -62,9 +59,13 @@ use Illuminate\Support\Carbon;
  * @property string $skip_reason
  * @property string $stop_reason
  * @property CaptureState $capture_state
- * @property array<string, int> $stream_offsets
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property array $stream_offsets
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $end attribute
+ * @property Collection<int, OutputAssessment>|OutputAssessment[] $assessments
+ * @property Collection<int, OutputChunk>|OutputChunk[] $chunks
+ * @property ProcessRun $run
  */
 #[Fillable([
     'process_run_id',

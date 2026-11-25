@@ -17,6 +17,7 @@ use Domain\Sequences\Values\SequenceStep;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -24,16 +25,14 @@ use Illuminate\Support\Carbon;
 use Spatie\LaravelData\DataCollection;
 
 /**
- * A stored sequence: its name, a one-line summary and its steps, each with its title, when it runs and when it is
- * done. Its version goes up with each change; a run keeps the steps it started with.
- *
  * @property string $id
  * @property string $name
  * @property string $summary
- * @property DataCollection<int, SequenceStepData> $steps
+ * @property SequenceStepData[]|DataCollection<array-key, SequenceStepData> $steps
  * @property int $version
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property Collection<int, SequenceRun>|SequenceRun[] $runs
  */
 #[Fillable([
     'name',

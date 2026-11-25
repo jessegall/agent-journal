@@ -50,48 +50,49 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
- * One accepted request to a runtime's driver, in the order it was accepted: its payload, attempts, progress and
- * outcome, expected and actual timing, wake watermarks and key script progress.
- *
  * @property string $id
  * @property string $agent_runtime_id
  * @property int $sequence
  * @property DriverOperation $operation
  * @property string $idempotency_key
  * @property string $payload_digest
- * @property string|null $message
- * @property list<array<string, mixed>>|null $parts
- * @property string|null $model
- * @property string|null $effort
+ * @property ?string $message
+ * @property ?array $parts
+ * @property ?string $model
+ * @property ?string $effort
  * @property RequestProgress $progress
- * @property RequestOutcome|null $outcome
- * @property HostWakeRefusal|null $refusal_reason
+ * @property ?RequestOutcome $outcome
+ * @property ?HostWakeRefusal $refusal_reason
  * @property bool $no_process_created
- * @property int|null $retried_from_version
- * @property string|null $possible_duplicate_of_id
+ * @property ?int $retried_from_version
+ * @property ?string $possible_duplicate_of_id
  * @property ExpectedTiming $expected_timing
- * @property CarbonImmutable|null $expected_observed_at
- * @property CarbonImmutable|null $created_at
- * @property CarbonImmutable|null $updated_at
- * @property string|null $actual_binding
+ * @property ?CarbonImmutable $expected_observed_at
+ * @property ?string $actual_binding
  * @property int $attempt_version
  * @property int $wake_requested
  * @property int $wake_acknowledged
- * @property int|null $wake_claimed
- * @property CarbonImmutable|null $staged_at
- * @property CarbonImmutable|null $offer_after
- * @property string|null $script_id
- * @property int|null $script_version
- * @property int|null $script_step
- * @property array<string, string> $script_parameters
- * @property int|null $script_generation
- * @property string|null $script_evidence
- * @property string|null $navigation_request_id
- * @property NavigationRound|null $navigation_round
+ * @property ?int $wake_claimed
+ * @property ?CarbonImmutable $staged_at
+ * @property ?CarbonImmutable $offer_after
+ * @property ?string $script_id
+ * @property ?int $script_version
+ * @property ?int $script_step
+ * @property array $script_parameters
+ * @property ?int $script_generation
+ * @property ?string $script_evidence
+ * @property ?string $navigation_request_id
+ * @property ?OptionalStoredValueCast<array-key, NavigationRound>|?NavigationRound[] $navigation_round
  * @property HoldReason $hold_reason
  * @property int $row_version
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $receipt attribute
+ * @property mixed $status attribute
+ * @property AgentRuntime $runtime
  */
 #[Fillable([
     'agent_runtime_id',

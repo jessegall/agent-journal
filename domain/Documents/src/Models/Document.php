@@ -17,6 +17,7 @@ use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Sharing\Shareable;
 use App\Enums\ActorType;
+use App\Models\Records\Comment;
 use App\Models\Support\Accessor;
 use App\Support\ActorContext;
 use App\Support\Cards\DockCard;
@@ -44,6 +45,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -53,16 +55,22 @@ use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Carbon;
 
 /**
- * A document: lasting knowledge kept as numbered revisions. It keeps no copy of its text; its current text is its
- * highest revision.
- *
  * @property string $id
+ * @property string $number_group_id
  * @property int $number
  * @property ActorType $creator_type
  * @property string $creator_id
  * @property AttentionState $attention
- * @property string|null $current_revision_id
- * @property Carbon|null $created_at
+ * @property ?string $current_revision_id
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $card attribute
+ * @property mixed $dock_card attribute
+ * @property mixed $view attribute
+ * @property Collection<int, Comment>|Comment[] $comments
+ * @property ?DocumentRevision $currentRevision
+ * @property DocumentDraft $draft
+ * @property Collection<int, DocumentRevision>|DocumentRevision[] $revisions
  */
 #[Fillable([
     'creator_type',

@@ -39,29 +39,30 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
- * One job a parent gave a helper for a purpose: its brief, the source it was given, how far it got, the steering added
- * on the way and where its result and stop evidence are. Only its parent reads it.
- *
  * @property string $id
  * @property string $actor_type
  * @property string $actor_id
  * @property string $helper_identity_id
  * @property string $helper_purpose_id
  * @property string $brief
- * @property list<string> $source_subjects
+ * @property array $source_subjects
  * @property string $request_id
  * @property JobState $state
- * @property list<string> $steering
- * @property string|null $stop_evidence_reference
+ * @property array $steering
+ * @property ?string $stop_evidence_reference
  * @property int $profile_revision
- * @property CarbonImmutable|null $finished_at
+ * @property ?CarbonImmutable $finished_at
  * @property string $payload_digest
  * @property bool $identity_new
  * @property bool $independent
  * @property ConversationModeType $conversation_mode
  * @property string $conversation_reason
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $launch attribute
  */
 #[Table('helper_jobs')]
 #[Fillable([

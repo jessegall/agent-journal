@@ -19,6 +19,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Contracts\Work\Focusable;
 use App\Enums\ActorType;
 use App\Enums\PoolMembersType;
+use App\Models\Records\Comment;
 use App\Models\Support\Accessor;
 use App\Models\Support\AssignableListing;
 use App\Support\ActorIdentity;
@@ -55,6 +56,7 @@ use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -65,9 +67,8 @@ use PhpOption\Option;
 use PhpOption\Some;
 
 /**
- * One task. Each start begins a run; the agent and session working on it are set only by starting it.
- * Every agent reads every task, so it has no agent limit.
- *
+ * @property string $owner
+ * @property string $plan_name
  * @property string $id
  * @property string $number_group_id
  * @property int $number
@@ -78,13 +79,15 @@ use PhpOption\Some;
  * @property int $revision
  * @property TaskState $state
  * @property int $run_number
- * @property string|null $result_note
- * @property-read string|null $stateText
- * @property string|null $block_reason
- * @property string|null $cancel_reason
- * @property string|null $environment_id
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?string $result_note
+ * @property ?string $block_reason
+ * @property ?string $cancel_reason
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property ?string $environment_id
+ * @property mixed $state_text attribute
+ * @property mixed $summary attribute
+ * @property Collection<int, Comment>|Comment[] $comments
  */
 #[UseFactory(TaskFactory::class)]
 #[UsePolicy(TaskRunPolicy::class)]

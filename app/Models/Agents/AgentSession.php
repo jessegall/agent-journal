@@ -40,6 +40,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -48,33 +49,37 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
 /**
- * One start of an agent: one journal session, its parent session for a child, and the driver's own session once
- * verified.
- *
  * @property string $id
  * @property string $agent_id
- * @property string|null $parent_session_id
- * @property string|null $driver_key
- * @property string|null $current_conversation_id
- * @property string|null $driver_label
+ * @property ?string $parent_session_id
+ * @property ?string $driver_key
+ * @property ?string $driver_label
+ * @property ?string $driver_build
  * @property string $model
  * @property ModelSelectionType $requested_model_type
- * @property string|null $requested_model
+ * @property ?string $requested_model
  * @property DriverSourceType $driver_source
  * @property string $profile_key
  * @property int $profile_revision
  * @property string $start_request_id
- * @property string|null $skill_generation_id
+ * @property ?string $skill_generation_id
+ * @property ?string $current_conversation_id
+ * @property ?string $selected_message_id
+ * @property ?string $job_source_message_id
  * @property SessionStatus $status
- * @property CarbonImmutable|null $ended_at
- * @property CarbonImmutable|null $last_heartbeat_at
- * @property CarbonImmutable|null $silent_since
- * @property string|null $end_evidence
- * @property CarbonImmutable|null $discovered_at
- * @property Carbon $created_at
- * @property Carbon|null $updated_at
- * @property-read Agent $agent
- * @property-read StartToken|null $startToken
+ * @property ?CarbonImmutable $ended_at
+ * @property ?CarbonImmutable $last_heartbeat_at
+ * @property ?CarbonImmutable $silent_since
+ * @property ?string $end_evidence
+ * @property ?CarbonImmutable $discovered_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $selection attribute
+ * @property mixed $target attribute
+ * @property Agent $agent
+ * @property ?DriverConversation $currentConversation
+ * @property StartToken $startToken
+ * @property Collection<int, ConversationVisit>|ConversationVisit[] $visits
  */
 #[Fillable([
     'driver_key',

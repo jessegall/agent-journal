@@ -15,19 +15,17 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
- * One change of one receipt in a scope, at the scope's version after it, so a browser can catch up in order: which
- * receipt, what happened and its arrival sequence, never its title. Kept for a day.
- *
  * @property string $id
  * @property string $scope_id
  * @property int $version
  * @property string $receipt_id
  * @property NotificationMutationType $mutation_type
  * @property int $sequence
- * @property CarbonImmutable|null $created_at
+ * @property ?Carbon $created_at
  */
 #[Table('notification_changes')]
 #[Fillable([

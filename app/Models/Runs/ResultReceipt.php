@@ -21,10 +21,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * The one result a consumer may rely on: it binds the run, part and attempt,
- * the work it saw, the declaration, reader and exit-policy revisions, the capture manifest and the valid assessment it
- * was published from. Only the ReceiptPublisher writes it; a newer receipt for the same part supersedes it.
- *
  * @property string $id
  * @property string $project_key
  * @property string $process_run_id
@@ -37,7 +33,7 @@ use Illuminate\Support\Carbon;
  * @property string $manifest_digest
  * @property string $output_assessment_id
  * @property AssessmentOutcome $outcome
- * @property string|null $superseded_by_id
+ * @property ?string $superseded_by_id
  * @property Carbon $published_at
  */
 #[Fillable([

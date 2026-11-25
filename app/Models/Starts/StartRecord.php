@@ -48,45 +48,47 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
- * The durable record of one start request: who asked for which agent, the selection, its origin and conversation,
- * the digest of its contents and where it stands. It never holds a credential or a secret.
- *
  * @property string $id
  * @property string $request_id
  * @property string $agent_id
  * @property string $actor_type
  * @property string $actor_id
  * @property string $driver_key
- * @property string $family
  * @property string $driver_label
- * @property int|null $catalogue_revision
+ * @property string $family
+ * @property ?string $driver_build
+ * @property ?string $host_id
+ * @property ?int $proposed_generation
+ * @property ?int $catalogue_revision
  * @property string $model
  * @property ModelSelectionType $requested_model_type
- * @property string|null $requested_model
+ * @property ?string $requested_model
  * @property DriverSourceType $driver_source
- * @property string|null $profile_key
- * @property int|null $profile_revision
+ * @property ?string $profile_key
+ * @property ?int $profile_revision
  * @property StartOriginType $origin_type
- * @property string|null $owner_reference
- * @property string|null $context_reference
+ * @property ?string $owner_reference
+ * @property ?string $context_reference
  * @property ConversationModeType $conversation_mode
- * @property string|null $conversation_target
  * @property DriverType $driver_type
  * @property bool $account_chosen
  * @property bool $remember
- * @property bool|null $conversation_resumed
+ * @property ?string $conversation_target
+ * @property ?bool $conversation_resumed
  * @property string $payload_digest
  * @property StartDisposition $disposition
  * @property StartReadiness $readiness
- * @property string|null $native_id
- * @property string|null $refusal_reason
- * @property CarbonImmutable|null $refused_at
- * @property string|null $session_id
- * @property CarbonImmutable|null $created_at
- * @property CarbonImmutable|null $updated_at
+ * @property ?string $native_id
+ * @property ?string $refusal_reason
+ * @property ?Carbon $refused_at
+ * @property ?string $session_id
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $owner_work attribute
  */
 #[Fillable([
     'request_id',

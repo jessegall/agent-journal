@@ -18,19 +18,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * A test, build or other long command line kept under a name, its alias, so an agent runs it as journal <name> or
- * journal run <name>. Each change is a new revision with the digest of its body, and the positional arguments it
- * takes are declared by name, never pasted into the body.
- *
  * @property string $id
  * @property string $project_key
  * @property string $name
  * @property string $line
  * @property int $revision
  * @property string $body_digest
- * @property list<string> $argument_grammar
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property array $argument_grammar
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $lookup attribute
  */
 #[Fillable([
     'project_key',

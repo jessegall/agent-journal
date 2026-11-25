@@ -31,9 +31,6 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
- * The one open draft of a document: its editor, the revision it started from, a version that counts its saves,
- * and its text. Closing it publishes a revision only when the text changed.
- *
  * @property string $id
  * @property string $document_id
  * @property string $token
@@ -44,7 +41,11 @@ use Illuminate\Support\Str;
  * @property string $title
  * @property string $abstract
  * @property string $body
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable $opened_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $holder_label attribute
+ * @property Document $document
  */
 #[Fillable(
     [

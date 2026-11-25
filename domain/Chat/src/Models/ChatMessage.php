@@ -24,11 +24,9 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Carbon;
 
 /**
- * One entry of an inbox's chat and what it shows: its source, a message, a question or the record of something that
- * happened. It holds no text of its own. Entries of one author close together share a group.
- *
  * @property string $id
  * @property string $inbox_id
  * @property string $source_type
@@ -37,8 +35,9 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property int $group_number
  * @property string $author_type
  * @property string $author_id
- * @property CarbonImmutable $created_at
- * @property CarbonImmutable $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $author attribute
  * @property Model $source
  */
 #[Fillable([

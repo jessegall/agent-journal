@@ -17,6 +17,7 @@ use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Sharing\Shareable;
 use App\Enums\ActorType;
+use App\Models\Records\Comment;
 use App\Models\Support\Accessor;
 use App\Support\ActorContext;
 use App\Support\Cards\DockCard;
@@ -46,22 +47,29 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * A report: what was checked or found at one moment, filed once. Only whether it still asks for attention changes.
- *
  * @property string $id
+ * @property string $number_group_id
  * @property int $number
  * @property string $title
  * @property string $abstract
  * @property string $body
  * @property ActorType $creator_type
  * @property string $creator_id
- * @property Carbon $filed_at
+ * @property CarbonImmutable $filed_at
  * @property AttentionState $attention
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $card attribute
+ * @property mixed $dock_card attribute
+ * @property mixed $share_card attribute
+ * @property mixed $view attribute
+ * @property Collection<int, Comment>|Comment[] $comments
  */
 #[Fillable([
     'title',

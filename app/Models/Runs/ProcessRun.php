@@ -52,16 +52,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
- * One admitted command line run under supervision: its single-use admission,
- * whether it is a normal or an evidence run, the source and tree digests and rule revisions it was admitted under,
- * and where its lifecycle and capture stand. The actor who runs it holds it.
- *
  * @property string $id
  * @property string $admission_id
  * @property RunMode $mode
  * @property string $project_key
- * @property string|null $actor_type
- * @property string|null $actor_id
+ * @property ?string $actor_type
+ * @property ?string $actor_id
  * @property string $source_digest
  * @property ShellDialect $dialect
  * @property string $tree_digest
@@ -69,25 +65,27 @@ use Illuminate\Support\Carbon;
  * @property string $policy_revision
  * @property LifecycleState $lifecycle
  * @property CaptureState $capture_state
- * @property string|null $stop_reason
- * @property int $update_sequence the number of the last live update sent for this run
- * @property string $stale_reason why the run's admission no longer holds, or empty while it does
+ * @property ?string $stop_reason
+ * @property string $stale_reason
+ * @property int $update_sequence
  * @property string $event_key_hash
  * @property string $consuming_key_hash
  * @property string $working_folder
  * @property ExecutionPlan $plan
- * @property CarbonImmutable|null $consumed_at
- * @property CarbonImmutable|null $heartbeat_at
- * @property CarbonImmutable|null $shown_at when its agent's conversation began showing it
- * @property CarbonImmutable|null $started_at
- * @property CarbonImmutable|null $ended_at
+ * @property ?CarbonImmutable $consumed_at
+ * @property ?CarbonImmutable $heartbeat_at
+ * @property ?CarbonImmutable $shown_at
+ * @property ?CarbonImmutable $started_at
+ * @property ?CarbonImmutable $ended_at
  * @property RunRequestIntent $request_intent
- * @property string|null $responsible_type
- * @property string|null $responsible_id
- * @property string|null $outcome_user_id
+ * @property ?string $responsible_type
+ * @property ?string $responsible_id
+ * @property ?string $outcome_user_id
  * @property string $attempt_id
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property Collection<int, ProcessEvent>|ProcessEvent[] $events
+ * @property Collection<int, PartRun>|PartRun[] $parts
  */
 #[Fillable([
     'admission_id',

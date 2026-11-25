@@ -31,28 +31,27 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * The durable intent to deliver one generation's selection to one session's target, and how far it got: each worker
- * claims it under a new fencing version, so an older worker can never overwrite a newer one. Its manifest holds only
- * safe identities and hashes.
- *
  * @property string $id
  * @property string $session_id
- * @property string $skill_protocol the skill format the publication is written for, which every driver of its family reads
+ * @property string $skill_protocol
  * @property string $target
  * @property string $generation_id
  * @property string $selection_digest
- * @property list<string> $skill_keys
- * @property string|null $expected_previous_generation_id
+ * @property array $skill_keys
+ * @property ?string $expected_previous_generation_id
  * @property int $fencing_version
- * @property string|null $lease_holder
- * @property CarbonImmutable|null $lease_until
+ * @property ?string $lease_holder
+ * @property ?CarbonImmutable $lease_until
  * @property int $progress
  * @property PublicationState $state
- * @property string|null $open_key
- * @property array<string, mixed>|null $manifest
- * @property string|null $error
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?string $open_key
+ * @property ?array $manifest
+ * @property ?string $error
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $status attribute
+ * @property mixed $target_key attribute
+ * @property mixed $target_name attribute
  */
 #[Fillable([
     'session_id',

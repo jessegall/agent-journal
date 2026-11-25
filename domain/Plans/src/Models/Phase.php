@@ -34,22 +34,21 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * One phase of a plan, at its place in the plan, holding tasks in order. A task sits in one phase at most.
- *
  * @property string $id
  * @property string $plan_id
- * @property string $title
  * @property string $number_group_id
  * @property int $number
+ * @property string $title
  * @property int $revision
  * @property int $total_tasks
  * @property int $finished_tasks
  * @property int $cancelled_tasks
  * @property int $blocked_tasks
  * @property int $started_tasks
- * @property-read PlanProgress $progress
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $progress attribute
+ * @property Plan $plan
  */
 #[Fillable([
     'title',

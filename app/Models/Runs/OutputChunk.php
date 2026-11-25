@@ -18,9 +18,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One stored piece of a part's output stream: where it starts, how long it is, its checksum and the file that holds
- * it. A stream's chunks in offset order with their checksums are its manifest.
- *
  * @property string $id
  * @property string $part_run_id
  * @property OutputStream $stream
@@ -29,8 +26,8 @@ use Illuminate\Support\Carbon;
  * @property string $checksum
  * @property CarbonImmutable $captured_at
  * @property string $storage_path
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'part_run_id',

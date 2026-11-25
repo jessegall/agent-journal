@@ -28,12 +28,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
- * One browser writer's take of an agent's terminal and the grant it led to: who took it, through which read interest,
- * for which session, process generation and host, the opaque grant id the host issued, where it stands and when it
- * expires unless renewed. A grant only ever writes; reading is the read interest's.
- *
  * @property string $id
  * @property string $actor_type
  * @property string $actor_id
@@ -44,12 +41,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $host_id
  * @property string $read_interest_id
  * @property string $take_id
- * @property string|null $grant_id
+ * @property ?string $grant_id
  * @property TerminalGrantState $state
  * @property int $next_sequence
- * @property string|null $take_request_id
- * @property string|null $release_request_id
+ * @property ?string $take_request_id
+ * @property ?string $release_request_id
  * @property CarbonImmutable $expires_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property AgentRuntime $runtime
  */
 #[Fillable([
     'state',

@@ -20,14 +20,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * One actor read one message: when it first read it and when it last read it.
- *
  * @property string $id
  * @property string $message_id
  * @property string $reader_type
  * @property string $reader_id
  * @property CarbonImmutable $read_at
  * @property CarbonImmutable $last_read_at
+ * @property Message $message
  */
 #[Fillable([
     'message_id',
