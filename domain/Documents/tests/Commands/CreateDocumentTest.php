@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Documents\Tests\Feature;
+namespace Domain\Documents\Tests\Commands;
 
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\CommandInputInvalid;
@@ -10,10 +10,7 @@ use App\Support\RecordIdentity;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Documents\Contracts\Documents\DocumentResolver;
-use Domain\Documents\Contracts\Reports\ReportResolver;
-use Domain\Documents\Data\DocumentFilters;
 use Domain\Documents\Exceptions\RecordImmutable;
-use Domain\Documents\Exceptions\ReportMissing;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Models\Report;
@@ -23,10 +20,11 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 
 /**
- * A document is published with its text as revision 1 and a report is filed once; both are numbered across the
- * journal, read back by number, and never changed in place.
+ * A user or agent files a document: documents are numbered from one, each at its first revision that never changes,
+ * the title and abstract are kept trimmed, and an empty title, a two-line abstract or too many links leave no row and
+ * name the field.
  */
-final class DocumentsTest extends TestCase
+final class CreateDocumentTest extends TestCase
 {
     use ActsAsFirstUser;
     use CommitsHookRows;
@@ -40,10 +38,6 @@ final class DocumentsTest extends TestCase
     private const string FIRST_DOCUMENT = 'doc 1';
 
     private const string SECOND_DOCUMENT = 'doc 2';
-
-    private const string FIRST_REPORT = 'report 1';
-
-    private const string GOOD_REPORT = "All good\n";
 
     private const string TITLE_REQUIRED = 'title: The title field is required.';
 
@@ -73,18 +67,6 @@ final class DocumentsTest extends TestCase
         $this->assertSame(['1'], [$this->app->make(DocumentResolver::class)->show(2)->revision]);
 
         $this->assertSame(self::GOAL_TEXT, $this->app->make(DocumentResolver::class)->show(1)->body);
-    }
-
-    public function test_a_report_is_filed_and_a_document_number_never_selects_it(): void
-    {
-        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "Text\n"));
-        $report = $this->bus()->run(new CreateReportCommand('Check', 'What we found', self::GOOD_REPORT));
-
-        $this->assertSame(self::FIRST_REPORT, $report->label());
-        $this->assertSame(self::GOOD_REPORT, $this->app->make(ReportResolver::class)->show(1)->body);
-        $this->assertCount(1, $this->app->make(DocumentResolver::class)->list(new DocumentFilters())->rows);
-        $this->expectException(ReportMissing::class);
-        $this->app->make(ReportResolver::class)->show(2);
     }
 
     public function test_an_empty_title_leaves_no_row_and_names_the_field(): void

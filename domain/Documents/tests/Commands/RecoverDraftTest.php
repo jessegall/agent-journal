@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Documents\Tests\Feature;
+namespace Domain\Documents\Tests\Commands;
 
 use App\Contracts\Bus\CommandBus;
 use App\Data\Messages\MessageTextData;
@@ -37,7 +37,7 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensDriverRuntimes;
 use Tests\Support\StartsAgentRequests;
 
-final class DocumentDraftTest extends TestCase
+final class RecoverDraftTest extends TestCase
 {
     use CommitsHookRows;
     use OpensDriverRuntimes;
