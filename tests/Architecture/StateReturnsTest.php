@@ -7,7 +7,6 @@ namespace Tests\Architecture;
 use Tests\Architecture\Support\StateReturnScan;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * A state's lifecycle, hook and fact methods and a listener's handle method give nothing, a command or an event

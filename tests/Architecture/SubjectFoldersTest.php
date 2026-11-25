@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use PHPUnit\Framework\Attributes\DataProvider;
-use Tests\TestCase;
 
 /**
  * A model, an enum or an attribute sits in the folder of its subject or kind, such as app/Models/Messages/Message.php,

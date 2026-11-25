@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use Tests\TestCase;
 
 /**
  * A class that carries out the operations of one subject is named <Subject>Service, never with a suffix of its own:

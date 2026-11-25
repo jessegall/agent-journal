@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use Tests\TestCase;
 
 /**
  * An agent's instructions, skills and settings are handed to its container by the host at every boot, never built

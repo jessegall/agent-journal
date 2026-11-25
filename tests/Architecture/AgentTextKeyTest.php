@@ -6,7 +6,6 @@ namespace Tests\Architecture;
 
 use Illuminate\Support\Str;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * Every text the journal puts in an agent's context is registered beforehand: each key the code asks for is in a

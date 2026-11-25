@@ -11,7 +11,6 @@ use App\Support\States\AgentState;
 use Tests\Fixtures\Hooks\StateLoading\HandedCountState;
 use Tests\Fixtures\Hooks\StateLoading\HandedFlagState;
 use Tests\Fixtures\Hooks\StateLoading\KeptValuesState;
-use Tests\TestCase;
 
 /**
  * A state keeps its own flags, counts and steps as properties it changes itself: its constructor takes only

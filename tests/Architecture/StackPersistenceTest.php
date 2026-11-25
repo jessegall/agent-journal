@@ -7,7 +7,6 @@ namespace Tests\Architecture;
 use Tests\Architecture\Support\StackWriteScan;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * A live stack is persisted only through the shared transition path, so every change settles its frames' lifecycle

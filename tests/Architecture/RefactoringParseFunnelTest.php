@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Symfony\Component\Process\Process;
-use Tests\TestCase;
 
 /**
  * Every PHP parse of the refactoring tools goes through parsedOnce in tools/refactoring/php-parse.php, which stops a

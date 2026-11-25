@@ -6,7 +6,6 @@ namespace Tests\Architecture;
 
 use Symfony\Component\Process\Process;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * No public model method is called only by tests: such a method is a second copy of behaviour the application no

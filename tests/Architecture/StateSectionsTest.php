@@ -6,7 +6,6 @@ namespace Tests\Architecture;
 
 use Symfony\Component\Process\Process;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * A state lays out its methods as the state machine reads them: the constructor, its reference makers and its own

@@ -6,7 +6,6 @@ namespace Tests\Architecture;
 
 use Tests\Architecture\Support\DriverStateNames;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * A driver's screens are passed by the screen navigation alone, so no code writes a driver's own state to make a

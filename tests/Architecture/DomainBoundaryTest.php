@@ -15,7 +15,6 @@ use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\ProjectRoots;
 use Tests\Architecture\Support\Violation;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * Every domain uses only its own code, App\Domain, App\Core, code outside the project, and the domains it declares.

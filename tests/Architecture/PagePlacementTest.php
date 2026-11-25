@@ -6,7 +6,6 @@ namespace Tests\Architecture;
 
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * A class that builds a page from a page recipe (ListPage, DetailPage, SettingsPage or

@@ -6,7 +6,6 @@ namespace Tests\Architecture;
 
 use Symfony\Component\Process\Process;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * A parameter drops a leading word its context already says ($profileKey and $profileRevision in a method

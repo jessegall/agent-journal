@@ -6,7 +6,6 @@ namespace Tests\Architecture;
 
 use Tests\Architecture\Support\TestDatabaseTraits;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * Every test reaches its database through Tests\Support\RefreshHookDatabase, never through Laravel's database traits.

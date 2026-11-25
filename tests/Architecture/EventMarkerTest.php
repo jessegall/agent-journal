@@ -12,7 +12,6 @@ use PhpOption\None;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * Every class in an Events folder of Core, a domain or an installed module implements Core's Event marker, so what

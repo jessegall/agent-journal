@@ -7,7 +7,6 @@ namespace Tests\Architecture;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\WordLines;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * Claude Code, Codex and the like are drivers, so no name or text calls one a program. Program keeps its

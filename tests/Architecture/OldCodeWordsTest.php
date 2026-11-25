@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Tests\Architecture\Support\DomainFiles;
-use Tests\TestCase;
 
 /**
  * Version 6 is the new version, so nothing in it is old: no name holds Legacy, Old or Deprecated, and no comment says a

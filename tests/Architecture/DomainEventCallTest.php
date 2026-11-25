@@ -17,7 +17,6 @@ use Tests\Fixtures\Boundary\EventCalls\Tasks\TasksDomain;
 use Tests\Support\JudgesFixtureFiles;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * Events are named by their class and raised only by their owner, by every form the scan can see.

@@ -6,7 +6,6 @@ namespace Tests\Architecture;
 
 use Symfony\Component\Process\Process;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * A model writes a query clause (a where, an order, a when, a join) only inside a named scope or a relation; its other

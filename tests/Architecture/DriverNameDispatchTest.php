@@ -6,7 +6,6 @@ namespace Tests\Architecture;
 
 use Symfony\Component\Finder\Finder;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * Code outside a driver never chooses what to do by the driver's name: it never compares a driver key or family with

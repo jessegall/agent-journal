@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Symfony\Component\Process\Process;
-use Tests\TestCase;
 
 /**
  * Every tracked shell script follows docs/shell-scripts.md: a header of at most three lines, a main of named steps

@@ -6,7 +6,6 @@ namespace Tests\Architecture;
 
 use Tests\Architecture\Support\DirectFileAccess;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * Only the Files area touches the disk: every other direct file function, directory iterator, Finder or Filesystem in

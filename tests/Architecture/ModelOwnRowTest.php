@@ -10,7 +10,6 @@ use Tests\Architecture\Support\ModelWriteScan;
 use Tests\Architecture\Support\ParsedFile;
 use Tests\Support\JudgesFixtureFiles;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * A model method writes only its own row: every write of a model, its traits and helpers outside that row

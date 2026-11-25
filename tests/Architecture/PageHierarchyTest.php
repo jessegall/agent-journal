@@ -6,7 +6,6 @@ namespace Tests\Architecture;
 
 use App\Http\Pages\Page;
 use App\Support\Reflector;
-use Tests\TestCase;
 
 /**
  * Every page class under a subject folder of Http/Pages extends that subject's page, named after the folder, and

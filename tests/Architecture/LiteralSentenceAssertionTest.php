@@ -8,7 +8,6 @@ use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\LiteralSentenceAssertionScan;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * A test never compares a literal sentence, so rewording a text never breaks a

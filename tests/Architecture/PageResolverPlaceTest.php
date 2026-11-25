@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Tests\Architecture\Support\DomainFiles;
-use Tests\TestCase;
 
 /**
  * What serves the frontend lives in Http: a page or section resolver of Core or of a domain sits under its Http folder,

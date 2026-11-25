@@ -14,7 +14,6 @@ use Tests\Architecture\Support\Violation;
 use Tests\Fixtures\Declarations\Good\GoodDomain;
 use Tests\Fixtures\Declarations\Wrong\WrongDomain;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * Domain classes, the files outside every domain, namespaces inside domain folders and the shared places: the domain

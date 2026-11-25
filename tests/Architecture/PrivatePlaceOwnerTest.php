@@ -8,7 +8,6 @@ use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\PrivatePlaceScan;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * Only the subject that owns a private place names it: the accounts belong to accounts, profiles, sign-in, drivers and

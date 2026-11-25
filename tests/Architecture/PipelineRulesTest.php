@@ -15,7 +15,6 @@ use App\Support\StateLoading\StateBuilder;
 use Illuminate\Contracts\Container\Container;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * A pipeline is the definition of a run of steps, or the adapter that runs one; a pipe is one step and never runs a

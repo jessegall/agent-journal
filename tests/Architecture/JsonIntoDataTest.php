@@ -10,7 +10,6 @@ use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\JsonDecodeScan;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * Decoded JSON is read into a Data class, so its shape is written down and read through typed properties: every

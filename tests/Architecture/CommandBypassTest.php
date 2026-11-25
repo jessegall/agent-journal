@@ -7,7 +7,6 @@ namespace Tests\Architecture;
 use Tests\Architecture\Support\CallScan;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * Commands run only through the CommandBus and entry adapters write only by dispatching a command

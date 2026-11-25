@@ -6,7 +6,6 @@ namespace Tests\Architecture;
 
 use Symfony\Component\Process\Process;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * A model throws only inside a method named assert<What>, which its other methods call (user messages 21923 and

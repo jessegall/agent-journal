@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Symfony\Component\Process\Process;
-use Tests\TestCase;
 
 /**
  * Core never names a domain, read as text, in code, strings, comments, config, routes, migrations, bootstrap or the

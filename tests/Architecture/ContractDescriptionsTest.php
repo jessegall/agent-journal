@@ -13,7 +13,6 @@ use Tests\Architecture\Support\InterfacesDeclared;
 use Tests\Fixtures\ContractDescriptions\UndescribedContract;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * Every method an interface or an abstract class declares has a short description above it, so a class that

@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\File;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Process\Process;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * Every name of the project, in PHP, the frontend, the Go host, the shell scripts and the file names, follows the

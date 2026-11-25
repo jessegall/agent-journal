@@ -27,7 +27,6 @@ use Tests\Fixtures\Boundary\Events\Tasks\TasksDomain;
 use Tests\Support\JudgesFixtureFiles;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 #[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class DomainEventRulesTest extends TestCase

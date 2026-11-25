@@ -18,7 +18,6 @@ use Tests\Support\InstallsCommandModules;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 use Throwable;
 
 /**

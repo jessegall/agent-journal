@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Tests\Architecture\Support\DomainFiles;
-use Tests\TestCase;
 
 /**
  * A model knows nothing of commands: no class in a Models folder imports from the bus, its contracts or a Commands

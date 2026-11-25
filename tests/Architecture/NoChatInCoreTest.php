@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Tests\Architecture\Support\DomainFiles;
-use Tests\TestCase;
 
 /**
  * Nothing in core's backend names chat: no file, class, method, comment or string of app holds the word. Chat is the

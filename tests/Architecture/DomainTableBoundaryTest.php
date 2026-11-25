@@ -16,7 +16,6 @@ use Tests\Architecture\Support\TableScan;
 use Tests\Architecture\Support\Violation;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * Every domain and Core uses only its own tables; another owner's table is reached through what that owner exports.

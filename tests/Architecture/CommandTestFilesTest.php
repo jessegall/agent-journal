@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Symfony\Component\Process\Process;
-use Tests\TestCase;
 
 /**
  * Every command has its own test file that seeds what it needs and covers its scenarios (rule 104): a core command in

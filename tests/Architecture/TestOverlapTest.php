@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Symfony\Component\Process\Process;
-use Tests\TestCase;
 
 /**
  * tools/refactoring/test-overlap.php lists tests that rest on near-identical facts and tests a command test already

@@ -7,7 +7,6 @@ namespace Tests\Architecture;
 use Tests\Architecture\Support\AssignmentWriteScan;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * An assignment's holder and record and a claim authorization's fields are written only by their models and their

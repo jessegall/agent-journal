@@ -12,7 +12,6 @@ use Tests\Architecture\Support\ModelConventions;
 use Tests\Architecture\Support\Violation;
 use Tests\Fixtures\Models\Shop\ShopDomain;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * Every domain and core model declares no fillable columns, as it writes its columns as properties, is never open to

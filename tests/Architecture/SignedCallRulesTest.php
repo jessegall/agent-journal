@@ -19,7 +19,6 @@ use Tests\Architecture\Support\SignedCallRules;
 use Tests\Fixtures\SignedCalls\PlantedController;
 use Tests\Fixtures\SignedCalls\PlantedRetireCall;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * Every signed agent route is a declared call with a controller that takes it and answers what it declares, the

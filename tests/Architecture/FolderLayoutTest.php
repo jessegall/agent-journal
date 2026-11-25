@@ -13,7 +13,6 @@ use Tests\Architecture\Support\TypesDeclared;
 use Tests\Fixtures\Bus\Layouts\Commands\Plant\PlantCommand;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * Every class sits in the folder of its type. A domain root holds only its Domain class beside its role folders;

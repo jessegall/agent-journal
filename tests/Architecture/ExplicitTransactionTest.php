@@ -7,7 +7,6 @@ namespace Tests\Architecture;
 use Tests\Architecture\Support\CallScan;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * The bus opens the one transaction of a command: no code of an owner moved onto the bus opens,

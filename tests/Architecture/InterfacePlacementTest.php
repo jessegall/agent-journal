@@ -7,7 +7,6 @@ namespace Tests\Architecture;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\InterfacePlacement;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * Every interface of a domain or the core lives in a Contracts folder of the area that uses it.

@@ -12,7 +12,6 @@ use App\Support\DomainRegistry;
 use App\Support\ListenerOwnership;
 use Illuminate\Contracts\Events\Dispatcher;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * The listener that tells the open pages is typed on the group of facts that change a page, so every event of Core

@@ -27,15 +27,14 @@ use Tests\Fixtures\Modules\Notes\Api\NoteValue;
 use Tests\Fixtures\Modules\Notes\Contracts\NoteResolver;
 use Tests\Fixtures\Modules\Notes\NoteRecords;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
+use App\Support\Bootstrappers\RegisterMorphAliases;
 use Tests\Fixtures\Modules\Notes\Providers\NotesServiceProvider;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * A module outside the domain folder, registered beside the domains as a package would be, is discovered like a domain
- * and
- * judged by every boundary check in both directions: what it uses, and what others use of it.
+ * and judged by every boundary check in both directions: what it uses, and what others use of it.
  */
 #[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class RegisteredModuleTest extends TestCase
@@ -47,6 +46,7 @@ final class RegisteredModuleTest extends TestCase
         $this->assertContains($notes->listenerFolder(), $this->registry()->listenerFolders());
         $this->assertFileExists($notes->migrationFolder().'/2026_11_19_000001_create_module_notes.php');
 
+        new RegisterMorphAliases()($notes);
         $this->app->register(NotesServiceProvider::class);
 
         $this->assertInstanceOf(NoteRecords::class, $this->app->make(NoteResolver::class));

@@ -9,7 +9,6 @@ use App\Contracts\Refusals\CodedRefusal;
 use App\Support\Reflector;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Fixtures\Architecture\Refusals\UncodedRefusal;
-use Tests\TestCase;
 
 /**
  * Every refusal a route renders carries a refusal code, so a caller can act on it without

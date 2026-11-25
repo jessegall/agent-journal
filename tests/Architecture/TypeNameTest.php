@@ -8,7 +8,6 @@ use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\VerbNamedTypes;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * A class, interface or enum is named with a noun for what it is or the role it plays, never with a verb

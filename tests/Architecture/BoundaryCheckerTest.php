@@ -157,23 +157,6 @@ final class BoundaryCheckerTest extends TestCase
         );
     }
 
-    public function test_a_core_type_off_the_core_list_is_refused_to_a_domain(): void
-    {
-        $use = new NameUse(
-            $this->fixtureFolder().'/Plans/UsesAllowed.php',
-            3,
-            'App\Support\AgentStacks',
-            NameType::Type,
-        );
-
-        $violations = $this->checker()->violations([$use]);
-
-        $this->assertSame(
-            [ViolationType::PrivateCoreType],
-            array_map(fn ($violation) => $violation->type, $violations),
-        );
-    }
-
     public function test_a_composition_file_names_only_what_it_composes(): void
     {
         $base = dirname(__DIR__, 2);

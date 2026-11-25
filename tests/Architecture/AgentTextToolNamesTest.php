@@ -13,7 +13,6 @@ use App\Mcp\Tools\OutputsReadTool;
 use Domain\Helpers\Mcp\Tools\ContinueHelperTool;
 use Domain\Helpers\Mcp\Tools\SendHelperTool;
 use Tests\Architecture\Support\DomainFiles;
-use Tests\TestCase;
 
 /**
  * Agents use the journal through its tools, and the command line is for the user at a terminal: no text in app, a

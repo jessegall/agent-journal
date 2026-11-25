@@ -11,7 +11,6 @@ use Tests\Architecture\Support\ProjectRoots;
 use Tests\Architecture\Support\PublicContracts;
 use Tests\Architecture\Support\PublicOwner;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * What every domain and Core exports is a type of type an owner may publish, and its public signatures show nothing

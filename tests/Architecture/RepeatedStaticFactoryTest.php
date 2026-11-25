@@ -7,7 +7,6 @@ namespace Tests\Architecture;
 use Tests\Architecture\Support\StaticFactoryScan;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * A function holds what a static factory gave it instead of asking for it again with the same arguments, and a class

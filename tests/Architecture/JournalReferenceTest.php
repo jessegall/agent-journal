@@ -6,7 +6,6 @@ namespace Tests\Architecture;
 
 use Tests\Architecture\Support\JournalReferences;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * A comment says its reason in plain words: it never points at this project's own rules, tasks, documents, plans or

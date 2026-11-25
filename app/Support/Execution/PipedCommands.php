@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Execution;
 
+use App\Contracts\Processes\SpawnablePart;
+
 /**
  * The commands of a shell pipeline, started one after another with each reading the one before it: those still to
  * start, those started, and whether one could not start, which ends the pipeline as not found.

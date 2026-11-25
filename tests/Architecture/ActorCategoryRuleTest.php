@@ -8,7 +8,6 @@ use Tests\Architecture\Support\ActorCategoryScan;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\ParsedFile;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * No code in app or a domain chooses behaviour by the kind of actor, calls a removed

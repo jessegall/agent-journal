@@ -7,7 +7,6 @@ namespace Tests\Architecture;
 use App\Support\DomainEntry;
 use App\Support\DomainRegistry;
 use Tests\Architecture\Support\AgentReferences;
-use Tests\TestCase;
 
 /**
  * A domain record names actors, never agents: who holds a record is a Core assignment to an actor, and

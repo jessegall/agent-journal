@@ -7,7 +7,6 @@ namespace Tests\Architecture;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\ExceptionPlacement;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * Every exception class of a domain or the core lives in that domain's or core area's Exceptions folder.

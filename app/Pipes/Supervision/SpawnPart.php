@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Pipes\Supervision;
 
 use App\Contracts\Bus\Pipe;
-use App\Support\Execution\SpawnablePart;
+use App\Contracts\Processes\SpawnablePart;
 use App\Support\Execution\SpawnedPart;
 use App\Support\Execution\SpawnedProcess;
 

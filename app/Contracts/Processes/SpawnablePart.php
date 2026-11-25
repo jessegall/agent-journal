@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Support\Execution;
+namespace App\Contracts\Processes;
+
+use App\Support\Execution\QueuedPart;
+use App\Support\Execution\SpawnedPart;
 
 /**
  * What SpawnPart starts the next part of: one queued part, or the commands of a pipeline in turn. It names the part to

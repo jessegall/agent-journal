@@ -13,7 +13,6 @@ use Tests\Fixtures\EventProducers\Events\FixtureFinished;
 use Tests\Fixtures\EventProducers\Events\FixtureHeld;
 use Tests\Fixtures\EventProducers\Models\FixtureTask;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * A migrated event has one producer, its model: every send of an event in app and the domains is either

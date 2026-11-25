@@ -15,7 +15,6 @@ use Tests\Fixtures\Boundary\Tables\Chat\ChatDomain;
 use Tests\Fixtures\Boundary\Tables\Plans\PlansDomain;
 use Tests\Fixtures\Boundary\Tables\Tasks\TasksDomain;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 #[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class TableCheckerTest extends TestCase

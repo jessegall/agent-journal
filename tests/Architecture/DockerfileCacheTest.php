@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Illuminate\Support\Facades\File;
-use Tests\TestCase;
 
 /**
  * Every image build keeps its slow steps in Docker's cache (rule 82; user messages 19445 and 19447): a package install

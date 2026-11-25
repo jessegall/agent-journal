@@ -2,15 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Events\Messages\MessageReactionAdded;
-use App\Events\Messages\MessageReactionWithdrawn;
-use App\Models\Access\User;
-use App\Support\ActorIdentity;
-use Domain\Chat\Events\ChatReconciled;
-use Domain\Chat\Events\ChatReconcileMarked;
-use Domain\Chat\Events\ConversationClosed;
-use Domain\Chat\Events\ConversationTransferred;
-use Domain\Chat\Events\DirectChatRemoved;
+use Domain\Chat\Events\ChatMessageChanged;
 use Domain\Chat\Events\DockChanged;
 use Tests\Architecture\Support\EventRole;
 
@@ -20,19 +12,12 @@ use Tests\Architecture\Support\EventRole;
  * EventProducerTest fails on any producer not listed here.
  */
 return [
-    ChatReconcileMarked::class => [
+    ChatMessageChanged::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'Conversation::markReconcilePending',
+        'owner' => ['ChatMessage::create', 'ChatMessage::reload'],
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ChatReconcileMarked('conversation'),
-    ],
-    ChatReconciled::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'Conversation::clearReconcilePending',
-        'migrated' => true,
-        'producers' => [],
-        'sample' => fn () => new ChatReconciled('conversation'),
+        'sample' => fn () => new ChatMessageChanged('inbox', 'entry'),
     ],
     DockChanged::class => [
         'role' => EventRole::RowFact,
@@ -40,40 +25,5 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new DockChanged('conversation'),
-    ],
-    MessageReactionAdded::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'MessageReaction::create',
-        'migrated' => true,
-        'producers' => [],
-        'sample' => fn () => new MessageReactionAdded('inbox', 'message', ActorIdentity::ofClass(User::class, 'user')),
-    ],
-    ConversationClosed::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'Conversation::close',
-        'migrated' => true,
-        'producers' => [],
-        'sample' => fn () => new ConversationClosed('conversation'),
-    ],
-    ConversationTransferred::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'Conversation::transferTo',
-        'migrated' => true,
-        'producers' => [],
-        'sample' => fn () => new ConversationTransferred('conversation', ActorIdentity::ofClass(User::class, 'user')),
-    ],
-    MessageReactionWithdrawn::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'MessageReaction::withdraw',
-        'migrated' => true,
-        'producers' => [],
-        'sample' => fn () => new MessageReactionWithdrawn('inbox', 'message', ActorIdentity::ofClass(User::class, 'user')),
-    ],
-    DirectChatRemoved::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'DirectChat::remove',
-        'migrated' => true,
-        'producers' => [],
-        'sample' => fn () => new DirectChatRemoved('chat'),
     ],
 ];

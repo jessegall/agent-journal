@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Symfony\Component\Process\Process;
-use Tests\TestCase;
+use Tests\Support\TimeLimits\TimeLimit;
 
 /**
  * The project's own code rules still run and still find exactly what their samples mark: the tool proves every rule
@@ -26,6 +26,7 @@ final class CustomCodeRulesTest extends TestCase
      */
     private const array RULES_OFF = [];
 
+    #[TimeLimit(seconds: 120, reason: 'It runs the commandments engine on the samples of every custom rule.')]
     public function test_every_custom_rule_runs_and_flags_exactly_what_its_samples_mark(): void
     {
         $proof = new Process(

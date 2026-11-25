@@ -10,7 +10,6 @@ use App\Support\Reflector;
 use Domain\Questions\Models\Question;
 use Illuminate\Database\Eloquent\Model;
 use Tests\Architecture\Support\DomainFiles;
-use Tests\TestCase;
 
 /**
  * An AuthoredModel is always an Eloquent model: whatever implements it extends Model (user message 21992).

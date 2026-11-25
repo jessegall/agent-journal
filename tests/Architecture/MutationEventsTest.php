@@ -8,7 +8,6 @@ use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\SilentMutationScan;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * Every method of a model's Mutations section that writes the model's row raises a named event of its own, even when

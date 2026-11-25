@@ -56,7 +56,7 @@ use Spatie\LaravelData\DataCollection;
  * @property ?CarbonImmutable $last_answered_at
  * @property ?CarbonImmutable $failing_since
  * @property ?string $last_failure
- * @property ?FailedHostCallData[]|?DataCollection<array-key, FailedHostCallData> $reported_failures
+ * @property FailedHostCallData[]|DataCollection<array-key, FailedHostCallData>|null $reported_failures
  * @property ?string $failing_route
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at

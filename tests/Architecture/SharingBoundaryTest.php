@@ -42,7 +42,6 @@ use Domain\Sharing\Support\GatewayRuns;
 use Domain\Sharing\Support\ShareEndings;
 use Domain\Sharing\Support\ShareGrants;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Tests\TestCase;
 
 /**
  * Core sharing keeps its boundary: every sharing command is registered through the bus grammar and none is queued, and

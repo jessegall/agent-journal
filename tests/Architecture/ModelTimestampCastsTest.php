@@ -7,7 +7,6 @@ namespace Tests\Architecture;
 use App\Support\Reflector;
 use Illuminate\Database\Eloquent\Model;
 use Tests\Architecture\Support\DomainFiles;
-use Tests\TestCase;
 
 /**
  * A model never casts created_at or updated_at: Eloquent already reads its timestamps as the project's immutable

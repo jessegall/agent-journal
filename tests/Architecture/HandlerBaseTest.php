@@ -8,7 +8,6 @@ use App\Contracts\Bus\CommandHandler;
 use App\Support\Reflector;
 use Illuminate\Support\Str;
 use Symfony\Component\Finder\Finder;
-use Tests\TestCase;
 
 /**
  * Each domain has exactly one handler base, named for the domain in the singular plus CommandHandler, in its

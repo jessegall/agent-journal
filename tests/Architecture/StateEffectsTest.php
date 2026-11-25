@@ -7,7 +7,6 @@ namespace Tests\Architecture;
 use Tests\Architecture\Support\StateEffectScan;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * A state's methods change nothing themselves: they answer with commands the engine runs. It reads

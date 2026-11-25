@@ -9,7 +9,6 @@ use App\Support\Reflector;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Schema;
 use Tests\Support\RefreshHookDatabase;
-use Tests\TestCase;
 
 /**
  * Every registered model's default read order names only columns its migrated table has, and ends in the table's

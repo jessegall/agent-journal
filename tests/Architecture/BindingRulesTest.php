@@ -21,7 +21,6 @@ use Tests\Architecture\Support\PublicOwner;
 use Tests\Architecture\Support\Violation;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * The bindings the code states are sound, Core's parser comes from Processes, and only the authentication sites

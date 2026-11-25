@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Schema;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * Every table a create migration makes has a model,

@@ -6,7 +6,6 @@ namespace Tests\Architecture;
 
 use Symfony\Component\Process\Process;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * An Eloquent model's methods sit in marked sections, Constructors, Mutations, Predicates, Transformers, Calculations,

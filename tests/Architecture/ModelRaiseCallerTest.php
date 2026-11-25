@@ -12,7 +12,6 @@ use Tests\Architecture\Support\RaiseCallers;
 use Tests\Architecture\Support\UnitRoots;
 use Tests\Fixtures\RaiseCallers\Attributes\InCommandTransaction;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * A model transition that raises a fact runs only inside a unit: every caller of a transition the lists in

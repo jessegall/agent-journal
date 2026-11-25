@@ -22,7 +22,6 @@ use Tests\Fixtures\EventGroups\Orders\Events\OrderLinePosted;
 use Tests\Fixtures\EventGroups\Orders\Events\OrderShipped;
 use Tests\Fixtures\EventGroups\Orders\Listeners\RecordShipment;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * Every event extends the one base event of its domain, or of its subject in Core, and smaller groups are interfaces

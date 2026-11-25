@@ -41,7 +41,7 @@ use Spatie\LaravelData\DataCollection;
  * @property string $actor_id
  * @property ProjectReadState $state
  * @property ?ProjectReadFailure $failure
- * @property ?ProjectEntryData[]|?DataCollection<array-key, ProjectEntryData> $entries
+ * @property ProjectEntryData[]|DataCollection<array-key, ProjectEntryData>|null $entries
  * @property ?string $text
  * @property ?string $digest
  * @property ?int $size

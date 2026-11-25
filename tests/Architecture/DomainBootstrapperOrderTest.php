@@ -8,7 +8,6 @@ use App\Support\Domain;
 use App\Support\ReflectedMethod;
 use App\Support\Reflector;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * A domain that adds boot steps of its own says what it is and what its boot runs first: bootstrappers() is the method

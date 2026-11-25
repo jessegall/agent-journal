@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Symfony\Component\Process\Process;
-use Tests\TestCase;
 
 /**
  * A model or an Eloquent cast never writes or reads a column's JSON by hand: a column holding an object or a list of

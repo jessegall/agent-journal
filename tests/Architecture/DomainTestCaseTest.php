@@ -6,7 +6,6 @@ namespace Tests\Architecture;
 
 use App\Support\Reflector;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * Each domain with feature tests has its own TestCase, Domain\<Name>\Tests\TestCase extending the shared

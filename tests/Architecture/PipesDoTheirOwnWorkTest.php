@@ -17,7 +17,6 @@ use PhpParser\Node\Stmt\Return_;
 use PhpParser\NodeFinder;
 use Symfony\Component\Finder\Finder;
 use Tests\Architecture\Support\ParsedFile;
-use Tests\TestCase;
 
 /**
  * A pipe does its one thing itself (rule 98): its handle never only hands the value to a service injected into it

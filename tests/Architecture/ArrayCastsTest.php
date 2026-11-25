@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Symfony\Component\Process\Process;
-use Tests\TestCase;
 
 /**
  * A model column whose items are not plain scalars is cast to Laravel Data, the Data class or a collection of one,

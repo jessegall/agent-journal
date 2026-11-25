@@ -13,7 +13,6 @@ use App\Support\StateLoading\StateValues;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
-use Tests\TestCase;
 
 /**
  * Adding a state is writing one class: the class names its own type, the one builder makes it from its

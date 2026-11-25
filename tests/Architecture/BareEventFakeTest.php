@@ -7,7 +7,6 @@ namespace Tests\Architecture;
 use Tests\Architecture\Support\CallScan;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * No test fakes every event: a bare Event::fake() fakes Eloquent's saved and deleted too, so the event unit would

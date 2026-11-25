@@ -6,7 +6,6 @@ namespace Tests\Architecture;
 
 use Symfony\Component\Finder\Finder;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * Only the driver registration decides anything by how a driver runs, headless or in a terminal: other code may carry

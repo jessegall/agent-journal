@@ -37,7 +37,6 @@ use Tests\Architecture\Support\ParsedFile;
 use Tests\Fixtures\Mcp\DuplicateCommandTool;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * A journal MCP tool or resource holds no logic of its own: it names no model, query builder,
@@ -277,7 +276,7 @@ final class McpToolRulesTest extends TestCase
         }
 
         foreach (array_intersect(
-            array_keys($type->newInstanceWithoutConstructor()->schema(new JsonSchemaTypeFactory())),
+            array_keys($this->app->make($class)->schema(new JsonSchemaTypeFactory())),
             self::IDENTITY_PROPERTIES,
         ) as $property) {
             $violations[] = "{$class} asks for {$property}";

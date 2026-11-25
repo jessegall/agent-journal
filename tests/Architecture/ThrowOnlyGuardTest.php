@@ -8,7 +8,6 @@ use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\ThrowOnlyGuards;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\TestCase;
 
 /**
  * A method whose only purpose is to throw when something does not hold is named assert<What>, never

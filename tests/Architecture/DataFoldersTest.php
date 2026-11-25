@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use Tests\TestCase;
 
 /**
  * Core's data classes sit in a folder of their subject under app/Data, such as app/Data/Messages, never loose in

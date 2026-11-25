@@ -10,7 +10,6 @@ use App\Support\StateLoading\RegisteredStateType;
 use App\Support\States\AgentState;
 use Tests\Fixtures\Hooks\WorkStates\GatesToolsOnly;
 use Tests\Fixtures\Hooks\WorkStates\SilentWork;
-use Tests\TestCase;
 
 /**
  * Every registered state that names a work record also tells the agent what to do with it; a
