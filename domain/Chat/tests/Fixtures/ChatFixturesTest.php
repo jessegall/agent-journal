@@ -26,8 +26,14 @@ final class ChatFixturesTest extends TestCase
         $chat = $chats->pairChat($this->journal->actorCalled('Owner'), $this->journal->actorCalled('Planner'));
 
         $this->assertSame(
-            [PairChats::PAIR_PROVIDER, $chat->id],
-            [$chat->provider_key, $chats->pairChatOf('Owner', 'Planner')->id],
+            [
+                PairChats::PAIR_PROVIDER,
+                $chat->id,
+            ],
+            [
+                $chat->provider_key,
+                $chats->pairChatOf('Owner', 'Planner')->id,
+            ],
         );
         $this->assertTrue(InboxMember::isAttached($chat->id, $this->journal->actorCalled('Owner')));
         $this->assertTrue(InboxMember::isAttached($chat->id, $this->journal->actorCalled('Planner')));

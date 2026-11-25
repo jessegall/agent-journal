@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support\Bus;
 
-use Domain\Rules\RulesDomain;
 use Illuminate\Database\ConnectionInterface;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\DomainBoot;
 use Tests\Support\InstallsCommandModules;
 
 /**
@@ -20,11 +18,11 @@ trait RunsModuleCommands
     use InstallsCommandModules;
 
     /**
-     * Rules, which the Notes test module requires.
+     * The domains the test modules require.
      */
     protected static function bootedDomains(): array
     {
-        return DomainBoot::withRequirements(RulesDomain::class);
+        return self::moduleRequirements();
     }
 
     protected function rowText(int $id): string

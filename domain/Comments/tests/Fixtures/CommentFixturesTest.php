@@ -69,6 +69,12 @@ final class CommentFixturesTest extends TestCase
             ->assertCount($other, 0);
 
         $whole = $comments->commentCalled('Whole');
-        $this->assertSame([$page->id, 'All of it.'], [$whole->target_id, $whole->body]);
+        $this->assertSame([
+            $page->id,
+            'All of it.',
+        ], [
+            $whole->target_id,
+            $whole->body,
+        ]);
     }
 }

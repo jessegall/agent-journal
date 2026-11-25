@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Symfony\Component\Process\Process;
+use Tests\Support\TimeLimits\TimeLimit;
 
 /**
  * A contract that exactly one class implements is that class's name: the class is simply what the contract says, and
@@ -17,6 +18,7 @@ final class SingleImplementationsTest extends TestCase
 
     private const string FIXTURE = 'tests/Fixtures/SingleImplementations';
 
+    #[TimeLimit(seconds: 10, reason: 'It parses every class of app and the domains, in a PHP process of its own.')]
     public function test_every_only_implementation_carries_its_contracts_name(): void
     {
         $output = $this->checkOutput('app', 'domain');

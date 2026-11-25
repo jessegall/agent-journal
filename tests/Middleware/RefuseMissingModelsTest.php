@@ -8,6 +8,7 @@ use App\CommandMiddleware\RefuseMissingModels;
 use App\Exceptions\RecordUnavailable;
 use Domain\Memory\Commands\RemoveMemory\RemoveMemoryCommand;
 use Domain\Memory\MemoryDomain;
+use Domain\Memory\Models\Memory;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMiddleware;
 use Tests\Support\RefreshHookDatabase;
@@ -37,7 +38,7 @@ final class RefuseMissingModelsTest extends TestCase
         $this->assertThrows(
             fn () => $this->journal->run(new RemoveMemoryCommand('memory-1')),
             RecordUnavailable::class,
-            'Memory memory-1 does not exist or is not available to you.',
+            RecordUnavailable::forModel(Memory::class, 'memory-1')->getMessage(),
         );
     }
 }

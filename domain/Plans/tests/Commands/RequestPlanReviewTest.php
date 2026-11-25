@@ -142,9 +142,9 @@ final class RequestPlanReviewTest extends TestCase
 
         $this->journal
             ->stateOn(
-$this->journal->sessionOf('Reviewer'),
- ReviewPlanStateReference::forPlan($plan->id, $plan->number),
-)
+                $this->journal->sessionOf('Reviewer'),
+                ReviewPlanStateReference::forPlan($plan->id, $plan->number),
+            )
             ->given([], fn (StateObservation $state) => $state->assertOnTop());
     }
 

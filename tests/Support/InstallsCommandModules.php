@@ -29,6 +29,27 @@ use Tests\Fixtures\Modules\Notes\Support\CommandTrail;
  */
 trait InstallsCommandModules
 {
+    /**
+     * The test modules a test installs in place of the booted domains' commands.
+     */
+    private const array MODULES = [
+        CardsDomain::class,
+        LedgerDomain::class,
+        NotesDomain::class,
+    ];
+
+    /**
+     * The booted domains the test modules require, such as Rules for Notes, which a test of them boots beside core.
+     *
+     * @return list<class-string>
+     */
+    protected static function moduleRequirements(): array
+    {
+        $required = array_merge(...array_map(fn (string $module) => new $module()->requires(), self::MODULES));
+
+        return array_values(array_diff(DomainBoot::withRequirements(...$required), self::MODULES));
+    }
+
     protected function installCommandModules(MiddlewareDeclaration ...$extraNotesMiddleware): CommandTrail
     {
         return $this->installCommandModulesRequiring([], ...$extraNotesMiddleware);
@@ -79,7 +100,7 @@ trait InstallsCommandModules
         array $alsoRequired = [],
         MiddlewareDeclaration ...$extraNotesMiddleware,
     ): void {
-        $domains = $this->domainsWith(CardsDomain::class, LedgerDomain::class, NotesDomain::class);
+        $domains = $this->domainsWith(...self::MODULES);
         $this->app->instance(DomainRegistry::class, $domains);
         $owners = array_map(fn (DomainEntry $entry) => $entry->commandOwner(), $domains->all());
         $owners = array_map(fn (CommandOwner $owner) => $owner->domainClass === NotesDomain::class
@@ -94,7 +115,7 @@ trait InstallsCommandModules
             )
             : $owner, $owners);
 
-        $this->registerPoliciesOf($domains, [CardsDomain::class, LedgerDomain::class, NotesDomain::class]);
+        $this->registerPoliciesOf($domains, self::MODULES);
         $this->app->instance(CommandRegistry::class, CommandRegistry::from(
             [CoreCommands::owner(), ...$owners],
             $this->app->make(PipelineRunner::class),

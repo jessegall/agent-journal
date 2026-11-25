@@ -326,7 +326,13 @@ final class StartTaskTest extends TestCase
 
         $this->assertThrows(fn () => $this->journal->run(new StartTaskCommand($task->id)), StackAlreadyClosed::class);
         $stored = $task->refresh();
-        $this->assertSame([TaskStatus::Open, 0], [$stored->status, $stored->run_number]);
+        $this->assertSame([
+            TaskStatus::Open,
+            0,
+        ], [
+            $stored->status,
+            $stored->run_number,
+        ]);
     }
 
     public function test_a_failure_after_the_push_leaves_no_task_run_or_stack_change(): void

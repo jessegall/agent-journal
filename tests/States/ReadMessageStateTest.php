@@ -102,14 +102,14 @@ final class ReadMessageStateTest extends TestCase
             ->given(
                 new MessageRead($this->first->id, $this->inbox->id, $this->journal->actorCalled('Other')),
                 fn (StateObservation $state) => $state->assertStack(
-['core.ready', ReadMessageStateReference::TYPE_KEY],
-),
+                    ['core.ready', ReadMessageStateReference::TYPE_KEY],
+                ),
             )
             ->given(new MessageRead(
-$this->first->id,
- $this->inbox->id,
- $this->agent(),
-), function (StateObservation $state) {
+                $this->first->id,
+                $this->inbox->id,
+                $this->agent(),
+            ), function (StateObservation $state) {
                 $state->assertPushed(AnswerMessageStateReference::forMessage($this->first, $this->writerId()));
                 $state->assertValue('unreadIds', [$this->second->id]);
             })

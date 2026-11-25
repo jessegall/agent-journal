@@ -122,7 +122,10 @@ final readonly class CommandCall
      */
     public function passedThrough(string $middleware): self
     {
-        return clone ($this, ['trail' => [...$this->trail, $middleware]]);
+        return clone ($this, ['trail' => [
+            ...$this->trail,
+            $middleware,
+        ]]);
     }
 
     /**

@@ -123,7 +123,11 @@ final class WorkOnTaskStateTest extends TestCase
 
         $this->working()
             ->given([
-                $this->claimed($this->agent(), ['claim-1', 'seat-1', 'work-1']),
+                $this->claimed($this->agent(), [
+                    'claim-1',
+                    'seat-1',
+                    'work-1',
+                ]),
                 $this->hooks()->stop('turn-1'),
             ], fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Deny))
             ->given([
@@ -140,8 +144,14 @@ final class WorkOnTaskStateTest extends TestCase
         $this->startWork();
 
         $this->working()->given([
-            $this->claimed($this->agent(), ['claim-1', 'work-1']),
-            $this->claimed($this->agent(), ['claim-2', 'work-1']),
+            $this->claimed($this->agent(), [
+                'claim-1',
+                'work-1',
+            ]),
+            $this->claimed($this->agent(), [
+                'claim-2',
+                'work-1',
+            ]),
             new AssignmentsEnded(['claim-1']),
             $this->hooks()->stop(),
         ], fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Deny));
@@ -166,7 +176,10 @@ final class WorkOnTaskStateTest extends TestCase
         $other = ActorIdentity::fromText('agent:01jd8x0g9m3qz6v4k2t7r5w1cz');
 
         $this->working()->given(
-            [$this->claimed($other, ['claim-3']), $this->hooks()->stop()],
+            [
+                $this->claimed($other, ['claim-3']),
+                $this->hooks()->stop(),
+            ],
             fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Delegate),
         );
     }

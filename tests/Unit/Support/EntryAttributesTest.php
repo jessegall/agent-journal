@@ -6,9 +6,8 @@ namespace Tests\Unit\Support;
 
 use App\Commands\Layouts\SaveLayout\SaveLayoutCommand;
 use App\Commands\Messages\SendMessage\SendMessageCommand;
+use App\Support\ReflectedType;
 use Error;
-use ReflectionAttribute;
-use ReflectionObject;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\TestCase;
@@ -23,10 +22,7 @@ final class EntryAttributesTest extends TestCase
     {
         $test = new #[TestsRoute('GET', 'chat.show')] #[TestsRoute('POST', 'chat.send')] class {};
 
-        $routes = array_map(
-            fn (ReflectionAttribute $attribute) => $attribute->newInstance(),
-            new ReflectionObject($test)->getAttributes(TestsRoute::class),
-        );
+        $routes = iterator_to_array(ReflectedType::of($test)->attributes(TestsRoute::class), false);
 
         $this->assertEquals([new TestsRoute('GET', 'chat.show'), new TestsRoute('POST', 'chat.send')], $routes);
     }
@@ -36,7 +32,7 @@ final class EntryAttributesTest extends TestCase
         $test = new #[TestsCommand(SendMessageCommand::class)] #[TestsCommand(SaveLayoutCommand::class)] class {};
 
         $this->assertThrows(
-            fn () => new ReflectionObject($test)->getAttributes(TestsCommand::class)[0]->newInstance(),
+            fn () => ReflectedType::of($test)->attribute(TestsCommand::class),
             Error::class,
         );
     }

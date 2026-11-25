@@ -43,8 +43,14 @@ final class DocumentFixturesTest extends TestCase
             ->documentCalled('Notes');
 
         $this->assertSame(
-            [$this->journal->agentCalled('Ada')->id, null],
-            [$document->creator_id, $document->current_revision_id],
+            [
+                $this->journal->agentCalled('Ada')->id,
+                null,
+            ],
+            [
+                $document->creator_id,
+                $document->current_revision_id,
+            ],
         );
     }
 
@@ -57,8 +63,14 @@ final class DocumentFixturesTest extends TestCase
         $revision = $documents->revisionOf('Design', 2);
 
         $this->assertSame(
-            [$documents->documentCalled('Design')->id, 'Second words.'],
-            [$revision->document_id, $revision->body],
+            [
+                $documents->documentCalled('Design')->id,
+                'Second words.',
+            ],
+            [
+                $revision->document_id,
+                $revision->body,
+            ],
         );
     }
 }
