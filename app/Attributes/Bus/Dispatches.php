@@ -2,12 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Mcp\Attributes;
+namespace App\Attributes\Bus;
 
 use App\Contracts\Bus\Command;
 use Attribute;
 
-#[Attribute(Attribute::TARGET_CLASS)]
+/**
+ * A command a write tool or a controller action may send to the bus; an action names each it may send.
+ */
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
 final readonly class Dispatches
 {
     /**

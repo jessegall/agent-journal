@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Mcp\Tools;
 
-use App\Mcp\Attributes\Dispatches;
+use App\Attributes\Bus\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;

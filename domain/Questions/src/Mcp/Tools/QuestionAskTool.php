@@ -6,7 +6,7 @@ namespace Domain\Questions\Mcp\Tools;
 
 use App\Contracts\Actors\ActorTypes;
 use App\Contracts\Bus\Command;
-use App\Mcp\Attributes\Dispatches;
+use App\Attributes\Bus\Dispatches;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\MessageWriteTool;
 use App\Support\ActorIdentity;

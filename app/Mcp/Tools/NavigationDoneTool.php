@@ -6,7 +6,7 @@ namespace App\Mcp\Tools;
 
 use App\Commands\Navigation\ProveNavigation\ProveNavigationCommand;
 use App\Enums\Navigation\NavigationCompletion;
-use App\Mcp\Attributes\Dispatches;
+use App\Attributes\Bus\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;

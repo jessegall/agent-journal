@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
+use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\Command;
 use App\Contracts\Work\AgentStacks;
 use App\Contracts\Work\StackEditor;
 use App\Contracts\Work\StackTransactionRunner;
-use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Resources\JournalResource;
 use App\Mcp\Tools\JournalReadTool;
 use App\Mcp\Tools\JournalWriteTool;
@@ -114,6 +114,22 @@ final class McpToolRulesTest extends TestCase
         $this->assertSame([], $violations);
     }
 
+    public function test_read_tools_declare_no_dispatches(): void
+    {
+        $declaring = [];
+
+        foreach (ScanCache::findings(new ClassesDeclared(), $this->mcpFiles()) as $class) {
+            $tool = ReflectedType::find($class)
+                ->filter(fn (ReflectedType $type) => $type->isSubclassOf(JournalReadTool::class));
+
+            if ($tool->isDefined() && count($tool->get()->attributes(Dispatches::class)) > 0) {
+                $declaring[] = $class;
+            }
+        }
+
+        $this->assertSame([], $declaring, 'A read tool sends no command, so it declares no Dispatches:');
+    }
+
     public function test_the_command_rule_detects_two_commands_and_an_unrelated_call(): void
     {
         $this->assertSame([
@@ -144,7 +160,11 @@ final class McpToolRulesTest extends TestCase
         $this->assertIsArray($node->stmts);
 
         $declared = $type->attributes(Dispatches::class);
-        $this->assertCount(1, $declared, $type->name());
+
+        if (count($declared) !== 1) {
+            return ["{$type->name()} must declare exactly one Dispatches."];
+        }
+
         $command = $declared->first()->get()->command;
         $constructions = $finder->find($node->stmts, fn (Node $node): bool => $node instanceof Expr\New_
             && $node->class instanceof ParsedName

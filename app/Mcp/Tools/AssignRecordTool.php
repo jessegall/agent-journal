@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Mcp\Tools;
 
 use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
-use App\Mcp\Attributes\Dispatches;
+use App\Attributes\Bus\Dispatches;
 use App\Mcp\Support\ToolArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;

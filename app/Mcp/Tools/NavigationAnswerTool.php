@@ -6,7 +6,7 @@ namespace App\Mcp\Tools;
 
 use App\Commands\Navigation\AnswerNavigation\AnswerNavigationCommand;
 use App\Exceptions\NavigationAnswerRefused;
-use App\Mcp\Attributes\Dispatches;
+use App\Attributes\Bus\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;

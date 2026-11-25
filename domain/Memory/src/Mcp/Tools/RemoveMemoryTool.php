@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Mcp\Tools;
 
-use App\Mcp\Attributes\Dispatches;
+use App\Attributes\Bus\Dispatches;
 use App\Mcp\Support\ToolArguments;
 use Domain\Memory\Commands\RemoveMemory\RemoveMemoryCommand;
 use Illuminate\Contracts\JsonSchema\JsonSchema;

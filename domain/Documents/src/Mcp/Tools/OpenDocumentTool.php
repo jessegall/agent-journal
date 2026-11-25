@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Mcp\Tools;
 
-use App\Mcp\Attributes\Dispatches;
+use App\Attributes\Bus\Dispatches;
 use App\Mcp\Support\ToolArguments;
 use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
 use Illuminate\Contracts\JsonSchema\JsonSchema;

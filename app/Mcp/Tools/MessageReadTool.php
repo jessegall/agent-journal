@@ -6,7 +6,7 @@ namespace App\Mcp\Tools;
 
 use App\Commands\Messages\ReadMessage\ReadMessageCommand;
 use App\Contracts\Bus\Command;
-use App\Mcp\Attributes\Dispatches;
+use App\Attributes\Bus\Dispatches;
 use App\Mcp\Support\ToolArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;

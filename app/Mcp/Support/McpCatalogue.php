@@ -6,7 +6,7 @@ namespace App\Mcp\Support;
 
 use App\Contracts\Domains\JournalToolNames;
 use App\Contracts\Reflection\ReflectorFactory;
-use App\Mcp\Attributes\Dispatches;
+use App\Attributes\Bus\Dispatches;
 use App\Mcp\Contracts\McpRegistration;
 use App\Mcp\Contracts\OverviewContribution;
 use App\Mcp\Enums\DiscoveryProfile;

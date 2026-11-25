@@ -6,7 +6,7 @@ namespace App\Mcp\Support;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Authorization\ReadGrant;
-use App\Mcp\Attributes\Dispatches;
+use App\Attributes\Bus\Dispatches;
 use App\Mcp\Contracts\JobPermissionReader as JobPermissionReaderContract;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Tools\JournalReadTool;
