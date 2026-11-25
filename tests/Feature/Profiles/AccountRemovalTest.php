@@ -18,14 +18,14 @@ use App\Contracts\Accounts\AccountOwnerDrain;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Files\Files;
 use App\Enums\Accounts\AccountProcessRole;
-use App\Enums\Accounts\AccountState;
+use App\Enums\Accounts\AccountStatus;
 use App\Enums\Accounts\CleanupProblem;
 use App\Enums\Accounts\CleanupTarget;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Accounts\SignInMethod;
-use App\Enums\Accounts\SignInState;
+use App\Enums\Accounts\SignInStatus;
 use App\Enums\Accounts\UsageWindowSlot;
-use App\Enums\Agents\SessionProcessState;
+use App\Enums\Agents\SessionProcessStatus;
 use App\Exceptions\AccountUnavailable;
 use App\Http\Pages\Resolvers\AccountsWindowResolver;
 use App\Jobs\SignInDeadline;
@@ -119,10 +119,10 @@ final class AccountRemovalTest extends TestCase
         $this->asOwner(new RemoveAccountCommand($this->account->id));
 
         $this->account->refresh();
-        $this->assertSame(AccountState::Removing, $this->account->state);
+        $this->assertSame(AccountStatus::Removing, $this->account->status);
         $this->assertSame($generation + 1, $this->account->sign_in_generation);
         $this->assertNull($this->account->live_writer_attempt_id);
-        $this->assertSame(SignInState::Cancelled, SignInAttempt::query()->withoutGlobalScopes()->sole()->state);
+        $this->assertSame(SignInStatus::Cancelled, SignInAttempt::query()->withoutGlobalScopes()->sole()->status);
         $this->assertNull(
             ActiveAccount::query()->withoutGlobalScopes()->where('account_protocol', 'codex')->value('account_id'),
         );
@@ -140,7 +140,7 @@ final class AccountRemovalTest extends TestCase
         $this->reconcile();
         $this->assertNull($this->asHost(new ClaimCleanupCommand('host')));
 
-        DB::table('session_processes')->update(['state' => SessionProcessState::Stopped->value]);
+        DB::table('session_processes')->update(['status' => SessionProcessStatus::Stopped->value]);
         $this->reconcile();
         $claimed = $this->asHost(new ClaimCleanupCommand('host'));
         $this->assertInstanceOf(ClaimedCleanup::class, $claimed);
@@ -148,7 +148,7 @@ final class AccountRemovalTest extends TestCase
 
         $this->clean($claimed->generation - 1, true, true);
         $this->clean($claimed->generation, false, true);
-        $this->assertSame(AccountState::Removing, $this->account->refresh()->state);
+        $this->assertSame(AccountStatus::Removing, $this->account->refresh()->status);
         $this->assertNotNull($this->account->directory);
 
         $this->clean($claimed->generation, true, false);
@@ -157,7 +157,7 @@ final class AccountRemovalTest extends TestCase
         $this->clean($claimed->generation, false, true);
 
         $this->account->refresh();
-        $this->assertSame(AccountState::Removed, $this->account->state);
+        $this->assertSame(AccountStatus::Removed, $this->account->status);
         $this->assertSame(0, AccountUsageWindow::query()->withoutGlobalScopes()->count());
         $this->assertSame(0, AccountUsageCost::query()->withoutGlobalScopes()->count());
         $this->assertSame(0, AccountUsageTokens::query()->withoutGlobalScopes()->count());
@@ -445,7 +445,7 @@ final class AccountRemovalTest extends TestCase
             'account_id' => $this->account->id,
             'account_generation' => $this->account->sign_in_generation,
             'directory' => (string) $this->account->directory,
-            'state' => SessionProcessState::Running->value,
+            'status' => SessionProcessStatus::Running->value,
             'role' => AccountProcessRole::Execution->value,
             'created_at' => now(),
             'updated_at' => now(),

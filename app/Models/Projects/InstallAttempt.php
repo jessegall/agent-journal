@@ -11,7 +11,7 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Projects\InstallAttemptState;
+use App\Enums\Projects\InstallAttemptStatus;
 use App\Enums\Projects\InvitationMode;
 use App\Events\Connections\InstallAttemptCancelled;
 use App\Events\Connections\InstallAttemptOpened;
@@ -40,7 +40,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property InvitationMode $mode
  * @property string|null $project_id
  * @property string|null $environment_id
- * @property InstallAttemptState $state
+ * @property InstallAttemptStatus $status
  * @property string|null $binding_id
  * @property int $version
  * @property CarbonImmutable|null $created_at
@@ -84,7 +84,7 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
     {
         return [
             'mode' => InvitationMode::class,
-            'state' => InstallAttemptState::class,
+            'status' => InstallAttemptStatus::class,
             'version' => 'integer',
         ];
     }
@@ -111,7 +111,7 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
         $attempt->mode = $joins === null ? InvitationMode::New : InvitationMode::Join;
         $attempt->project_id = $joins?->project_id;
         $attempt->environment_id = $joins?->id;
-        $attempt->state = InstallAttemptState::Open;
+        $attempt->status = InstallAttemptStatus::Open;
         $attempt->version = 0;
         $attempt->setAttribute($attempt->getKeyName(), $attempt->newUniqueId());
 
@@ -150,7 +150,7 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
     public function cancel(int|null $seenVersion): void
     {
         $this->assertChangeable($seenVersion);
-        $this->state = InstallAttemptState::Cancelled;
+        $this->status = InstallAttemptStatus::Cancelled;
         $this->version++;
         $this->assertSaved($this->save());
         $this->raise(new InstallAttemptCancelled($this->id, CarbonImmutable::now()));
@@ -161,7 +161,7 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
      */
     public function spendOn(ProjectBinding $binding): void
     {
-        $this->state = InstallAttemptState::Spent;
+        $this->status = InstallAttemptStatus::Spent;
         $this->binding_id = $binding->id;
         $this->version++;
         $this->assertSaved($this->save());
@@ -173,19 +173,19 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
     /**
      * Where the attempt stands now: an open attempt whose line can no longer be redeemed reads as expired.
      */
-    public function stateAt(CarbonImmutable $now): InstallAttemptState
+    public function stateAt(CarbonImmutable $now): InstallAttemptStatus
     {
-        if ($this->state !== InstallAttemptState::Open) {
-            return $this->state;
+        if ($this->status !== InstallAttemptStatus::Open) {
+            return $this->status;
         }
 
         $live = $this->invitations->filter(fn (ProjectInvitation $line) => $line->isRedeemableAt($now));
 
         if ($live->isEmpty()) {
-            return InstallAttemptState::Expired;
+            return InstallAttemptStatus::Expired;
         }
 
-        return InstallAttemptState::Open;
+        return InstallAttemptStatus::Open;
     }
 
     // ----------[ Accessors ]----------
@@ -231,11 +231,11 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
      */
     private function assertChangeable(int|null $seenVersion): void
     {
-        if ($this->state === InstallAttemptState::Spent) {
+        if ($this->status === InstallAttemptStatus::Spent) {
             throw InstallAttemptRefused::spent($this->reference, (string) $this->binding_id);
         }
 
-        if ($this->state === InstallAttemptState::Cancelled) {
+        if ($this->status === InstallAttemptStatus::Cancelled) {
             throw InstallAttemptRefused::cancelled($this->reference);
         }
 
@@ -275,11 +275,6 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
             ->withReference($reference)
             ->lockForUpdate()
             ->firstOr(InstallAttemptRefused::throwing()->unknown($reference));
-    }
-
-    public static function findLockedById(string $id): self
-    {
-        return self::findLockedById($id);
     }
 
     /**
@@ -365,7 +360,7 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function openOrChangedSince(Builder $query, CarbonImmutable $since): void
     {
-        $query->where(fn (Builder $listed) => $listed->where('state', InstallAttemptState::Open)
+        $query->where(fn (Builder $listed) => $listed->where('status', InstallAttemptStatus::Open)
             ->orWhere('updated_at', '>=', $since));
     }
 }

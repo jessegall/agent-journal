@@ -36,8 +36,8 @@ final readonly class NavigationRoundReports
             ->lockForUpdate()
             ->firstOrFail();
 
-        if (! $navigation->state->isOpen()) {
-            throw NavigationRaiseRefused::ended($navigation->id, $navigation->state->value);
+        if (! $navigation->status->isOpen()) {
+            throw NavigationRaiseRefused::ended($navigation->id, $navigation->status->value);
         }
 
         $navigation->showScreen($report->screen());

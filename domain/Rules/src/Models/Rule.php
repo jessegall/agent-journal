@@ -16,7 +16,7 @@ use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\TextSearch;
 use Carbon\CarbonImmutable;
-use Domain\Rules\Enums\RuleState;
+use Domain\Rules\Enums\RuleStatus;
 use Domain\Rules\Events\RuleApproved;
 use Domain\Rules\Events\RuleDenied;
 use Domain\Rules\Events\RuleRemoved;
@@ -34,7 +34,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $number_group_id
  * @property int $number
  * @property string $text
- * @property RuleState $state
+ * @property RuleStatus $status
  * @property string|null $reason
  * @property string|null $replaces_rule_id
  * @property string|null $proposer_type
@@ -66,7 +66,7 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
     /**
      * @var array<string, mixed>
      */
-    protected $attributes = ['state' => 'active'];
+    protected $attributes = ['status' => 'active'];
 
     /**
      * @return array<string, string>
@@ -74,7 +74,7 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
     protected function casts(): array
     {
         return [
-            'state' => RuleState::class,
+            'status' => RuleStatus::class,
         ];
     }
 
@@ -97,7 +97,7 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
         $rule->proposer_type = $proposer->type;
         $rule->proposer_id = $proposer->id;
 
-        $rule->state = RuleState::Proposed;
+        $rule->status = RuleStatus::Proposed;
         $rule->save();
 
         return $rule;
@@ -107,7 +107,7 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
 
     public function remove(): void
     {
-        $this->state = RuleState::Removed;
+        $this->status = RuleStatus::Removed;
         $this->assertSaved($this->save());
         $this->raise(new RuleRemoved($this->id));
     }
@@ -120,13 +120,13 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
     public function approveBy(ActorIdentity $approver): void
     {
         $this->assertNotProposedBy($approver);
-        $this->closeProposal(RuleState::Active);
+        $this->closeProposal(RuleStatus::Active);
         $this->raise(new RuleApproved($this->id));
     }
 
     public function deny(): void
     {
-        $this->closeProposal(RuleState::Denied);
+        $this->closeProposal(RuleStatus::Denied);
         $this->raise(new RuleDenied($this->id));
     }
 
@@ -134,7 +134,7 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
 
     public function canBeReviewed(): bool
     {
-        return $this->state === RuleState::Proposed;
+        return $this->status === RuleStatus::Proposed;
     }
 
     // ----------[ Transformers ]----------
@@ -148,7 +148,7 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
             $this->id,
             $this->number,
             $this->text,
-            $this->state,
+            $this->status,
             $this->reason,
             $this->proposer_type,
             $this->proposer_id,
@@ -183,18 +183,18 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
      */
     private function assertProposed(): void
     {
-        if ($this->state !== RuleState::Proposed) {
-            throw RuleNotProposed::inState($this->state->value);
+        if ($this->status !== RuleStatus::Proposed) {
+            throw RuleNotProposed::inState($this->status->value);
         }
     }
 
     // ----------[ Internals ]----------
 
-    private function closeProposal(RuleState $outcome): void
+    private function closeProposal(RuleStatus $outcome): void
     {
         $this->assertProposed();
 
-        $this->state = $outcome;
+        $this->status = $outcome;
         $this->assertSaved($this->save());
     }
 
@@ -225,6 +225,6 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
     #[Scope]
     protected function active(Builder $query): void
     {
-        $query->where('state', RuleState::Active->value);
+        $query->where('status', RuleStatus::Active->value);
     }
 }

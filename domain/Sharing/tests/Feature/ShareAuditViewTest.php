@@ -8,7 +8,7 @@ use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
-use Domain\Sharing\Enums\GatewayEndpointState;
+use Domain\Sharing\Enums\GatewayEndpointStatus;
 use Domain\Sharing\Enums\ShareAuditActor;
 use Domain\Sharing\Enums\ShareAuditType;
 use Domain\Sharing\Models\Share;
@@ -117,7 +117,7 @@ final class ShareAuditViewTest extends TestCase
 
         ShareInstallation::create()->holdFor(self::RUN);
         $endpoint = ShareGatewayEndpoint::create($this->configuration, 1, self::RUN);
-        $endpoint->moveTo(GatewayEndpointState::Open);
+        $endpoint->moveTo(GatewayEndpointStatus::Open);
         $endpoint->recordHealthy();
 
         $this->actingAs($this->owner)->get(

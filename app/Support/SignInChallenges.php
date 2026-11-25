@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\Accounts\SignInState;
+use App\Enums\Accounts\SignInStatus;
 use App\Models\Accounts\SignInAttempt;
 use App\Values\SignInChallenge;
 use Carbon\CarbonImmutable;
@@ -63,7 +63,7 @@ final readonly class SignInChallenges
 
         $answer = $this->encrypter->decrypt($stored);
 
-        if ($attempt->state !== SignInState::Checking || ! $attempt->hasTakenAnswer((string) $answer['key'])) {
+        if ($attempt->status !== SignInStatus::Checking || ! $attempt->hasTakenAnswer((string) $answer['key'])) {
             return null;
         }
 

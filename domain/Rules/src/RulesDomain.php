@@ -27,7 +27,7 @@ use Domain\Rules\Commands\ProposeRule\ProposeRuleCommand;
 use Domain\Rules\Commands\RemoveRule\RemoveRuleCommand;
 use Domain\Rules\Contracts\RuleDetailsResolver;
 use Domain\Rules\Contracts\RuleResolver;
-use Domain\Rules\Enums\RuleState;
+use Domain\Rules\Enums\RuleStatus;
 use Domain\Rules\Events\RuleApproved;
 use Domain\Rules\Events\RuleDenied;
 use Domain\Rules\Events\RuleRemoved;
@@ -87,7 +87,7 @@ final class RulesDomain extends Domain implements
                 RuleDetails::class,
                 RuleList::class,
                 RuleView::class,
-                RuleState::class,
+                RuleStatus::class,
             )
             ->commands(ApproveRuleCommand::class, DenyRuleCommand::class)
             ->exceptions(RuleMissing::class, RuleNotProposed::class)

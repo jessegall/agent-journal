@@ -13,7 +13,7 @@ use App\Values\OwnerAuthority;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Models\Document;
 use Domain\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\SharePreview;
@@ -106,7 +106,7 @@ final class ShareEntriesTest extends TestCase
         $this->assertSame('proposed', $request->json('state'));
 
         $proposal = Share::query()->sole();
-        $proposal->state = ShareState::Active;
+        $proposal->status = ShareStatus::Active;
         $proposal->save();
 
         $status = $this->signed($start, '/agent/sharing/status', [])->assertOk();
@@ -132,7 +132,7 @@ final class ShareEntriesTest extends TestCase
             ->assertExitCode(0);
         $this->artisan('share:status', ['--json' => true])->expectsOutputToContain('"proposals"')->assertExitCode(0);
 
-        $this->assertSame(ShareState::Proposed, Share::query()->sole()->state);
+        $this->assertSame(ShareStatus::Proposed, Share::query()->sole()->status);
     }
 
     public function test_the_owner_lists_creates_revokes_and_prints_an_address_from_the_cli(): void
@@ -165,7 +165,7 @@ final class ShareEntriesTest extends TestCase
         )->assertExitCode(0);
         $this->artisan('share:url', ['share' => $share->id])->assertExitCode(1);
 
-        $share->state = ShareState::Active;
+        $share->status = ShareStatus::Active;
         $share->save();
         $this->artisan('share:url', ['share' => $share->id])->expectsOutputToContain(
             FakeShareGateway::PUBLIC_ORIGIN.'/s/',

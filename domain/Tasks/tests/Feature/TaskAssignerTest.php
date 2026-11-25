@@ -10,7 +10,7 @@ use App\Models\Records\AssignmentRecord;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
 use App\Support\PoolMembers;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Exceptions\CandidateLimitInvalid;
 use Domain\Tasks\Exceptions\TaskNotOpenForAssignment;
 use Domain\Tasks\Models\Task;
@@ -49,18 +49,18 @@ final class TaskAssignerTest extends TestCase
         $this->assertSame(Task::linkType(), TaskType::linkType());
         $this->assertSame(TaskType::linkType(), Task::factory()->create()->assignmentIdentity()->type);
         $this->assertSame([
-            TaskState::Open,
-            TaskState::Started,
-            TaskState::Blocked,
-        ], TaskState::unfinished());
+            TaskStatus::Open,
+            TaskStatus::Started,
+            TaskStatus::Blocked,
+        ], TaskStatus::unfinished());
     }
 
     public function test_the_count_holds_the_actors_unfinished_tasks_only(): void
     {
-        $this->hold($this->task(TaskState::Started), $this->builder);
-        $this->hold($this->task(TaskState::Blocked), $this->builder);
-        $this->hold($this->task(TaskState::Finished), $this->builder);
-        $this->hold($this->task(TaskState::Open), $this->reviewer);
+        $this->hold($this->task(TaskStatus::Started), $this->builder);
+        $this->hold($this->task(TaskStatus::Blocked), $this->builder);
+        $this->hold($this->task(TaskStatus::Finished), $this->builder);
+        $this->hold($this->task(TaskStatus::Open), $this->reviewer);
 
         $this->assertSame(
             2,
@@ -70,11 +70,11 @@ final class TaskAssignerTest extends TestCase
 
     public function test_an_all_pool_gives_the_lowest_id_open_task_nobody_holds(): void
     {
-        $tasks = [$this->task(TaskState::Open), $this->task(TaskState::Open), $this->task(TaskState::Open)];
+        $tasks = [$this->task(TaskStatus::Open), $this->task(TaskStatus::Open), $this->task(TaskStatus::Open)];
         sort($tasks);
         [$lowest, $middle, $highest] = $tasks;
         $this->hold($lowest, $this->reviewer);
-        $this->task(TaskState::Started);
+        $this->task(TaskStatus::Started);
 
         $assigner = $this->app->make(AutoAssigner::class);
 
@@ -91,10 +91,10 @@ final class TaskAssignerTest extends TestCase
 
     public function test_an_ordered_pool_keeps_its_order_and_filters_before_the_limit(): void
     {
-        $first = $this->task(TaskState::Open);
-        $second = $this->task(TaskState::Open);
-        $third = $this->task(TaskState::Open);
-        $finished = $this->task(TaskState::Finished);
+        $first = $this->task(TaskStatus::Open);
+        $second = $this->task(TaskStatus::Open);
+        $third = $this->task(TaskStatus::Open);
+        $finished = $this->task(TaskStatus::Finished);
         $this->hold($third, $this->reviewer);
         $pool = self::pool(PoolMembers::ordered([
             $third,
@@ -115,7 +115,7 @@ final class TaskAssignerTest extends TestCase
 
     public function test_an_ordered_pool_past_ten_ids_keeps_its_numeric_order(): void
     {
-        $ids = array_map(fn () => $this->task(TaskState::Open), range(1, 12));
+        $ids = array_map(fn () => $this->task(TaskStatus::Open), range(1, 12));
         $listed = array_reverse($ids);
 
         $pool = self::pool(PoolMembers::ordered($listed));
@@ -144,7 +144,7 @@ final class TaskAssignerTest extends TestCase
     {
         $assigner = $this->app->make(AutoAssigner::class);
         $open = Task::factory()->create();
-        $finished = Task::factory()->create(['state' => TaskState::Finished]);
+        $finished = Task::factory()->create(['status' => TaskStatus::Finished]);
 
         $assigner->requireCandidate($open->assignmentIdentity());
 
@@ -153,9 +153,9 @@ final class TaskAssignerTest extends TestCase
         $assigner->requireCandidate($finished->assignmentIdentity());
     }
 
-    private function task(TaskState $state): string
+    private function task(TaskStatus $state): string
     {
-        return Task::factory()->create(['state' => $state])->id;
+        return Task::factory()->create(['status' => $state])->id;
     }
 
     private function hold(string $taskId, ActorIdentity $holder): void

@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Sessions\StartHeartbeats as StartHeartbeatsContract;
 use App\Contracts\Sessions\StartTransaction;
 use App\Contracts\Time\ServerClock;
-use App\Enums\Agents\SessionProcessState;
+use App\Enums\Agents\SessionProcessStatus;
 use App\Enums\Sessions\SessionStatus;
 use App\Events\Sessions\SessionClosed;
 use App\Models\Agents\AgentRuntime;
@@ -167,7 +167,7 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
         $this->transaction->runForSession($sessionId, function () use ($sessionId, $now): void {
             $start = SessionProcess::findLockedCurrentOf($sessionId);
 
-            if ($start === null || $start->state !== SessionProcessState::Pending) {
+            if ($start === null || $start->status !== SessionProcessStatus::Pending) {
                 return;
             }
 

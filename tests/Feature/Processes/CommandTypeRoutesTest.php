@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Declarations\RuleDeclaration;
-use App\Enums\CommandRules\RequestState;
+use App\Enums\CommandRules\RequestStatus;
 use App\Mcp\Tools\CommandRequestShowTool;
 use App\Mcp\Tools\CommandTypeProposeTool;
 use App\Models\CommandRules\ClassificationRule;
@@ -42,7 +42,7 @@ final class CommandTypeRoutesTest extends TestCase
 
         $this->assertSame(TestText::words(AgentText::of('core.shell.nothing_started')), $reply->json('notice'));
         $this->assertSame('acme', $reply->json('held.0.operation'));
-        $this->assertSame(RequestState::CollectingDeclaration->value, $reply->json('held.0.requestState'));
+        $this->assertSame(RequestStatus::CollectingDeclaration->value, $reply->json('held.0.requestState'));
         $this->assertStringStartsWith(self::PROPOSE_STEP, (string) $reply->json('held.0.next'));
         $this->assertSame(1, CommandRequest::query()->count());
     }
@@ -72,7 +72,7 @@ final class CommandTypeRoutesTest extends TestCase
         $shown = $this->callMcpTool($this->start, CommandRequestShowTool::NAME, ['request' => $requestId])
             ->assertJsonPath('result.isError', false)
             ->json('result.structuredContent');
-        $this->assertSame(RequestState::AwaitingSampleApproval->value, $shown['state']);
+        $this->assertSame(RequestStatus::AwaitingSampleApproval->value, $shown['state']);
         $this->assertSame($proposal['proposal_id'], $shown['proposals'][0]['proposal_id']);
     }
 
@@ -88,7 +88,7 @@ final class CommandTypeRoutesTest extends TestCase
         $this->assertSame('pending', $reply->json('state'));
         $this->app->forgetScopedInstances();
         $shown = $this->signed($this->start, "/agent/processes/requests/{$requestId}/show", [])->assertOk();
-        $this->assertSame(RequestState::AwaitingSampleApproval->value, $shown->json('state'));
+        $this->assertSame(RequestStatus::AwaitingSampleApproval->value, $shown->json('state'));
         $this->assertSame(sprintf(self::APPROVE_STEP, $requestId), $shown->json('next'));
         $this->assertSame($reply->json('proposal_id'), $shown->json('proposals.0.proposal_id'));
     }

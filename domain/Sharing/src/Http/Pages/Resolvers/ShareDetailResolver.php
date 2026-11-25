@@ -38,10 +38,10 @@ final readonly class ShareDetailResolver implements PageResolver
 
         $controls = ShareControlsPartData::from([
             'id' => $share->id,
-            'state' => $share->state,
+            'state' => $share->status,
             'mayReveal' => $this->links->linkFor($this->actors->actor(), $share->id)->isDefined(),
-            'mayRetry' => $share->state->mayRetry() && $share->expires_at->isFuture(),
-            'mayRevoke' => ! $share->state->isTerminal(),
+            'mayRetry' => $share->status->mayRetry() && $share->expires_at->isFuture(),
+            'mayRevoke' => ! $share->status->isTerminal(),
         ]);
 
         return $this->page->of(

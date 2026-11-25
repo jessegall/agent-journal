@@ -100,7 +100,7 @@ final readonly class RequestWindowResolver implements PageResolver
 
         return ProposalData::from([
             'id' => $proposal->id,
-            'state' => $proposal->state->value,
+            'state' => $proposal->status->value,
             'currentRevision' => $proposal->current_revision,
             'author' => "{$proposal->author_type}:{$proposal->author_id}",
             'revisions' => array_values($revisions->map(

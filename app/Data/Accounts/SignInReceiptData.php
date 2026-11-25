@@ -6,7 +6,7 @@ namespace App\Data\Accounts;
 
 use App\Enums\Accounts\SignInMethod;
 use App\Enums\Accounts\SignInReceiptStatus;
-use App\Enums\Accounts\SignInState;
+use App\Enums\Accounts\SignInStatus;
 use App\Enums\Accounts\SignInType;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -25,7 +25,7 @@ final class SignInReceiptData extends Data
         public readonly SignInType|null $type,
         public readonly string|null $resultAccountId,
         public readonly SignInMethod|null $method,
-        public readonly SignInState|null $state,
+        public readonly SignInStatus|null $state,
         public readonly string|null $refusal,
     ) {}
 

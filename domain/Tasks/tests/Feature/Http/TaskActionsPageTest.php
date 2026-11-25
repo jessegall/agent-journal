@@ -9,7 +9,7 @@ use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
 use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Testing\TestResponse;
@@ -61,7 +61,7 @@ final class TaskActionsPageTest extends TestCase
             'reason' => 'Waits for the schema.',
         ])->assertSessionHasNoErrors();
 
-        $this->assertSame(TaskState::Blocked, $this->task->refresh()->state);
+        $this->assertSame(TaskStatus::Blocked, $this->task->refresh()->status);
     }
 
     public function test_a_stale_cancel_is_refused_and_an_older_run_cannot_block(): void
@@ -83,10 +83,10 @@ final class TaskActionsPageTest extends TestCase
         ])->assertSessionHasErrors();
 
         $this->assertSame([
-            TaskState::Started,
+            TaskStatus::Started,
             2,
         ], [
-            $this->task->refresh()->state,
+            $this->task->refresh()->status,
             $this->task->run_number,
         ]);
     }

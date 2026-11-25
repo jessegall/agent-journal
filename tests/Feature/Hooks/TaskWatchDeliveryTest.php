@@ -14,7 +14,7 @@ use App\Support\References\StateReference;
 use App\Support\References\SubjectReference;
 use App\Support\StackTransaction;
 use Domain\Rules\RulesDomain;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Events\TaskCancelled;
 use Domain\Tasks\Events\TaskFinished;
 use Domain\Tasks\TasksDomain;
@@ -73,14 +73,14 @@ final class TaskWatchDeliveryTest extends TestCase
         );
         $this->app->instance(LoggerInterface::class, $logger);
 
-        $this->dispatch(new TaskFinished(TestIds::of(43), TaskState::Started, 'entry'));
+        $this->dispatch(new TaskFinished(TestIds::of(43), TaskStatus::Started, 'entry'));
         $this->assertSame([], $this->app->make(TaskWatchLog::class)->records);
         $this->assertSame([], $attention->wakes);
         $trace = [];
 
-        $this->dispatch(new TaskFinished($taskId, TaskState::Started, 'entry'));
+        $this->dispatch(new TaskFinished($taskId, TaskStatus::Started, 'entry'));
         $this->assertSame([], $attention->wakes);
-        $this->dispatch(new TaskCancelled($taskId, TaskState::Started, 'entry'));
+        $this->dispatch(new TaskCancelled($taskId, TaskStatus::Started, 'entry'));
 
         $actorId = $this->target->agentId;
         $this->assertSame([

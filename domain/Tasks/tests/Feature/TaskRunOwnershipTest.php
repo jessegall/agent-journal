@@ -21,7 +21,7 @@ use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Exceptions\TaskRestartRefused;
 use Domain\Tasks\Exceptions\TaskRunOfAnotherActor;
 use Domain\Tasks\Exceptions\TaskRunTaken;
@@ -100,11 +100,11 @@ final class TaskRunOwnershipTest extends TestCase
 
         $this->assertSame(
             [
-                TaskState::Finished,
+                TaskStatus::Finished,
                 'Built and tested.',
             ],
             [
-                $this->task->fresh()?->state,
+                $this->task->fresh()?->status,
                 $this->task->fresh()?->result_note,
             ],
         );
@@ -135,11 +135,11 @@ final class TaskRunOwnershipTest extends TestCase
 
         $this->assertSame(
             [
-                TaskState::Blocked,
+                TaskStatus::Blocked,
                 'Waits on review.',
             ],
             [
-                $this->task->fresh()?->state,
+                $this->task->fresh()?->status,
                 $this->task->fresh()?->block_reason,
             ],
         );
@@ -165,13 +165,13 @@ final class TaskRunOwnershipTest extends TestCase
 
         $this->assertSame(
             [
-                TaskState::Started,
-                TaskState::Cancelled,
+                TaskStatus::Started,
+                TaskStatus::Cancelled,
                 'Superseded.',
             ],
             [
-                $this->task->fresh()?->state,
-                $helperTask->fresh()?->state,
+                $this->task->fresh()?->status,
+                $helperTask->fresh()?->status,
                 $helperTask->fresh()?->cancel_reason,
             ],
         );

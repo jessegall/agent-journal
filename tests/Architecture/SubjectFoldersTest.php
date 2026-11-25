@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * A model, an enum or an attribute sits in the folder of its subject or kind, such as app/Models/Messages/Message.php,
- * app/Enums/Accounts/AccountState.php or app/Attributes/Commands/Authorize.php, never directly in app/Models, app/Enums
+ * app/Enums/Accounts/AccountStatus.php or app/Attributes/Commands/Authorize.php, never directly in app/Models, app/Enums
  * or app/Attributes.
  */
 final class SubjectFoldersTest extends TestCase

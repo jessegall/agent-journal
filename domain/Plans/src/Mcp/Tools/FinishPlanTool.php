@@ -8,7 +8,7 @@ use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use Domain\Plans\Commands\FinishPlan\FinishPlanCommand;
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Enums\PlanTextLimit;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -42,6 +42,6 @@ final class FinishPlanTool extends PlanWriteTool
 
     protected function present(mixed $commandResult): ToolResult
     {
-        return ToolResult::ok(['state' => PlanState::Done->value]);
+        return ToolResult::ok(['state' => PlanStatus::Done->value]);
     }
 }

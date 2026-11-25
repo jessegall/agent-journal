@@ -35,7 +35,7 @@ final readonly class ProposeReaderHandler implements CommandHandler
             throw ReaderProposalRefused::notTheRequester($request->id);
         }
 
-        if (! $request->state->isOpen()) {
+        if (! $request->status->isOpen()) {
             throw ReaderProposalRefused::closed($request->id);
         }
 

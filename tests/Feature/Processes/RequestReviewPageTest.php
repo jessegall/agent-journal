@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Enums\CommandRules\RequestState;
+use App\Enums\CommandRules\RequestStatus;
 use App\Models\CommandRules\ModuleRuleBundle;
 use App\Models\CommandRules\RuleProposal;
 use App\Support\CommandRuleRegistry;
@@ -33,7 +33,7 @@ final class RequestReviewPageTest extends TestCase
         $this->listPage()->assertInertia(fn (AssertableInertia $page) => $page
             ->component('layout/DeclaredLayout')
             ->where('page.data.root.children.2.children.1.rows.0.key', $this->requestId)
-            ->where('page.data.root.children.2.children.1.rows.0.value', RequestState::AwaitingSampleApproval->value));
+            ->where('page.data.root.children.2.children.1.rows.0.value', RequestStatus::AwaitingSampleApproval->value));
 
         config(['processes.project_key' => 'another-project']);
 
@@ -57,7 +57,7 @@ final class RequestReviewPageTest extends TestCase
             'command_digest' => $this->request()->source_digest,
         ])->assertStatus(303);
 
-        $this->assertSame(RequestState::ReadyForSample, $this->request()->state);
+        $this->assertSame(RequestStatus::ReadyForSample, $this->request()->status);
     }
 
     public function test_an_approval_without_a_proof_is_shown_as_a_refusal_and_a_rejection_stays_visible(): void
@@ -73,9 +73,9 @@ final class RequestReviewPageTest extends TestCase
             ->post("/processes/proposals/{$proposal->id}/rejection", ['reason' => 'effects too wide'])
             ->assertStatus(303);
 
-        $this->assertSame(RequestState::Rejected, $this->request()->state);
+        $this->assertSame(RequestStatus::Rejected, $this->request()->status);
         $this->listPage()->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.root.children.2.children.1.rows.0.value', RequestState::Rejected->value));
+            ->where('page.data.root.children.2.children.1.rows.0.value', RequestStatus::Rejected->value));
     }
 
     public function test_a_waiting_module_bundle_is_activated_from_the_list(): void

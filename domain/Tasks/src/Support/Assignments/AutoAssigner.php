@@ -39,7 +39,7 @@ final readonly class AutoAssigner implements AutoAssignerContract
         $task = Task::findLockedById($record->id);
 
         if (! $task->isOpenForAssignment()) {
-            throw TaskNotOpenForAssignment::forTask($task->number, $task->state->value);
+            throw TaskNotOpenForAssignment::forTask($task->number, $task->status->value);
         }
     }
 }

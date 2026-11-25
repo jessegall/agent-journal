@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Api\Processes;
 
-use App\Enums\Processes\AdmissionState;
+use App\Enums\Processes\AdmissionStatus;
 use Spatie\LaravelData\Attributes\MapName;
 
 /**
@@ -16,6 +16,6 @@ final class AdmissionAlreadyStarted extends AdmissionFetched
         #[MapName('run_id')]
         public readonly string $runId,
     ) {
-        $this->state = AdmissionState::AlreadyStarted;
+        $this->state = AdmissionStatus::AlreadyStarted;
     }
 }

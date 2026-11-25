@@ -16,8 +16,8 @@ final readonly class CancelPlanHandler extends PlanCommandHandler
     {
         $plan = $this->lockPlanAtRevision($command->planId, $command->expectedRevision);
 
-        if ($command->expectedState !== null && $command->expectedState !== $plan->state) {
-            throw PlanRevisionChanged::inState($plan->number, $plan->state->value);
+        if ($command->expectedState !== null && $command->expectedState !== $plan->status) {
+            throw PlanRevisionChanged::inState($plan->number, $plan->status->value);
         }
 
         $plan->cancel($command->reason, $command->dispatchedBy());

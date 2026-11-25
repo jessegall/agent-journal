@@ -24,7 +24,7 @@ return new class extends Migration
             $table->string('take_id', 64);
             // The opaque id the host issued for the grant, the per-tab credential held only in browser memory.
             $table->string('grant_id', 64)->nullable()->unique();
-            $table->string('state', 16);
+            $table->string('status', 16);
             $table->unsignedInteger('next_sequence')->default(1);
             // The host requests that take and release the grant, whose reports settle it.
             $table->ulid('take_request_id')->nullable()->index();
@@ -32,7 +32,7 @@ return new class extends Migration
             $table->timestampTz('expires_at');
             $table->timestampsTz();
             $table->unique(['actor_type', 'actor_id', 'take_id']);
-            $table->index(['agent_runtime_id', 'state']);
+            $table->index(['agent_runtime_id', 'status']);
         });
     }
 

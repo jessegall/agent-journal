@@ -20,7 +20,7 @@ use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Sharing\Commands\ReadShare\ReadShareCommand;
 use Domain\Sharing\Enums\ShareAuditType;
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareAudit;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
@@ -253,7 +253,7 @@ final class ReadShareTest extends TestCase
 
             $revoker->table('shares')->where('id', $shareId)->update(
                 [
-                    'state' => ShareState::Revoked->value,
+                    'status' => ShareStatus::Revoked->value,
                     'token_ciphertext' => null,
                     'terminal_at' => CarbonImmutable::now(),
                 ],
@@ -287,7 +287,7 @@ final class ReadShareTest extends TestCase
                 $token,
             ),
         );
-        $share->state = ShareState::Active;
+        $share->status = ShareStatus::Active;
         $share->save();
 
         return $token->token;

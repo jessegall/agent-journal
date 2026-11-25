@@ -8,7 +8,7 @@ use App\Contracts\Assignments\Assignable;
 use App\Contracts\Assignments\AssignableProvider;
 use App\Exceptions\RecordUnavailable;
 use App\Support\RecordIdentity;
-use Domain\Tasks\Enums\TaskRunState;
+use Domain\Tasks\Enums\TaskRunStatus;
 use Domain\Tasks\Models\TaskRun;
 
 /**
@@ -41,7 +41,7 @@ final readonly class TaskRunAssignments implements AssignableProvider
     {
         $finished = array_filter(
             $records,
-            fn (Assignable $run) => $run instanceof TaskRun && $run->state === TaskRunState::Finished,
+            fn (Assignable $run) => $run instanceof TaskRun && $run->status === TaskRunStatus::Finished,
         );
 
         return array_values(array_map(fn (Assignable $run) => $run->assignmentIdentity(), $finished));

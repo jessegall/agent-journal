@@ -43,8 +43,8 @@ use Domain\Plans\Commands\StartPlan\StartPlanCommand;
 use Domain\Plans\Commands\UnassignPlanWork\UnassignPlanWorkCommand;
 use Domain\Plans\Contracts\PlanDetailsResolver;
 use Domain\Plans\Contracts\PlanResolver;
-use Domain\Plans\Enums\PlanReviewState;
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanReviewStatus;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Events\PlanCancelled;
 use Domain\Plans\Events\PlanFinished;
@@ -165,9 +165,9 @@ final class PlansDomain extends Domain implements
                 AssignedPlanFilters::class,
                 AssignedPlanList::class,
                 PlanProgress::class,
-                PlanReviewState::class,
+                PlanReviewStatus::class,
                 PlanType::class,
-                PlanState::class,
+                PlanStatus::class,
                 PlanDetails::class,
                 PlanPhaseTasks::class,
                 PhaseDetails::class,

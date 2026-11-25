@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Data;
 
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -20,7 +20,7 @@ final class TaskGraphNode extends Data
         public readonly string $id,
         public readonly int $number,
         public readonly string $title,
-        public readonly TaskState $state,
+        public readonly TaskStatus $state,
         public readonly string $address,
         public readonly bool $mayEditWaits,
         public readonly string|Optional $reason = new Optional(),

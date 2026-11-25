@@ -13,7 +13,7 @@ use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
 use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Data\PlanCardData;
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Values\PlanFilters;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -35,7 +35,7 @@ final class PlansListTool extends JournalReadTool
     {
         return [
             'search' => $schema->string()->max(240),
-            'states' => $schema->array()->items($this->caseArgument($schema, PlanState::class)),
+            'states' => $schema->array()->items($this->caseArgument($schema, PlanStatus::class)),
             'page' => $schema->integer()->min(1),
             'continuation' => $schema->string(),
         ];
@@ -48,13 +48,13 @@ final class PlansListTool extends JournalReadTool
             $arguments,
             fn (ToolArguments $initialArguments) => [
                 'search' => $initialArguments->textOr('search', ''),
-                'states' => $initialArguments->enumValues('states', PlanState::class),
+                'states' => $initialArguments->enumValues('states', PlanStatus::class),
                 'page' => $initialArguments->positiveIntegerOr('page', 1),
             ],
             fn (ToolArguments $filters) => $this->page(new PlanFilters(
                 search: $filters->text('search'),
                 page: $filters->positiveInteger('page'),
-                states: array_map(PlanState::from(...), $filters->list('states')),
+                states: array_map(PlanStatus::from(...), $filters->list('states')),
             )),
         );
     }

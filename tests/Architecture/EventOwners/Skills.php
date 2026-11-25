@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\Skills\PublicationState;
+use App\Enums\Skills\PublicationStatus;
 use App\Events\Skills\SessionSkillsIntended;
 use App\Events\Skills\SkillContextEpochAdvanced;
 use App\Events\Skills\SkillGenerationRetired;
@@ -31,7 +31,7 @@ return [
         'owner' => 'SkillPublication::raiseMoved',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new SkillPublicationMoved('publication', 'session', PublicationState::Delivered),
+        'sample' => fn () => new SkillPublicationMoved('publication', 'session', PublicationStatus::Delivered),
     ],
     SkillsChanged::class => [
         'role' => EventRole::RowFact,

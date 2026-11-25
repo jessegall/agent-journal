@@ -33,7 +33,7 @@ use App\Values\ModelSelection;
 use App\Values\ProfileKey;
 use App\Values\ProfileSelection;
 use App\Values\StartProfileAuthority;
-use Domain\Helpers\Enums\JobState;
+use Domain\Helpers\Enums\JobStatus;
 use Domain\Helpers\Exceptions\HelperBusy;
 use Domain\Helpers\Exceptions\HelperJobUnfinished;
 use Domain\Helpers\Exceptions\HelperProfileMismatch;
@@ -197,7 +197,7 @@ final readonly class HelperDispatch
 
         $identity = HelperIdentity::query()->whereKey($job->helper_identity_id)->sole();
 
-        if ($job->state->isLive() && $this->hasRetired($identity)) {
+        if ($job->status->isLive() && $this->hasRetired($identity)) {
             throw HelperRetired::withUnfinishedJob($identity->id, $job->id);
         }
 
@@ -442,9 +442,9 @@ final readonly class HelperDispatch
             return;
         }
 
-        throw match ($open->state) {
-            JobState::Unfinished => HelperJobUnfinished::onJob($identity->id, $open->id),
-            JobState::Held => HelperStartUncertain::forIdentity($identity->id),
+        throw match ($open->status) {
+            JobStatus::Unfinished => HelperJobUnfinished::onJob($identity->id, $open->id),
+            JobStatus::Held => HelperStartUncertain::forIdentity($identity->id),
             default => HelperBusy::onJob($identity->id, $open->id),
         };
     }

@@ -6,7 +6,7 @@ namespace App\Commands\Accounts\CancelSignIn;
 
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\Accounts\SignInState;
+use App\Enums\Accounts\SignInStatus;
 use App\Models\Accounts\SignInAttempt;
 use App\Support\SignInChallenges;
 use Carbon\CarbonImmutable;
@@ -26,7 +26,7 @@ final readonly class CancelSignInHandler implements CommandHandler
             return;
         }
 
-        $attempt->finishAt(SignInState::Cancelled, CarbonImmutable::now());
+        $attempt->finishAt(SignInStatus::Cancelled, CarbonImmutable::now());
         $this->facts->runTransactionListeners();
         $this->challenges->forget($attempt->id);
     }

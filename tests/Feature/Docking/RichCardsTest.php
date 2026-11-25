@@ -18,7 +18,7 @@ use Domain\Documents\DocumentsDomain;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\PlansDomain;
 use Domain\Rules\RulesDomain;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Events\TaskCancelled;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
@@ -132,7 +132,7 @@ final class RichCardsTest extends TestCase
 
     public function test_a_docked_task_shows_its_state_and_a_plan_without_phases_says_so(): void
     {
-        $task = Task::factory()->create(['title' => 'Ship the dock', 'state' => TaskState::Blocked]);
+        $task = Task::factory()->create(['title' => 'Ship the dock', 'status' => TaskStatus::Blocked]);
         $plan = Plan::factory()->create(['title' => 'Dock plan']);
         $this->dock('tasks.task', $task->id);
         $this->dock('plans.plan', $plan->id);
@@ -169,10 +169,10 @@ final class RichCardsTest extends TestCase
         Event::fake([PageChanged::class]);
 
         // A task change refreshes every page once, docks included, so a docked task adds no second refresh.
-        $this->app->make('events')->dispatch(new TaskCancelled($loose->id, TaskState::Open, 'entry'));
+        $this->app->make('events')->dispatch(new TaskCancelled($loose->id, TaskStatus::Open, 'entry'));
         Event::assertDispatchedTimes(PageChanged::class, 1);
 
-        $this->app->make('events')->dispatch(new TaskCancelled($docked->id, TaskState::Open, 'entry'));
+        $this->app->make('events')->dispatch(new TaskCancelled($docked->id, TaskStatus::Open, 'entry'));
         Event::assertDispatchedTimes(PageChanged::class, 2);
     }
 

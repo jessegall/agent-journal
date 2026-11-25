@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
-use App\Enums\Skills\PublicationState;
+use App\Enums\Skills\PublicationStatus;
 use App\Events\Sessions\StartGrantRequested;
 use App\Exceptions\StartRefused;
 use App\Models\Agents\AgentSession;
@@ -37,8 +37,8 @@ final readonly class HandStartSkillsToHost implements Listener
             return;
         }
 
-        if ($publication->state !== PublicationState::Delivered) {
-            throw StartRefused::skillsNotReady($event->sessionId, $publication->error ?? $publication->state->value);
+        if ($publication->status !== PublicationStatus::Delivered) {
+            throw StartRefused::skillsNotReady($event->sessionId, $publication->error ?? $publication->status->value);
         }
 
         $delivery = $this->adapters->for(DriverKey::from($publication->skill_protocol))->delivery();

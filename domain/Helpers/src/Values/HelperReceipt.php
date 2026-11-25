@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Helpers\Values;
 
 use App\Support\OwnerStartReceipt;
-use Domain\Helpers\Enums\JobState;
+use Domain\Helpers\Enums\JobStatus;
 
 /**
  * What a dispatch tells its parent: the identity, the job and whether this request made it, the profile type, the
@@ -20,7 +20,7 @@ final readonly class HelperReceipt
         public string $jobId,
         public bool $isNewJob,
         public string $profileType,
-        public JobState $state,
+        public JobStatus $state,
         public SessionStartDetails $startDetails,
         public OwnerStartReceipt $start,
     ) {}

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('agent_id');
             $table->foreignUlid('binding_id')->constrained('project_bindings');
             $table->jsonb('argv');
-            $table->string('state');
+            $table->string('status');
             $table->unsignedInteger('pid')->nullable();
             $table->integer('exit_code')->nullable();
             $table->jsonb('frames')->default('[]');

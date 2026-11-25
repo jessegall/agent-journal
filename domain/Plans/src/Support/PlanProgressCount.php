@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Support;
 
 use Domain\Plans\Values\PlanProgress;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Values\TaskProgress;
 
 /**
@@ -31,37 +31,37 @@ final class PlanProgressCount
     /**
      * The same tasks after one of them moved from one state to another.
      */
-    public static function afterMove(PlanProgress $progress, TaskState $from, TaskState $to): PlanProgress
+    public static function afterMove(PlanProgress $progress, TaskStatus $from, TaskStatus $to): PlanProgress
     {
         return self::withChange(self::withChange($progress, $from, -1), $to, 1);
     }
 
-    private static function withChange(PlanProgress $progress, TaskState $state, int $change): PlanProgress
+    private static function withChange(PlanProgress $progress, TaskStatus $state, int $change): PlanProgress
     {
         return match ($state) {
-            TaskState::Open => $progress,
-            TaskState::Started => new PlanProgress(
+            TaskStatus::Open => $progress,
+            TaskStatus::Started => new PlanProgress(
                 $progress->finished,
                 $progress->cancelled,
                 $progress->blocked,
                 $progress->started + $change,
                 $progress->total,
             ),
-            TaskState::Blocked => new PlanProgress(
+            TaskStatus::Blocked => new PlanProgress(
                 $progress->finished,
                 $progress->cancelled,
                 $progress->blocked + $change,
                 $progress->started,
                 $progress->total,
             ),
-            TaskState::Finished => new PlanProgress(
+            TaskStatus::Finished => new PlanProgress(
                 $progress->finished + $change,
                 $progress->cancelled,
                 $progress->blocked,
                 $progress->started,
                 $progress->total,
             ),
-            TaskState::Cancelled => new PlanProgress(
+            TaskStatus::Cancelled => new PlanProgress(
                 $progress->finished,
                 $progress->cancelled + $change,
                 $progress->blocked,

@@ -9,7 +9,7 @@ use App\Contracts\Assignments\AssignedWorkResolver;
 use App\Contracts\Assignments\AssignmentProviders;
 use App\Contracts\Assignments\AutoAssignmentAccess;
 use App\Contracts\Domains\DomainAvailability;
-use App\Enums\Assignments\AutoAssignmentState;
+use App\Enums\Assignments\AutoAssignmentStatus;
 use App\Exceptions\AssignmentPoolTooLarge;
 use App\Exceptions\AssignmentPoolUnavailable;
 use App\Exceptions\AssignmentTypeUnavailable;
@@ -35,7 +35,7 @@ final readonly class AutoAssignmentStatuses
         private AssignmentRoom $room,
     ) {}
 
-    public function of(AutoAssignment $row): AutoAssignmentStatus
+    public function of(AutoAssignment $row): AutoAssignmentView
     {
         try {
             $fact = $row->toFact();
@@ -45,17 +45,17 @@ final readonly class AutoAssignmentStatuses
                 $this->providers->poolOwner($fact->pool->type),
             ];
         } catch (CannotCreateData|AssignmentTypeUnavailable) {
-            return AutoAssignmentStatus::unreadable($row->enabled, $row->configuration_revision);
+            return AutoAssignmentView::unreadable($row->enabled, $row->configuration_revision);
         }
 
         if (! array_all($owners, fn (string $owner) => $this->domains->isEnabled($owner))) {
-            return $this->status($fact, AutoAssignmentState::DomainUnavailable, None::create(), None::create());
+            return $this->status($fact, AutoAssignmentStatus::DomainUnavailable, None::create(), None::create());
         }
 
         $pool = Some::create($this->describe($fact));
 
         if (! $fact->isEnabled) {
-            return $this->status($fact, AutoAssignmentState::Off, $pool, None::create());
+            return $this->status($fact, AutoAssignmentStatus::Off, $pool, None::create());
         }
 
         return $this->ofActiveFact($fact, $pool);
@@ -64,20 +64,20 @@ final readonly class AutoAssignmentStatuses
     /**
      * @param  Option<PoolDescription>  $pool
      */
-    private function ofActiveFact(AutoAssignmentFact $fact, Option $pool): AutoAssignmentStatus
+    private function ofActiveFact(AutoAssignmentFact $fact, Option $pool): AutoAssignmentView
     {
         $actor = $fact->key->actor;
 
         if (! $this->providers->activity($actor->type)->mayTakeWork($actor)) {
-            return $this->status($fact, AutoAssignmentState::Inactive, $pool, None::create());
+            return $this->status($fact, AutoAssignmentStatus::Inactive, $pool, None::create());
         }
 
         try {
             $this->providers->poolFactory($fact->pool->type)->open($fact->pool, $actor);
         } catch (AssignmentPoolUnavailable) {
-            return $this->status($fact, AutoAssignmentState::PoolUnavailable, $pool, None::create());
+            return $this->status($fact, AutoAssignmentStatus::PoolUnavailable, $pool, None::create());
         } catch (AssignmentPoolTooLarge) {
-            return $this->status($fact, AutoAssignmentState::TooLarge, $pool, None::create());
+            return $this->status($fact, AutoAssignmentStatus::TooLarge, $pool, None::create());
         }
 
         $held = $this->work->count($fact->key->assignableType, AssigneeIdentity::ofActorIdentity($actor));
@@ -88,9 +88,9 @@ final readonly class AutoAssignmentStatuses
             : None::create();
 
         $state = match (true) {
-            $held > $fact->size => AutoAssignmentState::OverCapacity,
-            $room === 0 => AutoAssignmentState::Full,
-            default => AutoAssignmentState::Ready,
+            $held > $fact->size => AutoAssignmentStatus::OverCapacity,
+            $room === 0 => AutoAssignmentStatus::Full,
+            default => AutoAssignmentStatus::Ready,
         };
 
         return $this->status($fact, $state, $pool, $totals);
@@ -107,11 +107,11 @@ final readonly class AutoAssignmentStatuses
      */
     private function status(
         AutoAssignmentFact $fact,
-        AutoAssignmentState $state,
+        AutoAssignmentStatus $state,
         Option $pool,
         Option $totals,
-    ): AutoAssignmentStatus {
-        return new AutoAssignmentStatus(
+    ): AutoAssignmentView {
+        return new AutoAssignmentView(
             $fact->isEnabled,
             $state,
             $fact->revision,

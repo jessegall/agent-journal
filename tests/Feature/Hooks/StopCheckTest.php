@@ -7,7 +7,7 @@ namespace Tests\Feature\Hooks;
 use App\Commands\Sessions\RecordStopConditionResults\RecordStopConditionResultsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Processes\StopEvidence;
-use App\Enums\Sessions\StopCheckState;
+use App\Enums\Sessions\StopCheckStatus;
 use App\Enums\Sessions\StopConditionResultType;
 use App\Exceptions\CommandNotRegistered;
 use App\Exceptions\StopConditionResultsRefused;
@@ -52,7 +52,7 @@ final class StopCheckTest extends TestCase
 
         $this->assertSame($first->id, $retried->id);
         $this->assertNotSame($first->id, $next->id);
-        $this->assertSame(StopCheckState::Pending, $first->state);
+        $this->assertSame(StopCheckStatus::Pending, $first->status);
     }
 
     public function test_the_host_stores_every_status_and_the_attempt_settles_by_them(): void
@@ -63,7 +63,7 @@ final class StopCheckTest extends TestCase
 
         $state = $this->asSystem($this->results($attempt, $statuses));
 
-        $this->assertSame(StopCheckState::Failed, $state);
+        $this->assertSame(StopCheckStatus::Failed, $state);
         $this->assertSame(count($statuses), StopConditionResult::query()->where('stop_check_id', $attempt->id)->count());
         $this->assertNull(StopConditionResult::query()->where('condition_key', 'unknown')->sole()->exit_code);
     }
@@ -74,8 +74,8 @@ final class StopCheckTest extends TestCase
         $attempt = $this->open($start, 'stop-1', ['passed']);
         $passing = $this->results($attempt, [StopConditionResultType::Passed]);
 
-        $this->assertSame(StopCheckState::Passed, $this->asSystem($passing));
-        $this->assertSame(StopCheckState::Passed, $this->asSystem($passing));
+        $this->assertSame(StopCheckStatus::Passed, $this->asSystem($passing));
+        $this->assertSame(StopCheckStatus::Passed, $this->asSystem($passing));
         $this->assertThrows(
             fn () => $this->asSystem($this->results($attempt, [StopConditionResultType::Failed], ['failed' => 'passed'])),
             StopConditionResultsRefused::class,
@@ -122,7 +122,7 @@ final class StopCheckTest extends TestCase
 
         $result = $this->app->make(StopEvidence::class)->result(new StopCheckReference($attempt->id));
 
-        $this->assertSame(StopCheckState::Failed, $result->state);
+        $this->assertSame(StopCheckStatus::Failed, $result->state);
         $this->assertSame(['failed' => StopConditionResultType::Failed], $result->statuses);
         $this->assertSame(['failed' => 'failed in summary'], $result->summaries);
     }

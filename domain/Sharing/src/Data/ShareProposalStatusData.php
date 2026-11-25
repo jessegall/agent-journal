@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Data;
 
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Support\ShareProposalStatus;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -17,7 +17,7 @@ final class ShareProposalStatusData extends Data
 {
     public function __construct(
         public readonly int $number,
-        public readonly ShareState $state,
+        public readonly ShareStatus $state,
     ) {}
 
     public static function fromStatus(ShareProposalStatus $status): self

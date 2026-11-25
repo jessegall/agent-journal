@@ -30,7 +30,7 @@ final class ClassificationRuleRowData extends Data
             $rule->rule_id,
             $rule->scope->name(),
             $rule->active_revision,
-            $rule->state->value,
+            $rule->status->value,
             $rule->state_reason,
         );
     }

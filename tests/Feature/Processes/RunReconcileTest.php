@@ -10,8 +10,8 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Admission\ShellAdmission;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Processes\ShellDialect;
-use App\Enums\Runs\CaptureState;
-use App\Enums\Runs\LifecycleState;
+use App\Enums\Runs\CaptureStatus;
+use App\Enums\Runs\LifecycleStatus;
 use App\Enums\Runs\PartEndType;
 use App\Exceptions\RetryRefused;
 use App\Models\Runs\PartRun;
@@ -63,11 +63,11 @@ final class RunReconcileTest extends TestCase
         $this->artisan('process:reconcile')->expectsOutputToContain('1 runs marked lost')->assertExitCode(0);
 
         $part = $this->part->refresh();
-        $this->assertSame(LifecycleState::Lost, $part->lifecycle);
+        $this->assertSame(LifecycleStatus::Lost, $part->lifecycle);
         $this->assertSame(PartEndType::Unavailable, $part->end_type);
         $this->assertFalse($part->end->hasStatus());
-        $this->assertSame(CaptureState::Incomplete, $part->capture_state);
-        $this->assertSame(LifecycleState::Lost, $this->run->refresh()->lifecycle);
+        $this->assertSame(CaptureStatus::Incomplete, $part->capture_state);
+        $this->assertSame(LifecycleStatus::Lost, $this->run->refresh()->lifecycle);
         $this->assertSame(0, ResultReceipt::query()->count());
     }
 
@@ -77,7 +77,7 @@ final class RunReconcileTest extends TestCase
 
         $this->artisan('process:reconcile')->expectsOutputToContain('0 runs marked lost');
 
-        $this->assertSame(LifecycleState::Running, $this->part->refresh()->lifecycle);
+        $this->assertSame(LifecycleStatus::Running, $this->part->refresh()->lifecycle);
     }
 
     public function test_a_retry_admits_the_same_line_as_a_new_run_and_the_lost_one_stays_lost(): void
@@ -93,7 +93,7 @@ final class RunReconcileTest extends TestCase
         $bus->run(new StopLeftoverProcessesCommand($this->run->id));
 
         $this->assertNotSame($this->run->id, $retried);
-        $this->assertSame(LifecycleState::Lost, $this->run->refresh()->lifecycle);
+        $this->assertSame(LifecycleStatus::Lost, $this->run->refresh()->lifecycle);
         $this->assertTrue($this->run->isStale());
     }
 

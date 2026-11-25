@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Skills;
 
 use App\Data\Skills\GeneratedSkillData;
-use App\Enums\Skills\GenerationState;
-use App\Enums\Skills\PublicationState;
+use App\Enums\Skills\GenerationStatus;
+use App\Enums\Skills\PublicationStatus;
 use App\Exceptions\SkillGenerationImmutable;
 use App\Exceptions\SkillPublicationFailed;
 use App\Exceptions\SkillPublicationStale;
@@ -37,7 +37,7 @@ final class SkillPublicationModelsTest extends TestCase
         $this->assertTrue(Schema::hasTable('skill_publications'));
 
         $generation = $this->generation();
-        $this->assertSame(GenerationState::Ready, SkillGeneration::findLatestReady()?->state);
+        $this->assertSame(GenerationStatus::Ready, SkillGeneration::findLatestReady()?->status);
         $entry = $generation->entry('journal');
         $this->assertNotNull($entry);
         $this->assertSame('journal', $entry->key);
@@ -72,7 +72,7 @@ final class SkillPublicationModelsTest extends TestCase
             ),
         );
 
-        $this->assertSame(PublicationState::Delivered, $publication->state);
+        $this->assertSame(PublicationStatus::Delivered, $publication->status);
         $this->expectException(SkillPublicationFailed::class);
 
         $publication->retry();
@@ -108,8 +108,8 @@ final class SkillPublicationModelsTest extends TestCase
             ['journal'],
         );
 
-        $this->assertSame(PublicationState::Superseded, $first->refresh()->state);
-        $this->assertSame(PublicationState::Pending, $second->state);
+        $this->assertSame(PublicationStatus::Superseded, $first->refresh()->status);
+        $this->assertSame(PublicationStatus::Pending, $second->status);
     }
 
     public function test_a_failed_publication_is_retried_with_the_same_generation(): void
@@ -128,14 +128,14 @@ final class SkillPublicationModelsTest extends TestCase
 
         $publication->retry();
 
-        $this->assertSame(PublicationState::Pending, $publication->state);
+        $this->assertSame(PublicationStatus::Pending, $publication->status);
         $this->assertSame($generationId, $publication->generation_id);
         $this->assertNull($publication->error);
     }
 
     private function generation(): SkillGeneration
     {
-        return SkillGeneration::create(str_repeat('e', 64), GenerationState::Ready, str_repeat('d', 64), GeneratedSkillData::collect([
+        return SkillGeneration::create(str_repeat('e', 64), GenerationStatus::Ready, str_repeat('d', 64), GeneratedSkillData::collect([
             [
                 'key' => 'journal',
                 'owner' => 'Core',

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Terminals;
 
-use App\Enums\Terminals\TerminalGrantState;
+use App\Enums\Terminals\TerminalGrantStatus;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -20,7 +20,7 @@ final class TerminalControlData extends Data
     public function __construct(
         public readonly string $takeId,
         public readonly string|null $grantId,
-        public readonly TerminalGrantState $state,
+        public readonly TerminalGrantStatus $state,
         public readonly int $expiresInSeconds,
         public readonly int $nextSequence,
         // Whether the host offers private entry for this terminal; without it no private field is offered.

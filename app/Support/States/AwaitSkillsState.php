@@ -7,7 +7,7 @@ namespace App\Support\States;
 use App\Attributes\States\StateType;
 use App\Enums\Engine\FrameReuse;
 use App\Enums\Sessions\SessionTransferType;
-use App\Enums\Skills\PublicationState;
+use App\Enums\Skills\PublicationStatus;
 use App\Events\Skills\SkillPublicationMoved;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\FileEditRequested;
@@ -24,7 +24,7 @@ use PhpOption\Some;
 #[StateType(AwaitSkillsStateReference::TYPE_KEY, schemaVersion: 1, transfer: SessionTransferType::SessionOnly)]
 final class AwaitSkillsState extends AgentState
 {
-    private PublicationState $publication = PublicationState::Pending;
+    private PublicationStatus $publication = PublicationStatus::Pending;
 
     public function __construct(private readonly string $publicationId) {}
 

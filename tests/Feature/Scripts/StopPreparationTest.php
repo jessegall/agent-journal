@@ -12,7 +12,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Processes\StopPreparer;
 use App\Contracts\Scripts\ScriptChecks;
 use App\Contracts\Sessions\ProfileResolver;
-use App\Enums\Agents\StopPreparationState;
+use App\Enums\Agents\StopPreparationStatus;
 use App\Enums\Terminals\StepStatus;
 use App\Models\Agents\PendingAgentMessage;
 use App\Models\Profiles\ProfileRun;
@@ -86,7 +86,7 @@ final class StopPreparationTest extends TestCase
     {
         $outcome = $this->stopDirty(StepStatus::Completed, 'passed', 'All tests passed.');
 
-        $this->assertSame(StopPreparationState::ReturnToActor, $outcome->state);
+        $this->assertSame(StopPreparationStatus::ReturnToActor, $outcome->state);
         $this->assertEquals(AgentText::of('core.stop.script_returned', ['evidence' => self::GUIDANCE]), $outcome->message);
         $this->assertGreaterThan(0, PendingAgentMessage::countFor($this->writer));
     }
@@ -95,7 +95,7 @@ final class StopPreparationTest extends TestCase
     {
         $outcome = $this->stopDirty(StepStatus::Failed, 'failure', self::FAILED_TESTS);
 
-        $this->assertSame(StopPreparationState::ReturnToActor, $outcome->state);
+        $this->assertSame(StopPreparationStatus::ReturnToActor, $outcome->state);
         $this->assertEquals(AgentText::of('core.stop.script_returned', ['evidence' => self::FAILED_TESTS]), $outcome->message);
     }
 
@@ -108,21 +108,21 @@ final class StopPreparationTest extends TestCase
         $this->answerReads(isDirty: true);
         $stillHeld = $this->stopAgain();
 
-        $this->assertSame([StopPreparationState::Held, true], [$held->state, $held->tellsOwner]);
+        $this->assertSame([StopPreparationStatus::Held, true], [$held->state, $held->tellsOwner]);
         $reason = TestText::words(AgentText::of('core.stop.unchanged_returns', ['evidence' => self::GUIDANCE]));
         $this->assertSame(AgentText::of('core.stop.script_held', ['reason' => $reason])->key, $held->message->key);
         $this->assertStringContainsString($reason, TestText::words($held->message));
-        $this->assertSame([StopPreparationState::Held, false], [$stillHeld->state, $stillHeld->tellsOwner]);
+        $this->assertSame([StopPreparationStatus::Held, false], [$stillHeld->state, $stillHeld->tellsOwner]);
     }
 
     public function test_a_clean_workspace_goes_straight_to_the_final_checks(): void
     {
-        $this->assertSame(StopPreparationState::Preparing, $this->stopAgain()->state);
+        $this->assertSame(StopPreparationStatus::Preparing, $this->stopAgain()->state);
         $this->answerReads(isDirty: false);
-        $this->assertSame(StopPreparationState::Preparing, $this->stopAgain()->state);
+        $this->assertSame(StopPreparationStatus::Preparing, $this->stopAgain()->state);
         $this->answerReads(isDirty: false);
 
-        $this->assertSame(StopPreparationState::FinalChecks, $this->stopAgain()->state);
+        $this->assertSame(StopPreparationStatus::FinalChecks, $this->stopAgain()->state);
     }
 
     public function test_a_changed_definition_holds_before_any_instruction_with_one_owner_notice(): void
@@ -138,7 +138,7 @@ final class StopPreparationTest extends TestCase
         $held = $this->stopAgain();
         $stillHeld = $this->stopAgain();
 
-        $this->assertSame([StopPreparationState::Held, true], [$held->state, $held->tellsOwner]);
+        $this->assertSame([StopPreparationStatus::Held, true], [$held->state, $held->tellsOwner]);
         $reason = TestText::words(AgentText::of('core.stop.definitions_changed'));
         $this->assertSame(TestText::words(AgentText::of('core.stop.script_held', ['reason' => $reason])), TestText::words($held->message));
         $this->assertFalse($stillHeld->tellsOwner);

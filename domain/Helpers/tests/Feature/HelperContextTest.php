@@ -17,7 +17,7 @@ use App\Support\Inputs\Values\SessionStartDetails;
 use App\Support\ReminderContribution;
 use App\Support\Stack\StateFactory;
 use App\Values\StackTarget;
-use Domain\Helpers\Enums\JobState;
+use Domain\Helpers\Enums\JobStatus;
 use Domain\Helpers\Events\HelperJobHeld;
 use Domain\Helpers\Events\HelperJobSteered;
 use Domain\Helpers\Listeners\SupplyHelperNotices;
@@ -58,7 +58,7 @@ final class HelperContextTest extends TestCase
     {
         $receipt = $this->start((string) Str::ulid(), self::REVIEW_TITLE, self::PHASE_BRIEF);
 
-        $this->assertSame(JobState::Running, HelperJob::query()->acrossActors()->findOrFail($receipt->jobId)->state);
+        $this->assertSame(JobStatus::Running, HelperJob::query()->acrossActors()->findOrFail($receipt->jobId)->status);
     }
 
     public function test_a_helper_gets_its_brief_and_steering_again_after_a_compaction(): void

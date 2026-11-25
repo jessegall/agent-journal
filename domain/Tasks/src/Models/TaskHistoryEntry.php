@@ -12,7 +12,7 @@ use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use App\Values\ReadOrder;
 use Carbon\CarbonImmutable;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Values\TaskTransition;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -29,8 +29,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property int|null $run_number
  * @property string $actor_type
  * @property string $actor_id
- * @property TaskState $from_state
- * @property TaskState $to_state
+ * @property TaskStatus $from_state
+ * @property TaskStatus $to_state
  * @property string|null $text
  * @property int $sequence
  * @property CarbonImmutable $created_at
@@ -55,8 +55,8 @@ final class TaskHistoryEntry extends Model implements ReadableModel
     {
         return [
             'run_number' => 'integer',
-            'from_state' => TaskState::class,
-            'to_state' => TaskState::class,
+            'from_state' => TaskStatus::class,
+            'to_state' => TaskStatus::class,
             'sequence' => 'integer',
         ];
     }
@@ -72,7 +72,7 @@ final class TaskHistoryEntry extends Model implements ReadableModel
         Task $task,
         TaskRun|null $run,
         ActorIdentity $actor,
-        TaskState $fromState,
+        TaskStatus $fromState,
         string|null $text,
     ): self {
         $entry = new self();
@@ -82,7 +82,7 @@ final class TaskHistoryEntry extends Model implements ReadableModel
         $entry->actor_type = $actor->type;
         $entry->actor_id = $actor->id;
         $entry->from_state = $fromState;
-        $entry->to_state = $task->state;
+        $entry->to_state = $task->status;
         $entry->text = $text;
         $entry->sequence = self::lastSequenceOf($task->id) + 1;
 

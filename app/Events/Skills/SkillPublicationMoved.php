@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Events\Skills;
 
 use App\Contracts\Skills\SkillPublicationEvent;
-use App\Enums\Skills\PublicationState;
+use App\Enums\Skills\PublicationStatus;
 
 /**
  * A session's skill publication moved to another state: delivered, failed, waiting again, superseded or retired.
@@ -15,6 +15,6 @@ final readonly class SkillPublicationMoved extends SkillEvent implements SkillPu
     public function __construct(
         public string $publicationId,
         public string $sessionId,
-        public PublicationState $state,
+        public PublicationStatus $state,
     ) {}
 }

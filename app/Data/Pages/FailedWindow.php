@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Pages;
 
-use App\Enums\Web\WindowState;
+use App\Enums\Web\WindowStatus;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -18,14 +18,14 @@ final class FailedWindow extends Data
     public const string MESSAGE = 'This window could not be loaded.';
 
     public function __construct(
-        public readonly WindowState $state,
+        public readonly WindowStatus $state,
         public readonly string $message,
         public readonly string|null $reason = null,
     ) {}
 
     public static function make(): self
     {
-        return new self(WindowState::Failed, self::MESSAGE);
+        return new self(WindowStatus::Failed, self::MESSAGE);
     }
 
     /**
@@ -33,6 +33,6 @@ final class FailedWindow extends Data
      */
     public static function because(string $reason): self
     {
-        return new self(WindowState::Failed, self::MESSAGE, $reason);
+        return new self(WindowStatus::Failed, self::MESSAGE, $reason);
     }
 }

@@ -10,7 +10,7 @@ use App\Support\ActorIdentity;
 use App\Support\AutoAssignmentFact;
 use App\Support\AutoAssignmentKey;
 use App\Support\AutoAssignmentPage;
-use App\Support\AutoAssignmentStatus;
+use App\Support\AutoAssignmentView;
 use App\Support\IdListPage;
 use PhpOption\Option;
 
@@ -33,7 +33,7 @@ interface AutoAssignmentResolver
      * @throws AutoAssignmentDenied
      * @throws AssignmentDenied
      */
-    public function status(AutoAssignmentKey $key): AutoAssignmentStatus;
+    public function status(AutoAssignmentKey $key): AutoAssignmentView;
 
     /**
      * One page of the auto-assignments that are on, by id, for the engine's maintenance only.

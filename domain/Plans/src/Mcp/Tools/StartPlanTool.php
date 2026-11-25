@@ -8,7 +8,7 @@ use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use Domain\Plans\Commands\StartPlan\StartPlanCommand;
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanStatus;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -36,6 +36,6 @@ final class StartPlanTool extends PlanWriteTool
 
     protected function present(mixed $commandResult): ToolResult
     {
-        return ToolResult::ok(['state' => PlanState::Started->value]);
+        return ToolResult::ok(['state' => PlanStatus::Started->value]);
     }
 }

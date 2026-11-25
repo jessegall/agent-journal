@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\CommandRules\ReceiptState;
+use App\Enums\CommandRules\ReceiptStatus;
 
 /**
  * What the caller's receipt of one command under one request key says: its state, the result a completed command
@@ -17,7 +17,7 @@ final readonly class ReceiptAnswer
      * @param  array<string, mixed>  $fields
      */
     public function __construct(
-        public ReceiptState $state,
+        public ReceiptStatus $state,
         public string $result,
         public array $fields,
         public string $refusalCode,

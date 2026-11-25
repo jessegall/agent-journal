@@ -7,7 +7,7 @@ namespace Domain\Tasks\Data;
 use App\Data\Pages\SlotSectionData;
 use App\Support\AssignmentData;
 use Domain\Comments\Data\CommentList;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -29,7 +29,7 @@ final class TaskReaderData extends Data
     public function __construct(
         public readonly string $number,
         public readonly string $title,
-        public readonly TaskState $state,
+        public readonly TaskStatus $state,
         public readonly int $revision,
         public readonly string $brief,
         public readonly TaskActionsData $actions,
@@ -87,13 +87,13 @@ final class TaskReaderData extends Data
             'proofs' => $proofs instanceof Optional ? null : $proofs,
             'waits' => $waits instanceof Optional ? null : $waits,
             'waitActions' => $waitActions instanceof Optional ? null : $waitActions,
-            'blockReason' => $details->state === TaskState::Blocked && $details->text instanceof TaskText
+            'blockReason' => $details->state === TaskStatus::Blocked && $details->text instanceof TaskText
                 ? $details->text->blockReason
                 : null,
-            'resultNote' => $details->state === TaskState::Finished && $details->text instanceof TaskText
+            'resultNote' => $details->state === TaskStatus::Finished && $details->text instanceof TaskText
                 ? $details->text->resultNote
                 : null,
-            'cancelReason' => $details->state === TaskState::Cancelled && $details->text instanceof TaskText
+            'cancelReason' => $details->state === TaskStatus::Cancelled && $details->text instanceof TaskText
                 ? $details->text->cancelReason
                 : null,
         ], fn (mixed $readerValue) => $readerValue !== null));

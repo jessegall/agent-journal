@@ -11,9 +11,9 @@ use App\Commands\CommandRules\ReviseRuleProposal\ReviseRuleProposalCommand;
 use App\Commands\CommandRules\WithdrawRuleProposal\WithdrawRuleProposalCommand;
 use App\Enums\CommandRules\CommandClass;
 use App\Enums\CommandRules\CommandType;
-use App\Enums\CommandRules\ProposalState;
+use App\Enums\CommandRules\ProposalStatus;
 use App\Enums\CommandRules\RequestHoldReason;
-use App\Enums\CommandRules\RequestState;
+use App\Enums\CommandRules\RequestStatus;
 use App\Enums\CommandRules\ToolType;
 use App\Exceptions\DeclarationInvalid;
 use App\Exceptions\RuleProposalRefused;
@@ -52,9 +52,9 @@ final class RuleProposalCommandsTest extends TestCase
 
         $receipt = $this->propose('agent-1', $request, 'request-1', AcmeDeclarations::proposedVerify());
 
-        $this->assertSame(ProposalState::Pending, $receipt->state);
+        $this->assertSame(ProposalStatus::Pending, $receipt->state);
         $this->assertSame([], $receipt->missingFields);
-        $this->assertSame(RequestState::AwaitingSampleApproval, CommandRequest::query()->findOrFail($request)->state);
+        $this->assertSame(RequestStatus::AwaitingSampleApproval, CommandRequest::query()->findOrFail($request)->status);
         $this->assertSame(0, ClassificationRule::query()->count());
         $this->assertSame(0, RuleRevision::query()->count());
     }
@@ -74,9 +74,9 @@ final class RuleProposalCommandsTest extends TestCase
 
         $receipt = $this->propose('agent-1', $request, 'request-1', AcmeDeclarations::proposed($unproven));
 
-        $this->assertSame(ProposalState::Draft, $receipt->state);
+        $this->assertSame(ProposalStatus::Draft, $receipt->state);
         $this->assertSame(['contracts.0.exits'], $receipt->missingFields);
-        $this->assertSame(RequestState::CollectingDeclaration, CommandRequest::query()->findOrFail($request)->state);
+        $this->assertSame(RequestStatus::CollectingDeclaration, CommandRequest::query()->findOrFail($request)->status);
     }
 
     public function test_a_command_known_as_a_check_cannot_be_relabelled_as_ordinary(): void
@@ -131,7 +131,7 @@ final class RuleProposalCommandsTest extends TestCase
 
         $this->assertSame(2, $revised->revision);
         $this->assertSame(2, RuleProposal::query()->findOrFail($receipt->proposalId)->revisions()->count());
-        $this->assertSame(RequestState::AwaitingSampleApproval, CommandRequest::query()->findOrFail($request)->state);
+        $this->assertSame(RequestStatus::AwaitingSampleApproval, CommandRequest::query()->findOrFail($request)->status);
     }
 
     public function test_only_the_author_withdraws_and_a_withdrawn_proposal_takes_no_revision(): void
@@ -145,7 +145,7 @@ final class RuleProposalCommandsTest extends TestCase
         );
         $this->runAsAgentId('agent-1', new WithdrawRuleProposalCommand($receipt->proposalId));
 
-        $this->assertSame(ProposalState::Withdrawn, RuleProposal::query()->findOrFail($receipt->proposalId)->state);
+        $this->assertSame(ProposalStatus::Withdrawn, RuleProposal::query()->findOrFail($receipt->proposalId)->status);
         $this->assertThrows(
             fn () => $this->revise('agent-1', $receipt->proposalId, 1),
             RuleProposalRefused::class,
@@ -164,7 +164,7 @@ final class RuleProposalCommandsTest extends TestCase
         $receipts = $this->runAsAgentId('agent-1', new ImportRuleProposalsCommand($file))->receipts;
 
         $this->assertCount(1, $receipts);
-        $this->assertSame(ProposalState::Pending, $receipts[0]->state);
+        $this->assertSame(ProposalStatus::Pending, $receipts[0]->state);
         $proposal = RuleProposal::query()->findOrFail($receipts[0]->proposalId);
         $this->assertEquals(AcmeDeclarations::verify(), $proposal->revisions()->firstOrFail()->payload);
         $this->assertSame(0, ClassificationRule::query()->count());

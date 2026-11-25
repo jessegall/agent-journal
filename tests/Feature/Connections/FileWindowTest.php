@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Connections;
 
 use App\Contracts\Assignments\AssignmentTransaction;
-use App\Enums\Connections\FileWindowState;
+use App\Enums\Connections\FileWindowStatus;
 use App\Enums\Projects\ProjectReadFailure;
 use App\Http\Pages\Resolvers\FileWindowResolver;
 use App\Models\Access\User;
@@ -60,13 +60,13 @@ final class FileWindowTest extends TestCase
     public function test_a_file_waits_for_the_host_then_shows_its_lines_and_digest(): void
     {
         $this->readyFolder();
-        $this->assertState(self::README, FileWindowState::Pending);
+        $this->assertState(self::README, FileWindowStatus::Pending);
 
         $text = "# Shop\r\n\nhello";
         $this->readOf(self::README)->answerWithText(new ProjectFileText($text, hash('sha256', $text), 15), false);
 
         $this->window(self::README, fn (AssertableInertia $window) => $window
-            ->where(self::PROP.'.data.state', FileWindowState::Ready->value)
+            ->where(self::PROP.'.data.state', FileWindowStatus::Ready->value)
             ->where(self::PROP.'.data.lines', ['# Shop', '', 'hello'])
             ->where(self::PROP.'.data.isMarkdown', true)
             ->where(self::PROP.'.data.digest', hash('sha256', $text)));
@@ -75,13 +75,13 @@ final class FileWindowTest extends TestCase
     public function test_a_long_line_is_cut_and_named_and_a_file_cut_by_its_host_is_too_large(): void
     {
         $this->readyFolder();
-        $this->assertState('big.txt', FileWindowState::Pending);
+        $this->assertState('big.txt', FileWindowStatus::Pending);
 
         $text = str_repeat('a', FileWindowResolver::LINE_CHARACTER_LIMIT + 1)."\nend";
         $this->readOf('big.txt')->answerWithText(new ProjectFileText($text, hash('sha256', $text), 900000), true);
 
         $this->window('big.txt', fn (AssertableInertia $window) => $window
-            ->where(self::PROP.'.data.state', FileWindowState::TooLarge->value)
+            ->where(self::PROP.'.data.state', FileWindowStatus::TooLarge->value)
             ->where(self::PROP.'.data.cutLineNumbers', [1])
             ->where(self::PROP.'.data.lines.1', 'end')
             ->where(self::PROP.'.data.isTruncated', true));
@@ -90,29 +90,29 @@ final class FileWindowTest extends TestCase
     public function test_a_binary_file_and_a_missing_one_are_named(): void
     {
         $this->readyFolder();
-        $this->assertState('image.png', FileWindowState::Pending);
-        $this->assertState('gone.txt', FileWindowState::Pending);
+        $this->assertState('image.png', FileWindowStatus::Pending);
+        $this->assertState('gone.txt', FileWindowStatus::Pending);
 
         $this->readOf('image.png')->fail(ProjectReadFailure::Binary);
         $this->readOf('gone.txt')->fail(ProjectReadFailure::Missing);
 
-        $this->assertState('image.png', FileWindowState::Binary);
-        $this->assertState('gone.txt', FileWindowState::Failed);
+        $this->assertState('image.png', FileWindowStatus::Binary);
+        $this->assertState('gone.txt', FileWindowStatus::Failed);
     }
 
     public function test_no_path_is_empty_and_no_project_is_none(): void
     {
-        $this->assertState(self::README, FileWindowState::None);
+        $this->assertState(self::README, FileWindowStatus::None);
 
         $this->readyFolder();
 
-        $this->assertState('', FileWindowState::Empty);
+        $this->assertState('', FileWindowStatus::Empty);
     }
 
     public function test_a_comment_on_lines_of_the_kept_version_shows_as_its_thread_once(): void
     {
         $this->readyFolder();
-        $this->assertState(self::README, FileWindowState::Pending);
+        $this->assertState(self::README, FileWindowStatus::Pending);
         $text = "one\ntwo\nthree";
         $digest = hash('sha256', $text);
         $read = $this->readOf(self::README);
@@ -174,7 +174,7 @@ final class FileWindowTest extends TestCase
             fn (AssertableInertia $page) => $page->reloadOnly(
                 [self::PROP, 'window_connections_project'],
                 fn (AssertableInertia $windows) => $windows
-                    ->where(self::PROP.'.data.state', FileWindowState::Pending->value)
+                    ->where(self::PROP.'.data.state', FileWindowStatus::Pending->value)
                     ->where('window_connections_project.state', 'ready'),
             ),
         );
@@ -197,7 +197,7 @@ final class FileWindowTest extends TestCase
         return ProjectRead::query()->where('path', $path)->firstOrFail();
     }
 
-    private function assertState(string $path, FileWindowState $state): void
+    private function assertState(string $path, FileWindowStatus $state): void
     {
         $this->window($path, fn (AssertableInertia $window) => $window->where(self::PROP.'.data.state', $state->value));
     }

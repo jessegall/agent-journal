@@ -8,7 +8,7 @@ use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Processes\StopPreparer;
 use App\Contracts\Scripts\ProfileScripts;
 use App\Contracts\Scripts\ScriptChecks;
-use App\Enums\Profiles\ProfileRunState;
+use App\Enums\Profiles\ProfileRunStatus;
 use App\Models\Profiles\ProfileRun;
 use App\Models\Profiles\ProfileStepResult;
 use App\Values\AgentText;
@@ -71,7 +71,7 @@ final readonly class ScriptStopPreparation implements StopPreparer
             $request->trigger,
         );
 
-        if (! $run->state->isUnfinished()) {
+        if (! $run->status->isUnfinished()) {
             return $this->answer($run, tellsOwner: false);
         }
 
@@ -116,10 +116,10 @@ final readonly class ScriptStopPreparation implements StopPreparer
 
         $unchanged = $run->previous()->filter(fn (ProfileRun $previous) => $previous->generation === $run->generation);
 
-        $held = $unchanged->filter(fn (ProfileRun $previous) => $previous->state === ProfileRunState::Held);
+        $held = $unchanged->filter(fn (ProfileRun $previous) => $previous->status === ProfileRunStatus::Held);
 
         if ($held->isDefined()) {
-            $run->finish(ProfileRunState::Held, (string) $held->get()->message, $held->get()->unchanged_returns);
+            $run->finish(ProfileRunStatus::Held, (string) $held->get()->message, $held->get()->unchanged_returns);
 
             return $this->answer($run, tellsOwner: false);
         }
@@ -147,7 +147,7 @@ final readonly class ScriptStopPreparation implements StopPreparer
         }
 
         if ($next === $handler->policy->fallthrough) {
-            $run->finish(ProfileRunState::FinalChecks, '', 0);
+            $run->finish(ProfileRunStatus::FinalChecks, '', 0);
 
             return StopPreparation::finalChecks();
         }
@@ -162,7 +162,7 @@ final readonly class ScriptStopPreparation implements StopPreparer
             return $this->hold($run, $reason, $unchangedReturns);
         }
 
-        $run->finish(ProfileRunState::Returned, $evidence, $unchangedReturns);
+        $run->finish(ProfileRunStatus::Returned, $evidence, $unchangedReturns);
 
         return StopPreparation::returnToActor($evidence);
     }
@@ -200,18 +200,18 @@ final readonly class ScriptStopPreparation implements StopPreparer
     private function hold(ProfileRun $run, AgentText $reason, int $unchangedReturns): StopPreparation
     {
         $wasHeld = $run->followsHeldRun();
-        $run->finish(ProfileRunState::Held, $this->texts->render($reason), $unchangedReturns);
+        $run->finish(ProfileRunStatus::Held, $this->texts->render($reason), $unchangedReturns);
 
         return $this->answer($run, tellsOwner: ! $wasHeld);
     }
 
     private function answer(ProfileRun $run, bool $tellsOwner): StopPreparation
     {
-        return match ($run->state) {
-            ProfileRunState::Running, ProfileRunState::Suspended => StopPreparation::preparing(),
-            ProfileRunState::FinalChecks => StopPreparation::finalChecks(),
-            ProfileRunState::Returned => StopPreparation::returnToActor((string) $run->message),
-            ProfileRunState::Held => StopPreparation::held((string) $run->message, $tellsOwner),
+        return match ($run->status) {
+            ProfileRunStatus::Running, ProfileRunStatus::Suspended => StopPreparation::preparing(),
+            ProfileRunStatus::FinalChecks => StopPreparation::finalChecks(),
+            ProfileRunStatus::Returned => StopPreparation::returnToActor((string) $run->message),
+            ProfileRunStatus::Held => StopPreparation::held((string) $run->message, $tellsOwner),
         };
     }
 

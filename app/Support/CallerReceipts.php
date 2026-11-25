@@ -27,7 +27,7 @@ final readonly class CallerReceipts implements CallerReceiptsContract
         $answered = $receipt->result->value ?? '';
 
         return [new ReceiptAnswer(
-            $receipt->state,
+            $receipt->status,
             is_array($answered) ? '' : (string) $answered,
             is_array($answered) ? $answered : [],
             (string) $receipt->refusal_code,

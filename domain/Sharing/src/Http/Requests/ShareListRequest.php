@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sharing\Http\Requests;
 
 use Domain\Sharing\Data\ShareFiltersData;
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -20,7 +20,7 @@ final class ShareListRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'state' => ['nullable', Rule::enum(ShareState::class)],
+            'state' => ['nullable', Rule::enum(ShareStatus::class)],
             'rootType' => ['nullable', 'string', 'max:100'],
             'gateway' => ['nullable', 'string', 'ulid'],
             'expiresBefore' => ['nullable', 'date'],
@@ -37,7 +37,7 @@ final class ShareListRequest extends FormRequest
             'after' => $this->filled('after') ? $this->string('after')->toString() : null,
         ];
 
-        $state = $this->enum('state', ShareState::class);
+        $state = $this->enum('state', ShareStatus::class);
 
         return ShareFiltersData::from($state === null ? $filters : [...$filters, 'state' => $state]);
     }

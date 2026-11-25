@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Enums\Runs\LifecycleState;
+use App\Enums\Runs\LifecycleStatus;
 use App\Models\Runs\ProcessRun;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
@@ -47,7 +47,7 @@ final class RunPageTest extends TestCase
 
         $this->actingAs($this->owner)->post("/processes/runs/{$run->id}/stop")->assertStatus(303);
 
-        $this->assertSame(LifecycleState::Stopped, $run->refresh()->lifecycle);
+        $this->assertSame(LifecycleStatus::Stopped, $run->refresh()->lifecycle);
         config(['processes.project_key' => 'another-project']);
         $this->actingAs($this->owner)->get("/processes/runs/{$run->id}")->assertOk()->assertInertia(fn (
             AssertableInertia $page,

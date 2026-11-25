@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\Skills\PublicationState;
+use App\Enums\Skills\PublicationStatus;
 use App\Enums\Skills\ReadEvidence;
 use App\Models\Skills\SkillContextEpoch;
 use App\Models\Skills\SkillGeneration;
@@ -24,7 +24,7 @@ final readonly class SkillReads
     {
         $publication = SkillPublication::findLatestOfSession($sessionId);
 
-        if ($publication === null || $publication->state !== PublicationState::Delivered) {
+        if ($publication === null || $publication->status !== PublicationStatus::Delivered) {
             return false;
         }
 

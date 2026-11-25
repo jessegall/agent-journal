@@ -79,7 +79,7 @@ final class SignInReceiptTest extends TestCase
         $receipt = $this->receipt('tab-2')->assertOk();
         $this->assertSame($attempt->id, $receipt->json('attemptId'));
         $this->assertSame('api_key', $receipt->json('method'));
-        $this->assertSame($attempt->refresh()->state->value, $receipt->json('state'));
+        $this->assertSame($attempt->refresh()->status->value, $receipt->json('state'));
         $this->assertFalse($attempt->isLive());
     }
 

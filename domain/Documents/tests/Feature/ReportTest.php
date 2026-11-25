@@ -12,7 +12,7 @@ use Domain\Documents\Commands\BeginUpload\BeginUploadCommand;
 use Domain\Documents\Commands\CommitUpload\CommitUploadCommand;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Contracts\Reports\ReportResolver;
-use Domain\Documents\Enums\AttentionState;
+use Domain\Documents\Enums\AttentionStatus;
 use Domain\Documents\Enums\UploadType;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Models\TextUpload;
@@ -93,7 +93,7 @@ final class ReportTest extends TestCase
 
         $report = Report::query()->findOrFail($id);
         $this->assertSame($findings, $report->body);
-        $this->assertSame(AttentionState::Settled, $report->attention);
+        $this->assertSame(AttentionStatus::Settled, $report->attention);
         $this->assertSame($reviewer->agent->id, $report->creator_id);
         $links = $this->app->make(IdentityLinks::class);
         $this->assertSame([$source->id], array_column($links->linkedOfType($report, 'documents.document'), 'id'));

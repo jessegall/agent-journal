@@ -15,11 +15,11 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Accounts\AccountCheckResult;
 use App\Enums\Accounts\AccountProcessRole;
-use App\Enums\Accounts\AccountState;
+use App\Enums\Accounts\AccountStatus;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Accounts\SignInMethod;
-use App\Enums\Accounts\SignInState;
-use App\Enums\Agents\SessionProcessState;
+use App\Enums\Accounts\SignInStatus;
+use App\Enums\Agents\SessionProcessStatus;
 use App\Exceptions\AccountRecheckRefused;
 use App\Exceptions\AccountUnavailable;
 use App\Exceptions\SignInAttemptStale;
@@ -108,7 +108,7 @@ final class SignInAgainTest extends TestCase
         $this->reconcile();
         $this->assertNull($this->claimSignIn('host', CarbonImmutable::now()));
 
-        DB::table('session_processes')->update(['state' => SessionProcessState::Stopped->value]);
+        DB::table('session_processes')->update(['status' => SessionProcessStatus::Stopped->value]);
         $this->reconcile();
 
         $this->assertSame($attemptId, $this->claimSignIn('host', CarbonImmutable::now())?->id);
@@ -138,7 +138,7 @@ final class SignInAgainTest extends TestCase
 
         $this->assertSame($staging, $this->account->refresh()->directory);
         $attempt = SignInAttempt::query()->whereKey($attemptId)->sole();
-        $this->assertSame(SignInState::Complete, $attempt->state);
+        $this->assertSame(SignInStatus::Complete, $attempt->status);
         $this->assertSame($saved, $attempt->directory);
         $this->assertTrue($attempt->cleanup_pending);
         $this->assertSame($attemptId, SignInAttempt::findNextDueForCleanup()?->id);
@@ -149,8 +149,8 @@ final class SignInAgainTest extends TestCase
         $saved = (string) $this->account->directory;
 
         $outcomes = [
-            [self::proved('subject-2'), SignInState::DifferentAccount],
-            [SignInIdentity::shown('me@example.com'), SignInState::Unverified],
+            [self::proved('subject-2'), SignInStatus::DifferentAccount],
+            [SignInIdentity::shown('me@example.com'), SignInStatus::Unverified],
         ];
 
         foreach ($outcomes as [$identity, $expected]) {
@@ -159,7 +159,7 @@ final class SignInAgainTest extends TestCase
 
             $this->asHost(new CompleteSignInCommand($attemptId, $generation, $identity));
 
-            $state = SignInAttempt::query()->whereKey($attemptId)->sole()->state;
+            $state = SignInAttempt::query()->whereKey($attemptId)->sole()->status;
             $this->assertSame($expected, $state);
             $this->assertSame($saved, $this->account->refresh()->directory);
             $this->assertNull($this->account->live_writer_attempt_id);
@@ -195,7 +195,7 @@ final class SignInAgainTest extends TestCase
 
         $this->asHost(new CompleteSignInCommand($attemptId, $attempt->generation, SignInIdentity::unproved()));
 
-        $this->assertSame(SignInState::AlreadyAdded, $attempt->refresh()->state);
+        $this->assertSame(SignInStatus::AlreadyAdded, $attempt->refresh()->status);
         $this->assertSame($saved, $this->account->refresh()->directory);
     }
 
@@ -257,7 +257,7 @@ final class SignInAgainTest extends TestCase
 
         $this->account->refresh();
         $this->assertFalse($this->account->maintenance);
-        $this->assertSame(AccountState::Authenticated, $this->account->state);
+        $this->assertSame(AccountStatus::Authenticated, $this->account->status);
         $this->assertSame($this->account->id, $this->chosen());
     }
 
@@ -290,13 +290,13 @@ final class SignInAgainTest extends TestCase
 
         $this->asHost(new CheckAccountCommand('host', $this->account->id, $generation, AccountCheckResult::SignedOut));
 
-        $this->assertSame(AccountState::Unauthenticated, $this->account->refresh()->state);
+        $this->assertSame(AccountStatus::Unauthenticated, $this->account->refresh()->status);
         $this->assertNull($this->chosen());
     }
 
     public function test_a_failed_renewal_of_an_account_that_needed_sign_in_lets_it_go_at_once(): void
     {
-        $this->account->forceFill(['state' => AccountState::Unauthenticated])->save();
+        $this->account->forceFill(['status' => AccountStatus::Unauthenticated])->save();
         [$label, $folder] = [$this->account->label, $this->account->directory];
 
         $this->cancel($this->again('tab-1'));
@@ -305,8 +305,8 @@ final class SignInAgainTest extends TestCase
         $this->assertFalse($this->account->maintenance);
         $this->assertFalse($this->account->isHeldForCheck());
         $this->assertNull($this->account->live_writer_attempt_id);
-        $this->assertSame([AccountState::Unauthenticated, $label, $folder], [
-            $this->account->state,
+        $this->assertSame([AccountStatus::Unauthenticated, $label, $folder], [
+            $this->account->status,
             $this->account->label,
             $this->account->directory,
         ]);
@@ -325,10 +325,10 @@ final class SignInAgainTest extends TestCase
             SignInAttemptStale::class,
         );
 
-        $this->assertSame(SignInState::Cancelled, SignInAttempt::query()->whereKey($attemptId)->sole()->state);
+        $this->assertSame(SignInStatus::Cancelled, SignInAttempt::query()->whereKey($attemptId)->sole()->status);
         $this->account->refresh();
         $this->assertSame($folder, $this->account->directory);
-        $this->assertNotSame(AccountState::Authenticated, $this->account->state);
+        $this->assertNotSame(AccountStatus::Authenticated, $this->account->status);
         $this->assertNull($this->chosen());
     }
 
@@ -388,7 +388,7 @@ final class SignInAgainTest extends TestCase
             'account_id' => $this->account->id,
             'account_generation' => $this->account->sign_in_generation,
             'directory' => (string) $this->account->directory,
-            'state' => SessionProcessState::Running->value,
+            'status' => SessionProcessStatus::Running->value,
             'role' => AccountProcessRole::Execution->value,
             'created_at' => now(),
             'updated_at' => now(),

@@ -8,7 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Runs\AssessmentOutcome;
-use App\Enums\Runs\InterpretationState;
+use App\Enums\Runs\InterpretationStatus;
 use App\Enums\Runs\ProblemCode;
 use App\Exceptions\RevisionImmutable;
 use App\Models\CommandRules\RuleRevision;
@@ -28,7 +28,7 @@ use Spatie\LaravelData\DataCollection;
  * @property string $part_run_id
  * @property string $reader_revision_id
  * @property string $rule_revision_id
- * @property InterpretationState $interpretation
+ * @property InterpretationStatus $interpretation
  * @property AssessmentOutcome $outcome
  * @property DataCollection<int, OutputProblem> $problems
  * @property array<string,int> $counts
@@ -55,7 +55,7 @@ final class OutputAssessment extends Model implements ReadableModel
     protected function casts(): array
     {
         return [
-            'interpretation' => InterpretationState::class,
+            'interpretation' => InterpretationStatus::class,
             'outcome' => AssessmentOutcome::class,
             'problems' => DataCollection::class.':'.OutputProblem::class,
             'counts' => 'array',
@@ -104,7 +104,7 @@ final class OutputAssessment extends Model implements ReadableModel
 
     public function isValid(): bool
     {
-        return $this->interpretation === InterpretationState::Valid && $this->problems->items() === [];
+        return $this->interpretation === InterpretationStatus::Valid && $this->problems->items() === [];
     }
 
     // ----------[ Asserts ]----------
@@ -124,17 +124,17 @@ final class OutputAssessment extends Model implements ReadableModel
     /**
      * @param  list<OutputProblem>  $problems
      */
-    private static function interpretationOf(array $problems): InterpretationState
+    private static function interpretationOf(array $problems): InterpretationStatus
     {
         if ($problems === []) {
-            return InterpretationState::Valid;
+            return InterpretationStatus::Valid;
         }
 
         if (array_any($problems, fn (OutputProblem $problem) => $problem->code === ProblemCode::ReaderFailed)) {
-            return InterpretationState::ReaderFailed;
+            return InterpretationStatus::ReaderFailed;
         }
 
-        return InterpretationState::Invalid;
+        return InterpretationStatus::Invalid;
     }
 
     // ----------[ Queries ]----------

@@ -7,7 +7,7 @@ namespace Domain\Tasks\Resolvers;
 use App\Contracts\Actors\CurrentActor;
 use App\Support\RecordIdentity;
 use Domain\Tasks\Contracts\TaskAssignmentResolver as TaskAssignmentResolverContract;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Values\TaskAssignmentCompletion;
@@ -51,7 +51,7 @@ final readonly class TaskAssignmentResolver implements TaskAssignmentResolverCon
 
     /**
      * @param  list<string>  $ids
-     * @return array<string, TaskState>
+     * @return array<string, TaskStatus>
      *
      * @throws TaskMissing
      */
@@ -62,7 +62,7 @@ final readonly class TaskAssignmentResolver implements TaskAssignmentResolverCon
 
         $states = Task::query()->whereKey($requestedTaskIds)->readExactly(
             count($requestedTaskIds),
-        )->oldestFirst()->pluck('state', 'id')->all();
+        )->oldestFirst()->pluck('status', 'id')->all();
 
         foreach ($requestedTaskIds as $taskId) {
             if (! array_key_exists($taskId, $states)) {

@@ -14,7 +14,7 @@ use App\Support\ActorIdentity;
 use App\Support\DomainRegistry;
 use App\Support\StartSessions;
 use Domain\Chat\Http\Requests\ConversationRequest;
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Illuminate\Support\Str;
@@ -192,7 +192,7 @@ final class HomePageTest extends TestCase
     public function test_chats_dock_shows_the_plans_waiting_for_review_beside_the_chosen_session(): void
     {
         $waiting = Plan::factory()->create(['title' => 'Review the dock', 'type' => PlanType::Build]);
-        Plan::query()->whereKey($waiting->id)->update(['state' => PlanState::Reviewing->value]);
+        Plan::query()->whereKey($waiting->id)->update(['status' => PlanStatus::Reviewing->value]);
 
         $this->actingAs($this->owner)->get(
             "/chat?session={$this->session->id}",

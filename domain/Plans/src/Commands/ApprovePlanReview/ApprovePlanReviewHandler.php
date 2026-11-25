@@ -6,7 +6,7 @@ namespace Domain\Plans\Commands\ApprovePlanReview;
 
 use App\Support\ActorIdentity;
 use Domain\Plans\Commands\Support\PlanCommandHandler;
-use Domain\Plans\Enums\PlanReviewState;
+use Domain\Plans\Enums\PlanReviewStatus;
 use Domain\Plans\Exceptions\PlanReviewRefused;
 use Domain\Plans\Support\PlanReviewDecision;
 
@@ -23,7 +23,7 @@ final readonly class ApprovePlanReviewHandler extends PlanCommandHandler
     {
         [$plan, $edition] = $this->decision->certified($command->planId, $command->editionNumber);
         $edition->approve(ActorIdentity::of($command->dispatchedBy()), $command->requestKey);
-        $plan->settleReview($edition->id, PlanReviewState::Approved);
+        $plan->settleReview($edition->id, PlanReviewStatus::Approved);
 
         return $edition->id;
     }

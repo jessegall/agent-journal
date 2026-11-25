@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Contracts\Actors\CurrentActorSetter;
-use App\Enums\Navigation\MenuEntryState;
+use App\Enums\Navigation\MenuEntryStatus;
 use App\Enums\Navigation\NavigationCompletion;
 use App\Models\Access\User;
 use App\Models\Drivers\MenuEntry;
@@ -74,7 +74,7 @@ final class MenuEntryTest extends TestCase
         $this->assertSame(true, $entry->buildOn('2.1.323')?->isStale);
         $this->assertSame(false, $entry->buildOn('2.2.0')?->isStale);
         $this->assertSame(['Model: <redacted>'], $entry->buildOn('2.1.323')?->staleScreen);
-        $this->assertSame(MenuEntryState::Current, $entry->state);
+        $this->assertSame(MenuEntryStatus::Current, $entry->status);
     }
 
     public function test_an_entry_is_used_superseded_and_retired_but_kept(): void
@@ -87,8 +87,8 @@ final class MenuEntryTest extends TestCase
         $newer->retire();
 
         $this->assertSame(1, $entry->fresh()?->uses);
-        $this->assertSame([MenuEntryState::Superseded, $newer->id], [$entry->state, $entry->superseded_by_id]);
-        $this->assertSame(MenuEntryState::Retired, $newer->fresh()?->state);
+        $this->assertSame([MenuEntryStatus::Superseded, $newer->id], [$entry->status, $entry->superseded_by_id]);
+        $this->assertSame(MenuEntryStatus::Retired, $newer->fresh()?->status);
         $this->assertSame(0, MenuEntry::query()->current()->count());
         $this->assertSame(2, MenuEntry::query()->count());
     }

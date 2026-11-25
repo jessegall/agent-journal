@@ -12,7 +12,7 @@ use App\Data\Accounts\SignInAttemptData;
 use App\Enums\Accounts\SignInMethod;
 use App\Enums\Accounts\SignInOutcome;
 use App\Enums\Accounts\SignInRefusal;
-use App\Enums\Accounts\SignInState;
+use App\Enums\Accounts\SignInStatus;
 use App\Exceptions\SignInMethodMissing;
 use App\Jobs\SignInDeadline;
 use App\Models\Access\User;
@@ -97,11 +97,11 @@ final class SignInHostTest extends TestCase
         $this->signed($host, '/host/sign-ins/claim')->assertNoContent();
 
         $this->notify($host, $attemptId, 'waiting')->assertNoContent();
-        $this->assertSame(SignInState::Waiting, $this->signInAttempt($attemptId)->state);
+        $this->assertSame(SignInStatus::Waiting, $this->signInAttempt($attemptId)->status);
         $proof = ['display' => 'work@example.test', 'subject' => 'subject-1', 'workspace' => 'workspace-1'];
         $this->notify($host, $attemptId, 'verified', $proof)->assertNoContent();
 
-        $this->assertSame(SignInState::Complete, $this->signInAttempt($attemptId)->state);
+        $this->assertSame(SignInStatus::Complete, $this->signInAttempt($attemptId)->status);
         $account = Account::query()->withoutGlobalScopes()->sole();
         $this->assertSame(
             ['work@example.test', 'subject-1', 'workspace-1'],
@@ -156,7 +156,7 @@ final class SignInHostTest extends TestCase
             ->assertNoContent();
 
         $attempt = $this->signInAttempt($attemptId);
-        $this->assertSame(SignInState::Failed, $attempt->state);
+        $this->assertSame(SignInStatus::Failed, $attempt->status);
         $this->assertSame(
             SignInRefusal::RejectedCredential->text(),
             SignInAttemptData::fromAttempt($attempt->load('resultAccount'))->refusal,
@@ -173,7 +173,7 @@ final class SignInHostTest extends TestCase
         $this->notify($other, $attemptId, 'failed')->assertNotFound();
         $this->call('POST', '/host/sign-ins/claim')->assertUnauthorized();
 
-        $this->assertSame(SignInState::Starting, $this->signInAttempt($attemptId)->state);
+        $this->assertSame(SignInStatus::Starting, $this->signInAttempt($attemptId)->status);
     }
 
     public function test_the_challenge_reaches_only_the_owner_no_store_and_a_typed_code_reaches_the_host_once(): void
@@ -220,7 +220,7 @@ final class SignInHostTest extends TestCase
 
         $this->signed($host, "/host/sign-ins/{$attemptId}/code", ['generation' => 0])
             ->assertExactJson(['live' => false, 'code' => null]);
-        $this->assertSame(SignInState::Cancelled, $this->signInAttempt($attemptId)->state);
+        $this->assertSame(SignInStatus::Cancelled, $this->signInAttempt($attemptId)->status);
         $read = $this->actingAs($owner)->post("/accounts/sign-ins/{$attemptId}/challenge");
         $this->assertNull($read->json('address'));
     }
@@ -256,7 +256,7 @@ final class SignInHostTest extends TestCase
         $this->notify($host, $attemptId, 'interrupted')->assertNoContent();
 
         $attempt = $this->signInAttempt($attemptId);
-        $this->assertSame(SignInState::Interrupted, $attempt->state);
+        $this->assertSame(SignInStatus::Interrupted, $attempt->status);
         $this->assertNull($attempt->refusal);
         $this->assertNull($this->app->make(SignInChallenges::class)->takeCode($attempt));
     }
@@ -338,7 +338,7 @@ final class SignInHostTest extends TestCase
         $this->notify($host, $attemptId, 'failed', ['refusal' => 'Too late'])->assertNoContent();
 
         $attempt = $this->signInAttempt($attemptId);
-        $this->assertSame(SignInState::Expired, $attempt->state);
+        $this->assertSame(SignInStatus::Expired, $attempt->status);
         $this->assertNull($attempt->refusal);
         $this->assertSame(0, Account::query()->withoutGlobalScopes()->count());
         $this->assertNull($this->app->make(SignInChallenges::class)->challengeOf($attemptId));

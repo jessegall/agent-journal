@@ -9,7 +9,7 @@ use App\Commands\CommandRules\SaveCommandRule\SaveCommandRuleCommand;
 use App\Contracts\Bus\CommandClassifier;
 use App\Enums\CommandRules\CommandClass;
 use App\Enums\Processes\ShellDialect;
-use App\Enums\Runs\LifecycleState;
+use App\Enums\Runs\LifecycleStatus;
 use App\Models\Agents\Agent;
 use App\Models\CommandRules\ClassificationRule;
 use App\Models\Runs\PartRun;
@@ -92,8 +92,8 @@ final class StaleAdmissionTest extends TestCase
         );
 
         $parts = PartRun::query()->where('process_run_id', $run->id)->orderBy('syntax_node')->get();
-        $this->assertSame(LifecycleState::Ended, $parts[0]->lifecycle);
-        $this->assertSame(LifecycleState::Skipped, $parts[1]->lifecycle);
+        $this->assertSame(LifecycleStatus::Ended, $parts[0]->lifecycle);
+        $this->assertSame(LifecycleStatus::Skipped, $parts[1]->lifecycle);
         $this->assertStringContainsString(self::RETIRED_PRINTF, $parts[1]->skip_reason);
     }
 

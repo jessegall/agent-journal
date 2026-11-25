@@ -11,7 +11,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Accounts\AccountProcessRole;
-use App\Enums\Agents\SessionProcessState;
+use App\Enums\Agents\SessionProcessStatus;
 use App\Enums\Sessions\SessionStatus;
 use App\Enums\Sessions\TransportProfileType;
 use App\Events\Sessions\SessionProcessCancelled;
@@ -46,7 +46,7 @@ use Illuminate\Support\Str;
  * @property string $account_id
  * @property int $account_generation
  * @property string $directory
- * @property SessionProcessState $state
+ * @property SessionProcessStatus $status
  * @property TransportProfileType $transport_profile
  * @property AccountProcessRole $role
  * @property string|null $owner_start_id
@@ -83,7 +83,7 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
     protected function casts(): array
     {
         return [
-            'state' => SessionProcessState::class,
+            'status' => SessionProcessStatus::class,
             'transport_profile' => TransportProfileType::class,
             'role' => AccountProcessRole::class,
             'account_generation' => 'integer',
@@ -110,7 +110,7 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
         $start->account_id = $account->record->id;
         $start->account_generation = $account->generation;
         $start->directory = $account->directory;
-        $start->state = SessionProcessState::Pending;
+        $start->status = SessionProcessStatus::Pending;
         $start->transport_profile = $transport;
         $start->role = AccountProcessRole::Execution;
         $start->save();
@@ -136,11 +136,11 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
      */
     public function recordRunning(string $executionId): bool
     {
-        if ($this->state !== SessionProcessState::Starting) {
+        if ($this->status !== SessionProcessStatus::Starting) {
             return false;
         }
 
-        $this->state = SessionProcessState::Running;
+        $this->status = SessionProcessStatus::Running;
         $this->execution_id = $executionId;
         $this->save();
         $this->raise(new SessionProcessSeenRunning($this->id, $executionId));
@@ -153,11 +153,11 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
      */
     public function stopWithProof(): bool
     {
-        if (! in_array($this->state, SessionProcessState::unresolved(), true)) {
+        if (! in_array($this->status, SessionProcessStatus::unresolved(), true)) {
             return false;
         }
 
-        $this->state = SessionProcessState::Stopped;
+        $this->status = SessionProcessStatus::Stopped;
         $this->ended_at = CarbonImmutable::now();
         $this->save();
         $this->raise(new SessionProcessStopped($this->id));
@@ -171,11 +171,11 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
      */
     public function claim(): bool
     {
-        if ($this->state !== SessionProcessState::Pending) {
+        if ($this->status !== SessionProcessStatus::Pending) {
             return false;
         }
 
-        $this->state = SessionProcessState::Starting;
+        $this->status = SessionProcessStatus::Starting;
         $this->save();
         $this->raise(new SessionProcessClaimed($this->id));
 
@@ -198,7 +198,7 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
      */
     public function refuse(string $refusal): void
     {
-        $this->state = SessionProcessState::Stopped;
+        $this->status = SessionProcessStatus::Stopped;
         $this->ended_at = CarbonImmutable::now();
         $this->refusal = $refusal;
         $this->assertSaved($this->save());
@@ -210,7 +210,7 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
      */
     public function cancelPending(): void
     {
-        $this->state = SessionProcessState::Cancelled;
+        $this->status = SessionProcessStatus::Cancelled;
         $this->ended_at = CarbonImmutable::now();
         $this->save();
         $this->raise(new SessionProcessCancelled($this->id));
@@ -394,8 +394,8 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function unresolved(Builder $query): void
     {
-        $states = array_map(fn (SessionProcessState $state) => $state->value, SessionProcessState::unresolved());
-        $query->whereIn('state', $states);
+        $states = array_map(fn (SessionProcessStatus $state) => $state->value, SessionProcessStatus::unresolved());
+        $query->whereIn('status', $states);
     }
 
     /**
@@ -497,7 +497,7 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function pending(Builder $query): void
     {
-        $query->where('state', SessionProcessState::Pending->value);
+        $query->where('status', SessionProcessStatus::Pending->value);
     }
 
     /**
@@ -527,7 +527,7 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
         Builder $unreachableHosts,
         bool $isAnyHostReachable,
     ): void {
-        $query->where('state', SessionProcessState::Pending->value)
+        $query->where('status', SessionProcessStatus::Pending->value)
             ->where(fn ($starts) => $starts
                 ->where('created_at', '<=', $hostWaitEnd)
                 ->orWhere(fn ($reachable) => $reachable

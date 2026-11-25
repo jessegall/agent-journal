@@ -51,7 +51,7 @@ final readonly class HelperJobsLayoutResolver implements PageResolver
                         fn (HelperJob $job) => LayoutRowData::from([
                             'key' => $job->id,
                             'label' => Str::limit($job->brief, 80),
-                            'value' => $job->state->label(),
+                            'value' => $job->status->label(),
                         ]),
                     )->all(),
                 ),

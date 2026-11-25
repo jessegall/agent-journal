@@ -14,8 +14,8 @@ use Domain\Plans\Commands\EditPlan\EditPlanCommand;
 use Domain\Plans\Commands\RequestPlanReview\RequestPlanReviewCommand;
 use Domain\Plans\Commands\StartPlan\StartPlanCommand;
 use Domain\Plans\Commands\WithdrawPlanReview\WithdrawPlanReviewCommand;
-use Domain\Plans\Enums\PlanReviewState;
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanReviewStatus;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Exceptions\PlanUnderReview;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Models\PlanReviewEdition;
@@ -83,15 +83,15 @@ final class PlanReviewTest extends TestCase
 
         $reviewId = $this->runCommand(new RequestPlanReviewCommand($plan->id, [$this->owner()]));
 
-        $this->assertSame(PlanState::Reviewing, $plan->refresh()->state);
+        $this->assertSame(PlanStatus::Reviewing, $plan->refresh()->status);
         $this->assertSame(1, PlanReviewEdition::query()->whereKey($reviewId)->sole()->number);
         $this->assertThrows(fn () => $this->runCommand(new StartPlanCommand($plan->id)));
 
         $this->runCommand(new WithdrawPlanReviewCommand($plan->id));
 
-        $this->assertSame(PlanState::Planned, $plan->refresh()->state);
+        $this->assertSame(PlanStatus::Planned, $plan->refresh()->status);
         $review = PlanReviewEdition::query()->whereKey($reviewId)->sole();
-        $this->assertSame(PlanReviewState::Withdrawn, $review->state);
+        $this->assertSame(PlanReviewStatus::Withdrawn, $review->status);
         $this->assertSame($this->owner->id, $review->decided_by_id);
 
         $this->runCommand(new EditTaskCommand($task->id, $task->refresh()->revision, brief: self::NEW_BRIEF));
@@ -113,7 +113,7 @@ final class PlanReviewTest extends TestCase
             PlanUnderReview::forPlan($plan->number)->getMessage(),
         );
 
-        $this->assertSame(PlanState::Reviewing, $plan->refresh()->state);
+        $this->assertSame(PlanStatus::Reviewing, $plan->refresh()->status);
         $this->assertSame(self::BRIEF, $task->refresh()->brief);
         $this->assertSame(1, $plan->phases()->count());
     }
@@ -124,7 +124,7 @@ final class PlanReviewTest extends TestCase
         $this->app->make(CurrentActorSetter::class)->clear();
 
         $this->assertThrows(fn () => $this->runCommand(new RequestPlanReviewCommand($plan->id, [$this->owner()])));
-        $this->assertSame(PlanState::Planned, $plan->refresh()->state);
+        $this->assertSame(PlanStatus::Planned, $plan->refresh()->status);
         $this->assertSame(0, PlanReviewEdition::query()->count());
     }
 

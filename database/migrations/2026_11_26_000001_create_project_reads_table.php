@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('path', 1024);
             $table->string('actor_type', 16);
             $table->string('actor_id');
-            $table->string('state', 16);
+            $table->string('status', 16);
             $table->string('failure', 32)->nullable();
             $table->json('entries')->nullable();
             $table->longText('text')->nullable();
@@ -29,7 +29,7 @@ return new class extends Migration
             $table->timestampTz('expires_at');
             $table->timestampsTz();
 
-            $table->index(['state', 'created_at']);
+            $table->index(['status', 'created_at']);
         });
     }
 

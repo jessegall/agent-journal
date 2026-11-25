@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Agents\StopPreparationState;
+use App\Enums\Agents\StopPreparationStatus;
 
 /**
  * How preparing a stop came out: its state, what the actor is told, and whether the owner is told the work is held
@@ -13,19 +13,19 @@ use App\Enums\Agents\StopPreparationState;
 final readonly class StopPreparation
 {
     private function __construct(
-        public StopPreparationState $state,
+        public StopPreparationStatus $state,
         public AgentText $message,
         public bool $tellsOwner,
     ) {}
 
     public static function preparing(): self
     {
-        return new self(StopPreparationState::Preparing, AgentText::of('core.stop.script_waits'), false);
+        return new self(StopPreparationStatus::Preparing, AgentText::of('core.stop.script_waits'), false);
     }
 
     public static function finalChecks(): self
     {
-        return new self(StopPreparationState::FinalChecks, AgentText::of('core.stop.checks_running'), false);
+        return new self(StopPreparationStatus::FinalChecks, AgentText::of('core.stop.checks_running'), false);
     }
 
     /**
@@ -34,7 +34,7 @@ final readonly class StopPreparation
     public static function returnToActor(string $evidence): self
     {
         return new self(
-            StopPreparationState::ReturnToActor,
+            StopPreparationStatus::ReturnToActor,
             AgentText::of('core.stop.script_returned', ['evidence' => $evidence]),
             false,
         );
@@ -46,7 +46,7 @@ final readonly class StopPreparation
     public static function held(string $reason, bool $tellsOwner): self
     {
         return new self(
-            StopPreparationState::Held,
+            StopPreparationStatus::Held,
             AgentText::of('core.stop.script_held', ['reason' => $reason]),
             $tellsOwner,
         );

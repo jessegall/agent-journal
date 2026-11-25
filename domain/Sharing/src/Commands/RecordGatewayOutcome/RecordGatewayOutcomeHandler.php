@@ -7,11 +7,11 @@ namespace Domain\Sharing\Commands\RecordGatewayOutcome;
 use App\Support\ActorIdentity;
 use Domain\Sharing\Commands\Support\SharingCommandHandler;
 use Domain\Sharing\Concerns\RefusesStaleGatewayRuns;
-use Domain\Sharing\Enums\GatewayEndpointState;
+use Domain\Sharing\Enums\GatewayEndpointStatus;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\GatewayOutcome;
 use Domain\Sharing\Enums\ShareAuditType;
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Exceptions\GatewayLeaseRefused;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareAudit;
@@ -55,7 +55,7 @@ final readonly class RecordGatewayOutcomeHandler extends SharingCommandHandler
         $operation->finish($command->outcome);
 
         if (! $opens) {
-            $endpoint->moveTo(GatewayEndpointState::Closed);
+            $endpoint->moveTo(GatewayEndpointStatus::Closed);
 
             return;
         }
@@ -77,7 +77,7 @@ final readonly class RecordGatewayOutcomeHandler extends SharingCommandHandler
         ShareGatewayConfiguration $configuration,
         array $shares,
     ): void {
-        $endpoint->moveTo(GatewayEndpointState::Open);
+        $endpoint->moveTo(GatewayEndpointStatus::Open);
 
         foreach ($shares as $share) {
             $share->activate();
@@ -96,10 +96,10 @@ final readonly class RecordGatewayOutcomeHandler extends SharingCommandHandler
      */
     private function failed(ShareGatewayEndpoint $endpoint, array $shares): void
     {
-        $endpoint->moveTo(GatewayEndpointState::Closed);
+        $endpoint->moveTo(GatewayEndpointStatus::Closed);
 
         foreach ($shares as $share) {
-            if ($share->state !== ShareState::Pending) {
+            if ($share->status !== ShareStatus::Pending) {
                 continue;
             }
 

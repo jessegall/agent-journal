@@ -11,7 +11,7 @@ use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalWriteTool;
 use Domain\Rules\Commands\ProposeRule\ProposeRuleCommand;
-use Domain\Rules\Enums\RuleState;
+use Domain\Rules\Enums\RuleStatus;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -48,7 +48,7 @@ final class ProposeRuleTool extends JournalWriteTool
     {
         return ToolResult::ok([
             'rule_id' => $ruleId,
-            'state' => RuleState::Proposed->value,
+            'state' => RuleStatus::Proposed->value,
         ]);
     }
 }

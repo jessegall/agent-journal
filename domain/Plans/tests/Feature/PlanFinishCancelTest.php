@@ -16,7 +16,7 @@ use App\Values\OwnerAuthority;
 use Domain\Plans\Commands\CancelPlan\CancelPlanCommand;
 use Domain\Plans\Commands\FinishPlan\FinishPlanCommand;
 use Domain\Plans\Commands\StartPlan\StartPlanCommand;
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Events\PlanCancelled;
 use Domain\Plans\Events\PlanFinished;
 use Domain\Plans\Events\PlanStarted;
@@ -24,7 +24,7 @@ use Domain\Plans\Exceptions\PlanHasUnfinishedTasks;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\TestCase;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\AssignmentWriterInTransaction;
@@ -69,9 +69,9 @@ final class PlanFinishCancelTest extends TestCase
     public function test_finishing_a_plan_with_an_open_task_is_refused_with_the_count(): void
     {
         $plan = $this->startedPlan([
-            TaskState::Finished,
-            TaskState::Open,
-            TaskState::Blocked,
+            TaskStatus::Finished,
+            TaskStatus::Open,
+            TaskStatus::Blocked,
         ]);
 
         $this->assertThrows(
@@ -80,27 +80,27 @@ final class PlanFinishCancelTest extends TestCase
             PlanHasUnfinishedTasks::for($plan->number, 2)->getMessage(),
         );
 
-        $this->assertSame(PlanState::Started, $plan->fresh()?->state);
+        $this->assertSame(PlanStatus::Started, $plan->fresh()?->status);
         Event::assertNotDispatched(PlanFinished::class);
     }
 
     public function test_finishing_a_plan_whose_tasks_are_done_records_the_note_and_the_done_state(): void
     {
         $plan = $this->startedPlan([
-            TaskState::Finished,
-            TaskState::Cancelled,
+            TaskStatus::Finished,
+            TaskStatus::Cancelled,
         ]);
 
         $this->bus()->run(new FinishPlanCommand($plan->id, 1, 'Shipped.'));
 
         $this->assertSame(
             [
-                PlanState::Done,
+                PlanStatus::Done,
                 'Shipped.',
                 2,
             ],
             [
-                $plan->fresh()?->state,
+                $plan->fresh()?->status,
                 $plan->fresh()?->finish_note,
                 $plan->fresh()?->revision,
             ],
@@ -117,8 +117,8 @@ final class PlanFinishCancelTest extends TestCase
     public function test_cancelling_keeps_every_task_and_assignment(): void
     {
         $plan = $this->startedPlan([
-            TaskState::Open,
-            TaskState::Started,
+            TaskStatus::Open,
+            TaskStatus::Started,
         ]);
 
         $this->app->make(AssignmentWriterInTransaction::class)->assign(
@@ -132,21 +132,21 @@ final class PlanFinishCancelTest extends TestCase
 
         $this->assertSame(
             [
-                PlanState::Cancelled,
+                PlanStatus::Cancelled,
                 'Superseded.',
             ],
             [
-                $plan->fresh()?->state,
+                $plan->fresh()?->status,
                 $plan->fresh()?->cancel_reason,
             ],
         );
 
         $this->assertSame(
             [
-                TaskState::Open,
-                TaskState::Started,
+                TaskStatus::Open,
+                TaskStatus::Started,
             ],
-            Task::query()->whereKey($plan->taskIds())->orderBy('number')->pluck('state')->all(),
+            Task::query()->whereKey($plan->taskIds())->orderBy('number')->pluck('status')->all(),
         );
 
         $this->assertSame($assignments, AssignmentRecord::query()->withoutGlobalScopes()->count());
@@ -164,7 +164,7 @@ final class PlanFinishCancelTest extends TestCase
     }
 
     /**
-     * @param  list<TaskState>  $states
+     * @param  list<TaskStatus>  $states
      */
     private function startedPlan(array $states): Plan
     {
@@ -173,22 +173,22 @@ final class PlanFinishCancelTest extends TestCase
 
         $this->planStructure()->addTasks(
             $this->planStructure()->addPhase($plan, 'Work'),
-            array_map(fn (TaskState $state): string => $this->taskIn($state)->id, $states),
+            array_map(fn (TaskStatus $state): string => $this->taskIn($state)->id, $states),
         );
 
         return $plan;
     }
 
-    private function taskIn(TaskState $state): Task
+    private function taskIn(TaskStatus $state): Task
     {
         $task = Task::factory()->create();
 
         match ($state) {
-            TaskState::Started => $task->start(ActorIdentity::system()),
-            TaskState::Blocked => $task->block('Waits.'),
-            TaskState::Finished => $task->finish('Done.'),
-            TaskState::Cancelled => $task->cancel('Not needed.'),
-            TaskState::Open => null,
+            TaskStatus::Started => $task->start(ActorIdentity::system()),
+            TaskStatus::Blocked => $task->block('Waits.'),
+            TaskStatus::Finished => $task->finish('Done.'),
+            TaskStatus::Cancelled => $task->cancel('Not needed.'),
+            TaskStatus::Open => null,
         };
 
         return $task;

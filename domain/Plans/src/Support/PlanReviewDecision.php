@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Support;
 
-use Domain\Plans\Enums\PlanReviewState;
+use Domain\Plans\Enums\PlanReviewStatus;
 use Domain\Plans\Exceptions\PlanReviewRefused;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Models\PlanReviewEdition;
@@ -27,11 +27,11 @@ final readonly class PlanReviewDecision
         $edition = PlanReviewEdition::findNumberedIn($plan->id, $editionNumber);
 
         if ($edition === null) {
-            throw PlanReviewRefused::notReviewing($plan->number, $plan->state->value);
+            throw PlanReviewRefused::notReviewing($plan->number, $plan->status->value);
         }
 
-        if ($edition->state !== PlanReviewState::Requested) {
-            throw PlanReviewRefused::alreadyDecided($plan->number, $edition->number, $edition->state->value);
+        if ($edition->status !== PlanReviewStatus::Requested) {
+            throw PlanReviewRefused::alreadyDecided($plan->number, $edition->number, $edition->status->value);
         }
 
         return [

@@ -22,7 +22,7 @@ use App\Support\Storage\FrameRecord;
 use App\Support\Storage\FrameRecords;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Contracts\Events\Dispatcher;
 use Tests\Fixtures\Hooks\AllowedStops;
@@ -58,7 +58,7 @@ final class StackRestorerTest extends TestCase
     {
         parent::setUp();
 
-        $this->tasks = new InMemoryTasks([42 => TaskState::Started, 43 => TaskState::Started]);
+        $this->tasks = new InMemoryTasks([42 => TaskStatus::Started, 43 => TaskStatus::Started]);
         $this->app->instance(InMemoryTasks::class, $this->tasks);
         $this->app->instance(OperationPolicy::class, new FixedOperationPolicy());
         $this->app->instance(StopConditionGate::class, new AllowedStops());
@@ -80,14 +80,14 @@ final class StackRestorerTest extends TestCase
         $restored = $this->restore(...$records);
         $this->assertFalse($restored->frames()[1]->isFinished());
 
-        $this->tasks->tasks[42] = TaskState::Finished;
+        $this->tasks->tasks[42] = TaskStatus::Finished;
 
         $this->assertTrue($restored->frames()[1]->isFinished());
     }
 
     public function test_restoring_keeps_a_finished_frame_and_only_an_exposed_one_is_popped(): void
     {
-        $this->tasks->tasks[42] = TaskState::Cancelled;
+        $this->tasks->tasks[42] = TaskStatus::Cancelled;
 
         $stack = $this->restore($this->bottom(), $this->task('task-42', 42), $this->task('task-43', 43));
 

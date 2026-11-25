@@ -8,7 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Sessions\CapacityResource;
-use App\Enums\Sessions\ReservationState;
+use App\Enums\Sessions\ReservationStatus;
 use App\Exceptions\CapacityUnavailable;
 use App\Values\ExecutionBudgets;
 use App\Values\HostCapacity;
@@ -24,7 +24,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $cpu_cores
  * @property int $memory_bytes
  * @property int $disk_bytes
- * @property ReservationState $state
+ * @property ReservationStatus $status
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  *
@@ -45,7 +45,7 @@ final class CapacityReservation extends Model implements ReadableModel
             'cpu_cores' => 'integer',
             'memory_bytes' => 'integer',
             'disk_bytes' => 'integer',
-            'state' => ReservationState::class,
+            'status' => ReservationStatus::class,
         ];
     }
 
@@ -72,7 +72,7 @@ final class CapacityReservation extends Model implements ReadableModel
         $capacityReservation->cpu_cores = $budgets->cpuCores;
         $capacityReservation->memory_bytes = $budgets->memoryBytes;
         $capacityReservation->disk_bytes = $budgets->workspaceBytes;
-        $capacityReservation->state = ReservationState::Reserved;
+        $capacityReservation->status = ReservationStatus::Reserved;
         $capacityReservation->save();
 
         return $capacityReservation;
@@ -161,7 +161,7 @@ final class CapacityReservation extends Model implements ReadableModel
     #[Scope]
     protected function reserved(Builder $query): void
     {
-        $query->where('state', ReservationState::Reserved);
+        $query->where('status', ReservationStatus::Reserved);
     }
 
     /**
@@ -170,8 +170,8 @@ final class CapacityReservation extends Model implements ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function withState(Builder $query, ReservationState $state): void
+    protected function withState(Builder $query, ReservationStatus $state): void
     {
-        $query->where('state', $state);
+        $query->where('status', $state);
     }
 }

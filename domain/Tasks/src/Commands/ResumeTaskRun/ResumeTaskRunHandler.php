@@ -12,7 +12,7 @@ use App\Exceptions\RunClaimRefused;
 use App\Support\ActorIdentity;
 use App\Support\References\SubjectReference;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Events\TaskRunClaimed;
 use Domain\Tasks\Exceptions\TaskResumeCovered;
 use Domain\Tasks\Exceptions\TaskRunFinished;
@@ -48,7 +48,7 @@ final readonly class ResumeTaskRunHandler extends TaskCommandHandler
             throw TaskRunFinished::forRun($run->id);
         }
 
-        if ($task->state !== TaskState::Started || ! $task->isCurrentRun($run->run_number)) {
+        if ($task->status !== TaskStatus::Started || ! $task->isCurrentRun($run->run_number)) {
             throw TaskRunStale::forRun($task->number, $run->run_number);
         }
 

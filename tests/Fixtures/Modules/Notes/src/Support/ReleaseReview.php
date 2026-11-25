@@ -23,7 +23,7 @@ use App\Support\Cards\Subtitle;
 use App\Support\Cards\Title;
 use App\Enums\Web\Alignment;
 use App\Enums\Runs\ConsoleStream;
-use App\Enums\Runs\DisclosureState;
+use App\Enums\Runs\DisclosureStatus;
 use App\Enums\Web\Emphasis;
 use App\Enums\Runs\Tone;
 use App\Support\Sources\Contracts\CardContext;
@@ -76,7 +76,7 @@ final readonly class ReleaseReview implements Dockable
             'root',
             new Title('title', 'Release review'),
             new Subtitle('subtitle', 'Friday build'),
-            new Disclosure('checks', 'Checks', DisclosureState::Closed, Stack::of('body', ...$checks)),
+            new Disclosure('checks', 'Checks', DisclosureStatus::Closed, Stack::of('body', ...$checks)),
             new Row(
                 'tones',
                 Alignment::Between,
@@ -86,7 +86,7 @@ final readonly class ReleaseReview implements Dockable
                 fn (Alignment $alignment) => new Row("align-{$alignment->value}", $alignment, new Subtitle('label', $alignment->name)),
                 Alignment::cases(),
             )),
-            new Disclosure('notes', 'Notes', DisclosureState::Open, Stack::of('body', new Subtitle('note', 'Open by default'))),
+            new Disclosure('notes', 'Notes', DisclosureStatus::Open, Stack::of('body', new Subtitle('note', 'Open by default'))),
         ));
     }
 }

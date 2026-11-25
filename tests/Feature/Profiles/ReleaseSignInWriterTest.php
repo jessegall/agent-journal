@@ -10,10 +10,10 @@ use App\Commands\Accounts\CancelSignIn\CancelSignInCommand;
 use App\Commands\Accounts\ExpireSignInAttempt\ExpireSignInAttemptCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\Accounts\AccountState;
+use App\Enums\Accounts\AccountStatus;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Accounts\SignInMethod;
-use App\Enums\Accounts\SignInState;
+use App\Enums\Accounts\SignInStatus;
 use App\Events\Accounts\SignInAttemptFinished;
 use App\Jobs\SignInDeadline;
 use App\Listeners\ReleaseSignInWriter;
@@ -79,7 +79,7 @@ final class ReleaseSignInWriterTest extends TestCase
 
         $attempt = SignInAttempt::query()->withoutGlobalScopes()->findOrFail($attemptId);
         $this->account->refresh();
-        $this->assertSame(SignInState::Cancelled, $attempt->state);
+        $this->assertSame(SignInStatus::Cancelled, $attempt->status);
         $this->assertTrue($attempt->cleanup_pending);
         $this->assertNull($this->account->live_writer_attempt_id);
         $this->assertSame($this->account->sign_in_generation, $this->account->check_requested_generation);
@@ -87,7 +87,7 @@ final class ReleaseSignInWriterTest extends TestCase
 
     public function test_an_account_needing_a_sign_in_is_let_go_out_of_maintenance(): void
     {
-        $this->account->forceFill(['state' => AccountState::Unauthenticated])->save();
+        $this->account->forceFill(['status' => AccountStatus::Unauthenticated])->save();
         $attemptId = $this->again('tab-1');
 
         $this->asOwner(new CancelSignInCommand($attemptId));
@@ -115,7 +115,7 @@ final class ReleaseSignInWriterTest extends TestCase
 
         $expired = SignInAttempt::query()->withoutGlobalScopes()->findOrFail($attemptId);
 
-        $this->assertSame(SignInState::Expired, $expired->state);
+        $this->assertSame(SignInStatus::Expired, $expired->status);
         $this->assertSame([], $accountReads);
     }
 
@@ -129,7 +129,7 @@ final class ReleaseSignInWriterTest extends TestCase
         $this->assertThrows(fn () => $this->asOwner(new CancelSignInCommand($attemptId)), RuntimeException::class);
 
         $attempt = SignInAttempt::query()->withoutGlobalScopes()->findOrFail($attemptId);
-        $this->assertNotSame(SignInState::Cancelled, $attempt->state);
+        $this->assertNotSame(SignInStatus::Cancelled, $attempt->status);
         $this->assertSame($attemptId, $this->account->refresh()->live_writer_attempt_id);
     }
 

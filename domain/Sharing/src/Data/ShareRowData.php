@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Data;
 
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Models\Share;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -18,7 +18,7 @@ final class ShareRowData extends Data
     public function __construct(
         public readonly string $id,
         public readonly int $number,
-        public readonly ShareState $state,
+        public readonly ShareStatus $state,
         public readonly string $rootType,
         public readonly string $rootId,
         public readonly string|null $gatewayKey,
@@ -34,12 +34,12 @@ final class ShareRowData extends Data
         return new self(
             $share->id,
             $share->number,
-            $share->state,
+            $share->status,
             $share->root_type,
             $share->root_id,
             $gatewayKeys[$share->share_gateway_configuration_id ?? ''] ?? null,
             $share->expires_at->toIso8601String(),
-            $share->state === ShareState::Proposed,
+            $share->status === ShareStatus::Proposed,
         );
     }
 }

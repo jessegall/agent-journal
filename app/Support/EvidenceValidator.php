@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Declarations\VerificationContract;
 use App\Enums\CommandRules\Outcome;
 use App\Enums\Runs\AssessmentOutcome;
-use App\Enums\Runs\LifecycleState;
+use App\Enums\Runs\LifecycleStatus;
 use App\Enums\Runs\PartEndType;
 use App\Enums\Runs\ProblemCode;
 use App\Enums\Runs\RunMode;
@@ -102,7 +102,7 @@ final readonly class EvidenceValidator
             $problems[] = $this->problem(ProblemCode::NotNormalRun, 'An evidence sample never gives a result.');
         }
 
-        if ($part->lifecycle !== LifecycleState::Ended || $part->end_type !== PartEndType::Exited) {
+        if ($part->lifecycle !== LifecycleStatus::Ended || $part->end_type !== PartEndType::Exited) {
             $problems[] = $this->problem(ProblemCode::ExitUnavailable, 'The part did not end with its own exit.');
         }
 

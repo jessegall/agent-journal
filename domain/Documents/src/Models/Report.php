@@ -31,7 +31,7 @@ use Closure;
 use Domain\Documents\Data\DockSuggestion;
 use Domain\Documents\Data\PublicationCard;
 use Domain\Documents\Data\ReportView;
-use Domain\Documents\Enums\AttentionState;
+use Domain\Documents\Enums\AttentionStatus;
 use Domain\Documents\Events\ReportFiled;
 use Domain\Documents\Exceptions\RecordImmutable;
 use Domain\Documents\Exceptions\ReportMissing;
@@ -58,7 +58,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $creator_type
  * @property string $creator_id
  * @property CarbonImmutable $filed_at
- * @property AttentionState $attention
+ * @property AttentionStatus $attention
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read mixed $card
@@ -87,7 +87,7 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
     protected function casts(): array
     {
         return [
-            'attention' => AttentionState::class,
+            'attention' => AttentionStatus::class,
             'filed_at' => 'immutable_datetime',
         ];
     }

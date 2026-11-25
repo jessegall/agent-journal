@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Data;
 
 use App\Support\AssignmentHolder;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Values\TaskExecution;
 use PhpOption\Option;
 use Spatie\LaravelData\Data;
@@ -24,7 +24,7 @@ final class TaskDetails extends Data
         public readonly string $id,
         public readonly int $number,
         public readonly string $title,
-        public readonly TaskState $state,
+        public readonly TaskStatus $state,
         public readonly int $revision,
         public readonly Option $holder,
         public readonly TaskExecution|null $execution,

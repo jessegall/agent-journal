@@ -6,7 +6,7 @@ namespace Domain\Tasks\Resolvers;
 
 use App\Contracts\Actors\CurrentActor;
 use Domain\Tasks\Contracts\TaskProgressCounter as TaskProgressCounterContract;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Values\TaskProgress;
 use Illuminate\Container\Attributes\Scoped;
@@ -35,8 +35,8 @@ final readonly class TaskProgressCounter implements TaskProgressCounterContract
      */
     public function progressOfPlaced(array $ids): TaskProgress
     {
-        $states = Task::query()->whereKey($ids)->readExactly(count($ids))->pluck('state')->countBy(
-            fn (TaskState $state) => $state->value,
+        $states = Task::query()->whereKey($ids)->readExactly(count($ids))->pluck('status')->countBy(
+            fn (TaskStatus $state) => $state->value,
         );
 
         return self::progressOfStates($states->all());
@@ -57,7 +57,7 @@ final readonly class TaskProgressCounter implements TaskProgressCounterContract
 
         $stateOfTask = Task::query()->whereKey($allTaskIds)->readExactly(
             count($allTaskIds),
-        )->pluck('state', 'id')->all();
+        )->pluck('status', 'id')->all();
 
         return array_map(
             fn (array $taskIds) => self::progressOfStates(array_count_values(array_map(
@@ -73,14 +73,14 @@ final readonly class TaskProgressCounter implements TaskProgressCounterContract
      */
     private static function progressOfStates(array $byState): TaskProgress
     {
-        $taskCounts = [...array_fill_keys(array_column(TaskState::cases(), 'value'), 0), ...$byState];
+        $taskCounts = [...array_fill_keys(array_column(TaskStatus::cases(), 'value'), 0), ...$byState];
 
         return new TaskProgress(
-            done: $taskCounts[TaskState::Finished->value],
-            started: $taskCounts[TaskState::Started->value],
-            blocked: $taskCounts[TaskState::Blocked->value],
+            done: $taskCounts[TaskStatus::Finished->value],
+            started: $taskCounts[TaskStatus::Started->value],
+            blocked: $taskCounts[TaskStatus::Blocked->value],
             total: array_sum($taskCounts),
-            cancelled: $taskCounts[TaskState::Cancelled->value],
+            cancelled: $taskCounts[TaskStatus::Cancelled->value],
         );
     }
 }

@@ -8,7 +8,7 @@ use App\Commands\Terminals\CancelKeyScript\CancelKeyScriptCommand;
 use App\Enums\Drivers\HoldReason;
 use App\Enums\Drivers\RequestOutcome;
 use App\Enums\Drivers\RequestProgress;
-use App\Enums\Navigation\NavigationState;
+use App\Enums\Navigation\NavigationStatus;
 use App\Events\Engine\EngineTicked;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
@@ -69,7 +69,7 @@ final class NavigationLifecycleTest extends TestCase
             new EngineTicked(CarbonImmutable::now(), ElapsedTime::between(0, 1_000_000_000)),
         ));
 
-        $this->assertSame(NavigationState::Expired, $navigation->fresh()?->state);
+        $this->assertSame(NavigationStatus::Expired, $navigation->fresh()?->status);
         $request = DriverRequest::query()->findOrFail($stalled->id);
         $this->assertSame([RequestProgress::Failed, RequestOutcome::EntryUnavailable], [
             $request->progress,
@@ -85,7 +85,7 @@ final class NavigationLifecycleTest extends TestCase
 
         $this->asOwner(new CancelKeyScriptCommand($stalled->id, $stalled->row_version, 'not needed'));
 
-        $this->assertSame(NavigationState::Cancelled, $navigation->fresh()?->state);
+        $this->assertSame(NavigationStatus::Cancelled, $navigation->fresh()?->status);
     }
 
     public function test_a_runtime_that_ends_cancels_the_request_of_its_key_script(): void
@@ -95,7 +95,7 @@ final class NavigationLifecycleTest extends TestCase
 
         $this->app->make(DriverRequestEndings::class)->closeAfterExit(AgentRuntime::query()->findOrFail($stalled->agent_runtime_id));
 
-        $this->assertSame(NavigationState::Cancelled, $navigation->fresh()?->state);
+        $this->assertSame(NavigationStatus::Cancelled, $navigation->fresh()?->status);
     }
 
     public function test_the_hosts_report_that_the_user_took_over_interrupts_the_request_once(): void
@@ -108,7 +108,7 @@ final class NavigationLifecycleTest extends TestCase
         $this->hostCall($host, "/host/navigation/{$navigation->id}/interrupt")->assertNoContent();
         $this->hostCall($host, "/host/navigation/{$navigation->id}/interrupt")->assertNoContent();
 
-        $this->assertSame(NavigationState::Interrupted, $navigation->fresh()?->state);
+        $this->assertSame(NavigationStatus::Interrupted, $navigation->fresh()?->status);
         $this->assertSame(HoldReason::NeedsAttention, $stalled->fresh()?->hold_reason);
         $this->assertTrue($stalled->refresh()->isStoppedKeyScript());
     }

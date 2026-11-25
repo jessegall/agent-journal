@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\Accounts\SignInOutcome;
 use App\Enums\Accounts\SignInRefusal;
-use App\Enums\Accounts\SignInState;
+use App\Enums\Accounts\SignInStatus;
 use App\Models\Accounts\SignInAttempt;
 use App\Support\SignInChallenges;
 use App\Support\SignInCompletion;
@@ -40,7 +40,7 @@ final readonly class NotifySignInHandler implements CommandHandler
             ),
             SignInOutcome::Failed => $this->end(
                 $attempt,
-                SignInState::Failed,
+                SignInStatus::Failed,
                 SignInRefusal::fromProvider($command->refusal)->text(),
             ),
             SignInOutcome::Interrupted => $this->interrupt($attempt, $command->generation),
@@ -58,14 +58,14 @@ final readonly class NotifySignInHandler implements CommandHandler
             return;
         }
 
-        $this->end($attempt, SignInState::Interrupted, null);
+        $this->end($attempt, SignInStatus::Interrupted, null);
     }
 
     /**
      * Ends a live attempt through its one guarded step, so one past its deadline ends Expired instead, and forgets its
      * challenge and any staged answer.
      */
-    private function end(SignInAttempt $attempt, SignInState $state, string|null $reason): void
+    private function end(SignInAttempt $attempt, SignInStatus $state, string|null $reason): void
     {
         $attempt->finishAt($state, CarbonImmutable::now(), $reason);
         $this->challenges->forget($attempt->id);

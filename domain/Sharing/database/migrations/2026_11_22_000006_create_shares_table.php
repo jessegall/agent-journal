@@ -14,7 +14,7 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->foreignUlid('number_group_id')->constrained('number_groups')->restrictOnDelete();
             $table->unsignedBigInteger('number');
-            $table->string('state');
+            $table->string('status');
             $table->string('root_type');
             $table->string('root_id');
             $table->string('owner_user_id')->nullable();
@@ -43,7 +43,7 @@ return new class extends Migration
                 'number',
             ]);
             $table->index([
-                'state',
+                'status',
                 'expires_at',
             ]);
         });

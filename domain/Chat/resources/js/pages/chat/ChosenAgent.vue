@@ -2,7 +2,7 @@
 import { usePage } from "@inertiajs/vue3";
 import { computed, ref } from "vue";
 import type { AgentOptionData, ChatData } from "@generated/types/chat";
-import type { SessionState } from "@kit/CoreTypes";
+import type { SessionActivityStatus } from "@kit/CoreTypes";
 import Avatar from "@kit/Avatar";
 import Icon from "@kit/Icon";
 import Status from "@kit/Status";
@@ -35,7 +35,7 @@ const announcement = useStatusAnnouncement(
 );
 
 // Each session state as the kit's Status shows it: a spinner while it moves, a hollow dot at rest, an alert when refused.
-const looks: Record<SessionState, StatusState> = {
+const looks: Record<SessionActivityStatus, StatusState> = {
   stopped: "stopped",
   starting: "connecting",
   working: "working",

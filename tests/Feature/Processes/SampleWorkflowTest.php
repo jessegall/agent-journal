@@ -10,7 +10,7 @@ use App\Commands\CommandRules\ProposeCommandRule\ProposeCommandRuleCommand;
 use App\Commands\CommandRules\SettleSample\SettleSampleCommand;
 use App\Commands\CommandRules\StartSample\StartSampleCommand;
 use App\Enums\CommandRules\RequestHoldReason;
-use App\Enums\CommandRules\RequestState;
+use App\Enums\CommandRules\RequestStatus;
 use App\Enums\Processes\OutputStream;
 use App\Exceptions\CommandAdmissionRefused;
 use App\Exceptions\SampleRefused;
@@ -84,11 +84,11 @@ final class SampleWorkflowTest extends TestCase
     public function test_the_approved_sample_runs_once_and_the_request_awaits_proof_with_the_run(): void
     {
         $permitId = $this->asUser($this->approval());
-        $this->assertSame(RequestState::ReadyForSample, $this->request()->state);
+        $this->assertSame(RequestStatus::ReadyForSample, $this->request()->status);
 
         $runId = $this->runAsAgent(new StartSampleCommand($this->requestId, $permitId, 'first'));
         $this->assertSame($runId, $this->runAsAgent(new StartSampleCommand($this->requestId, $permitId, 'first')));
-        $this->assertSame(RequestState::CapturingSample, $this->request()->state);
+        $this->assertSame(RequestStatus::CapturingSample, $this->request()->status);
         $this->assertThrows(
             fn () => $this->runAsAgent(new StartSampleCommand($this->requestId, $permitId, 'second')),
             SampleRefused::class,
@@ -97,7 +97,7 @@ final class SampleWorkflowTest extends TestCase
         $this->endRun($runId, 0);
         $outcome = $this->settle();
 
-        $this->assertSame(RequestState::AwaitingProof, $outcome->state);
+        $this->assertSame(RequestStatus::AwaitingProof, $outcome->state);
         $this->assertSame($runId, $outcome->runId);
         $this->assertSame([1], $outcome->unsampledStatuses);
         $this->assertSame($runId, EvidencePermit::query()->findOrFail($permitId)->process_run_id);
@@ -113,7 +113,7 @@ final class SampleWorkflowTest extends TestCase
         $part->finishProcess(PartEnd::exited(0));
         $part->finishDraining();
 
-        $this->assertSame(RequestState::AwaitingSampleApproval, $this->settle()->state);
+        $this->assertSame(RequestStatus::AwaitingSampleApproval, $this->settle()->state);
     }
 
     public function test_a_declaration_without_effects_cannot_be_approved_for_a_sample(): void

@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\Connections\BindingReadiness;
-use App\Enums\Connections\CommandRunState;
+use App\Enums\Connections\CommandRunStatus;
 use App\Enums\Projects\ProjectReadFailure;
 use App\Events\Connections\BindingRuntimeRecorded;
 use App\Events\Connections\DeviceGrantApproved;
@@ -272,7 +272,7 @@ return [
         'owner' => 'ProjectCommandRun::reconcile',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ProjectCommandReconciled('run', CommandRunState::Cancelled),
+        'sample' => fn () => new ProjectCommandReconciled('run', CommandRunStatus::Cancelled),
     ],
     ProjectReadClaimed::class => [
         'role' => EventRole::RowFact,

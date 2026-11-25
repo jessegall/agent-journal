@@ -6,7 +6,7 @@ namespace Tests\Feature\Agents;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Enums\Navigation\NavigationCompletion;
-use App\Enums\Navigation\NavigationState;
+use App\Enums\Navigation\NavigationStatus;
 use App\Exceptions\NavigationTransitionRefused;
 use App\Models\Drivers\NavigationRequest;
 use App\Support\ActorContext;
@@ -48,7 +48,7 @@ final class NavigationRequestTest extends TestCase
 
         $navigation = $this->raise($stalled, 'raise-1');
 
-        $this->assertSame(NavigationState::Open, $navigation->state);
+        $this->assertSame(NavigationStatus::Open, $navigation->status);
         $this->assertSame([$stalled->id, $stalled->agent_runtime_id], [
             $navigation->driver_request_id,
             $navigation->agent_runtime_id,
@@ -68,12 +68,12 @@ final class NavigationRequestTest extends TestCase
         $navigation->answer();
         $navigation->prove(NavigationCompletion::Step, 3, 'GPT-6');
         $navigation->refuseProof();
-        $this->assertSame([NavigationState::Answering, null], [$navigation->state, $navigation->proof]);
+        $this->assertSame([NavigationStatus::Answering, null], [$navigation->status, $navigation->proof]);
         $navigation->prove(NavigationCompletion::Goal, null, 'Set model to GPT-6');
         $navigation->markProven();
 
         $proven = NavigationRequest::query()->findOrFail($navigation->id);
-        $this->assertSame([NavigationState::Proven, NavigationCompletion::Goal], [$proven->state, $proven->completes]);
+        $this->assertSame([NavigationStatus::Proven, NavigationCompletion::Goal], [$proven->status, $proven->completes]);
         $this->assertSame(['Set model to GPT-6', 7], [$proven->proof, $proven->row_version]);
     }
 
@@ -99,7 +99,7 @@ final class NavigationRequestTest extends TestCase
             $navigation = $this->raise($stalled, $name);
             $end($navigation);
 
-            $this->assertFalse($navigation->fresh()?->state->isOpen(), $name);
+            $this->assertFalse($navigation->fresh()?->status->isOpen(), $name);
         }
     }
 
@@ -126,7 +126,7 @@ final class NavigationRequestTest extends TestCase
             }
         }
 
-        $this->assertSame(NavigationState::Proven, $navigation->fresh()?->state);
+        $this->assertSame(NavigationStatus::Proven, $navigation->fresh()?->status);
     }
 
     public function test_the_same_raise_is_one_row_and_a_second_open_request_is_refused_by_the_database(): void

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Data;
 
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Enums\TaskWaitTargetType;
 use Domain\Tasks\Values\TaskWaitLink;
 use Spatie\LaravelData\Data;
@@ -24,7 +24,7 @@ final class TaskWaitItemData extends Data
         public readonly bool $isSatisfied,
         public readonly string|Optional $number = new Optional(),
         public readonly string|Optional $title = new Optional(),
-        public readonly TaskState|Optional $state = new Optional(),
+        public readonly TaskStatus|Optional $state = new Optional(),
         public readonly string|Optional $waivedAt = new Optional(),
         public readonly string|Optional $waivedByType = new Optional(),
         public readonly string|Optional $waivedById = new Optional(),

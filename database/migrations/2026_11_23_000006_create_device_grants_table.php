@@ -18,7 +18,7 @@ return new class extends Migration
             $table->char('device_code_digest', 64)->unique();
             $table->string('user_code')->unique();
             $table->jsonb('scopes');
-            $table->string('state');
+            $table->string('status');
             $table->string('approved_by_user_id')->nullable();
             $table->timestampTz('code_expires_at');
             $table->char('grant_digest', 64)->nullable()->unique();

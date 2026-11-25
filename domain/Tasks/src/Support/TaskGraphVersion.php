@@ -21,7 +21,7 @@ final readonly class TaskGraphVersion
     {
         $states = array_values(array_map(fn (Task $task) => [
             $task->id,
-            $task->state->value,
+            $task->status->value,
         ], $tasks));
 
         $edges = array_map(

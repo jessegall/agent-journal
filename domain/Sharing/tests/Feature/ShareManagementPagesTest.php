@@ -19,7 +19,7 @@ use Domain\Documents\Models\Document;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Sharing\Enums\GatewayOperationType;
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Http\Controllers\RevealShareLinkController;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
@@ -175,13 +175,13 @@ final class ShareManagementPagesTest extends TestCase
         $this->assertSame(Share::FIRST_SCOPE_VERSION + 1, Share::query()->findOrFail($share->id)->scope_version);
 
         $failed = Share::query()->findOrFail($share->id);
-        $failed->state = ShareState::Failed;
+        $failed->status = ShareStatus::Failed;
         $failed->save();
         $this->write('post', "/sharing/shares/{$share->id}/retry")->assertStatus(303);
         $this->assertSame(2, ShareGatewayOperation::query()->where('type', GatewayOperationType::Open->value)->count());
 
         $this->write('delete', "/sharing/shares/{$share->id}")->assertStatus(303);
-        $this->assertSame(ShareState::Revoked, Share::query()->findOrFail($share->id)->state);
+        $this->assertSame(ShareStatus::Revoked, Share::query()->findOrFail($share->id)->status);
         $this->actingAs($this->owner)->postJson("/sharing/shares/{$share->id}/link")->assertNotFound();
     }
 
@@ -209,7 +209,7 @@ final class ShareManagementPagesTest extends TestCase
         )
             ->assertRedirect("/sharing/shares/{$proposal->id}");
 
-        $this->assertSame(ShareState::Pending, Share::query()->findOrFail($proposal->id)->state);
+        $this->assertSame(ShareStatus::Pending, Share::query()->findOrFail($proposal->id)->status);
     }
 
     public function test_the_list_filters_by_state_and_pages_on(): void
@@ -260,7 +260,7 @@ final class ShareManagementPagesTest extends TestCase
                 ['Idempotency-Key' => '01JD8X0G9M3QZ6V4K2OTHER001'],
             )->isSuccessful(),
         );
-        $this->assertSame(ShareState::Pending, Share::query()->findOrFail($share->id)->state);
+        $this->assertSame(ShareStatus::Pending, Share::query()->findOrFail($share->id)->status);
     }
 
     private function createShare(): Share

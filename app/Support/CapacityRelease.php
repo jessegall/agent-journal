@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\Sessions\ReservationState;
+use App\Enums\Sessions\ReservationStatus;
 use App\Models\Sessions\CapacityReservation;
 
 /**
@@ -19,7 +19,7 @@ final readonly class CapacityRelease
     {
         CapacityReservation::query()
             ->ofStartRequest($startRequestId)
-            ->withState(ReservationState::Reserved)
-            ->update(['state' => ReservationState::Released]);
+            ->withState(ReservationStatus::Reserved)
+            ->update(['status' => ReservationStatus::Released]);
     }
 }

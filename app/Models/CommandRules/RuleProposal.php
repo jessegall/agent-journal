@@ -10,7 +10,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\CommandRules\ProposalState;
+use App\Enums\CommandRules\ProposalStatus;
 use App\Events\Processes\RuleProposalAdopted;
 use App\Events\Processes\RuleProposalApproved;
 use App\Events\Processes\RuleProposalRejected;
@@ -40,7 +40,7 @@ use Spatie\LaravelData\DataCollection;
  * @property string|null $command_request_id
  * @property string $program
  * @property string $operation
- * @property ProposalState $state
+ * @property ProposalStatus $status
  * @property string $author_type
  * @property string $author_id
  * @property string $request_id
@@ -70,7 +70,7 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
     {
         return [
             'scope' => RuleScopeCast::class,
-            'state' => ProposalState::class,
+            'status' => ProposalStatus::class,
             'replaces' => DataCollection::class.':'.RuleReference::class,
             'current_revision' => 'integer',
         ];
@@ -105,7 +105,7 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
         $proposal->command_request_id = $answers?->id;
         $proposal->program = $proposed->rule->programFamily();
         $proposal->operation = $proposed->rule->operation();
-        $proposal->state = ProposalState::Draft;
+        $proposal->status = ProposalStatus::Draft;
         $proposal->author_type = $author->type;
         $proposal->author_id = $author->id;
         $proposal->request_id = $requestId;
@@ -129,7 +129,7 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
         $this->assertAuthor($author);
         $this->assertOpen();
 
-        $this->state = ProposalState::Withdrawn;
+        $this->status = ProposalStatus::Withdrawn;
         $this->assertSaved($this->save());
         $this->raise(new RuleProposalWithdrawn($this->id));
     }
@@ -144,7 +144,7 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
         $this->operation = $proposed->rule->operation();
         $this->replaces = RuleReference::collect($proposed->rule->replaces, DataCollection::class);
         $this->current_revision = $revision->revision;
-        $this->state = $proposed->isComplete() ? ProposalState::Pending : ProposalState::Draft;
+        $this->status = $proposed->isComplete() ? ProposalStatus::Pending : ProposalStatus::Draft;
         $this->assertSaved($this->save());
         $this->raise(new RuleProposalAdopted($this->id));
     }
@@ -156,7 +156,7 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
      */
     public function approve(): void
     {
-        $this->end(ProposalState::Approved);
+        $this->end(ProposalStatus::Approved);
         $this->raise(new RuleProposalApproved($this->id));
     }
 
@@ -165,7 +165,7 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
      */
     public function reject(): void
     {
-        $this->end(ProposalState::Rejected);
+        $this->end(ProposalStatus::Rejected);
         $this->raise(new RuleProposalRejected($this->id));
     }
 
@@ -217,8 +217,8 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
      */
     public function assertAcceptsRevision(): void
     {
-        if (! $this->state->canAcceptRevision()) {
-            throw RuleProposalRefused::ended($this->id, $this->state);
+        if (! $this->status->canAcceptRevision()) {
+            throw RuleProposalRefused::ended($this->id, $this->status);
         }
     }
 
@@ -227,8 +227,8 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
      */
     public function assertReviewable(int $expectedRevision): void
     {
-        if ($this->state !== ProposalState::Pending) {
-            throw RuleProposalRefused::notPending($this->id, $this->state);
+        if ($this->status !== ProposalStatus::Pending) {
+            throw RuleProposalRefused::notPending($this->id, $this->status);
         }
 
         if ($expectedRevision !== $this->current_revision) {
@@ -243,8 +243,8 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
      */
     private function assertOpen(): void
     {
-        if (! $this->state->canAcceptRevision()) {
-            throw RuleProposalRefused::ended($this->id, $this->state);
+        if (! $this->status->canAcceptRevision()) {
+            throw RuleProposalRefused::ended($this->id, $this->status);
         }
     }
 
@@ -275,11 +275,11 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
     /**
      * @throws RuleProposalRefused
      */
-    private function end(ProposalState $state): void
+    private function end(ProposalStatus $state): void
     {
         $this->assertOpen();
 
-        $this->state = $state;
+        $this->status = $state;
         $this->save();
     }
 
@@ -330,11 +330,11 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
      * The rows of any of the given states.
      *
      * @param  Builder<self>  $query
-     * @param  array<array-key, ProposalState>|Builder<covariant Model>|Closure  $states
+     * @param  array<array-key, ProposalStatus>|Builder<covariant Model>|Closure  $states
      */
     #[Scope]
     protected function withAnyState(Builder $query, array|Builder|Closure $states): void
     {
-        $query->whereIn('state', $states);
+        $query->whereIn('status', $states);
     }
 }

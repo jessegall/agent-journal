@@ -15,7 +15,7 @@ use Domain\Rules\Commands\DenyRule\DenyRuleCommand;
 use Domain\Rules\Commands\ProposeRule\ProposeRuleCommand;
 use Domain\Rules\Commands\RemoveRule\RemoveRuleCommand;
 use Domain\Rules\Contracts\RuleDetailsResolver;
-use Domain\Rules\Enums\RuleState;
+use Domain\Rules\Enums\RuleStatus;
 use Domain\Rules\Models\Rule;
 use Domain\Rules\Support\ActiveRules;
 use Domain\Rules\Tests\TestCase;
@@ -57,7 +57,7 @@ final class RuleProposalTest extends TestCase
 
         $this->assertSame(
             [
-                RuleState::Proposed,
+                RuleStatus::Proposed,
                 'The old one is too vague.',
                 Agent::storedType(),
                 $start->agent->id,
@@ -91,12 +91,12 @@ final class RuleProposalTest extends TestCase
 
         $this->assertSame(
             [
-                RuleState::Active,
-                RuleState::Proposed,
+                RuleStatus::Active,
+                RuleStatus::Proposed,
             ],
             [
-                $active->fresh()?->state,
-                $proposed->fresh()?->state,
+                $active->fresh()?->status,
+                $proposed->fresh()?->status,
             ],
         );
     }
@@ -112,6 +112,6 @@ final class RuleProposalTest extends TestCase
 
         $this->app->make(CommandBus::class)->run(new RemoveRuleCommand($active->id));
 
-        $this->assertSame(RuleState::Removed, $active->fresh()?->state);
+        $this->assertSame(RuleStatus::Removed, $active->fresh()?->status);
     }
 }

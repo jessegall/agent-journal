@@ -6,7 +6,7 @@ namespace Tests\Feature\Connections;
 
 use App\Data\Connections\ProjectEntryData;
 use App\Enums\Projects\ProjectReadType;
-use App\Enums\Projects\ProjectWindowState;
+use App\Enums\Projects\ProjectWindowStatus;
 use App\Models\Access\User;
 use App\Models\Projects\ProjectRead;
 use Carbon\CarbonImmutable;
@@ -41,12 +41,12 @@ final class ProjectWindowTest extends TestCase
     {
         $this->readyFolder();
 
-        $this->assertState(ProjectWindowState::Pending);
+        $this->assertState(ProjectWindowStatus::Pending);
 
         $this->answer('', [new ProjectEntryData('src', true, 0), new ProjectEntryData('README.md', false, 6)]);
 
         $this->window(fn (AssertableInertia $window) => $window
-            ->where(self::PROP.'.data.state', ProjectWindowState::Ready->value)
+            ->where(self::PROP.'.data.state', ProjectWindowStatus::Ready->value)
             ->where(self::PROP.'.data.entries.0.path', 'src')
             ->where(self::PROP.'.data.entries.0.isLoading', true)
             ->where(self::PROP.'.data.entries.1.size', 6));
@@ -61,23 +61,23 @@ final class ProjectWindowTest extends TestCase
     public function test_an_empty_project_is_ready_with_no_entries(): void
     {
         $this->readyFolder();
-        $this->assertState(ProjectWindowState::Pending);
+        $this->assertState(ProjectWindowStatus::Pending);
 
         $this->answer('', []);
 
         $this->window(fn (AssertableInertia $window) => $window
-            ->where(self::PROP.'.data.state', ProjectWindowState::Ready->value)
+            ->where(self::PROP.'.data.state', ProjectWindowStatus::Ready->value)
             ->where(self::PROP.'.data.entries', []));
     }
 
     public function test_a_folder_whose_relay_went_quiet_is_offline_and_none_connected_is_none(): void
     {
-        $this->assertState(ProjectWindowState::None);
+        $this->assertState(ProjectWindowStatus::None);
 
         $this->readyFolder();
         CarbonImmutable::setTestNow(CarbonImmutable::now()->addHour());
 
-        $this->assertState(ProjectWindowState::Offline);
+        $this->assertState(ProjectWindowStatus::Offline);
     }
 
     public function test_someone_other_than_the_owner_does_not_see_the_window(): void
@@ -101,7 +101,7 @@ final class ProjectWindowTest extends TestCase
             ->firstOrFail()->answerWithEntries($entries, false);
     }
 
-    private function assertState(ProjectWindowState $state): void
+    private function assertState(ProjectWindowStatus $state): void
     {
         $this->window(fn (AssertableInertia $window) => $window->where(self::PROP.'.data.state', $state->value));
     }

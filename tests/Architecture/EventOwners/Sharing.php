@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use Carbon\CarbonImmutable;
-use Domain\Sharing\Enums\GatewayEndpointState;
+use Domain\Sharing\Enums\GatewayEndpointStatus;
 use Domain\Sharing\Enums\GatewayOutcome;
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Events\ShareActivated;
 use Domain\Sharing\Events\ShareCreated;
 use Domain\Sharing\Events\ShareExpired;
@@ -37,28 +37,28 @@ return [
         'owner' => 'Share::activate',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ShareActivated(new ShareFact('share', null, ShareState::Active, 1, new DateTimeImmutable('2026-01-01'))),
+        'sample' => fn () => new ShareActivated(new ShareFact('share', null, ShareStatus::Active, 1, new DateTimeImmutable('2026-01-01'))),
     ],
     ShareCreated::class => [
         'role' => EventRole::RowFact,
         'owner' => ['Share::create', 'Share::approveAs'],
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ShareCreated(new ShareFact('share', null, ShareState::Pending, 1, new DateTimeImmutable('2026-01-01'))),
+        'sample' => fn () => new ShareCreated(new ShareFact('share', null, ShareStatus::Pending, 1, new DateTimeImmutable('2026-01-01'))),
     ],
     ShareExpired::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Share::end',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ShareExpired(new ShareFact('share', null, ShareState::Expired, 1, new DateTimeImmutable('2026-01-01'))),
+        'sample' => fn () => new ShareExpired(new ShareFact('share', null, ShareStatus::Expired, 1, new DateTimeImmutable('2026-01-01'))),
     ],
     ShareFailed::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Share::failActivation',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ShareFailed(new ShareFact('share', null, ShareState::Failed, 1, new DateTimeImmutable('2026-01-01'))),
+        'sample' => fn () => new ShareFailed(new ShareFact('share', null, ShareStatus::Failed, 1, new DateTimeImmutable('2026-01-01'))),
     ],
     ShareGatewayChanged::class => [
         'role' => EventRole::RowFact,
@@ -73,28 +73,28 @@ return [
         'owner' => 'Share::create',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ShareRequested(new ShareFact('share', null, ShareState::Proposed, 1, new DateTimeImmutable('2026-01-01'))),
+        'sample' => fn () => new ShareRequested(new ShareFact('share', null, ShareStatus::Proposed, 1, new DateTimeImmutable('2026-01-01'))),
     ],
     ShareRevoked::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Share::end',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ShareRevoked(new ShareFact('share', null, ShareState::Revoked, 1, new DateTimeImmutable('2026-01-01'))),
+        'sample' => fn () => new ShareRevoked(new ShareFact('share', null, ShareStatus::Revoked, 1, new DateTimeImmutable('2026-01-01'))),
     ],
     ShareScopeChanged::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Share::advanceScope',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ShareScopeChanged(new ShareFact('share', null, ShareState::Active, 1, new DateTimeImmutable('2026-01-01'))),
+        'sample' => fn () => new ShareScopeChanged(new ShareFact('share', null, ShareStatus::Active, 1, new DateTimeImmutable('2026-01-01'))),
     ],
     ShareRetried::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Share::retryOpening',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ShareRetried(new ShareFact('share', 'configuration', ShareState::Pending, 1, new CarbonImmutable('2026-01-01'))),
+        'sample' => fn () => new ShareRetried(new ShareFact('share', 'configuration', ShareStatus::Pending, 1, new CarbonImmutable('2026-01-01'))),
     ],
     SharePruned::class => [
         'role' => EventRole::RowFact,
@@ -115,7 +115,7 @@ return [
         'owner' => 'ShareGatewayEndpoint::moveTo',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ShareGatewayEndpointMoved('endpoint', GatewayEndpointState::cases()[0]),
+        'sample' => fn () => new ShareGatewayEndpointMoved('endpoint', GatewayEndpointStatus::cases()[0]),
     ],
     ShareGatewayEndpointFoundHealthy::class => [
         'role' => EventRole::RowFact,

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Profiles;
 
 use App\Contracts\Actors\CurrentActorSetter;
-use App\Enums\Accounts\AccountState;
+use App\Enums\Accounts\AccountStatus;
 use App\Enums\Accounts\SignInMethod;
 use App\Enums\Sessions\StartUnavailableReason;
 use App\Exceptions\AccountLabelInvalid;
@@ -130,7 +130,7 @@ final class AccountStorageTest extends TestCase
         $again = $this->account('WORK');
 
         $removed->refresh();
-        $this->assertSame(AccountState::Removed, $removed->state);
+        $this->assertSame(AccountStatus::Removed, $removed->status);
         $this->assertSame(['Work', null], [$removed->label, $removed->directory]);
         $this->assertSame('core.accounts.account', $removed->recordIdentity->type);
         $this->assertNotSame($removed->id, $again->id);

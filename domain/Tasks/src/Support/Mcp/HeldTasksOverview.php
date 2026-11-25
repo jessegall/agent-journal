@@ -9,7 +9,7 @@ use App\Mcp\Data\NextAction;
 use App\Mcp\Data\OverviewSection;
 use App\Support\NumberedPage;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Values\TaskFilters;
 
 /**
@@ -26,9 +26,9 @@ final readonly class HeldTasksOverview implements OverviewContribution
 
     public function read(): OverviewSection
     {
-        $states = array_values(array_filter(TaskState::cases(), fn (TaskState $state): bool => ! $state->hasEnded()));
+        $states = array_values(array_filter(TaskStatus::cases(), fn (TaskStatus $state): bool => ! $state->hasEnded()));
         $held = $this->tasks->assignedToCaller(new TaskFilters(states: $states, page: new NumberedPage(1, 1)))->total;
-        $stateNames = array_map(fn (TaskState $state): string => $state->value, $states);
+        $stateNames = array_map(fn (TaskStatus $state): string => $state->value, $states);
 
         return OverviewSection::from([
             'title' => 'Tasks you hold',

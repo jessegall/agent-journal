@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Data;
 
 use App\Support\AssignmentData;
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Values\PlanCard;
 use Spatie\LaravelData\Data;
@@ -23,7 +23,7 @@ final class AssignedPlanCardData extends Data
         public readonly string $id,
         public readonly string $title,
         public readonly PlanType $type,
-        public readonly PlanState $state,
+        public readonly PlanStatus $state,
         public readonly AssignmentData $holder,
     ) {}
 

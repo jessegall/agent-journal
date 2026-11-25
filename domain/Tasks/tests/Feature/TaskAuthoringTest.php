@@ -14,7 +14,7 @@ use App\Support\ActorIdentity;
 use App\Values\OwnerAuthority;
 use Domain\Tasks\Commands\CreateTask\CreateTaskCommand;
 use Domain\Tasks\Commands\EditTask\EditTaskCommand;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Exceptions\TaskRevisionChanged;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
@@ -102,14 +102,14 @@ final class TaskAuthoringTest extends TestCase
                 'New',
                 'New brief',
                 2,
-                TaskState::Open,
+                TaskStatus::Open,
                 0,
             ],
             [
                 $fresh?->title,
                 $fresh?->brief,
                 $fresh?->revision,
-                $fresh?->state,
+                $fresh?->status,
                 $fresh?->run_number,
             ],
         );
@@ -122,10 +122,10 @@ final class TaskAuthoringTest extends TestCase
         $task->start(ActorIdentity::system());
         $this->assertSame([
             1,
-            TaskState::Started,
+            TaskStatus::Started,
         ], [
             $task->run_number,
-            $task->state,
+            $task->status,
         ]);
 
         $task->block('Waits on the schema.');
@@ -136,14 +136,14 @@ final class TaskAuthoringTest extends TestCase
         $this->assertSame(
             [
                 2,
-                TaskState::Finished,
+                TaskStatus::Finished,
                 'Waits on the schema.',
                 'Built and tested.',
                 1,
             ],
             [
                 $fresh?->run_number,
-                $fresh?->state,
+                $fresh?->status,
                 $fresh?->block_reason,
                 $fresh?->result_note,
                 $fresh?->revision,
@@ -159,11 +159,11 @@ final class TaskAuthoringTest extends TestCase
 
         $this->assertSame(
             [
-                TaskState::Cancelled,
+                TaskStatus::Cancelled,
                 'No longer needed.',
             ],
             [
-                $task->fresh()?->state,
+                $task->fresh()?->status,
                 $task->fresh()?->cancel_reason,
             ],
         );
@@ -221,7 +221,7 @@ final class TaskAuthoringTest extends TestCase
             [
                 Agent::storedType(),
                 $start->agent->id,
-                TaskState::Open,
+                TaskStatus::Open,
             ],
             [
                 $task->creator_type,

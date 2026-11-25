@@ -10,7 +10,7 @@ use App\Enums\Drivers\HoldReason;
 use App\Enums\Drivers\RequestProgress;
 use App\Enums\Navigation\NavigationCompletion;
 use App\Enums\Navigation\NavigationKey;
-use App\Enums\Navigation\NavigationState;
+use App\Enums\Navigation\NavigationStatus;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\MenuEntry;
@@ -107,7 +107,7 @@ final class NavigationRoundTest extends TestCase
 
         $this->notify($host, $round, isProofSeen: true)->assertNoContent();
 
-        $this->assertSame(NavigationState::Proven, $navigation->fresh()?->state);
+        $this->assertSame(NavigationStatus::Proven, $navigation->fresh()?->status);
         $stalled = DriverRequest::query()->findOrFail($navigation->driver_request_id);
         $this->assertSame(RequestProgress::Applied, $stalled->progress);
         $runtime = AgentRuntime::query()->findOrFail($navigation->agent_runtime_id);
@@ -141,7 +141,7 @@ final class NavigationRoundTest extends TestCase
 
         $this->notify($host, $round, isProofSeen: false)->assertNoContent();
 
-        $this->assertSame(NavigationState::Answering, $navigation->fresh()?->state);
+        $this->assertSame(NavigationStatus::Answering, $navigation->fresh()?->status);
     }
 
     public function test_an_ended_request_cancels_its_queued_rounds_and_refuses_their_report(): void

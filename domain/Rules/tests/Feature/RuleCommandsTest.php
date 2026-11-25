@@ -12,7 +12,7 @@ use App\Values\OwnerAuthority;
 use Domain\Rules\Commands\ApproveRule\ApproveRuleCommand;
 use Domain\Rules\Commands\ProposeRule\ProposeRuleCommand;
 use Domain\Rules\Commands\RemoveRule\RemoveRuleCommand;
-use Domain\Rules\Enums\RuleState;
+use Domain\Rules\Enums\RuleStatus;
 use Domain\Rules\Events\RuleRemoved;
 use Domain\Rules\Exceptions\RuleMissing;
 use Domain\Rules\Models\Rule;
@@ -54,7 +54,7 @@ final class RuleCommandsTest extends TestCase
             new ProposeRuleCommand('Every phase ends with its tests.', 'Phases ended untested.'),
         );
 
-        $this->assertSame(RuleState::Proposed, Rule::query()->findOrFail($id)->state);
+        $this->assertSame(RuleStatus::Proposed, Rule::query()->findOrFail($id)->status);
     }
 
     public function test_removing_a_rule_raises_its_fact(): void
@@ -68,7 +68,7 @@ final class RuleCommandsTest extends TestCase
 
         $this->app->make(CommandBus::class)->run(new RemoveRuleCommand($rule->id));
 
-        $this->assertSame(RuleState::Removed, $rule->fresh()?->state);
+        $this->assertSame(RuleStatus::Removed, $rule->fresh()?->status);
         Event::assertDispatched(RuleRemoved::class, fn (RuleRemoved $event) => $event->ruleId === $rule->id);
     }
 
@@ -90,7 +90,7 @@ final class RuleCommandsTest extends TestCase
             $this->app->make(CommandBus::class)->run(new ApproveRuleCommand($rule->id));
             $this->fail('An agent approved a rule.');
         } catch (ActorNotAllowed) {
-            $this->assertSame(RuleState::Proposed, $rule->fresh()?->state);
+            $this->assertSame(RuleStatus::Proposed, $rule->fresh()?->status);
         }
     }
 

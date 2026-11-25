@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\CommandRules\StartSample;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\CommandRules\RequestState;
+use App\Enums\CommandRules\RequestStatus;
 use App\Exceptions\EvidencePermitRefused;
 use App\Exceptions\RequestTransitionRefused;
 use App\Exceptions\SampleRefused;
@@ -41,7 +41,7 @@ final readonly class StartSampleHandler implements CommandHandler
             return (string) $permit->process_run_id;
         }
 
-        if ($permit === null || $request->state !== RequestState::ReadyForSample) {
+        if ($permit === null || $request->status !== RequestStatus::ReadyForSample) {
             throw SampleRefused::notReady($request->nextStep->command);
         }
 

@@ -10,7 +10,7 @@ use App\Support\StateLoading\StateBuilder;
 use App\Support\StateLoading\StateValues;
 use Tests\Fixtures\Hooks\Stacks\FinishedSubjects;
 use Tests\Fixtures\Hooks\StateLoading\KeptValuesState;
-use Tests\Fixtures\Web\Types\ShelfState;
+use Tests\Fixtures\Web\Types\ShelfStatus;
 use Tests\TestCase;
 
 /**
@@ -37,7 +37,7 @@ final class StateBuilderTest extends TestCase
         $built = $this->build(StateValues::of($state));
 
         $this->assertSame(StateValues::of($state), StateValues::of($built));
-        $this->assertSame(ShelfState::Closed, $built->shelf());
+        $this->assertSame(ShelfStatus::Closed, $built->shelf());
         $this->assertTrue($built->isFinished());
     }
 

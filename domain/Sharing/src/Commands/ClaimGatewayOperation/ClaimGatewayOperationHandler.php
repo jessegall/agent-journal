@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sharing\Commands\ClaimGatewayOperation;
 
 use Domain\Sharing\Commands\Support\SharingCommandHandler;
-use Domain\Sharing\Enums\GatewayEndpointState;
+use Domain\Sharing\Enums\GatewayEndpointStatus;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\GatewayOutcome;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
@@ -55,7 +55,7 @@ final readonly class ClaimGatewayOperationHandler extends SharingCommandHandler
         $endpoint = $running->getOrCall(fn () => ShareGatewayEndpoint::createForConfiguration($configuration, $command->runId));
 
         if ($operation->type === GatewayOperationType::Close) {
-            $endpoint->moveTo(GatewayEndpointState::Closing);
+            $endpoint->moveTo(GatewayEndpointStatus::Closing);
         }
 
         return new ClaimedGatewayOperation(

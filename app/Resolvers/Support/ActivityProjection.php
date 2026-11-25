@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Resolvers\Support;
 
-use App\Enums\Runs\LifecycleState;
+use App\Enums\Runs\LifecycleStatus;
 use App\Models\Runs\OutputChunk;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
@@ -49,9 +49,9 @@ final readonly class ActivityProjection
         );
     }
 
-    private function lifecycleOf(LifecycleState $state): string
+    private function lifecycleOf(LifecycleStatus $state): string
     {
-        if ($state === LifecycleState::Draining) {
+        if ($state === LifecycleStatus::Draining) {
             return 'finalizing';
         }
 

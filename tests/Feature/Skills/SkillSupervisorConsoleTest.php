@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Skills;
 
 use App\Contracts\Skills\SkillPublisher as SkillPublisherContract;
-use App\Enums\Skills\PublicationState;
+use App\Enums\Skills\PublicationStatus;
 use App\Models\Skills\SkillGeneration;
 use App\Models\Skills\SkillPublication;
 use App\Support\Drivers\DriverSkillAdapters;
@@ -80,14 +80,14 @@ final class SkillSupervisorConsoleTest extends TestCase
         $this->app->instance(SkillPublisherContract::class, new FullDiskPublisher($this->app->make(SkillPublisher::class)));
         $publication = $this->intend('First text.');
         $this->publishing()->publish($publication->id, 'worker-1');
-        $this->assertSame(PublicationState::Failed, $publication->refresh()->state);
+        $this->assertSame(PublicationStatus::Failed, $publication->refresh()->status);
         $this->app->forgetInstance(SkillPublisherContract::class);
 
         $this->artisan('skill:retry', ['publication' => $publication->id])
             ->expectsOutputToContain("Publication {$publication->id}: delivered.")
             ->assertSuccessful();
 
-        $this->assertSame(PublicationState::Delivered, $publication->refresh()->state);
+        $this->assertSame(PublicationStatus::Delivered, $publication->refresh()->status);
         $this->assertSame(self::FIRST_TEXT, File::get("{$this->target()}/skills/journal/SKILL.md"));
     }
 
@@ -107,7 +107,7 @@ final class SkillSupervisorConsoleTest extends TestCase
             ->expectsOutputToContain("Publication {$publication->id}: delivered.")
             ->assertSuccessful();
 
-        $this->assertSame(PublicationState::Delivered, $publication->refresh()->state);
+        $this->assertSame(PublicationStatus::Delivered, $publication->refresh()->status);
     }
 
     public function test_prune_removes_an_unused_set_keeps_current_and_previous_and_reports_a_hand_edited_file(): void
@@ -128,14 +128,14 @@ final class SkillSupervisorConsoleTest extends TestCase
         $this->assertDirectoryExists($this->stagingFolder($previous));
         $this->assertDirectoryExists($this->stagingFolder($current));
         $this->assertSame(self::FOURTH_TEXT, File::get("{$this->target()}/skills/journal/SKILL.md"));
-        $this->assertSame(PublicationState::Superseded, $oldest->refresh()->state);
+        $this->assertSame(PublicationStatus::Superseded, $oldest->refresh()->status);
 
         $this->travel(31)->days();
         $this->artisan('skill:prune')->expectsOutputToContain('Retired 1 publications.')->assertSuccessful();
 
-        $this->assertSame(PublicationState::Retired, $oldest->refresh()->state);
-        $this->assertSame(PublicationState::Superseded, $edited->refresh()->state);
-        $this->assertSame(PublicationState::Delivered, $current->refresh()->state);
+        $this->assertSame(PublicationStatus::Retired, $oldest->refresh()->status);
+        $this->assertSame(PublicationStatus::Superseded, $edited->refresh()->status);
+        $this->assertSame(PublicationStatus::Delivered, $current->refresh()->status);
     }
 
     public function test_the_scheduler_runs_resume_every_minute_and_prune_daily(): void
@@ -149,7 +149,7 @@ final class SkillSupervisorConsoleTest extends TestCase
     private function delivered(string $text): SkillPublication
     {
         $publication = $this->intend($text);
-        $this->assertSame(PublicationState::Delivered, $this->publishing()->publish($publication->id, 'worker-1'));
+        $this->assertSame(PublicationStatus::Delivered, $this->publishing()->publish($publication->id, 'worker-1'));
 
         return $publication->refresh();
     }

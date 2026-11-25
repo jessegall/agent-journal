@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Commands\CommandRules\ProveReader\ProveReaderCommand;
-use App\Enums\CommandRules\RequestState;
+use App\Enums\CommandRules\RequestStatus;
 use App\Exceptions\ReaderProofFailed;
 use App\Exceptions\RevisionImmutable;
 use App\Models\Runs\ReaderProof;
@@ -44,7 +44,7 @@ final class ReaderProofTest extends TestCase
 
         $this->assertSame([1], $refusal->unprovenStatuses);
         $this->assertSame([], $refusal->failures);
-        $this->assertSame(RequestState::AwaitingProof, $this->request()->state);
+        $this->assertSame(RequestStatus::AwaitingProof, $this->request()->status);
     }
 
     public function test_a_reader_that_leaves_an_error_line_unaccounted_fails_naming_its_offsets(): void
@@ -79,7 +79,7 @@ final class ReaderProofTest extends TestCase
         $proof = ReaderProof::query()->findOrFail($proofId);
         $this->assertSame([0, 1], array_map(fn ($branch) => $branch->status, $proof->proven_branches->items()));
         $this->assertArrayHasKey('stdout', $proof->proven_branches[0]->manifests);
-        $this->assertSame(RequestState::AwaitingApproval, $this->request()->state);
+        $this->assertSame(RequestStatus::AwaitingApproval, $this->request()->status);
         $this->assertTrue(ReaderRevision::query()->findOrFail($reader)->isProven());
         $proof->actor_id = 'someone-else';
         $this->assertThrows(fn () => $proof->save(), RevisionImmutable::class);

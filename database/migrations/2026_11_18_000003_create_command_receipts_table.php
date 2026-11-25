@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('request_key', 128);
             $table->string('command');
             $table->char('fingerprint', 64);
-            $table->string('state', 16);
+            $table->string('status', 16);
             $table->json('result')->nullable();
             $table->string('refusal_code', 32)->nullable();
             $table->text('refusal_message')->nullable();

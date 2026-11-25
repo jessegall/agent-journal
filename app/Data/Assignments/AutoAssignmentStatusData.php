@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Assignments;
 
 use App\Support\AssignmentTotals;
-use App\Support\AutoAssignmentStatus;
+use App\Support\AutoAssignmentView;
 use App\Support\PoolDescription;
 use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Data;
@@ -29,7 +29,7 @@ final class AutoAssignmentStatusData extends Data
         public readonly string|Optional $lastAssignedAt = new Optional(),
     ) {}
 
-    public static function of(AutoAssignmentStatus $status): self
+    public static function of(AutoAssignmentView $status): self
     {
         return self::from([
             'isEnabled' => $status->isEnabled,

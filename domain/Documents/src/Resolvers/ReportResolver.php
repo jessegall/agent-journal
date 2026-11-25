@@ -12,8 +12,8 @@ use Domain\Documents\Data\PublicationList;
 use Domain\Documents\Data\RecordInspection;
 use Domain\Documents\Data\RecordText;
 use Domain\Documents\Data\ReportView;
-use Domain\Documents\Enums\AttentionState;
-use Domain\Documents\Enums\EditingState;
+use Domain\Documents\Enums\AttentionStatus;
+use Domain\Documents\Enums\EditingStatus;
 use Domain\Documents\Exceptions\ReportMissing;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Support\RecordReading;
@@ -68,7 +68,7 @@ final readonly class ReportResolver implements ReportResolverContract
 
     public function openCount(): int
     {
-        return Report::query()->sharedPublished()->inAttention(AttentionState::Active)->count();
+        return Report::query()->sharedPublished()->inAttention(AttentionStatus::Active)->count();
     }
 
     public function show(int $number): ReportView
@@ -83,7 +83,7 @@ final readonly class ReportResolver implements ReportResolverContract
         return RecordInspection::from([
             'label' => "report {$number}",
             'attention' => $report->attention,
-            'editing' => ['state' => EditingState::Free],
+            'editing' => ['state' => EditingStatus::Free],
             'settlements' => $report->settlements(),
             'closes' => [],
             'links' => $this->records->linkedCards($report),

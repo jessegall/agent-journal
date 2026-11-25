@@ -9,7 +9,7 @@ use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
 use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Events\TaskBlocked;
 use Domain\Tasks\Events\TaskCancelled;
 use Domain\Tasks\Events\TaskFinished;
@@ -71,14 +71,14 @@ final class TaskCommandsTest extends TestCase
 
         $this->assertSame(
             [
-                TaskState::Finished,
-                TaskState::Blocked,
-                TaskState::Cancelled,
+                TaskStatus::Finished,
+                TaskStatus::Blocked,
+                TaskStatus::Cancelled,
             ],
             [
-                $finished->fresh()?->state,
-                $blocked->fresh()?->state,
-                $cancelled->fresh()?->state,
+                $finished->fresh()?->status,
+                $blocked->fresh()?->status,
+                $cancelled->fresh()?->status,
             ],
         );
 
@@ -110,7 +110,7 @@ final class TaskCommandsTest extends TestCase
         $this->assertInstanceOf(TaskFinished::class, $raised[0]);
         $this->assertSame([
             $task->id,
-            TaskState::Open,
+            TaskStatus::Open,
         ], [
             $raised[0]->taskId,
             $raised[0]->previousState,
@@ -126,7 +126,7 @@ final class TaskCommandsTest extends TestCase
             fn () => $this->app->make(CommandBus::class)->run(new FinishTaskCommand($task->id, 3, 'Done.')),
         );
 
-        $this->assertSame(TaskState::Open, $task->fresh()?->state);
+        $this->assertSame(TaskStatus::Open, $task->fresh()?->status);
         Event::assertNotDispatched(TaskFinished::class);
     }
 

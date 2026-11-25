@@ -11,7 +11,7 @@ use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
 use App\Values\StopCheckReference;
-use Domain\Helpers\Enums\JobState;
+use Domain\Helpers\Enums\JobStatus;
 use Domain\Helpers\Listeners\HoldFailingJob;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
@@ -37,7 +37,7 @@ final class HelperJobEndingTest extends TestCase
         $this->raise(new HelperCompletionCertified($job->assignmentIdentity(), new StopCheckReference('attempt-1')));
 
         $finished = HelperJob::query()->acrossActors()->findOrFail($job->id);
-        $this->assertSame(JobState::Finished, $finished->state);
+        $this->assertSame(JobStatus::Finished, $finished->status);
         $this->assertSame('stop-attempt:attempt-1', $finished->stop_evidence_reference);
         $this->assertNotNull($finished->finished_at);
     }
@@ -55,8 +55,8 @@ final class HelperJobEndingTest extends TestCase
 
         $this->raise(new SessionStartCancelled($cancelled->assignmentIdentity()));
 
-        $this->assertSame(JobState::Held, HelperJob::query()->acrossActors()->findOrFail($held->id)->state);
-        $this->assertSame(JobState::Cancelled, HelperJob::query()->acrossActors()->findOrFail($cancelled->id)->state);
+        $this->assertSame(JobStatus::Held, HelperJob::query()->acrossActors()->findOrFail($held->id)->status);
+        $this->assertSame(JobStatus::Cancelled, HelperJob::query()->acrossActors()->findOrFail($cancelled->id)->status);
     }
 
     public function test_an_ended_job_and_other_work_are_left_alone(): void
@@ -67,7 +67,7 @@ final class HelperJobEndingTest extends TestCase
         $this->raise(new HelperCompletionCertified($job->assignmentIdentity(), new StopCheckReference('attempt-3')));
         $this->raise(new SessionStartCancelled(new RecordIdentity('tasks.task', $job->id)));
 
-        $this->assertSame(JobState::Cancelled, HelperJob::query()->acrossActors()->findOrFail($job->id)->state);
+        $this->assertSame(JobStatus::Cancelled, HelperJob::query()->acrossActors()->findOrFail($job->id)->status);
     }
 
     private function job(): HelperJob

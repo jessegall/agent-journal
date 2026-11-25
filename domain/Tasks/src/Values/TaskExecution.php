@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Values;
 
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use PhpOption\Option;
 
 /**
@@ -21,7 +21,7 @@ final readonly class TaskExecution
         public string $actorId,
         public string|null $actorLabel,
         public int $runNumber,
-        public TaskState $state,
+        public TaskStatus $state,
         public bool $isRunningNow,
         public Option $focusedBy,
     ) {}

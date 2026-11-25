@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Navigation;
 
-use App\Enums\Navigation\MenuEntryState;
+use App\Enums\Navigation\MenuEntryStatus;
 use App\Support\ActorIdentity;
 
 /**
@@ -24,14 +24,14 @@ interface NavigationReader
     public function menuEntries(
         ActorIdentity $owner,
         string|null $driver,
-        MenuEntryState|null $state,
+        MenuEntryStatus|null $state,
         int $page,
     ): array;
 
     /**
      * How many of the owner's menu entries match the filters, over every page.
      */
-    public function menuEntryCount(ActorIdentity $owner, string|null $driver, MenuEntryState|null $state): int;
+    public function menuEntryCount(ActorIdentity $owner, string|null $driver, MenuEntryStatus|null $state): int;
 
     /**
      * One menu entry of the owner, whole.

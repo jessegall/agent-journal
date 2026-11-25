@@ -18,7 +18,7 @@ use App\Models\Support\BelongsToOneRoot;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Events\ShareActivated;
 use Domain\Sharing\Events\ShareCreated;
 use Domain\Sharing\Events\ShareExpired;
@@ -52,7 +52,7 @@ use PhpOption\Option;
  * @property string $id
  * @property string $number_group_id
  * @property int $number
- * @property ShareState $state
+ * @property ShareStatus $status
  * @property string $root_type
  * @property string $root_id
  * @property string|null $owner_user_id
@@ -119,7 +119,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     protected function casts(): array
     {
         return [
-            'state' => ShareState::class,
+            'status' => ShareStatus::class,
             'configuration_version' => 'integer',
             'scope_version' => 'integer',
             'token_ciphertext' => 'encrypted',
@@ -145,7 +145,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
         ShareProposal|ShareGrant $origin,
     ): self {
         if ($origin instanceof ShareProposal) {
-            $share = self::forRoot($root, ShareState::Proposed, $expiresAt);
+            $share = self::forRoot($root, ShareStatus::Proposed, $expiresAt);
             $share->requester_type = $origin->requester->type;
             $share->requester_id = $origin->requester->id;
             $share->assertSaved($share->save());
@@ -154,7 +154,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
             return $share;
         }
 
-        $share = self::forRoot($root, ShareState::Pending, $expiresAt);
+        $share = self::forRoot($root, ShareStatus::Pending, $expiresAt);
         $share->owner_user_id = $origin->ownerUserId;
         $share->scope_version = self::FIRST_SCOPE_VERSION;
         $share->share_gateway_configuration_id = $origin->configurationId;
@@ -179,7 +179,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
         ShareToken $token,
         CarbonImmutable $expiresAt,
     ): void {
-        $this->state = ShareState::Pending;
+        $this->status = ShareStatus::Pending;
         $this->owner_user_id = $ownerUserId;
         $this->scope_version = self::FIRST_SCOPE_VERSION;
         $this->expires_at = $expiresAt;
@@ -197,21 +197,21 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      *
      * @throws ShareEndInvalid
      */
-    public function end(ShareState $terminal): bool
+    public function end(ShareStatus $terminal): bool
     {
         $this->assertEndsAs($terminal);
 
-        if ($this->state->isTerminal()) {
+        if ($this->status->isTerminal()) {
             return false;
         }
 
         $endedAt = CarbonImmutable::now();
-        $this->state = $terminal;
+        $this->status = $terminal;
         $this->terminal_at = $endedAt;
         $this->token_ciphertext = null;
         $this->assertSaved($this->save());
 
-        if ($terminal === ShareState::Revoked) {
+        if ($terminal === ShareStatus::Revoked) {
             $this->raise(new ShareRevoked($this->factAt($endedAt)));
 
             return true;
@@ -241,7 +241,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     {
         $this->assertRetryable();
 
-        $this->state = ShareState::Pending;
+        $this->status = ShareStatus::Pending;
         $this->save();
         $this->raise(new ShareRetried($this->factAt(CarbonImmutable::now())));
     }
@@ -265,7 +265,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      */
     public function activate(): void
     {
-        $this->state = ShareState::Active;
+        $this->status = ShareStatus::Active;
         $this->assertSaved($this->save());
         $this->raise(new ShareActivated($this->fact));
     }
@@ -275,7 +275,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      */
     public function failActivation(): void
     {
-        $this->state = ShareState::Failed;
+        $this->status = ShareStatus::Failed;
         $this->assertSaved($this->save());
         $this->raise(new ShareFailed($this->fact));
     }
@@ -301,7 +301,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      */
     public function isReadableNow(): bool
     {
-        return $this->state === ShareState::Active && $this->expires_at->isFuture();
+        return $this->status === ShareStatus::Active && $this->expires_at->isFuture();
     }
 
     /**
@@ -402,7 +402,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      */
     protected function summary(): Attribute
     {
-        return Accessor::get(fn () => new ShareSummary($this->id, $this->number, $this->state));
+        return Accessor::get(fn () => new ShareSummary($this->id, $this->number, $this->status));
     }
 
     /**
@@ -412,7 +412,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      */
     protected function proposalStatus(): Attribute
     {
-        return Accessor::get(fn () => new ShareProposalStatus($this->number, $this->state));
+        return Accessor::get(fn () => new ShareProposalStatus($this->number, $this->status));
     }
 
     /**
@@ -430,9 +430,9 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      *
      * @throws ShareEndInvalid
      */
-    private function assertEndsAs(ShareState $terminal): void
+    private function assertEndsAs(ShareStatus $terminal): void
     {
-        if ($terminal !== ShareState::Revoked && $terminal !== ShareState::Expired) {
+        if ($terminal !== ShareStatus::Revoked && $terminal !== ShareStatus::Expired) {
             throw ShareEndInvalid::for($this->id, $terminal);
         }
     }
@@ -445,11 +445,11 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     private function assertRetryable(): void
     {
         if (! $this->expires_at->isFuture()) {
-            throw ShareRetryRefused::for($this->id, ShareState::Expired);
+            throw ShareRetryRefused::for($this->id, ShareStatus::Expired);
         }
 
-        if (! $this->state->mayRetry()) {
-            throw ShareRetryRefused::for($this->id, $this->state);
+        if (! $this->status->mayRetry()) {
+            throw ShareRetryRefused::for($this->id, $this->status);
         }
     }
 
@@ -469,10 +469,10 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
 
     // ----------[ Internals ]----------
 
-    private static function forRoot(RecordIdentity $root, ShareState $state, CarbonImmutable $expiresAt): self
+    private static function forRoot(RecordIdentity $root, ShareStatus $state, CarbonImmutable $expiresAt): self
     {
         $share = new self();
-        $share->state = $state;
+        $share->status = $state;
         $share->root_type = $root->type;
         $share->root_id = $root->id;
         $share->scope_version = 0;
@@ -568,7 +568,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     {
         return array_values(
             self::query()->servedBy($configurationId)->inState(
-                ShareState::Pending,
+                ShareStatus::Pending,
             )->oldestFirst()->lockForUpdate()->limit(self::LIVE_LIMIT)->get()->all(),
         );
     }
@@ -710,7 +710,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     {
         $share = self::query()->openedByDigest($digest)->first([
             'id',
-            'state',
+            'status',
             'scope_version',
             'expires_at',
         ]);
@@ -737,7 +737,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     #[Scope]
     protected function unended(Builder $query): void
     {
-        $query->whereIn('state', array_map(fn (ShareState $state) => $state->value, ShareState::liveStates()));
+        $query->whereIn('status', array_map(fn (ShareStatus $state) => $state->value, ShareStatus::liveStates()));
     }
 
     /**
@@ -747,10 +747,10 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     protected function awaitingGateway(Builder $query): void
     {
         $query->whereIn(
-            'state',
+            'status',
             [
-                ShareState::Pending->value,
-                ShareState::Failed->value,
+                ShareStatus::Pending->value,
+                ShareStatus::Failed->value,
             ],
         )->where('expires_at', '>', CarbonImmutable::now());
     }
@@ -759,9 +759,9 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function inState(Builder $query, ShareState $state): void
+    protected function inState(Builder $query, ShareStatus $state): void
     {
-        $query->where('state', $state->value);
+        $query->where('status', $state->value);
     }
 
     /**
@@ -797,11 +797,11 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     #[Scope]
     protected function pastDeadline(Builder $query): void
     {
-        $open = [ShareState::Proposed, ...ShareState::liveStates()];
+        $open = [ShareStatus::Proposed, ...ShareStatus::liveStates()];
 
         $query->whereIn(
-            'state',
-            array_map(fn (ShareState $state) => $state->value, $open),
+            'status',
+            array_map(fn (ShareStatus $state) => $state->value, $open),
         )->where('expires_at', '<=', CarbonImmutable::now());
     }
 
@@ -820,7 +820,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     #[Scope]
     protected function proposedNow(Builder $query): void
     {
-        $query->where('state', ShareState::Proposed->value)->where('expires_at', '>', CarbonImmutable::now());
+        $query->where('status', ShareStatus::Proposed->value)->where('expires_at', '>', CarbonImmutable::now());
     }
 
     /**
@@ -848,8 +848,8 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     protected function liveNow(Builder $query): void
     {
         $query->whereIn(
-            'state',
-            array_map(fn (ShareState $state) => $state->value, ShareState::liveStates()),
+            'status',
+            array_map(fn (ShareStatus $state) => $state->value, ShareStatus::liveStates()),
         )->where('expires_at', '>', CarbonImmutable::now());
     }
 
@@ -867,7 +867,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      */
     private function factAt(CarbonImmutable $at): ShareFact
     {
-        return new ShareFact($this->id, $this->share_gateway_configuration_id, $this->state, $this->scope_version, $at);
+        return new ShareFact($this->id, $this->share_gateway_configuration_id, $this->status, $this->scope_version, $at);
     }
 
     /**
@@ -900,7 +900,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     #[Scope]
     protected function filteredBy(Builder $query, ShareListFilters $filters): void
     {
-        $query->when($filters->state, fn (Builder $kept, ShareState $state) => $kept->inState($state))
+        $query->when($filters->state, fn (Builder $kept, ShareStatus $state) => $kept->inState($state))
             ->when($filters->rootType, fn (Builder $kept, string $type) => $kept->ofRootType($type))
             ->when($filters->configurationId, fn (Builder $kept, string $id) => $kept->servedBy($id))
             ->when($filters->expiresBefore, fn (Builder $kept, CarbonImmutable $by) => $kept->expiringBefore($by))

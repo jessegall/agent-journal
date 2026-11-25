@@ -27,7 +27,7 @@ final readonly class CancelHelperJobHandler extends HelperCommandHandler
             HelperUnavailable::throwing()->toYou(),
         );
 
-        if ($job->state->isLive()) {
+        if ($job->status->isLive()) {
             $this->stopLiveAttempt($job, $command->idempotencyKey);
         }
 

@@ -12,7 +12,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Navigation\NavigationCompletion;
 use App\Enums\Navigation\NavigationReason;
-use App\Enums\Navigation\NavigationState;
+use App\Enums\Navigation\NavigationStatus;
 use App\Events\Sessions\NavigationRequestAbandoned;
 use App\Events\Sessions\NavigationRequestAnswered;
 use App\Events\Sessions\NavigationRequestCancelled;
@@ -60,7 +60,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property NavigationReason $reason
  * @property NavigationScreen $screen
  * @property list<string> $raise_rows
- * @property NavigationState $state
+ * @property NavigationStatus $status
  * @property NavigationCompletion|null $completes
  * @property int|null $next_step
  * @property string|null $proof
@@ -107,7 +107,7 @@ final class NavigationRequest extends Model implements Assignable, EventSource, 
             'screen' => NavigationScreen::class,
             'raise_rows' => 'array',
             'sent_steps' => 'array',
-            'state' => NavigationState::class,
+            'status' => NavigationStatus::class,
             'completes' => NavigationCompletion::class,
             'expires_at' => 'immutable_datetime',
         ];
@@ -150,7 +150,7 @@ final class NavigationRequest extends Model implements Assignable, EventSource, 
         $navigation->raise_rows = $uncertainty->screen->rows;
         $navigation->stale_entry_id = $uncertainty->staleEntryId;
         $navigation->sent_steps = $uncertainty->sentSteps;
-        $navigation->state = NavigationState::Open;
+        $navigation->status = NavigationStatus::Open;
         $navigation->expires_at = $expiresAt;
         $navigation->belongTo($owner);
         $navigation->save();
@@ -191,7 +191,7 @@ final class NavigationRequest extends Model implements Assignable, EventSource, 
             return;
         }
 
-        $this->moveTo(NavigationState::Answering);
+        $this->moveTo(NavigationStatus::Answering);
         $this->raise(new NavigationRequestAnswered($this->id));
     }
 
@@ -203,7 +203,7 @@ final class NavigationRequest extends Model implements Assignable, EventSource, 
         $this->completes = $completes;
         $this->next_step = $nextStep;
         $this->proof = $proof;
-        $this->moveTo(NavigationState::Proving);
+        $this->moveTo(NavigationStatus::Proving);
         $this->raise(new NavigationRequestProofGiven($this->id));
     }
 
@@ -215,7 +215,7 @@ final class NavigationRequest extends Model implements Assignable, EventSource, 
         $this->completes = null;
         $this->next_step = null;
         $this->proof = null;
-        $this->moveTo(NavigationState::Answering);
+        $this->moveTo(NavigationStatus::Answering);
         $this->raise(new NavigationRequestProofRefused($this->id));
     }
 
@@ -224,7 +224,7 @@ final class NavigationRequest extends Model implements Assignable, EventSource, 
      */
     public function markProven(): void
     {
-        $this->moveTo(NavigationState::Proven);
+        $this->moveTo(NavigationStatus::Proven);
         $this->raise(new NavigationRequestProven($this->id));
     }
 
@@ -234,7 +234,7 @@ final class NavigationRequest extends Model implements Assignable, EventSource, 
     public function abandon(string $reason): void
     {
         $this->abandon_reason = $reason;
-        $this->moveTo(NavigationState::Abandoned);
+        $this->moveTo(NavigationStatus::Abandoned);
         $this->raise(new NavigationRequestAbandoned($this->id));
     }
 
@@ -243,7 +243,7 @@ final class NavigationRequest extends Model implements Assignable, EventSource, 
      */
     public function interrupt(): void
     {
-        $this->moveTo(NavigationState::Interrupted);
+        $this->moveTo(NavigationStatus::Interrupted);
         $this->raise(new NavigationRequestInterrupted($this->id));
     }
 
@@ -252,7 +252,7 @@ final class NavigationRequest extends Model implements Assignable, EventSource, 
      */
     public function cancel(): void
     {
-        $this->moveTo(NavigationState::Cancelled);
+        $this->moveTo(NavigationStatus::Cancelled);
         $this->raise(new NavigationRequestCancelled($this->id));
     }
 
@@ -261,7 +261,7 @@ final class NavigationRequest extends Model implements Assignable, EventSource, 
      */
     public function expire(): void
     {
-        $this->moveTo(NavigationState::Expired);
+        $this->moveTo(NavigationStatus::Expired);
         $this->raise(new NavigationRequestExpired($this->id));
     }
 
@@ -272,7 +272,7 @@ final class NavigationRequest extends Model implements Assignable, EventSource, 
      */
     public function isAnswering(): bool
     {
-        return $this->state === NavigationState::Answering;
+        return $this->status === NavigationStatus::Answering;
     }
 
     public function isAtRowVersion(int $version): bool
@@ -324,20 +324,20 @@ final class NavigationRequest extends Model implements Assignable, EventSource, 
      *
      * @throws NavigationTransitionRefused
      */
-    private function assertMayMoveTo(NavigationState $next): void
+    private function assertMayMoveTo(NavigationStatus $next): void
     {
-        if (! $this->state->canMoveTo($next)) {
-            throw NavigationTransitionRefused::from($this->state, $next);
+        if (! $this->status->canMoveTo($next)) {
+            throw NavigationTransitionRefused::from($this->status, $next);
         }
     }
 
     // ----------[ Internals ]----------
 
-    private function moveTo(NavigationState $next): void
+    private function moveTo(NavigationStatus $next): void
     {
         $this->assertMayMoveTo($next);
 
-        $this->state = $next;
+        $this->status = $next;
         $this->change();
     }
 
@@ -376,7 +376,7 @@ final class NavigationRequest extends Model implements Assignable, EventSource, 
     #[Scope]
     protected function open(Builder $query): void
     {
-        $query->whereIn('state', NavigationState::openStates());
+        $query->whereIn('status', NavigationStatus::openStates());
     }
 
     /**
@@ -436,12 +436,12 @@ final class NavigationRequest extends Model implements Assignable, EventSource, 
      * The rows of any of the given states.
      *
      * @param  Builder<self>  $query
-     * @param  array<array-key, NavigationState>|Builder<covariant Model>|Closure  $states
+     * @param  array<array-key, NavigationStatus>|Builder<covariant Model>|Closure  $states
      */
     #[Scope]
     protected function withAnyState(Builder $query, array|Builder|Closure $states): void
     {
-        $query->whereIn('state', $states);
+        $query->whereIn('status', $states);
     }
 
     /**

@@ -57,6 +57,6 @@ trait AssignableListing
             return;
         }
 
-        $query->whereIn('state', array_map(fn (BackedEnum $state) => $state->value, $states));
+        $query->whereIn('status', array_map(fn (BackedEnum $state) => $state->value, $states));
     }
 }

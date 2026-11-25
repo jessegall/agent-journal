@@ -7,7 +7,7 @@ namespace Tests\Feature\Skills;
 use App\Commands\Skills\PrepareSkillPublication\PrepareSkillPublicationCommand;
 use App\Commands\Skills\PublishSkills\PublishSkillsCommand;
 use App\Contracts\Skills\SkillPublisher as SkillPublisherContract;
-use App\Enums\Skills\PublicationState;
+use App\Enums\Skills\PublicationStatus;
 use App\Exceptions\SkillPublicationStale;
 use App\Models\Skills\SkillPublication;
 use App\Support\SkillPublisher;
@@ -51,7 +51,7 @@ final class SkillPublishingTest extends TestCase
     {
         $publication = $this->intend('First text.');
 
-        $this->assertSame(PublicationState::Delivered, $this->publishing()->publish($publication->id, 'worker-1'));
+        $this->assertSame(PublicationStatus::Delivered, $this->publishing()->publish($publication->id, 'worker-1'));
 
         $target = $this->target();
         $this->assertTrue(is_link($target));
@@ -63,7 +63,7 @@ final class SkillPublishingTest extends TestCase
         First text.
 
         TEXT), $manifest['files']['skills/journal/SKILL.md']);
-        $this->assertSame(PublicationState::Delivered, $publication->refresh()->state);
+        $this->assertSame(PublicationStatus::Delivered, $publication->refresh()->status);
         $plugin = json_decode(File::get("{$target}/.claude-plugin/plugin.json"), true, flags: JSON_THROW_ON_ERROR);
         $this->assertSame('journal-session-skills', $plugin['name']);
     }
@@ -75,9 +75,9 @@ final class SkillPublishingTest extends TestCase
         $this->app->instance(SkillPublisherContract::class, new FullDiskPublisher($this->app->make(SkillPublisher::class)));
         $second = $this->intend('Second text.');
 
-        $this->assertSame(PublicationState::Failed, $this->publishing()->publish($second->id, 'worker-1'));
+        $this->assertSame(PublicationStatus::Failed, $this->publishing()->publish($second->id, 'worker-1'));
         $this->assertSame($before, readlink($this->target()));
-        $this->assertSame(PublicationState::Failed, $second->refresh()->state);
+        $this->assertSame(PublicationStatus::Failed, $second->refresh()->status);
         $this->assertStringContainsString(self::NO_SPACE, (string) $second->error);
     }
 
@@ -87,7 +87,7 @@ final class SkillPublishingTest extends TestCase
         File::put($this->target().'/mine/SKILL.md', 'My own skill.');
         $publication = $this->intend('First text.');
 
-        $this->assertSame(PublicationState::Failed, $this->publishing()->publish($publication->id, 'worker-1'));
+        $this->assertSame(PublicationStatus::Failed, $this->publishing()->publish($publication->id, 'worker-1'));
         $this->assertSame(self::OWN_SKILL, File::get($this->target().'/mine/SKILL.md'));
         $this->assertStringContainsString(
             self::FOREIGN_FILES,

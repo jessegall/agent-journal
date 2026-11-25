@@ -18,7 +18,7 @@ use App\Support\ActorIdentity;
 use App\Support\OwnerStartReceipt;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
-use Domain\Helpers\Enums\JobState;
+use Domain\Helpers\Enums\JobStatus;
 use Domain\Helpers\Events\HelperJobAttached;
 use Domain\Helpers\Events\HelperJobCancelled;
 use Domain\Helpers\Events\HelperJobFinished;
@@ -46,7 +46,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $brief
  * @property list<string> $source_subjects
  * @property string $request_id
- * @property JobState $state
+ * @property JobStatus $status
  * @property list<string> $steering
  * @property string|null $stop_evidence_reference
  * @property int $profile_revision
@@ -81,7 +81,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
     protected function casts(): array
     {
         return [
-            'state' => JobState::class,
+            'status' => JobStatus::class,
             'source_subjects' => 'array',
             'steering' => 'array',
             'finished_at' => 'immutable_datetime',
@@ -116,7 +116,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
         $job->independent = $startDetails->isIndependent;
         $job->conversation_mode = $startDetails->conversationMode;
         $job->conversation_reason = $startDetails->conversationReason;
-        $job->state = JobState::Accepted;
+        $job->status = JobStatus::Accepted;
         $job->steering = [];
         $job->belongTo($parent);
         $job->save();
@@ -131,7 +131,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
      */
     public function reopenForAttempt(): void
     {
-        $this->moveTo(JobState::Accepted);
+        $this->moveTo(JobStatus::Accepted);
         $this->assertSaved($this->save());
         $this->raise(new HelperJobReopenedForAttempt($this->id));
     }
@@ -141,14 +141,14 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
      */
     public function attachTo(string $sessionId): void
     {
-        $this->moveTo(JobState::Running);
+        $this->moveTo(JobStatus::Running);
         $this->assertSaved($this->save());
         $this->raise(new HelperJobAttached($this->id, $sessionId));
     }
 
     public function addSteering(string $steering): void
     {
-        $this->moveTo($this->state);
+        $this->moveTo($this->status);
         $this->steering = [
             ...$this->steering,
             $steering,
@@ -162,7 +162,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
      */
     public function finish(string $reference): void
     {
-        $this->moveTo(JobState::Finished);
+        $this->moveTo(JobStatus::Finished);
         $this->stop_evidence_reference = $reference;
         $this->finished_at = CarbonImmutable::now();
         $this->assertSaved($this->save());
@@ -171,7 +171,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
 
     public function cancel(): void
     {
-        $this->moveTo(JobState::Cancelled);
+        $this->moveTo(JobStatus::Cancelled);
         $this->assertSaved($this->save());
         $this->raise(new HelperJobCancelled($this->id));
     }
@@ -181,7 +181,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
      */
     public function hold(string $stopEvidenceReference): void
     {
-        $this->moveTo(JobState::Held);
+        $this->moveTo(JobStatus::Held);
         $this->stop_evidence_reference = $stopEvidenceReference;
         $this->assertSaved($this->save());
         $this->raise(new HelperJobHeld($this->id));
@@ -189,7 +189,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
 
     public function markUnfinished(string $stopEvidenceReference): void
     {
-        $this->moveTo(JobState::Unfinished);
+        $this->moveTo(JobStatus::Unfinished);
         $this->stop_evidence_reference = $stopEvidenceReference;
         $this->assertSaved($this->save());
         $this->raise(new HelperJobLeftUnfinished($this->id));
@@ -205,7 +205,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
             $this->id,
             $isNewJob,
             $profileType,
-            $this->state,
+            $this->status,
             $this->start_details,
             $start,
         );
@@ -223,7 +223,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
 
     public function isFinished(): bool
     {
-        return $this->state->isFinal();
+        return $this->status->isFinal();
     }
 
     /**
@@ -271,18 +271,18 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
      */
     private function assertNotFinished(): void
     {
-        if ($this->state->isFinal()) {
-            throw HelperJobEnded::forJob($this->id, $this->state->value);
+        if ($this->status->isFinal()) {
+            throw HelperJobEnded::forJob($this->id, $this->status->value);
         }
     }
 
     // ----------[ Internals ]----------
 
-    private function moveTo(JobState $state): void
+    private function moveTo(JobStatus $state): void
     {
         $this->assertNotFinished();
 
-        $this->state = $state;
+        $this->status = $state;
     }
 
     // ----------[ Queries ]----------
@@ -326,9 +326,9 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
     #[Scope]
     protected function open(Builder $query): void
     {
-        $query->whereNotIn('state', array_map(
-            fn (JobState $state) => $state->value,
-            array_filter(JobState::cases(), fn (JobState $state) => $state->isFinal()),
+        $query->whereNotIn('status', array_map(
+            fn (JobStatus $state) => $state->value,
+            array_filter(JobStatus::cases(), fn (JobStatus $state) => $state->isFinal()),
         ));
     }
 

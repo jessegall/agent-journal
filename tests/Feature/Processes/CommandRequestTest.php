@@ -7,7 +7,7 @@ namespace Tests\Feature\Processes;
 use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
 use App\Commands\CommandRules\WithdrawCommandRequest\WithdrawCommandRequestCommand;
 use App\Enums\CommandRules\RequestHoldReason;
-use App\Enums\CommandRules\RequestState;
+use App\Enums\CommandRules\RequestStatus;
 use App\Exceptions\RequestTransitionRefused;
 use App\Models\CommandRules\CommandRequest;
 use Tests\Support\ActsAsActors;
@@ -33,7 +33,7 @@ final class CommandRequestTest extends TestCase
 
         $request = CommandRequest::query()->findOrFail($first);
         $this->assertSame($first, $second);
-        $this->assertSame(RequestState::CollectingDeclaration, $request->state);
+        $this->assertSame(RequestStatus::CollectingDeclaration, $request->status);
         $this->assertStringStartsWith(sprintf(self::PROPOSE_STEP, $first), $request->nextStep->command);
     }
 
@@ -55,7 +55,7 @@ final class CommandRequestTest extends TestCase
         $this->runAsAgentId('agent-1', new WithdrawCommandRequestCommand($first));
 
         $request = CommandRequest::query()->findOrFail($first);
-        $this->assertSame(RequestState::Withdrawn, $request->state);
+        $this->assertSame(RequestStatus::Withdrawn, $request->status);
         $this->assertSame([], $request->nextStep->steps);
         $this->assertNotSame($first, $this->open('agent-1', '/projects/acme'));
     }
@@ -80,7 +80,7 @@ final class CommandRequestTest extends TestCase
         CommandRequest::query()->findOrFail($first)->propose();
 
         $again = CommandRequest::query()->findOrFail($first);
-        $this->assertSame(RequestState::AwaitingSampleApproval, $again->state);
+        $this->assertSame(RequestStatus::AwaitingSampleApproval, $again->status);
         $this->assertSame(sprintf(self::APPROVE_STEP, $first), $again->nextStep->command);
     }
 

@@ -6,7 +6,7 @@ namespace App\Exceptions;
 
 use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\Engine\RefusalCode;
-use App\Enums\Skills\PublicationState;
+use App\Enums\Skills\PublicationStatus;
 use RuntimeException;
 use Throwable;
 
@@ -16,12 +16,12 @@ use Throwable;
  */
 final class SkillPublicationFailed extends RuntimeException implements CodedRefusal
 {
-    public static function transition(PublicationState $from, PublicationState $to): self
+    public static function transition(PublicationStatus $from, PublicationStatus $to): self
     {
         return new self("A publication that is {$from->value} cannot become {$to->value}.");
     }
 
-    public static function notClaimable(PublicationState $state): self
+    public static function notClaimable(PublicationStatus $state): self
     {
         return new self("A publication that is {$state->value} is not waiting for a worker.");
     }

@@ -30,7 +30,7 @@ use App\Support\Sources\Contracts\Dockable;
 use App\Support\Sources\DockDefinition;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
-use Domain\Sequences\Enums\SequenceRunState;
+use Domain\Sequences\Enums\SequenceRunStatus;
 use Domain\Sequences\Events\SequenceEnded;
 use Domain\Sequences\Events\SequenceStarted;
 use Domain\Sequences\Events\SequenceStepEnded;
@@ -50,7 +50,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $name
  * @property list<string> $steps
  * @property int $current_step
- * @property SequenceRunState $state
+ * @property SequenceRunStatus $status
  * @property string|null $actor_type
  * @property string|null $actor_id
  * @property CarbonImmutable|null $created_at
@@ -78,7 +78,7 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
      */
     protected $attributes = [
         'current_step' => 1,
-        'state' => 'running',
+        'status' => 'running',
     ];
 
     /**
@@ -91,7 +91,7 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
         return [
             'steps' => 'array',
             'current_step' => 'integer',
-            'state' => SequenceRunState::class,
+            'status' => SequenceRunStatus::class,
         ];
     }
 
@@ -141,7 +141,7 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
     public function startFor(ActorIdentity $follower, string $sessionId): void
     {
         $this->current_step = 1;
-        $this->state = SequenceRunState::Running;
+        $this->status = SequenceRunStatus::Running;
         $this->belongTo($follower);
         $this->assertSaved($this->save());
         $this->raise(new SequenceStarted($this->id, new StackTarget($follower->id, $sessionId)));
@@ -156,10 +156,10 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
         $ended = $this->current_step;
 
         if ($ended >= count($this->steps)) {
-            $this->state = SequenceRunState::Finished;
+            $this->status = SequenceRunStatus::Finished;
             $this->assertSaved($this->save());
             $this->raise(new SequenceStepEnded($this->id, $this->owningActor(), $ended));
-            $this->raise(new SequenceEnded($this->id, $this->owningActor(), $this->state));
+            $this->raise(new SequenceEnded($this->id, $this->owningActor(), $this->status));
 
             return;
         }
@@ -172,9 +172,9 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
 
     public function cancel(): void
     {
-        $this->state = SequenceRunState::Cancelled;
+        $this->status = SequenceRunStatus::Cancelled;
         $this->assertSaved($this->save());
-        $this->raise(new SequenceEnded($this->id, $this->owningActor(), $this->state));
+        $this->raise(new SequenceEnded($this->id, $this->owningActor(), $this->status));
     }
 
     /**
@@ -206,7 +206,7 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
         ), $this->steps, array_keys($this->steps));
 
         $started = CarbonImmutable::instance($this->created_at ?? CarbonImmutable::now());
-        $ended = $this->state->needsWork() ? null : CarbonImmutable::instance($this->updated_at ?? $started);
+        $ended = $this->status->needsWork() ? null : CarbonImmutable::instance($this->updated_at ?? $started);
 
         return DockCard::named($this->name, Stack::of(
             'root',
@@ -224,8 +224,8 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
     private function stepLabel(int $step): StateLabel
     {
         $key = "step-{$step}-state";
-        $isDone = $step < $this->current_step || $this->state === SequenceRunState::Finished;
-        $isRunning = $step === $this->current_step && $this->state->needsWork();
+        $isDone = $step < $this->current_step || $this->status === SequenceRunStatus::Finished;
+        $isRunning = $step === $this->current_step && $this->status->needsWork();
 
         return match (true) {
             $isDone => new StateLabel($key, 'Done', Tone::Muted),

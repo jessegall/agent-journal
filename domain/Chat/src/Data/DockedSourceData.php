@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Data;
 
-use Domain\Chat\Enums\DockedState;
+use Domain\Chat\Enums\DockedStatus;
 use Spatie\LaravelData\Data;
 
 /**
@@ -17,6 +17,6 @@ final class DockedSourceData extends Data
         public readonly string $type,
         public readonly string $sourceId,
         public readonly string $title,
-        public readonly DockedState $state,
+        public readonly DockedStatus $state,
     ) {}
 }

@@ -10,7 +10,7 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Files\Files;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Accounts\SignInMethod;
-use App\Enums\Accounts\SignInState;
+use App\Enums\Accounts\SignInStatus;
 use App\Jobs\SignInDeadline;
 use App\Models\Accounts\SignInAttempt;
 use App\Support\ActorContext;
@@ -57,11 +57,11 @@ final class SignInRestartTest extends TestCase
 
         $this->assertSame([0, 1], [$kept, $ended]);
         $attempt = SignInAttempt::query()->withoutGlobalScopes()->findOrFail($lost);
-        $this->assertSame(SignInState::Interrupted, $attempt->state);
+        $this->assertSame(SignInStatus::Interrupted, $attempt->status);
         $this->assertTrue($attempt->cleanup_pending);
         $this->assertSame(
-            SignInState::Starting,
-            SignInAttempt::query()->withoutGlobalScopes()->findOrFail($other)->state,
+            SignInStatus::Starting,
+            SignInAttempt::query()->withoutGlobalScopes()->findOrFail($other)->status,
         );
     }
 

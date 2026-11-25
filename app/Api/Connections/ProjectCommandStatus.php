@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Api\Connections;
 
-use App\Enums\Connections\CommandRunState;
+use App\Enums\Connections\CommandRunStatus;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 
@@ -18,7 +18,7 @@ final class ProjectCommandStatus extends Data
      * @param  list<ProjectCommandFrame>  $frames
      */
     public function __construct(
-        public readonly CommandRunState $state,
+        public readonly CommandRunStatus $state,
         #[DataCollectionOf(ProjectCommandFrame::class)]
         public readonly array $frames,
     ) {}
@@ -26,7 +26,7 @@ final class ProjectCommandStatus extends Data
     /**
      * @param  list<ProjectCommandFrame>  $frames
      */
-    public static function of(CommandRunState $state, array $frames): self
+    public static function of(CommandRunStatus $state, array $frames): self
     {
         return self::from([
             'state' => $state,

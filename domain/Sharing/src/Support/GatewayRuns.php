@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sharing\Support;
 
 use Carbon\CarbonImmutable;
-use Domain\Sharing\Enums\GatewayEndpointState;
+use Domain\Sharing\Enums\GatewayEndpointStatus;
 use Domain\Sharing\Exceptions\GatewayRunStale;
 use Domain\Sharing\Models\ShareGatewayEndpoint;
 use Domain\Sharing\Models\ShareGatewayOperation;
@@ -39,7 +39,7 @@ final readonly class GatewayRuns
     private function stopAllButRun(string $runId): void
     {
         ShareGatewayEndpoint::query()->notOfRun($runId)->stillRunning()->update(
-            ['state' => GatewayEndpointState::Closed->value],
+            ['status' => GatewayEndpointStatus::Closed->value],
         );
     }
 

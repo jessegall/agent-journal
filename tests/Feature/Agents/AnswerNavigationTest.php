@@ -15,7 +15,7 @@ use App\Enums\Drivers\DriverOperation;
 use App\Enums\Drivers\RequestOutcome;
 use App\Enums\Drivers\RequestProgress;
 use App\Enums\Navigation\NavigationCompletion;
-use App\Enums\Navigation\NavigationState;
+use App\Enums\Navigation\NavigationStatus;
 use App\Exceptions\NavigationAnswerRefused;
 use App\Exceptions\NavigationProofRefused;
 use App\Models\Agents\Agent;
@@ -89,7 +89,7 @@ final class AnswerNavigationTest extends TestCase
         $sent = DriverRequest::query()->findOrFail($first->requestId);
         $this->assertSame(DriverOperation::Navigate, $sent->operation);
         $this->assertSame(['down', 'down'], $sent->navigation_round?->toArray()['keys']);
-        $this->assertSame(NavigationState::Answering, $navigation->fresh()?->state);
+        $this->assertSame(NavigationStatus::Answering, $navigation->fresh()?->status);
     }
 
     public function test_a_stale_round_another_actors_round_or_a_parameter_the_goal_lacks_stores_nothing(): void
@@ -141,7 +141,7 @@ final class AnswerNavigationTest extends TestCase
         );
 
         $navigation->refresh();
-        $this->assertSame(NavigationState::Proving, $navigation->state);
+        $this->assertSame(NavigationStatus::Proving, $navigation->status);
         $this->assertSame(['Set model', NavigationCompletion::Step, 3], [
             $navigation->proof,
             $navigation->completes,
@@ -173,7 +173,7 @@ final class AnswerNavigationTest extends TestCase
             $this->assertThrows(fn () => $this->asAgent($this->main, $command), $refusal, null);
         }
 
-        $this->assertSame(NavigationState::Answering, $navigation->fresh()?->state);
+        $this->assertSame(NavigationStatus::Answering, $navigation->fresh()?->status);
     }
 
     public function test_giving_up_abandons_the_request_and_ends_its_key_script_entry_unavailable(): void
@@ -184,8 +184,8 @@ final class AnswerNavigationTest extends TestCase
 
         $navigation->refresh();
         $this->assertSame(
-            [NavigationState::Abandoned, 'no such model'],
-            [$navigation->state, $navigation->abandon_reason],
+            [NavigationStatus::Abandoned, 'no such model'],
+            [$navigation->status, $navigation->abandon_reason],
         );
         $stalled = DriverRequest::query()->findOrFail($navigation->driver_request_id);
         $this->assertSame(

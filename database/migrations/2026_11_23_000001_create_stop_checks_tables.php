@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('policy_digest', 64);
             $table->unsignedInteger('workspace_generation');
             $table->json('condition_hashes');
-            $table->string('state', 16);
+            $table->string('status', 16);
             $table->string('submission_digest', 64)->nullable();
             $table->timestampTz('certified_at')->nullable();
             $table->timestampsTz();

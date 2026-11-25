@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Data;
 
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Enums\TaskStreamEntryType;
 use Domain\Tasks\Values\TaskLogLine;
 use Domain\Tasks\Values\TaskTransition;
@@ -27,8 +27,8 @@ final class TaskStreamEntryData extends Data
         public readonly string $actorId,
         public readonly int|Optional $runNumber = new Optional(),
         public readonly string|Optional $text = new Optional(),
-        public readonly TaskState|Optional $fromState = new Optional(),
-        public readonly TaskState|Optional $toState = new Optional(),
+        public readonly TaskStatus|Optional $fromState = new Optional(),
+        public readonly TaskStatus|Optional $toState = new Optional(),
     ) {}
 
     public static function ofTransition(TaskTransition $transition): self

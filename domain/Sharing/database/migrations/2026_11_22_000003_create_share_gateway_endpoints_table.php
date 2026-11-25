@@ -20,7 +20,7 @@ return new class extends Migration
             $table->unsignedInteger('endpoint_version');
             $table->string('run_id');
             $table->string('public_origin');
-            $table->string('state');
+            $table->string('status');
             $table->timestampTz('last_health_at')->nullable();
             $table->timestampsTz();
 

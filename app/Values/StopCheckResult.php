@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Sessions\StopCheckState;
+use App\Enums\Sessions\StopCheckStatus;
 use App\Enums\Sessions\StopConditionResultType;
 
 /**
@@ -18,7 +18,7 @@ final readonly class StopCheckResult
      * @param  array<string, string>  $summaries  condition key => its short summary
      */
     public function __construct(
-        public StopCheckState $state,
+        public StopCheckStatus $state,
         public array $statuses,
         public array $summaries,
     ) {}
@@ -28,7 +28,7 @@ final readonly class StopCheckResult
      *
      * @param  list<StopConditionResultReport>  $reports
      */
-    public static function ofReports(StopCheckState $state, array $reports): self
+    public static function ofReports(StopCheckStatus $state, array $reports): self
     {
         $statuses = [];
         $summaries = [];

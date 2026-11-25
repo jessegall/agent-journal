@@ -6,7 +6,7 @@ namespace App\Commands\Navigation\InterruptNavigation;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Enums\Drivers\HoldReason;
-use App\Enums\Navigation\NavigationState;
+use App\Enums\Navigation\NavigationStatus;
 use App\Exceptions\HostReportRefused;
 use App\Exceptions\NavigationRaiseRefused;
 use App\Models\Drivers\NavigationRequest;
@@ -36,7 +36,7 @@ final readonly class InterruptNavigationHandler implements CommandHandler
 
         $runtime = $this->runtimes->lockedFor($command->hostId, $navigation->agent_runtime_id);
 
-        if ($navigation->state === NavigationState::Interrupted) {
+        if ($navigation->status === NavigationStatus::Interrupted) {
             return;
         }
 

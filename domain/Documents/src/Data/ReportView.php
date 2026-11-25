@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Data;
 
-use Domain\Documents\Enums\AttentionState;
+use Domain\Documents\Enums\AttentionStatus;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -22,7 +22,7 @@ final class ReportView extends Data
         public readonly string $body,
         public readonly string $creatorType,
         public readonly string $creatorId,
-        public readonly AttentionState $attention,
+        public readonly AttentionStatus $attention,
         public readonly string $filedAt,
     ) {}
 }

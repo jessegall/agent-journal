@@ -6,7 +6,7 @@ namespace Domain\Plans\Commands\RequestPlanReview;
 
 use App\Support\ActorIdentity;
 use Domain\Plans\Commands\Support\PlanCommandHandler;
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Exceptions\PlanReviewRefused;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Models\PlanReviewEdition;
@@ -22,8 +22,8 @@ final readonly class RequestPlanReviewHandler extends PlanCommandHandler
     {
         $plan = Plan::findLockedStructure($command->planId);
 
-        if ($plan->state !== PlanState::Planned) {
-            throw PlanReviewRefused::notPlanned($plan->number, $plan->state->value);
+        if ($plan->status !== PlanStatus::Planned) {
+            throw PlanReviewRefused::notPlanned($plan->number, $plan->status->value);
         }
 
         $review = PlanReviewEdition::create($plan, ActorIdentity::of($command->dispatchedBy()));

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Contracts\Bus\CommandRefusal;
-use App\Enums\Navigation\MenuEntryState;
+use App\Enums\Navigation\MenuEntryStatus;
 use App\Exceptions\Concerns\ThrowsLater;
 use RuntimeException;
 
@@ -24,7 +24,7 @@ final class MenuEntryRefused extends RuntimeException implements CommandRefusal
         return new self("There is no menu entry {$entryId}.");
     }
 
-    public static function changedSinceRead(string $entryId, MenuEntryState $expected, MenuEntryState $current): self
+    public static function changedSinceRead(string $entryId, MenuEntryStatus $expected, MenuEntryStatus $current): self
     {
         return new self("Menu entry {$entryId} is {$current->value}, not {$expected->value}; read it again.");
     }

@@ -56,7 +56,7 @@ final readonly class TaskAssignments implements AssignableProvider
     {
         return array_values(array_map(
             fn (Task $task) => $task->assignmentIdentity(),
-            array_filter($records, fn (Assignable $record) => $record instanceof Task && $record->state->hasEnded()),
+            array_filter($records, fn (Assignable $record) => $record instanceof Task && $record->status->hasEnded()),
         ));
     }
 }

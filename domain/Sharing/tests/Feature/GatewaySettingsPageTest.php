@@ -7,7 +7,7 @@ namespace Domain\Sharing\Tests\Feature;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
 use Carbon\CarbonImmutable;
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Support\ShareGatewayRegistry;
@@ -152,7 +152,7 @@ final class GatewaySettingsPageTest extends TestCase
             ->where('page.data.root.children.3.children.0.children.3.children.1.rows.0.key', $share->id));
         $this->write('delete', "/sharing/gateways/{$configuration->id}")->assertStatus(303);
 
-        $this->assertSame(ShareState::Revoked, Share::query()->findOrFail($share->id)->state);
+        $this->assertSame(ShareStatus::Revoked, Share::query()->findOrFail($share->id)->status);
         $this->assertNotNull(ShareGatewayConfiguration::query()->sole()->disabled_at);
     }
 

@@ -8,7 +8,7 @@ use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Enums\Drivers\HoldReason;
-use App\Enums\Navigation\MenuEntryState;
+use App\Enums\Navigation\MenuEntryStatus;
 use App\Enums\Navigation\NavigationCompletion;
 use App\Enums\Navigation\NavigationReason;
 use App\Models\Access\User;
@@ -303,8 +303,8 @@ final class NavigationRaiseRouteTest extends TestCase
         $navigation->prove(NavigationCompletion::Goal, null, 'GPT-6');
         $saved = $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(NavigationLibrary::class)
             ->save($navigation, [new MenuStep(self::FINGERPRINT, 'GPT-7', null, null)]));
-        $this->assertSame(MenuEntryState::Superseded, $stale->fresh()?->state);
-        $this->assertSame(MenuEntryState::Current, $saved->state);
+        $this->assertSame(MenuEntryStatus::Superseded, $stale->fresh()?->status);
+        $this->assertSame(MenuEntryStatus::Current, $saved->status);
     }
 
     public function test_the_replayed_report_counts_once_and_lists_the_build(): void

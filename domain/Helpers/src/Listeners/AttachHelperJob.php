@@ -30,7 +30,7 @@ final readonly class AttachHelperJob implements Listener
 
         $job = HelperJob::query()->acrossActors()->whereKey($event->ownerWork->id)->lockForUpdate()->firstOrFail();
 
-        if (! $job->state->isLive()) {
+        if (! $job->status->isLive()) {
             return;
         }
 

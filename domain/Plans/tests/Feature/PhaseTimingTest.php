@@ -9,7 +9,7 @@ use App\Models\Agents\Agent;
 use App\Support\AssigneeIdentity;
 use App\Support\OpenTiming;
 use App\Values\TimingVerdict;
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PhaseTiming;
 use Domain\Plans\Support\PlanStructure;
@@ -55,7 +55,7 @@ final class PhaseTimingTest extends TestCase
         $this->agent = Agent::create('Worker', 'writing-helper', $this->localProject());
         $this->plan = Plan::factory()->create([
             'title' => 'Phase timing',
-            'state' => PlanState::Started,
+            'status' => PlanStatus::Started,
         ]);
         $this->tasks = [
             Task::factory()->create(['title' => 'First']),

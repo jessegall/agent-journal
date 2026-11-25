@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Mcp\Tools;
 
 use App\Commands\Navigation\RetireMenuEntry\RetireMenuEntryCommand;
-use App\Enums\Navigation\MenuEntryState;
+use App\Enums\Navigation\MenuEntryStatus;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
@@ -34,13 +34,13 @@ final class MenuRetireTool extends JournalWriteTool
     {
         return [
             'entry' => $schema->string()->max(64)->required(),
-            'expected_state' => $this->caseArgument($schema, MenuEntryState::class)->required(),
+            'expected_state' => $this->caseArgument($schema, MenuEntryStatus::class)->required(),
         ];
     }
 
     protected function command(ToolArguments $arguments): RetireMenuEntryCommand
     {
-        $expected = $arguments->enum('expected_state', MenuEntryState::class);
+        $expected = $arguments->enum('expected_state', MenuEntryStatus::class);
 
         return new RetireMenuEntryCommand($arguments->text('entry'), $expected);
     }

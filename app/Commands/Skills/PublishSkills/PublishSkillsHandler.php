@@ -27,7 +27,7 @@ final readonly class PublishSkillsHandler implements CommandHandler
         $publication = SkillPublication::findLockedById($command->publicationId);
 
         if (! $publication->isClaimable(CarbonImmutable::now())) {
-            throw SkillPublicationFailed::notClaimable($publication->state);
+            throw SkillPublicationFailed::notClaimable($publication->status);
         }
 
         $fence = $publication->claim($command->holder, CarbonImmutable::now()->addSeconds(self::LEASE_SECONDS));

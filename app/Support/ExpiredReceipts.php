@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\CommandRules\ReceiptState;
+use App\Enums\CommandRules\ReceiptStatus;
 use App\Models\CommandRules\CommandReceipt;
 use Carbon\CarbonImmutable;
 
@@ -16,7 +16,7 @@ final readonly class ExpiredReceipts
     public function expirePastRetention(CarbonImmutable $now): int
     {
         return CommandReceipt::query()->pastRetention($now)->update([
-            'state' => ReceiptState::Expired->value,
+            'status' => ReceiptStatus::Expired->value,
             'result' => null,
             'refusal_code' => null,
             'refusal_message' => null,

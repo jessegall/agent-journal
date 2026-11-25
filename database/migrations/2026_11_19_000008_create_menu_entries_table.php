@@ -24,7 +24,7 @@ return new class extends Migration
             $table->string('completes', 8);
             $table->unsignedInteger('next_step')->nullable();
             $table->string('proof', 200);
-            $table->string('state', 16);
+            $table->string('status', 16);
             $table->json('builds');
             $table->unsignedInteger('uses')->default(0);
             $table->timestampTz('last_used_at')->nullable();
@@ -33,7 +33,7 @@ return new class extends Migration
             $table->ulid('superseded_by_id')->nullable();
             $table->timestampsTz();
 
-            $table->index(['actor_type', 'actor_id', 'family', 'entry_fingerprint', 'goal_key', 'state']);
+            $table->index(['actor_type', 'actor_id', 'family', 'entry_fingerprint', 'goal_key', 'status']);
         });
     }
 

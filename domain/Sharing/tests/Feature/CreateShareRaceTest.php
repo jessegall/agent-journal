@@ -13,7 +13,7 @@ use App\Support\ShareRecordRegistry;
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Commands\CreateShare\CreateShareCommand;
 use Domain\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Exceptions\ShareQuotaReached;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
@@ -126,7 +126,7 @@ final class CreateShareRaceTest extends TestCase
             'id' => strtolower((string) Str::ulid()),
             'number_group_id' => Share::query()->value('number_group_id'),
             'number' => 1_000_000,
-            'state' => ShareState::Pending->value,
+            'status' => ShareStatus::Pending->value,
             'root_type' => 'binders.binder',
             'root_id' => TestIds::of(1),
             'owner_user_id' => TestIds::of(9),

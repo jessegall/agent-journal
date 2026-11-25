@@ -13,7 +13,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Skills\SkillPublisher as SkillPublisherContract;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Sessions\SessionStatus;
-use App\Enums\Skills\PublicationState;
+use App\Enums\Skills\PublicationStatus;
 use App\Events\Sessions\SessionOpened;
 use App\Exceptions\SkillSelectionConflict;
 use App\Exceptions\StartRefused;
@@ -100,7 +100,7 @@ final class StartSkillsTest extends TestCase
         $publication = SkillPublication::findLatestOfSession($opened->sessionId);
 
         $this->assertNotNull($publication);
-        $this->assertSame(PublicationState::Delivered, $publication->state);
+        $this->assertSame(PublicationStatus::Delivered, $publication->status);
         $this->assertFileExists("{$this->root}/targets/{$opened->sessionId}/codex/journal/SKILL.md");
 
         $grant = $this->asSystem(new ClaimStartGrantCommand($host, $opened->runtimeId));
@@ -163,8 +163,8 @@ final class StartSkillsTest extends TestCase
         $this->assertNotSame($mainSet->selection_digest, $reviewerSet->selection_digest);
         $this->assertContains('journal-plans', $mainSet->skill_keys);
         $this->assertNotContains('journal-plans', $reviewerSet->skill_keys);
-        $this->assertSame(PublicationState::Delivered, $mainSet->state);
-        $this->assertSame(PublicationState::Delivered, $reviewerSet->state);
+        $this->assertSame(PublicationStatus::Delivered, $mainSet->status);
+        $this->assertSame(PublicationStatus::Delivered, $reviewerSet->status);
     }
 
     /**

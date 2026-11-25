@@ -11,9 +11,9 @@ use App\Contracts\Projects\FileComments;
 use App\Data\Connections\FileThreadData;
 use App\Data\Connections\FileWindowData;
 use App\Enums\Connections\BindingReadiness;
-use App\Enums\Connections\FileWindowState;
+use App\Enums\Connections\FileWindowStatus;
 use App\Enums\Projects\ProjectReadFailure;
-use App\Enums\Projects\ProjectReadState;
+use App\Enums\Projects\ProjectReadStatus;
 use App\Http\Requests\Connections\FileWindowRequest;
 use App\Models\Agents\Agent;
 use App\Models\Projects\ProjectBinding;
@@ -51,34 +51,34 @@ final readonly class FileWindowResolver implements PageResolver
         $found = ProjectBinding::findLastHeardFromIn($this->served->environmentIds());
 
         if (! $found->isDefined()) {
-            return $this->window(FileWindowState::None, $path);
+            return $this->window(FileWindowStatus::None, $path);
         }
 
         if ($path === '') {
-            return $this->window(FileWindowState::Empty, $path);
+            return $this->window(FileWindowStatus::Empty, $path);
         }
 
         $binding = $found->get();
 
         if ($binding->readinessAt(CarbonImmutable::now()) !== BindingReadiness::Ready) {
-            return $this->window(FileWindowState::Offline, $path);
+            return $this->window(FileWindowStatus::Offline, $path);
         }
 
         $answer = $this->files->file($binding, $path);
 
         return match ($answer->state) {
-            ProjectReadState::Pending => $this->window(FileWindowState::Pending, $path),
-            ProjectReadState::Answered => $this->answered($binding, $answer),
-            ProjectReadState::Failed, ProjectReadState::Expired => $this->window($this->failedState($answer), $path),
+            ProjectReadStatus::Pending => $this->window(FileWindowStatus::Pending, $path),
+            ProjectReadStatus::Answered => $this->answered($binding, $answer),
+            ProjectReadStatus::Failed, ProjectReadStatus::Expired => $this->window($this->failedState($answer), $path),
         };
     }
 
-    private function failedState(ProjectFileAnswer $answer): FileWindowState
+    private function failedState(ProjectFileAnswer $answer): FileWindowStatus
     {
         return match ($answer->failure) {
-            ProjectReadFailure::Binary => FileWindowState::Binary,
-            ProjectReadFailure::TooLarge => FileWindowState::TooLarge,
-            default => FileWindowState::Failed,
+            ProjectReadFailure::Binary => FileWindowStatus::Binary,
+            ProjectReadFailure::TooLarge => FileWindowStatus::TooLarge,
+            default => FileWindowStatus::Failed,
         };
     }
 
@@ -102,7 +102,7 @@ final readonly class FileWindowResolver implements PageResolver
         }
 
         return FileWindowData::from([
-            'state' => $isTruncated ? FileWindowState::TooLarge : FileWindowState::Ready,
+            'state' => $isTruncated ? FileWindowStatus::TooLarge : FileWindowStatus::Ready,
             'name' => basename($answer->path),
             'path' => $answer->path,
             'isMarkdown' => $this->isMarkdown($answer->path),
@@ -117,7 +117,7 @@ final readonly class FileWindowResolver implements PageResolver
         ]);
     }
 
-    private function window(FileWindowState $state, string $path): FileWindowData
+    private function window(FileWindowStatus $state, string $path): FileWindowData
     {
         return FileWindowData::from([
             'state' => $state,

@@ -6,7 +6,7 @@ namespace Domain\Documents\Models\Concerns;
 
 use App\Contracts\Actors\Actor;
 use Domain\Documents\Data\SettlementCard;
-use Domain\Documents\Enums\AttentionState;
+use Domain\Documents\Enums\AttentionStatus;
 use Domain\Documents\Events\RecordSettled;
 use Domain\Documents\Exceptions\SettlementDenied;
 use Domain\Documents\Models\RecordSettlement;
@@ -24,15 +24,15 @@ trait Settles
     {
         $last = RecordSettlement::query()->onRecord(static::linkType(), $this->id)->first();
 
-        if ($this->attention === AttentionState::Settled && $last?->reason === $reason) {
+        if ($this->attention === AttentionStatus::Settled && $last?->reason === $reason) {
             return false;
         }
 
-        if ($this->attention === AttentionState::Settled) {
+        if ($this->attention === AttentionStatus::Settled) {
             throw SettlementDenied::settledFor((string) $last?->reason);
         }
 
-        $this->attention = AttentionState::Settled;
+        $this->attention = AttentionStatus::Settled;
         $this->assertSaved($this->save());
         $this->raise(new RecordSettled(static::linkType(), $this->id));
 

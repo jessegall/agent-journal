@@ -40,7 +40,7 @@ use App\Support\Storage\FrameRecord;
 use App\Values\RuntimeIntent;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Hooks\InMemoryTasks;
 use Tests\Fixtures\Hooks\InMemoryTaskState;
@@ -77,7 +77,7 @@ trait CommittedHookStack
         config(['processes.runner' => true]);
         $this->target = $this->startedTarget();
         $this->openRuntime();
-        $this->tasks = new InMemoryTasks([42 => TaskState::Started, 43 => TaskState::Started]);
+        $this->tasks = new InMemoryTasks([42 => TaskStatus::Started, 43 => TaskStatus::Started]);
         $this->app->instance(InMemoryTasks::class, $this->tasks);
         $this->app->scoped(ShellCommandParser::class, fn () => new ListedCommandParser());
         $this->registerTestState('test.tasks', InMemoryTaskState::class);

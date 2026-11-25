@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Data;
 
 use App\Support\AssignmentData;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Values\TaskCard;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -25,7 +25,7 @@ final class TaskRowData extends Data
         public readonly string $id,
         public readonly string $number,
         public readonly string $title,
-        public readonly TaskState $state,
+        public readonly TaskStatus $state,
         public readonly AssignmentData|Optional $holder = new Optional(),
     ) {}
 

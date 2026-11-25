@@ -6,7 +6,7 @@ namespace App\Resolvers\Support;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Skills\SkillResolver;
-use App\Enums\Skills\PublicationState;
+use App\Enums\Skills\PublicationStatus;
 use App\Enums\Skills\SkillReload;
 use App\Exceptions\SkillContextUnavailable;
 use App\Exceptions\SkillSelectionConflict;
@@ -92,7 +92,7 @@ final readonly class SkillStatusResolver
                 $selected,
                 $selected ? 'selected' : $selection['reasons'][$key] ?? 'not-selected',
                 $deliveredEntry === null ? null : $delivered->generation_id,
-                $deliveredEntry === null ? 'not-delivered' : PublicationState::Delivered->value,
+                $deliveredEntry === null ? 'not-delivered' : PublicationStatus::Delivered->value,
                 $deliveredEntry !== null && SkillReceipt::hasRead($sessionId, $key, $deliveredEntry->digest),
                 $reloadsAtNewSession && $selected && ($startedDigest === null || $startedDigest !== $currentDigest),
             );
@@ -171,8 +171,8 @@ final readonly class SkillStatusResolver
     private function statusOf(array $publications): SkillStatus
     {
         return new SkillStatus(
-            SkillGeneration::findLatest()?->status,
-            array_map(fn (SkillPublication $publication) => $publication->status, $publications),
+            SkillGeneration::findLatest()?->report,
+            array_map(fn (SkillPublication $publication) => $publication->report, $publications),
         );
     }
 

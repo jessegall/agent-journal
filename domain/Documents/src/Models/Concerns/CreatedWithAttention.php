@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Models\Concerns;
 
 use App\Contracts\Actors\Actor;
-use Domain\Documents\Enums\AttentionState;
+use Domain\Documents\Enums\AttentionStatus;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -20,7 +20,7 @@ trait CreatedWithAttention
      * @param  Builder<static>  $query
      */
     #[Scope]
-    protected function inAttention(Builder $query, AttentionState|null $state): void
+    protected function inAttention(Builder $query, AttentionStatus|null $state): void
     {
         $query->when($state !== null, fn (Builder $records) => $records->where('attention', $state?->value));
     }

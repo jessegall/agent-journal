@@ -23,7 +23,7 @@ use Domain\Sequences\Models\SequenceRun;
 use Domain\Sequences\SequencesDomain;
 use Domain\Sequences\Support\States\FollowSequenceState;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Facades\Event;
@@ -116,7 +116,7 @@ final class HookCompactionTest extends TestCase
     {
         $this->compact('call-1');
 
-        $this->assertSame(TaskState::Started, $this->task->fresh()?->state);
+        $this->assertSame(TaskStatus::Started, $this->task->fresh()?->status);
         $this->assertSame(1, $this->run->fresh()?->current_step);
         $this->assertSame(['core.ready', 'tasks.work', 'sequences.follow'], $this->storedTypeKeys());
     }

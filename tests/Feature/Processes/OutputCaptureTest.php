@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Enums\Processes\OutputStream;
-use App\Enums\Runs\CaptureState;
+use App\Enums\Runs\CaptureStatus;
 use App\Exceptions\OutputStorageFailed;
 use App\Models\Runs\OutputChunk;
 use App\Models\Runs\PartRun;
@@ -61,7 +61,7 @@ final class OutputCaptureTest extends TestCase
         $recorder->finish($part, $process->wait());
 
         $this->assertSame(52_428_800, $part->refresh()->stream_offsets['stdout']);
-        $this->assertSame(CaptureState::Complete, $part->capture_state);
+        $this->assertSame(CaptureStatus::Complete, $part->capture_state);
     }
 
     public function test_binary_bytes_and_carriage_returns_are_stored_raw(): void
@@ -88,7 +88,7 @@ final class OutputCaptureTest extends TestCase
             OutputChunk::query()->where('part_run_id', $part->id)->where('offset', 0)->firstOrFail()->storage_path,
         );
 
-        $this->assertSame(CaptureState::Incomplete, $this->app->make(ManifestCheck::class)->stateOf($part->refresh()));
+        $this->assertSame(CaptureStatus::Incomplete, $this->app->make(ManifestCheck::class)->stateOf($part->refresh()));
     }
 
     #[TimeLimit(5, 'It waits out a short drain deadline while a background child holds the pipe.')]

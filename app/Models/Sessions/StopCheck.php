@@ -10,7 +10,7 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Sessions\StopCheckState;
+use App\Enums\Sessions\StopCheckStatus;
 use App\Events\Sessions\StopCheckCertified;
 use App\Events\Sessions\StopCheckSettled;
 use App\Models\Agents\Agent;
@@ -38,7 +38,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $policy_digest
  * @property int $workspace_generation
  * @property array<string,string> $condition_hashes
- * @property StopCheckState $state
+ * @property StopCheckStatus $status
  * @property string|null $submission_digest
  * @property CarbonImmutable|null $certified_at
  * @property CarbonImmutable|null $created_at
@@ -72,7 +72,7 @@ final class StopCheck extends Model implements EventSource, ReadableModel
         return [
             'workspace_generation' => 'integer',
             'condition_hashes' => 'array',
-            'state' => StopCheckState::class,
+            'status' => StopCheckStatus::class,
             'certified_at' => 'datetime',
         ];
     }
@@ -98,7 +98,7 @@ final class StopCheck extends Model implements EventSource, ReadableModel
         $attempt->policy_digest = $policyDigest;
         $attempt->workspace_generation = $workspaceGeneration;
         $attempt->condition_hashes = $conditionHashes;
-        $attempt->state = StopCheckState::Pending;
+        $attempt->status = StopCheckStatus::Pending;
 
         $attempt->insertIfAbsent();
 
@@ -110,9 +110,9 @@ final class StopCheck extends Model implements EventSource, ReadableModel
     /**
      * Records that one submission of the host's results settled the attempt, with what its refusing conditions said.
      */
-    public function settle(StopCheckState $state, string $submissionDigest, string $failureSummary): void
+    public function settle(StopCheckStatus $state, string $submissionDigest, string $failureSummary): void
     {
-        $this->state = $state;
+        $this->status = $state;
         $this->submission_digest = $submissionDigest;
         $this->assertSaved($this->save());
         $this->raise(new StopCheckSettled($this->id, $state, $this->outcomeOf($failureSummary)));
@@ -155,7 +155,7 @@ final class StopCheck extends Model implements EventSource, ReadableModel
 
     public function isSettled(): bool
     {
-        return $this->state !== StopCheckState::Pending;
+        return $this->status !== StopCheckStatus::Pending;
     }
 
     public function wasSubmittedAs(string $submissionDigest): bool
@@ -177,7 +177,7 @@ final class StopCheck extends Model implements EventSource, ReadableModel
     public function outcomeOf(string $failureSummary): string
     {
         return hash('sha256', implode("\n", [
-            $this->state->value,
+            $this->status->value,
             $this->policy_digest,
             (string) $this->workspace_generation,
             $failureSummary,
@@ -228,7 +228,7 @@ final class StopCheck extends Model implements EventSource, ReadableModel
         return array_values(self::query()
             ->withoutGlobalScope(AgentSessionScope::class)
             ->ofSessions($sessionIds)
-            ->inState(StopCheckState::Pending)
+            ->inState(StopCheckStatus::Pending)
             ->oldestFirst()
             ->limit(50)
             ->get()
@@ -245,7 +245,7 @@ final class StopCheck extends Model implements EventSource, ReadableModel
     {
         return array_values(self::query()
             ->withoutGlobalScope(AgentSessionScope::class)
-            ->inState(StopCheckState::Passed)
+            ->inState(StopCheckStatus::Passed)
             ->uncertified()
             ->oldestFirst()
             ->readExactly($limit)
@@ -309,9 +309,9 @@ final class StopCheck extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function inState(Builder $query, StopCheckState $state): void
+    protected function inState(Builder $query, StopCheckStatus $state): void
     {
-        $query->where('state', $state->value);
+        $query->where('status', $state->value);
     }
 
     /**
@@ -322,7 +322,7 @@ final class StopCheck extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function settled(Builder $query): void
     {
-        $query->where('state', '!=', StopCheckState::Pending->value);
+        $query->where('status', '!=', StopCheckStatus::Pending->value);
     }
 
     /**

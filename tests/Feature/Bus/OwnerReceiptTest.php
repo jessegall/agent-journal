@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Bus;
 
 use App\Contracts\Bus\CommandBus;
-use App\Enums\CommandRules\ReceiptState;
+use App\Enums\CommandRules\ReceiptStatus;
 use App\Exceptions\RequestKeyConflict;
 use App\Exceptions\RequestKeyExpired;
 use App\Exceptions\RequestKeyMissing;
@@ -98,7 +98,7 @@ final class OwnerReceiptTest extends CommandBusTestCase
         $this->prune();
 
         $receipt = CommandReceipt::query()->sole();
-        $this->assertSame(ReceiptState::Expired, $receipt->state);
+        $this->assertSame(ReceiptStatus::Expired, $receipt->status);
         $this->assertNull($receipt->result);
         $this->assertThrows(fn () => $bus->run(new KeepNoteCommand('kept')), RequestKeyExpired::class);
 

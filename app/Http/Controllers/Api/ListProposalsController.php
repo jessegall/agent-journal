@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Api\Processes\ListProposalsPayload;
 use App\Api\Processes\ProposalList;
-use App\Enums\CommandRules\ProposalState;
+use App\Enums\CommandRules\ProposalStatus;
 use App\Models\CommandRules\RuleProposal;
 use App\Support\ServedEnvironment;
 
@@ -17,7 +17,7 @@ final readonly class ListProposalsController
 {
     public function __invoke(ListProposalsPayload $call, ServedEnvironment $projects): ProposalList
     {
-        $states = $call->states === [] ? ProposalState::cases() : array_map(ProposalState::from(...), $call->states);
+        $states = $call->states === [] ? ProposalStatus::cases() : array_map(ProposalStatus::from(...), $call->states);
 
         $proposals = RuleProposal::query()
             ->ofProject($projects->current())
@@ -29,7 +29,7 @@ final readonly class ListProposalsController
             'proposal_id' => $proposal->id,
             'program' => $proposal->program,
             'operation' => $proposal->operation,
-            'state' => $proposal->state->value,
+            'state' => $proposal->status->value,
             'revision' => $proposal->current_revision,
             'author' => "{$proposal->author_type}:{$proposal->author_id}",
         ])->all()]);

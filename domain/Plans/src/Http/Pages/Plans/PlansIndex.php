@@ -21,8 +21,8 @@ use App\Support\Layout\ListPaging;
 use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Data\PlanCardData;
 use Domain\Plans\Data\PlanFiltersData;
-use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanStateGroup;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Enums\PlanType;
 use Spatie\LaravelData\Optional;
 
@@ -63,7 +63,7 @@ final readonly class PlansIndex extends PlansPage
     {
         $trailing = [];
 
-        if ($card->state === PlanState::Cancelled) {
+        if ($card->state === PlanStatus::Cancelled) {
             $trailing[] = LayoutPartData::badge('state', 'Cancelled', 'quiet');
         }
 

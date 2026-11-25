@@ -32,12 +32,12 @@ final readonly class CommandRequestViews
             'requestId' => $request->id,
             'operation' => $request->operation,
             'line' => $request->source_excerpt,
-            'state' => $request->state->value,
+            'state' => $request->status->value,
             'steps' => $next->steps,
             'next' => $next->command,
             'proposals' => $proposals->map(fn (RuleProposal $proposal) => [
                 'proposal_id' => $proposal->id,
-                'state' => $proposal->state->value,
+                'state' => $proposal->status->value,
                 'revision' => $proposal->current_revision,
             ])->all(),
             'readers' => $readers->map(fn (ReaderRevision $reader) => [

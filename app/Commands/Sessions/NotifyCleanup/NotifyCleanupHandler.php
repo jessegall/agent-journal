@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Sessions\NotifyCleanup;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\Sessions\CleanupState;
+use App\Enums\Sessions\CleanupStatus;
 use App\Models\Sessions\SessionCleanup;
 use App\Support\CapacityRelease;
 
@@ -17,7 +17,7 @@ final readonly class NotifyCleanupHandler implements CommandHandler
 {
     public function __construct(private CapacityRelease $capacity) {}
 
-    public function handle(NotifyCleanupCommand $command): CleanupState
+    public function handle(NotifyCleanupCommand $command): CleanupStatus
     {
         $cleanup = SessionCleanup::findForSessionOn($command->hostId, $command->sessionId);
         $cleanup->recordPass($command->report);
@@ -26,6 +26,6 @@ final readonly class NotifyCleanupHandler implements CommandHandler
             $this->capacity->releaseFor($cleanup->start_request_id);
         }
 
-        return $cleanup->state;
+        return $cleanup->status;
     }
 }

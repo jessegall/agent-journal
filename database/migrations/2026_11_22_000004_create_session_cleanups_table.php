@@ -18,7 +18,7 @@ return new class extends Migration
             $table->json('removed_steps');
             $table->string('recovery_location', 1024)->nullable();
             $table->text('last_error')->nullable();
-            $table->string('state', 16)->index();
+            $table->string('status', 16)->index();
             $table->unsignedInteger('attempts')->default(0);
             $table->timestampsTz();
         });

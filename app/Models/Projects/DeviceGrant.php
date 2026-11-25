@@ -10,7 +10,7 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Projects\DeviceGrantState;
+use App\Enums\Projects\DeviceGrantStatus;
 use App\Events\Connections\DeviceGrantApproved;
 use App\Events\Connections\DeviceGrantIssued;
 use App\Events\Connections\DeviceGrantPolled;
@@ -31,7 +31,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $device_code_digest
  * @property string $user_code
  * @property list<string> $scopes
- * @property DeviceGrantState $state
+ * @property DeviceGrantStatus $status
  * @property string|null $approved_by_user_id
  * @property CarbonImmutable $code_expires_at
  * @property string|null $grant_digest
@@ -82,7 +82,7 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
     {
         return [
             'scopes' => 'array',
-            'state' => DeviceGrantState::class,
+            'status' => DeviceGrantStatus::class,
             'code_expires_at' => 'immutable_datetime',
             'grant_expires_at' => 'immutable_datetime',
             'last_polled_at' => 'immutable_datetime',
@@ -106,7 +106,7 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
         $grant->device_code_digest = $codeDigest;
         $grant->user_code = $userCode;
         $grant->scopes = self::SCOPES;
-        $grant->state = DeviceGrantState::Pending;
+        $grant->status = DeviceGrantStatus::Pending;
         $grant->code_expires_at = CarbonImmutable::now()->addMinutes(self::CODE_MINUTES);
         $grant->save();
 
@@ -129,7 +129,7 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
     public function approveBy(string $userId): void
     {
         $this->approved_by_user_id = $userId;
-        $this->state = DeviceGrantState::Approved;
+        $this->status = DeviceGrantStatus::Approved;
         $this->assertSaved($this->save());
         $this->raise(new DeviceGrantApproved($this->id, $userId));
     }
@@ -156,14 +156,14 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
     {
         $this->grant_digest = $digest;
         $this->grant_expires_at = CarbonImmutable::now()->addHours(self::GRANT_HOURS);
-        $this->state = DeviceGrantState::Issued;
+        $this->status = DeviceGrantStatus::Issued;
         $this->assertSaved($this->save());
         $this->raise(new DeviceGrantIssued($this->id));
     }
 
     public function revoke(): void
     {
-        $this->state = DeviceGrantState::Revoked;
+        $this->status = DeviceGrantStatus::Revoked;
         $this->assertSaved($this->save());
         $this->raise(new DeviceGrantRevoked($this->id));
     }
@@ -172,7 +172,7 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
 
     public function isApproved(): bool
     {
-        return $this->state === DeviceGrantState::Approved;
+        return $this->status === DeviceGrantStatus::Approved;
     }
 
     public function isCodeExpired(): bool
@@ -188,11 +188,11 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
      */
     public function approvalStateAt(CarbonImmutable $now): string
     {
-        if ($this->state === DeviceGrantState::Pending && ! $now->lessThan($this->code_expires_at)) {
+        if ($this->status === DeviceGrantStatus::Pending && ! $now->lessThan($this->code_expires_at)) {
             return 'expired';
         }
 
-        return $this->state->value;
+        return $this->status->value;
     }
 
     // ----------[ Relations ]----------
@@ -223,11 +223,11 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
      */
     public function assertNotCollected(): void
     {
-        if ($this->state === DeviceGrantState::Revoked) {
+        if ($this->status === DeviceGrantStatus::Revoked) {
             throw DeviceGrantRefused::revoked((string) $this->reference);
         }
 
-        if ($this->state === DeviceGrantState::Issued) {
+        if ($this->status === DeviceGrantStatus::Issued) {
             throw DeviceGrantRefused::alreadyIssued((string) $this->reference);
         }
     }
@@ -399,7 +399,7 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function pendingWithLiveCode(Builder $query): void
     {
-        $query->where('state', DeviceGrantState::Pending)->where('code_expires_at', '>', CarbonImmutable::now());
+        $query->where('status', DeviceGrantStatus::Pending)->where('code_expires_at', '>', CarbonImmutable::now());
     }
 
     /**
@@ -432,7 +432,7 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function usableNow(Builder $query): void
     {
-        $query->where('state', DeviceGrantState::Issued)
+        $query->where('status', DeviceGrantStatus::Issued)
             ->where('grant_expires_at', '>', CarbonImmutable::now())
             ->whereNotNull('approved_by_user_id')
             ->whereHas('binding', fn (Builder $binding) => $binding->unrevoked());
@@ -446,6 +446,6 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function unrevoked(Builder $query): void
     {
-        $query->where('state', '!=', DeviceGrantState::Revoked);
+        $query->where('status', '!=', DeviceGrantStatus::Revoked);
     }
 }

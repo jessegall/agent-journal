@@ -8,7 +8,7 @@ use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Enums\TaskTextLimit;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -38,6 +38,6 @@ final class CancelTaskTool extends TaskWriteTool
 
     protected function present(mixed $commandResult): ToolResult
     {
-        return ToolResult::ok(['state' => TaskState::Cancelled->value]);
+        return ToolResult::ok(['state' => TaskStatus::Cancelled->value]);
     }
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Accounts;
 
 use App\Enums\Accounts\SignInMethod;
-use App\Enums\Accounts\SignInState;
+use App\Enums\Accounts\SignInStatus;
 use App\Enums\Accounts\SignInType;
 use App\Models\Accounts\SignInAttempt;
 use Carbon\CarbonImmutable;
@@ -31,7 +31,7 @@ final class SignInAttemptData extends Data
         public readonly string|null $resultAccountId,
         public readonly bool $isWaitingForAgents,
         public readonly bool $isUnclaimed,
-        public readonly SignInState $state,
+        public readonly SignInStatus $state,
         public readonly bool $isAwaitingSignIn,
         public readonly string $expiresAt,
         public readonly string|null $refusal,
@@ -48,8 +48,8 @@ final class SignInAttemptData extends Data
             $attempt->resultAccount?->id,
             $attempt->isWaitingForAgents(),
             $attempt->isUnclaimedSince(CarbonImmutable::now()),
-            $attempt->state,
-            $attempt->state->isAwaitingSignIn(),
+            $attempt->status,
+            $attempt->status->isAwaitingSignIn(),
             $attempt->expires_at->toIso8601String(),
             $attempt->refusal,
         );

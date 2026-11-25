@@ -7,7 +7,7 @@ namespace Domain\Sequences\Events;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
 use Domain\Sequences\Contracts\ChatLineSource;
-use Domain\Sequences\Enums\SequenceRunState;
+use Domain\Sequences\Enums\SequenceRunStatus;
 use Domain\Sequences\Models\SequenceRun;
 
 /**
@@ -18,7 +18,7 @@ final readonly class SequenceEnded extends SequenceEvent implements ChatLineSour
     public function __construct(
         public string $runId,
         public ActorIdentity $follower,
-        public SequenceRunState $state,
+        public SequenceRunStatus $state,
     ) {}
 
     public function run(): RecordIdentity

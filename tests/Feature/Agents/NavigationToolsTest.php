@@ -6,7 +6,7 @@ namespace Tests\Feature\Agents;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Assignments\AssignmentTransaction;
-use App\Enums\Navigation\NavigationState;
+use App\Enums\Navigation\NavigationStatus;
 use App\Models\Drivers\NavigationRequest;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
@@ -100,7 +100,7 @@ final class NavigationToolsTest extends TestCase
         $this->callMcpTool($this->main, 'navigation_answer', [...$round, 'request_key' => 'answer', 'keys' => ['down']])
             ->assertJsonPath('result.isError', false);
 
-        $this->assertSame(NavigationState::Answering, $navigation->fresh()?->state);
+        $this->assertSame(NavigationStatus::Answering, $navigation->fresh()?->status);
     }
 
     public function test_done_and_give_up_move_the_request_as_their_commands_do(): void
@@ -129,7 +129,7 @@ final class NavigationToolsTest extends TestCase
             'reason' => 'the picker shows no such model',
         ])->assertJsonPath('result.isError', false);
 
-        $this->assertSame(NavigationState::Proving, $proved->fresh()?->state);
-        $this->assertSame(NavigationState::Abandoned, $abandoned->fresh()?->state);
+        $this->assertSame(NavigationStatus::Proving, $proved->fresh()?->status);
+        $this->assertSame(NavigationStatus::Abandoned, $abandoned->fresh()?->status);
     }
 }

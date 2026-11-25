@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Cards;
 
-use App\Enums\Runs\DisclosureState;
+use App\Enums\Runs\DisclosureStatus;
 use App\Enums\Runs\PartType;
 use App\Exceptions\DockCardInvalid;
 use App\Support\Cards\Contracts\DockPart;
@@ -17,7 +17,7 @@ final readonly class Disclosure implements DockPart
     public function __construct(
         public string $key,
         public string $title,
-        public DisclosureState $initial,
+        public DisclosureStatus $initial,
         public DockPart $body,
     ) {
         PartKey::assertGiven($key, PartType::Disclosure);

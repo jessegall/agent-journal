@@ -45,11 +45,11 @@ enum StartReadiness: string
     /**
      * The state a live session shows while this start has not proved its conversation; none once it no longer waits.
      */
-    public function verificationState(): SessionState|null
+    public function verificationState(): SessionActivityStatus|null
     {
         return match ($this) {
-            self::Accepted, self::PreparingIdentity => SessionState::Verifying,
-            self::Uncertain => SessionState::Unverified,
+            self::Accepted, self::PreparingIdentity => SessionActivityStatus::Verifying,
+            self::Uncertain => SessionActivityStatus::Unverified,
             self::Ready, self::Refused, self::Cancelled => null,
         };
     }

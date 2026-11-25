@@ -11,7 +11,7 @@ use App\Support\Inputs\ToolFinished;
 use App\Support\Inputs\Values\DriverToolInput;
 use App\Support\Inputs\Values\ToolResult;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Events\TaskBlocked;
 use Domain\Tasks\Events\TaskCancelled;
 use Domain\Tasks\Events\TaskFinished;
@@ -57,9 +57,9 @@ final class WorkOnTaskStateTest extends TestCase
         $other = Task::factory()->create();
 
         $this->working()
-            ->given(new $ending($other->id, TaskState::Started, 'entry-1'))
+            ->given(new $ending($other->id, TaskStatus::Started, 'entry-1'))
             ->assertStillActive()
-            ->given(new $ending($this->task->id, TaskState::Started, 'entry-2'))
+            ->given(new $ending($this->task->id, TaskStatus::Started, 'entry-2'))
             ->assertPopped();
     }
 

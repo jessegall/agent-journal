@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Runs\ReplayAssessment;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\Runs\LifecycleState;
+use App\Enums\Runs\LifecycleStatus;
 use App\Enums\Runs\RunMode;
 use App\Exceptions\ReplayRefused;
 use App\Models\CommandRules\RuleRevision;
@@ -42,7 +42,7 @@ final readonly class ReplayAssessmentHandler implements CommandHandler
             throw ReplayRefused::evidenceRun($part->id);
         }
 
-        if ($part->lifecycle !== LifecycleState::Ended) {
+        if ($part->lifecycle !== LifecycleStatus::Ended) {
             throw ReplayRefused::notEnded($part->id);
         }
 

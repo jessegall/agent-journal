@@ -12,7 +12,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Enums\TaskWaitChange;
 use Domain\Tasks\Events\TaskWaitChanged;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -126,9 +126,9 @@ final class TaskWait extends Model implements EventSource, ReadableModel
      * The one rule of a wait: met once it is waived or its prerequisite is finished. Open, started, blocked, cancelled
      * and a prerequisite that is gone (no state) all leave it outstanding.
      */
-    public function isSatisfiedBy(TaskState|null $prerequisiteState): bool
+    public function isSatisfiedBy(TaskStatus|null $prerequisiteState): bool
     {
-        return $this->isWaived() || $prerequisiteState === TaskState::Finished;
+        return $this->isWaived() || $prerequisiteState === TaskStatus::Finished;
     }
 
     // ----------[ Queries ]----------

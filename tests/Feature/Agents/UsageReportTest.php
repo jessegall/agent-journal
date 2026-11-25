@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Enums\Accounts\AccountProcessRole;
-use App\Enums\Agents\SessionProcessState;
+use App\Enums\Agents\SessionProcessStatus;
 use App\Events\Accounts\AccountsChanged;
 use App\Events\Accounts\AccountUsageChanged;
 use App\Models\Accounts\Account;
@@ -125,7 +125,7 @@ final class UsageReportTest extends TestCase
 
     public function test_a_cost_from_a_stopped_start_of_an_earlier_sign_in_still_counts_for_its_account(): void
     {
-        $key = $this->claimedStart($this->account, SessionProcessState::Stopped);
+        $key = $this->claimedStart($this->account, SessionProcessStatus::Stopped);
         DB::table('accounts')->where('id', $this->account->id)->increment('sign_in_generation');
 
         $this->notify($key, 'result-1', ['type' => 'result_cost', 'usd' => '2'])->assertNoContent();
@@ -140,7 +140,7 @@ final class UsageReportTest extends TestCase
     public function test_a_report_on_a_removed_account_is_refused_and_writes_nothing(): void
     {
         $key = $this->claimedStart($this->account);
-        DB::table('accounts')->where('id', $this->account->id)->update(['state' => 'removed']);
+        DB::table('accounts')->where('id', $this->account->id)->update(['status' => 'removed']);
 
         $this->notify($key, 'result-1', ['type' => 'result_cost', 'usd' => '1'])->assertNotFound();
 
@@ -181,7 +181,7 @@ final class UsageReportTest extends TestCase
         ]);
     }
 
-    private function claimedStart(Account $account, SessionProcessState $state = SessionProcessState::Running): string
+    private function claimedStart(Account $account, SessionProcessStatus $state = SessionProcessStatus::Running): string
     {
         $key = (string) Str::ulid();
         DB::table('session_processes')->insert([
@@ -194,7 +194,7 @@ final class UsageReportTest extends TestCase
             'account_id' => $account->id,
             'account_generation' => 1,
             'directory' => (string) $account->directory,
-            'state' => $state->value,
+            'status' => $state->value,
             'role' => AccountProcessRole::Execution->value,
             'created_at' => now(),
             'updated_at' => now(),

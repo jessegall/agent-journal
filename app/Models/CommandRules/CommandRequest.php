@@ -9,9 +9,9 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\CommandRules\EvidenceSource;
-use App\Enums\CommandRules\ProposalState;
+use App\Enums\CommandRules\ProposalStatus;
 use App\Enums\CommandRules\RequestHoldReason;
-use App\Enums\CommandRules\RequestState;
+use App\Enums\CommandRules\RequestStatus;
 use App\Enums\Processes\OutputStream;
 use App\Exceptions\RequestTransitionRefused;
 use App\Models\Runs\PartRun;
@@ -41,7 +41,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $source_line
  * @property string $working_folder
  * @property RequestHoldReason $hold_reason
- * @property RequestState $state
+ * @property RequestStatus $status
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read mixed $next_step
@@ -65,7 +65,7 @@ final class CommandRequest extends Model implements ReadableModel
     {
         return [
             'hold_reason' => RequestHoldReason::class,
-            'state' => RequestState::class,
+            'status' => RequestStatus::class,
         ];
     }
 
@@ -87,7 +87,7 @@ final class CommandRequest extends Model implements ReadableModel
         $commandRequest->source_line = $command->line;
         $commandRequest->working_folder = $command->workingFolder;
         $commandRequest->hold_reason = $command->reason;
-        $commandRequest->state = RequestState::CollectingDeclaration;
+        $commandRequest->status = RequestStatus::CollectingDeclaration;
         $commandRequest->save();
 
         return $commandRequest;
@@ -100,7 +100,7 @@ final class CommandRequest extends Model implements ReadableModel
      */
     protected function nextStep(): Attribute
     {
-        return Accessor::get(fn () => $this->state->nextStep($this->id, $this->operation));
+        return Accessor::get(fn () => $this->status->nextStep($this->id, $this->operation));
     }
 
     // ----------[ Asserts ]----------
@@ -110,17 +110,17 @@ final class CommandRequest extends Model implements ReadableModel
      */
     private function assertAwaitingApproval(): void
     {
-        if ($this->state !== RequestState::AwaitingApproval) {
-            throw $this->refusal(RequestState::Active);
+        if ($this->status !== RequestStatus::AwaitingApproval) {
+            throw $this->refusal(RequestStatus::Active);
         }
     }
 
     /**
      * Refuses a move its present state does not allow.
      */
-    private function assertMoveAllowed(RequestState $next): void
+    private function assertMoveAllowed(RequestStatus $next): void
     {
-        if (! $this->state->allows($next)) {
+        if (! $this->status->allows($next)) {
             throw $this->refusal($next);
         }
     }
@@ -130,17 +130,17 @@ final class CommandRequest extends Model implements ReadableModel
     /**
      * @throws RequestTransitionRefused
      */
-    private function moveTo(RequestState $next): void
+    private function moveTo(RequestStatus $next): void
     {
         $this->assertMoveAllowed($next);
 
-        $this->state = $next;
+        $this->status = $next;
         $this->save();
     }
 
-    private function refusal(RequestState $next): RequestTransitionRefused
+    private function refusal(RequestStatus $next): RequestTransitionRefused
     {
-        return RequestTransitionRefused::from($this->state, $next, implode('; ', $this->next_step->steps));
+        return RequestTransitionRefused::from($this->status, $next, implode('; ', $this->next_step->steps));
     }
 
     // ----------[ Queries ]----------
@@ -166,7 +166,7 @@ final class CommandRequest extends Model implements ReadableModel
      */
     public function awaitsProof(): bool
     {
-        return $this->state === RequestState::AwaitingProof;
+        return $this->status === RequestStatus::AwaitingProof;
     }
 
     /**
@@ -226,7 +226,7 @@ final class CommandRequest extends Model implements ReadableModel
      */
     public function propose(): void
     {
-        $this->moveTo(RequestState::AwaitingSampleApproval);
+        $this->moveTo(RequestStatus::AwaitingSampleApproval);
     }
 
     /**
@@ -236,7 +236,7 @@ final class CommandRequest extends Model implements ReadableModel
      */
     public function approveSample(): void
     {
-        $this->moveTo(RequestState::ReadyForSample);
+        $this->moveTo(RequestStatus::ReadyForSample);
     }
 
     /**
@@ -244,7 +244,7 @@ final class CommandRequest extends Model implements ReadableModel
      */
     public function startSample(): void
     {
-        $this->moveTo(RequestState::CapturingSample);
+        $this->moveTo(RequestStatus::CapturingSample);
     }
 
     /**
@@ -254,7 +254,7 @@ final class CommandRequest extends Model implements ReadableModel
      */
     public function finishSample(): void
     {
-        $this->moveTo(RequestState::AwaitingProof);
+        $this->moveTo(RequestStatus::AwaitingProof);
     }
 
     /**
@@ -264,7 +264,7 @@ final class CommandRequest extends Model implements ReadableModel
      */
     public function retrySample(): void
     {
-        $this->moveTo(RequestState::AwaitingSampleApproval);
+        $this->moveTo(RequestStatus::AwaitingSampleApproval);
     }
 
     /**
@@ -272,7 +272,7 @@ final class CommandRequest extends Model implements ReadableModel
      */
     public function prove(): void
     {
-        $this->moveTo(RequestState::AwaitingApproval);
+        $this->moveTo(RequestStatus::AwaitingApproval);
     }
 
     /**
@@ -283,7 +283,7 @@ final class CommandRequest extends Model implements ReadableModel
     public function approve(): void
     {
         $this->assertAwaitingApproval();
-        $this->moveTo(RequestState::Active);
+        $this->moveTo(RequestStatus::Active);
     }
 
     /**
@@ -293,7 +293,7 @@ final class CommandRequest extends Model implements ReadableModel
      */
     public function approveOrdinary(): void
     {
-        $this->moveTo(RequestState::Active);
+        $this->moveTo(RequestStatus::Active);
     }
 
     /**
@@ -303,7 +303,7 @@ final class CommandRequest extends Model implements ReadableModel
      */
     public function revise(): void
     {
-        $this->moveTo(RequestState::CollectingDeclaration);
+        $this->moveTo(RequestStatus::CollectingDeclaration);
     }
 
     /**
@@ -314,11 +314,11 @@ final class CommandRequest extends Model implements ReadableModel
      */
     public function answerWith(RuleProposal $proposal): void
     {
-        if ($this->state->restartsCollection()) {
+        if ($this->status->restartsCollection()) {
             $this->revise();
         }
 
-        if ($this->state === RequestState::CollectingDeclaration && $proposal->state === ProposalState::Pending) {
+        if ($this->status === RequestStatus::CollectingDeclaration && $proposal->status === ProposalStatus::Pending) {
             $this->propose();
         }
     }
@@ -328,7 +328,7 @@ final class CommandRequest extends Model implements ReadableModel
      */
     public function reject(): void
     {
-        $this->moveTo(RequestState::Rejected);
+        $this->moveTo(RequestStatus::Rejected);
     }
 
     /**
@@ -336,7 +336,7 @@ final class CommandRequest extends Model implements ReadableModel
      */
     public function withdraw(): void
     {
-        $this->moveTo(RequestState::Withdrawn);
+        $this->moveTo(RequestStatus::Withdrawn);
     }
 
     // ----------[ Scopes ]----------
@@ -365,10 +365,10 @@ final class CommandRequest extends Model implements ReadableModel
     #[Scope]
     protected function stillOpen(Builder $query): void
     {
-        $query->whereNotIn('state', [
-            RequestState::Active->value,
-            RequestState::Rejected->value,
-            RequestState::Withdrawn->value,
+        $query->whereNotIn('status', [
+            RequestStatus::Active->value,
+            RequestStatus::Rejected->value,
+            RequestStatus::Withdrawn->value,
         ]);
     }
 }

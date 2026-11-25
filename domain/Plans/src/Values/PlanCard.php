@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Values;
 
 use App\Support\AssignmentHolder;
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Enums\PlanType;
 use PhpOption\Option;
 
@@ -23,7 +23,7 @@ final readonly class PlanCard
         public int $number,
         public string $title,
         public PlanType $type,
-        public PlanState $state,
+        public PlanStatus $state,
         public bool $canStart,
         public bool $isFocused,
         public PlanProgress $progress,

@@ -16,11 +16,11 @@ enum AttentionFilter: string
     /**
      * The attention state a list keeps, or none when it keeps every record.
      */
-    public function state(): AttentionState|null
+    public function state(): AttentionStatus|null
     {
         return match ($this) {
-            self::Active => AttentionState::Active,
-            self::Settled => AttentionState::Settled,
+            self::Active => AttentionStatus::Active,
+            self::Settled => AttentionStatus::Settled,
             self::All => null,
         };
     }

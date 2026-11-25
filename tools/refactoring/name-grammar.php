@@ -474,6 +474,10 @@ function stateFault(DeclaredName $declared): string|null
         return "a state says what the agent is to do with the plain verb, not {$first}";
     }
 
+    if ($declared->declarationType === 'enum' && str_ends_with($declared->name, 'State')) {
+        return 'an enum of where something stands is named Status: State names an agent state';
+    }
+
     return null;
 }
 

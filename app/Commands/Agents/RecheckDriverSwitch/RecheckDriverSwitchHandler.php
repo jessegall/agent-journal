@@ -24,6 +24,6 @@ final readonly class RecheckDriverSwitchHandler implements CommandHandler
             : $switch->replacement_session_id;
 
         $start = $session === null ? null : SessionProcess::findLatestOfSession($session);
-        $switch->recheck($start?->state, AgentRuntime::findForSession($switch->expected_session_id));
+        $switch->recheck($start?->status, AgentRuntime::findForSession($switch->expected_session_id));
     }
 }

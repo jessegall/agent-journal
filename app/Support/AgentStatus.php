@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\Sessions\SessionState;
+use App\Enums\Sessions\SessionActivityStatus;
 
 /**
  * One agent's status as the bar, the picker, the conversation and the session dialog all show it, decided from its evidence
@@ -19,7 +19,7 @@ final readonly class AgentStatus
      * @param  list<StatusAction>  $actions
      */
     public function __construct(
-        public SessionState $sessionState,
+        public SessionActivityStatus $sessionState,
         public string $label,
         public string|null $reason,
         public string|null $remedy,

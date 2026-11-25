@@ -16,7 +16,7 @@ use Domain\Plans\PlansDomain;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Values\AssignedPlanFilters;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Domain\Tasks\Values\TaskFilters;
@@ -77,7 +77,7 @@ final class AssignedListsTest extends TestCase
 
         $list = $this->app->make(AssignedTaskResolver::class)->assignedToCaller(new TaskFilters());
         $finishedOnly = $this->app->make(AssignedTaskResolver::class)->assignedToCaller(
-            new TaskFilters(states: [TaskState::Finished]),
+            new TaskFilters(states: [TaskStatus::Finished]),
         );
         $searched = $this->app->make(AssignedTaskResolver::class)->assignedToCaller(
             new TaskFilters(search: 'READER', page: new NumberedPage(1, 1)),

@@ -65,7 +65,7 @@ return new class extends Migration
             $table->text('brief');
             $table->json('source_subjects');
             $table->string('request_id', 64);
-            $table->string('state', 16);
+            $table->string('status', 16);
             $table->json('steering');
             $table->string('stop_evidence_reference')->nullable();
             $table->unsignedInteger('profile_revision');

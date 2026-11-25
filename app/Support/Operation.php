@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\CommandRules\ReceiptState;
+use App\Enums\CommandRules\ReceiptStatus;
 use App\Enums\Engine\RefusalCode;
 use Carbon\CarbonImmutable;
 
@@ -17,7 +17,7 @@ final readonly class Operation
     public function __construct(
         public string $requestKey,
         public string $command,
-        public ReceiptState $state,
+        public ReceiptStatus $state,
         public mixed $commandReply,
         public RefusalCode|null $refusalCode,
         public string|null $refusalMessage,

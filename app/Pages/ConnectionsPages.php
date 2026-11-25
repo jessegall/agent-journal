@@ -31,15 +31,15 @@ use App\Declarations\NavigationItem;
 use App\Declarations\Page;
 use App\Enums\Agents\ChildRole;
 use App\Enums\Connections\BindingReadiness;
-use App\Enums\Connections\CommandRunState;
+use App\Enums\Connections\CommandRunStatus;
 use App\Enums\Connections\ConnectionAuditActor;
 use App\Enums\Connections\ConnectionAuditType;
-use App\Enums\Connections\FileWindowState;
+use App\Enums\Connections\FileWindowStatus;
 use App\Enums\Navigation\Icon;
-use App\Enums\Projects\DeviceGrantState;
-use App\Enums\Projects\InstallAttemptState;
+use App\Enums\Projects\DeviceGrantStatus;
+use App\Enums\Projects\InstallAttemptStatus;
 use App\Enums\Projects\InvitationMode;
-use App\Enums\Projects\ProjectWindowState;
+use App\Enums\Projects\ProjectWindowStatus;
 use App\Enums\Web\WindowPlace;
 use App\Http\Pages\Resolvers\ConnectProjectWindowResolver;
 use App\Http\Pages\Resolvers\DeviceApprovalWindowResolver;
@@ -130,14 +130,14 @@ final class ConnectionsPages implements NativePartProvider, NavigationProvider, 
             TerminalSignInRowData::class,
             BindingReadiness::class,
             ChildRole::class,
-            CommandRunState::class,
+            CommandRunStatus::class,
             ConnectionAuditActor::class,
             ConnectionAuditType::class,
-            DeviceGrantState::class,
-            FileWindowState::class,
-            InstallAttemptState::class,
+            DeviceGrantStatus::class,
+            FileWindowStatus::class,
+            InstallAttemptStatus::class,
             InvitationMode::class,
-            ProjectWindowState::class,
+            ProjectWindowStatus::class,
         ];
     }
 

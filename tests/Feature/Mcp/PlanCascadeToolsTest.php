@@ -11,7 +11,7 @@ use App\Models\Records\AssignmentRecord;
 use App\Support\Access\AccessSettings;
 use App\Support\AssignmentGroup;
 use App\Support\RecordIdentity;
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\PlansDomain;
 use Domain\Plans\Support\PlanStructure;
@@ -124,7 +124,7 @@ final class PlanCascadeToolsTest extends TestCase
 
     public function test_a_finished_root_is_refused_with_a_recovery_action(): void
     {
-        $plan = Plan::factory()->create(['state' => PlanState::Done]);
+        $plan = Plan::factory()->create(['status' => PlanStatus::Done]);
 
         $this->callMcpTool($this->caller, 'plans_assign_work', $this->assignArguments($plan))
             ->assertJsonPath('result.isError', true)

@@ -9,7 +9,7 @@ use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCompatibilities as DriverCompatibilitiesContract;
-use App\Enums\Agents\SessionProcessState;
+use App\Enums\Agents\SessionProcessStatus;
 use App\Enums\Drivers\DriverCapability;
 use App\Enums\Drivers\DriverEvidence;
 use App\Enums\Drivers\DriverType;
@@ -96,7 +96,7 @@ final class HostStartsTest extends TestCase
 
         $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])->assertStatus(409);
 
-        $this->assertSame(SessionProcessState::Pending, SessionProcess::query()->withoutGlobalScopes()->sole()->state);
+        $this->assertSame(SessionProcessStatus::Pending, SessionProcess::query()->withoutGlobalScopes()->sole()->status);
     }
 
     public function test_the_claim_carries_the_checked_recipe_for_the_account_folder(): void
@@ -128,7 +128,7 @@ final class HostStartsTest extends TestCase
         $this->signed($other, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])->assertForbidden();
 
         $start = SessionProcess::query()->withoutGlobalScopes()->sole();
-        $this->assertSame([SessionProcessState::Pending, null], [$start->state, $start->host_id]);
+        $this->assertSame([SessionProcessStatus::Pending, null], [$start->status, $start->host_id]);
     }
 
     public function test_only_the_claiming_host_reads_the_sealed_output_grants_of_its_start(): void
@@ -162,7 +162,7 @@ final class HostStartsTest extends TestCase
         $this->signed($host, 'POST', "/host/starts/{$key}/stopped")->assertNoContent();
 
         $start = SessionProcess::query()->withoutGlobalScopes()->sole();
-        $this->assertSame([SessionProcessState::Stopped, 'thread-1'], [$start->state, $start->execution_id]);
+        $this->assertSame([SessionProcessStatus::Stopped, 'thread-1'], [$start->status, $start->execution_id]);
         $this->assertSame([], $this->signed($host, 'GET', '/host/starts')->json('unresolved'));
     }
 
@@ -270,7 +270,7 @@ final class HostStartsTest extends TestCase
 
         $this->signed($host, 'POST', '/host/starts/reconcile', ['stopped' => [$key]])
             ->assertJson(['accounts_changed' => 1]);
-        $this->assertSame(SessionProcessState::Stopped, SessionProcess::query()->withoutGlobalScopes()->sole()->state);
+        $this->assertSame(SessionProcessStatus::Stopped, SessionProcess::query()->withoutGlobalScopes()->sole()->status);
     }
 
     // A session its restarted host no longer serves is stopped by itself, and the pages hear it.
@@ -299,7 +299,7 @@ final class HostStartsTest extends TestCase
         $this->call('POST', '/host/starts/claim', content: $body)->assertUnauthorized();
         $bearerOnly = ['HTTP_AUTHORIZATION' => "Bearer {$host->secret}"];
         $this->call('POST', '/host/starts/claim', server: $bearerOnly, content: $body)->assertUnauthorized();
-        $this->assertSame(SessionProcessState::Pending, SessionProcess::query()->withoutGlobalScopes()->sole()->state);
+        $this->assertSame(SessionProcessStatus::Pending, SessionProcess::query()->withoutGlobalScopes()->sole()->status);
     }
 
     /**

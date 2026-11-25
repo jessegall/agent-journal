@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Data;
 
 use App\Data\Pages\RecordCard;
-use Domain\Documents\Enums\AttentionState;
+use Domain\Documents\Enums\AttentionStatus;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -24,7 +24,7 @@ final class RecordInspection extends Data
      */
     public function __construct(
         public readonly string $label,
-        public readonly AttentionState $attention,
+        public readonly AttentionStatus $attention,
         public readonly DraftState $editing,
         #[DataCollectionOf(SettlementCard::class)]
         public readonly array $settlements,

@@ -6,7 +6,7 @@ namespace Domain\Sequences\Tests\Feature\States;
 
 use App\Enums\Hooks\AnswerType;
 use App\Support\ActorIdentity;
-use Domain\Sequences\Enums\SequenceRunState;
+use Domain\Sequences\Enums\SequenceRunStatus;
 use Domain\Sequences\Events\SequenceEnded;
 use Domain\Sequences\Events\SequenceStepReached;
 use Domain\Sequences\Models\SequenceRun;
@@ -44,9 +44,9 @@ final class FollowSequenceStateTest extends TestCase
     public function test_the_end_of_its_run_ends_it_and_another_run_does_not(): void
     {
         $this->following()
-            ->given(new SequenceEnded('run-2', $this->follower(), SequenceRunState::Finished))
+            ->given(new SequenceEnded('run-2', $this->follower(), SequenceRunStatus::Finished))
             ->assertStillActive()
-            ->given(new SequenceEnded(self::RUN, $this->follower(), SequenceRunState::Finished))
+            ->given(new SequenceEnded(self::RUN, $this->follower(), SequenceRunStatus::Finished))
             ->assertPopped();
     }
 

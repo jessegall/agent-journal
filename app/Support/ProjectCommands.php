@@ -10,7 +10,7 @@ use App\Commands\Projects\FinishProjectCommandRun\FinishProjectCommandRunCommand
 use App\Commands\Projects\RecordProjectCommandProcess\RecordProjectCommandProcessCommand;
 use App\Commands\Projects\StartProjectCommandRun\StartProjectCommandRunCommand;
 use App\Enums\Accounts\CommandEntry;
-use App\Enums\Connections\CommandRunState;
+use App\Enums\Connections\CommandRunStatus;
 use App\Exceptions\VerbNotServed;
 use App\Models\Projects\ProjectBinding;
 use App\Values\CommandRunStart;
@@ -81,11 +81,11 @@ final readonly class ProjectCommands
             throw VerbNotServed::stillRunning($requestKey);
         }
 
-        if ($started->state === CommandRunState::Interrupted) {
+        if ($started->state === CommandRunStatus::Interrupted) {
             throw VerbNotServed::interrupted($requestKey);
         }
 
-        if ($started->state === CommandRunState::Unknown) {
+        if ($started->state === CommandRunStatus::Unknown) {
             throw VerbNotServed::outcomeUnknown($requestKey);
         }
 

@@ -7,7 +7,7 @@ namespace Tests\Feature\Web;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Data\Terminals\ScreenFrameData;
 use App\Enums\Drivers\DriverType;
-use App\Enums\Terminals\TerminalFrameState;
+use App\Enums\Terminals\TerminalFrameStatus;
 use App\Enums\Terminals\TerminalViewRefusal;
 use App\Exceptions\ActorNotAllowed;
 use App\Http\Middleware\Web\HandleInertiaRequests;
@@ -133,16 +133,16 @@ final class TerminalPageTest extends TestCase
         $agentId = $runtime->session->agent_id;
         $this->open($agentId)->assertOk();
 
-        $this->frame($agentId)->assertExactJson(['state' => TerminalFrameState::Unchanged->value]);
+        $this->frame($agentId)->assertExactJson(['state' => TerminalFrameStatus::Unchanged->value]);
         $this->storeFrame($runtime, 'epoch-1', 3);
 
         $this->frame($agentId)
-            ->assertJsonPath('state', TerminalFrameState::Live->value)
+            ->assertJsonPath('state', TerminalFrameStatus::Live->value)
             ->assertJsonPath('frame.epoch', 'epoch-1')
             ->assertJsonPath('frame.sequence', 3)
             ->assertJsonPath('frame.rows.0.runs.0.text', '<script>');
         $this->frame($agentId, ['epoch' => 'epoch-1', 'stream' => 'stream-1', 'after' => 3])
-            ->assertJsonPath('state', TerminalFrameState::Unchanged->value)
+            ->assertJsonPath('state', TerminalFrameStatus::Unchanged->value)
             ->assertJsonMissingPath('frame');
         $this->frame($agentId, ['epoch' => 'epoch-0', 'after' => 9])->assertJsonPath('frame.sequence', 3);
     }
@@ -173,7 +173,7 @@ final class TerminalPageTest extends TestCase
         $this->app->make(DriverRequestEndings::class)->closeAfterExit($runtime);
 
         $this->frame($agentId, ['epoch' => 'epoch-1', 'stream' => 'stream-1', 'after' => 1])
-            ->assertJsonPath('state', TerminalFrameState::Ended->value)
+            ->assertJsonPath('state', TerminalFrameStatus::Ended->value)
             ->assertJsonPath('frame.sequence', 1)
             ->assertJsonStructure(['endedAt']);
     }
@@ -186,12 +186,12 @@ final class TerminalPageTest extends TestCase
         $runtime->reassignTo('host-2', 'start-token-2');
         $this->storeFrame($runtime, 'epoch-2', 1);
 
-        $this->frame($agentId)->assertExactJson(['state' => TerminalFrameState::Restarted->value]);
+        $this->frame($agentId)->assertExactJson(['state' => TerminalFrameStatus::Restarted->value]);
         $this->assertSame(0, TerminalView::query()->acrossActors()->live()->count());
 
         $this->open($agentId)->assertOk();
         $this->frame($agentId)
-            ->assertJsonPath('state', TerminalFrameState::Live->value)
+            ->assertJsonPath('state', TerminalFrameStatus::Live->value)
             ->assertJsonPath('frame.epoch', 'epoch-2');
         $view = TerminalView::query()->acrossActors()->live()->sole();
         $this->assertSame($runtime->process_generation, $view->process_generation);
@@ -219,7 +219,7 @@ final class TerminalPageTest extends TestCase
         );
         $this->app->make(AgentRuntimes::class)->open($replacement->session, $intent, 'start-token-2');
 
-        $this->frame($agent->id)->assertJsonPath('state', TerminalFrameState::Ended->value);
+        $this->frame($agent->id)->assertJsonPath('state', TerminalFrameStatus::Ended->value);
         $this->assertSame(0, TerminalView::query()->acrossActors()->live()->count());
     }
 

@@ -9,7 +9,7 @@ use App\Support\Access\AccessSettings;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Enums\GatewayOperationType;
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Exceptions\GatewayRunStale;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
@@ -74,7 +74,7 @@ final class SharingSupervisorTest extends TestCase
 
         $this->assertTrue($supervisor->work());
         $this->assertFalse($supervisor->work());
-        $this->assertSame(ShareState::Active, Share::query()->findOrFail($share->id)->state);
+        $this->assertSame(ShareStatus::Active, Share::query()->findOrFail($share->id)->status);
         $this->assertCount(1, $this->gateway->opened);
     }
 
@@ -88,9 +88,9 @@ final class SharingSupervisorTest extends TestCase
         $newer->begin();
 
         $this->assertThrows(fn () => $older->work(), GatewayRunStale::class);
-        $this->assertSame(ShareState::Pending, Share::query()->findOrFail($share->id)->state);
+        $this->assertSame(ShareStatus::Pending, Share::query()->findOrFail($share->id)->status);
         $this->assertTrue($newer->work());
-        $this->assertSame(ShareState::Active, Share::query()->findOrFail($share->id)->state);
+        $this->assertSame(ShareStatus::Active, Share::query()->findOrFail($share->id)->status);
     }
 
     public function test_a_restart_reopens_active_shares_with_the_same_link_and_token_after_a_healthy_probe(): void
@@ -108,7 +108,7 @@ final class SharingSupervisorTest extends TestCase
         $this->assertTrue($restarted->work());
         $restarted->checkHealth();
 
-        $this->assertSame(ShareState::Active, Share::query()->findOrFail($share->id)->state);
+        $this->assertSame(ShareStatus::Active, Share::query()->findOrFail($share->id)->status);
         $this->assertSame($digest, Share::query()->findOrFail($share->id)->token_digest);
         $this->assertSame(
             $link,
@@ -128,7 +128,7 @@ final class SharingSupervisorTest extends TestCase
             new ShareProposal(TestActors::agentIdentity(5)),
         );
         $revoked = TestShares::grantForADay(TestActors::record('binders.binder', 2), $this->configuration);
-        $revoked->end(ShareState::Revoked);
+        $revoked->end(ShareStatus::Revoked);
 
         $this->assertSame(0, $this->supervisor()->begin());
         $this->assertSame(0, ShareGatewayOperation::query()->count());

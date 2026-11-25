@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Contracts\Bus\CommandRefusal;
-use App\Enums\Navigation\NavigationState;
+use App\Enums\Navigation\NavigationStatus;
 use RuntimeException;
 
 /**
@@ -13,7 +13,7 @@ use RuntimeException;
  */
 final class NavigationTransitionRefused extends RuntimeException implements CommandRefusal
 {
-    public static function from(NavigationState $state, NavigationState $next): self
+    public static function from(NavigationStatus $state, NavigationStatus $next): self
     {
         return new self("A navigation request that is {$state->value} cannot become {$next->value}.");
     }

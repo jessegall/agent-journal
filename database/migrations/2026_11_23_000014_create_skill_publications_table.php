@@ -23,13 +23,13 @@ return new class extends Migration
             $table->string('lease_holder', 128)->nullable();
             $table->timestampTz('lease_until')->nullable();
             $table->unsignedInteger('progress')->default(0);
-            $table->string('state', 16);
+            $table->string('status', 16);
             $table->string('open_key', 1100)->nullable()->unique();
             $table->json('manifest')->nullable();
             $table->text('error')->nullable();
             $table->timestampsTz();
 
-            $table->index(['state', 'created_at']);
+            $table->index(['status', 'created_at']);
             $table->index(['session_id', 'created_at']);
         });
     }

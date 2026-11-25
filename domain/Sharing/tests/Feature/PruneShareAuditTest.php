@@ -9,7 +9,7 @@ use App\Support\AuditPruning;
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Commands\PruneShareAudit\PruneShareAuditCommand;
 use Domain\Sharing\Enums\ShareAuditType;
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareAudit;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
@@ -38,7 +38,7 @@ final class PruneShareAuditTest extends TestCase
 
         $this->travelTo(CarbonImmutable::now()->subDays(400));
         $this->audit($ended, ShareAuditType::Created);
-        $ended->end(ShareState::Revoked);
+        $ended->end(ShareStatus::Revoked);
         $this->audit($ended, ShareAuditType::Revoked);
         $this->audit($live, ShareAuditType::Created);
         $this->travelBack();

@@ -7,7 +7,7 @@ namespace Domain\Documents\Http\Pages\Resolvers;
 use App\Contracts\Navigation\SectionResolver;
 use App\Declarations\SlotContext;
 use Domain\Documents\Data\DockData;
-use Domain\Documents\Enums\AttentionState;
+use Domain\Documents\Enums\AttentionStatus;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\Report;
 
@@ -23,13 +23,13 @@ final readonly class DocumentDockResolver implements SectionResolver
     {
         $documents = Document::query()
             ->withCurrentRevision()
-            ->inAttention(AttentionState::Active)
+            ->inAttention(AttentionStatus::Active)
             ->newestFirst()
             ->limit(self::SUGGESTIONS_SHOWN)
             ->get();
 
         $reports = Report::query()
-            ->inAttention(AttentionState::Active)
+            ->inAttention(AttentionStatus::Active)
             ->newestFirst()
             ->limit(self::SUGGESTIONS_SHOWN)
             ->get();

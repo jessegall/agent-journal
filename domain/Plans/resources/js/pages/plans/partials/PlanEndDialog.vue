@@ -8,7 +8,7 @@ import SendNotices from '@kit/SendNotices';
 import UnknownOutcomeActions from '@kit/UnknownOutcomeActions';
 import { useWindowReload } from '@kit/useWindowQuery';
 import { cancelPlan as cancelRoute, finishPlan as finishRoute } from '@generated/routes/plans';
-import type { PlanState } from '@generated/types/plans';
+import type { PlanStatus } from '@generated/types/plans';
 import { useHostProp } from '@kit/hostProp';
 
 /**
@@ -21,7 +21,7 @@ const props = defineProps<{
     change: 'cancel' | 'finish';
     number: string;
     revision: number;
-    state: PlanState;
+    state: PlanStatus;
 }>();
 const emit = defineEmits<{ close: []; refused: [message: string] }>();
 

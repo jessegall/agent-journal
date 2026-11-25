@@ -7,10 +7,10 @@ namespace Domain\Sharing\Tests\Feature;
 use App\Support\GatewaySettings;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
-use Domain\Sharing\Enums\GatewayEndpointState;
+use Domain\Sharing\Enums\GatewayEndpointStatus;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\ShareAuditType;
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareAudit;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
@@ -77,7 +77,7 @@ final class SharingModelsTest extends TestCase
         );
         $this->assertSame('press', $configuration->toConfiguration->gatewayKey());
         $this->assertSame('https://share.example.test', $endpoint->public_origin);
-        $this->assertSame(GatewayEndpointState::Opening, $endpoint->fresh()?->state);
+        $this->assertSame(GatewayEndpointStatus::Opening, $endpoint->fresh()?->status);
         $this->assertSame(GatewayOperationType::Open, $operation->fresh()?->type);
         $this->assertSame($configuration->configuration_version, $operation->configuration_version);
         $this->assertNull($operation->share_gateway_endpoint_id);
@@ -111,7 +111,7 @@ final class SharingModelsTest extends TestCase
         );
         $stored = Share::query()->findOrFail($share->id);
 
-        $this->assertSame(ShareState::Pending, $stored->state);
+        $this->assertSame(ShareStatus::Pending, $stored->status);
         $this->assertArrayNotHasKey('token_digest', $stored->toArray());
         $this->assertArrayNotHasKey('token_ciphertext', $stored->toArray());
         $this->assertStringNotContainsString($token->token, $stored->toJson());
@@ -134,7 +134,7 @@ final class SharingModelsTest extends TestCase
         $audit = ShareAudit::create($proposal, ShareAuditType::Created, TestActors::agentIdentity(5), null);
         $change = ShareAudit::create(null, ShareAuditType::GatewayChanged, TestActors::userIdentity(9), 'disabled');
 
-        $this->assertSame(ShareState::Proposed, $proposal->fresh()?->state);
+        $this->assertSame(ShareStatus::Proposed, $proposal->fresh()?->status);
         $this->assertNull($proposal->token_digest);
         $this->assertSame(0, $member->scope_version);
         $this->assertEquals(TestActors::record('documents.report', 7), $member->target);

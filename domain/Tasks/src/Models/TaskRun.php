@@ -15,7 +15,7 @@ use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
-use Domain\Tasks\Enums\TaskRunState;
+use Domain\Tasks\Enums\TaskRunStatus;
 use Domain\Tasks\Events\TaskRunEnded;
 use Domain\Tasks\Exceptions\TaskRunFinished;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -32,7 +32,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $run_number
  * @property string $started_by_type
  * @property string $started_by_id
- * @property TaskRunState $state
+ * @property TaskRunStatus $status
  * @property string|null $outcome
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
@@ -56,7 +56,7 @@ final class TaskRun extends Model implements Assignable, EventSource, ReadableMo
     {
         return [
             'run_number' => 'integer',
-            'state' => TaskRunState::class,
+            'status' => TaskRunStatus::class,
         ];
     }
 
@@ -72,7 +72,7 @@ final class TaskRun extends Model implements Assignable, EventSource, ReadableMo
         $run->run_number = $number;
         $run->started_by_type = $starter->type;
         $run->started_by_id = $starter->id;
-        $run->state = TaskRunState::Running;
+        $run->status = TaskRunStatus::Running;
 
         $run->save();
 
@@ -97,7 +97,7 @@ final class TaskRun extends Model implements Assignable, EventSource, ReadableMo
     {
         $this->assertNotFinished();
 
-        $this->state = TaskRunState::Finished;
+        $this->status = TaskRunStatus::Finished;
         $this->outcome = $outcome;
         $this->assertSaved($this->save());
         $this->raise(new TaskRunEnded($this->id, $this->task_id));
@@ -107,7 +107,7 @@ final class TaskRun extends Model implements Assignable, EventSource, ReadableMo
 
     public function isFinished(): bool
     {
-        return $this->state === TaskRunState::Finished;
+        return $this->status === TaskRunStatus::Finished;
     }
 
     // ----------[ Transformers ]----------

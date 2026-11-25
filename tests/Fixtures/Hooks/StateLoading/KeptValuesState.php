@@ -7,7 +7,7 @@ namespace Tests\Fixtures\Hooks\StateLoading;
 use App\Support\States\AgentState;
 use Tests\Fixtures\Hooks\Counting\CountedValues;
 use Tests\Fixtures\Hooks\Stacks\FinishedSubjects;
-use Tests\Fixtures\Web\Types\ShelfState;
+use Tests\Fixtures\Web\Types\ShelfStatus;
 
 /**
  * A state that keeps one value of every kind a state may keep, beside a collaborator it is given and never keeps.
@@ -24,7 +24,7 @@ final class KeptValuesState extends AgentState
     public function __construct(
         private readonly string $subject,
         private readonly int $number,
-        private readonly ShelfState $shelf,
+        private readonly ShelfStatus $shelf,
         private readonly array $names,
         private readonly FinishedSubjects $hasFinished,
     ) {
@@ -42,7 +42,7 @@ final class KeptValuesState extends AgentState
         $this->counted = new CountedValues($this->counted->count + $this->number + count($this->names));
     }
 
-    public function shelf(): ShelfState
+    public function shelf(): ShelfStatus
     {
         return $this->shelf;
     }

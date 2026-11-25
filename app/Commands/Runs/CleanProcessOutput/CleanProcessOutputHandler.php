@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Runs\CleanProcessOutput;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\Runs\CaptureState;
+use App\Enums\Runs\CaptureStatus;
 use App\Exceptions\CleanRefused;
 use App\Models\Runs\OutputChunk;
 use App\Models\Runs\PartRun;
@@ -55,7 +55,7 @@ final readonly class CleanProcessOutputHandler implements CommandHandler
         }
 
         foreach ($parts as $part) {
-            $part->markCapture(CaptureState::Removed);
+            $part->markCapture(CaptureStatus::Removed);
         }
 
         return $preview;

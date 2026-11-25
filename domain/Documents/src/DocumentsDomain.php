@@ -72,9 +72,9 @@ use Domain\Documents\Data\RevisionCard;
 use Domain\Documents\Data\RevisionView;
 use Domain\Documents\Data\SettlementCard;
 use Domain\Documents\Enums\AttentionFilter;
-use Domain\Documents\Enums\AttentionState;
+use Domain\Documents\Enums\AttentionStatus;
 use Domain\Documents\Enums\CloseCause;
-use Domain\Documents\Enums\EditingState;
+use Domain\Documents\Enums\EditingStatus;
 use Domain\Documents\Events\DocumentClosed;
 use Domain\Documents\Events\DocumentCreated;
 use Domain\Documents\Events\DocumentDraftSaved;
@@ -190,7 +190,7 @@ final class DocumentsDomain extends Domain implements
                 RecordInspection::class,
                 SettlementCard::class,
                 RecordText::class,
-                EditingState::class,
+                EditingStatus::class,
                 DraftState::class,
                 RecordReadsData::class,
                 DraftView::class,
@@ -202,7 +202,7 @@ final class DocumentsDomain extends Domain implements
                 CloseResult::class,
                 CloseCause::class,
                 CreatedRecord::class,
-                AttentionState::class,
+                AttentionStatus::class,
                 AttentionFilter::class,
                 DocumentFilters::class,
                 PublicationCard::class,

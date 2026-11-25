@@ -18,15 +18,15 @@ final readonly class CancelTaskHandler extends TaskCommandHandler
      */
     public function handle(CancelTaskCommand $command, Task $task): void
     {
-        if ($task->state->hasEnded()) {
-            throw TaskChangedSinceRead::notCancellable($task->number, $task->state);
+        if ($task->status->hasEnded()) {
+            throw TaskChangedSinceRead::notCancellable($task->number, $task->status);
         }
 
         $isRevisionMoved = $command->expectedRevision !== null && $command->expectedRevision !== $task->revision;
         $isRunMoved = $command->expectedRunNumber !== null && $command->expectedRunNumber !== $task->run_number;
 
         if ($isRevisionMoved || $isRunMoved) {
-            throw TaskChangedSinceRead::now($task->number, $task->state, $task->run_number);
+            throw TaskChangedSinceRead::now($task->number, $task->status, $task->run_number);
         }
 
         $task->cancel($command->reason);

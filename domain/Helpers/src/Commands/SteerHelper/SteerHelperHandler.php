@@ -6,7 +6,7 @@ namespace Domain\Helpers\Commands\SteerHelper;
 
 use App\Support\ActorIdentity;
 use Domain\Helpers\Commands\Support\HelperCommandHandler;
-use Domain\Helpers\Enums\JobState;
+use Domain\Helpers\Enums\JobStatus;
 use Domain\Helpers\Exceptions\HelperUnavailable;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
@@ -26,13 +26,13 @@ final readonly class SteerHelperHandler extends HelperCommandHandler
 
         $latest = HelperJob::query()->ofIdentities([$identity->id])->newestFirst()->lockForUpdate()->first();
 
-        if ($latest !== null && $latest->state->isLive()) {
+        if ($latest !== null && $latest->status->isLive()) {
             $latest->addSteering($command->text);
 
             return SteerReceipt::steered($latest->id);
         }
 
-        $suggestedCommand = $latest !== null && $latest->state === JobState::Unfinished
+        $suggestedCommand = $latest !== null && $latest->status === JobStatus::Unfinished
             ? $this->starts->continueCall($latest)
             : HelperStarts::sendCallFor($identity->id, "its model and the brief '{$command->text}'");
 

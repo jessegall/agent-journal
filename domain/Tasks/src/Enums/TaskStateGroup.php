@@ -14,19 +14,19 @@ enum TaskStateGroup: string
     case Done = 'done';
 
     /**
-     * @return list<TaskState>
+     * @return list<TaskStatus>
      */
     public function states(): array
     {
         return match ($this) {
             self::Open => [
-                TaskState::Open,
-                TaskState::Started,
-                TaskState::Blocked,
+                TaskStatus::Open,
+                TaskStatus::Started,
+                TaskStatus::Blocked,
             ],
             self::Done => [
-                TaskState::Finished,
-                TaskState::Cancelled,
+                TaskStatus::Finished,
+                TaskStatus::Cancelled,
             ],
         };
     }

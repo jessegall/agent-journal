@@ -6,7 +6,7 @@ namespace Domain\Plans\Events;
 
 use App\Contracts\Navigation\UserInterfaceUpdater;
 use Domain\Plans\Contracts\PlanReviewEvent;
-use Domain\Plans\Enums\PlanReviewState;
+use Domain\Plans\Enums\PlanReviewStatus;
 
 /**
  * A plan's review edition was decided, approved or sent back for changes, and the plan is Planned again. Raised only
@@ -17,6 +17,6 @@ final readonly class PlanReviewDecided extends PlanEvent implements PlanReviewEv
     public function __construct(
         public string $planId,
         public string $editionId,
-        public PlanReviewState $decision,
+        public PlanReviewStatus $decision,
     ) {}
 }

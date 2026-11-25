@@ -6,7 +6,7 @@ namespace Tests\Feature\Scripts;
 
 use App\Commands\Projects\NotifyWorkspaceRead\NotifyWorkspaceReadCommand;
 use App\Commands\Terminals\RecordScriptStepResult\RecordScriptStepResultCommand;
-use App\Enums\Profiles\ProfileRunState;
+use App\Enums\Profiles\ProfileRunStatus;
 use App\Enums\Terminals\StepStatus;
 use App\Exceptions\ProfileRunRefused;
 use App\Models\Profiles\ProfileRun;
@@ -76,7 +76,7 @@ final class ProfileRunTest extends TestCase
         $this->notify($run, 'step-1', StepStatus::Failed);
 
         $run->refresh();
-        $this->assertSame(ProfileRunState::Running, $run->state);
+        $this->assertSame(ProfileRunStatus::Running, $run->status);
         $this->assertSame([StepStatus::Completed], $run->results()->get()->map(fn ($result) => $result->status)->all());
         $this->expectException(ProfileRunRefused::class);
 

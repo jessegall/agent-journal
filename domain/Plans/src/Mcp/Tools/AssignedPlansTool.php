@@ -14,7 +14,7 @@ use App\Mcp\Tools\JournalReadTool;
 use App\Support\NumberedPage;
 use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Data\PlanCardData;
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Values\AssignedPlanFilters;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -36,7 +36,7 @@ final class AssignedPlansTool extends JournalReadTool
     {
         return [
             'search' => $schema->string()->max(240),
-            'states' => $schema->array()->items($this->caseArgument($schema, PlanState::class)),
+            'states' => $schema->array()->items($this->caseArgument($schema, PlanStatus::class)),
             'page' => $schema->integer()->min(1),
             'per_page' => $this->wholeNumberArgument($schema, 1, NumberedPage::LARGEST_SIZE),
             'continuation' => $schema->string(),
@@ -50,13 +50,13 @@ final class AssignedPlansTool extends JournalReadTool
             $arguments,
             fn (ToolArguments $initialArguments) => [
                 'search' => $initialArguments->textOr('search', ''),
-                'states' => $initialArguments->enumValues('states', PlanState::class),
+                'states' => $initialArguments->enumValues('states', PlanStatus::class),
                 'page' => $initialArguments->positiveIntegerOr('page', 1),
                 'per_page' => $initialArguments->positiveIntegerOr('per_page', 20, NumberedPage::LARGEST_SIZE),
             ],
             fn (ToolArguments $filters) => $this->page(new AssignedPlanFilters(
                 search: $filters->text('search'),
-                states: array_map(PlanState::from(...), $filters->list('states')),
+                states: array_map(PlanStatus::from(...), $filters->list('states')),
                 page: new NumberedPage($filters->positiveInteger('page'), $filters->positiveInteger('per_page')),
             )),
         );

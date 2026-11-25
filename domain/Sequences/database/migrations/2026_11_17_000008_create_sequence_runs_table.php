@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('name');
             $table->jsonb('steps');
             $table->unsignedInteger('current_step')->default(1);
-            $table->string('state', 16)->default('running');
+            $table->string('status', 16)->default('running');
             $table->string('actor_type', 16)->nullable();
             $table->string('actor_id')->nullable();
             $table->timestampsTz();

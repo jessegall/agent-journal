@@ -10,7 +10,7 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Skills\PublicationState;
+use App\Enums\Skills\PublicationStatus;
 use App\Events\Skills\SkillPublicationClaimed;
 use App\Events\Skills\SkillPublicationMoved;
 use App\Events\Skills\SkillPublicationProgressed;
@@ -20,7 +20,7 @@ use App\Exceptions\SkillPublicationStale;
 use App\Models\Support\Accessor;
 use App\Values\PublicationIntent;
 use App\Values\PublicationManifest;
-use App\Values\PublicationStatus;
+use App\Values\PublicationReport;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -42,13 +42,12 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $lease_holder
  * @property CarbonImmutable|null $lease_until
  * @property int $progress
- * @property PublicationState $state
+ * @property PublicationStatus $status
  * @property string|null $open_key
  * @property PublicationManifest|null $manifest
  * @property string|null $error
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
- * @property-read mixed $status
  * @property-read mixed $target_key
  * @property-read mixed $target_name
  *
@@ -74,7 +73,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
             'lease_until' => 'immutable_datetime',
             'progress' => 'integer',
             'skill_keys' => 'array',
-            'state' => PublicationState::class,
+            'status' => PublicationStatus::class,
             'manifest' => PublicationManifest::class,
         ];
     }
@@ -97,7 +96,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
         $skillPublication->selection_digest = $intent->selectionDigest;
         $skillPublication->skill_keys = $intent->skillKeys;
         $skillPublication->expected_previous_generation_id = $expectedPreviousGenerationId;
-        $skillPublication->state = PublicationState::Pending;
+        $skillPublication->status = PublicationStatus::Pending;
         $skillPublication->open_key = self::resolveOpenKeyOf($intent->sessionId, $intent->target);
         $skillPublication->assertSaved($skillPublication->save());
 
@@ -111,7 +110,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
      */
     public function claim(string $holder, CarbonImmutable $leaseUntil): int
     {
-        $this->moveTo(PublicationState::Preparing);
+        $this->moveTo(PublicationStatus::Preparing);
         $this->fencing_version++;
         $this->lease_holder = $holder;
         $this->lease_until = $leaseUntil;
@@ -138,7 +137,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     public function deliver(int $fence, PublicationManifest $manifest): void
     {
         $this->assertHeldBy($fence);
-        $this->moveTo(PublicationState::Delivered);
+        $this->moveTo(PublicationStatus::Delivered);
         $this->manifest = $manifest;
         $this->open_key = null;
         $this->lease_holder = null;
@@ -149,7 +148,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
 
     public function fail(string $reason): void
     {
-        $this->moveTo(PublicationState::Failed);
+        $this->moveTo(PublicationStatus::Failed);
         $this->error = $reason;
         $this->open_key = null;
         $this->lease_holder = null;
@@ -165,7 +164,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     public function retry(): void
     {
         $this->assertNewest();
-        $this->moveTo(PublicationState::Pending);
+        $this->moveTo(PublicationStatus::Pending);
         $this->error = null;
         $this->open_key = self::resolveOpenKeyOf($this->session_id, $this->target);
         $this->save();
@@ -174,7 +173,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
 
     public function supersede(): void
     {
-        $this->moveTo(PublicationState::Superseded);
+        $this->moveTo(PublicationStatus::Superseded);
         $this->open_key = null;
         $this->save();
         $this->raiseMoved();
@@ -182,7 +181,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
 
     public function retire(): void
     {
-        $this->moveTo(PublicationState::Retired);
+        $this->moveTo(PublicationStatus::Retired);
         $this->save();
         $this->raiseMoved();
     }
@@ -196,11 +195,11 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
 
     public function isClaimable(CarbonImmutable $now): bool
     {
-        if ($this->state === PublicationState::Pending) {
+        if ($this->status === PublicationStatus::Pending) {
             return true;
         }
 
-        return $this->state === PublicationState::Preparing
+        return $this->status === PublicationStatus::Preparing
             && ($this->lease_until === null || $this->lease_until->lessThan($now));
     }
 
@@ -217,7 +216,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
      */
     public function awaitsRetry(CarbonImmutable $retentionStart): bool
     {
-        return $this->state === PublicationState::Failed && ! $this->endedBefore($retentionStart);
+        return $this->status === PublicationStatus::Failed && ! $this->endedBefore($retentionStart);
     }
 
     public function endedBefore(CarbonImmutable $moment): bool
@@ -228,14 +227,14 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     // ----------[ Accessors ]----------
 
     /**
-     * @return Attribute<PublicationStatus, never>
+     * @return Attribute<PublicationReport, never>
      */
-    protected function status(): Attribute
+    protected function report(): Attribute
     {
-        return Accessor::get(fn () => new PublicationStatus(
+        return Accessor::get(fn () => new PublicationReport(
             $this->id,
             $this->session_id,
-            $this->state,
+            $this->status,
             $this->generation_id,
             $this->selection_digest,
             $this->target,
@@ -287,10 +286,10 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
      *
      * @throws SkillPublicationFailed
      */
-    private function assertMayMoveTo(PublicationState $next): void
+    private function assertMayMoveTo(PublicationStatus $next): void
     {
-        if (! $this->state->canMoveTo($next)) {
-            throw SkillPublicationFailed::transition($this->state, $next);
+        if (! $this->status->canMoveTo($next)) {
+            throw SkillPublicationFailed::transition($this->status, $next);
         }
     }
 
@@ -309,11 +308,11 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     /**
      * @throws SkillPublicationFailed
      */
-    private function moveTo(PublicationState $next): void
+    private function moveTo(PublicationStatus $next): void
     {
         $this->assertMayMoveTo($next);
 
-        $this->state = $next;
+        $this->status = $next;
     }
 
     /**
@@ -321,7 +320,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
      */
     private function raiseMoved(): void
     {
-        $this->raise(new SkillPublicationMoved($this->id, $this->session_id, $this->state));
+        $this->raise(new SkillPublicationMoved($this->id, $this->session_id, $this->status));
     }
 
     // ----------[ Queries ]----------
@@ -342,9 +341,9 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
         $publications = self::query()
             ->ofSessions($sessionIds)
             ->inAnyState([
-                PublicationState::Pending,
-                PublicationState::Preparing,
-                PublicationState::Delivered,
+                PublicationStatus::Pending,
+                PublicationStatus::Preparing,
+                PublicationStatus::Delivered,
             ])
             ->newestFirst()
             ->readExactly(max(1, 2 * count($sessionIds)))
@@ -376,9 +375,9 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     {
         $settled = self::query()
             ->inAnyState([
-                PublicationState::Delivered,
-                PublicationState::Failed,
-                PublicationState::Superseded,
+                PublicationStatus::Delivered,
+                PublicationStatus::Failed,
+                PublicationStatus::Superseded,
             ])
             ->newestFirst()
             ->readExactly($limit)
@@ -396,8 +395,8 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     {
         $open = self::query()
             ->inAnyState([
-                PublicationState::Pending,
-                PublicationState::Preparing,
+                PublicationStatus::Pending,
+                PublicationStatus::Preparing,
             ])
             ->oldestFirst()
             ->readExactly($limit)
@@ -428,13 +427,13 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
      * Where each of these publications stands, by id; an id that names none is left out.
      *
      * @param  list<string>  $ids
-     * @return array<string, PublicationState>
+     * @return array<string, PublicationStatus>
      */
     public static function resolveStatesOf(array $ids): array
     {
         $publications = self::query()->whereKey($ids)->readExactly(max(1, count($ids)))->get();
 
-        return $publications->mapWithKeys(fn (self $publication) => [$publication->id => $publication->state])->all();
+        return $publications->mapWithKeys(fn (self $publication) => [$publication->id => $publication->status])->all();
     }
 
     /**
@@ -456,7 +455,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     {
         return self::query()
             ->ofSessions([$sessionId])
-            ->inState(PublicationState::Delivered)
+            ->inState(PublicationStatus::Delivered)
             ->newestFirst()
             ->first();
     }
@@ -503,9 +502,9 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function inState(Builder $query, PublicationState $state): void
+    protected function inState(Builder $query, PublicationStatus $state): void
     {
-        $query->where('state', $state->value);
+        $query->where('status', $state->value);
     }
 
     /**
@@ -535,12 +534,12 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
      * The publications in any of the states.
      *
      * @param  Builder<self>  $query
-     * @param  list<PublicationState>  $states
+     * @param  list<PublicationStatus>  $states
      */
     #[Scope]
     protected function inAnyState(Builder $query, array $states): void
     {
-        $query->whereIn('state', array_map(fn (PublicationState $state) => $state->value, $states));
+        $query->whereIn('status', array_map(fn (PublicationStatus $state) => $state->value, $states));
     }
 
     /**

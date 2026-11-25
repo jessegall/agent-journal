@@ -12,7 +12,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Data\Connections\ProjectEntryData;
 use App\Enums\Projects\ProjectReadFailure;
-use App\Enums\Projects\ProjectReadState;
+use App\Enums\Projects\ProjectReadStatus;
 use App\Enums\Projects\ProjectReadType;
 use App\Events\Connections\ProjectReadAnsweredWithEntries;
 use App\Events\Connections\ProjectReadAnsweredWithText;
@@ -38,7 +38,7 @@ use Spatie\LaravelData\DataCollection;
  * @property string $path
  * @property string $actor_type
  * @property string $actor_id
- * @property ProjectReadState $state
+ * @property ProjectReadStatus $status
  * @property ProjectReadFailure|null $failure
  * @property DataCollection<int, ProjectEntryData>|null $entries
  * @property string|null $text
@@ -95,7 +95,7 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
     {
         return [
             'type' => ProjectReadType::class,
-            'state' => ProjectReadState::class,
+            'status' => ProjectReadStatus::class,
             'failure' => ProjectReadFailure::class,
             'entries' => DataCollection::class.':'.ProjectEntryData::class,
             'size' => 'integer',
@@ -123,7 +123,7 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
         $read->path = $path;
         $read->actor_type = $requester->type;
         $read->actor_id = $requester->id;
-        $read->state = ProjectReadState::Pending;
+        $read->status = ProjectReadStatus::Pending;
         $read->is_truncated = false;
         $read->expires_at = CarbonImmutable::now()->addSeconds(self::PENDING_SECONDS_LIMIT);
         $read->save();
@@ -154,7 +154,7 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
         $this->entries = ProjectEntryData::collect($kept, DataCollection::class);
 
         $this->is_truncated = $isTruncated || count($entries) > self::DIRECTORY_ENTRY_LIMIT;
-        $this->settle(ProjectReadState::Answered);
+        $this->settle(ProjectReadStatus::Answered);
         $this->raise(new ProjectReadAnsweredWithEntries($this->id));
     }
 
@@ -167,14 +167,14 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
         $this->digest = $text->digest;
         $this->size = $text->size;
         $this->is_truncated = $isTruncated;
-        $this->settle(ProjectReadState::Answered);
+        $this->settle(ProjectReadStatus::Answered);
         $this->raise(new ProjectReadAnsweredWithText($this->id));
     }
 
     public function fail(ProjectReadFailure $failure): void
     {
         $this->failure = $failure;
-        $this->settle(ProjectReadState::Failed);
+        $this->settle(ProjectReadStatus::Failed);
         $this->raise(new ProjectReadFailed($this->id, $failure));
     }
 
@@ -182,12 +182,12 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
 
     public function isSettled(): bool
     {
-        return $this->state->isSettled();
+        return $this->status->isSettled();
     }
 
     public function isExpired(): bool
     {
-        return $this->state === ProjectReadState::Expired;
+        return $this->status === ProjectReadStatus::Expired;
     }
 
     /**
@@ -212,9 +212,9 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
 
     // ----------[ Internals ]----------
 
-    private function settle(ProjectReadState $state): void
+    private function settle(ProjectReadStatus $state): void
     {
-        $this->state = $state;
+        $this->status = $state;
         $this->answered_at = CarbonImmutable::now();
         $this->save();
     }
@@ -285,7 +285,7 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function claimableAt(Builder $query, CarbonImmutable $now): void
     {
-        $query->where('state', ProjectReadState::Pending->value)
+        $query->where('status', ProjectReadStatus::Pending->value)
             ->whereNull('claimed_at')
             ->where('expires_at', '>', $now);
     }
@@ -322,12 +322,12 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
     {
         $usableSince = $now->subMinutes(self::KEEP_MINUTES_LIMIT);
         $failedSince = $now->subSeconds(self::PENDING_SECONDS_LIMIT);
-        $usable = [ProjectReadState::Pending->value, ProjectReadState::Answered->value];
+        $usable = [ProjectReadStatus::Pending->value, ProjectReadStatus::Answered->value];
 
         $query->where(fn (Builder $kept) => $kept
-            ->where(fn (Builder $live) => $live->whereIn('state', $usable)->where('created_at', '>=', $usableSince))
+            ->where(fn (Builder $live) => $live->whereIn('status', $usable)->where('created_at', '>=', $usableSince))
             ->orWhere(fn (Builder $failed) => $failed
-                ->where('state', ProjectReadState::Failed->value)
+                ->where('status', ProjectReadStatus::Failed->value)
                 ->where('created_at', '>=', $failedSince)));
     }
 
@@ -337,9 +337,9 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function withState(Builder $query, ProjectReadState $state): void
+    protected function withState(Builder $query, ProjectReadStatus $state): void
     {
-        $query->where('state', $state);
+        $query->where('status', $state);
     }
 
     /**
@@ -361,7 +361,7 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function settled(Builder $query): void
     {
-        $query->where('state', '!=', ProjectReadState::Pending->value);
+        $query->where('status', '!=', ProjectReadStatus::Pending->value);
     }
 
     /**

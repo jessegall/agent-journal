@@ -15,7 +15,7 @@ use App\Support\Layout\ListPaging;
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Data\ShareFiltersData;
 use Domain\Sharing\Data\ShareRowData;
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Spatie\LaravelData\Optional;
 
 /**
@@ -44,7 +44,7 @@ final readonly class SharesIndex extends SharingPage
 
     private function filtersOf(ShareFiltersData $filters): LayoutPartData
     {
-        $chosen = $filters->state instanceof ShareState ? $filters->state->value : '';
+        $chosen = $filters->state instanceof ShareStatus ? $filters->state->value : '';
 
         $states = [
             LayoutRowData::from(
@@ -59,7 +59,7 @@ final readonly class SharesIndex extends SharingPage
                 ],
             ),
             ...array_map(
-                fn (ShareState $state) => LayoutRowData::from(
+                fn (ShareStatus $state) => LayoutRowData::from(
                     [
                         'key' => $state->value,
                         'label' => $state->value,
@@ -70,7 +70,7 @@ final readonly class SharesIndex extends SharingPage
                         'isCurrent' => $chosen === $state->value,
                     ],
                 ),
-                ShareState::cases(),
+                ShareStatus::cases(),
             ),
         ];
 

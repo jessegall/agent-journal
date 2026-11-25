@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Files\Files;
 use App\Enums\Files\Place;
-use App\Enums\Runs\CaptureState;
+use App\Enums\Runs\CaptureStatus;
 use App\Models\Runs\OutputChunk;
 use App\Models\Runs\PartRun;
 use App\Values\FilePath;
@@ -21,10 +21,10 @@ final readonly class ManifestCheck
 {
     public function __construct(private Files $files) {}
 
-    public function stateOf(PartRun $part): CaptureState
+    public function stateOf(PartRun $part): CaptureStatus
     {
         $next = [];
-        $state = CaptureState::Complete;
+        $state = CaptureStatus::Complete;
 
         OutputChunk::query()->ofPartRun($part->id)->byStreamThenOffset()->readInChunks(500, function (
             Collection $chunks,
@@ -34,9 +34,9 @@ final readonly class ManifestCheck
                 $stored = FilePath::in(Place::ProcessOutput, $chunk->storage_path);
 
                 if ($chunk->offset !== ($next[$stream] ?? 0) || ! $this->files->exists($stored)) {
-                    $state = $state === CaptureState::Corrupt ? $state : CaptureState::Incomplete;
+                    $state = $state === CaptureStatus::Corrupt ? $state : CaptureStatus::Incomplete;
                 } elseif ($this->files->digest($stored) !== $chunk->checksum) {
-                    $state = CaptureState::Corrupt;
+                    $state = CaptureStatus::Corrupt;
                 }
 
                 $next[$stream] = $chunk->offset + $chunk->length;
@@ -45,7 +45,7 @@ final readonly class ManifestCheck
 
         foreach ($part->stream_offsets as $stream => $counted) {
             if (($next[$stream] ?? 0) !== $counted) {
-                $state = $state === CaptureState::Corrupt ? $state : CaptureState::Incomplete;
+                $state = $state === CaptureStatus::Corrupt ? $state : CaptureStatus::Incomplete;
             }
         }
 

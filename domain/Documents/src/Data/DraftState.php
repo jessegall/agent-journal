@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Data;
 
-use Domain\Documents\Enums\EditingState;
+use Domain\Documents\Enums\EditingStatus;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -17,7 +17,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class DraftState extends Data
 {
     public function __construct(
-        public readonly EditingState $state,
+        public readonly EditingStatus $state,
         public readonly DraftView|Optional $draft = new Optional(),
         public readonly string|Optional $holder = new Optional(),
         public readonly DraftView|Optional $held = new Optional(),

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Connections;
 
-use App\Enums\Projects\ProjectWindowState;
+use App\Enums\Projects\ProjectWindowStatus;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -21,7 +21,7 @@ final class ProjectWindowData extends Data
      * @param  list<ProjectTreeEntryData>  $entries
      */
     public function __construct(
-        public readonly ProjectWindowState $state,
+        public readonly ProjectWindowStatus $state,
         public readonly string|null $projectLabel,
         public readonly string|null $machineLabel,
         public readonly string $connectAddress,

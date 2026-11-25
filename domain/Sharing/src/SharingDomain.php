@@ -34,12 +34,12 @@ use Domain\Sharing\Data\SharePreviewData;
 use Domain\Sharing\Data\ShareProposalStatusData;
 use Domain\Sharing\Data\ShareRowData;
 use Domain\Sharing\Data\ShareRuntimeData;
-use Domain\Sharing\Enums\GatewayEndpointState;
+use Domain\Sharing\Enums\GatewayEndpointStatus;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\GatewayOutcome;
 use Domain\Sharing\Enums\ShareAuditActor;
 use Domain\Sharing\Enums\ShareAuditType;
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Http\Controllers\ApproveShareRequestController;
 use Domain\Sharing\Http\Controllers\ConfigureShareGatewayController;
 use Domain\Sharing\Http\Controllers\CreateShareController;
@@ -126,13 +126,13 @@ final class SharingDomain extends Domain implements
             ShareProposalStatusData::class,
             ShareRowData::class,
             ShareRuntimeData::class,
-            GatewayEndpointState::class,
+            GatewayEndpointStatus::class,
             GatewayOperationType::class,
             GatewayOutcome::class,
             ShareAuditActor::class,
             ShareAuditType::class,
             ShareRelationType::class,
-            ShareState::class,
+            ShareStatus::class,
         ];
     }
 

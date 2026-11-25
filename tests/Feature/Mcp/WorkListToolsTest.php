@@ -121,7 +121,7 @@ final class WorkListToolsTest extends TestCase
         $card = $this->callMcpTool($this->caller, 'plans_assigned')->json('result.structuredContent.cards.0');
 
         $this->assertSame('Release', $card['title']);
-        $this->assertSame($plan->state->value, $card['state']);
+        $this->assertSame($plan->status->value, $card['state']);
         $this->assertSame([0, 0], [$card['finishedTasks'], $card['totalTasks']]);
     }
 

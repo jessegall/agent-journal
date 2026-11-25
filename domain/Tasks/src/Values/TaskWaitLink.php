@@ -6,7 +6,7 @@ namespace Domain\Tasks\Values;
 
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 
 /**
  * The other task of one wait, as a task's waits list it: its id, number, title and state (none when it is gone),
@@ -18,7 +18,7 @@ final readonly class TaskWaitLink
         public string $taskId,
         public int|null $number,
         public string|null $title,
-        public TaskState|null $state,
+        public TaskStatus|null $state,
         public bool $isSatisfied,
         public string|null $waiveReason,
         public CarbonImmutable|null $waivedAt,

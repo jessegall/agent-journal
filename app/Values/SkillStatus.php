@@ -13,10 +13,10 @@ use JsonSerializable;
 final readonly class SkillStatus implements JsonSerializable
 {
     /**
-     * @param  list<PublicationStatus>  $publications
+     * @param  list<PublicationReport>  $publications
      */
     public function __construct(
-        public GenerationStatus|null $generation,
+        public GenerationReport|null $generation,
         public array $publications,
     ) {}
 
@@ -28,7 +28,7 @@ final readonly class SkillStatus implements JsonSerializable
         return [
             'generation' => $this->generation?->jsonSerialize(),
             'publications' => array_map(
-                fn (PublicationStatus $publication) => $publication->jsonSerialize(),
+                fn (PublicationReport $publication) => $publication->jsonSerialize(),
                 $this->publications,
             ),
         ];

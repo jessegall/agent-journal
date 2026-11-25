@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Support\ActorIdentity;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Enums\TaskWaitChange;
 use Domain\Tasks\Events\TaskBlocked;
 use Domain\Tasks\Events\TaskCancelled;
@@ -37,14 +37,14 @@ return [
         'owner' => 'Task::block',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new TaskBlocked('task', TaskState::Started, 'entry'),
+        'sample' => fn () => new TaskBlocked('task', TaskStatus::Started, 'entry'),
     ],
     TaskCancelled::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Task::cancel',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new TaskCancelled('task', TaskState::Open, 'entry'),
+        'sample' => fn () => new TaskCancelled('task', TaskStatus::Open, 'entry'),
     ],
     TaskCheckRecorded::class => [
         'role' => EventRole::RowFact,
@@ -58,7 +58,7 @@ return [
         'owner' => 'Task::finish',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new TaskFinished('task', TaskState::Started, 'entry'),
+        'sample' => fn () => new TaskFinished('task', TaskStatus::Started, 'entry'),
     ],
     TaskLogged::class => [
         'role' => EventRole::RowFact,
@@ -86,7 +86,7 @@ return [
         'owner' => 'Task::start',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new TaskStarted('task', ActorIdentity::system(), TaskState::Open, 'entry'),
+        'sample' => fn () => new TaskStarted('task', ActorIdentity::system(), TaskStatus::Open, 'entry'),
     ],
     TaskDescribed::class => [
         'role' => EventRole::RowFact,

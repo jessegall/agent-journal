@@ -57,7 +57,7 @@ use Domain\Tasks\Data\TaskGraphNode;
 use Domain\Tasks\Data\TaskGraphSuggestion;
 use Domain\Tasks\Data\TaskText;
 use Domain\Tasks\Enums\TaskHolderFilter;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Enums\TaskWaitChange;
 use Domain\Tasks\Events\TaskBlocked;
 use Domain\Tasks\Events\TaskCancelled;
@@ -259,7 +259,7 @@ final class TasksDomain extends Domain implements
                 TaskFilters::class,
                 TaskHolderFilter::class,
                 TaskList::class,
-                TaskState::class,
+                TaskStatus::class,
                 TaskExecution::class,
                 TaskDetails::class,
                 TaskText::class,

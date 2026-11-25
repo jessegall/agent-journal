@@ -7,7 +7,7 @@ namespace Domain\Rules\Tests\Feature\Http;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
-use Domain\Rules\Enums\RuleState;
+use Domain\Rules\Enums\RuleStatus;
 use Domain\Rules\Models\Rule;
 use Domain\Rules\Tests\TestCase;
 use Inertia\Testing\AssertableInertia;
@@ -111,7 +111,7 @@ final class RulesPageTest extends TestCase
             ->assertStatus(303)
             ->assertRedirect("/rules?q=phase&rule={$this->proposed->id}");
 
-        $this->assertSame(RuleState::Active, $this->proposed->fresh()?->state);
+        $this->assertSame(RuleStatus::Active, $this->proposed->fresh()?->status);
     }
 
     public function test_approving_from_home_returns_to_home_with_every_windows_query(): void
@@ -121,7 +121,7 @@ final class RulesPageTest extends TestCase
             ->assertStatus(303)
             ->assertRedirect("/?q=release&rules_q=phase&rule={$this->proposed->id}");
 
-        $this->assertSame(RuleState::Active, $this->proposed->fresh()?->state);
+        $this->assertSame(RuleStatus::Active, $this->proposed->fresh()?->status);
     }
 
     public function test_denying_settles_the_rule(): void
@@ -130,7 +130,7 @@ final class RulesPageTest extends TestCase
             "/rules/{$this->proposed->number}/deny",
         )->assertRedirect('/rules');
 
-        $this->assertSame(RuleState::Denied, $this->proposed->fresh()?->state);
+        $this->assertSame(RuleStatus::Denied, $this->proposed->fresh()?->status);
     }
 
     public function test_a_rule_settled_meanwhile_is_refused_as_a_review_error(): void
@@ -152,6 +152,6 @@ final class RulesPageTest extends TestCase
             $this->actingAs($this->owner)->patch("/rules/{$id}/approve")->assertNotFound();
         }
 
-        $this->assertSame(RuleState::Proposed, $this->proposed->fresh()?->state);
+        $this->assertSame(RuleStatus::Proposed, $this->proposed->fresh()?->status);
     }
 }

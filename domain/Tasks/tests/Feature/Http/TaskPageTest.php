@@ -11,7 +11,7 @@ use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
 use Domain\Tasks\Commands\AddTaskWait\AddTaskWaitCommand;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
 use Domain\Tasks\Models\TaskWait;
@@ -214,7 +214,7 @@ final class TaskPageTest extends TestCase
     {
         $agent = Agent::create($agentName, 'main-agent', $this->localProject());
         $task = Task::factory()->create([
-            'state' => TaskState::Started,
+            'status' => TaskStatus::Started,
             'run_number' => 1,
         ]);
         TaskRun::create($task, 1, ActorIdentity::ofClass(Agent::class, $agent->id));

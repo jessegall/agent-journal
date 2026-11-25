@@ -43,6 +43,7 @@ final class NamesFollowTheRulesTest extends TestCase
             'a forbidden word' => ['method PartToSpawn::underway() (%s): holds the forbidden underway'],
             'an event that does not say what happened' => ['class PartStart (%s): an event says what happened'],
             'a state named with the gerund' => ['class ReadingLedgerState (%s): a state says what the agent is to do with the plain verb, not reading'],
+            'an enum named State' => ['enum LedgerState (%s): an enum of where something stands is named Status: State names an agent state'],
             'a frontend purpose name' => ['variable ledgerToCheck (%s): named for what will be done with it (ledger to check)'],
             'a shell verb with a better word' => ['function report_stop (%s): its verb report'],
             'a shell function without its verb' => ['function ledger_of (%s): a shell function is verb_noun'],

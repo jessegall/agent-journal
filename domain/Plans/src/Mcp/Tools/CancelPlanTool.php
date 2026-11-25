@@ -9,7 +9,7 @@ use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use Domain\Plans\Commands\CancelPlan\CancelPlanCommand;
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Enums\PlanTextLimit;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -44,6 +44,6 @@ final class CancelPlanTool extends PlanWriteTool
 
     protected function present(mixed $commandResult): ToolResult
     {
-        return ToolResult::ok(['state' => PlanState::Cancelled->value]);
+        return ToolResult::ok(['state' => PlanStatus::Cancelled->value]);
     }
 }

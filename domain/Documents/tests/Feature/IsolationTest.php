@@ -12,7 +12,7 @@ use App\Support\ReflectedType;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
 use Domain\Documents\Contracts\Drafts\DraftResolver;
-use Domain\Documents\Enums\EditingState;
+use Domain\Documents\Enums\EditingStatus;
 use Domain\Documents\Events\DocumentCreated;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;
@@ -47,13 +47,13 @@ final class IsolationTest extends TestCase
         $this->actAsUser(1);
         $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "Private draft text\n"));
         $this->bus()->run(new OpenDocumentCommand('1'));
-        $this->assertSame(EditingState::HeldByViewer, $this->app->make(DraftResolver::class)->stateOf(1)->state);
+        $this->assertSame(EditingStatus::HeldByViewer, $this->app->make(DraftResolver::class)->stateOf(1)->state);
 
         $this->app->forgetScopedInstances();
         $this->actAsUser(2);
 
         $state = $this->app->make(DraftResolver::class)->stateOf(1);
-        $this->assertSame(EditingState::Held, $state->state);
+        $this->assertSame(EditingStatus::Held, $state->state);
         $this->assertNotSame(TestIds::of(2), Document::query()->sole()->creator_id);
     }
 

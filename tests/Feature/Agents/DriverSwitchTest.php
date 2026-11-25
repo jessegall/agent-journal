@@ -6,7 +6,7 @@ namespace Tests\Feature\Agents;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\Agents\SessionProcessState;
+use App\Enums\Agents\SessionProcessStatus;
 use App\Enums\Drivers\DriverSwitchStage;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Runs\RuntimeActivity;
@@ -108,11 +108,11 @@ final class DriverSwitchTest extends TestCase
 
         $switch->recheck(null, null);
         $this->assertSame(DriverSwitchStage::StopUnconfirmed, $switch->stage);
-        $switch->recheck(SessionProcessState::Stopped, null);
+        $switch->recheck(SessionProcessStatus::Stopped, null);
         $this->assertSame(DriverSwitchStage::Stopped, $switch->stage);
 
         $switch->beginStarting(strtolower((string) Str::ulid()));
-        $switch->recheck(SessionProcessState::Stopped, null);
+        $switch->recheck(SessionProcessStatus::Stopped, null);
         $this->assertSame(DriverSwitchStage::StartFailed, $switch->stage);
     }
 
@@ -143,7 +143,7 @@ final class DriverSwitchTest extends TestCase
         $source = $this->sourceRuntime(observations: 3, activity: RuntimeActivity::Running);
         $switch->beginStopping($source);
 
-        $switch->recheck(SessionProcessState::Running, $source);
+        $switch->recheck(SessionProcessStatus::Running, $source);
 
         $this->assertSame(DriverSwitchStage::StopUnconfirmed, $switch->stage);
     }
@@ -156,7 +156,7 @@ final class DriverSwitchTest extends TestCase
         $switch->beginStopping($source);
         $later = $this->sourceRuntime(observations: 4, activity: RuntimeActivity::Running);
 
-        $switch->recheck(SessionProcessState::Running, $later);
+        $switch->recheck(SessionProcessStatus::Running, $later);
 
         $this->assertSame(DriverSwitchStage::Cancelled, $switch->stage);
     }
@@ -169,13 +169,13 @@ final class DriverSwitchTest extends TestCase
         $switch->recheck(null, null);
         $this->assertTrue($switch->stage->blocksWriter());
 
-        $switch->recheck(SessionProcessState::Stopped, null);
+        $switch->recheck(SessionProcessStatus::Stopped, null);
         $switch->beginStarting(strtolower((string) Str::ulid()));
         $switch->recheck(null, null);
         $this->assertSame(DriverSwitchStage::StartUnconfirmed, $switch->stage);
         $this->assertTrue($switch->stage->blocksWriter());
 
-        $switch->recheck(SessionProcessState::Stopped, null);
+        $switch->recheck(SessionProcessStatus::Stopped, null);
         $this->assertSame(DriverSwitchStage::StartFailed, $switch->stage);
         $switch->retryStart();
         $this->assertSame(DriverSwitchStage::Stopped, $switch->stage);
@@ -184,10 +184,10 @@ final class DriverSwitchTest extends TestCase
     public function test_a_late_running_after_the_replacement_ended_confirms_nothing(): void
     {
         $start = new SessionProcess();
-        $start->state = SessionProcessState::Stopped;
+        $start->status = SessionProcessStatus::Stopped;
 
         $this->assertFalse($start->recordRunning('execution-late'));
-        $this->assertSame(SessionProcessState::Stopped, $start->state);
+        $this->assertSame(SessionProcessStatus::Stopped, $start->status);
     }
 
     /**

@@ -8,7 +8,7 @@ use App\Support\NumberedPage;
 use Domain\Tasks\Api\ListAssignedTasksPayload;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Data\AssignedTaskListData;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Values\TaskFilters;
 
 /**
@@ -20,7 +20,7 @@ final readonly class ListAssignedTasksController
     {
         $filters = new TaskFilters(
             search: (string) $call->search,
-            states: array_map(TaskState::from(...), $call->states),
+            states: array_map(TaskStatus::from(...), $call->states),
             page: new NumberedPage($call->page, $call->perPage),
         );
 

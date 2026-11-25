@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Api\Processes;
 
-use App\Enums\Processes\AdmissionState;
+use App\Enums\Processes\AdmissionStatus;
 use App\Enums\Processes\ShellDialect;
 use App\Values\ExecutionPlan;
 use Spatie\LaravelData\Attributes\MapName;
@@ -26,6 +26,6 @@ final class StartableAdmission extends AdmissionFetched
         public readonly string $treeDigest,
         public readonly ExecutionPlan $plan,
     ) {
-        $this->state = AdmissionState::ToRun;
+        $this->state = AdmissionStatus::ToRun;
     }
 }

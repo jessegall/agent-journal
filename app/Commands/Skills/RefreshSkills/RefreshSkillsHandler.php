@@ -6,7 +6,7 @@ namespace App\Commands\Skills\RefreshSkills;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Data\Skills\GeneratedSkillData;
-use App\Enums\Skills\GenerationState;
+use App\Enums\Skills\GenerationStatus;
 use App\Exceptions\SkillConflict;
 use App\Exceptions\SkillDeclarationInvalid;
 use App\Exceptions\SkillSelectionConflict;
@@ -60,7 +60,7 @@ final readonly class RefreshSkillsHandler implements CommandHandler
         } catch (SkillDeclarationInvalid|SkillConflict $broken) {
             $failed = SkillGeneration::create(
                 $registrationDigest,
-                GenerationState::Failed,
+                GenerationStatus::Failed,
                 '',
                 [],
                 $broken->getMessage(),
@@ -78,7 +78,7 @@ final readonly class RefreshSkillsHandler implements CommandHandler
             ? $previous
             : SkillGeneration::create(
                 $registrationDigest,
-                GenerationState::Ready,
+                GenerationStatus::Ready,
                 $catalogueDigest,
                 $this->generationEntries($skillEntries),
                 null,

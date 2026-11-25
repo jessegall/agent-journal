@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Profiles\ProfileRunState;
+use App\Enums\Profiles\ProfileRunStatus;
 use App\Events\Accounts\ProfileRunFinished;
 use App\Events\Accounts\ProfileRunResumed;
 use App\Events\Accounts\ProfileRunStarted;
@@ -41,7 +41,7 @@ use PhpOption\Some;
  * @property int $profile_revision
  * @property string $definition_digest
  * @property string $trigger_reference
- * @property ProfileRunState $state
+ * @property ProfileRunStatus $status
  * @property int $cursor
  * @property string|null $awaited_step
  * @property int|null $generation
@@ -76,7 +76,7 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
             'generation' => 'integer',
             'unchanged_returns' => 'integer',
             'sequence' => 'integer',
-            'state' => ProfileRunState::class,
+            'status' => ProfileRunStatus::class,
         ];
     }
 
@@ -108,7 +108,7 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
         $run->profile_revision = $revision;
         $run->definition_digest = $definitionDigest;
         $run->trigger_reference = $reference;
-        $run->state = ProfileRunState::Running;
+        $run->status = ProfileRunStatus::Running;
         $run->unchanged_returns = 0;
         $run->sequence = (int) (clone $runs)->max('sequence') + 1;
         $run->belongTo($actor);
@@ -135,7 +135,7 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
     public function suspendOn(int $line, string $stepReference): void
     {
         $this->cursor = $line;
-        $this->state = ProfileRunState::Suspended;
+        $this->status = ProfileRunStatus::Suspended;
         $this->awaited_step = $stepReference;
         $this->assertSaved($this->save());
         $this->raise(new ProfileRunSuspended($this->id, $line));
@@ -150,7 +150,7 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
     {
         $this->assertAwaiting($reference);
 
-        $this->state = ProfileRunState::Running;
+        $this->status = ProfileRunStatus::Running;
         $this->awaited_step = null;
         $this->assertSaved($this->save());
         $this->raise(new ProfileRunResumed($this->id));
@@ -159,9 +159,9 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
     /**
      * Ends the run in a finished state with what it told the actor and how many unchanged returns led to it.
      */
-    public function finish(ProfileRunState $state, string $message, int $unchangedReturns): void
+    public function finish(ProfileRunStatus $state, string $message, int $unchangedReturns): void
     {
-        $this->state = $state;
+        $this->status = $state;
         $this->message = $message;
         $this->unchanged_returns = $unchangedReturns;
         $this->awaited_step = null;
@@ -177,7 +177,7 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
     public function followsHeldRun(): bool
     {
         return $this->previous()
-            ->filter(fn (self $previous) => $previous->state === ProfileRunState::Held)
+            ->filter(fn (self $previous) => $previous->status === ProfileRunStatus::Held)
             ->isDefined();
     }
 
@@ -243,7 +243,7 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
      */
     private function assertAwaiting(string $reference): void
     {
-        if ($this->state !== ProfileRunState::Suspended || $this->awaited_step !== $reference) {
+        if ($this->status !== ProfileRunStatus::Suspended || $this->awaited_step !== $reference) {
             throw ProfileRunRefused::stepNotAwaited($this->id, $reference);
         }
     }
@@ -294,7 +294,7 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function unfinished(Builder $query): void
     {
-        $query->whereIn('state', ProfileRunState::unfinished());
+        $query->whereIn('status', ProfileRunStatus::unfinished());
     }
 
     /**
@@ -305,7 +305,7 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function finished(Builder $query): void
     {
-        $query->whereNotIn('state', ProfileRunState::unfinished());
+        $query->whereNotIn('status', ProfileRunStatus::unfinished());
     }
 
     /**

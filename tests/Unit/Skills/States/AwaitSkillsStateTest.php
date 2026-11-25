@@ -10,7 +10,7 @@ use App\Enums\CommandRules\ParseOutcome;
 use App\Enums\Files\FileOperation;
 use App\Enums\Hooks\AnswerType;
 use App\Enums\Processes\ShellDialect;
-use App\Enums\Skills\PublicationState;
+use App\Enums\Skills\PublicationStatus;
 use App\Events\Skills\SkillPublicationMoved;
 use App\Support\Decisions\Denied;
 use App\Support\Inputs\FileEditRequested;
@@ -35,31 +35,31 @@ final class AwaitSkillsStateTest extends TestCase
     private const string STATUS_COMMAND = 'php artisan skill:status';
 
     /**
-     * @return iterable<string, array{PublicationState}>
+     * @return iterable<string, array{PublicationStatus}>
      */
     public static function waitingStates(): iterable
     {
-        yield 'pending' => [PublicationState::Pending];
+        yield 'pending' => [PublicationStatus::Pending];
 
-        yield 'preparing' => [PublicationState::Preparing];
+        yield 'preparing' => [PublicationStatus::Preparing];
 
-        yield 'failed' => [PublicationState::Failed];
+        yield 'failed' => [PublicationStatus::Failed];
     }
 
     /**
-     * @return iterable<string, array{PublicationState}>
+     * @return iterable<string, array{PublicationStatus}>
      */
     public static function settledStates(): iterable
     {
-        yield 'delivered' => [PublicationState::Delivered];
+        yield 'delivered' => [PublicationStatus::Delivered];
 
-        yield 'superseded' => [PublicationState::Superseded];
+        yield 'superseded' => [PublicationStatus::Superseded];
 
-        yield 'retired' => [PublicationState::Retired];
+        yield 'retired' => [PublicationStatus::Retired];
     }
 
     #[DataProvider('waitingStates')]
-    public function test_a_file_change_is_held_with_the_reason_while_the_set_waits(PublicationState $state): void
+    public function test_a_file_change_is_held_with_the_reason_while_the_set_waits(PublicationStatus $state): void
     {
         $awaiting = $this->awaiting($state);
         $edit = new FileEditRequested(
@@ -78,13 +78,13 @@ final class AwaitSkillsStateTest extends TestCase
     {
         $status = new ShellCommandRequested($this->hook(), self::command('php', CommandEffect::ReadsOnly));
 
-        $decision = $this->awaiting(PublicationState::Pending)->onShellCommand($status);
+        $decision = $this->awaiting(PublicationStatus::Pending)->onShellCommand($status);
 
         $this->assertSame(AnswerType::Delegate, $decision->answerType());
     }
 
     #[DataProvider('settledStates')]
-    public function test_a_settled_publication_ends_the_hold(PublicationState $state): void
+    public function test_a_settled_publication_ends_the_hold(PublicationStatus $state): void
     {
         $this->assertTrue($this->awaiting($state)->isFinished());
     }
@@ -92,7 +92,7 @@ final class AwaitSkillsStateTest extends TestCase
     public function test_another_publication_moving_leaves_the_hold(): void
     {
         $awaiting = new AwaitSkillsState('publication-1');
-        $moved = new SkillPublicationMoved('publication-2', 'session-1', PublicationState::Delivered);
+        $moved = new SkillPublicationMoved('publication-2', 'session-1', PublicationStatus::Delivered);
 
         $awaiting->onSkillPublicationMoved($moved);
 
@@ -102,7 +102,7 @@ final class AwaitSkillsStateTest extends TestCase
     /**
      * A state waiting for publication 1, which it has heard move to the state given.
      */
-    private function awaiting(PublicationState $state): AwaitSkillsState
+    private function awaiting(PublicationStatus $state): AwaitSkillsState
     {
         $awaiting = new AwaitSkillsState('publication-1');
         $awaiting->onSkillPublicationMoved(new SkillPublicationMoved('publication-1', 'session-1', $state));

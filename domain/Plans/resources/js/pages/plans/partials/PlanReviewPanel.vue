@@ -4,7 +4,7 @@ import { computed, nextTick, ref, useTemplateRef } from 'vue';
 import Button from '@kit/Button';
 import { keyedPost } from '@kit/keyedPost';
 import { approveReview, requestChanges, requestReview, withdrawReview } from '@generated/routes/plans';
-import type { PlanReviewData, PlanState } from '@generated/types/plans';
+import type { PlanReviewData, PlanStatus } from '@generated/types/plans';
 import PlanEndDialog from './PlanEndDialog.vue';
 import PlanWorkDialog from './PlanWorkDialog.vue';
 import { useHostProp } from '@kit/hostProp';
@@ -19,7 +19,7 @@ import { useHostProp } from '@kit/hostProp';
 const props = defineProps<{
     review: PlanReviewData;
     number: string;
-    state: PlanState;
+    state: PlanStatus;
     holder: { type: string; id: string; name: string; reference: string } | undefined;
 }>();
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Accounts;
 
 use App\Enums\Accounts\AccountProcessRole;
-use App\Enums\Accounts\AccountState;
+use App\Enums\Accounts\AccountStatus;
 use App\Models\Accounts\Account;
 use App\Values\AccountUse;
 use Spatie\LaravelData\Data;
@@ -23,7 +23,7 @@ final class StartAccountData extends Data
         public readonly string $driver,
         public readonly string $accountId,
         public readonly string $accountLabel,
-        public readonly AccountState $accountState,
+        public readonly AccountStatus $accountState,
         public readonly AccountProcessRole $role,
         public readonly string $startedAt,
         public readonly string|null $endedAt,
@@ -36,7 +36,7 @@ final class StartAccountData extends Data
             $use->driver,
             $account->id,
             $account->label,
-            $account->state,
+            $account->status,
             $use->role,
             $use->startedAt->toIso8601String(),
             $use->endedAt?->toIso8601String(),

@@ -13,7 +13,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
 use App\Support\GatewayEndpoint;
 use Carbon\CarbonImmutable;
-use Domain\Sharing\Enums\GatewayEndpointState;
+use Domain\Sharing\Enums\GatewayEndpointStatus;
 use Domain\Sharing\Events\ShareGatewayEndpointFoundHealthy;
 use Domain\Sharing\Events\ShareGatewayEndpointMoved;
 use Domain\Sharing\Exceptions\GatewayLeaseRefused;
@@ -30,7 +30,7 @@ use PhpOption\Option;
  * @property int $endpoint_version
  * @property string $run_id
  * @property string $public_origin
- * @property GatewayEndpointState $state
+ * @property GatewayEndpointStatus $status
  * @property CarbonImmutable|null $last_health_at
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
@@ -58,7 +58,7 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
     {
         return [
             'endpoint_version' => 'integer',
-            'state' => GatewayEndpointState::class,
+            'status' => GatewayEndpointStatus::class,
             'last_health_at' => 'immutable_datetime',
         ];
     }
@@ -75,7 +75,7 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
         $endpoint->endpoint_version = $version;
         $endpoint->run_id = $runId;
         $endpoint->public_origin = $configuration->settings->publicOrigin;
-        $endpoint->state = GatewayEndpointState::Opening;
+        $endpoint->status = GatewayEndpointStatus::Opening;
         $endpoint->save();
 
         return $endpoint;
@@ -92,9 +92,9 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
 
     // ----------[ Mutations ]----------
 
-    public function moveTo(GatewayEndpointState $state): void
+    public function moveTo(GatewayEndpointStatus $state): void
     {
-        $this->state = $state;
+        $this->status = $state;
         $this->assertSaved($this->save());
         $this->raise(new ShareGatewayEndpointMoved($this->id, $state));
     }
@@ -201,14 +201,6 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
     }
 
     /**
-     * The endpoint of this id, locked until the transaction ends.
-     */
-    public static function findLockedById(string $id): self
-    {
-        return self::findLockedById($id);
-    }
-
-    /**
      * The endpoint version of the configuration, locked, while the run holds it.
      *
      * @throws GatewayLeaseRefused
@@ -265,9 +257,9 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
     #[Scope]
     protected function stillRunning(Builder $query): void
     {
-        $query->whereIn('state', [
-            GatewayEndpointState::Opening->value,
-            GatewayEndpointState::Open->value,
+        $query->whereIn('status', [
+            GatewayEndpointStatus::Opening->value,
+            GatewayEndpointStatus::Open->value,
         ]);
     }
 
@@ -290,7 +282,7 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
     #[Scope]
     protected function open(Builder $query): void
     {
-        $query->where('state', GatewayEndpointState::Open->value);
+        $query->where('status', GatewayEndpointStatus::Open->value);
     }
 
     /**

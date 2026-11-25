@@ -7,7 +7,7 @@ namespace Tests\Feature\Processes;
 use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
 use App\Commands\CommandRules\ProposeCommandRule\ProposeCommandRuleCommand;
 use App\Enums\CommandRules\RequestHoldReason;
-use App\Enums\CommandRules\RequestState;
+use App\Enums\CommandRules\RequestStatus;
 use App\Enums\Processes\OutputStream;
 use App\Enums\Runs\RunMode;
 use App\Models\Agents\Agent;
@@ -71,7 +71,7 @@ final class ReaderProposalTest extends TestCase
         $this->assertSame($this->request->id, $revision->command_request_id);
         $this->assertSame(1, $revision->declaration_revision);
         $this->assertSame(self::OPERATION, $revision->operation);
-        $this->assertSame(RequestState::AwaitingSampleApproval, $this->request->refresh()->state);
+        $this->assertSame(RequestStatus::AwaitingSampleApproval, $this->request->refresh()->status);
     }
 
     public function test_a_definition_without_the_summary_rule_the_contract_requires_is_refused(): void

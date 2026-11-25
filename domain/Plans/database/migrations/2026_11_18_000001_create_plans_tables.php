@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('creator_id', 64);
             $table->unsignedInteger('revision')->default(1);
             $table->string('type', 16);
-            $table->string('state', 16)->default('planned');
+            $table->string('status', 16)->default('planned');
             $table->text('finish_note')->nullable();
             $table->text('cancel_reason')->nullable();
             $table->unsignedInteger('total_tasks')->default(0);
@@ -31,7 +31,7 @@ return new class extends Migration
             $table->unsignedInteger('started_tasks')->default(0);
             $table->timestampsTz();
 
-            $table->index('state');
+            $table->index('status');
             $table->unique([
                 'number_group_id',
                 'number',

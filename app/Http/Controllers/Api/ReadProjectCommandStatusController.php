@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Api\Connections\ProjectCommandStatus;
 use App\Api\Connections\ReadProjectCommandStatusPayload;
-use App\Enums\Connections\CommandRunState;
+use App\Enums\Connections\CommandRunStatus;
 use App\Exceptions\VerbNotServed;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectCommandRun;
@@ -40,6 +40,6 @@ final readonly class ReadProjectCommandStatusController
             return ProjectCommandStatus::of($state, $state->isActive() ? [] : $run->recordedFrames());
         }
 
-        return ProjectCommandStatus::of(CommandRunState::Unknown, []);
+        return ProjectCommandStatus::of(CommandRunStatus::Unknown, []);
     }
 }

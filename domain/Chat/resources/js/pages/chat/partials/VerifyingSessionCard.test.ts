@@ -2,7 +2,7 @@
 import { mount } from "@vue/test-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { AgentOptionData } from "@generated/types/chat";
-import type { SessionState } from "@kit/CoreTypes";
+import type { SessionActivityStatus } from "@kit/CoreTypes";
 import { CHECK_READ_MILLISECONDS } from "../../../composables/useStatusCheck";
 
 const reload = vi.fn();
@@ -20,7 +20,7 @@ vi.mock("./StopConfirmation.vue", () => ({ default: { template: "<div />" } }));
 
 const { default: VerifyingSessionCard } = await import("./VerifyingSessionCard.vue");
 
-function agentIn(sessionState: SessionState): AgentOptionData {
+function agentIn(sessionState: SessionActivityStatus): AgentOptionData {
   return {
     id: "agent-1",
     name: "Main agent",

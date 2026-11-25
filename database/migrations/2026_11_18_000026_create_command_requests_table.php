@@ -22,7 +22,7 @@ return new class extends Migration
             $table->text('source_line');
             $table->text('working_folder');
             $table->string('hold_reason', 32);
-            $table->string('state', 32);
+            $table->string('status', 32);
             $table->timestampsTz();
 
             $table->index(['project_key', 'actor_type', 'actor_id', 'operation', 'binding_digest']);

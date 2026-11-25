@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Projects\StartProjectCommandRun;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\Connections\CommandRunState;
+use App\Enums\Connections\CommandRunStatus;
 use App\Exceptions\VerbNotServed;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectCommandRun;
@@ -30,7 +30,7 @@ final readonly class StartProjectCommandRunHandler implements CommandHandler
 
             $earlier->reconcile($this->evidence);
 
-            return new CommandRunStart(false, $earlier->state, $earlier->recordedFrames());
+            return new CommandRunStart(false, $earlier->status, $earlier->recordedFrames());
         }
 
         $binding = ProjectBinding::findLockedById($command->bindingId);
@@ -44,6 +44,6 @@ final readonly class StartProjectCommandRunHandler implements CommandHandler
             $command->worker,
         );
 
-        return new CommandRunStart(true, CommandRunState::Running, []);
+        return new CommandRunStart(true, CommandRunStatus::Running, []);
     }
 }

@@ -35,14 +35,14 @@ use App\Declarations\Page;
 use App\Declarations\Section;
 use App\Enums\Accounts\AccountCheckResult;
 use App\Enums\Accounts\AccountNoticeReason;
-use App\Enums\Accounts\AccountState;
+use App\Enums\Accounts\AccountStatus;
 use App\Enums\Accounts\CleanupProblem;
 use App\Enums\Accounts\CleanupTarget;
 use App\Enums\Accounts\SignInMethod;
 use App\Enums\Accounts\SignInOutcome;
 use App\Enums\Accounts\SignInReceiptStatus;
 use App\Enums\Accounts\SignInRefusal;
-use App\Enums\Accounts\SignInState;
+use App\Enums\Accounts\SignInStatus;
 use App\Enums\Accounts\SignInType;
 use App\Enums\Accounts\UsageWindowSlot;
 use App\Enums\Asks\SupervisorCoverageType;
@@ -185,7 +185,7 @@ final class ProfilesPages implements NativePartProvider, NavigationProvider, Pag
             ScriptDiagnostic::class,
             AccountCheckResult::class,
             AccountNoticeReason::class,
-            AccountState::class,
+            AccountStatus::class,
             AuthorizationType::class,
             CleanupProblem::class,
             CleanupTarget::class,
@@ -197,7 +197,7 @@ final class ProfilesPages implements NativePartProvider, NavigationProvider, Pag
             SignInOutcome::class,
             SignInReceiptStatus::class,
             SignInRefusal::class,
-            SignInState::class,
+            SignInStatus::class,
             SignInType::class,
             SupervisorCoverageType::class,
             UsageWindowSlot::class,

@@ -102,8 +102,8 @@ final readonly class ShareGrants
         $consumed = $this->consume($owner, $previewId, $previewChecksum);
         $share = Share::ownForUpdate($shareId);
 
-        if (! $share->state->isLive() || ! $share->expires_at->isFuture()) {
-            throw ShareRefreshRefused::notLive($shareId, $share->state);
+        if (! $share->status->isLive() || ! $share->expires_at->isFuture()) {
+            throw ShareRefreshRefused::notLive($shareId, $share->status);
         }
 
         if (! $share->root->isSameAs($consumed->root)) {

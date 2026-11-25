@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\CommandRules\SettleSample;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\CommandRules\RequestState;
+use App\Enums\CommandRules\RequestStatus;
 use App\Exceptions\RequestTransitionRefused;
 use App\Exceptions\SampleRefused;
 use App\Models\CommandRules\CommandRequest;
@@ -24,7 +24,7 @@ final readonly class SettleSampleHandler implements CommandHandler
     {
         $request = CommandRequest::findLockedForChange($command->commandRequestId);
 
-        if ($request->state !== RequestState::CapturingSample) {
+        if ($request->status !== RequestStatus::CapturingSample) {
             throw SampleRefused::notReady($request->nextStep->command);
         }
 
@@ -45,7 +45,7 @@ final readonly class SettleSampleHandler implements CommandHandler
             $request->retrySample();
         }
 
-        return new SampleOutcome($request->state, $run->id, $this->unsampledStatuses($request, $permit));
+        return new SampleOutcome($request->status, $run->id, $this->unsampledStatuses($request, $permit));
     }
 
     /**

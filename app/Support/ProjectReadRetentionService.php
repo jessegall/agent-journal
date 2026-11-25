@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Projects\HeldFileVersions;
-use App\Enums\Projects\ProjectReadState;
+use App\Enums\Projects\ProjectReadStatus;
 use App\Models\Projects\ProjectFileVersion;
 use App\Models\Projects\ProjectRead;
 use Carbon\CarbonImmutable;
@@ -21,9 +21,9 @@ final readonly class ProjectReadRetentionService
     public function prune(CarbonImmutable $now): void
     {
         ProjectRead::query()
-            ->withState(ProjectReadState::Pending)
+            ->withState(ProjectReadStatus::Pending)
             ->expiredAt($now)
-            ->update(['state' => ProjectReadState::Expired->value]);
+            ->update(['status' => ProjectReadStatus::Expired->value]);
 
         ProjectRead::query()
             ->settled()

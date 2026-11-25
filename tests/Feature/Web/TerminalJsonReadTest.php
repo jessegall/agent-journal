@@ -7,7 +7,7 @@ namespace Tests\Feature\Web;
 use App\Contracts\Time\ServerClock;
 use App\Data\Terminals\ScreenFrameData;
 use App\Enums\Engine\RefusalCode;
-use App\Enums\Terminals\TerminalFrameState;
+use App\Enums\Terminals\TerminalFrameStatus;
 use App\Models\Access\User;
 use App\Models\Agents\AgentRuntime;
 use App\Support\Access\AccessSettings;
@@ -57,7 +57,7 @@ final class TerminalJsonReadTest extends TestCase
         $repeated = $this->read($agentId, $held);
 
         $live->assertOk()
-            ->assertJsonPath('state', TerminalFrameState::Live->value)
+            ->assertJsonPath('state', TerminalFrameStatus::Live->value)
             ->assertJsonPath('identity.sessionId', $runtime->agent_session_id)
             ->assertJsonPath('identity.processGeneration', $runtime->process_generation)
             ->assertJsonPath('identity.stream', 'stream-1')
@@ -65,7 +65,7 @@ final class TerminalJsonReadTest extends TestCase
             ->assertJsonPath('liveForMs', 15_000)
             ->assertJsonPath('frame.rows.0.runs.0.text', 'hello');
         $repeated->assertOk()
-            ->assertJsonPath('state', TerminalFrameState::Unchanged->value)
+            ->assertJsonPath('state', TerminalFrameStatus::Unchanged->value)
             ->assertJsonPath('liveForMs', 11_000)
             ->assertJsonMissingPath('frame');
         $this->assertTrue($live->headers->hasCacheControlDirective('no-store'));
@@ -81,7 +81,7 @@ final class TerminalJsonReadTest extends TestCase
 
         $this->read($agentId, ['interest' => $interest])
             ->assertOk()
-            ->assertJsonPath('state', TerminalFrameState::Unchanged->value)
+            ->assertJsonPath('state', TerminalFrameStatus::Unchanged->value)
             ->assertJsonMissingPath('frame')
             ->assertJsonMissingPath('identity');
     }
@@ -95,7 +95,7 @@ final class TerminalJsonReadTest extends TestCase
 
         $this->read($agentId, ['interest' => $interest])
             ->assertOk()
-            ->assertJsonPath('state', TerminalFrameState::LastReported->value)
+            ->assertJsonPath('state', TerminalFrameStatus::LastReported->value)
             ->assertJsonPath('frame.rows.0.runs.0.text', 'hello')
             ->assertJsonMissingPath('liveForMs');
     }
@@ -109,7 +109,7 @@ final class TerminalJsonReadTest extends TestCase
 
         $this->read($agentId, ['interest' => $interest])
             ->assertOk()
-            ->assertJsonPath('state', TerminalFrameState::PreviewUnavailable->value)
+            ->assertJsonPath('state', TerminalFrameStatus::PreviewUnavailable->value)
             ->assertJsonPath('identity.privacyRevision', 1)
             ->assertJsonMissingPath('frame');
     }
@@ -139,7 +139,7 @@ final class TerminalJsonReadTest extends TestCase
             ->assertStatus(RefusalCode::StateBlocked->status())
             ->assertJsonPath('code', RefusalCode::StateBlocked->value);
 
-        $this->read($agentId, ['interest' => $interest])->assertJsonPath('state', TerminalFrameState::Ended->value);
+        $this->read($agentId, ['interest' => $interest])->assertJsonPath('state', TerminalFrameStatus::Ended->value);
     }
 
     private function openInterest(string $agentId): string

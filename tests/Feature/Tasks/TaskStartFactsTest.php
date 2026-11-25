@@ -17,7 +17,7 @@ use Domain\Plans\Models\Plan;
 use Domain\Plans\PlansDomain;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Listeners\PushTaskState;
 use Domain\Tasks\Models\Task;
@@ -128,7 +128,7 @@ final class TaskStartFactsTest extends TestCase
 
         $this->start($task);
 
-        $this->assertSame(TaskState::Started, $task->refresh()->state);
+        $this->assertSame(TaskStatus::Started, $task->refresh()->status);
         $this->assertSame([], $progress());
     }
 
@@ -146,7 +146,7 @@ final class TaskStartFactsTest extends TestCase
 
         $this->assertThrows(fn () => $this->start($task), RuntimeException::class);
 
-        $this->assertSame(TaskState::Open, $task->refresh()->state);
+        $this->assertSame(TaskStatus::Open, $task->refresh()->status);
         $this->assertSame(0, TaskRun::query()->where('task_id', $task->id)->count());
         $this->assertSame($stackRows, AgentStackRow::query()->withoutGlobalScopes()->count());
     }

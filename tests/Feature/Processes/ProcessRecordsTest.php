@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Enums\Runs\LifecycleState;
+use App\Enums\Runs\LifecycleStatus;
 use App\Enums\Runs\PartEndType;
 use App\Enums\Runs\RunMode;
 use App\Exceptions\PartTransitionRefused;
@@ -41,7 +41,7 @@ final class ProcessRecordsTest extends TestCase
         $part->finishProcess(PartEnd::exited(0));
         $part->finishDraining();
 
-        $this->assertSame(LifecycleState::Ended, $part->refresh()->lifecycle);
+        $this->assertSame(LifecycleStatus::Ended, $part->refresh()->lifecycle);
         $this->expectException(PartTransitionRefused::class);
         $this->part('second')->finishDraining();
     }
@@ -53,7 +53,7 @@ final class ProcessRecordsTest extends TestCase
 
         $part->finishProcess(PartEnd::exited(1));
 
-        $this->assertSame(LifecycleState::Draining, $part->refresh()->lifecycle);
+        $this->assertSame(LifecycleStatus::Draining, $part->refresh()->lifecycle);
         $this->assertFalse($part->streams_drained);
     }
 

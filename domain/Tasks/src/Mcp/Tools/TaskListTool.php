@@ -13,7 +13,7 @@ use App\Support\AssignmentData;
 use App\Support\AssignmentHolder;
 use App\Support\NumberedPage;
 use Domain\Tasks\Data\TaskExecutionData;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Values\TaskFilters;
 use Domain\Tasks\Values\TaskList;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
@@ -32,7 +32,7 @@ abstract class TaskListTool extends JournalReadTool
     {
         return [
             'search' => $schema->string()->max(240),
-            'states' => $schema->array()->items($this->caseArgument($schema, TaskState::class)),
+            'states' => $schema->array()->items($this->caseArgument($schema, TaskStatus::class)),
             'page' => $schema->integer()->min(1),
             'per_page' => $this->wholeNumberArgument($schema, 1, NumberedPage::LARGEST_SIZE),
             'continuation' => $schema->string(),
@@ -46,13 +46,13 @@ abstract class TaskListTool extends JournalReadTool
             $arguments,
             fn (ToolArguments $initialArguments) => [
                 'search' => $initialArguments->textOr('search', ''),
-                'states' => $initialArguments->enumValues('states', TaskState::class),
+                'states' => $initialArguments->enumValues('states', TaskStatus::class),
                 'page' => $initialArguments->positiveIntegerOr('page', 1),
                 'per_page' => $initialArguments->positiveIntegerOr('per_page', 20, NumberedPage::LARGEST_SIZE),
             ],
             fn (ToolArguments $filters) => $this->page(new TaskFilters(
                 search: $filters->text('search'),
-                states: array_map(TaskState::from(...), $filters->list('states')),
+                states: array_map(TaskStatus::from(...), $filters->list('states')),
                 page: new NumberedPage($filters->positiveInteger('page'), $filters->positiveInteger('per_page')),
             )),
         );

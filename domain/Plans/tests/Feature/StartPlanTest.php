@@ -12,7 +12,7 @@ use App\Support\ActorContext;
 use App\Support\StackTransaction;
 use App\Values\OwnerAuthority;
 use Domain\Plans\Commands\StartPlan\StartPlanCommand;
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Events\PlanStarted;
 use Domain\Plans\Exceptions\StartDenied;
@@ -63,7 +63,7 @@ final class StartPlanTest extends TestCase
     {
         $this->startPlan($this->plan->id);
 
-        $this->assertSame(PlanState::Started, $this->plan->fresh()?->state);
+        $this->assertSame(PlanStatus::Started, $this->plan->fresh()?->status);
         Event::assertDispatchedTimes(PlanStarted::class, 1);
 
         Event::assertDispatched(
@@ -84,13 +84,13 @@ final class StartPlanTest extends TestCase
 
     public function test_a_paused_plan_is_refused_and_stays_paused(): void
     {
-        Plan::query()->whereKey($this->plan->id)->update(['state' => PlanState::Paused->value]);
+        Plan::query()->whereKey($this->plan->id)->update(['status' => PlanStatus::Paused->value]);
 
         try {
             $this->startPlan($this->plan->id);
             $this->fail('A paused plan started.');
         } catch (StartDenied) {
-            $this->assertSame(PlanState::Paused, $this->plan->fresh()?->state);
+            $this->assertSame(PlanStatus::Paused, $this->plan->fresh()?->status);
             Event::assertNotDispatched(PlanStarted::class);
         }
     }
@@ -104,7 +104,7 @@ final class StartPlanTest extends TestCase
                 throw TestFailure::failedAfterTheStart();
             });
         } catch (TestFailure) {
-            $this->assertSame(PlanState::Planned, $this->plan->fresh()?->state);
+            $this->assertSame(PlanStatus::Planned, $this->plan->fresh()?->status);
             Event::assertNotDispatched(PlanStarted::class);
         }
     }
@@ -115,7 +115,7 @@ final class StartPlanTest extends TestCase
             'title' => 'Paused plan',
             'type' => PlanType::Fix,
         ]);
-        Plan::query()->whereKey($paused->id)->update(['state' => PlanState::Paused->value]);
+        Plan::query()->whereKey($paused->id)->update(['status' => PlanStatus::Paused->value]);
 
         $canStart = [];
 
@@ -143,7 +143,7 @@ final class StartPlanTest extends TestCase
             $this->startPlan($this->plan->id);
             $this->fail('A start without an actor went through.');
         } catch (ActorContextMissing) {
-            $this->assertSame(PlanState::Planned, $this->plan->fresh()?->state);
+            $this->assertSame(PlanStatus::Planned, $this->plan->fresh()?->status);
         }
     }
 

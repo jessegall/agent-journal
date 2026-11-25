@@ -35,7 +35,7 @@ use App\Declarations\Page;
 use App\Enums\CommandRules\AdmissionRefusalCode;
 use App\Enums\CommandRules\AnalysisLimit;
 use App\Enums\CommandRules\BindingType;
-use App\Enums\CommandRules\ClassificationState;
+use App\Enums\CommandRules\ClassificationStatus;
 use App\Enums\CommandRules\CommandClass;
 use App\Enums\CommandRules\CommandEffect;
 use App\Enums\CommandRules\CommandType;
@@ -52,10 +52,10 @@ use App\Enums\CommandRules\OutputEncoding;
 use App\Enums\CommandRules\OutputRequirement;
 use App\Enums\CommandRules\ParseOutcome;
 use App\Enums\CommandRules\ProgressType;
-use App\Enums\CommandRules\ProposalState;
+use App\Enums\CommandRules\ProposalStatus;
 use App\Enums\CommandRules\RedirectType;
 use App\Enums\CommandRules\RequestHoldReason;
-use App\Enums\CommandRules\RequestState;
+use App\Enums\CommandRules\RequestStatus;
 use App\Enums\CommandRules\ScopeType;
 use App\Enums\CommandRules\StepType;
 use App\Enums\CommandRules\StreamUse;
@@ -67,16 +67,16 @@ use App\Enums\CommandRules\UnsupportedKeyword;
 use App\Enums\CommandRules\WordPlace;
 use App\Enums\CommandRules\WordSegmentType;
 use App\Enums\Navigation\Icon;
-use App\Enums\Processes\AdmissionState;
+use App\Enums\Processes\AdmissionStatus;
 use App\Enums\Processes\OutputStream;
 use App\Enums\Processes\ReviewLimit;
 use App\Enums\Processes\ShellDialect;
 use App\Enums\Records\RecordRole;
 use App\Enums\Runs\AssessmentOutcome;
-use App\Enums\Runs\CaptureState;
+use App\Enums\Runs\CaptureStatus;
 use App\Enums\Runs\ClaimedOutcome;
-use App\Enums\Runs\InterpretationState;
-use App\Enums\Runs\LifecycleState;
+use App\Enums\Runs\InterpretationStatus;
+use App\Enums\Runs\LifecycleStatus;
 use App\Enums\Runs\PartEndType;
 use App\Enums\Runs\PartJoin;
 use App\Enums\Runs\PartResultType;
@@ -161,13 +161,13 @@ final class ProcessPages implements NativePartProvider, PageProvider, TypeProvid
             RunWindowData::class,
             SampleData::class,
             AdmissionRefusalCode::class,
-            AdmissionState::class,
+            AdmissionStatus::class,
             AnalysisLimit::class,
             AssessmentOutcome::class,
             BindingType::class,
-            CaptureState::class,
+            CaptureStatus::class,
             ClaimedOutcome::class,
-            ClassificationState::class,
+            ClassificationStatus::class,
             CommandClass::class,
             CommandEffect::class,
             CommandType::class,
@@ -176,9 +176,9 @@ final class ProcessPages implements NativePartProvider, PageProvider, TypeProvid
             EvidenceSource::class,
             ExampleType::class,
             FramingType::class,
-            InterpretationState::class,
+            InterpretationStatus::class,
             JournalRouteType::class,
-            LifecycleState::class,
+            LifecycleStatus::class,
             NodeType::class,
             OperandType::class,
             Outcome::class,
@@ -192,11 +192,11 @@ final class ProcessPages implements NativePartProvider, PageProvider, TypeProvid
             PositionPurpose::class,
             ProblemCode::class,
             ProgressType::class,
-            ProposalState::class,
+            ProposalStatus::class,
             RecordRole::class,
             RedirectType::class,
             RequestHoldReason::class,
-            RequestState::class,
+            RequestStatus::class,
             ReviewLimit::class,
             RunEventType::class,
             RunLogicalResult::class,

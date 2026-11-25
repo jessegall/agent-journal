@@ -15,8 +15,8 @@ use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
 use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
-use Domain\Tasks\Enums\TaskRunState;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskRunStatus;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
 use Domain\Tasks\Tests\TestCase;
@@ -66,7 +66,7 @@ final class TaskRunTest extends TestCase
 
         $bus->run(new FinishTaskCommand($task->id, 1, 'Done'));
 
-        $this->assertSame(TaskRunState::Finished, $run->refresh()->state);
+        $this->assertSame(TaskRunStatus::Finished, $run->refresh()->status);
         $this->assertNull($this->holderOf($run));
     }
 
@@ -85,11 +85,11 @@ final class TaskRunTest extends TestCase
         $this->assertThrows(fn () => $bus->run($finish), CommandInputInvalid::class, 'note:');
         $this->assertThrows(fn () => $bus->run($block), CommandInputInvalid::class, 'reason:');
         $this->assertThrows(fn () => $bus->run($cancel), CommandInputInvalid::class, 'reason:');
-        $this->assertSame(TaskState::Started, $task->refresh()->state);
+        $this->assertSame(TaskStatus::Started, $task->refresh()->status);
 
         $bus->run(new FinishTaskCommand($task->id, 1, str_repeat('a', Task::NOTE_CHARACTER_LIMIT)));
 
-        $this->assertSame(TaskState::Finished, $task->refresh()->state);
+        $this->assertSame(TaskStatus::Finished, $task->refresh()->status);
     }
 
     private function holderOf(TaskRun $run): ActorIdentity|null

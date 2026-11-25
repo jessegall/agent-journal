@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Feature;
 
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Events\ShareExpired;
 use Domain\Sharing\Events\ShareRevoked;
 use Domain\Sharing\Exceptions\ShareEndInvalid;
@@ -29,12 +29,12 @@ final class ShareEndTest extends TestCase
         $share = $this->share();
         $share->takeRaisedEvents();
 
-        $this->assertTrue($share->end(ShareState::Revoked));
+        $this->assertTrue($share->end(ShareStatus::Revoked));
         $raised = $share->takeRaisedEvents();
-        $this->assertFalse($share->end(ShareState::Expired));
+        $this->assertFalse($share->end(ShareStatus::Expired));
 
         $fresh = $share->fresh();
-        $this->assertSame(ShareState::Revoked, $fresh?->state);
+        $this->assertSame(ShareStatus::Revoked, $fresh?->status);
         $this->assertNull($fresh->token_ciphertext);
         $this->assertNotNull($fresh->token_digest);
         $this->assertCount(1, $raised);
@@ -48,11 +48,11 @@ final class ShareEndTest extends TestCase
         $share = $this->share();
         $share->takeRaisedEvents();
 
-        $this->assertTrue($share->end(ShareState::Expired));
-        $this->assertFalse($share->end(ShareState::Revoked));
+        $this->assertTrue($share->end(ShareStatus::Expired));
+        $this->assertFalse($share->end(ShareStatus::Revoked));
 
         $raised = $share->takeRaisedEvents();
-        $this->assertSame(ShareState::Expired, $share->fresh()?->state);
+        $this->assertSame(ShareStatus::Expired, $share->fresh()?->status);
         $this->assertCount(1, $raised);
         $this->assertInstanceOf(ShareExpired::class, $raised[0]);
     }
@@ -63,7 +63,7 @@ final class ShareEndTest extends TestCase
 
         $this->expectException(ShareEndInvalid::class);
 
-        $share->end(ShareState::Active);
+        $share->end(ShareStatus::Active);
     }
 
     private function share(): Share

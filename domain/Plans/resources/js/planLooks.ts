@@ -1,6 +1,6 @@
 import type { IconName } from '@kit/Icon';
 import type { StateTone } from '@kit/StateBadge';
-import type { PlanCardData, PlanType, PlanState } from '@generated/types/plans';
+import type { PlanCardData, PlanType, PlanStatus } from '@generated/types/plans';
 
 /**
  * How a plan's type and state look; keyed by the server's enum values, never by a translated label.
@@ -19,7 +19,7 @@ export const typeLabel: Record<PlanType, string> = {
     cleanup: 'Cleanup',
 };
 
-export const stateLook: Record<PlanState, { label: string; tone: StateTone; icon: IconName }> = {
+export const stateLook: Record<PlanStatus, { label: string; tone: StateTone; icon: IconName }> = {
     planned: { label: 'Planned', tone: 'quiet', icon: 'list' },
     reviewing: { label: 'Reviewing', tone: 'sequence', icon: 'search' },
     started: { label: 'Started', tone: 'busy', icon: 'start' },

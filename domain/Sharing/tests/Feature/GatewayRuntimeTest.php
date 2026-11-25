@@ -8,11 +8,11 @@ use Carbon\CarbonImmutable;
 use Domain\Sharing\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
 use Domain\Sharing\Commands\RecordGatewayHealth\RecordGatewayHealthCommand;
 use Domain\Sharing\Commands\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
-use Domain\Sharing\Enums\GatewayEndpointState;
+use Domain\Sharing\Enums\GatewayEndpointStatus;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\GatewayOutcome;
 use Domain\Sharing\Enums\ShareAuditType;
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Exceptions\GatewayLeaseRefused;
 use Domain\Sharing\Exceptions\GatewayRunStale;
 use Domain\Sharing\Models\Share;
@@ -82,7 +82,7 @@ final class GatewayRuntimeTest extends TestCase
             fn () => $this->outcome(self::FIRST_RUN, $claim, GatewayOutcome::Succeeded),
             GatewayLeaseRefused::class,
         );
-        $this->assertSame(ShareState::Pending, $this->share->fresh()?->state);
+        $this->assertSame(ShareStatus::Pending, $this->share->fresh()?->status);
     }
 
     public function test_a_second_run_takes_over_the_operation_and_fences_the_first_runs_outcome_and_health(): void
@@ -99,18 +99,18 @@ final class GatewayRuntimeTest extends TestCase
         $this->assertSame(
             [
                 2,
-                GatewayEndpointState::Opening,
+                GatewayEndpointStatus::Opening,
             ],
             [
                 $taken?->operation->endpointVersion,
-                ShareGatewayEndpoint::query()->where('endpoint_version', 2)->sole()->state,
+                ShareGatewayEndpoint::query()->where('endpoint_version', 2)->sole()->status,
             ],
         );
         $this->assertSame(
-            GatewayEndpointState::Closed,
-            ShareGatewayEndpoint::query()->where('endpoint_version', 1)->sole()->state,
+            GatewayEndpointStatus::Closed,
+            ShareGatewayEndpoint::query()->where('endpoint_version', 1)->sole()->status,
         );
-        $this->assertSame(ShareState::Pending, $this->share->fresh()?->state);
+        $this->assertSame(ShareStatus::Pending, $this->share->fresh()?->status);
     }
 
     public function test_a_replayed_outcome_activates_once_and_audits_once(): void
@@ -120,8 +120,8 @@ final class GatewayRuntimeTest extends TestCase
         $this->outcome(self::FIRST_RUN, $claim, GatewayOutcome::Succeeded);
         $this->outcome(self::FIRST_RUN, $claim, GatewayOutcome::Succeeded);
 
-        $this->assertSame(ShareState::Active, $this->share->fresh()?->state);
-        $this->assertSame(GatewayEndpointState::Open, ShareGatewayEndpoint::query()->sole()->state);
+        $this->assertSame(ShareStatus::Active, $this->share->fresh()?->status);
+        $this->assertSame(GatewayEndpointStatus::Open, ShareGatewayEndpoint::query()->sole()->status);
         $this->assertSame([ShareAuditType::Activated], $this->auditTypes());
     }
 
@@ -131,18 +131,18 @@ final class GatewayRuntimeTest extends TestCase
 
         $this->outcome(self::FIRST_RUN, $claim, GatewayOutcome::Failed);
 
-        $this->assertSame(ShareState::Failed, $this->share->fresh()?->state);
+        $this->assertSame(ShareStatus::Failed, $this->share->fresh()?->status);
         $this->assertSame([ShareAuditType::ActivationFailed], $this->auditTypes());
     }
 
     public function test_an_open_after_the_share_ended_keeps_it_ended_and_requests_a_close(): void
     {
         $claim = $this->claim(self::FIRST_RUN);
-        $this->share->end(ShareState::Revoked);
+        $this->share->end(ShareStatus::Revoked);
 
         $this->outcome(self::FIRST_RUN, $claim, GatewayOutcome::Succeeded);
 
-        $this->assertSame(ShareState::Revoked, $this->share->fresh()?->state);
+        $this->assertSame(ShareStatus::Revoked, $this->share->fresh()?->status);
         $close = $this->claim(self::FIRST_RUN);
         $this->assertSame([
             GatewayOperationType::Close,
@@ -151,10 +151,10 @@ final class GatewayRuntimeTest extends TestCase
             $close?->type,
             $close?->operation->endpointVersion,
         ]);
-        $this->assertSame(GatewayEndpointState::Closing, ShareGatewayEndpoint::query()->sole()->state);
+        $this->assertSame(GatewayEndpointStatus::Closing, ShareGatewayEndpoint::query()->sole()->status);
 
         $this->outcome(self::FIRST_RUN, $close, GatewayOutcome::Succeeded);
-        $this->assertSame(GatewayEndpointState::Closed, ShareGatewayEndpoint::query()->sole()->state);
+        $this->assertSame(GatewayEndpointStatus::Closed, ShareGatewayEndpoint::query()->sole()->status);
     }
 
     public function test_health_notes_a_healthy_endpoint_and_never_moves_a_deadline(): void

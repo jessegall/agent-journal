@@ -24,7 +24,7 @@ use Domain\Documents\Data\RecordSharePartData;
 use Domain\Documents\Data\ReportReceiptPartData;
 use Domain\Documents\Data\ReportView;
 use Domain\Documents\Data\SettlementCard;
-use Domain\Documents\Enums\AttentionState;
+use Domain\Documents\Enums\AttentionStatus;
 
 /**
  * A report's page as a publication: its title, label and abstract, then the tab the window chose. Text is the report's
@@ -140,7 +140,7 @@ final readonly class ReportsShow extends ReportsPage
             $parts[] = LayoutPartData::collection('settlements', 'list', $settlements);
         }
 
-        if ($report->attention === AttentionState::Active) {
+        if ($report->attention === AttentionStatus::Active) {
             $parts[] = LayoutPartData::form(
                 'settle',
                 LayoutFormData::from(

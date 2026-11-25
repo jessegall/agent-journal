@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\CommandRules\SaveCommandRule;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\CommandRules\ProposalState;
+use App\Enums\CommandRules\ProposalStatus;
 use App\Exceptions\ApprovalRefused;
 use App\Models\CommandRules\RuleRevision;
 use App\Support\ActorIdentity;
@@ -41,7 +41,7 @@ final readonly class SaveCommandRuleHandler implements CommandHandler
         $projectKey = $this->projects->current();
         $proposal = $this->proposals->open($projectKey, $owner, $command->requestId, $command->proposed, null);
 
-        if ($proposal->state === ProposalState::Approved) {
+        if ($proposal->status === ProposalStatus::Approved) {
             $declaration = $proposal->revisions()->numbered($proposal->current_revision)->sole();
 
             $approved = RuleRevision::query()->ofRuleProposalRevision($declaration->id)->sole();

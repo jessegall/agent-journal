@@ -24,7 +24,7 @@ use App\Support\Storage\FrameRecord;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Agents\TestSelections;
@@ -123,7 +123,7 @@ final class HookRecoveryTest extends TestCase
             ['core.ready', 'tasks.work'],
             array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->stackOf($started)->frames->all()),
         );
-        $this->assertSame(TaskState::Started, $task->fresh()?->state);
+        $this->assertSame(TaskStatus::Started, $task->fresh()?->status);
         $this->assertSame(0, HookCall::query()->acrossEveryAgent()->count());
     }
 

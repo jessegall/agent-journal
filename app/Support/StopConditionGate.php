@@ -8,8 +8,8 @@ use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Processes\StopEvidence;
 use App\Contracts\Processes\StopPreparer;
 use App\Contracts\Sessions\SessionPolicyReader;
-use App\Enums\Agents\StopPreparationState;
-use App\Enums\Sessions\StopCheckState;
+use App\Enums\Agents\StopPreparationStatus;
+use App\Enums\Sessions\StopCheckStatus;
 use App\Events\Hooks\HelperStopHeld;
 use App\Models\Sessions\SessionRequest;
 use App\Models\Sessions\StopCheck;
@@ -65,10 +65,10 @@ final readonly class StopConditionGate implements StopConditionGateContract
         $preparation = $this->prepare($stop, $policy);
 
         return match ($preparation->state) {
-            StopPreparationState::Preparing => StopAnswer::withoutAttempt(new MessageLine($preparation->message)),
-            StopPreparationState::ReturnToActor => StopAnswer::withoutAttempt(Decision::deny($preparation->message)),
-            StopPreparationState::Held => $this->holdPrepared($stop, $policy, $preparation),
-            StopPreparationState::FinalChecks => $this->runFinalChecks($stop, $policy, $settled),
+            StopPreparationStatus::Preparing => StopAnswer::withoutAttempt(new MessageLine($preparation->message)),
+            StopPreparationStatus::ReturnToActor => StopAnswer::withoutAttempt(Decision::deny($preparation->message)),
+            StopPreparationStatus::Held => $this->holdPrepared($stop, $policy, $preparation),
+            StopPreparationStatus::FinalChecks => $this->runFinalChecks($stop, $policy, $settled),
         };
     }
 
@@ -107,7 +107,7 @@ final readonly class StopConditionGate implements StopConditionGateContract
         }
 
         $attempt = $this->openAttempt($stop, $policy);
-        $attempt->settle(StopCheckState::Failed, self::PREPARATION_HELD_SUBMISSION, $preparation->message->key);
+        $attempt->settle(StopCheckStatus::Failed, self::PREPARATION_HELD_SUBMISSION, $preparation->message->key);
         $this->tellOwnerHeld($attempt);
 
         return StopAnswer::forAttempt($attempt->id, $held);
@@ -124,10 +124,10 @@ final readonly class StopConditionGate implements StopConditionGateContract
         $stopOutcome = $this->evidence->result($attempt->reference);
 
         return StopAnswer::forAttempt($attempt->id, match ($stopOutcome->state) {
-            StopCheckState::Pending => new MessageLine(AgentText::of('core.stop.checks_running')),
-            StopCheckState::Passed => $this->certifyCompletion($attempt),
-            StopCheckState::Failed => $this->refuseOrHold($attempt, $settled, $stopOutcome->failureSummary()),
-            StopCheckState::Unresolved => Decision::deny(AgentText::of('core.stop.checks_unresolved')),
+            StopCheckStatus::Pending => new MessageLine(AgentText::of('core.stop.checks_running')),
+            StopCheckStatus::Passed => $this->certifyCompletion($attempt),
+            StopCheckStatus::Failed => $this->refuseOrHold($attempt, $settled, $stopOutcome->failureSummary()),
+            StopCheckStatus::Unresolved => Decision::deny(AgentText::of('core.stop.checks_unresolved')),
         });
     }
 
@@ -148,7 +148,7 @@ final readonly class StopConditionGate implements StopConditionGateContract
     private function passWithoutConditions(StopCheck $attempt): Decision
     {
         if (! $attempt->isSettled()) {
-            $attempt->settle(StopCheckState::Passed, self::NO_CONDITIONS_SUBMISSION, '');
+            $attempt->settle(StopCheckStatus::Passed, self::NO_CONDITIONS_SUBMISSION, '');
         }
 
         return $this->certifyCompletion($attempt);

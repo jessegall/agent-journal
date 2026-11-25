@@ -7,7 +7,7 @@ namespace Domain\Helpers\Tests\Feature;
 use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
-use Domain\Helpers\Enums\JobState;
+use Domain\Helpers\Enums\JobStatus;
 use Domain\Helpers\Exceptions\HelperIdentityFixed;
 use Domain\Helpers\Exceptions\HelperJobEnded;
 use Domain\Helpers\Models\HelperIdentity;
@@ -85,7 +85,7 @@ final class HelperRecordsTest extends TestCase
         $job->addSteering('Look at the tests too');
         $job->finish('report:12');
 
-        $this->assertSame(JobState::Finished, $job->fresh()?->state);
+        $this->assertSame(JobStatus::Finished, $job->fresh()?->status);
         $this->assertSame(['Look at the tests too'], $job->fresh()?->steering);
         $this->expectException(HelperJobEnded::class);
 

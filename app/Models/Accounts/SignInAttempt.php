@@ -10,10 +10,10 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Accounts\AccountState;
+use App\Enums\Accounts\AccountStatus;
 use App\Enums\Accounts\CleanupProblem;
 use App\Enums\Accounts\SignInMethod;
-use App\Enums\Accounts\SignInState;
+use App\Enums\Accounts\SignInStatus;
 use App\Enums\Accounts\SignInType;
 use App\Events\Accounts\SignInAttemptAnswerAccepted;
 use App\Events\Accounts\SignInAttemptClaimed;
@@ -53,7 +53,7 @@ use Illuminate\Support\Str;
  * @property string $actor_id
  * @property string|null $fingerprint
  * @property string|null $account_id
- * @property SignInState $state
+ * @property SignInStatus $status
  * @property int $generation
  * @property string|null $directory
  * @property string|null $process_reference
@@ -107,7 +107,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     {
         return [
             'method' => SignInMethod::class,
-            'state' => SignInState::class,
+            'status' => SignInStatus::class,
             'generation' => 'integer',
             'cleanup_pending' => 'boolean',
             'waits_for_uses' => 'boolean',
@@ -160,7 +160,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      */
     public function displace(Account $account): void
     {
-        $this->state = SignInState::Complete;
+        $this->status = SignInStatus::Complete;
         $this->result_account_id = $account->id;
         $this->directory = (string) $account->directory;
         $this->cleanup_pending = true;
@@ -181,10 +181,10 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     /**
      * Ends a live attempt in the given state; an attempt that made no account still owes the deletion of its folder.
      */
-    public function end(SignInState $state): void
+    public function end(SignInStatus $state): void
     {
-        $this->state = $state;
-        $this->cleanup_pending = $state !== SignInState::Complete;
+        $this->status = $state;
+        $this->cleanup_pending = $state !== SignInStatus::Complete;
         $this->assertSaved($this->save());
         $this->raise(new SignInAttemptEnded($this->account_protocol, $this->id, $state));
     }
@@ -194,11 +194,11 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      */
     public function waitForUser(): void
     {
-        if ($this->state !== SignInState::Starting) {
+        if ($this->status !== SignInStatus::Starting) {
             return;
         }
 
-        $this->state = SignInState::Waiting;
+        $this->status = SignInStatus::Waiting;
         $this->save();
         $this->raise(new SignInAttemptHandedToUser($this->account_protocol, $this->id));
     }
@@ -209,7 +209,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      */
     public function acceptAnswer(string $submissionKey): void
     {
-        $this->state = SignInState::Checking;
+        $this->status = SignInStatus::Checking;
         $this->submission_key = $submissionKey;
         $this->save();
         $this->raise(new SignInAttemptAnswerAccepted($this->account_protocol, $this->id));
@@ -286,7 +286,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     public function completeWith(Account $account): void
     {
         $this->result_account_id = $account->id;
-        $this->end(SignInState::Complete);
+        $this->end(SignInStatus::Complete);
     }
 
     /**
@@ -295,14 +295,14 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     public function finishMatching(Account $account): void
     {
         $this->result_account_id = $account->id;
-        $this->finish(SignInState::AlreadyAdded);
+        $this->finish(SignInStatus::AlreadyAdded);
     }
 
     /**
      * Ends the attempt and lets go of the account folder it wrote, so a later attempt may write it; an account signed
      * in again that may have changed is checked before starts use it again.
      */
-    public function finish(SignInState $state): void
+    public function finish(SignInStatus $state): void
     {
         $this->end($state);
         $this->raise(new SignInAttemptFinished($this->account_protocol, $this->id, $this->account_id));
@@ -315,7 +315,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      */
     public function isWaitingForAgents(): bool
     {
-        return $this->waits_for_uses && $this->state === SignInState::Starting;
+        return $this->waits_for_uses && $this->status === SignInStatus::Starting;
     }
 
     /**
@@ -324,7 +324,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      */
     public function isUnclaimedSince(CarbonImmutable $now): bool
     {
-        return $this->state === SignInState::Starting
+        return $this->status === SignInStatus::Starting
             && ! $this->waits_for_uses
             && $this->process_reference === null
             && $this->created_at !== null
@@ -334,13 +334,13 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     public function isPublishedIn(int $generation): bool
     {
         $published = [
-            SignInState::Complete,
-            SignInState::DifferentAccount,
-            SignInState::AlreadyAdded,
-            SignInState::Unverified,
+            SignInStatus::Complete,
+            SignInStatus::DifferentAccount,
+            SignInStatus::AlreadyAdded,
+            SignInStatus::Unverified,
         ];
 
-        return in_array($this->state, $published, true) && $this->generation === $generation;
+        return in_array($this->status, $published, true) && $this->generation === $generation;
     }
 
     /**
@@ -353,7 +353,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
 
     public function isLive(): bool
     {
-        return $this->state->isLive();
+        return $this->status->isLive();
     }
 
     public function isExpiredAt(CarbonImmutable $now): bool
@@ -372,7 +372,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      */
     public function accepts(int $generation, CarbonImmutable $now): bool
     {
-        return $this->state->canComplete() && ! $this->isExpiredAt($now) && $this->generation === $generation;
+        return $this->status->canComplete() && ! $this->isExpiredAt($now) && $this->generation === $generation;
     }
 
     // ----------[ Transformers ]----------
@@ -381,16 +381,16 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      * Ends a live attempt in the given state at this moment: an attempt that already ended keeps its result, and one
      * at or past its deadline ends Expired whatever was asked. Answers the state the attempt is in afterwards.
      */
-    public function finishAt(SignInState $state, CarbonImmutable $now, string|null $reason = null): SignInState
+    public function finishAt(SignInStatus $state, CarbonImmutable $now, string|null $reason = null): SignInStatus
     {
         if (! $this->isLive()) {
-            return $this->state;
+            return $this->status;
         }
 
         if ($this->isExpiredAt($now)) {
-            $this->finish(SignInState::Expired);
+            $this->finish(SignInStatus::Expired);
 
-            return SignInState::Expired;
+            return SignInStatus::Expired;
         }
 
         $this->refusal = $reason;
@@ -437,7 +437,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      */
     public function assertWaitsForAnswer(CarbonImmutable $now): void
     {
-        if ($this->state !== SignInState::Waiting || $this->isExpiredAt($now)) {
+        if ($this->status !== SignInStatus::Waiting || $this->isExpiredAt($now)) {
             throw SignInAnswerRefused::notWaiting($this->id);
         }
     }
@@ -460,7 +460,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
 
     private function begin(CarbonImmutable $expiresAt): void
     {
-        $this->state = SignInState::Starting;
+        $this->status = SignInStatus::Starting;
         $this->expires_at = $expiresAt;
         $this->assertSaved($this->save());
         $this->raise(new SignInAttemptStarted($this->account_protocol, $this->id, $this->account_id));
@@ -691,7 +691,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function waitingToStartAt(Builder $query, CarbonImmutable $now): void
     {
-        $query->where('state', SignInState::Starting->value)
+        $query->where('status', SignInStatus::Starting->value)
             ->where('waits_for_uses', false)
             ->whereNull('process_reference')
             ->where('expires_at', '>', $now);
@@ -716,7 +716,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function live(Builder $query): void
     {
-        $query->whereIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()));
+        $query->whereIn('status', array_map(fn (SignInStatus $state) => $state->value, SignInStatus::live()));
     }
 
     /**
@@ -727,7 +727,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function notLive(Builder $query): void
     {
-        $query->whereNotIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()));
+        $query->whereNotIn('status', array_map(fn (SignInStatus $state) => $state->value, SignInStatus::live()));
     }
 
     /**
@@ -798,7 +798,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
             ->whereNotNull('directory')
             ->whereNotExists(fn (QueryBuilder $accounts) => $accounts->from('accounts')
                 ->whereColumn('accounts.directory', 'sign_in_attempts.directory')
-                ->where('accounts.state', '!=', AccountState::Removed->value));
+                ->where('accounts.status', '!=', AccountStatus::Removed->value));
     }
 
     /**

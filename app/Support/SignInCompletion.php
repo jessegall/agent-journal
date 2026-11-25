@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Authorization\TargetAuthorizer;
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\Accounts\SignInState;
+use App\Enums\Accounts\SignInStatus;
 use App\Enums\Agents\AccessType;
 use App\Exceptions\ActorUnavailable;
 use App\Exceptions\SignInAttemptStale;
@@ -48,7 +48,7 @@ final readonly class SignInCompletion
         }
 
         if ($attempt->isLive() && $attempt->isExpiredAt($now)) {
-            $this->endWithout($attempt, SignInState::Expired, $now);
+            $this->endWithout($attempt, SignInStatus::Expired, $now);
 
             return;
         }
@@ -58,7 +58,7 @@ final readonly class SignInCompletion
         }
 
         if (! $this->isStarterMayStillAdd($attempt)) {
-            $this->endWithout($attempt, SignInState::Failed, $now);
+            $this->endWithout($attempt, SignInStatus::Failed, $now);
 
             return;
         }
@@ -84,13 +84,13 @@ final readonly class SignInCompletion
             $account = Account::findLockedForJournal($attempt->account_id);
 
             if (! $attempt->method->isSecret() && ! $account->canCompareWith($identity)) {
-                $this->endWithout($attempt, SignInState::Unverified, $now);
+                $this->endWithout($attempt, SignInStatus::Unverified, $now);
 
                 return;
             }
 
             if (! $attempt->method->isSecret() && ! $account->isSamePrincipal($identity)) {
-                $this->endWithout($attempt, SignInState::DifferentAccount, $now);
+                $this->endWithout($attempt, SignInStatus::DifferentAccount, $now);
 
                 return;
             }
@@ -128,7 +128,7 @@ final readonly class SignInCompletion
      * An attempt that publishes nothing, as a different account, a starter without the grant or one past its deadline:
      * it ends in that state, its staging folder is cleaned, and a reconnected account keeps its saved folder and login.
      */
-    private function endWithout(SignInAttempt $attempt, SignInState $state, CarbonImmutable $now): void
+    private function endWithout(SignInAttempt $attempt, SignInStatus $state, CarbonImmutable $now): void
     {
         $attempt->finishAt($state, $now);
         $this->facts->runTransactionListeners();

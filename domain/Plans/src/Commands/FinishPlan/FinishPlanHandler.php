@@ -22,7 +22,7 @@ final readonly class FinishPlanHandler extends PlanCommandHandler
         $plan = $this->lockPlanAtRevision($command->planId, $command->expectedRevision);
 
         if (! $plan->isStarted()) {
-            throw PlanHasUnfinishedTasks::notStarted($plan->number, $plan->state->value);
+            throw PlanHasUnfinishedTasks::notStarted($plan->number, $plan->status->value);
         }
 
         $unfinished = $this->progress->progressOf($plan->taskIds())->unfinished();

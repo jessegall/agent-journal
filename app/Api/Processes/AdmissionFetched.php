@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Api\Processes;
 
-use App\Enums\Processes\AdmissionState;
+use App\Enums\Processes\AdmissionStatus;
 use Spatie\LaravelData\Attributes\PropertyForMorph;
 use Spatie\LaravelData\Contracts\PropertyMorphableData;
 use Spatie\LaravelData\Data;
@@ -15,10 +15,10 @@ use Spatie\LaravelData\Data;
 abstract class AdmissionFetched extends Data implements PropertyMorphableData
 {
     #[PropertyForMorph]
-    public AdmissionState $state;
+    public AdmissionStatus $state;
 
     /**
-     * @param  array{state: AdmissionState}  $properties
+     * @param  array{state: AdmissionStatus}  $properties
      */
     public static function morph(array $properties): string
     {

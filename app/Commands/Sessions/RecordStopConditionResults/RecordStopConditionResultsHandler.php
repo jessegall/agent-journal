@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Sessions\RecordStopConditionResults;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\Sessions\StopCheckState;
+use App\Enums\Sessions\StopCheckStatus;
 use App\Exceptions\StopConditionResultsRefused;
 use App\Models\Sessions\StopCheck;
 use App\Models\Sessions\StopConditionResult;
@@ -14,7 +14,7 @@ use App\Values\StopConditionResultReport;
 
 final readonly class RecordStopConditionResultsHandler implements CommandHandler
 {
-    public function handle(RecordStopConditionResultsCommand $command): StopCheckState
+    public function handle(RecordStopConditionResultsCommand $command): StopCheckStatus
     {
         $attempt = StopCheck::query()
             ->acrossSessions()
@@ -24,7 +24,7 @@ final readonly class RecordStopConditionResultsHandler implements CommandHandler
         $submission = $command->submissionDigest();
 
         if ($attempt->isSettled() && $attempt->wasSubmittedAs($submission)) {
-            return $attempt->state;
+            return $attempt->status;
         }
 
         if ($attempt->isSettled()) {
@@ -41,7 +41,7 @@ final readonly class RecordStopConditionResultsHandler implements CommandHandler
 
         StopConditionResult::createMany($attempt, $command->stopReports);
 
-        $state = StopCheckState::settledBy(
+        $state = StopCheckStatus::settledBy(
             array_map(fn (StopConditionResultReport $stopReport) => $stopReport->status, $command->stopReports),
         );
 

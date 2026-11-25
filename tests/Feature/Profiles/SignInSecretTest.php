@@ -10,7 +10,7 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Accounts\SignInMethod;
-use App\Enums\Accounts\SignInState;
+use App\Enums\Accounts\SignInStatus;
 use App\Exceptions\SignInAnswerRefused;
 use App\Exceptions\SignInCodeInvalid;
 use App\Models\Access\User;
@@ -119,11 +119,11 @@ final class SignInSecretTest extends TestCase
             );
             $this->assertNull($challenges->takeCode($attempt->refresh()));
             $this->assertTrue($attempt->refresh()->isLive());
-            $this->assertNotSame(SignInState::Checking, $attempt->state);
+            $this->assertNotSame(SignInStatus::Checking, $attempt->status);
 
             $this->submit($attempt, $code);
             $this->assertSame($code, $challenges->takeCode($attempt->refresh()));
-            $this->assertSame(SignInState::Checking, $attempt->refresh()->state);
+            $this->assertSame(SignInStatus::Checking, $attempt->refresh()->status);
         }
     }
 
@@ -141,7 +141,7 @@ final class SignInSecretTest extends TestCase
 
         $this->assertSame('1234', $challenges->takeCode($attempt->refresh()));
         $this->assertNull($challenges->takeCode($attempt->refresh()));
-        $this->assertSame(SignInState::Checking, $attempt->refresh()->state);
+        $this->assertSame(SignInStatus::Checking, $attempt->refresh()->status);
         $this->assertThrows(fn () => $answer('5678', 'answer-2'), SignInAnswerRefused::class);
     }
 
@@ -152,9 +152,9 @@ final class SignInSecretTest extends TestCase
 
         $this->assertThrows(fn () => $this->submit($oauth, str_repeat('a', 513)), SignInCodeInvalid::class);
         $this->assertThrows(fn () => $this->submit($oauth, str_repeat('é', 257)), SignInCodeInvalid::class);
-        $this->assertSame(SignInState::Waiting, $oauth->refresh()->state);
+        $this->assertSame(SignInStatus::Waiting, $oauth->refresh()->status);
         $this->assertThrows(fn () => $this->submit($device, '1234'), SignInAnswerRefused::class);
-        $this->assertSame(SignInState::Waiting, $device->refresh()->state);
+        $this->assertSame(SignInStatus::Waiting, $device->refresh()->status);
     }
 
     public function test_key_accounts_are_named_for_their_method_and_the_same_key_is_already_added(): void
@@ -168,8 +168,8 @@ final class SignInSecretTest extends TestCase
 
         $labels = Account::query()->orderBy('created_at')->orderBy('id')->pluck('label')->all();
         $this->assertSame(['Claude Code API key', 'Claude Code API key (2)'], $labels);
-        $this->assertSame(SignInState::AlreadyAdded, $again->refresh()->state);
-        $this->assertSame(SignInState::Complete, $first->refresh()->state);
+        $this->assertSame(SignInStatus::AlreadyAdded, $again->refresh()->status);
+        $this->assertSame(SignInStatus::Complete, $first->refresh()->status);
     }
 
     /**

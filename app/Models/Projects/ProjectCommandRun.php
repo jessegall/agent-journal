@@ -10,7 +10,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Connections\CommandRunState;
+use App\Enums\Connections\CommandRunStatus;
 use App\Events\Connections\ProjectCommandCancellationRequested;
 use App\Events\Connections\ProjectCommandCancelled;
 use App\Events\Connections\ProjectCommandFinished;
@@ -30,7 +30,7 @@ use Spatie\LaravelData\DataCollection;
  * @property string $agent_id
  * @property string $binding_id
  * @property list<string> $argv
- * @property CommandRunState $state
+ * @property CommandRunStatus $status
  * @property int|null $pid
  * @property int|null $exit_code
  * @property DataCollection<int, ProjectCommandFrame> $frames
@@ -57,7 +57,7 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
     {
         return [
             'argv' => 'array',
-            'state' => CommandRunState::class,
+            'status' => CommandRunStatus::class,
             'frames' => DataCollection::class.':'.ProjectCommandFrame::class,
             'pid' => 'integer',
             'exit_code' => 'integer',
@@ -86,7 +86,7 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
         $run->argv = $argv;
         $run->fingerprint = $fingerprint;
         $run->worker = $worker;
-        $run->state = CommandRunState::Running;
+        $run->status = CommandRunStatus::Running;
         $run->frames = ProjectCommandFrame::collect([], DataCollection::class);
         $run->save();
 
@@ -109,7 +109,7 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
     {
         $this->frames = ProjectCommandFrame::collect($frames, DataCollection::class);
         $this->exit_code = $exitCode;
-        $this->state = $this->state->settledBy($exitCode);
+        $this->status = $this->status->settledBy($exitCode);
         $this->assertSaved($this->save());
         $this->raise(new ProjectCommandFinished($this->id, $exitCode));
     }
@@ -119,7 +119,7 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
      */
     public function requestCancellation(): void
     {
-        $this->state = CommandRunState::CancellationRequested;
+        $this->status = CommandRunStatus::CancellationRequested;
         $this->assertSaved($this->save());
         $this->raise(new ProjectCommandCancellationRequested($this->id));
     }
@@ -129,7 +129,7 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
      */
     public function cancel(): void
     {
-        $this->state = CommandRunState::Cancelled;
+        $this->status = CommandRunStatus::Cancelled;
         $this->assertSaved($this->save());
         $this->raise(new ProjectCommandCancelled($this->id));
     }
@@ -143,11 +143,11 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
     {
         $settled = $this->settledStateBy($evidence);
 
-        if ($settled === $this->state) {
+        if ($settled === $this->status) {
             return;
         }
 
-        $this->state = $settled;
+        $this->status = $settled;
         $this->assertSaved($this->save());
         $this->raise(new ProjectCommandReconciled($this->id, $settled));
     }
@@ -159,7 +159,7 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
      */
     public function isRunning(): bool
     {
-        return $this->state->isActive();
+        return $this->status->isActive();
     }
 
     /**
@@ -176,21 +176,21 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
      * Where the run stands by what can be proved now: as recorded while its worker lives or its recorded process
      * still runs; interrupted once that process ended unrecorded; unknown when it never recorded one.
      */
-    public function settledStateBy(CommandRunEvidence $evidence): CommandRunState
+    public function settledStateBy(CommandRunEvidence $evidence): CommandRunStatus
     {
         if (! $this->isRunning() || $evidence->isWorkerAlive($this->worker)) {
-            return $this->state;
+            return $this->status;
         }
 
         if ($this->pid !== null && $evidence->isProcessAlive($this->pid)) {
-            return $this->state;
+            return $this->status;
         }
 
         if ($this->pid === null) {
-            return CommandRunState::Unknown;
+            return CommandRunStatus::Unknown;
         }
 
-        return CommandRunState::Interrupted;
+        return CommandRunStatus::Interrupted;
     }
 
     /**
@@ -281,6 +281,6 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
     #[Scope]
     protected function active(Builder $query): void
     {
-        $query->whereIn('state', CommandRunState::active());
+        $query->whereIn('status', CommandRunStatus::active());
     }
 }

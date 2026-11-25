@@ -7,7 +7,7 @@ namespace App\Exceptions;
 use App\Concerns\RendersRefusal;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
-use App\Enums\CommandRules\ClassificationState;
+use App\Enums\CommandRules\ClassificationStatus;
 use App\Enums\Engine\RefusalCode;
 use RuntimeException;
 
@@ -34,7 +34,7 @@ final class ClassificationRuleRefused extends RuntimeException implements CodedR
         return new self("The rule {$ruleId} cannot activate revision {$revision}: revision {$active} is active.");
     }
 
-    public static function notActive(string $ruleId, ClassificationState $state): self
+    public static function notActive(string $ruleId, ClassificationStatus $state): self
     {
         return new self("The rule {$ruleId} is {$state->value}, so it cannot be retired.");
     }

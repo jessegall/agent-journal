@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
-use Domain\Plans\Enums\PlanReviewState;
+use Domain\Plans\Enums\PlanReviewStatus;
 use Domain\Plans\Events\PhaseProgressRecorded;
 use Domain\Plans\Events\PhaseRevisionAdvanced;
 use Domain\Plans\Events\PlanCancelled;
@@ -53,7 +53,7 @@ return [
         'owner' => 'Plan::settleReview',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new PlanReviewDecided('plan', 'edition', PlanReviewState::Approved),
+        'sample' => fn () => new PlanReviewDecided('plan', 'edition', PlanReviewStatus::Approved),
     ],
     PlanReviewRequested::class => [
         'role' => EventRole::RowFact,

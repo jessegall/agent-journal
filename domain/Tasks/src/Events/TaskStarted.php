@@ -7,7 +7,7 @@ namespace Domain\Tasks\Events;
 use App\Attributes\Listeners\TransactionListenerConsent;
 use App\Support\ActorIdentity;
 use Domain\Tasks\Contracts\TaskStateEvent;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 
 /**
  * A task run started for an agent and session, raised by the task inside the transaction that started it. Plans
@@ -20,12 +20,12 @@ final readonly class TaskStarted extends TaskEvent implements TaskStateEvent
     public function __construct(
         public string $taskId,
         public ActorIdentity $actor,
-        public TaskState $previousState,
+        public TaskStatus $previousState,
         public string $historyEntryId,
     ) {}
 
-    public function enteredState(): TaskState
+    public function enteredState(): TaskStatus
     {
-        return TaskState::Started;
+        return TaskStatus::Started;
     }
 }

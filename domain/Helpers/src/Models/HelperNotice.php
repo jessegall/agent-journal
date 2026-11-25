@@ -13,7 +13,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
-use Domain\Helpers\Enums\JobState;
+use Domain\Helpers\Enums\JobStatus;
 use Domain\Helpers\Events\HelperNoticeDelivered;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $actor_id
  * @property string $helper_identity_id
  * @property string $helper_job_id
- * @property JobState $job_state
+ * @property JobStatus $job_state
  * @property string $text
  * @property CarbonImmutable|null $delivered_at
  * @property CarbonImmutable|null $created_at
@@ -56,7 +56,7 @@ final class HelperNotice extends Model implements EventSource, ReadableModel
     protected function casts(): array
     {
         return [
-            'job_state' => JobState::class,
+            'job_state' => JobStatus::class,
             'delivered_at' => 'immutable_datetime',
         ];
     }
@@ -68,7 +68,7 @@ final class HelperNotice extends Model implements EventSource, ReadableModel
         $notice = new self();
         $notice->helper_identity_id = $job->helper_identity_id;
         $notice->helper_job_id = $job->id;
-        $notice->job_state = $job->state;
+        $notice->job_state = $job->status;
         $notice->text = $text;
         $notice->belongTo($job->actor());
         $notice->save();

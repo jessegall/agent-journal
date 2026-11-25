@@ -24,7 +24,7 @@ use App\Enums\Navigation\Icon;
 use App\Enums\Profiles\DiagnosticCode;
 use App\Enums\Profiles\FlowNodeType;
 use App\Enums\Profiles\KeywordCategory;
-use App\Enums\Profiles\ProfileRunState;
+use App\Enums\Profiles\ProfileRunStatus;
 use App\Enums\Profiles\ScriptEffect;
 use App\Enums\Terminals\StepStatus;
 use App\Http\Controllers\Pages\CheckDraftPageController;
@@ -75,7 +75,7 @@ final class ScriptsPages implements PageProvider, TypeProvider
             DiagnosticCode::class,
             FlowNodeType::class,
             KeywordCategory::class,
-            ProfileRunState::class,
+            ProfileRunStatus::class,
             ScriptEffect::class,
             StepStatus::class,
             SyntaxForm::class,

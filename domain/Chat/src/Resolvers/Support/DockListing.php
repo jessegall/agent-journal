@@ -8,7 +8,7 @@ use App\Models\Inboxes\Inbox;
 use App\Support\Wire\EncodedCard;
 use Domain\Chat\Data\DockedSourceData;
 use Domain\Chat\Data\DockListData;
-use Domain\Chat\Enums\DockedState;
+use Domain\Chat\Enums\DockedStatus;
 use Domain\Chat\Models\DockPlacement;
 use Domain\Chat\Support\DockProjection;
 
@@ -53,7 +53,7 @@ final readonly class DockListing
             'type' => $placement->dockable_type,
             'sourceId' => $placement->dockable_id,
             'title' => $card === null ? '' : $card->accessibleName,
-            'state' => $card === null ? DockedState::Unavailable : DockedState::Shown,
+            'state' => $card === null ? DockedStatus::Unavailable : DockedStatus::Shown,
         ]);
     }
 }

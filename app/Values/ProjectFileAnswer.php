@@ -6,7 +6,7 @@ namespace App\Values;
 
 use App\Data\Connections\ProjectEntryData;
 use App\Enums\Projects\ProjectReadFailure;
-use App\Enums\Projects\ProjectReadState;
+use App\Enums\Projects\ProjectReadStatus;
 use App\Models\Projects\ProjectRead;
 
 /**
@@ -21,7 +21,7 @@ final readonly class ProjectFileAnswer
     public function __construct(
         public string $readId,
         public string $path,
-        public ProjectReadState $state,
+        public ProjectReadStatus $state,
         public ProjectReadFailure|null $failure,
         public array $entries,
         public string|null $text,
@@ -35,7 +35,7 @@ final readonly class ProjectFileAnswer
         return new self(
             $read->id,
             $read->path,
-            $read->state,
+            $read->status,
             $read->failure,
             $read->listedEntries(),
             $read->text,

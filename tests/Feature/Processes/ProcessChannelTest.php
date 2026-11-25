@@ -8,7 +8,7 @@ use App\Api\Processes\ProcessApi;
 use App\Contracts\Bus\CommandClassifier;
 use App\Contracts\Files\Files;
 use App\Enums\Processes\ShellDialect;
-use App\Enums\Runs\LifecycleState;
+use App\Enums\Runs\LifecycleStatus;
 use App\Models\Agents\Agent;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessEvent;
@@ -68,7 +68,7 @@ final class ProcessChannelTest extends TestCase
         $parts = PartRun::query()->where('process_run_id', $run->id)->orderBy('syntax_node')->get();
         $this->assertCount(2, $parts);
         $this->assertSame(
-            [LifecycleState::Ended, LifecycleState::Ended],
+            [LifecycleStatus::Ended, LifecycleStatus::Ended],
             $parts->map(fn (PartRun $part) => $part->lifecycle)->all(),
         );
         $this->assertSame(
@@ -108,7 +108,7 @@ final class ProcessChannelTest extends TestCase
 
         $this->assertSame(2, ProcessEvent::query()->where('process_run_id', $run->id)->count());
         $this->assertSame(
-            LifecycleState::Running,
+            LifecycleStatus::Running,
             PartRun::query()->where('process_run_id', $run->id)->firstOrFail()->lifecycle,
         );
     }

@@ -10,7 +10,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\CommandRules\ClassificationState;
+use App\Enums\CommandRules\ClassificationStatus;
 use App\Events\Processes\ClassificationRuleActivated;
 use App\Events\Processes\ClassificationRuleRestored;
 use App\Events\Processes\ClassificationRuleRetired;
@@ -34,7 +34,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $rule_id
  * @property string $active_revision_id
  * @property int $active_revision
- * @property ClassificationState $state
+ * @property ClassificationStatus $status
  * @property string $state_reason
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
@@ -59,7 +59,7 @@ final class ClassificationRule extends Model implements EventSource, ReadableMod
         return [
             'scope' => RuleScopeCast::class,
             'active_revision' => 'integer',
-            'state' => ClassificationState::class,
+            'status' => ClassificationStatus::class,
         ];
     }
 
@@ -97,7 +97,7 @@ final class ClassificationRule extends Model implements EventSource, ReadableMod
         $this->assertExpectedRevision($expectedRevision);
         $this->assertActive();
 
-        $this->state = ClassificationState::Retired;
+        $this->status = ClassificationStatus::Retired;
         $this->state_reason = $reason;
         $this->assertSaved($this->save());
         $this->raise(new ClassificationRuleRetired($this->id, $reason));
@@ -160,8 +160,8 @@ final class ClassificationRule extends Model implements EventSource, ReadableMod
      */
     private function assertActive(): void
     {
-        if ($this->state !== ClassificationState::Active) {
-            throw ClassificationRuleRefused::notActive($this->rule_id, $this->state);
+        if ($this->status !== ClassificationStatus::Active) {
+            throw ClassificationRuleRefused::notActive($this->rule_id, $this->status);
         }
     }
 
@@ -193,7 +193,7 @@ final class ClassificationRule extends Model implements EventSource, ReadableMod
     {
         $this->active_revision_id = $revision->id;
         $this->active_revision = $revision->revision;
-        $this->state = ClassificationState::Active;
+        $this->status = ClassificationStatus::Active;
         $this->state_reason = $reason;
         $this->save();
     }
@@ -225,7 +225,7 @@ final class ClassificationRule extends Model implements EventSource, ReadableMod
     #[Scope]
     protected function active(Builder $query): void
     {
-        $query->where('state', ClassificationState::Active->value);
+        $query->where('status', ClassificationStatus::Active->value);
     }
 
     /**

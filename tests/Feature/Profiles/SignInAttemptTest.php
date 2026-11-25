@@ -12,10 +12,10 @@ use App\Commands\Accounts\ReconcileAccounts\ReconcileAccountsCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Accounts\SignInAttemptData;
-use App\Enums\Accounts\AccountState;
+use App\Enums\Accounts\AccountStatus;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Accounts\SignInMethod;
-use App\Enums\Accounts\SignInState;
+use App\Enums\Accounts\SignInStatus;
 use App\Events\Accounts\AccountsChanged;
 use App\Exceptions\SignInAttemptStale;
 use App\Jobs\SignInDeadline;
@@ -90,9 +90,9 @@ final class SignInAttemptTest extends TestCase
         $this->complete($started->attemptId, 0, 'work@example.test');
 
         $account = Account::query()->sole();
-        $this->assertSame([AccountState::Authenticated, 'work@example.test'], [$account->state, $account->label]);
+        $this->assertSame([AccountStatus::Authenticated, 'work@example.test'], [$account->status, $account->label]);
         $this->assertSame($account->id, ActiveAccount::query()->sole()->account_id);
-        $this->assertSame(SignInState::Complete, SignInAttempt::query()->sole()->state);
+        $this->assertSame(SignInStatus::Complete, SignInAttempt::query()->sole()->status);
     }
 
     public function test_the_same_verified_report_twice_publishes_once_and_an_older_generation_is_refused(): void
@@ -119,7 +119,7 @@ final class SignInAttemptTest extends TestCase
 
         $labels = Account::query()->orderBy('created_at')->pluck('label')->all();
         $this->assertSame(['a@example.test', 'a@example.test (2)', 'Claude Code'], $labels);
-        $this->assertSame(SignInState::AlreadyAdded, SignInAttempt::query()->whereKey($known)->sole()->state);
+        $this->assertSame(SignInStatus::AlreadyAdded, SignInAttempt::query()->whereKey($known)->sole()->status);
         $first = Account::query()->orderBy('created_at')->firstOrFail();
         $this->assertSame($first->id, ActiveAccount::query()->sole()->account_id);
     }
@@ -155,7 +155,7 @@ final class SignInAttemptTest extends TestCase
         $second = $this->completeNew('request-2', SignInIdentity::shown('same@example.test'));
 
         $this->assertSame(2, Account::query()->count());
-        $this->assertSame(SignInState::Complete, SignInAttempt::query()->whereKey($second)->sole()->state);
+        $this->assertSame(SignInStatus::Complete, SignInAttempt::query()->whereKey($second)->sole()->status);
     }
 
     public function test_an_attempt_no_sign_in_service_took_up_says_so_after_a_while(): void
@@ -179,7 +179,7 @@ final class SignInAttemptTest extends TestCase
         $this->complete($started->attemptId, 0, 'work@example.test');
 
         $this->assertSame(0, Account::query()->count());
-        $this->assertSame(SignInState::Failed, SignInAttempt::query()->sole()->state);
+        $this->assertSame(SignInStatus::Failed, SignInAttempt::query()->sole()->status);
     }
 
     public function test_a_cancelled_attempt_ignores_a_late_result_and_owes_its_folder_cleanup(): void
@@ -189,7 +189,7 @@ final class SignInAttemptTest extends TestCase
         $this->bus()->run(new CancelSignInCommand($started->attemptId));
 
         $attempt = SignInAttempt::query()->sole();
-        $this->assertSame(SignInState::Cancelled, $attempt->state);
+        $this->assertSame(SignInStatus::Cancelled, $attempt->status);
         $this->assertTrue($attempt->cleanup_pending);
         $this->expectException(SignInAttemptStale::class);
 
@@ -211,7 +211,7 @@ final class SignInAttemptTest extends TestCase
             ->runAsJournal(CommandEntry::AccountMaintenance, 'test sweep', new ReconcileAccountsCommand());
 
         $this->assertSame(1, $ended);
-        $this->assertSame(SignInState::Expired, SignInAttempt::query()->whereKey($again->attemptId)->sole()->state);
+        $this->assertSame(SignInStatus::Expired, SignInAttempt::query()->whereKey($again->attemptId)->sole()->status);
         $this->assertNull($account->refresh()->live_writer_attempt_id);
     }
 

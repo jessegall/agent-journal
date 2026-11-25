@@ -1,6 +1,6 @@
 import type {
     AccountRowData,
-    AccountState,
+    AccountStatus,
     CleanupProblem,
 } from '@generated/types/accounts';
 
@@ -8,7 +8,7 @@ import type {
  * How an account's state looks; keyed by the server's enum values, never by a translated label.
  */
 export const accountStateLook: Record<
-    AccountState,
+    AccountStatus,
     { label: string; tone: 'good' | 'warn' | 'danger' | 'busy' | 'quiet' }
 > = {
     authenticated: { label: 'Signed in', tone: 'good' },
@@ -23,7 +23,7 @@ export const accountStateLook: Record<
  */
 export function rowStateLook(
     account: AccountRowData,
-): (typeof accountStateLook)[AccountState] {
+): (typeof accountStateLook)[AccountStatus] {
     if (account.isCheckInconclusive) {
         return { label: 'Verification pending', tone: 'warn' };
     }

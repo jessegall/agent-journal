@@ -16,7 +16,7 @@ use Domain\Sharing\Data\ShareAuditData;
 use Domain\Sharing\Data\ShareControlsPartData;
 use Domain\Sharing\Data\ShareMemberData;
 use Domain\Sharing\Data\ShareRuntimeData;
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Models\Share;
 
 /**
@@ -37,11 +37,11 @@ final readonly class SharesShow extends SharingPage
         Closure $audit,
         Closure $members,
     ): DeclaredLayoutData {
-        $title = ($share->state === ShareState::Proposed ? 'Proposal' : 'Share')." {$share->number}";
+        $title = ($share->status === ShareStatus::Proposed ? 'Proposal' : 'Share')." {$share->number}";
 
         return PublicationPage::make(
             $title,
-            [LayoutPartData::text('state', $share->state->value, 'muted')],
+            [LayoutPartData::text('state', $share->status->value, 'muted')],
             "A share of a {$share->root_type}.",
             fn () => LayoutBodyData::fromMarkdown(''),
             [
@@ -73,7 +73,7 @@ final readonly class SharesShow extends SharingPage
                 LayoutRowData::from([
                     'key' => 'state',
                     'label' => 'State',
-                    'value' => $share->state->value,
+                    'value' => $share->status->value,
                 ]),
                 LayoutRowData::from([
                     'key' => 'record',

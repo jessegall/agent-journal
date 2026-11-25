@@ -9,7 +9,7 @@ use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ListedPage;
 use App\Mcp\Support\ToolArguments;
 use Domain\Rules\Contracts\RuleResolver;
-use Domain\Rules\Enums\RuleState;
+use Domain\Rules\Enums\RuleStatus;
 use Domain\Rules\Values\RuleFilters;
 
 final readonly class RulesListResult
@@ -24,12 +24,12 @@ final readonly class RulesListResult
             self::TOOL,
             $arguments,
             fn (ToolArguments $initialArguments) => [
-                'state' => $initialArguments->enumOr('state', RuleState::Active)->value,
+                'state' => $initialArguments->enumOr('state', RuleStatus::Active)->value,
                 'page' => $initialArguments->positiveIntegerOr('page', 1),
             ],
             fn (ToolArguments $filters) => $this->page(new RuleFilters(
                 page: $filters->positiveInteger('page'),
-                state: $filters->enum('state', RuleState::class),
+                state: $filters->enum('state', RuleStatus::class),
             )),
         );
     }

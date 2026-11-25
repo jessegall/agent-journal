@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Concerns;
 
-use App\Enums\Skills\PublicationState;
+use App\Enums\Skills\PublicationStatus;
 use Illuminate\Console\Command;
 
 /**
@@ -15,7 +15,7 @@ use Illuminate\Console\Command;
 trait PrintsPublicationOutcomes
 {
     /**
-     * @param  array<string, PublicationState>  $outcomes  by publication id
+     * @param  array<string, PublicationStatus>  $outcomes  by publication id
      */
     private function printOutcomes(array $outcomes): int
     {
@@ -29,7 +29,7 @@ trait PrintsPublicationOutcomes
             $this->line("Publication {$publicationId}: {$state->value}.");
         }
 
-        if (in_array(PublicationState::Failed, $outcomes, true)) {
+        if (in_array(PublicationStatus::Failed, $outcomes, true)) {
             return self::FAILURE;
         }
 

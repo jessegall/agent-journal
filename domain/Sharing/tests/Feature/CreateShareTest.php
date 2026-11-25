@@ -18,7 +18,7 @@ use Domain\Sharing\Commands\CreateShare\CreateShareCommand;
 use Domain\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\ShareAuditType;
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Exceptions\ShareDurationInvalid;
 use Domain\Sharing\Exceptions\SharePreviewRefused;
 use Domain\Sharing\Exceptions\ShareQuotaReached;
@@ -93,7 +93,7 @@ final class CreateShareTest extends TestCase
         $summary = $this->create($this->preview([TestIds::of(101)]));
         $share = Share::query()->findOrFail($summary->shareId);
 
-        $this->assertSame(ShareState::Pending, $summary->state);
+        $this->assertSame(ShareStatus::Pending, $summary->state);
         $this->assertSame($share->number, $summary->number);
         $this->assertSame(Share::FIRST_SCOPE_VERSION, $share->scope_version);
         $this->assertSame([TestIds::of(101)], ShareMember::query()->readAll('one member')->pluck('target_id')->all());
@@ -116,7 +116,7 @@ final class CreateShareTest extends TestCase
             self::PENDING_HAS_NO_ADDRESS,
         );
 
-        $share->state = ShareState::Active;
+        $share->status = ShareStatus::Active;
         $share->save();
 
         $this->assertSame(
@@ -249,7 +249,7 @@ final class CreateShareTest extends TestCase
             );
         }
 
-        $this->assertSame(ShareState::Pending, $this->create($this->preview([]))->state);
+        $this->assertSame(ShareStatus::Pending, $this->create($this->preview([]))->state);
     }
 
     /**

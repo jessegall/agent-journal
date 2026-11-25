@@ -85,7 +85,7 @@ import type {
     DriverMethodsData,
     SignInAttemptData,
     SignInMethodData,
-    SignInState,
+    SignInStatus,
 } from '@generated/types/accounts';
 
 const { default: AddAccountWizard } = await import('./AddAccountWizard.vue');
@@ -118,7 +118,7 @@ const methods: DriverMethodsData[] = [
 ];
 
 function attempt(
-    state: SignInState,
+    state: SignInStatus,
     fields: Partial<SignInAttemptData> = {},
 ): SignInAttemptData {
     return {

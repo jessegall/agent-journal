@@ -6,7 +6,7 @@ namespace App\Commands\Accounts\ExpireSignInAttempt;
 
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\Accounts\SignInState;
+use App\Enums\Accounts\SignInStatus;
 use App\Models\Accounts\SignInAttempt;
 use App\Support\SignInChallenges;
 use Carbon\CarbonImmutable;
@@ -23,7 +23,7 @@ final readonly class ExpireSignInAttemptHandler implements CommandHandler
             return false;
         }
 
-        $attempt->finishAt(SignInState::Expired, CarbonImmutable::now());
+        $attempt->finishAt(SignInStatus::Expired, CarbonImmutable::now());
         $this->challenges->forget($attempt->id);
         $this->facts->runTransactionListeners();
 

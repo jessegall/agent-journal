@@ -22,7 +22,7 @@ final class AwaitSkillsStateReference extends StateReferenceFactory
             new SubjectReference($publication->id, 1),
             [
                 'publicationId' => $publication->id,
-                'publication' => $publication->state->value,
+                'publication' => $publication->status->value,
             ],
         );
     }

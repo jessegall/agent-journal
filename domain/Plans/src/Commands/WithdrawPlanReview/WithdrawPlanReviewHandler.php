@@ -6,7 +6,7 @@ namespace Domain\Plans\Commands\WithdrawPlanReview;
 
 use App\Support\ActorIdentity;
 use Domain\Plans\Commands\Support\PlanCommandHandler;
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Exceptions\PlanReviewRefused;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Models\PlanReviewEdition;
@@ -23,8 +23,8 @@ final readonly class WithdrawPlanReviewHandler extends PlanCommandHandler
         $plan = Plan::findLockedStructure($command->planId);
         $edition = PlanReviewEdition::findRequestedOf($plan->id);
 
-        if ($plan->state !== PlanState::Reviewing || $edition === null) {
-            throw PlanReviewRefused::notReviewing($plan->number, $plan->state->value);
+        if ($plan->status !== PlanStatus::Reviewing || $edition === null) {
+            throw PlanReviewRefused::notReviewing($plan->number, $plan->status->value);
         }
 
         $edition->withdraw(ActorIdentity::of($command->dispatchedBy()));

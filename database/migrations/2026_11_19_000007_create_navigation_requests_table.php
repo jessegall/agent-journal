@@ -29,7 +29,7 @@ return new class extends Migration
             $table->string('reason', 16);
             $table->json('screen');
             $table->json('raise_rows');
-            $table->string('state', 16);
+            $table->string('status', 16);
             $table->string('completes', 8)->nullable();
             $table->unsignedInteger('next_step')->nullable();
             $table->string('proof', 200)->nullable();
@@ -47,7 +47,7 @@ return new class extends Migration
 
         // One open request per runtime: a second is refused by the database, not by a check that could race.
         DB::statement('CREATE UNIQUE INDEX navigation_requests_one_open ON navigation_requests (agent_runtime_id) '
-            ."WHERE state IN ('open', 'answering', 'proving')");
+            ."WHERE status IN ('open', 'answering', 'proving')");
     }
 
     public function down(): void

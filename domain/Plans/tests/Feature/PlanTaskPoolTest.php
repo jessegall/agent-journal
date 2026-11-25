@@ -13,7 +13,7 @@ use App\Support\PoolDefinition;
 use App\Support\PoolMembers;
 use App\Support\PoolReference;
 use App\Support\RecordIdentity;
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Exceptions\PlanMissing;
 use Domain\Plans\Exceptions\PlanPoolRefused;
 use Domain\Plans\Models\Plan;
@@ -56,7 +56,7 @@ final class PlanTaskPoolTest extends TestCase
 
     public function test_a_started_plan_opens_to_its_tasks_phase_by_phase(): void
     {
-        $plan = Plan::factory()->create(['state' => PlanState::Started]);
+        $plan = Plan::factory()->create(['status' => PlanStatus::Started]);
         $build = $this->planStructure()->addPhase($plan, 'Build');
         $review = $this->planStructure()->addPhase($plan, 'Review');
         [$first, $second, $third, $fourth] = array_map(fn () => Task::factory()->create()->id, range(1, 4));
@@ -86,22 +86,22 @@ final class PlanTaskPoolTest extends TestCase
     }
 
     /**
-     * @return array<string, array{PlanState}>
+     * @return array<string, array{PlanStatus}>
      */
     public static function unstartedStates(): array
     {
         return [
-            'planned' => [PlanState::Planned],
-            'paused' => [PlanState::Paused],
-            'done' => [PlanState::Done],
+            'planned' => [PlanStatus::Planned],
+            'paused' => [PlanStatus::Paused],
+            'done' => [PlanStatus::Done],
         ];
     }
 
     #[DataProvider('unstartedStates')]
-    public function test_a_plan_that_is_not_started_gives_no_tasks(PlanState $state): void
+    public function test_a_plan_that_is_not_started_gives_no_tasks(PlanStatus $state): void
     {
         $factory = $this->app->make(PlanTaskPoolFactory::class);
-        $plan = Plan::factory()->create(['state' => $state]);
+        $plan = Plan::factory()->create(['status' => $state]);
 
         $this->planStructure()->addTasks(
             $this->planStructure()->addPhase($plan, 'Build'),
@@ -119,7 +119,7 @@ final class PlanTaskPoolTest extends TestCase
 
     public function test_a_plan_of_more_than_a_thousand_tasks_gives_none(): void
     {
-        $plan = Plan::factory()->create(['state' => PlanState::Started]);
+        $plan = Plan::factory()->create(['status' => PlanStatus::Started]);
 
         $this->planStructure()->addTasks(
             $this->planStructure()->addPhase($plan, 'Build'),

@@ -10,8 +10,8 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Processes\OutputStream;
-use App\Enums\Runs\CaptureState;
-use App\Enums\Runs\LifecycleState;
+use App\Enums\Runs\CaptureStatus;
+use App\Enums\Runs\LifecycleStatus;
 use App\Enums\Runs\PartEndType;
 use App\Events\Processes\PartRunCaptured;
 use App\Events\Processes\PartRunCaptureMarked;
@@ -45,7 +45,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $attempt
  * @property string|null $parent_part_run_id
  * @property string $operation
- * @property LifecycleState $lifecycle
+ * @property LifecycleStatus $lifecycle
  * @property CarbonImmutable|null $started_at
  * @property CarbonImmutable|null $ended_at
  * @property int|null $pid
@@ -56,7 +56,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property bool $streams_drained
  * @property string $skip_reason
  * @property string $stop_reason
- * @property CaptureState $capture_state
+ * @property CaptureStatus $capture_state
  * @property array<string,int> $stream_offsets
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
@@ -96,14 +96,14 @@ final class PartRun extends Model implements EventSource, ReadableModel
         return [
             'syntax_node' => 'integer',
             'attempt' => 'integer',
-            'lifecycle' => LifecycleState::class,
+            'lifecycle' => LifecycleStatus::class,
             'started_at' => 'immutable_datetime',
             'ended_at' => 'immutable_datetime',
             'pid' => 'integer',
             'end_type' => PartEndType::class,
             'end_code' => 'integer',
             'streams_drained' => 'boolean',
-            'capture_state' => CaptureState::class,
+            'capture_state' => CaptureStatus::class,
             'stream_offsets' => 'array',
         ];
     }
@@ -134,7 +134,7 @@ final class PartRun extends Model implements EventSource, ReadableModel
      */
     public function start(string $host, int|null $pid = null): void
     {
-        $this->moveTo(LifecycleState::Running);
+        $this->moveTo(LifecycleStatus::Running);
         $this->pid = $pid;
         $this->host = $host;
         $this->started_at = CarbonImmutable::now();
@@ -147,7 +147,7 @@ final class PartRun extends Model implements EventSource, ReadableModel
      */
     public function finishProcess(PartEnd $end): void
     {
-        $this->moveTo(LifecycleState::Draining);
+        $this->moveTo(LifecycleStatus::Draining);
         $this->end_type = $end->type;
         $this->end_code = $end->code;
         $this->end_reason = $end->reason;
@@ -161,7 +161,7 @@ final class PartRun extends Model implements EventSource, ReadableModel
     public function finishDraining(): void
     {
         $this->assertDrained();
-        $this->moveTo(LifecycleState::Ended);
+        $this->moveTo(LifecycleStatus::Ended);
         $this->streams_drained = true;
         $this->ended_at = CarbonImmutable::now();
         $this->assertSaved($this->save());
@@ -181,7 +181,7 @@ final class PartRun extends Model implements EventSource, ReadableModel
         $this->raise(new PartRunCaptured($this->id));
     }
 
-    public function markCapture(CaptureState $state): void
+    public function markCapture(CaptureStatus $state): void
     {
         $this->capture_state = $state;
         $this->assertSaved($this->save());
@@ -194,8 +194,8 @@ final class PartRun extends Model implements EventSource, ReadableModel
     public function stop(string $reason): void
     {
         $this->stop_reason = $reason;
-        $this->capture_state = CaptureState::Incomplete;
-        $this->finishAs(LifecycleState::Stopped);
+        $this->capture_state = CaptureStatus::Incomplete;
+        $this->finishAs(LifecycleStatus::Stopped);
         $this->raise(new PartRunStopped($this->id, $reason));
     }
 
@@ -208,8 +208,8 @@ final class PartRun extends Model implements EventSource, ReadableModel
         $this->end_type = PartEndType::Unavailable;
         $this->end_code = 0;
         $this->end_reason = 'exit_unavailable: the supervisor stopped reporting';
-        $this->capture_state = CaptureState::Incomplete;
-        $this->finishAs(LifecycleState::Lost);
+        $this->capture_state = CaptureStatus::Incomplete;
+        $this->finishAs(LifecycleStatus::Lost);
         $this->raise(new PartRunLost($this->id));
     }
 
@@ -217,7 +217,7 @@ final class PartRun extends Model implements EventSource, ReadableModel
     {
         $this->end_type = PartEndType::Unavailable;
         $this->end_reason = $reason;
-        $this->finishAs(LifecycleState::SpawnFailed);
+        $this->finishAs(LifecycleStatus::SpawnFailed);
         $this->raise(new PartRunSpawnFailed($this->id, $reason));
     }
 
@@ -227,7 +227,7 @@ final class PartRun extends Model implements EventSource, ReadableModel
     public function skip(string $controllingResult): void
     {
         $this->skip_reason = $controllingResult;
-        $this->finishAs(LifecycleState::Skipped);
+        $this->finishAs(LifecycleStatus::Skipped);
         $this->raise(new PartRunSkipped($this->id));
     }
 
@@ -319,7 +319,7 @@ final class PartRun extends Model implements EventSource, ReadableModel
      *
      * @throws PartTransitionRefused
      */
-    private function assertMayMoveTo(LifecycleState $next): void
+    private function assertMayMoveTo(LifecycleStatus $next): void
     {
         if (! $this->lifecycle->canMoveTo($next)) {
             throw PartTransitionRefused::between($this->lifecycle, $next);
@@ -328,14 +328,14 @@ final class PartRun extends Model implements EventSource, ReadableModel
 
     // ----------[ Internals ]----------
 
-    private function finishAs(LifecycleState $state): void
+    private function finishAs(LifecycleStatus $state): void
     {
         $this->moveTo($state);
         $this->ended_at = CarbonImmutable::now();
         $this->save();
     }
 
-    private function moveTo(LifecycleState $next): void
+    private function moveTo(LifecycleStatus $next): void
     {
         $this->assertMayMoveTo($next);
 
@@ -365,7 +365,7 @@ final class PartRun extends Model implements EventSource, ReadableModel
     protected function endedUnassessedOf(Builder $query, ProcessRun $run): void
     {
         $query->where('process_run_id', $run->id)
-            ->where('lifecycle', LifecycleState::Ended->value)
+            ->where('lifecycle', LifecycleStatus::Ended->value)
             ->whereDoesntHave('assessments');
     }
 

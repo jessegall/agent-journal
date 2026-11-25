@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Data;
 
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -17,7 +17,7 @@ final class ShareControlsPartData extends Data
 {
     public function __construct(
         public readonly string $id,
-        public readonly ShareState $state,
+        public readonly ShareStatus $state,
         public readonly bool $mayReveal,
         public readonly bool $mayRetry,
         public readonly bool $mayRevoke,

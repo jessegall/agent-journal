@@ -7,7 +7,7 @@ namespace Domain\Rules\Mcp\Tools;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
-use Domain\Rules\Enums\RuleState;
+use Domain\Rules\Enums\RuleStatus;
 use Domain\Rules\Support\Mcp\RulesListResult;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -24,7 +24,7 @@ final class RulesListTool extends JournalReadTool
     public function schema(JsonSchema $schema): array
     {
         return [
-            'state' => $this->caseArgument($schema, RuleState::class),
+            'state' => $this->caseArgument($schema, RuleStatus::class),
             'page' => $schema->integer()->min(1),
             'continuation' => $schema->string(),
         ];

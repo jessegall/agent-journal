@@ -27,7 +27,7 @@ use Domain\Documents\Commands\ReplaceDocumentText\ReplaceDocumentTextCommand;
 use Domain\Documents\Commands\SettleDocument\SettleDocumentCommand;
 use Domain\Documents\Contracts\Documents\DocumentResolver;
 use Domain\Documents\Data\DraftView;
-use Domain\Documents\Enums\AttentionState;
+use Domain\Documents\Enums\AttentionStatus;
 use Domain\Documents\Enums\CloseCause;
 use Domain\Documents\Exceptions\DraftConflict;
 use Domain\Documents\Exceptions\SettlementDenied;
@@ -91,14 +91,14 @@ final class SettleAndRecoverTest extends TestCase
         $this->bus()->run(new SettleDocumentCommand(1, 1, 'Shipped.'));
 
         $inspection = $this->documents()->inspect(1);
-        $this->assertSame(AttentionState::Settled, $inspection->attention);
+        $this->assertSame(AttentionStatus::Settled, $inspection->attention);
         $this->assertSame(['Shipped.'], array_map(fn ($settlement) => $settlement->reason, $inspection->settlements));
 
         $draft = $this->bus()->run(new OpenDocumentCommand('1'));
         $draft = $this->bus()->run(new ReplaceDocumentTextCommand($draft->target(), 'Ship it.', 'Ship it again.'));
         $this->bus()->run(new CloseDocumentCommand($draft->target()));
 
-        $this->assertSame(AttentionState::Active, $this->documents()->inspect(1)->attention);
+        $this->assertSame(AttentionStatus::Active, $this->documents()->inspect(1)->attention);
         $this->assertCount(1, $this->documents()->inspect(1)->settlements);
     }
 
@@ -110,7 +110,7 @@ final class SettleAndRecoverTest extends TestCase
             self::REASON_REQUIRED,
         );
 
-        $this->assertSame(AttentionState::Active, Document::query()->sole()->attention);
+        $this->assertSame(AttentionStatus::Active, Document::query()->sole()->attention);
 
         $this->bus()->run(new OpenDocumentCommand('1'));
         $this->expectException(SettlementDenied::class);
@@ -136,8 +136,8 @@ final class SettleAndRecoverTest extends TestCase
 
         $this->assertSame(
             [
-                AttentionState::Active,
-                AttentionState::Active,
+                AttentionStatus::Active,
+                AttentionStatus::Active,
             ],
             [
                 Document::query()->sole()->attention,
@@ -176,7 +176,7 @@ final class SettleAndRecoverTest extends TestCase
         $this->actAsAgent(9, 90);
         $this->bus()->run(new CreateReportCommand('Check', 'What we found', "All good\n"));
         $this->bus()->run(new CloseReportCommand('1', 'Checked.'));
-        $this->assertSame(AttentionState::Settled, Report::query()->sole()->attention);
+        $this->assertSame(AttentionStatus::Settled, Report::query()->sole()->attention);
 
         $this->actAsUser(1);
         $this->bus()->run(new CreateReportCommand('Other', 'By a user', "Text\n"));

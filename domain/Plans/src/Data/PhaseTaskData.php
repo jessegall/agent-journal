@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Data;
 
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Values\TaskSummary;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -19,7 +19,7 @@ final class PhaseTaskData extends Data
     public function __construct(
         public readonly string $number,
         public readonly string $title,
-        public readonly TaskState $state,
+        public readonly TaskStatus $state,
         public readonly string $stateLabel,
         public readonly bool $hasWaits,
     ) {}

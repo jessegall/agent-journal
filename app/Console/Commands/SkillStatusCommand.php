@@ -8,8 +8,8 @@ use App\Exceptions\ConsoleOwnerMissing;
 use App\Exceptions\SkillSessionHidden;
 use App\Resolvers\Support\SkillStatusResolver;
 use App\Support\SkillAuthoringService;
-use App\Values\GenerationStatus;
-use App\Values\PublicationStatus;
+use App\Values\GenerationReport;
+use App\Values\PublicationReport;
 use App\Values\SessionSkillStatus;
 use App\Values\SkillStatus;
 use Illuminate\Console\Command;
@@ -117,7 +117,7 @@ final class SkillStatusCommand extends Command
                 'Target',
                 'Error',
             ],
-            array_map(fn (PublicationStatus $publication) => $this->row($publication), $status->publications),
+            array_map(fn (PublicationReport $publication) => $this->row($publication), $status->publications),
         );
 
         foreach ($status->publications as $publication) {
@@ -129,7 +129,7 @@ final class SkillStatusCommand extends Command
         }
     }
 
-    private function printGeneration(GenerationStatus|null $generation): void
+    private function printGeneration(GenerationReport|null $generation): void
     {
         if ($generation === null) {
             $this->line('No generation yet: run php artisan skill:refresh.');
@@ -145,7 +145,7 @@ final class SkillStatusCommand extends Command
     /**
      * @return list<string>
      */
-    private function row(PublicationStatus $publication): array
+    private function row(PublicationReport $publication): array
     {
         return [
             $publication->sessionId,

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sharing\Support;
 
 use DateTimeImmutable;
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 
 /**
  * What a sharing lifecycle event tells about one share: its id, the gateway configuration it is served under (none
@@ -16,7 +16,7 @@ final readonly class ShareFact
     public function __construct(
         public string $shareId,
         public string|null $configurationId,
-        public ShareState $state,
+        public ShareStatus $state,
         public int $scopeVersion,
         public DateTimeImmutable $occurredAt,
     ) {}

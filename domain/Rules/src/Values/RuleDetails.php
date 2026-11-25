@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Values;
 
-use Domain\Rules\Enums\RuleState;
+use Domain\Rules\Enums\RuleStatus;
 
 /**
  * One rule as its read gives it: its text and state, and for a proposal its reason, its proposer and the number of
@@ -16,7 +16,7 @@ final readonly class RuleDetails
         public string $id,
         public int $number,
         public string $text,
-        public RuleState $state,
+        public RuleStatus $state,
         public string|null $reason,
         public string|null $proposerType,
         public string|null $proposerId,

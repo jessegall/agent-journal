@@ -20,7 +20,7 @@ return new class extends Migration
             $table->ulid('account_id');
             $table->unsignedBigInteger('account_generation');
             $table->string('directory');
-            $table->string('state', 32);
+            $table->string('status', 32);
             $table->string('transport_profile', 8)->default('mcp');
             $table->string('role', 32);
             $table->ulid('owner_start_id')->nullable();
@@ -29,7 +29,7 @@ return new class extends Migration
             $table->timestampTz('ended_at')->nullable();
             $table->timestampsTz();
 
-            $table->index(['account_type', 'account_id', 'state']);
+            $table->index(['account_type', 'account_id', 'status']);
             $table->index('session_id');
             $table->text('refusal')->nullable();
         });

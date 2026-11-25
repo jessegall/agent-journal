@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Bus\CallerReceipts;
 use App\Data\Accounts\SignInReceiptData;
 use App\Enums\Accounts\SignInReceiptStatus;
-use App\Enums\CommandRules\ReceiptState;
+use App\Enums\CommandRules\ReceiptStatus;
 use App\Http\Requests\Profiles\SignInReceiptRequest;
 use App\Models\Accounts\SignInAttempt;
 
@@ -28,13 +28,13 @@ final readonly class SignInReceipts
         }
 
         $receipt = $answers[0];
-        $state = $receipt->isExpired ? ReceiptState::Expired : $receipt->state;
+        $state = $receipt->isExpired ? ReceiptStatus::Expired : $receipt->state;
 
         return match ($state) {
-            ReceiptState::Completed => $this->startedFrom($receipt->fields),
-            ReceiptState::Refused => SignInReceiptData::without(SignInReceiptStatus::Refused, $receipt->refusalMessage),
-            ReceiptState::Taken => SignInReceiptData::without(SignInReceiptStatus::Pending),
-            ReceiptState::Expired => SignInReceiptData::without(SignInReceiptStatus::Expired),
+            ReceiptStatus::Completed => $this->startedFrom($receipt->fields),
+            ReceiptStatus::Refused => SignInReceiptData::without(SignInReceiptStatus::Refused, $receipt->refusalMessage),
+            ReceiptStatus::Taken => SignInReceiptData::without(SignInReceiptStatus::Pending),
+            ReceiptStatus::Expired => SignInReceiptData::without(SignInReceiptStatus::Expired),
         };
     }
 
@@ -70,7 +70,7 @@ final readonly class SignInReceipts
             $attempt->type,
             $attempt->resultAccount?->id,
             $attempt->method,
-            $attempt->state,
+            $attempt->status,
             null,
         );
     }

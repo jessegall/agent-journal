@@ -10,7 +10,7 @@ use App\Support\ActorIdentity;
 use App\Support\DomainRegistry;
 use App\Values\OwnerAuthority;
 use Database\Seeders\DatabaseSeeder;
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use Domain\Plans\Models\Plan;
@@ -65,7 +65,7 @@ final class PlanPersistenceTest extends TestCase
             $first->id,
             $third->id,
         ], $plan->taskIds());
-        $this->assertSame(PlanState::Planned, $plan->fresh()?->state);
+        $this->assertSame(PlanStatus::Planned, $plan->fresh()?->status);
     }
 
     public function test_a_task_sits_in_one_phase_at_most(): void

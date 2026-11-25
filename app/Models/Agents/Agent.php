@@ -43,6 +43,7 @@ use PhpOption\Some;
 /**
  * @property string $id
  * @property string $name
+ * @property string $project_id
  * @property string $profile_key
  * @property CarbonImmutable|null $retired_at
  * @property string|null $current_session_id

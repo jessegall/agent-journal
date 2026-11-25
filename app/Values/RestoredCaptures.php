@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Runs\CaptureState;
+use App\Enums\Runs\CaptureStatus;
 
 /**
  * What checking a run's restored output answers: the capture state of each of its parts.
@@ -17,7 +17,7 @@ final readonly class RestoredCaptures
     public function __construct(public array $parts) {}
 
     /**
-     * @return list<CaptureState>
+     * @return list<CaptureStatus>
      */
     public function states(): array
     {

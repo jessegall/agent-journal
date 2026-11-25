@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('rule_id');
             $table->foreignUlid('active_revision_id')->constrained('rule_revisions')->restrictOnDelete();
             $table->unsignedInteger('active_revision');
-            $table->string('state', 16);
+            $table->string('status', 16);
             $table->text('state_reason');
             $table->timestampsTz();
 

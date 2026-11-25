@@ -9,7 +9,7 @@ use App\Events\Hooks\HelperReportedOnRecord;
 use App\Events\Hooks\HelperSentOnRecord;
 use App\Models\Agents\Agent;
 use App\Support\RecordIdentity;
-use Domain\Plans\Enums\PlanReviewState;
+use Domain\Plans\Enums\PlanReviewStatus;
 use Domain\Plans\Events\PlanReviewDecided;
 use Domain\Plans\Events\PlanReviewWithdrawn;
 use Domain\Plans\Models\Plan;
@@ -70,7 +70,7 @@ final class ReviewPlanStateTest extends TestCase
     public function test_the_review_ends_when_it_is_decided(): void
     {
         $this->reviewing()
-            ->given(new PlanReviewDecided(TestIds::of(5), 'edition-1', PlanReviewState::Approved))
+            ->given(new PlanReviewDecided(TestIds::of(5), 'edition-1', PlanReviewStatus::Approved))
             ->assertPopped();
     }
 

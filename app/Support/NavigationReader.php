@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Navigation\NavigationReader as NavigationReaderContract;
-use App\Enums\Navigation\MenuEntryState;
+use App\Enums\Navigation\MenuEntryStatus;
 use App\Exceptions\MenuEntryRefused;
 use App\Exceptions\NavigationRaiseRefused;
 use App\Models\Agents\AgentRuntime;
@@ -30,7 +30,7 @@ final readonly class NavigationReader implements NavigationReaderContract
     public function menuEntries(
         ActorIdentity $owner,
         string|null $driver,
-        MenuEntryState|null $state,
+        MenuEntryStatus|null $state,
         int $page,
     ): array {
         $menuEntries = $this->menuQuery($owner, $driver, $state)
@@ -53,11 +53,11 @@ final readonly class NavigationReader implements NavigationReaderContract
             ),
             'uses' => $entry->uses,
             'last_used_at' => $entry->last_used_at?->toIso8601String(),
-            'state' => $entry->state->value,
+            'state' => $entry->status->value,
         ]])->all();
     }
 
-    public function menuEntryCount(ActorIdentity $owner, string|null $driver, MenuEntryState|null $state): int
+    public function menuEntryCount(ActorIdentity $owner, string|null $driver, MenuEntryStatus|null $state): int
     {
         return $this->menuQuery($owner, $driver, $state)->count();
     }
@@ -77,7 +77,7 @@ final readonly class NavigationReader implements NavigationReaderContract
             'completes' => $entry->completes->value,
             'next_step' => $entry->next_step,
             'proof' => $entry->proof,
-            'state' => $entry->state->value,
+            'state' => $entry->status->value,
             'superseded_by' => $entry->superseded_by_id,
             'builds' => array_map(fn (MenuEntryBuild $build) => [
                 'build' => $build->build,
@@ -119,7 +119,7 @@ final readonly class NavigationReader implements NavigationReaderContract
             ],
             'stalled_step' => $navigation->stalled_step,
             'reason' => $navigation->reason->value,
-            'state' => $navigation->state->value,
+            'state' => $navigation->status->value,
             'version' => $navigation->row_version,
             'generation' => $screen->generation,
             'stale_entry' => $this->staleHint($navigation),
@@ -161,11 +161,11 @@ final readonly class NavigationReader implements NavigationReaderContract
     /**
      * @return ReadBuilder<MenuEntry>
      */
-    private function menuQuery(ActorIdentity $owner, string|null $driver, MenuEntryState|null $state): ReadBuilder
+    private function menuQuery(ActorIdentity $owner, string|null $driver, MenuEntryStatus|null $state): ReadBuilder
     {
         return MenuEntry::query()
             ->ownedBy($owner)
             ->when($driver !== null, fn (Builder $query) => $query->forDriver($driver))
-            ->when($state !== null, fn (Builder $query) => $query->where('state', $state));
+            ->when($state !== null, fn (Builder $query) => $query->where('status', $state));
     }
 }

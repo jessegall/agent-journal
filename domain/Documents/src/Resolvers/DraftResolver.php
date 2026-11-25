@@ -9,7 +9,7 @@ use App\Enums\Agents\AccessType;
 use Domain\Documents\Contracts\Drafts\DraftResolver as DraftResolverContract;
 use Domain\Documents\Data\DraftState;
 use Domain\Documents\Data\DraftView;
-use Domain\Documents\Enums\EditingState;
+use Domain\Documents\Enums\EditingStatus;
 use Domain\Documents\Exceptions\DraftMissing;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
@@ -45,11 +45,11 @@ final readonly class DraftResolver implements DraftResolverContract
         $draft = $document->draft;
 
         if ($draft === null) {
-            return DraftState::from(['state' => EditingState::Free]);
+            return DraftState::from(['state' => EditingStatus::Free]);
         }
 
         if (! $this->editors->isEditing($draft)) {
-            $held = ['state' => EditingState::Held, 'holder' => $draft->holderLabel];
+            $held = ['state' => EditingStatus::Held, 'holder' => $draft->holderLabel];
 
             $administrativeAccesses = [AccessType::Edit];
 
@@ -66,7 +66,7 @@ final readonly class DraftResolver implements DraftResolverContract
         }
 
         return DraftState::from([
-            'state' => EditingState::HeldByViewer,
+            'state' => EditingStatus::HeldByViewer,
             'draft' => $draft->view($document),
         ]);
     }

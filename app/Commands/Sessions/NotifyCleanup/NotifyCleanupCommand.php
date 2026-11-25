@@ -6,7 +6,7 @@ namespace App\Commands\Sessions\NotifyCleanup;
 
 use App\Attributes\Commands\Entry;
 use App\Enums\Accounts\CommandEntry;
-use App\Enums\Sessions\CleanupState;
+use App\Enums\Sessions\CleanupStatus;
 use App\Support\Command;
 use App\Values\CleanupReport;
 
@@ -15,7 +15,7 @@ use App\Values\CleanupReport;
  * and why a deletion failed. The result is where the cleanup stands. A repeated report changes nothing more.
  * Run for an authenticated host by the journal itself (internal, not exported).
  *
- * @extends Command<CleanupState>
+ * @extends Command<CleanupStatus>
  */
 #[Entry(CommandEntry::HostControl)]
 final readonly class NotifyCleanupCommand extends Command

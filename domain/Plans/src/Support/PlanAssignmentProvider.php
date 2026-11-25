@@ -56,7 +56,7 @@ final readonly class PlanAssignmentProvider implements AssignableProvider
     {
         return array_values(array_map(
             fn (Plan $plan) => $plan->assignmentIdentity(),
-            array_filter($records, fn (Assignable $record) => $record instanceof Plan && $record->state->hasEnded()),
+            array_filter($records, fn (Assignable $record) => $record instanceof Plan && $record->status->hasEnded()),
         ));
     }
 }

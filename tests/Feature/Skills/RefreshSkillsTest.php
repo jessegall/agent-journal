@@ -8,8 +8,8 @@ use App\Commands\Skills\CreateSkill\CreateSkillCommand;
 use App\Commands\Skills\RefreshSkills\RefreshSkillsCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Sessions\SessionStatus;
-use App\Enums\Skills\GenerationState;
-use App\Enums\Skills\PublicationState;
+use App\Enums\Skills\GenerationStatus;
+use App\Enums\Skills\PublicationStatus;
 use App\Exceptions\CommandNotRegistered;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
@@ -88,8 +88,8 @@ final class RefreshSkillsTest extends TestCase
         $this->assertTrue($failed->hasFailed);
         $this->assertStringContainsString(self::INVALID_SKILL, $failed->reason);
         $this->assertSame(
-            GenerationState::Failed,
-            SkillGeneration::query()->whereKey($failed->generationId)->firstOrFail()->state,
+            GenerationStatus::Failed,
+            SkillGeneration::query()->whereKey($failed->generationId)->firstOrFail()->status,
         );
         $this->assertSame($ready->generationId, SkillGeneration::findLatestReady()?->id);
     }
@@ -110,8 +110,8 @@ final class RefreshSkillsTest extends TestCase
         );
 
         $pending = SkillPublication::query()->where('session_id', $session->id)->where(
-            'state',
-            PublicationState::Pending->value,
+            'status',
+            PublicationStatus::Pending->value,
         )->firstOrFail();
         $this->assertSame(2, SkillGeneration::query()->count());
         $this->assertSame(SkillGeneration::findLatestReady()?->id, $pending->generation_id);

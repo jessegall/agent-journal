@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandBus;
 use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Contracts\TaskHistoryResolver;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
 use Domain\Tasks\Values\TaskTransition;
@@ -54,20 +54,20 @@ final class TaskHistoryTest extends TestCase
             [
                 [
                     2,
-                    TaskState::Blocked,
-                    TaskState::Started,
+                    TaskStatus::Blocked,
+                    TaskStatus::Started,
                     null,
                 ],
                 [
                     1,
-                    TaskState::Started,
-                    TaskState::Blocked,
+                    TaskStatus::Started,
+                    TaskStatus::Blocked,
                     'Waits for the schema.',
                 ],
                 [
                     1,
-                    TaskState::Open,
-                    TaskState::Started,
+                    TaskStatus::Open,
+                    TaskStatus::Started,
                     null,
                 ],
             ],

@@ -26,8 +26,8 @@ final readonly class WaiveTaskWaitHandler extends TaskCommandHandler
     {
         [$dependent] = $this->lock->lock($command->dependentTaskId, $command->prerequisiteTaskId);
 
-        if ($dependent->state->hasEnded()) {
-            throw TaskWaitRefused::dependentEnded($dependent->number, $dependent->state->value);
+        if ($dependent->status->hasEnded()) {
+            throw TaskWaitRefused::dependentEnded($dependent->number, $dependent->status->value);
         }
 
         $wait = TaskWait::findBetween($dependent->id, $command->prerequisiteTaskId);

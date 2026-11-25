@@ -7,7 +7,7 @@ namespace Tests\Feature\Connections;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Hosts\ProjectFiles;
 use App\Enums\Projects\ProjectReadFailure;
-use App\Enums\Projects\ProjectReadState;
+use App\Enums\Projects\ProjectReadStatus;
 use App\Enums\Projects\ProjectReadType;
 use App\Exceptions\CommandNotRegistered;
 use App\Exceptions\ProjectReadRefused;
@@ -79,7 +79,7 @@ final class ProjectReadTest extends TestCase
         $this->reportText($read)->assertNoContent();
 
         $answered = ProjectRead::query()->findOrFail($read->id);
-        $this->assertSame(ProjectReadState::Answered, $answered->state);
+        $this->assertSame(ProjectReadStatus::Answered, $answered->status);
         $this->assertSame(self::SOURCE, $answered->text);
         $this->assertSame(hash('sha256', self::SOURCE), $answered->digest);
     }
@@ -108,8 +108,8 @@ final class ProjectReadTest extends TestCase
             ->assertClientError();
         $this->notify($read, [...$this->textAnswer(), 'digest' => 'not-a-digest'])->assertClientError();
 
-        $this->assertSame(ProjectReadState::Pending, ProjectRead::query()->findOrFail($read->id)->state);
-        $this->assertSame(ProjectReadState::Pending, ProjectRead::query()->findOrFail($folder->id)->state);
+        $this->assertSame(ProjectReadStatus::Pending, ProjectRead::query()->findOrFail($read->id)->status);
+        $this->assertSame(ProjectReadStatus::Pending, ProjectRead::query()->findOrFail($folder->id)->status);
 
         $this->reportText($read)->assertNoContent();
         $this->reportText($read)->assertClientError();
@@ -130,7 +130,7 @@ final class ProjectReadTest extends TestCase
         $this->app->make(ProjectReadRetentionService::class)->prune(CarbonImmutable::now()->addSeconds(ProjectRead::PENDING_SECONDS_LIMIT + 1));
 
         $this->reportText($read)->assertNoContent();
-        $this->assertSame(ProjectReadState::Expired, ProjectRead::query()->findOrFail($read->id)->state);
+        $this->assertSame(ProjectReadStatus::Expired, ProjectRead::query()->findOrFail($read->id)->status);
 
         $this->app->make(ProjectReadRetentionService::class)->prune(CarbonImmutable::now()->addMinutes(ProjectRead::KEEP_MINUTES_LIMIT + 1));
         $this->assertFalse(ProjectRead::query()->whereKey($read->id)->exists());
@@ -158,7 +158,7 @@ final class ProjectReadTest extends TestCase
         $this->actAs(TestActors::user(7));
 
         $pending = $files->file($this->binding, 'src/main.go');
-        $this->assertSame(ProjectReadState::Pending, $pending->state);
+        $this->assertSame(ProjectReadStatus::Pending, $pending->state);
 
         $read = ProjectRead::query()->findOrFail($pending->readId);
         $this->reportText($read)->assertNoContent();
@@ -166,7 +166,7 @@ final class ProjectReadTest extends TestCase
 
         $answered = $files->file($this->binding, 'src/main.go');
         $this->assertSame($pending->readId, $answered->readId);
-        $this->assertSame(ProjectReadState::Answered, $answered->state);
+        $this->assertSame(ProjectReadStatus::Answered, $answered->state);
         $this->assertSame(self::SOURCE, $answered->text);
     }
 

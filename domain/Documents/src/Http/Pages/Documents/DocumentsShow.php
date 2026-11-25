@@ -34,8 +34,8 @@ use Domain\Documents\Data\RecoverDraftPartData;
 use Domain\Documents\Data\RevisionCard;
 use Domain\Documents\Data\SettlementCard;
 use Domain\Documents\DocumentsDomain;
-use Domain\Documents\Enums\AttentionState;
-use Domain\Documents\Enums\EditingState;
+use Domain\Documents\Enums\AttentionStatus;
+use Domain\Documents\Enums\EditingStatus;
 use Spatie\LaravelData\Optional;
 
 /**
@@ -173,7 +173,7 @@ final readonly class DocumentsShow extends DocumentsPage
      */
     private function editingOf(DocumentView $document, DraftState $editing): array
     {
-        if ($editing->state === EditingState::HeldByViewer && ! $editing->draft instanceof Optional) {
+        if ($editing->state === EditingStatus::HeldByViewer && ! $editing->draft instanceof Optional) {
             $editor = DraftEditorPartData::from([
                 'number' => $document->number,
                 'draft' => $editing->draft,
@@ -182,7 +182,7 @@ final readonly class DocumentsShow extends DocumentsPage
             return [LayoutPartData::native('editing', LayoutNativeData::of('documents/DraftEditor', $editor))];
         }
 
-        if ($editing->state === EditingState::Held && ! $editing->held instanceof Optional) {
+        if ($editing->state === EditingStatus::Held && ! $editing->held instanceof Optional) {
             $recovery = RecoverDraftPartData::from([
                 'number' => $document->number,
                 'holder' => $this->holderOf($editing),
@@ -192,7 +192,7 @@ final readonly class DocumentsShow extends DocumentsPage
             return [LayoutPartData::native('editing', LayoutNativeData::of('documents/RecoverForm', $recovery))];
         }
 
-        if ($editing->state === EditingState::Held) {
+        if ($editing->state === EditingStatus::Held) {
             return [LayoutPartData::notice('editing', 'info', "{$this->holderOf($editing)} is editing this document.")];
         }
 
@@ -243,7 +243,7 @@ final readonly class DocumentsShow extends DocumentsPage
             $parts[] = LayoutPartData::collection('settlements', 'list', $settlements);
         }
 
-        if ($document->attention === AttentionState::Active) {
+        if ($document->attention === AttentionStatus::Active) {
             $parts[] = LayoutPartData::form(
                 'settle',
                 LayoutFormData::from(

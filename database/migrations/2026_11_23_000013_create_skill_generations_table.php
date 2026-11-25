@@ -15,11 +15,11 @@ return new class extends Migration
             $table->string('catalogue_digest', 64);
             $table->string('registration_digest', 64);
             $table->json('entries');
-            $table->string('state', 16);
+            $table->string('status', 16);
             $table->text('error_reason')->nullable();
             $table->timestampsTz();
 
-            $table->index(['state', 'created_at']);
+            $table->index(['status', 'created_at']);
         });
     }
 

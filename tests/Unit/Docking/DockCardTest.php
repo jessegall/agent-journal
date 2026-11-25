@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Docking;
 
 use App\Enums\Runs\ConsoleStream;
-use App\Enums\Runs\DisclosureState;
+use App\Enums\Runs\DisclosureStatus;
 use App\Exceptions\DockCardInvalid;
 use App\Support\Cards\ConsoleOutput;
 use App\Support\Cards\Contracts\DockPart;
@@ -49,7 +49,7 @@ final class DockCardTest extends TestCase
     {
         $this->expectExceptionObject(DockCardInvalid::emptyDisclosure('checks'));
 
-        new Disclosure('checks', 'Checks', DisclosureState::Closed, Stack::of('body'));
+        new Disclosure('checks', 'Checks', DisclosureStatus::Closed, Stack::of('body'));
     }
 
     public function test_a_card_of_more_than_128_parts_is_over_its_budget(): void

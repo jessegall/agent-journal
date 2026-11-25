@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\CommandRules\ProposalState;
+use App\Enums\CommandRules\ProposalStatus;
 use App\Models\CommandRules\RuleProposal;
 
 /**
@@ -19,7 +19,7 @@ final readonly class ProposalReceipt
     private function __construct(
         public string $proposalId,
         public int $revision,
-        public ProposalState $state,
+        public ProposalStatus $state,
         public array $missingFields,
     ) {}
 
@@ -38,6 +38,6 @@ final readonly class ProposalReceipt
 
     public static function of(RuleProposal $proposal, ProposedRule $proposed): self
     {
-        return new self($proposal->id, $proposal->current_revision, $proposal->state, $proposed->missingFields());
+        return new self($proposal->id, $proposal->current_revision, $proposal->status, $proposed->missingFields());
     }
 }

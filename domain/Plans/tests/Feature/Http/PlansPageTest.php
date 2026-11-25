@@ -7,7 +7,7 @@ namespace Domain\Plans\Tests\Feature\Http;
 use App\Http\Middleware\Web\HandleInertiaRequests;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\PlansDomain;
@@ -63,7 +63,7 @@ final class PlansPageTest extends TestCase
             'title' => 'Compare chat layouts',
             'type' => PlanType::Research,
         ]);
-        Plan::query()->whereKey($this->paused->id)->update(['state' => PlanState::Paused->value]);
+        Plan::query()->whereKey($this->paused->id)->update(['status' => PlanStatus::Paused->value]);
     }
 
     public function test_a_guest_is_sent_to_sign_in(): void
@@ -134,7 +134,7 @@ final class PlansPageTest extends TestCase
 
     public function test_the_waiting_filter_lists_waiting_plans_under_the_one_plans_page(): void
     {
-        Plan::query()->whereKey($this->paused->id)->update(['state' => PlanState::Reviewing->value]);
+        Plan::query()->whereKey($this->paused->id)->update(['status' => PlanStatus::Reviewing->value]);
 
         $this->actingAs($this->owner)->get('/plans?state=waiting')->assertInertia(fn (AssertableInertia $page) => $page
             ->where('page.data.root.children.0.children.1.text', '1')

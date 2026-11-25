@@ -14,7 +14,7 @@ use App\Contracts\Navigation\TerminalViewCloser;
 use App\Data\Terminals\TerminalControlData;
 use App\Enums\Drivers\DriverOperation;
 use App\Enums\Terminals\TerminalControlRefusal;
-use App\Enums\Terminals\TerminalGrantState;
+use App\Enums\Terminals\TerminalGrantStatus;
 use App\Enums\Terminals\TerminalInputType;
 use App\Enums\Terminals\TerminalNamedKey;
 use App\Exceptions\TerminalControlRefused;
@@ -71,7 +71,7 @@ final class TerminalControlTest extends TestCase
         $first = $this->take($runtime, $interest);
 
         $this->assertRefusedWith(TerminalControlRefusal::ControlHeld, fn () => $this->take($runtime, $interest));
-        $this->assertSame(TerminalGrantState::Taking, $first->state);
+        $this->assertSame(TerminalGrantStatus::Taking, $first->state);
         $this->assertSame(1, TerminalGrant::query()->acrossActors()->count());
         $this->assertSame(
             [DriverOperation::TakeControl],
@@ -99,7 +99,7 @@ final class TerminalControlTest extends TestCase
         $this->app->make(TerminalViewCloser::class)
             ->closeAllFor($runtime->session->agent_id, $this->owner(), CarbonImmutable::now());
 
-        $this->assertSame(TerminalGrantState::Retired, TerminalGrant::query()->acrossActors()->sole()->state);
+        $this->assertSame(TerminalGrantStatus::Retired, TerminalGrant::query()->acrossActors()->sole()->status);
         $this->assertRefusedWith(TerminalControlRefusal::GrantEnded, fn () => $this->asOwner(new SendTerminalInputCommand(
             $runtime->session->agent_id,
             'grant-1',

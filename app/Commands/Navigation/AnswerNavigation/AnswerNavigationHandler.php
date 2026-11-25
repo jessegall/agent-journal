@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Navigation\AnswerNavigation;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\Navigation\NavigationState;
+use App\Enums\Navigation\NavigationStatus;
 use App\Exceptions\NavigationAnswerRefused;
 use App\Exceptions\NavigationRaiseRefused;
 use App\Models\Drivers\DriverRequest;
@@ -55,7 +55,7 @@ final readonly class AnswerNavigationHandler implements CommandHandler
 
         $request = $this->rounds->append($navigation, $round);
 
-        if ($navigation->state === NavigationState::Open) {
+        if ($navigation->status === NavigationStatus::Open) {
             $this->recordAnswered($navigation);
         }
 
@@ -82,11 +82,11 @@ final readonly class AnswerNavigationHandler implements CommandHandler
      */
     private function checkAnswerable(NavigationRequest $navigation, AnswerNavigationCommand $command): void
     {
-        if (! in_array($navigation->state, [
-            NavigationState::Open,
-            NavigationState::Answering,
+        if (! in_array($navigation->status, [
+            NavigationStatus::Open,
+            NavigationStatus::Answering,
         ], true)) {
-            throw NavigationAnswerRefused::notAnswerable($navigation->id, $navigation->state->value);
+            throw NavigationAnswerRefused::notAnswerable($navigation->id, $navigation->status->value);
         }
 
         $this->answering->assertCurrentVersion($navigation, $command->expectedRowVersion);

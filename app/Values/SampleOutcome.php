@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\CommandRules\RequestState;
+use App\Enums\CommandRules\RequestStatus;
 
 /**
  * Where a request stands after its sample run ended: awaiting proof with the run, or back to the owner's approval,
@@ -15,5 +15,5 @@ final readonly class SampleOutcome
     /**
      * @param  list<int>  $unsampledStatuses
      */
-    public function __construct(public RequestState $state, public string $runId, public array $unsampledStatuses) {}
+    public function __construct(public RequestStatus $state, public string $runId, public array $unsampledStatuses) {}
 }

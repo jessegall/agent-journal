@@ -23,7 +23,7 @@ use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
 use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Events\TaskBlocked;
 use Domain\Tasks\Events\TaskCancelled;
 use Domain\Tasks\Events\TaskFinished;
@@ -156,9 +156,9 @@ final class EventPayloadTest extends TestCase
 
         $this->assertSame(
             [
-                [TaskFinished::class, $finished->id, TaskState::Started],
-                [TaskBlocked::class, $blocked->id, TaskState::Started],
-                [TaskCancelled::class, $cancelled->id, TaskState::Open],
+                [TaskFinished::class, $finished->id, TaskStatus::Started],
+                [TaskBlocked::class, $blocked->id, TaskStatus::Started],
+                [TaskCancelled::class, $cancelled->id, TaskStatus::Open],
             ],
             array_map(fn (object $event) => [$event::class, $event->taskId, $event->previousState], $sent()),
         );

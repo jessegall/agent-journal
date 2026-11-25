@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Data;
 
 use App\Support\AssignmentData;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Values\TaskCard;
 use Spatie\LaravelData\Data;
 
@@ -21,7 +21,7 @@ final class AssignedTaskCardData extends Data
     public function __construct(
         public readonly string $id,
         public readonly string $title,
-        public readonly TaskState $state,
+        public readonly TaskStatus $state,
         public readonly AssignmentData $holder,
         public readonly TaskExecutionData|null $execution = null,
     ) {}

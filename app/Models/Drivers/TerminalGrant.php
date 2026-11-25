@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Terminals\TerminalGrantState;
+use App\Enums\Terminals\TerminalGrantStatus;
 use App\Events\Sessions\TerminalGrantGivenBack;
 use App\Events\Sessions\TerminalGrantIssued;
 use App\Events\Sessions\TerminalGrantRefused;
@@ -40,7 +40,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $read_interest_id
  * @property string $take_id
  * @property string|null $grant_id
- * @property TerminalGrantState $state
+ * @property TerminalGrantStatus $status
  * @property int $next_sequence
  * @property string|null $take_request_id
  * @property string|null $release_request_id
@@ -70,7 +70,7 @@ final class TerminalGrant extends Model implements EventSource, ReadableModel
     protected function casts(): array
     {
         return [
-            'state' => TerminalGrantState::class,
+            'status' => TerminalGrantStatus::class,
             'process_generation' => 'integer',
             'next_sequence' => 'integer',
             'expires_at' => 'immutable_datetime',
@@ -98,7 +98,7 @@ final class TerminalGrant extends Model implements EventSource, ReadableModel
         $grant->host_id = $runtime->host_id;
         $grant->read_interest_id = $interest->read_interest_id;
         $grant->take_id = $takeId;
-        $grant->state = TerminalGrantState::Taking;
+        $grant->status = TerminalGrantStatus::Taking;
         $grant->expires_at = $now->addSeconds(self::LIFETIME_SECONDS);
         $grant->save();
 
@@ -122,19 +122,19 @@ final class TerminalGrant extends Model implements EventSource, ReadableModel
      */
     public function issue(string $grantId): void
     {
-        if ($this->state !== TerminalGrantState::Taking) {
+        if ($this->status !== TerminalGrantStatus::Taking) {
             return;
         }
 
         $this->grant_id = $grantId;
-        $this->state = TerminalGrantState::Granted;
+        $this->status = TerminalGrantStatus::Granted;
         $this->assertSaved($this->save());
         $this->raise(new TerminalGrantIssued($this->id));
     }
 
     public function refuse(): void
     {
-        $this->state = TerminalGrantState::Refused;
+        $this->status = TerminalGrantStatus::Refused;
         $this->assertSaved($this->save());
         $this->raise(new TerminalGrantRefused($this->id));
     }
@@ -151,7 +151,7 @@ final class TerminalGrant extends Model implements EventSource, ReadableModel
      */
     public function release(DriverRequest $request): void
     {
-        $this->state = TerminalGrantState::Releasing;
+        $this->status = TerminalGrantStatus::Releasing;
         $this->release_request_id = $request->id;
         $this->assertSaved($this->save());
         $this->raise(new TerminalGrantGivenBack($this->id, $request->id));
@@ -162,11 +162,11 @@ final class TerminalGrant extends Model implements EventSource, ReadableModel
      */
     public function markReleased(): void
     {
-        if ($this->state !== TerminalGrantState::Releasing) {
+        if ($this->status !== TerminalGrantStatus::Releasing) {
             return;
         }
 
-        $this->state = TerminalGrantState::Released;
+        $this->status = TerminalGrantStatus::Released;
         $this->assertSaved($this->save());
         $this->raise(new TerminalGrantReleased($this->id));
     }
@@ -176,7 +176,7 @@ final class TerminalGrant extends Model implements EventSource, ReadableModel
      */
     public function retire(DriverRequest $release): void
     {
-        $this->state = TerminalGrantState::Retired;
+        $this->status = TerminalGrantStatus::Retired;
         $this->release_request_id = $release->id;
         $this->assertSaved($this->save());
         $this->raise(new TerminalGrantRetired($this->id, $release->id));
@@ -202,7 +202,7 @@ final class TerminalGrant extends Model implements EventSource, ReadableModel
      */
     public function writesFor(AgentRuntime $runtime, CarbonImmutable $now): bool
     {
-        return $this->state === TerminalGrantState::Granted
+        return $this->status === TerminalGrantStatus::Granted
             && $this->expires_at->greaterThan($now)
             && $this->agent_runtime_id === $runtime->id
             && $this->agent_session_id === $runtime->agent_session_id
@@ -212,7 +212,7 @@ final class TerminalGrant extends Model implements EventSource, ReadableModel
 
     public function holdsAt(CarbonImmutable $now): bool
     {
-        return $this->state->isHolding() && $this->expires_at->greaterThan($now);
+        return $this->status->isHolding() && $this->expires_at->greaterThan($now);
     }
 
     // ----------[ Relations ]----------
@@ -266,7 +266,7 @@ final class TerminalGrant extends Model implements EventSource, ReadableModel
     protected function holdingRuntime(Builder $query, string $runtimeId, CarbonImmutable $now): void
     {
         $query->where('agent_runtime_id', $runtimeId)
-            ->whereIn('state', TerminalGrantState::holding())
+            ->whereIn('status', TerminalGrantStatus::holding())
             ->where('expires_at', '>', $now);
     }
 

@@ -9,9 +9,9 @@ use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\Agents\ConversationModeType;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Sessions\CapacityResource;
-use App\Enums\Sessions\CleanupState;
+use App\Enums\Sessions\CleanupStatus;
 use App\Enums\Sessions\CleanupStep;
-use App\Enums\Sessions\ReservationState;
+use App\Enums\Sessions\ReservationStatus;
 use App\Enums\Sessions\StartOriginType;
 use App\Exceptions\CapacityUnavailable;
 use App\Models\Agents\AgentRuntime;
@@ -56,13 +56,13 @@ final class SessionCleanupTest extends TestCase
     {
         $start = $this->endedContainerStart();
 
-        $this->assertSame(CleanupState::Pending, $this->cleanupOf($start)->state);
-        $this->assertSame(ReservationState::Reserved, $this->reservationOf($start)->state);
+        $this->assertSame(CleanupStatus::Pending, $this->cleanupOf($start)->status);
+        $this->assertSame(ReservationStatus::Reserved, $this->reservationOf($start)->status);
 
         $state = $this->notify($start, new CleanupReport(self::ALL_STEPS, null, null));
 
-        $this->assertSame(CleanupState::Done, $state);
-        $this->assertSame(ReservationState::Released, $this->reservationOf($start)->state);
+        $this->assertSame(CleanupStatus::Done, $state);
+        $this->assertSame(ReservationStatus::Released, $this->reservationOf($start)->status);
         $this->assertNull($this->cleanupOf($start)->recovery_location);
     }
 
@@ -75,8 +75,8 @@ final class SessionCleanupTest extends TestCase
             '/workspaces/helper-7',
             'removing the network failed: daemon busy',
         );
-        $this->assertSame(CleanupState::Pending, $this->notify($start, $failed));
-        $this->assertSame(ReservationState::Reserved, $this->reservationOf($start)->state);
+        $this->assertSame(CleanupStatus::Pending, $this->notify($start, $failed));
+        $this->assertSame(ReservationStatus::Reserved, $this->reservationOf($start)->status);
         $pending = $this->cleanupOf($start);
         $this->assertSame('/workspaces/helper-7', $pending->recovery_location);
         $this->assertSame([CleanupStep::Network, CleanupStep::Runtime], $pending->remainingSteps());
@@ -84,7 +84,7 @@ final class SessionCleanupTest extends TestCase
         $retried = new CleanupReport([CleanupStep::Network, CleanupStep::Runtime], null, null);
         $this->notify($start, $retried);
         $again = new CleanupReport(self::ALL_STEPS, null, 'late failure');
-        $this->assertSame(CleanupState::Done, $this->notify($start, $again));
+        $this->assertSame(CleanupStatus::Done, $this->notify($start, $again));
 
         $done = $this->cleanupOf($start);
         $this->assertSame(1, $done->attempts);
@@ -100,7 +100,7 @@ final class SessionCleanupTest extends TestCase
 
         $this->app->make(StartHeartbeats::class)->markExited($start->session, 'exit 1');
 
-        $this->assertSame(ReservationState::Released, $this->reservationOf($start)->state);
+        $this->assertSame(ReservationStatus::Released, $this->reservationOf($start)->status);
         $this->assertSame(0, SessionCleanup::query()->count());
     }
 
@@ -133,9 +133,9 @@ final class SessionCleanupTest extends TestCase
         $this->assertNull(CapacityReservation::resolveShortageOf($budgets, $room));
 
         CapacityReservation::create('start-other', $budgets, $room);
-        $this->assertSame(CleanupState::Done, $this->notify($start, new CleanupReport(self::ALL_STEPS, null, null)));
+        $this->assertSame(CleanupStatus::Done, $this->notify($start, new CleanupReport(self::ALL_STEPS, null, null)));
         $this->assertTrue(CapacityReservation::isHeldFor('start-other'));
-        $this->assertSame(ReservationState::Released, $this->reservationOf($start)->state);
+        $this->assertSame(ReservationStatus::Released, $this->reservationOf($start)->status);
     }
 
     public function test_a_start_past_its_wall_budget_is_stopped_and_a_younger_one_runs_on(): void
@@ -212,7 +212,7 @@ final class SessionCleanupTest extends TestCase
         CapacityReservation::create($start->session->start_request_id, ExecutionBudgets::defaults(), $capacity);
     }
 
-    private function notify(TestStart $start, CleanupReport $report): CleanupState
+    private function notify(TestStart $start, CleanupReport $report): CleanupStatus
     {
         return $this->asSystem(new NotifyCleanupCommand('host-1', $start->session->id, $report));
     }

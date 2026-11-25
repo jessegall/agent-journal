@@ -17,7 +17,7 @@ use Domain\Sharing\Commands\RetryShare\RetryShareCommand;
 use Domain\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\ShareAuditType;
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Exceptions\ShareRefreshRefused;
 use Domain\Sharing\Exceptions\ShareRetryRefused;
 use Domain\Sharing\Models\Share;
@@ -127,12 +127,12 @@ final class ShareRefreshAndRetryTest extends TestCase
     public function test_a_retry_of_a_failed_share_adds_one_open_request_and_keeps_its_deadline(): void
     {
         $share = $this->share([]);
-        $share->state = ShareState::Failed;
+        $share->status = ShareStatus::Failed;
         $share->save();
 
         $summary = $this->runOwner(fn (string $key) => new RetryShareCommand($share->id, $key));
 
-        $this->assertSame(ShareState::Pending, $summary->state);
+        $this->assertSame(ShareStatus::Pending, $summary->state);
         $this->assertSame(2, ShareGatewayOperation::query()->where('type', GatewayOperationType::Open->value)->count());
         $this->assertEquals($share->expires_at, Share::query()->findOrFail($share->id)->expires_at);
         $this->assertTrue(
@@ -147,7 +147,7 @@ final class ShareRefreshAndRetryTest extends TestCase
         $expired = $this->share([]);
         $this->travel(ShareDuration::STANDARD_MINUTES + 1)->minutes();
         $revoked = $this->share([]);
-        $revoked->state = ShareState::Revoked;
+        $revoked->status = ShareStatus::Revoked;
         $revoked->save();
         $proposal = Share::create(
             $this->root,

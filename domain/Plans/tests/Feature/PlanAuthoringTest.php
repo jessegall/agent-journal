@@ -6,7 +6,7 @@ namespace Domain\Plans\Tests\Feature;
 
 use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
@@ -88,13 +88,13 @@ final class PlanAuthoringTest extends TestCase
             [
                 'Ship version 6.',
                 PlanType::Build,
-                PlanState::Planned,
+                PlanStatus::Planned,
                 1,
             ],
             [
                 $plan->brief,
                 $plan->type,
-                $plan->state,
+                $plan->status,
                 $plan->revision,
             ],
         );

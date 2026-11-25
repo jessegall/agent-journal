@@ -7,7 +7,7 @@ namespace Domain\Plans\Commands\CancelPlan;
 use App\Attributes\Commands\Authorize;
 use App\Enums\Agents\AccessType;
 use App\Support\Command;
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Policies\PlanPolicy;
 use Spatie\LaravelData\Attributes\Validation\Max;
@@ -27,6 +27,6 @@ final readonly class CancelPlanCommand extends Command
         public int $expectedRevision,
         #[Required, Max(Plan::NOTE_CHARACTER_LIMIT)]
         public string $reason,
-        public PlanState|null $expectedState = null,
+        public PlanStatus|null $expectedState = null,
     ) {}
 }

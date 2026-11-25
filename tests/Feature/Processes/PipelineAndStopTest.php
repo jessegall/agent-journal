@@ -7,7 +7,7 @@ namespace Tests\Feature\Processes;
 use App\Contracts\Bus\CommandClassifier;
 use App\Contracts\Processes\StopSignal as StopSignalContract;
 use App\Enums\Processes\ShellDialect;
-use App\Enums\Runs\LifecycleState;
+use App\Enums\Runs\LifecycleStatus;
 use App\Enums\Runs\PartEndType;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
@@ -99,7 +99,7 @@ final class PipelineAndStopTest extends TestCase
         $this->supervise('sleep 1 & echo done');
 
         [$sleep, $echo] = $this->parts();
-        $this->assertSame(LifecycleState::Ended, $sleep->lifecycle);
+        $this->assertSame(LifecycleStatus::Ended, $sleep->lifecycle);
         $this->assertTrue($echo->ended_at->lessThan($sleep->ended_at));
     }
 
@@ -109,9 +109,9 @@ final class PipelineAndStopTest extends TestCase
         $this->supervise('sleep 30', new StopAfter(0.3, self::STOP_REASON));
 
         $sleep = $this->parts()[0];
-        $this->assertSame(LifecycleState::Stopped, $sleep->lifecycle);
+        $this->assertSame(LifecycleStatus::Stopped, $sleep->lifecycle);
         $this->assertSame(self::STOP_REASON, $sleep->stop_reason);
-        $this->assertSame(LifecycleState::Stopped, $this->processRun->refresh()->lifecycle);
+        $this->assertSame(LifecycleStatus::Stopped, $this->processRun->refresh()->lifecycle);
     }
 
     #[TimeLimit(10, 'The child ignores SIGTERM, so the stop waits its five-second grace before forcing it.')]

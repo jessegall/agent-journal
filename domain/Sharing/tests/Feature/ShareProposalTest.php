@@ -24,7 +24,7 @@ use Domain\Sharing\Commands\RequestShare\RequestShareCommand;
 use Domain\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\ShareAuditType;
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Events\ShareCreated;
 use Domain\Sharing\Events\ShareRequested;
 use Domain\Sharing\Exceptions\ShareQuotaReached;
@@ -121,7 +121,7 @@ final class ShareProposalTest extends TestCase
         $status = $this->request('01JD8X0G9M3QZ6V4K2PROPOSE1');
         $proposal = Share::query()->sole();
 
-        $this->assertEquals(new ShareProposalStatus($proposal->number, ShareState::Proposed), $status);
+        $this->assertEquals(new ShareProposalStatus($proposal->number, ShareStatus::Proposed), $status);
         $this->assertSame([
             'number',
             'state',
@@ -209,7 +209,7 @@ final class ShareProposalTest extends TestCase
 
         $this->assertSame([
             $proposal->id,
-            ShareState::Pending,
+            ShareStatus::Pending,
         ], [
             $summary->shareId,
             $summary->state,
@@ -236,11 +236,11 @@ final class ShareProposalTest extends TestCase
             [
                 [
                     ShareRequested::class,
-                    ShareState::Proposed,
+                    ShareStatus::Proposed,
                 ],
                 [
                     ShareCreated::class,
-                    ShareState::Pending,
+                    ShareStatus::Pending,
                 ],
             ],
             $facts,
@@ -248,7 +248,7 @@ final class ShareProposalTest extends TestCase
 
         $this->startRequestAs($this->start->agent->id, $this->start->session->id);
         $this->assertEquals(
-            [new ShareProposalStatus($granted->number, ShareState::Pending)],
+            [new ShareProposalStatus($granted->number, ShareStatus::Pending)],
             $this->app->make(ProposalStatusResolver::class)->ownProposals(),
         );
     }
@@ -273,7 +273,7 @@ final class ShareProposalTest extends TestCase
         $oldest->expires_at = CarbonImmutable::now()->subMinute();
         $oldest->save();
 
-        $this->assertSame(ShareState::Proposed, $this->request('01JD8X0G9M3QZ6V4K2PROPOSE3')->state);
+        $this->assertSame(ShareStatus::Proposed, $this->request('01JD8X0G9M3QZ6V4K2PROPOSE3')->state);
     }
 
     private function request(string $key): ShareProposalStatus
@@ -313,7 +313,7 @@ final class ShareProposalTest extends TestCase
                 'id' => Str::lower((string) Str::ulid()),
                 'number_group_id' => $first->number_group_id,
                 'number' => self::BULK_NUMBERS + $index,
-                'state' => ShareState::Proposed->value,
+                'status' => ShareStatus::Proposed->value,
                 'root_type' => $this->root->type,
                 'root_id' => $this->root->id,
                 'requester_type' => Agent::storedType(),

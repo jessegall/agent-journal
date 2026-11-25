@@ -79,7 +79,7 @@ final readonly class RefreshSessionSkills implements Listener
             );
         }
 
-        if ($publication->state->awaitsDelivery()) {
+        if ($publication->status->awaitsDelivery()) {
             $this->stacks->push($event->target, AwaitSkillsStateReference::forPublication($publication));
             $this->facts->publishAfterCommit(new SessionSkillsIntended($publication->id));
         }

@@ -35,7 +35,7 @@ use App\Declarations\Slot;
 use App\Enums\Navigation\Icon;
 use App\Enums\Profiles\SlotContextType;
 use App\Enums\Web\WindowPlace;
-use App\Enums\Web\WindowState;
+use App\Enums\Web\WindowStatus;
 use App\Http\Controllers\Agents\CheckCapacityController;
 use App\Http\Controllers\Agents\StartPreviewController;
 use App\Http\Controllers\Drafts\DraftQuestionsController;
@@ -103,7 +103,7 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
             SharedData::class,
             TerminalWindowData::class,
             UnavailableWindow::class,
-            WindowState::class,
+            WindowStatus::class,
             LoginPage::class,
         ];
     }

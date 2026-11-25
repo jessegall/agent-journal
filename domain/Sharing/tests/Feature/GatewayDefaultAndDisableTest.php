@@ -16,10 +16,10 @@ use Domain\Sharing\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand;
 use Domain\Sharing\Commands\CreateShare\CreateShareCommand;
 use Domain\Sharing\Commands\DisableShareGateway\DisableShareGatewayCommand;
 use Domain\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
-use Domain\Sharing\Enums\GatewayEndpointState;
+use Domain\Sharing\Enums\GatewayEndpointStatus;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\ShareAuditType;
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Exceptions\ShareGatewayUnavailable;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareAudit;
@@ -100,7 +100,7 @@ final class GatewayDefaultAndDisableTest extends TestCase
     public function test_disabling_a_gateway_revokes_its_three_shares_before_one_close(): void
     {
         $configuration = ShareGatewayConfiguration::query()->findOrFail($this->configure()->configurationId);
-        ShareGatewayEndpoint::create($configuration, 1, self::RUN)->moveTo(GatewayEndpointState::Open);
+        ShareGatewayEndpoint::create($configuration, 1, self::RUN)->moveTo(GatewayEndpointStatus::Open);
 
         foreach ([
             1,
@@ -114,10 +114,10 @@ final class GatewayDefaultAndDisableTest extends TestCase
         $this->asOwner(new DisableShareGatewayCommand($configuration->id, (string) Str::ulid()));
 
         $this->assertSame(
-            [ShareState::Revoked],
+            [ShareStatus::Revoked],
             array_values(
                 array_unique(
-                    Share::query()->readAll('three shares')->get()->map(fn (Share $share) => $share->state)->all(),
+                    Share::query()->readAll('three shares')->get()->map(fn (Share $share) => $share->status)->all(),
                     SORT_REGULAR,
                 ),
             ),
@@ -154,7 +154,7 @@ final class GatewayDefaultAndDisableTest extends TestCase
 
         $this->asOwner(new DisableShareGatewayCommand($configuration->id, (string) Str::ulid()));
         $this->asSystem(new ClaimGatewayOperationCommand(self::RUN));
-        $this->assertSame(GatewayEndpointState::Closing, ShareGatewayEndpoint::query()->sole()->state);
+        $this->assertSame(GatewayEndpointStatus::Closing, ShareGatewayEndpoint::query()->sole()->status);
 
         $configuration->disabled_at = null;
         $configuration->save();

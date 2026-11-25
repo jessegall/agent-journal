@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Terminals;
 
-use App\Enums\Terminals\TerminalFrameState;
+use App\Enums\Terminals\TerminalFrameStatus;
 use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -19,7 +19,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class TerminalFrameData extends Data
 {
     public function __construct(
-        public readonly TerminalFrameState $state,
+        public readonly TerminalFrameStatus $state,
         public readonly TerminalScreenIdentityData|Optional $identity = new Optional(),
         public readonly ScreenFrameData|Optional $frame = new Optional(),
         public readonly CarbonImmutable|Optional $receivedAt = new Optional(),

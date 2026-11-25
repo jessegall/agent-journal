@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Data\Agents\DriverRequestStatus;
-use App\Enums\Agents\SessionProcessState;
+use App\Enums\Agents\SessionProcessStatus;
 use App\Enums\Agents\StatusActionType;
 use App\Enums\Drivers\DriverOperation;
 use App\Enums\Drivers\DriverSwitchStage;
 use App\Enums\Drivers\HoldReason;
 use App\Enums\Drivers\RequestProgress;
 use App\Enums\Runs\RuntimeActivity;
-use App\Enums\Sessions\SessionState;
+use App\Enums\Sessions\SessionActivityStatus;
 use App\Enums\Sessions\SessionStatus;
 use App\Enums\Sessions\StartDisposition;
 use App\Enums\Sessions\StartRefusalType;
@@ -29,8 +29,8 @@ final class AgentStatusRules
     {
         if ($evidence->isRetired) {
             return new AgentStatus(
-                SessionState::Retired,
-                SessionState::Retired->label(),
+                SessionActivityStatus::Retired,
+                SessionActivityStatus::Retired->label(),
                 null,
                 null,
                 null,
@@ -82,7 +82,7 @@ final class AgentStatusRules
 
         if ($stop->progress === RequestProgress::DeliveryUncertain || ($isUnderWay && $isSilent)) {
             return self::labelled(
-                SessionState::Unknown,
+                SessionActivityStatus::Unknown,
                 'Stop could not be confirmed',
                 $evidence,
                 $checkStatus,
@@ -103,7 +103,7 @@ final class AgentStatusRules
 
         if ($ended !== null) {
             return self::labelled(
-                SessionState::Unknown,
+                SessionActivityStatus::Unknown,
                 $ended,
                 $evidence,
                 $checkStatus,
@@ -117,9 +117,9 @@ final class AgentStatusRules
 
         $label = $stop->progress === RequestProgress::Accepted && $evidence->waitsOnHelpers
             ? 'Stopping · Waiting for helpers'
-            : SessionState::Stopping->label();
+            : SessionActivityStatus::Stopping->label();
 
-        return self::labelled(SessionState::Stopping, $label, $evidence, [], $operation);
+        return self::labelled(SessionActivityStatus::Stopping, $label, $evidence, [], $operation);
     }
 
     private static function switching(AgentEvidence $evidence, SwitchEvidence $switch): AgentStatus
@@ -137,9 +137,9 @@ final class AgentStatusRules
             : null;
 
         return match ($stage) {
-            DriverSwitchStage::Stopping => self::plain(SessionState::Stopping, $evidence, [], $operation),
+            DriverSwitchStage::Stopping => self::plain(SessionActivityStatus::Stopping, $evidence, [], $operation),
             DriverSwitchStage::StopUnconfirmed => self::labelled(
-                SessionState::Unknown,
+                SessionActivityStatus::Unknown,
                 'Stop could not be confirmed',
                 $evidence,
                 $reconcile,
@@ -147,7 +147,7 @@ final class AgentStatusRules
                 $reconcileReason,
             ),
             DriverSwitchStage::StartUnconfirmed => self::labelled(
-                SessionState::Unknown,
+                SessionActivityStatus::Unknown,
                 'Start could not be confirmed',
                 $evidence,
                 $reconcile,
@@ -155,13 +155,13 @@ final class AgentStatusRules
                 $reconcileReason,
             ),
             DriverSwitchStage::StartFailed => self::labelled(
-                SessionState::Failed,
+                SessionActivityStatus::Failed,
                 $stage->label(),
                 $evidence,
                 [StatusAction::retry('switch')],
                 $operation,
             ),
-            default => self::labelled(SessionState::Starting, $stage->label(), $evidence, [], $operation),
+            default => self::labelled(SessionActivityStatus::Starting, $stage->label(), $evidence, [], $operation),
         };
     }
 
@@ -184,9 +184,9 @@ final class AgentStatusRules
         $copy = HoldCopy::of($hold, $evidence->hasTerminal);
 
         $state = match ($hold) {
-            HoldReason::LoginRequired => SessionState::WaitingForSignIn,
-            HoldReason::Compacting => SessionState::Working,
-            default => SessionState::Idle,
+            HoldReason::LoginRequired => SessionActivityStatus::WaitingForSignIn,
+            HoldReason::Compacting => SessionActivityStatus::Working,
+            default => SessionActivityStatus::Idle,
         };
 
         return self::labelled($state, $copy->label, $evidence, $copy->actions, null, $copy->reason);
@@ -232,7 +232,7 @@ final class AgentStatusRules
             }
 
             return self::plain(
-                SessionState::Working,
+                SessionActivityStatus::Working,
                 $evidence,
                 $switch,
             );
@@ -247,11 +247,11 @@ final class AgentStatusRules
         }
 
         return match ($runtime->activity) {
-            RuntimeActivity::Running => self::plain(SessionState::Working, $evidence, $workingActions),
-            RuntimeActivity::Idle => self::plain(SessionState::Idle, $evidence, $switch),
-            RuntimeActivity::Starting => self::plain(SessionState::Starting, $evidence, []),
-            RuntimeActivity::Interrupting => self::plain(SessionState::Interrupting, $evidence, []),
-            RuntimeActivity::Stopping => self::plain(SessionState::Stopping, $evidence, []),
+            RuntimeActivity::Running => self::plain(SessionActivityStatus::Working, $evidence, $workingActions),
+            RuntimeActivity::Idle => self::plain(SessionActivityStatus::Idle, $evidence, $switch),
+            RuntimeActivity::Starting => self::plain(SessionActivityStatus::Starting, $evidence, []),
+            RuntimeActivity::Interrupting => self::plain(SessionActivityStatus::Interrupting, $evidence, []),
+            RuntimeActivity::Stopping => self::plain(SessionActivityStatus::Stopping, $evidence, []),
             RuntimeActivity::Stopped, RuntimeActivity::HostUnavailable => self::unknown($evidence),
         };
     }
@@ -295,7 +295,7 @@ final class AgentStatusRules
         $name = str_replace('_', ' ', $request->operation->value);
 
         return self::plain(
-            SessionState::Failed,
+            SessionActivityStatus::Failed,
             $evidence,
             [StatusAction::retry($name)],
             self::operationOf($request),
@@ -321,7 +321,7 @@ final class AgentStatusRules
             $actions[] = StatusAction::of(StatusActionType::Resume);
         }
 
-        return self::plain(SessionState::Stopped, $evidence, $actions);
+        return self::plain(SessionActivityStatus::Stopped, $evidence, $actions);
     }
 
     private static function starting(AgentEvidence $evidence): AgentStatus
@@ -342,7 +342,7 @@ final class AgentStatusRules
             1,
         );
 
-        return self::plain(SessionState::Starting, $evidence, $actions, $operation);
+        return self::plain(SessionActivityStatus::Starting, $evidence, $actions, $operation);
     }
 
     private static function refused(SessionStartOutcome $start, StartRemedyWords $words): AgentStatus
@@ -351,9 +351,9 @@ final class AgentStatusRules
         $remedy = $reason->remedy();
 
         $state = match ($reason) {
-            StartRefusalType::CapacityUnavailable => SessionState::NoCapacity,
-            StartUnavailableReason::NeedsSignIn => SessionState::WaitingForSignIn,
-            default => SessionState::Refused,
+            StartRefusalType::CapacityUnavailable => SessionActivityStatus::NoCapacity,
+            StartUnavailableReason::NeedsSignIn => SessionActivityStatus::WaitingForSignIn,
+            default => SessionActivityStatus::Refused,
         };
 
         $primary = match ($remedy->type) {
@@ -393,7 +393,7 @@ final class AgentStatusRules
             $actions[] = StatusAction::of(StatusActionType::Stop);
         }
 
-        return self::plain(SessionState::Unknown, $evidence, $actions, $operation);
+        return self::plain(SessionActivityStatus::Unknown, $evidence, $actions, $operation);
     }
 
     private static function operationOf(DriverRequestStatus $request): StatusOperation
@@ -410,7 +410,7 @@ final class AgentStatusRules
      * @param  list<StatusAction>  $actions
      */
     private static function plain(
-        SessionState $state,
+        SessionActivityStatus $state,
         AgentEvidence $evidence,
         array $actions,
         StatusOperation|null $operation = null,
@@ -425,7 +425,7 @@ final class AgentStatusRules
      * @param  list<StatusAction>  $actions
      */
     private static function labelled(
-        SessionState $state,
+        SessionActivityStatus $state,
         string $label,
         AgentEvidence $evidence,
         array $actions,
@@ -450,7 +450,7 @@ final class AgentStatusRules
                 ...$actions,
                 ...$dismiss,
             ],
-            $evidence->sessionProcess === SessionProcessState::Running,
+            $evidence->sessionProcess === SessionProcessStatus::Running,
         );
     }
 

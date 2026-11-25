@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Http\Requests;
 
 use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Models\Plan;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -26,7 +26,7 @@ final class PlanEndRequest extends FormRequest
     {
         return [
             'revision' => ['required', 'integer', 'min:1'],
-            'state' => ['required', Rule::enum(PlanState::class)],
+            'state' => ['required', Rule::enum(PlanStatus::class)],
             'text' => ['required', 'string', 'max:'.Plan::NOTE_CHARACTER_LIMIT],
         ];
     }
@@ -41,9 +41,9 @@ final class PlanEndRequest extends FormRequest
         return $this->integer('revision');
     }
 
-    public function expectedState(): PlanState
+    public function expectedState(): PlanStatus
     {
-        return $this->enum('state', PlanState::class) ?? throw new NotFoundHttpException();
+        return $this->enum('state', PlanStatus::class) ?? throw new NotFoundHttpException();
     }
 
     public function text(): string

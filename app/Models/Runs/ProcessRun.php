@@ -10,8 +10,8 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Processes\ShellDialect;
-use App\Enums\Runs\CaptureState;
-use App\Enums\Runs\LifecycleState;
+use App\Enums\Runs\CaptureStatus;
+use App\Enums\Runs\LifecycleStatus;
 use App\Enums\Runs\PartEndType;
 use App\Enums\Runs\RunLogicalResult;
 use App\Enums\Runs\RunMode;
@@ -62,8 +62,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $tree_digest
  * @property string $registry_revision
  * @property string $policy_revision
- * @property LifecycleState $lifecycle
- * @property CaptureState $capture_state
+ * @property LifecycleStatus $lifecycle
+ * @property CaptureStatus $capture_state
  * @property string|null $stop_reason
  * @property string $stale_reason
  * @property int $update_sequence
@@ -129,8 +129,8 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
         return [
             'mode' => RunMode::class,
             'dialect' => ShellDialect::class,
-            'lifecycle' => LifecycleState::class,
-            'capture_state' => CaptureState::class,
+            'lifecycle' => LifecycleStatus::class,
+            'capture_state' => CaptureStatus::class,
             'started_at' => 'immutable_datetime',
             'ended_at' => 'immutable_datetime',
             'plan' => ExecutionPlan::class,
@@ -218,7 +218,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
         $this->consuming_key_hash = $keyHash;
         $this->event_key_hash = hash('sha256', $eventKey);
         $this->consumed_at = CarbonImmutable::now();
-        $this->lifecycle = LifecycleState::Running;
+        $this->lifecycle = LifecycleStatus::Running;
         $this->started_at = $this->consumed_at;
         $this->save();
         $this->raise(new ProcessRunConsumed($this->id));
@@ -263,14 +263,14 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
      */
     public function markLost(): void
     {
-        $this->lifecycle = LifecycleState::Lost;
+        $this->lifecycle = LifecycleStatus::Lost;
         $this->save();
         $this->raise(new ProcessRunLost($this->id));
     }
 
     public function markStopped(string $reason): void
     {
-        $this->lifecycle = LifecycleState::Stopped;
+        $this->lifecycle = LifecycleStatus::Stopped;
         $this->stop_reason = $reason;
         $this->save();
         $this->raise(new ProcessRunStopped($this->id, $reason));
@@ -307,8 +307,8 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
         $parts = $this->parts()->readLimit(500)->get();
 
         return $parts->isNotEmpty() && $parts->every(
-            fn (PartRun $part) => $part->lifecycle === LifecycleState::Ended
-                && $part->capture_state === CaptureState::Complete,
+            fn (PartRun $part) => $part->lifecycle === LifecycleStatus::Ended
+                && $part->capture_state === CaptureStatus::Complete,
         );
     }
 
@@ -336,7 +336,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
 
     public function isStopped(): bool
     {
-        return $this->lifecycle === LifecycleState::Stopped;
+        return $this->lifecycle === LifecycleStatus::Stopped;
     }
 
     public function isStale(): bool
@@ -372,7 +372,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
     {
         $lastSign = $this->heartbeat_at ?? $this->started_at;
 
-        return $this->lifecycle === LifecycleState::Running
+        return $this->lifecycle === LifecycleStatus::Running
             && $lastSign?->lessThan(CarbonImmutable::now()->subSeconds($quietSeconds)) === true;
     }
 
@@ -463,7 +463,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
      */
     private function assertLost(): void
     {
-        if ($this->lifecycle !== LifecycleState::Lost) {
+        if ($this->lifecycle !== LifecycleStatus::Lost) {
             throw RetryRefused::notLost($this->id);
         }
     }
@@ -540,9 +540,9 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
     protected function unfinishedIn(Builder $query, string $projectKey): void
     {
         $query->where('project_key', $projectKey)->whereIn('lifecycle', [
-            LifecycleState::Queued->value,
-            LifecycleState::Running->value,
-            LifecycleState::Draining->value,
+            LifecycleStatus::Queued->value,
+            LifecycleStatus::Running->value,
+            LifecycleStatus::Draining->value,
         ]);
     }
 
@@ -554,7 +554,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
     #[Scope]
     protected function silentSince(Builder $query, CarbonImmutable $moment): void
     {
-        $query->where('lifecycle', LifecycleState::Running->value)
+        $query->where('lifecycle', LifecycleStatus::Running->value)
             ->where(fn (Builder $silent) => $silent
                 ->where('heartbeat_at', '<', $moment)
                 ->orWhere(fn (Builder $never) => $never->whereNull('heartbeat_at')->where('started_at', '<', $moment)));

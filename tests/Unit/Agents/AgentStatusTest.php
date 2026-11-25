@@ -6,7 +6,7 @@ namespace Tests\Unit\Agents;
 
 use App\Contracts\Hosts\HostOperatorAccess;
 use App\Data\Agents\DriverRequestStatus;
-use App\Enums\Agents\SessionProcessState;
+use App\Enums\Agents\SessionProcessStatus;
 use App\Enums\Agents\StatusActionType;
 use App\Enums\Drivers\DriverOperation;
 use App\Enums\Drivers\DriverSwitchStage;
@@ -15,7 +15,7 @@ use App\Enums\Drivers\HoldReason;
 use App\Enums\Drivers\RequestOutcome;
 use App\Enums\Drivers\RequestProgress;
 use App\Enums\Runs\RuntimeActivity;
-use App\Enums\Sessions\SessionState;
+use App\Enums\Sessions\SessionActivityStatus;
 use App\Enums\Sessions\SessionStatus;
 use App\Enums\Sessions\StartDisposition;
 use App\Enums\Sessions\StartReadiness;
@@ -41,114 +41,114 @@ final class AgentStatusTest extends TestCase
     private const string REQUEST = '01jd8x0g9m3qz6v4k2t7r5w1cf';
 
     /**
-     * @return array<string, array{AgentEvidence, SessionState, string, list<string>}>
+     * @return array<string, array{AgentEvidence, SessionActivityStatus, string, list<string>}>
      */
     public static function evidence(): array
     {
         return [
             'idle' => [
                 self::live(self::runtime(RuntimeActivity::Idle)),
-                SessionState::Idle,
+                SessionActivityStatus::Idle,
                 'Idle',
                 ['switch'],
             ],
             'silent' => [
                 self::live(self::runtime(RuntimeActivity::Running), SessionStatus::Silent),
-                SessionState::Unknown,
+                SessionActivityStatus::Unknown,
                 'Status unknown',
                 ['check-status'],
             ],
             'runtime-less' => [
                 self::live(null),
-                SessionState::Unknown,
+                SessionActivityStatus::Unknown,
                 'Status unknown',
                 ['check-status'],
             ],
             'stale observation' => [
                 self::live(self::runtime(RuntimeActivity::Running, isStale: true)),
-                SessionState::Unknown,
+                SessionActivityStatus::Unknown,
                 'Status unknown',
                 ['check-status'],
             ],
             'refused and ended' => [
                 self::stopped(self::startOutcome(StartDisposition::Refused, 'capacity-unavailable')),
-                SessionState::NoCapacity,
+                SessionActivityStatus::NoCapacity,
                 'No capacity',
                 ['check-capacity', 'dismiss'],
             ],
             'sessionless refusal' => [
                 self::stopped(self::startOutcome(StartDisposition::Refused, 'model-required')),
-                SessionState::Refused,
+                SessionActivityStatus::Refused,
                 'Start refused',
                 ['start', 'dismiss'],
             ],
             'lost reply' => [
                 self::stopped(self::startOutcome(StartDisposition::Accepted)),
-                SessionState::Starting,
+                SessionActivityStatus::Starting,
                 'Starting',
                 [],
             ],
             'later independent start' => [
                 self::live(self::runtime(RuntimeActivity::Idle), startOutcome: self::startOutcome(StartDisposition::Started)),
-                SessionState::Idle,
+                SessionActivityStatus::Idle,
                 'Idle',
                 ['switch'],
             ],
             'dismissed refusal after reload' => [
                 self::stopped(null),
-                SessionState::Stopped,
+                SessionActivityStatus::Stopped,
                 'Stopped',
                 ['start'],
             ],
             'replayed sessionless receipt' => [
                 self::stopped(self::startOutcome(StartDisposition::Refused, 'image-unverified')),
-                SessionState::Refused,
+                SessionActivityStatus::Refused,
                 'Start refused',
                 ['dismiss'],
             ],
             'late old-generation Running' => [
                 self::live(self::runtime(RuntimeActivity::Starting)),
-                SessionState::Starting,
+                SessionActivityStatus::Starting,
                 'Starting',
                 [],
             ],
             'generic refusal of the initial wake' => [
                 self::live(
                     self::runtime(RuntimeActivity::Starting),
-                    start: SessionProcessState::Pending,
+                    start: SessionProcessStatus::Pending,
                     request: self::refusedWake(),
                 ),
-                SessionState::Unknown,
+                SessionActivityStatus::Unknown,
                 'Status unknown',
                 ['check-status'],
             ],
             'sign-in hold' => [
                 self::live(self::runtime(RuntimeActivity::Idle, HoldReason::LoginRequired)),
-                SessionState::WaitingForSignIn,
+                SessionActivityStatus::WaitingForSignIn,
                 'Waiting for sign-in',
                 ['sign-in'],
             ],
             'first-run setup with a terminal' => [
                 self::live(self::runtime(RuntimeActivity::Starting, HoldReason::OnboardingRequired), isTerminal: true),
-                SessionState::Idle,
+                SessionActivityStatus::Idle,
                 'Finish setup',
                 ['open-terminal'],
             ],
             'first-run setup without a terminal' => [
                 self::live(self::runtime(RuntimeActivity::Starting, HoldReason::OnboardingRequired)),
-                SessionState::Idle,
+                SessionActivityStatus::Idle,
                 'Finish setup',
                 [],
             ],
             'unreadable screen' => [
                 self::live(self::runtime(RuntimeActivity::Idle, HoldReason::ScreenUnreadable)),
-                SessionState::Idle,
+                SessionActivityStatus::Idle,
                 "The journal can't read the driver screen.",
                 [],
             ],
             'navigation hold' => [
                 self::live(self::runtime(RuntimeActivity::Idle, HoldReason::NavigationNeeded)),
-                SessionState::Idle,
+                SessionActivityStatus::Idle,
                 'Waiting for the main desk',
                 [],
             ],
@@ -157,7 +157,7 @@ final class AgentStatusTest extends TestCase
                     self::runtime(RuntimeActivity::Idle),
                     switch: new SwitchEvidence('01jd8x0g9m3qz6v4k2t7r5w1cg', DriverSwitchStage::Refused, 1),
                 ),
-                SessionState::Idle,
+                SessionActivityStatus::Idle,
                 'Idle · Switch refused',
                 ['switch'],
             ],
@@ -166,7 +166,7 @@ final class AgentStatusTest extends TestCase
                     self::runtime(RuntimeActivity::Running),
                     switch: new SwitchEvidence('01jd8x0g9m3qz6v4k2t7r5w1cg', DriverSwitchStage::StopUnconfirmed, 4),
                 ),
-                SessionState::Unknown,
+                SessionActivityStatus::Unknown,
                 'Stop could not be confirmed',
                 ['check-status'],
             ],
@@ -179,7 +179,7 @@ final class AgentStatusTest extends TestCase
     #[DataProvider('evidence')]
     public function test_the_evidence_decides_the_state_label_and_actions(
         AgentEvidence $evidence,
-        SessionState $state,
+        SessionActivityStatus $state,
         string $label,
         array $actions,
     ): void {
@@ -196,16 +196,16 @@ final class AgentStatusTest extends TestCase
     }
 
     /**
-     * @return array<string, array{StartReadiness, SessionState, list<string>}>
+     * @return array<string, array{StartReadiness, SessionActivityStatus, list<string>}>
      */
     public static function readiness(): array
     {
         return [
-            'accepted' => [StartReadiness::Accepted, SessionState::Verifying, ['check-status', 'cancel-start']],
-            'preparing' => [StartReadiness::PreparingIdentity, SessionState::Verifying, ['check-status', 'cancel-start']],
-            'uncertain' => [StartReadiness::Uncertain, SessionState::Unverified, ['check-status', 'cancel-start']],
-            'ready' => [StartReadiness::Ready, SessionState::Idle, ['switch']],
-            'cancelled' => [StartReadiness::Cancelled, SessionState::Idle, ['switch']],
+            'accepted' => [StartReadiness::Accepted, SessionActivityStatus::Verifying, ['check-status', 'cancel-start']],
+            'preparing' => [StartReadiness::PreparingIdentity, SessionActivityStatus::Verifying, ['check-status', 'cancel-start']],
+            'uncertain' => [StartReadiness::Uncertain, SessionActivityStatus::Unverified, ['check-status', 'cancel-start']],
+            'ready' => [StartReadiness::Ready, SessionActivityStatus::Idle, ['switch']],
+            'cancelled' => [StartReadiness::Cancelled, SessionActivityStatus::Idle, ['switch']],
         ];
     }
 
@@ -215,14 +215,14 @@ final class AgentStatusTest extends TestCase
     #[DataProvider('readiness')]
     public function test_a_start_that_has_not_proved_its_conversation_is_verifying_with_check_status_and_cancel(
         StartReadiness $readiness,
-        SessionState $state,
+        SessionActivityStatus $state,
         array $actions,
     ): void {
         $evidence = new AgentEvidence(
             false,
             self::SESSION,
             SessionStatus::Active,
-            SessionProcessState::Running,
+            SessionProcessStatus::Running,
             self::runtime(RuntimeActivity::Idle),
             true,
             null,
@@ -289,7 +289,7 @@ final class AgentStatusTest extends TestCase
             self::words(false),
         );
 
-        $this->assertSame([SessionState::Idle, SessionState::Unknown], [$afterWake->sessionState, $afterDelivery->sessionState]);
+        $this->assertSame([SessionActivityStatus::Idle, SessionActivityStatus::Unknown], [$afterWake->sessionState, $afterDelivery->sessionState]);
     }
 
     /**
@@ -301,7 +301,7 @@ final class AgentStatusTest extends TestCase
             false,
             self::SESSION,
             SessionStatus::Active,
-            SessionProcessState::Starting,
+            SessionProcessStatus::Starting,
             self::runtime(RuntimeActivity::Idle),
             true,
             null,
@@ -315,7 +315,7 @@ final class AgentStatusTest extends TestCase
 
         $status = AgentStatusRules::of($starting, self::words(false));
 
-        $this->assertSame(SessionState::Starting, $status->sessionState);
+        $this->assertSame(SessionActivityStatus::Starting, $status->sessionState);
         $this->assertSame(
             [StatusActionType::Stop],
             array_map(fn (StatusAction $action) => $action->type, $status->actions),
@@ -331,7 +331,7 @@ final class AgentStatusTest extends TestCase
             false,
             self::SESSION,
             SessionStatus::Active,
-            SessionProcessState::Running,
+            SessionProcessStatus::Running,
             self::runtime(RuntimeActivity::Idle, isStale: true),
             true,
             null,
@@ -345,7 +345,7 @@ final class AgentStatusTest extends TestCase
 
         $status = AgentStatusRules::of($unvouched, self::words(false));
 
-        $this->assertSame(SessionState::Unknown, $status->sessionState);
+        $this->assertSame(SessionActivityStatus::Unknown, $status->sessionState);
         $this->assertSame(
             [StatusActionType::CheckStatus, StatusActionType::Stop],
             array_map(fn (StatusAction $action) => $action->type, $status->actions),
@@ -358,7 +358,7 @@ final class AgentStatusTest extends TestCase
             false,
             self::SESSION,
             SessionStatus::Active,
-            SessionProcessState::Running,
+            SessionProcessStatus::Running,
             self::runtime(RuntimeActivity::Running),
             true,
             null,
@@ -391,7 +391,7 @@ final class AgentStatusTest extends TestCase
             false,
             self::SESSION,
             SessionStatus::Active,
-            SessionProcessState::Running,
+            SessionProcessStatus::Running,
             self::runtime(RuntimeActivity::Running),
             true,
             new SwitchEvidence('01jd8x0g9m3qz6v4k2t7r5w1cg', DriverSwitchStage::StartUnconfirmed, 4),
@@ -417,7 +417,7 @@ final class AgentStatusTest extends TestCase
 
         $status = AgentStatusRules::of($evidence, self::words(false));
 
-        $this->assertSame([SessionState::Retired, []], [$status->sessionState, $status->actions]);
+        $this->assertSame([SessionActivityStatus::Retired, []], [$status->sessionState, $status->actions]);
     }
 
     public function test_a_stopped_agent_with_a_saved_conversation_also_offers_resume(): void
@@ -437,7 +437,7 @@ final class AgentStatusTest extends TestCase
         SessionStatus $status = SessionStatus::Active,
         SwitchEvidence|null $switch = null,
         SessionStartOutcome|null $startOutcome = null,
-        SessionProcessState $start = SessionProcessState::Running,
+        SessionProcessStatus $start = SessionProcessStatus::Running,
         DriverRequestStatus|null $request = null,
         bool $isTerminal = false,
     ): AgentEvidence {

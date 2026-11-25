@@ -31,7 +31,7 @@ use App\Support\MiddlewareDeclaration;
 use App\Support\RequestKey;
 use App\Support\StartSessions;
 use Domain\Plans\Commands\StartPlan\StartPlanCommand;
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\PlansDomain;
@@ -243,7 +243,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
             $this->app->make(CommandBus::class)->run(new StartPlanCommand($plan->id));
             $this->fail('The quota let the start through.');
         } catch (CommandRefused) {
-            $this->assertSame(PlanState::Planned, $plan->fresh()?->state);
+            $this->assertSame(PlanStatus::Planned, $plan->fresh()?->status);
         }
 
         $this->app->make(CommandBus::class)->run(new WriteNoteCommand('not a plan start'));

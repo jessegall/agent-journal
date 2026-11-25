@@ -6,7 +6,7 @@ namespace Tests\Feature\Connections;
 
 use App\Api\Connections\ProjectCommandFrame;
 use App\Enums\Connections\BindingReadiness;
-use App\Enums\Connections\CommandRunState;
+use App\Enums\Connections\CommandRunStatus;
 use App\Enums\Projects\ArrangementType;
 use App\Exceptions\DeviceGrantRefused;
 use App\Models\Access\User;
@@ -83,7 +83,7 @@ final class ProjectCommandsTest extends TestCase
 
         $this->assertStringNotContainsString(self::SECRET_TASKS, (string) $reply->getContent());
         $this->assertNull($reply->json('frames'));
-        $this->assertSame(CommandRunState::Completed, $run->fresh()?->state);
+        $this->assertSame(CommandRunStatus::Completed, $run->fresh()?->status);
     }
 
     public function test_a_run_whose_worker_died_reads_interrupted_or_unknown_and_is_never_run_again(): void
@@ -99,8 +99,8 @@ final class ProjectCommandsTest extends TestCase
         $this->command($start, 'request-2', $binding->id, ['comment', 'list'])->assertConflict()
             ->assertJsonPath('message', fn (string $message) => str_contains($message, 'unknown'));
 
-        $this->assertSame(CommandRunState::Interrupted, $interrupted->fresh()?->state);
-        $this->assertSame(CommandRunState::Unknown, $unknown->fresh()?->state);
+        $this->assertSame(CommandRunStatus::Interrupted, $interrupted->fresh()?->status);
+        $this->assertSame(CommandRunStatus::Unknown, $unknown->fresh()?->status);
         $this->assertSame(2, ProjectCommandRun::query()->count());
     }
 

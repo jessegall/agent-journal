@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Navigation\MenuEntryState;
+use App\Enums\Navigation\MenuEntryStatus;
 use App\Enums\Navigation\NavigationCompletion;
 use App\Events\Sessions\MenuEntryMarkedStale;
 use App\Events\Sessions\MenuEntryProven;
@@ -47,7 +47,7 @@ use Spatie\LaravelData\DataCollection;
  * @property NavigationCompletion $completes
  * @property int|null $next_step
  * @property string $proof
- * @property MenuEntryState $state
+ * @property MenuEntryStatus $status
  * @property DataCollection<int, MenuEntryBuild> $builds
  * @property int $uses
  * @property CarbonImmutable|null $last_used_at
@@ -85,7 +85,7 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
             'goal_parameters' => 'array',
             'steps' => DataCollection::class.':'.MenuStep::class,
             'completes' => NavigationCompletion::class,
-            'state' => MenuEntryState::class,
+            'status' => MenuEntryStatus::class,
             'builds' => DataCollection::class.':'.MenuEntryBuild::class,
             'last_used_at' => 'immutable_datetime',
         ];
@@ -118,7 +118,7 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
         $entry->completes = $completes;
         $entry->next_step = $source->next_step;
         $entry->proof = $proof;
-        $entry->state = MenuEntryState::Current;
+        $entry->status = MenuEntryStatus::Current;
         $build = MenuEntryBuild::proven($source->build, CarbonImmutable::now());
         $entry->builds = MenuEntryBuild::collect([$build], DataCollection::class);
         $entry->source_request_id = $source->id;
@@ -146,7 +146,7 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
      */
     public function supersededBy(self $entry): void
     {
-        $this->state = MenuEntryState::Superseded;
+        $this->status = MenuEntryStatus::Superseded;
         $this->superseded_by_id = $entry->id;
         $this->assertSaved($this->save());
         $this->raise(new MenuEntrySuperseded($this->id, $entry->id));
@@ -157,7 +157,7 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
      */
     public function retire(): void
     {
-        $this->state = MenuEntryState::Retired;
+        $this->status = MenuEntryStatus::Retired;
         $this->assertSaved($this->save());
         $this->raise(new MenuEntryRetired($this->id));
     }
@@ -175,7 +175,7 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
      */
     public function wasProvenElsewhere(string $build): bool
     {
-        return $this->state->isUsable() && $this->buildOn($build) === null;
+        return $this->status->isUsable() && $this->buildOn($build) === null;
     }
 
     /**
@@ -298,7 +298,7 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function current(Builder $query): void
     {
-        $query->where('state', MenuEntryState::Current);
+        $query->where('status', MenuEntryStatus::Current);
     }
 
     /**

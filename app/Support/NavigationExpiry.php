@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Navigation\NavigationExpiry as NavigationExpiryContract;
 use App\Enums\Drivers\HoldReason;
 use App\Enums\Drivers\RequestOutcome;
-use App\Enums\Navigation\NavigationState;
+use App\Enums\Navigation\NavigationStatus;
 use App\Models\Drivers\NavigationRequest;
 use Carbon\CarbonImmutable;
 
@@ -29,8 +29,8 @@ final readonly class NavigationExpiry implements NavigationExpiryContract
         $due = NavigationRequest::query()
             ->acrossActors()
             ->withAnyState([
-                NavigationState::Open,
-                NavigationState::Answering,
+                NavigationStatus::Open,
+                NavigationStatus::Answering,
             ])
             ->expiredBefore(CarbonImmutable::now())
             ->withDriverRequestAndRuntime()

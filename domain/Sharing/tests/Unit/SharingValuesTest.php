@@ -24,7 +24,7 @@ use App\Support\ShareRelationSet;
 use App\Support\ShareSelection;
 use App\Support\ShareTargetRead;
 use Domain\Sharing\Enums\ShareAuditType;
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Support\ShareCandidates;
 use Domain\Sharing\Support\ShareLinkedCandidate;
 use Domain\Sharing\Support\ShareSelectedTarget;
@@ -39,22 +39,22 @@ final class SharingValuesTest extends TestCase
 {
     public function test_live_terminal_and_retryable_states_are_answered_by_the_state(): void
     {
-        $live = array_values(array_filter(ShareState::cases(), fn (ShareState $state) => $state->isLive()));
-        $terminal = array_values(array_filter(ShareState::cases(), fn (ShareState $state) => $state->isTerminal()));
-        $retryable = array_values(array_filter(ShareState::cases(), fn (ShareState $state) => $state->mayRetry()));
+        $live = array_values(array_filter(ShareStatus::cases(), fn (ShareStatus $state) => $state->isLive()));
+        $terminal = array_values(array_filter(ShareStatus::cases(), fn (ShareStatus $state) => $state->isTerminal()));
+        $retryable = array_values(array_filter(ShareStatus::cases(), fn (ShareStatus $state) => $state->mayRetry()));
 
         $this->assertSame([
-            ShareState::Pending,
-            ShareState::Active,
-            ShareState::Failed,
+            ShareStatus::Pending,
+            ShareStatus::Active,
+            ShareStatus::Failed,
         ], $live);
         $this->assertSame([
-            ShareState::Revoked,
-            ShareState::Expired,
+            ShareStatus::Revoked,
+            ShareStatus::Expired,
         ], $terminal);
         $this->assertSame([
-            ShareState::Pending,
-            ShareState::Failed,
+            ShareStatus::Pending,
+            ShareStatus::Failed,
         ], $retryable);
     }
 

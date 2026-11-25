@@ -8,7 +8,7 @@ use App\Concerns\RendersRefusal;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\Engine\RefusalCode;
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use RuntimeException;
 
 /**
@@ -18,7 +18,7 @@ final class ShareRefreshRefused extends RuntimeException implements CodedRefusal
 {
     use RendersRefusal;
 
-    public static function notLive(string $shareId, ShareState $state): self
+    public static function notLive(string $shareId, ShareStatus $state): self
     {
         return new self("Share {$shareId} is {$state->value} and past changing; share the record again instead.");
     }

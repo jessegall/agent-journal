@@ -11,7 +11,7 @@ use App\Support\StartCandidateFacts;
 use App\Support\StartCandidateQuery;
 use App\Support\StartProfileKey;
 use Carbon\CarbonImmutable;
-use Domain\Helpers\Enums\JobState;
+use Domain\Helpers\Enums\JobStatus;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
 
@@ -85,7 +85,7 @@ final readonly class HelperCandidates
      */
     private function factsOf(HelperIdentity $identity, array $jobs, CandidateQuery $query): StartCandidateFacts
     {
-        $finished = array_values(array_filter($jobs, fn (HelperJob $job) => $job->state === JobState::Finished));
+        $finished = array_values(array_filter($jobs, fn (HelperJob $job) => $job->status === JobStatus::Finished));
 
         $matching = array_values(array_filter(
             $finished,
@@ -94,7 +94,7 @@ final readonly class HelperCandidates
 
         return new StartCandidateFacts(
             $identity->helper_actor,
-            array_any($jobs, fn (HelperJob $job) => ! $job->state->isFinal()),
+            array_any($jobs, fn (HelperJob $job) => ! $job->status->isFinal()),
             $matching !== [],
             self::latestFinish($matching),
             self::latestFinish($finished),

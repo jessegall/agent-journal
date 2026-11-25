@@ -75,7 +75,7 @@ final readonly class TaskWaitResolver implements TaskWaitResolverContract
         $blocked = [];
 
         foreach ($waits as $wait) {
-            if (! $wait->isSatisfiedBy(($prerequisites[$wait->prerequisite_task_id] ?? null)?->state)) {
+            if (! $wait->isSatisfiedBy(($prerequisites[$wait->prerequisite_task_id] ?? null)?->status)) {
                 $blocked[$wait->dependent_task_id] = true;
             }
         }
@@ -96,8 +96,8 @@ final readonly class TaskWaitResolver implements TaskWaitResolverContract
             $otherId,
             $other?->number,
             $other?->title,
-            $other?->state,
-            $wait->isSatisfiedBy($prerequisite?->state),
+            $other?->status,
+            $wait->isSatisfiedBy($prerequisite?->status),
             $wait->waive_reason,
             $wait->waived_at === null ? null : CarbonImmutable::parse($wait->waived_at),
             $wait->waived_by_type === null || $wait->waived_by_id === null

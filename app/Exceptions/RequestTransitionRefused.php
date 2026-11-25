@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\Enums\CommandRules\RequestState;
+use App\Enums\CommandRules\RequestStatus;
 use RuntimeException;
 
 /**
@@ -12,7 +12,7 @@ use RuntimeException;
  */
 final class RequestTransitionRefused extends RuntimeException
 {
-    public static function from(RequestState $state, RequestState $next, string $owed): self
+    public static function from(RequestStatus $state, RequestStatus $next, string $owed): self
     {
         return new self("A request that is {$state->value} cannot become {$next->value}: {$owed}");
     }

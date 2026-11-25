@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Data;
 
-use App\Enums\Sessions\SessionState;
+use App\Enums\Sessions\SessionActivityStatus;
 use App\Support\AgentStatus;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
@@ -24,7 +24,7 @@ final class AgentStatusData extends Data
      * @param  list<StatusActionData>  $actions
      */
     public function __construct(
-        public readonly SessionState $sessionState,
+        public readonly SessionActivityStatus $sessionState,
         public readonly bool $isStartRefused,
         public readonly string $label,
         public readonly string|null $reason,

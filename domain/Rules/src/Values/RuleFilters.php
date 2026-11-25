@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Values;
 
-use Domain\Rules\Enums\RuleState;
+use Domain\Rules\Enums\RuleStatus;
 
 /**
  * Which rules to list: a text search, the page, and the rule selected for reading, if any. Web turns its validated
@@ -18,7 +18,7 @@ final readonly class RuleFilters
         public string $search = '',
         public int $page = 1,
         public string|null $selectedRuleId = null,
-        public RuleState|null $state = null,
+        public RuleStatus|null $state = null,
         public int $perPage = self::PAGE_SIZE,
     ) {}
 }

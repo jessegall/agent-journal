@@ -10,10 +10,10 @@ use App\Commands\CommandRules\RejectRuleProposal\RejectRuleProposalCommand;
 use App\Commands\CommandRules\RestoreCommandRule\RestoreCommandRuleCommand;
 use App\Commands\CommandRules\RetireCommandRule\RetireCommandRuleCommand;
 use App\Commands\CommandRules\SaveCommandRule\SaveCommandRuleCommand;
-use App\Enums\CommandRules\ClassificationState;
+use App\Enums\CommandRules\ClassificationStatus;
 use App\Enums\CommandRules\CommandClass;
-use App\Enums\CommandRules\ProposalState;
-use App\Enums\CommandRules\RequestState;
+use App\Enums\CommandRules\ProposalStatus;
+use App\Enums\CommandRules\RequestStatus;
 use App\Events\Processes\RuleActivated;
 use App\Events\Processes\RuleRejected;
 use App\Exceptions\ApprovalRefused;
@@ -67,11 +67,11 @@ final class RuleApprovalTest extends TestCase
         $this->assertSame('project.acme.verify', $receipt->ruleId);
         $this->assertSame(1, $receipt->revision);
         $rule = ClassificationRule::query()->sole();
-        $this->assertSame(ClassificationState::Active, $rule->state);
+        $this->assertSame(ClassificationStatus::Active, $rule->status);
         $revision = RuleRevision::query()->findOrFail($rule->active_revision_id);
         $this->assertSame([new ReaderApproval($reader, $proof)->toArray()], $revision->reader_approvals->toArray());
-        $this->assertSame(RequestState::Active, $this->request()->state);
-        $this->assertSame(ProposalState::Approved, RuleProposal::query()->sole()->state);
+        $this->assertSame(RequestStatus::Active, $this->request()->status);
+        $this->assertSame(ProposalStatus::Approved, RuleProposal::query()->sole()->status);
         Event::assertDispatched(RuleActivated::class);
     }
 
@@ -118,8 +118,8 @@ final class RuleApprovalTest extends TestCase
 
         $this->asUser(new RejectRuleProposalCommand($this->proposalId(), 'effects are wider than read'));
 
-        $this->assertSame(RequestState::Rejected, $this->request()->state);
-        $this->assertSame(ProposalState::Rejected, RuleProposal::query()->sole()->state);
+        $this->assertSame(RequestStatus::Rejected, $this->request()->status);
+        $this->assertSame(ProposalStatus::Rejected, RuleProposal::query()->sole()->status);
         Event::assertDispatched(
             RuleRejected::class,
             fn (RuleRejected $rejected) => $rejected->reason === 'effects are wider than read',
@@ -133,14 +133,14 @@ final class RuleApprovalTest extends TestCase
         $rule = ClassificationRule::query()->sole();
 
         $this->asUser(new RetireCommandRuleCommand($rule->id, 1, 'replaced by a script'));
-        $this->assertSame(ClassificationState::Retired, $rule->refresh()->state);
+        $this->assertSame(ClassificationStatus::Retired, $rule->refresh()->status);
 
         $restored = $this->asUser(new RestoreCommandRuleCommand($rule->id, 1, 1, 'restore-1'));
-        $this->assertSame(ProposalState::Pending, $restored->state);
-        $this->assertSame(ClassificationState::Retired, $rule->refresh()->state);
+        $this->assertSame(ProposalStatus::Pending, $restored->state);
+        $this->assertSame(ClassificationStatus::Retired, $rule->refresh()->status);
 
         $this->asUser(new ApproveRuleProposalCommand($restored->proposalId, new OwnerApproval(1, 1, [], 'back again')));
-        $this->assertSame(ClassificationState::Active, $rule->refresh()->state);
+        $this->assertSame(ClassificationStatus::Active, $rule->refresh()->status);
         $this->assertSame(2, $rule->active_revision);
     }
 
@@ -157,7 +157,7 @@ final class RuleApprovalTest extends TestCase
             fn () => $this->runAsAgent(new RejectRuleProposalCommand($this->proposalId(), 'agents cannot')),
             CommandAdmissionRefused::class,
         );
-        $this->assertSame(ProposalState::Pending, RuleProposal::query()->sole()->state);
+        $this->assertSame(ProposalStatus::Pending, RuleProposal::query()->sole()->status);
     }
 
     /**

@@ -8,7 +8,7 @@ use App\Contracts\Drivers\Driver;
 use App\Contracts\Drivers\DriverCatalogue as DriverCatalogueContract;
 use App\Enums\Drivers\DriverCapability;
 use App\Enums\Drivers\DriverType;
-use App\Enums\Drivers\SupportState;
+use App\Enums\Drivers\SupportStatus;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Exceptions\DriverKeyInvalid;
 use App\Exceptions\DriverRegisteredTwice;
@@ -121,7 +121,7 @@ final class DriverRegistryTest extends TestCase
         $support = $this->registry()->forKey(DriverKey::from('codex'))->capabilities(BoundTarget::onHost('host-1'));
         $run = $support->supportOf(DriverCapability::Run);
 
-        $this->assertSame(SupportState::TemporarilyUnavailable, $run->state);
+        $this->assertSame(SupportStatus::TemporarilyUnavailable, $run->state);
         $this->assertSame(CodexTerminalCapabilities::NOT_PROVEN, $run->reason);
         $this->assertThrows(
             fn () => $support->assertSupports([DriverCapability::Run]),

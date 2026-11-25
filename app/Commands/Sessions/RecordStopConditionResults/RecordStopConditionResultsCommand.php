@@ -6,7 +6,7 @@ namespace App\Commands\Sessions\RecordStopConditionResults;
 
 use App\Attributes\Commands\Entry;
 use App\Enums\Accounts\CommandEntry;
-use App\Enums\Sessions\StopCheckState;
+use App\Enums\Sessions\StopCheckStatus;
 use App\Support\Command;
 use App\Values\StopConditionResultReport;
 
@@ -15,7 +15,7 @@ use App\Values\StopConditionResultReport;
  * or unresolved. The same submission again answers the stored state; a changed one is refused.
  * Run for an authenticated host by the journal itself: a helper never posts its own results.
  *
- * @extends Command<StopCheckState>
+ * @extends Command<StopCheckStatus>
  */
 #[Entry(CommandEntry::HostControl)]
 final readonly class RecordStopConditionResultsCommand extends Command

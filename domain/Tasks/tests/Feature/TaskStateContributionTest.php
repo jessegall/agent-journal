@@ -21,7 +21,7 @@ use Domain\Tasks\Commands\FocusTask\FocusTaskCommand;
 use Domain\Tasks\Commands\LogTaskRun\LogTaskRunCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\States\Support\LogDueStateReference;
 use Domain\Tasks\Support\States\WorkOnTaskState;
@@ -44,10 +44,10 @@ final class TaskStateContributionTest extends TestCase
         $stored = $task->fresh();
         $this->assertNotNull($stored);
         $this->assertSame([
-            TaskState::Started,
+            TaskStatus::Started,
             1,
         ], [
-            $stored->state,
+            $stored->status,
             $stored->run_number,
         ]);
         $this->assertSame(["tasks.work {$task->id} 1"], $this->taskFrames());
@@ -65,10 +65,10 @@ final class TaskStateContributionTest extends TestCase
             $stored = $task->fresh();
             $this->assertNotNull($stored);
             $this->assertSame([
-                TaskState::Open,
+                TaskStatus::Open,
                 0,
             ], [
-                $stored->state,
+                $stored->status,
                 $stored->run_number,
             ]);
         }

@@ -32,7 +32,7 @@ final class ShelfPage extends Data
         public readonly string $shelf,
         #[DataCollectionOf(BookData::class)]
         public readonly array $books,
-        public readonly ShelfState $state,
+        public readonly ShelfStatus $state,
         #[Hidden, FromContainer(ShelfCounter::class)]
         public readonly ShelfCounter $counter,
         public readonly string|Optional $note = new Optional(),

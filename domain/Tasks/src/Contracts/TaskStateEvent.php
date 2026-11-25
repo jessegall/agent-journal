@@ -6,7 +6,7 @@ namespace Domain\Tasks\Contracts;
 
 use App\Attributes\Listeners\TransactionListenerConsent;
 use App\Contracts\Events\Event;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 
 /**
  * A task moved into another state: started, finished, blocked or cancelled.
@@ -16,12 +16,12 @@ interface TaskStateEvent extends Event
 {
     public string $taskId { get; }
 
-    public TaskState $previousState { get; }
+    public TaskStatus $previousState { get; }
 
     public string $historyEntryId { get; }
 
     /**
      * The state the task moved into.
      */
-    public function enteredState(): TaskState;
+    public function enteredState(): TaskStatus;
 }

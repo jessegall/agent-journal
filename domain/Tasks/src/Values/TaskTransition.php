@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Values;
 
 use Carbon\CarbonImmutable;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 
 /**
  * One committed change of a task, as its history keeps it for good: the run it belonged to (none for a change outside
@@ -19,8 +19,8 @@ final readonly class TaskTransition
         public int|null $runNumber,
         public string $actorType,
         public string $actorId,
-        public TaskState $fromState,
-        public TaskState $toState,
+        public TaskStatus $fromState,
+        public TaskStatus $toState,
         public string|null $text,
         public int $sequence,
         public CarbonImmutable $at,

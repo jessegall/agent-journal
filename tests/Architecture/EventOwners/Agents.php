@@ -5,8 +5,8 @@ declare(strict_types=1);
 use App\Enums\Drivers\DriverType;
 use App\Enums\Drivers\HoldReason;
 use App\Enums\Runs\RuntimeActivity;
-use App\Enums\Sessions\CleanupState;
-use App\Enums\Sessions\StopCheckState;
+use App\Enums\Sessions\CleanupStatus;
+use App\Enums\Sessions\StopCheckStatus;
 use App\Events\Sessions\AccountSettingsRequested;
 use App\Events\Sessions\AccountUseChanged;
 use App\Events\Sessions\ActivityRecorded;
@@ -510,7 +510,7 @@ return [
         'owner' => 'SessionCleanup::recordPass',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new CleanupPassRecorded('cleanup', CleanupState::Pending),
+        'sample' => fn () => new CleanupPassRecorded('cleanup', CleanupStatus::Pending),
     ],
     ProfileRevisionHoldReconciled::class => [
         'role' => EventRole::RowFact,
@@ -727,7 +727,7 @@ return [
         'owner' => 'StopCheck::settle',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new StopCheckSettled('attempt', StopCheckState::cases()[0], 'outcome'),
+        'sample' => fn () => new StopCheckSettled('attempt', StopCheckStatus::cases()[0], 'outcome'),
     ],
     StopCheckCertified::class => [
         'role' => EventRole::RowFact,

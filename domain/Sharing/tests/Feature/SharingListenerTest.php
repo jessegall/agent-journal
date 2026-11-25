@@ -14,7 +14,7 @@ use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Models\Document;
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Support\ShareGrant;
@@ -261,7 +261,7 @@ final class SharingListenerTest extends TestCase
                 $token,
             ),
         );
-        $share->state = ShareState::Active;
+        $share->status = ShareStatus::Active;
         $share->save();
 
         return $token->token;

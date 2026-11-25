@@ -10,7 +10,7 @@ use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Enums\TaskTextLimit;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -45,6 +45,6 @@ final class FinishTaskTool extends TaskWriteTool
 
     protected function present(mixed $commandResult): ToolResult
     {
-        return ToolResult::ok(['state' => TaskState::Finished->value]);
+        return ToolResult::ok(['state' => TaskStatus::Finished->value]);
     }
 }

@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Sessions\CleanupState;
+use App\Enums\Sessions\CleanupStatus;
 use App\Enums\Sessions\CleanupStep;
 use App\Events\Sessions\CleanupPassRecorded;
 use App\Models\Agents\AgentSession;
@@ -29,7 +29,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property list<string> $removed_steps
  * @property string|null $recovery_location
  * @property string|null $last_error
- * @property CleanupState $state
+ * @property CleanupStatus $status
  * @property int $attempts
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
@@ -58,7 +58,7 @@ final class SessionCleanup extends Model implements EventSource, ReadableModel
     {
         return [
             'removed_steps' => 'array',
-            'state' => CleanupState::class,
+            'status' => CleanupStatus::class,
             'attempts' => 'integer',
         ];
     }
@@ -75,7 +75,7 @@ final class SessionCleanup extends Model implements EventSource, ReadableModel
         $operation->agent_session_id = $session->id;
         $operation->host_id = $hostId;
         $operation->removed_steps = [];
-        $operation->state = CleanupState::Pending;
+        $operation->status = CleanupStatus::Pending;
 
         $operation->setAttribute($operation->getKeyName(), $operation->newUniqueId());
         $operation->insertIfAbsent();
@@ -91,7 +91,7 @@ final class SessionCleanup extends Model implements EventSource, ReadableModel
      */
     public function recordPass(CleanupReport $report): void
     {
-        if ($this->state !== CleanupState::Pending) {
+        if ($this->status !== CleanupStatus::Pending) {
             return;
         }
 
@@ -103,16 +103,16 @@ final class SessionCleanup extends Model implements EventSource, ReadableModel
         $this->recovery_location = $report->keptWorkspace ?? $this->recovery_location;
         $this->last_error = $report->failure;
         $this->attempts += $report->hasFailed() ? 1 : 0;
-        $this->state = $this->stateAfterPass();
+        $this->status = $this->stateAfterPass();
         $this->assertSaved($this->save());
-        $this->raise(new CleanupPassRecorded($this->id, $this->state));
+        $this->raise(new CleanupPassRecorded($this->id, $this->status));
     }
 
     // ----------[ Predicates ]----------
 
     public function isDone(): bool
     {
-        return $this->state === CleanupState::Done;
+        return $this->status === CleanupStatus::Done;
     }
 
     // ----------[ Transformers ]----------
@@ -132,12 +132,12 @@ final class SessionCleanup extends Model implements EventSource, ReadableModel
 
     // ----------[ Internals ]----------
 
-    private function stateAfterPass(): CleanupState
+    private function stateAfterPass(): CleanupStatus
     {
         return match (true) {
-            $this->remainingSteps() === [] => CleanupState::Done,
-            $this->attempts >= self::ATTEMPT_LIMIT => CleanupState::Failed,
-            default => CleanupState::Pending,
+            $this->remainingSteps() === [] => CleanupStatus::Done,
+            $this->attempts >= self::ATTEMPT_LIMIT => CleanupStatus::Failed,
+            default => CleanupStatus::Pending,
         };
     }
 
@@ -205,7 +205,7 @@ final class SessionCleanup extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function pending(Builder $query): void
     {
-        $query->where('state', CleanupState::Pending);
+        $query->where('status', CleanupStatus::Pending);
     }
 
     /**

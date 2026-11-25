@@ -226,14 +226,6 @@ final class ShareGatewayOperation extends Model implements EventSource, Readable
         return self::query()->whereKey($id)->firstOr(GatewayLeaseRefused::throwing()->forOperation($id));
     }
 
-    /**
-     * The operation of this id, locked until the transaction ends.
-     */
-    public static function findLockedById(string $id): self
-    {
-        return self::findLockedById($id);
-    }
-
     // ----------[ Scopes ]----------
 
     /**

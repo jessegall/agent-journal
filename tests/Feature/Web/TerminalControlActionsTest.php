@@ -7,7 +7,7 @@ namespace Tests\Feature\Web;
 use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Enums\Engine\RefusalCode;
 use App\Enums\Terminals\TerminalControlRefusal;
-use App\Enums\Terminals\TerminalGrantState;
+use App\Enums\Terminals\TerminalGrantStatus;
 use App\Enums\Terminals\TerminalReceiptOutcome;
 use App\Models\Access\User;
 use App\Models\Agents\AgentRuntime;
@@ -53,11 +53,11 @@ final class TerminalControlActionsTest extends TestCase
 
         $this->postAction($agentId, 'control/take', ['interest' => $this->openInterest($agentId), 'takeId' => $takeId])
             ->assertOk()
-            ->assertJsonPath('state', TerminalGrantState::Taking->value)
+            ->assertJsonPath('state', TerminalGrantStatus::Taking->value)
             ->assertJsonPath('grantId', null);
         TerminalGrant::query()->acrossActors()->sole()->issue('grant-1');
         $this->receipt($agentId, ['takeId' => $takeId])
-            ->assertJsonPath('state', TerminalGrantState::Granted->value)
+            ->assertJsonPath('state', TerminalGrantStatus::Granted->value)
             ->assertJsonPath('grantId', 'grant-1');
 
         $input = ['grantId' => 'grant-1', 'text' => 'ls', 'enter' => true, 'sequence' => 1];
@@ -71,7 +71,7 @@ final class TerminalControlActionsTest extends TestCase
 
         $this->postAction($agentId, 'control/release', ['grantId' => 'grant-1'])
             ->assertOk()
-            ->assertJsonPath('state', TerminalGrantState::Releasing->value);
+            ->assertJsonPath('state', TerminalGrantStatus::Releasing->value);
     }
 
     public function test_an_inspect_only_viewer_is_refused_with_its_own_code(): void

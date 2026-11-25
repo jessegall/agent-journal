@@ -8,7 +8,7 @@ use App\Contracts\Navigation\TerminalViewCloser as TerminalViewCloserContract;
 use App\Data\Terminals\TerminalFrameData;
 use App\Data\Terminals\TerminalInterestData;
 use App\Data\Terminals\TerminalScreenIdentityData;
-use App\Enums\Terminals\TerminalFrameState;
+use App\Enums\Terminals\TerminalFrameStatus;
 use App\Exceptions\TerminalViewRefused;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\TerminalView;
@@ -133,7 +133,7 @@ final readonly class TerminalViewCloser implements TerminalViewCloserContract
         if (! $view->watches($runtime)) {
             $view->close($now);
 
-            return TerminalFrameData::from(['state' => TerminalFrameState::Restarted]);
+            return TerminalFrameData::from(['state' => TerminalFrameStatus::Restarted]);
         }
 
         $received = $this->screens->latest(ScreenRegistration::of($runtime));
@@ -143,7 +143,7 @@ final readonly class TerminalViewCloser implements TerminalViewCloserContract
         }
 
         if ($received === null) {
-            return TerminalFrameData::from(['state' => TerminalFrameState::Unchanged]);
+            return TerminalFrameData::from(['state' => TerminalFrameStatus::Unchanged]);
         }
 
         return $this->answerOf($runtime, $received, $held, $now);
@@ -187,7 +187,7 @@ final readonly class TerminalViewCloser implements TerminalViewCloserContract
 
         if ($received->frame->isConnectionLost) {
             return TerminalFrameData::from([
-                'state' => TerminalFrameState::ConnectionLost,
+                'state' => TerminalFrameStatus::ConnectionLost,
                 'identity' => $identity,
                 'receivedAt' => $received->receivedAt,
             ]);
@@ -195,7 +195,7 @@ final readonly class TerminalViewCloser implements TerminalViewCloserContract
 
         if ($received->frame->isShielded) {
             return TerminalFrameData::from([
-                'state' => TerminalFrameState::PreviewUnavailable,
+                'state' => TerminalFrameStatus::PreviewUnavailable,
                 'identity' => $identity,
                 'receivedAt' => $received->receivedAt,
                 ...$proof,
@@ -204,14 +204,14 @@ final readonly class TerminalViewCloser implements TerminalViewCloserContract
 
         if (! $received->isNewerThan($held->epoch, $held->stream, $held->sequence)) {
             return TerminalFrameData::from([
-                'state' => TerminalFrameState::Unchanged,
+                'state' => TerminalFrameStatus::Unchanged,
                 'identity' => $identity,
                 ...$proof,
             ]);
         }
 
         return TerminalFrameData::from([
-            'state' => $liveForMs === null ? TerminalFrameState::LastReported : TerminalFrameState::Live,
+            'state' => $liveForMs === null ? TerminalFrameStatus::LastReported : TerminalFrameStatus::Live,
             'identity' => $identity,
             'frame' => $received->frame,
             'receivedAt' => $received->receivedAt,
@@ -233,13 +233,13 @@ final readonly class TerminalViewCloser implements TerminalViewCloserContract
     {
         if ($received === null) {
             return TerminalFrameData::from([
-                'state' => TerminalFrameState::Ended,
+                'state' => TerminalFrameStatus::Ended,
                 'endedAt' => $endedAt,
             ]);
         }
 
         return TerminalFrameData::from([
-            'state' => TerminalFrameState::Ended,
+            'state' => TerminalFrameStatus::Ended,
             'frame' => $received->frame,
             'receivedAt' => $received->receivedAt,
             'endedAt' => $endedAt,

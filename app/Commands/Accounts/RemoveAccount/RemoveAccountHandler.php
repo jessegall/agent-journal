@@ -6,7 +6,7 @@ namespace App\Commands\Accounts\RemoveAccount;
 
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\Accounts\SignInState;
+use App\Enums\Accounts\SignInStatus;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Accounts\SignInAttempt;
@@ -34,7 +34,7 @@ final readonly class RemoveAccountHandler implements CommandHandler
         $liveAttempt = SignInAttempt::findLiveFor($driver, $account);
 
         if ($liveAttempt !== null) {
-            $liveAttempt->finishAt(SignInState::Cancelled, CarbonImmutable::now());
+            $liveAttempt->finishAt(SignInStatus::Cancelled, CarbonImmutable::now());
         }
 
         $this->facts->runTransactionListeners();

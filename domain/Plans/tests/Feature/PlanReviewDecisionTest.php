@@ -10,8 +10,8 @@ use Domain\Plans\Commands\ApprovePlanReview\ApprovePlanReviewCommand;
 use Domain\Plans\Commands\RequestPlanReview\RequestPlanReviewCommand;
 use Domain\Plans\Commands\StartPlan\StartPlanCommand;
 use Domain\Plans\Commands\WithdrawPlanReview\WithdrawPlanReviewCommand;
-use Domain\Plans\Enums\PlanReviewState;
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanReviewStatus;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Exceptions\PlanReviewRefused;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Models\PlanReviewEdition;
@@ -76,12 +76,12 @@ final class PlanReviewDecisionTest extends TestCase
 
         $this->assertSame($first, $again);
         $review = PlanReviewEdition::query()->whereKey($first)->sole();
-        $this->assertSame(PlanReviewState::Approved, $review->state);
+        $this->assertSame(PlanReviewStatus::Approved, $review->status);
         $this->assertSame($this->owner->id, $review->decided_by_id);
-        $this->assertSame(PlanState::Planned, $this->plan->refresh()->state);
+        $this->assertSame(PlanStatus::Planned, $this->plan->refresh()->status);
 
         $this->runCommand(new StartPlanCommand($this->plan->id));
-        $this->assertSame(PlanState::Started, $this->plan->refresh()->state);
+        $this->assertSame(PlanStatus::Started, $this->plan->refresh()->status);
     }
 
     public function test_a_decision_on_a_withdrawn_review_reports_its_outcome(): void
@@ -95,7 +95,7 @@ final class PlanReviewDecisionTest extends TestCase
         $this->assertThrows(
             fn () => $this->runCommand(new ApprovePlanReviewCommand($this->plan->id, 1, (string) Str::uuid())),
             PlanReviewRefused::class,
-            PlanReviewRefused::alreadyDecided($this->plan->number, 1, PlanReviewState::Withdrawn->value)->getMessage(),
+            PlanReviewRefused::alreadyDecided($this->plan->number, 1, PlanReviewStatus::Withdrawn->value)->getMessage(),
         );
     }
 

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedInteger('run_number');
             $table->string('started_by_type', 16);
             $table->string('started_by_id', 64);
-            $table->string('state', 16);
+            $table->string('status', 16);
             $table->text('outcome')->nullable();
             $table->timestampsTz();
 

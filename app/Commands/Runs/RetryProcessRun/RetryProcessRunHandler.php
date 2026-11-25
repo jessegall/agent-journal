@@ -7,7 +7,7 @@ namespace App\Commands\Runs\RetryProcessRun;
 use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Admission\ShellAdmission;
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\Runs\LifecycleState;
+use App\Enums\Runs\LifecycleStatus;
 use App\Exceptions\RetryRefused;
 use App\Models\Runs\ProcessRun;
 use App\Support\ActorIdentity;
@@ -35,7 +35,7 @@ final readonly class RetryProcessRunHandler implements CommandHandler
             throw RetryRefused::ofAnotherActor($lost->id);
         }
 
-        if ($lost->lifecycle !== LifecycleState::Lost) {
+        if ($lost->lifecycle !== LifecycleStatus::Lost) {
             throw RetryRefused::notLost($lost->id);
         }
 

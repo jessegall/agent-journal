@@ -19,8 +19,8 @@ use App\Support\AutoAssignmentInput;
 use App\Support\AutoAssignmentKey;
 use App\Support\AutoAssignmentOutcome;
 use App\Support\AutoAssignmentPage;
-use App\Support\AutoAssignmentStatus;
 use App\Support\AutoAssignmentStatuses;
+use App\Support\AutoAssignmentView;
 use App\Support\IdListPage;
 use Closure;
 use PhpOption\None;
@@ -52,13 +52,13 @@ final readonly class DatabaseAutoAssignments implements AutoAssignmentResolver, 
         return Some::create($row->toFact());
     }
 
-    public function status(AutoAssignmentKey $key): AutoAssignmentStatus
+    public function status(AutoAssignmentKey $key): AutoAssignmentView
     {
         $this->access->assertMayRead($this->actors->actor(), $key->actor);
         $row = AutoAssignment::query()->forKey($key)->first();
 
         if ($row === null) {
-            return AutoAssignmentStatus::never();
+            return AutoAssignmentView::never();
         }
 
         return $this->statuses->of($row);

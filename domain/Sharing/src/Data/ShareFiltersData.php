@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sharing\Data;
 
 use Carbon\CarbonImmutable;
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Support\ShareListFilters;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -23,13 +23,13 @@ final class ShareFiltersData extends Data
         public readonly string|null $gateway,
         public readonly string|null $expiresBefore,
         public readonly string|null $after,
-        public readonly ShareState|Optional $state = new Optional(),
+        public readonly ShareStatus|Optional $state = new Optional(),
     ) {}
 
     public function toFilters(): ShareListFilters
     {
         return new ShareListFilters(
-            $this->state instanceof ShareState ? $this->state : null,
+            $this->state instanceof ShareStatus ? $this->state : null,
             $this->rootType,
             $this->gateway,
             $this->expiresBefore === null ? null : CarbonImmutable::parse($this->expiresBefore),

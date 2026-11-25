@@ -64,7 +64,7 @@ final class SequenceRunsListTest extends TestCase
         $run = $this->pageOf("/sequences/runs/{$running->number}?{$query}");
 
         $this->assertStringContainsString("/sequences/runs/{$running->number}?{$query}", $list);
-        $this->assertStringContainsString(ucfirst($cancelled->state->value), $list);
+        $this->assertStringContainsString(ucfirst($cancelled->status->value), $list);
         $this->assertStringContainsString("/sequences/runs?{$query}", $run);
         $this->assertStringContainsString($cancelled->id, $run);
     }

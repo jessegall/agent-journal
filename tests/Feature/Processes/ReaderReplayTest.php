@@ -6,7 +6,7 @@ namespace Tests\Feature\Processes;
 
 use App\Commands\Runs\AssessPartOutput\AssessPartOutputCommand;
 use App\Commands\Runs\ReplayAssessment\ReplayAssessmentCommand;
-use App\Enums\Runs\InterpretationState;
+use App\Enums\Runs\InterpretationStatus;
 use App\Enums\Runs\PositionPurpose;
 use App\Enums\Runs\RunMode;
 use App\Exceptions\ReplayRefused;
@@ -37,7 +37,7 @@ final class ReaderReplayTest extends TestCase
         $part = $this->normalRun(0, self::PASSED_OUTPUT);
 
         $position = $this->livePosition($part);
-        $this->assertSame(InterpretationState::Provisional, $position->interpretation);
+        $this->assertSame(InterpretationStatus::Provisional, $position->interpretation);
         $this->assertSame(['stdout' => strlen(self::PASSED_OUTPUT)], $position->checkpoint->offsets);
     }
 
@@ -45,7 +45,7 @@ final class ReaderReplayTest extends TestCase
     {
         $part = $this->normalRun(0, str_repeat('x', 70_000)."\n".self::PASSED_OUTPUT);
 
-        $this->assertSame(InterpretationState::ReaderFailed, $this->livePosition($part)->interpretation);
+        $this->assertSame(InterpretationStatus::ReaderFailed, $this->livePosition($part)->interpretation);
         $activity = $this->app->make(ActivityProjection::class)->ofPart($part->refresh());
         $this->assertSame(70_001 + strlen(self::PASSED_OUTPUT), $activity->bytes['stdout']);
     }

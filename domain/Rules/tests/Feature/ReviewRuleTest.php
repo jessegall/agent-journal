@@ -10,7 +10,7 @@ use App\Support\ActorContext;
 use App\Values\OwnerAuthority;
 use Domain\Rules\Commands\ApproveRule\ApproveRuleCommand;
 use Domain\Rules\Commands\DenyRule\DenyRuleCommand;
-use Domain\Rules\Enums\RuleState;
+use Domain\Rules\Enums\RuleStatus;
 use Domain\Rules\Events\RuleApproved;
 use Domain\Rules\Events\RuleDenied;
 use Domain\Rules\Exceptions\RuleNotProposed;
@@ -84,7 +84,7 @@ final class ReviewRuleTest extends TestCase
             $bus->run(new ApproveRuleCommand($this->proposed->id));
             $this->fail('A denied rule was approved.');
         } catch (RuleNotProposed) {
-            $this->assertSame(RuleState::Denied, $this->proposed->fresh()?->state);
+            $this->assertSame(RuleStatus::Denied, $this->proposed->fresh()?->status);
             Event::assertNotDispatched(RuleApproved::class);
             Event::assertDispatchedTimes(RuleDenied::class, 1);
         }

@@ -6,7 +6,7 @@ namespace Domain\Documents\Console\Concerns;
 
 use App\Values\CommandReport;
 use Domain\Documents\Data\RecordInspection;
-use Domain\Documents\Enums\EditingState;
+use Domain\Documents\Enums\EditingStatus;
 
 /**
  * How doc:inspect and report:inspect print a record's state: editing, attention, settlements and draft closes.
@@ -15,7 +15,7 @@ trait PrintsInspection
 {
     protected function inspectionReport(RecordInspection $inspection): CommandReport
     {
-        $editing = $inspection->editing->state === EditingState::Free
+        $editing = $inspection->editing->state === EditingStatus::Free
             ? 'free'
             : "held by {$this->holderOf($inspection)}";
 

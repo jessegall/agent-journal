@@ -27,7 +27,7 @@ use Domain\Tasks\Data\TaskStreamEntryData;
 use Domain\Tasks\Data\TaskWaitActionsData;
 use Domain\Tasks\Data\TaskWaitChoiceData;
 use Domain\Tasks\Data\TaskWaitsData;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Exceptions\TaskPassageUnavailable;
 use Domain\Tasks\Http\Pages\Tasks\TasksIndex;
@@ -176,7 +176,7 @@ final readonly class TaskWindowResolver implements PageResolver
             AccessType::Edit,
             AccessType::Admin,
         ]);
-        $hasEnded = $task->state->hasEnded();
+        $hasEnded = $task->status->hasEnded();
         $search = $this->request->prerequisiteSearch();
 
         $choices = $search === '' || $hasEnded ? [] : $this->list->list(
@@ -219,8 +219,8 @@ final readonly class TaskWindowResolver implements PageResolver
         $isWaiting = $this->waits->readyAmong([$task->id]) === [];
 
         $startReason = match (true) {
-            $task->state->hasEnded() => "Task {$task->number} is {$task->state->value}.",
-            $task->state === TaskState::Started => "Task {$task->number} is already being worked on.",
+            $task->status->hasEnded() => "Task {$task->number} is {$task->status->value}.",
+            $task->status === TaskStatus::Started => "Task {$task->number} is already being worked on.",
             $isWaiting => "Task {$task->number} waits for other tasks to finish.",
             ! $mayCreate => 'You may not start this task.',
             default => null,
@@ -228,8 +228,8 @@ final readonly class TaskWindowResolver implements PageResolver
 
         return TaskActionsData::from(array_filter([
             'mayStart' => $startReason === null,
-            'mayBlock' => $mayEditRun && $task->state === TaskState::Started,
-            'mayCancel' => $mayEditRun && ! $task->state->hasEnded(),
+            'mayBlock' => $mayEditRun && $task->status === TaskStatus::Started,
+            'mayCancel' => $mayEditRun && ! $task->status->hasEnded(),
             'runNumber' => $task->run_number,
             'startReason' => $startReason,
         ], fn (mixed $actionValue) => $actionValue !== null));

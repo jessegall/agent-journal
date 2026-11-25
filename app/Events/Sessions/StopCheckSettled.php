@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Events\Sessions;
 
 use App\Contracts\Sessions\StopCheckEvent;
-use App\Enums\Sessions\StopCheckState;
+use App\Enums\Sessions\StopCheckStatus;
 
 /**
  * A stop attempt was settled in the state given; its outcome is the same for two attempts that settled alike, with
@@ -15,7 +15,7 @@ final readonly class StopCheckSettled extends SessionEvent implements StopCheckE
 {
     public function __construct(
         public string $attemptId,
-        public StopCheckState $state,
+        public StopCheckStatus $state,
         public string $outcome,
     ) {}
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Connections;
 
-use App\Enums\Connections\FileWindowState;
+use App\Enums\Connections\FileWindowStatus;
 use App\Support\Layout\LayoutBodyData;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
@@ -28,7 +28,7 @@ final class FileWindowData extends Data
      * @param  list<FileThreadData>  $threads
      */
     public function __construct(
-        public readonly FileWindowState $state,
+        public readonly FileWindowStatus $state,
         public readonly string $name,
         public readonly string $path,
         public readonly bool $isMarkdown,

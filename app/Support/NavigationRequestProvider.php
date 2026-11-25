@@ -45,7 +45,7 @@ final readonly class NavigationRequestProvider implements AssignableProvider
     {
         $finished = array_filter(
             $records,
-            fn (Assignable $record) => $record instanceof NavigationRequest && ! $record->state->isOpen(),
+            fn (Assignable $record) => $record instanceof NavigationRequest && ! $record->status->isOpen(),
         );
 
         return array_values(array_map(fn (Assignable $record) => $record->assignmentIdentity(), $finished));

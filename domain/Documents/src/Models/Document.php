@@ -30,7 +30,7 @@ use Domain\Documents\Data\CloseCard;
 use Domain\Documents\Data\DockSuggestion;
 use Domain\Documents\Data\DocumentView;
 use Domain\Documents\Data\PublicationCard;
-use Domain\Documents\Enums\AttentionState;
+use Domain\Documents\Enums\AttentionStatus;
 use Domain\Documents\Events\DocumentCreated;
 use Domain\Documents\Events\DocumentFirstRevisionSet;
 use Domain\Documents\Events\DocumentPublished;
@@ -57,7 +57,7 @@ use Illuminate\Database\Query\JoinClause;
  * @property int $number
  * @property string $creator_type
  * @property string $creator_id
- * @property AttentionState $attention
+ * @property AttentionStatus $attention
  * @property string|null $current_revision_id
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
@@ -103,7 +103,7 @@ final class Document extends Model implements Commentable, Dockable, EventSource
     protected function casts(): array
     {
         return [
-            'attention' => AttentionState::class,
+            'attention' => AttentionStatus::class,
         ];
     }
 
@@ -144,8 +144,8 @@ final class Document extends Model implements Commentable, Dockable, EventSource
     {
         $this->current_revision_id = $revision->id;
 
-        if ($this->attention === AttentionState::Settled) {
-            $this->attention = AttentionState::Active;
+        if ($this->attention === AttentionStatus::Settled) {
+            $this->attention = AttentionStatus::Active;
         }
 
         $this->assertSaved($this->save());

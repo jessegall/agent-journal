@@ -19,7 +19,7 @@ return new class extends Migration
             $table->unsignedInteger('profile_revision');
             $table->string('definition_digest', 64);
             $table->string('trigger_reference', 200);
-            $table->string('state', 16);
+            $table->string('status', 16);
             $table->unsignedInteger('cursor')->default(0);
             $table->string('awaited_step', 200)->nullable();
             $table->unsignedInteger('generation')->nullable();

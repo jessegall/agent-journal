@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
-use App\Enums\Skills\PublicationState;
+use App\Enums\Skills\PublicationStatus;
 use App\Events\Hooks\ContextStarted;
 use App\Models\Agents\AgentSession;
 use App\Models\Skills\SkillGeneration;
@@ -30,7 +30,7 @@ final readonly class RemindRequiredSkills implements Listener
         $session = AgentSession::findById($event->target->sessionId);
         $publication = SkillPublication::findLatestOfSession($session->id);
 
-        if ($publication === null || $publication->state !== PublicationState::Delivered) {
+        if ($publication === null || $publication->status !== PublicationStatus::Delivered) {
             return;
         }
 

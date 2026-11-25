@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('mode');
             $table->foreignUlid('project_id')->nullable()->constrained('projects')->restrictOnDelete();
             $table->foreignUlid('environment_id')->nullable()->constrained('project_environments')->nullOnDelete();
-            $table->string('state');
+            $table->string('status');
             $table->foreignUlid('binding_id')->nullable()->constrained('project_bindings');
             $table->unsignedInteger('version')->default(0);
             $table->timestampsTz();

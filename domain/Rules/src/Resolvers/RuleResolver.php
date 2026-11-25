@@ -38,7 +38,7 @@ final readonly class RuleResolver implements RuleResolverContract
         $matching = Rule::query()->matching($filters->search);
 
         if ($filters->state !== null) {
-            $matching->where('state', $filters->state);
+            $matching->where('status', $filters->state);
         }
 
         $total = (clone $matching)->count();
@@ -60,6 +60,6 @@ final readonly class RuleResolver implements RuleResolverContract
 
     private static function viewOf(Rule $rule): RuleView
     {
-        return new RuleView($rule->id, $rule->number, $rule->text, $rule->state, $rule->canBeReviewed());
+        return new RuleView($rule->id, $rule->number, $rule->text, $rule->status, $rule->canBeReviewed());
     }
 }

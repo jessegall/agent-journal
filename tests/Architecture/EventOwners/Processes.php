@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\Runs\CaptureState;
+use App\Enums\Runs\CaptureStatus;
 use App\Enums\Runs\RunLogicalResult;
 use App\Events\Processes\BundleActivated;
 use App\Events\Processes\ClassificationRuleActivated;
@@ -253,7 +253,7 @@ return [
         'owner' => 'PartRun::markCapture',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new PartRunCaptureMarked('part', CaptureState::cases()[0]),
+        'sample' => fn () => new PartRunCaptureMarked('part', CaptureStatus::cases()[0]),
     ],
     PartRunStopped::class => [
         'role' => EventRole::RowFact,

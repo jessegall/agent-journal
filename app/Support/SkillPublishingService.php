@@ -13,7 +13,7 @@ use App\Commands\Skills\RefreshSkills\RefreshSkillsCommand;
 use App\Commands\Skills\RetrySkillPublication\RetrySkillPublicationCommand;
 use App\Contracts\Bus\Command;
 use App\Enums\Accounts\CommandEntry;
-use App\Enums\Skills\PublicationState;
+use App\Enums\Skills\PublicationStatus;
 use App\Exceptions\SkillPublicationFailed;
 use App\Exceptions\SkillPublicationStale;
 use App\Models\Skills\SkillPublication;
@@ -44,7 +44,7 @@ final readonly class SkillPublishingService
     /**
      * Puts a failed publication back in the queue and publishes it at once.
      */
-    public function retry(string $publicationId, string $holder): PublicationState
+    public function retry(string $publicationId, string $holder): PublicationStatus
     {
         $this->asSystem(new RetrySkillPublicationCommand($publicationId));
 
@@ -59,7 +59,7 @@ final readonly class SkillPublishingService
     /**
      * Publishes every committed open publication, oldest first; answers each one's outcome by publication id.
      *
-     * @return array<string, PublicationState>
+     * @return array<string, PublicationStatus>
      */
     public function publishOpen(string $holder): array
     {
@@ -72,12 +72,12 @@ final readonly class SkillPublishingService
         return $outcomes;
     }
 
-    public function publish(string $publicationId, string $holder): PublicationState
+    public function publish(string $publicationId, string $holder): PublicationStatus
     {
         try {
             $claim = $this->asSystem(new PublishSkillsCommand($publicationId, $holder));
         } catch (SkillPublicationFailed) {
-            return SkillPublication::query()->whereKey($publicationId)->firstOrFail()->state;
+            return SkillPublication::query()->whereKey($publicationId)->firstOrFail()->status;
         }
 
         try {
@@ -87,13 +87,13 @@ final readonly class SkillPublishingService
 
             $this->asSystem(new ActivateSkillPublicationCommand($publicationId, $claim->fence));
 
-            return PublicationState::Delivered;
+            return PublicationStatus::Delivered;
         } catch (SkillPublicationStale) {
-            return PublicationState::Superseded;
+            return PublicationStatus::Superseded;
         } catch (SkillPublicationFailed $failure) {
             $this->asSystem(new FailSkillPublicationCommand($publicationId, $failure->getMessage()));
 
-            return PublicationState::Failed;
+            return PublicationStatus::Failed;
         }
     }
 

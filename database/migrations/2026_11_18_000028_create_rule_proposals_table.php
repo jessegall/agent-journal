@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreignUlid('command_request_id')->nullable()->constrained('command_requests')->nullOnDelete();
             $table->string('program');
             $table->string('operation');
-            $table->string('state', 16);
+            $table->string('status', 16);
             $table->string('author_type', 16);
             $table->string('author_id');
             $table->string('request_id');
@@ -29,7 +29,7 @@ return new class extends Migration
             $table->timestampsTz();
 
             $table->unique(['project_key', 'author_type', 'author_id', 'request_id']);
-            $table->index(['project_key', 'state']);
+            $table->index(['project_key', 'status']);
         });
     }
 

@@ -6,7 +6,7 @@ namespace Tests\Feature\Processes;
 
 use App\Contracts\Bus\CommandClassifier;
 use App\Enums\Processes\ShellDialect;
-use App\Enums\Runs\LifecycleState;
+use App\Enums\Runs\LifecycleStatus;
 use App\Enums\Runs\PartEndType;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
@@ -55,8 +55,8 @@ final class SupervisorTest extends TestCase
 
         [$false, $skipped, $recovered] = $this->parts();
         $this->assertSame(1, $false->end->code);
-        $this->assertSame(LifecycleState::Skipped, $skipped->lifecycle);
-        $this->assertSame(LifecycleState::Ended, $recovered->lifecycle);
+        $this->assertSame(LifecycleStatus::Skipped, $skipped->lifecycle);
+        $this->assertSame(LifecycleStatus::Ended, $recovered->lifecycle);
         $this->assertSame('recovered', $this->output->stdoutOf($recovered));
     }
 
@@ -81,7 +81,7 @@ final class SupervisorTest extends TestCase
         $this->supervise('cd project && pwd');
 
         [$cd, $pwd] = $this->parts();
-        $this->assertSame(LifecycleState::Ended, $cd->lifecycle);
+        $this->assertSame(LifecycleStatus::Ended, $cd->lifecycle);
         $this->assertSame(realpath($this->folder.'/project')."\n", $this->output->stdoutOf($pwd));
     }
 
@@ -91,7 +91,7 @@ final class SupervisorTest extends TestCase
 
         $this->assertCount(2, $this->parts());
         $this->assertSame(self::PRINTED_OUTPUT, $outcome->output);
-        $this->assertSame(LifecycleState::Queued, $this->processRun->refresh()->lifecycle);
+        $this->assertSame(LifecycleStatus::Queued, $this->processRun->refresh()->lifecycle);
     }
 
     public function test_an_external_part_is_spawned_from_its_argv_with_its_own_record(): void

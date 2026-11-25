@@ -11,7 +11,7 @@ use App\Contracts\Work\ActorStackSessions;
 use App\Support\AssigneeIdentity;
 use App\Support\IdListPage;
 use App\Values\TimingVerdict;
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Models\PhaseTask;
 use Domain\Plans\Models\Plan;
 use Domain\Tasks\Contracts\TaskProgressCounter;
@@ -51,7 +51,7 @@ final readonly class PhaseTiming implements VerificationTiming
                 new IdListPage($afterId, IdListPage::LARGEST_LIMIT),
             );
 
-            $started = Plan::query()->amongIds($page->ids)->inStates([PlanState::Started])
+            $started = Plan::query()->amongIds($page->ids)->inStates([PlanStatus::Started])
                 ->oldestFirst()->readExactly(count($page->ids))->get();
 
             foreach ($started as $plan) {

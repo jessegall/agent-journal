@@ -6,7 +6,7 @@ namespace App\Commands\Accounts\ReconcileSignIns;
 
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\Accounts\SignInState;
+use App\Enums\Accounts\SignInStatus;
 use App\Models\Accounts\SignInAttempt;
 use Carbon\CarbonImmutable;
 
@@ -24,7 +24,7 @@ final readonly class ReconcileSignInsHandler implements CommandHandler
         $ended = 0;
 
         foreach (SignInAttempt::findLostBy($command->hostId, $command->runningAttemptIds) as $attempt) {
-            $attempt->finishAt(SignInState::Interrupted, CarbonImmutable::now());
+            $attempt->finishAt(SignInStatus::Interrupted, CarbonImmutable::now());
             $this->facts->runTransactionListeners();
             $ended++;
         }

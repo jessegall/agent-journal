@@ -8,11 +8,11 @@ use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
 use Domain\Plans\Commands\StartPlan\StartPlanCommand;
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\TestCase;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
@@ -56,7 +56,7 @@ final class PlanEndPageTest extends TestCase
         ])
             ->assertSessionHasErrors();
 
-        $this->assertSame(PlanState::Started, $this->plan->refresh()->state);
+        $this->assertSame(PlanStatus::Started, $this->plan->refresh()->status);
 
         $this->end('cancel', [
             'revision' => $this->plan->revision,
@@ -65,8 +65,8 @@ final class PlanEndPageTest extends TestCase
         ])
             ->assertSessionHasNoErrors();
 
-        $this->assertSame(PlanState::Cancelled, $this->plan->refresh()->state);
-        $this->assertSame(TaskState::Open, $task->refresh()->state);
+        $this->assertSame(PlanStatus::Cancelled, $this->plan->refresh()->status);
+        $this->assertSame(TaskStatus::Open, $task->refresh()->status);
     }
 
     public function test_a_started_plan_with_nothing_unfinished_offers_finish_and_finishing_shows_done(): void
@@ -86,7 +86,7 @@ final class PlanEndPageTest extends TestCase
         ])
             ->assertSessionHasNoErrors();
 
-        $this->assertSame(PlanState::Done, $this->plan->refresh()->state);
+        $this->assertSame(PlanStatus::Done, $this->plan->refresh()->status);
     }
 
     /**

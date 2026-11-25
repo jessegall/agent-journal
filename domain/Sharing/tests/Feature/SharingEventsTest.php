@@ -16,7 +16,7 @@ use Domain\Sharing\Commands\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
 use Domain\Sharing\Commands\RevokeShare\RevokeShareCommand;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\GatewayOutcome;
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Events\ShareActivated;
 use Domain\Sharing\Events\ShareRevoked;
 use Domain\Sharing\Models\Share;
@@ -123,7 +123,7 @@ final class SharingEventsTest extends TestCase
             [
                 $this->share->id,
                 $this->configuration->id,
-                ShareState::Active,
+                ShareStatus::Active,
                 Share::FIRST_SCOPE_VERSION,
             ],
             [
@@ -155,7 +155,7 @@ final class SharingEventsTest extends TestCase
         }
 
         $this->assertSame([], $this->received);
-        $this->assertSame(ShareState::Pending, $this->share->fresh()?->state);
+        $this->assertSame(ShareStatus::Pending, $this->share->fresh()?->status);
 
         $this->asOwner(new RevokeShareCommand($this->share->id, (string) Str::ulid()));
         $this->asOwner(new RevokeShareCommand($this->share->id, (string) Str::ulid()));

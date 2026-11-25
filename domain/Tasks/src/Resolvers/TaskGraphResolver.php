@@ -67,7 +67,7 @@ final readonly class TaskGraphResolver implements TaskGraphResolverContract
                 'id' => $task->id,
                 'number' => $task->number,
                 'title' => $task->title,
-                'state' => $task->state,
+                'state' => $task->status,
                 'address' => "/tasks/{$task->number}",
                 'mayEditWaits' => $mayEdit,
                 'reason' => $mayEdit ? Optional::create() : $this->reasonFor($task),
@@ -77,7 +77,7 @@ final readonly class TaskGraphResolver implements TaskGraphResolverContract
 
     private function reasonFor(Task $task): string
     {
-        if ($task->state->hasEnded()) {
+        if ($task->status->hasEnded()) {
             return "Task {$task->number} has ended, so its waits no longer change.";
         }
 

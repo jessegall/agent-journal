@@ -26,7 +26,7 @@ use Domain\Helpers\Commands\ContinueHelper\ContinueHelperCommand;
 use Domain\Helpers\Commands\SendHelper\SendHelperCommand;
 use Domain\Helpers\Commands\StartHelper\StartHelperCommand;
 use Domain\Helpers\Commands\SteerHelper\SteerHelperCommand;
-use Domain\Helpers\Enums\JobState;
+use Domain\Helpers\Enums\JobStatus;
 use Domain\Helpers\Exceptions\HelperBusy;
 use Domain\Helpers\Exceptions\HelperJobAlreadyEnded;
 use Domain\Helpers\Exceptions\HelperJobUnfinished;
@@ -100,7 +100,7 @@ final class HelpersDomain extends Domain implements
             ->values(
                 HelperReceipt::class,
                 HelperWork::class,
-                JobState::class,
+                JobStatus::class,
                 SessionStartDetails::class,
                 SteerReceipt::class,
             )

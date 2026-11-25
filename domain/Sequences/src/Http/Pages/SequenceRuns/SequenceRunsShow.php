@@ -8,7 +8,7 @@ use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\DetailPage;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
-use Domain\Sequences\Enums\SequenceRunState;
+use Domain\Sequences\Enums\SequenceRunStatus;
 use Domain\Sequences\Models\SequenceRun;
 
 /**
@@ -33,7 +33,7 @@ final readonly class SequenceRunsShow extends SequenceRunsPage
 
     private function detailOf(SequenceRun $run): DetailPage
     {
-        $isRunning = $run->state === SequenceRunState::Running;
+        $isRunning = $run->status === SequenceRunStatus::Running;
         $steps = [];
 
         foreach ($run->steps as $index => $title) {
@@ -45,7 +45,7 @@ final readonly class SequenceRunsShow extends SequenceRunsPage
                 'label' => $title,
                 'isCurrent' => $isCurrent,
                 'leading' => [LayoutPartData::text('position', (string) $position, 'muted')],
-                'trailing' => [$this->markOf($position, $run->current_step, $run->state)],
+                'trailing' => [$this->markOf($position, $run->current_step, $run->status)],
             ]);
         }
 
@@ -54,15 +54,15 @@ final readonly class SequenceRunsShow extends SequenceRunsPage
             ->withFacts(LayoutRowData::from([
                 'key' => 'state',
                 'label' => 'State',
-                'value' => ucfirst($run->state->value),
+                'value' => ucfirst($run->status->value),
             ]))
             ->withStanding(LayoutPartData::collection('steps', 'list', $steps));
     }
 
-    private function markOf(int $position, int $current, SequenceRunState $state): LayoutPartData
+    private function markOf(int $position, int $current, SequenceRunStatus $state): LayoutPartData
     {
-        if ($state !== SequenceRunState::Running) {
-            return LayoutPartData::text('mark', $state === SequenceRunState::Finished ? 'Done' : 'Not done', 'muted');
+        if ($state !== SequenceRunStatus::Running) {
+            return LayoutPartData::text('mark', $state === SequenceRunStatus::Finished ? 'Done' : 'Not done', 'muted');
         }
 
         return match (true) {

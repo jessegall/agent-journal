@@ -9,7 +9,7 @@ use App\Data\Accounts\AccountListData;
 use App\Data\Accounts\AccountRowData;
 use App\Data\Accounts\AccountUsageData;
 use App\Data\Accounts\AccountUsageWindowData;
-use App\Enums\Accounts\AccountState;
+use App\Enums\Accounts\AccountStatus;
 use App\Enums\Accounts\UsageWindowSlot;
 use App\Enums\Settings\ActionMethod;
 use App\Support\Layout\DeclaredLayoutData;
@@ -208,14 +208,14 @@ final readonly class AccountsIndex extends AccountsPage
     {
         $rows = [$this->nameRow($row)];
 
-        if ($row->state === AccountState::Authenticated) {
+        if ($row->state === AccountStatus::Authenticated) {
             $rows[] = $this->defaultRow($row);
         }
 
         $rows[] = SettingsRow::control(
             'sign-in',
             'Sign-in',
-            $row->state === AccountState::Unauthenticated
+            $row->state === AccountStatus::Unauthenticated
                 ? $this->form('sign-in-again', 'accounts.sign-in-again', $row->id, 'Sign in again')
                 : LayoutPartData::badge('state', $this->stateWordOf($row), $this->stateToneOf($row)),
             $this->signInHelp($row),
@@ -277,8 +277,8 @@ final readonly class AccountsIndex extends AccountsPage
     private function signInHelp(AccountRowData $row): string
     {
         return match (true) {
-            $row->state === AccountState::Authenticated && $row->expiresAt !== null => "Signed in. It expires on {$this->dayOf($row->expiresAt)}.",
-            $row->state === AccountState::Authenticated => 'Signed in.',
+            $row->state === AccountStatus::Authenticated && $row->expiresAt !== null => "Signed in. It expires on {$this->dayOf($row->expiresAt)}.",
+            $row->state === AccountStatus::Authenticated => 'Signed in.',
             $this->hasExpired($row) => 'Expired. Sign in again so agents can use it.',
             default => 'Not signed in yet. Sign in so agents can use it.',
         };
@@ -375,7 +375,7 @@ final readonly class AccountsIndex extends AccountsPage
      */
     private function stateToneOf(AccountRowData $row): string
     {
-        if ($row->state === AccountState::Unauthenticated) {
+        if ($row->state === AccountStatus::Unauthenticated) {
             return 'waiting';
         }
 
@@ -385,10 +385,10 @@ final readonly class AccountsIndex extends AccountsPage
     private function stateWordOf(AccountRowData $row): string
     {
         return match (true) {
-            $row->state === AccountState::Authenticated => 'Signed in',
-            $row->state === AccountState::Unauthenticated && $this->hasExpired($row) => 'Expired',
-            $row->state === AccountState::Unauthenticated => 'Not signed in',
-            $row->state === AccountState::Removing => 'Removing',
+            $row->state === AccountStatus::Authenticated => 'Signed in',
+            $row->state === AccountStatus::Unauthenticated && $this->hasExpired($row) => 'Expired',
+            $row->state === AccountStatus::Unauthenticated => 'Not signed in',
+            $row->state === AccountStatus::Removing => 'Removing',
             default => 'Removed',
         };
     }

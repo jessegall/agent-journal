@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('creator_type', 16);
             $table->string('creator_id', 64);
             $table->unsignedInteger('revision')->default(1);
-            $table->string('state', 16)->default('open');
+            $table->string('status', 16)->default('open');
             $table->unsignedInteger('run_number')->default(0);
             $table->text('result_note')->nullable();
             $table->text('block_reason')->nullable();

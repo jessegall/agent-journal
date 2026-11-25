@@ -100,7 +100,7 @@ final readonly class TerminalControls
         $runtime = $this->lockedRuntime($agentId);
         $grant = $this->takeOf($writer, $takeId);
 
-        if ($grant->state->isHolding()) {
+        if ($grant->status->isHolding()) {
             $grant->release($this->send($runtime, DriverOperation::CancelTake, "cancel:{$takeId}", [
                 'take_id' => $takeId,
             ]));
@@ -145,7 +145,7 @@ final readonly class TerminalControls
         $runtime = $this->lockedRuntime($agentId);
         $grant = $this->grantOf($writer, $grantId);
 
-        if ($grant->state->isHolding()) {
+        if ($grant->status->isHolding()) {
             $grant->release($this->send($runtime, DriverOperation::ReleaseControl, "release:{$grantId}", [
                 'take_id' => $grant->take_id,
                 'grant_id' => $grantId,
@@ -423,7 +423,7 @@ final readonly class TerminalControls
 
     private function revoke(AgentRuntime $runtime, TerminalGrant $grant): void
     {
-        if (! $grant->state->isHolding()) {
+        if (! $grant->status->isHolding()) {
             return;
         }
 
@@ -538,7 +538,7 @@ final readonly class TerminalControls
         return [
             'takeId' => $grant->take_id,
             'grantId' => $grant->grant_id,
-            'state' => $grant->state,
+            'state' => $grant->status,
             'expiresInSeconds' => max(0, (int) ceil($now->diffInSeconds($grant->expires_at, false))),
             'nextSequence' => $grant->next_sequence,
             'isPrivateEntry' => Host::query()->whereKey($grant->host_id)->sole()

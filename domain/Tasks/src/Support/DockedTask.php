@@ -28,7 +28,7 @@ final readonly class DockedTask implements Dockable
 
     public function composeDockCard(CardContext $context): DockCard
     {
-        $parts = [new Title('title', $this->task->title), $this->task->state->stateLabel()];
+        $parts = [new Title('title', $this->task->title), $this->task->status->stateLabel()];
 
         if ($this->holderName !== null) {
             $parts[] = new Subtitle('holder', $this->holderName);

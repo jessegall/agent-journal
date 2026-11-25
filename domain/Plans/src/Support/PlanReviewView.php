@@ -14,8 +14,8 @@ use Domain\Plans\Data\PlanReviewData;
 use Domain\Plans\Data\PlanReviewReceiptData;
 use Domain\Plans\Data\PlanWorkPreviewData;
 use Domain\Plans\Data\PlanWorkRecipientData;
-use Domain\Plans\Enums\PlanReviewState;
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanReviewStatus;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Models\PlanReviewEdition;
 use Domain\Plans\Policies\PlanPolicy;
@@ -48,16 +48,16 @@ final readonly class PlanReviewView
         $approval = PlanReviewEdition::findLatestApprovalOf($plan->id);
 
         return PlanReviewData::from([
-            'mayRequest' => $mayEdit && $plan->state === PlanState::Planned,
-            'mayWithdraw' => $mayEdit && $plan->state === PlanState::Reviewing,
-            'mayDecide' => in_array(AccessType::Admin, $allowed, true) && $plan->state === PlanState::Reviewing,
-            'mayCancel' => $mayEdit && ! $plan->state->hasEnded(),
-            'mayFinish' => $mayEdit && $plan->state === PlanState::Started && $plan->progress->unfinished() === 0,
+            'mayRequest' => $mayEdit && $plan->status === PlanStatus::Planned,
+            'mayWithdraw' => $mayEdit && $plan->status === PlanStatus::Reviewing,
+            'mayDecide' => in_array(AccessType::Admin, $allowed, true) && $plan->status === PlanStatus::Reviewing,
+            'mayCancel' => $mayEdit && ! $plan->status->hasEnded(),
+            'mayFinish' => $mayEdit && $plan->status === PlanStatus::Started && $plan->progress->unfinished() === 0,
             'revision' => $plan->revision,
             'work' => $this->workOf($plan, $mayEdit),
             'reviewNumber' => $requested?->number,
             'receipt' => self::receiptOrMissing($approval),
-            'changesRequested' => $latest !== null && $latest->state === PlanReviewState::ChangesRequested
+            'changesRequested' => $latest !== null && $latest->status === PlanReviewStatus::ChangesRequested
                 ? self::receiptOf($latest)
                 : Optional::create(),
         ]);
@@ -73,7 +73,7 @@ final readonly class PlanReviewView
         $progress = $plan->progress;
 
         return PlanWorkPreviewData::from([
-            'mayAssign' => $mayEdit && ! $plan->state->hasEnded(),
+            'mayAssign' => $mayEdit && ! $plan->status->hasEnded(),
             'phaseCount' => $phaseCount,
             'taskCount' => $progress->total,
             'movingTasks' => $progress->unfinished(),

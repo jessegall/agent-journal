@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('method', 32)->default('oauth');
             $table->string('label', 80);
             $table->string('label_key', 80);
-            $table->string('state', 32);
+            $table->string('status', 32);
             $table->string('directory')->nullable();
             $table->string('identity')->nullable();
             $table->string('subject')->nullable();
@@ -42,7 +42,7 @@ return new class extends Migration
             $table->unsignedInteger('name_revision')->default(0);
         });
 
-        DB::statement("create unique index accounts_label_in_use on accounts (account_protocol, label_key) where state <> 'removed'");
+        DB::statement("create unique index accounts_label_in_use on accounts (account_protocol, label_key) where status <> 'removed'");
 
         Schema::create('active_accounts', function (Blueprint $table) {
             $table->ulid('id')->primary();
@@ -61,7 +61,7 @@ return new class extends Migration
             $table->string('actor_id', 64);
             $table->string('fingerprint', 64)->nullable();
             $table->ulid('account_id')->nullable();
-            $table->string('state', 32);
+            $table->string('status', 32);
             $table->unsignedBigInteger('generation')->default(0);
             $table->string('directory')->nullable();
             $table->string('process_reference')->nullable();
@@ -74,7 +74,7 @@ return new class extends Migration
             $table->timestampTz('expires_at');
             $table->timestampsTz();
 
-            $table->index(['account_protocol', 'state']);
+            $table->index(['account_protocol', 'status']);
             $table->string('refusal', 300)->nullable();
             $table->string('result_account_id', 26)->nullable();
             $table->string('submission_key', 128)->nullable();

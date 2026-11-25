@@ -6,7 +6,7 @@ namespace Tests\Feature\Agents;
 
 use App\Commands\Sessions\RecordStopConditionResults\RecordStopConditionResultsCommand;
 use App\Enums\Hooks\AnswerType;
-use App\Enums\Sessions\StopCheckState;
+use App\Enums\Sessions\StopCheckStatus;
 use App\Enums\Sessions\StopConditionResultType;
 use App\Models\Sessions\SessionPolicy;
 use App\Models\Sessions\SessionProcess;
@@ -107,8 +107,8 @@ final class StopConditionRunnerTest extends TestCase
         $this->assertSame(AnswerType::Allow, $this->typeOf($this->stop($unfrozen, 'stop-1')));
         $this->assertSame(AnswerType::Allow, $this->typeOf($this->stop($empty, 'stop-1')));
         $this->assertSame(
-            StopCheckState::Passed,
-            StopCheck::query()->withoutGlobalScopes()->sole()->state,
+            StopCheckStatus::Passed,
+            StopCheck::query()->withoutGlobalScopes()->sole()->status,
         );
     }
 

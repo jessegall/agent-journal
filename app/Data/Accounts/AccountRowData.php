@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Accounts;
 
-use App\Enums\Accounts\AccountState;
+use App\Enums\Accounts\AccountStatus;
 use App\Enums\Accounts\CleanupProblem;
 use App\Models\Accounts\Account;
 use App\Support\SignInProtocols;
@@ -31,7 +31,7 @@ final class AccountRowData extends Data
         public readonly string $label,
         public readonly int $nameRevision,
         public readonly SignInMethodData $signIn,
-        public readonly AccountState $state,
+        public readonly AccountStatus $state,
         public readonly string|null $identity,
         public readonly string|null $workspace,
         public readonly bool $isActive,
@@ -67,7 +67,7 @@ final class AccountRowData extends Data
                 $account->method,
                 $protocols->for($account->account_protocol, $account->method),
             ),
-            $account->state,
+            $account->status,
             $account->identity,
             $account->workspace,
             $isActive,

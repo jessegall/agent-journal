@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Pages;
 
-use App\Enums\Web\WindowState;
+use App\Enums\Web\WindowStatus;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -15,10 +15,10 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class UnavailableWindow extends Data
 {
-    public function __construct(public readonly WindowState $state) {}
+    public function __construct(public readonly WindowStatus $state) {}
 
     public static function make(): self
     {
-        return new self(WindowState::Unavailable);
+        return new self(WindowStatus::Unavailable);
     }
 }

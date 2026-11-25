@@ -29,6 +29,6 @@ final readonly class StopEvidence implements StopEvidenceContract
             $summaries[$stopRecord->condition_key] = $stopRecord->summary;
         }
 
-        return new StopCheckResult($record->state, $statuses, $summaries);
+        return new StopCheckResult($record->status, $statuses, $summaries);
     }
 }

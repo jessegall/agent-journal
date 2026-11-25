@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignUlid('number_group_id')->constrained('number_groups')->restrictOnDelete();
             $table->unsignedBigInteger('number');
             $table->text('text');
-            $table->string('state', 16)->default('active');
+            $table->string('status', 16)->default('active');
             $table->text('reason')->nullable();
             $table->ulid('replaces_rule_id')->nullable();
             $table->string('proposer_type', 16)->nullable();

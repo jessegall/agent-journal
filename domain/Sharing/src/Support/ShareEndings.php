@@ -7,7 +7,7 @@ namespace Domain\Sharing\Support;
 use App\Support\ActorIdentity;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\ShareAuditType;
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareAudit;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
@@ -25,7 +25,7 @@ final readonly class ShareEndings
      */
     public function revoke(Share $share, ActorIdentity $owner): bool
     {
-        return $this->endAndRelease($share, ShareState::Revoked, ShareAuditType::Revoked, $owner);
+        return $this->endAndRelease($share, ShareStatus::Revoked, ShareAuditType::Revoked, $owner);
     }
 
     /**
@@ -33,7 +33,7 @@ final readonly class ShareEndings
      */
     public function expire(Share $share): bool
     {
-        return $this->endAndRelease($share, ShareState::Expired, ShareAuditType::Expired, ActorIdentity::system());
+        return $this->endAndRelease($share, ShareStatus::Expired, ShareAuditType::Expired, ActorIdentity::system());
     }
 
     /**
@@ -45,13 +45,13 @@ final readonly class ShareEndings
     public function revokeAll(array $shares, ActorIdentity $owner): void
     {
         foreach ($shares as $share) {
-            $this->end($share, ShareState::Revoked, ShareAuditType::Revoked, $owner);
+            $this->end($share, ShareStatus::Revoked, ShareAuditType::Revoked, $owner);
         }
     }
 
-    private function endAndRelease(Share $share, ShareState $terminal, ShareAuditType $type, ActorIdentity $actor): bool
+    private function endAndRelease(Share $share, ShareStatus $terminal, ShareAuditType $type, ActorIdentity $actor): bool
     {
-        $wasLive = $share->state->isLive();
+        $wasLive = $share->status->isLive();
 
         if (! $this->end($share, $terminal, $type, $actor)) {
             return false;
@@ -65,7 +65,7 @@ final readonly class ShareEndings
         return true;
     }
 
-    private function end(Share $share, ShareState $terminal, ShareAuditType $type, ActorIdentity $actor): bool
+    private function end(Share $share, ShareStatus $terminal, ShareAuditType $type, ActorIdentity $actor): bool
     {
         if (! $share->end($terminal)) {
             return false;

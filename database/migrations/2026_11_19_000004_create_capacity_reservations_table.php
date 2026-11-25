@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedInteger('cpu_cores');
             $table->unsignedBigInteger('memory_bytes');
             $table->unsignedBigInteger('disk_bytes');
-            $table->string('state', 16)->index();
+            $table->string('status', 16)->index();
             $table->timestampsTz();
         });
     }

@@ -6,7 +6,7 @@ namespace Domain\Tasks\Support;
 
 use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Enums\Agents\AccessType;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Exceptions\TaskWaitRefused;
 use Domain\Tasks\Models\Task;
@@ -27,7 +27,7 @@ final readonly class TaskWaitRules
     {
         $allowed = $this->authorizer->filterActions(TaskPolicy::class, $task, [AccessType::Edit]);
 
-        return ! $task->state->hasEnded() && in_array(AccessType::Edit, $allowed, true);
+        return ! $task->status->hasEnded() && in_array(AccessType::Edit, $allowed, true);
     }
 
     /**
@@ -46,11 +46,11 @@ final readonly class TaskWaitRules
             throw TaskWaitRefused::onItself($dependent->number);
         }
 
-        if ($dependent->state->hasEnded()) {
-            throw TaskWaitRefused::dependentEnded($dependent->number, $dependent->state->value);
+        if ($dependent->status->hasEnded()) {
+            throw TaskWaitRefused::dependentEnded($dependent->number, $dependent->status->value);
         }
 
-        if ($dependent->state === TaskState::Started) {
+        if ($dependent->status === TaskStatus::Started) {
             throw TaskWaitRefused::dependentStarted($dependent->number);
         }
 
@@ -68,8 +68,8 @@ final readonly class TaskWaitRules
      */
     public function existingToRemove(Task $dependent, string $prerequisiteId): TaskWait
     {
-        if ($dependent->state->hasEnded()) {
-            throw TaskWaitRefused::dependentEnded($dependent->number, $dependent->state->value);
+        if ($dependent->status->hasEnded()) {
+            throw TaskWaitRefused::dependentEnded($dependent->number, $dependent->status->value);
         }
 
         $wait = TaskWait::findBetween($dependent->id, $prerequisiteId);

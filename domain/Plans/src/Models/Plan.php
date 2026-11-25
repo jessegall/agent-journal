@@ -28,8 +28,8 @@ use App\Support\ShareRecordCard;
 use App\Support\ShareRelationSet;
 use Carbon\CarbonImmutable;
 use Domain\Plans\Database\Factories\PlanFactory;
-use Domain\Plans\Enums\PlanReviewState;
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanReviewStatus;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Enums\PlanTextLimit;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Events\PlanCancelled;
@@ -69,7 +69,7 @@ use PhpOption\Option;
  * @property string $creator_id
  * @property int $revision
  * @property PlanType $type
- * @property PlanState $state
+ * @property PlanStatus $status
  * @property string|null $finish_note
  * @property string|null $cancel_reason
  * @property int $total_tasks
@@ -125,7 +125,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
      * @var array<string, mixed>
      */
     protected $attributes = [
-        'state' => 'planned',
+        'status' => 'planned',
         'revision' => 1,
         'total_tasks' => 0,
         'finished_tasks' => 0,
@@ -141,7 +141,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
     {
         return [
             'type' => PlanType::class,
-            'state' => PlanState::class,
+            'status' => PlanStatus::class,
             'revision' => 'integer',
             'total_tasks' => 'integer',
             'finished_tasks' => 'integer',
@@ -189,7 +189,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
      */
     public function finish(string $note, ActorContext $actor): void
     {
-        $this->state = PlanState::Done;
+        $this->status = PlanStatus::Done;
         $this->finish_note = $note;
         $this->revision++;
         $this->assertSaved($this->save());
@@ -201,7 +201,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
      */
     public function cancel(string $reason, ActorContext $actor): void
     {
-        $this->state = PlanState::Cancelled;
+        $this->status = PlanStatus::Cancelled;
         $this->cancel_reason = $reason;
         $this->revision++;
         $this->assertSaved($this->save());
@@ -214,13 +214,13 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
      */
     public function startOnce(ActorContext $actor): bool
     {
-        if ($this->state === PlanState::Started) {
+        if ($this->status === PlanStatus::Started) {
             return false;
         }
 
         $this->assertStartable();
 
-        $this->state = PlanState::Started;
+        $this->status = PlanStatus::Started;
         $this->assertSaved($this->save());
         $this->raise(new PlanStarted($this->id, $actor));
         $this->recordProgress($this->progress);
@@ -240,7 +240,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
     {
         $this->assertPlanned();
 
-        $this->state = PlanState::Reviewing;
+        $this->status = PlanStatus::Reviewing;
         $this->assertSaved($this->save());
         $this->raise(new PlanReviewRequested($this->id, $review->id, $reviewers, $this->number));
     }
@@ -254,7 +254,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
     {
         $this->assertReviewing();
 
-        $this->state = PlanState::Planned;
+        $this->status = PlanStatus::Planned;
         $this->assertSaved($this->save());
         $this->raise(new PlanReviewWithdrawn($this->id, $editionId));
     }
@@ -264,11 +264,11 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
      *
      * @throws PlanReviewRefused
      */
-    public function settleReview(string $editionId, PlanReviewState $decision): void
+    public function settleReview(string $editionId, PlanReviewStatus $decision): void
     {
         $this->assertReviewing();
 
-        $this->state = PlanState::Planned;
+        $this->status = PlanStatus::Planned;
         $this->assertSaved($this->save());
         $this->raise(new PlanReviewDecided($this->id, $editionId, $decision));
     }
@@ -301,7 +301,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
      */
     public function isStarted(): bool
     {
-        return $this->state === PlanState::Started;
+        return $this->status === PlanStatus::Started;
     }
 
     // ----------[ Transformers ]----------
@@ -361,8 +361,8 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
             $this->number,
             $this->title,
             $this->type,
-            $this->state,
-            $this->state->canStart(),
+            $this->status,
+            $this->status->canStart(),
             $isFocused,
             $progress,
             $currentPhase,
@@ -393,7 +393,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
             $this->number,
             $this->title,
             $this->type,
-            $this->state,
+            $this->status,
             $this->revision,
             $this->creator_type,
             $this->creator_id,
@@ -445,7 +445,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
         return Accessor::get(fn () => <<<TEXT
         # {$this->title}
 
-        This plan is {$this->state->value}.
+        This plan is {$this->status->value}.
 
         TEXT);
     }
@@ -469,8 +469,8 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
      */
     private function assertStartable(): void
     {
-        if (! $this->state->canStart()) {
-            throw StartDenied::inState($this->number, $this->state->value);
+        if (! $this->status->canStart()) {
+            throw StartDenied::inState($this->number, $this->status->value);
         }
     }
 
@@ -481,8 +481,8 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
      */
     private function assertPlanned(): void
     {
-        if ($this->state !== PlanState::Planned) {
-            throw PlanReviewRefused::notPlanned($this->number, $this->state->value);
+        if ($this->status !== PlanStatus::Planned) {
+            throw PlanReviewRefused::notPlanned($this->number, $this->status->value);
         }
     }
 
@@ -493,8 +493,8 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
      */
     private function assertReviewing(): void
     {
-        if ($this->state !== PlanState::Reviewing) {
-            throw PlanReviewRefused::notReviewing($this->number, $this->state->value);
+        if ($this->status !== PlanStatus::Reviewing) {
+            throw PlanReviewRefused::notReviewing($this->number, $this->status->value);
         }
     }
 
@@ -505,8 +505,8 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
      */
     private function assertStarted(): void
     {
-        if ($this->state !== PlanState::Started) {
-            throw AssignmentPoolUnavailable::inState("Plan {$this->number}", $this->state->value);
+        if ($this->status !== PlanStatus::Started) {
+            throw AssignmentPoolUnavailable::inState("Plan {$this->number}", $this->status->value);
         }
     }
 
@@ -531,7 +531,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
      */
     private function assertNotUnderReview(): void
     {
-        if ($this->state === PlanState::Reviewing) {
+        if ($this->status === PlanStatus::Reviewing) {
             throw PlanUnderReview::forPlan($this->number);
         }
     }

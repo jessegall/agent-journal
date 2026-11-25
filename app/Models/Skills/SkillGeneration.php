@@ -11,11 +11,11 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Data\Skills\GeneratedSkillData;
-use App\Enums\Skills\GenerationState;
+use App\Enums\Skills\GenerationStatus;
 use App\Events\Skills\SkillGenerationRetired;
 use App\Exceptions\SkillGenerationImmutable;
 use App\Models\Support\Accessor;
-use App\Values\GenerationStatus;
+use App\Values\GenerationReport;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -29,11 +29,10 @@ use Spatie\LaravelData\DataCollection;
  * @property string $catalogue_digest
  * @property string $registration_digest
  * @property DataCollection<int, GeneratedSkillData> $entries
- * @property GenerationState $state
+ * @property GenerationStatus $status
  * @property string|null $error_reason
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
- * @property-read mixed $status
  *
  * @mixin \Eloquent
  */
@@ -52,7 +51,7 @@ final class SkillGeneration extends Model implements EventSource, ReadableModel
     {
         return [
             'entries' => DataCollection::class.':'.GeneratedSkillData::class,
-            'state' => GenerationState::class,
+            'status' => GenerationStatus::class,
         ];
     }
 
@@ -71,7 +70,7 @@ final class SkillGeneration extends Model implements EventSource, ReadableModel
      */
     public static function create(
         string $registrationDigest,
-        GenerationState $state,
+        GenerationStatus $state,
         string $catalogueDigest,
         array $definitions,
         string|null $errorReason,
@@ -80,7 +79,7 @@ final class SkillGeneration extends Model implements EventSource, ReadableModel
         $skillGeneration->catalogue_digest = $catalogueDigest;
         $skillGeneration->registration_digest = $registrationDigest;
         $skillGeneration->entries = GeneratedSkillData::collect($definitions, DataCollection::class);
-        $skillGeneration->state = $state;
+        $skillGeneration->status = $state;
         $skillGeneration->error_reason = $errorReason;
         $skillGeneration->assertSaved($skillGeneration->save());
 
@@ -91,7 +90,7 @@ final class SkillGeneration extends Model implements EventSource, ReadableModel
 
     public function retire(): void
     {
-        $this->state = GenerationState::Retired;
+        $this->status = GenerationStatus::Retired;
         $this->assertSaved($this->save());
         $this->raise(new SkillGenerationRetired($this->id));
     }
@@ -113,12 +112,12 @@ final class SkillGeneration extends Model implements EventSource, ReadableModel
     // ----------[ Accessors ]----------
 
     /**
-     * @return Attribute<GenerationStatus, never>
+     * @return Attribute<GenerationReport, never>
      */
-    protected function status(): Attribute
+    protected function report(): Attribute
     {
         return Accessor::get(
-            fn () => new GenerationStatus($this->id, $this->state, $this->catalogue_digest, $this->error_reason),
+            fn () => new GenerationReport($this->id, $this->status, $this->catalogue_digest, $this->error_reason),
         );
     }
 
@@ -155,7 +154,7 @@ final class SkillGeneration extends Model implements EventSource, ReadableModel
      */
     public static function findLatestReady(): self|null
     {
-        return self::query()->inState(GenerationState::Ready)->newestFirst()->first();
+        return self::query()->inState(GenerationStatus::Ready)->newestFirst()->first();
     }
 
     /**
@@ -172,8 +171,8 @@ final class SkillGeneration extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function inState(Builder $query, GenerationState $state): void
+    protected function inState(Builder $query, GenerationStatus $state): void
     {
-        $query->where('state', $state->value);
+        $query->where('status', $state->value);
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\Enums\Runs\LifecycleState;
+use App\Enums\Runs\LifecycleStatus;
 use LogicException;
 
 /**
@@ -12,7 +12,7 @@ use LogicException;
  */
 final class PartTransitionRefused extends LogicException
 {
-    public static function between(LifecycleState $from, LifecycleState $to): self
+    public static function between(LifecycleStatus $from, LifecycleStatus $to): self
     {
         return new self("A part that is {$from->value} cannot become {$to->value}.");
     }

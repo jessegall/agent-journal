@@ -195,14 +195,6 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
     }
 
     /**
-     * The configuration of this id, enabled or not, locked until the transaction ends.
-     */
-    public static function findLockedById(string $configurationId): self
-    {
-        return self::findLockedById($configurationId);
-    }
-
-    /**
      * The configurations of these ids, locked together in id order, so two runs take their locks in the same order.
      *
      * @param  list<string>  $ids

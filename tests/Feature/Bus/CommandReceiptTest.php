@@ -7,7 +7,7 @@ namespace Tests\Feature\Bus;
 use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
 use App\Contracts\Authorization\OperationResolver;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\CommandRules\ReceiptState;
+use App\Enums\CommandRules\ReceiptStatus;
 use App\Exceptions\CommandRefused;
 use App\Exceptions\NestedCommandFailureIgnored;
 use App\Exceptions\OperationUnavailable;
@@ -88,7 +88,7 @@ final class CommandReceiptTest extends CommandBusTestCase
         $this->assertSame($first, $repeat);
         $this->assertSame(1, $this->rowCount());
         $this->assertSame(
-            ReceiptState::Completed,
+            ReceiptStatus::Completed,
             $this->app->make(OperationResolver::class)->operation(self::KEY)->state,
         );
     }
@@ -115,7 +115,7 @@ final class CommandReceiptTest extends CommandBusTestCase
 
         $this->assertThrows(fn () => $bus->run(new RefuseNoteCommand('refused')), RefusalReplayed::class, $message);
         $this->assertSame(
-            ReceiptState::Refused,
+            ReceiptStatus::Refused,
             $this->app->make(OperationResolver::class)->operation(self::KEY)->state,
         );
         $this->assertSame(0, $this->rowCount());

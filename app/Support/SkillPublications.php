@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\Skills\PublicationState;
+use App\Enums\Skills\PublicationStatus;
 use App\Models\Skills\SkillGeneration;
 use App\Models\Skills\SkillPublication;
 use App\Values\PublicationIntent;
@@ -58,7 +58,7 @@ final readonly class SkillPublications
 
         $delivered = SkillPublication::query()
             ->ofSessions(array_map(fn (PublicationIntent $intent) => $intent->sessionId, $intents))
-            ->inState(PublicationState::Delivered)
+            ->inState(PublicationStatus::Delivered)
             ->newestCreatedFirst()
             ->readExactly($limit)
             ->get()
@@ -84,7 +84,7 @@ final readonly class SkillPublications
 
         SkillPublication::query()
             ->forTarget($publication->session_id, $publication->target)
-            ->inState(PublicationState::Delivered)
+            ->inState(PublicationStatus::Delivered)
             ->whereKeyNot($publication->id)
             ->readAll('a target keeps a handful of delivered publications')
             ->get()

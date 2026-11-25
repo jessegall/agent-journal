@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Wire;
 
 use App\Enums\Runs\ConsoleStream;
-use App\Enums\Runs\DisclosureState;
+use App\Enums\Runs\DisclosureStatus;
 use App\Enums\Runs\PartType;
 use App\Enums\Runs\Tone;
 use App\Enums\Web\Alignment;
@@ -73,7 +73,7 @@ final class PartMap
             Disclosure::class,
             PartType::Disclosure,
             TextField::named('title'),
-            EnumField::named('initial', DisclosureState::class),
+            EnumField::named('initial', DisclosureStatus::class),
         );
 
         $map->part(Title::class, PartType::Title, $textField);

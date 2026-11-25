@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Runs\InterpretationState;
+use App\Enums\Runs\InterpretationStatus;
 use App\Enums\Runs\PositionPurpose;
 use App\Events\Processes\ReaderPositionAdvanced;
 use App\Events\Processes\ReaderPositionFailed;
@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $reader_revision_id
  * @property PositionPurpose $purpose
  * @property ReaderCheckpoint $checkpoint
- * @property InterpretationState $interpretation
+ * @property InterpretationStatus $interpretation
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  *
@@ -48,7 +48,7 @@ final class ReaderPosition extends Model implements EventSource, ReadableModel
         return [
             'purpose' => PositionPurpose::class,
             'checkpoint' => ReaderCheckpoint::class,
-            'interpretation' => InterpretationState::class,
+            'interpretation' => InterpretationStatus::class,
         ];
     }
 
@@ -60,7 +60,7 @@ final class ReaderPosition extends Model implements EventSource, ReadableModel
      */
     public function markFailed(): void
     {
-        $this->interpretation = InterpretationState::ReaderFailed;
+        $this->interpretation = InterpretationStatus::ReaderFailed;
         $this->assertSaved($this->save());
         $this->raise(new ReaderPositionFailed($this->id));
     }
@@ -71,7 +71,7 @@ final class ReaderPosition extends Model implements EventSource, ReadableModel
     public function rewindTo(ReaderCheckpoint $consumed): void
     {
         $this->checkpoint = $consumed;
-        $this->interpretation = InterpretationState::Provisional;
+        $this->interpretation = InterpretationStatus::Provisional;
         $this->assertSaved($this->save());
         $this->raise(new ReaderPositionRewound($this->id));
     }
@@ -87,7 +87,7 @@ final class ReaderPosition extends Model implements EventSource, ReadableModel
 
     public function hasFailed(): bool
     {
-        return $this->interpretation === InterpretationState::ReaderFailed;
+        return $this->interpretation === InterpretationStatus::ReaderFailed;
     }
 
     // ----------[ Internals ]----------
@@ -106,7 +106,7 @@ final class ReaderPosition extends Model implements EventSource, ReadableModel
         $position->reader_revision_id = $revision->id;
         $position->purpose = $purpose;
         $position->checkpoint = $checkpoint;
-        $position->interpretation = InterpretationState::Provisional;
+        $position->interpretation = InterpretationStatus::Provisional;
 
         $position->setAttribute($position->getKeyName(), $position->newUniqueId());
         $position->insertIfAbsent();

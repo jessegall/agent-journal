@@ -10,7 +10,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Accounts\AccountCheckResult;
-use App\Enums\Accounts\AccountState;
+use App\Enums\Accounts\AccountStatus;
 use App\Enums\Accounts\CleanupProblem;
 use App\Enums\Accounts\SignInMethod;
 use App\Enums\Sessions\StartUnavailableReason;
@@ -54,7 +54,7 @@ use Illuminate\Support\Str;
  * @property SignInMethod $method
  * @property string $label
  * @property string $label_key
- * @property AccountState $state
+ * @property AccountStatus $status
  * @property string|null $directory
  * @property string|null $identity
  * @property string|null $subject
@@ -105,7 +105,7 @@ final class Account extends Model implements EventSource, ReadableModel
     protected function casts(): array
     {
         return [
-            'state' => AccountState::class,
+            'status' => AccountStatus::class,
             'maintenance' => 'boolean',
             'sign_in_generation' => 'integer',
             'cleanup_pending' => 'boolean',
@@ -132,7 +132,7 @@ final class Account extends Model implements EventSource, ReadableModel
         $account = new self();
         $account->account_protocol = $driver;
         $account->name($label);
-        $account->state = AccountState::Authenticated;
+        $account->status = AccountStatus::Authenticated;
         $account->directory = $directory;
         $account->sign_in_generation = 1;
         $account->save();
@@ -160,7 +160,7 @@ final class Account extends Model implements EventSource, ReadableModel
             $this->check_requested_generation = null;
         }
 
-        $this->state = AccountState::Authenticated;
+        $this->status = AccountStatus::Authenticated;
         $this->directory = $directory;
         $this->method = $attempt->method;
         $this->fingerprint = $attempt->fingerprint;
@@ -185,7 +185,7 @@ final class Account extends Model implements EventSource, ReadableModel
             return;
         }
 
-        if ($this->state === AccountState::Authenticated) {
+        if ($this->status === AccountStatus::Authenticated) {
             $this->check_requested_generation = $this->sign_in_generation;
         } else {
             $this->maintenance = false;
@@ -214,7 +214,7 @@ final class Account extends Model implements EventSource, ReadableModel
      */
     public function requestCheck(int $generation): bool
     {
-        if (! $this->isGeneration($generation) || $this->state !== AccountState::Authenticated) {
+        if (! $this->isGeneration($generation) || $this->status !== AccountStatus::Authenticated) {
             return false;
         }
 
@@ -252,10 +252,10 @@ final class Account extends Model implements EventSource, ReadableModel
         $this->check_requested_generation = null;
         $this->check_inconclusive_at = null;
         $this->checked_at = $now;
-        $isSignedOut = $check === AccountCheckResult::SignedOut && $this->state === AccountState::Authenticated;
+        $isSignedOut = $check === AccountCheckResult::SignedOut && $this->status === AccountStatus::Authenticated;
 
         if ($isSignedOut) {
-            $this->state = AccountState::Unauthenticated;
+            $this->status = AccountStatus::Unauthenticated;
         }
 
         $this->assertSaved($this->save());
@@ -343,7 +343,7 @@ final class Account extends Model implements EventSource, ReadableModel
      */
     public function beginRemoval(): void
     {
-        $this->state = AccountState::Removing;
+        $this->status = AccountStatus::Removing;
         $this->maintenance = true;
         $this->cleanup_pending = true;
         $this->cleanup_released = false;
@@ -362,7 +362,7 @@ final class Account extends Model implements EventSource, ReadableModel
      */
     public function retryCleanup(): void
     {
-        if ($this->state !== AccountState::Removing) {
+        if ($this->status !== AccountStatus::Removing) {
             return;
         }
 
@@ -386,7 +386,7 @@ final class Account extends Model implements EventSource, ReadableModel
      */
     public function applyCleanup(int $generation, CleanupProgress $progress): bool
     {
-        if (! $this->isGeneration($generation) || $this->state !== AccountState::Removing) {
+        if (! $this->isGeneration($generation) || $this->status !== AccountStatus::Removing) {
             return false;
         }
 
@@ -408,7 +408,7 @@ final class Account extends Model implements EventSource, ReadableModel
      */
     public function finishRemoval(): void
     {
-        $this->state = AccountState::Removed;
+        $this->status = AccountStatus::Removed;
         $this->directory = null;
         $this->maintenance = false;
         $this->cleanup_pending = false;
@@ -455,7 +455,7 @@ final class Account extends Model implements EventSource, ReadableModel
     {
         return $this->maintenance
             && $this->live_writer_attempt_id === null
-            && $this->state === AccountState::Authenticated
+            && $this->status === AccountStatus::Authenticated
             && $this->check_requested_generation !== null;
     }
 
@@ -469,14 +469,14 @@ final class Account extends Model implements EventSource, ReadableModel
      */
     public function awaitsCleanupRetry(): bool
     {
-        return $this->state === AccountState::Removing && $this->hasUsedEveryCleanupTry();
+        return $this->status === AccountStatus::Removing && $this->hasUsedEveryCleanupTry();
     }
 
     public function isBeingRemoved(): bool
     {
-        return in_array($this->state, [
-            AccountState::Removing,
-            AccountState::Removed,
+        return in_array($this->status, [
+            AccountStatus::Removing,
+            AccountStatus::Removed,
         ], true);
     }
 
@@ -527,11 +527,11 @@ final class Account extends Model implements EventSource, ReadableModel
     protected function startUnavailableReason(): Attribute
     {
         return Accessor::get(function () {
-            if ($this->state->canStart() && ! $this->maintenance) {
+            if ($this->status->canStart() && ! $this->maintenance) {
                 return null;
             }
 
-            return $this->state->startUnavailableReason();
+            return $this->status->startUnavailableReason();
         });
     }
 
@@ -570,7 +570,7 @@ final class Account extends Model implements EventSource, ReadableModel
      */
     private function assertNotRemoved(): void
     {
-        if ($this->state === AccountState::Removed) {
+        if ($this->status === AccountStatus::Removed) {
             throw AccountMissing::for($this->id);
         }
     }
@@ -907,7 +907,7 @@ final class Account extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function kept(Builder $query): void
     {
-        $query->where('state', '!=', AccountState::Removed->value);
+        $query->where('status', '!=', AccountStatus::Removed->value);
     }
 
     /**
@@ -973,7 +973,7 @@ final class Account extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function cleanupDue(Builder $query): void
     {
-        $query->where('state', AccountState::Removing->value)
+        $query->where('status', AccountStatus::Removing->value)
             ->where('cleanup_released', true)
             ->where('cleanup_tries', '<', CleanupProgress::MOST_TRIES)
             ->whereNotNull('directory');
@@ -987,7 +987,7 @@ final class Account extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function awaitingCleanupRelease(Builder $query): void
     {
-        $query->where('state', AccountState::Removing->value)->where('cleanup_released', false);
+        $query->where('status', AccountStatus::Removing->value)->where('cleanup_released', false);
     }
 
     /**

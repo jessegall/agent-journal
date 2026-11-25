@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Values;
 
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanStatus;
 
 /**
  * Which plans to list: a title search, the page, and the plan selected for reading, if any. Web turns its validated
@@ -15,7 +15,7 @@ final readonly class PlanFilters
     public const int PAGE_SIZE = 20;
 
     /**
-     * @param  list<PlanState>  $states  only plans in these states, or every plan when empty
+     * @param  list<PlanStatus>  $states  only plans in these states, or every plan when empty
      */
     public function __construct(
         public string $search = '',

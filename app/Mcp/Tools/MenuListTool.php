@@ -6,7 +6,7 @@ namespace App\Mcp\Tools;
 
 use App\Contracts\Admission\JournalAdmission;
 use App\Contracts\Navigation\NavigationReader;
-use App\Enums\Navigation\MenuEntryState;
+use App\Enums\Navigation\MenuEntryStatus;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Contracts\NumberedPages;
 use App\Mcp\Data\ToolResult;
@@ -41,7 +41,7 @@ final class MenuListTool extends JournalReadTool
     {
         return [
             'driver' => $schema->string()->max(80),
-            'state' => $this->caseArgument($schema, MenuEntryState::class),
+            'state' => $this->caseArgument($schema, MenuEntryStatus::class),
             'page' => $schema->integer()->min(1),
             'continuation' => $schema->string(),
         ];
@@ -66,7 +66,7 @@ final class MenuListTool extends JournalReadTool
         $owner = ActorIdentity::of($this->admission->owner());
         $driver = $filters->optionalText('driver');
         $state = $filters->optionalText('state');
-        $state = $state === null ? null : MenuEntryState::from($state);
+        $state = $state === null ? null : MenuEntryStatus::from($state);
         $page = $filters->positiveInteger('page');
 
         return new ListedPage(

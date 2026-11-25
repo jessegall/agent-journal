@@ -7,7 +7,7 @@ namespace App\Support\Execution;
 use App\Contracts\Events\RunEvents;
 use App\Contracts\Reads\OutputRecorder;
 use App\Enums\Processes\OutputStream;
-use App\Enums\Runs\CaptureState;
+use App\Enums\Runs\CaptureStatus;
 use App\Enums\Runs\RunLogicalResult;
 use App\Enums\Runs\RunResultSource;
 use App\Models\Runs\PartRun;
@@ -83,7 +83,7 @@ final class RecordedRunEvents implements RunEvents
         $this->recorder->finish($record, $end);
 
         if (! $isDrained) {
-            $record->markCapture(CaptureState::Incomplete);
+            $record->markCapture(CaptureStatus::Incomplete);
         }
     }
 

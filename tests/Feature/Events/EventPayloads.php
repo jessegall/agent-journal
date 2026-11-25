@@ -402,7 +402,7 @@ final class EventPayloads
                 'fields' => [
                     'planId' => 'string',
                     'editionId' => 'string',
-                    'decision' => 'Domain\Plans\Enums\PlanReviewState',
+                    'decision' => 'Domain\Plans\Enums\PlanReviewStatus',
                 ],
             ],
             PlanReviewRequested::class => [
@@ -449,7 +449,7 @@ final class EventPayloads
             TaskBlocked::class => [
                 'fields' => [
                     'taskId' => 'string',
-                    'previousState' => 'Domain\Tasks\Enums\TaskState',
+                    'previousState' => 'Domain\Tasks\Enums\TaskStatus',
                     'historyEntryId' => 'string',
                 ],
             ],
@@ -459,14 +459,14 @@ final class EventPayloads
             TaskCancelled::class => [
                 'fields' => [
                     'taskId' => 'string',
-                    'previousState' => 'Domain\Tasks\Enums\TaskState',
+                    'previousState' => 'Domain\Tasks\Enums\TaskStatus',
                     'historyEntryId' => 'string',
                 ],
             ],
             TaskFinished::class => [
                 'fields' => [
                     'taskId' => 'string',
-                    'previousState' => 'Domain\Tasks\Enums\TaskState',
+                    'previousState' => 'Domain\Tasks\Enums\TaskStatus',
                     'historyEntryId' => 'string',
                 ],
             ],
@@ -494,7 +494,7 @@ final class EventPayloads
                 'fields' => [
                     'taskId' => 'string',
                     'actor' => 'App\Support\ActorIdentity',
-                    'previousState' => 'Domain\Tasks\Enums\TaskState',
+                    'previousState' => 'Domain\Tasks\Enums\TaskStatus',
                     'historyEntryId' => 'string',
                 ],
             ],

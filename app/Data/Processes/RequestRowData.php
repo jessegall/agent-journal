@@ -30,7 +30,7 @@ final class RequestRowData extends Data
             $request->operation,
             $request->source_excerpt,
             $request->hold_reason->value,
-            $request->state->value,
+            $request->status->value,
             $request->next_step->command,
         );
     }

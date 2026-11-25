@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Data;
 
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Values\TaskExecution;
 use Spatie\LaravelData\Data;
 
@@ -20,7 +20,7 @@ final class TaskExecutionData extends Data
         public readonly string $actorId,
         public readonly string|null $actorLabel,
         public readonly int $runNumber,
-        public readonly TaskState $state,
+        public readonly TaskStatus $state,
     ) {}
 
     public static function fromExecution(TaskExecution $execution): self

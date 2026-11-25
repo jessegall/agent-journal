@@ -9,7 +9,7 @@ use App\Commands\Runs\VerifyRestoredOutput\VerifyRestoredOutputCommand;
 use App\Contracts\Admission\ShellAdmission;
 use App\Enums\CommandRules\AdmissionRefusalCode;
 use App\Enums\Processes\ShellDialect;
-use App\Enums\Runs\CaptureState;
+use App\Enums\Runs\CaptureStatus;
 use App\Exceptions\CleanRefused;
 use App\Models\Runs\OutputChunk;
 use App\Models\Runs\PartRun;
@@ -51,11 +51,11 @@ final class OutputCleanupTest extends TestCase
         $preview = $this->asUser(new CleanProcessOutputCommand([$this->part->process_run_id], true));
         $this->assertSame([$this->part->id], $preview->partRunIds);
         $this->assertSame(strlen(self::PASSED_OUTPUT), $preview->bytes);
-        $this->assertSame(CaptureState::Complete, $this->part->refresh()->capture_state);
+        $this->assertSame(CaptureStatus::Complete, $this->part->refresh()->capture_state);
 
         $this->asUser(new CleanProcessOutputCommand([$this->part->process_run_id], false));
 
-        $this->assertSame(CaptureState::Removed, $this->part->refresh()->capture_state);
+        $this->assertSame(CaptureStatus::Removed, $this->part->refresh()->capture_state);
         $chunk = OutputChunk::query()->where('part_run_id', $this->part->id)->sole();
         Storage::disk(OutputRecorder::DISK)->assertMissing($chunk->storage_path);
     }
@@ -74,10 +74,10 @@ final class OutputCleanupTest extends TestCase
         Storage::disk(OutputRecorder::DISK)->put($path, 'X'.substr(self::PASSED_OUTPUT, 1));
 
         $check = new VerifyRestoredOutputCommand($this->part->process_run_id);
-        $this->assertSame([CaptureState::Corrupt], $this->asUser($check)->states());
+        $this->assertSame([CaptureStatus::Corrupt], $this->asUser($check)->states());
 
         Storage::disk(OutputRecorder::DISK)->put($path, self::PASSED_OUTPUT);
-        $this->assertSame([CaptureState::Complete], $this->asUser($check)->states());
+        $this->assertSame([CaptureStatus::Complete], $this->asUser($check)->states());
     }
 
     public function test_a_full_output_disk_starts_nothing_until_room_returns(): void

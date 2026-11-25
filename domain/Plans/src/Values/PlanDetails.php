@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Values;
 
-use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Enums\PlanType;
 
 /**
@@ -22,7 +22,7 @@ final readonly class PlanDetails
         public int $number,
         public string $title,
         public PlanType $type,
-        public PlanState $state,
+        public PlanStatus $state,
         public int $revision,
         public string $creatorType,
         public string $creatorId,

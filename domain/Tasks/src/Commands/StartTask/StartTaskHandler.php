@@ -9,7 +9,7 @@ use App\Contracts\Processes\RunClaims;
 use App\Support\ActorIdentity;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Contracts\TaskWaitResolver;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Events\TaskRunClaimed;
 use Domain\Tasks\Exceptions\TaskRestartRefused;
 use Domain\Tasks\Exceptions\TaskRunTaken;
@@ -45,7 +45,7 @@ final readonly class StartTaskHandler extends TaskCommandHandler
         $actor = ActorIdentity::of($command->dispatchedBy());
         $this->requireRunNotTaken($task, $actor);
 
-        if ($task->state !== TaskState::Started) {
+        if ($task->status !== TaskStatus::Started) {
             $this->assertWaitsMet($task);
         }
 
@@ -89,7 +89,7 @@ final readonly class StartTaskHandler extends TaskCommandHandler
      */
     private function requireRunNotTaken(Task $task, ActorIdentity $actor): void
     {
-        $run = $task->state === TaskState::Started ? $task->currentRun() : null;
+        $run = $task->status === TaskStatus::Started ? $task->currentRun() : null;
         $holder = $run === null ? null : $this->claims->holderOf($run->assignmentIdentity())->getOrElse(null);
 
         if ($holder !== null && ! $holder->isSameAs($actor)) {

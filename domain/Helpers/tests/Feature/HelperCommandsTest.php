@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Helpers\Tests\Feature;
 
 use App\Support\StartReceipt;
-use Domain\Helpers\Enums\JobState;
+use Domain\Helpers\Enums\JobStatus;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Tests\Support\DispatchesHelpers;
 use Domain\Helpers\Tests\TestCase;
@@ -54,7 +54,7 @@ final class HelperCommandsTest extends TestCase
             ->expectsOutputToContain('actual: '.StartReceipt::ACTUAL_MODEL_NOT_REPORTED)
             ->assertSuccessful();
 
-        $this->assertSame(JobState::Running, HelperJob::query()->acrossActors()->sole()->state);
+        $this->assertSame(JobStatus::Running, HelperJob::query()->acrossActors()->sole()->status);
     }
 
     public function test_a_steer_reaches_the_live_job_and_a_cancel_ends_it(): void
@@ -80,6 +80,6 @@ final class HelperCommandsTest extends TestCase
 
         $job = HelperJob::query()->acrossActors()->findOrFail($receipt->jobId);
         $this->assertSame(['Look at the tests too'], $job->steering);
-        $this->assertSame(JobState::Cancelled, $job->state);
+        $this->assertSame(JobStatus::Cancelled, $job->status);
     }
 }

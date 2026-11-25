@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 use App\Values\StackTarget;
-use Domain\Sequences\Enums\SequenceRunState;
+use Domain\Sequences\Enums\SequenceRunStatus;
 use Domain\Sequences\Events\SequenceChanged;
 use Domain\Sequences\Events\SequenceDefined;
 use Domain\Sequences\Events\SequenceEnded;
@@ -60,6 +60,6 @@ return [
         'owner' => ['SequenceRun::advance', 'SequenceRun::cancel'],
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new SequenceEnded('run', ActorIdentity::ofClass(Agent::class, 'agent'), SequenceRunState::Finished),
+        'sample' => fn () => new SequenceEnded('run', ActorIdentity::ofClass(Agent::class, 'agent'), SequenceRunStatus::Finished),
     ],
 ];

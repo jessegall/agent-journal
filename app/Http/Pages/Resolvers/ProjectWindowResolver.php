@@ -11,8 +11,8 @@ use App\Data\Connections\ProjectEntryData;
 use App\Data\Connections\ProjectTreeEntryData;
 use App\Data\Connections\ProjectWindowData;
 use App\Enums\Connections\BindingReadiness;
-use App\Enums\Projects\ProjectReadState;
-use App\Enums\Projects\ProjectWindowState;
+use App\Enums\Projects\ProjectReadStatus;
+use App\Enums\Projects\ProjectWindowStatus;
 use App\Http\Requests\Connections\ProjectWindowRequest;
 use App\Models\Projects\ProjectBinding;
 use App\Values\ProjectFileAnswers;
@@ -35,13 +35,13 @@ final readonly class ProjectWindowResolver implements PageResolver
         $found = ProjectBinding::findLastHeardFromIn($this->served->environmentIds());
 
         if (! $found->isDefined()) {
-            return $this->window(ProjectWindowState::None, null, null);
+            return $this->window(ProjectWindowStatus::None, null, null);
         }
 
         $binding = $found->get();
 
         if ($binding->readinessAt(CarbonImmutable::now()) !== BindingReadiness::Ready) {
-            return $this->window(ProjectWindowState::Offline, $binding->project_label, $binding->machine_label);
+            return $this->window(ProjectWindowStatus::Offline, $binding->project_label, $binding->machine_label);
         }
 
         $open = $this->request->openFolders();
@@ -52,12 +52,12 @@ final readonly class ProjectWindowResolver implements PageResolver
         $root = $answers->of('');
 
         $state = match ($root->state) {
-            ProjectReadState::Answered => ProjectWindowState::Ready,
-            ProjectReadState::Pending => ProjectWindowState::Pending,
-            ProjectReadState::Failed, ProjectReadState::Expired => ProjectWindowState::Failed,
+            ProjectReadStatus::Answered => ProjectWindowStatus::Ready,
+            ProjectReadStatus::Pending => ProjectWindowStatus::Pending,
+            ProjectReadStatus::Failed, ProjectReadStatus::Expired => ProjectWindowStatus::Failed,
         };
 
-        $entries = $state === ProjectWindowState::Ready
+        $entries = $state === ProjectWindowStatus::Ready
             ? $this->tree($answers, '', $root->entries, $open)
             : [];
 
@@ -68,7 +68,7 @@ final readonly class ProjectWindowResolver implements PageResolver
      * @param  list<ProjectTreeEntryData>  $entries
      */
     private function window(
-        ProjectWindowState $state,
+        ProjectWindowStatus $state,
         string|null $projectLabel,
         string|null $machineLabel,
         array $entries = [],
@@ -102,12 +102,12 @@ final readonly class ProjectWindowResolver implements PageResolver
                 'isFolder' => $entry->isFolder,
                 'size' => $entry->size,
                 'isOpen' => $isOpen,
-                'isLoading' => $answer?->state === ProjectReadState::Pending,
+                'isLoading' => $answer?->state === ProjectReadStatus::Pending,
                 'isFailed' => in_array($answer?->state, [
-                    ProjectReadState::Failed,
-                    ProjectReadState::Expired,
+                    ProjectReadStatus::Failed,
+                    ProjectReadStatus::Expired,
                 ], true),
-                'children' => $answer?->state === ProjectReadState::Answered
+                'children' => $answer?->state === ProjectReadStatus::Answered
                     ? $this->tree($answers, $path, $answer->entries, $open)
                     : [],
             ]);

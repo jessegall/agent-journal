@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sharing\Console\Commands;
 
 use App\Support\ConsoleOwner;
-use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Support\ShareListFilters;
 use Illuminate\Console\Command;
@@ -25,7 +25,7 @@ final class ShareListCommand extends Command
     public function handle(ConsoleOwner $owner): int
     {
         $owner->actAsOwner();
-        $state = $this->option('state') === null ? null : ShareState::from((string) $this->option('state'));
+        $state = $this->option('state') === null ? null : ShareStatus::from((string) $this->option('state'));
         $after = $this->option('after') === null ? null : (string) $this->option('after');
         $found = Share::findListPage(new ShareListFilters($state, null, null, null, $after), self::ROWS);
         $rows = array_slice($found, 0, self::ROWS);
@@ -42,7 +42,7 @@ final class ShareListCommand extends Command
                 fn (Share $share) => [
                     $share->id,
                     $share->number,
-                    $share->state->value,
+                    $share->status->value,
                     "{$share->root_type} {$share->root_id}",
                     $share->expires_at->toIso8601String(),
                 ],

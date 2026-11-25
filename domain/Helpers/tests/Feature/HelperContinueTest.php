@@ -12,7 +12,7 @@ use App\Support\Capabilities\CodexHeadlessCapabilities;
 use Domain\Helpers\Commands\CancelHelperJob\CancelHelperJobCommand;
 use Domain\Helpers\Commands\ContinueHelper\ContinueHelperCommand;
 use Domain\Helpers\Commands\SteerHelper\SteerHelperCommand;
-use Domain\Helpers\Enums\JobState;
+use Domain\Helpers\Enums\JobStatus;
 use Domain\Helpers\Exceptions\HelperJobAlreadyEnded;
 use Domain\Helpers\Exceptions\HelperStartUncertain;
 use Domain\Helpers\Models\HelperJob;
@@ -59,7 +59,7 @@ final class HelperContinueTest extends TestCase
 
         $job = HelperJob::query()->findOrFail($receipt->jobId);
         $notice = HelperNotice::query()->sole();
-        $this->assertSame(JobState::Unfinished, $job->state);
+        $this->assertSame(JobStatus::Unfinished, $job->status);
 
         $this->assertStringContainsString(
             sprintf("helpers_continue with identity_id '%s', job_id '%s' and model '", $receipt->identityId, $receipt->jobId),
@@ -81,7 +81,7 @@ final class HelperContinueTest extends TestCase
         $job = HelperJob::query()->findOrFail($receipt->jobId);
         $this->assertSame($receipt->jobId, $continued->jobId);
         $this->assertSame($continued->jobId, $repeated->jobId);
-        $this->assertSame(JobState::Running, $job->state);
+        $this->assertSame(JobStatus::Running, $job->status);
         $this->assertSame(self::BRIEF, $job->brief);
         $this->assertSame(2, SessionRequest::query()->where('owner_reference', 'like', '%'.$receipt->jobId)->count());
     }
@@ -135,7 +135,7 @@ final class HelperContinueTest extends TestCase
 
         $this->commands()->run(new CancelHelperJobCommand($receipt->jobId, 'cancel-1'));
 
-        $this->assertSame(JobState::Cancelled, HelperJob::query()->findOrFail($receipt->jobId)->state);
+        $this->assertSame(JobStatus::Cancelled, HelperJob::query()->findOrFail($receipt->jobId)->status);
     }
 
     private function endAttempt(HelperReceipt $receipt): void

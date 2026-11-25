@@ -15,20 +15,20 @@ enum PlanStateGroup: string
     case Closed = 'closed';
 
     /**
-     * @return list<PlanState>
+     * @return list<PlanStatus>
      */
     public function states(): array
     {
         return match ($this) {
             self::Open => [
-                PlanState::Planned,
-                PlanState::Started,
-                PlanState::Paused,
+                PlanStatus::Planned,
+                PlanStatus::Started,
+                PlanStatus::Paused,
             ],
-            self::Waiting => [PlanState::Reviewing],
+            self::Waiting => [PlanStatus::Reviewing],
             self::Closed => [
-                PlanState::Done,
-                PlanState::Cancelled,
+                PlanStatus::Done,
+                PlanStatus::Cancelled,
             ],
         };
     }

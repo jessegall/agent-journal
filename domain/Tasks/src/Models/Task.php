@@ -30,7 +30,7 @@ use App\Support\References\SubjectReference;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Data\TaskDetails;
 use Domain\Tasks\Database\Factories\TaskFactory;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Enums\TaskTextLimit;
 use Domain\Tasks\Events\TaskBlocked;
 use Domain\Tasks\Events\TaskCancelled;
@@ -69,7 +69,7 @@ use PhpOption\Some;
  * @property string $creator_type
  * @property string $creator_id
  * @property int $revision
- * @property TaskState $state
+ * @property TaskStatus $status
  * @property int $run_number
  * @property string|null $result_note
  * @property string|null $block_reason
@@ -116,7 +116,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
      * @var array<string, mixed>
      */
     protected $attributes = [
-        'state' => 'open',
+        'status' => 'open',
         'run_number' => 0,
         'revision' => 1,
     ];
@@ -127,7 +127,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
     protected function casts(): array
     {
         return [
-            'state' => TaskState::class,
+            'status' => TaskStatus::class,
             'revision' => 'integer',
             'run_number' => 'integer',
         ];
@@ -178,20 +178,20 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
     {
         $this->assertNotEnded();
 
-        if ($this->state !== TaskState::Started) {
+        if ($this->status !== TaskStatus::Started) {
             $this->run_number++;
         }
 
-        $previousState = $this->state;
-        $this->state = TaskState::Started;
+        $previousState = $this->status;
+        $this->status = TaskStatus::Started;
         $this->assertSaved($this->save());
         $this->raise(new TaskStarted($this->id, $actor, $previousState, (string) Str::ulid()));
     }
 
     public function finish(string $note): void
     {
-        $previousState = $this->state;
-        $this->state = TaskState::Finished;
+        $previousState = $this->status;
+        $this->status = TaskStatus::Finished;
         $this->result_note = $note;
         $this->assertSaved($this->save());
         $this->raise(new TaskFinished($this->id, $previousState, (string) Str::ulid()));
@@ -199,8 +199,8 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
 
     public function block(string $reason): void
     {
-        $previousState = $this->state;
-        $this->state = TaskState::Blocked;
+        $previousState = $this->status;
+        $this->status = TaskStatus::Blocked;
         $this->block_reason = $reason;
         $this->assertSaved($this->save());
         $this->raise(new TaskBlocked($this->id, $previousState, (string) Str::ulid()));
@@ -208,8 +208,8 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
 
     public function cancel(string $reason): void
     {
-        $previousState = $this->state;
-        $this->state = TaskState::Cancelled;
+        $previousState = $this->status;
+        $this->status = TaskStatus::Cancelled;
         $this->cancel_reason = $reason;
         $this->assertSaved($this->save());
         $this->raise(new TaskCancelled($this->id, $previousState, (string) Str::ulid()));
@@ -237,7 +237,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
 
     public function isOpenForAssignment(): bool
     {
-        return $this->state === TaskState::Open;
+        return $this->status === TaskStatus::Open;
     }
 
     public function isCurrentRun(int $number): bool
@@ -264,8 +264,8 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
             $runner->id,
             $labels->nameOf($runner),
             $this->run_number,
-            $this->state,
-            $isClaimed && $this->state === TaskState::Started,
+            $this->status,
+            $isClaimed && $this->status === TaskStatus::Started,
             $focuser->map(fn (ActorIdentity $agent) => $labels->nameOf($agent) ?? "agent {$agent->id}"),
         );
     }
@@ -287,7 +287,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
      */
     public function card(Option $holder, TaskExecution|null $execution): TaskCard
     {
-        return new TaskCard($this->id, $this->number, $this->title, $this->state, $holder, $execution);
+        return new TaskCard($this->id, $this->number, $this->title, $this->status, $holder, $execution);
     }
 
     /**
@@ -337,7 +337,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
         return Accessor::get(function () {
             $changedAt = CarbonImmutable::parse((string) ($this->updated_at ?? $this->created_at));
 
-            return new TaskSummary($this->number, $this->title, $this->state, $changedAt);
+            return new TaskSummary($this->number, $this->title, $this->status, $changedAt);
         });
     }
 
@@ -349,11 +349,11 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
      */
     protected function stateText(): Attribute
     {
-        return Accessor::get(fn () => match ($this->state) {
-            TaskState::Finished => $this->result_note,
-            TaskState::Blocked => $this->block_reason,
-            TaskState::Cancelled => $this->cancel_reason,
-            TaskState::Open, TaskState::Started => null,
+        return Accessor::get(fn () => match ($this->status) {
+            TaskStatus::Finished => $this->result_note,
+            TaskStatus::Blocked => $this->block_reason,
+            TaskStatus::Cancelled => $this->cancel_reason,
+            TaskStatus::Open, TaskStatus::Started => null,
         });
     }
 
@@ -364,8 +364,8 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
      */
     public function assertFocusable(): void
     {
-        if ($this->state !== TaskState::Started) {
-            throw TaskChangedSinceRead::notFocusable($this->number, $this->state);
+        if ($this->status !== TaskStatus::Started) {
+            throw TaskChangedSinceRead::notFocusable($this->number, $this->status);
         }
     }
 
@@ -376,8 +376,8 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
      */
     private function assertNotEnded(): void
     {
-        if ($this->state->hasEnded()) {
-            throw TaskRestartRefused::forTask($this->number, $this->state->value);
+        if ($this->status->hasEnded()) {
+            throw TaskRestartRefused::forTask($this->number, $this->status->value);
         }
     }
 
@@ -457,7 +457,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
                 'id',
                 'number',
                 'title',
-                'state',
+                'status',
             ])->keyBy('id')->all();
     }
 
@@ -545,7 +545,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
     #[Scope]
     protected function unfinished(Builder $query): void
     {
-        $query->whereIn('state', TaskState::unfinished());
+        $query->whereIn('status', TaskStatus::unfinished());
     }
 
     /**
@@ -595,7 +595,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
     #[Scope]
     protected function open(Builder $query): void
     {
-        $query->where('state', TaskState::Open);
+        $query->where('status', TaskStatus::Open);
     }
 
     /**
@@ -606,7 +606,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
     #[Scope]
     protected function finished(Builder $query): void
     {
-        $query->where('state', TaskState::Finished);
+        $query->where('status', TaskStatus::Finished);
     }
 
     /**

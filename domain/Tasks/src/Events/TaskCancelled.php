@@ -7,7 +7,7 @@ namespace Domain\Tasks\Events;
 use App\Contracts\Navigation\UserInterfaceUpdater;
 use App\Support\Sources\Contracts\DockSourceChanged;
 use Domain\Tasks\Contracts\TaskRunEndEvent;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;
 
 /**
@@ -18,7 +18,7 @@ final readonly class TaskCancelled extends TaskEvent implements DockSourceChange
 {
     public function __construct(
         public string $taskId,
-        public TaskState $previousState,
+        public TaskStatus $previousState,
         public string $historyEntryId,
     ) {}
 
@@ -32,8 +32,8 @@ final readonly class TaskCancelled extends TaskEvent implements DockSourceChange
         return $this->taskId;
     }
 
-    public function enteredState(): TaskState
+    public function enteredState(): TaskStatus
     {
-        return TaskState::Cancelled;
+        return TaskStatus::Cancelled;
     }
 }

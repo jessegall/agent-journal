@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Api\Connections\ProjectCommandFrame;
-use App\Enums\Connections\CommandRunState;
+use App\Enums\Connections\CommandRunStatus;
 
 /**
  * What starting a journal verb's run answered: whether this request started it now, where an earlier run of the
@@ -16,5 +16,5 @@ final readonly class CommandRunStart
     /**
      * @param  list<ProjectCommandFrame>  $recordedFrames
      */
-    public function __construct(public bool $isNew, public CommandRunState $state, public array $recordedFrames) {}
+    public function __construct(public bool $isNew, public CommandRunStatus $state, public array $recordedFrames) {}
 }

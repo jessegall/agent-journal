@@ -11,7 +11,7 @@ use App\Contracts\Bus\TargetedCommand;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Data\Receipts\ReceiptResultData;
-use App\Enums\CommandRules\ReceiptState;
+use App\Enums\CommandRules\ReceiptStatus;
 use App\Enums\Engine\RefusalCode;
 use App\Events\Engine\CommandReceiptCompleted;
 use App\Events\Engine\CommandReceiptRefused;
@@ -42,7 +42,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $request_key
  * @property string $command
  * @property string $fingerprint
- * @property ReceiptState $state
+ * @property ReceiptStatus $status
  * @property ReceiptResultData|null $result
  * @property string|null $refusal_code
  * @property string|null $refusal_message
@@ -74,7 +74,7 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
     protected function casts(): array
     {
         return [
-            'state' => ReceiptState::class,
+            'status' => ReceiptStatus::class,
             'result' => ReceiptResultData::class,
             'refusal_recovery' => RecoveryCall::class,
             'contract_major' => 'integer',
@@ -117,7 +117,7 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
         $receipt->target = $command instanceof TargetedCommand ? $command->receiptTarget() : null;
         $receipt->answers_until = $retention->answersUntil($now);
         $receipt->refuses_until = $retention->refusesUntil($now);
-        $receipt->state = ReceiptState::Taken;
+        $receipt->status = ReceiptStatus::Taken;
         $receipt->assertSaved($receipt->save());
 
         return $receipt;
@@ -127,7 +127,7 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
 
     public function complete(mixed $reply): void
     {
-        $this->state = ReceiptState::Completed;
+        $this->status = ReceiptStatus::Completed;
         $this->result = ReceiptResultData::of($reply);
         $this->assertSaved($this->save());
         $this->raise(new CommandReceiptCompleted($this->id));
@@ -139,11 +139,11 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
      */
     public function refuse(RefusalCode $code, string $message, RecoveryCall|null $recovery): void
     {
-        if ($this->state === ReceiptState::Completed) {
+        if ($this->status === ReceiptStatus::Completed) {
             return;
         }
 
-        $this->state = ReceiptState::Refused;
+        $this->status = ReceiptStatus::Refused;
         $this->refusal_code = $code->value;
         $this->refusal_message = $message;
         $this->refusal_recovery = $recovery;
@@ -176,7 +176,7 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
 
     public function isExpired(): bool
     {
-        return $this->state === ReceiptState::Expired || $this->answers_until->isPast();
+        return $this->status === ReceiptStatus::Expired || $this->answers_until->isPast();
     }
 
     // ----------[ Transformers ]----------
@@ -204,7 +204,7 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
         return Accessor::get(fn () => new Operation(
             $this->request_key,
             CommandName::of($this->command),
-            $this->state,
+            $this->status,
             $this->result?->value,
             $this->refusal_code === null ? null : RefusalCode::from($this->refusal_code),
             $this->refusal_message,
@@ -226,7 +226,7 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
             throw RequestKeyExpired::for($this->request_key);
         }
 
-        if ($this->state === ReceiptState::Refused) {
+        if ($this->status === ReceiptStatus::Refused) {
             throw RefusalReplayed::of(
                 RefusalCode::from((string) $this->refusal_code),
                 (string) $this->refusal_message,
@@ -290,8 +290,8 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
     protected function pastRetention(Builder $query, CarbonImmutable $now): void
     {
         $query->withoutGlobalScope('caller')->where('answers_until', '<', $now)->whereNot(
-            'state',
-            ReceiptState::Expired->value,
+            'status',
+            ReceiptStatus::Expired->value,
         );
     }
 

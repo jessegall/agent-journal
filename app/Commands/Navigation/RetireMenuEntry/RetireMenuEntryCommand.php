@@ -6,7 +6,7 @@ namespace App\Commands\Navigation\RetireMenuEntry;
 
 use App\Attributes\Commands\Authorize;
 use App\Enums\Agents\AccessType;
-use App\Enums\Navigation\MenuEntryState;
+use App\Enums\Navigation\MenuEntryStatus;
 use App\Policies\AgentMaintenancePolicy;
 use App\Support\Command;
 
@@ -21,6 +21,6 @@ final readonly class RetireMenuEntryCommand extends Command
 {
     public function __construct(
         public string $entryId,
-        public MenuEntryState $expectedState,
+        public MenuEntryStatus $expectedState,
     ) {}
 }

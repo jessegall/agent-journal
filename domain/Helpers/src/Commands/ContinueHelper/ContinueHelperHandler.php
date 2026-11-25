@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Helpers\Commands\ContinueHelper;
 
 use Domain\Helpers\Commands\Support\HelperCommandHandler;
-use Domain\Helpers\Enums\JobState;
+use Domain\Helpers\Enums\JobStatus;
 use Domain\Helpers\Exceptions\HelperJobAlreadyEnded;
 use Domain\Helpers\Exceptions\HelperStartUncertain;
 use Domain\Helpers\Exceptions\HelperUnavailable;
@@ -42,12 +42,12 @@ final readonly class ContinueHelperHandler extends HelperCommandHandler
         if ($job->isFinished()) {
             throw HelperJobAlreadyEnded::withSendCommand(
                 $job->id,
-                $job->state->value,
+                $job->status->value,
                 $this->starts->sendCall($job),
             );
         }
 
-        if ($job->state !== JobState::Unfinished) {
+        if ($job->status !== JobStatus::Unfinished) {
             throw HelperStartUncertain::forIdentity($job->helper_identity_id);
         }
 

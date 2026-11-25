@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Enums\CommandRules\ClassificationState;
+use App\Enums\CommandRules\ClassificationStatus;
 use App\Enums\CommandRules\CommandClass;
 use App\Enums\CommandRules\CommandType;
-use App\Enums\CommandRules\ProposalState;
+use App\Enums\CommandRules\ProposalStatus;
 use App\Enums\CommandRules\ToolType;
 use App\Exceptions\ClassificationRuleRefused;
 use App\Exceptions\RevisionImmutable;
@@ -73,8 +73,8 @@ final class RuleRecordsTest extends TestCase
         $pending = $this->open('request-1', $this->complete($this->statusRule()));
         $draft = $this->open('request-2', new ProposedRule($this->statusRule(), '', [RuleExample::negative('acme x')]));
 
-        $this->assertSame(ProposalState::Pending, $pending->refresh()->state);
-        $this->assertSame(ProposalState::Draft, $draft->refresh()->state);
+        $this->assertSame(ProposalStatus::Pending, $pending->refresh()->status);
+        $this->assertSame(ProposalStatus::Draft, $draft->refresh()->status);
         $this->assertSame(1, $pending->current_revision);
         $this->assertSame(self::OPERATION, $pending->operation);
         $this->assertSame('acme', $pending->program);
@@ -111,7 +111,7 @@ final class RuleRecordsTest extends TestCase
     public function test_an_ended_proposal_takes_no_new_revision(): void
     {
         $proposal = $this->open('request-1', $this->complete($this->statusRule()));
-        $proposal->state = ProposalState::Withdrawn;
+        $proposal->status = ProposalStatus::Withdrawn;
         $proposal->save();
 
         $this->assertThrows(
@@ -175,13 +175,13 @@ final class RuleRecordsTest extends TestCase
         $this->assertThrows(fn () => $rule->activate($first, 2), ClassificationRuleRefused::class);
 
         $rule->retire(2, self::RETIREMENT_REASON);
-        $this->assertSame(ClassificationState::Retired, $rule->refresh()->state);
+        $this->assertSame(ClassificationStatus::Retired, $rule->refresh()->status);
         $this->assertSame(self::RETIREMENT_REASON, $rule->state_reason);
         $this->assertThrows(fn () => $rule->retire(2, 'again'), ClassificationRuleRefused::class);
 
         $rule->restoreFrom($first, 2);
         $rule->refresh();
-        $this->assertSame(ClassificationState::Active, $rule->state);
+        $this->assertSame(ClassificationStatus::Active, $rule->status);
         $this->assertSame($first->id, $rule->active_revision_id);
         $this->assertSame(1, $rule->active_revision);
         $this->assertSame($rule->id, ClassificationRule::create(self::PROJECT, $second->payload)->id);

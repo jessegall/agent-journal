@@ -21,7 +21,7 @@ use Carbon\CarbonImmutable;
 use Domain\Sequences\Commands\AdvanceSequence\AdvanceSequenceCommand;
 use Domain\Sequences\Commands\CancelSequence\CancelSequenceCommand;
 use Domain\Sequences\Commands\StartSequence\StartSequenceCommand;
-use Domain\Sequences\Enums\SequenceRunState;
+use Domain\Sequences\Enums\SequenceRunStatus;
 use Domain\Sequences\Models\SequenceRun;
 use Domain\Sequences\Support\States\FollowSequenceState;
 use Domain\Sequences\Tests\TestCase;
@@ -45,13 +45,13 @@ final class SequenceStateContributionTest extends TestCase
 
         $this->assertSame(
             [
-                SequenceRunState::Running,
+                SequenceRunStatus::Running,
                 1,
                 'agent',
                 TestIds::of(1),
             ],
             [
-                $run->fresh()?->state,
+                $run->fresh()?->status,
                 $run->fresh()?->current_step,
                 $run->fresh()?->actor_type,
                 $run->fresh()?->actor_id,
@@ -109,7 +109,7 @@ final class SequenceStateContributionTest extends TestCase
         $this->app->make(CommandBus::class)->run(new AdvanceSequenceCommand($finished->id));
         $this->app->make(CommandBus::class)->run(new AdvanceSequenceCommand($finished->id));
 
-        $this->assertSame(SequenceRunState::Finished, $finished->fresh()?->state);
+        $this->assertSame(SequenceRunStatus::Finished, $finished->fresh()?->status);
         $this->assertSame('{}', $this->answerStop('call-1'));
 
         $cancelled = $this->newRun();

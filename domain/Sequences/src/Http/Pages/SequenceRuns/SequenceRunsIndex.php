@@ -13,7 +13,7 @@ use App\Support\Layout\LayoutRowData;
 use App\Support\Layout\ListEmpty;
 use App\Support\Layout\ListPage;
 use App\Support\Layout\ListPaging;
-use Domain\Sequences\Enums\SequenceRunState;
+use Domain\Sequences\Enums\SequenceRunStatus;
 use Domain\Sequences\Http\Pages\SequencePageViews;
 use Domain\Sequences\Models\SequenceRun;
 use Domain\Sequences\Values\SequenceRunPage;
@@ -71,9 +71,9 @@ final readonly class SequenceRunsIndex extends SequenceRunsPage
      */
     private function rowOf(SequenceRun $run, array $query, string $chosenRunId): LayoutRowData
     {
-        $mark = $run->state === SequenceRunState::Running
+        $mark = $run->status === SequenceRunStatus::Running
             ? LayoutPartData::text('step', $run->stepLine($run->current_step), 'chip')
-            : LayoutPartData::badge('state', ucfirst($run->state->value), 'quiet');
+            : LayoutPartData::badge('state', ucfirst($run->status->value), 'quiet');
 
         return LayoutRowData::from([
             'key' => $run->id,

@@ -9,8 +9,8 @@ use App\Contracts\Skills\SkillPublisher as SkillPublisherContract;
 use App\Data\Skills\GeneratedSkillData;
 use App\Enums\Files\Place;
 use App\Enums\Sessions\SessionStatus;
-use App\Enums\Skills\GenerationState;
-use App\Enums\Skills\PublicationState;
+use App\Enums\Skills\GenerationStatus;
+use App\Enums\Skills\PublicationStatus;
 use App\Exceptions\SkillSessionHidden;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
@@ -142,7 +142,7 @@ final class SkillStatusTest extends TestCase
         {$text}
 
         TEXT;
-        $generation = SkillGeneration::create(str_repeat('e', 64), GenerationState::Ready, hash('sha256', $text), GeneratedSkillData::collect([[
+        $generation = SkillGeneration::create(str_repeat('e', 64), GenerationStatus::Ready, hash('sha256', $text), GeneratedSkillData::collect([[
             'key' => 'journal',
             'owner' => 'Core',
             'revision' => null,
@@ -158,7 +158,7 @@ final class SkillStatusTest extends TestCase
             ['journal'],
         );
         $state = $this->app->make(SkillPublishingService::class)->publish($publication->id, 'worker-1');
-        $this->assertContains($state, [PublicationState::Delivered, PublicationState::Failed]);
+        $this->assertContains($state, [PublicationStatus::Delivered, PublicationStatus::Failed]);
 
         return $publication->refresh();
     }

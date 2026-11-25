@@ -36,7 +36,7 @@ final class ProfileRunData extends Data
             $run->id,
             $run->profile_key,
             $run->profile_revision,
-            $run->state->value,
+            $run->status->value,
             $run->cursor,
             $run->message,
             array_values($run->results->map(ProfileStepData::fromResult(...))->all()),

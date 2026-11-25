@@ -13,7 +13,7 @@ use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
 use Domain\Rules\Contracts\RuleResolver;
-use Domain\Rules\Enums\RuleState;
+use Domain\Rules\Enums\RuleStatus;
 use Domain\Rules\Http\Requests\RulesRequest;
 use Domain\Rules\Values\RuleList;
 use Domain\Rules\Values\RuleView;
@@ -87,7 +87,7 @@ final readonly class RulesWindowResolver implements PageResolver
             );
         }
 
-        $isAwaitingReview = array_any($page->rules, fn (RuleView $rule) => $rule->state === RuleState::Proposed);
+        $isAwaitingReview = array_any($page->rules, fn (RuleView $rule) => $rule->state === RuleStatus::Proposed);
 
         $rows = array_map(
             fn (RuleView $rule) => LayoutRowData::from(

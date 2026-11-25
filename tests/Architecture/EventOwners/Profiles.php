@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Enums\Accounts\SignInState;
-use App\Enums\Profiles\ProfileRunState;
+use App\Enums\Accounts\SignInStatus;
+use App\Enums\Profiles\ProfileRunStatus;
 use App\Events\Accounts\AccountCheckRequested;
 use App\Events\Accounts\AccountCleaned;
 use App\Events\Accounts\AccountCleanupReleased;
@@ -251,7 +251,7 @@ return [
         'owner' => 'SignInAttempt::end',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new SignInAttemptEnded('claude-code', 'attempt', SignInState::Complete),
+        'sample' => fn () => new SignInAttemptEnded('claude-code', 'attempt', SignInStatus::Complete),
     ],
     SignInAttemptHandedToUser::class => [
         'role' => EventRole::RowFact,
@@ -321,6 +321,6 @@ return [
         'owner' => 'ProfileRun::finish',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ProfileRunFinished('run', ProfileRunState::cases()[0]),
+        'sample' => fn () => new ProfileRunFinished('run', ProfileRunStatus::cases()[0]),
     ],
 ];

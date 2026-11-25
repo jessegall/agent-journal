@@ -11,7 +11,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
-use Domain\Plans\Enums\PlanReviewState;
+use Domain\Plans\Enums\PlanReviewStatus;
 use Domain\Plans\Events\PlanReviewEditionApproved;
 use Domain\Plans\Events\PlanReviewEditionChangesRequested;
 use Domain\Plans\Events\PlanReviewEditionOutdated;
@@ -28,7 +28,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $requested_by_type
  * @property string $requested_by_id
  * @property int $plan_revision
- * @property PlanReviewState $state
+ * @property PlanReviewStatus $status
  * @property string|null $decided_by_type
  * @property string|null $decided_by_id
  * @property CarbonImmutable|null $decided_at
@@ -55,7 +55,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
         return [
             'number' => 'integer',
             'plan_revision' => 'integer',
-            'state' => PlanReviewState::class,
+            'status' => PlanReviewStatus::class,
             'decided_at' => 'datetime',
             'is_historical' => 'boolean',
         ];
@@ -74,7 +74,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
         $planReviewEdition->requested_by_type = $actor->type;
         $planReviewEdition->requested_by_id = $actor->id;
         $planReviewEdition->plan_revision = $plan->revision;
-        $planReviewEdition->state = PlanReviewState::Requested;
+        $planReviewEdition->status = PlanReviewStatus::Requested;
         $planReviewEdition->assertSaved($planReviewEdition->save());
 
         return $planReviewEdition;
@@ -87,7 +87,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
      */
     public function withdraw(ActorIdentity $actor): void
     {
-        $this->state = PlanReviewState::Withdrawn;
+        $this->status = PlanReviewStatus::Withdrawn;
         $this->decided_by_type = $actor->type;
         $this->decided_by_id = $actor->id;
         $this->decided_at = CarbonImmutable::now();
@@ -100,7 +100,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
      */
     public function approve(ActorIdentity $actor, string $requestKey): void
     {
-        $this->decide(PlanReviewState::Approved, $actor, $requestKey, null);
+        $this->decide(PlanReviewStatus::Approved, $actor, $requestKey, null);
         $this->raise(new PlanReviewEditionApproved($this->id));
     }
 
@@ -109,7 +109,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
      */
     public function requestChanges(ActorIdentity $actor, string $requestKey, string $reason): void
     {
-        $this->decide(PlanReviewState::ChangesRequested, $actor, $requestKey, $reason);
+        $this->decide(PlanReviewStatus::ChangesRequested, $actor, $requestKey, $reason);
         $this->raise(new PlanReviewEditionChangesRequested($this->id));
     }
 
@@ -125,9 +125,9 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
 
     // ----------[ Internals ]----------
 
-    private function decide(PlanReviewState $state, ActorIdentity $actor, string $requestKey, string|null $reason): void
+    private function decide(PlanReviewStatus $state, ActorIdentity $actor, string $requestKey, string|null $reason): void
     {
-        $this->state = $state;
+        $this->status = $state;
         $this->decided_by_type = $actor->type;
         $this->decided_by_id = $actor->id;
         $this->decided_at = CarbonImmutable::now();
@@ -143,7 +143,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
      */
     public static function findRequestedOf(string $planId): self|null
     {
-        return self::query()->ofPlan($planId)->inState(PlanReviewState::Requested)->newestNumberFirst()->first();
+        return self::query()->ofPlan($planId)->inState(PlanReviewStatus::Requested)->newestNumberFirst()->first();
     }
 
     /**
@@ -167,7 +167,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
      */
     public static function findLatestApprovalOf(string $planId): self|null
     {
-        return self::query()->ofPlan($planId)->inState(PlanReviewState::Approved)->newestNumberFirst()->first();
+        return self::query()->ofPlan($planId)->inState(PlanReviewStatus::Approved)->newestNumberFirst()->first();
     }
 
     /**
@@ -175,7 +175,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
      */
     public static function findCurrentApprovalOf(string $planId): self|null
     {
-        return self::query()->ofPlan($planId)->inState(PlanReviewState::Approved)->current()
+        return self::query()->ofPlan($planId)->inState(PlanReviewStatus::Approved)->current()
             ->newestNumberFirst()
             ->first();
     }
@@ -207,9 +207,9 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function inState(Builder $query, PlanReviewState $state): void
+    protected function inState(Builder $query, PlanReviewStatus $state): void
     {
-        $query->where('state', $state);
+        $query->where('status', $state);
     }
 
     /**

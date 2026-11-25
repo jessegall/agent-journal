@@ -27,7 +27,7 @@ use App\Values\ProfileBase;
 use Carbon\CarbonImmutable;
 use Domain\Helpers\Commands\SendHelper\SendHelperCommand;
 use Domain\Helpers\Commands\StartHelper\StartHelperCommand;
-use Domain\Helpers\Enums\JobState;
+use Domain\Helpers\Enums\JobStatus;
 use Domain\Helpers\Exceptions\HelperBusy;
 use Domain\Helpers\Exceptions\HelperJobUnfinished;
 use Domain\Helpers\Exceptions\HelperProfilesUnavailable;
@@ -76,7 +76,7 @@ final class HelperDispatchTest extends TestCase
         $this->assertSame(ExecutionModeType::RequiredContainer, $receipt->start->executionMode);
         $this->assertSame(ConversationModeType::New, $receipt->startDetails->conversationMode);
         $this->assertSame(StartReceipt::ACTUAL_MODEL_NOT_REPORTED, $receipt->start->actualModel);
-        $this->assertSame(JobState::Accepted, $receipt->state);
+        $this->assertSame(JobStatus::Accepted, $receipt->state);
         $this->assertSame(self::SHELL_LIKE_BRIEF, HelperJob::query()->findOrFail($receipt->jobId)->brief);
         $this->assertSame(1, AssignmentRecord::query()->where('record_id', $receipt->jobId)->count());
     }
